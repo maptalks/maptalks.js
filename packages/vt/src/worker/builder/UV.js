@@ -2,19 +2,19 @@ import { vec2 } from 'gl-matrix';
 import { project } from './projection.js';
 
 // 按照原来的uv计算时的缩放比例，计算的 meter 到 gl point 坐标的比例
-export const METER_TO_GL_POINT = 46.5;
+// export const METER_TO_GL_POINT = 46.5;
 
 
-export function buildFaceUV(mode, start, offset, uvs, vertices, uvOrigin, centimeterToPoint, localScale, texWidth, texHeight, ombb, res, glScale, projectionCode, center) {
+export function buildFaceUV(mode, start, offset, uvs, vertices, uvOrigin, centimeterToPoint, tileRatio, texWidth, texHeight, ombb, res, glScale, projectionCode, center) {
     if (mode === 0) {
-        buildFlatUV(start, offset, uvs, vertices, uvOrigin, centimeterToPoint, localScale, texWidth, texHeight, center);
+        buildFlatUV(start, offset, uvs, vertices, uvOrigin, centimeterToPoint, tileRatio, texWidth, texHeight, center);
     } else if (mode === 1) {
-        buildOmbbUV(ombb, start, offset, uvs, vertices, uvOrigin, localScale, res, glScale, projectionCode, !!center);
+        buildOmbbUV(ombb, start, offset, uvs, vertices, uvOrigin, tileRatio, res, glScale, projectionCode, !!center);
     }
 }
 
 //inspired by https://stackoverflow.com/questions/20774648/three-js-generate-uv-coordinate
-function buildOmbbUV(obox, start, offset, uvs, vertices, uvOrigin, localScale, res, glScale, projectionCode, isExtrudePolygonLayer) {
+function buildOmbbUV(obox, start, offset, uvs, vertices, uvOrigin, tileRatio, res, glScale, projectionCode, isExtrudePolygonLayer) {
     if (!obox) {
         return;
     }
@@ -42,8 +42,8 @@ function buildOmbbUV(obox, start, offset, uvs, vertices, uvOrigin, localScale, r
     //为了提升精度，计算uvOrigin的小数部分
     for (let i = start; i < offset; i += 3) {
         const idx = i / 3 * 2;
-        const x = (uvOrigin.x / glScale + vertices[i] * localScale) * res;
-        const y = uvOrigin.y / glScale * res + (isExtrudePolygonLayer ? vertices[i + 1] : -vertices[i + 1]) * localScale * res;
+        const x = (uvOrigin.x / glScale + vertices[i] / tileRatio) * res;
+        const y = uvOrigin.y / glScale * res + (isExtrudePolygonLayer ? vertices[i + 1] : -vertices[i + 1]) / tileRatio * res;
         vec2.set(pt, x, y);
         if (projectionCode === 'EPSG:4326' || projectionCode === 'EPSG:4490') {
             project(pt, pt, 'EPSG:3857');
@@ -75,7 +75,7 @@ function getFootOfPerpendicular(
     return out;
 }
 
-function buildFlatUV(start, offset, uvs, vertices, uvOrigin, centimeterToPoint, localScale, texWidth, texHeight, center) {
+function buildFlatUV(start, offset, uvs, vertices, uvOrigin, centimeterToPoint, tileRatio, texWidth, texHeight, center) {
     const pointToMeter = 1 / (centimeterToPoint * 100);
     //为了提升精度，计算uvOrigin的小数部分
     // console.log([(uvOrigin.x / texWidth), (uvOrigin.y / texHeight)]);
@@ -87,12 +87,12 @@ function buildFlatUV(start, offset, uvs, vertices, uvOrigin, centimeterToPoint, 
         const idx = i / 3 * 2;
         const x = vertices[i] - centerX;
         const y = vertices[i + 1] - centerY;
-        uvs[idx] = uvStart[0] + (x * pointToMeter / METER_TO_GL_POINT * localScale) / texWidth;
-        uvs[idx + 1] = uvStart[1] - (y * pointToMeter / METER_TO_GL_POINT * localScale) / texHeight;
+        uvs[idx] = uvStart[0] + (x / tileRatio * pointToMeter) / texWidth;
+        uvs[idx + 1] = uvStart[1] - (y / tileRatio * pointToMeter) / texHeight;
     }
 }
 
-export function buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, vertices, indices, texWidth, texHeight, localScale, centimeterToPoint, needReverseTriangle) {
+export function buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, vertices, indices, texWidth, texHeight, tileRatio, centimeterToPoint, needReverseTriangle) {
     let maxz = 0, minz = 0, h;
     let lensofar = 0;
     let seg = 0;
@@ -140,10 +140,10 @@ export function buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs,
             }
         }
 
-        // len * glScale = gl point， localScale = tileSize / extent
+        // len * glScale = gl point， tileRatio = extent / tileSize
         const pointToMeter = 1 / (centimeterToPoint * 100);
-        const u = len * localScale * pointToMeter / METER_TO_GL_POINT / texWidth; //0 ? 1.0 - len * glScale / texWidth :
-        // const u = len * localScale * glScale / texWidth;
+        const u = len / tileRatio * pointToMeter / texWidth; //0 ? 1.0 - len * glScale / texWidth :
+        // const u = len * tileRatio * glScale / texWidth;
         let v;
 
         if (sideVerticalUVMode === 1) {
@@ -153,9 +153,9 @@ export function buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs,
         } else {
             if (textureYOrigin === 'bottom') {
                 // 除以 100 是从厘米转换为米
-                v = (z === maxz ? h / 100 / METER_TO_GL_POINT / texHeight : 0);
+                v = (z === maxz ? h / 100 / texHeight : 0);
             } else {
-                v = (z === maxz ? 0 : -h / 100 / METER_TO_GL_POINT / texHeight);
+                v = (z === maxz ? 0 : -h / 100 / texHeight);
             }
         }
 

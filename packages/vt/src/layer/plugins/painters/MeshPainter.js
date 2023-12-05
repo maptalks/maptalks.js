@@ -1,12 +1,13 @@
+import * as maptalks from 'maptalks';
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import Painter from './Painter';
 import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
-import { setUniformFromSymbol, createColorSetter, isNumber, toUint8ColorInGlobalVar } from '../Util';
+import { setUniformFromSymbol, createColorSetter, isNumber, toUint8ColorInGlobalVar, meterToPoint, pointAtResToMeter } from '../Util';
 import { prepareFnTypeData } from './util/fn_type_util';
 import { interpolated } from '@maptalks/function-type';
 import Color from 'color';
-import { PACK_TEX_SIZE } from '@maptalks/vector-packer';
+import { DEFAULT_TEX_WIDTH } from '@maptalks/vector-packer';
 
 const EMPTY_UV_ORIGIN = [0, 0];
 const SCALE = [1, 1, 1];
@@ -163,8 +164,11 @@ class MeshPainter extends Painter {
             }
         })
 
+        const { tileResolution } = geometry.properties;
         const map = this.getMap();
+        const renderer = this.layer.getRenderer();
         const glRes = map.getGLRes();
+        const tileCoord = map.pointAtResToCoord(new maptalks.Point(tilePoint), tileResolution);
         const sr = this.layer.getSpatialReference && this.layer.getSpatialReference();
         const layerRes = sr ? sr.getResolution(tileZoom) : map.getResolution(tileZoom);
         const glScale = layerRes / glRes;
@@ -186,26 +190,52 @@ class MeshPainter extends Painter {
                 const symbol = this.getSymbol(symbolIndex);
                 const material = symbol.material;
                 const uvScale = material && material.uvScale || [1, 1];
-                const dataUVScale = this.dataConfig.dataUVScale || [1, 1];
+
                 // 每个瓦片左上角的坐标值
-                const xmin = uvScale[0] * tilePoint[0] * glScale;
-                const ymax = uvScale[1] * tilePoint[1] * glScale;
+                const xmin = tilePoint[0] * glScale;
+                const ymax = tilePoint[1] * glScale;
                 // 纹理的高宽
-                const texWidth = PACK_TEX_SIZE * dataUVScale[0];
-                const texHeight = PACK_TEX_SIZE * dataUVScale[1];
-                return [xmin / texWidth, ymax / texHeight];
+                let textureWidth = material && material.textureWidth || DEFAULT_TEX_WIDTH;
+                const texturePointWidth = meterToPoint(map, textureWidth, glRes);
+                const pointToMeter = texturePointWidth / textureWidth;
+                return [(xmin * pointToMeter / textureWidth) % 1, (ymax * pointToMeter / textureWidth) % 1];
+                // const texWidth = textureWidth / uvScale[0];
+                // const texHeight = textureWidth / uvScale[1];
+                // return [xmin / texWidth, ymax / texHeight];
             }
         });
+        const pointToMeter = pointAtResToMeter(map, 1, tileCoord, tileResolution);
+        // const pointToMeter = 1 / (centimeterToPoint * 100);
         Object.defineProperty(mesh.uniforms, 'uvOffset', {
             enumerable: true,
             get: () => {
-                const uvOffsetAnim = this.getUVOffsetAnim();
-                const offset = this.getUVOffset(uvOffsetAnim);
-                if (this.material && this.material.get('noiseTexture')) {
-                    offset[0] *= -1;
-                    // offset[1] *= -1;
+                // const uvOffsetAnim = this.getUVOffsetAnim();
+                // const offset = this.getUVOffset(uvOffsetAnim);
+                // if (this.material && this.material.get('noiseTexture')) {
+                //     offset[0] *= -1;
+                //     // offset[1] *= -1;
+                // }
+                // return offset;
+                if (this.dataConfig.side) {
+                    // 侧面的纹理不会根据瓦片左上角坐标偏移
+                    // 只有顶面的坐标是需要根据瓦片左上角坐标来整体偏移的
+                    return EMPTY_UV_ORIGIN;
                 }
-                return offset;
+                if (this.dataConfig.topUVMode === 1) {
+                    // 如果顶面纹理是ombb，不需要偏移
+                    return EMPTY_UV_ORIGIN;
+                }
+                const symbol = this.getSymbol(symbolIndex);
+                const material = symbol.material;
+                const uvScale = material && material.uvScale || [1, 1];
+
+                // 每个瓦片左上角的坐标值
+                const xmin = tilePoint[0];
+                const ymax = tilePoint[1];
+                // 纹理的高宽
+                const textureWidth = (material && material.textureWidth || DEFAULT_TEX_WIDTH);
+                const textureHeight = textureWidth * uvScale[1] / uvScale[0];
+                return [(xmin * pointToMeter * uvScale[0] / textureWidth) % 1, (ymax * pointToMeter * uvScale[1] / textureHeight) % 1];
             }
         });
         Object.defineProperty(mesh.uniforms, 'hasAlpha', {
@@ -218,7 +248,7 @@ class MeshPainter extends Painter {
                     mesh.material.uniforms.emissiveTexture);
             }
         });
-        const renderer = this.layer.getRenderer();
+
         const maxZoom = this.layer.getMap().getMaxNativeZoom();
         Object.defineProperty(mesh.uniforms, 'stencilRef', {
             enumerable: true,

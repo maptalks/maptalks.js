@@ -1,3 +1,4 @@
+import * as maptalks from 'maptalks';
 import { isFunctionDefinition } from '@maptalks/function-type';
 
 

@@ -1,7 +1,7 @@
 import { isNil, extend, isString, isObject, isNumber, pushIn, isFnTypeSymbol } from '../../common/Util';
 import { buildWireframe, build3DExtrusion } from '../builder/';
 import { VectorPack, PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack, CirclePack, RoundTubePack, SquareTubePack, FilterUtil, PackUtil, StyleUtil, TextUtil } from '@maptalks/vector-packer';
-import { GlyphRequestor/*, IconRequestor*/ } from '@maptalks/vector-packer';
+import { DEFAULT_TEX_WIDTH, GlyphRequestor/*, IconRequestor*/ } from '@maptalks/vector-packer';
 import { createFilter } from '@maptalks/feature-filter';
 import { KEY_IDX } from '../../common/Constant';
 import Browser from '../util/Browser';
@@ -523,7 +523,8 @@ export default class BaseLayerWorker {
                 }
             }
             const projectionCode = this.options.projectionCode;
-            return Promise.all([Promise.resolve(build3DExtrusion(features, dataConfig, extent, tilePoint, context.tileInfo.res, glScale, this.options['tileSize'] / extent, centimeterToPoint, symbol, zoom, projectionCode, debugIndex))]);
+            const textureWidth = symbol.material && symbol.material.textureWidth || DEFAULT_TEX_WIDTH;
+            return Promise.all([Promise.resolve(build3DExtrusion(features, dataConfig, extent, tilePoint, textureWidth, context.tileInfo.res, glScale, extent / this.options['tileSize'], centimeterToPoint, symbol, zoom, projectionCode, debugIndex))]);
         } else if (type === '3d-wireframe') {
             return Promise.all([Promise.resolve(buildWireframe(features, extent, symbol, dataConfig))]);
         } else if (type === 'point') {

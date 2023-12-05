@@ -179,3 +179,14 @@ export function isArray(arr) {
     arr.constructor === Int32Array ||
     arr.constructor === Uint8ClampedArray;
 }
+
+const COORD1 = new maptalks.Coordinate(0, 0);
+export function meterToPoint(map, meter, patternOrigin, res, isYAxis) {
+    const point = map.distanceToPointAtRes(meter, meter, res, patternOrigin, COORD1);
+    return isYAxis ? point.y : point.x;
+}
+
+export function pointAtResToMeter(map, pointDistance, patternOrigin, res, isYAxis) {
+    const distance = map.pointAtResToDistance(isYAxis ? 0 : pointDistance, isYAxis ? pointDistance : 0, res, patternOrigin);
+    return distance;
+}

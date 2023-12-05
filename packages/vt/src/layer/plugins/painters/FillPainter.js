@@ -4,7 +4,7 @@ import { vec2, reshader, mat4 } from '@maptalks/gl';
 import vert from './glsl/fill.vert';
 import frag from './glsl/fill.frag';
 import pickingVert from './glsl/fill.picking.vert';
-import { isNumber, isNil, setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar } from '../Util';
+import { isNumber, isNil, setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar, meterToPoint } from '../Util';
 import { prepareFnTypeData } from './util/fn_type_util';
 import { createAtlasTexture } from './util/atlas_util';
 import { isFunctionDefinition, piecewiseConstant, interpolated } from '@maptalks/function-type';
@@ -189,8 +189,8 @@ class FillPainter extends BasicPainter {
                     if (!offset) {
                         return DEFAULT_UNIFORMS['uvOffset'];
                     }
-                    const offsetX = this._meterToPoint(offset[0], tileCoord, tileRes);
-                    const offsetY = this._meterToPoint(offset[1], tileCoord, tileRes);
+                    const offsetX = meterToPoint(map, offset[0], tileCoord, tileRes);
+                    const offsetY = meterToPoint(map, offset[1], tileCoord, tileRes);
                     return vec2.set(offsetUniform, offsetX, offsetY);
                 }
             });
@@ -320,6 +320,7 @@ class FillPainter extends BasicPainter {
         if (isObjectEmpty(features)) {
             return;
         }
+        const map = this.getMap();
         let isMeterFn = isFunctionDefinition(symbolDef['uvOffsetInMeter']) && piecewiseConstant(symbolDef['uvOffsetInMeter']);
         const uvOffsetFn = interpolated(symbolDef['uvOffset']);
         const originFn = interpolated(symbolDef['polygonPatternFileOrigin']);
@@ -350,8 +351,8 @@ class FillPainter extends BasicPainter {
                         origin = COORD2.set(patternOrigin[0], patternOrigin[1]);
                     }
                 }
-                const offsetX = this._meterToPoint(offset[0], origin, tileRes);
-                const offsetY = this._meterToPoint(offset[0], origin, tileRes);
+                const offsetX = meterToPoint(map, offset[0], origin, tileRes);
+                const offsetY = meterToPoint(map, offset[0], origin, tileRes);
                 currentOffsetX = aPatternOffset[i * 2] = offsetX;
                 currentOffsetY = aPatternOffset[i * 2 + 1] = offsetY;
             } else {
@@ -398,12 +399,6 @@ class FillPainter extends BasicPainter {
             }
         }
         geo.data.aPatternOrigin = aPatternOrigin;
-    }
-
-    _meterToPoint(meter, patternOrigin, res, isYAxis) {
-        const map = this.getMap();
-        const point = map.distanceToPointAtRes(meter, meter, res, patternOrigin, COORD1);
-        return isYAxis ? point.y : point.x;
     }
 
     createFnTypeConfig(map, symbolDef) {
@@ -638,12 +633,13 @@ class FillPainter extends BasicPainter {
 
     _computePatternWidth(out, texWidth, texHeight, tileRatio, tileCoord, tileRes) {
         let scaleX, scaleY;
+        const map = this.getMap();
         if (texWidth) {
-            const pointWidth = this._meterToPoint(texWidth, tileCoord, tileRes);
+            const pointWidth = meterToPoint(map, texWidth, tileCoord, tileRes);
             scaleX = pointWidth;
         }
         if (texHeight) {
-            const pointHeight = this._meterToPoint(texHeight, tileCoord, tileRes, 1);
+            const pointHeight = meterToPoint(map, texHeight, tileCoord, tileRes, 1);
             scaleY = pointHeight;
         }
         scaleX = scaleX || scaleY;

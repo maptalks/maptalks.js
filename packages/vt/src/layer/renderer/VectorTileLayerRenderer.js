@@ -8,6 +8,7 @@ import { extend, pushIn, getCentiMeterScale, isNil } from '../../common/Util';
 import convertToPainterFeatures from './utils/convert_to_painter_features';
 import { isFunctionDefinition } from '@maptalks/function-type';
 import { FilterUtil } from '@maptalks/vector-packer';
+import { meterToPoint } from '../plugins/Util';
 
 // const DEFAULT_PLUGIN_ORDERS = ['native-point', 'native-line', 'fill'];
 const EMPTY_ARRAY = [];
@@ -525,7 +526,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const { url } = tileInfo;
         const cached = this._requestingMVT[url];
         if (!cached) {
-            const centimeterToPoint = this.getCentimeterToPoint(tileInfo.z);
+            const map = this.getMap();
+            const tilePoint = TILE_POINT.set(tileInfo.extent2d.xmin, tileInfo.extent2d.ymax);
+            const tileCoord = map.pointAtResToCoord(new maptalks.Point(tilePoint), tileInfo.res);
+            const centimeterToPoint = meterToPoint(map, 1, tileCoord, tileInfo.res) / 100;
+            // const centimeterToPoint = this.getCentimeterToPoint(tileInfo.z);
+            // console.log(centimeterToPoint, centimeterToPoint1);
             const glScale = this.getTileGLScale(tileInfo.z);
             this._requestingMVT[url] = {
                 keys: {},

@@ -4,11 +4,11 @@ import { buildExtrudeFaces } from './Extrusion';
 import { vec3, vec4 } from 'gl-matrix';
 import { buildNormals, buildTangents, packTangentFrame } from '@maptalks/tbn-packer';
 import { interpolated, piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
-import { PACK_TEX_SIZE, StyleUtil, PackUtil, ArrayPool } from '@maptalks/vector-packer';
+import { StyleUtil, PackUtil, ArrayPool } from '@maptalks/vector-packer';
 
 const arrayPool = ArrayPool.getInstance();
 
-export default function (features, dataConfig, extent, uvOrigin, res, glScale,
+export default function (features, dataConfig, extent, uvOrigin, textureSize, res, glScale,
     localScale, centimeterToPoint, symbol, zoom, projectionCode, debugIndex, positionType, center) {
     if (dataConfig.top === undefined) {
         dataConfig.top = true;
@@ -25,7 +25,7 @@ export default function (features, dataConfig, extent, uvOrigin, res, glScale,
         minHeightProperty,
         defaultHeight,
         tangent,
-        uv, uvScale,
+        uv,
         topUVMode,
         sideUVMode, sideVerticalUVMode,
         top, side,
@@ -33,7 +33,7 @@ export default function (features, dataConfig, extent, uvOrigin, res, glScale,
         topThickness,
     } = dataConfig;
     //256是2的8次方，在glZoom + 8级别时，texture为1:1比例
-    const textureSize = PACK_TEX_SIZE;
+    // const textureSize = PACK_TEX_SIZE;
     const isExtrudePolygonLayer = !!center;
     const faces = buildExtrudeFaces(
         features, extent,
@@ -49,7 +49,7 @@ export default function (features, dataConfig, extent, uvOrigin, res, glScale,
             top, side,
             topThickness: topThickness * 10 || 0,
             uv: uv || tangent, //tangent也需要计算uv
-            uvSize: uvScale ? [textureSize * uvScale[0], textureSize  * uvScale[1]] : [textureSize, textureSize],
+            uvSize: [textureSize, textureSize],
             uvOrigin,
             topUVMode,
             sideUVMode,

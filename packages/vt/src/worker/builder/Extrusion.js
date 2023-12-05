@@ -25,6 +25,7 @@ export function buildExtrudeFaces(
         // vScale用于将meter转为gl point值
         // localScale用于将gl point转为瓦片内坐标
         localScale,
+        // 厘米到tile point
         centimeterToPoint,
         positionType,
         res,

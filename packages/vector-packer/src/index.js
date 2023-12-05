@@ -25,9 +25,8 @@ import * as FilterUtil from './style/Filter.js';
 export { FilterUtil };
 import * as FuncTypeUtil from './style/FuncType.js';
 export { FuncTypeUtil };
-//256是2的8次方，在glZoom + 8级别时，texture为1:1比例
-export const PACK_TEX_SIZE = 128 / 256;
 
+export const DEFAULT_TEX_WIDTH = 128 / 256 * 46.5;
 // vt和vector图层，共同需要重建mesh的symbol属性
 const SYMBOLS_NEED_REBUILD = {
     'polygonPatternFile': 1,

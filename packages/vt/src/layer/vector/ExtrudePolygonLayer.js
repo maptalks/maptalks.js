@@ -289,7 +289,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         symbol = SYMBOL;
         const center = this._extrudeCenter;
         const extent = Infinity;
-        const localScale = 1;
+        const tileRatio = 1;
         // 原zoom是用来计算functiont-type 的symbol属性值
         const zoom = map.getZoom();
         const tilePoint = new maptalks.Point(0, 0);
@@ -310,7 +310,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         }
         const projectionCode = map.getProjection().code;
         const data = build3DExtrusion(features, dataConfig, extent, tilePoint, map.getGLRes(), 1,
-            localScale, this._zScale, symbol, zoom, projectionCode, debugIndex, Float32Array, center);
+            tileRatio, this._zScale, symbol, zoom, projectionCode, debugIndex, Float32Array, center);
         return data;
     }
 
