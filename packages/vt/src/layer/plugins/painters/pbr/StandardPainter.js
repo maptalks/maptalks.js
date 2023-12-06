@@ -108,13 +108,13 @@ class StandardPainter extends MeshPainter {
         }
         delete this.shadowCount;
 
-        const uvOffsetAnim = this._getUVOffsetAnim();
-        if (uvOffsetAnim && (uvOffsetAnim[0] || uvOffsetAnim[1])) {
-            this.material.set('uvOffset', [0, 0]);
-        } else {
-            const offset = this.getUVOffset(uvOffsetAnim);
-            this.material.set('uvOffset', offset);
-        }
+        // const uvOffsetAnim = this._getUVOffsetAnim();
+        // if (uvOffsetAnim && (uvOffsetAnim[0] || uvOffsetAnim[1])) {
+        //     this.material.set('uvOffset', [0, 0]);
+        // } else {
+        //     const offset = this.getUVOffset(uvOffsetAnim);
+        //     this.material.set('uvOffset', offset);
+        // }
         this._previousSSR = isSsr;
     }
 

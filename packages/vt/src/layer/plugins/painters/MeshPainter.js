@@ -17,6 +17,12 @@ const DEFAULT_UV_SCALE = [1, 1];
 
 const EMPTY_ARRAY = [];
 
+const COORD0 = new maptalks.Coordinate(0, 0);
+const COORD1 = new maptalks.Coordinate(0, 0);
+
+const ARR2_0 = [];
+const ARR2_1 = [];
+
 //一个三维mesh绘制的通用painter，负责mesh的create, add 和 delete, 负责fn-type的更新
 class MeshPainter extends Painter {
 
@@ -168,76 +174,22 @@ class MeshPainter extends Painter {
         const { tileResolution } = geometry.properties;
         const map = this.getMap();
         const renderer = this.layer.getRenderer();
-        const glRes = map.getGLRes();
         const tileCoord = map.pointAtResToCoord(new maptalks.Point(tilePoint), tileResolution);
-        const sr = this.layer.getSpatialReference && this.layer.getSpatialReference();
-        const layerRes = sr ? sr.getResolution(tileZoom) : map.getResolution(tileZoom);
-        const glScale = layerRes / glRes;
-        // vector-packer/PACK_TEX_SIZE
-        // const uvScale = this.material.get('uvScale') || [1, 1];
-        // mesh.setUniform('uvOrigin', [tilePoint[0] * glScale / (PACK_TEX_SIZE * uvScale[0]), tilePoint[1] * glScale / (PACK_TEX_SIZE * uvScale[0])]);
+        const pointToMeter = pointAtResToMeter(map, 1, tileCoord, tileResolution);
+        const uvOriginUniform = [];
         Object.defineProperty(mesh.uniforms, 'uvOrigin', {
             enumerable: true,
             get: () => {
-                if (this.dataConfig.side) {
-                    // 侧面的纹理不会根据瓦片左上角坐标偏移
-                    // 只有顶面的坐标是需要根据瓦片左上角坐标来整体偏移的
-                    return EMPTY_UV_ORIGIN;
-                }
-                if (this.dataConfig.topUVMode === 1) {
-                    // 如果顶面纹理是ombb，不需要偏移
-                    return EMPTY_UV_ORIGIN;
-                }
-                const symbol = this.getSymbol(symbolIndex);
-                const material = symbol.material;
-
-                // 每个瓦片左上角的坐标值
-                const xmin = tilePoint[0] * glScale;
-                const ymax = tilePoint[1] * glScale;
-                // 纹理的高宽
-                let textureWidth = material && material.textureWidth || DEFAULT_TEX_WIDTH;
-                const texturePointWidth = meterToPoint(map, textureWidth, glRes);
-                const pointToMeter = texturePointWidth / textureWidth;
-                return [(xmin * pointToMeter / textureWidth) % 1, (ymax * pointToMeter / textureWidth) % 1];
+                const offset = this._computeUVOffset(uvOffsetUniform, symbolIndex, tilePoint, tileResolution, pointToMeter);
+                return vec2.set(uvOriginUniform, offset[0] - offset[0] % 1, offset[1] - offset[1] % 1)
             }
         });
-        const pointToMeter = pointAtResToMeter(map, 1, tileCoord, tileResolution);
         const uvOffsetUniform = [];
         Object.defineProperty(mesh.uniforms, 'uvOffset', {
             enumerable: true,
             get: () => {
-                // const uvOffsetAnim = this.getUVOffsetAnim();
-                // const offset = this.getUVOffset(uvOffsetAnim);
-                // if (this.material && this.material.get('noiseTexture')) {
-                //     offset[0] *= -1;
-                //     // offset[1] *= -1;
-                // }
-                // return offset;
-                if (this.dataConfig.topUVMode === 1) {
-                    // 如果顶面纹理是ombb，不需要偏移
-                    return EMPTY_UV_ORIGIN;
-                }
-                const symbol = this.getSymbol(symbolIndex);
-                const material = symbol.material;
-                const isMeter = !!material && material.uvOffsetInMeter;
-                const uvOffset = material && material.uvOffset || EMPTY_UV_OFFSET;
-                const uvScale = material && material.uvScale || DEFAULT_UV_SCALE;
-
-                // 每个瓦片左上角的坐标值
-                // 侧面的纹理不会根据瓦片左上角坐标偏移
-                // 只有顶面的坐标是需要根据瓦片左上角坐标来整体偏移的
-                let xmin = this.dataConfig.side ? 0 : tilePoint[0];
-                let ymax = this.dataConfig.side ? 0 : tilePoint[1];
-                // 纹理的高宽
-                const textureWidth = (material && material.textureWidth || DEFAULT_TEX_WIDTH);
-                const textureHeight = textureWidth * uvScale[1] / uvScale[0];
-                if (isMeter) {
-                    xmin += uvOffset[0];
-                    ymax += uvOffset[1];
-                }
-                const offsetX = isMeter ? 0 : uvOffset[0];
-                const offsetY = isMeter ? 0 : uvOffset[1];
-                return vec2.set(uvOffsetUniform, (xmin * pointToMeter * uvScale[0] / textureWidth) % 1 + offsetX, (ymax * pointToMeter * uvScale[1] / textureHeight) % 1 + offsetY);
+                const offset = this._computeUVOffset(uvOffsetUniform, symbolIndex, tilePoint, tileResolution, pointToMeter);
+                return vec2.set(uvOriginUniform, offset[0] % 1, offset[1] % 1);
             }
         });
         Object.defineProperty(mesh.uniforms, 'hasAlpha', {
@@ -263,6 +215,45 @@ class MeshPainter extends Painter {
         });
         mesh.properties.symbolIndex = symbolIndex;
         return mesh;
+    }
+
+    _computeUVOffset(out, symbolIndex, tilePoint, tileResolution, pointToMeter) {
+        if (this.dataConfig.topUVMode === 1) {
+            // 如果顶面纹理是ombb，不需要偏移
+            return EMPTY_UV_ORIGIN;
+        }
+        const map = this.getMap();
+        const symbol = this.getSymbol(symbolIndex);
+        const material = symbol.material;
+        let origin = tilePoint;
+        if (!this.dataConfig.side && material.textureOrigin) {
+            COORD0.set(material.textureOrigin[0], material.textureOrigin[1]);
+            map.coordToPointAtRes(COORD0, tileResolution, COORD1);
+            origin = vec2.set(ARR2_0, tilePoint[0] - COORD1.x, tilePoint[1] - COORD1.y);
+        }
+        const isMeter = !!material && material.uvOffsetInMeter;
+        let uvOffset = material && material.uvOffset || EMPTY_UV_OFFSET;
+        const uvOffsetAnim = this.getUVOffsetAnim();
+        if (uvOffsetAnim) {
+            uvOffset = this.getUVOffset(uvOffsetAnim);
+        }
+        const uvScale = material && material.uvScale || DEFAULT_UV_SCALE;
+
+        // 每个瓦片左上角的坐标值
+        // 侧面的纹理不会根据瓦片左上角坐标偏移
+        // 只有顶面的坐标是需要根据瓦片左上角坐标来整体偏移的
+        let xmin = this.dataConfig.side ? 0 : origin[0];
+        let ymax = this.dataConfig.side ? 0 : origin[1];
+        // 纹理的高宽
+        const textureWidth = (material && material.textureWidth || DEFAULT_TEX_WIDTH);
+        const textureHeight = textureWidth * uvScale[1] / uvScale[0];
+        if (isMeter) {
+            xmin += uvOffset[0] / pointToMeter;
+            ymax += uvOffset[1] / pointToMeter;
+        }
+        const offsetX = isMeter ? 0 : uvOffset[0];
+        const offsetY = isMeter ? 0 : uvOffset[1];
+        return vec2.set(out, xmin * pointToMeter * uvScale[0] / textureWidth + offsetX, ymax * pointToMeter * uvScale[1] / textureHeight + offsetY);
     }
 
     callShader(uniforms, context) {
@@ -300,17 +291,14 @@ class MeshPainter extends Painter {
     getUVOffset(uvOffsetAnim) {
         const symbol = this.getSymbols()[0];
         const uvOffset = symbol.material && symbol.material.uvOffset || EMPTY_UV_OFFSET;
-        const timeStamp = this.layer.getRenderer().getFrameTimestamp();
-        const offset = [uvOffset[0], uvOffset[1]];
-        const hasNoise = !!symbol.material && symbol.material.noiseTexture;
-        // 256是noiseTexture的高宽，乘以256才能保证动画首尾衔接，不会出现跳跃现象
-        const speed = hasNoise ? 500000 : 1000
-        const scale = hasNoise ? 256 : 1;
-        if (uvOffsetAnim && uvOffsetAnim[0]) {
-            offset[0] = (timeStamp * uvOffsetAnim[0] % speed) / speed * scale;
-        }
-        if (uvOffsetAnim && uvOffsetAnim[1]) {
-            offset[1] = (timeStamp * uvOffsetAnim[1] % speed) / speed * scale;
+        const inMeter = !!symbol.material && symbol.material.uvOffsetInMeter;
+        const timeStamp = performance.now() / 1000;
+        const offset = vec2.set(ARR2_1, uvOffset[0], uvOffset[1]);
+        offset[0] = timeStamp * uvOffsetAnim[0];
+        offset[1] = timeStamp * uvOffsetAnim[0];
+        if (!inMeter) {
+            offset[0] %= 1;
+            offset[1] %= 1;
         }
         return offset;
     }
