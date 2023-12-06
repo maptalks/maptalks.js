@@ -23,10 +23,11 @@ export function buildExtrudeFaces(
         sideVerticalUVMode,
         textureYOrigin,
         // vScale用于将meter转为gl point值
-        // localScale用于将gl point转为瓦片内坐标
-        localScale,
+        // tileRatio = extent / tileSize
+        tileRatio,
         // 厘米到tile point
         centimeterToPoint,
+        verticalCentimeterToPoint,
         positionType,
         res,
         glScale,
@@ -89,11 +90,11 @@ export function buildExtrudeFaces(
             pushIn(indices, triangles);
             if (generateUV) {
                 // debugger
-                buildFaceUV(topUVMode || 0, start, offset, uvs, vertices, uvOrigin, centimeterToPoint, localScale, uvSize[0], uvSize[1], ombb, res, glScale, projectionCode, center);
+                buildFaceUV(topUVMode || 0, start, offset, uvs, vertices, uvOrigin, centimeterToPoint, tileRatio, uvSize[0], uvSize[1], ombb, res, glScale, projectionCode, center);
             }
 
             if (topThickness > 0 && !generateSide) {
-                offset = buildSide(vertices, geoVertices, holes, indices, offset, uvs, 0, topThickness, EXTENT, generateUV, sideUVMode || 0, sideVerticalUVMode || 0, textureYOrigin, uvSize, localScale, centimeterToPoint, needReverseTriangle);
+                offset = buildSide(vertices, geoVertices, holes, indices, offset, uvs, 0, topThickness, EXTENT, generateUV, sideUVMode || 0, sideVerticalUVMode || 0, textureYOrigin, uvSize, tileRatio, verticalCentimeterToPoint, needReverseTriangle);
             }
             verticeTypes.setLength(offset / 3);
             verticeTypes.fill(1, typeStartOffset / 3, offset / 3);
@@ -104,7 +105,7 @@ export function buildExtrudeFaces(
                 topThickness = 0;
             }
             typeStartOffset = offset;
-            offset = buildSide(vertices, geoVertices, holes, indices, offset, uvs, topThickness, height, EXTENT, generateUV, sideUVMode || 0, sideVerticalUVMode || 0, textureYOrigin, uvSize, localScale, centimeterToPoint, needReverseTriangle);
+            offset = buildSide(vertices, geoVertices, holes, indices, offset, uvs, topThickness, height, EXTENT, generateUV, sideUVMode || 0, sideVerticalUVMode || 0, textureYOrigin, uvSize, tileRatio, verticalCentimeterToPoint, needReverseTriangle);
             verticeTypes.setLength(offset / 3);
             const count = geoVertices.length / 3;
             verticeTypes.fill(1, typeStartOffset / 3, typeStartOffset / 3 + count);
@@ -236,7 +237,7 @@ export function buildExtrudeFaces(
     return data;
 }
 
-function buildSide(vertices, topVertices, holes, indices, offset, uvs, topThickness, height, EXTENT, generateUV, sideUVMode, sideVerticalUVMode, textureYOrigin, uvSize, localScale, centimeterToPoint, needReverseTriangle) {
+function buildSide(vertices, topVertices, holes, indices, offset, uvs, topThickness, height, EXTENT, generateUV, sideUVMode, sideVerticalUVMode, textureYOrigin, uvSize, tileRatio, verticalCentimeterToPoint, needReverseTriangle) {
     const count = topVertices.length;
     const startIdx = offset / 3;
     //拷贝两次top和bottom，是为了让侧面的三角形使用不同的端点，避免uv和normal值因为共端点产生错误
@@ -281,13 +282,13 @@ function buildSide(vertices, topVertices, holes, indices, offset, uvs, topThickn
         const ringEnd = startIdx + holes[r];
 
         buildRingSide(ringStart, ringEnd, vertices, count / 3, EXTENT, indices,
-            generateUV, sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, uvSize, localScale, centimeterToPoint, needReverseTriangle);
+            generateUV, sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, uvSize, tileRatio, verticalCentimeterToPoint, needReverseTriangle);
     }
     return offset;
 }
 
 function buildRingSide(ringStart, ringEnd, vertices, vertexCount, EXTENT, indices,
-    generateUV, sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, uvSize, localScale, centimeterToPoint, needReverseTriangle) {
+    generateUV, sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, uvSize, tileRatio, verticalCentimeterToPoint, needReverseTriangle) {
     const indiceStart = indices.length;
     let current, next;
     for (let i = ringStart, l = ringEnd; i < l - 1; i++) {
@@ -314,7 +315,7 @@ function buildRingSide(ringStart, ringEnd, vertices, vertexCount, EXTENT, indice
 
     }
     if (generateUV) {
-        buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, vertices, indices.slice(indiceStart, indices.length), uvSize[0], uvSize[1], localScale, centimeterToPoint, needReverseTriangle); //convert uvSize[1] to meter
+        buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, vertices, indices.slice(indiceStart, indices.length), uvSize[0], uvSize[1], tileRatio, verticalCentimeterToPoint, needReverseTriangle); //convert uvSize[1] to meter
     }
 }
 

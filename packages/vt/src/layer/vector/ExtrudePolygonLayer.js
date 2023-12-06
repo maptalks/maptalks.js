@@ -310,7 +310,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         }
         const projectionCode = map.getProjection().code;
         const data = build3DExtrusion(features, dataConfig, extent, tilePoint, map.getGLRes(), 1,
-            tileRatio, this._zScale, symbol, zoom, projectionCode, debugIndex, Float32Array, center);
+            tileRatio, this._zScale, this._zScale, symbol, zoom, projectionCode, debugIndex, Float32Array, center);
         return data;
     }
 

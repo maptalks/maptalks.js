@@ -152,8 +152,8 @@ export function isFnTypeSymbol(v) {
 }
 
 export function getAltitudeToLocal(options) {
-    const { centimeterToPoint, tileRatio } = options;
-    const altitudeToLocal = centimeterToPoint * tileRatio;
+    const { verticalCentimeterToPoint, tileRatio } = options;
+    const altitudeToLocal = verticalCentimeterToPoint * tileRatio;
     return altitudeToLocal;
 }
 

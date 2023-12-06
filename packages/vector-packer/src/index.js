@@ -26,6 +26,7 @@ export { FilterUtil };
 import * as FuncTypeUtil from './style/FuncType.js';
 export { FuncTypeUtil };
 
+// in meters
 export const DEFAULT_TEX_WIDTH = 128 / 256 * 46.5;
 // vt和vector图层，共同需要重建mesh的symbol属性
 const SYMBOLS_NEED_REBUILD = {

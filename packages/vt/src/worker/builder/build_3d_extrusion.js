@@ -9,7 +9,7 @@ import { StyleUtil, PackUtil, ArrayPool } from '@maptalks/vector-packer';
 const arrayPool = ArrayPool.getInstance();
 
 export default function (features, dataConfig, extent, uvOrigin, textureSize, res, glScale,
-    localScale, centimeterToPoint, symbol, zoom, projectionCode, debugIndex, positionType, center) {
+    tileRatio, centimeterToPoint, verticalCentimeterToPoint, symbol, zoom, projectionCode, debugIndex, positionType, center) {
     if (dataConfig.top === undefined) {
         dataConfig.top = true;
     }
@@ -55,10 +55,11 @@ export default function (features, dataConfig, extent, uvOrigin, textureSize, re
             sideUVMode,
             sideVerticalUVMode,
             textureYOrigin,
-            // localScale用于将gl point转为瓦片内坐标
-            localScale,
+            // tileRatio = extent / tileSize
+            tileRatio,
             // 厘米到point的比例系数
             centimeterToPoint,
+            verticalCentimeterToPoint,
             positionType,
             // tile的resolution
             res,

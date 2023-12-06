@@ -1,6 +1,6 @@
 import * as maptalks from 'maptalks';
 import { reshader } from '@maptalks/gl';
-import { mat4 } from '@maptalks/gl';
+import { vec2, mat4 } from '@maptalks/gl';
 import Painter from './Painter';
 import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
 import { setUniformFromSymbol, createColorSetter, isNumber, toUint8ColorInGlobalVar, meterToPoint, pointAtResToMeter } from '../Util';
@@ -13,6 +13,7 @@ const EMPTY_UV_ORIGIN = [0, 0];
 const SCALE = [1, 1, 1];
 const DEFAULT_POLYGON_FILL = [1, 1, 1, 1];
 const EMPTY_UV_OFFSET = [0, 0];
+const DEFAULT_UV_SCALE = [1, 1];
 
 const EMPTY_ARRAY = [];
 
@@ -189,7 +190,6 @@ class MeshPainter extends Painter {
                 }
                 const symbol = this.getSymbol(symbolIndex);
                 const material = symbol.material;
-                const uvScale = material && material.uvScale || [1, 1];
 
                 // 每个瓦片左上角的坐标值
                 const xmin = tilePoint[0] * glScale;
@@ -199,13 +199,10 @@ class MeshPainter extends Painter {
                 const texturePointWidth = meterToPoint(map, textureWidth, glRes);
                 const pointToMeter = texturePointWidth / textureWidth;
                 return [(xmin * pointToMeter / textureWidth) % 1, (ymax * pointToMeter / textureWidth) % 1];
-                // const texWidth = textureWidth / uvScale[0];
-                // const texHeight = textureWidth / uvScale[1];
-                // return [xmin / texWidth, ymax / texHeight];
             }
         });
         const pointToMeter = pointAtResToMeter(map, 1, tileCoord, tileResolution);
-        // const pointToMeter = 1 / (centimeterToPoint * 100);
+        const uvOffsetUniform = [];
         Object.defineProperty(mesh.uniforms, 'uvOffset', {
             enumerable: true,
             get: () => {
@@ -216,26 +213,31 @@ class MeshPainter extends Painter {
                 //     // offset[1] *= -1;
                 // }
                 // return offset;
-                if (this.dataConfig.side) {
-                    // 侧面的纹理不会根据瓦片左上角坐标偏移
-                    // 只有顶面的坐标是需要根据瓦片左上角坐标来整体偏移的
-                    return EMPTY_UV_ORIGIN;
-                }
                 if (this.dataConfig.topUVMode === 1) {
                     // 如果顶面纹理是ombb，不需要偏移
                     return EMPTY_UV_ORIGIN;
                 }
                 const symbol = this.getSymbol(symbolIndex);
                 const material = symbol.material;
-                const uvScale = material && material.uvScale || [1, 1];
+                const isMeter = !!material && material.uvOffsetInMeter;
+                const uvOffset = material && material.uvOffset || EMPTY_UV_OFFSET;
+                const uvScale = material && material.uvScale || DEFAULT_UV_SCALE;
 
                 // 每个瓦片左上角的坐标值
-                const xmin = tilePoint[0];
-                const ymax = tilePoint[1];
+                // 侧面的纹理不会根据瓦片左上角坐标偏移
+                // 只有顶面的坐标是需要根据瓦片左上角坐标来整体偏移的
+                let xmin = this.dataConfig.side ? 0 : tilePoint[0];
+                let ymax = this.dataConfig.side ? 0 : tilePoint[1];
                 // 纹理的高宽
                 const textureWidth = (material && material.textureWidth || DEFAULT_TEX_WIDTH);
                 const textureHeight = textureWidth * uvScale[1] / uvScale[0];
-                return [(xmin * pointToMeter * uvScale[0] / textureWidth) % 1, (ymax * pointToMeter * uvScale[1] / textureHeight) % 1];
+                if (isMeter) {
+                    xmin += uvOffset[0];
+                    ymax += uvOffset[1];
+                }
+                const offsetX = isMeter ? 0 : uvOffset[0];
+                const offsetY = isMeter ? 0 : uvOffset[1];
+                return vec2.set(uvOffsetUniform, (xmin * pointToMeter * uvScale[0] / textureWidth) % 1 + offsetX, (ymax * pointToMeter * uvScale[1] / textureHeight) % 1 + offsetY);
             }
         });
         Object.defineProperty(mesh.uniforms, 'hasAlpha', {

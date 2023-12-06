@@ -530,6 +530,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             const tilePoint = TILE_POINT.set(tileInfo.extent2d.xmin, tileInfo.extent2d.ymax);
             const tileCoord = map.pointAtResToCoord(new maptalks.Point(tilePoint), tileInfo.res);
             const centimeterToPoint = meterToPoint(map, 1, tileCoord, tileInfo.res) / 100;
+            const verticalCentimeterToPoint = this.getCentimeterToPoint(tileInfo.z);
             // const centimeterToPoint = this.getCentimeterToPoint(tileInfo.z);
             // console.log(centimeterToPoint, centimeterToPoint1);
             const glScale = this.getTileGLScale(tileInfo.z);
@@ -541,7 +542,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this._requestingMVT[url].keys[tileInfo.id] = 1;
             const fetchOptions = this.layer.options['fetchOptions'];
             this._workerConn.loadTile({ tileInfo: { res: tileInfo.res, x: tileInfo.x, y: tileInfo.y, z: tileInfo.z, url: tileInfo.url, id: tileInfo.id, extent2d: tileInfo.extent2d },
-                glScale, zScale: this._zScale, centimeterToPoint, fetchOptions, styleCounter: this._styleCounter }, this._onReceiveMVTData.bind(this, url));
+                glScale, zScale: this._zScale, centimeterToPoint, verticalCentimeterToPoint, fetchOptions, styleCounter: this._styleCounter }, this._onReceiveMVTData.bind(this, url));
         } else if (!cached.keys[tileInfo.id]) {
             cached.tiles.push(tileInfo);
             cached.keys[tileInfo.id] = 1;

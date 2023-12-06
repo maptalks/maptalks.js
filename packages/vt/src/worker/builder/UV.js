@@ -92,7 +92,7 @@ function buildFlatUV(start, offset, uvs, vertices, uvOrigin, centimeterToPoint, 
     }
 }
 
-export function buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, vertices, indices, texWidth, texHeight, tileRatio, centimeterToPoint, needReverseTriangle) {
+export function buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, vertices, indices, texWidth, texHeight, tileRatio, verticalCentimeterToPoint, needReverseTriangle) {
     let maxz = 0, minz = 0, h;
     let lensofar = 0;
     let seg = 0;
@@ -141,7 +141,7 @@ export function buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs,
         }
 
         // len * glScale = gl point， tileRatio = extent / tileSize
-        const pointToMeter = 1 / (centimeterToPoint * 100);
+        const pointToMeter = 1 / (verticalCentimeterToPoint * 100);
         const u = len / tileRatio * pointToMeter / texWidth; //0 ? 1.0 - len * glScale / texWidth :
         // const u = len * tileRatio * glScale / texWidth;
         let v;

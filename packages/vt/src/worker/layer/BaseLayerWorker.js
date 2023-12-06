@@ -503,7 +503,7 @@ export default class BaseLayerWorker {
         const dataConfig = pluginConfig.renderPlugin.dataConfig;
         const symbol = pluginConfig.symbol;
         const tileSize = this.options.tileSize;
-        const { extent, glScale, zScale, zoom, tilePoint, centimeterToPoint } = context;
+        const { extent, glScale, zScale, zoom, tilePoint, centimeterToPoint, verticalCentimeterToPoint } = context;
         const tileRatio = extent / tileSize;
         const type = dataConfig.type;
         const debugIndex = context.debugIndex;
@@ -524,7 +524,8 @@ export default class BaseLayerWorker {
             }
             const projectionCode = this.options.projectionCode;
             const textureWidth = symbol.material && symbol.material.textureWidth || DEFAULT_TEX_WIDTH;
-            return Promise.all([Promise.resolve(build3DExtrusion(features, dataConfig, extent, tilePoint, textureWidth, context.tileInfo.res, glScale, extent / this.options['tileSize'], centimeterToPoint, symbol, zoom, projectionCode, debugIndex))]);
+            return Promise.all([Promise.resolve(build3DExtrusion(features, dataConfig, extent, tilePoint,
+                textureWidth, context.tileInfo.res, glScale, extent / this.options['tileSize'], centimeterToPoint, verticalCentimeterToPoint, symbol, zoom, projectionCode, debugIndex))]);
         } else if (type === '3d-wireframe') {
             return Promise.all([Promise.resolve(buildWireframe(features, extent, symbol, dataConfig))]);
         } else if (type === 'point') {
