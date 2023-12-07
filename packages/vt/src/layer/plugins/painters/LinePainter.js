@@ -1,3 +1,4 @@
+import * as maptalks from 'maptalks';
 import Color from 'color';
 import BasicPainter from './BasicPainter';
 import { reshader } from '@maptalks/gl';
@@ -127,7 +128,7 @@ class LinePainter extends BasicPainter {
         setUniformFromSymbol(uniforms, 'lineDashColor', symbol, 'lineDashColor', [0, 0, 0, 0], createColorSetter(this.colorCache));
 
         const iconAtlas = geometry.properties.iconAtlas;
-        const isVectorTile = geometry.data.aPosition instanceof Int16Array;
+        const isVectorTile = this.layer instanceof maptalks.TileLayer;
         if (iconAtlas) {
             uniforms.linePatternFile = createAtlasTexture(this.regl, iconAtlas, false, false);
             uniforms.atlasSize = iconAtlas ? [iconAtlas.width, iconAtlas.height] : [0, 0];

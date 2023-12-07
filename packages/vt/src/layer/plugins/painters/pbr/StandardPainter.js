@@ -291,6 +291,7 @@ class StandardPainter extends MeshPainter {
                 extend(symbolMaterial, config);
             }
         }
+        const dataConfig = this.dataConfig;
         const materialConfig = config || this.getSymbols()[0].material;
         const material = {};
         let hasTexture = false;
@@ -335,7 +336,7 @@ class StandardPainter extends MeshPainter {
                             wrap: 'repeat'
                         };
                     }
-                    texConf.flipY = true;//!dataConfig.side && !isNil(dataConfig.side) || this.dataConfig.textureYOrigin === 'bottom';
+                    texConf.flipY = !dataConfig.upsideUpTexture;
                     texConf.min = 'linear mipmap linear';
                     texConf.mag = 'linear';
                     material[p] = new reshader.Texture2D(texConf, this._loader);

@@ -3,6 +3,7 @@ import { extend } from '../../common/Util';
 
 const defaultOptions = {
     picking: true,
+    pickingPoint: true,
     renderer: 'gl',
     collision: false,
     textGamma: 1,

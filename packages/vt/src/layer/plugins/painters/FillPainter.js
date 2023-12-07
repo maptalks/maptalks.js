@@ -89,7 +89,7 @@ class FillPainter extends BasicPainter {
         const map = this.getMap();
         const { tilePoint } = params;
         const { geometry, symbolIndex, ref } = geo;
-        const isVectorTile = geometry.data.aPosition instanceof Int16Array;
+        const isVectorTile = this.layer instanceof maptalks.TileLayer;
         const tileSize = this.layer.getTileSize().width;
         const tileRatio = geometry.properties.tileExtent / tileSize;
         const tileRes = geometry.properties.tileResolution;

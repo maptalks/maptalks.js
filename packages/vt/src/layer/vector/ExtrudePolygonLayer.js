@@ -1,4 +1,5 @@
 import * as maptalks from 'maptalks';
+import { DEFAULT_TEX_WIDTH } from '@maptalks/vector-packer';
 import { extend, isNil } from '../../common/Util';
 import Vector3DLayer from './Vector3DLayer';
 import { PolygonLayerRenderer } from './PolygonLayer';
@@ -7,6 +8,7 @@ import { build3DExtrusion } from '../../worker/builder/';
 import { ID_PROP } from './util/convert_to_feature';
 import { PROP_OMBB } from '../../common/Constant';
 import computeOMBB from '../../worker/builder/ombb.js';
+import { meterToPoint } from '../plugins/Util';
 
 const options = {
     cullFace: false,
@@ -229,7 +231,9 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
                 return this.layer.options['castShadow'];
             }
         });
-        const painter = new StandardPainter(this.regl, this.layer, this.painterSymbol, sceneConfig, 0, dataConfig);
+        const topDataConfig = extend({}, dataConfig);
+        topDataConfig.upsideUpTexture = true;
+        const painter = new StandardPainter(this.regl, this.layer, this.painterSymbol, sceneConfig, 0, topDataConfig);
         this.sidePainter = new StandardPainter(this.regl, this.layer, this.sidePainterSymbol, sceneConfig, 0, dataConfig);
         return painter;
     }
@@ -293,6 +297,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         // 原zoom是用来计算functiont-type 的symbol属性值
         const zoom = map.getZoom();
         const tilePoint = new maptalks.Point(0, 0);
+        const tileCoord = new maptalks.Coordinate(0, 0);
         const dataConfig = extend({}, DEFAULT_DATACONFIG, this.layer.options.dataConfig);
         dataConfig.tangent = 1;
         if (dataConfig.top) {
@@ -308,9 +313,13 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         if (!features.length) {
             return null;
         }
+        const glRes = map.getGLRes();
         const projectionCode = map.getProjection().code;
-        const data = build3DExtrusion(features, dataConfig, extent, tilePoint, map.getGLRes(), 1,
-            tileRatio, this._zScale, this._zScale, symbol, zoom, projectionCode, debugIndex, Float32Array, center);
+        const material = top ? this.painterSymbol && this.painterSymbol.material : this.sidePainterSymbol && this.sidePainterSymbol.material;
+        const textureWidth = material && material.textureWidth || DEFAULT_TEX_WIDTH;
+        const centimeterToPoint = [meterToPoint(map, 1, tileCoord, glRes) / 100, meterToPoint(map, 1, tileCoord, glRes, 1) / 100];
+        const data = build3DExtrusion(features, dataConfig, extent, tilePoint, textureWidth, map.getGLRes(), 1,
+            tileRatio, centimeterToPoint, this._zScale, symbol, zoom, projectionCode, debugIndex, Float32Array, center);
         return data;
     }
 

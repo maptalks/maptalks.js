@@ -3,7 +3,7 @@ import { reshader } from '@maptalks/gl';
 import { vec2, mat4 } from '@maptalks/gl';
 import Painter from './Painter';
 import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
-import { setUniformFromSymbol, createColorSetter, isNumber, toUint8ColorInGlobalVar, meterToPoint, pointAtResToMeter } from '../Util';
+import { setUniformFromSymbol, createColorSetter, isNumber, toUint8ColorInGlobalVar, pointAtResToMeter } from '../Util';
 import { prepareFnTypeData } from './util/fn_type_util';
 import { interpolated } from '@maptalks/function-type';
 import Color from 'color';
@@ -46,13 +46,14 @@ class MeshPainter extends Painter {
         return false;
     }
 
-    createMesh(geo, transform, { tilePoint, tileZoom }) {
+    createMesh(geo, transform, { tilePoint }) {
         if (!this.material) {
             //还没有初始化
             this.setToRedraw();
             return null;
         }
         const { geometry, symbolIndex } = geo;
+        const isVectorTile = this.layer instanceof maptalks.TileLayer;
         const mesh = new reshader.Mesh(geometry, this.material);
         if (this.sceneConfig.animation) {
             SCALE[2] = 0.01;
@@ -180,7 +181,7 @@ class MeshPainter extends Painter {
         Object.defineProperty(mesh.uniforms, 'uvOrigin', {
             enumerable: true,
             get: () => {
-                const offset = this._computeUVOffset(uvOffsetUniform, symbolIndex, tilePoint, tileResolution, pointToMeter);
+                const offset = this._computeUVOffset(uvOffsetUniform, symbolIndex, tilePoint, tileResolution, pointToMeter, isVectorTile);
                 return vec2.set(uvOriginUniform, offset[0] - offset[0] % 1, offset[1] - offset[1] % 1)
             }
         });
@@ -188,7 +189,7 @@ class MeshPainter extends Painter {
         Object.defineProperty(mesh.uniforms, 'uvOffset', {
             enumerable: true,
             get: () => {
-                const offset = this._computeUVOffset(uvOffsetUniform, symbolIndex, tilePoint, tileResolution, pointToMeter);
+                const offset = this._computeUVOffset(uvOffsetUniform, symbolIndex, tilePoint, tileResolution, pointToMeter, isVectorTile);
                 return vec2.set(uvOriginUniform, offset[0] % 1, offset[1] % 1);
             }
         });
@@ -217,7 +218,7 @@ class MeshPainter extends Painter {
         return mesh;
     }
 
-    _computeUVOffset(out, symbolIndex, tilePoint, tileResolution, pointToMeter) {
+    _computeUVOffset(out, symbolIndex, tilePoint, tileResolution, pointToMeter, isVectorTile) {
         if (this.dataConfig.topUVMode === 1) {
             // 如果顶面纹理是ombb，不需要偏移
             return EMPTY_UV_ORIGIN;
@@ -253,7 +254,11 @@ class MeshPainter extends Painter {
         }
         const offsetX = isMeter ? 0 : uvOffset[0];
         const offsetY = isMeter ? 0 : uvOffset[1];
-        return vec2.set(out, xmin * pointToMeter * uvScale[0] / textureWidth + offsetX, ymax * pointToMeter * uvScale[1] / textureHeight + offsetY);
+        const result = vec2.set(out, xmin * pointToMeter * uvScale[0] / textureWidth + offsetX, ymax * pointToMeter * uvScale[1] / textureHeight + offsetY);
+        if (!isVectorTile) {
+            result[1] *= -1;
+        }
+        return result;
     }
 
     callShader(uniforms, context) {

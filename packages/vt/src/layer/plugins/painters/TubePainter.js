@@ -1,3 +1,4 @@
+import * as maptalks from 'maptalks';
 import Color from 'color';
 import { StyleUtil } from '@maptalks/vector-packer';
 import { reshader, mat4, mat3 } from '@maptalks/gl';
@@ -85,7 +86,7 @@ class TubePainter extends BasicPainter {
         setUniformFromSymbol(uniforms, 'uvScale', symbol, 'uvScale', [1, 1]);
 
         const iconAtlas = geometry.properties.iconAtlas;
-        const isVectorTile = geometry.data.aPosition instanceof Int16Array;
+        const isVectorTile = this.layer instanceof maptalks.TileLayer;
         if (iconAtlas) {
             uniforms.linePatternFile = createAtlasTexture(this.regl, iconAtlas, false);
             uniforms.atlasSize = iconAtlas ? [iconAtlas.width, iconAtlas.height] : [0, 0];
