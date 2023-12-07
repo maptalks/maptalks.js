@@ -529,7 +529,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             const map = this.getMap();
             const tilePoint = TILE_POINT.set(tileInfo.extent2d.xmin, tileInfo.extent2d.ymax);
             const tileCoord = map.pointAtResToCoord(new maptalks.Point(tilePoint), tileInfo.res);
-            const centimeterToPoint = meterToPoint(map, 1, tileCoord, tileInfo.res) / 100;
+            const centimeterToPoint = [meterToPoint(map, 1, tileCoord, tileInfo.res) / 100, meterToPoint(map, 1, tileCoord, tileInfo.res, 1) / 100];
             const verticalCentimeterToPoint = this.getCentimeterToPoint(tileInfo.z);
             // const centimeterToPoint = this.getCentimeterToPoint(tileInfo.z);
             // console.log(centimeterToPoint, centimeterToPoint1);

@@ -76,7 +76,8 @@ function getFootOfPerpendicular(
 }
 
 function buildFlatUV(start, offset, uvs, vertices, uvOrigin, centimeterToPoint, tileRatio, texWidth, texHeight, center) {
-    const pointToMeter = 1 / (centimeterToPoint * 100);
+    const xPointToMeter = 1 / (centimeterToPoint[0] * 100);
+    const yPointToMeter = 1 / (centimeterToPoint[1] * 100);
     //为了提升精度，计算uvOrigin的小数部分
     // console.log([(uvOrigin.x / texWidth), (uvOrigin.y / texHeight)]);
     // const uvStart = [(uvOrigin.x / texWidth) % 1, (uvOrigin.y / texHeight) % 1];
@@ -87,8 +88,8 @@ function buildFlatUV(start, offset, uvs, vertices, uvOrigin, centimeterToPoint, 
         const idx = i / 3 * 2;
         const x = vertices[i] - centerX;
         const y = vertices[i + 1] - centerY;
-        uvs[idx] = uvStart[0] + (x / tileRatio * pointToMeter) / texWidth;
-        uvs[idx + 1] = uvStart[1] - (y / tileRatio * pointToMeter) / texHeight;
+        uvs[idx] = uvStart[0] + (x / tileRatio * xPointToMeter) / texWidth;
+        uvs[idx + 1] = uvStart[1] - (y / tileRatio * yPointToMeter) / texHeight;
     }
 }
 
