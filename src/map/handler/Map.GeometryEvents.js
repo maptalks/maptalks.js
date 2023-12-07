@@ -263,7 +263,7 @@ class MapGeometryEventsHandler extends Handler {
             }
             return false;
         });
-        map._setPriorityCursor(geometryCursorStyle);
+        // map._setPriorityCursor(geometryCursorStyle);
         if (!layers.length) {
             return;
         }

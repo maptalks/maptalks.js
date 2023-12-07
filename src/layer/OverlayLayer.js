@@ -64,6 +64,9 @@ class OverlayLayer extends Layer {
             if (!geometry) {
                 continue;
             }
+            if (geometry.options.cursor) {
+                return true;
+            }
             for (let j = 0; j < types.length; j++) {
                 if (geometry.listens(types[j])) {
                     return true;
@@ -704,9 +707,16 @@ class OverlayLayer extends Layer {
         }
         const geos = this.getGeometries() || [];
         for (let i = 0, len = geos.length; i < len; i++) {
+            const geometry = geos[i];
+            if (!geometry) {
+                continue;
+            }
+            if (geometry.options.cursor) {
+                return true;
+            }
             for (let j = 0, len1 = eventTypes.length; j < len1; j++) {
                 const eventType = eventTypes[j];
-                const listens = geos[i].listens(eventType);
+                const listens = geometry.listens(eventType);
                 if (listens > 0) {
                     return true;
                 }
