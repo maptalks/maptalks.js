@@ -461,4 +461,27 @@ describe('Geometry.Events', function () {
         }
         test();
     });
+
+    it('#2148 geometry cursor when listens is empty', function (done) {
+        var circle = new maptalks.Circle(map.getCenter(), 10, { cursor: 'zoom-in' });
+        circle.addTo(layer);
+        var domPosition = GET_PAGE_POSITION(container);
+        var point = map.coordinateToContainerPoint(center).add(domPosition);
+
+        happen.mousemove(eventContainer, {
+            'clientX': point.x,
+            'clientY': point.y
+        });
+        setTimeout(() => {
+            happen.mousemove(eventContainer, {
+                'clientX': point.x + 2,
+                'clientY': point.y + 2
+            });
+
+            setTimeout(() => {
+                expect(map._priorityCursor).to.be.eql('zoom-in');
+                done();
+            }, 100);
+        }, 16);
+    });
 });
