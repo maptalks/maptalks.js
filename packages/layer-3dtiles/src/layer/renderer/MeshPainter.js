@@ -820,9 +820,11 @@ export default class MeshPainter {
             mesh.properties.magic = 'b3dm';
             mesh.properties.id = id;
             mesh.properties.node = node;
-            mesh.properties.batchTable = data.batchTable;
-            mesh.properties.batchTableBin = data.batchTableBin;
-            mesh.properties.count = data.featureTable['BATCH_LENGTH'];
+            if (data.batchTable) {
+                mesh.properties.batchTable = data.batchTable;
+                mesh.properties.batchTableBin = data.batchTableBin;
+            }
+            mesh.properties.count = data.featureTable && data.featureTable['BATCH_LENGTH'] || 0;
             mesh.properties.serviceIndex = node._rootIdx;
             const defines = this._getGLTFMeshDefines(gltfMesh, geometry, material, node._rootIdx, gltf);
             mesh.setDefines(defines);

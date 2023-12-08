@@ -15,6 +15,7 @@ import { iterateMesh, iterateBufferData } from '../common/GLTFHelpers';
 import { isI3SURL, loadI3STile } from './parsers/i3s/I3SWorkerHelper';
 import { buildNormals } from '@maptalks/tbn-packer';
 import { project } from './Projection';
+import getTranscoders from '../loaders/transcoders.js';
 
 const Y_TO_Z = [1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1];
 const X_TO_Z = [0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 1];
@@ -135,7 +136,11 @@ export default class BaseLayerWorker {
                 // '{' 或空格 ' ', 表明是个json文件
                 const str = readString(arraybuffer, 0, arraybuffer.byteLength);
                 const json = JSON.parse(str);
-                this._checkAndConvert(params.rootIdx, json, arraybuffer, url, cb);
+                if (json.accessors) {
+                    this._read3DTile(json, url, params, 'gltf', cb);
+                } else {
+                    this._checkAndConvert(params.rootIdx, json, arraybuffer, url, cb);
+                }
                 // if (magic[0] === '<') {
                 //     try {
                 //         const json = this._checkAndConvertS3MXML(str);
@@ -189,6 +194,7 @@ export default class BaseLayerWorker {
 
 
     _read3DTile(arraybuffer, url, params, magic, cb) {
+        magic = magic && magic.toLowerCase();
         const service = params.service;
         if (magic === 'b3dm') {
             const promise = this._b3dmLoader.load(url, arraybuffer, 0, 0, { maxTextureSize: service.maxTextureSize || 1024 });
@@ -227,6 +233,25 @@ export default class BaseLayerWorker {
                 cb(null, cmpt, transferables);
             }).catch(err => {
                 cb(err);
+            });
+        } else if (magic === 'gltf') {
+            if (!this._decoders) {
+                this._decoders = getTranscoders();
+            }
+            const rootPath = url.substring(0, url.lastIndexOf('/'));
+            const gltfContent = arraybuffer instanceof ArrayBuffer && { buffer: arraybuffer, byteOffset: 0, byteLength: arraybuffer.byteLength } || arraybuffer;
+            const loader = new GLTFLoader(rootPath, gltfContent, {
+                transferable: true,
+                requestImage: this._bindedRequestImage,
+                decoders: this._decoders,
+                supportedFormats: this._supportedFormats,
+                maxTextureSize: service.maxTextureSize || 1024
+            });
+            loader.load({ skipAttributeTransform: false }).then(gltf => {
+                gltf.url = url;
+                this._processGLTF(gltf, null, params);
+                this._compressAttrFloat32ToInt16(gltf);
+                cb(null, { magic: 'gltf', gltf }, loader.transferables);
             });
         } else {
             cb(new Error('unsupported tile format: ' + magic));
@@ -462,23 +487,27 @@ export default class BaseLayerWorker {
 
     _processB3DM(b3dm, params) {
         const { gltf, transferables, featureTable } = b3dm;
-        const isSharePosition = ifSharingPosition(gltf);
-        this._markTextures(b3dm.gltf);
-        if (!b3dm.gltf.asset) {
-            b3dm.gltf.asset = {};
-        }
-        if (!isSharePosition) {
-            this._projectCoordinates(gltf, featureTable, params.upAxis, params.transform);
-        } else {
-            // 如果position是共享的，不能用把坐标转为投影坐标的方式载入，还是只能用basisTo2D的方式载入
-            b3dm.gltf.asset.sharePosition = true;
-            this._convertCoordinates(gltf, featureTable, params.upAxis, params.transform);
-        }
+        this._processGLTF(gltf, featureTable, params);
 
         delete b3dm.transferables;
         return {
             content: b3dm, transferables
         };
+    }
+
+    _processGLTF(gltf, featureTable, params) {
+        const isSharePosition = ifSharingPosition(gltf);
+        this._markTextures(gltf);
+        if (!gltf.asset) {
+            gltf.asset = {};
+        }
+        if (!isSharePosition) {
+            this._projectCoordinates(gltf, featureTable, params.upAxis, params.transform);
+        } else {
+            // 如果position是共享的，不能用把坐标转为投影坐标的方式载入，还是只能用basisTo2D的方式载入
+            gltf.asset.sharePosition = true;
+            this._convertCoordinates(gltf, featureTable, params.upAxis, params.transform);
+        }
     }
 
     _loadI3DMAndPNTS(content, transform, rootIdx) {

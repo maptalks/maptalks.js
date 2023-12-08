@@ -1875,6 +1875,38 @@ describe('render specs', () => {
         });
     });
 
+    context('gltf tile specs', () => {
+        it('glb content', done => {
+            const resPath = 'Cesium3DTiles/GltfContent/glb';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                        shader: 'pbr'
+                    }
+                ]
+            });
+            runner(() => {
+                done();
+            }, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 5 });
+        });
+
+        it('gltf content', done => {
+            const resPath = 'Cesium3DTiles/GltfContent/gltf';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                        shader: 'pbr'
+                    }
+                ]
+            });
+            runner(() => {
+                done();
+            }, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 5 });
+        });
+    });
+
     context('offset specs', () => {
         const offset = [-1, 1];
         it('offset/BatchedWithTransformBox', done => {

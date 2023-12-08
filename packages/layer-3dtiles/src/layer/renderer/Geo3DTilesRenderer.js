@@ -384,13 +384,13 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             }
             const { magic } = data;
 
-            if (magic === 'b3dm' || magic === 'pnts' || magic === 'i3dm' || magic === 'cmpt') {
+            if (magic === 'b3dm' || magic === 'pnts' || magic === 'i3dm' || magic === 'cmpt' || magic === 'gltf') {
                 this._modelQueue.push({ data, tile });
+                if (service['debugShowBoundingVolume']) {
+                    this.painter._createBBoxMesh(tile);
+                }
             } else {
                 this.onTilesetLoad(data, tile, url);
-            }
-            if (service['debugShowBoundingVolume']) {
-                this.painter._createBBoxMesh(tile);
             }
 
             // if (magic === 'b3dm') {
@@ -422,7 +422,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         while (this._modelQueue.length && (count < limit || !map.isInteracting())) {
             const { data, tile } = this._modelQueue.shift();
             const { magic } = data;
-            if (magic === 'b3dm') {
+            if (magic === 'b3dm' || magic === 'gltf') {
                 this.painter.createB3DMMesh(data, tile.id, tile, (err, { mesh }) => {
                     this._onMeshCreated(data, tile, err, mesh);
                 });
