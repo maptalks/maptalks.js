@@ -3,7 +3,8 @@ import * as reshader from '@maptalks/reshader.gl';
 import fillVert from './glsl/fill.vert';
 import fillFrag from './glsl/fill.frag';
 import ShadowProcess from './shadow/ShadowProcess';
-import { extend, getGroundTransform, hasOwn, normalizeColor, computeUVUniforms } from './util/util.js';
+import { extend, getGroundTransform, hasOwn, normalizeColor } from './util/util.js';
+import { computeUVUniforms } from './util/uvUniforms.js';
 
 const { createIBLTextures, disposeIBLTextures, getPBRUniforms } = reshader.pbr.PBRUtils;
 const DEFAULT_TEX_OFFSET = [0, 0];
@@ -376,11 +377,15 @@ class GroundPainter {
         const patternWidth = this.material ? this.material.get('textureWidth') : symbol.polygonPatternFileWidth;
         const patternHeight = this.material ? patternWidth * (uvScale[1] / uvScale[0]) : symbol.polygonPatternFileHeight;
         const uvOffsetAnim = this._getUVOffsetAnim();
-        const [scaleX, scaleY, uvStartX, uvStartY, uvOffset] = computeUVUniforms(map,
-            xmin, ymin, extent.getWidth() * 2, extent.getHeight() * 2,
+        const [textureWidth, textureHeight, uvStartX, uvStartY, uvOffset] = computeUVUniforms(map,
+            xmin, ymin,
             patternOrigin, patternWidth, patternHeight, texAspect,
             uvScale,
             isOffsetInMeter, offsetValue, uvOffsetAnim);
+
+        // 乘以2是因为plane的长宽是extent的2倍
+        const scaleX = extent.getWidth() * 2 / textureWidth;
+        const scaleY = extent.getHeight() * 2 / textureHeight;
 
         if (!this.material) {
             // fill
