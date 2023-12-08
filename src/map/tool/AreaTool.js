@@ -86,7 +86,7 @@ class AreaTool extends DistanceTool {
             content += area < 1E6 ? area.toFixed(decimals) + units[0] : (area / 1E6).toFixed(decimals) + units[1];
         }
         if (this.options['imperial']) {
-            area *= 3.2808399;
+            area *= Math.pow(3.2808399, 2);
             if (content.length > 0) {
                 content += '\n';
             }
