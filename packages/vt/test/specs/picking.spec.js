@@ -1138,8 +1138,9 @@ describe('picking specs', () => {
             });
             layer.once('canvasisdirty', () => {
                 const redPoint = layer.identify([0.6, 0.6]);
-                assert(redPoint[0] instanceof maptalks.Marker);
-                assert(redPoint[0].getProperties().idx === 11);
+                assert(redPoint[0].geometry instanceof maptalks.Marker);
+                assert(redPoint[0].geometry.getProperties().idx === 11);
+                assert(redPoint[0].coordinate);
                 done();
             });
             layer.addTo(map);
@@ -1200,8 +1201,8 @@ describe('picking specs', () => {
             });
             layer.once('canvasisdirty', () => {
                 const redPoint = layer.identify([0.6, 0.6]);
-                assert(redPoint[0] instanceof maptalks.Marker);
-                assert(redPoint[0].getProperties().idx === 11);
+                assert(redPoint[0].geometry instanceof maptalks.Marker);
+                assert(redPoint[0].geometry.getProperties().idx === 11);
                 done();
             });
             layer.addTo(map);
@@ -1258,8 +1259,9 @@ describe('picking specs', () => {
             });
             layer.once('canvasisdirty', () => {
                 const redPoint = layer.identify([13.41720, 52.52956625878565]);
-                assert(redPoint[0] instanceof maptalks.LineString);
-                assert(redPoint[0].getProperties().idx === 11);
+                assert(redPoint[0].geometry instanceof maptalks.LineString);
+                assert(redPoint[0].geometry.getProperties().idx === 11);
+                assert(redPoint[0].coordinate);
                 done();
             });
             layer.addTo(map);
@@ -1324,8 +1326,8 @@ describe('picking specs', () => {
             });
             layer.once('canvasisdirty', () => {
                 const redPoint = layer.identify([13.41720, 52.52949625878565]);
-                assert(redPoint[0] instanceof maptalks.Polygon);
-                assert(redPoint[0].getProperties().idx === 11);
+                assert(redPoint[0].geometry instanceof maptalks.Polygon);
+                assert(redPoint[0].geometry.getProperties().idx === 11);
                 done();
             });
             layer.addTo(map);

@@ -29,6 +29,10 @@ export default class VectorTileLayerWorker extends LayerWorker {
             }, 1);
         }
         return Ajax.getArrayBuffer(url, fetchOptions, (err, response) => {
+            if (!this._cache) {
+                // removed
+                return;
+            }
             if (err) {
                 if (!err.loading) {
                     this._cache.add(url, { err, data: response && response.data });

@@ -1124,7 +1124,16 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             const picked = painter.pick(x, y, options.tolerance);
             if (picked && picked.data && picked.data.feature) {
                 const feature = picked.data.feature;
-                hits.push(this._geometries[feature[ID_PROP]]);
+                const geometry = this._geometries[feature[ID_PROP]];
+                if (options && options.includeInternals) {
+                    hits.push(geometry);
+                } else {
+                    picked.geometry = geometry;
+                    delete picked.plugin;
+                    delete picked.data;
+                    delete picked.point;
+                    hits.push(picked);
+                }
             }
         });
         return hits;
