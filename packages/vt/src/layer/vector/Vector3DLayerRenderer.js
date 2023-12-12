@@ -138,21 +138,18 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const isDefaultRender = !renderMode || renderMode === 'default';
         let polygonOffset = 0;
         if (this.layer.options['meshRenderOrder'] === 0) {
-            const status = this._renderMeshes(context, polygonOffset, renderMode);
-            if (status.drawCount) {
-                polygonOffset--;
-            }
+            this._renderMeshes(context, polygonOffset, renderMode);
         }
 
         if (this._lineMeshes && (isDefaultRender || this._linePainter.supportRenderMode(renderMode))) {
             this._linePainter.startFrame(context);
             this._linePainter.addMesh(this._lineMeshes, null, { bloom: this._parentContext.bloom });
             this._linePainter.prepareRender(context);
-            context.polygonOffsetIndex = polygonOffset;
-            const status = this._linePainter.render(context);
-            if (status.drawCount) {
-                polygonOffset--;
-            }
+            const currentPolygonOffset = context.polygonOffsetIndex || 0;
+            const offset = this.meshes && this.meshes.length ? polygonOffset - 1 : polygonOffset;
+            context.polygonOffsetIndex = (context.polygonOffsetIndex || 0) + offset;
+            this._linePainter.render(context);
+            context.polygonOffsetIndex = currentPolygonOffset;
         }
 
         if (this.layer.options['meshRenderOrder'] === 1) {
@@ -199,8 +196,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         if (this.painter && this.meshes && (isDefaultRender || this.painter.supportRenderMode(renderMode))) {
             this.painter.addMesh(this.meshes, null, { bloom: context && context.bloom });
             this.painter.prepareRender(context);
-            context.polygonOffsetIndex = polygonOffset++;
-            return this.painter.render(context);
+            context.polygonOffsetIndex = (context.polygonOffsetIndex || 0) + polygonOffset;
+            const status = this.painter.render(context);
+            return status;
         }
         return {
             redraw: false,

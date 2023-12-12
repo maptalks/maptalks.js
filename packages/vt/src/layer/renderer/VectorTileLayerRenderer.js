@@ -439,7 +439,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const len = plugins.length;
         for (let i = len - 1; i >= 0; i--) {
             const plugin = plugins[i];
-            if (!plugin.isVisible() || !hasMesh(plugin)) {
+            if (!plugin.isVisible() || !plugin.hasMesh()) {
                 continue;
             }
             this._pluginOffsets[i] = polygonOffsetIndex;
@@ -920,7 +920,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (this.layer.options.collision && !parentContext.isPostProcess) {
             //按照plugin顺序更新collision索引
             plugins.forEach((plugin) => {
-                if (!this._isVisible(plugin) || !hasMesh(plugin)) {
+                if (!this._isVisible(plugin) || !plugin.hasMesh()) {
                     return;
                 }
                 if (mode && mode !== 'default' && !plugin.supportRenderMode(mode)) {
@@ -935,7 +935,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             });
         } else {
             plugins.forEach((plugin) => {
-                if (!this._isVisible(plugin) || !hasMesh(plugin)) {
+                if (!this._isVisible(plugin) || !plugin.hasMesh()) {
                     return;
                 }
                 if (mode && mode !== 'default' && !plugin.supportRenderMode(mode)) {
@@ -1240,7 +1240,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (this.layer.options.collision) {
             //按照plugin顺序更新collision索引
             plugins.forEach((plugin) => {
-                if (!this._isVisible(plugin) || !hasMesh(plugin)) {
+                if (!this._isVisible(plugin) || !plugin.hasMesh()) {
                     return;
                 }
                 if (!terrainSkinFilter(plugin) || !this.layer.options.awareOfTerrain) {
@@ -1253,7 +1253,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             });
         } else {
             plugins.forEach((plugin) => {
-                if (!this._isVisible(plugin) || !hasMesh(plugin)) {
+                if (!this._isVisible(plugin) || !plugin.hasMesh()) {
                     return;
                 }
                 if (!terrainSkinFilter(plugin) || !this.layer.options.awareOfTerrain) {
@@ -2007,11 +2007,6 @@ function copyTileData(data) {
 //z小的排在后面
 function sortByLevel(m0, m1) {
     return m1.info.z - m0.info.z;
-}
-
-function hasMesh(plugin) {
-    const meshes = plugin.painter && plugin.painter.scene && plugin.painter.scene.getMeshes();
-    return meshes && meshes.length;
 }
 
 function groupFeatures(features) {

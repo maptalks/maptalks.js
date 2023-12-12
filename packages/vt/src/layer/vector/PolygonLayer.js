@@ -77,6 +77,10 @@ export class PolygonLayerRenderer extends Vector3DLayerRenderer {
         this.GeometryTypes = [maptalks.Polygon, maptalks.MultiPolygon];
     }
 
+   getPolygonOffsetCount() {
+        return this.options['altitude'] > 0 ? 0 : 2;
+   }
+
     buildMesh(atlas) {
         const { features, center } = this._getFeaturesToRender();
         if (!features.length) {

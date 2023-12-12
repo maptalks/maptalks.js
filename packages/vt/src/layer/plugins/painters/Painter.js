@@ -69,6 +69,11 @@ class Painter {
         this._invisibleWhenCreated = this.symbolDef.map(s => !!(s && s.visible === false));
     }
 
+    hasMesh() {
+        const meshes = this.scene && this.scene.getMeshes();
+        return this.isVisible() && meshes && !!meshes.length;
+    }
+
     getMap() {
         return this.layer ? this.layer.getMap() : null;
     }

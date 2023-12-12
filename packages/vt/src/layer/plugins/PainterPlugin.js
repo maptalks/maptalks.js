@@ -31,6 +31,10 @@ function createPainterPlugin(type, Painter) {
             return this.painter.supportRenderMode(mode);
         },
 
+        hasMesh() {
+            return this.painter && this.painter.hasMesh();
+        },
+
         startFrame: function (context) {
             const layer = context.layer,
                 regl = context.regl,
