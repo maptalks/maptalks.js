@@ -34,3 +34,47 @@ layer.addTo(map);
 </script>
 
 ```
+
+# 配置说明
+## I3S数据gzip解压
+
+i3s数据默认都进行了gzip压缩（以.gz结尾），需要在http服务中配置url rewrite和gzip解压。
+
+### IIS配置
+* 下载安装[url rewrite模块](https://www.iis.net/downloads/microsoft/url-rewrite)
+* 在文件夹目录下创建web.config，配置gz解压和url write:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <system.webServer>
+    <staticContent>
+      <remove fileExtension=".json.gz" />
+      <remove fileExtension=".bin.gz" />
+      <mimeMap fileExtension=".json.gz" mimeType="application/json" />
+      <mimeMap fileExtension=".bin.gz" mimeType="application/octet-stream" />
+    </staticContent>
+    <rewrite>
+      <outboundRules rewriteBeforeCache="true">
+        <rule name="Custom gzip file header">
+          <match serverVariable="RESPONSE_CONTENT_ENCODING" pattern=".*" />
+          <conditions>
+            <add input="{REQUEST_URI}" pattern="\.gz$" />
+          </conditions>
+          <action type="Rewrite" value="gzip"/>
+        </rule>
+      </outboundRules>
+      
+      <rules>
+        <rule name="Rewrite gzip file">
+          <match url="(.*)"/>
+          <conditions>
+            <add input="{HTTP_ACCEPT_ENCODING}" pattern="gzip" />
+            <add input="{REQUEST_FILENAME}.gz" matchType="IsFile" />
+          </conditions>
+          <action type="Rewrite" url="{R:1}.gz" />
+        </rule>
+      </rules>
+    </rewrite>
+  </system.webServer>
+</configuration>
+```
