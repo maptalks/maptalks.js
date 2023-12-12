@@ -503,7 +503,6 @@ include(
                     this.vaoOES.bindVertexArrayOES(vao);
                 }
             }
-            this.states.activeAttribType = 1;
         },
 
         /**
@@ -517,7 +516,6 @@ include(
          */
         vertexAttribPointer(index, size, type, normalized, stride, offset) {
             this._checkAndRestore();
-            this.states.activeAttribType = 0;
             // const args = [index, size, type, normalized, stride, offset];
             if (!this.states.attributes[index]) {
                 this.states.attributes[index] = {
@@ -677,11 +675,17 @@ include(
                 this._vaoOES.bindVertexArrayOES(null);
             }
 
+            const limit = this._attrLimit;
+            if (this._is2 || this.angleOES) {
+                for (let i = 0; i < limit; i++) {
+                    gl.vertexAttribDivisor(i, 0);
+                }
+            }
 
             //restore array buffer and element array buffer
             gl.bindBuffer(gl.ARRAY_BUFFER, target.arrayBuffer);
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, target.elementArrayBuffer);
-            if (preStates.activeAttribType === 1) {
+            if (target.activeAttribType === 1) {
                 this._restoreVAO(target, gl);
             } else {
                 this._restoreAttribs(target, gl, activeAttibNum);

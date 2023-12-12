@@ -7,6 +7,7 @@ include(GLContext.prototype, {
      */
     drawArraysInstanced(mode, first, count, instanceCount) {
         this._checkAndRestore();
+        this.states.activeAttribType = 1;
         this._addDrawCall();
         if (this._is2) {
             return this._gl.drawArraysInstanced(mode, first, count, instanceCount);
@@ -20,6 +21,7 @@ include(GLContext.prototype, {
      */
     drawElementsInstanced(mode, count, type, offset, instanceCount) {
         this._checkAndRestore();
+        this.states.activeAttribType = 1;
         this._addDrawCall();
         if (this._is2) {
             return this._gl.drawElementsInstanced(mode, count, type, offset, instanceCount);

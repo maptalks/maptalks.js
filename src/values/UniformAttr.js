@@ -12,7 +12,6 @@ include(GLContext.prototype, {
      */
     enableVertexAttribArray(index) {
         this._checkAndRestore();
-        this.states.activeAttribType = 1;
         if (!this.states.attributes[index]) {
             this.states.attributes[index] = {};
         }
