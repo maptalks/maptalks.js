@@ -1212,6 +1212,10 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         //TODO 判断properties中哪些只需要调用painter.updateSymbol
         // 如果有，则更新 this.painterSymbol 上的相应属性，以触发painter中的属性更新
         const geo = e.target['_getParent']() || e.target;
+        const id = geo[ID_PROP];
+        if (id === undefined) {
+            return;
+        }
         let props = e.properties;
         if (Array.isArray(props)) {
             const allChangedProps = {};
@@ -1240,7 +1244,6 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             }
         }
 
-        const id = geo[ID_PROP];
         const symbol = geo['_getInternalSymbol']();
         const feas = this.features[id];
         this._convertGeo(geo);
@@ -1295,21 +1298,39 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     onGeometryPositionChange(e) {
         const target = e.target['_getParent']() || e.target;
         const uid = target[ID_PROP];
+        if (uid === undefined) {
+            return;
+        }
         this._convertGeometries([target]);
         // 为应对同一个数据的频繁修改，发生变化的数据留到下一帧再统一修改
         this._dirtyTargetsInCurrentFrame[uid] = target;
         redraw(this);
     }
 
-    onGeometryZIndexChange() {
+    onGeometryZIndexChange(e) {
+        const target = e.target['_getParent']() || e.target;
+        const uid = target[ID_PROP];
+        if (uid === undefined) {
+            return;
+        }
         this._markRebuild();
     }
 
     onGeometryShow(e) {
+        const target = e.target['_getParent']() || e.target;
+        const uid = target[ID_PROP];
+        if (uid === undefined) {
+            return;
+        }
         this._onShowHide(e);
     }
 
     onGeometryHide(e) {
+        const target = e.target['_getParent']() || e.target;
+        const uid = target[ID_PROP];
+        if (uid === undefined) {
+            return;
+        }
         this._onShowHide(e);
     }
 
@@ -1344,8 +1365,11 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     onGeometryPropertiesChange(e) {
         //TODO 可能会更新textName
         // this._markRebuildGeometry();
-        const geo = e.target;
+        const geo = e.target['_getParent']() || e.target;
         const uid = geo[ID_PROP];
+        if (uid === undefined) {
+            return;
+        }
         this.features[uid] = convertToFeature(geo, this._kidGen);
         this._refreshFeatures(this.features[uid], uid);
         this._markRebuild();

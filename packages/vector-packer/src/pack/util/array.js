@@ -32,7 +32,7 @@ export function getIndexArrayType(max) {
     // if (max < 256) return Uint8Array;
     // according to http://www.webglinsights.com/, Uint8Array performs badly in directx according to ANGLE
     if (max < 65536) return Uint16Array;
-    return Uint32Array;
+    return Float32Array;
 }
 
 export function getPosArrayType(max) {
@@ -48,8 +48,7 @@ export function getPosArrayType(max) {
 export function getUnsignedArrayType(max) {
     if (max < 256) return Uint8Array;
     if (max < 65536) return Uint16Array;
-    if (max < Math.pow(2, 32)) return Uint32Array;
-    return Float64Array;
+    return Float32Array;
 }
 
 export function createTypedArray(values, ctor) {
