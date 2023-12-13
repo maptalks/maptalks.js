@@ -1046,7 +1046,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                     continue;
                 }
                 const feaObj = { feature: feas[j] };
-                if (hasMarkerSymbol(feas[j])) {
+                // maptalks/issues#532
+                // marker没有marker样式时也应该绘制，否则text会因为缺少对应的marker，在创建collision时出现错误
+                if (hasMarkerSymbol(feas[j]) || hasTextSymbol(feas[j])) {
                     this._markerFeatures[kid] = feaObj;
                     // this._markerFeatures[kid].push(feaObj);
                 }
@@ -1067,7 +1069,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             if (!this.needCheckPointLineSymbols()) {
                 return;
             }
-            if (hasMarkerSymbol(feas)) {
+            if (hasMarkerSymbol(feas) || hasTextSymbol(feas)) {
                 this._markerFeatures[kid] = feaObj;
             }
             if (hasTextSymbol(feas)) {
