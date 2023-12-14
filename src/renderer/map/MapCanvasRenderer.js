@@ -956,9 +956,6 @@ class MapCanvasRenderer extends MapRenderer {
             // addDomEvent(document, 'dragstart', this._thisDocDragStart, this);
             // addDomEvent(document, 'dragend', this._thisDocDragEnd, this);
         }
-        if (Browser.addDPRListening) {
-            Browser.addDPRListening(this.map);
-        }
     }
 
     _onMapMouseMove(param) {
