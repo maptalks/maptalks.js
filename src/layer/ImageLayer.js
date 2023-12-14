@@ -1,4 +1,4 @@
-import { extend, isNil } from '../core/util';
+import { extend } from '../core/util';
 import { getDepthFunc } from '../core/util/gl';
 import Browser from '../core/Browser';
 import Point from '../geo/Point';

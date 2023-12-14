@@ -1,6 +1,3 @@
-import {
-    isNil
-} from '../../../core/util';
 import TileLayer from '../../../layer/tile/TileLayer';
 import TileLayerCanvasRenderer from './TileLayerCanvasRenderer';
 import ImageGLRenderable from '../ImageGLRenderable';
