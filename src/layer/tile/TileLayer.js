@@ -374,8 +374,8 @@ class TileLayer extends Layer {
                 const visualHeight1 = Math.floor(map._getVisualHeight(cascadePitch1));
                 const visualContainerExtent = pitch <= cascadePitch1 ? mapContainerExtent : new PointExtent(0, map.height - visualHeight1, map.width, map.height);
                 this._visitedTiles = new TileHashset();
-                const tileGrid = this._getTiles(0, visualContainerExtent, 2, layer && layer.getRenderer(), true);
-                const error = this._getRootError();
+                const tileGrid = this._getTiles(0 - this.options['zoomOffset'], visualContainerExtent, 2, layer && layer.getRenderer(), true);
+                const error = this._getRootError() * Math.pow(2, this.options['zoomOffset']);
                 tileGrid.tiles.forEach(t => {
                     t.error = error;
                 });
