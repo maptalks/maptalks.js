@@ -87,6 +87,7 @@ class TileHashset {
  * @property {Object}              [options.fetchOptions=object]       - fetch params,such as fetchOptions: { 'headers': { 'accept': '' } }, about accept value more info https://developer.mozilla.org/en-US/docs/Web/HTTP/Content_negotiation/List_of_default_Accept_values
  * @property {Boolean}             [options.awareOfTerrain=true]       - if the tile layer is aware of terrain.
  * @property {Number}             [options.bufferPixel=0.5]       - tile buffer size,the unit is pixel
+ * @property {Number}             [options.depthMask=true]       - mask to decide whether to write depth buffer
  * @memberOf TileLayer
  * @instance
  */
@@ -149,7 +150,8 @@ const options = {
 
     'awareOfTerrain': true,
     'bufferPixel': 0.5,
-    'mipmapTexture': true
+    'mipmapTexture': true,
+    'depthMask': true
 };
 
 const URL_PATTERN = /\{ *([\w_]+) *\}/g;
