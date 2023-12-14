@@ -133,6 +133,22 @@ describe('TileLayer', function () {
             expect(tile.getTiles().tileGrids[0].tiles.length).to.be.eql(2);
         });
 
+        it('getTiles when zoomOffset is not zero, #1839', function () {
+            createMap('1414px', '1271px');
+            map.setView({
+                center: [-0.113049, 51.498568],
+                zoom: 7,
+                pitch: 69,
+            });
+            var tile = new maptalks.TileLayer('tile', {
+                tileSize: 512,
+                zoomOffset: -1,
+                renderer : 'canvas',
+                urlTemplate : '#'
+            }).addTo(map);
+            expect(tile.getTiles().tileGrids[0].tiles.length).to.be.eql(26);
+        });
+
         it('tiles out of extent', function () {
             createMap(1000, 1000);
             var p = map.getProjection().project(map.getCenter());
