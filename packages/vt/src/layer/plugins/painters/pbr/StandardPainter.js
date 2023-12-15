@@ -251,7 +251,10 @@ class StandardPainter extends MeshPainter {
                 func: this.getBlendFunc(),
                 equation: 'add'
             },
-            polygonOffset: this.getPolygonOffset()
+            polygonOffset: {
+                enable: true,
+                offset: this.getPolygonOffset()
+            }
         };
         const config = {
             uniforms: uniformDeclares,

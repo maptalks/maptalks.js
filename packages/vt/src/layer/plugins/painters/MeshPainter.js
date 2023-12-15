@@ -452,14 +452,6 @@ class MeshPainter extends Painter {
         ];
     }
 
-    getPolygonOffset() {
-        return {
-            enable: (context, props) => props.maxAltitude === 0,
-            // enable: true,
-            offset: super.getPolygonOffset()
-        };
-    }
-
     updateSymbol(symbol, all) {
         let refreshMaterial = false;
         if (symbol && symbol.material) {

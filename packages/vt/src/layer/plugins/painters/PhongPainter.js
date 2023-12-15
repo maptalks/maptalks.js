@@ -145,7 +145,10 @@ class PhongPainter extends MeshPainter {
                     equation: 'add'
                 },
                 viewport,
-                polygonOffset: this.getPolygonOffset()
+                polygonOffset: {
+                    enable: true,
+                    offset: this.getPolygonOffset()
+                }
             }
         };
     }

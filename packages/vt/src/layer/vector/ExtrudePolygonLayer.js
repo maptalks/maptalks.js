@@ -32,6 +32,10 @@ class ExtrudePolygonLayer extends Vector3DLayer {
         return 0;
     }
 
+    getPolygonOffset() {
+        return 0;
+    }
+
     onConfig(conf) {
         const renderer = this.getRenderer();
         if (renderer) {

@@ -85,7 +85,7 @@ class Vector3DLayer extends maptalks.OverlayLayer {
      * 用于GroupGLLayer全局管理polygonOffset
      */
     getPolygonOffsetCount() {
-        return this.options['altitude'] > 0 ? 0 : 1;
+        return this.isEmpty() ? 0 : (this.options['altitude'] ? 0 : 1);
     }
 
     /**
@@ -93,7 +93,7 @@ class Vector3DLayer extends maptalks.OverlayLayer {
      * 用于GroupGLLayer全局管理polygonOffset
      */
     getPolygonOffset() {
-        return this._polygonOffset || 0;
+        return this.options['altitude'] ? 0 : (this._polygonOffset || 0);
     }
 
     setPolygonOffset(offset, total) {

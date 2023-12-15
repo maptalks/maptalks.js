@@ -35,6 +35,14 @@ class PointLayer extends Vector3DLayer {
             this.options.sceneConfig = extend({}, ICON_PAINTER_SCENECONFIG);
         }
     }
+
+    getPolygonOffsetCount() {
+        return 0;
+    }
+
+    getPolygonOffset() {
+        return 0;
+    }
 }
 
 PointLayer.mergeOptions(defaultOptions);
