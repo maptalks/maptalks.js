@@ -127,16 +127,19 @@ class Position {
     }
 
     //destructive add
-    _add(x, y) {
+    _add(x, y, z) {
         if (!isNil(x.x)) {
             this.x += x.x;
             this.y += x.y;
+            this.z = (this.z || 0) + (x.z || 0);
         } else if (!isNil(x[0])) {
             this.x += x[0];
             this.y += x[1];
+            this.z = (this.z || 0) + (x[2] || 0);
         } else {
             this.x += x;
             this.y += y;
+            this.z = (this.z || 0) + (z || 0);
         }
         return this;
     }
@@ -147,32 +150,38 @@ class Position {
      * @param {Number} [y=undefined] - optional, coordinate to add
      * @return {Coordinate|Point} result
      */
-    add(x, y) {
-        let nx, ny;
+    add(x, y, z) {
+        let nx, ny, nz;
         if (!isNil(x.x)) {
             nx = this.x + x.x;
             ny = this.y + x.y;
+            nz = (this.z || 0) + (x.z || 0);
         } else if (!isNil(x[0])) {
             nx = this.x + x[0];
             ny = this.y + x[1];
+            nz = (this.z || 0) + (x[2] || 0);
         } else {
             nx = this.x + x;
             ny = this.y + y;
+            nz = (this.z || 0) + (z || 0);
         }
-        return new this.constructor(nx, ny);
+        return new this.constructor(nx, ny, nz);
     }
 
     //destructive substract
-    _sub(x, y) {
+    _sub(x, y, z) {
         if (!isNil(x.x)) {
             this.x -= x.x;
             this.y -= x.y;
+            this.z = (this.z || 0) - (x.z || 0);
         } else if (!isNil(x[0])) {
             this.x -= x[0];
             this.y -= x[1];
+            this.z = (this.z || 0) - (x[2] || 0);
         } else {
             this.x -= x;
             this.y -= y;
+            this.z = (this.z || 0) - (z || 0);
         }
         return this;
     }
@@ -187,19 +196,22 @@ class Position {
      * @param {Number} [y=undefined] - optional, coordinate to add
      * @return {Coordinate|Point} result
      */
-    sub(x, y) {
-        let nx, ny;
+    sub(x, y, z) {
+        let nx, ny, nz;
         if (!isNil(x.x)) {
             nx = this.x - x.x;
             ny = this.y - x.y;
+            nz = (this.z || 0) - (x.z || 0);
         } else if (!isNil(x[0])) {
             nx = this.x - x[0];
             ny = this.y - x[1];
+            nz = (this.z || 0) - (x[2] || 0);
         } else {
             nx = this.x - x;
             ny = this.y - y;
+            nz = (this.z || 0) - (z || 0);
         }
-        return new this.constructor(nx, ny);
+        return new this.constructor(nx, ny, nz);
     }
 
     /**

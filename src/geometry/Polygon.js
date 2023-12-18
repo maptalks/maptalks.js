@@ -183,7 +183,7 @@ class Polygon extends Path {
         }
         const lastPoint = ring[ring.length - 1];
         let isClose = true;
-        if (ring[0].x !== lastPoint.x || ring[0].y !== lastPoint.y) {
+        if (ring[0].x !== lastPoint.x || ring[0].y !== lastPoint.y || (ring[0].z || 0) !== (lastPoint.z || 0)) {
             isClose = false;
         }
         return isClose;
