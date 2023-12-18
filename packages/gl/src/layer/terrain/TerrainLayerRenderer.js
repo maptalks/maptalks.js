@@ -1386,6 +1386,13 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         }
         this._painter.setMaterial(mat, this._matVer++);
     }
+
+    getAnalysisMeshes() {
+        if (this._painter && this._painter._leafScene) {
+            return this._painter._leafScene.getMeshes();
+        }
+        return [];
+    }
 }
 
 export default TerrainLayerRenderer;

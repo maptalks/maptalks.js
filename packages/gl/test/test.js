@@ -1505,6 +1505,61 @@ describe('gl tests', () => {
             });
             group.addTo(map);
         });
+
+        it('terrain suppot floodAnalysis', (done) => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            map.setPitch(20);
+            const skinLayers = [
+                new maptalks.TileLayer('base', {
+                    urlTemplate: '/fixtures/google-256/{z}/{x}/{y}.jpg'
+                })
+            ];
+            const terrain = {
+                fadeAnimation: false,
+                type: 'mapbox',
+                tileSize: 512,
+                spatialReference: 'preset-vt-3857',
+                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
+                tileStackDepth: 0
+            };
+            const boundary = [[90.97311862304686, 29.72796651904297],
+                [91.1619461376953, 29.795257778808594],
+                [91.35901339843748, 29.666855068847656],
+                [91.17567904785155, 29.554245205566406],
+                [90.87904818847655, 29.614670010253906]];
+            const floodAnalysis = new maptalks.FloodAnalysis({
+                // 水淹区域
+                boundary,
+                waterHeight: 3800,
+                waterColor: [0.1, 0.5, 0.9],
+                waterOpacity: 0.6
+            });
+            const group = new maptalks.GroupGLLayer('group', skinLayers, {
+                terrain,
+                sceneConfig: {
+                    postProcess: { enable: true }
+                }
+            });
+            group.once('terrainlayercreated', () => {
+                const terrainLayer = group.getTerrainLayer();
+                terrainLayer.once('terrainreadyandrender', () => {
+                    group.once('layerload', () => {
+                        const canvas = map.getRenderer().canvas;
+                        const ctx = canvas.getContext('2d');
+                        const pixel1 = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
+                        expect(pixel1).to.be.eql({ data: { '0': 68, '1': 128, '2': 185, '3': 255 } });
+                        const pixel2 = ctx.getImageData(canvas.width / 2, canvas.height / 2 + 250, 1, 1);
+                        expect(pixel2).to.be.eql({ data: { '0': 125, '1': 115, '2': 95, '3': 255 } });
+                        done();
+                    });
+                });
+            });
+            group.addTo(map);
+            floodAnalysis.addTo(group);
+        })
     });
 });
 

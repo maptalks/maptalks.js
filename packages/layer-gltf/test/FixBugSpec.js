@@ -172,9 +172,9 @@ describe('bug', () => {
                 url: url1
             }
         }).addTo(gltflayer);
-        gltfMarker.outline();
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
         gltfMarker.on('load', () => {
+            gltfMarker.outline();
             //TODO 增加像素判断
             setTimeout(function() {
                 const pixel = pickPixel(map, map.width / 2 + 41, map.height / 2, 1, 1);
@@ -1564,6 +1564,144 @@ describe('bug', () => {
                 done();
             }, 100);
         })
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
+
+    it('rotateAround', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFGeometry(center.add(0.001, 0),
+            { symbol: { url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
+            }});
+        gltflayer.addGeometry(marker);
+        marker.on('click', e => {
+            const meshId = e.meshId;
+            const target = e.target;
+            expect(meshId).to.be.eql(0);
+            expect(target instanceof maptalks.GLTFMarker).to.be.ok();
+            done();
+        });
+        marker.on('load', () => {
+            marker.rotateAround(center, 45);
+            setTimeout(function () {
+                happen.click(eventContainer, {
+                    'clientX': map.width / 2 + 80,
+                    'clientY': map.height / 2 - 80
+                });
+            }, 100);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
+
+    it('highlight gltf mesh', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFGeometry(center,
+            { symbol: { url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
+            }});
+        gltflayer.addGeometry(marker);
+        function checkColor() {
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixel).to.be.eql([152, 18, 18, 255]);
+                done();
+            }, 100);
+        }
+        marker.on('click', e => {
+            e.target.highlight({
+                nodeIndex: e.mesh.properties.nodeIndex,
+                color: [0.8, 0, 0, 1]
+            });
+            checkColor();
+        });
+        marker.on('load', () => {
+            setTimeout(function () {
+                happen.click(eventContainer, {
+                    'clientX': map.width / 2,
+                    'clientY': map.height / 2
+                });
+            }, 100);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
+
+    it('highlightNodes and cancelHighlight', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFGeometry(center,
+            { symbol: { url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
+            }});
+        gltflayer.addGeometry(marker);
+
+        function cancelHighlight() {
+            marker.cancelHighlight();
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixel).to.be.eql([146, 146, 146, 255]);
+                done();
+            }, 100);
+        }
+        function checkColor() {
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixel).to.be.eql([255, 115, 115, 255]);
+                cancelHighlight();
+            }, 100);
+        }
+        marker.on('load', () => {
+            setTimeout(function () {
+                marker.highlightNodes([{
+                    nodeIndex: 0,
+                    color: [0.8, 0, 0, 1],
+                    bloom: true
+                }, {
+                    nodeIndex: 1,
+                    color: [0.8, 0, 0, 1],
+                    bloom: true
+                }]);
+                checkColor();
+            }, 100);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
+
+    it('outlineNodes and cancelOutline', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFGeometry(center,
+            { symbol: { url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
+            }});
+        gltflayer.addGeometry(marker);
+
+        function cancelOutline() {
+            marker.cancelOutline();
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixel).to.be.eql([146, 146, 146, 255]);
+                done();
+            }, 100);
+        }
+        function checkColor() {
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixel).to.be.eql([168, 168, 117, 255]);
+                cancelOutline();
+            }, 100);
+        }
+        marker.on('load', () => {
+            setTimeout(function () {
+                marker.outlineNodes([0, 1]);
+                checkColor();
+            }, 100);
+        });
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
     });
 });

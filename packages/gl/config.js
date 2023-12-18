@@ -10,6 +10,8 @@ module.exports = {
         '../../node_modules/maptalks/dist/maptalks.js',
         './dist/maptalksgl.js',
         '../layer-gltf/dist/maptalks.gltf.js',
+        '../../node_modules/@maptalks/vt/dist/maptalks.vt.js',
+        '../analysis/dist/maptalks.analysis.js',
         'test/**/*.js',
         {
             pattern: 'test/fixtures/**/*',

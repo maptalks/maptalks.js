@@ -154,7 +154,7 @@ export default class GLTFPack {
         delete this.gltf;
     }
 
-    updateAnimation(time, loop, speed, animationName, startTime, nodeMatrixMap, skinMap) {
+    updateAnimation(time, loop, speed, animationName, startTime, nodeMatrixMap, skinMap, animationNodes) {
         const json = this.gltf;
         if (!json) {
             return;
@@ -172,7 +172,7 @@ export default class GLTFPack {
             animTime = time * speed * 0.001 + timespan.min;
         }
         json.scenes[0].nodes.forEach(node => {
-            this._updateNodeMatrix(animationName, animTime, node, null, nodeMatrixMap);
+            this._updateNodeMatrix(animationName, animTime, node, null, nodeMatrixMap, animationNodes);
         });
         for (const index in this.gltf.nodes) {
             const node = this.gltf.nodes[index];
@@ -204,14 +204,14 @@ export default class GLTFPack {
         return !!this._isAnimation;
     }
 
-    _updateNodeMatrix(animationName, time, node, parentNodeMatrix, nodeMatrixMap) {
+    _updateNodeMatrix(animationName, time, node, parentNodeMatrix, nodeMatrixMap, animationNodes) {
         const trs = node.trs;
         if (trs) {
-            const animation = gltf.GLTFLoader.getAnimationClip(this.gltf, Number(node.nodeIndex), time, animationName);
-            if (animation.weights) {
-                this._updateMorph(node, animation.weights);
+            if (!animationNodes) {
+                this._updateNodeTRS(node, time, animationName);
+            } else if (animationNodes.indexOf(Number(node.nodeIndex)) > -1) {
+                this._updateNodeTRS(node, time, animationName);
             }
-            node.trs.update(animation);
         }
         if (parentNodeMatrix) {
             nodeMatrixMap[node.nodeIndex] = mat4.multiply(nodeMatrixMap[node.nodeIndex] || [], parentNodeMatrix, node.matrix || node.trs.getMatrix());
@@ -220,9 +220,17 @@ export default class GLTFPack {
         }
         if (node.children) {
             node.children.forEach(child => {
-                this._updateNodeMatrix(animationName, time, child, nodeMatrixMap[node.nodeIndex], nodeMatrixMap);
+                this._updateNodeMatrix(animationName, time, child, nodeMatrixMap[node.nodeIndex], nodeMatrixMap, animationNodes);
             });
         }
+    }
+
+    _updateNodeTRS(node, time, animationName) {
+        const animation = gltf.GLTFLoader.getAnimationClip(this.gltf, Number(node.nodeIndex), time, animationName);
+        if (animation.weights) {
+            this._updateMorph(node, animation.weights);
+        }
+        node.trs.update(animation);
     }
 
     //更新morph的基本思路是，计算node下每一帧的weights，然后对weights排序，最后根据

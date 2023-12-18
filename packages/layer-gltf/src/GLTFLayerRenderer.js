@@ -588,10 +588,8 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
         }
         const markers = this.layer.getGeometries();
         for (let i = 0; i < markers.length; i++) {
-            if (markers[i].isOutline() && markers[i].isVisible() && markers[i]._getOpacity()) {
-                const meshes = markers[i]._meshes || [];
-                maptalks.Util.pushIn(outlineMeshes, meshes);
-            }
+            const meshes = markers[i]._getOutlineMeshes();
+            maptalks.Util.pushIn(outlineMeshes, meshes);
         }
         return outlineMeshes;
     }
@@ -686,11 +684,13 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
 
     _getResult(result) {
         const { meshId, pickingId, point, coordinate } = result;
+        const meshes = this._getToRenderMeshes();
+        const mesh = meshes[meshId];
         const markerId = this._squeezeTarget(pickingId);
         const data = this.layer._getMarkerMap()[markerId];
         const index = pickingId - markerId;
         const nodeIndex = this._getNodeIndex(meshId);
-        return { meshId, data, pickingId, point, coordinate, index, nodeIndex };
+        return { meshId, mesh, data, pickingId, point, coordinate, index, nodeIndex };
     }
 
     _getNodeIndex(meshId) {

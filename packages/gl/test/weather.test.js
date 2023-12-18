@@ -279,4 +279,46 @@ describe('weather tests', () => {
             sceneConfig: newSceneConfig
         }).addTo(map);
     });
+
+    it('update snow intensity', done => {
+        const snow = {
+            enable: true
+        };
+        const newSceneConfig = JSON.parse(JSON.stringify(sceneConfig));
+        newSceneConfig.weather.snow = snow;
+        newSceneConfig.ground.enable = false;
+        const url = "models/Duck/Duck.glb";
+        const gltfLayer = new maptalks.GLTFLayer("gltf");
+        const position = map.getCenter();
+        const gltfMarker = new maptalks.GLTFGeometry(position.add(0, 0.1), {
+            symbol: {
+                url: url,
+                shadow: true,
+                scaleX: 400,
+                scaleY: 400,
+                scaleZ: 400
+            }
+        });
+        const groupgllayer = new maptalks.GroupGLLayer("gl", [gltfLayer], {
+            sceneConfig: newSceneConfig
+        }).addTo(map);
+
+        function updateSnowIntensity() {
+            newSceneConfig.weather.snow.snowIntensity = 0.8;
+            groupgllayer.setSceneConfig(newSceneConfig);
+            setTimeout(function() {
+                const pixel = pickPixel(map, 550, 550, 1, 1);
+                expect(hasColor(pixel));
+                done();
+            }, 100);
+        }
+        gltfMarker.once('load', () => {
+            setTimeout(function() {
+                const pixel = pickPixel(map, 550, 550, 1, 1);
+                expect(hasColor(pixel));
+                updateSnowIntensity();
+            }, 100);
+        });
+        gltfLayer.addGeometry(gltfMarker);
+    });
 });

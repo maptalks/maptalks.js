@@ -19,6 +19,7 @@ uniform sampler2D sceneMap;
 uniform sampler2D mixFactorMap;
 uniform float time;
 uniform vec2 resolution;
+uniform float snowIntensity;
 
 float lerp(float a, float b, float w) {
     return a + w * (b - a);
@@ -28,10 +29,10 @@ float lerp(float a, float b, float w) {
 #define HASHSCALE3 vec3(.1031, .1030, .0973)
 #define HASHSCALE4 vec3(.1031, .1030, .0973, .1099)
 
-float SIZE_RATE = 0.1;
+float SIZE_RATE = 0.5;
 float XSPEED = 0.2;
 float YSPEED = 0.5;
-float LAYERS = 10.;
+float LAYERS = 20.;
 
 float Hash11(float p)
 {
@@ -58,7 +59,8 @@ vec2 Rand22(vec2 co)
 vec3 SnowSingleLayer(vec2 uv,float layer){
     vec3 acc = vec3(0.0,0.0,0.0);//让雪花的大小变化
     uv = uv * (2.0+layer);//透视视野变大效果
-    float xOffset = uv.y * (((Hash11(layer)*2.-1.)*0.5+1.)*XSPEED);//增加x轴移动
+    float speedX = XSPEED * snowIntensity;
+    float xOffset = uv.y * (((Hash11(layer)*2.-1.)*0.5+1.)*speedX);//增加x轴移动
     float yOffset = (YSPEED*time);//y轴下落过程
     uv += vec2(xOffset,yOffset);
     vec2 rgrid = Hash22(floor(uv)+(31.1759*layer));
@@ -77,7 +79,8 @@ vec3 snowFlower() {
     vec3 acc = vec3(0,0,0);
     vec2 uv = gl_FragCoord.xy/resolution.xy;
     uv *= vec2(resolution.x/resolution.y,1.0);
-    for (float i = 0.; i < LAYERS; i++) {
+    float layers = LAYERS * snowIntensity;
+    for (float i = 0.; i < layers; i++) {
         acc += SnowSingleLayer(uv, i);
     }
     return acc;

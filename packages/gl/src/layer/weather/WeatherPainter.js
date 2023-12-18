@@ -2,6 +2,7 @@ import * as reshader from '@maptalks/reshader.gl';
 import { vec2 } from 'gl-matrix';
 import RainPainter from './RainPainter.js';
 import SnowPainter from './SnowPainter.js';
+import { isNumber } from '../../../../reshader.gl/src/common/Util.js';
 
 const RESOLUTION = [],  DEFAULT_ZOOM = 16.685648411389433;
 class WeatherPainter {
@@ -84,6 +85,7 @@ class WeatherPainter {
         }
         if (this.isEnableSnow()) {
             this._weatherShader.shaderDefines['HAS_SNOW'] = 1;
+            uniforms['snowIntensity'] = isNumber(config.snow.snowIntensity) ? config.snow.snowIntensity : 0.5;
             meshes.forEach(mesh => {
                 mesh.defines['HAS_SNOW'] = 1;
             });

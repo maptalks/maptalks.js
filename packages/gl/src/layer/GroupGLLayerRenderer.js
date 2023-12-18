@@ -1001,6 +1001,9 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const layers = this._getLayers().filter(layer => {
             return layer.isVisible();
         });
+        if (this.layer._terrainLayer) {
+            layers.push(this.layer._terrainLayer);
+        }
         return this._analysisPainter.paint(tex, layers);
     }
 

@@ -107,4 +107,29 @@ describe('skinning', () => {
             }, 100);
         });
     });
+
+    it('set animationNodes', done => {
+        const layer = new maptalks.GLTFLayer('layer').addTo(map);
+        const marker = new maptalks.GLTFGeometry(center, {
+            symbol: {
+                url: url2,
+                modelHeight: 100,
+                animation: true,
+                loop: true
+            }
+        }).addTo(layer);
+        map.setPitch(45);
+        marker.on('load', () => {
+            marker.updateSymbol({
+                animationNodes: [12, 19, 20, 16, 13, 17]
+            });
+            setTimeout(function() {
+                const pixel1 = pickPixel(map, 200, 80, 1, 1);
+                expect(hasColor(pixel1)).to.be.ok();
+                const pixel2 = pickPixel(map, 250, 80, 1, 1);
+                expect(hasColor(pixel2)).not.to.be.ok();
+                done();
+            }, 100);
+        });
+    });
 });

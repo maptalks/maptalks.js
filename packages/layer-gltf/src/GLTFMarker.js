@@ -195,6 +195,11 @@ export default class GLTFMarker extends Marker {
         return meshes;
     }
 
+
+    getGLTFJSON() {
+        return this._gltfData;
+    }
+
     getAllMeshes() {
         return this._meshes;
     }
@@ -318,10 +323,9 @@ export default class GLTFMarker extends Marker {
         if (this._isTransparent()) {
             mesh.transparent = true;
         }
-        mesh.bloom = +!!this.isBloom();
+        mesh.bloom = mesh.bloom || +!!this.isBloom();
         mesh.setUniform('uPickingId', this._getPickingId());
         mesh.properties.isAnimated = this.isAnimated();
-        this._setPolygonFill(mesh);
     }
 
     _updateDefines(mesh) {
@@ -571,7 +575,9 @@ export default class GLTFMarker extends Marker {
                 this._setAnimationStartTime(timestamp);
                 const startTime = this._getAnimationStartTime()
                 const looped = this.isAnimationLooped(), speed = this.getAnimationSpeed();
-                this.gltfPack.updateAnimation(timestamp, looped, speed, currentAnimation, startTime, nodeMatrixMap, skinMap);
+                const symbol = this.getSymbol();
+                const animationNodes = symbol && symbol.animationNodes;
+                this.gltfPack.updateAnimation(timestamp, looped, speed, currentAnimation, startTime, nodeMatrixMap, skinMap, animationNodes);
             } else {
                 console.warn('animation specified does not exist!');
             }
@@ -1014,20 +1020,48 @@ export default class GLTFMarker extends Marker {
         return symbol && symbol.shadow;
     }
 
+    outlineNodes(nodes) {
+        const meshes = this._meshes;
+        if (!meshes) {
+            return this;
+        }
+        meshes.forEach(mesh => {
+            if (nodes.indexOf(mesh.properties.nodeIndex) > -1) {
+                mesh.properties.outline = true;
+            }
+        });
+        this._dirty = true;
+        return this;
+    }
+
     outline() {
-        this._outline = true;
+        const meshes = this._meshes;
+        if (!meshes) {
+            return this;
+        }
+        meshes.forEach(mesh => {
+            mesh.properties.outline = true;
+        });
         this._dirty = true;
         return this;
     }
 
-    cancelOutline() {
-        this._outline = false;
+    cancelOutline(nodes) {
+        const meshes = this._meshes;
+        if (!meshes) {
+            return this;
+        }
+        meshes.forEach(mesh => {
+            if (nodes) {
+                if (nodes.indexOf(mesh.properties.nodeIndex) > -1) {
+                    mesh.properties.outline = false;
+                }
+            } else {
+                mesh.properties.outline = false;
+            }
+        });
         this._dirty = true;
         return this;
-    }
-
-    isOutline() {
-        return this._outline;
     }
 
     isVisible() {
@@ -1187,6 +1221,29 @@ export default class GLTFMarker extends Marker {
             rotationZ
         });
         return this;
+    }
+
+    rotateAround(coordinate, degree) {
+        const map = this.getMap();
+        if (!map) {
+            return;
+        }
+        const glRes = map.getGLRes();
+        let coord = this.getCoordinates();
+        const point = map.coordinateToPointAtRes(coord, glRes);
+        const rotatePoint = map.coordinateToPointAtRes(coordinate, glRes);
+        const relativeX = point.x - rotatePoint.x;
+        const relativeY = point.y - rotatePoint.y;
+        const currentAngle = Math.atan2(relativeY, relativeX) * 180 / Math.PI;
+        const angle = currentAngle + degree;
+        const radius = Math.sqrt(relativeX * relativeX + relativeY * relativeY);
+        const theta = Math.PI * angle / 180;
+        const x = radius * Math.cos(theta) + rotatePoint.x;//圆公式
+        const y = radius * Math.sin(theta) + rotatePoint.y;
+        TEMP_POINT.set(x, y);
+        coord = map.pointAtResToCoordinate(TEMP_POINT, glRes);
+        this.setCoordinates(coord);
+        this.updateSymbol({ rotationZ: angle });
     }
 
     setScale(scaleX, scaleY, scaleZ) {
@@ -1615,6 +1672,104 @@ export default class GLTFMarker extends Marker {
         }
         delete this._pickingParams;
         super['_fireEvent'](eventName, param);
+    }
+
+    _getOutlineMeshes() {
+        let outlineMeshes = [];
+        if (this._meshes && this.isVisible() && this._getOpacity()) {
+            if (this.isOutline && this.isOutline()) {
+                return this._meshes;
+            }
+            outlineMeshes = this._meshes.filter(mesh => { return mesh.properties.outline; });
+            return outlineMeshes;
+        }
+        return outlineMeshes;
+    }
+
+    highlightNodes(highlights) {
+        const layer = this.getLayer();
+        if (!layer) {
+            return;
+        }
+        const renderer = layer.getRenderer();
+        if (!renderer) {
+            return;
+        }
+        const meshes = renderer._getToRenderMeshes();
+        highlights.forEach(highlight => {
+            meshes.forEach(mesh => {
+                if (mesh.properties.nodeIndex === highlight.nodeIndex) {
+                    this._highlightMesh(mesh, highlight.color, highlight.opacity, highlight.bloom);
+                }
+            });
+        });
+        renderer.setToRedraw();
+    }
+
+    highlight(highlight) {
+        const layer = this.getLayer();
+        if (!layer) {
+            return;
+        }
+        const renderer = layer.getRenderer();
+        if (!renderer) {
+            return;
+        }
+        const { color, opacity, bloom } = highlight;
+        const meshes = renderer._getToRenderMeshes();
+        meshes.forEach(mesh => {
+            this._highlightMesh(mesh, color, opacity, bloom);
+        });
+        renderer.setToRedraw();
+    }
+
+    _highlightMesh(mesh, color, opacity, bloom) {
+        if (!mesh.properties['polygonFill']) {
+            mesh.properties['polygonFill'] = mesh.getUniform('polygonFill') || defaultColor;
+        }
+        if (!mesh.properties['polygonOpacity']) {
+            mesh.properties['polygonOpacity'] = mesh.getUniform('polygonOpacity') || defaultOpacity;
+        }
+        mesh.setUniform('polygonFill', color || defaultColor);
+        mesh.setUniform('polygonOpacity', opacity || defaultOpacity);
+        mesh.bloom = bloom;
+    }
+
+    _cancelHighlight() {
+        if (this._highlighted) {
+            if (Array.isArray(this._highlighted)) {
+                const nodes = this._highlighted.map(highlight => { return highlight.nodeIndex; });
+                this.cancelHighlight(nodes);
+            } else {
+                this.cancelHighlight(this._highlighted.nodeIndex);
+            }
+        }
+    }
+
+    cancelHighlight(nodes) {
+        const layer = this.getLayer();
+        if (!layer) {
+            return;
+        }
+        const renderer = layer.getRenderer();
+        if (!renderer) {
+            return;
+        }
+        let meshes = renderer._getToRenderMeshes();
+        if (nodes) {
+            let nodeList = nodes;
+            if (!Array.isArray(nodeList)) {
+                nodeList = [nodeList];
+            }
+            meshes = meshes.filter(mesh => { return nodeList.indexOf(mesh.properties.nodeIndex) > -1 });
+        }
+        meshes.forEach(mesh => {
+            const { polygonFill, polygonOpacity } = mesh.properties;
+            mesh.setUniform('polygonFill', polygonFill);
+            mesh.setUniform('polygonOpacity', polygonOpacity);
+            mesh.bloom = false;
+        });
+        renderer.setToRedraw();
     }
 }
 
