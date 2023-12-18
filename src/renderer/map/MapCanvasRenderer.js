@@ -439,10 +439,10 @@ class MapCanvasRenderer extends MapRenderer {
 
     remove() {
         if (Browser.webgl && typeof document !== 'undefined') {
-            GlobalEvent.on(EVENT_DPR_CHANGE, this._thisDocDPRChange, this);
-            GlobalEvent.on(EVENT_DOC_VISIBILITY_CHANGE, this._thisDocVisibilitychange, this);
-            GlobalEvent.on(EVENT_DOC_DRAGSTART, this._thisDocDragStart, this);
-            GlobalEvent.on(EVENT_DOC_DRAGEND, this._thisDocDragEnd, this);
+            GlobalEvent.off(EVENT_DPR_CHANGE, this._thisDocDPRChange, this);
+            GlobalEvent.off(EVENT_DOC_VISIBILITY_CHANGE, this._thisDocVisibilitychange, this);
+            GlobalEvent.off(EVENT_DOC_DRAGSTART, this._thisDocDragStart, this);
+            GlobalEvent.off(EVENT_DOC_DRAGEND, this._thisDocDragEnd, this);
             // removeDomEvent(document, 'visibilitychange', this._thisDocVisibilitychange, this);
             // removeDomEvent(document, 'dragstart', this._thisDocDragStart, this);
             // removeDomEvent(document, 'dragend', this._thisDocDragEnd, this);
