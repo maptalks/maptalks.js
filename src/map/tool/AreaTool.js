@@ -26,7 +26,7 @@ const options = {
 };
 
 /**
- * A map tool to help measure area on the map
+ * A map tool to help measure area on the map .it is extends DistanceTool
  * @category maptool
  * @extends DistanceTool
  * @example
@@ -74,6 +74,10 @@ class AreaTool extends DistanceTool {
             area = map.getProjection().measureArea(toMeasure);
         }
         this._lastMeasure = area;
+        const result = this._formatLabelContent(area);
+        if (result) {
+            return result;
+        }
         let units;
         if (this.options['language'] === 'zh-CN') {
             units = [' 平方米', ' 平方公里', ' 平方英尺', ' 平方英里'];
@@ -86,7 +90,7 @@ class AreaTool extends DistanceTool {
             content += area < 1E6 ? area.toFixed(decimals) + units[0] : (area / 1E6).toFixed(decimals) + units[1];
         }
         if (this.options['imperial']) {
-            area *= 3.2808399;
+            area *= Math.pow(3.2808399, 2);
             if (content.length > 0) {
                 content += '\n';
             }

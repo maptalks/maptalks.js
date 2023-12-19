@@ -14,6 +14,7 @@ export { default as Promise } from './core/Promise';
 // core classes
 export { default as Class } from './core/Class';
 export { default as Eventable } from './core/Eventable';
+export { GlobalEvent } from './core/GlobalEvent';
 export { default as JSONAble } from './core/JSONAble';
 export { default as CollisionIndex } from './core/CollisionIndex';
 
@@ -74,7 +75,7 @@ import Actor from './core/worker/Actor';
  * @namespace worker
  */
 const worker = {
-    Actor : Actor
+    Actor: Actor
 };
 
 export { worker };

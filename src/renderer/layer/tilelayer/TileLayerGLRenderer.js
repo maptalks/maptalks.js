@@ -1,6 +1,3 @@
-import {
-    isNil
-} from '../../../core/util';
 import TileLayer from '../../../layer/tile/TileLayer';
 import TileLayerCanvasRenderer from './TileLayerCanvasRenderer';
 import ImageGLRenderable from '../ImageGLRenderable';
@@ -43,7 +40,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         gl.enable(gl.STENCIL_TEST);
         gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
 
-        const depthMask = isNil(this.layer.options['depthMask']) || !!this.layer.options['depthMask'];
+        const depthMask = !!this.layer.options['depthMask'];
         gl.depthMask(depthMask);
         if (parentContext && parentContext.renderTarget) {
             const fbo = parentContext.renderTarget.fbo;

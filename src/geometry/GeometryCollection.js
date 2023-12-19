@@ -1,4 +1,4 @@
-import { isFunction, isArrayHasData, isNil } from '../core/util';
+import { isFunction, isArrayHasData, isNil, extend } from '../core/util';
 import { createFilter, getFilterFeature } from '@maptalks/feature-filter';
 import { getExternalResources } from '../core/util/resource';
 import Coordinate from '../geo/Coordinate';
@@ -423,6 +423,8 @@ class GeometryCollection extends Geometry {
     }
     //for toJSON
     _toJSON(options) {
+        //fix call from feature-filter package
+        options = extend({}, options);
         //Geometry了用的是toGeoJSON(),如果里面包含特殊图形(Circle等),就不能简单的用toGeoJSON代替了，否则反序列化回来就不是原来的图形了
         const feature = {
             'type': 'Feature',

@@ -1,4 +1,4 @@
-import { extend, isNil } from '../core/util';
+import { extend } from '../core/util';
 import { getDepthFunc } from '../core/util/gl';
 import Browser from '../core/Browser';
 import Point from '../geo/Point';
@@ -230,7 +230,7 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
             gl.enable(gl.BLEND);
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
             gl.depthFunc(getDepthFunc(this.layer.options['depthFunc']));
-            const depthMask = isNil(this.layer.options['depthMask']) || !!this.layer.options['depthMask'];
+            const depthMask = !!this.layer.options['depthMask'];
             gl.depthMask(depthMask);
         }
     }

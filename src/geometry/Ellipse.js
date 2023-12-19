@@ -88,12 +88,18 @@ class Ellipse extends CenterMixin(Polygon) {
         this.onShapeChanged();
         return this;
     }
-
     /**
      * Gets the shell of the ellipse as a polygon, number of the shell points is decided by [options.numberOfShellPoints]{@link Circle#options}
      * @return {Coordinate[]} - shell coordinates
      */
     getShell() {
+        if (this.isRotated()) {
+            return this.getRotatedShell();
+        }
+        return this._getShell();
+    }
+
+    _getShell() {
         const measurer = this._getMeasurer(),
             center = this.getCoordinates(),
             numberOfPoints = this.options['numberOfShellPoints'],
@@ -122,6 +128,11 @@ class Ellipse extends CenterMixin(Polygon) {
         return shell;
     }
 
+    _getPrjShell() {
+        const shell = super._getPrjShell();
+        return this._rotatePrjCoordinates(shell);
+    }
+
     /**
      * Ellipse won't have any holes, always returns null
      * @return {Object[]} an empty array
@@ -148,6 +159,9 @@ class Ellipse extends CenterMixin(Polygon) {
     }
 
     _computePrjExtent() {
+        if (this.isRotated()) {
+            return this._computeRotatedPrjExtent();
+        }
         return Circle.prototype._computePrjExtent.apply(this, arguments);
     }
 
