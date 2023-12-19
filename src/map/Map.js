@@ -1601,9 +1601,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         delete this.renderer;
         this._fireEvent('removeend');
         this._clearAllListeners();
-        if (Browser.removeDPRListening) {
-            Browser.removeDPRListening(this);
-        }
         return this;
     }
 
