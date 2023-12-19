@@ -1,6 +1,7 @@
 import Size from '../../geo/Size';
 import { Geometry, Marker, Label } from '../../geometry';
 import DistanceTool from './DistanceTool';
+import Translator from '../../lang/translator';
 
 /**
  * @property {options} options
@@ -22,7 +23,8 @@ const options = {
         'lineDasharray': '',
         'polygonFill': '#ffffff',
         'polygonOpacity': 0.5
-    }
+    },
+    'language' : 'zh-CN'
 };
 
 /**
@@ -62,6 +64,7 @@ class AreaTool extends DistanceTool {
         super(options);
         // this.on('enable', this._afterEnable, this)
         //     .on('disable', this._afterDisable, this);
+        this.translator = new Translator(this.options['language']);
         this._measureLayers = [];
     }
 
@@ -74,16 +77,17 @@ class AreaTool extends DistanceTool {
             area = map.getProjection().measureArea(toMeasure);
         }
         this._lastMeasure = area;
+
         const result = this._formatLabelContent(area);
         if (result) {
             return result;
         }
-        let units;
-        if (this.options['language'] === 'zh-CN') {
-            units = [' 平方米', ' 平方公里', ' 平方英尺', ' 平方英里'];
-        } else {
-            units = [' sq.m', ' sq.km', ' sq.ft', ' sq.mi'];
-        }
+        const units = [
+            this.translator.translate('areatool.units.meter'),
+            this.translator.translate('areatool.units.kilometer'),
+            this.translator.translate('areatool.units.feet'),
+            this.translator.translate('areatool.units.mile')];
+
         let content = '';
         const decimals = this.options['decimalPlaces'];
         if (this.options['metric']) {

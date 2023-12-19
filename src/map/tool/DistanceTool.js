@@ -5,6 +5,7 @@ import Geometry from '../../geometry/Geometry';
 import Marker from '../../geometry/Marker';
 import Label from '../../geometry/Label';
 import VectorLayer from '../../layer/VectorLayer';
+import Translator from '../../lang/translator';
 import DrawTool from './DrawTool';
 
 /**
@@ -113,6 +114,7 @@ class DistanceTool extends DrawTool {
         this.on('enable', this._afterEnable, this)
             .on('disable', this._afterDisable, this);
         this._measureLayers = [];
+        this.translator = new Translator(this.options['language']);
     }
 
     /**
@@ -196,16 +198,17 @@ class DistanceTool extends DrawTool {
             length = map.getProjection().measureLength(toMeasure);
         }
         this._lastMeasure = length;
+
         const result = this._formatLabelContent(length);
         if (result) {
             return result;
         }
-        let units;
-        if (this.options['language'] === 'zh-CN') {
-            units = [' 米', ' 公里', ' 英尺', ' 英里'];
-        } else {
-            units = [' m', ' km', ' feet', ' mile'];
-        }
+        const units = [
+            this.translator.translate('distancetool.units.meter'),
+            this.translator.translate('distancetool.units.kilometer'),
+            this.translator.translate('distancetool.units.feet'),
+            this.translator.translate('distancetool.units.mile')
+        ];
         let content = '';
         const decimals = this.options['decimalPlaces'];
         if (this.options['metric']) {
@@ -266,7 +269,7 @@ class DistanceTool extends DrawTool {
         });
         //调用_setPrjCoordinates主要是为了解决repeatworld下，让它能标注在其他世界的问题
         marker._setPrjCoordinates(prjCoord);
-        const content = (this.options['language'] === 'zh-CN' ? '起点' : 'start');
+        const content = this.translator.translate('distancetool.start');
         const startLabel = new Label(content, param['coordinate'], this.options['labelOptions']);
         startLabel._setPrjCoordinates(prjCoord);
         this._lastVertex = startLabel;
