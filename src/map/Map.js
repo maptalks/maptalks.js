@@ -1998,6 +1998,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             this._zoomLevel = minZoom;
         }
         delete this._prjCenter;
+        delete this._glRes;
         const projection = this.getProjection();
         this._prjCenter = projection.project(this._center);
         this._calcMatrices();
@@ -2591,7 +2592,7 @@ Map.include(/** @lends Map.prototype */{
         const DEFAULT_CENTER = new Coordinate(0, 40);
         const POINT = new Point(0, 0);
         return function (altitude = 0, res, originCenter) {
-            if (this._altitudeOriginDirty)  {
+            if (this._altitudeOriginDirty) {
                 DEFAULT_CENTER.x = this._originLng;
                 this._altitudeOriginDirty = false;
             }
