@@ -536,6 +536,7 @@ export default class MeshPainter {
         mesh.properties.serviceIndex = rootIdx;
         mesh.properties.rtcCoord = rtcCoord;
         mesh.properties.rtcCenter = rtcCenter;
+        mesh.properties.projCenter = projCenter;
         mesh.setDefines(defines);
         Object.defineProperty(mesh.uniforms, 'pointColor', {
             enumerable: true,
@@ -543,19 +544,48 @@ export default class MeshPainter {
                 if (data.featureTable['CONSTANT_RGBA']) {
                     return data.featureTable['CONSTANT_RGBA'];
                 }
-                return options && options.pointColor || [1, 1, 1, 1];
+                return service && service.pointColor || [1, 1, 1, 1];
             }
         });
+        const map = this.getMap();
+        let pointSizeValue = null;
+        let pointSizeFn = null;
         Object.defineProperty(mesh.uniforms, 'pointSize', {
             enumerable: true,
             get: function () {
-                return options && options.pointSize || 2;
+                if (!service) {
+                    return 2;
+                }
+                if (isFunctionDefinition(service.pointSize)) {
+                    const key = JSON.stringify(service.pointSize);
+                    if (key !== pointSizeValue) {
+                        pointSizeFn = interpolated(service.pointSize);
+                        pointSizeValue = key;
+                    }
+                    const size = pointSizeFn(map.getZoom());
+                    return size;
+                }
+                return service.pointSize || 2;
             }
         });
+        let pointOpacityValue = null;
+        let pointOpacityFn = null;
         Object.defineProperty(mesh.uniforms, 'pointOpacity', {
             enumerable: true,
             get: function () {
-                return options && options.pointOpacity || 1;
+                if (!service) {
+                    return 1;
+                }
+                if (isFunctionDefinition(service.pointOpacity)) {
+                    const key = JSON.stringify(service.pointOpacity);
+                    if (key !== pointOpacityValue) {
+                        pointOpacityFn = interpolated(service.pointOpacity);
+                        pointOpacityValue = key;
+                    }
+                    const opacity = pointOpacityFn(map.getZoom());
+                    return opacity;
+                }
+                return service.pointOpacity || 1;
             }
         });
         this._setCompressedInt16Uniforms(mesh, compressed_int16_params);
