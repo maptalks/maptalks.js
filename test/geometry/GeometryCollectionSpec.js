@@ -58,7 +58,9 @@ describe('#GeometryCollection', function () {
 
         expect(collection.getGeometries()).to.be.empty();
 
-        var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
+        var geometries = GEN_GEOMETRIES_OF_ALL_TYPES().filter(geo => {
+            return !(geo instanceof maptalks.GeometryCollection);
+        })
         collection.setGeometries(geometries);
 
         expect(collection.getGeometries()).to.eql(geometries);
@@ -102,7 +104,7 @@ describe('#GeometryCollection', function () {
         it('normal constructor', function () {
             var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
             var collection = new maptalks.GeometryCollection(geometries);
-            expect(collection.getGeometries()).to.have.length(geometries.length);
+            expect(collection.getGeometries().length).to.be.eql(geometries.length - 2);
         });
 
         it('can be empty.', function () {
@@ -350,6 +352,40 @@ describe('#GeometryCollection', function () {
         });
     });
 
+
+    it('#2141 Provide a prompt when GeometryCollection is nested within itself', function () {
+        const pointSymbol = {
+            markerType: 'ellipse',
+            markerWidth: 20,
+            markerHeight: 20
+        };
+        const lineSymbol = {
+            lineColor: 'black',
+            lineWidth: 4
+        };
+
+        const fillSymbol = {
+            polygonFill: "black",
+            polygonOpacity: 1
+        };
+        const lefttop = [-0.01, 0.01, 1], righttop = [0.01, 0.01, 1], rightbottom = [0.01, -0.01, 1], leftbottom = [-0.01, -0.01, 1];
+        const point = new maptalks.Marker(lefttop, { symbol: pointSymbol });
+        const multipoint = new maptalks.MultiPoint([lefttop, lefttop], { symbol: pointSymbol });
+        const line = new maptalks.LineString([lefttop, righttop], { symbol: lineSymbol });
+        const multiline = new maptalks.MultiLineString([[lefttop, righttop], [lefttop, righttop]], { symbol: lineSymbol });
+        const polygon = new maptalks.Polygon([[lefttop, righttop, rightbottom, leftbottom]], { symbol: fillSymbol });
+        const multipolygon = new maptalks.MultiPolygon([[[lefttop, righttop, rightbottom, leftbottom]], [[lefttop, righttop, rightbottom, leftbottom]]], { symbol: fillSymbol });
+        const rectange = new maptalks.Rectangle(lefttop, 2000, 1000, { symbol: fillSymbol });
+        const ellispe = new maptalks.Ellipse(lefttop, 2000, 1000, { symbol: fillSymbol });
+        const sector = new maptalks.Sector(lefttop, 1000, 0, 90, { symbol: fillSymbol });
+        const circle = new maptalks.Circle(lefttop, 1000, { symbol: fillSymbol });
+        const collectionTest = new maptalks.GeometryCollection([]);
+        const geos = [point, multipoint, line, multiline, polygon, multipolygon, circle, rectange, ellispe, sector, collectionTest];
+
+        const collection = new maptalks.GeometryCollection(geos);
+        expect(collection.getGeometries().length).to.be.eql(7);
+    });
+
     it('#2146 _toJSON(null) from feature-filter', function () {
         const geojson = {
             "type": "FeatureCollection",
@@ -447,7 +483,6 @@ describe('#GeometryCollection', function () {
         })
         layer.addGeometry(polygons)
     });
-
 });
 
 function genPoints() {
