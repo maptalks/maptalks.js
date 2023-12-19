@@ -106,8 +106,8 @@ Map.include(/** @lends Map.prototype */ {
                 opts.tolerance = opts.tolerance || 0;
                 opts.tolerance += layer.options.geometryEventTolerance;
             }
-            if (layer.isGeometryListening && isMapGeometryEvent && opts.eventTypes.indexOf('mousemove') >= 0) {
-                if (!layer.isGeometryListening(opts.eventTypes)) {
+            if (layer._hasGeoListeners && isMapGeometryEvent && opts.eventTypes.indexOf('mousemove') >= 0) {
+                if (!layer._hasGeoListeners(opts.eventTypes)) {
                     return [];
                 }
             }
