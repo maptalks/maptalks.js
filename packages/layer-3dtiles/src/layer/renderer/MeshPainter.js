@@ -6,6 +6,7 @@ import pntsFrag from './glsl/pnts.frag';
 import { isFunction, isNil, extend, setColumn3, flatArr, isNumber, normalizeColor } from '../../common/Util';
 import { intersectsBox } from 'frustum-intersects';
 import { basisTo2D, setTranslation, getTranslation, readBatchData } from '../../common/TileHelper';
+import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 // import { getKHR_techniques } from './s3m/S3MTechnique';
 
 
@@ -521,9 +522,9 @@ export default class MeshPainter {
             data.featureTable['CONSTANT_RGBA'] = data.featureTable['CONSTANT_RGBA'].map(c => c / 255);
         }
 
-        const { rtcCenter, rtcCoord } = data;
+        const { rtcCenter, rtcCoord, projCenter } = data;
 
-        const options = this._layer._getNodeService(rootIdx);
+        const service = this._layer._getNodeService(rootIdx);
 
         const mesh = new reshader.Mesh(geometry);
         mesh.properties.magic = 'pnts';
@@ -567,19 +568,10 @@ export default class MeshPainter {
 
 
     _updatePNTSLocalTransform(mesh) {
-        const { rtcCenter, rtcCoord, node } = mesh.properties;
-        const scaleTransform = this._getTransform(TEMP_MATRIX1, rtcCoord);
         const localTransform = mesh.localTransform || [];
-        this._computeProjectedTransform(localTransform, node, rtcCenter, rtcCoord);
-        mat4.multiply(localTransform, localTransform, scaleTransform);
-        const service = this._layer._getNodeService(node._rootIdx);
-        if (service.coordOffset) {
-            const coordOffsetMatrix = this._computeCoordOffsetMatrix(TEMP_MATRIX2, node._rootIdx, rtcCoord);
-            mat4.multiply(localTransform, coordOffsetMatrix, localTransform);
-        }
+        const { rtcCoord, node, projCenter } = mesh.properties;
+        this._getB3DMTransform(localTransform, rtcCoord, projCenter, node._rootIdx);
         mesh.setLocalTransform(localTransform);
-        mesh.properties.heightOffset = service.heightOffset || 0;
-        mesh.properties.coordOffset = service.coordOffset && service.coordOffset.slice(0) || EMPTY_COORD_OFFSET;
     }
 
 

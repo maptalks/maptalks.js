@@ -213,7 +213,7 @@ export default class BaseLayerWorker {
             const transform = params.transform;
             const promise = this._pntsLoader.load(url, arraybuffer);
             promise.then(tile => {
-                const { content:pnts, transferables } = this._loadI3DMAndPNTS(tile, transform, params.rootIdx);
+                const { content:pnts, transferables } = this._loadPNTS(tile, transform, params.rootIdx);
                 this._compressPNTSFloat32ToInt16(pnts);
                 cb(null, pnts, transferables);
             });
@@ -221,7 +221,7 @@ export default class BaseLayerWorker {
             const transform = params.transform;
             const promise =  this._i3dmLoader.load(url, arraybuffer, 0, 0, { maxTextureSize: service.maxTextureSize || 1024 });
             promise.then(tile => {
-                const { content:i3dm, transferables } = this._loadI3DMAndPNTS(tile, transform, params.rootIdx);
+                const { content:i3dm, transferables } = this._loadI3DM(tile, transform, params.rootIdx);
                 this._compressAttrFloat32ToInt16(i3dm.gltf);
                 cb(null, i3dm, transferables);
             });
@@ -468,9 +468,14 @@ export default class BaseLayerWorker {
                 const { content, transferables } = this._processB3DM(tiles[i], params);
                 pushTransferables(tileTransferables, transferables);
                 cmpt.content.push(content);
-            } else if (magic === 'i3dm' || magic === 'pnts') {
+            } else if (magic === 'i3dm') {
                 const { transform, rootIdx } = params;
-                const { content, transferables } = this._loadI3DMAndPNTS(tiles[i], transform, rootIdx);
+                const { content, transferables } = this._loadI3DM(tiles[i], transform, rootIdx);
+                pushTransferables(tileTransferables, transferables);
+                cmpt.content.push(content);
+            } else if (magic === 'pnts') {
+                const { transform, rootIdx } = params;
+                const { content, transferables } = this._loadPNTS(tiles[i], transform, rootIdx);
                 pushTransferables(tileTransferables, transferables);
                 cmpt.content.push(content);
             } else if (magic === 'cmpt') {
@@ -510,9 +515,9 @@ export default class BaseLayerWorker {
         }
     }
 
-    _loadI3DMAndPNTS(content, transform, rootIdx) {
+    _loadI3DM(content, transform, rootIdx) {
         const { featureTable } = content;
-        const data = content.pnts || content.i3dm;
+        const data = content.i3dm;
         const rtcCenter = featureTable && featureTable['RTC_CENTER'] || [0, 0, 0];
 
         if (featureTable['EAST_NORTH_UP'] && !data['NORMAL_UP'] && !data['NORMAL_UP_OCT32P']) {
@@ -578,6 +583,100 @@ export default class BaseLayerWorker {
 
         content.rtcCenter = newRtcCenter;
         // content.instanceCenter = modelCenter;
+        content.rtcCoord = rtcCoord;
+        content.rootIdx = rootIdx;
+        const transferables = content.transferables;
+        delete content.transferables;
+        return {
+            content,
+            transferables
+        };
+    }
+
+    _loadPNTS(content, transform, rootIdx) {
+        const { featureTable } = content;
+        const data = content.pnts;
+        const rtcCenter = featureTable && featureTable['RTC_CENTER'] || [0, 0, 0];
+        const projection = this.options['projection'];
+
+        const isTransformIdentity = transform && mat4.exactEquals(IDENTITY_MATRIX, transform);
+
+        const minmax = {
+            xmin: Infinity,
+            xmax: -Infinity,
+            ymin: Infinity,
+            ymax: -Infinity,
+            hmin: Infinity,
+            hmax: -Infinity
+        };
+        findMinMaxOfPosition(data.POSITION.array, 3, rtcCenter, IDENTITY_MATRIX, minmax);
+        const modelCenter = getCenterOfMinMax(minmax);
+        const projCenter = this._getProjCenter(modelCenter);
+        const newRtcCenter = vec3.copy([], modelCenter);
+        const min = [Infinity, Infinity, Infinity];
+        const max = [-Infinity, -Infinity, -Infinity];
+
+        let cartesian = [0, 0, 0, 1];
+        const degree = [0, 0, 0],
+            proj = [0, 0];
+        iterateBufferData(data.POSITION, (vertex) => {
+            cartesian[0] = vertex[0] + rtcCenter[0];
+            cartesian[1] = vertex[1] + rtcCenter[1];
+            cartesian[2] = vertex[2] + rtcCenter[2];
+
+            if (transform && !isTransformIdentity) {
+                cartesian = vec3.transformMat4(cartesian, cartesian, transform);
+            }
+
+            if (vec3.len(cartesian) === 0) {
+                vec3.set(degree, 0, 0, -6378137);
+            } else {
+                cartesian3ToDegree(degree, cartesian);
+            }
+            project(proj, degree, projection);
+            // height = cartesian[2] ? projMeter(degree, proj, degree[2], projection) : 0;
+
+            vertex[0] = proj[0] - projCenter[0];
+            vertex[1] = proj[1] - projCenter[1];
+            vertex[2] = degree[2] - projCenter[2];
+            // array[i] = proj[0];
+            // array[i + 1] = proj[1];
+            // if (itemSize > 2) {
+            //     array[i + 2] = height;
+            // }
+            if (vertex[0] < min[0]) {
+                min[0] = vertex[0];
+            }
+            if (vertex[1] < min[1]) {
+                min[1] = vertex[1];
+            }
+            if (vertex[2] < min[2]) {
+                min[2] = vertex[2];
+            }
+
+            if (vertex[0] > max[0]) {
+                max[0] = vertex[0];
+            }
+            if (vertex[1] > max[1]) {
+                max[1] = vertex[1];
+            }
+            if (vertex[2] > max[2]) {
+                max[2] = vertex[2];
+            }
+            return vertex;
+        });
+        data.POSITION.min = min;
+        data.POSITION.max = max;
+
+        if (transform) {
+            vec3.transformMat4(modelCenter, modelCenter, transform);
+        }
+
+        const rtcCoord = this._getCoordiate(modelCenter);
+
+        content.rtcCenter = newRtcCenter;
+        // content.instanceCenter = modelCenter;
+        content.projCenter = projCenter;
         content.rtcCoord = rtcCoord;
         content.rootIdx = rootIdx;
         const transferables = content.transferables;
@@ -896,10 +995,12 @@ export default class BaseLayerWorker {
                 const x = proj[0] - projCenter[0];
                 const y = proj[1] - projCenter[1];
                 const z = degree[2] - projCenter[2];
-                newPositions.push(x);
-                newPositions.push(y);
-                newPositions.push(z);
-                newPositions.push(vertex[3]);
+                if (vertices.componentType !== 5126) {
+                    newPositions.push(x);
+                    newPositions.push(y);
+                    newPositions.push(z);
+                    newPositions.push(vertex[3]);
+                }
             }
             // array[i] = proj[0];
             // array[i + 1] = proj[1];
