@@ -899,13 +899,23 @@ describe('Map.Spec', function () {
     it('#centercross when map.layers=0', function () {
         //clear all layers
         map.removeLayer(baseLayer);
-        map.options.centerCross=true;
-        map.once('frameend',function(){
-            expect(map).to.be.painted(0, 0); 
-            map.options.centerCross=false;
-            map.once('frameend',function(){
-                expect(map).not.to.be.painted(0, 0); 
+        map.options.centerCross = true;
+        map.once('frameend', function () {
+            expect(map).to.be.painted(0, 0);
+            map.options.centerCross = false;
+            map.once('frameend', function () {
+                expect(map).not.to.be.painted(0, 0);
             })
         })
+    });
+
+    it('#2128 clear glRes cache when SpatialReference change', function (done) {
+        //clear all layers
+        const glRes = map.getGLRes();
+        map.setSpatialReference({ projection:'EPSG:4326' });
+        setTimeout(() => {
+            expect(map.getGLRes()).not.to.be(glRes);
+            done();
+        }, 100);
     });
 });

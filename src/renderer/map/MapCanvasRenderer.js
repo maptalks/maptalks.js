@@ -1,5 +1,6 @@
 import { IS_NODE, isNumber, isFunction, requestAnimFrame, cancelAnimFrame, equalMapView, calCanvasSize } from '../../core/util';
-import { createEl, preventSelection, computeDomPosition, addDomEvent, removeDomEvent } from '../../core/util/dom';
+import { createEl, preventSelection, computeDomPosition } from '../../core/util/dom';
+import { GlobalEvent, EVENT_DOC_DRAGEND, EVENT_DOC_VISIBILITY_CHANGE, EVENT_DPR_CHANGE, EVENT_DOC_DRAGSTART } from './../../core/GlobalEvent';
 import Browser from '../../core/Browser';
 import Point from '../../geo/Point';
 import Canvas2D from '../../core/Canvas';
@@ -438,9 +439,13 @@ class MapCanvasRenderer extends MapRenderer {
 
     remove() {
         if (Browser.webgl && typeof document !== 'undefined') {
-            removeDomEvent(document, 'visibilitychange', this._thisDocVisibilitychange, this);
-            removeDomEvent(document, 'dragstart', this._thisDocDragStart, this);
-            removeDomEvent(document, 'dragend', this._thisDocDragEnd, this);
+            GlobalEvent.off(EVENT_DPR_CHANGE, this._thisDocDPRChange, this);
+            GlobalEvent.off(EVENT_DOC_VISIBILITY_CHANGE, this._thisDocVisibilitychange, this);
+            GlobalEvent.off(EVENT_DOC_DRAGSTART, this._thisDocDragStart, this);
+            GlobalEvent.off(EVENT_DOC_DRAGEND, this._thisDocDragEnd, this);
+            // removeDomEvent(document, 'visibilitychange', this._thisDocVisibilitychange, this);
+            // removeDomEvent(document, 'dragstart', this._thisDocDragStart, this);
+            // removeDomEvent(document, 'dragend', this._thisDocDragEnd, this);
         }
         if (this._resizeInterval) {
             clearInterval(this._resizeInterval);
@@ -942,12 +947,14 @@ class MapCanvasRenderer extends MapRenderer {
         });
 
         if (Browser.webgl && typeof document !== 'undefined') {
-            addDomEvent(document, 'visibilitychange', this._thisDocVisibilitychange, this);
-            addDomEvent(document, 'dragstart', this._thisDocDragStart, this);
-            addDomEvent(document, 'dragend', this._thisDocDragEnd, this);
-        }
-        if (Browser.addDPRListening) {
-            Browser.addDPRListening(this.map);
+            GlobalEvent.on(EVENT_DPR_CHANGE, this._thisDocDPRChange, this);
+            GlobalEvent.on(EVENT_DOC_VISIBILITY_CHANGE, this._thisDocVisibilitychange, this);
+            GlobalEvent.on(EVENT_DOC_DRAGSTART, this._thisDocDragStart, this);
+            GlobalEvent.on(EVENT_DOC_DRAGEND, this._thisDocDragEnd, this);
+
+            // addDomEvent(document, 'visibilitychange', this._thisDocVisibilitychange, this);
+            // addDomEvent(document, 'dragstart', this._thisDocDragStart, this);
+            // addDomEvent(document, 'dragend', this._thisDocDragEnd, this);
         }
     }
 

@@ -28,7 +28,7 @@ const options = {
 };
 
 /**
- * A map tool to help measure area on the map
+ * A map tool to help measure area on the map .it is extends DistanceTool
  * @category maptool
  * @extends DistanceTool
  * @example
@@ -77,18 +77,24 @@ class AreaTool extends DistanceTool {
             area = map.getProjection().measureArea(toMeasure);
         }
         this._lastMeasure = area;
+
+        const result = this._formatLabelContent(area);
+        if (result) {
+            return result;
+        }
         const units = [
             this.translator.translate('areatool.units.meter'),
             this.translator.translate('areatool.units.kilometer'),
             this.translator.translate('areatool.units.feet'),
             this.translator.translate('areatool.units.mile')];
+
         let content = '';
         const decimals = this.options['decimalPlaces'];
         if (this.options['metric']) {
             content += area < 1E6 ? area.toFixed(decimals) + units[0] : (area / 1E6).toFixed(decimals) + units[1];
         }
         if (this.options['imperial']) {
-            area *= 3.2808399;
+            area *= Math.pow(3.2808399, 2);
             if (content.length > 0) {
                 content += '\n';
             }

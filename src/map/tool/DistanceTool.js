@@ -1,4 +1,4 @@
-import { isArrayHasData, UID } from '../../core/util';
+import { isArrayHasData, isFunction, UID } from '../../core/util';
 import { extendSymbol } from '../../core/util/style';
 import Size from '../../geo/Size';
 import Geometry from '../../geometry/Geometry';
@@ -17,10 +17,12 @@ import DrawTool from './DrawTool';
  * @property {Object}  options.vertexSymbol     - symbol of the vertice
  * @property {Object}  options.labelOptions     - construct options of the vertice labels.
  * @property {Number}  options.decimalPlaces     - The  decimal places of the measured value
+ * @property {Function}  options.formatLabelContent     - Content function for custom measurement result labels
  * @memberOf DistanceTool
  * @instance
  */
 const options = {
+    'formatLabelContent': null,
     'decimalPlaces': 2,
     'mode': 'LineString',
     'language': 'zh-CN', //'en-US'
@@ -179,6 +181,14 @@ class DistanceTool extends DrawTool {
         return this;
     }
 
+    _formatLabelContent(params) {
+        const formatLabelContent = this.options.formatLabelContent;
+        if (formatLabelContent && isFunction(formatLabelContent)) {
+            return formatLabelContent.call(this, params) + '';
+        }
+        return null;
+    }
+
     _measure(toMeasure) {
         const map = this.getMap();
         let length;
@@ -188,6 +198,11 @@ class DistanceTool extends DrawTool {
             length = map.getProjection().measureLength(toMeasure);
         }
         this._lastMeasure = length;
+
+        const result = this._formatLabelContent(length);
+        if (result) {
+            return result;
+        }
         const units = [
             this.translator.translate('distancetool.units.meter'),
             this.translator.translate('distancetool.units.kilometer'),
