@@ -1,5 +1,6 @@
 import { mat4, vec4, reshader } from '@maptalks/gl';
 import { setUniformFromSymbol, createColorSetter, wrap, toUint8ColorInGlobalVar, isIconText } from '../../Util';
+import { DEFAULT_ICON_ALPHA_TEST } from '../Constant';
 import { prepareFnTypeData, PREFIX } from './fn_type_util';
 import { isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
 import Color from 'color';
@@ -120,6 +121,7 @@ export function createTextMesh(regl, geometry, transform, symbolDef, symbol, fnT
         picking: true
     });
     mesh.setLocalTransform(transform);
+    mesh.setUniform('alphaTest', DEFAULT_ICON_ALPHA_TEST);
     //设置ignoreCollision，此mesh略掉collision检测
     //halo mesh会进行collision检测，并统一更新elements
     if (uniforms['isHalo']) {
@@ -150,6 +152,7 @@ export function createTextMesh(regl, geometry, transform, symbolDef, symbol, fnT
             castShadow: false,
             picking: true
         });
+        textMesh.setUniform('alphaTest', DEFAULT_ICON_ALPHA_TEST);
         textMesh.properties.haloMesh = mesh;
         // isLabelCollides 中，计算碰撞盒时需要
         Object.defineProperty(textMesh.properties, 'textSize',  {

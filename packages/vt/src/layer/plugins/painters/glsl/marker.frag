@@ -4,6 +4,7 @@
 precision mediump float;
 #include <gl2_frag>
 
+uniform float alphaTest;
 uniform sampler2D iconTex;
 uniform lowp float markerOpacity;
 uniform lowp float blendSrcIsOne;
@@ -42,6 +43,11 @@ void main() {
 
     glFragColor = fragColor;
 
+    glFragColor = highlight_blendColor(glFragColor);
+
+    if (glFragColor.a < alphaTest) {
+        discard;
+    }
     glFragColor = highlight_blendColor(glFragColor);
 
     #if __VERSION__ == 100

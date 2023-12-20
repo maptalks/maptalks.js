@@ -11,6 +11,7 @@ uniform float textOpacity;
 uniform highp float gammaScale;
 uniform int isHalo;
 uniform highp float textHaloBlur;
+uniform float alphaTest;
 #ifdef HAS_TEXT_HALO_OPACITY
     varying float vTextHaloOpacity;
 #else
@@ -83,6 +84,8 @@ void main() {
     // float alpha = smoothstep(buff - gammaScaled, buff + gammaScaled, dist);
     // gl_FragColor = vec4(textFill.rgb, alpha * textFill.a);
     gl_FragColor = color * (alpha * textOpacity * vOpacity * layerOpacity);
-
+    if (gl_FragColor.a < alphaTest) {
+        discard;
+    }
     gl_FragColor = highlight_blendColor(gl_FragColor);
 }

@@ -1,7 +1,7 @@
 import { reshader } from '@maptalks/gl';
 import { interpolated, piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
 import { setUniformFromSymbol, wrap, fillArray } from '../../Util';
-import { DEFAULT_MARKER_WIDTH, DEFAULT_MARKER_HEIGHT, GLYPH_SIZE } from '../Constant';
+import { DEFAULT_MARKER_WIDTH, DEFAULT_MARKER_HEIGHT, GLYPH_SIZE, DEFAULT_ICON_ALPHA_TEST } from '../Constant';
 import { createAtlasTexture, getDefaultMarkerSize } from './atlas_util';
 import { prepareFnTypeData, PREFIX } from './fn_type_util';
 // import { getIconBox } from './get_icon_box';
@@ -113,6 +113,7 @@ export function createMarkerMesh(regl, geometry, transform, symbolDef, symbol, f
         defines['HAS_ALTITUDE'] = 1;
     }
     mesh.setDefines(defines);
+    mesh.setUniform('alphaTest', DEFAULT_ICON_ALPHA_TEST);
     mesh.setLocalTransform(transform);
     mesh.properties.symbolIndex = geometry.properties.symbolIndex;
     return mesh;
