@@ -210,7 +210,7 @@ export default class BaseLayerWorker {
                 cb(err);
             });
         } else if (magic === 'pnts') {
-            const transform = params.transform;
+            const transform = params.transform || IDENTITY_MATRIX;
             const promise = this._pntsLoader.load(url, arraybuffer);
             promise.then(tile => {
                 const { content:pnts, transferables } = this._loadPNTS(tile, transform, params.rootIdx);
@@ -218,7 +218,7 @@ export default class BaseLayerWorker {
                 cb(null, pnts, transferables);
             });
         } else if (magic === 'i3dm') {
-            const transform = params.transform;
+            const transform = params.transform || IDENTITY_MATRIX;
             const promise =  this._i3dmLoader.load(url, arraybuffer, 0, 0, { maxTextureSize: service.maxTextureSize || 1024 });
             promise.then(tile => {
                 const { content:i3dm, transferables } = this._loadI3DM(tile, transform, params.rootIdx);
@@ -609,7 +609,7 @@ export default class BaseLayerWorker {
             hmin: Infinity,
             hmax: -Infinity
         };
-        findMinMaxOfPosition(data.POSITION.array, 3, rtcCenter, IDENTITY_MATRIX, minmax);
+        findMinMaxOfPosition(data.POSITION.array, 3, rtcCenter, transform, minmax);
         const modelCenter = getCenterOfMinMax(minmax);
         const projCenter = this._getProjCenter(modelCenter);
         const newRtcCenter = vec3.copy([], modelCenter);
