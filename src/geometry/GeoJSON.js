@@ -173,25 +173,33 @@ const GeoJSON = {
             return GeoJSON.isGeoJSON(json[0]);
         }
         const type = json.type;
+        if (!type) {
+            return false;
+        }
         if (GEOJSON_TYPES.indexOf(type) === -1) {
             return false;
         }
         const { features, geometries, geometry, coordinates } = json;
-        //FeatureCollection
-        if (Array.isArray(features)) {
-            return true;
-        }
-        //Feature
-        if (geometry && geometry.coordinates && Array.isArray(geometry.coordinates)) {
+
+        //Geometry
+        if (coordinates && Array.isArray(coordinates)) {
             return true;
         }
         //GeometryCollection
         if (Array.isArray(geometries)) {
             return true;
         }
-        //Geometry
-        if (coordinates && Array.isArray(coordinates)) {
+
+        //FeatureCollection
+        if (Array.isArray(features)) {
             return true;
+        }
+        //Feature
+        if (geometry) {
+            const coordinates = geometry.coordinates;
+            if (coordinates && Array.isArray(coordinates)) {
+                return true;
+            }
         }
         return false;
 
