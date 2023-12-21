@@ -304,7 +304,7 @@ describe('render specs', () => {
                     }
                 ]
             });
-            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 6 });
+            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 7 });
         }).timeout(10000);
 
         it('i3s-map-traverse_mercator-data-identity', done => {
