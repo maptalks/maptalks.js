@@ -202,7 +202,7 @@ describe('UI.UIMarker', function () {
         });
         marker.addTo(map).show();
 
-        setTimeout(function() {
+        setTimeout(function () {
             var m = document.getElementById('uimarker');
             expect(m).to.be.ok();
             map.getContainer().style.width = '400px';
@@ -236,9 +236,18 @@ describe('UI.UIMarker', function () {
             altitude: 20,
             dy: -5
         });
+        //layer add uimarker
         layer.addGeometry(marker);
         expect(layer.getGeometries().length).to.be.equal(0);
+        //add Invalid geometry
+        layer.addGeometry({ type: 'hello' });
+        expect(layer.getGeometries().length).to.be.equal(0);
+        //uimarker add to layer
         marker.addTo(layer);
+        expect(marker.getOwner()).to.be.equal(undefined);
+        //uimarker add Geometry
+        const point = new maptalks.Marker(map.getCenter());
+        marker.addTo(point);
         expect(marker.getOwner()).to.be.equal(undefined);
         done();
     });

@@ -23,6 +23,9 @@ const types = {
     'MultiPolygon': MultiPolygon
 };
 
+const GEOJSON_TYPES = ['Point', 'LineString', 'Polygon',
+    'MultiPoint', 'MultiLineString', 'MultiPolygon', 'FeatureCollection', 'GeometryCollection', 'Feature'];
+
 /**
  * GeoJSON utilities
  * @class
@@ -160,6 +163,39 @@ const GeoJSON = {
             return result;
         }
         return null;
+    },
+
+    _isGeoJSON(json) {
+        if (!json) {
+            return false;
+        }
+        json = json || {};
+        //is flat geometries
+        if (Array.isArray(json) && json.length) {
+            return GeoJSON.isGeoJSON(json[0]);
+        }
+        const type = json.type;
+        if (GEOJSON_TYPES.indexOf(type) === -1) {
+            return false;
+        }
+        const { features, geometries, geometry, coordinates } = json;
+        //FeatureCollection
+        if (Array.isArray(features)) {
+            return true;
+        }
+        //Feature
+        if (geometry && geometry.coordinates && Array.isArray(geometry.coordinates)) {
+            return true;
+        }
+        if (Array.isArray(geometries)) {
+            return true;
+        }
+        //Geometry
+        if (coordinates && Array.isArray(coordinates)) {
+            return true;
+        }
+        return false;
+
     }
 };
 

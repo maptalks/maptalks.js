@@ -234,14 +234,8 @@ class OverlayLayer extends Layer {
                 geometries.push(last);
                 fitView = false;
             }
-            for (let i = 0, len = geometries.length; i < len; i++) {
-                if (!isGeometry(geometries[i])) {
-                    console.warn(geometries[i], 'is not Geometry,This may not be a correct operation');
-                }
-            }
             return this.addGeometry(geometries, fitView);
         } else if (geometries.length === 0) {
-            console.warn('geometries is empty');
             return this;
         }
         this._initCache();
@@ -253,12 +247,8 @@ class OverlayLayer extends Layer {
         const geos = [];
         for (let i = 0, l = geometries.length; i < l; i++) {
             let geo = geometries[i];
-            if (!geo) {
-                console.error('Invalid geometry to add to layer(' + this.getId() + ') at index:' + i);
-                continue;
-            }
-            if (geo.isUI) {
-                console.error(geo, 'is UI,can not add to layer');
+            if (!(geo && (GeoJSON._isGeoJSON(geo) || isGeometry(geo)))) {
+                console.error(geo, 'is not Invalid geometry to add to layer(' + this.getId() + ') at index:' + i);
                 continue;
             }
             if (geo.getLayer && geo.getLayer() === this) {
@@ -273,8 +263,9 @@ class OverlayLayer extends Layer {
                     }
                 }
             }
-            if (!geo || !isGeometry(geo)) {
-                console.error(geo, 'is not Geometry');
+            // geojson to Geometry may be null
+            if (!geo) {
+                console.error(geo, 'is null');
                 continue;
             }
             if (!Array.isArray(geo)) {
