@@ -113,6 +113,7 @@ export default function (Base) {
             if (hasPlayingVideoMask.call(this)) {
                 updateVideoMask.call(this);
             }
+            this.layer.updateExtent();
             return this['_maskUniforms'];
         }
 

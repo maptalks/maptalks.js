@@ -6,36 +6,6 @@ import { extend } from "../util/util";
 const maskLayerEvents = ['shapechange', 'symbolchange', 'heightrangechange', 'flatheightchange'];
 const COORD_EXTENT = new Coordinate(0, 0);
 const EXTENT_MIN = [], EXTENT_MAX = [];
-const TEMP_COORD0 = new Coordinate(0, 0), TEMP_COORD1 = new Coordinate(0, 0);
-
-function updateExtent() {
-    if (!this['_maskList']) {
-        return;
-    }
-    const map = this.getMap();
-    if (!map) {
-        return;
-    }
-    const renderer = this.getRenderer();
-    if (renderer && !this['_maskList'].length) {
-        renderer['_clearMask']();
-        return;
-    }
-    if (renderer && !hasVisibleMask.call(this)) {
-        renderer['_deleteMaskUniforms']();
-        renderer.setToRedraw();
-        return;
-    }
-    const { extent, ratio, minHeight } = this.getMaskExtent();
-    const { projViewMatrix, extentInWorld } = this.updateMask(extent);
-    if (renderer) {
-        renderer.setMask(extentInWorld, projViewMatrix, ratio, minHeight);
-    } else {
-        this.once('renderercreate', e => {
-            e.renderer.setMask(extentInWorld, projViewMatrix, ratio, minHeight);
-        });
-    }
-}
 
 function clearMasks() {
     if (!this['_maskList']) {
@@ -45,7 +15,7 @@ function clearMasks() {
         mask.remove();
     });
     this['_maskList'] = [];
-    updateExtent.call(this);
+    this.updateExtent('shapechange');
     return this;
 }
 
@@ -100,7 +70,7 @@ export default function (Base) {
                     this['_maskList'].splice(index, 1);
                 }
             }
-            updateExtent.call(this);
+            this.updateExtent('shapechange');
             return this;
         }
 
@@ -122,13 +92,13 @@ export default function (Base) {
                     mask._updateCoordinates();
                 }
             });
-            updateExtent.call(this, 'shapechange');
+            this.updateExtent('shapechange');
             return this;
         }
 
         onAdd() {
             super.onAdd();
-            updateExtent.call(this, 'shapechange');
+            this.updateExtent('shapechange');
         }
 
         getMasks() {
@@ -144,7 +114,7 @@ export default function (Base) {
                 param['target']._updateShape();
             }
             if (param['target'] instanceof Mask && maskLayerEvents.indexOf(type) > -1) {
-                updateExtent.call(this, type);
+                this.updateExtent(type);
             }
             if (super['_onGeometryEvent']) {
                 super['_onGeometryEvent'](param);
@@ -206,8 +176,46 @@ export default function (Base) {
             return { projViewMatrix, extentInWorld };
         }
 
+        updateExtent(type) {
+            if (!this['_maskList']) {
+                return;
+            }
+            const map = this.getMap();
+            if (!map) {
+                return;
+            }
+            const renderer = this.getRenderer();
+            if (renderer && !this['_maskList'].length) {
+                renderer['_clearMask']();
+                return;
+            }
+            if (renderer && !hasVisibleMask.call(this)) {
+                renderer['_deleteMaskUniforms']();
+                renderer.setToRedraw();
+                return;
+            }
+            const maskExtent = this.getMaskExtent();
+            if (!maskExtent) {
+                return;
+            }
+            const { extent, ratio, minHeight } = maskExtent;
+            if (type || !this._projViewMatrix || !this._projViewMatrix) {
+                const { projViewMatrix, extentInWorld } = this.updateMask(extent);
+                this._projViewMatrix = projViewMatrix;
+                this._extentInWorld = extentInWorld;
+            }
+            if (renderer) {
+                renderer.setMask(this._extentInWorld, this._projViewMatrix, ratio, minHeight);
+            } else {
+                this.once('renderercreate', e => {
+                    e.renderer.setMask(this._extentInWorld, this._projViewMatrix, ratio, minHeight);
+                });
+            }
+        }
+
         getMaskExtent() {
             let xmin = Infinity, ymin = Infinity, xmax = -Infinity, ymax = -Infinity, maxheight = -Infinity, minheight = Infinity;
+            let hasMaskInExtent = false;
             for (let i = 0; i < this['_maskList'].length; i++) {
                 const mask = this['_maskList'][i];
                 if (!mask.isVisible()) {
@@ -217,6 +225,7 @@ export default function (Base) {
                 if (!extent || !this._inMapExtent(extent)) {
                     continue;
                 }
+                hasMaskInExtent = true;
                 if (extent.xmin < xmin) {
                     xmin = extent.xmin;
                 }
@@ -239,6 +248,9 @@ export default function (Base) {
                     }
                 }
             }
+            if (!hasMaskInExtent) {
+                return null;
+            }
             const { ratio, minHeight } = normalizeHeight(minheight, maxheight);
             const extent = new Extent(xmin, ymin, xmax, ymax);
             return { extent, ratio, minHeight };
@@ -246,14 +258,8 @@ export default function (Base) {
 
         _inMapExtent(extent) {
             const map = this.getMap();
-            const glRes = map.getGLRes();
-            TEMP_COORD0.set(extent.xmin, extent.ymin);
-            TEMP_COORD1.set(extent.xmin, extent.ymin);
-            const pointMin = map.coordinateToPointAtRes(TEMP_COORD0, glRes);
-            const pointMax = map.coordinateToPointAtRes(TEMP_COORD1, glRes);
-            const maskExtent = new Extent(pointMin.x, pointMin.y, pointMax.x, pointMax.y);
-            const mapExtent = map['_get2DExtentAtRes'](glRes);
-            return mapExtent.intersects(maskExtent);
+            const mapExtent = map.getExtent();
+            return mapExtent.intersects(extent);
         }
     };
 }

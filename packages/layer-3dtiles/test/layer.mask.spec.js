@@ -245,4 +245,22 @@ describe('render specs', () => {
             }, 300);
         });
     }).timeout(10000);
+
+    it('add mask which is not in map extent', done => {
+        const layer = add3DTilesLayer();
+        layer.once('loadtileset', () => {
+            const extent = layer.getExtent(0);
+            map.fitExtent(extent, 0, { animation: false });
+            const coordinates = [[-1, 1],[1, 1],[1, -1],[-1, -1]];
+            const mask = new ColorMask(coordinates, {
+                symbol
+            });
+            layer.setMask(mask);
+            setTimeout(function() {
+                const pixel = pickPixel(map, 255, 497, 1, 1);
+                assert(pixelMatch([171, 175, 177, 255], pixel) === true);
+                done();
+            }, 500);
+        });
+    }).timeout(10000);
 });
