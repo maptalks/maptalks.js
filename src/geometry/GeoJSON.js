@@ -170,7 +170,7 @@ const GeoJSON = {
             return false;
         }
         json = json || {};
-        //is flat geometries
+        //is flat geometries,[geometry,geometry,...]
         if (Array.isArray(json) && json.length) {
             return GeoJSON.isGeoJSON(json[0]);
         }
@@ -187,6 +187,7 @@ const GeoJSON = {
         if (geometry && geometry.coordinates && Array.isArray(geometry.coordinates)) {
             return true;
         }
+        //GeometryCollection
         if (Array.isArray(geometries)) {
             return true;
         }
