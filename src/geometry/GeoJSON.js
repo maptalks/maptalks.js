@@ -13,6 +13,7 @@ import MultiLineString from './MultiLineString';
 import MultiPolygon from './MultiPolygon';
 import GeometryCollection from './GeometryCollection';
 import Geometry from './Geometry';
+import { GEOJSON_TYPES } from '../core/Constants';
 
 const types = {
     'Marker': Marker,
@@ -22,9 +23,6 @@ const types = {
     'MultiLineString': MultiLineString,
     'MultiPolygon': MultiPolygon
 };
-
-const GEOJSON_TYPES = ['Point', 'LineString', 'Polygon',
-    'MultiPoint', 'MultiLineString', 'MultiPolygon', 'FeatureCollection', 'GeometryCollection', 'Feature'];
 
 /**
  * GeoJSON utilities
