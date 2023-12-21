@@ -80,6 +80,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             }
         }
         this.proxyOptions();
+        this.isLayer = true;
     }
 
     /**
