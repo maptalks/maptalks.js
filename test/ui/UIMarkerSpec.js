@@ -5,12 +5,14 @@ describe('UI.UIMarker', function () {
     var context = {
 
     };
+    var layer;
 
     beforeEach(function () {
         var setups = COMMON_CREATE_MAP(center);
         container = setups.container;
         map = setups.map;
         context.map = map;
+        layer = new maptalks.VectorLayer('v').addTo(map);
     });
 
     afterEach(function () {
@@ -225,5 +227,19 @@ describe('UI.UIMarker', function () {
             zoom: 18,
             pitch: 60
         });
+    });
+
+    it('UIMarker Can only be added to the map', function (done) {
+        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+            content: '<div id="uimarker" class="text-marker" style="width:100px;height:40px;background:black;color:white;text-align:center;">maptalks</div>',
+            verticalAlignment: 'top',
+            altitude: 20,
+            dy: -5
+        });
+        layer.addGeometry(marker);
+        expect(layer.getGeometries().length).to.be.equal(0);
+        marker.addTo(layer);
+        expect(marker.getOwner()).to.be.equal(undefined);
+        done();
     });
 });
