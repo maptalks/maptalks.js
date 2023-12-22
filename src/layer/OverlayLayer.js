@@ -265,7 +265,7 @@ class OverlayLayer extends Layer {
             }
             // geojson to Geometry may be null
             if (!geo) {
-                console.error(geo, 'is null');
+                console.error(geo, 'is not Invalid geometry to add to layer(' + this.getId() + ') at index:' + i);
                 continue;
             }
             if (!Array.isArray(geo)) {
