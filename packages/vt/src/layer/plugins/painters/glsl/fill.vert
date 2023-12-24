@@ -22,6 +22,9 @@ uniform mat4 projViewModelMatrix;
 #endif
 
 #ifdef HAS_PATTERN
+    #ifdef HAS_TEX_COORD
+        attribute vec2 aTexCoord;
+    #endif
     attribute vec4 aTexInfo;
 
     uniform vec2 patternWidth;
@@ -50,7 +53,6 @@ uniform mat4 projViewModelMatrix;
 
     #ifdef HAS_PATTERN_WIDTH
         attribute vec2 aPatternWidth;
-        varying vec2 vPatternWidth;
     #endif
 
     #ifdef HAS_PATTERN_ORIGIN
@@ -92,30 +94,8 @@ uniform mat4 projViewModelMatrix;
             return vec2(u, -v);
         #endif
     }
-#endif
-// #ifndef ENABLE_TILE_STENCIL
-//     varying vec2 vPosition;
-// #endif
 
-#if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
-    #include <vsm_shadow_vert>
-#endif
-
-#include <vt_position_vert>
-#include <highlight_vert>
-
-void main() {
-    vec3 myPosition = unpackVTPosition();
-    vec4 localVertex = vec4(myPosition, 1.);
-    gl_Position = projViewModelMatrix * localVertex;
-
-    // #ifndef ENABLE_TILE_STENCIL
-    //     vPosition = aPosition.xy;
-    // #endif
-    #ifdef HAS_PATTERN
-        //uvSize + 1.0 是为了把256宽实际存为255，这样可以用Uint8Array来存储宽度为256的值
-        vec2 patternSize = aTexInfo.zw + 1.0;
-        vTexInfo = vec4(aTexInfo.xy, patternSize);
+    vec2 computeTexCoord(vec4 localVertex, vec2 patternSize) {
         #ifdef IS_VT
             #ifdef HAS_PATTERN_OFFSET
                 vec2 myPatternOffset = aPatternOffset;
@@ -140,7 +120,7 @@ void main() {
             //瓦片左上角对应的纹理偏移量
             vec2 originOffset = origin * tileScale * myUVScale * vec2(1.0, -1.0) / myPatternWidth;
 
-            vTexCoord = originOffset / myUVScale + computeUV(myPosition.xy * tileScale / tileRatio, myPatternWidth);
+            return originOffset / myUVScale + computeUV(localVertex.xy * tileScale / tileRatio, myPatternWidth);
         #else
             vec2 myPatternWidth = patternSize;
             #ifdef HAS_PATTERN_WIDTH
@@ -148,14 +128,48 @@ void main() {
                 myPatternWidth = mix(patternSize, aPatternWidth, hasPatternWidth);
             #endif
             vec4 position = modelMatrix * localVertex;
-            vTexCoord = computeUV(position.xy, myPatternWidth);
+            return computeUV(position.xy, myPatternWidth);
+        #endif
+    }
+#endif
+
+
+// #ifndef ENABLE_TILE_STENCIL
+//     varying vec2 vPosition;
+// #endif
+
+#if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
+    #include <vsm_shadow_vert>
+#endif
+
+#include <vt_position_vert>
+#include <highlight_vert>
+
+
+void main() {
+    vec3 myPosition = unpackVTPosition();
+    vec4 localVertex = vec4(myPosition, 1.);
+    gl_Position = projViewModelMatrix * localVertex;
+
+    // #ifndef ENABLE_TILE_STENCIL
+    //     vPosition = aPosition.xy;
+    // #endif
+    #ifdef HAS_PATTERN
+        //uvSize + 1.0 是为了把256宽实际存为255，这样可以用Uint8Array来存储宽度为256的值
+        vec2 patternSize = aTexInfo.zw + 1.0;
+        vTexInfo = vec4(aTexInfo.xy, patternSize);
+        #ifdef HAS_TEX_COORD
+            if (aTexCoord.x == INVALID_TEX_COORD) {
+                vTexCoord = computeTexCoord(localVertex, patternSize);
+            } else {
+                vTexCoord = aTexCoord;
+            }
+        #else
+            vTexCoord = computeTexCoord(localVertex, patternSize);
         #endif
 
         #ifdef HAS_UV_SCALE
             vUVScale = aUVScale / 255.0;
-        #endif
-        #ifdef HAS_PATTERN_WIDTH
-            vPatternWidth = aPatternWidth;
         #endif
         #ifdef HAS_UV_OFFSET
             vUVOffset = aUVOffset / 255.0;

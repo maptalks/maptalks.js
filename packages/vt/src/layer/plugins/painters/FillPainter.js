@@ -10,6 +10,7 @@ import { createAtlasTexture } from './util/atlas_util';
 import { isFunctionDefinition, piecewiseConstant, interpolated } from '@maptalks/function-type';
 import Color from 'color';
 import { isObjectEmpty } from './util/is_obj_empty';
+import { INVALID_TEX_COORD } from '@maptalks/vector-packer';
 
 const IDENTITY_ARR = mat4.identity([]);
 
@@ -220,6 +221,10 @@ class FillPainter extends BasicPainter {
         const defines = {};
         if (iconAtlas && geometry.data.aTexInfo) {
             defines['HAS_PATTERN'] = 1;
+        }
+        if (iconAtlas && geometry.data.aTexCoord) {
+            defines['HAS_TEX_COORD'] = 1;
+            defines['INVALID_TEX_COORD'] = INVALID_TEX_COORD + '.0';
         }
         if (geometry.data.aAltitude) {
             defines['HAS_ALTITUDE'] = 1;

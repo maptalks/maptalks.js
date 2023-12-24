@@ -9,6 +9,7 @@ import { vec4 } from 'gl-matrix';
 
 const EARCUT_MAX_RINGS = 500;
 const EMPTY_FILL = [0, 0, 0, 0];
+export const INVALID_TEX_COORD = -9999999;
 
 export default class PolygonPack extends VectorPack {
 
@@ -30,7 +31,7 @@ export default class PolygonPack extends VectorPack {
         const format = [
             ...this.getPositionFormat()
         ];
-        const { polygonFillFn, polygonOpacityFn, uvScaleFn, uvOffsetFn } = this._fnTypes;
+        const { polygonFillFn, polygonOpacityFn, uvScaleFn, uvOffsetFn, polygonPatternUVFn } = this._fnTypes;
         if (this.iconAtlas) {
             const max = this.getIconAtlasMaxValue();
             format.push({
@@ -67,6 +68,13 @@ export default class PolygonPack extends VectorPack {
                 name: 'aUVOffset'
             });
         }
+        if (polygonPatternUVFn) {
+            format.push({
+                type: Float32Array,
+                width: 2,
+                name: 'aTexCoord'
+            });
+        }
         return format;
     }
 
@@ -96,7 +104,7 @@ export default class PolygonPack extends VectorPack {
 
     _addPolygon(geometry, feature) {
         let dynFill, dynOpacity, dynUVScale, dynUVOffset;
-        const { polygonFillFn, polygonOpacityFn, uvScaleFn, uvOffsetFn, uvOffsetInMeterFn } = this._fnTypes;
+        const { polygonFillFn, polygonOpacityFn, uvScaleFn, uvOffsetFn, uvOffsetInMeterFn, polygonPatternUVFn } = this._fnTypes;
         const properties = feature.properties;
         if (polygonFillFn) {
             dynFill = polygonFillFn(this.options['zoom'], properties) || vec4.set([], 255, 255, 255, 255);
@@ -172,6 +180,13 @@ export default class PolygonPack extends VectorPack {
                 uvSize[1] = image.displaySize[1] - 3;
             }
         }
+
+        let texCoords;
+        let tIndex = 0;
+        if (polygonPatternUVFn) {
+            texCoords = polygonPatternUVFn(this.options['zoom'], properties);
+        }
+
         const positionSize = this.needAltitudeAttribute() ? 2 : 3;
         const BOUNDS = [-1, -1, feature.extent + 1, feature.extent + 1];
         const flattened = this._flattened = this._flattened || this._arrayPool.get();
@@ -244,6 +259,17 @@ export default class PolygonPack extends VectorPack {
                     }
                     if (dynUVOffset !== undefined) {
                         this.data.aUVOffset.push(dynUVOffset[0], dynUVOffset[1]);
+                    }
+                    if (polygonPatternUVFn) {
+                        if (texCoords) {
+                            const tx = isNil(texCoords[tIndex * 2]) ? texCoords[0] : texCoords[tIndex * 2];
+                            const ty = isNil(texCoords[tIndex * 2] + 1) ? texCoords[1] : texCoords[tIndex * 2 + 1];
+                            this.data.aTexCoord.push(tx, ty);
+                        } else {
+                            this.data.aTexCoord.push(INVALID_TEX_COORD, INVALID_TEX_COORD);
+                        }
+
+                        tIndex++;
                     }
 
                     const absX = Math.abs(x);

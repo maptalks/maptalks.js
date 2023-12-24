@@ -67,6 +67,11 @@ const SYMBOL = {
         type: 'identity',
         default: undefined,
         property: '_symbol_polygonPatternFileOrigin'
+    },
+    polygonPatternUV: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_polygonPatternUV'
     }
 };
 

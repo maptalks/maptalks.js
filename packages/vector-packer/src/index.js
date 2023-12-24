@@ -4,7 +4,7 @@ export { default as LinePack } from './pack/LinePack';
 export { default as LineExtrusionPack } from './pack/LineExtrusionPack';
 export { default as NativeLinePack } from './pack/NativeLinePack';
 export { default as NativePointPack } from './pack/NativePointPack';
-export { default as PolygonPack } from './pack/PolygonPack';
+export { default as PolygonPack, INVALID_TEX_COORD } from './pack/PolygonPack';
 export { default as CirclePack } from './pack/CirclePack';
 export { default as RoundTubePack } from './pack/RoundTubePack';
 export { default as SquareTubePack } from './pack/SquareTubePack';
