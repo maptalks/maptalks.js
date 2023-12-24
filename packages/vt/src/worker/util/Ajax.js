@@ -92,7 +92,11 @@ const Ajax = {
             requestConfig.signal = controller.signal;
             requestConfig.referrerPolicy = requestConfig.referrerPolicy || 'origin';
             requestConfig.method = requestConfig.method || 'GET';
-            fetch(url, requestConfig).then(response => {
+            const request = new Request(url, requestConfig);
+            if (options['returnJSON']) {
+                request.headers.set('Accept', 'application/json');
+            }
+            fetch(request).then(response => {
                 const parsed = this._parseResponse(response, options['returnJSON'], options['responseType']);
                 if (parsed.message) {
                     parsed.url = url;

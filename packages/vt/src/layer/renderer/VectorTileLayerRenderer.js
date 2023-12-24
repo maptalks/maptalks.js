@@ -541,8 +541,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             };
             this._requestingMVT[url].keys[tileInfo.id] = 1;
             const fetchOptions = this.layer.options['fetchOptions'];
+            const referrer = window.location.href;
             this._workerConn.loadTile({ tileInfo: { res: tileInfo.res, x: tileInfo.x, y: tileInfo.y, z: tileInfo.z, url: tileInfo.url, id: tileInfo.id, extent2d: tileInfo.extent2d },
-                glScale, zScale: this._zScale, centimeterToPoint, verticalCentimeterToPoint, fetchOptions, styleCounter: this._styleCounter }, this._onReceiveMVTData.bind(this, url));
+                glScale, zScale: this._zScale, centimeterToPoint, verticalCentimeterToPoint, fetchOptions, styleCounter: this._styleCounter, referrer }, this._onReceiveMVTData.bind(this, url));
         } else if (!cached.keys[tileInfo.id]) {
             cached.tiles.push(tileInfo);
             cached.keys[tileInfo.id] = 1;
