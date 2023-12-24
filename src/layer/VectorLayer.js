@@ -29,6 +29,8 @@ const TEMP_EXTENT = new PointExtent();
  * @property {Number}  [options.collisionBufferSize=2]  - collision buffer size
  * @property {Number}  [options.collisionDelay=250]  - collision delay time when map Interacting
  * @property {String}  [options.collisionScope=layer]  - Collision range:layer or map
+ * @property {Boolean}  [options.progressiveRender=false]  - progressive Render
+ * @property {Number}  [options.progressiveRenderCount=2000]  - progressive Render page size
  * @memberOf VectorLayer
  * @instance
  */
@@ -48,7 +50,9 @@ const options = {
     'collision': false,
     'collisionBufferSize': 2,
     'collisionDelay': 250,
-    'collisionScope': 'layer'
+    'collisionScope': 'layer',
+    'progressiveRender': false,
+    'progressiveRenderCount': 2000
 };
 // Polyline is for custom line geometry
 // const TYPES = ['LineString', 'Polyline', 'Polygon', 'MultiLineString', 'MultiPolygon'];
