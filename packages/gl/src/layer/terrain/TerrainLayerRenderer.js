@@ -90,18 +90,22 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
 
     _createTerrainFromParent(tile, parentTile) {
         parentTile = parentTile || this.findParentTile(tile);
+        while (parentTile && parentTile.image && parentTile.image.sourceZoom === -1) {
+            parentTile = this.findParentTile(parentTile.info);
+        }
         const res = (parentTile && parentTile.info || tile).res;
         const error = this.getMap().pointAtResToDistance(1, 1, res);
-        const heights = parentTile && parentTile.image.data && this._clipParentTerrain(parentTile, tile);
-        if (!heights || heights.width < 5) {
+        const heights = parentTile && parentTile.image && parentTile.image.data && this._clipParentTerrain(parentTile, tile);
+        const sourceZoom = heights && parentTile.image.sourceZoom !== -1 ? parentTile.info.z : -1;
+        if (!heights || heights.width <= 1) {
             // find sibling tile's minAltitude
             const minAltitude = this._findTileMinAltitude(tile, parentTile);
-            return { data: createEmtpyTerrainHeights(minAltitude || 0, 5), minAltitude, mesh: EMPTY_TERRAIN_GEO, sourceZoom: -1 };
+            return { data: createEmtpyTerrainHeights(minAltitude || 0, 5), minAltitude, mesh: EMPTY_TERRAIN_GEO, sourceZoom };
         }
         const terrainWidth = heights.width;
         const mesh = createMartiniData(error, heights.data, terrainWidth, true);
 
-        return { data: heights, mesh, sourceZoom: parentTile.info.z };
+        return { data: heights, mesh, sourceZoom };
     }
 
     _findTileMinAltitude(tile, parentTile) {
@@ -816,23 +820,62 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         return isNil(layerOptions.terrainWidth) ? layerOptions.tileSize + 1 : layerOptions.terrainWidth;
     }
 
+    _getParentTileRequest(tile, createIfNotExists) {
+        const maxAvailableZoom = this.layer.options['maxAvailableZoom'] - this.layer.options['zoomOffset'];
+        const diff = tile.z - maxAvailableZoom;
+        const scale = Math.pow(2, diff);
+        const x = Math.floor(tile.x / scale);
+        const y = Math.floor(tile.y / scale);
+        const idx = Math.floor(tile.idx / scale);
+        const idy = Math.floor(tile.idy / scale);
+        const reqKey = getParentRequestKey(x, y);
+        if (!this._parentRequests) {
+            this._parentRequests = {};
+        }
+        const isFirst = !this._parentRequests[reqKey];
+        if (isFirst && createIfNotExists) {
+            this._parentRequests[reqKey] = new Set();
+            this._parentRequests[reqKey].url = this.layer.getTileUrl(x, y, maxAvailableZoom + this.layer.options['zoomOffset'])
+        }
+        return {
+            x, y, idx, idy, requests: this._parentRequests[reqKey], isFirst, key: reqKey
+        };
+    }
+
     loadTile(tile) {
+        const layer = this.layer;
         const terrainWidth = this._getTerrainWidth();
-        const sp = this.layer.getSpatialReference();
+        const sp = layer.getSpatialReference();
         const res = sp.getResolution(tile.z);
-        const error = this.getMap().pointAtResToDistance(1, 1, res);
-        const maxAvailableZoom = this.layer.options['maxAvailableZoom'];
+        let error = this.getMap().pointAtResToDistance(1, 1, res);
+
+        const zoomOffset = layer.options['zoomOffset'] || 0;
+        const maxAvailableZoom = layer.options['maxAvailableZoom'] - zoomOffset;
 
         if (maxAvailableZoom && tile.z > maxAvailableZoom) {
+
             // 检查 maxAvailableZoom 的tile是否存在，如果没有存在，则请求它，并在返回结果后clip
             const terrainData = this._createTerrainFromParent(tile);
-            this.onTileLoad(terrainData, tile);
-            return terrainData;
+            if (terrainData.sourceZoom === -1) {
+                //改为请求maxAvailableZoom上的瓦片
+                const { requests, isFirst, x, y, idx, idy  } = this._getParentTileRequest(tile, true);
+                requests.add(tile);
+                if (!isFirst) {
+                    return terrainData;
+                }
+                const diff = tile.z - maxAvailableZoom;
+                error = error * Math.pow(2, diff);
+                const res = tile.res * Math.pow(2, diff);
+                tile = layer.createTileNode(x, y, maxAvailableZoom, idx, idy, res, tile.error * Math.pow(2, diff));
+            } else {
+                this.onTileLoad(terrainData, tile);
+                return terrainData;
+            }
         }
 
         const terrainUrl = tile.url;
         const terrainData = {};
-        const layerOptions = this.layer.options;
+        const layerOptions = layer.options;
 
         const options = {
             terrainWidth,
@@ -842,7 +885,16 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
             error: error
         };
         this.workerConn.fetchTerrain(terrainUrl, options, (err, resource) => {
-            delete terrainData.loading;
+            if (this._parentRequests) {
+                const reqKey = getParentRequestKey(tile.x, tile.y);
+                const childTiles = this._parentRequests[reqKey];
+                if (childTiles) {
+                    for (const tile of childTiles) {
+                        this.removeTileLoading(tile);
+                    }
+                }
+                delete this._parentRequests[reqKey];
+            }
             if (err) {
                 if (err.canceled) {
                     return;
@@ -990,11 +1042,29 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
     }
 
     abortTileLoading(tileImage, tileInfo) {
-        if (tileInfo && tileInfo.url) {
-            if (this.workerConn) {
-                this.workerConn.abortTerrain(tileInfo.url);
+        const maxAvailableZoom = this.layer.options.maxAvailableZoom - this.layer.options.zoomOffset;
+        if (tileInfo) {
+            if (tileInfo.z > maxAvailableZoom) {
+                const { requests, key } = this._getParentTileRequest(tileInfo);
+                if (requests && requests.size) {
+                    requests.delete(tileInfo);
+                    if (!requests.size) {
+                        // 中止 maxAvailableZoom 瓦片的请求
+                        delete this._parentRequests[key];
+                        if (this.workerConn) {
+                            this.workerConn.abortTerrain(requests.url);
+                        }
+                    }
+                }
+            } else {
+                if (tileInfo && tileInfo.url) {
+                    if (this.workerConn) {
+                        this.workerConn.abortTerrain(tileInfo.url);
+                    }
+                }
             }
         }
+
         super.abortTileLoading(tileImage, tileInfo);
     }
 
@@ -1191,6 +1261,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
             this._skinGeometry.dispose();
             delete this._skinGeometry;
         }
+        delete this._parentRequests;
         super.onRemove();
         if (this._painter) {
             this._painter.delete();
@@ -1504,4 +1575,8 @@ function computeSkinDimension(terrainTileInfo, tile, terrainTileSize) {
 
 function isValidSkinImage(image) {
     return image && image.texture;
+}
+
+function getParentRequestKey(x, y) {
+    return x + '-' + y;
 }
