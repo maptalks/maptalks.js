@@ -915,7 +915,7 @@ export default class GLTFMarker extends Marker {
         }
         const map = layer.getMap();
         if (!map) {
-            throw Error('marker has not been added to map');
+            return null;
         }
         const gltfBBox = this._getBoundingBox();
         if (!gltfBBox) {
