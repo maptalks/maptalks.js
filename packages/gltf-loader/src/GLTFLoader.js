@@ -27,7 +27,7 @@ export default class GLTFLoader {
         if (!this.options.decoders) {
             this.options.decoders = {};
         }
-        this._fetchOptions = options.fetchOptions || {};
+        this._fetchOptions = this.options.fetchOptions || {};
         if (gltf.buffer instanceof ArrayBuffer) {
             const { json, glbBuffer } = GLBReader.read(gltf.buffer, gltf.byteOffset, gltf.byteLength);
             this._init(rootPath, json, glbBuffer);
