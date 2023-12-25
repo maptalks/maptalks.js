@@ -133,7 +133,7 @@ module.exports = [
             footer: ``
         },
         watch: {
-            include: ['src/worker/**/*']
+            include: ['src/worker/**/*', '../gltf-loader/dist/*.es.js']
         }
     },
 
