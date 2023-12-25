@@ -5,14 +5,14 @@ import Accessor from '../core/Accessor.js';
 // GLTF 1.0 adapter
 // https://github.com/KhronosGroup/glTF/tree/master/specification/1.0
 export default class V1 extends GLTFAdapter {
-    constructor(rootPath, gltf, glbBuffer, requestImage, decoders, supportedFormats) {
-        super(requestImage, decoders, supportedFormats);
+    constructor(rootPath, gltf, glbBuffer, requestImage, decoders, supportedFormats, fetchOptions) {
+        super(requestImage, decoders, supportedFormats, fetchOptions);
         this.rootPath = rootPath;
         this.gltf = gltf;
         this.requests = {};
         this.buffers = {};
         this.glbBuffer = glbBuffer;
-        this.accessor = new Accessor(rootPath, gltf, glbBuffer);
+        this.accessor = new Accessor(rootPath, gltf, glbBuffer, fetchOptions);
     }
 
     iterate(cb, propertyName) {

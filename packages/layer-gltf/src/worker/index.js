@@ -29,11 +29,11 @@ function loadGLTF(root, data, options) {
     });
 }
 
-function load(actorId, url) {
+function load(actorId, url, fetchOptions) {
     const index = url.lastIndexOf('/');
     const root = url.slice(0, index);
     const imgRequest = requestImage.bind(this, actorId);
-    return getArrayBuffer(url, {}).then(res => {
+    return getArrayBuffer(url, fetchOptions).then(res => {
         if (res.message) {
             return res;
         }
@@ -41,19 +41,19 @@ function load(actorId, url) {
         const dataView = new DataView(data, data.byteOffset, data.byteLength);
         const version = dataView.getUint32(4, true);
         if (version > 2) { //version is 1 or 2
-            return getJSON(url, {}).then(res => {
+            return getJSON(url, fetchOptions).then(res => {
                 if (res.message) {
                     return res;
                 }
-                return loadGLTF(root, res, { requestImage: imgRequest, decoders, transferable: true });
+                return loadGLTF(root, res, { requestImage: imgRequest, decoders, transferable: true, fetchOptions });
             });
         } else {
-            return loadGLTF(root, { buffer: res.data, byteOffset: 0 }, { requestImage: imgRequest, decoders, transferable: true });
+            return loadGLTF(root, { buffer: res.data, byteOffset: 0 }, { requestImage: imgRequest, decoders, transferable: true, fetchOptions });
         }
     });
 }
 
-function requestImage(actorId, url, cb) {
+function requestImage(actorId, url, fetchOptions, cb) {
     if (callbacks[url]) {
         callbacks[url].push(cb);
         return;
@@ -70,7 +70,10 @@ function gltfload(message) {
     const callback = message.callback;
     const actorId = message.actorId;
     const url = data.url;
-    load(actorId, url).then(data => {
+    const fetchOptions = data.fetchOptions || {};
+    fetchOptions.referrerPolicy = fetchOptions.referrerPolicy || 'origin';
+    fetchOptions.referrer = data.referrer;
+    load(actorId, url, fetchOptions).then(data => {
         if (data.message) {
             self.postMessage({callback, error: data});
         } else {

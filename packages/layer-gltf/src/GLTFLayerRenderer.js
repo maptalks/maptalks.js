@@ -295,7 +295,7 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
     prepareWorker() {
         const map = this.layer.getMap();
         if (!this.workerConn) {
-            this.workerConn = new GLTFWorkerConnection('@maptalks/gltf-layer', map.id);
+            this.workerConn = new GLTFWorkerConnection('@maptalks/gltf-layer', this.layer);
         }
         const workerConn = this.workerConn;
         if (!workerConn.isActive()) {

@@ -23,15 +23,18 @@ function requestImage(url, cb) {
     image.src = url;
 }
 export default class GLTFWorkerConnection extends maptalks.worker.Actor {
-    constructor(workerKey, mapId) {
+    constructor(workerKey, layer) {
         super(workerKey);
-        this.mapId = mapId;
+        this.mapId = layer.getMap().id;
+        this._layer = layer;
     }
 
     loadGLTF(url) {
         const reqUrl = getAbsoluteURL(url);
         const data = {
-            url: reqUrl
+            url: reqUrl,
+            referrer: window && window.location.href,
+            fetchOptions: this._layer.options.fetchOptions
         };
         return new Promise((resolve, reject) => {
             this.send(data, null, (err, data) => {

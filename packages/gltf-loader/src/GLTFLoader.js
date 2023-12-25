@@ -27,13 +27,14 @@ export default class GLTFLoader {
         if (!this.options.decoders) {
             this.options.decoders = {};
         }
+        this._fetchOptions = options.fetchOptions || {};
         if (gltf.buffer instanceof ArrayBuffer) {
             const { json, glbBuffer } = GLBReader.read(gltf.buffer, gltf.byteOffset, gltf.byteLength);
             this._init(rootPath, json, glbBuffer);
         } else {
             this._init(rootPath, gltf);
         }
-        this._accessor = new Accessor(this.rootPath, this.gltf, this.glbBuffer);
+        this._accessor = new Accessor(this.rootPath, this.gltf, this.glbBuffer, this._fetchOptions);
         this._checkExtensions();
     }
 
@@ -153,7 +154,7 @@ export default class GLTFLoader {
         //2.0中要忽略glbBuffer的byteOffset
         //1.0中不能忽略
         if (this.version === 2) {
-            this.adapter = new GLTFV2(rootPath, gltf, glbBuffer, this.options.requestImage, this.options.decoders || {}, this.options.supportedFormats || {});
+            this.adapter = new GLTFV2(rootPath, gltf, glbBuffer, this.options.requestImage, this.options.decoders || {}, this.options.supportedFormats || {}, this._fetchOptions);
             // NOTE: buffer.id和image.id都会作为GLTFV2.requests的key，用前缀加以区分
             this.adapter.iterate((_key, buffer, index) => {
                 buffer.id = 'buffer_' + index;
@@ -166,7 +167,7 @@ export default class GLTFLoader {
                 accessor.id = 'accessor_' + index;
             }, 'accessors');
         } else {
-            this.adapter = new GLTFV1(rootPath, gltf, glbBuffer, this.options.requestImage, this.options.decoders || {}, this.options.supportedFormats || {});
+            this.adapter = new GLTFV1(rootPath, gltf, glbBuffer, this.options.requestImage, this.options.decoders || {}, this.options.supportedFormats || {}, this._fetchOptions);
             this.adapter.iterate((_key, accessor, index) => {
                 accessor.id = 'accessor_' + index;
             }, 'accessors');
@@ -497,7 +498,7 @@ export default class GLTFLoader {
 }
 
 //默认的image读取方法，可在options中替换，例如由worker传回给主线程解析
-function requestImage(url, cb) {
+function requestImage(url, fetchOptions, cb) {
     const image = new Image();
     image.crossOrigin = '';
     image.onload = () => {
@@ -521,14 +522,14 @@ function requestImage(url, cb) {
 }
 
 let offCanvas, offCtx;
-function requestImageOffscreen(url, cb) {
+function requestImageOffscreen(url, fetchOptions, cb) {
     if (!offCanvas) {
         offCanvas = new OffscreenCanvas(2, 2);
         offCtx = offCanvas.getContext('2d', { willReadFrequently: true });
     }
     let promise = null;
     if (isString(url)) {
-        promise = fetch(url)
+        promise = fetch(url, fetchOptions)
             .then(response => response.arrayBuffer())
             .then(arrayBuffer => {
                 // response.blob()方法似乎有内存泄漏

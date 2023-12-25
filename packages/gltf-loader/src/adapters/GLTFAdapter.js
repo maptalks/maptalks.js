@@ -2,12 +2,13 @@ import { isDataUri, dataUriToArrayBuffer } from '../common/Util.js';
 import Ajax from '../core/Ajax';
 
 export default class GLTFAdapter {
-    constructor(requestImage, decoders, supportedFormats) {
+    constructor(requestImage, decoders, supportedFormats, fetchOptions) {
         this._requestImage = requestImage;
         this.decoders = decoders;
         this._supportedFormats = supportedFormats;
         this.images = {};
         this._imgRequests = {};
+        this._fetchOptions = fetchOptions || {};
     }
 
     // only for GLTF 2.0
@@ -37,7 +38,7 @@ export default class GLTFAdapter {
         } else {
             url = this.rootPath + '/' + buffer.uri;
         }
-        const promise = this._imgRequests[buffer.id] = Ajax.getArrayBuffer(url, null).then(response => {
+        const promise = this._imgRequests[buffer.id] = Ajax.getArrayBuffer(url, this._fetchOptions).then(response => {
             const bufferData = this.buffers[buffer.id] = response.data;
             const dataview = this._createDataView(bufferView, bufferData);
             return this.getImageByBuffer(dataview, source);
@@ -80,7 +81,7 @@ export default class GLTFAdapter {
     //获取图片的高、宽、数据等信息
     _getImageInfo(key, url) {
         return new Promise((resolve, reject) => {
-            this._requestImage(url, (err, result) => {
+            this._requestImage(url, this._fetchOptions, (err, result) => {
                 if (err) {
                     reject(err);
                     return;
