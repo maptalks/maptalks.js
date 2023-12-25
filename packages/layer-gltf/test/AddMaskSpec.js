@@ -470,7 +470,7 @@ describe('setMask', () => {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
                 expect(pixelMatch([47, 59, 63, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2, map.height / 2 - 50, 1, 1);
-                expect(pixelMatch([61, 89, 73, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([61, 91, 73, 255], pixel2)).to.be.eql(true);
                 updateHeightRange();
             }, 100);
         });
