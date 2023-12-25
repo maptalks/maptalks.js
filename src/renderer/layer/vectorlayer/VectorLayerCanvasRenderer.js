@@ -211,7 +211,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         }
         this.clearImageData();
         this._lastGeosToDraw = this._geosToDraw;
-        this.canvas._drawn = true;
+        this._alwaysDraw();
     }
 
 
@@ -231,7 +231,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 
     _checkGeos() {
-        const geos = this._getPageGeos();
+        const geos = this._getCurrentNeedRenderGeos();
         for (let i = 0, len = geos.length; i < len; i++) {
             this.checkGeo(geos[i]);
         }
@@ -239,7 +239,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 
     drawGeos() {
-        this._drawCacheResult();
+        this._drawSnapshot();
         this._updateMapStateCache();
         this._drawnRes = this.mapStateCache.resolution;
         this._updateDisplayExtent();
@@ -257,8 +257,8 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         }
         this.clearImageData();
         this._lastGeosToDraw = this._geosToDraw;
-        this._cacheRenderResult();
-        this.canvas._drawn = true;
+        this._snapshot();
+        this._alwaysDraw();
         this._setDrawGeosDrawTime();
     }
 
@@ -353,7 +353,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             g.onHide();
         });
         delete this._geosToDraw;
-        delete this.cacheCanvas;
+        delete this.snapshotCanvas;
         delete this.pageGeoMap;
     }
 
@@ -428,7 +428,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this._onlyHasPoint = true;
         //Traverse all Geo
         let idx = 0;
-        const geos = this._getPageGeos();
+        const geos = this._getCurrentNeedRenderGeos();
         for (let i = 0, len = geos.length; i < len; i++) {
             const geo = geos[i];
             const type = geo.getType();
@@ -537,6 +537,12 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return this.constructor === VectorLayerRenderer;
     }
 
+    _alwaysDraw() {
+        if (this.canvas) {
+            this.canvas._drawn = true;
+        }
+    }
+
     isProgressiveRender() {
         const layer = this.layer;
         if (!layer) {
@@ -556,6 +562,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         const geos = [];
         for (const page in this.pageGeoMap) {
             const pageGeos = this.pageGeoMap[page] || [];
+            if (pageGeos.length === 0) {
+                continue;
+            }
             for (let i = 0, len = pageGeos.length; i < len; i++) {
                 geos.push(pageGeos[i]);
             }
@@ -563,35 +572,35 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return geos;
     }
 
-    _checkCacheCanvas() {
+    _checkSnapshotCanvas() {
         if (!this.isProgressiveRender()) {
-            delete this.cacheCanvas;
+            delete this.snapshotCanvas;
             return null;
         }
         const canvas = this.canvas;
         if (!canvas) {
-            delete this.cacheCanvas;
+            delete this.snapshotCanvas;
             return null;
         }
-        if (!this.cacheCanvas) {
-            this.cacheCanvas = Canvas.createCanvas(1, 1);
+        if (!this.snapshotCanvas) {
+            this.snapshotCanvas = Canvas.createCanvas(1, 1);
         }
-        const cacheCanvas = this.cacheCanvas;
+        const snapshotCanvas = this.snapshotCanvas;
         const { width, height, style } = canvas;
-        if (cacheCanvas.width !== width || cacheCanvas.height !== height) {
-            cacheCanvas.width = width;
-            cacheCanvas.height = height;
+        if (snapshotCanvas.width !== width || snapshotCanvas.height !== height) {
+            snapshotCanvas.width = width;
+            snapshotCanvas.height = height;
         }
-        if (cacheCanvas.style.width !== style.width || cacheCanvas.style.height !== style.height) {
-            cacheCanvas.style.width = style.width;
-            cacheCanvas.style.height = style.height;
+        if (snapshotCanvas.style.width !== style.width || snapshotCanvas.style.height !== style.height) {
+            snapshotCanvas.style.width = style.width;
+            snapshotCanvas.style.height = style.height;
         }
 
-        return cacheCanvas;
+        return snapshotCanvas;
 
     }
 
-    _getPageGeos() {
+    _getCurrentNeedRenderGeos() {
         const geos = this.layer._geoList || [];
         if (!this.isProgressiveRender()) {
             return geos;
@@ -612,23 +621,23 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this.renderEnd = false;
         this.page = 1;
         this.pageGeoMap = {};
-        this._clearCacheCanvas();
+        this._clearSnapshotCanvas();
     }
 
-    _clearCacheCanvas() {
-        const cacheCanvas = this._checkCacheCanvas();
-        if (cacheCanvas) {
-            clearCanvas(cacheCanvas);
+    _clearSnapshotCanvas() {
+        const snapshotCanvas = this._checkSnapshotCanvas();
+        if (snapshotCanvas) {
+            clearCanvas(snapshotCanvas);
         }
     }
 
-    _cacheRenderResult() {
+    _snapshot() {
         if (!this.isProgressiveRender()) {
             return this;
         }
-        const cacheCanvas = this._checkCacheCanvas();
-        if (cacheCanvas && this.canvas) {
-            const ctx = clearCanvas(cacheCanvas);
+        const snapshotCanvas = this._checkSnapshotCanvas();
+        if (snapshotCanvas && this.canvas) {
+            const ctx = clearCanvas(snapshotCanvas);
             ctx.drawImage(this.canvas, 0, 0);
         }
         this.pageGeoMap[this.page] = this._geosToDraw || [];
@@ -644,12 +653,12 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return this;
     }
 
-    _drawCacheResult() {
+    _drawSnapshot() {
         if (!this.isProgressiveRender()) {
             return this;
         }
-        const { cacheCanvas, context } = this;
-        if (!cacheCanvas || !context) {
+        const { snapshotCanvas, context } = this;
+        if (!snapshotCanvas || !context) {
             return this;
         }
         const map = this.getMap();
@@ -659,7 +668,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         const dpr = map.getDevicePixelRatio() || 1;
         const rScale = 1 / dpr;
         context.scale(rScale, rScale);
-        context.drawImage(cacheCanvas, 0, 0);
+        context.drawImage(snapshotCanvas, 0, 0);
         context.scale(dpr, dpr);
         return this;
     }
