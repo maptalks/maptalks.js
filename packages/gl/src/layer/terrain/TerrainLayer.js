@@ -5,6 +5,7 @@ import  { extend } from '../util/util';
 import MaskLayerMixin from '../mask/MaskLayerMixin';
 
 const COORD0 = new maptalks.Coordinate(0, 0);
+const TEMP_POINT = new maptalks.Coordinate(0, 0);
 const POINT0 = new maptalks.Point(0, 0);
 const EMPTY_ARRAY = [];
 
@@ -358,6 +359,33 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
             return;
         }
         renderer.setMaterial(mat);
+    }
+
+    _createTileNode(x, y, z, idx, idy, res, error, parentId, extent2d, tileId) {
+        const map = this.getMap();
+        const zoomOffset = this.options['zoomOffset'];
+        if (!extent2d) {
+            const tileConfig = this._getTileConfig();
+            extent2d = tileConfig.getTilePrjExtent(x, y, res).convertTo(c => map._prjToPointAtRes(c, res, TEMP_POINT));
+        }
+        const offset = this._getTileOffset(z);
+
+        return {
+            parent: parentId,
+            layer: this.getId(),
+            x: x,
+            y,
+            z,
+            idx,
+            idy,
+            res,
+            extent2d,
+            id: tileId || this._getTileId(x, y, z),
+            url: this.getTileUrl(x, y, z + zoomOffset),
+            offset,
+            error,
+            children: []
+        };
     }
 }
 

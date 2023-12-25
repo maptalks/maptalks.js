@@ -866,7 +866,8 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
                 const diff = tile.z - maxAvailableZoom;
                 error = error * Math.pow(2, diff);
                 const res = tile.res * Math.pow(2, diff);
-                tile = layer.createTileNode(x, y, maxAvailableZoom, idx, idy, res, tile.error * Math.pow(2, diff));
+                const args = [x, y, maxAvailableZoom, idx, idy, res, tile.error * Math.pow(2, diff)];
+                tile = layer.createTileNode ? layer.createTileNode(...args) : layer._createTileNode(...args);
             } else {
                 this.onTileLoad(terrainData, tile);
                 return terrainData;
