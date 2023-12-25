@@ -1524,6 +1524,14 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return 0;
     }
 
+    hasAltitude() {
+        const altitude = this._getAltitude();
+        if (!altitude) {
+            return false;
+        }
+        return true;
+    }
+
     setAltitude(alt) {
         if (!isNumber(alt)) {
             return this;
