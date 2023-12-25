@@ -7,7 +7,7 @@ import LRUCache from './LRUCache';
 import MeshPainter from './MeshPainter';
 import { readBatchArray } from '../../common/TileHelper';
 import { extend, isBase64, base64URLToArrayBuffer, pushIn } from '../../common/Util.js';
-import { isRelativeURL } from '../../common/UrlUtil';
+import { isRelativeURL, prepareFetchOptions } from '../../common/UrlUtil';
 import { CANDIDATE_MAX_ERROR } from '../../common/Constants.js';
 import { parseI3SJSON, isI3STileset, isI3SMesh, getI3SNodeInfo } from '../i3s/I3SHelper';
 import { fillNodepagesToCache } from '../i3s/Util';
@@ -377,6 +377,8 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         if (service.offset) {
             delete params.service.offset;
         }
+        // fetchOptions定义在service中
+        params.referrer = window && window.location.href;
         this.workerConn.loadTile(this.layer.getId(), params, (err, data) => {
             if (err) {
                 this.onTileError(err, tile, url);
@@ -769,7 +771,9 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             }
             callbacks.status = 'pending';
             const rootIdx = callbacks.rootIdx;
-            promises.push(Ajax.getJSON(url).then(json => {
+            const service = this.layer._getNodeService(rootIdx);
+            const fetchOptions = prepareFetchOptions(service.fetchOptions);
+            promises.push(Ajax.getJSON(url, fetchOptions).then(json => {
                 delete this._i3sRequests[url];
                 const nodeCache = this._i3sNodeCache[rootIdx];
                 if (!nodeCache)  {

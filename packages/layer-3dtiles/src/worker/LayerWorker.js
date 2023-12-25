@@ -104,10 +104,13 @@ export default class BaseLayerWorker {
         const service = params.service;
         const url = params.url,
             arraybuffer = params.arraybuffer;
+        const fetchOptions = service['fetchOptions'] || {};
+        fetchOptions.referrer = params.referrer;
+        fetchOptions.referrerPolicy = fetchOptions.referrerPolicy || 'origin';
         if (isI3SURL(url)) {
             const i3sInfo = params.i3sInfo;
             const maxTextureSize = service.maxTextureSize || 1024;
-            const promise = loadI3STile(i3sInfo, params.supportedFormats, this.options.projection, params.projection, maxTextureSize);
+            const promise = loadI3STile(i3sInfo, params.supportedFormats, this.options.projection, params.projection, maxTextureSize, fetchOptions);
             promise.then(i3sData => {
                 delete this._requests[url];
                 if (!i3sData) {
@@ -174,7 +177,7 @@ export default class BaseLayerWorker {
                 urlParams = (url.indexOf('?') > 0 ? '&' : '?') + urlParams;
             }
             const requrl = url.replace(/\+/g, '%2B');
-            let promise = Ajax.getArrayBuffer(requrl + (urlParams || ''), service['fetchOptions']);
+            let promise = Ajax.getArrayBuffer(requrl + (urlParams || ''), fetchOptions);
             const xhr = promise.xhr;
             promise = promise.then(data => {
                 delete this._requests[url];

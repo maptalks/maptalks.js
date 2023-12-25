@@ -84,13 +84,13 @@ export function isI3SURL(url) {
     return url.indexOf('i3s:') >= 0;
 }
 
-export function loadI3STile(i3sInfo, supportedFormats, projection, dataProjection, maxTextureSize) {
+export function loadI3STile(i3sInfo, supportedFormats, projection, dataProjection, maxTextureSize, fetchOptions) {
     const promises = [];
     const texCount = [];
     const xhrs = [];
     for (let i = 0; i < i3sInfo.meshes.length; i++) {
         const { geometry, material } = i3sInfo.meshes[i];
-        const ajax = Ajax.getArrayBuffer(geometry.url);
+        const ajax = Ajax.getArrayBuffer(geometry.url, fetchOptions);
         ajax.xhr.url = geometry.url;
         xhrs.push(ajax.xhr);
         const promise = ajax.then(buffer => { return { buffer };});
@@ -100,7 +100,7 @@ export function loadI3STile(i3sInfo, supportedFormats, projection, dataProjectio
         fillTextureRequests(material, requests);
         if (requests.length) {
             const texturePromises = requests.map(req => {
-                const ajax = Ajax.getArrayBuffer(req.url);
+                const ajax = Ajax.getArrayBuffer(req.url, fetchOptions);
                 ajax.xhr.url = req.url;
                 xhrs.push(ajax.xhr);
                 return ajax.then(buffer => {
