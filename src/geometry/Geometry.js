@@ -92,7 +92,6 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (!isNil(id)) {
             this.setId(id);
         }
-        this.isGeometry = true;
     }
 
     /**

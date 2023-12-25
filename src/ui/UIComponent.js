@@ -93,7 +93,6 @@ class UIComponent extends Eventable(Class) {
     constructor(options) {
         super(options);
         this.proxyOptions();
-        this.isUI = true;
     }
 
     /**
