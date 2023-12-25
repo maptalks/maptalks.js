@@ -84,7 +84,7 @@ describe('gl tests', () => {
                 const pixel = ctx.getImageData(canvas.width / 2 + 10, canvas.height / 2 - 10, 1, 1);
                 expect(pixel).to.be.eql({ data: { '0': 0, '1': 255, '2': 0, '3': 255 } });
                 done();
-            }, 200)
+            }, 500)
             group.addTo(map);
         });
 
@@ -969,6 +969,45 @@ describe('gl tests', () => {
                         const ctx = canvas.getContext('2d');
                         const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2 + 1, 1, 1);
                         expect(pixel).to.be.eql({ data: { '0': 95, '1': 100, '2': 103, '3': 255 } });
+                        done();
+                    });
+                });
+            });
+            group.addTo(map);
+        });
+
+        it('terrain of tianditu at zoom 14', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                spatialReference: {
+                    projection: 'EPSG:4326'
+                },
+                zoom: 14
+            });
+            const skinLayers = [
+                new maptalks.TileLayer('base', {
+                    tileSystem : [1, -1, -180, 90],
+                    fadeAnimation: false,
+                    urlTemplate: '/fixtures/tianditu-terrain/{z}/{x}/{y}.jpg'
+                })
+            ];
+            const terrain = {
+                // debug: true,
+                maxAvailableZoom: 11,
+                fadeAnimation: false,
+                type: 'tianditu',
+                urlTemplate: '/fixtures/tianditu-terrain/{z}/{x}/{y}.terrain',
+                tileStackDepth: 0
+            }
+            const group = new maptalks.GroupGLLayer('group', skinLayers, { terrain });
+            group.once('terrainlayercreated', () => {
+                const terrainLayer = group.getTerrainLayer();
+                terrainLayer.once('terrainreadyandrender', () => {
+                    group.once('layerload', () => {
+                        const canvas = map.getRenderer().canvas;
+                        const ctx = canvas.getContext('2d');
+                        const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2 + 1, 1, 1);
+                        expect(pixel).to.be.eql({ data: { '0': 85, '1': 85, '2': 79, '3': 255 }  });
                         done();
                     });
                 });

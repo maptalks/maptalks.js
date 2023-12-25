@@ -850,7 +850,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         let error = this.getMap().pointAtResToDistance(1, 1, res);
 
         const zoomOffset = layer.options['zoomOffset'] || 0;
-        const maxAvailableZoom = layer.options['maxAvailableZoom'] - zoomOffset;
+        const maxAvailableZoom = layer.options['maxAvailableZoom'] && (layer.options['maxAvailableZoom'] - zoomOffset);
 
         if (maxAvailableZoom && tile.z > maxAvailableZoom) {
 
@@ -889,7 +889,8 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
             if (this._parentRequests) {
                 const reqKey = getParentRequestKey(tile.x, tile.y);
                 const childTiles = this._parentRequests[reqKey];
-                if (childTiles) {
+                if (childTiles && childTiles.size) {
+                    this.tileCache.add(tile.id, { info: tile, image: terrainData });
                     for (const tile of childTiles) {
                         this.removeTileLoading(tile);
                     }
@@ -1043,9 +1044,10 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
     }
 
     abortTileLoading(tileImage, tileInfo) {
-        const maxAvailableZoom = this.layer.options.maxAvailableZoom - this.layer.options.zoomOffset;
+        const layer = this.layer;
+        const maxAvailableZoom = layer.options.maxAvailableZoom && (layer.options.maxAvailableZoom - layer.options.zoomOffset);
         if (tileInfo) {
-            if (tileInfo.z > maxAvailableZoom) {
+            if (maxAvailableZoom && tileInfo.z > maxAvailableZoom) {
                 const { requests, key } = this._getParentTileRequest(tileInfo);
                 if (requests && requests.size) {
                     requests.delete(tileInfo);
