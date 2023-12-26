@@ -271,10 +271,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     _setDrawGeosDrawTime() {
         const drawTime = this.layer._drawTime;
-        const geos = this.getGeosForIdentify();
-        for (let i = 0, len = geos.length; i < len; i++) {
-            const geo = geos[i];
-            const painter = geo._painter;
+        const painterList = this.getGeoPainterList();
+        for (let i = 0, len = painterList.length; i < len; i++) {
+            const painter = painterList[i];
             if (painter && painter._setDrawTime) {
                 painter._setDrawTime(drawTime);
             }
@@ -354,7 +353,8 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         });
         delete this._geosToDraw;
         delete this.snapshotCanvas;
-        delete this.pageGeoMap;
+        delete this.pageGeos;
+        delete this.geoPainterList;
     }
 
     onGeometryPropertiesChange(param) {
@@ -559,17 +559,19 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (!this.isProgressiveRender()) {
             return this._geosToDraw || [];
         }
-        const geos = [];
-        for (const page in this.pageGeoMap) {
-            const pageGeos = this.pageGeoMap[page] || [];
-            if (pageGeos.length === 0) {
-                continue;
+        return this.pageGeos || [];
+    }
+
+    getGeoPainterList() {
+        if (!this.isProgressiveRender()) {
+            const list = [];
+            const geos = this._geosToDraw || [];
+            for (let i = 0, len = geos.length; i < len; i++) {
+                list.push(geos[i]._painter);
             }
-            for (let i = 0, len = pageGeos.length; i < len; i++) {
-                geos.push(pageGeos[i]);
-            }
+            return list;
         }
-        return geos;
+        return this.geoPainterList || [];
     }
 
     _checkSnapshotCanvas() {
@@ -620,7 +622,8 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     _resetProgressiveRender() {
         this.renderEnd = false;
         this.page = 1;
-        this.pageGeoMap = {};
+        this.pageGeos = [];
+        this.geoPainterList = [];
         this._clearSnapshotCanvas();
     }
 
@@ -640,7 +643,12 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             const ctx = clearCanvas(snapshotCanvas);
             ctx.drawImage(this.canvas, 0, 0);
         }
-        this.pageGeoMap[this.page] = this._geosToDraw || [];
+        const geosToDraw = this._geosToDraw || [];
+        for (let i = 0, len = geosToDraw.length; i < len; i++) {
+            this.pageGeos.push(geosToDraw[i]);
+            const painter = geosToDraw[i]._painter;
+            this.geoPainterList.push(painter);
+        }
         const layer = this.layer;
         const { progressiveRenderCount } = layer.options;
         const geos = layer._geoList || [];

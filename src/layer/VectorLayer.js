@@ -52,7 +52,7 @@ const options = {
     'collisionDelay': 250,
     'collisionScope': 'layer',
     'progressiveRender': false,
-    'progressiveRenderCount': 2000
+    'progressiveRenderCount': 1000
 };
 // Polyline is for custom line geometry
 // const TYPES = ['LineString', 'Polyline', 'Polygon', 'MultiLineString', 'MultiPolygon'];
