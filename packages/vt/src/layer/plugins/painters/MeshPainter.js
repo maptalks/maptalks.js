@@ -227,7 +227,7 @@ class MeshPainter extends Painter {
         const symbol = this.getSymbol(symbolIndex);
         const material = symbol.material;
         let origin = tilePoint;
-        if (!this.dataConfig.side && material.textureOrigin) {
+        if (!this.dataConfig.side && material && material.textureOrigin) {
             COORD0.set(material.textureOrigin[0], material.textureOrigin[1]);
             map.coordToPointAtRes(COORD0, tileResolution, COORD1);
             origin = vec2.set(ARR2_0, tilePoint[0] - COORD1.x, tilePoint[1] - COORD1.y);

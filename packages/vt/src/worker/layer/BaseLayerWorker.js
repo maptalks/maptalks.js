@@ -615,6 +615,7 @@ export default class BaseLayerWorker {
                 requestor: this.fetchIconGlyphs.bind(this),
                 radialSegments: type === 'round-tube' ? (dataConfig.radialSegments || 8) : 4,
                 centimeterToPoint,
+                verticalCentimeterToPoint,
                 tileRatio,
                 isTube: true
             });

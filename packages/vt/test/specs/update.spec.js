@@ -1641,7 +1641,7 @@ describe('update style specs', () => {
                     count++;
                     if (count >= 3) {
                         finished = true;
-                        assert.deepEqual(pixel, [60, 70, 68, 255]);
+                        assert.deepEqual(pixel, [43, 46, 49, 255]);
                         done();
                     }
                 }

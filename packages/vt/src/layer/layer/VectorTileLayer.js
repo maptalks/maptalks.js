@@ -32,7 +32,7 @@ const defaultOptions = {
     // boxLimitOnZoomout: 7,
     tileLimitPerFrame: 1,
     loadingLimitOnInteracting: 1,
-    loadingLimit: 1,
+    loadingLimit: 3,
     antialias: false,
     iconErrorUrl: null,
     collisionFrameLimit: 1.5,
