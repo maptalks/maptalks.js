@@ -157,7 +157,6 @@ export default class GroupGLLayer extends maptalks.Layer {
         if (idx < 0) {
             return this;
         }
-        this._updateTerrainSkinLayers();
         const layerRenderer = layer.getRenderer();
         if (layerRenderer && layerRenderer.setTerrainHelper) {
             layerRenderer.setTerrainHelper(null);
@@ -171,6 +170,7 @@ export default class GroupGLLayer extends maptalks.Layer {
             // not loaded yet
             return this;
         }
+        this._updateTerrainSkinLayers();
         renderer.setToRedraw();
         return this;
     }

@@ -1236,6 +1236,21 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         return out;
     }
 
+    clear() {
+        this.clearTempResources();
+        return super.clear();
+    }
+
+    clearTempResources() {
+        if (this._tempTilesPool) {
+            this._tempTilesPool.reset();
+            delete this._tempTilesPool;
+        }
+        if (this._skinImageCache) {
+            this._clearSkinImageCache();
+        }
+    }
+
     onAdd() {
         super.onAdd();
         this.prepareWorker();
@@ -1249,13 +1264,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
             this.workerConn.remove();
             delete this.workerConn;
         }
-        if (this._tempTilesPool) {
-            this._tempTilesPool.reset();
-            delete this._tempTilesPool;
-        }
-        if (this._skinImageCache) {
-            this._clearSkinImageCache();
-        }
+        this.clearTempResources();
         if (this._skinShader) {
             this._skinShader.dispose();
             delete this._skinShader;

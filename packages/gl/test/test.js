@@ -468,6 +468,53 @@ describe('gl tests', () => {
             group.addTo(map);
         });
 
+
+        it('remove and add childLayer again, maptalks/issues#555', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            const terrain = {
+                fadeAnimation: false,
+                type: 'mapbox',
+                tileSize: 512,
+                spatialReference: 'preset-vt-3857',
+                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
+                tileStackDepth: 0
+            };
+            const sceneConfig = {
+                postProcess: {
+                    enable: true,
+                    antialias: {
+                        enable: true
+                    }
+                }
+            };
+            const greenLayer = new maptalks.TileLayer('green', {
+                urlTemplate: './fixtures/tiles/tile-green-256.png',
+                fadeAnimation: false
+            });
+            const redLayer = new maptalks.TileLayer('red', {
+                urlTemplate: './fixtures/tiles/tile-red-256.png',
+                zIndex: 1,
+                fadeAnimation: false
+            });
+            const group = new maptalks.GroupGLLayer('group', [greenLayer, redLayer], {
+                sceneConfig,
+                terrain
+            });
+            group.addTo(map);
+            setTimeout(() => {
+                group.removeLayer(greenLayer);
+                setTimeout(() => {
+                    group.once('layerload', () => {
+                        done();
+                    });
+                    group.addLayer(greenLayer);
+                }, 1000);
+            }, 1000);
+        });
+
         it('terrain layer with 256 skin layer', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
