@@ -5,7 +5,8 @@ import * as Util from './core/util';
 import * as DomUtil from './core/util/dom';
 import * as StringUtil from './core/util/strings';
 import * as MapboxUtil from './core/mapbox';
-export { Util, DomUtil, StringUtil, MapboxUtil };
+import * as PickUtil from './core/util/pick';
+export { Util, DomUtil, StringUtil, MapboxUtil, PickUtil };
 export { default as LRUCache } from './core/util/LRUCache';
 export { default as Ajax } from './core/Ajax';
 export { default as Canvas } from './core/Canvas';
@@ -74,7 +75,7 @@ import Actor from './core/worker/Actor';
  * @namespace worker
  */
 const worker = {
-    Actor : Actor
+    Actor: Actor
 };
 
 export { worker };
