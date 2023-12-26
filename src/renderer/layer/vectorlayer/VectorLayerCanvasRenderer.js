@@ -22,6 +22,10 @@ function clearCanvas(canvas) {
     return ctx;
 }
 
+function isDebug(layer) {
+    return layer && layer.options.progressiveRenderDebug;
+}
+
 
 /**
  * @classdesc
@@ -212,6 +216,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this.clearImageData();
         this._lastGeosToDraw = this._geosToDraw;
         this._alwaysDraw();
+        if (isDebug(this.layer)) {
+            console.log('progressiveRender on drawOnInteracting page:', this.page);
+        }
     }
 
 
@@ -257,6 +264,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         }
         this.clearImageData();
         this._lastGeosToDraw = this._geosToDraw;
+        if (isDebug(this.layer)) {
+            console.log('progressiveRender drawGeos page:', this.page);
+        }
         this._snapshot();
         this._alwaysDraw();
         this._setDrawGeosDrawTime();
@@ -270,6 +280,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 
     _setDrawGeosDrawTime() {
+        const time = now();
         const drawTime = this.layer._drawTime;
         const painterList = this.getGeoPainterList();
         for (let i = 0, len = painterList.length; i < len; i++) {
@@ -277,6 +288,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             if (painter && painter._setDrawTime) {
                 painter._setDrawTime(drawTime);
             }
+        }
+        if (isDebug(this.layer)) {
+            console.log('_setDrawGeosDrawTime time:', (now() - time) + 'ms');
         }
         return this;
     }
@@ -620,6 +634,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 
     _resetProgressiveRender() {
+        if (isDebug(this.layer)) {
+            console.log('progressiveRender resetProgressiveRender');
+        }
         this.renderEnd = false;
         this.page = 1;
         this.pageGeos = [];
@@ -638,6 +655,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (!this.isProgressiveRender()) {
             return this;
         }
+        const time = now();
         const snapshotCanvas = this._checkSnapshotCanvas();
         if (snapshotCanvas && this.canvas) {
             const ctx = clearCanvas(snapshotCanvas);
@@ -656,6 +674,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this.renderEnd = this.page >= pages;
         if (this.renderEnd) {
             this._setDrawGeosDrawTime();
+        }
+        if (isDebug(this.layer)) {
+            console.log('snapshot time:', (now() - time) + 'ms');
         }
         this.page++;
         return this;
