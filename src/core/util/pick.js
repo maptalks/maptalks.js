@@ -73,6 +73,8 @@ export function layerIsBlankInPoint(layer, containerPoint, tolerance = 1) {
     let left = x - tolerance, top = y - tolerance;
     left = Math.round(left * r);
     top = Math.round(top * r);
+    left = Math.max(0, left);
+    top = Math.max(0, top);
     const size = tolerance * 2;
     let imageData;
     try {
