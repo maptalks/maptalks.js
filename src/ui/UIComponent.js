@@ -511,6 +511,10 @@ class UIComponent extends Eventable(Class) {
             altitude = coordinates.z;
         } else if (this._owner && this._owner.getAltitude) {
             altitude = this._owner.getAltitude() || 0;
+            //altitude is array from linestring ,polygon etc when coordinates carry z value [[x,y,z],[x,y,z],....];
+            if (!isNumber(altitude)) {
+                altitude = 0;
+            }
         }
         const alt = this._meterToPoint(this._coordinate, altitude);
         return this.getMap().coordToViewPoint(this._coordinate, undefined, alt)

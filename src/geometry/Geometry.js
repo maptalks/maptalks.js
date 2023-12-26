@@ -25,6 +25,7 @@ import Painter from '../renderer/geometry/Painter';
 import CollectionPainter from '../renderer/geometry/CollectionPainter';
 import SpatialReference from '../map/spatial-reference/SpatialReference';
 import { isFunctionDefinition } from '../core/mapbox';
+import { getDefaultBBOX, pointsBBOX } from '../core/util/bbox';
 
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_EXTENT = new PointExtent();
@@ -929,6 +930,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @returns {Geometry} this
      */
     rotate(angle, pivot) {
+        if (!isNumber(angle)) {
+            console.error(`angle:${angle} is not number`);
+            return this;
+        }
         if (this.type === 'GeometryCollection') {
             const geometries = this.getGeometries();
             geometries.forEach(g => g.rotate(angle, pivot));
@@ -939,12 +944,18 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         } else {
             pivot = new Coordinate(pivot);
         }
+        this._angle = angle;
+        this._pivot = pivot;
         const measurer = this._getMeasurer();
         const coordinates = this.getCoordinates();
         if (!Array.isArray(coordinates)) {
-            if (pivot.x !== coordinates.x || pivot.y !== coordinates.y) {
+            //exclude Rectangle ,Ellipse,Sector by shell judge
+            if ((pivot.x !== coordinates.x || pivot.y !== coordinates.y) && !this.getShell) {
                 const c = measurer._rotate(coordinates, pivot, angle);
                 this.setCoordinates(c);
+            } else {
+                //only redraw ,not to change coordinate
+                this.onPositionChanged();
             }
             return this;
         }
@@ -953,6 +964,65 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         });
         this.setCoordinates(coordinates);
         return this;
+    }
+
+    _rotatePrjCoordinates(coordinates) {
+        if (!coordinates || this._angle === 0 || !this._pivot) {
+            return coordinates;
+        }
+        const projection = this._getProjection();
+        if (!projection) {
+            return coordinates;
+        }
+        let offsetAngle = 0;
+        const isArray = Array.isArray(coordinates);
+        const coord = isArray ? coordinates : [coordinates];
+        const rotatePrjCoordinates = [];
+        let cx, cy;
+        //sector is special
+        if (this.getRotateOffsetAngle) {
+            offsetAngle = this.getRotateOffsetAngle();
+            const center = coord[coord.length - 1];
+            cx = center.x;
+            cy = center.y;
+        } else {
+            const bbox = getDefaultBBOX();
+            //cal all points center
+            pointsBBOX(coord, bbox);
+            const [minx, miny, maxx, maxy] = bbox;
+            cx = (minx + maxx) / 2;
+            cy = (miny + maxy) / 2;
+        }
+        //图形按照自身的几何中心旋转
+        for (let i = 0, len = coord.length; i < len; i++) {
+            const c = coord[i];
+            const { x, y } = c;
+            const dx = x - cx, dy = y - cy;
+            const r = Math.sqrt(dx * dx + dy * dy);
+            const sAngle = getSegmentAngle(cx, cy, x, y);
+            const rad = (sAngle - this._angle + offsetAngle) / 180 * Math.PI;
+            const rx = Math.cos(rad) * r, ry = Math.sin(rad) * r;
+            const rc = new Coordinate(cx + rx, cy + ry);
+            rotatePrjCoordinates.push(rc);
+        }
+        const prjCenter = projection.project(this._pivot);
+        const rx = prjCenter.x, ry = prjCenter.y;
+        //translate rotate center
+        const translateX = cx - rx, translateY = cy - ry;
+        //平移到指定的选中中心点
+        for (let i = 0, len = rotatePrjCoordinates.length; i < len; i++) {
+            const c = rotatePrjCoordinates[i];
+            c.x -= translateX;
+            c.y -= translateY;
+        }
+        if (isArray) {
+            return rotatePrjCoordinates;
+        }
+        return rotatePrjCoordinates[0];
+    }
+
+    isRotated() {
+        return isNumber(this._angle) && this._pivot;
     }
 
     /**
@@ -1454,6 +1524,14 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return 0;
     }
 
+    hasAltitude() {
+        const altitude = this._getAltitude();
+        if (!altitude) {
+            return false;
+        }
+        return true;
+    }
+
     setAltitude(alt) {
         if (!isNumber(alt)) {
             return this;
@@ -1557,7 +1635,7 @@ function getGeometryCoordinatesAlts(geometry, layerAlt, enableAltitude) {
         coordinatesHasAlt(coordinates, tempAlts);
         if (tempAlts.length) {
             const alts = getCoordinatesAlts(coordinates, layerAlt, enableAltitude);
-            if (geometry.getShell) {
+            if (geometry.getShell && Array.isArray(alts[0])) {
                 return alts[0][0];
             }
             return alts;
@@ -1604,6 +1682,21 @@ function getCoordinatesAlts(coordinates, layerAlt, enableAltitude) {
     } else {
         return 0;
     }
+}
+
+function getSegmentAngle(cx, cy, x, y) {
+    if (cx === x) {
+        if (y > cy) {
+            return -90;
+        }
+        return 90;
+    }
+    x -= cx;
+    y -= cy;
+    //经纬坐标系和屏幕坐标正好相反,经纬度向上递增,而屏幕坐标递减
+    y = -y;
+    const rad = Math.atan2(y, x);
+    return rad / Math.PI * 180;
 }
 
 export default Geometry;

@@ -58,7 +58,9 @@ describe('#GeometryCollection', function () {
 
         expect(collection.getGeometries()).to.be.empty();
 
-        var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
+        var geometries = GEN_GEOMETRIES_OF_ALL_TYPES().filter(geo => {
+            return !(geo instanceof maptalks.GeometryCollection);
+        })
         collection.setGeometries(geometries);
 
         expect(collection.getGeometries()).to.eql(geometries);
@@ -102,7 +104,7 @@ describe('#GeometryCollection', function () {
         it('normal constructor', function () {
             var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
             var collection = new maptalks.GeometryCollection(geometries);
-            expect(collection.getGeometries()).to.have.length(geometries.length);
+            expect(collection.getGeometries().length).to.be.eql(geometries.length - 2);
         });
 
         it('can be empty.', function () {
@@ -348,6 +350,138 @@ describe('#GeometryCollection', function () {
             expect(selection).to.be.an(maptalks.GeometryCollection);
             expect(selection.getGeometries()).to.have.length(points.length);
         });
+    });
+
+
+    it('#2141 Provide a prompt when GeometryCollection is nested within itself', function () {
+        const pointSymbol = {
+            markerType: 'ellipse',
+            markerWidth: 20,
+            markerHeight: 20
+        };
+        const lineSymbol = {
+            lineColor: 'black',
+            lineWidth: 4
+        };
+
+        const fillSymbol = {
+            polygonFill: "black",
+            polygonOpacity: 1
+        };
+        const lefttop = [-0.01, 0.01, 1], righttop = [0.01, 0.01, 1], rightbottom = [0.01, -0.01, 1], leftbottom = [-0.01, -0.01, 1];
+        const point = new maptalks.Marker(lefttop, { symbol: pointSymbol });
+        const multipoint = new maptalks.MultiPoint([lefttop, lefttop], { symbol: pointSymbol });
+        const line = new maptalks.LineString([lefttop, righttop], { symbol: lineSymbol });
+        const multiline = new maptalks.MultiLineString([[lefttop, righttop], [lefttop, righttop]], { symbol: lineSymbol });
+        const polygon = new maptalks.Polygon([[lefttop, righttop, rightbottom, leftbottom]], { symbol: fillSymbol });
+        const multipolygon = new maptalks.MultiPolygon([[[lefttop, righttop, rightbottom, leftbottom]], [[lefttop, righttop, rightbottom, leftbottom]]], { symbol: fillSymbol });
+        const rectange = new maptalks.Rectangle(lefttop, 2000, 1000, { symbol: fillSymbol });
+        const ellispe = new maptalks.Ellipse(lefttop, 2000, 1000, { symbol: fillSymbol });
+        const sector = new maptalks.Sector(lefttop, 1000, 0, 90, { symbol: fillSymbol });
+        const circle = new maptalks.Circle(lefttop, 1000, { symbol: fillSymbol });
+        const collectionTest = new maptalks.GeometryCollection([]);
+        const geos = [point, multipoint, line, multiline, polygon, multipolygon, circle, rectange, ellispe, sector, collectionTest];
+
+        const collection = new maptalks.GeometryCollection(geos);
+        expect(collection.getGeometries().length).to.be.eql(7);
+    });
+
+    it('#2146 _toJSON(null) from feature-filter', function () {
+        const geojson = {
+            "type": "FeatureCollection",
+            "name": "aa",
+            "crs": {
+                "type": "name",
+                "properties": {
+                    "name": "EPSG:4490"
+                }
+            },
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "GeometryCollection",
+                        "geometries": [
+                            {
+                                "type": "Polygon",
+                                "coordinates": [
+                                    [
+                                        [113.7991529327, 23.0121665284],
+                                        [113.7605656502, 22.9686311814],
+                                        [113.8260686078, 22.9546199745],
+                                        [113.8198107317, 23.0045461461],
+                                        [113.7991529327, 23.0121665284]
+                                    ]
+                                ]
+                            },
+                            {
+                                "type": "Polygon",
+                                "coordinates": [
+                                    [
+                                        [113.8688589262, 22.9914540607],
+                                        [113.8333100818, 22.9400538911],
+                                        [113.8869830716, 22.9190765221],
+                                        [113.8939079988, 22.9690147904],
+                                        [113.8688589262, 22.9914540607]
+                                    ]
+                                ]
+                            },
+                            {
+                                "type": "Polygon",
+                                "coordinates": [
+                                    [
+                                        [113.7786088849, 22.9485879648],
+                                        [113.7591122414, 22.8866803638],
+                                        [113.8297744355, 22.8793652689],
+                                        [113.8198854714, 22.9481623574],
+                                        [113.7786088849, 22.9485879648]
+                                    ]
+                                ]
+                            },
+                            {
+                                "type": "MultiPolygon",
+                                "coordinates": [
+                                    [
+                                        [
+                                            [113.8654530057, 23.0430565973],
+                                            [113.8432406194, 23.0525926525],
+                                            [113.8218502836, 23.0236615414],
+                                            [113.870137785, 23.0034008379],
+                                            [113.8654530057, 23.0430565973]
+                                        ]
+                                    ],
+                                    [
+                                        [
+                                            [113.8561406429, 23.0607279435],
+                                            [113.8339123801, 23.0802969357],
+                                            [113.8189838691, 23.0439658919],
+                                            [113.8561406429, 23.0607279435]
+                                        ]
+                                    ]
+                                ]
+                            }
+                        ]
+                    },
+                    "properties": {
+                        "OBJECTID": 1,
+                        "SHAPE_Length": 20977.022743581954,
+                        "SHAPE_Area": 24845610.21174327
+                    }
+                }
+            ]
+        }
+        const polygons = maptalks.GeoJSON.toGeometry(geojson);
+        layer = new maptalks.VectorLayer("v").addTo(map);
+        layer.setStyle({
+            symbol: {
+                polygonFill: '#FFFFFF',
+                polygonOpacity: 1,
+                lineColor: 'blue',
+                lineWidth: 2,
+                lineDasharray: [10, 10],
+            }
+        })
+        layer.addGeometry(polygons)
     });
 });
 

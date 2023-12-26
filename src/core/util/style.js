@@ -194,6 +194,9 @@ function parseStops(value, replacer) {
         value['default'] = defaultValue.replace(URL_PATTERN, replacer);
     }
     const stops = value.stops;
+    if (!stops) {
+        return value;
+    }
     for (let i = 0; i < stops.length; i++) {
         if (!Array.isArray(stops[i])) {
             continue;

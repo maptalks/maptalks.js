@@ -1,10 +1,11 @@
-import { isFunction, isArrayHasData, isNil } from '../core/util';
+import { isFunction, isArrayHasData, isNil, extend } from '../core/util';
 import { createFilter, getFilterFeature } from '@maptalks/feature-filter';
 import { getExternalResources } from '../core/util/resource';
 import Coordinate from '../geo/Coordinate';
 import PointExtent from '../geo/PointExtent';
 import Extent from '../geo/Extent';
 import Geometry from './Geometry';
+import Browser from '../core/Browser';
 
 const TEMP_EXTENT = new PointExtent();
 
@@ -277,20 +278,26 @@ class GeometryCollection extends Geometry {
      */
     _checkGeometries(geometries) {
         const invalidGeoError = 'The geometry added to collection is invalid.';
-        if (geometries && !Array.isArray(geometries)) {
-            if (geometries instanceof Geometry) {
-                return [geometries];
-            } else {
-                throw new Error(invalidGeoError);
+        geometries = Array.isArray(geometries) ? geometries : [geometries];
+        const filterGeometries = [];
+        for (let i = 0, l = geometries.length; i < l; i++) {
+            const geometry = geometries[i];
+            if (!geometry) {
+                continue;
             }
-        } else {
-            for (let i = 0, l = geometries.length; i < l; i++) {
-                if (!this._checkGeo(geometries[i])) {
-                    throw new Error(invalidGeoError + ' Index: ' + i);
+            if (!this._checkGeo(geometry)) {
+                console.error(invalidGeoError + ' Index: ' + i);
+                continue;
+            }
+            if (isSelf(geometry)) {
+                if (!Browser.isTest) {
+                    console.error(geometry, ' is GeometryCollection sub class,it Cannot be placed in GeometryCollection');
                 }
+                continue;
             }
-            return geometries;
+            filterGeometries.push(geometry);
         }
+        return filterGeometries;
     }
 
     _checkGeo(geo) {
@@ -416,6 +423,8 @@ class GeometryCollection extends Geometry {
     }
     //for toJSON
     _toJSON(options) {
+        //fix call from feature-filter package
+        options = extend({}, options);
         //Geometry了用的是toGeoJSON(),如果里面包含特殊图形(Circle等),就不能简单的用toGeoJSON代替了，否则反序列化回来就不是原来的图形了
         const feature = {
             'type': 'Feature',
@@ -587,3 +596,8 @@ function computeExtent(projection, fn) {
 
     return extent;
 }
+
+function isSelf(geom) {
+    return (geom instanceof GeometryCollection);
+}
+

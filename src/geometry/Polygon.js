@@ -223,7 +223,7 @@ class Polygon extends Path {
         //r.g. for Rectangle
         this._verifyProjection();
         if (this._getProjection() && !this._prjShell) {
-            this._prjShell = this._projectCoords(this.getShell());
+            this._prjShell = this._projectCoords(this._getShell ? this._getShell() : this.getShell());
         }
         return this._prjShell;
     }

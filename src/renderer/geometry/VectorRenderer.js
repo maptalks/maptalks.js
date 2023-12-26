@@ -9,7 +9,8 @@ import Rectangle from '../../geometry/Rectangle';
 import Path from '../../geometry/Path';
 import LineString from '../../geometry/LineString';
 import Polygon from '../../geometry/Polygon';
-import { BBOX_TEMP, pointsBBOX, resetBBOX } from '../../core/util/bbox';
+import { BBOX_TEMP, getDefaultBBOX, pointsBBOX, resetBBOX } from '../../core/util/bbox';
+import Extent from '../../geo/Extent';
 
 const TEMP_WITHIN = {
     within: false,
@@ -49,14 +50,43 @@ Geometry.include({
     }
 });
 
+function _computeRotatedPrjExtent() {
+    const coord = this._getPrjShell();
+    const bbox = getDefaultBBOX();
+    //cal all points center
+    pointsBBOX(coord, bbox);
+    const [minx, miny, maxx, maxy] = bbox;
+    return new Extent(minx, miny, maxx, maxy);
+}
+
+function getRotatedShell() {
+    const prjs = this._getPrjShell();
+    if (!prjs || !Array.isArray(prjs)) {
+        return [];
+    }
+    const projection = this._getProjection();
+    const coordinates = this.getCoordinates() || {};
+    return prjs.map(prj => {
+        const c = projection.unproject(prj);
+        c.z = coordinates.z || 0;
+        return c;
+    });
+}
+
 const el = {
     _redrawWhenPitch: () => true,
 
     _redrawWhenRotate: function () {
         return (this instanceof Ellipse) || (this instanceof Sector);
     },
+    _computeRotatedPrjExtent,
+    getRotatedShell,
 
     _paintAsPath: function () {
+        //why? when rotate need draw by path
+        if (this.isRotated()) {
+            return true;
+        }
         const map = this.getMap();
         const altitude = this._getAltitude();
         // when map is tilting, draw the circle/ellipse as a polygon by vertexes.
@@ -104,7 +134,9 @@ Rectangle.include({
         return [points];
     },
 
-    _paintOn: Canvas.polygon
+    _paintOn: Canvas.polygon,
+    _computeRotatedPrjExtent,
+    getRotatedShell
 });
 //----------------------------------------------------
 Sector.include(el, {

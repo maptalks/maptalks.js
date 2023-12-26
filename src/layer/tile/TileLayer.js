@@ -87,6 +87,7 @@ class TileHashset {
  * @property {Object}              [options.fetchOptions=object]       - fetch params,such as fetchOptions: { 'headers': { 'accept': '' } }, about accept value more info https://developer.mozilla.org/en-US/docs/Web/HTTP/Content_negotiation/List_of_default_Accept_values
  * @property {Boolean}             [options.awareOfTerrain=true]       - if the tile layer is aware of terrain.
  * @property {Number}             [options.bufferPixel=0.5]       - tile buffer size,the unit is pixel
+ * @property {Number}             [options.depthMask=true]       - mask to decide whether to write depth buffer
  * @memberOf TileLayer
  * @instance
  */
@@ -149,7 +150,8 @@ const options = {
 
     'awareOfTerrain': true,
     'bufferPixel': 0.5,
-    'mipmapTexture': true
+    'mipmapTexture': true,
+    'depthMask': true
 };
 
 const URL_PATTERN = /\{ *([\w_]+) *\}/g;
@@ -301,24 +303,10 @@ class TileLayer extends Layer {
         const error = this._getRootError();
         const tiles = [];
         const z = 0;
-        const zoomOffset = this.options['zoomOffset'];
         for (let i = -left; i < right; i++) {
             for (let j = -top; j < bottom; j++) {
                 const y = scale.y < 0 ? j : -(j + 1);
-                tiles.push({
-                    x: i,
-                    y,
-                    z,
-                    idx: i,
-                    idy: y,
-                    res,
-                    extent2d: tileConfig.getTilePrjExtent(i, y, res).convertTo(c => map._prjToPointAtRes(c, res, TEMP_POINT)),
-                    id: this._getTileId(i, y, z),
-                    url: this.getTileUrl(i, y, z + zoomOffset),
-                    offset: [0, 0],
-                    error: error,
-                    children: []
-                });
+                tiles.push(this.createTileNode(i, y, z, i, y, res, error));
             }
         }
 
@@ -329,6 +317,33 @@ class TileLayer extends Layer {
             mapHeight: map.height
         };
         return this._getRootNodes(offset0);
+    }
+
+    createTileNode(x, y, z, idx, idy, res, error, parentId, extent2d, tileId) {
+        const map = this.getMap();
+        const zoomOffset = this.options['zoomOffset'];
+        if (!extent2d) {
+            const tileConfig = this._getTileConfig();
+            extent2d = tileConfig.getTilePrjExtent(x, y, res).convertTo(c => map._prjToPointAtRes(c, res, TEMP_POINT));
+        }
+        const offset = this._getTileOffset(z);
+
+        return {
+            parent: parentId,
+            layer: this.getId(),
+            x: x,
+            y,
+            z,
+            idx,
+            idy,
+            res,
+            extent2d,
+            id: tileId || this._getTileId(x, y, z),
+            url: this.getTileUrl(x, y, z + zoomOffset),
+            offset,
+            error,
+            children: []
+        };
     }
 
     _getRootError() {
@@ -374,8 +389,8 @@ class TileLayer extends Layer {
                 const visualHeight1 = Math.floor(map._getVisualHeight(cascadePitch1));
                 const visualContainerExtent = pitch <= cascadePitch1 ? mapContainerExtent : new PointExtent(0, map.height - visualHeight1, map.width, map.height);
                 this._visitedTiles = new TileHashset();
-                const tileGrid = this._getTiles(0, visualContainerExtent, 2, layer && layer.getRenderer(), true);
-                const error = this._getRootError();
+                const tileGrid = this._getTiles(0 - this.options['zoomOffset'], visualContainerExtent, 2, layer && layer.getRenderer(), true);
+                const error = this._getRootError() * Math.pow(2, this.options['zoomOffset']);
                 tileGrid.tiles.forEach(t => {
                     t.error = error;
                 });
@@ -480,9 +495,6 @@ class TileLayer extends Layer {
                 if (!childNode) {
                     childNode = this._createChildNode(node, dx, dy, offset, tileId);
                 }
-                if (parentRenderer) {
-                    childNode['layer'] = this.getId();
-                }
             }
             childNode.error = node.error / 2;
             childNode.offset[0] = offset[0];
@@ -514,7 +526,7 @@ class TileLayer extends Layer {
     }
 
     _createChildNode(node, dx, dy, offset, tileId) {
-        const zoomOffset = this.options['zoomOffset'];
+        // const zoomOffset = this.options['zoomOffset'];
         const { x, y, idx, idy, extent2d } = node;
         const z = node.z + 1;
         const childX = (x << 1) + dx;
@@ -542,21 +554,7 @@ class TileLayer extends Layer {
             const swy = miny + dy * height;
             extent = new PointExtent(swx, swy, swx + width, swy + height);
         }
-        const childNode = {
-            parent: node.id,
-            x: childX,
-            y: childY,
-            idx: childIdx,
-            idy: childIdy,
-            z,
-            extent2d: extent,
-            error: node.error / 2,
-            res: node.res / 2,
-            id: tileId,
-            children: [],
-            url: this.getTileUrl(childX, childY, z + zoomOffset),
-            offset
-        };
+        const childNode = this.createTileNode(childX, childY, z, childIdx, childIdy, node.res / 2, node.error / 2, node.id, extent, tileId);
         this.tileInfoCache.add(tileId, childNode);
         return childNode;
     }
@@ -1068,27 +1066,11 @@ class TileLayer extends Layer {
                         this._visitedTiles.add(tileId);
                     }
                     if (canSplitTile && cascadeLevel === 0) {
-                        this._splitTiles(frustumMatrix, tiles, renderer, idx, z + 1, tileRes, tileExtent, dx, dy, tileOffsets, parentRenderer);
+                        this._splitTiles(frustumMatrix, tiles, renderer, idx, z + 1, tileRes, tileExtent, dx, dy, tileOffsets);
                         extent._combine(tileExtent);
                     } else {
                         if (!tileInfo) {
-                            tileInfo = {
-                                //reserve point caculated by tileConfig
-                                //so add offset because we have p._sub(offset) and p._add(dx, dy) if hasOffset
-                                'z': z,
-                                'x': idx.x,
-                                'y': idx.y,
-                                'idx': idx.idx,
-                                'idy': idx.idy,
-                                'extent2d': tileExtent,
-                                'offset': offset,
-                                'id': tileId,
-                                'res': tileRes,
-                                'url': this.getTileUrl(idx.x, idx.y, zoom)
-                            };
-                            if (parentRenderer) {
-                                tileInfo['layer'] = this.getId();
-                            }
+                            tileInfo = this.createTileNode(idx.x, idx.y, z, idx.idx, idx.idy, tileRes, 0, null, tileExtent, tileId);
                         } else {
                             tileInfo.offset[0] = offset[0];
                             tileInfo.offset[1] = offset[1];
@@ -1145,7 +1127,7 @@ class TileLayer extends Layer {
         });
     }
 
-    _splitTiles(frustumMatrix, tiles, renderer, tileIdx, z, res, tileExtent, dx, dy, tileOffsets, parentRenderer) {
+    _splitTiles(frustumMatrix, tiles, renderer, tileIdx, z, res, tileExtent, dx, dy, tileOffsets) {
         // const hasOffset = offset[0] || offset[1];
         const yOrder = this._getTileConfig().tileSystem.scale.y;
         const glScale = this.getMap().getGLScale(z);
@@ -1158,17 +1140,17 @@ class TileLayer extends Layer {
         const x = tileIdx.x * 2;
         const y = tileIdx.y * 2;
 
-        let tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, res, 0, 0, w, h, corner, glScale, tileOffsets, parentRenderer);
+        let tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, res, 0, 0, w, h, corner, glScale, tileOffsets);
         if (tile) tiles.push(tile);
-        tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, res, 0, 1, w, h, corner, glScale, tileOffsets, parentRenderer);
+        tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, res, 0, 1, w, h, corner, glScale, tileOffsets);
         if (tile) tiles.push(tile);
-        tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, res, 1, 0, w, h, corner, glScale, tileOffsets, parentRenderer);
+        tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, res, 1, 0, w, h, corner, glScale, tileOffsets);
         if (tile) tiles.push(tile);
-        tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, res, 1, 1, w, h, corner, glScale, tileOffsets, parentRenderer);
+        tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, res, 1, 1, w, h, corner, glScale, tileOffsets);
         if (tile) tiles.push(tile);
     }
 
-    _checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, res, i, j, w, h, corner, glScale, tileOffsets, parentRenderer) {
+    _checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, res, i, j, w, h, corner, glScale, tileOffsets) {
         const tileId = this._getTileId(idx + i, idy + j, z);
         if (this._visitedTiles && this._visitedTiles.has(tileId)) {
             return null;
@@ -1188,19 +1170,7 @@ class TileLayer extends Layer {
         if (!tileInfo) {
             //reserve point caculated by tileConfig
             //so add offset because we have p._sub(offset) and p._add(dx, dy) if hasOffset
-            tileInfo = {
-                'z': z,
-                'x': x + i,
-                'y': y + j,
-                'extent2d': childExtent,
-                'id': tileId,
-                'offset': offset,
-                'res': childRes,
-                'url': this.getTileUrl(x + i, y + j, z + this.options['zoomOffset'])
-            };
-            if (parentRenderer) {
-                tileInfo['layer'] = this.getId();
-            }
+            tileInfo = this.createTileNode(x + i, y + j, z, idx + i, idx + y, childRes, 0, null, childExtent, tileId);
         } else {
             tileInfo = tileInfo.info;
         }

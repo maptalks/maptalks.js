@@ -5,7 +5,7 @@ describe('Geometry.Polygon', function () {
     var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
     var canvasContainer;
-
+    var eventContainer;
     beforeEach(function () {
         var setups = COMMON_CREATE_MAP(center, null, {
             width: 800,
@@ -16,6 +16,7 @@ describe('Geometry.Polygon', function () {
         layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
         canvasContainer = map._panels.canvasContainer;
+        eventContainer = canvasContainer;
     });
 
     afterEach(function () {
@@ -427,6 +428,142 @@ describe('Geometry.Polygon', function () {
             expect(layer).not.to.be.painted(-4, 0);
             done();
         }, 100);
+
+    });
+
+
+    it('polygon sub geometries(Rectange/Ellipse/Sector) rotate', function (done) {
+        layer.config('drawImmediate', true);
+        layer.clear();
+        map.config({ centerCross: true });
+        map.setCenter(center);
+        map.setZoom(17);
+
+        const symbol = {
+            polygonFill: '#fff',
+            lineWidth: 8
+            // polygonFill: '#fff'
+        };
+
+        const angles = [];
+        while (angles.length < 10) {
+            angles.push(Math.random() * 180);
+        }
+
+        const rectangle = new maptalks.Rectangle(center.copy(), 200, 100, {
+            symbol
+        });
+        const ellipse = new maptalks.Ellipse(center.copy(), 200, 100, {
+            symbol
+        });
+        const sector = new maptalks.Sector(center.copy(), 100, 0, 90, {
+            symbol
+        });
+
+        const geos = [rectangle, ellipse, sector];
+
+        function getTopPrj(geo) {
+            const prjs = geo._getPrjShell();
+            let topPrj = prjs[0];
+            for (let i = 0, len = prjs.length; i < len; i++) {
+                const { x, y } = prjs[i];
+                if (y > topPrj.y) {
+                    topPrj = prjs[i];
+                }
+            }
+            return topPrj;
+        }
+
+        let idx = 0;
+        const load = () => {
+            if (idx < geos.length) {
+                layer.clear();
+                const geo = geos[idx];
+                geo.addTo(layer);
+
+                let i = 0;
+                const rotate = () => {
+                    if (i < angles.length) {
+                        const angle = angles[i];
+                        geo.rotate(angle);
+                        const topPrj = getTopPrj(geo);
+                        const coordinate = geo._getProjection().unproject(topPrj);
+                        const pixel = map.coordinateToContainerPoint(coordinate);
+                        setTimeout(() => {
+                            const size = map.getSize();
+                            const cx = size.width / 2, cy = size.height / 2;
+                            const x = pixel.x - cx, y = pixel.y - cy;
+                            expect(layer).to.be.painted(x, y);
+                            i++;
+                            rotate();
+                        }, 50);
+                    } else {
+                        idx++;
+                        load();
+                    }
+                }
+                rotate();
+
+            } else {
+                done();
+            }
+        }
+        load();
+    });
+
+    it('#2159 polygon sub geometries(Rectange/Ellipse/Sector) rotate missing z', function (done) {
+        layer.config('drawImmediate', true);
+        layer.clear();
+        map.config({ centerCross: true });
+        map.setCenter(center);
+        map.setZoom(17);
+
+        const symbol = {
+            polygonFill: '#fff',
+            lineWidth: 8
+            // polygonFill: '#fff'
+        };
+
+        const altitude = 100;
+        const center1 = center.copy();
+        center1.z = altitude;
+        const center2 = center.copy();
+        center2.z = altitude;
+        const center3 = center.copy();
+        center3.z = altitude;
+
+        const rectangle = new maptalks.Rectangle(center1, 200, 100, {
+            symbol
+        });
+        const ellipse = new maptalks.Ellipse(center2, 200, 100, {
+            symbol
+        });
+        const sector = new maptalks.Sector(center3, 100, 0, 90, {
+            symbol
+        });
+
+        const geos = [rectangle, ellipse, sector];
+        layer.addGeometry(geos);
+
+        setTimeout(() => {
+            geos.forEach(geo => {
+                const shell = geo.getShell();
+                const z = shell[0].z;
+                expect(z).to.be(altitude);
+                //rotate geometry
+                geo.rotate(Math.random() * 90);
+            })
+
+            setTimeout(() => {
+                geos.forEach(geo => {
+                    const shell = geo.getShell();
+                    const z = shell[0].z;
+                    expect(z).to.be(altitude);
+                })
+                done();
+            }, 40);
+
+        }, 40);
 
     });
 });
