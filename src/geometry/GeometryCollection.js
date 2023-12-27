@@ -366,6 +366,7 @@ class GeometryCollection extends Geometry {
         return false;
     }
 
+    // fix GeometryCollection hitTolerance always is 0
     _hitTestTolerance() {
         const geometries = this.getGeometries();
         let hitTolerance = 0;
