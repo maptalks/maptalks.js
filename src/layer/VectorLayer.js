@@ -176,10 +176,13 @@ class VectorLayer extends OverlayLayer {
         }
         for (let i = geometries.length - 1; i >= 0; i--) {
             const geo = geometries[i];
-            if (!geo || !geo.isVisible() || !geo._getPainter() || !geo.options['interactive']) {
+            if (!geo || !geo.isVisible() || !geo.options['interactive']) {
                 continue;
             }
             const painter = geo._getPainter();
+            if (!painter) {
+                continue;
+            }
             const bbox = painter.getRenderBBOX && painter.getRenderBBOX();
             if (bbox) {
                 const { x, y } = cp;
