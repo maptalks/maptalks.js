@@ -366,6 +366,16 @@ class GeometryCollection extends Geometry {
         return false;
     }
 
+    _hitTestTolerance() {
+        const geometries = this.getGeometries();
+        let hitTolerance = 0;
+        for (let i = 0, len = geometries.length; i < len; i++) {
+            const t = geometries[i]._hitTestTolerance();
+            hitTolerance = Math.max(hitTolerance, t);
+        }
+        return hitTolerance;
+    }
+
     _computeExtent(projection) {
         return computeExtent.call(this, projection, '_computeExtent');
     }
