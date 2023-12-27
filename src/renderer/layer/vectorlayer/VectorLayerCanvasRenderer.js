@@ -641,6 +641,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this.page = 1;
         this.pageGeos = [];
         this.geoPainterList = [];
+        this.maxTolerance = 0;
         this._clearSnapshotCanvas();
     }
 
@@ -652,6 +653,12 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 
     _snapshot() {
+        const geosToDraw = this._geosToDraw || [];
+        for (let i = 0, len = geosToDraw.length; i < len; i++) {
+            const geo = geosToDraw[i];
+            const t = geo._hitTestTolerance() || 0;
+            this.maxTolerance = Math.max(this.maxTolerance, t);
+        }
         if (!this.isProgressiveRender()) {
             return this;
         }
@@ -661,10 +668,10 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             const ctx = clearCanvas(snapshotCanvas);
             ctx.drawImage(this.canvas, 0, 0);
         }
-        const geosToDraw = this._geosToDraw || [];
         for (let i = 0, len = geosToDraw.length; i < len; i++) {
-            this.pageGeos.push(geosToDraw[i]);
-            const painter = geosToDraw[i]._painter;
+            const geo = geosToDraw[i];
+            this.pageGeos.push(geo);
+            const painter = geo._painter;
             this.geoPainterList.push(painter);
         }
         const layer = this.layer;

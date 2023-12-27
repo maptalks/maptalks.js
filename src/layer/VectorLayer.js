@@ -1,5 +1,5 @@
 import Browser from '../core/Browser';
-import { isNil } from '../core/util';
+import { isNil, isNumber } from '../core/util';
 import Extent from '../geo/Extent';
 import Geometry from '../geometry/Geometry';
 import OverlayLayer from './OverlayLayer';
@@ -137,10 +137,15 @@ class VectorLayer extends OverlayLayer {
         const imageData = renderer && renderer.getImageData && renderer.getImageData();
         if (imageData) {
             let hitTolerance = 0;
-            for (let i = geometries.length - 1; i >= 0; i--) {
-                const t = geometries[i]._hitTestTolerance() + (tolerance || 0);
-                if (t > hitTolerance) {
-                    hitTolerance = t;
+            const maxTolerance = renderer.maxTolerance;
+            if (isNumber(maxTolerance)) {
+                hitTolerance = maxTolerance;
+            } else {
+                for (let i = geometries.length - 1; i >= 0; i--) {
+                    const t = geometries[i]._hitTestTolerance() + (tolerance || 0);
+                    if (t > hitTolerance) {
+                        hitTolerance = t;
+                    }
                 }
             }
 
