@@ -5,7 +5,7 @@ import * as maptalks from 'maptalks';
 
 const point = [];
 function createGLTFMesh(modelName) {
-    const loader = new gltf.GLTFLoader('', partsModels[modelName]);
+    const loader = new gltf.GLTFLoader('', JSON.parse(JSON.stringify(partsModels[modelName])));//避免tc在移除后，再添加新的，内置的gltf受影响
     return loader.load().then(gltf => {
         return gltf;
     });
