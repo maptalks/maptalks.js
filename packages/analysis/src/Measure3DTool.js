@@ -25,7 +25,7 @@ const options = {
         'markerType': 'square',
         'markerFill': 'rgb(135,196,240)',
         'markerFillOpacity': '0.6',
-        'markerDx': 20,
+        'markerDx': -15,
         'markerVerticalAlignment': 'middle',
         'markerHorizontalAlignment': 'left',
         'markerTextFit': 'both',
@@ -33,7 +33,7 @@ const options = {
         'textHorizontalAlignment': 'left',
         'textSize': 16,
         'textFill': '#fff',
-        'textDx': 30
+        'textDx': -25
     }
 };
 export default class Measure3DTool extends maptalks.DrawTool {
@@ -79,7 +79,7 @@ export default class Measure3DTool extends maptalks.DrawTool {
     }
 
     _getPickedCoordinate(coordinate) {
-        const identifyData = this._gllayer.identify(coordinate)[0];
+        const identifyData = this._gllayer.identify(coordinate, { includeInternals: true })[0];
         const pickedPoint = identifyData && identifyData.coordinate;
         if (pickedPoint) {
             return new maptalks.Coordinate(identifyData.coordinate);

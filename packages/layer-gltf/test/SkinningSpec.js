@@ -132,4 +132,35 @@ describe('skinning', () => {
             }, 100);
         });
     });
+
+    it('support multiple animation name', done => {
+        const layer = new maptalks.GLTFLayer('layer').addTo(map);
+        const marker = new maptalks.GLTFGeometry(center, {
+            symbol: {
+                url: url13,
+                modelHeight: 100,
+                animation: true,
+                loop: true
+            }
+        }).addTo(layer);
+        map.setPitch(45);
+
+        function checkColor() {
+            setTimeout(function() {
+                const pixel = pickPixel(map, 200, 90, 1, 1);
+                expect(hasColor(pixel)).not.to.be.ok();
+                done();
+            }, 500);
+        }
+
+        marker.on('load', () => {
+            setTimeout(function() {
+                const pixel = pickPixel(map, 200, 90, 1, 1);
+                expect(hasColor(pixel)).to.be.ok();
+                const animations = marker.getAnimations();
+                marker.setCurrentAnimation(animations);
+                checkColor();
+            }, 100);
+        });
+    });
 });

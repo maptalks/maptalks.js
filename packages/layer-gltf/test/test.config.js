@@ -4,7 +4,7 @@ const center = new maptalks.Coordinate([0, 0]);
 const clickContainerPoint = new maptalks.Point([200, 150]);
 const url1 = 'models/cube-animation/cube.gltf', url2 = 'models/CesiumMan/CesiumMan.gltf', url3 = 'models/Duck/Duck.glb', url4 = 'models/DamagedHelmet/glTF/DamagedHelmet.gltf';
 const url5 = 'models/saturn_planet/scene.gltf', url6 = 'models/cloud/cloud.glb', url7 = 'models/space/scene.gltf', url8 = 'models/matilda/scene.gltf';
-const url9 = 'models/board/scene.gltf', url10 = 'models/simple_flower_loop/scene.gltf', url11 = 'models/Fox/Fox.gltf', url12 = 'models/video_countdown/scene.gltf';
+const url9 = 'models/board/scene.gltf', url10 = 'models/simple_flower_loop/scene.gltf', url11 = 'models/Fox/Fox.gltf', url12 = 'models/video_countdown/scene.gltf', url13 = 'models/assmbly-sign.glb';
 //顶点着色器
 const vert =  `attribute vec3 POSITION;
     uniform mat4 projectionViewModel;

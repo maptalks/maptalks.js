@@ -50,8 +50,8 @@ export default class TransformTarget {
             const targetScale = vec3.add(TEMP_SCALE, vec3.set(EMPTY_VEC, tempScale *  currentScaling[0], tempScale * currentScaling[1], tempScale * currentScaling[2]), currentScaling);
             const minScale = Math.min(...targetScale);
             //minScale可能会出现<=0的情况，所以minScale只作为判断是否要限定scale的依据，计算的逻辑则用当前target的scale去计算，当前target的scale可以保证>=0.01
-            if (minScale < limitScale) {
-                const currentMinScale = Math.min(...targetScale);
+            if (Math.abs(minScale) < limitScale) {//scale有可能是负，例如翻转的情况
+                const currentMinScale = Math.abs(minScale);
                 targetScale[0] = targetScale[0] * (limitScale / currentMinScale);
                 targetScale[1] = targetScale[1] * (limitScale / currentMinScale);
                 targetScale[2] = targetScale[2] * (limitScale / currentMinScale);

@@ -7,8 +7,8 @@ export default class Height3DTool extends Measure3DTool {
 
     _addHelperLayer() {
         super._addHelperLayer();
-        this._helperLayer = new maptalks.VectorLayer(maptalks.INTERNAL_LAYER_PREFIX + '_height3dtool', { enableAltitude: true }).addTo(this._map).bringToFront();
         this._markerLayer = new PointLayer(maptalks.INTERNAL_LAYER_PREFIX + '_height3dtool_marker').addTo(this._map).bringToFront();
+        this._helperLayer = new maptalks.VectorLayer(maptalks.INTERNAL_LAYER_PREFIX + '_height3dtool', { enableAltitude: true }).addTo(this._map).bringToFront();
     }
 
     _msOnDrawVertex(e) {
@@ -48,14 +48,17 @@ export default class Height3DTool extends Measure3DTool {
             const altitude = coordinates.map(c => { return c.z;});
             this._helperGeometry.setCoordinates(coordinates);
             this._helperGeometry.setProperties({ altitude });
-            this._drawLabel(coordinates);
+            const horizontalDistance = this._map.getProjection().measureLenBetween(coordinates[0], coordinates[2]);
+            const height = coordinates[1].z - coordinates[2].z;
+            const distance = Math.sqrt(Math.pow(horizontalDistance, 2) + Math.pow(height, 2));
+            this._drawLabel(coordinates, [distance, height, horizontalDistance]);
         }
     }
 
-    _drawLabel(coordinates) {
+    _drawLabel(coordinates, distances) {
         for (let i = 0; i < coordinates.length - 1; i++) {
             const from = coordinates[i], to = coordinates[i + 1];
-            const distance = new maptalks.LineString([from, to]).getLength();
+            const distance = distances[i];
             const language = this.options['language'] === 'zh-CN' ? 0 : 1;
             const unitContent = this._getUnitContent(distance);
             const content = MEASURE_HEIGHT_NAMES[language][i] + ':' + unitContent;

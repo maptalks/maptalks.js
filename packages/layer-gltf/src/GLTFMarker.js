@@ -116,7 +116,7 @@ export default class GLTFMarker extends Marker {
     static combineGLTFBoundingBox(markers) {
         const bboxes = [];
         for (let i = 0; i < markers.length; i++) {
-            const bbox = markers[i]._getBoundingBox();
+            const bbox = markers[i].getBoundingBox();
             bboxes.push([bbox.min, bbox.max]);
         }
         const bbox0 = bboxes[0];
@@ -317,7 +317,7 @@ export default class GLTFMarker extends Marker {
         //此处涉及到材质的更新，比较耗费性能，对于不需要更新材质的操作尽量不去更新
         if (markerUniforms  && this.isDirty() && this._isUniformsDirty()) {
             for (const u in markerUniforms) {
-                mesh.material.set(u, markerUniforms[u]);
+                mesh.setUniform(u, markerUniforms[u]);
             }
         }
         if (this._isTransparent()) {
@@ -539,7 +539,7 @@ export default class GLTFMarker extends Marker {
     }
 
     getCurrentPixelHeight() {
-        const bbox = this._getBoundingBox();
+        const bbox = this.getBoundingBox();
         const boxHeight = Math.abs(bbox.max[2] - bbox.min[2]);
         const map = this.getMap();
         return boxHeight / map.getGLScale();
@@ -577,7 +577,9 @@ export default class GLTFMarker extends Marker {
                 const looped = this.isAnimationLooped(), speed = this.getAnimationSpeed();
                 const symbol = this.getSymbol();
                 const animationNodes = symbol && symbol.animationNodes;
-                this.gltfPack.updateAnimation(timestamp, looped, speed, currentAnimation, startTime, nodeMatrixMap, skinMap, animationNodes);
+                for (let i = 0; i < currentAnimation.length; i++) {
+                    this.gltfPack.updateAnimation(timestamp, looped, speed, currentAnimation[i], startTime, nodeMatrixMap, skinMap, animationNodes);
+                }
             } else {
                 console.warn('animation specified does not exist!');
             }
@@ -620,7 +622,7 @@ export default class GLTFMarker extends Marker {
 
     _checkSize(modelMeshes) {
         this._updateMeshMatrix(modelMeshes);
-        const gltfBBox = this._getBoundingBox();
+        const gltfBBox = this.getBoundingBox();
         if (!gltfBBox) {
             return;
         }
@@ -711,7 +713,7 @@ export default class GLTFMarker extends Marker {
         this._dirty = true;
     }
 
-    _getBoundingBox() {
+    getBoundingBox() {
         const meshes = this._meshes;
         if (!meshes || !meshes.length) {
             return null;
@@ -917,7 +919,7 @@ export default class GLTFMarker extends Marker {
         if (!map) {
             return null;
         }
-        const gltfBBox = this._getBoundingBox();
+        const gltfBBox = this.getBoundingBox();
         if (!gltfBBox) {
             return null;
         }
@@ -1526,7 +1528,8 @@ export default class GLTFMarker extends Marker {
         if (!this._gltfData) {
             return null;
         }
-        const animations = this._gltfData.animations;
+        const gltf = this._gltfData;
+        const animations = gltf.animations ? gltf.animations.map((animation, index) => { return { name: defined(animation.name) ? animation.name : index }; }) : null;
         if (!animations) {
             return null;
         }
@@ -1540,19 +1543,24 @@ export default class GLTFMarker extends Marker {
         return symbol && symbol.animationName;
     }
 
+    //animationName支持数组，即多个动画同时起作用
     _getCurrentAnimation() {
         const animations = this.getAnimations();
         if (!animations) {
             return null;
         }
-        const animationName = this.getCurrentAnimation();
+        let animationName = this.getCurrentAnimation();
         if (!defined(animationName)) {
-            return animations[0];
+            return animations.slice(0, 1);
         }
-        if (animations.indexOf(animationName) > -1) {
-            return animationName;
+        const animationList = [];
+        animationName = Array.isArray(animationName) ? animationName : [animationName];
+        for (let i = 0; i < animationName.length; i++) {
+            if (animations.indexOf(animationName[i]) > -1) {
+                animationList.push(animationName[i]);
+            }
         }
-        return null;
+        return animationList.length ? animationList : null;
     }
 
     setCurrentAnimation(animationName) {
@@ -1594,7 +1602,7 @@ export default class GLTFMarker extends Marker {
     }
 
     zoomTo(zoomOffset, options = { animation: false }) {
-        const markerBBox = this._getBoundingBox();
+        const markerBBox = this.getBoundingBox();
         const map = this.getMap();
         if (!map || !markerBBox) {
             return;
@@ -1695,7 +1703,10 @@ export default class GLTFMarker extends Marker {
         if (!renderer) {
             return;
         }
-        const meshes = renderer._getToRenderMeshes();
+        const meshes = this._meshes;
+        if (!meshes) {
+            return;
+        }
         highlights.forEach(highlight => {
             meshes.forEach(mesh => {
                 if (mesh.properties.nodeIndex === highlight.nodeIndex) {
@@ -1716,7 +1727,10 @@ export default class GLTFMarker extends Marker {
             return;
         }
         const { color, opacity, bloom } = highlight;
-        const meshes = renderer._getToRenderMeshes();
+        const meshes = this._meshes;
+        if (!meshes) {
+            return;
+        }
         meshes.forEach(mesh => {
             this._highlightMesh(mesh, color, opacity, bloom);
         });
@@ -1755,7 +1769,10 @@ export default class GLTFMarker extends Marker {
         if (!renderer) {
             return;
         }
-        let meshes = renderer._getToRenderMeshes();
+        let meshes = this._meshes;
+        if (!meshes) {
+            return;
+        }
         if (nodes) {
             let nodeList = nodes;
             if (!Array.isArray(nodeList)) {

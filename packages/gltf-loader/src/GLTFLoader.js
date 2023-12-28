@@ -237,6 +237,8 @@ export default class GLTFLoader {
                 const materials = this.adapter._loadMaterials(this.gltf.materials);
                 gltf.materials = materials;
             }
+            delete this.gltf.buffers;
+            gltf.json = this.gltf;
             return gltf;
         });
     }

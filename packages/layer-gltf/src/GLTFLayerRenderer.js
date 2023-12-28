@@ -731,7 +731,7 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
 
     isInFrustum(marker) {
         const map = this.layer.getMap();
-        const bbox = marker._getBoundingBox();
+        const bbox = marker.getBoundingBox();
         if (!bbox || marker.getGLTFMarkerType() === 'multigltfmarker') {//multigltfmarker由于没有coordinate, coordinates是分散于instanceData中，无法提供确定bbox，所以这里需要排除掉
             return true;
         }

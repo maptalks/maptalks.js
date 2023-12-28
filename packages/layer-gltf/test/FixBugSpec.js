@@ -1704,4 +1704,53 @@ describe('bug', () => {
         });
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
     });
+
+    it('setUniforms', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFGeometry(center,
+            { symbol: { url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
+            }});
+        gltflayer.addGeometry(marker);
+
+        function checkColor() {
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixel).to.be.eql([168, 17, 17, 204]);
+                done();
+            }, 100);
+        }
+        marker.on('load', () => {
+            setTimeout(function () {
+                marker.setUniform('polygonFill', [1, 0, 0, 0.8]);
+                checkColor();
+            }, 100);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
+
+    it('getGLTFJSON(issues/561)', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFGeometry(center,
+            { symbol: { url: url13,
+                modelHeight: 50
+            }});
+        gltflayer.addGeometry(marker);
+        marker.on('load', () => {
+            const json = marker.getGLTFJSON();
+            expect(json.accessors.length).to.be.eql(32);
+            expect(json.animations.length).to.be.eql(7);
+            expect(json.asset).to.be.ok();
+            expect(json.bufferViews.length).to.be.eql(32);
+            expect(json.extensionsUsed.length).to.be.eql(3);
+            expect(json.nodes.length).to.be.eql(7);
+            expect(json.scene).to.be.eql(0);
+            expect(json.meshes.length).to.be.eql(7);
+            expect(json.scenes.length).to.be.eql(1);
+            done();
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
 });
