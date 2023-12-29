@@ -94,7 +94,7 @@ const depthFrag = `
     #ifdef GL_ES
         precision highp float;
     #endif
-    #if __VERSION__ == 100
+    #if __VERSION__ == 100 && defined(GL_EXT_frag_depth)
         #extension GL_EXT_frag_depth : enable
     #endif
     #include <gl2_frag>
@@ -116,7 +116,7 @@ const depthFrag = `
 
     void main() {
         float fragDepth = vFbo_picking_fragDepth > 1.0 ? vFbo_picking_fragDepth : vFbo_picking_viewZ + 1.0;
-        #if __VERSION__ == 300
+        #if __VERSION__ == 300 || __VERSION__ == 100 && defined(GL_EXT_frag_depth)
             gl_FragDepthEXT = log2(fragDepth) * logDepthBufFC * 0.5;
         #endif
         vec4 depthColor = packDepthToRGBA(fragDepth - 1.0);
