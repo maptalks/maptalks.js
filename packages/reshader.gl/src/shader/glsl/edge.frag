@@ -1,5 +1,4 @@
 precision mediump float;
-#include <gl2_frag>
 uniform vec4 lineColor;
 uniform float lineOpacity;
 void main() {

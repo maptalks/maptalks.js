@@ -1,4 +1,3 @@
-#include <gl2_vert>
 attribute vec3 aPosition;
 uniform mat4 projMatrix;
 uniform mat4 modelMatrix;

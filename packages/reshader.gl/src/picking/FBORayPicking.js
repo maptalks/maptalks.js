@@ -198,7 +198,6 @@ export default class FBORayPicking {
             defines : defines1,
             extraCommandProps
         });
-        this._depthShader.version = 300;
         this._scene = new Scene();
         this._scene1 = new Scene();
     }

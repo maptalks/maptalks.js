@@ -26,7 +26,6 @@ class EdgeShader extends MeshShader {
             defines: config.defines || {},
             extraCommandProps: config.extraCommandProps || {}
         });
-        this.version = 300;
     }
 }
 export default EdgeShader;
