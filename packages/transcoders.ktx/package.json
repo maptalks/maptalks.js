@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/transcoders.ktx2",
-  "version": "0.95.2",
+  "version": "0.95.4",
   "description": "ktx2 transcoder for @maptalks/gl",
   "main": "dist/transcoders.ktx2.js",
   "module": "dist/transcoders.ktx2.es.js",
@@ -21,7 +21,7 @@
   "author": "fuzhen",
   "license": "ISC",
   "dependencies": {
-    "@maptalks/gl": "^0.95.2"
+    "@maptalks/gl": "^0.95.4"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^20.0.0",
