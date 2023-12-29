@@ -1147,6 +1147,46 @@ describe('picking specs', () => {
 
         });
 
+        it('should pick point only with text in PointLayer', done => {
+            const options = {
+                loadingLimit: 0,
+                view: {
+                    center: [0, 0],
+                    zoom: 6
+                }
+            };
+            const marker = new maptalks.Marker([0, 0], {
+                symbol: {
+                    textName: '■■■■■■',
+                    textSize: 20
+                },
+                properties: {
+                    idx: 11
+                }
+            });
+            map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
+            const layer = new PointLayer('gvt', [marker]);
+            new GroupGLLayer('group', [layer], {
+        sceneConfig: {
+          environment: {
+            enable: true,
+            mode: 1,
+            level: 0,
+            brightness: 0,
+          },
+        },
+      }).addTo(map);
+            layer.once('canvasisdirty', () => {
+                const redPoint = layer.identify([0, 0]);
+                assert(redPoint[0].geometry instanceof maptalks.Marker);
+                assert(redPoint[0].geometry.getProperties().idx === 11);
+                assert(redPoint[0].coordinate);
+                done();
+            });
+            // layer.addTo(map);
+
+        });
+
         it('should pick point with multiple symbols in PointLayer', done => {
             const options = {
                 loadingLimit: 0,
