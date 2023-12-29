@@ -84,6 +84,7 @@ export default class Measure3DTool extends maptalks.DrawTool {
         if (pickedPoint) {
             return new maptalks.Coordinate(identifyData.coordinate);
         } else {
+            coordinate.z = coordinate.z || 0;
             return coordinate;
         }
     }

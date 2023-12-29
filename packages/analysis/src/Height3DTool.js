@@ -63,6 +63,12 @@ export default class Height3DTool extends Measure3DTool {
             const unitContent = this._getUnitContent(distance);
             const content = MEASURE_HEIGHT_NAMES[language][i] + ':' + unitContent;
             const labelSymbol = maptalks.Util.extend({ textName: content }, this.options.labelSymbol);
+            if (i === 0) {
+                labelSymbol['markerDx'] = 20;
+                labelSymbol['textDx'] = 25;
+                labelSymbol['markerHorizontalAlignment'] = 'right';
+                labelSymbol['textHorizontalAlignment'] = 'right';
+            }
             const labelCoordinate = new maptalks.Coordinate((from.x + to.x)/ 2, (from.y + to.y)/ 2, (from.z + to.z)/ 2);
             const geometryCount = this._helperLayer.getGeometries().length;
             const id = 'label' + geometryCount + '_' + i;
