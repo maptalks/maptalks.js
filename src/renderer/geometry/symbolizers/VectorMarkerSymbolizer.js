@@ -38,7 +38,6 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         const style = this.style;
         if (!this.painter.isHitTesting() && (style['markerWidth'] === 0 || style['markerHeight'] === 0 ||
             (style['polygonOpacity'] === 0 && style['lineOpacity'] === 0))) {
-            this._resetBBOX(ctx);
             return;
         }
         const cookedPoints = this._getRenderContainerPoints();

@@ -36,7 +36,6 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         if (!this.painter.isHitTesting() && (this.style['textSize'] === 0 ||
             !this.style['textOpacity'] && (!this.style['textHaloRadius'] || !this.style['textHaloOpacity']) ||
             this.style['textWrapWidth'] === 0)) {
-            this._resetBBOX(ctx);
             return;
         }
         const cookedPoints = this._getRenderContainerPoints();

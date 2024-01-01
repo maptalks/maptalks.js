@@ -31,7 +31,7 @@ const TEMP_POINT0 = new Point(0, 0);
 const TEMP_EXTENT = new PointExtent();
 const TEMP_PROPERTIES = {};
 
-function validteExtent(extent) {
+function validateExtent(extent) {
     if (!extent) {
         return false;
     }
@@ -461,7 +461,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
         if (extent) {
             const fixedExtent = this._getFixedExtent();
-            if (validteExtent(fixedExtent)) {
+            if (validateExtent(fixedExtent)) {
                 extent._add(fixedExtent);
             }
         }

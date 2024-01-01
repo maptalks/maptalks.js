@@ -910,7 +910,7 @@ describe('Geometry.Marker', function () {
         done();
     });
 
-    it('#2175 marker ContainerExtent/RenderBBOX when markerWidth/markerHeight/textSize =0', function (done) {
+    it('#2175 marker ContainerExtent when markerWidth/markerHeight/textSize =0', function (done) {
         const imageSymbol = {
             markerWidth: 10,
             markerHeight: 10,
@@ -957,8 +957,7 @@ describe('Geometry.Marker', function () {
                     const extent = point.getContainerExtent();
                     expect(extent.getWidth()).not.to.be.eql(0);
                     expect(extent.getHeight()).not.to.be.eql(0);
-                    const bbox = point._getPainter().getRenderBBOX();
-                    expect(bbox[0]).not.to.be.eql(Infinity);
+
                     if (isText) {
                         symbol.textSize = 0;
                         point.setSymbol(symbol)
@@ -971,8 +970,6 @@ describe('Geometry.Marker', function () {
                         const extent = point.getContainerExtent();
                         expect(extent.getWidth()).to.be.eql(0);
                         expect(extent.getHeight()).to.be.eql(0);
-                        const bbox = point._getPainter().getRenderBBOX();
-                        expect(bbox).to.be.eql(null);
                         idx++;
                         test();
                     }, 50);
