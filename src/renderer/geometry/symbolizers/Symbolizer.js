@@ -1,6 +1,6 @@
 import { COLOR_PROPERTIES } from '../../../core/Constants';
 import { isString } from '../../../core/util';
-import { bufferBBOX, getDefaultBBOX, setBBOX } from '../../../core/util/bbox';
+import { bufferBBOX, getDefaultBBOX, resetBBOX, setBBOX } from '../../../core/util/bbox';
 
 /**
  * @classdesc
@@ -20,6 +20,11 @@ class Symbolizer {
             setBBOX(this.bbox, x1, y1, x2, y2);
         }
         return this;
+    }
+    _resetBBOX(ctx) {
+        if (!ctx.isHitTesting) {
+            resetBBOX(this.bbox);
+        }
     }
 
     _bufferBBOX(ctx, bufferSize = 0) {
