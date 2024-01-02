@@ -52,8 +52,8 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (!collision) {
             return false;
         }
-        const type = geo.getType();
-        if (type === 'Point' && geo.getContainerExtent) {
+        // const type = geo.getType();
+        if (geo.isPoint && geo.getContainerExtent) {
             if (!geo.bbox) {
                 geo.bbox = [0, 0, 0, 0];
             }
@@ -297,7 +297,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     checkGeo(geo) {
         //点的话已经在批量处理里判断过了
-        if (geo.type === 'Point' && this._onlyHasPoint !== undefined) {
+        if (geo.isPoint && this._onlyHasPoint !== undefined) {
             if (geo._inCurrentView) {
                 this._hasPoint = true;
                 geo._isCheck = true;
@@ -445,8 +445,8 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         const geos = this._getCurrentNeedRenderGeos();
         for (let i = 0, len = geos.length; i < len; i++) {
             const geo = geos[i];
-            const type = geo.getType();
-            if (type === 'Point') {
+            // const type = geo.getType();
+            if (geo.isPoint) {
                 let painter = geo._painter;
                 if (!painter) {
                     painter = geo._getPainter();
@@ -525,9 +525,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         const meterScale = p / 1000;
         const placement = 'center';
         this._geosToDraw.sort((a, b) => {
-            const type0 = a.getType();
-            const type1 = b.getType();
-            if (type0 !== 'Point' || type1 !== 'Point') {
+            // const type0 = a.getType();
+            // const type1 = b.getType();
+            if (!a.isPoint || !b.isPoint) {
                 return 0;
             }
             const painter0 = a._painter;
@@ -653,13 +653,19 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 
     _snapshot() {
+        const progressiveRender = this.isProgressiveRender();
         const geosToDraw = this._geosToDraw || [];
         for (let i = 0, len = geosToDraw.length; i < len; i++) {
             const geo = geosToDraw[i];
             const t = geo._hitTestTolerance() || 0;
             this.maxTolerance = Math.max(this.maxTolerance, t);
+            if (progressiveRender) {
+                this.pageGeos.push(geo);
+                const painter = geo._painter;
+                this.geoPainterList.push(painter);
+            }
         }
-        if (!this.isProgressiveRender()) {
+        if (!progressiveRender) {
             return this;
         }
         const time = now();
@@ -667,12 +673,6 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (snapshotCanvas && this.canvas) {
             const ctx = clearCanvas(snapshotCanvas);
             ctx.drawImage(this.canvas, 0, 0);
-        }
-        for (let i = 0, len = geosToDraw.length; i < len; i++) {
-            const geo = geosToDraw[i];
-            this.pageGeos.push(geo);
-            const painter = geo._painter;
-            this.geoPainterList.push(painter);
         }
         const layer = this.layer;
         const { progressiveRenderCount } = layer.options;

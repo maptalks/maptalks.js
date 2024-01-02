@@ -59,6 +59,7 @@ class Marker extends CenterMixin(Geometry) {
     constructor(coordinates, opts) {
         super(opts);
         this.type = 'Point';
+        this.isPoint = true;
         if (coordinates) {
             this.setCoordinates(coordinates);
         }

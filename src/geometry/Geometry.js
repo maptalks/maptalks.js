@@ -1206,6 +1206,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     _getPainter() {
+        if (this._painter) {
+            return this._painter;
+        }
         const layer = this.getLayer();
         if (!this._painter && layer) {
             if (GEOMETRY_COLLECTION_TYPES.indexOf(this.type) !== -1) {

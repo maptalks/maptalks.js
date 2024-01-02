@@ -617,7 +617,7 @@ class Painter extends Class {
     }
 
     getSprite(resources, canvasClass) {
-        if (this.geometry.type !== 'Point') {
+        if (!this.geometry.isPoint) {
             return null;
         }
         this._spriting = true;
