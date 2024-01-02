@@ -138,6 +138,7 @@ class VectorLayer extends OverlayLayer {
         if (imageData) {
             let hitTolerance = 0;
             const maxTolerance = renderer.maxTolerance;
+            //for performance
             if (isNumber(maxTolerance)) {
                 hitTolerance = maxTolerance;
             } else {

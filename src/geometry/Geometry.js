@@ -1206,6 +1206,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     _getPainter() {
+        //for performance
         if (this._painter) {
             return this._painter;
         }
