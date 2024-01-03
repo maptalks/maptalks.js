@@ -76,7 +76,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     getImageData() {
         //如果不开启geometry event 或者 渲染频率很高 不要取缓存了，因为getImageData是个很昂贵的操作
-        if (!this.layer.options['geometryEvents'] || (!this._lastRenderTime) || (now() - this._lastRenderTime) < 32) {
+        if ((!this._lastRenderTime) || (now() - this._lastRenderTime) < 32) {
             return null;
         }
         if (!this.context || !this.context.canvas) {

@@ -129,6 +129,9 @@ class VectorLayer extends OverlayLayer {
     }
 
     _hitGeos(geometries, cp, options = {}) {
+        if (!geometries || !geometries.length) {
+            return [];
+        }
         const filter = options['filter'],
             hits = [];
         const tolerance = options['tolerance'];
