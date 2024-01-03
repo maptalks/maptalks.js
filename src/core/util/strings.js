@@ -12,6 +12,8 @@ import Size from '../../geo/Size';
  * @name StringUtil
  */
 
+export const EMPTY_STRING = '';
+
 /**
  * Trim the string
  * @param {String} str
@@ -35,7 +37,7 @@ export function escapeSpecialChars(str) {
     if (!isString(str)) {
         return str;
     }
-    return str.replace(specialPattern, '');
+    return str.replace(specialPattern, EMPTY_STRING);
 }
 
 /**
@@ -164,11 +166,11 @@ export function replaceVariable(str, props) {
 
     function getValue(key) {
         if (!props) {
-            return '';
+            return EMPTY_STRING;
         }
         const value = props[key];
         if (isNil(value)) {
-            return '';
+            return EMPTY_STRING;
         } else if (Array.isArray(value)) {
             return value.join();
         }
@@ -177,36 +179,39 @@ export function replaceVariable(str, props) {
     str = str.replace(CONTENT_EXPRE, function (str, key) {
         return getValue(key);
     });
-    if (str.indexOf(TEMPLATE_CHARS[0]) > -1 || str.indexOf(TEMPLATE_CHARS[1]) > -1) {
+    const [left, right] = TEMPLATE_CHARS;
+    if (str.indexOf(left) > -1 && str.indexOf(right) > -1) {
         const keys = templateKeys(str);
         for (let i = 0, len = keys.length; i < len; i++) {
             const key = keys[i];
             const value = getValue(key);
-            str = str.replace(`${TEMPLATE_CHARS[0]}${key}${TEMPLATE_CHARS[1]}`, value);
+            str = str.replace(`${left}${key}${right}`, value);
         }
     }
     return str;
 }
 
 function templateKeys(str) {
-    str += '';
+    str += EMPTY_STRING;
+    const [left, right] = TEMPLATE_CHARS;
     const keys = [];
     let start = false;
-    let key = '';
+    let key = EMPTY_STRING;
     for (let i = 0, len = str.length; i < len; i++) {
-        if (!start && str[i] === TEMPLATE_CHARS[0]) {
+        const char = str[i];
+        if (!start && char === left) {
             start = true;
         }
-        if (str[i] === TEMPLATE_CHARS[0] && start) {
-            key = '';
+        if (char === left && start) {
+            key = EMPTY_STRING;
         }
-        if (start && TEMPLATE_CHARS.indexOf(str[i]) === -1) {
-            key += str[i];
+        if (start && (char !== left && char !== right)) {
+            key += char;
         }
-        if (str[i] === TEMPLATE_CHARS[1]) {
+        if (char === right) {
             start = false;
             keys.push(key);
-            key = '';
+            key = EMPTY_STRING;
         }
     }
     return keys;
