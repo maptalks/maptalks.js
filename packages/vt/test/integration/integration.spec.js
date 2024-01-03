@@ -409,6 +409,15 @@ describe('vector tile integration specs', () => {
             }
         }
     });
+
+    context('specs on performance', () => {
+        const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'perf'));
+        for (const p in specs) {
+            if (hasOwn(specs, p)) {
+                it(p, runner(p, specs[p])).timeout(10000);
+            }
+        }
+    });
 });
 
 

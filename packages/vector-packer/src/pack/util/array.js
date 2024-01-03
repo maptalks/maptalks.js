@@ -32,7 +32,8 @@ export function getIndexArrayType(max) {
     // if (max < 256) return Uint8Array;
     // according to http://www.webglinsights.com/, Uint8Array performs badly in directx according to ANGLE
     if (max < 65536) return Uint16Array;
-    return Float32Array;
+    // 这里必须是Uint32Array，不能是Float32Array，element无法支持Float32Array类型, maptalks/issues#573
+    return Uint32Array;
 }
 
 export function getPosArrayType(max) {
