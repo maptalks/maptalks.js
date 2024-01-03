@@ -1200,6 +1200,10 @@ class Painter {
     }
 
     _highlightMesh(mesh) {
+        // ignore halo text meshes, maptalks/issues#562
+        if (mesh && mesh.properties.isHalo) {
+            return;
+        }
         const { pickingIdIndiceMap } = mesh.geometry.properties;
         const highlights = this._highlighted ? convertHighlights(mesh, this.layer, this._highlighted) : null;
         HighlightUtil.highlightMesh(this.regl, mesh, highlights, this._highlightTimestamp, pickingIdIndiceMap);

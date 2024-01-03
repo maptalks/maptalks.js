@@ -92,6 +92,57 @@ describe('highlight specs', () => {
         map.remove();
     });
 
+    it('should can cancel highlight text, maptalks/issues#562', done => {
+        const style = [
+            {
+                name: 'area-label',
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
+                renderPlugin: {
+                    type: 'text',
+                    dataConfig: { type: 'point' },
+                    sceneConfig: { collision: false }
+                },
+                symbol: { textName: '■■■■■■', textSize: 30, textFill: '#f00' }
+            }
+        ];
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: point,
+            style
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                bloom: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        group.once('layerload', () => {
+            const highlights = [{
+                plugin: [/*'area-fill', */'area-label'],
+                // id: 12,
+                filter: () => true,
+                name: "highlightname",
+                visible: false
+            }];
+            layer.highlight(highlights);
+            setTimeout(() => {
+                layer.cancelHighlight(["highlightname"]);
+                setTimeout(() => {
+                    const pixel = readPixel(renderer.canvas, x / 2 + 10, y / 2);
+                    //变成高亮的绿色，但只高亮了文字绘制的部分，所以颜色
+                    assert(pixel[0] > 100);
+                    done();
+                }, 200);
+            }, 200);
+        });
+        group.addTo(map);
+    });
+
     it('should can highlight text', done => {
         const style = [
             {
