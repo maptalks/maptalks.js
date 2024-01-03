@@ -125,6 +125,7 @@ class Ellipse extends CenterMixin(Polygon) {
             vertex.z = center.z;
             shell.push(vertex);
         }
+        shell.push(shell[0].copy());
         return shell;
     }
 
