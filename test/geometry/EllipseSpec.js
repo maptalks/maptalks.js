@@ -77,9 +77,9 @@ describe('Geometry.Ellipse', function () {
         var ellipse = new maptalks.Ellipse([0, 0], 1000, 800);
         var shell = ellipse.getShell();
 
-        var num = ellipse.options.numberOfShellPoints;
-        expect(shell).to.have.length(num);
-        var sumx = 0, sumy = 0, len = shell.length;
+        var num = ellipse.options.numberOfShellPoints - 1;
+        expect(shell).to.have.length(ellipse.options.numberOfShellPoints);
+        var sumx = 0, sumy = 0, len = shell.length - 1;
         for (var i = 0; i < len; i++) {
             sumx += shell[i].x;
             sumy += shell[i].y;
@@ -96,9 +96,9 @@ describe('Geometry.Ellipse', function () {
         var ellipse = new maptalks.Ellipse([0, 0, 100], 1000, 800);
         var shell = ellipse.getShell();
 
-        var num = ellipse.options.numberOfShellPoints;
-        expect(shell).to.have.length(num);
-        var sumx = 0, sumy = 0, len = shell.length;
+        var num = ellipse.options.numberOfShellPoints - 1;
+        expect(shell).to.have.length(ellipse.options.numberOfShellPoints);
+        var sumx = 0, sumy = 0, len = shell.length - 1;
         for (var i = 0; i < len; i++) {
             sumx += shell[i].x;
             sumy += shell[i].y;
