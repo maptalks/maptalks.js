@@ -622,6 +622,13 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         if (this._markerMeshes) {
             this._updateVisElements(this._markerMeshes[0], this._markerFeatures);
             this._updateVisElements(this._markerMeshes[1], this._textFeatures);
+            if (this._markerMeshes[0]) {
+                this._markerPainter.prepareCollideIndex(this._markerMeshes[0].geometry);
+            }
+            if (this._markerMeshes[1]) {
+                this._markerPainter.prepareCollideIndex(this._markerMeshes[1].geometry);
+            }
+
         }
         if (this._lineMeshes) {
             for (let i = 0; i < this._lineMeshes.length; i++) {

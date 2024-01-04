@@ -149,7 +149,7 @@ class IconPainter extends CollisionPainter {
         }
     }
 
-    _prepareCollideIndex(geo) {
+    prepareCollideIndex(geo) {
         // if (!this.layer.options['collision']) {
         //     return;
         // }
@@ -228,7 +228,7 @@ class IconPainter extends CollisionPainter {
         if (geometry.properties.markerPlacement === 'line') {
             meshes.forEach(m => m.properties.isLinePlacement = true);
         }
-        this._prepareCollideIndex(geometry);
+        this.prepareCollideIndex(geometry);
         return meshes;
     }
 
