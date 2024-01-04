@@ -591,6 +591,103 @@ describe('highlight specs', () => {
         group.addTo(map);
     });
 
+    it('should can highlight polygon above, maptalks/issues#566', done => {
+        const style = [
+            {
+                filter: true,
+                name: 'test',
+                renderPlugin: {
+                    type: 'fill',
+                    dataConfig: { type: 'fill' }
+                },
+                symbol: {
+                    polygonFill: {
+                        type: 'categorical',
+                        property: 'name',
+                        stops: [
+                            [1, '#00f'],
+                            [2, '#f00'],
+                        ],
+                    }
+                }
+            }
+        ];
+
+        const data = {
+            type: 'FeatureCollection',
+            features: [
+                {
+                    type: 'Feature',
+                    id: 0,
+                    geometry: {
+                        type: 'Polygon',
+                        coordinates: [
+                            [
+                                [-1., 1.0],
+                                [1., 1.0],
+                                [1., -1.0],
+                                [-1., -1],
+                                [-1., 1]
+                            ]
+                        ]
+                    },
+                    properties: {
+                        name: 1
+                    }
+                },
+                {
+                    type: 'Feature',
+                    id: 1,
+                    geometry: {
+                        type: 'Polygon',
+                        coordinates: [
+                            [
+                                [-1., 1.0],
+                                [1., 1.0],
+                                [1., -1.0],
+                                [-1., -1],
+                                [-1., 1]
+                            ]
+                        ]
+                    },
+                    properties: {
+                        name: 2
+                    }
+                }
+            ]
+        };
+
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data,
+            style
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                bloom: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        group.on('layerload', () => {
+            count++
+            if (count === 4) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                layer.highlight({ id: 1, plugin: 'test', color: [0, 1, 0, 1] });
+            } else if (count === 5) {
+                let pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert(pixel[1] > 10);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
     it('should not highlight with a wrong index', done => {
         const style = [
             {
