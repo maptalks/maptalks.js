@@ -1,34 +1,44 @@
-// import { resolve } from 'zousan';
+import PromisePolyfill from './Promise';
 import { requestAnimFrame } from './util';
-import { isFunction } from './util/common';
+import { isFunction, isNil } from './util/common';
 import { getGlobalWorkerPool } from './worker/WorkerPool';
 import Browser from './Browser';
 
 let tasks = [];
 
-export function pushTask(task) {
-    if (!task) {
-        return null;
-    }
-    if (isFunction(task)) {
-        task = { count: 1, run: task };
-    }
-    if (!task.run) {
-        return null;
-    }
-    if (!task.count) {
-        task.count = 1;
-    }
-    task.count = Math.ceil(task.count);
-    tasks.push(task);
-    const promise = new Promise((resolve) => {
+/**
+ *
+ * @param {Object|Function} task a micro task
+ * @param {Number} task.count task run count
+ * @param {Function} task.run task run function
+ * @returns Promise
+ */
+export function runTaskAsyn(task) {
+    const promise = new PromisePolyfill((resolve, reject) => {
+        if (!task) {
+            reject(new Error('task is null'));
+            return;
+        }
+        if (isFunction(task)) {
+            task = { count: 1, run: task };
+        }
+        if (!task.run) {
+            reject(new Error('task.run is null'));
+            return;
+        }
+        if (isNil(task.count)) {
+            task.count = 1;
+        }
+        task.count = Math.ceil(task.count);
+        task.results = [];
+        tasks.push(task);
         task.resolve = resolve;
     });
     startGlobalTasks();
     return promise;
 }
 
-function runTasks() {
+function executeMicroTasks() {
     const runingTasks = [], endTasks = [];
     let len = tasks.length;
     for (let i = 0; i < len; i++) {
@@ -38,14 +48,15 @@ function runTasks() {
             endTasks.push(task);
         } else {
             runingTasks.push(task);
-            task.run();
+            const result = task.run();
+            task.results.push(result);
         }
     }
     len = endTasks.length;
     for (let i = 0; i < len; i++) {
         const task = endTasks[i];
         if (task.resolve) {
-            task.resolve();
+            task.resolve(task.results);
         }
     }
     tasks = runingTasks;
@@ -53,7 +64,7 @@ function runTasks() {
 
 function loop() {
     getGlobalWorkerPool().commit();
-    runTasks();
+    executeMicroTasks();
 }
 
 function frameLoop(deadline) {
