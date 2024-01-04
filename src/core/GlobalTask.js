@@ -13,7 +13,7 @@ let tasks = [];
  * @param {Function} task.run task run function
  * @returns Promise
  */
-export function runTaskAsyn(task) {
+export function runTaskAsync(task) {
     const promise = new PromisePolyfill((resolve, reject) => {
         if (!task) {
             reject(new Error('task is null'));
