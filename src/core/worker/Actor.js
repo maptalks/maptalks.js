@@ -2,6 +2,7 @@ import { getGlobalWorkerPool } from './WorkerPool';
 import { UID } from '../util';
 import { createAdapter } from './Worker';
 import { adapterHasCreated, pushAdapterCreated, workersHasCreated } from './CoreWorkers';
+import { startGlobalTasks } from '../GlobalTask.js';
 
 let dedicatedWorker = 0;
 
@@ -47,6 +48,7 @@ const EMPTY_BUFFERS = [];
 class Actor {
 
     constructor(workerKey) {
+        startGlobalTasks();
         this._delayMessages = [];
         this.initializing = false;
         const hasCreated = adapterHasCreated(workerKey);

@@ -1,4 +1,4 @@
-import { requestAnimFrame } from '../util';
+// import { requestAnimFrame } from '../util';
 import { setWorkerPool, setWorkersCreated } from './CoreWorkers';
 import { getWorkerSourcePath } from './Worker';
 
@@ -112,10 +112,10 @@ export function getGlobalWorkerPool() {
     return globalWorkerPool;
 }
 
-function frameLoop() {
-    getGlobalWorkerPool().commit();
-    requestAnimFrame(frameLoop);
-}
-if (requestAnimFrame) {
-    requestAnimFrame(frameLoop);
-}
+// function frameLoop() {
+//     getGlobalWorkerPool().commit();
+//     requestAnimFrame(frameLoop);
+// }
+// if (requestAnimFrame) {
+//     requestAnimFrame(frameLoop);
+// }
