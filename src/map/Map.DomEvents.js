@@ -6,7 +6,7 @@ import {
     preventDefault,
     getEventContainerPoint,
     isMoveEvent,
-    mousemoveEventTimeThresholdJudge
+    isMousemoveEventBlocked
 } from '../core/util/dom';
 import Map from './Map';
 
@@ -223,7 +223,7 @@ Map.include(/** @lends Map.prototype */ {
         }
         const clickTimeThreshold = this.options['clickTimeThreshold'];
         const type = e.type;
-        if (isMoveEvent(type) && !Browser.isTest && !mousemoveEventTimeThresholdJudge(this, this.options['mousemoveTimeThreshold'])) {
+        if (isMoveEvent(type) && !Browser.isTest && isMousemoveEventBlocked(this, this.options['mousemoveThrottleTime'])) {
             return;
         }
         const isMouseDown = type === 'mousedown' || (type === 'touchstart' && (!e.touches || e.touches.length === 1));

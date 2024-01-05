@@ -1,5 +1,5 @@
 import { now } from '../../core/util';
-import { on, off, getEventContainerPoint, preventDefault, stopPropagation, isMoveEvent, mousemoveEventTimeThresholdJudge } from '../../core/util/dom';
+import { on, off, getEventContainerPoint, preventDefault, stopPropagation, isMoveEvent, isMousemoveEventBlocked } from '../../core/util/dom';
 import Handler from '../../handler/Handler';
 import Geometry from '../../geometry/Geometry';
 import Map from '../Map';
@@ -205,7 +205,7 @@ class MapGeometryEventsHandler extends Handler {
         }
         let oneMoreEvent = null;
         const eventType = type || domEvent.type;
-        if (isMoveEvent(eventType) && !Browser.isTest && !mousemoveEventTimeThresholdJudge(this, map.options['mousemoveTimeThreshold'])) {
+        if (isMoveEvent(eventType) && !Browser.isTest && isMousemoveEventBlocked(this, map.options['mousemoveThrottleTime'])) {
             stopPropagation(domEvent);
             return;
         }

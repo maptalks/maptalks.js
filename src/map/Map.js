@@ -23,7 +23,7 @@ import Coordinate from '../geo/Coordinate';
 import Layer from '../layer/Layer';
 import Renderable from '../renderer/Renderable';
 import SpatialReference from './spatial-reference/SpatialReference';
-import { computeDomPosition, MOUSEMOVE_EVENT_TIMETHRESHOLD } from '../core/util/dom';
+import { computeDomPosition, MOUSEMOVE_THROTTLE_TIME } from '../core/util/dom';
 import EPSG9807 from '../geo/projection/Projection.EPSG9807.js';
 
 const TEMP_COORD = new Coordinate(0, 0);
@@ -89,7 +89,7 @@ const REDRAW_OPTIONS_PROPERTIES = ['centerCross', 'fog', 'fogColor', 'debugSky']
  * @property {Boolean} [options.cameraInfiniteFar=false]           - Increase camera far plane to infinite. Enable this option may reduce map's performance.
  * @property {Boolean} [options.stopRenderOnOffscreen=true]           - whether to stop map rendering when container is offscreen
  * @property {Boolean} [options.originLatitudeForAltitude=40]         - default latitude for map.altitudeToPoint method
- * @property {Number} [options.mousemoveTimeThreshold=48]         - mousemove event interval time(ms)
+ * @property {Number} [options.mousemoveThrottleTime=48]         - mousemove event interval time(ms)
  * @memberOf Map
  * @instance
  */
@@ -151,7 +151,7 @@ const options = {
     'supportPluginEvent': true,
 
     'switchDragButton': false,
-    'mousemoveTimeThreshold': MOUSEMOVE_EVENT_TIMETHRESHOLD
+    'mousemoveThrottleTime': MOUSEMOVE_THROTTLE_TIME
 };
 
 /**
