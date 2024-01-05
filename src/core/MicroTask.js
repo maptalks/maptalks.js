@@ -8,10 +8,16 @@ let tasks = [];
 
 /**
  *
- * @param {Object|Function}  a micro task
- * @param {Number} task.count task run count
- * @param {Function} task.run task run function
- * @returns Promise
+ * @param {Object|Function} task  - a micro task
+ * @param {Number} task.count - task run count
+ * @param {Function} task.run - task run function
+ * @return {Promise}
+ * @example
+ * const run =()=>{
+ * //do some things
+ * };
+ * runTaskAsync({count:4,run}).then(result=>{})
+ * runTaskAsync(run).then(result=>{})
  */
 export function runTaskAsync(task) {
     starTasks();
