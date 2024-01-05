@@ -8,12 +8,13 @@ let tasks = [];
 
 /**
  *
- * @param {Object|Function} task a micro task
+ * @param {Object|Function}  a micro task
  * @param {Number} task.count task run count
  * @param {Function} task.run task run function
  * @returns Promise
  */
 export function runTaskAsync(task) {
+    starTasks();
     const promise = new PromisePolyfill((resolve, reject) => {
         if (!task) {
             reject(new Error('task is null'));
@@ -34,7 +35,6 @@ export function runTaskAsync(task) {
         tasks.push(task);
         task.resolve = resolve;
     });
-    startGlobalTasks();
     return promise;
 }
 
@@ -75,13 +75,13 @@ function frameLoop(deadline) {
         requestIdleCallback(frameLoop, { timeout: 1000 });
     } else {
         loop();
-        // Fallback to
+        // Fallback to requestAnimFrame
         requestAnimFrame(frameLoop);
     }
 }
 
 let started = false;
-export function startGlobalTasks() {
+export function starTasks() {
     if (started) {
         return;
     }
