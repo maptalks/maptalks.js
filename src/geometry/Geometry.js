@@ -31,6 +31,14 @@ const TEMP_POINT0 = new Point(0, 0);
 const TEMP_EXTENT = new PointExtent();
 const TEMP_PROPERTIES = {};
 
+function validateExtent(extent) {
+    if (!extent) {
+        return false;
+    }
+    const { xmin, ymin, xmax, ymax } = extent;
+    return (xmax - xmin > 0 && ymax - ymin > 0);
+}
+
 /**
  * @property {Object} options                       - geometry options
  * @property {Boolean} [options.id=null]            - id of the geometry
@@ -452,7 +460,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             extent._combine(groundExtent);
         }
         if (extent) {
-            extent._add(this._getFixedExtent());
+            const fixedExtent = this._getFixedExtent();
+            if (validateExtent(fixedExtent)) {
+                extent._add(fixedExtent);
+            }
         }
         const smoothness = this.options['smoothness'];
         if (smoothness) {
