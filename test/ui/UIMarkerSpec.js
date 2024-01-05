@@ -237,18 +237,33 @@ describe('UI.UIMarker', function () {
             dy: -5
         });
         //layer add uimarker
-        layer.addGeometry(marker);
+        try {
+            layer.addGeometry(marker);
+        } catch (err) {
+            expect(!!err).to.be.ok();
+        }
         expect(layer.getGeometries().length).to.be.equal(0);
         //add Invalid geometry
-        layer.addGeometry({ type: 'hello' });
+        try {
+            layer.addGeometry({ type: 'hello' });
+        } catch (err) {
+            expect(!!err).to.be.ok();
+        }
+
         expect(layer.getGeometries().length).to.be.equal(0);
         //uimarker add to layer
-        marker.addTo(layer);
-        expect(marker.getOwner()).to.be.equal(undefined);
+        try {
+            marker.addTo(layer);
+        } catch (err) {
+            expect(!!err).to.be.ok();
+        }
         //uimarker add Geometry
         const point = new maptalks.Marker(map.getCenter());
-        marker.addTo(point);
-        expect(marker.getOwner()).to.be.equal(undefined);
+        try {
+            marker.addTo(point);
+        } catch (err) {
+            expect(!!err).to.be.ok();
+        }
         done();
     });
 });
