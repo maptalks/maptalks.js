@@ -83,6 +83,7 @@ if (!IS_NODE) {
     }
 
     Browser = {
+        isTest: false,
         ie: ie,
         ielt9: ie && !document.addEventListener,
         edge: 'msLaunchUri' in navigator && !('documentMode' in document),

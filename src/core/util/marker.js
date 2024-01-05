@@ -136,6 +136,10 @@ const SIZE = [];
 export function getVectorMarkerFixedExtent(out, symbol, size) {
     // const padding = getVectorPadding(symbol) * 2;
     size = size || calVectorMarkerSize(SIZE, symbol);
+    if (size && (size[0] === 0 || size[1] === 0)) {
+        emptyExtent(out);
+        return out;
+    }
     // if (padding) {
     //     size = size.map(d => d - padding);
     // }
@@ -185,6 +189,11 @@ export function calVectorMarkerSize(out, symbol) {
     const padding = getVectorPadding(symbol);
     const width = getValueOrDefault(symbol['markerWidth'], DEFAULT_MARKER_SYMBOLS.markerWidth);
     const height = getValueOrDefault(symbol['markerHeight'], DEFAULT_MARKER_SYMBOLS.markerHeight);
+    if (width === 0 || height === 0) {
+        out[0] = 0;
+        out[1] = 0;
+        return out;
+    }
     const lineWidth = getValueOrDefault(symbol['markerLineWidth'], DEFAULT_MARKER_SYMBOLS.markerLineWidth),
         shadow = 2 * ((symbol['shadowBlur'] || 0) + Math.max(Math.abs(symbol['shadowOffsetX'] || 0) + Math.abs(symbol['shadowOffsetY'] || 0))), // add some tolerance for shadowOffsetX/Y
         w = Math.round(width + lineWidth + shadow + padding * 2),
@@ -217,6 +226,10 @@ export function getImageMarkerFixedExtent(out, symbol, resources) {
         height = symbol['markerHeight'] || (img ? img.height : 0);
     TEMP_SIZE.width = width;
     TEMP_SIZE.height = height;
+    if (symbol['markerWidth'] === 0 || symbol['markerHeight'] === 0) {
+        emptyExtent(out);
+        return out;
+    }
     const alignPoint = getAlignPoint(TEMP_SIZE, symbol['markerHorizontalAlignment'] || 'middle', symbol['markerVerticalAlignment'] || 'top');
     return getFixedExtent(out, symbol['markerDx'] || 0, symbol['markerDy'] || 0,
         getMarkerRotation(symbol), alignPoint, width, height);
@@ -225,6 +238,10 @@ export function getImageMarkerFixedExtent(out, symbol, resources) {
 
 export function getTextMarkerFixedExtent(out, symbol, textDesc) {
     const size = textDesc['size'];
+    if (size && (size.width === 0 || size.height === 0)) {
+        emptyExtent(out);
+        return out;
+    }
     const alignPoint = getAlignPoint(size, symbol['textHorizontalAlignment'], symbol['textVerticalAlignment']);
     // if (symbol['textHaloRadius']) {
     //     const r = symbol['textHaloRadius'];
@@ -316,3 +333,13 @@ export const DYNAMIC_SYMBOL_PROPS = [
 export const SIZE_SYMBOL_PROPS = [
     'textName', 'markerType', 'markerFile', 'textHaloRadius', 'shadowBlur', 'shadowOffsetX', 'shadowOffsetY', 'textWrapWidth'
 ];
+
+export function emptyExtent(extent) {
+    if (!extent) {
+        return;
+    }
+    extent.xmin = Infinity;
+    extent.ymin = Infinity;
+    extent.xmax = -Infinity;
+    extent.ymax = -Infinity;
+}

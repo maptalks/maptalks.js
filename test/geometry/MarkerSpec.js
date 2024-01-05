@@ -909,4 +909,75 @@ describe('Geometry.Marker', function () {
         });
         done();
     });
+
+    it('#2175 marker ContainerExtent when markerWidth/markerHeight/textSize =0', function (done) {
+        const imageSymbol = {
+            markerWidth: 10,
+            markerHeight: 10,
+            'markerFile': 'resources/tile.png',
+        };
+
+        const pathSymbol = {
+            'markerType': 'path',
+            'markerPath': [{
+                'path': 'M8 23l0 0 0 0 0 0 0 0 0 0c-4,-5 -8,-10 -8,-14 0,-5 4,-9 8,-9l0 0 0 0c4,0 8,4 8,9 0,4 -4,9 -8,14z M3,9 a5,5 0,1,0,0,-0.9Z',
+                'fill': '#DE3333'
+            }],
+            'markerPathWidth': 16,
+            'markerPathHeight': 23,
+            'markerWidth': 8,
+            'markerHeight': 20,
+        };
+
+        const vectorSymbol = {
+            markerType: 'ellipse',
+            markerWidth: 10,
+            markerHeight: 10
+        };
+
+        const textSymbol = {
+            textSize: 12,
+            textName: 'hello'
+        };
+
+        const symbols = [imageSymbol, pathSymbol, vectorSymbol, textSymbol];
+
+        let idx = 0;
+
+        function test() {
+            layer.clear();
+            if (idx < symbols.length) {
+                const symbol = symbols[idx];
+                const isText = symbol.textSize !== undefined;
+                const point = new maptalks.Marker(map.getCenter(), {
+                    symbol: symbol
+                })
+                point.addTo(layer);
+                setTimeout(() => {
+                    const extent = point.getContainerExtent();
+                    expect(extent.getWidth()).not.to.be.eql(0);
+                    expect(extent.getHeight()).not.to.be.eql(0);
+
+                    if (isText) {
+                        symbol.textSize = 0;
+                        point.setSymbol(symbol)
+                    } else {
+                        symbol.markerWidth = 0;
+                        point.setSymbol(symbol)
+                    }
+
+                    setTimeout(() => {
+                        const extent = point.getContainerExtent();
+                        expect(extent.getWidth()).to.be.eql(0);
+                        expect(extent.getHeight()).to.be.eql(0);
+                        idx++;
+                        test();
+                    }, 50);
+                }, 50);
+            } else {
+                done();
+            }
+        }
+        test();
+    });
 });
