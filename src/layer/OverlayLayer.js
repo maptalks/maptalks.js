@@ -6,6 +6,10 @@ import { createFilter, getFilterFeature, compileStyle } from '@maptalks/feature-
 import Layer from './Layer';
 import GeoJSON from '../geometry/GeoJSON';
 
+function isGeometry(geo) {
+    return geo && (geo instanceof Geometry);
+}
+
 /**
  * @property {Boolean}  [options.drawImmediate=false] - (Only for layer rendered with [CanvasRenderer]{@link renderer.CanvasRenderer}) <br>
  *                                                    In default, for performance reason, layer will be drawn in a frame requested by RAF(RequestAnimationFrame).<br>
@@ -35,7 +39,7 @@ const TMP_EVENTS_ARR = [];
 class OverlayLayer extends Layer {
 
     constructor(id, geometries, options) {
-        if (geometries && (!(geometries instanceof Geometry) && !Array.isArray(geometries) && GEOJSON_TYPES.indexOf(geometries.type) < 0)) {
+        if (geometries && (!isGeometry(geometries) && !Array.isArray(geometries) && GEOJSON_TYPES.indexOf(geometries.type) < 0)) {
             options = geometries;
             geometries = null;
         }
@@ -226,7 +230,7 @@ class OverlayLayer extends Layer {
             const last = arguments[count - 1];
             geometries = Array.prototype.slice.call(arguments, 0, count - 1);
             fitView = last;
-            if (last && isObject(last) && (('type' in last) || last instanceof Geometry)) {
+            if (last && isObject(last) && (('type' in last) || isGeometry(last))) {
                 geometries.push(last);
                 fitView = false;
             }
@@ -243,13 +247,14 @@ class OverlayLayer extends Layer {
         const geos = [];
         for (let i = 0, l = geometries.length; i < l; i++) {
             let geo = geometries[i];
-            if (!geo) {
-                throw new Error('Invalid geometry to add to layer(' + this.getId() + ') at index:' + i);
+            if (!(geo && (GeoJSON._isGeoJSON(geo) || isGeometry(geo)))) {
+                console.error(geo, 'is not Invalid geometry to add to layer(' + this.getId() + ') at index:' + i);
+                continue;
             }
             if (geo.getLayer && geo.getLayer() === this) {
                 continue;
             }
-            if (!(geo instanceof Geometry)) {
+            if (!isGeometry(geo)) {
                 geo = Geometry.fromJSON(geo);
                 if (Array.isArray(geo)) {
                     for (let ii = 0, ll = geo.length; ii < ll; ii++) {
@@ -257,6 +262,11 @@ class OverlayLayer extends Layer {
                         geos.push(geo[ii]);
                     }
                 }
+            }
+            // geojson to Geometry may be null
+            if (!geo) {
+                console.error(geo, 'is not Invalid geometry to add to layer(' + this.getId() + ') at index:' + i);
+                continue;
             }
             if (!Array.isArray(geo)) {
                 this._add(geo, extent, i);
