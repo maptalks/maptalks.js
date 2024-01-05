@@ -325,7 +325,11 @@ class UIMarker extends Handlerable(UIComponent) {
     }
 
     onAdd() {
+        if (this._owner && !this._owner.isMap) {
+            throw new Error('UIMarker Can only be added to the map, but owner is:', this._owner.getJSONType());
+        }
         this.show();
+        return this;
     }
 
     /**
