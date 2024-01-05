@@ -326,9 +326,7 @@ class UIMarker extends Handlerable(UIComponent) {
 
     onAdd() {
         if (this._owner && !this._owner.isMap) {
-            console.error('UIMarker Can only be added to the map,but owner is:', this._owner);
-            delete this._owner;
-            return this;
+            throw new Error('UIMarker Can only be added to the map, but owner is:', this._owner.getJSONType());
         }
         this.show();
         return this;

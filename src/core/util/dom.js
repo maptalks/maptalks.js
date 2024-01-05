@@ -526,14 +526,14 @@ export function isMoveEvent(type) {
     return type && (type === 'mousemove' || type === 'touchmove');
 }
 
-export const MOUSEMOVE_EVENT_TIMETHRESHOLD = 48;
+export const MOUSEMOVE_THROTTLE_TIME = 48;
 
-export function mousemoveEventTimeThresholdJudge(target, mousemoveTimeThreshold) {
+export function isMousemoveEventBlocked(target, mousemoveThrottleTime) {
     const currentTime = now();
-    const TIME = mousemoveTimeThreshold || MOUSEMOVE_EVENT_TIMETHRESHOLD;
+    const TIME = mousemoveThrottleTime || MOUSEMOVE_THROTTLE_TIME;
     if (target._mousemoveTime && currentTime - target._mousemoveTime < TIME) {
-        return false;
+        return true;
     }
     target._mousemoveTime = currentTime;
-    return true;
+    return false;
 }

@@ -248,8 +248,7 @@ class OverlayLayer extends Layer {
         for (let i = 0, l = geometries.length; i < l; i++) {
             let geo = geometries[i];
             if (!(geo && (GeoJSON._isGeoJSON(geo) || isGeometry(geo)))) {
-                console.error(geo, 'is not Invalid geometry to add to layer(' + this.getId() + ') at index:' + i);
-                continue;
+                throw new Error('Invalid geometry to add to layer(' + this.getId() + ') at index:' + i);
             }
             if (geo.getLayer && geo.getLayer() === this) {
                 continue;
@@ -265,8 +264,7 @@ class OverlayLayer extends Layer {
             }
             // geojson to Geometry may be null
             if (!geo) {
-                console.error(geo, 'is not Invalid geometry to add to layer(' + this.getId() + ') at index:' + i);
-                continue;
+                throw new Error('Invalid geometry to add to layer(' + this.getId() + ') at index:' + i);
             }
             if (!Array.isArray(geo)) {
                 this._add(geo, extent, i);
