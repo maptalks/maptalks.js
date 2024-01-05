@@ -253,6 +253,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
         this._Load();
         this.proxyOptions();
+        this.isMap = true;
     }
 
     /**

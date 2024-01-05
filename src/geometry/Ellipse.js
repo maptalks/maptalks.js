@@ -12,7 +12,7 @@ import Circle from './Circle';
  * @instance
  */
 const options = {
-    'numberOfShellPoints': 80
+    'numberOfShellPoints': 81
 };
 
 /**
@@ -102,7 +102,7 @@ class Ellipse extends CenterMixin(Polygon) {
     _getShell() {
         const measurer = this._getMeasurer(),
             center = this.getCoordinates(),
-            numberOfPoints = this.options['numberOfShellPoints'],
+            numberOfPoints = this.options['numberOfShellPoints'] - 1,
             width = this.getWidth(),
             height = this.getHeight();
         const shell = [];
@@ -125,6 +125,7 @@ class Ellipse extends CenterMixin(Polygon) {
             vertex.z = center.z;
             shell.push(vertex);
         }
+        shell.push(shell[0].copy());
         return shell;
     }
 
