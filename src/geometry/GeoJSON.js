@@ -106,7 +106,7 @@ const GeoJSON = {
     * @param  {Number} [countPerTime=2000] - Number of graphics converted per time
     * @return {Promise}
     * @example
-    *  GeoJSON.toGeometry(geoJSON).then(geos=>{
+    *  GeoJSON.toGeometryAsync(geoJSON).then(geos=>{
     *    console.log(geos);
     * })
     * */
