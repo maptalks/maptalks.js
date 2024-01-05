@@ -20,7 +20,7 @@ let tasks = [];
  * runTaskAsync(run).then(result=>{})
  */
 export function runTaskAsync(task) {
-    starTasks();
+    startTasks();
     const promise = new PromisePolyfill((resolve, reject) => {
         if (!task) {
             reject(new Error('task is null'));
@@ -87,7 +87,7 @@ function frameLoop(deadline) {
 }
 
 let started = false;
-export function starTasks() {
+export function startTasks() {
     if (started) {
         return;
     }
