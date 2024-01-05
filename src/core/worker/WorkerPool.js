@@ -1,6 +1,7 @@
 // import { requestAnimFrame } from '../util';
 import { setWorkerPool, setWorkersCreated } from './CoreWorkers';
 import { getWorkerSourcePath } from './Worker';
+import globalConfig from '../../globalConfig';
 
 const hardwareConcurrency = typeof window !== 'undefined' ? (window.navigator.hardwareConcurrency || 4) : 0;
 const workerCount = Math.max(Math.floor(hardwareConcurrency / 2), 1);
@@ -42,7 +43,7 @@ class MessageBatch {
 export default class WorkerPool {
     constructor() {
         this.active = {};
-        this.workerCount = typeof window !== 'undefined' ? (window.MAPTALKS_WORKER_COUNT || workerCount) : 0;
+        this.workerCount = typeof window !== 'undefined' ? (globalConfig.workerCount || window.MAPTALKS_WORKER_COUNT || workerCount) : 0;
         this._messages = [];
         this._messageBuffers = [];
     }
@@ -101,6 +102,24 @@ export default class WorkerPool {
             }
         }
     }
+
+    getWorkers() {
+        return this.workers || [];
+    }
+
+    broadcastMessage(message) {
+        const workers = this.getWorkers();
+        workers.forEach(worker => {
+            worker.postMessage({ messageType: message, messageCount: globalConfig.workerConcurrencyCount });
+        });
+        return this;
+    }
+
+    broadcastIdleMessage() {
+        this.broadcastMessage('idle');
+        return this;
+    }
+
 }
 
 let globalWorkerPool;

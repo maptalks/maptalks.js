@@ -3,6 +3,7 @@ import { requestAnimFrame } from './util';
 import { isFunction, isNil, isNumber } from './util/common';
 import { getGlobalWorkerPool } from './worker/WorkerPool';
 import Browser from './Browser';
+import globalConfig from '../globalConfig';
 
 let tasks = [];
 
@@ -75,21 +76,39 @@ function executeMicroTasks() {
     }
 }
 
+let sendIdle = true;
 function loop() {
-    getGlobalWorkerPool().commit();
+    if (sendIdle) {
+        getGlobalWorkerPool().broadcastIdleMessage();
+    } else {
+        getGlobalWorkerPool().commit();
+    }
     executeMicroTasks();
+    sendIdle = !sendIdle;
 }
 
 function frameLoop(deadline) {
+    const { idleTimeRemaining, idleLog, idleTimeout } = globalConfig;
     if (Browser.requestIdleCallback) {
-        if (deadline && (deadline.timeRemaining() > 10 || deadline.didTimeout)) {
-            loop();
+        if (deadline && deadline.timeRemaining) {
+            const t = deadline.timeRemaining();
+            if (t > idleTimeRemaining || deadline.didTimeout) {
+                if (deadline.didTimeout && idleLog) {
+                    console.error('idle timeout in', idleTimeout);
+                }
+                loop();
+            } else if (t <= idleTimeRemaining && idleLog) {
+                console.warn('currrent page is busy,the timeRemaining is', t);
+            }
         }
-        requestIdleCallback(frameLoop, { timeout: 1000 });
+        requestIdleCallback(frameLoop, { timeout: idleTimeout });
     } else {
         loop();
         // Fallback to requestAnimFrame
         requestAnimFrame(frameLoop);
+        if (globalConfig.idleLog) {
+            console.warn('current env not support requestIdleCallback. Fallback to requestAnimFrame');
+        }
     }
 }
 

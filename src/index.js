@@ -1,4 +1,5 @@
 import { version } from '../package.json';
+export { default as globalconfig } from './globalConfig';
 export * from './core/Constants';
 export { default as Browser } from './core/Browser';
 import * as Util from './core/util';
