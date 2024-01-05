@@ -3,7 +3,8 @@ import {
     isString,
     parseJSON,
     isArrayHasData,
-    pushIn
+    pushIn,
+    isNumber
 } from '../core/util';
 import Marker from './Marker';
 import LineString from './LineString';
@@ -101,21 +102,22 @@ const GeoJSON = {
     * async Convert one or more GeoJSON objects to geometry
     * @param  {String|Object|Object[]} geoJSON - GeoJSON objects or GeoJSON string
     * @param  {Function} [foreachFn=undefined] - callback function for each geometry
+    * @param  {Number} [countPerTime=2000] - Number of graphics converted per time
     * @return {Promise}
     * @example
     *  GeoJSON.toGeometry(geoJSON).then(geos=>{
     *    console.log(geos);
     * })
     * */
-    toGeometryAsync(geoJSON, foreachFn) {
+    toGeometryAsync(geoJSON, foreachFn, countPerTime = 2000) {
         if (isString(geoJSON)) {
             geoJSON = parseJSON(geoJSON);
         }
         return new PromisePolyfill((resolve) => {
             const resultGeos = [];
             if (geoJSON && (Array.isArray(geoJSON) || Array.isArray(geoJSON.features))) {
+                const pageSize = isNumber(countPerTime) ? Math.round(countPerTime) : 2000;
                 const features = geoJSON.features || geoJSON;
-                const pageSize = 2000;
                 const count = Math.ceil(features.length / pageSize);
                 let page = 1;
                 const run = () => {

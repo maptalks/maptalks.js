@@ -1,6 +1,6 @@
 import PromisePolyfill from './Promise';
 import { requestAnimFrame } from './util';
-import { isFunction, isNil } from './util/common';
+import { isFunction, isNil, isNumber } from './util/common';
 import { getGlobalWorkerPool } from './worker/WorkerPool';
 import Browser from './Browser';
 
@@ -37,6 +37,10 @@ export function runTaskAsync(task) {
             task.count = 1;
         }
         task.count = Math.ceil(task.count);
+        if (!isNumber(task.count)) {
+            reject(new Error('task.count is not number'));
+            return;
+        }
         task.results = [];
         tasks.push(task);
         task.resolve = resolve;
@@ -45,6 +49,9 @@ export function runTaskAsync(task) {
 }
 
 function executeMicroTasks() {
+    if (tasks.length === 0) {
+        return;
+    }
     const runingTasks = [], endTasks = [];
     let len = tasks.length;
     for (let i = 0; i < len; i++) {
@@ -58,6 +65,7 @@ function executeMicroTasks() {
             task.results.push(result);
         }
     }
+    tasks = runingTasks;
     len = endTasks.length;
     for (let i = 0; i < len; i++) {
         const task = endTasks[i];
@@ -65,7 +73,6 @@ function executeMicroTasks() {
             task.resolve(task.results);
         }
     }
-    tasks = runingTasks;
 }
 
 function loop() {
