@@ -113,7 +113,7 @@ const GeoJSON = {
         }
         return new PromisePolyfill((resolve) => {
             const resultGeos = [];
-            if (Array.isArray(geoJSON) || Array.isArray(geoJSON.features)) {
+            if (geoJSON && (Array.isArray(geoJSON) || Array.isArray(geoJSON.features))) {
                 const features = geoJSON.features || geoJSON;
                 const pageSize = 2000;
                 const count = Math.ceil(features.length / pageSize);
@@ -128,6 +128,9 @@ const GeoJSON = {
                 runTaskAsync({ count, run }).then((geoList) => {
                     for (let i = 0, len = geoList.length; i < len; i++) {
                         const geo = geoList[i];
+                        if (!geo) {
+                            continue;
+                        }
                         if (Array.isArray(geo)) {
                             pushIn(resultGeos, geo);
                         } else {
