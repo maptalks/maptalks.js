@@ -510,4 +510,60 @@ describe('Geometry.Polygon', function () {
         }
         load();
     });
+
+    it('#2159 polygon sub geometries(Rectange/Ellipse/Sector) rotate missing z', function (done) {
+        layer.config('drawImmediate', true);
+        layer.clear();
+        map.config({ centerCross: true });
+        map.setCenter(center);
+        map.setZoom(17);
+
+        const symbol = {
+            polygonFill: '#fff',
+            lineWidth: 8
+            // polygonFill: '#fff'
+        };
+
+        const altitude = 100;
+        const center1 = center.copy();
+        center1.z = altitude;
+        const center2 = center.copy();
+        center2.z = altitude;
+        const center3 = center.copy();
+        center3.z = altitude;
+
+        const rectangle = new maptalks.Rectangle(center1, 200, 100, {
+            symbol
+        });
+        const ellipse = new maptalks.Ellipse(center2, 200, 100, {
+            symbol
+        });
+        const sector = new maptalks.Sector(center3, 100, 0, 90, {
+            symbol
+        });
+
+        const geos = [rectangle, ellipse, sector];
+        layer.addGeometry(geos);
+
+        setTimeout(() => {
+            geos.forEach(geo => {
+                const shell = geo.getShell();
+                const z = shell[0].z;
+                expect(z).to.be(altitude);
+                //rotate geometry
+                geo.rotate(Math.random() * 90);
+            })
+
+            setTimeout(() => {
+                geos.forEach(geo => {
+                    const shell = geo.getShell();
+                    const z = shell[0].z;
+                    expect(z).to.be(altitude);
+                })
+                done();
+            }, 40);
+
+        }, 40);
+
+    });
 });

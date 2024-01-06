@@ -461,4 +461,27 @@ describe('Geometry.Events', function () {
         }
         test();
     });
+
+    it('#2103 mouseout when no others mouse events', function (done) {
+        var circle = new maptalks.Circle(map.getCenter(), 10);
+        circle.addTo(layer);
+        var domPosition = GET_PAGE_POSITION(container);
+        var point = map.coordinateToContainerPoint(center).add(domPosition);
+        circle.on('mouseout', function (param) {
+            expect(param.type).to.be.eql('mouseout');
+            done();
+        });
+
+        happen.mousemove(eventContainer, {
+            'clientX': point.x,
+            'clientY': point.y
+        });
+
+        setTimeout(() => {
+            happen.mousemove(eventContainer, {
+                'clientX': point.x + 100,
+                'clientY': point.y + 100
+            });
+        }, 50);
+    });
 });

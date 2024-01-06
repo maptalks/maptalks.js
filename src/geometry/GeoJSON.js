@@ -13,6 +13,7 @@ import MultiLineString from './MultiLineString';
 import MultiPolygon from './MultiPolygon';
 import GeometryCollection from './GeometryCollection';
 import Geometry from './Geometry';
+import { GEOJSON_TYPES } from '../core/Constants';
 
 const types = {
     'Marker': Marker,
@@ -160,6 +161,48 @@ const GeoJSON = {
             return result;
         }
         return null;
+    },
+
+    _isGeoJSON(json) {
+        if (!json) {
+            return false;
+        }
+        json = json || {};
+        //is flat geometries,[geometry,geometry,...]
+        if (Array.isArray(json) && json.length) {
+            return GeoJSON.isGeoJSON(json[0]);
+        }
+        const type = json.type;
+        if (!type) {
+            return false;
+        }
+        if (GEOJSON_TYPES.indexOf(type) === -1) {
+            return false;
+        }
+        const { features, geometries, geometry, coordinates } = json;
+
+        //Geometry
+        if (coordinates && Array.isArray(coordinates)) {
+            return true;
+        }
+        //GeometryCollection
+        if (Array.isArray(geometries)) {
+            return true;
+        }
+
+        //FeatureCollection
+        if (Array.isArray(features)) {
+            return true;
+        }
+        //Feature
+        if (geometry) {
+            const coordinates = geometry.coordinates;
+            if (coordinates && Array.isArray(coordinates)) {
+                return true;
+            }
+        }
+        return false;
+
     }
 };
 

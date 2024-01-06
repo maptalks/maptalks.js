@@ -44,8 +44,11 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
         if (!layer.options['drawAltitude']) {
             return;
         }
-        const properties = this.geometry.getProperties();
-        if (!properties || !properties[layer.options['altitudeProperty']]) {
+        // const properties = this.geometry.getProperties();
+        // if (!properties || !properties[layer.options['altitudeProperty']]) {
+        //     return;
+        // }
+        if (!this.geometry.hasAltitude()) {
             return;
         }
         const style = this._getStyle();
