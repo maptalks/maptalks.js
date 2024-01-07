@@ -3,6 +3,11 @@
  * idle/worker etc
  */
 const globalConfig = {
+    //dev env
+    dev: false,
+    //test env
+    test: false,
+    //idle logging
     idleLog: false,
     //idle 时间阈值
     idleTimeRemaining: 8,

@@ -106,7 +106,7 @@ function frameLoop(deadline) {
         loop();
         // Fallback to requestAnimFrame
         requestAnimFrame(frameLoop);
-        if (globalConfig.idleLog) {
+        if (idleLog) {
             console.warn('current env not support requestIdleCallback. Fallback to requestAnimFrame');
         }
     }
