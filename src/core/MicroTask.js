@@ -9,7 +9,7 @@ let tasks = [];
 
 /**
  *
- * @param {Object|Function} task  - a micro task
+ * @param {Object|Function} task  - a micro task(Promise)
  * @param {Number} task.count - task run count
  * @param {Function} task.run - task run function
  * @return {Promise}
@@ -76,15 +76,15 @@ function executeMicroTasks() {
     }
 }
 
-let sendIdle = true;
+let broadcastIdleMessage = true;
 function loop() {
-    if (sendIdle) {
+    if (broadcastIdleMessage) {
         getGlobalWorkerPool().broadcastIdleMessage();
     } else {
         getGlobalWorkerPool().commit();
     }
     executeMicroTasks();
-    sendIdle = !sendIdle;
+    broadcastIdleMessage = !broadcastIdleMessage;
 }
 
 function frameLoop(deadline) {
@@ -118,5 +118,10 @@ export function startTasks() {
         return;
     }
     started = true;
-    frameLoop();
+    const { idleTimeout } = globalConfig;
+    if (Browser.requestIdleCallback) {
+        requestIdleCallback(frameLoop, { timeout: idleTimeout });
+    } else {
+        requestAnimFrame(frameLoop);
+    }
 }
