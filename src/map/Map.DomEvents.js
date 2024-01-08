@@ -1,10 +1,12 @@
+import Browser from '../core/Browser';
 import { now, extend } from '../core/util';
 import {
     addDomEvent,
     removeDomEvent,
     preventDefault,
     getEventContainerPoint,
-    isMoveEvent
+    isMoveEvent,
+    isMousemoveEventBlocked
 } from '../core/util/dom';
 import Map from './Map';
 
@@ -221,6 +223,9 @@ Map.include(/** @lends Map.prototype */ {
         }
         const clickTimeThreshold = this.options['clickTimeThreshold'];
         const type = e.type;
+        if (isMoveEvent(type) && !Browser.isTest && isMousemoveEventBlocked(this, this.options['mousemoveThrottleTime'])) {
+            return;
+        }
         const isMouseDown = type === 'mousedown' || (type === 'touchstart' && (!e.touches || e.touches.length === 1));
         // prevent default contextmenu
         if (isMouseDown) {

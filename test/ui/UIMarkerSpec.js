@@ -5,12 +5,14 @@ describe('UI.UIMarker', function () {
     var context = {
 
     };
+    var layer;
 
     beforeEach(function () {
         var setups = COMMON_CREATE_MAP(center);
         container = setups.container;
         map = setups.map;
         context.map = map;
+        layer = new maptalks.VectorLayer('v').addTo(map);
     });
 
     afterEach(function () {
@@ -200,7 +202,7 @@ describe('UI.UIMarker', function () {
         });
         marker.addTo(map).show();
 
-        setTimeout(function() {
+        setTimeout(function () {
             var m = document.getElementById('uimarker');
             expect(m).to.be.ok();
             map.getContainer().style.width = '400px';
@@ -225,5 +227,43 @@ describe('UI.UIMarker', function () {
             zoom: 18,
             pitch: 60
         });
+    });
+
+    it('UIMarker Can only be added to the map', function (done) {
+        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+            content: '<div id="uimarker" class="text-marker" style="width:100px;height:40px;background:black;color:white;text-align:center;">maptalks</div>',
+            verticalAlignment: 'top',
+            altitude: 20,
+            dy: -5
+        });
+        //layer add uimarker
+        try {
+            layer.addGeometry(marker);
+        } catch (err) {
+            expect(!!err).to.be.ok();
+        }
+        expect(layer.getGeometries().length).to.be.equal(0);
+        //add Invalid geometry
+        try {
+            layer.addGeometry({ type: 'hello' });
+        } catch (err) {
+            expect(!!err).to.be.ok();
+        }
+
+        expect(layer.getGeometries().length).to.be.equal(0);
+        //uimarker add to layer
+        try {
+            marker.addTo(layer);
+        } catch (err) {
+            expect(!!err).to.be.ok();
+        }
+        //uimarker add Geometry
+        const point = new maptalks.Marker(map.getCenter());
+        try {
+            marker.addTo(point);
+        } catch (err) {
+            expect(!!err).to.be.ok();
+        }
+        done();
     });
 });

@@ -8,7 +8,7 @@
 
 import Browser from '../Browser';
 import { IS_NODE } from './env';
-import { isString, isNil } from './common';
+import { isString, isNil, now } from './common';
 import { splitWords } from './strings';
 import Point from '../../geo/Point';
 import Size from '../../geo/Size';
@@ -524,4 +524,16 @@ export const off = removeDomEvent;
 
 export function isMoveEvent(type) {
     return type && (type === 'mousemove' || type === 'touchmove');
+}
+
+export const MOUSEMOVE_THROTTLE_TIME = 48;
+
+export function isMousemoveEventBlocked(target, mousemoveThrottleTime) {
+    const currentTime = now();
+    const TIME = mousemoveThrottleTime || MOUSEMOVE_THROTTLE_TIME;
+    if (target._mousemoveTime && currentTime - target._mousemoveTime < TIME) {
+        return true;
+    }
+    target._mousemoveTime = currentTime;
+    return false;
 }
