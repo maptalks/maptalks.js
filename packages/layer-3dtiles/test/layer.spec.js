@@ -293,6 +293,37 @@ describe('3dtiles layer', () => {
         layer.addTo(map);
     });
 
+    it('can serialize layer with json', done => {
+        const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
+        const layer = new Geo3DTilesLayer('3d-tiles', {
+            services: [{
+                url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                shader: 'pbr'
+            }]
+        });
+
+        const json = layer.toJSON();
+
+        const newLayer = maptalks.Layer.fromJSON(json);
+
+        newLayer.on('loadtileset', () => {
+            const extent = newLayer.getExtent(0);
+            map.fitExtent(extent, 0, { animation: false });
+        });
+        let count = 0;
+        newLayer.on('canvasisdirty', () => {
+            count++;
+            if (count === 2) {
+                const canvas = map.getRenderer().canvas;
+                const ctx = canvas.getContext('2d');
+                const color = ctx.getImageData(canvas.width / 2 - 43, canvas.height / 2 + 70, 1, 1);
+                assert(color.data[3] > 0);
+                done();
+            }
+        });
+        newLayer.addTo(map);
+    });
+
     it('can add service on the fly', done => {
         const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
         const service = {

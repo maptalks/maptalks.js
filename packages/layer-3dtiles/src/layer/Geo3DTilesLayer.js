@@ -93,7 +93,20 @@ const BOX_POS = [
  * 3d-tiles 规范：https://github.com/AnalyticalGraphicsInc/3d-tiles/
  */
 export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
-
+    /**
+     * Reproduce a Geo3DTilesLayer from layer's profile JSON.
+     * @param  {Object} layerJSON - layer's profile JSON
+     * @return {Geo3DTilesLayer}
+     * @static
+     * @private
+     * @function
+     */
+    static fromJSON(layerJSON) {
+        if (!layerJSON || layerJSON['type'] !== 'Geo3DTilesLayer') {
+            return null;
+        }
+        return new Geo3DTilesLayer(layerJSON['id'], layerJSON['options']);
+    }
 
     constructor(id, options) {
         super(id, options);
@@ -1198,6 +1211,21 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         this.getRenderer()._identityCoordToLngLat(TEMP_VEC3_0, TEMP_VEC3_1);
         cameraCoord.set(TEMP_VEC3_0[0], TEMP_VEC3_0[1]);
         return cameraCoord;
+    }
+
+    /**
+     * Export the Geo3DTilesLayer's profile json. <br>
+     * Layer's profile is a snapshot of the layer in JSON format. <br>
+     * It can be used to reproduce the instance by [fromJSON]{@link Layer#fromJSON} method
+     * @return {Object} layer's profile JSON
+     */
+    toJSON() {
+        const profile = {
+            'type': this.getJSONType(),
+            'id': this.getId(),
+            'options': this.config()
+        };
+        return profile;
     }
 }
 
