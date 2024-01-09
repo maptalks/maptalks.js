@@ -178,9 +178,14 @@ class VectorLayer extends OverlayLayer {
                 return hits;
             }
         }
+        const onlyVisible = options.onlyVisible;
         for (let i = geometries.length - 1; i >= 0; i--) {
             const geo = geometries[i];
-            if (!geo || !geo.isVisible() || !geo.options['interactive']) {
+            if (!geo || !geo.options['interactive']) {
+                continue;
+            }
+            //当onlyVisible===false时才需要判断isVisible,因为渲染时已经判断过isVisible的值了
+            if (!onlyVisible && (!geo.isVisible())) {
                 continue;
             }
             const painter = geo._getPainter();
