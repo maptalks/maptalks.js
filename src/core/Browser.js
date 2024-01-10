@@ -35,7 +35,8 @@ if (!IS_NODE) {
         imageBitMap = typeof window !== 'undefined' && isFunction(window.createImageBitmap),
         resizeObserver = typeof window !== 'undefined' && isFunction(window.ResizeObserver),
         btoa = typeof window !== 'undefined' && isFunction(window.btoa),
-        proxy = typeof window !== 'undefined' && isFunction(window.Proxy);
+        proxy = typeof window !== 'undefined' && isFunction(window.Proxy),
+        requestIdleCallback = typeof window !== 'undefined' && isFunction(window.requestIdleCallback);
 
 
     let chromeVersion = 0;
@@ -127,6 +128,7 @@ if (!IS_NODE) {
         monitorDPRChange: true,
         supportsPassive,
         proxy,
+        requestIdleCallback,
         // removeDPRListening: (map) => {
         //     // if (map) {
         //     //     delete maps[map.id];

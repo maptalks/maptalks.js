@@ -53,6 +53,12 @@ const header = `
            postMessage({adapterName:key});
            return;
         }
+        // postMessage when main thread idle
+        if(msg.messageType==='idle'){
+            var messageCount = msg.messageCount||5;
+            handleMessageQueue(messageCount);
+            return;
+        }
         if (msg.messageType === 'batch') {
             const messages = msg.messages;
             if (messages) {
@@ -81,6 +87,19 @@ const header = `
         }
     }
 
+    var messageResultQueue = [];
+    
+    function handleMessageQueue(messageCount){
+       if(messageResultQueue.length===0){
+          return;
+       }
+       var queues = messageResultQueue.slice(0,messageCount);
+       queues.forEach(function(queue){
+          post(queue.callback,queue.err,queue.data,queue.buffers);
+       });
+       messageResultQueue=messageResultQueue.slice(messageCount,Infinity);
+    }
+
     function post(callback, err, data, buffers) {
         var msg = {
             callback : callback
@@ -96,9 +115,19 @@ const header = `
             postMessage(msg);
         }
     }
+
+    function joinQueue(callback,err,data,buffers){
+        messageResultQueue.push({
+            callback:callback,
+            err:err,
+            data:data,
+            buffers:buffers
+        });
+    }
+
     function wrap(callback) {
         return function (err, data, buffers) {
-            post(callback, err, data, buffers);
+            joinQueue(callback, err, data, buffers);
         };
     }
     var workerExports;
