@@ -2,11 +2,7 @@
  * global config
  * idle/worker etc
  */
-const globalConfig = {
-    //dev env
-    dev: false,
-    //test env
-    test: false,
+const GlobalConfig = {
     //idle logging
     idleLog: false,
     //idle 时间阈值
@@ -14,8 +10,8 @@ const globalConfig = {
     //idle 超时阈值
     idleTimeout: 1000,
     //worker 数量
-    workerCount: 0,
-    //worker 通信并发数量
-    workerConcurrencyCount: 5
+    workerCount: window.MAPTALKS_WORKER_COUNT || 0,
+    //每个Worker Message中封装的task message数量
+    taskCountPerWorkerMessage: 5
 };
-export default globalConfig;
+export default GlobalConfig;

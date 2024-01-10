@@ -3,7 +3,7 @@ import { requestAnimFrame } from './util';
 import { isFunction, isNil, isNumber } from './util/common';
 import { getGlobalWorkerPool } from './worker/WorkerPool';
 import Browser from './Browser';
-import globalConfig from '../globalConfig';
+import GlobalConfig from '../GlobalConfig';
 
 let tasks = [];
 
@@ -88,7 +88,7 @@ function loop() {
 }
 
 function frameLoop(deadline) {
-    const { idleTimeRemaining, idleLog, idleTimeout } = globalConfig;
+    const { idleTimeRemaining, idleLog, idleTimeout } = GlobalConfig;
     if (Browser.requestIdleCallback) {
         if (deadline && deadline.timeRemaining) {
             const t = deadline.timeRemaining();
@@ -118,7 +118,7 @@ export function startTasks() {
         return;
     }
     started = true;
-    const { idleTimeout } = globalConfig;
+    const { idleTimeout } = GlobalConfig;
     if (Browser.requestIdleCallback) {
         requestIdleCallback(frameLoop, { timeout: idleTimeout });
     } else {
