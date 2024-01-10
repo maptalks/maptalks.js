@@ -1,6 +1,5 @@
 import { INTERNAL_LAYER_PREFIX } from '../core/Constants';
 import { isNil, isString, isArrayHasData, pushIn, isFunction } from '../core/util';
-import { isGLRenderLayer, layerIsBlankInPoint } from '../core/util/pick';
 import Coordinate from '../geo/Coordinate';
 import Point from '../geo/Point';
 import Map from './Map';
@@ -108,17 +107,12 @@ Map.include(/** @lends Map.prototype */ {
                 opts.tolerance = opts.tolerance || 0;
                 opts.tolerance += layer.options.geometryEventTolerance;
             }
-            //only gllayer,exclude canvas layer
-            const isGLLayer = isGLRenderLayer(layer);
-            const isBlank = isGLLayer && layerIsBlankInPoint(layer, containerPoint, opts.tolerance);
-            if (!isBlank && layer._hasGeoListeners && isMapGeometryEvent && opts.eventTypes.indexOf('mousemove') >= 0) {
+            if (layer._hasGeoListeners && isMapGeometryEvent && opts.eventTypes.indexOf('mousemove') >= 0) {
                 if (!layer._hasGeoListeners(opts.eventTypes)) {
                     return [];
                 }
             }
-            if (isBlank) {
-                result = [];
-            } else if (layer.identifyAtPoint) {
+            if (layer.identifyAtPoint) {
                 result = layer.identifyAtPoint(containerPoint, opts);
             } else if (coordinate && layer.identify) {
                 result = layer.identify(coordinate, opts);

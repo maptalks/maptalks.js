@@ -552,12 +552,6 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return this.constructor === VectorLayerRenderer;
     }
 
-    _alwaysDraw() {
-        if (this.canvas && this.isProgressiveRender()) {
-            this.canvas._drawn = true;
-        }
-    }
-
     isProgressiveRender() {
         const layer = this.layer;
         if (!layer) {
