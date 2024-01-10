@@ -6,8 +6,10 @@ import * as Util from './core/util';
 import * as DomUtil from './core/util/dom';
 import * as StringUtil from './core/util/strings';
 import * as MapboxUtil from './core/mapbox';
+
 import * as MicroTask from './core/MicroTask';
 export { Util, DomUtil, StringUtil, MapboxUtil, MicroTask };
+
 export { default as LRUCache } from './core/util/LRUCache';
 export { default as Ajax } from './core/Ajax';
 export { default as Canvas } from './core/Canvas';

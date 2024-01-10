@@ -56,26 +56,29 @@ class OverlayLayer extends Layer {
         }
     }
 
-    isGeometryListening(types) {
-        if (!this._geoList) {
-            return false;
-        }
-        if (!Array.isArray(types)) {
-            types = [types];
-        }
-        for (let i = 0, l = this._geoList.length; i < l; i++) {
-            const geometry = this._geoList[i];
-            if (!geometry) {
-                continue;
-            }
-            for (let j = 0; j < types.length; j++) {
-                if (geometry.listens(types[j])) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+    // isGeometryListening(types) {
+    //     if (!this._geoList) {
+    //         return false;
+    //     }
+    //     if (!Array.isArray(types)) {
+    //         types = [types];
+    //     }
+    //     for (let i = 0, l = this._geoList.length; i < l; i++) {
+    //         const geometry = this._geoList[i];
+    //         if (!geometry) {
+    //             continue;
+    //         }
+    //         if (geometry.options.cursor) {
+    //             return true;
+    //         }
+    //         for (let j = 0; j < types.length; j++) {
+    //             if (geometry.listens(types[j])) {
+    //                 return true;
+    //             }
+    //         }
+    //     }
+    //     return false;
+    // }
 
     /**
      * Get a geometry by its id
@@ -712,9 +715,16 @@ class OverlayLayer extends Layer {
         }
         const geos = this.getGeometries() || [];
         for (let i = 0, len = geos.length; i < len; i++) {
+            const geometry = geos[i];
+            if (!geometry) {
+                continue;
+            }
+            if (geometry.options.cursor) {
+                return true;
+            }
             for (let j = 0, len1 = eventTypes.length; j < len1; j++) {
                 const eventType = eventTypes[j];
-                const listens = geos[i].listens(eventType);
+                const listens = geometry.listens(eventType);
                 if (listens > 0) {
                     return true;
                 }
