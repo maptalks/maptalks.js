@@ -3,7 +3,8 @@ import {
     isString,
     parseJSON,
     isArrayHasData,
-    pushIn
+    pushIn,
+    isNumber
 } from '../core/util';
 import Marker from './Marker';
 import LineString from './LineString';
@@ -14,6 +15,8 @@ import MultiPolygon from './MultiPolygon';
 import GeometryCollection from './GeometryCollection';
 import Geometry from './Geometry';
 import { GEOJSON_TYPES } from '../core/Constants';
+import PromisePolyfill from './../core/Promise';
+import { runTaskAsync } from '../core/MicroTask';
 
 const types = {
     'Marker': Marker,
@@ -95,6 +98,55 @@ const GeoJSON = {
             return resultGeo;
         }
 
+    },
+    /**
+    * async Convert one or more GeoJSON objects to geometry
+    * @param  {String|Object|Object[]} geoJSON - GeoJSON objects or GeoJSON string
+    * @param  {Function} [foreachFn=undefined] - callback function for each geometry
+    * @param  {Number} [countPerTime=2000] - Number of graphics converted per time
+    * @return {Promise}
+    * @example
+    *  GeoJSON.toGeometryAsync(geoJSON).then(geos=>{
+    *    console.log(geos);
+    * })
+    * */
+    toGeometryAsync(geoJSON, foreachFn, countPerTime = 2000) {
+        if (isString(geoJSON)) {
+            geoJSON = parseJSON(geoJSON);
+        }
+        return new PromisePolyfill((resolve) => {
+            const resultGeos = [];
+            if (geoJSON && (Array.isArray(geoJSON) || Array.isArray(geoJSON.features))) {
+                const pageSize = isNumber(countPerTime) ? Math.round(countPerTime) : 2000;
+                const features = geoJSON.features || geoJSON;
+                const count = Math.ceil(features.length / pageSize);
+                let page = 1;
+                const run = () => {
+                    const startIndex = (page - 1) * pageSize, endIndex = (page) * pageSize;
+                    const fs = features.slice(startIndex, endIndex);
+                    const geos = GeoJSON.toGeometry(fs, foreachFn);
+                    page++;
+                    return geos;
+                };
+                runTaskAsync({ count, run }).then((geoList) => {
+                    for (let i = 0, len = geoList.length; i < len; i++) {
+                        const geo = geoList[i];
+                        if (!geo) {
+                            continue;
+                        }
+                        if (Array.isArray(geo)) {
+                            pushIn(resultGeos, geo);
+                        } else {
+                            resultGeos.push(geo);
+                        }
+                    }
+                    resolve(resultGeos);
+                });
+            } else {
+                const geo = GeoJSON.toGeometry(geoJSON, foreachFn);
+                resolve(geo);
+            }
+        });
     },
 
     /**
