@@ -23,7 +23,7 @@ function clearCanvas(canvas) {
 }
 
 function isDebug(layer) {
-    return layer && layer.options.progressiveRenderDebug;
+    return layer && layer.options.progressiveRender && layer.options.progressiveRenderDebug;
 }
 
 
@@ -39,8 +39,8 @@ function isDebug(layer) {
 class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     setToRedraw() {
+        super.setToRedraw();
         this._resetProgressiveRender();
-        this._toRedraw = true;
         return this;
     }
 
@@ -160,6 +160,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (!this.context) {
             return false;
         }
+        if (this.isProgressiveRender()) {
+            return false;
+        }
         return !this.context.canvas._drawn;
     }
 
@@ -215,7 +218,6 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         }
         this.clearImageData();
         this._lastGeosToDraw = this._geosToDraw;
-        this._alwaysDraw();
         if (isDebug(this.layer)) {
             console.log('progressiveRender on drawOnInteracting page:', this.page);
         }
@@ -268,7 +270,6 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             console.log('progressiveRender drawGeos page:', this.page);
         }
         this._snapshot();
-        this._alwaysDraw();
         this._setDrawGeosDrawTime();
     }
 
