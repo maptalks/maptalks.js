@@ -107,16 +107,11 @@ export default class WorkerPool {
         return this.workers || [];
     }
 
-    broadcastMessage(message) {
+    broadcastIdleMessage() {
         const workers = this.getWorkers();
         workers.forEach(worker => {
-            worker.postMessage(message);
+            worker.postMessage({ messageType: 'idle', messageCount: GlobalConfig.taskCountPerWorkerMessage });
         });
-        return this;
-    }
-
-    broadcastIdleMessage() {
-        this.broadcastMessage({ messageType: 'idle', messageCount: GlobalConfig.taskCountPerWorkerMessage });
         return this;
     }
 
