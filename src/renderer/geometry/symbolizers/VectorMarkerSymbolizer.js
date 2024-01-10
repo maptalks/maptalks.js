@@ -12,6 +12,7 @@ import { getDefaultVAlign, getDefaultHAlign, DEFAULT_MARKER_SYMBOLS } from '../.
 
 const MARKER_SIZE = [];
 const TEMP_EXTENT = new PointExtent();
+const DEFAULT_ANCHOR = new Point(0, 0);
 
 export default class VectorMarkerSymbolizer extends PointSymbolizer {
 
@@ -59,15 +60,26 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
     _drawMarkers(ctx, cookedPoints, resources) {
         for (let i = cookedPoints.length - 1; i >= 0; i--) {
             let point = cookedPoints[i];
+            const size = calVectorMarkerSize(MARKER_SIZE, this.style);
+            const [width, height] = size;
             // const origin = this._rotate(ctx, point, this._getRotationAt(i));
+            let extent;
             const origin = this.getRotation() ? this._rotate(ctx, point, this._getRotationAt(i)) : null;
             if (origin) {
+                const pixel = point.sub(origin);
                 point = origin;
+                const rad = this._getRotationAt(i);
+                extent = getMarkerRotationExtent(TEMP_EXTENT, rad, width, height, point, DEFAULT_ANCHOR);
+                extent._add(pixel);
             }
 
             this._drawVectorMarker(ctx, point, resources);
             if (origin) {
                 ctx.restore();
+                this._setBBOX(ctx, extent.xmin, extent.ymin, extent.xmax, extent.ymax);
+            } else {
+                const { x, y } = point;
+                this._setBBOX(ctx, x, y, x + width, y + height);
             }
         }
     }
