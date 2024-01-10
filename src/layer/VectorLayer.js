@@ -1,5 +1,5 @@
 import Browser from '../core/Browser';
-import { isNil } from '../core/util';
+import { isNil, isNumber } from '../core/util';
 import Extent from '../geo/Extent';
 import Geometry from '../geometry/Geometry';
 import OverlayLayer from './OverlayLayer';
@@ -29,6 +29,9 @@ const TEMP_EXTENT = new PointExtent();
  * @property {Number}  [options.collisionBufferSize=2]  - collision buffer size
  * @property {Number}  [options.collisionDelay=250]  - collision delay time when map Interacting
  * @property {String}  [options.collisionScope=layer]  - Collision range:layer or map
+ * @property {Boolean}  [options.progressiveRender=false]  - progressive Render
+ * @property {Number}  [options.progressiveRenderCount=1000]  - progressive Render page size
+ * @property {Boolean}  [options.progressiveRenderDebug=false]  - progressive Render debug
  * @memberOf VectorLayer
  * @instance
  */
@@ -48,7 +51,10 @@ const options = {
     'collision': false,
     'collisionBufferSize': 2,
     'collisionDelay': 250,
-    'collisionScope': 'layer'
+    'collisionScope': 'layer',
+    'progressiveRender': false,
+    'progressiveRenderCount': 1000,
+    'progressiveRenderDebug': false
 };
 // Polyline is for custom line geometry
 // const TYPES = ['LineString', 'Polyline', 'Polygon', 'MultiLineString', 'MultiPolygon'];
@@ -123,6 +129,9 @@ class VectorLayer extends OverlayLayer {
     }
 
     _hitGeos(geometries, cp, options = {}) {
+        if (!geometries || !geometries.length) {
+            return [];
+        }
         const filter = options['filter'],
             hits = [];
         const tolerance = options['tolerance'];
@@ -131,10 +140,16 @@ class VectorLayer extends OverlayLayer {
         const imageData = renderer && renderer.getImageData && renderer.getImageData();
         if (imageData) {
             let hitTolerance = 0;
-            for (let i = geometries.length - 1; i >= 0; i--) {
-                const t = geometries[i]._hitTestTolerance() + (tolerance || 0);
-                if (t > hitTolerance) {
-                    hitTolerance = t;
+            const maxTolerance = renderer.maxTolerance;
+            //for performance
+            if (isNumber(maxTolerance)) {
+                hitTolerance = maxTolerance;
+            } else {
+                for (let i = geometries.length - 1; i >= 0; i--) {
+                    const t = geometries[i]._hitTestTolerance() + (tolerance || 0);
+                    if (t > hitTolerance) {
+                        hitTolerance = t;
+                    }
                 }
             }
 
@@ -163,12 +178,20 @@ class VectorLayer extends OverlayLayer {
                 return hits;
             }
         }
+        const onlyVisible = options.onlyVisible;
         for (let i = geometries.length - 1; i >= 0; i--) {
             const geo = geometries[i];
-            if (!geo || !geo.isVisible() || !geo._getPainter() || !geo.options['interactive']) {
+            if (!geo || !geo.options['interactive']) {
+                continue;
+            }
+            //当onlyVisible===false时才需要判断isVisible,因为渲染时已经判断过isVisible的值了
+            if (!onlyVisible && (!geo.isVisible())) {
                 continue;
             }
             const painter = geo._getPainter();
+            if (!painter) {
+                continue;
+            }
             const bbox = painter.getRenderBBOX && painter.getRenderBBOX();
             if (bbox) {
                 const { x, y } = cp;

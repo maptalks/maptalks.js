@@ -6,11 +6,25 @@ import * as vec3 from '../../../core/util/vec3';
 import { now } from '../../../core/util/common';
 import { getPointsResultPts } from '../../../core/util';
 import CollisionIndex from '../../../core/CollisionIndex';
+import Canvas from '../../../core/Canvas';
 const TEMP_EXTENT = new PointExtent();
 const TEMP_VEC3 = [];
 const TEMP_FIXEDEXTENT = new PointExtent();
 const PLACEMENT_CENTER = 'center';
 const tempCollisionIndex = new CollisionIndex();
+
+function clearCanvas(canvas) {
+    if (!canvas) {
+        return null;
+    }
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    return ctx;
+}
+
+function isDebug(layer) {
+    return layer && layer.options.progressiveRender && layer.options.progressiveRenderDebug;
+}
 
 
 /**
@@ -24,6 +38,12 @@ const tempCollisionIndex = new CollisionIndex();
  */
 class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
+    setToRedraw() {
+        super.setToRedraw();
+        this._resetProgressiveRender();
+        return this;
+    }
+
     _geoIsCollision(geo, collisionIndex) {
         if (!geo) {
             return false;
@@ -32,8 +52,8 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (!collision) {
             return false;
         }
-        const type = geo.getType();
-        if (type === 'Point' && geo.getContainerExtent) {
+        // const type = geo.getType();
+        if (geo.isPoint && geo.getContainerExtent) {
             if (!geo.bbox) {
                 geo.bbox = [0, 0, 0, 0];
             }
@@ -56,7 +76,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     getImageData() {
         //如果不开启geometry event 或者 渲染频率很高 不要取缓存了，因为getImageData是个很昂贵的操作
-        if (!this.layer.options['geometryEvents'] || (!this._lastRenderTime) || (now() - this._lastRenderTime) < 32) {
+        if ((!this._lastRenderTime) || (now() - this._lastRenderTime) < 32) {
             return null;
         }
         if (!this.context || !this.context.canvas) {
@@ -100,6 +120,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 
     needToRedraw() {
+        if (this.isProgressiveRender() && !this.renderEnd) {
+            return true;
+        }
         const map = this.getMap();
         if (map.isInteracting() && this.layer.options['enableAltitude']) {
             return true;
@@ -137,6 +160,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (!this.context) {
             return false;
         }
+        if (this.isProgressiveRender()) {
+            return false;
+        }
         return !this.context.canvas._drawn;
     }
 
@@ -156,7 +182,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             this.prepareToDraw();
             this._batchConversionMarkers(this.mapStateCache.glRes);
             if (!this._onlyHasPoint) {
-                this.forEachGeo(this.checkGeo, this);
+                this._checkGeos();
             }
             this._drawnRes = res;
         }
@@ -192,6 +218,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         }
         this.clearImageData();
         this._lastGeosToDraw = this._geosToDraw;
+        if (isDebug(this.layer)) {
+            console.log('progressiveRender on drawOnInteracting page:', this.page);
+        }
     }
 
 
@@ -210,14 +239,23 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this.layer.forEach(fn, context);
     }
 
+    _checkGeos() {
+        const geos = this._getCurrentNeedRenderGeos();
+        for (let i = 0, len = geos.length; i < len; i++) {
+            this.checkGeo(geos[i]);
+        }
+        return this;
+    }
+
     drawGeos() {
+        this._drawSnapshot();
         this._updateMapStateCache();
         this._drawnRes = this.mapStateCache.resolution;
         this._updateDisplayExtent();
         this.prepareToDraw();
         this._batchConversionMarkers(this.mapStateCache.glRes);
         if (!this._onlyHasPoint) {
-            this.forEachGeo(this.checkGeo, this);
+            this._checkGeos();
         }
         this._sortByDistanceToCamera(this.getMap().cameraPosition);
         this._collidesGeos();
@@ -228,6 +266,10 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         }
         this.clearImageData();
         this._lastGeosToDraw = this._geosToDraw;
+        if (isDebug(this.layer)) {
+            console.log('progressiveRender drawGeos page:', this.page);
+        }
+        this._snapshot();
         this._setDrawGeosDrawTime();
     }
 
@@ -239,20 +281,24 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 
     _setDrawGeosDrawTime() {
+        const time = now();
         const drawTime = this.layer._drawTime;
-        for (let i = 0, len = this._geosToDraw.length; i < len; i++) {
-            const geo = this._geosToDraw[i];
-            const painter = geo._painter;
+        const painterList = this.getGeoPainterList();
+        for (let i = 0, len = painterList.length; i < len; i++) {
+            const painter = painterList[i];
             if (painter && painter._setDrawTime) {
                 painter._setDrawTime(drawTime);
             }
+        }
+        if (isDebug(this.layer)) {
+            console.log('_setDrawGeosDrawTime time:', (now() - time) + 'ms');
         }
         return this;
     }
 
     checkGeo(geo) {
         //点的话已经在批量处理里判断过了
-        if (geo.type === 'Point' && this._onlyHasPoint !== undefined) {
+        if (geo.isPoint && this._onlyHasPoint !== undefined) {
             if (geo._inCurrentView) {
                 this._hasPoint = true;
                 geo._isCheck = true;
@@ -321,6 +367,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             g.onHide();
         });
         delete this._geosToDraw;
+        delete this.snapshotCanvas;
+        delete this.pageGeos;
+        delete this.geoPainterList;
     }
 
     onGeometryPropertiesChange(param) {
@@ -343,7 +392,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 
     identifyAtPoint(point, options = {}) {
-        const geometries = this._geosToDraw;
+        const geometries = this.getGeosForIdentify();
         if (!geometries) {
             return [];
         }
@@ -394,10 +443,11 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this._onlyHasPoint = true;
         //Traverse all Geo
         let idx = 0;
-        for (let i = 0, len = this.layer._geoList.length; i < len; i++) {
-            const geo = this.layer._geoList[i];
-            const type = geo.getType();
-            if (type === 'Point') {
+        const geos = this._getCurrentNeedRenderGeos();
+        for (let i = 0, len = geos.length; i < len; i++) {
+            const geo = geos[i];
+            // const type = geo.getType();
+            if (geo.isPoint) {
                 let painter = geo._painter;
                 if (!painter) {
                     painter = geo._getPainter();
@@ -476,9 +526,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         const meterScale = p / 1000;
         const placement = 'center';
         this._geosToDraw.sort((a, b) => {
-            const type0 = a.getType();
-            const type1 = b.getType();
-            if (type0 !== 'Point' || type1 !== 'Point') {
+            // const type0 = a.getType();
+            // const type1 = b.getType();
+            if (!a.isPoint || !b.isPoint) {
                 return 0;
             }
             const painter0 = a._painter;
@@ -500,6 +550,164 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     _constructorIsThis() {
         return this.constructor === VectorLayerRenderer;
+    }
+
+    _alwaysDraw() {
+        if (this.canvas && this.isProgressiveRender()) {
+            this.canvas._drawn = true;
+        }
+    }
+
+    isProgressiveRender() {
+        const layer = this.layer;
+        if (!layer) {
+            return false;
+        }
+        const { progressiveRender, collision } = layer.options || {};
+        if (collision) {
+            return false;
+        }
+        return progressiveRender;
+    }
+
+    getGeosForIdentify() {
+        if (!this.isProgressiveRender()) {
+            return this._geosToDraw || [];
+        }
+        return this.pageGeos || [];
+    }
+
+    getGeoPainterList() {
+        if (!this.isProgressiveRender()) {
+            const list = [];
+            const geos = this._geosToDraw || [];
+            for (let i = 0, len = geos.length; i < len; i++) {
+                list.push(geos[i]._painter);
+            }
+            return list;
+        }
+        return this.geoPainterList || [];
+    }
+
+    _checkSnapshotCanvas() {
+        if (!this.isProgressiveRender()) {
+            delete this.snapshotCanvas;
+            return null;
+        }
+        const canvas = this.canvas;
+        if (!canvas) {
+            delete this.snapshotCanvas;
+            return null;
+        }
+        if (!this.snapshotCanvas) {
+            this.snapshotCanvas = Canvas.createCanvas(1, 1);
+        }
+        const snapshotCanvas = this.snapshotCanvas;
+        const { width, height, style } = canvas;
+        if (snapshotCanvas.width !== width || snapshotCanvas.height !== height) {
+            snapshotCanvas.width = width;
+            snapshotCanvas.height = height;
+        }
+        if (snapshotCanvas.style.width !== style.width || snapshotCanvas.style.height !== style.height) {
+            snapshotCanvas.style.width = style.width;
+            snapshotCanvas.style.height = style.height;
+        }
+
+        return snapshotCanvas;
+
+    }
+
+    _getCurrentNeedRenderGeos() {
+        const geos = this.layer._geoList || [];
+        if (!this.isProgressiveRender()) {
+            return geos;
+        }
+        if (this.renderEnd) {
+            return [];
+        }
+        const layer = this.layer;
+        const { progressiveRenderCount } = layer.options;
+        const pageSize = progressiveRenderCount;
+        const page = this.page;
+        const start = (page - 1) * pageSize, end = page * pageSize;
+        const pageGeos = geos.slice(start, end);
+        return pageGeos;
+    }
+
+    _resetProgressiveRender() {
+        if (isDebug(this.layer)) {
+            console.log('progressiveRender resetProgressiveRender');
+        }
+        this.renderEnd = false;
+        this.page = 1;
+        this.pageGeos = [];
+        this.geoPainterList = [];
+        this.maxTolerance = 0;
+        this._clearSnapshotCanvas();
+    }
+
+    _clearSnapshotCanvas() {
+        const snapshotCanvas = this._checkSnapshotCanvas();
+        if (snapshotCanvas) {
+            clearCanvas(snapshotCanvas);
+        }
+    }
+
+    _snapshot() {
+        const progressiveRender = this.isProgressiveRender();
+        const geosToDraw = this._geosToDraw || [];
+        for (let i = 0, len = geosToDraw.length; i < len; i++) {
+            const geo = geosToDraw[i];
+            const t = geo._hitTestTolerance() || 0;
+            this.maxTolerance = Math.max(this.maxTolerance, t);
+            if (progressiveRender) {
+                this.pageGeos.push(geo);
+                const painter = geo._painter;
+                this.geoPainterList.push(painter);
+            }
+        }
+        if (!progressiveRender) {
+            return this;
+        }
+        const time = now();
+        const snapshotCanvas = this._checkSnapshotCanvas();
+        if (snapshotCanvas && this.canvas) {
+            const ctx = clearCanvas(snapshotCanvas);
+            ctx.drawImage(this.canvas, 0, 0);
+        }
+        const layer = this.layer;
+        const { progressiveRenderCount } = layer.options;
+        const geos = layer._geoList || [];
+        const pages = Math.ceil(geos.length / progressiveRenderCount);
+        this.renderEnd = this.page >= pages;
+        if (this.renderEnd) {
+            this._setDrawGeosDrawTime();
+        }
+        if (isDebug(this.layer)) {
+            console.log('snapshot time:', (now() - time) + 'ms');
+        }
+        this.page++;
+        return this;
+    }
+
+    _drawSnapshot() {
+        if (!this.isProgressiveRender()) {
+            return this;
+        }
+        const { snapshotCanvas, context } = this;
+        if (!snapshotCanvas || !context) {
+            return this;
+        }
+        const map = this.getMap();
+        if (!map) {
+            return this;
+        }
+        const dpr = map.getDevicePixelRatio() || 1;
+        const rScale = 1 / dpr;
+        context.scale(rScale, rScale);
+        context.drawImage(snapshotCanvas, 0, 0);
+        context.scale(dpr, dpr);
+        return this;
     }
 }
 

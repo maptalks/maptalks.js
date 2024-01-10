@@ -13,7 +13,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         if (!symbol) {
             return false;
         }
-        if (geometry && (geometry.type === 'Point')) {
+        if (geometry && (geometry.isPoint)) {
             return false;
         }
         for (const p in symbol) {
@@ -30,7 +30,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         this.symbol = symbol;
         this.geometry = geometry;
         this.painter = painter;
-        if (geometry.type === 'Point') {
+        if (geometry.isPoint) {
             return;
         }
         this.style = this._defineStyle(this.translate());
