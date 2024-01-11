@@ -23,6 +23,7 @@ const defaultOptions = {
     schema: false,
     cascadeTiles: true,
     collision: true,
+    collisionBuffserSize: 0,
     picking: true,
     pickingPoint: true,
     pickingGeometry: false,

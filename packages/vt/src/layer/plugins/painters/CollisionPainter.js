@@ -622,6 +622,10 @@ export default class CollisionPainter extends BasicPainter {
         // const isBackground = layer.getRenderer().isCurrentTile(tileInfo.id);
         // const collisionIndex = isBackground ? layer.getBackgroundCollisionIndex() : layer.getCollisionIndex();
         const collisionIndex = layer.getCollisionIndex();
+        const bufferSize = this.sceneConfig.collisionBufferSize || layer.options['collisionBufferSize'] || 0;
+        if (bufferSize) {
+            box = bufferBox(BOX, box, bufferSize);
+        }
         return +collisionIndex.collides(box);
     }
 
@@ -630,7 +634,13 @@ export default class CollisionPainter extends BasicPainter {
         // const isBackground = layer.getRenderer().isCurrentTile(tileInfo.id);
         // const collisionIndex = isBackground ? layer.getBackgroundCollisionIndex() : layer.getCollisionIndex();
         const collisionIndex = layer.getCollisionIndex();
-        collisionIndex.insertBox(box);
+        const bufferSize = this.sceneConfig.collisionBufferSize || layer.options['collisionBufferSize'] || 0;
+        let out = box;
+        if (bufferSize) {
+            out = box._buffered = box._buffered || [];
+            box = bufferBox(out, box, bufferSize);
+        }
+        collisionIndex.insertBox(out);
     }
 
     /**
@@ -661,6 +671,10 @@ export default class CollisionPainter extends BasicPainter {
             aVisible: [],
             indices: []
         };
+        const bufferSize = this.sceneConfig.collisionBufferSize || this.layer.options['collisionBufferSize'] || 0;
+        if (bufferSize) {
+            box = bufferBox(BOX, box, bufferSize);
+        }
         const map = this.getMap();
         const dpr = map.getDevicePixelRatio();
         vec4.scale(BOX, box, 1 / dpr);
@@ -1135,4 +1149,14 @@ function sortByLevel(m0, m1) {
     } else {
         return r;
     }
+}
+
+function bufferBox(out, box, buffer) {
+    //minx, miny, maxx, maxy
+    out[0] = box[0] - buffer;
+    out[1] = box[1] - buffer;
+    out[2] = box[2] + buffer;
+    out[3] = box[3] + buffer;
+    return out;
+
 }

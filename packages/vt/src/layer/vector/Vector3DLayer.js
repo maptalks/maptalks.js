@@ -6,6 +6,7 @@ const defaultOptions = {
     pickingPoint: true,
     renderer: 'gl',
     collision: false,
+    collisionBufferSize: 0,
     textGamma: 1,
     geometryEvents: true,
     styleScale: 1,
