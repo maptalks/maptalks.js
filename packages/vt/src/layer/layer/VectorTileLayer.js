@@ -31,8 +31,8 @@ const defaultOptions = {
     //zooming或zoom fading时，每个瓦片最多能绘制的box(icon或text)数量
     // boxLimitOnZoomout: 7,
     tileLimitPerFrame: 1,
-    loadingLimitOnInteracting: 1,
-    loadingLimit: 3,
+    loadingLimitOnInteracting: 5,
+    loadingLimit: 0,
     antialias: false,
     iconErrorUrl: null,
     collisionFrameLimit: 1.5,
