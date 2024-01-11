@@ -290,9 +290,10 @@ export default class MeshPainter {
     _updateBBoxMatrix(mesh) {
         const node = mesh.properties.node;
         const service = this._layer._getNodeService(node._rootIdx);
+        const rootNode = this._layer._getRootNode(node._rootIdx);
         const heightOffset = service.heightOffset || 0;
         const heightScale = this._getHeightScale();
-        const originHeightOffset = service._originHeightOffset;
+        const originHeightOffset = rootNode._originHeightOffset;
         const translation = vec3.set(TEMP_TRANS_1, 0, 0, heightScale * (heightOffset - originHeightOffset));
         let rotation = service['rotation'] || [0, 0, 0];
         rotation = quat.fromEuler(TEMP_QUAT_1, rotation[0], rotation[1], rotation[2]);
@@ -944,8 +945,8 @@ export default class MeshPainter {
         if (!nodeBox.length) { //region、box
             vertices = nodeBox.boxPosition;
             indices = BOX_INDEX;
-            const service = this._layer._getNodeService(node._rootIdx);
-            translate = service._bboxCenter;
+            const rootNode = this._layer._getRootNode(node._rootIdx);
+            translate = rootNode._bboxCenter;
             scale = BOX_SCALE;
         } else if (nodeBox.length === 2) { //sphere
             const sphereCenter = nodeBox[0], radius = nodeBox[1];
@@ -1404,7 +1405,8 @@ export default class MeshPainter {
 
     _updateServiceMatrix(mesh, node) {
         const service = this._layer._getNodeService(node._rootIdx);
-        const bboxCenter = service._bboxCenter;
+        const rootNode = this._layer._getRootNode(node._rootIdx);
+        const bboxCenter = rootNode._bboxCenter;
         let rotation = service['rotation'] || [0, 0, 0];
         rotation = quat.fromEuler(TEMP_QUAT_2, rotation[0], rotation[1], rotation[2]);
         const scale = service['scale'] || [1, 1, 1];

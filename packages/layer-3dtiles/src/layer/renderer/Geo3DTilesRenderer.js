@@ -701,15 +701,21 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             return;
         }
         this._preRetireTime = now;
+        const aborted = [];
         for (const i in this.tilesLoading) {
             const node = this.tilesLoading[i];
             if (force || !node.current) {
+                aborted.push(i);
                 // abort loading tiles
                 this.abortTileLoading(node);
                 // if (this.painter.has(node)) {
                 //     this.painter.deleteTile(node);
                 // }
             }
+        }
+
+        for (let i = 0; i < aborted.length; i++) {
+            delete this.tilesLoading[aborted[i]];
         }
     }
 

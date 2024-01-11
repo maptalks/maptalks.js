@@ -18,7 +18,7 @@ const options = {
     'maxGPUMemory' : maptalks.Browser.mobile ? 32 : 1024,
     'retireInterval' : 2000,
     'loadingLimitOnInteracting' : 5,
-    'loadingLimit' : 5,
+    'loadingLimit' : 0,
     'renderer' : 'gl',
     'forceRenderOnZooming' : true,
     'forceRenderOnRotating' : true,
@@ -60,9 +60,11 @@ const TEMP_EXTENT = new maptalks.Extent(0, 0, 0, 0);
 // const TEMP_EXTENT_1 = new maptalks.Extent(0, 0, 0, 0);
 const TEMP_VEC3_0 = [];
 const TEMP_VEC3_1 = [];
+const TEMP_VEC3_2 = [];
 const TEMP_SCALE = [];
 
 const EMPTY_ARRAY = [];
+const TEMP_COORD = new maptalks.Coordinate(0, 0);
 const TEMP_POINT = new maptalks.Point(0, 0);
 
 const TEMP_MAT3_0 = [];
@@ -766,8 +768,8 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         const pointCenter = [(boxPosition[0] + boxPosition[18]) / 2, (boxPosition[1] + boxPosition[19]) / 2, (boxPosition[2] + boxPosition[20]) / 2];
         const coordCenter = map.pointAtResToCoord(new maptalks.Point(pointCenter), glRes);
         coordCenter.z = (ws.z + en.z) / 2;
-        const service = this._getNodeService(node._rootIdx);
-        const bboxPointCenter = service._bboxCenter;
+        const rootNode = this._getRootNode(node._rootIdx);
+        const bboxPointCenter = rootNode._bboxCenter;
         const bbox = [
             boxPosition.slice(21, 24),
             boxPosition.slice(3, 6)
@@ -793,25 +795,29 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         const modelMatrix = fromRotationTranslation(halfAxes, center);
         const boxCenter = this._calBoxCenter(node);
         const boxPosition = [];
-        const service = this._getNodeService(node._rootIdx);
-        const bboxPointCenter = service._bboxCenter;
+        const rootNode = this._getRootNode(node._rootIdx);
+        const bboxPointCenter = rootNode._bboxCenter;
         TEMP_POINT.set(bboxPointCenter[0], bboxPointCenter[1]);
         const coordCenter = map.pointAtResToCoord(TEMP_POINT, glRes);
+        const pos = TEMP_VEC3_0;
         for (let i = 0; i < BOX_POS.length; i += 3) {
-            const pos = BOX_POS.slice(i, i + 3);
+            pos[0] = BOX_POS[i];
+            pos[1] = BOX_POS[i + 1];
+            pos[2] = BOX_POS[i + 2];
+
             vec3.transformMat4(pos, pos, modelMatrix);
             cartesian3ToDegree(pos, pos)
             if (isIdentity) {
                 renderer._lngLatToIdentityCoord(pos, pos);
             }
-            const coord = new maptalks.Coordinate(pos);
-            let point = map.coordToPointAtRes(coord, glRes);
-            point = [point.x, point.y, map.altitudeToPoint(coord.z, glRes)];
+            const coord = TEMP_COORD.set(...pos);
+            let point = map.coordToPointAtRes(coord, glRes, TEMP_POINT);
+            point = vec3.set(pos, point.x, point.y, map.altitudeToPoint(coord.z, glRes))
             boxPosition[i] = point[0] - bboxPointCenter[0];
             boxPosition[i + 1] = point[1] - bboxPointCenter[1];
             boxPosition[i + 2] = point[2] - bboxPointCenter[2];
         }
-        const obbox = this._generateOBBox(boxPosition, boxCenter);
+        const obbox = this._generateOBBox(boxPosition, bboxPointCenter, boxCenter);
         return { obbox, boxPosition, boxCenter, coordCenter };
     }
 
@@ -837,23 +843,24 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return [sphereCenter, sphere[3] * scale[2]];
     }
 
-    _generateOBBox(boxPosition, boxCenter) {
-        const xAxis = [(boxPosition[1 * 3] + boxPosition[4 * 3]) / 2, (boxPosition[1 * 3 + 1] + boxPosition[4 * 3 + 1]) / 2, (boxPosition[1 * 3 + 2] + boxPosition[4 * 3 + 2]) / 2];
-        const yAxis = [(boxPosition[1 * 3] + boxPosition[6 * 3]) / 2, (boxPosition[1 * 3 + 1] + boxPosition[6 * 3 + 1]) / 2, (boxPosition[1 * 3 + 2] + boxPosition[6 * 3 + 2]) / 2];
-        const zAxis = [(boxPosition[1 * 3] + boxPosition[3 * 3]) / 2, (boxPosition[1 * 3 + 1] + boxPosition[3 * 3 + 1]) / 2, (boxPosition[1 * 3 + 2] + boxPosition[3 * 3 + 2]) / 2];
-        const obbox = boxCenter.slice(0);
+    _generateOBBox(boxPosition, bboxPositionCenter, obbCenter) {
+        const [x, y, z] = bboxPositionCenter;
+        const xAxis = vec3.set(TEMP_VEC3_0, (boxPosition[1 * 3] + boxPosition[4 * 3]) / 2 + x, (boxPosition[1 * 3 + 1] + boxPosition[4 * 3 + 1]) / 2 + y, (boxPosition[1 * 3 + 2] + boxPosition[4 * 3 + 2]) / 2 + z);
+        const yAxis = vec3.set(TEMP_VEC3_1, (boxPosition[1 * 3] + boxPosition[6 * 3]) / 2 + x, (boxPosition[1 * 3 + 1] + boxPosition[6 * 3 + 1]) / 2 + y, (boxPosition[1 * 3 + 2] + boxPosition[6 * 3 + 2]) / 2 + z);
+        const zAxis = vec3.set(TEMP_VEC3_2, (boxPosition[1 * 3] + boxPosition[3 * 3]) / 2 + x, (boxPosition[1 * 3 + 1] + boxPosition[3 * 3 + 1]) / 2 + y, (boxPosition[1 * 3 + 2] + boxPosition[3 * 3 + 2]) / 2 + z);
+        const obbox = obbCenter.slice(0);
         //中心点指向x轴方向
-        obbox[3] = xAxis[0] - boxCenter[0];
-        obbox[4] = xAxis[1] - boxCenter[1];
-        obbox[5] = xAxis[2] - boxCenter[2];
+        obbox[3] = xAxis[0] - obbCenter[0];
+        obbox[4] = xAxis[1] - obbCenter[1];
+        obbox[5] = xAxis[2] - obbCenter[2];
 
-        obbox[6] = yAxis[0] - boxCenter[0];
-        obbox[7] = yAxis[1] - boxCenter[1];
-        obbox[8] = yAxis[2] - boxCenter[2];
+        obbox[6] = yAxis[0] - obbCenter[0];
+        obbox[7] = yAxis[1] - obbCenter[1];
+        obbox[8] = yAxis[2] - obbCenter[2];
 
-        obbox[9] = zAxis[0] - boxCenter[0];
-        obbox[10] = zAxis[1] - boxCenter[1];
-        obbox[11] = zAxis[2] - boxCenter[2];
+        obbox[9] = zAxis[0] - obbCenter[0];
+        obbox[10] = zAxis[1] - obbCenter[1];
+        obbox[11] = zAxis[2] - obbCenter[2];
         return obbox;
     }
 
@@ -864,10 +871,10 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         const glRes = map.getGLRes();
         const nodeBox = node.boundingVolume.box;
         const center = nodeBox.slice(0, 3);
-        const halfAxes = this._createHalfAxes(nodeBox, node.matrix);
-        const modelMatrix = fromRotationTranslation(halfAxes, center);
-        const box_center = [0, 0, 0];
-        vec3.transformMat4(box_center, box_center, modelMatrix);
+        // const halfAxes = this._createHalfAxes(nodeBox, node.matrix);
+        // const modelMatrix = fromRotationTranslation(halfAxes, center);
+        const box_center = center;
+        // vec3.transformMat4(box_center, box_center, modelMatrix);
         cartesian3ToDegree(box_center, box_center)
         if (isIdentity) {
             renderer._lngLatToIdentityCoord(box_center, box_center);
@@ -878,13 +885,14 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
     }
 
     _updateRootCenter(rootNode) {
-        if (!rootNode.boundingVolume) {
+        const service = this._getNodeService(rootNode._rootIdx);
+        if (!rootNode.boundingVolume || this._equalsOffsets(rootNode, service)) {
             return;
         }
         const box = rootNode.boundingVolume.box;
         const region = rootNode.boundingVolume.region;
         const sphere = rootNode.boundingVolume.sphere;
-        const service = this._getNodeService(rootNode._rootIdx);
+
         let pointCenter = null;
         if (box) {
             const center = this._updateRootBBoxCenter(rootNode);
@@ -897,9 +905,17 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         }
         const heightOffset = service.heightOffset || 0;
         const coordOffset = service.coordOffset || [0, 0];
-        service._originCoordOffset = [coordOffset[0] || 0, coordOffset[1] || 0];
-        service._originHeightOffset = heightOffset;
-        service._bboxCenter = pointCenter;
+        rootNode._originCoordOffset = [coordOffset[0] || 0, coordOffset[1] || 0];
+        rootNode._originHeightOffset = heightOffset;
+        rootNode._bboxCenter = pointCenter;
+    }
+
+    _equalsOffsets(rootNode, service) {
+        if (!rootNode._originCoordOffset) {
+            return false;
+        }
+        const coordOffset = service.coordOffset || EMPTY_COORD_OFFSET;
+        return rootNode._originCoordOffset[0] === coordOffset[0] && rootNode._originCoordOffset[1] === coordOffset[1] && rootNode._originHeightOffset === (service.heightOffset || 0);
     }
 
     _updateRootRegionCenter(rootNode) {
@@ -916,25 +932,15 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             return null;
         }
         this._offsetBoundingVolume(rootNode);
-        const map = this.getMap();
-        const isIdentity = map.getProjection().code.toLowerCase() === 'identity';
-        const renderer = this.getRenderer();
-        const glRes = map.getGLRes();
+
         const box = rootNode.boundingVolume.box;
         const center = box.slice(0, 3);
-        const halfAxes = this._createHalfAxes(box, rootNode.matrix);
-        const modelMatrix = fromRotationTranslation(halfAxes, center);
-        const boxCenter = [0, 0, 0];
-        vec3.transformMat4(boxCenter, boxCenter, modelMatrix);
+        const boxCenter = center;
+
         cartesian3ToDegree(boxCenter, boxCenter);
 
-        if (isIdentity) {
-            renderer._lngLatToIdentityCoord(boxCenter, boxCenter);
-        }
         const coordCenter = new maptalks.Coordinate(boxCenter);
-        let pointCenter = map.coordToPointAtRes(coordCenter, glRes);
-        pointCenter.z = map.altitudeToPoint(coordCenter.z, glRes);
-        pointCenter = [pointCenter.x, pointCenter.y, pointCenter.z];
+        const pointCenter = this._calBoxCenter(rootNode);
         return { pointCenter, coordCenter };
     }
 
@@ -987,6 +993,10 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             return map.pointAtResToCoord(point, res);
         }
         return center;
+    }
+
+    _getRootNode(i) {
+        return this._roots[i];
     }
 
     _getRootMaxExtent(i) {
