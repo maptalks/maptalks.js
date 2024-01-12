@@ -143,6 +143,57 @@ describe('highlight specs', () => {
         group.addTo(map);
     });
 
+    it('should can hide text by highlight, maptalks/issues#576', done => {
+        const style = [
+            {
+                name: 'area-label',
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
+                renderPlugin: {
+                    type: 'text',
+                    dataConfig: { type: 'point' },
+                    // collision 会让CollisionPainter调用updateCollision，重新设置elements
+                    // 原版本的gl/highlight.js中，没有把highlight后的elements替换掉geometry.properties.elements
+                    // 导致updateCollision基于highlight之前的elements计算，覆盖掉highlight中的结果
+                    sceneConfig: { collision: true }
+                },
+                symbol: { textName: '■■■■■■', textSize: 30, textFill: '#f00' }
+            }
+        ];
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: point,
+            style
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                bloom: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        group.once('layerload', () => {
+            const highlights = [{
+                plugin: ['area-label'],
+                filter: () => true,
+                name: "highlightname",
+                visible: false
+            }];
+            layer.highlight(highlights);
+            setTimeout(() => {
+                setTimeout(() => {
+                    const pixel = readPixel(renderer.canvas, x / 2 + 10, y / 2);
+                    assert(pixel[3] === 0);
+                    done();
+                }, 200);
+            }, 200);
+        });
+        group.addTo(map);
+    });
+
     it('should can highlight text', done => {
         const style = [
             {
