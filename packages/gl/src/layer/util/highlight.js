@@ -10,11 +10,35 @@ export function clearShowOnly(mesh) {
         return;
     }
     delete mesh.properties.showOnlyTimestamp;
-    const oldElementsBeforeHighlight = mesh.properties.oldElementsBeforeHighlight;
-    if (oldElementsBeforeHighlight && mesh.geometry.elements !== oldElementsBeforeHighlight) {
-        mesh.geometry.deleteElements();
-        mesh.geometry.setElements(oldElementsBeforeHighlight);
+    restoreOldElements(mesh);
+}
+
+function saveOldElements(mesh, elements) {
+    const geoProps = mesh.geometry.properties;
+    if (!geoProps.oldElementsBeforeHighlight) {
+        geoProps.oldElementsBeforeHighlight = mesh.geometry.elements;
     }
+    if (geoProps.elements) {
+        if (!geoProps.oldElementsArrBeforeHighlight) {
+            geoProps.oldElementsArrBeforeHighlight = geoProps.elements;
+        }
+        geoProps.elements = elements;
+    }
+}
+
+function restoreOldElements(mesh) {
+    const oldElementsBeforeHighlight = mesh.geometry.properties.oldElementsBeforeHighlight;
+    if (!oldElementsBeforeHighlight || mesh.geometry.elements === oldElementsBeforeHighlight) {
+        return;
+    }
+    mesh.geometry.deleteElements();
+    mesh.geometry.setElements(mesh.geometry.properties.oldElementsBeforeHighlight);
+    if (mesh.geometry.properties.oldElementsArrBeforeHighlight) {
+        mesh.geometry.properties.elements = mesh.geometry.properties.oldElementsArrBeforeHighlight;
+        delete mesh.geometry.properties.oldElementsArrBeforeHighlight;
+    }
+    delete mesh.geometry.properties.hasInvisible;
+    delete mesh.geometry.properties.oldElementsBeforeHighlight;
 }
 
 export function showOnly(regl, mesh, items, timestamp, feaIdIndiceMap) {
@@ -41,10 +65,8 @@ export function showOnly(regl, mesh, items, timestamp, feaIdIndiceMap) {
         }
     }
 
-    if (!mesh.properties.oldElementsBeforeHighlight) {
-        mesh.properties.oldElementsBeforeHighlight = mesh.geometry.elements;
-    }
-    if (mesh.geometry.elements !== mesh.properties.oldElementsBeforeHighlight && mesh.geometry.elements.destroy) {
+    saveOldElements(mesh, elements);
+    if (mesh.geometry.elements !== mesh.geometry.properties.oldElementsBeforeHighlight && mesh.geometry.elements.destroy) {
         mesh.geometry.deleteElements();
     }
     const info = {
@@ -65,12 +87,7 @@ export function clearHighlight(mesh) {
     delete defines['HAS_HIGHLIGHT_OPACITY'];
     mesh.setDefines(defines);
     delete mesh.properties.highlightTimestamp;
-    const oldElementsBeforeHighlight = mesh.properties.oldElementsBeforeHighlight;
-    if (oldElementsBeforeHighlight && mesh.geometry.elements !== oldElementsBeforeHighlight) {
-        mesh.geometry.deleteElements();
-        mesh.geometry.setElements(mesh.properties.oldElementsBeforeHighlight);
-        delete mesh.properties.hasInvisible;
-    }
+    restoreOldElements(mesh);
     deleteHighlightBloomMesh(mesh);
 }
 
@@ -188,26 +205,21 @@ export function highlightMesh(regl, mesh, highlighted, timestamp, feaIdIndiceMap
             }
             pushIn(elements, value);
         });
-        mesh.properties.hasInvisible = true;
-        if (!mesh.properties.oldElementsBeforeHighlight) {
-            mesh.properties.oldElementsBeforeHighlight = mesh.geometry.elements;
-        }
+        mesh.geometry.properties.hasInvisible = true;
+        saveOldElements(mesh, elements);
         const info = {
             data: elements,
             // type: mesh.geometry.getElementsType(elements),
             primitive: mesh.geometry.getPrimitive()
         };
-        if (mesh.geometry.elements !== mesh.properties.oldElementsBeforeHighlight && mesh.geometry.elements.destroy) {
+        if (mesh.geometry.elements !== mesh.geometry.properties.oldElementsBeforeHighlight && mesh.geometry.elements.destroy) {
             mesh.geometry.deleteElements();
         }
         elements = regl.elements(info);
         mesh.geometry.setElements(elements);
         mesh.geometry.generateBuffers(regl);
-    } else if (mesh.properties.hasInvisible) {
-        mesh.geometry.deleteElements();
-        mesh.geometry.setElements(mesh.properties.oldElementsBeforeHighlight);
-        delete mesh.properties.hasInvisible;
-        // delete mesh.properties.oldElementsBeforeHighlight;
+    } else if (mesh.geometry.properties.hasInvisible) {
+        restoreOldElements(mesh);
     }
     mesh.setDefines(defines);
     mesh.properties.highlightTimestamp = timestamp;
