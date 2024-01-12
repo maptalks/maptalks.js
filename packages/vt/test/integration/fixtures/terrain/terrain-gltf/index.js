@@ -32,6 +32,7 @@ const style = [
 ];
 
 module.exports = {
+    renderingCount: 4,
     style,
     data
 };

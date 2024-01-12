@@ -86,6 +86,7 @@ module.exports = {
     data: data,
     containerWidth: 512,
     containerHeight: 512,
+    renderingCount: 4,
     view: {
         pitch: 70,
         bearing: 60,
