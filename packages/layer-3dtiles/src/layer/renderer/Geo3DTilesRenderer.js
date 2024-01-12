@@ -20,13 +20,27 @@ const REPORTED_ERRORS = new Set();
 
 const EMPTY_ARRAY = [];
 
+const GlobalTieCache = new LRUCache((maptalks.Browser.mobile ? 32 : 1024) * 1024 * 1024, (tile => {
+    const renderer = tile.renderer;
+    delete tile.renderer;
+    renderer.deleteTile(tile);
+}));
+let TileCacheRefCount = 0;
+
+
+
 export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.renderer.CanvasRenderer) {
 
     constructor(layer) {
         super(layer);
+        const max = layer.options['maxGPUMemory'] * 1024 * 1024;
+        if (max > GlobalTieCache.max) {
+            GlobalTieCache.setMaxSize(max);
+        }
+        this.tileCache = GlobalTieCache;
+        TileCacheRefCount++;
         this.prepareWorker();
         this.tilesLoading = {};
-        this.tileCache = new LRUCache(layer.getId(), layer.options['maxGPUMemory'] * 1024 * 1024, this.deleteTile.bind(this));
         this._requests = {};
         this._modelQueue = [];
         this._fnFetchNodepages = this._fetchI3DNodepages.bind(this);
@@ -288,11 +302,11 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
 
     _drawTiles(tiles, leaves, parentContext) {
 
-        this.tileCache.markAll(false);
+        this.tileCache.markAll(this, false);
         for (let i = 0, l = tiles.length; i < l; i++) {
             const tileData = tiles[i].data;
             tileData.current = true;
-
+            tileData.renderer = this;
             this.tileCache.add(tiles[i].node.id, tileData);
         }
         this.tileCache.shrink();
@@ -548,6 +562,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             error: err,
             node
         };
+        tileData.renderer = this;
         this.tileCache.add(node.id, tileData);
     }
 
@@ -558,6 +573,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             current : true,
             node
         };
+        tileData.renderer = this;
         this.tileCache.add(node.id, tileData);
     }
 
@@ -656,6 +672,10 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             this.workerConn.remove();
             delete this.workerConn;
         }
+        TileCacheRefCount--;
+        if (!TileCacheRefCount) {
+            GlobalTieCache.reset();
+        }
         this.clear();
         delete this.tileCache;
         super.onRemove();
@@ -663,7 +683,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
 
     clear() {
         this._retireTiles(true);
-        this.tileCache.reset();
+        this.tileCache.reset(this);
         this.tilesLoading = {};
         super.clear();
     }

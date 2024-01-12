@@ -15,7 +15,7 @@ import TileBoundingRegion from './renderer/TileBoundingRegion';
 
 const options = {
     // 'maximumScreenSpaceError' : 8,
-    'maxGPUMemory' : maptalks.Browser.mobile ? 32 : 1024,
+    'maxGPUMemory' : maptalks.Browser.mobile ? 32 : 1536,
     'retireInterval' : 2000,
     'loadingLimitOnInteracting' : 5,
     'loadingLimit' : 0,
@@ -452,7 +452,8 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
     }
 
     _initNode(node) {
-        node.id = maptalks.Util.GUID();
+        const layerId = this.getId();
+        node.id = layerId + ':' + maptalks.Util.GUID();
         node.matrix = node.transform || mat4.identity([]);
         node._empty = this._isEmpty(node);
         if (node.parent) {

@@ -11,12 +11,11 @@ class LRUCache {
      * @param {number} max number of permitted values
      * @param {Function} onRemove callback called with items when they expire
      */
-    constructor(layerId, max, onRemove) {
-        this._layerId = layerId;
+    constructor(max, onRemove) {
         this.max = max;
         this.currentSize = 0;
+        this.data = new Map();
         this.onRemove = onRemove;
-        this.reset();
     }
 
     /**
@@ -24,22 +23,26 @@ class LRUCache {
      *
      * @returns {LRUCache} this cache
      */
-    reset() {
+    reset(renderer) {
         if (this.data) {
-            const values = this.data.values();
-            for (const p of values) {
-                this.onRemove(p);
+            const keys = this.data.keys();
+            for (const id of keys) {
+                const data = this.data.get(id);
+                if (!renderer || renderer === data.renderer) {
+                    this._remove(id, data);
+                }
             }
         }
-
-        this.data = new Map();
-        this.currentSize = 0;
+        if (!renderer) {
+            this.data = new Map();
+            this.currentSize = 0;
+        }
         return this;
     }
 
-    clear() {
-        this.reset();
-        delete this.onRemove;
+    clear(renderer) {
+        this.reset(renderer);
+        // delete this.onRemove;
     }
 
     /**
@@ -80,7 +83,7 @@ class LRUCache {
             while (this.currentSize > this.max && item.value !== undefined) {
                 if (!warned && this.data.get(item.value).current) {
                     warned = true;
-                    console.warn(`layer(${this._layerId})'s maxGPUMemory is not enough, one or more current tiles will be discarded.`);
+                    console.warn(`current maxGPUMemory(${this.max / 1024 / 1024}) for Geo3DTilesLayer is not enough, one or more current tiles will be discarded.`);
                 }
                 const removedData = this.getAndRemove(item.value);
                 if (removedData) {
@@ -158,15 +161,17 @@ class LRUCache {
      */
     remove(key) {
         if (!this.has(key)) { return this; }
-
         const data = this.data.get(key);
+        this._remove(key, data);
+        return this;
+    }
+
+    _remove(key, data) {
         if (data.node && data.node.memorySize) {
             this.currentSize -= data.node.memorySize;
         }
         this.data.delete(key);
         this.onRemove(data);
-
-        return this;
     }
 
     /**
@@ -195,10 +200,12 @@ class LRUCache {
         return size;
     }
 
-    markAll(isCurrent) {
+    markAll(renderer, isCurrent) {
         const values = this.data.values();
-        for (const p of values) {
-            p.current = isCurrent;
+        for (const data of values) {
+            if (!renderer || data.renderer === renderer) {
+                data.current = isCurrent;
+            }
         }
     }
 }
