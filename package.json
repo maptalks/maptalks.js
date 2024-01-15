@@ -28,7 +28,6 @@
     "dev": "rollup --environment BUILD:dev -c -w",
     "doc": "gulp doc",
     "lint": "eslint src/**/*.js test/**/*.js",
-    "postversion": "gulp zip",
     "pretest": "npm run lint && npm run build-test",
     "prepare": "npm run build",
     "preversion": "npm run lint",
