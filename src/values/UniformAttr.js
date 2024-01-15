@@ -94,20 +94,46 @@ include(GLContext.prototype, {
         );
     },
 
+    _ifUniformEquals(location, ...args) {
+        const program = this.states.program;
+        if (!program) {
+            return false;
+        }
+        let id = location.fid;
+        if (id === undefined) {
+            id = location.fid = program.fid++;
+        }
+        const cached = program.cachedUniforms[id];
+        if (equalArgs(cached, args)) {
+            return true;
+        }
+        program.cachedUniforms[id] = copyArgs(cached, args);
+        return false;
+    },
+
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniformMatrix
      */
     uniformMatrix2fv(location, transpose, value) {
+        if (this._ifUniformEquals(location, transpose, value)) {
+            return;
+        }
         this._checkAndRestore();
-        return this._gl.uniformMatrix2fv(location, transpose, value);
+        this._gl.uniformMatrix2fv(location, transpose, value);
     },
     uniformMatrix3fv(location, transpose, value) {
+        if (this._ifUniformEquals(location, transpose, value)) {
+            return;
+        }
         this._checkAndRestore();
-        return this._gl.uniformMatrix3fv(location, transpose, value);
+        this._gl.uniformMatrix3fv(location, transpose, value);
     },
     uniformMatrix4fv(location, transpose, value) {
+        if (this._ifUniformEquals(location, transpose, value)) {
+            return;
+        }
         this._checkAndRestore();
-        return this._gl.uniformMatrix4fv(location, transpose, value);
+        this._gl.uniformMatrix4fv(location, transpose, value);
     },
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniform
@@ -345,3 +371,37 @@ include(GLContext.prototype, {
         return this._gl.vertexAttribI4uiv(index, value);
     },
 });
+
+
+function copyArgs(out, args) {
+    out = out || new Array(args.length);
+    for (let i = 0; i < args.length; i++) {
+        out[i] = args[i].length !== undefined ? copyArr(out[i] || [], args[i]) : args[i];
+    }
+    return out;
+}
+
+function copyArr(out, arr) {
+    for (let i = 0; i < arr.length; i++) {
+        out[i] = arr[i];
+    }
+    return out;
+}
+
+function equalArgs(args0, args1) {
+    if (!args0) {
+        return false;
+    }
+    for (let i = 0; i < args1.length; i++) {
+        if (!args0[i] || args0[i].length === undefined) {
+            if (args0[i] !== args1[i]) {
+                return false;
+            }
+        } else for (let ii = 0; ii < args0[i].length; ii++) {
+            if (args0[i][ii] !== args1[i][ii]) {
+                return false;
+            }
+        }
+    }
+    return true;
+}

@@ -460,7 +460,23 @@ include(
                 return;
             }
             v.program = program;
+            if (program.fid === undefined) {
+                program.fid = 0;
+            }
+            this._clearProgramUniformCaches();
             this._gl.useProgram(program);
+        },
+
+        _clearProgramUniformCaches() {
+            const program = this.states.program;
+            const cache = program.cachedUniforms = program.cachedUniforms || {};
+            for (const p in cache) {
+                if (Array.isArray(program.cachedUniforms[p])) {
+                    program.cachedUniforms[p].fill(null);
+                } else {
+                    program.cachedUniforms[p] = null;
+                }
+            }
         },
 
         /**
@@ -562,12 +578,16 @@ include(
     {
         _checkAndRestore() {
             const gl = this._gl;
-            if (gl[KEY_CONTEXT] && gl[KEY_CONTEXT] !== this) {
-                const preContext = gl[KEY_CONTEXT];
-                this._restore(preContext.states);
-                gl[KEY_CONTEXT] = this;
+            if (gl[KEY_CONTEXT] !== this) {
+                if (!gl[KEY_CONTEXT]) {
+                    gl[KEY_CONTEXT] = this;
+                } else {
+                    const preContext = gl[KEY_CONTEXT];
+                    this._restore(preContext.states);
+                    gl[KEY_CONTEXT] = this;
+                }
             }
-            gl[KEY_CONTEXT] = this;
+
         },
 
         _restore(preStates) {
@@ -623,6 +643,7 @@ include(
                     }
                 }
             }
+            this._clearProgramUniformCaches();
 
             // enable/disable capabilities
             for (const p in target.capabilities) {
