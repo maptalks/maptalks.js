@@ -1,6 +1,6 @@
 import PromisePolyfill from './Promise';
 import { requestAnimFrame } from './util';
-import { isFunction, isNil, isNumber } from './util/common';
+import { isFunction, isNil, isNumber, now } from './util/common';
 import { getGlobalWorkerPool } from './worker/WorkerPool';
 import Browser from './Browser';
 import GlobalConfig from '../GlobalConfig';
@@ -87,8 +87,9 @@ function loop() {
     broadcastIdleMessage = !broadcastIdleMessage;
 }
 
+let loopFrameTime = now();
 function frameLoop(deadline) {
-    const { idleTimeRemaining, idleLog, idleTimeout } = GlobalConfig;
+    const { idleTimeRemaining, idleLog, idleTimeout, idleForceTimeThreshold } = GlobalConfig;
     if (Browser.requestIdleCallback) {
         if (deadline && deadline.timeRemaining) {
             const t = deadline.timeRemaining();
@@ -97,8 +98,16 @@ function frameLoop(deadline) {
                     console.error('idle timeout in', idleTimeout);
                 }
                 loop();
-            } else if (t <= idleTimeRemaining && idleLog) {
-                console.warn('currrent page is busy,the timeRemaining is', t);
+                loopFrameTime = now();
+            } else {
+                const time = now();
+                if (time - loopFrameTime > idleForceTimeThreshold) {
+                    loop();
+                    loopFrameTime = now();
+                }
+                if (t <= idleTimeRemaining && idleLog) {
+                    console.warn('currrent page is busy,the timeRemaining is', t);
+                }
             }
         }
         requestIdleCallback(frameLoop, { timeout: idleTimeout });
