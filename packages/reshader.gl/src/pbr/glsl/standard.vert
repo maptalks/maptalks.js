@@ -30,8 +30,8 @@ uniform mat4 modelViewMatrix;
 uniform mat4 positionMatrix;
 uniform mat4 projMatrix;
 
-uniform vec2 outSize;
-uniform vec2 halton;
+// uniform vec2 outSize;
+// uniform vec2 halton;
 uniform mediump vec3 cameraPosition;
 
 uniform mat3 modelNormalMatrix;
@@ -165,12 +165,12 @@ void main() {
     vec4 viewVertex = modelViewMatrix * position;
     vViewVertex = viewVertex;
     // gl_Position = projMatrix * modelViewMatrix * localVertex;
-    mat4 jitteredProjection = projMatrix;
-    jitteredProjection[2].xy += halton.xy / outSize.xy;
+    // mat4 jitteredProjection = projMatrix;
+    // jitteredProjection[2].xy += halton.xy / outSize.xy;
     #ifdef HAS_MASK_EXTENT
-        gl_Position = jitteredProjection * getMaskPosition(position, modelMatrix);
+        gl_Position = projMatrix * getMaskPosition(position, modelMatrix);
     #else
-        gl_Position = jitteredProjection * viewVertex;
+        gl_Position = projMatrix * viewVertex;
     #endif
     // gl_PointSize = min(64.0, max(1.0, -uPointSize / vViewVertex.z));
 
