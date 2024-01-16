@@ -2,10 +2,10 @@
   "distancetool": {
     "start": "起点",
     "units": {
-      "mile": " 米",
-      "feet": " 公里",
-      "kilometer": " 英尺",
-      "meter": " 英里"
+      "mile": " 英里",
+      "feet": " 英尺",
+      "kilometer": " 公里",
+      "meter": " 米"
     }
   },
   "areatool": {
