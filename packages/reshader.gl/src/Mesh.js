@@ -239,7 +239,6 @@ class Mesh {
                 if (hasOwn(this.uniforms, p)) {
                     const descriptor = Object.getOwnPropertyDescriptor(uniforms, p);
                     if (descriptor.get) {
-                        console.log(p);
                         Object.defineProperty(this._realUniforms, p, {
                             enumerable: true,
                             configurable: true,
