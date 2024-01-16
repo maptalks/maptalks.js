@@ -234,32 +234,44 @@ class Mesh {
             this._realUniforms = {
             };
             this._getUniformsForDraco();
-            if (this._material) {
-                const materialUniforms = this._material.getUniforms(regl);
-                for (const p in materialUniforms) {
-                    if (hasOwn(materialUniforms, p)) {
+            const uniforms = this.uniforms;
+            for (const p in this.uniforms) {
+                if (hasOwn(this.uniforms, p)) {
+                    const descriptor = Object.getOwnPropertyDescriptor(uniforms, p);
+                    if (descriptor.get) {
+                        console.log(p);
                         Object.defineProperty(this._realUniforms, p, {
                             enumerable: true,
                             configurable: true,
                             get: function () {
-                                return materialUniforms[p];
+                                return uniforms[p];
                             }
                         });
+                    } else {
+                        this._realUniforms[p] = uniforms[p];
                     }
                 }
             }
-            const uniforms = this.uniforms;
-            for (const p in this.uniforms) {
-                if (hasOwn(this.uniforms, p)) {
-                    Object.defineProperty(this._realUniforms, p, {
-                        enumerable: true,
-                        configurable: true,
-                        get: function () {
-                            return uniforms[p];
+            if (this._material) {
+                const materialUniforms = this._material.getUniforms(regl);
+                for (const p in materialUniforms) {
+                    if (hasOwn(materialUniforms, p) && !hasOwn(this._realUniforms, p)) {
+                        const descriptor = Object.getOwnPropertyDescriptor(materialUniforms, p);
+                        if (descriptor.get) {
+                            Object.defineProperty(this._realUniforms, p, {
+                                enumerable: true,
+                                configurable: true,
+                                get: function () {
+                                    return materialUniforms[p];
+                                }
+                            });
+                        } else {
+                            this._realUniforms[p] = materialUniforms[p];
                         }
-                    });
+                    }
                 }
             }
+
             this._dirtyUniforms = false;
             this._dirtyGeometry = false;
             this._materialVer = this._material && this._material.version;
@@ -277,35 +289,21 @@ class Mesh {
         if (position && position.quantization) {
             const quantization = position.quantization;
             const gltf_u_dec_position_normConstant = quantization.range / (1 << quantization.quantizationBits)
-            this._defineUniformsProperty(this._realUniforms, 'minValues_pos', quantization.minValues);
-            this._defineUniformsProperty(this._realUniforms, 'gltf_u_dec_position_normConstant', gltf_u_dec_position_normConstant);
+            this._realUniforms['minValues_pos'] = quantization.minValues;
+            this._realUniforms['gltf_u_dec_position_normConstant'] = gltf_u_dec_position_normConstant;
         }
         if (texcoord && texcoord.quantization) {
             const quantization = texcoord.quantization;
-            this._defineUniformsProperty(this._realUniforms, 'minValues_tex', quantization.minValues);
+            this._realUniforms['minValues_tex'] = quantization.minValues;
             const gltf_u_dec_texcoord_0_normConstant = quantization.range / (1 << quantization.quantizationBits)
-            this._defineUniformsProperty(this._realUniforms, 'gltf_u_dec_texcoord_0_normConstant', gltf_u_dec_texcoord_0_normConstant);
+            this._realUniforms['gltf_u_dec_texcoord_0_normConstant'] = gltf_u_dec_texcoord_0_normConstant;
         }
         if (normal && normal.quantization) {
             const quantization = normal.quantization;
             const gltf_u_dec_normal_rangeConstant = (1 << quantization.quantizationBits) - 1.0;
-            this._defineUniformsProperty(this._realUniforms, 'gltf_u_dec_normal_rangeConstant', gltf_u_dec_normal_rangeConstant);
+            this._realUniforms['gltf_u_dec_normal_rangeConstant'] = gltf_u_dec_normal_rangeConstant;
         }
     }
-
-    _defineUniformsProperty(uniforms, p, v) {
-        if (defined(uniforms[p])) {
-            return;
-        }
-        Object.defineProperty(uniforms, p, {
-            enumerable: true,
-            configurable: true,
-            get: function () {
-                return v;
-            }
-        });
-    }
-
 
     getMaterial() {
         return this._material;

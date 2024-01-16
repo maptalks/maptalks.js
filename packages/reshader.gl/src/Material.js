@@ -111,13 +111,18 @@ class Material {
                     }
                 });
             } else {
-                Object.defineProperty(realUniforms, p, {
-                    enumerable: true,
-                    configurable: true,
-                    get: function () {
-                        return uniforms[p];
-                    }
-                });
+                const descriptor = Object.getOwnPropertyDescriptor(uniforms, p);
+                if (descriptor.get) {
+                    Object.defineProperty(realUniforms, p, {
+                        enumerable: true,
+                        configurable: true,
+                        get: function () {
+                            return uniforms[p];
+                        }
+                    });
+                } else {
+                    realUniforms[p] = uniforms[p];
+                }
             }
         }
         this._reglUniforms = realUniforms;
