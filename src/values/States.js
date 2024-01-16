@@ -469,12 +469,15 @@ include(
 
         _clearProgramUniformCaches() {
             const program = this.states.program;
+            if (!program) {
+                return;
+            }
             const cache = program.cachedUniforms = program.cachedUniforms || {};
             for (const p in cache) {
-                if (Array.isArray(program.cachedUniforms[p])) {
-                    program.cachedUniforms[p].fill(null);
+                if (Array.isArray(cache[p])) {
+                    cache[p].fill(null);
                 } else {
-                    program.cachedUniforms[p] = null;
+                    cache[p] = null;
                 }
             }
         },
