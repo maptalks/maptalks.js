@@ -79,6 +79,9 @@ class Material {
      */
     appendDefines(defines/*, geometry*/) {
         const uniforms = this.uniforms;
+        if (!uniforms) {
+            return defines;
+        }
         if (uniforms['jointTexture']) {
             defines['HAS_SKIN'] = 1;
         }

@@ -109,7 +109,6 @@ class TerrainLitPainter extends TerrainPainter {
         defines['HAS_TERRAIN_NORMAL'] = 1;
         defines['HAS_MAP'] = 1;
         mesh.defines = defines;
-        this._updateMaskDefines(mesh);
         mesh.setUniform('terrainTileResolution', tileInfo.res);
         this.prepareMesh(mesh, tileInfo, terrainImage);
         return mesh;

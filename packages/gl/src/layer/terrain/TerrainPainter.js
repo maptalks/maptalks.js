@@ -71,7 +71,6 @@ class TerrainPainter {
         }
 
         mesh.setUniform('heightTexture', heightTexture);
-        this._updateMaskDefines(mesh);
         this.prepareMesh(mesh, tileInfo, terrainImage);
         return mesh;
     }
@@ -108,7 +107,11 @@ class TerrainPainter {
     }
 
     prepareMesh(mesh, tileInfo, terrainImage) {
+        if (!mesh.isValid()) {
+            return;
+        }
         const { mesh: terrainGeo } = terrainImage;
+        this._updateMaskDefines(mesh);
         const { triangles, numTrianglesWithoutSkirts, terrainWidth } = terrainGeo;
         mesh.localTransform = this._getLocalTransform(mesh.localTransform || [], tileInfo, terrainWidth);
         mesh.positionMatrix = this._getPositionMatrix(mesh.positionMatrix || []);
