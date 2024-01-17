@@ -127,6 +127,9 @@ export function createGLContext(canvas, options, onlyWebGL1) {
             break;
         }
     }
+    if (!gl) {
+        console.error('Browser doesn\'t support WebGL.');
+    }
     return gl;
     /* eslint-enable no-empty */
 }
