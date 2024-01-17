@@ -594,6 +594,18 @@ export default class Geometry {
                 }
             }
         });
+        if (this.properties) {
+            // resource saved by highlight.js
+            const oldElements = this.properties.oldElementsBeforeHighlight;
+            if (oldElements && !oldElements[KEY_DISPOSED]) {
+                if (oldElements.destroy) {
+                    oldElements.destroy();
+                    oldElements[KEY_DISPOSED] = true;
+                }
+            }
+            delete this.properties.oldElementsBeforeHighlight;
+            delete this.properties.hasInvisible;
+        }
         this.data = {};
         this._buffers = {};
         delete this._reglData;
