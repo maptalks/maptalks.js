@@ -18,7 +18,7 @@ const options = {
     'maxGPUMemory' : maptalks.Browser.mobile ? 32 : 1536,
     'retireInterval' : 2000,
     'loadingLimitOnInteracting' : 5,
-    'loadingLimit' : 0,
+    'loadingLimit' : 10,
     'renderer' : 'gl',
     'forceRenderOnZooming' : true,
     'forceRenderOnRotating' : true,
