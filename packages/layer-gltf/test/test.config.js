@@ -114,6 +114,7 @@ function createMap() {
     container.style.backgroundColor = '#000';
     document.body.appendChild(container);
     const map = new maptalks.Map(container, {
+        mousemoveThrottleTime: -1,
         center,
         zoom: 17,
         lights: lightConfig
