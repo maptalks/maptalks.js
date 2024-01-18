@@ -53,7 +53,7 @@ class Material {
             this.uniforms[k] = v;
             if (this._reglUniforms) {
                 const descriptor = Object.getOwnPropertyDescriptor(this._reglUniforms, k);
-                if (!descriptor.get) {
+                if (descriptor && !descriptor.get) {
                     this._dirtyProps = this._dirtyProps || [];
                     this._dirtyProps.push(k);
                     this._reglUniforms[k] = v;
