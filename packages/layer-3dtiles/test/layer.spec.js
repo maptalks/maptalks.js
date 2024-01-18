@@ -337,20 +337,17 @@ describe('3dtiles layer', () => {
             const extent = layer.getExtent(0);
             map.fitExtent(extent, 0, { animation: false });
         });
-        let count = 0;
-        layer.on('layerload', () => {
-            count++;
-            if (count === 1) {
-                layer.addService(service);
-            } else if (count === 3) {
+
+        setTimeout(() => {
+            layer.addService(service);
+            setTimeout(() => {
                 const canvas = map.getRenderer().canvas;
                 const ctx = canvas.getContext('2d');
                 const color = ctx.getImageData(canvas.width / 2 - 43, canvas.height / 2 + 70, 1, 1);
                 assert(color.data[3] > 0);
                 done();
-            }
-
-        });
+            }, 1000);
+        }, 100);
         layer.addTo(map);
     });
 
@@ -570,21 +567,16 @@ describe('3dtiles layer', () => {
             const extent = layer.getExtent(0);
             map.fitExtent(extent, 0, { animation: false });
         });
-        let count = 0;
-        layer.on('layerload', () => {
-            count++;
-            if (count === 2) {
-                layer.updateService(0, { heightOffset: 0 });
-            } else if (count === 3) {
-                setTimeout(() => {
-                    const canvas = map.getRenderer().canvas;
-                    const ctx = canvas.getContext('2d');
-                    const color = ctx.getImageData(canvas.width / 2 - 43, canvas.height / 2 + 70, 1, 1);
-                    assert(color.data[3] === 255);
-                    done();
-                }, 10);
-            }
-        });
+        setTimeout(() => {
+            layer.updateService(0, { heightOffset: 0 });
+            setTimeout(() => {
+                const canvas = map.getRenderer().canvas;
+                const ctx = canvas.getContext('2d');
+                const color = ctx.getImageData(canvas.width / 2 - 43, canvas.height / 2 + 70, 1, 1);
+                assert(color.data[3] === 255);
+                done();
+            }, 200);
+        }, 1000);
         layer.addTo(map);
     });
 });
