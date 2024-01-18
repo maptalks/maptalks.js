@@ -51,10 +51,18 @@ class Material {
         }
         if (!isNil(v)) {
             this.uniforms[k] = v;
+            if (this._reglUniforms) {
+                const descriptor = Object.getOwnPropertyDescriptor(this._reglUniforms, k);
+                if (!descriptor.get) {
+                    this._dirtyProps = this._dirtyProps || [];
+                    this._dirtyProps.push(k);
+                    this._reglUniforms[k] = v;
+                }
+            }
         } else if (!isNil(this.uniforms[k])) {
+            // dirty is true in this case
             delete this.uniforms[k];
         }
-        this._dirtyUniforms = true;
         if (this.isTexture(k)) {
             this._checkTextures();
         }
@@ -63,6 +71,14 @@ class Material {
             this._incrVersion();
         }
         return this;
+    }
+
+    _getDirtyProps() {
+        return this._dirtyProps;
+    }
+
+    _clearDirtyProps() {
+        this._dirtyProps = null;
     }
 
     get(k) {

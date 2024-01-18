@@ -140,6 +140,9 @@ class Mesh {
     setUniform(k, v) {
         if (this.uniforms[k] === undefined) {
             this._dirtyUniforms = true;
+        } else {
+            this._dirtyProps = this._dirtyProps || [];
+            this._dirtyProps.push(k);
         }
         this.uniforms[k] = v;
         return this;
@@ -273,6 +276,24 @@ class Mesh {
             this._dirtyUniforms = false;
             this._dirtyGeometry = false;
             this._materialVer = this._material && this._material.version;
+            this._material && this._material._clearDirtyProps();
+            this._dirtyProps = null;
+        } else if (this._dirtyProps || this._material && this._material._getDirtyProps()) {
+            if (this._dirtyProps) {
+                for (const p of this._dirtyProps) {
+                    this._realUniforms[p] = this.uniforms[p];
+                }
+            }
+            const matDirtyProps = this._material && this._material._getDirtyProps();
+            if (matDirtyProps) {
+                const materialUniforms = this._material.getUniforms(regl);
+                for (const p of matDirtyProps) {
+                    this._realUniforms[p] = materialUniforms[p];
+                }
+                this._material._clearDirtyProps();
+            }
+
+            this._dirtyProps = null;
         }
         this._realUniforms['modelMatrix'] = isFunction(this._localTransform) ? this._localTransform() : this._localTransform;
         this._realUniforms['positionMatrix'] = isFunction(this._positionMatrix) ? this._positionMatrix() : this._positionMatrix;
