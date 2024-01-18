@@ -702,7 +702,11 @@ include(
             const limit = this._attrLimit;
             if (this._is2 || this.angleOES) {
                 for (let i = 0; i < limit; i++) {
-                    gl.vertexAttribDivisor(i, 0);
+                    if (this._is2) {
+                        gl.vertexAttribDivisor(i, 0);
+                    } else {
+                        this.angleOES.vertexAttribDivisorANGLE(i, 0);
+                    }
                 }
             }
 
