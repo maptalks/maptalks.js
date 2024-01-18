@@ -1,7 +1,6 @@
 import { extend, isNil, isNumber, isFunction, isSupportVAO, hasOwn } from './common/Util.js';
 import { mat4, vec3 } from 'gl-matrix';
 import BoundingBox from './BoundingBox.js';
-import { KEY_DISPOSED } from './common/Constants';
 
 const tempMat4 = [];
 
