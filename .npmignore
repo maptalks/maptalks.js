@@ -7,4 +7,4 @@
 !dist/maptalks.css
 !dist/images/**/*
 !ACKNOWLEDGEMENT
-!src
+!src/**/*
