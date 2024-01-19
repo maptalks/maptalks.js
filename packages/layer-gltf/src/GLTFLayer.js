@@ -108,6 +108,7 @@ export default class GLTFLayer extends MaskLayerMixin(AbstractGLTFLayer) {
         for (const pickingId in this._markerMap) {
             const marker = this._markerMap[pickingId];
             marker._setPickingId(this.pickingId);
+            marker._setDirty(true);
             markerMap[this.pickingId] = marker;
             const count = marker.getCount() || 1;
             this.pickingId += count;

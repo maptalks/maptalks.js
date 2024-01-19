@@ -1753,4 +1753,23 @@ describe('bug', () => {
         });
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
     });
+
+    it('getBoundingBoxWidth', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
+        const marker = new maptalks.GLTFGeometry(center, {
+            symbol: {
+                modelHeight: 50,
+                url: url3
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            const length = marker.getBoundingBoxWidth('x');
+            const width = marker.getBoundingBoxWidth('y');
+            const height = marker.getBoundingBoxWidth('z');
+            expect(length).to.be.eql(53.71258212645953);
+            expect(width).to.be.eql(37.41006321261039);
+            expect(height).to.be.eql(50);
+            done();
+        });
+    })
 });

@@ -1311,9 +1311,9 @@ const xyzScale = {
             "name" : "Material.002",
             "pbrMetallicRoughness" : {
                 "baseColorFactor" : [
-                    0.226582869887352,
-                    0.226582869887352,
-                    0.226582869887352,
+                    0.626582869887352,
+                    0.626582869887352,
+                    0.626582869887352,
                     1
                 ],
                 "metallicFactor" : 0,

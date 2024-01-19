@@ -69,7 +69,7 @@ export function getGLTFAnchorsAlongLine(from, to, options) {
     const times = Math.floor(dist / boxWidth);
     const items = [];
     const map = options.map;
-    const rotationZ = options.rotateAlongLine ? getRotation(from, to, map) : 0;
+    const rotationZ = options.rotateAlongLine + getRotation(from, to, map);
     //取余缩放
     if (times >= 1) {
         const start = 0, end = times;

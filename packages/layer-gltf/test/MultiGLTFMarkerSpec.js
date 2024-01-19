@@ -1,5 +1,5 @@
 describe('MultiGLTFMarker', () => {
-    let map;
+    let map, eventContainer;
     beforeEach(function() {
         map = createMap();
         eventContainer = map._panels.canvasContainer;
@@ -664,6 +664,64 @@ describe('MultiGLTFMarker', () => {
                 expect(hasColor(pixel2)).to.be.eql(true);
                 done();
             }, 100);
+        });
+    });
+
+    it('add data to multigltfmarker in specify order', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        new maptalks.GroupGLLayer('group', [gltflayer],  { sceneConfig }).addTo(map);
+        let clickedTimes = 0;
+        const multigltfmarker1 = new maptalks.MultiGLTFMarker([{
+            coordinates: [-0.001, 0, 0]
+        }], {
+            symbol: {
+                url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
+            }
+        }).addTo(gltflayer);
+        function checkClickTimes() {
+            clickedTimes += 1;
+            if (clickedTimes === 3) { //3个模型全部能被点中
+                done();
+            }
+        }
+        const vlayer = new maptalks.VectorLayer('v').addTo(map);
+        map.on('click', e => {
+            new maptalks.Marker(e.coordinate).addTo(vlayer);
+        });
+        multigltfmarker1.on('click', () => {
+            checkClickTimes();
+        });
+        multigltfmarker1.on('load', () => {
+            setTimeout(function() {
+                const multigltfmarker2 = new maptalks.MultiGLTFMarker([{
+                    coordinates: [0, 0, 0]
+                }], {
+                    symbol: {
+                        url: url2,
+                        scaleX: 80,
+                        scaleY: 80,
+                        scaleZ: 80
+                    }
+                }).addTo(gltflayer);
+                multigltfmarker2.on('click', () => {
+                    checkClickTimes();
+                });
+            }, 100);
+
+            setTimeout(function() {
+                multigltfmarker1.addData({ coordinates: [0.001, 0, 0]});
+            }, 200);
+            setTimeout(function() {
+                for (let i = 0; i < 3; i++) {
+                    happen.click(eventContainer, {
+                        'clientX': 100 + i * 10,
+                        'clientY': 150
+                    });
+                }
+            }, 300);
         });
     });
 });

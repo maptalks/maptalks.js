@@ -120,6 +120,7 @@ export default class MultiGLTFMarker extends GLTFMarker {
         }
         this._data = [];
         this._attributeMatrixs = [];
+        this._dirty = true;
     }
 
     _updateAttributeMatrix() {

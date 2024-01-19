@@ -492,18 +492,29 @@ export default class GLTFMarker extends Marker {
         if (!bbox) {
             return 0;
         }
-        const idx = axis || 0;
+        let idx = 0;
+        if (axis === 'x') {
+            idx = 0;
+        } else if (axis === 'y') {//由于模型存在YZ翻转，算YZ方向长度需要对换
+            idx = 2;
+        } else if (axis === 'z') {
+            idx = 1;
+        }
         const { min, max } = bbox;
         const scale = this._getScale()[idx];
         return (max[idx] - min[idx]) * scale;
     }
 
     getAxisXWidth() {
-        return this.getBoundingBoxWidth(0);
+        return this.getBoundingBoxWidth('x');
     }
 
     getAxisYWidth() {
-        return this.getBoundingBoxWidth(1);
+        return this.getBoundingBoxWidth('y');
+    }
+
+    getAxisZWidth() {
+        return this.getBoundingBoxWidth('z');
     }
 
     _calSpatialScale(out) {
