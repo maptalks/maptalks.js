@@ -1,4 +1,4 @@
-import Browser from '../core/Browser';
+import GlobalConfig from '../GlobalConfig';
 import { now, extend } from '../core/util';
 import {
     addDomEvent,
@@ -223,7 +223,7 @@ Map.include(/** @lends Map.prototype */ {
         }
         const clickTimeThreshold = this.options['clickTimeThreshold'];
         const type = e.type;
-        if (isMoveEvent(type) && !Browser.isTest && isMousemoveEventBlocked(this, this.options['mousemoveThrottleTime'])) {
+        if (isMoveEvent(type) && !GlobalConfig.isTest && isMousemoveEventBlocked(this, this.options['mousemoveThrottleTime'])) {
             return;
         }
         const isMouseDown = type === 'mousedown' || (type === 'touchstart' && (!e.touches || e.touches.length === 1));
