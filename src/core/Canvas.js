@@ -25,6 +25,7 @@ let TEMP_CANVAS = null;
 
 const RADIAN = Math.PI / 180;
 const textOffsetY = 1;
+const TEXT_BASELINE = 'top';
 
 const Canvas = {
     getCanvas2DContext(canvas) {
@@ -48,13 +49,21 @@ const Canvas = {
     },
 
     prepareCanvasFont(ctx, style) {
-        ctx.textBaseline = 'top';
-        ctx.font = getFont(style);
+        if (ctx.textBaseline !== TEXT_BASELINE) {
+            ctx.textBaseline = TEXT_BASELINE;
+        }
+        const font = getFont(style);
+        if (ctx.font !== font) {
+            ctx.font = font;
+        }
         let fill = style['textFill'];
         if (!fill) {
             fill = DEFAULT_TEXT_COLOR;
         }
-        ctx.fillStyle = Canvas.getRgba(fill, style['textOpacity']);
+        const fillStyle = Canvas.getRgba(fill, style['textOpacity']);
+        if (ctx.fillStyle !== fillStyle) {
+            ctx.fillStyle = fillStyle;
+        }
     },
 
     /**
