@@ -51,8 +51,6 @@ class TileWorkerConnection extends Actor {
     }
 }
 
-const BLANK_IMAGE = new Image();
-
 /**
  * @classdesc
  * Renderer class based on HTML5 Canvas2D for TileLayers
@@ -759,6 +757,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     resetTileLoadTime(tileImage) {
+        // loadTime = 0 means a tile from onTileError
         if (tileImage.loadTime !== 0) {
             tileImage.loadTime = now();
         }
