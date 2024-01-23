@@ -759,7 +759,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     resetTileLoadTime(tileImage) {
-        tileImage.loadTime = now();
+        if (tileImage.loadTime !== 0) {
+            tileImage.loadTime = now();
+        }
     }
 
     onTileError(tileImage, tileInfo) {
@@ -785,7 +787,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 tileImage.src = errorUrl;
             }
         }
-        tileImage = tileImage instanceof Image ? tileImage : BLANK_IMAGE;
         this.abortTileLoading(tileImage, tileInfo);
 
         tileImage.loadTime = 0;
