@@ -223,7 +223,7 @@ export function getAlignPoint(size, horizontalAlignment, verticalAlignment) {
 }
 
 //export it for plugin develop
-export const DEFAULT_FONT = 'monospace';
+export const DEFAULT_FONT = 'sans-serif';
 export const DEFAULT_TEXTSIZE = 14;
 
 /**
@@ -243,8 +243,23 @@ export function getFont(style) {
         return (style['textStyle'] && style['textStyle'] !== 'normal' ? style['textStyle'] + ' ' : '') +
             (style['textWeight'] && style['textWeight'] !== 'normal' ? style['textWeight'] + ' ' : '') +
             textSize + 'px ' +
-            (style['textFaceName'] ? style['textFaceName'] : DEFAULT_FONT);
+            (style['textFaceName'] && formatFontFamily(style['textFaceName']) || DEFAULT_FONT);
     }
+}
+
+function formatFontFamily(font) {
+    const fonts = font.split(',');
+    for (let i = 0; i < fonts.length; i++) {
+        if (fonts[i].trim) {
+            fonts[i] = fonts[i].trim();
+        }
+        // quote font name with space
+        // e.g. "Gill Sans Extrabold", sans-serif
+        if (fonts[i].indexOf(' ') > 0 && fonts[i][0] !== '"' && fonts[i][0] !== '\'') {
+            fonts[i] = '"' + fonts[i] + '"';
+        }
+    }
+    return fonts.join(',');
 }
 
 /**
