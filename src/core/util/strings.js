@@ -249,14 +249,14 @@ export function getFont(style) {
 
 function formatFontFamily(font) {
     const fonts = font.split(',');
-    for (let i = 0; i < font.length; i++) {
-        if (fonts[i].trim) {
-            fonts[i] = fonts[i].trim();
+    for (let fontFamily of fonts) {
+        if (fontFamily.trim) {
+            fontFamily = fontFamily.trim();
         }
         // quote font name with space
         // e.g. "Gill Sans Extrabold", sans-serif
-        if (fonts[i].indexOf(' ') > 0 && fonts[i][0] !== '"') {
-            fonts[i] = '"' + fonts[i] + '"';
+        if (fontFamily.indexOf(' ') > 0 && fontFamily[0] !== '"' && fontFamily[0] !== '\'') {
+            fontFamily = '"' + fontFamily + '"';
         }
     }
     return fonts.join(',');
