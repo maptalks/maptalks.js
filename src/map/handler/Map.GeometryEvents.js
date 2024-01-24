@@ -3,7 +3,7 @@ import { on, off, getEventContainerPoint, preventDefault, stopPropagation, isMov
 import Handler from '../../handler/Handler';
 import Geometry from '../../geometry/Geometry';
 import Map from '../Map';
-import Browser from '../../core/Browser';
+import GlobalConfig from '../../GlobalConfig';
 
 const EVENTS =
     /**
@@ -205,7 +205,7 @@ class MapGeometryEventsHandler extends Handler {
         }
         let oneMoreEvent = null;
         const eventType = type || domEvent.type;
-        if (isMoveEvent(eventType) && !Browser.isTest && isMousemoveEventBlocked(this, map.options['mousemoveThrottleTime'])) {
+        if (isMoveEvent(eventType) && !GlobalConfig.isTest && isMousemoveEventBlocked(this, map.options['mousemoveThrottleTime'])) {
             stopPropagation(domEvent);
             return;
         }

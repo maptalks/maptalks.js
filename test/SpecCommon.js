@@ -107,7 +107,7 @@ function COMMON_CREATE_MAP(center, baseLayer, options) {
     if (baseLayer) {
         option.baseLayer = baseLayer;
     }
-    maptalks.Browser.isTest = true;
+    maptalks.Globalconfig.isTest = true;
     var map = new maptalks.Map(container, option);
     return {
         'container': container,
