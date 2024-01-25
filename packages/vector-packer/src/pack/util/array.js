@@ -53,8 +53,10 @@ export function getUnsignedArrayType(max) {
 }
 
 export function createTypedArray(values, ctor) {
-    const arr = new ctor(values.length);
-    const len = arr.length;
+    const len = values.length;
+    // _origin是ArrayPool中Proxy的原始ArrayItem，直接遍历他性能会更高
+    values = values._origin || values;
+    const arr = new ctor(len);
     for (let i = 0; i < len; i++) {
         arr[i] = values[i];
     }

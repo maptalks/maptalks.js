@@ -3,7 +3,7 @@ const inWorker = typeof WorkerGlobalScope !== 'undefined' && (self instanceof Wo
 
 class ArrayItem extends Array {
 
-    push(...args) {
+    pushIn(...args) {
         const len = args.length;
         for (let i = 0; i < len; i++) {
             this[this._index++] = args[i];
@@ -59,12 +59,17 @@ const ArrayItemProxy = {
 
 class MainThreadArrayItem extends Array {
     // 主线程中不能重用array，返回新的array对象，并实现setLength和trySetLength方法
+
     setLength(len) {
         super.length = len;
     }
 
     trySetLength(len) {
         super.length = len;
+    }
+
+    getLength() {
+        return super.length;
     }
 }
 
@@ -79,6 +84,17 @@ class ArrayPool {
         return arrayPool;
     }
 
+    static getArray() {
+        const array = new ArrayItem();
+        const proxy = new Proxy(array, ArrayItemProxy);
+        // 通过Proxy代理array的push，性能非常慢，改为直接定义一个push并调用array上的pushIn方法
+        proxy.push = (...args) => {
+            array.pushIn(...args);
+        };
+        proxy._origin = array;
+        return proxy;
+    }
+
     constructor() {
         this._arrays = [];
         this._index = 0;
@@ -88,7 +104,7 @@ class ArrayPool {
         if (!inWorker) {
             return new MainThreadArrayItem();
         }
-        const array = this._arrays[this._index] = this._arrays[this._index] || new Proxy(new ArrayItem(), ArrayItemProxy);
+        const array = this._arrays[this._index] = this._arrays[this._index] || ArrayPool.getArray();
         array.reset();
         this._index++;
         return array;
