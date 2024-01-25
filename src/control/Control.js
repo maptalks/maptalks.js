@@ -1,4 +1,4 @@
-import { extend, isNil, isString } from '../core/util';
+import { extend, isNil, isNumber, isString } from '../core/util';
 import { createEl, setStyle, removeDomNode } from '../core/util/dom';
 import Eventable from '../core/Eventable';
 import Class from '../core/Class';
@@ -229,8 +229,11 @@ class Control extends Eventable(Class) {
         }
         for (const p in position) {
             if (position.hasOwnProperty(p)) {
-                position[p] = parseInt(position[p]);
-                this.__ctrlContainer.style[p] = position[p] + 'px';
+                let v = position[p] || 0;
+                if (isNumber(v)) {
+                    v += 'px';
+                }
+                this.__ctrlContainer.style[p] = v;
             }
         }
         /**
@@ -251,20 +254,20 @@ class Control extends Eventable(Class) {
 
 Control.positions = {
     'top-left': {
-        'top'   : 20,
-        'left'  : 20
+        'top': 20,
+        'left': 20
     },
     'top-right': {
-        'top'   : 20,
-        'right' : 20
+        'top': 20,
+        'right': 20
     },
     'bottom-left': {
         'bottom': 20,
-        'left'  : 20
+        'left': 20
     },
     'bottom-right': {
         'bottom': 20,
-        'right' : 20
+        'right': 20
     }
 };
 
