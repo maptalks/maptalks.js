@@ -144,7 +144,7 @@ export default class MeshPainter {
         return this._layer.getMap();
     }
 
-    paint(tiles, leafs, parentContext) {
+    paint(tiles, leafs, boxMeshes, parentContext) {
         // const testMesh = { bloom: 1 };
         // if (!parentContext.sceneFilter(testMesh)) {
         //     return;
@@ -164,7 +164,6 @@ export default class MeshPainter {
         const i3dmMeshes = [];
 
         const levelMap = this._getLevelMap(tiles);
-        const boxMeshes = [];
         for (let i = 0, l = tiles.length; i < l; i++) {
             const node = tiles[i].data.node;
             let mesh = this._getMesh(node);
@@ -172,9 +171,6 @@ export default class MeshPainter {
                 continue;
             }
             const service = this._layer._getNodeService(node._rootIdx);
-            if (node._boxMesh && service['debugShowBoundingVolume']) {
-                boxMeshes.push(node._boxMesh);
-            }
             const heightOffset = service.heightOffset || 0;
             const coordOffset = service.coordOffset || EMPTY_COORD_OFFSET;
             if (this._cmptMeshes[node.id]) {
@@ -943,7 +939,7 @@ export default class MeshPainter {
 
     _createBBoxMesh(node) {
         const nodeBox = this._layer._nodeBoxes[node.id];
-        if (!nodeBox) {
+        if (!nodeBox || node._boxMesh) {
             return;
         }
         let vertices, indices, translate, scale;

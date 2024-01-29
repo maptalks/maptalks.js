@@ -303,16 +303,39 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
     _drawTiles(tiles, leaves, parentContext) {
 
         this.tileCache.markAll(this, false);
+        const boxMeshes = [];
         for (let i = 0, l = tiles.length; i < l; i++) {
             const tileData = tiles[i].data;
             tileData.current = true;
             tileData.renderer = this;
             this.tileCache.add(tiles[i].node.id, tileData);
+            const node = tileData.node;
+            const service = this.layer._getNodeService(node._rootIdx);
+            if (node._boxMesh && service['debugShowBoundingVolume'] && !Array.isArray(service['debugShowBoundingVolume'])) {
+                boxMeshes.push(node._boxMesh);
+            }
         }
         this.tileCache.shrink();
+
+        const services = this.layer.options.services;
+        for (let i = 0; i < services.length; i++) {
+            const service = services[i];
+            const debugNodes = Array.isArray(service['debugShowBoundingVolume']) && service['debugShowBoundingVolume'];
+            if (debugNodes) {
+                for (const nodeId of debugNodes) {
+                    const nodeBox = this.layer._nodeBoxes[nodeId];
+                    const node = nodeBox && nodeBox.node;
+                    if (!node || !node._boxMesh) {
+                        continue;
+                    }
+                    boxMeshes.push(node._boxMesh);
+                }
+            }
+        }
+
         const context = { tiles, leaves };
         this.onDrawTileStart(context);
-        const count = this.painter.paint(tiles, leaves, parentContext);
+        const count = this.painter.paint(tiles, leaves, boxMeshes, parentContext);
 
         this.onDrawTileEnd(context);
         if (count) {
@@ -399,12 +422,8 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
                 return;
             }
             const { magic } = data;
-
             if (magic === 'b3dm' || magic === 'pnts' || magic === 'i3dm' || magic === 'cmpt' || magic === 'gltf') {
                 this._modelQueue.push({ data, tile });
-                if (service['debugShowBoundingVolume']) {
-                    this.painter._createBBoxMesh(tile);
-                }
             } else {
                 this.onTilesetLoad(data, tile, url);
             }
@@ -429,6 +448,13 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             //     this.onTilesetLoad(data, tile, url);
             // }
         });
+    }
+
+    _createBBoxMesh(node) {
+        if (!this.painter) {
+            return;
+        }
+        this.painter._createBBoxMesh(node);
     }
 
     _consumeModelQueue() {

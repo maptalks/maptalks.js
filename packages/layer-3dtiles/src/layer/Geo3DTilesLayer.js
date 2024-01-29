@@ -656,10 +656,6 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             // }
             return -1;
         }
-        // const service = this._getNodeService(node._rootIdx);
-        // if (service['debugShowBoundingVolume']) {
-        //     this._createBBoxMesh(node);
-        // }
         if (node.geometricError === 0) {
             return 1;
         }
@@ -710,6 +706,12 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
                 const coord = new maptalks.Coordinate(center);
                 nodeBox.center = coord;
             }
+        }
+
+        const service = this._getNodeService(node._rootIdx);
+        if (service['debugShowBoundingVolume']) {
+            this._nodeBoxes[id].node = node;
+            this.getRenderer()._createBBoxMesh(node);
         }
 
 
