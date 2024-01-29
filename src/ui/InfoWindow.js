@@ -144,7 +144,7 @@ class InfoWindow extends UIComponent {
         const isFunc = isFunction(this.options['content']);
         const isStr = isString(this.options['content']);
         if (this.options['custom']) {
-            let oldDom = this.getDOM();
+            const oldDom = this.getDOM();
             let newDom;
             this._bindDomEvents(oldDom, 'off');
             if (isStr || isFunc) {
