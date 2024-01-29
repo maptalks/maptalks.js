@@ -83,7 +83,12 @@ const BOX_INDEX = [
     4, 5,
     5, 6,
     6, 7,
-    7, 4
+    7, 4,
+
+    // center axis
+    8, 9,
+    8, 10,
+    8, 11
 ];
 const SPHERE_POS = generateSphere(100, 1);
 const BOX_ROTATE = [0, 0, 0, 1], BOX_SCALE = [1, 1, 1];

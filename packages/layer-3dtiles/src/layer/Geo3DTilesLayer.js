@@ -61,6 +61,10 @@ const TEMP_EXTENT = new maptalks.Extent(0, 0, 0, 0);
 const TEMP_VEC3_0 = [];
 const TEMP_VEC3_1 = [];
 const TEMP_VEC3_2 = [];
+const TEMP_VEC3_3 = [];
+const TEMP_VEC3_4 = [];
+const TEMP_VEC3_5 = [];
+const TEMP_VEC3_6 = [];
 const TEMP_SCALE = [];
 
 const EMPTY_ARRAY = [];
@@ -814,11 +818,15 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             const coord = TEMP_COORD.set(...pos);
             let point = map.coordToPointAtRes(coord, glRes, TEMP_POINT);
             point = vec3.set(pos, point.x, point.y, map.altitudeToPoint(coord.z, glRes))
-            boxPosition[i] = point[0] - bboxPointCenter[0];
-            boxPosition[i + 1] = point[1] - bboxPointCenter[1];
-            boxPosition[i + 2] = point[2] - bboxPointCenter[2];
+            boxPosition[i] = point[0];
+            boxPosition[i + 1] = point[1];
+            boxPosition[i + 2] = point[2];
         }
-        const obbox = this._generateOBBox(boxPosition, bboxPointCenter, boxCenter);
+        boxPosition.push(...boxCenter);
+        const obbox = this._generateOBBox(boxPosition, boxCenter);
+        for (let i = 0; i < boxPosition.length; i++) {
+            boxPosition[i] -= bboxPointCenter[i % 3];
+        }
         return { obbox, boxPosition, boxCenter, coordCenter };
     }
 
@@ -844,25 +852,29 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return [sphereCenter, sphere[3] * scale[2]];
     }
 
-    _generateOBBox(boxPosition, bboxPositionCenter, obbCenter) {
-        const [x, y, z] = bboxPositionCenter;
-        const xAxis = vec3.set(TEMP_VEC3_0, (boxPosition[1 * 3] + boxPosition[4 * 3]) / 2 + x, (boxPosition[1 * 3 + 1] + boxPosition[4 * 3 + 1]) / 2 + y, (boxPosition[1 * 3 + 2] + boxPosition[4 * 3 + 2]) / 2 + z);
-        const yAxis = vec3.set(TEMP_VEC3_1, (boxPosition[1 * 3] + boxPosition[6 * 3]) / 2 + x, (boxPosition[1 * 3 + 1] + boxPosition[6 * 3 + 1]) / 2 + y, (boxPosition[1 * 3 + 2] + boxPosition[6 * 3 + 2]) / 2 + z);
-        const zAxis = vec3.set(TEMP_VEC3_2, (boxPosition[1 * 3] + boxPosition[3 * 3]) / 2 + x, (boxPosition[1 * 3 + 1] + boxPosition[3 * 3 + 1]) / 2 + y, (boxPosition[1 * 3 + 2] + boxPosition[3 * 3 + 2]) / 2 + z);
-        const obbox = obbCenter.slice(0);
-        //中心点指向x轴方向
-        obbox[3] = xAxis[0] - obbCenter[0];
-        obbox[4] = xAxis[1] - obbCenter[1];
-        obbox[5] = xAxis[2] - obbCenter[2];
+    _generateOBBox(boxPosition, obbCenter) {
+        // BOX template
+        //    v2----- v1
+        //   / |     /|
+        //  v3------v0|
+        //  |  |v6  | /v5
+        //  | /     |/
+        //  v7------v4
 
-        obbox[6] = yAxis[0] - obbCenter[0];
-        obbox[7] = yAxis[1] - obbCenter[1];
-        obbox[8] = yAxis[2] - obbCenter[2];
+        const xPlaneCenter = getBoxPlaneCenter(TEMP_VEC3_4, boxPosition, 0, 1, 4, 5);
+        const yPlaneCenter = getBoxPlaneCenter(TEMP_VEC3_5, boxPosition, 0, 3, 4, 7);
+        const zPlaneCenter = getBoxPlaneCenter(TEMP_VEC3_6, boxPosition, 0, 1, 2, 3);
 
-        obbox[9] = zAxis[0] - obbCenter[0];
-        obbox[10] = zAxis[1] - obbCenter[1];
-        obbox[11] = zAxis[2] - obbCenter[2];
-        return obbox;
+        boxPosition.push(...xPlaneCenter);
+        boxPosition.push(...yPlaneCenter);
+        boxPosition.push(...zPlaneCenter);
+
+        return [
+            ...obbCenter,
+            ...vec3.sub(TEMP_VEC3_0, xPlaneCenter, obbCenter),
+            ...vec3.sub(TEMP_VEC3_1, yPlaneCenter, obbCenter),
+            ...vec3.sub(TEMP_VEC3_2, zPlaneCenter, obbCenter)
+        ];
     }
 
     _calBoxCenter(node) {
@@ -1413,4 +1425,17 @@ function Matrix3Multiply(left, right, result) {
     result[7] = column2Row1;
     result[8] = column2Row2;
     return result;
+}
+
+function getBoxPlaneCenter(out, box, v0, v1, v2, v3) {
+    v0 = vec3.set(TEMP_VEC3_0, box[v0 * 3], box[v0 * 3 + 1], box[v0 * 3 + 2]);
+    v1 = vec3.set(TEMP_VEC3_1, box[v1 * 3], box[v1 * 3 + 1], box[v1 * 3 + 2]);
+    v2 = vec3.set(TEMP_VEC3_2, box[v2 * 3], box[v2 * 3 + 1], box[v2 * 3 + 2]);
+    v3 = vec3.set(TEMP_VEC3_3, box[v3 * 3], box[v3 * 3 + 1], box[v3 * 3 + 2]);
+
+    out[0] = (v0[0] + v1[0] + v2[0] + v3[0]) / 4;
+    out[1] = (v0[1] + v1[1] + v2[1] + v3[1]) / 4;
+    out[2] = (v0[2] + v1[2] + v2[2] + v3[2]) / 4;
+
+    return out;
 }
