@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { GLTFLayer, MultiGLTFMarker } from '@maptalks/gl-layers';
+import { GLTFLayer, MultiGLTFMarker } from '@maptalks/gltf-layer';
 import { map, reduce, extend, sample } from './Util.js';
 import * as turf from 'turf';
 import Pool from './Pool.js';
