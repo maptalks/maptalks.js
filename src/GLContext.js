@@ -8,10 +8,14 @@ import MockExtensions from "./extensions/Mocks";
 
 let uid = 1;
 
+// work around for maptalks/issues#601, class name changed from GLContext to WebGL2RenderingContext
+
+// three needs constructor.name to determine whether it's a webgl2 context, see
+// https://github.com/mrdoob/three.js/issues/26968
 /**
  * @class
  */
-class GLContext {
+class WebGL2RenderingContext /* GLContext */ {
     /**
      *
      * @param {WebGLRenderingContext} gl
@@ -31,12 +35,12 @@ class GLContext {
         this._gl["_fusiongl_drawCalls"] = 0;
 
         this._is2 =
-            typeof WebGL2RenderingContext !== "undefined" &&
-            this._gl instanceof WebGL2RenderingContext;
+            typeof window.WebGL2RenderingContext !== "undefined" &&
+            this._gl instanceof window.WebGL2RenderingContext;
 
         const myProto = Object.getPrototypeOf(this);
         if (this._is2) {
-            Object.setPrototypeOf(myProto, WebGL2RenderingContext.prototype);
+            Object.setPrototypeOf(myProto, window.WebGL2RenderingContext.prototype);
         } else {
             Object.setPrototypeOf(myProto, WebGLRenderingContext.prototype);
         }
@@ -539,4 +543,4 @@ class GLContext {
 
 // include(GLContext.prototype, GLConstants);
 
-export default GLContext;
+export default WebGL2RenderingContext;
