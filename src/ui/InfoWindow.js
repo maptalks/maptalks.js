@@ -144,6 +144,9 @@ class InfoWindow extends UIComponent {
         const isFunc = isFunction(this.options['content']);
         const isStr = isString(this.options['content']);
         if (this.options['custom']) {
+            const oldDom = this.getDOM();
+            let newDom;
+            this._bindDomEvents(oldDom, 'off');
             if (isStr || isFunc) {
                 const dom = createEl('div');
                 if (isStr) {
@@ -153,11 +156,13 @@ class InfoWindow extends UIComponent {
                     //dymatic render dom content
                     this.options['content'].bind(this)(dom);
                 }
-                return dom;
+                newDom = dom;
             } else {
                 this._replaceTemplate(this.options['content']);
-                return this.options['content'];
+                newDom = this.options['content'];
             }
+            this._bindDomEvents(newDom, 'on');
+            return newDom;
         }
         this._bindDomEvents(this.getDOM(), 'off');
         const dom = createEl('div');
