@@ -2,6 +2,7 @@ import { extend, hasOwn } from '../../../common/Util';
 import * as maptalks from 'maptalks';
 import { KEY_IDX } from '../../../common/Constant';
 import { LINE_GRADIENT_PROP_KEY } from './symbols';
+import { PackUtil } from '@maptalks/vector-packer';
 
 const POINT = new maptalks.Point(0, 0);
 export const ID_PROP = '_vector3dlayer_id';
@@ -49,13 +50,29 @@ export function convertToFeature(geo, kidGen, currentFeature) {
         }
         let ringIndex = 0;
         for (let i = 0; i < coordinates.length; i++) {
+            let shellIsClockwise = false;
             for (let ii = 0; ii < coordinates[i].length; ii++) {
                 geometry[ringIndex] = [];
                 coords[ringIndex] = [];
-                for (let iii = 0; iii < coordinates[i][ii].length; iii++) {
-                    map.coordToPointAtRes(coordinates[i][ii][iii], glRes, POINT);
-                    geometry[ringIndex].push([POINT.x, POINT.y, (coordinates[i][ii][iii].z || 0)]);
-                    coords[ringIndex].push([coordinates[i][ii][iii].x, coordinates[i][ii][iii].y]);
+                if (shellIsClockwise) {
+                    for (let iii = coordinates[i][ii].length - 1; iii >= 0; iii--) {
+                        map.coordToPointAtRes(coordinates[i][ii][iii], glRes, POINT);
+                        geometry[ringIndex].push([POINT.x, POINT.y, (coordinates[i][ii][iii].z || 0)]);
+                        coords[ringIndex].push([coordinates[i][ii][iii].x, coordinates[i][ii][iii].y]);
+                    }
+                } else {
+                    for (let iii = 0; iii < coordinates[i][ii].length; iii++) {
+                        map.coordToPointAtRes(coordinates[i][ii][iii], glRes, POINT);
+                        geometry[ringIndex].push([POINT.x, POINT.y, (coordinates[i][ii][iii].z || 0)]);
+                        coords[ringIndex].push([coordinates[i][ii][iii].x, coordinates[i][ii][iii].y]);
+                    }
+                }
+                if (ii === 0) {
+                    shellIsClockwise = PackUtil.calculateSignedArea(geometry[ringIndex]) < 0;
+                    if (shellIsClockwise) {
+                        geometry[ringIndex] = geometry[ringIndex].reverse();
+                        coords[ringIndex] = coords[ringIndex].reverse();
+                    }
                 }
                 ringIndex++;
             }
