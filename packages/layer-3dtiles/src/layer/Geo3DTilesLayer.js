@@ -31,6 +31,7 @@ const options = {
     'picking': true,
     'pickingPoint': true,
     'geometryEvents': false,
+    'alwaysShowTopTiles': true,
     // 'ambientLight' : [0, 0, 0],
     // 'heightOffsets' : null,
     // 'polygonOffsets' : null,
@@ -312,7 +313,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             if (!root || !root.visible) {
                 continue;
             }
-            let firstContentLevel = Infinity;
+            // let firstContentLevel = Infinity;
             const queue = [root];
             const maxExtent = this._getRootMaxExtent(i);
             while (queue.length > 0) {
@@ -338,7 +339,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
                 //     }
                 //     console.log(ancestors.join());
                 // }
-                if (visible < 1) {
+                if (visible < 1 && (visible < 0 || !this.options['alwaysShowTopTiles'] || !isTopTile(node))) {
                     let parent = currentParent;
                     while (parent && !parent.content) {
                         parent = parent.parent;
@@ -348,19 +349,19 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
                         this._addCandidateNode(tiles, parent);
                         // tiles[parent.node.id] = parent;
                     }
-                    const config = this.options.services[node._rootIdx];
-                    if (config['alwaysShow'] !== false) {
-                        //当tile在frustum中，level处于第一个有content的层级，则永远绘制它
-                        if (visible === 0 && node._level <= firstContentLevel) {
-                            if (node.content) {
-                                firstContentLevel = node._level;
-                            }
-                        } else {
-                            continue;
-                        }
-                    } else {
-                        continue;
-                    }
+                    continue;
+                    // if (config['alwaysShow'] !== false) {
+                    //     //当tile在frustum中，level处于第一个有content的层级，则永远绘制它
+                    //     if (visible === 0 && node._level <= firstContentLevel) {
+                    //         if (node.content) {
+                    //             firstContentLevel = node._level;
+                    //         }
+                    //     } else {
+                    //         continue;
+                    //     }
+                    // } else {
+
+                    // }
                     // continue;
                 }
 
@@ -1440,4 +1441,27 @@ function getBoxPlaneCenter(out, box, v0, v1, v2, v3) {
     out[2] = (v0[2] + v1[2] + v2[2] + v3[2]) / 4;
 
     return out;
+}
+
+function isTopTile(node)  {
+    if (!node.content || node.hasParentContent) {
+        return false;
+    }
+    let parent = node.parent;
+    if (parent.content || parent.hasParentContent) {
+        if (!node.hasParentContent) {
+            node.hasParentContent = true;
+        }
+        return false;
+    }
+    while (parent) {
+        if (parent.content || parent.hasParentContent) {
+            if (!node.hasParentContent) {
+                node.hasParentContent = true;
+            }
+            return false;
+        }
+        parent = parent.parent;
+    }
+    return true;
 }
