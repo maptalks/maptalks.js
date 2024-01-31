@@ -5,7 +5,7 @@ import { EMPTY_VECTOR_TILE } from '../core/Constant';
 import DebugPainter from './utils/DebugPainter';
 import TileStencilRenderer from './stencil/TileStencilRenderer';
 import { extend, pushIn, getCentiMeterScale, isNil } from '../../common/Util';
-import convertToPainterFeatures from './utils/convert_to_painter_features';
+import { default as convertToPainterFeatures, oldPropsKey }  from './utils/convert_to_painter_features';
 import { isFunctionDefinition } from '@maptalks/function-type';
 import { FilterUtil } from '@maptalks/vector-packer';
 import { meterToPoint } from '../plugins/Util';
@@ -691,6 +691,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 }
             }
             tileInfo.extent = tileData && tileData.extent;
+            tileData.features = Object.values(features);
             this.onTileLoad(tileData, tileInfo)
         }
         this.layer.fire('datareceived', { url });
@@ -1823,6 +1824,32 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     consumeTile(tileImage, tileInfo) {
         this._retirePrevTile(tileInfo);
         super.consumeTile(tileImage, tileInfo);
+        if (this.layer.options.features === 'transient' && tileImage.data) {
+            for (let j = 0; j < tileImage.data.length; j++) {
+                if (!tileImage.data[j]) {
+                    continue;
+                }
+                const features = tileImage.data[j].features;
+                if (!features) {
+                    continue;
+                }
+                for (const p in features) {
+                    const feature = features[p] && features[p].feature;
+                    if (!feature) {
+                        continue;
+                    }
+                    if (feature.fnTypeProps) {
+                        feature.customProps[oldPropsKey] = feature.fnTypeProps;
+                    } else {
+                        features[p] = null;
+                    }
+                }
+            }
+            this.layer.fire('_transientfeature', { tileImage });
+        }
+        if (tileImage && tileImage.features) {
+            tileImage.features = [];
+        }
         this._createOneTile(tileInfo, tileImage);
     }
 

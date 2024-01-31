@@ -442,7 +442,7 @@ export default class BaseLayerWorker {
                                 feature = fea;
                             }
                             const o = extend({}, feature);
-                            if (!options.features) {
+                            if (hasFnTypeProps && feaTags[i] && (!options.features || options.features === 'transient')) {
                                 // 只输出symbol中用到的属性
                                 const pluginIndexs = feaTags[i];
                                 for (let j = 0; j < pluginIndexs.length; j++) {
@@ -470,12 +470,20 @@ export default class BaseLayerWorker {
                     // 删除feature中，不是fn-type的属性
                     for (const p in allFeas) {
                         const feature = allFeas[p];
-                        if (feature.properties[fntypePropsKey]) {
-                            const keys = feature.properties[fntypePropsKey];
+                        const keys = feature.properties[fntypePropsKey];
+                        if (keys) {
                             delete feature.properties[fntypePropsKey];
+                            if (options.features === 'transient') {
+                                feature.fnTypeProps = extend({}, feature.properties);
+                            }
                             for (const pp in feature.properties) {
                                 if (!keys.has(pp)) {
-                                    delete feature.properties[pp];
+                                    if (options.features === 'transient') {
+                                        delete feature.fnTypeProps[pp];
+                                    } else {
+                                        delete feature.properties[pp];
+                                    }
+
                                 }
                             }
                         }
