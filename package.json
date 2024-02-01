@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/fusiongl",
-  "version": "0.6.11",
+  "version": "0.6.12",
   "description": "",
   "main": "dist/fusiongl.es.js",
   "module": "dist/fusiongl.es.js",
