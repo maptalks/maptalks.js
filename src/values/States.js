@@ -459,6 +459,7 @@ include(
             if (v.program === program) {
                 return;
             }
+            this.states.activeAttribType = 0;
             v.program = program;
             if (program.fid === undefined) {
                 program.fid = 0;
@@ -512,6 +513,7 @@ include(
          */
         bindVertexArray(vao) {
             this._checkAndRestore();
+            this.states.activeAttribType = 1;
             const gl = this._gl;
             const v = this.states;
             if (v.vao !== vao) {

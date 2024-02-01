@@ -314,7 +314,6 @@ class WebGL2RenderingContext /* GLContext */ {
      */
     drawArrays(mode, first, count) {
         this._checkAndRestore();
-        this.states.activeAttribType = 0;
         this._addDrawCall();
         return this._gl.drawArrays(mode, first, count);
     }
@@ -323,7 +322,6 @@ class WebGL2RenderingContext /* GLContext */ {
      */
     drawElements(mode, count, type, offset) {
         this._checkAndRestore();
-        this.states.activeAttribType = 0;
         // this._saveDataStatus();
         this._addDrawCall();
         return this._gl.drawElements(mode, count, type, offset);
@@ -332,7 +330,6 @@ class WebGL2RenderingContext /* GLContext */ {
     drawBuffers(buffers) {
         this._checkAndRestore();
         // this._saveDataStatus();
-        this.states.activeAttribType = 0;
         this._addDrawCall();
         if (this._is2) {
             return this._gl.drawBuffers(buffers);
