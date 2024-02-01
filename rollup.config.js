@@ -37,17 +37,6 @@ if (production) {
 export default [
     {
         input: "./src/index.js",
-        output: {
-            sourcemap: true,
-            banner,
-            format: "umd",
-            file: "dist/fusiongl-dev.js",
-            name: "fusion",
-        },
-        plugins,
-    },
-    {
-        input: "./src/index.js",
         external: ["fast-deep-equal"],
         output: {
             sourcemap: false,

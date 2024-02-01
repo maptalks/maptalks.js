@@ -752,14 +752,16 @@ include(
                                 );
                             }
                         }
+                        if (attribute.enable) {
+                            gl.enableVertexAttribArray(i);
+                            activeCount++;
+                            continue;
+                        } else {
+                            gl.disableVertexAttribArray(i);
+                        }
                     }
                     // gl.enableVertexAttribArray(i);
-                    if (attribute.enable) {
-                        gl.enableVertexAttribArray(i);
-                        activeCount++;
-                    } else {
-                        gl.disableVertexAttribArray(i);
-                    }
+                    gl.disableVertexAttribArray(i);
                 } else {
                     gl.disableVertexAttribArray(i);
                 }
