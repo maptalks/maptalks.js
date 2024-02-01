@@ -24,11 +24,12 @@ if (production) {
             mangle: {
                 properties: {
                     regex: /^_/,
-                    keep_quoted: true,
+                    keep_quoted: true
                 },
             },
+            keep_classnames: true,
             output: {
-                comments: "/^!/",
+                comments: "/^!/"
             },
         })
     );
