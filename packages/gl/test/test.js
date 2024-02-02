@@ -1189,7 +1189,7 @@ describe('gl tests', () => {
             group.addTo(map);
         });
 
-        it('GroupGLLayer.identifyTerrainAtPoint', done => {
+        it('GroupGLLayer.queryTerrainAtPoint', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
                 zoom: 12,
@@ -1214,12 +1214,12 @@ describe('gl tests', () => {
                 terrainLayer.once('terrainreadyandrender', () => {
                     group.on('layerload', () => {
                         if (!hit) {
-                            const pickCoord = group.identifyTerrainAtPoint(map.getCenter());
+                            const pickCoord = group.queryTerrainAtPoint(new maptalks.Point(91.14478,29.658272));
                             if (!pickCoord) {
                                 return;
                             }
                             hit = true;
-                            expect(pickCoord.toArray()).to.be.eql([91.07362586086208, 29.751717389855997, 4322.418170421599]);
+                            expect(pickCoord.toArray()).to.be.eql([91.07362876927778, 29.751694809767997, 4320.883467677781]);
                             done();
                         }
                     });

@@ -557,7 +557,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         return this._terrainLayer.queryTerrain(coord, out);
     }
 
-    identifyTerrainAtPoint(containerPoint, options = {}) {
+    queryTerrainAtPoint(containerPoint, options = {}) {
         const glRes = this.map.getGLRes();
         const map = this.map;
         const w2 = map.width / 2 || 1,
