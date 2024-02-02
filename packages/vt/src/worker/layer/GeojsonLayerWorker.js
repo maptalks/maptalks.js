@@ -83,20 +83,24 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                 const features = Array.isArray(data) ? data : data.features;
                 this._genOMBB(features);
                 // debugger
-                const { first1000, idMap } = this._generateId(features);
-                this._generate(first1000, idMap, data, options, cb);
+                const { sample1000, idMap } = this._generateId(features);
+                this._generate(sample1000, idMap, data, options, cb);
             });
         } else {
             if (typeof data === 'string') {
                 data = JSON.parse(data);
             }
             const features = Array.isArray(data) ? data : data.features;
+            const length = features.length;
             this._genOMBB(features);
-            let first1000 = features;
-            if (features && features.length > 1000) {
-                first1000 = features.slice(0, 1000);
+            let sample1000 = features;
+            if (features && length > 1000) {
+                sample1000 = [];
+                for (let i = 0; i < length; i++) {
+                    insertSample(features[i], sample1000, i, length);
+                }
             }
-            this._generate(first1000, null, data, options, cb);
+            this._generate(sample1000, null, data, options, cb);
         }
     }
 
@@ -154,9 +158,9 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
         }
     }
 
-    _generate(first1000, idMap, data, options, cb) {
+    _generate(sample1000, idMap, data, options, cb) {
         try {
-            const extent = first1000 && first1000.length ? bbox({ type: "FeatureCollection", features: first1000 }) : null;
+            const extent = sample1000 && sample1000.length ? bbox({ type: "FeatureCollection", features: sample1000 }) : null;
             this.index = geojsonvt(data, this.options.geojsonvt || options);
             cb(null, { extent, idMap });
         } catch (err) {
@@ -167,11 +171,11 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
 
     _generateId(data) {
         // generate id
-        const first1000 = [];
+        const sample1000 = [];
         const idMap = {};
         let uid = 0;
         const feaIdProp = this.options.featureIdProperty;
-        function visit(f) {
+        function visit(f, index, length) {
             if (!f) {
                 return;
             }
@@ -196,16 +200,15 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                 idMap[f.id].coordinates = null;
             }
 
-            if (first1000.length < 1000) {
-                first1000.push(f);
-            }
+            insertSample(f, sample1000, index, length);
         }
         if (data) {
-            data.forEach(f => {
-                visit(f);
+            const length = data.length;
+            data.forEach((f, index) => {
+                visit(f, index, length);
             });
         }
-        return { first1000, idMap };
+        return { sample1000, idMap };
     }
 
     getTileFeatures(context, cb) {
@@ -269,5 +272,14 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
     onRemove() {
         super.onRemove();
         delete this.index;
+    }
+}
+
+function insertSample(feature, sample1000, i, length) {
+    const step = Math.floor(length / (1000 - 2));
+    if (i === 0 || i === length - 1) {
+        sample1000.push(feature);
+    } else if ((step === 0 || i % step === 0) && sample1000.length < 999) {
+        sample1000.push(feature);
     }
 }
