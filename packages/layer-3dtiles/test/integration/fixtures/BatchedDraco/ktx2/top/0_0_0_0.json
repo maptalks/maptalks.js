@@ -61,13 +61,10 @@
                   "content":{
                      "uri":"2_2_0_0.b3dm"
                   },
-                  "geometricError":34.5840825235064,
+                  "geometricError":68.5840825235064,
                   "refine":"REPLACE"
                }
             ],
-            "content":{
-               "uri":"1_1_0_0.b3dm"
-            },
             "geometricError":68.9630968634592,
             "refine":"REPLACE"
          }

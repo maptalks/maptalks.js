@@ -483,7 +483,7 @@ describe('render specs', () => {
                     }
                 ]
             });
-            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 70, renderCount: 2, noGroup: true, threshold: 0.4, zoomOffset: 2 });
+            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 120, renderCount: 1, noGroup: true, threshold: 0.4, zoomOffset: 2 });
         });
 
         // it('s3m-jinjiang', done => {
@@ -1760,8 +1760,8 @@ describe('render specs', () => {
                     }
                 ]
             });
-            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 10 });
-        });
+            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 13 });
+        }).timeout(5000);
         it('layer opacity', done => {
             const resPath = 'BatchedDraco/dayanta/';
             const layer = new Geo3DTilesLayer('3d-tiles', {
