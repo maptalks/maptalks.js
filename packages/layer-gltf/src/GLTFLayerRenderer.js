@@ -418,10 +418,6 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
         return this._drawContext;
     }
 
-    supportRenderMode(mode) {
-        return mode === 'fxaa';
-    }
-
     needRetireFrames() {
         return this._needRetireFrames;
     }
