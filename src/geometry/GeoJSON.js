@@ -83,7 +83,7 @@ function WORKER_CODE(exports) {
                 handleResult(msg, postResponse);
             }).catch(errror => {
                 postResponse(errror.message);
-            })
+            });
         } else if (type === 'pagefeatures') {
             handleResult(msg, postResponse);
         } else {
@@ -105,7 +105,7 @@ class GeoJSONFetchActor extends Actor {
             } else {
                 this._pageFeatures(options, data, featuresList, cb);
             }
-        }, options.workerId)
+        }, options.workerId);
     }
 
     _fetchGeoJSON(url, options, featuresList = [], cb) {
@@ -401,7 +401,7 @@ const GeoJSON = {
                     type: 'FeatureCollection',
                     features: result
                 });
-            })
+            });
         });
     }
 };
