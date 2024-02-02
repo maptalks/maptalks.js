@@ -33,7 +33,8 @@ const types = {
 };
 
 const WORKER_KEY = 'geojson-fetch-worker-page-async';
-function WORKER_CODE(exports) {
+const WORKER_CODE = `
+function (exports) {
     const resultMap = {};
 
     function handleResult(msg, postResponse) {
@@ -90,7 +91,7 @@ function WORKER_CODE(exports) {
             postResponse('not support task type:' + type);
         }
     };
-}
+}`;
 
 class GeoJSONFetchActor extends Actor {
 
@@ -127,7 +128,7 @@ class GeoJSONFetchActor extends Actor {
     }
 }
 
-registerWorkerAdapter(WORKER_KEY, WORKER_CODE);
+registerWorkerAdapter(WORKER_KEY, function () { return WORKER_CODE; });
 
 let fetchActor;
 
