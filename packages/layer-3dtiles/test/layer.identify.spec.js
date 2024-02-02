@@ -55,14 +55,18 @@ describe('3dtiles identify specs', () => {
             const extent = layer.getExtent(0);
             map.fitExtent(extent, 0, { animation: false });
         });
+
+        layer.once('canvasisdirty', () => {
+            setTimeout(() => {
+                const hits = layer.identify([-75.61227133361945, 40.04222670592739]);
+                assert(hits[0].data.batchId === 8);
+                assert(hits[0].coordinate[0] !== 0);
+                done();
+            }, 500);
+        });
+
         layer.addTo(map);
-        setTimeout(() => {
-            const hits = layer.identify([-75.61227133361945, 40.04222670592739]);
-            assert(hits[0].data.batchId === 8);
-            assert(hits[0].coordinate[0] !== 0);
-            done();
-        }, 1000);
-    });
+    }).timeout(5000);
 
     it('can identify i3dm data', done => {
         const resPath = 'Cesium3DTiles/Instanced/InstancedWithBatchIds';
