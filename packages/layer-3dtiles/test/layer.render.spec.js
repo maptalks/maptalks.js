@@ -1177,7 +1177,7 @@ describe('render specs', () => {
         });
 
         it('alphaTest(issues/378)', done => {
-            const resPath = 'Cesium3DTiles/alphaTest/';
+            const resPath = 'BatchedDraco/alphaTest/';
             const layer = new Geo3DTilesLayer('3d-tiles', {
                 services : [
                     {
@@ -2067,7 +2067,7 @@ describe('render specs', () => {
         });
 
         it('issue#424', done => {
-            const resPath = 'Cesium3DTiles/issue-424';
+            const resPath = 'BatchedDraco/issue-424';
             const layer = new Geo3DTilesLayer('3d-tiles', {
                 services : [
                     {
