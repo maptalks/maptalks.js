@@ -69,7 +69,7 @@ describe('3dtiles layer', () => {
             if (count === 1) {
                 const tree = layer.getTiles(z);
                 assert(tree.root);
-                assert(tree.tiles['4']);
+                assert(tree.tiles[3]);
                 done();
                 return;
             }

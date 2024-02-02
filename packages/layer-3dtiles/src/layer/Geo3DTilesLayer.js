@@ -868,9 +868,9 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         const yPlaneCenter = getBoxPlaneCenter(TEMP_VEC3_5, boxPosition, 0, 3, 4, 7);
         const zPlaneCenter = getBoxPlaneCenter(TEMP_VEC3_6, boxPosition, 0, 1, 2, 3);
 
-        boxPosition.push(...xPlaneCenter);
-        boxPosition.push(...yPlaneCenter);
-        boxPosition.push(...zPlaneCenter);
+        // boxPosition.push(...xPlaneCenter);
+        // boxPosition.push(...yPlaneCenter);
+        // boxPosition.push(...zPlaneCenter);
 
         return [
             ...obbCenter,
