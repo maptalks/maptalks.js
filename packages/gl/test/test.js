@@ -1188,6 +1188,113 @@ describe('gl tests', () => {
             });
             group.addTo(map);
         });
+
+        it('GroupGLLayer.identifyTerrainAtPoint', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12,
+                pitch: 60
+            });
+            const skinLayers = [
+                new maptalks.TileLayer('base', {
+                    urlTemplate: '/fixtures/google-256/{z}/{x}/{y}.jpg'
+                })
+            ];
+            const terrain = {
+                type: 'mapbox',
+                tileSize: 512,
+                spatialReference: 'preset-vt-3857',
+                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
+                tileStackDepth: 0
+            }
+            const group = new maptalks.GroupGLLayer('group', skinLayers, { terrain });
+            let hit = false;
+            group.once('terrainlayercreated', () => {
+                const terrainLayer = group.getTerrainLayer();
+                terrainLayer.once('terrainreadyandrender', () => {
+                    group.on('layerload', () => {
+                        if (!hit) {
+                            const pickCoord = group.identifyTerrainAtPoint(map.getCenter());
+                            if (!pickCoord) {
+                                return;
+                            }
+                            hit = true;
+                            expect(pickCoord.toArray()).to.be.eql([91.07362586086208, 29.751717389855997, 4322.418170421599]);
+                            done();
+                        }
+                    });
+
+                });
+            });
+            group.addTo(map);
+        });
+
+        it('support weather for terrain', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            const skinLayers = [
+                new maptalks.TileLayer('base', {
+                    urlTemplate: '/fixtures/google-256/{z}/{x}/{y}.jpg'
+                })
+            ];
+            const terrain = {
+                type: 'mapbox',
+                tileSize: 512,
+                spatialReference: 'preset-vt-3857',
+                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
+                tileStackDepth: 0
+            }
+            const sceneConfig = {
+                environment: {
+                    enable: true,
+                    mode: 1,
+                    level: 0
+                },
+                postProcess: {
+                    enable: true
+                },
+                weather: {
+                    enable: true,
+                    rain: {
+                        enable: true,
+                        rainDepth: 3800,
+                        density: 3000,
+                        rainTexture: "./resources/rain.png"
+                    },
+                    fog: {
+                        enable: true,
+                        start: 0.1,
+                        end: 200,
+                        color: [0.9, 0.9, 0.9]
+                    }
+                }
+            };
+            const group = new maptalks.GroupGLLayer('group', skinLayers, { terrain, sceneConfig });
+            function pixelMatch(expectedValue, pixelValue) {
+                for (let i = 0; i < expectedValue.length; i++) {
+                    if (Math.abs(pixelValue[i] - expectedValue[i]) > 10) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            group.once('terrainlayercreated', () => {
+                const terrainLayer = group.getTerrainLayer();
+                terrainLayer.once('terrainreadyandrender', () => {
+                    setTimeout(function() {
+                        const canvas = map.getRenderer().canvas;
+                        const ctx = canvas.getContext('2d');
+                        const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
+                        expect(pixelMatch([93, 95, 96, 255], pixel.data)).to.be.eql(true);
+                        done();
+                    }, 100);
+
+                });
+            });
+            group.addTo(map);
+        });
     });
 
     context('skybox tests', () => {

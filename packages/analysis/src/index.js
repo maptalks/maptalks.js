@@ -9,4 +9,3 @@ export { default as HeightLimitAnalysis } from './HeightLimitAnalysis.js';
 export { default as Height3DTool } from './Height3DTool.js';
 export { default as Area3DTool } from './Area3DTool.js';
 export { default as Distance3DTool } from './Distance3DTool.js';
-export { default as RayCaster } from './RayCaster.js';

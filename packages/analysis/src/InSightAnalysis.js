@@ -1,8 +1,7 @@
-import { reshader } from '@maptalks/gl';
+import { reshader, RayCaster } from '@maptalks/gl';
 import { coordinateToWorld } from './common/Util';
 import Analysis from './Analysis';
 import InSightPass from './pass/InSightPass';
-import RayCaster from './RayCaster';
 
 export default class InSightAnalysis extends Analysis {
     constructor(options) {

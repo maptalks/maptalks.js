@@ -194,7 +194,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             const url = services[idx].url;
             const rootIdx = this._rootMap[url];
             if (this._roots[rootIdx]) {
-                this._roots[rootIdx] = null;
+                this._roots.splice(rootIdx, 1);
             }
             delete this._rootMap[url];
             services.splice(idx, 1);

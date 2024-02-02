@@ -654,4 +654,43 @@ describe('setMask', () => {
         });
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
     });
+
+    it('setInfoWindow for mask(#597、#598)', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf', { geometryEvents: true });
+        const marker = new maptalks.GLTFGeometry(center, {
+            symbol: {
+                url: url4,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
+            }
+        }).addTo(gltflayer);
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const mask = new maptalks.ColorMask(coord1);
+        const infoWindow = {
+            title: 'info',
+            content: 'maptalks',
+            'autoPan': false,
+            autoOpenOn: null
+        };
+        marker.once('load', () => {
+            mask.setInfoWindow(infoWindow);
+            mask.getInfoWindow().show();
+            setTimeout(function() {
+                for (let i = 0; i < 5; i++) {
+                    happen.mousemove(eventContainer, {
+                        'clientX':clickContainerPoint.x - 100 + i * 50,
+                        'clientY':clickContainerPoint.y
+                    });
+                }
+            }, 500);
+        });
+        mask.on('mousemove', () => {
+            const infoWindowStyle = mask.getInfoWindow().__uiDOM.style;
+            expect(infoWindowStyle.display).not.to.be.eql('none');
+            expect(infoWindowStyle.cssText).to.be.eql('width: auto; bottom: 0px; position: absolute; left: 0px; transform: translate3d(170.703px, 135.67px, 0px) scale(1); transform-origin: 34.6172px bottom; z-index: 0;');
+            done();
+        });
+        gltflayer.setMask(mask);
+    })
 });

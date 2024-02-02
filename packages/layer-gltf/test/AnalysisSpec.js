@@ -584,7 +584,7 @@ describe('add analysis', () => {
                 const results = raycaster.test(meshes, map);
                 expect(results.length).to.be.eql(2);
                 expect(results[0].mesh).to.be.ok();
-                expect(results[0].coordinates[0].indices).to.be.eql([0, 2, 3]);
+                expect(results[0].coordinates[0].indices).to.be.eql([0, 1, 2]);
                 expect(results[0].coordinates[0].coordinate.x).to.be.eql(0.0016623826727482083);
                 expect(results[0].coordinates[0].coordinate.y).to.be.eql(-0.0007186522272775164);
                 expect(results[0].coordinates[0].coordinate.z.toFixed(5)).to.be.eql(50.00033);

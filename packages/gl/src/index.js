@@ -19,8 +19,10 @@ import VideoMask from './layer/mask/VideoMask.js';
 import ElevateMask from './layer/mask/ElevateMask.js';
 import BoxInsideClipMask from './layer/mask/BoxInsideClipMask.js';
 import BoxOutsideClipMask from './layer/mask/BoxOutsideClipMask.js';
+import RayCaster from './layer/raycaster/RayCaster.js';
 export { MaskLayerMixin, MaskRendererMixin };
 export { ClipInsideMask, ClipOutsideMask, FlatInsideMask, FlatOutsideMask, ElevateMask, ColorMask, VideoMask, BoxInsideClipMask, BoxOutsideClipMask };
+export { RayCaster };
 
 if (typeof window !== 'undefined') {
     // append GroupGLLayer on maptalks manually
@@ -35,5 +37,6 @@ if (typeof window !== 'undefined') {
         window.maptalks.VideoMask = VideoMask;
         window.maptalks.BoxInsideClipMask = BoxInsideClipMask;
         window.maptalks.BoxOutsideClipMask = BoxOutsideClipMask;
+        window.maptalks.RayCaster = RayCaster;
     }
 }

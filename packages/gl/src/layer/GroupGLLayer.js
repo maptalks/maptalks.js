@@ -3,6 +3,7 @@ import Renderer from './GroupGLLayerRenderer.js';
 import { vec3 } from 'gl-matrix';
 import { isNil, extend } from './util/util.js';
 import TerrainLayer from './terrain/TerrainLayer';
+import RayCaster from './raycaster/RayCaster.js';
 
 const options = {
     renderer : 'gl',
@@ -45,6 +46,9 @@ const options = {
 //
 const emptyMethod = () => {};
 const EMPTY_ALTITUDE = [null, 0];
+const EMPTY_COORD0 = new maptalks.Coordinate(0, 0), EMPTY_COORD1 = new maptalks.Coordinate(0, 0);
+const TEMP_VEC3 = [];
+const cp = [0, 0, 0], coord0 = [0, 0, 0, 1], coord1 = [0, 0, 0, 1];
 
 export default class GroupGLLayer extends maptalks.Layer {
     /**
@@ -553,6 +557,54 @@ export default class GroupGLLayer extends maptalks.Layer {
         return this._terrainLayer.queryTerrain(coord, out);
     }
 
+    identifyTerrainAtPoint(containerPoint, options = {}) {
+        const glRes = this.map.getGLRes();
+        const map = this.map;
+        const w2 = map.width / 2 || 1,
+            h2 = map.height / 2 || 1;
+        const p = containerPoint;
+        vec3.set(cp, (p.x - w2) / w2, (h2 - p.y) / h2, 0);
+        vec3.set(coord0, cp[0], cp[1], 0);
+        vec3.set(coord1, cp[0], cp[1], 0.5);
+        coord0[3] = coord1[3] = 1;
+        applyMatrix(coord0, coord0, map.projViewMatrixInverse);
+        applyMatrix(coord1, coord1, map.projViewMatrixInverse);
+        const point0 = new maptalks.Point(coord0.slice(0, 3));
+        const point1 = new maptalks.Point(coord1.slice(0, 3));
+        const from = map.pointAtResToCoordinate(point0, glRes, EMPTY_COORD0);
+        from.z = coord0[2] / map.altitudeToPoint(1, glRes);
+        const to = map.pointAtResToCoordinate(point1, glRes, EMPTY_COORD1);
+        to.z = coord1[2] / map.altitudeToPoint(1, glRes);
+        if (!this._raycaster) {
+            options['allowPointNotOnLine'] = true;
+            this.raycaster = new RayCaster(from, to, options);
+        } else {
+            this.raycaster.setFromPoint(from);
+            this.raycaster.setToPoint(to);
+        }
+        const terrainRenderer = this._terrainLayer.getRenderer();
+        const meshes = terrainRenderer.getAnalysisMeshes();
+        const results = this.raycaster.test(meshes, map);
+        const coordinates = [];
+        const fromPoint = vec3.set(TEMP_VEC3, from.x, from.y, from.z);
+        // results数据结构 [{
+        //    mesh: Mesh,
+        //    coordinates: [{
+        //        coordinate: maptalks.Coordinate,
+        //        indices: Array
+        //    },...]
+        // },...]
+        results.forEach(result => {
+            result.coordinates.forEach(c => {
+                coordinates.push(c.coordinate)
+            });
+        });
+        coordinates.sort((a, b) => {
+            return vec3.dist(a.toArray(), fromPoint) - vec3.dist(b.toArray(), fromPoint);
+        });
+        return coordinates[0];
+    }
+
     queryTerrainByProjCoord(projCoord, out) {
         if (!this._terrainLayer) {
             return EMPTY_ALTITUDE;
@@ -707,4 +759,15 @@ function isTerrainSkin(layer) {
         return false;
     }
     return !!renderer.renderTerrainSkin;
+}
+
+function applyMatrix(out, v, e) {
+    const x = v[0],
+        y = v[1],
+        z = v[2];
+    const w = 1 / (e[3] * x + e[7] * y + e[11] * z + e[15]);
+    out[0] = (e[0] * x + e[4] * y + e[8] * z + e[12]) * w;
+    out[1] = (e[1] * x + e[5] * y + e[9] * z + e[13]) * w;
+    out[2] = (e[2] * x + e[6] * y + e[10] * z + e[14]) * w;
+    return out;
 }

@@ -3,7 +3,7 @@ import { mat4 } from 'gl-matrix';
 import Mask from "./Mask";
 import { extend } from "../util/util";
 
-const maskLayerEvents = ['shapechange', 'symbolchange', 'heightrangechange', 'flatheightchange'];
+const maskLayerEvents = ['shapechange', 'heightrangechange', 'flatheightchange'];
 const COORD_EXTENT = new Coordinate(0, 0);
 const EXTENT_MIN = [], EXTENT_MAX = [];
 
