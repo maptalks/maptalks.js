@@ -4,7 +4,10 @@ import {
     parseJSON,
     isArrayHasData,
     pushIn,
-    isNumber
+    isNumber,
+    extend,
+    getAbsoluteURL,
+    GUID
 } from '../core/util';
 import Marker from './Marker';
 import LineString from './LineString';
@@ -17,6 +20,8 @@ import Geometry from './Geometry';
 import { GEOJSON_TYPES } from '../core/Constants';
 import PromisePolyfill from './../core/Promise';
 import { runTaskAsync } from '../core/MicroTask';
+import Actor from '../core/worker/Actor';
+import { registerWorkerAdapter } from '../core/worker/Worker';
 
 const types = {
     'Marker': Marker,
@@ -26,6 +31,106 @@ const types = {
     'MultiLineString': MultiLineString,
     'MultiPolygon': MultiPolygon
 };
+
+const WORKER_KEY = 'geojson-fetch-worker-page-async';
+const WORKER_CODE = `
+function (exports) {
+    const resultMap = {};
+
+    function handleResult(msg, postResponse) {
+        const data = msg.data || {};
+        const { taskId } = data;
+        const features = resultMap[taskId];
+        if (!features) {
+            postResponse('not find geojson dataset the taskId:' + taskId);
+            return;
+        }
+        if (features.length === 0) {
+            delete resultMap[taskId];
+            postResponse(null, []);
+            return;
+        }
+        const pageSize = data.pageSize || 2000;
+        const pageFeatures = features.slice(0, pageSize);
+        resultMap[taskId] = features.slice(pageSize, Infinity);
+        postResponse(null, pageFeatures);
+    }
+    //worker init
+    exports.initialize = function () {
+        // console.log("geojson fetch init");
+    };
+    //recive message
+    exports.onmessage = function (msg, postResponse) {
+        const { taskId, type, url } = msg.data || {};
+        if (!taskId) {
+            postResponse('not find task id for get geojson dataset,taskId=' + taskId);
+            return;
+        }
+        if (type === 'fetchdata') {
+            if (!url) {
+                postResponse('url is null,url=' + url);
+                return;
+            }
+            fetch(url).then(res => res.json()).then(geojson => {
+                let features;
+                if (Array.isArray(geojson)) {
+                    features = geojson;
+                } else if (geojson.features) {
+                    features = geojson.features;
+                } else {
+                    features = [geojson];
+                }
+                resultMap[taskId] = features;
+                handleResult(msg, postResponse);
+            }).catch(errror => {
+                postResponse(errror.message);
+            });
+        } else if (type === 'pagefeatures') {
+            handleResult(msg, postResponse);
+        } else {
+            postResponse('not support task type:' + type);
+        }
+    };
+}`;
+
+class GeoJSONFetchActor extends Actor {
+
+    constructor() {
+        super(WORKER_KEY);
+    }
+
+    _sendMsg(options, featuresList, cb) {
+        this.send(options, [], (error, data) => {
+            if (error) {
+                cb(error);
+            } else {
+                this._pageFeatures(options, data, featuresList, cb);
+            }
+        }, options.workerId);
+    }
+
+    _fetchGeoJSON(url, options, featuresList = [], cb) {
+        const opts = extend({}, options);
+        opts.type = 'fetchdata';
+        opts.url = url;
+        this._sendMsg(opts, featuresList, cb);
+    }
+
+    _pageFeatures(options, features, featuresList, cb) {
+        featuresList.push(features);
+        if (features.length === 0) {
+            cb(null, featuresList);
+            return;
+        }
+        const opts = extend({}, options);
+        opts.type = 'pagefeatures';
+        this._sendMsg(opts, featuresList, cb);
+    }
+}
+
+registerWorkerAdapter(WORKER_KEY, function () { return WORKER_CODE; });
+
+let fetchActor;
 
 /**
  * GeoJSON utilities
@@ -255,6 +360,50 @@ const GeoJSON = {
         }
         return false;
 
+    },
+    /**
+    * Requesting a large volume geojson file.Solve the problem of main thread blocking
+    * @param  {String} url - GeoJSON file path
+    * @param  {Number} [countPerTime=2000] - Number of graphics converted per time
+    * @return {Promise}
+    * @example
+    *  GeoJSON.fetch('https://abc.com/file.geojson',2000).then(geojson=>{
+    *    console.log(geojson);
+    * })
+    * */
+    fetch(url, countPerTime = 2000) {
+        return new PromisePolyfill((resolve, reject) => {
+            if (!url || !isString(url)) {
+                reject('url is error,It should be string');
+                return;
+            }
+            const options = extend({ pageSize: 2000 }, { pageSize: countPerTime });
+            url = getAbsoluteURL(url);
+            if (!fetchActor) {
+                fetchActor = new GeoJSONFetchActor();
+            }
+            const workerCount = fetchActor.workers.length;
+            let workerId = Math.floor(Math.random() * workerCount);
+            workerId = Math.min(workerCount - 1, workerId);
+            options.workerId = workerId;
+            options.taskId = GUID();
+            fetchActor._fetchGeoJSON(url, options, [], (error, featuresList) => {
+                if (error) {
+                    reject(error);
+                    return;
+                }
+                const result = [];
+                featuresList.forEach(features => {
+                    for (let i = 0, len = features.length; i < len; i++) {
+                        result.push(features[i]);
+                    }
+                });
+                resolve({
+                    type: 'FeatureCollection',
+                    features: result
+                });
+            });
+        });
     }
 };
 
