@@ -481,7 +481,7 @@ function fetchTerrain(url, headers, type, terrainWidth, error, cb) {
                 // aborted by user
                 cb({ error: { canceled: true }});
             } else {
-                cb({ empty: true, error: res });
+                cb({ empty: true, originalError: res });
             }
         } else {
             const buffer = res.data;
@@ -504,7 +504,7 @@ function fetchTerrain(url, headers, type, terrainWidth, error, cb) {
         }
     }).catch(e => {
         delete terrainRequests[url];
-        cb({ empty: true, error: e });
+        cb({ empty: true, originalError: e });
     });
 }
 

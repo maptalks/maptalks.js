@@ -51,7 +51,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
     _resetTerrainImage(info, image, skinImagesToDel) {
         image.reset = true;
         delete image.data;
-        // delete image.loadTime;
+        delete image.loadTime;
         delete image.rendered;
         delete image.minAltitude;
         const refKey = info.id + '-temp';
@@ -90,7 +90,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
 
     _createTerrainFromParent(tile, parentTile) {
         parentTile = parentTile || this.findParentTile(tile);
-        while (parentTile && parentTile.image && (parentTile.image.loadTime === 0 || parentTile.image.sourceZoom === -1)) {
+        while (parentTile && parentTile.image && (parentTile.image.sourceZoom === -1 || parentTile.image.originalError)) {
             parentTile = this.findParentTile(parentTile.info);
         }
         const res = (parentTile && parentTile.info || tile).res;
