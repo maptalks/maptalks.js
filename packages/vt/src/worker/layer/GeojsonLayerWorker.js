@@ -91,7 +91,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                 data = JSON.parse(data);
             }
             const features = Array.isArray(data) ? data : data.features;
-            const length = features.length;
+            const length = features && features.length;
             this._genOMBB(features);
             let sample1000 = features;
             if (features && length > 1000) {
