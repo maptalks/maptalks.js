@@ -23,9 +23,9 @@
   "author": "fuzhen",
   "license": "ISC",
   "dependencies": {
-    "@maptalks/gl": "<2.0.0"
   },
   "devDependencies": {
+    "@maptalks/gl": "<2.0.0",
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
     "@rollup/plugin-replace": "4.0.0",
