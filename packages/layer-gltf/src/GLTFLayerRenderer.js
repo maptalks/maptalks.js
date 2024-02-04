@@ -34,6 +34,8 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
 
     //场景渲染函数
     _renderScene(context, timestamp) {
+        this._drawContext = context;
+        this._currentFrameTime = timestamp;
         let renderCount = 0;
         this._updateLightUniforms(context);
         this._toRenderMeshes = {};
@@ -73,13 +75,8 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
             this.layer.fire('canvasisdirty', { renderCount: drawCount });
         }
         this._needRefreshPicking = true;
-        if (!context || (context && context.isFinalRender)) {
-            this.completeRender();
-            this.layer.fire('rendercomplete-debug', { count : renderCount });
-        }
-
-        this._drawContext = context;
-        this._currentFrameTime = timestamp;
+        this.completeRender();
+        this.layer.fire('rendercomplete-debug', { count : renderCount });
     }
 
     _renderBBox(uniforms, targetFBO) {

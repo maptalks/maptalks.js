@@ -579,6 +579,44 @@ describe('3dtiles layer', () => {
         }, 1000);
         layer.addTo(map);
     });
+
+    it('removeService and addService', done => {
+        const resPath = 'BatchedDraco/dayanta';
+        const service = {
+            url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+            heightOffset: -400,
+        };
+        const layer = new Geo3DTilesLayer('3d-tiles', {
+            services: [service]
+        });
+        layer.on('loadtileset', () => {
+            const extent = layer.getExtent(0);
+            map.fitExtent(extent, 0, { animation: false });
+        });
+        let count = 0;
+        layer.on('canvasisdirty', () => {
+            count++;
+            if (count === 2) {
+                layer.removeService(0);
+                setTimeout(() => {
+                    const canvas = map.getRenderer().canvas;
+                    const ctx = canvas.getContext('2d');
+                    const color = ctx.getImageData(258, 525, 1, 1);
+                    assert(color.data[3] === 0);
+                    layer.addService(service);
+                }, 20);
+            } else if (count === 4) {
+                setTimeout(() => {
+                    const canvas = map.getRenderer().canvas;
+                    const ctx = canvas.getContext('2d');
+                    const color = ctx.getImageData(258, 525, 1, 1);
+                    assert(color.data[3] === 255);
+                    done();
+                }, 20);
+            }
+        });
+        layer.addTo(map);
+    });
 });
 
 function toRadian(d) {

@@ -25,7 +25,7 @@ describe('GLTFLineString', () => {
         gltfline.on('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([58, 52, 46, 127], pixel1)).to.be.eql(true);
+                expect(pixelMatch([58, 52, 46, 207], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, 320, 220, 1, 1);
                 expect(pixelMatch([59, 52, 44, 191], pixel2)).to.be.eql(true);
                 done();
@@ -53,7 +53,7 @@ describe('GLTFLineString', () => {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
                 expect(pixelMatch([0, 0, 0, 0], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, 295, 140, 1, 1);
-                expect(pixelMatch([64, 56, 48, 191], pixel2)).to.be.eql(true);
+                expect(pixelMatch([64, 56, 48, 207], pixel2)).to.be.eql(true);
                 done();
             }, 100);
         });

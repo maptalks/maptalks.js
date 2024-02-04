@@ -978,9 +978,9 @@ describe('bug', () => {
                 const pixel2 = pickPixel(map, map.width / 2 - 90, map.height / 2, 1, 1);//没有被点中，证明不会出现比例不正确的情况
                 const pixel3 = pickPixel(map, map.width / 2 + 90, map.height / 2, 1, 1);
                 expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
-                expect(pixelMatch([165, 165, 165, 255], pixel3)).to.be.eql(true);
+                expect(pixelMatch([165, 165, 165, 239], pixel3)).to.be.eql(true);
                 done();
-            });
+            }, 100);
         });
     });
 
@@ -1000,12 +1000,12 @@ describe('bug', () => {
             setTimeout(function() {
                 const x = 215, y = 190;
                 const pixel1 = pickPixel(map, x, y, 1, 1);
-                expect(pixelMatch([255, 0, 0, 186], pixel1)).not.to.be.eql(true);
+                expect(pixelMatch([255, 0, 0, 186], pixel1)).to.be.eql(true);
                 const coordinate = new maptalks.Coordinate([center.x, center.y, 30]);
                 gltfMarker.setCoordinates(coordinate);
                 setTimeout(function() {
-                    const pixel2 = pickPixel(map, x, y, 1, 1);
-                    expect(pixelMatch([255, 0, 0, 186], pixel2)).to.be.eql(true);
+                    const pixel2 = pickPixel(map, x - 10, y + 10, 1, 1);
+                    expect(pixelMatch([255, 0, 0, 1], pixel2)).to.be.eql(true);
                     done();
                 }, 100);
             }, 100);
@@ -1330,7 +1330,7 @@ describe('bug', () => {
         marker.on('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([53, 53, 53, 179], pixel1)).to.be.eql(true);
+                expect(pixelMatch([53, 53, 53, 168], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, 289, 197, 1, 1);
                 expect(pixelMatch([117, 26, 26, 255], pixel2)).to.be.eql(true);
                 const pixel3 = pickPixel(map, 330, 220, 1, 1);
