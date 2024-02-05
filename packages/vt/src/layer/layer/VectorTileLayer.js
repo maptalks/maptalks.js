@@ -62,7 +62,8 @@ const defaultOptions = {
 
     // A property to use as a feature id (for feature state)
     // https://docs.mapbox.com/style-spec/reference/sources/#vector-promoteId
-    featureIdProperty: null
+    featureIdProperty: null,
+    currentTilesFirst: false
 };
 
 /**
