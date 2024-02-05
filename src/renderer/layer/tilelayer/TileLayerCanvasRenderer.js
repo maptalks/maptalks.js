@@ -187,7 +187,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const loadingLimit = this._getLoadLimit();
 
         const l = tileGrids.length;
-        const isFirstRender = layer.getJSONType() === 'TileLayer' && this._tileZoom === undefined && !this._terrainHelper;
+        const isFirstRender = layer.options['currentTilesFirst'] && this._tileZoom === undefined;
         // main tile grid is the last one (draws on top)
         this._tileZoom = tileGrids[0]['zoom'];
 

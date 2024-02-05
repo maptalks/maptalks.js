@@ -151,7 +151,8 @@ const options = {
     'awareOfTerrain': true,
     'bufferPixel': 0.5,
     'mipmapTexture': true,
-    'depthMask': true
+    'depthMask': true,
+    'currentTilesFirst': true
 };
 
 const URL_PATTERN = /\{ *([\w_]+) *\}/g;
