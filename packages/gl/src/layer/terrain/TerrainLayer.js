@@ -33,7 +33,8 @@ const options = {
     'terrainTileMode': true,
     'tempTileCacheSize': 64,
     'tileStackStartDepth': 7,
-    'tileStackDepth': 6
+    'tileStackDepth': 6,
+    'currentTilesFirst': false
 };
 
 const EMPTY_TILE_GRIDS = {
