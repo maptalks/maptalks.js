@@ -311,7 +311,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             this.tileCache.add(tiles[i].node.id, tileData);
             const node = tileData.node;
             const service = this.layer._getNodeService(node._rootIdx);
-            if (node._boxMesh && service['debugShowBoundingVolume'] && !Array.isArray(service['debugShowBoundingVolume'])) {
+            if (node._boxMesh && service['debug'] && !Array.isArray(service['debug'])) {
                 boxMeshes.push(node._boxMesh);
             }
         }
@@ -320,7 +320,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         const services = this.layer.options.services;
         for (let i = 0; i < services.length; i++) {
             const service = services[i];
-            const debugNodes = Array.isArray(service['debugShowBoundingVolume']) && service['debugShowBoundingVolume'];
+            const debugNodes = Array.isArray(service['debug']) && service['debug'];
             if (debugNodes) {
                 for (const nodeId of debugNodes) {
                     const nodeBox = this.layer._nodeBoxes[nodeId];

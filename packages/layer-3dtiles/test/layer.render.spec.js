@@ -2056,7 +2056,7 @@ describe('render specs', () => {
                         heightOffset: -420,
                         scale: [4, 4, 4],
                         rotation: [0, 0, 45],
-                        debugShowBoundingVolume: true
+                        debug: true
                     }
                 ]
             });
@@ -2076,7 +2076,7 @@ describe('render specs', () => {
                         heightOffset: 0,
                         scale: [1, 1, 1],
                         rotation: [0, 0, 0],
-                        debugShowBoundingVolume: true
+                        debug: true
                     }
                 ]
             });

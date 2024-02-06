@@ -710,7 +710,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         }
 
         const service = this._getNodeService(node._rootIdx);
-        if (service['debugShowBoundingVolume']) {
+        if (service['debug']) {
             this._nodeBoxes[id].node = node;
             this.getRenderer()._createBBoxMesh(node);
         }
@@ -1212,7 +1212,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
     setServiceDebugBoundingVolume(idx, visible) {
         const service = this.options.services[idx];
         if (service) {
-            service.debugShowBoundingVolume = visible;
+            service.debug = visible;
         }
         const renderer = this.getRenderer();
         if (!renderer) {
