@@ -54,12 +54,8 @@ const TEMP_OFFSET = [];
 const TEMP_TRANSLATION = [];
 const TEMP_MATRIX1 = [];
 const TEMP_MATRIX2 = [];
-const TEMP_MATRIX3 = [];
-const TEMP_QUAT_1 = [];
-const TEMP_QUAT_2 = [];
-const TEMP_TRANS = [0, 0, 0];
-const TEMP_TRANS_1 = [];
-const TEMP_TRANS_2 = [];
+const TEMP_BBOX_MAT = [];
+const TEMP_SERVICE_MAT = [];
 
 const DEFAULT_SEMANTICS = {
     'POSITION': 'POSITION',
@@ -83,7 +79,12 @@ const BOX_INDEX = [
     4, 5,
     5, 6,
     6, 7,
-    7, 4
+    7, 4,
+
+    // center axis
+    // 8, 9,
+    // 8, 10,
+    // 8, 11
 ];
 const SPHERE_POS = generateSphere(100, 1);
 const BOX_ROTATE = [0, 0, 0, 1], BOX_SCALE = [1, 1, 1];
@@ -274,29 +275,19 @@ export default class MeshPainter {
             i3dmMeshes,
             b3dmMeshes: meshes
         };
-        boxMeshes.forEach(mesh => {
-            this._updateBBoxMatrix(mesh);
-        });
+        // boxMeshes.forEach(mesh => {
+        // this._updateBBoxMatrix(mesh);
+        // });
         this._boxScene.setMeshes(boxMeshes);
         this._renderer.render(this._edgeShader, uniforms, this._boxScene, renderTarget && renderTarget.fbo);
 
         return drawCount;
     }
 
-    _updateBBoxMatrix(mesh) {
-        const node = mesh.properties.node;
-        const service = this._layer._getNodeService(node._rootIdx);
-        const rootNode = this._layer._getRootNode(node._rootIdx);
-        const heightOffset = service.heightOffset || 0;
-        const heightScale = this._getHeightScale();
-        const originHeightOffset = rootNode._originHeightOffset;
-        const translation = vec3.set(TEMP_TRANS_1, 0, 0, heightScale * (heightOffset - originHeightOffset));
-        let rotation = service['rotation'] || [0, 0, 0];
-        rotation = quat.fromEuler(TEMP_QUAT_1, rotation[0], rotation[1], rotation[2]);
-        const scale = service['scale'] || [1, 1, 1];
-        const trsMatrix = mat4.fromRotationTranslationScale(TEMP_MATRIX3, rotation, translation, scale);
-        mat4.multiply(mesh.localTransform, mesh._originLocalTransform, trsMatrix);
-    }
+    // _updateBBoxMatrix(mesh) {
+    //     const serviceTransform = this._layer._getServiceTransform(TEMP_BBOX_MAT, mesh.properties.node);
+    //     mat4.multiply(mesh.localTransform, serviceTransform, mesh._originLocalTransform);
+    // }
 
     _callShader(shader, uniforms, filter, renderTarget, parentMeshes, meshes, i3dmMeshes) {
         shader.filter = filter.filter(fn => !!fn);
@@ -932,7 +923,7 @@ export default class MeshPainter {
         return meshes;
     }
 
-    _createBBoxMesh(node) {
+    _createBoxMesh(node) {
         const nodeBox = this._layer._nodeBoxes[node.id];
         if (!nodeBox || node._boxMesh) {
             return;
@@ -941,8 +932,7 @@ export default class MeshPainter {
         if (!nodeBox.length) { //region、box
             vertices = nodeBox.boxPosition;
             indices = BOX_INDEX;
-            const rootNode = this._layer._getRootNode(node._rootIdx);
-            translate = rootNode._bboxCenter;
+            translate = nodeBox.boxCenter;
             scale = BOX_SCALE;
         } else if (nodeBox.length === 2) { //sphere
             const sphereCenter = nodeBox[0], radius = nodeBox[1];
@@ -961,12 +951,20 @@ export default class MeshPainter {
             positionAttribute: 'POSITION'
         });
         const mesh = new reshader.Mesh(geometry, new reshader.Material({ lineColor: [0.8, 0.8, 0.1, 1.0], lineOpacity: 1 }));
-        const localTransform = mat4.identity([]);
+        const localTransform = [];
         mat4.fromRotationTranslationScale(localTransform, BOX_ROTATE, translate, scale);
         mesh.localTransform = localTransform;
         mesh._originLocalTransform = mat4.copy([], localTransform);
         mesh.properties.node = node;
         node._boxMesh = mesh;
+    }
+
+    _deleteBoxMesh(node) {
+        if (node._boxMesh) {
+            node._boxMesh.geometry.dispose();
+            node._boxMesh.dispose();
+            delete node._boxMesh;
+        }
     }
 
     _setCompressedInt16Uniforms(mesh, compressed_int16_params) {
@@ -1400,21 +1398,8 @@ export default class MeshPainter {
     }
 
     _updateServiceMatrix(mesh, node) {
-        const service = this._layer._getNodeService(node._rootIdx);
-        const rootNode = this._layer._getRootNode(node._rootIdx);
-        const bboxCenter = rootNode._bboxCenter;
-        let rotation = service['rotation'] || [0, 0, 0];
-        rotation = quat.fromEuler(TEMP_QUAT_2, rotation[0], rotation[1], rotation[2]);
-        const scale = service['scale'] || [1, 1, 1];
-        const trsMatrix = mat4.fromRotationTranslationScale([], rotation, TEMP_TRANS, scale);
-        const toBBoxCenterMatrix = mat4.identity([]);
-        const toPointCenterMatrix = mat4.identity([]);
-        mat4.translate(toBBoxCenterMatrix, toBBoxCenterMatrix, vec3.scale(TEMP_TRANS_2, bboxCenter, -1));
-        mat4.translate(toPointCenterMatrix, toPointCenterMatrix, bboxCenter);
-        const pMat = mat4.multiply(toBBoxCenterMatrix, toBBoxCenterMatrix, mesh._originLocalTransform);//平移至整体中心点坐标系
-        mat4.multiply(trsMatrix, trsMatrix, pMat);//trs变换
-        const resetMat = mat4.multiply(toPointCenterMatrix, toPointCenterMatrix, trsMatrix);//还原至世界坐标
-        mesh.localTransform = resetMat;
+        const serviceTransform = this._layer._getServiceTransform(TEMP_SERVICE_MAT, node);
+        mesh.localTransform = mat4.multiply(mesh.localTransform, serviceTransform, mesh._originLocalTransform);
     }
 
     _getTransform(out, rtcCoord) {

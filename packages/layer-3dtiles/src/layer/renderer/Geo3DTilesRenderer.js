@@ -450,11 +450,18 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         });
     }
 
-    _createBBoxMesh(node) {
+    _createBoxMesh(node) {
         if (!this.painter) {
             return;
         }
-        this.painter._createBBoxMesh(node);
+        this.painter._createBoxMesh(node);
+    }
+
+    _deleteBoxMesh(node) {
+        if (!this.painter) {
+            return;
+        }
+        this.painter._deleteBoxMesh(node);
     }
 
     _consumeModelQueue() {
