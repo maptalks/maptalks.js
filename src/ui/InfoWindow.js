@@ -379,7 +379,6 @@ class InfoWindow extends UIComponent {
                 const miny = Math.max(0, Math.min(pt1.y, pt2.y));
                 const maxy = Math.min(height, Math.max(pt1.y, pt2.y));
                 for (let y = miny; y <= maxy; y++) {
-                    const p = new Point(pt1.x, y);
                     xys.push({
                         point: new Point(pt1.x, y),
                         coordinateIndex
