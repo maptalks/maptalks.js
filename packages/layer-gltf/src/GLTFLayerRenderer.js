@@ -7,6 +7,7 @@ import pickingVert from './common/glsl/picking.vert';
 import sceneVert from './common/glsl/sceneVert.vert';
 import extentFrag from './common/glsl/extent.frag';
 import GLTFWorkerConnection from './common/GLTFWorkerConnection';
+import { loadGLTF } from './worker/'
 
 const uniformDeclares = [], tempBBox = [];
 const pointLineModes = ['points', 'lines', 'line strip', 'line loop'];
@@ -311,7 +312,24 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
     }
 
     _requestor(url) {
-        return this.workerConn.loadGLTF(url).then(data => {
+        const urlModifier = this.layer.getURLModifier();
+        let promise;
+        if (urlModifier) {
+            // 有urlModifier时，在主线程中请求模型
+            const fetchOptions = this.layer.options.fetchOptions;
+            url = urlModifier(url);
+            promise = loadGLTF(null, url, fetchOptions, (url) => {
+                const urlModifier = this.layer.getURLModifier();
+                if (urlModifier) {
+                    return urlModifier(url);
+                } else {
+                    return url;
+                }
+            });
+        } else {
+            promise = this.workerConn.loadGLTF(url);
+        }
+        return promise.then(data => {
             this.setToRedraw();
             this._needRetireFrames = true;
             return data;

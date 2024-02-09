@@ -29,7 +29,7 @@ const Ajax = {
      *     }
      * );
      */
-    get: function (url, options = {}) {
+    get: function (url, options = {}, urlModifier) {
         if (!options) {
             options = {};
         }
@@ -44,6 +44,10 @@ const Ajax = {
         if (!requestConfig.method) {
             requestConfig.method = 'GET';
         }
+        requestConfig.referrerPolicy = requestConfig.referrerPolicy || 'origin';
+        if (typeof window !== 'undefined' && !requestConfig.referrer) {
+            requestConfig.referrer = window.location.href;
+        }
         // const isPost = options.method === 'POST';
         // if (isPost) {
         //     if (!isNil(options.body)) {
@@ -56,6 +60,9 @@ const Ajax = {
         // if (!isNil(options.credentials)) {
         //     requestConfig.credentials = options.credentials;
         // }
+        if (urlModifier) {
+            url = urlModifier(url);
+        }
         const promise = fetch(url, requestConfig).then(response => {
             const parsed = this._parseResponse(response, options['responseType']);
             if (parsed.message) {
@@ -118,12 +125,12 @@ const Ajax = {
      *     }
      * );
      */
-    getArrayBuffer(url, options = {}) {
+    getArrayBuffer(url, options = {}, urlModifier) {
         if (!options) {
             options = {};
         }
         options['responseType'] = 'arraybuffer';
-        return Ajax.get(url, options);
+        return Ajax.get(url, options, urlModifier);
     },
 
     // from mapbox-gl-js
@@ -171,13 +178,13 @@ const Ajax = {
  * );
  * @static
  */
-Ajax.getJSON = function (url, options = {}) {
+Ajax.getJSON = function (url, options = {}, urlModifier) {
     if (options && options['jsonp']) {
         return Ajax.jsonp(url);
     }
     options = options || {};
     options['responseType'] = 'json';
-    return Ajax.get(url, options);
+    return Ajax.get(url, options, urlModifier);
 };
 
 

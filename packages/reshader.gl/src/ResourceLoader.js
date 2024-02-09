@@ -2,9 +2,10 @@ import Eventable from './common/Eventable.js';
 import Ajax from './common/Ajax.js';
 
 class ResourceLoader {
-    constructor(DEFAULT_TEXTURE) {
+    constructor(DEFAULT_TEXTURE, urlModifier) {
         this.defaultTexture = DEFAULT_TEXTURE;
         this.defaultCubeTexture = new Array(6);
+        this.urlModifier = urlModifier;
 
         //TODO 把this.resources换成LRU队列，控制缓存的资源数量
         this.resources = {};
@@ -24,7 +25,11 @@ class ResourceLoader {
             return Promise.all(promises);
         } else {
             return new Promise((resolve, reject) => {
-                Ajax.getArrayBuffer(url, (err, buffer) => {
+                let realUrl = url;
+                if (this.urlModifier) {
+                    realUrl = this.urlModifier(url);
+                }
+                Ajax.getArrayBuffer(realUrl, (err, buffer) => {
                     if (err) {
                         reject(err);
                     } else {
@@ -88,7 +93,12 @@ class ResourceLoader {
             img.onabort = function () {
                 reject(`image(${url}) loading aborted.`);
             };
-            img.src = url;
+            if (this.urlModifier) {
+                img.src = this.urlModifier(url);
+            } else {
+                img.src = url;
+            }
+
         });
         return promise;
     }

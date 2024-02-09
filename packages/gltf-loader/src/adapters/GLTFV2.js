@@ -5,14 +5,14 @@ import GLTFAdapter from './GLTFAdapter';
 // GLTF 2.0 adapter
 // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0
 export default class V2 extends GLTFAdapter {
-    constructor(rootPath, gltf, glbBuffer, requestImage, decoders, supportedFormats, fetchOptions) {
-        super(requestImage, decoders, supportedFormats, fetchOptions);
+    constructor(rootPath, gltf, glbBuffer, requestImage, decoders, supportedFormats, fetchOptions, urlModifier) {
+        super(requestImage, decoders, supportedFormats, fetchOptions, urlModifier);
         this.rootPath = rootPath;
         this.gltf = gltf;
         this.glbBuffer = glbBuffer;
         this.buffers = {};
         this.requests = {};
-        this.accessor = new Accessor(rootPath, gltf, glbBuffer, fetchOptions);
+        this.accessor = new Accessor(rootPath, gltf, glbBuffer, fetchOptions, urlModifier);
     }
 
     iterate(cb, propertyName) {

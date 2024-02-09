@@ -34,7 +34,7 @@ export default class GLTFLoader {
         } else {
             this._init(rootPath, gltf);
         }
-        this._accessor = new Accessor(this.rootPath, this.gltf, this.glbBuffer, this._fetchOptions);
+        this._accessor = new Accessor(this.rootPath, this.gltf, this.glbBuffer, this._fetchOptions, this.options.urlModifier);
         this._checkExtensions();
     }
 
@@ -154,7 +154,7 @@ export default class GLTFLoader {
         //2.0中要忽略glbBuffer的byteOffset
         //1.0中不能忽略
         if (this.version === 2) {
-            this.adapter = new GLTFV2(rootPath, gltf, glbBuffer, this.options.requestImage, this.options.decoders || {}, this.options.supportedFormats || {}, this._fetchOptions);
+            this.adapter = new GLTFV2(rootPath, gltf, glbBuffer, this.options.requestImage, this.options.decoders || {}, this.options.supportedFormats || {}, this._fetchOptions, this.options.urlModifier);
             // NOTE: buffer.id和image.id都会作为GLTFV2.requests的key，用前缀加以区分
             this.adapter.iterate((_key, buffer, index) => {
                 buffer.id = 'buffer_' + index;
@@ -167,7 +167,7 @@ export default class GLTFLoader {
                 accessor.id = 'accessor_' + index;
             }, 'accessors');
         } else {
-            this.adapter = new GLTFV1(rootPath, gltf, glbBuffer, this.options.requestImage, this.options.decoders || {}, this.options.supportedFormats || {}, this._fetchOptions);
+            this.adapter = new GLTFV1(rootPath, gltf, glbBuffer, this.options.requestImage, this.options.decoders || {}, this.options.supportedFormats || {}, this._fetchOptions, this.options.urlModifier);
             this.adapter.iterate((_key, accessor, index) => {
                 accessor.id = 'accessor_' + index;
             }, 'accessors');
@@ -531,6 +531,9 @@ function requestImageOffscreen(url, fetchOptions, cb) {
     }
     let promise = null;
     if (isString(url)) {
+        if (this.options.urlModifier) {
+            url = this.options.urlModifier(url);
+        }
         promise = fetch(url, fetchOptions)
             .then(response => response.arrayBuffer())
             .then(arrayBuffer => {

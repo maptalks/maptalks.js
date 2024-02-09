@@ -7,7 +7,7 @@ const TEMP_VEC4 = [];
 
 export default class Accessor {
 
-    constructor(rootPath, gltf, glbBuffer, fetchOptions) {
+    constructor(rootPath, gltf, glbBuffer, fetchOptions, urlModifier) {
         this.rootPath = rootPath;
         this.gltf = gltf;
         // const meshes = gltf.meshes;
@@ -28,6 +28,7 @@ export default class Accessor {
         this.accessors = {};
         this._compareAccessor();
         this._fetchOptions = fetchOptions;
+        this._urlModifier = urlModifier;
     }
 
     _requestData(name, accessorName) {
@@ -93,7 +94,7 @@ export default class Accessor {
             } else {
                 url = this.rootPath + '/' + buffer.uri;
             }
-            const promise = this.requests[buffer.id] = Ajax.getArrayBuffer(url, this._fetchOptions).then(response => {
+            const promise = this.requests[buffer.id] = Ajax.getArrayBuffer(url, this._fetchOptions, this._urlModifier).then(response => {
                 if (isBlob) {
                     // 5 is length of blob:
                     URL.revokeObjectURL(url);
@@ -264,7 +265,7 @@ export default class Accessor {
                     return Promise.resolve(shader);
                 } else {
                     const url = this.rootPath + '/' + shader.uri;
-                    return Ajax.get(url, this._fetchOptions).then(content => {
+                    return Ajax.get(url, this._fetchOptions, this._urlModifier).then(content => {
                         shader.content = content;
                         return shader;
                     });

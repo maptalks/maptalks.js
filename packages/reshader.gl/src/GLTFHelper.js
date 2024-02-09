@@ -1,25 +1,20 @@
 import * as gltf from '@maptalks/gltf-loader';
 import GLTFPack from './gltf/GLTFPack';
 
-function getJSON(url, options) {
-    return gltf.Ajax.getJSON(url, options);
-}
-
-function getArrayBuffer(url, options) {
-    return gltf.Ajax.getArrayBuffer(url, options);
-}
-
-export function load(url) {
+// options.fetchOptions
+// options.gltfLoaderOptions
+export function load(url, options) {
+    const { fetchOptions, gltfLoaderOptions } = options;
     const index = url.lastIndexOf('/');
     const root = url.slice(0, index);
     const postfix = url.slice(url.lastIndexOf('.')).toLowerCase();
     if (postfix === '.gltf') {
-        return getJSON(url, {}).then(json => {
-            return loadGLTF(root, json);
+        return gltf.Ajax.getJSON(url, fetchOptions).then(json => {
+            return loadGLTF(root, json, gltfLoaderOptions);
         });
     } else if (postfix === '.glb') {
-        return getArrayBuffer(url, {}).then(bin => {
-            return loadGLTF(root, { buffer : bin.data, byteOffset : 0 });
+        return gltf.Ajax.getArrayBuffer(url, fetchOptions).then(bin => {
+            return loadGLTF(root, { buffer : bin.data, byteOffset : 0 }, gltfLoaderOptions);
         });
     }
     return null;
@@ -30,7 +25,7 @@ export function exportGLTFPack(gltf, regl) {
     return gltfpack;
 }
 
-export function loadGLTF(root, options) {
-    const loader = new gltf.GLTFLoader(root, options);
+export function loadGLTF(root, gltf, gltfLoaderOptions) {
+    const loader = new gltf.GLTFLoader(root, gltf, gltfLoaderOptions);
     return loader.load();
 }

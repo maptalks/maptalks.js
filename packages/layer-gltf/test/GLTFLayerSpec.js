@@ -774,6 +774,58 @@ describe('maptalks.gltf', function () {
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
     });
 
+    it('layer setURLModifier', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf', { altitude: 2 });
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol: {
+                url: 'duck',
+                modelHeight: 100
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            setTimeout(function() {
+                const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixelMatch([0, 0, 0, 0], pixel1)).to.be.eql(true);
+                const pixel2 = pickPixel(map, map.width / 2, map.height / 2 + 120, 1, 1);
+                expect(pixelMatch([154, 130, 18, 255], pixel2)).to.be.eql(true);
+                done();
+            }, 100);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        gltflayer.setURLModifier((url) => {
+            if (url === 'duck') {
+                return url3;
+            }
+            return url;
+        });
+    });
+
+    it('setURLModifier for jpg in .gltf', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf', { altitude: 0 });
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol: {
+                url: 'models/CesiumMan-url-modifier/CesiumMan.gltf',
+                modelHeight: 100
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            setTimeout(function() {
+                const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixelMatch([145, 145, 145, 255], pixel1)).to.be.eql(true);
+                done();
+            }, 100);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        gltflayer.setURLModifier((url) => {
+            if (url.indexOf('CesiumMan.jpg') >= 0) {
+                url = url.replace('CesiumMan.jpg', 'CesiumMan1.jpg');
+            } else if (url.indexOf('CesiumMan0.bin')) {
+                url = url.replace('CesiumMan01.bin', 'CesiumMan0.bin');
+            }
+            return url;
+        });
+    });
+
     it('remove groupgllayer from map and then add it to map again', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const marker = new maptalks.GLTFMarker(center, {

@@ -22,14 +22,14 @@ function getArrayBuffer(url, options) {
     return gltf.Ajax.getArrayBuffer(url, options);
 }
 
-function loadGLTF(root, data, options) {
+function load(root, data, options) {
     const loader = new gltf.GLTFLoader(root, data, options);
     return loader.load({
         skipAttributeTransform: true
     });
 }
 
-function load(actorId, url, fetchOptions) {
+export function loadGLTF(actorId, url, fetchOptions, urlModifier) {
     const index = url.lastIndexOf('/');
     const root = url.slice(0, index);
     const imgRequest = requestImage.bind(this, actorId);
@@ -45,15 +45,19 @@ function load(actorId, url, fetchOptions) {
                 if (res.message) {
                     return res;
                 }
-                return loadGLTF(root, res, { requestImage: imgRequest, decoders, transferable: true, fetchOptions });
+                return load(root, res, { requestImage: imgRequest, decoders, transferable: true, fetchOptions, urlModifier });
             });
         } else {
-            return loadGLTF(root, { buffer: res.data, byteOffset: 0 }, { requestImage: imgRequest, decoders, transferable: true, fetchOptions });
+            return load(root, { buffer: res.data, byteOffset: 0 }, { requestImage: imgRequest, decoders, transferable: true, fetchOptions, urlModifier });
         }
     });
 }
 
 function requestImage(actorId, url, fetchOptions, cb) {
+    if (!actorId) {
+        requestImageInMainThread(url, cb);
+        return;
+    }
     if (callbacks[url]) {
         callbacks[url].push(cb);
         return;
@@ -73,7 +77,7 @@ function gltfload(message) {
     const fetchOptions = data.fetchOptions || {};
     fetchOptions.referrerPolicy = fetchOptions.referrerPolicy || 'origin';
     fetchOptions.referrer = data.referrer;
-    load(actorId, url, fetchOptions).then(data => {
+    loadGLTF(actorId, url, fetchOptions).then(data => {
         if (data.message) {
             self.postMessage({callback, error: data});
         } else {
@@ -105,4 +109,26 @@ export const onmessage = function (message) {
             }
         }
     }
+}
+
+const canvas = typeof document === 'undefined' ? null : document.createElement('canvas');
+function requestImageInMainThread(url, cb) {
+    const image = new Image();
+    image.onload = () => {
+        if (!canvas) {
+            cb(new Error('There is no canvas to draw image!'));
+            return;
+        }
+        canvas.width = image.width;
+        canvas.height = image.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(image, 0, 0, image.width, image.height);
+        const imageData = ctx.getImageData(0, 0, image.width, image.height);
+        const result = { width : image.width, height : image.height, data : new Uint8Array(imageData.data) };
+        cb(null, result, [result.data.buffer]);
+    };
+    image.onerror = function (err) {
+        cb(err);
+    };
+    image.src = url;
 }

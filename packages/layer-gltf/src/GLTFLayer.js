@@ -47,6 +47,15 @@ export default class GLTFLayer extends MaskLayerMixin(AbstractGLTFLayer) {
         return layer;
     }
 
+    setURLModifier(urlModifier) {
+        this._urlModifier = urlModifier;
+        return this;
+    }
+
+    getURLModifier() {
+        return this._urlModifier;
+    }
+
     onAdd() {
         const map = this.getMap();
         const geoList = this['_geoList'];

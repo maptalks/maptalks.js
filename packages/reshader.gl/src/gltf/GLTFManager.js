@@ -2,9 +2,10 @@ import * as GLTFHelper  from '../GLTFHelper.js';
 import { simpleModels, getSimpleModel, setSimpleModel } from './SimpleModel';
 
 export default class GLTFManager {
-    constructor(regl) {
+    constructor(regl, options) {
         this.regl = regl;
         this.resourceMap = {};
+        this.options = options || {};
     }
 
     getGLTF(url) {
@@ -18,9 +19,8 @@ export default class GLTFManager {
                 this.resourceMap[url] = this._exportGLTFResource(data, url, false);
             } else if (requestor) {
                 this.resourceMap[url] = requestor(url).then(gltf => {
-                    const gltfpack = this._exportGLTFResource(gltf, url);
-                    this.resourceMap[url] = gltfpack;
-                    return gltfpack;
+                    this.resourceMap[url] = this._exportGLTFResource(gltf, url);
+                    return this.resourceMap[url];
                 });
             } else {
                 this.resourceMap[url] = this._loadGLTFModel(url);
@@ -85,14 +85,16 @@ export default class GLTFManager {
         return resourceMap;
     }
 
-    _loadData(url) {
-        return GLTFHelper.load(url).then(gltfData => {
+    fetchGLTF(url) {
+        const { fetchOptions } = this.options;
+        return GLTFHelper.load(url, { fetchOptions }).then(gltfData => {
             return gltfData;
         });
     }
 
     _loadGLTFModel(url) {
-        return this._loadData(url).then(data => {
+        const { fetchOptions } = this.options;
+        return this.fetchGLTF(url, fetchOptions).then(data => {
             this.resourceMap[url] = this._exportGLTFResource(data, url);
             return this.resourceMap[url];
         });
