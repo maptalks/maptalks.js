@@ -94,7 +94,7 @@ export default class Accessor {
             } else {
                 url = this.rootPath + '/' + buffer.uri;
             }
-            const promise = this.requests[buffer.id] = Ajax.getArrayBuffer(url, this._fetchOptions, this._urlModifier).then(response => {
+            const promise = this.requests[buffer.id] = Ajax.getArrayBuffer(url, this._fetchOptions, !isBlob && this._urlModifier).then(response => {
                 if (isBlob) {
                     // 5 is length of blob:
                     URL.revokeObjectURL(url);
