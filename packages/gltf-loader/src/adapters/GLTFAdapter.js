@@ -83,8 +83,8 @@ export default class GLTFAdapter {
     _getImageInfo(key, url) {
         return new Promise((resolve, reject) => {
             let imgUrl = url;
-            if (this.options.urlModifier) {
-                imgUrl = this.options.urlModifier(url);
+            if (this._urlModifier) {
+                imgUrl = this._urlModifier(url);
             }
             this._requestImage(imgUrl, this._fetchOptions, (err, result) => {
                 if (err) {

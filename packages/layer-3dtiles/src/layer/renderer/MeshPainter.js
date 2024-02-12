@@ -54,7 +54,7 @@ const TEMP_OFFSET = [];
 const TEMP_TRANSLATION = [];
 const TEMP_MATRIX1 = [];
 const TEMP_MATRIX2 = [];
-const TEMP_BBOX_MAT = [];
+
 const TEMP_SERVICE_MAT = [];
 
 const DEFAULT_SEMANTICS = {

@@ -317,7 +317,6 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
         if (urlModifier) {
             // 有urlModifier时，在主线程中请求模型
             const fetchOptions = this.layer.options.fetchOptions;
-            url = urlModifier(url);
             promise = loadGLTF(null, url, fetchOptions, (url) => {
                 const urlModifier = this.layer.getURLModifier();
                 if (urlModifier) {

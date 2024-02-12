@@ -32,6 +32,9 @@ function load(root, data, options) {
 export function loadGLTF(actorId, url, fetchOptions, urlModifier) {
     const index = url.lastIndexOf('/');
     const root = url.slice(0, index);
+    if (urlModifier) {
+        url = urlModifier(url);
+    }
     const imgRequest = requestImage.bind(this, actorId);
     return getArrayBuffer(url, fetchOptions).then(res => {
         if (res.message) {
