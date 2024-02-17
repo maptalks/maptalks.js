@@ -357,14 +357,10 @@ class InfoWindow extends UIComponent {
                 coordinateIndex = i;
             }
         }
-        const indexs = [];
-        if (coordinateIndex === 0) {
-            indexs.push(0, 1);
-        } else if (coordinateIndex === pts.length - 1) {
-            indexs.push(coordinateIndex - 1, coordinateIndex);
-        } else {
-            indexs.push(coordinateIndex - 1, coordinateIndex, coordinateIndex + 1);
-        }
+        const indexs = [coordinateIndex - 1, coordinateIndex, coordinateIndex + 1].filter(index => {
+            return index >= 0 && index <= pts.length - 1;
+        });
+
         const filterPts = indexs.map(index => {
             return pts[index];
         });
