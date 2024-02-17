@@ -1,5 +1,6 @@
 import { isFunction, isNumber, isObject, isString } from '../core/util';
 import { createEl, addDomEvent, removeDomEvent, on, off } from '../core/util/dom';
+import Coordinate from '../geo/Coordinate';
 import Point from '../geo/Point';
 import Size from '../geo/Size';
 import { Geometry, Marker, MultiPoint, LineString, MultiLineString } from '../geometry';
@@ -336,10 +337,16 @@ class InfoWindow extends UIComponent {
     }
 
     _rectifyLineStringMouseCoordinate(lineString, mouseCoordinate) {
-        const pts = lineString.getCoordinates().map(coordinate => {
-            return this.getMap().coordToContainerPoint(coordinate);
+        const map = this.getMap();
+        const coordinates = lineString.getCoordinates() || [];
+        const glRes = map.getGLRes();
+        //coordinates to containerpoints
+        const pts = coordinates.map(coordinate => {
+            const renderPoints = map.coordToPointAtRes(coordinate, glRes);
+            const altitude = coordinate.z || 0;
+            return map._pointAtResToContainerPoint(renderPoints, glRes, altitude);
         });
-        const mousePt = this.getMap().coordToContainerPoint(mouseCoordinate);
+        const mousePt = map.coordToContainerPoint(mouseCoordinate);
         let minDis = Infinity, coordinateIndex = -1;
         // Find the point with the shortest distance
         for (let i = 0, len = pts.length; i < len; i++) {
@@ -350,24 +357,28 @@ class InfoWindow extends UIComponent {
                 coordinateIndex = i;
             }
         }
-        const filterPts = [];
-        if (coordinateIndex === 0) {
-            filterPts.push(pts[0], pts[1]);
-        } else if (coordinateIndex === pts.length - 1) {
-            filterPts.push(pts[coordinateIndex - 1], pts[coordinateIndex]);
-        } else {
-            filterPts.push(pts[coordinateIndex - 1], pts[coordinateIndex], pts[coordinateIndex + 1]);
-        }
+        const indexs = [coordinateIndex - 1, coordinateIndex, coordinateIndex + 1].filter(index => {
+            return index >= 0 && index <= pts.length - 1;
+        });
+
+        const filterPts = indexs.map(index => {
+            return pts[index];
+        });
         const xys = [];
-        const { width, height } = this.getMap().getSize();
+        const { width, height } = map.getSize();
         //Calculate all pixels in the field of view
         for (let i = 0, len = filterPts.length - 1; i < len; i++) {
+            const coordinateIndex = i;
             const pt1 = filterPts[i], pt2 = filterPts[i + 1];
+            // Vertical line
             if (pt1.x === pt2.x) {
                 const miny = Math.max(0, Math.min(pt1.y, pt2.y));
                 const maxy = Math.min(height, Math.max(pt1.y, pt2.y));
                 for (let y = miny; y <= maxy; y++) {
-                    xys.push(new Point(pt1.x, y));
+                    xys.push({
+                        point: new Point(pt1.x, y),
+                        coordinateIndex
+                    });
                 }
             } else {
                 const k = (pt2.y - pt1.y) / (pt2.x - pt1.x);
@@ -377,23 +388,48 @@ class InfoWindow extends UIComponent {
                 const maxx = Math.min(width, Math.max(pt1.x, pt2.x));
                 for (let x = minx; x <= maxx; x++) {
                     const y = k * (x - pt1.x) + pt1.y;
-                    xys.push(new Point(x, y));
+                    xys.push({
+                        point: new Point(x, y),
+                        coordinateIndex
+                    });
                 }
             }
         }
-        let minPtDis = Infinity, ptIndex = -1;
+        let minPtDis = Infinity, ptIndex = -1, index = -1, containerPoint;
         // Find the point with the shortest distance
         for (let i = 0, len = xys.length; i < len; i++) {
-            const pt = xys[i];
-            const dis = mousePt.distanceTo(pt);
+            const { point, coordinateIndex } = xys[i];
+            const dis = mousePt.distanceTo(point);
             if (dis < minPtDis) {
                 minPtDis = dis;
                 ptIndex = i;
+                index = coordinateIndex;
+                containerPoint = point;
             }
         }
+        if (ptIndex < 0) {
+            return {
+                dis: minPtDis,
+                coordinate: mouseCoordinate
+            };
+        }
+        // const coordinate = map.containerPointToCoord(containerPoint);
+        const p1 = filterPts[index], p2 = filterPts[index + 1];
+        const distance = p1.distanceTo(p2);
+        const d = containerPoint.distanceTo(p1);
+        const percent = d / distance;
+
+        const filterCoordinates = indexs.map(index => {
+            return coordinates[index];
+        });
+        const c1 = filterCoordinates[index], c2 = filterCoordinates[index + 1];
+        const x1 = c1.x, y1 = c1.y, z1 = c1.z || 0;
+        const x2 = c2.x, y2 = c2.y, z2 = c2.z || 0;
+        const dx = x2 - x1, dy = y2 - y1, dz = z2 - z1;
+        const x = x1 + dx * percent, y = y1 + dy * percent, z = z1 + dz * percent;
         return {
             dis: minPtDis,
-            coordinate: ptIndex < 0 ? mouseCoordinate : this.getMap().containerPointToCoord(xys[ptIndex])
+            coordinate: new Coordinate(x, y, z)
         };
     }
 
