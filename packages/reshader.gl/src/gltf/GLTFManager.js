@@ -86,15 +86,13 @@ export default class GLTFManager {
     }
 
     fetchGLTF(url) {
-        const { fetchOptions } = this.options;
-        return GLTFHelper.load(url, { fetchOptions }).then(gltfData => {
+        return GLTFHelper.load(url, this.options).then(gltfData => {
             return gltfData;
         });
     }
 
     _loadGLTFModel(url) {
-        const { fetchOptions } = this.options;
-        return this.fetchGLTF(url, fetchOptions).then(data => {
+        return this.fetchGLTF(url).then(data => {
             this.resourceMap[url] = this._exportGLTFResource(data, url);
             return this.resourceMap[url];
         });
