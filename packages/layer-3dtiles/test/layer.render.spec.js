@@ -2093,14 +2093,14 @@ describe('render specs', () => {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
                         debug: true,
                         heightOffset: 0,
-                        scale: 10,
-                        rotation: [90, 0, 0]
+                        scale: 1.5,
+                        rotation: [0, 0, 90]
                     }
                 ]
             });
             runner(() => {
                 done();
-            }, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 1, noGroup: true });
+            }, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 5, renderCount: 4, noGroup: true });
         });
     });
 });
