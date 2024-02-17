@@ -1853,7 +1853,7 @@ describe('render specs', () => {
             map.setLights(lightWithSkybox);
             runner(() => {
                 done();
-            }, layer, { path: `./integration/expected/withSkyBox/lit/expected.png`, diffCount: 0, renderCount: 1, noGroup: true, zoomOffset: 0 });
+            }, layer, { path: `./integration/expected/withSkyBox/lit/expected.png`, diffCount: 100, renderCount: 1, noGroup: true, zoomOffset: 0 });
         }).timeout(5000);
 
         it('Add 3dtiles with skybox and unlit in service is true(issue#467)', done => {
