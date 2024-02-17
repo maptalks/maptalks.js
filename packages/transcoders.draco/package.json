@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/transcoders.draco",
-  "version": "0.96.0",
+  "version": "0.97.0",
   "description": "draco transcoder for @maptalks/gl",
   "main": "dist/transcoders.draco.js",
   "module": "dist/transcoders.draco.es.js",
@@ -16,10 +16,8 @@
     "dist/transcoders.draco.js",
     "dist/transcoders.draco.es.js"
   ],
-  "dependencies": {
-  },
   "devDependencies": {
-    "@maptalks/gl": "<2.0.0",
+    "@maptalks/gl": "^0.97.0",
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
     "@rollup/plugin-replace": "4.0.0",
