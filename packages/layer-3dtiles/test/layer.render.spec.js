@@ -2012,7 +2012,7 @@ describe('render specs', () => {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
                         shader: 'phong',
                         heightOffset: -420,
-                        scale: [4, 4, 4],
+                        scale: 4,
                         rotation: [0, 0, 45]
                     }
                 ]
@@ -2031,14 +2031,14 @@ describe('render specs', () => {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
                         shader: 'phong',
                         heightOffset: -420,
-                        scale: [4, 4, 4],
+                        scale: 4,
                         rotation: [0, 0, 45]
                     }
                 ]
             });
             layer.updateService(0, {
                 rotation: [0, 0, 90],
-                scale: [2, 2, 2]
+                scale: 2
             });
             runner(() => {
                 assert(map.getCenter().x.toFixed(3) === '108.959');
@@ -2054,7 +2054,7 @@ describe('render specs', () => {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
                         shader: 'phong',
                         heightOffset: -420,
-                        scale: [4, 4, 4],
+                        scale: 4,
                         rotation: [0, 0, 45],
                         debug: true
                     }
@@ -2074,9 +2074,27 @@ describe('render specs', () => {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
                         shader: 'phong',
                         heightOffset: 0,
-                        scale: [1, 1, 1],
+                        scale: 1,
                         rotation: [0, 0, 0],
                         debug: true
+                    }
+                ]
+            });
+            runner(() => {
+                done();
+            }, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 1, noGroup: true });
+        });
+
+        it('issue#604', done => {
+            const resPath = 'BatchedDraco/issue-604';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                        debug: true,
+                        heightOffset: 0,
+                        scale: 10,
+                        rotation: [90, 0, 0]
                     }
                 ]
             });

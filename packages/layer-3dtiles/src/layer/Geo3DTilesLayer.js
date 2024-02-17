@@ -82,6 +82,7 @@ const EMPTY_COORD_OFFSET = [0, 0];
 
 const DEFAULT_ROTATION = [0, 0, 0];
 const DEFAULT_SCALE = [1, 1, 1];
+const TEMP_SERVICE_SCALE = [0, 0, 0];
 const DEFAULT_TRANSLATION = [0, 0, 0];
 
 // BOX template
@@ -949,7 +950,8 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
 
         const rotation = service.rotation || DEFAULT_ROTATION;
         const q = quat.fromEuler(TEMP_QUAT_0, ...rotation);
-        const scale = service.scale || DEFAULT_SCALE;
+        const serviceScale = service.scale;
+        const scale = serviceScale && vec3.set(TEMP_SERVICE_SCALE, serviceScale, serviceScale, serviceScale) || DEFAULT_SCALE;
         const transform = mat4.fromRotationTranslationScale(TEMP_MAT4_2, q, DEFAULT_TRANSLATION, scale);
 
         out = mat4.multiply(out, transform, originMat4);
@@ -1083,6 +1085,8 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             node._error = 0;
             return 0;
         }
+        const service = this._getNodeService(node._rootIdx);
+        const serviceScale = service.scale || 1;
         const map = this.getMap();
         let distanceToCamera;
 
@@ -1094,7 +1098,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             distanceToCamera = computeBoxDistanceToCamera(node.boundingVolume, this._cameraCartesian3);
         }
         const distance = Math.max(Math.abs(distanceToCamera), 1E-7);
-        const error = (geometricError * map.height) / (distance * fovDenominator);
+        const error = (geometricError * serviceScale * map.height) / (distance * fovDenominator);
 
         node._cameraDistance = distanceToCamera;
         node._error = error;
