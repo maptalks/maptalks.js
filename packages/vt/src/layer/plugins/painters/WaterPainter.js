@@ -155,7 +155,7 @@ class WaterPainter extends BasicPainter {
         if (!this._emptyTex) {
             this._emptyTex = regl.texture(2);
         }
-
+        const urlModifier = this.layer.getURLModifier();
 
         const symbol = this.getSymbol({ index: 0 });
         const normalUrl = symbol['texWaveNormal'];
@@ -187,7 +187,7 @@ class WaterPainter extends BasicPainter {
                 console.error('invalid water wave normal texture:' + normalUrl);
             };
             this.addCachedTexture(normalUrl, img);
-            img.src = normalUrl;
+            img.src = urlModifier && urlModifier(normalUrl) || normalUrl;
         }
 
         const pertUrl = symbol['texWavePerturbation'];
@@ -219,7 +219,7 @@ class WaterPainter extends BasicPainter {
                 console.error('invalid water wave perturbation texture:' + pertUrl);
             };
             this.addCachedTexture(pertUrl, img);
-            img.src = pertUrl;
+            img.src = urlModifier && urlModifier(pertUrl) || pertUrl;
         }
     }
 

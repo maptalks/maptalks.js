@@ -121,7 +121,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this._workerConn.updateOptions(this.layer.getWorkerOptions(), err => {
                 if (err) throw new Error(err);
                 //需要重新生成瓦片的设置
-                if (conf['features'] || conf['pickingGeometry'] || conf['altitudeProperty']) {
+                if (conf && (conf['features'] || conf['pickingGeometry'] || conf['altitudeProperty'])) {
                     this.clear();
                     this._clearPlugin();
                     this._initPlugins();

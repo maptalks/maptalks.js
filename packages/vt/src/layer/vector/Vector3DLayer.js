@@ -37,6 +37,15 @@ class Vector3DLayer extends maptalks.OverlayLayer {
         return Vector3DLayer.painters[name];
     }
 
+    setURLModifier(modifier) {
+        this._urlModifier = modifier;
+        return this;
+    }
+
+    getURLModifier() {
+        return this._urlModifier;
+    }
+
     getEvents() {
         let events;
         if (super.getEvents) {

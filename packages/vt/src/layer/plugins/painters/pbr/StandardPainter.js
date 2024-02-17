@@ -7,7 +7,7 @@ const { getPBRUniforms } = reshader.pbr.PBRUtils;
 class StandardPainter extends MeshPainter {
     constructor(...args) {
         super(...args);
-        this._loader = new reshader.ResourceLoader();
+        this._loader = new reshader.ResourceLoader(null, this.layer.getURLModifier());
         this.scene.sortFunction = this.sortByCommandKey;
     }
 

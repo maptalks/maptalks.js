@@ -73,6 +73,7 @@ export default class IconRequestor {
                 complete(this);
             }
         }
+        const urlModifier = this.options.urlModifier;
         let hasRequests = false;
         let marker;
         for (let i = 0; i < urls.length; i++) {
@@ -144,7 +145,7 @@ export default class IconRequestor {
                 img.onload = onload;
                 img.onerror = onerror;
                 img.onabort = onerror;
-                img.url = url;
+                img.url = urlModifier && urlModifier(url) || url;
                 img.crossOrigin = 'Anonymous';
                 hasRequests = true;
                 count++;

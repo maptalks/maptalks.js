@@ -65,6 +65,15 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this._dirtyTargetsInCurrentFrame = {};
     }
 
+
+    setURLModifier(urlModifier) {
+        this._urlModifier = urlModifier;
+    }
+
+    getURLModifier() {
+        return this._urlModifier;
+    }
+
     hasNoAARendering() {
         return true;
     }
@@ -486,7 +495,13 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             return;
         }
         const layer = this.layer;
-        this._iconRequestor = new IconRequestor({ iconErrorUrl: layer.options['iconErrorUrl'] });
+        this._iconRequestor = new IconRequestor({
+            iconErrorUrl: layer.options['iconErrorUrl'],
+            urlModifier: (url) => {
+                const modifier = layer.getURLModifier();
+                return modifier && modifier(url) || url;
+            }
+        });
         const useCharBackBuffer = !this._isEnableWorkAround('win-intel-gpu-crash');
         this._glyphRequestor = new GlyphRequestor(fn => {
             layer.getMap().getRenderer().callInNextFrame(fn);

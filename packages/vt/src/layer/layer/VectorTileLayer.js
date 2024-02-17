@@ -99,6 +99,19 @@ class VectorTileLayer extends maptalks.TileLayer {
         this.setStyle(style);
     }
 
+    setURLModifier(modifier) {
+        this._urlModifier = modifier;
+        const renderer = this.getRenderer();
+        if (renderer) {
+            renderer.updateOptions();
+        }
+        return this;
+    }
+
+    getURLModifier() {
+        return this._urlModifier;
+    }
+
     onAdd() {
         const map = this.getMap();
         this._prepareOptions();
@@ -239,7 +252,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             schema: this.options.schema,
             pickingGeometry: this.options['pickingGeometry'],
             projectionCode: this.getSpatialReference().getProjection().code,
-            workerGlyph: this.options['workerGlyph'],
+            workerGlyph: this.options['workerGlyph'] && !this.getURLModifier(),
             featureIdProperty: this.options['featureIdProperty']
         };
     }

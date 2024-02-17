@@ -30,7 +30,10 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         const options = super.getWorkerOptions();
         let workerData = this.options.data;
         if (isString(workerData) || workerData && workerData.url) {
-            workerData = convertUrl(workerData);
+            if (workerData.url) {
+                workerData = JSON.parse(JSON.stringify(workerData));
+            }
+            workerData = convertUrl(workerData, this.getURLModifier());
         } else {
             workerData = this.features;
         }
@@ -85,8 +88,11 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
             const workerConn = renderer.getWorkerConnection();
             if (workerConn) {
                 let workerData = this.options.data;
-                if (isString(workerData) || workerData.url) {
-                    workerData = convertUrl(workerData);
+                if (isString(workerData) || workerData && workerData.url) {
+                    if (workerData.url) {
+                        workerData = JSON.parse(JSON.stringify(workerData));
+                    }
+                    workerData = convertUrl(workerData, this.getURLModifier());
                 } else {
                     workerData = this.features;
                 }
@@ -219,11 +225,19 @@ function toAbsoluteURL(url) {
     return url;
 }
 
-function convertUrl(data) {
+function convertUrl(data, urlModifier) {
     if (data.url) {
-        data.url = toAbsoluteURL(data.url);
+        if (urlModifier) {
+            data.url = urlModifier(data.url);
+        } else {
+            data.url = toAbsoluteURL(data.url);
+        }
     } else {
-        data = toAbsoluteURL(data);
+        if (urlModifier) {
+            data = urlModifier(data);
+        } else {
+            data = toAbsoluteURL(data);
+        }
     }
     return data;
 }

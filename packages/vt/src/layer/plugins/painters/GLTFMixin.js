@@ -44,7 +44,15 @@ const GLTFMixin = Base =>
             super(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig);
             this._ready = false;
             this.scene.sortFunction = this.sortByCommandKey;
-            this._gltfManager = new reshader.GLTFManager(regl);
+            const fetchOptions = sceneConfig.fetchOptions || {};
+            fetchOptions.referrer = window && window.location.href;
+            this._gltfManager = new reshader.GLTFManager(regl, {
+                fetchOptions,
+                urlModifier: (url) => {
+                    const modifier = layer.getURLModifier();
+                    return modifier && modifier(url) || url;
+                }
+            });
             this._initTRSFuncType();
             this._initGLTF();
         }
