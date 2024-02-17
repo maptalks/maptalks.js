@@ -8,7 +8,7 @@ import MeshPainter from './MeshPainter';
 import { readBatchArray } from '../../common/TileHelper';
 import { extend, isBase64, base64URLToArrayBuffer, pushIn } from '../../common/Util.js';
 import { isRelativeURL, prepareFetchOptions } from '../../common/UrlUtil';
-import { CANDIDATE_MAX_ERROR } from '../../common/Constants.js';
+// import { CANDIDATE_MAX_ERROR } from '../../common/Constants.js';
 import { parseI3SJSON, isI3STileset, isI3SMesh, getI3SNodeInfo } from '../i3s/I3SHelper';
 import { fillNodepagesToCache } from '../i3s/Util';
 import I3SNode from '../i3s/I3SNode';
@@ -119,8 +119,6 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
     }
 
     _selectTiles(root, tiles) {
-        const layer = this.layer;
-        const rootNodes = layer.getRootTiles()
         let requests = [];
         this._markTiles();
         let preLoadingCount = 0;
@@ -134,8 +132,6 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             if (checked[node.id]) {
                 continue;
             }
-            const rootIdx = node._rootIdx;
-            const rootNode = rootNodes[rootIdx];
             checked[node.id] = 1;
             let tileLoading = false;
             const cached = this.getCachedTile(node.id);
@@ -149,11 +145,12 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
                 }
                 // 剔除掉error相差过大的父级瓦片。否则会在有些情况下，覆盖范围很大的父级瓦片会绘制在场景中
                 // 是在小丸子公司，由飞渡生成的模型中发现了该问题
-                if (!tile.node._error || rootNode.isS3M || !tile.node.children || tile.node._error <= CANDIDATE_MAX_ERROR) {
-                    hit = true;
-                    tile.selected = true;
-                    tile.data = cached;
-                }
+                // if (!tile.node._error || rootNode.isS3M || !tile.node.children || tile.node._error <= CANDIDATE_MAX_ERROR) {
+
+                // }
+                hit = true;
+                tile.selected = true;
+                tile.data = cached;
             } else if (!this.painter.has(node)) {
                 tileLoading = loading = true;
                 requests.push(node);

@@ -651,7 +651,7 @@ describe('render specs', () => {
     });
 
     context('Tilesets specs', () => {
-        it('Cesium3DTiles/Tilesets/Tileset', done => {
+        it('Cesium3DTiles/Tilesets/Tileset first', done => {
             const resPath = 'Cesium3DTiles/Tilesets/Tileset';
             const layer = new Geo3DTilesLayer('3d-tiles', {
                 services : [
