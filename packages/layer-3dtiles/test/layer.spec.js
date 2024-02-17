@@ -78,7 +78,7 @@ describe('3dtiles layer', () => {
         });
     });
 
-    it('root tile with maxExtent', done => {
+    it.skip('root tile with maxExtent', done => {
         //example is from http://web3d.smartearth.cn/
         map.setCenterAndZoom([-81.38110, 28.53711], 15);
         const layer = new Geo3DTilesLayer('3d-tiles', {

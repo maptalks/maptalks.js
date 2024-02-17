@@ -2085,6 +2085,25 @@ describe('render specs', () => {
             }, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 1, noGroup: true });
         });
 
+        it('issue#424 with scale and rotation', done => {
+            const resPath = 'BatchedDraco/issue-424';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                        shader: 'phong',
+                        heightOffset: 0,
+                        scale: 1.5,
+                        rotation: [0, 0, 60],
+                        debug: true
+                    }
+                ]
+            });
+            runner(() => {
+                done();
+            }, layer, { path: `./integration/expected/${resPath}-scale-rotation/expected.png`, diffCount: 0, renderCount: 1, noGroup: true });
+        });
+
         it('issue#604', done => {
             const resPath = 'BatchedDraco/issue-604';
             const layer = new Geo3DTilesLayer('3d-tiles', {
