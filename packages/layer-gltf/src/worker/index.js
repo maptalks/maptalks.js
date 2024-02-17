@@ -1,4 +1,4 @@
-import * as gltf from '@maptalks/gltf-loader';
+import * as gltfloader from '@maptalks/gltf-loader';
 import transcoders from '@maptalks/gl/dist/transcoders';
 
 const decoders = {
@@ -15,15 +15,15 @@ const callbacks = {
 };
 
 function getJSON(url, options) {
-    return gltf.Ajax.getJSON(url, options);
+    return gltfloader.Ajax.getJSON(url, options);
 }
 
 function getArrayBuffer(url, options) {
-    return gltf.Ajax.getArrayBuffer(url, options);
+    return gltfloader.Ajax.getArrayBuffer(url, options);
 }
 
 function load(root, data, options) {
-    const loader = new gltf.GLTFLoader(root, data, options);
+    const loader = new gltfloader.GLTFLoader(root, data, options);
     return loader.load({
         skipAttributeTransform: true
     });
