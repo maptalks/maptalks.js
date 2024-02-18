@@ -10,7 +10,7 @@ function isBase64URL(path) {
     return BASE64_REG.test(path);
 }
 
-function isBlobUrl(path) {
+function isBlobURL(path) {
     return path.indexOf('blob:') === 0;
 }
 
@@ -131,7 +131,7 @@ export function formatResouceUrl(path) {
         console.error('path is null,path:', path);
         return path;
     }
-    if (isBase64URL(path) || isBlobUrl(path)) {
+    if (isBase64URL(path) || isBlobURL(path)) {
         return path;
     }
     const origin = ResouceProxy.origin || {};
