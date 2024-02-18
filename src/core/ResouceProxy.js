@@ -4,6 +4,15 @@ import {
 } from './util';
 
 const EMPTY_STRING = '';
+const BASE64_REG = /data:image\/.*;base64,/;
+
+function isBase64URL(path) {
+    return BASE64_REG.test(path);
+}
+
+function isBlobUrl(path) {
+    return path.indexOf('blob:') === 0;
+}
 
 function strContains(str1, str2) {
     if (isNumber(str1)) {
@@ -36,8 +45,8 @@ function handlerURL(path, configs = {}) {
 }
 
 /**
- * simple Resouce Proxy implementation 
- * 
+ * simple Resouce Proxy implementation
+ *
  * https://www.webpackjs.com/configuration/dev-server/#devserverproxy
  */
 
@@ -120,6 +129,9 @@ export function formatResouceUrl(path) {
     }
     if (!path) {
         console.error('path is null,path:', path);
+        return path;
+    }
+    if (isBase64URL(path) || isBlobUrl(path)) {
         return path;
     }
     const origin = ResouceProxy.origin || {};
