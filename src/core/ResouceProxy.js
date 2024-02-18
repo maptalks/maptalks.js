@@ -128,7 +128,7 @@ export function formatResouceUrl(path) {
         path += EMPTY_STRING;
     }
     if (!path) {
-        console.error('path is null,path:', path);
+        console.error('resouce path is null,path:', path);
         return path;
     }
     if (!isString(path)) {
@@ -139,7 +139,8 @@ export function formatResouceUrl(path) {
     }
     const origin = ResouceProxy.origin || {};
     //is isAbsoluteURL
-    if (isURL(path) && isObject(origin)) {
+    const isAbsoluteURL = isURL(path);
+    if (isAbsoluteURL && isObject(origin)) {
         const url = handlerURL(path, origin);
         if (url) {
             return url;
@@ -154,7 +155,7 @@ export function formatResouceUrl(path) {
         }
     }
     const { host } = ResouceProxy;
-    if (host && isString(host) && !isURL(path)) {
+    if (!isAbsoluteURL && host && isString(host)) {
         return `${host}${path}`;
     }
     return getAbsoluteURL(path);
