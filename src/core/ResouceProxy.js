@@ -107,7 +107,7 @@ export const ResouceProxy = {
             if (isString(json)) {
                 json = JSON.parse(json);
             }
-            if (isObject) {
+            if (isObject(json)) {
                 extend(ResouceProxy, json);
             }
         } catch (error) {
@@ -145,6 +145,7 @@ export function formatResouceUrl(path) {
         if (url) {
             return url;
         }
+        return path;
     }
     //relative URL
     const proxys = ResouceProxy.proxy || {};
