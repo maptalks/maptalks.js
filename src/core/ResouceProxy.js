@@ -131,6 +131,9 @@ export function formatResouceUrl(path) {
         console.error('path is null,path:', path);
         return path;
     }
+    if (!isString(path)) {
+        return path;
+    }
     if (isBase64URL(path) || isBlobURL(path)) {
         return path;
     }
