@@ -872,7 +872,7 @@ Map.include(/** @lends Map.prototype */{
     },
 
     _queryTerrainInfo(containerPoint) {
-        const layers = this._getLayers();
+        const layers = this._getLayers() || [];
         for (let i = 0; i < layers.length; i++) {
             const layer = layers[i];
             if (containerPoint && layer && layer.queryTerrainAtPoint && layer.getTerrainLayer && layer.getTerrainLayer()) {
