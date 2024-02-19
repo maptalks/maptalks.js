@@ -330,6 +330,12 @@ Map.include(/** @lends Map.prototype */ {
         return false;
     },
 
+    _wrapTerrainData(eventParam) {
+        if (eventParam.containerPoint && !eventParam.terrain) {
+            eventParam.terrain = this._queryTerrainInfo(eventParam.containerPoint);
+        }
+    },
+
     _parseEvent(e, type) {
         if (!e) {
             return null;
@@ -355,6 +361,7 @@ Map.include(/** @lends Map.prototype */ {
                 }
             }
         }
+        this._wrapTerrainData(eventParam);
         return eventParam;
     },
 
@@ -382,9 +389,7 @@ Map.include(/** @lends Map.prototype */ {
         }
 
         const eventParam = this._parseEvent(e, type);
-        if (eventParam.containerPoint) {
-            eventParam.terrain = this._queryTerrainInfo(eventParam.containerPoint);
-        }
+        this._wrapTerrainData(eventParam);
         if (isMoveEvent(type)) {
             this.getRenderer().callInNextFrame(() => {
                 if (eventParam.domEvent && eventParam.domEvent._cancelBubble) {
@@ -420,6 +425,7 @@ Map.include(/** @lends Map.prototype */ {
             eventParam['viewPoint'] = map.containerPointToViewPoint(containerPoint);
             eventParam['pont2d'] = map._containerPointToPoint(containerPoint);
         }
+        this._wrapTerrainData(eventParam);
         return eventParam;
     }
 });
