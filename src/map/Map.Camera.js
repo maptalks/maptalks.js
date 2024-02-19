@@ -270,13 +270,13 @@ Map.include(/** @lends Map.prototype */{
 
     _setCameraMovement(frameOption, frame) {
         this.animateTo({
-            zoom : frameOption.zoom,
-            center : frameOption.center,
-            pitch : frameOption.pitch,
-            bearing : frameOption.bearing
+            zoom: frameOption.zoom,
+            center: frameOption.center,
+            pitch: frameOption.pitch,
+            bearing: frameOption.bearing
         }, {
-            duration : frameOption.duration,
-            easing : 'out'
+            duration: frameOption.duration,
+            easing: 'out'
         }, frame);
     },
 
@@ -869,6 +869,25 @@ Map.include(/** @lends Map.prototype */{
             }
         }
         return false;
+    },
+
+    _queryTerrainInfo(containerPoint) {
+        const layers = this._getLayers();
+        for (let i = 0; i < layers.length; i++) {
+            const layer = layers[i];
+            if (containerPoint && layer && layer.queryTerrainAtPoint && layer.getTerrainLayer && layer.getTerrainLayer()) {
+                const coordinate = layer.queryTerrainAtPoint(containerPoint);
+                if (coordinate) {
+                    return {
+                        coordinate,
+                        altitude: coordinate.z
+                    };
+                } else {
+                    break;
+                }
+            }
+        }
+        return null;
     },
 
     _getFovRatio() {

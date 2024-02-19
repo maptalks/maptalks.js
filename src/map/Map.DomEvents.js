@@ -382,6 +382,9 @@ Map.include(/** @lends Map.prototype */ {
         }
 
         const eventParam = this._parseEvent(e, type);
+        if (eventParam.containerPoint) {
+            eventParam.terrain = this._queryTerrainInfo(eventParam.containerPoint);
+        }
         if (isMoveEvent(type)) {
             this.getRenderer().callInNextFrame(() => {
                 if (eventParam.domEvent && eventParam.domEvent._cancelBubble) {
