@@ -146,7 +146,9 @@ Map.include(/** @lends Map.prototype */{
         this._zoomLevel = nextZoom;
         this._calcMatrices();
         if (origin) {
-            this._setPrjCoordAtContainerPoint(this._startZoomCoord, origin);
+            const p = this._containerPointToPoint(origin);
+            const offset = p._sub(this._prjToPoint(this._getPrjCenter()));
+            this._setPrjCoordAtOffsetToCenter(this._startZoomCoord, offset);
         }
     },
 

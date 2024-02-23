@@ -187,4 +187,25 @@ describe('Map.Drag', function () {
         expect(center2.toArray()).not.to.be.eql(center.toArray());
         expect(map.isMoving()).not.to.be.ok();
     });
+
+    it('synchronize with mouse when dragging map', (done) => {
+        map.setPitch(45);
+        //vlayer用于模拟鼠标的位置和高度
+        const vlayer = new maptalks.VectorLayer('v').addTo(map);
+        vlayer.queryTerrainAtPoint = function(containerPoint) {
+            const coord = map.containerPointToCoordinate(containerPoint);
+            return new maptalks.Coordinate(coord.x, coord.y - 0.2, 100);
+        };
+        vlayer.getTerrainLayer = function() {
+            return true;
+        }
+        map.on('moveend', function () {
+            expect(map.isMoving()).not.to.be.ok();
+            const center = map.getCenter();
+            expect(center.x).to.eql(118.84493355);
+            expect(center.y).to.eql(32.04882672);
+            done();
+        });
+        dragMap(100);
+    });
 });

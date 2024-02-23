@@ -2078,6 +2078,22 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this;
     }
 
+    _setPrjCoordAtOffsetToCenter(prjCoord, offset) {
+        const pcenter = this._pointToPrj(this._prjToPoint(prjCoord).sub(offset));
+        this._setPrjCenter(pcenter);
+        return this;
+    }
+
+    _queryTerrainAtPoint(p) {
+        const group = this.getLayers(layer => {
+            return layer.queryTerrainAtPoint;
+        })[0];
+        if (group && group.getTerrainLayer()) {
+            return group.queryTerrainAtPoint(p);
+        }
+        return null;
+    }
+
     _verifyExtent(prjCenter) {
         if (!prjCenter) {
             return false;
