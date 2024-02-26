@@ -109,9 +109,9 @@ export default class MeshPainter {
         this._boxScene = new reshader.Scene();
         this._resLoader = new reshader.ResourceLoader(regl.texture(2));
         this._bindedListener = this._onResourceLoad.bind(this);
-        this._defaultMaterial = new reshader.PhongMaterial({
-            'baseColorFactor' : [1, 1, 1, 1]
-        });
+        // this._defaultMaterial = new reshader.PhongMaterial({
+        //     'baseColorFactor' : [1, 1, 1, 1]
+        // });
         this._createShaders();
         this._khrTechniqueWebglManager = new reshader.KHRTechniquesWebglManager(this._regl, this._getExtraCommandProps(), this._resLoader);
         const map = this.getMap();
@@ -1286,7 +1286,9 @@ export default class MeshPainter {
         if (material && !material.isReady()) {
             material._nodeId = node.id;
         } else if (!material) {
-            material = this._defaultMaterial;
+            material = new reshader.PhongMaterial({
+                'baseColorFactor' : [1, 1, 1, 1]
+            });
         }
 
         const gltfGeo = {
