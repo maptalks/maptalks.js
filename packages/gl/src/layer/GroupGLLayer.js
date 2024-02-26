@@ -45,7 +45,6 @@ const options = {
 
 //
 const emptyMethod = () => {};
-const EMPTY_ALTITUDE = [null, 0];
 const EMPTY_COORD0 = new maptalks.Coordinate(0, 0), EMPTY_COORD1 = new maptalks.Coordinate(0, 0);
 const TEMP_VEC3 = [];
 const cp = [0, 0, 0], coord0 = [0, 0, 0, 1], coord1 = [0, 0, 0, 1];
@@ -552,12 +551,19 @@ export default class GroupGLLayer extends maptalks.Layer {
 
     queryTerrain(coord, out) {
         if (!this._terrainLayer) {
-            return EMPTY_ALTITUDE;
+            if (out) {
+                out[0] = null;
+                out[1] = 0;
+            }
+            return [null, 0];
         }
         return this._terrainLayer.queryTerrain(coord, out);
     }
 
     queryTerrainAtPoint(containerPoint, options = {}) {
+        if (!this._terrainLayer) {
+            return null;
+        }
         const glRes = this.map.getGLRes();
         const map = this.map;
         const w2 = map.width / 2 || 1,
@@ -607,7 +613,11 @@ export default class GroupGLLayer extends maptalks.Layer {
 
     queryTerrainByProjCoord(projCoord, out) {
         if (!this._terrainLayer) {
-            return EMPTY_ALTITUDE;
+            if (out) {
+                out[0] = null;
+                out[1] = 0;
+            }
+            return [null, 0];
         }
         return this._terrainLayer.queryTerrainByProjCoord(projCoord, out);
     }

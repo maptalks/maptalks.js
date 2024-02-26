@@ -1229,6 +1229,27 @@ describe('gl tests', () => {
             group.addTo(map);
         });
 
+        it('GroupGLLayer.queryTerrainAtPoint without terrain, maptalks/issues#606', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12,
+                pitch: 60
+            });
+            const skinLayers = [
+                new maptalks.TileLayer('base', {
+                    urlTemplate: '#'
+                })
+            ];
+            const group = new maptalks.GroupGLLayer('group', skinLayers, { });
+            group.addTo(map);
+            setTimeout(() => {
+                const pickCoord = group.queryTerrainAtPoint(new maptalks.Point(91.14478,29.658272));
+                if (!pickCoord) {
+                    done();
+                }
+            }, 200);
+        });
+
         it('support weather for terrain', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
