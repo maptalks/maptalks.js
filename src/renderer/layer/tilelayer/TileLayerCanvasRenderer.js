@@ -187,7 +187,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const loadingLimit = this._getLoadLimit();
 
         const l = tileGrids.length;
-        const isFirstRender = layer.options['currentTilesFirst'] && this._tileZoom === undefined;
+        // !this._terrainHelper can't be deleted as parent tiles are part of terrain skin, maptalks/issues#608
+        const isFirstRender = this._tileZoom === undefined && layer.options['currentTilesFirst'] && !this._terrainHelper;
         // main tile grid is the last one (draws on top)
         this._tileZoom = tileGrids[0]['zoom'];
 
