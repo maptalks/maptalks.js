@@ -523,6 +523,10 @@ function requestImage(url, fetchOptions, cb) {
     image.src = url;
 }
 
+
+const requests = [];
+const workingRequests = [];
+const requestLimit = 10;
 let offCanvas, offCtx;
 function requestImageOffscreen(url, fetchOptions, cb) {
     if (!offCanvas) {
@@ -534,25 +538,47 @@ function requestImageOffscreen(url, fetchOptions, cb) {
         if (this.options.urlModifier) {
             url = this.options.urlModifier(url);
         }
-        promise = fetch(url, fetchOptions)
-            .then(response => response.arrayBuffer())
-            .then(arrayBuffer => {
-                // response.blob()方法似乎有内存泄漏
-                // 2022-03-09
-                const blob = new Blob([new Uint8Array(arrayBuffer)]);
-                return createImageBitmap(blob);
-            });
+        requests.push([url, fetchOptions, cb, this]);
+        loopRequests();
     } else {
         const data = url;
         const blob = new Blob([data]);
         promise = createImageBitmap(blob);
+        promise.then(thenMethod.bind(this)).then(res =>{
+            cb(null, res);
+        }).catch(err => {
+            console.warn(err);
+            cb(err);
+        });
     }
-    promise.then(thenMethod.bind(this)).then(res =>{
-        cb(null, res);
-    }).catch(err => {
-        console.warn(err);
-        cb(err);
-    });
+}
+
+function loopRequests() {
+    if (!requests.length || workingRequests.length > requestLimit) {
+        return;
+    }
+    const request = requests.shift();
+    const [url, fetchOptions, cb, context] = request;
+    workingRequests.push(request);
+    fetch(url, fetchOptions)
+        .then(response => response.arrayBuffer())
+        .then(arrayBuffer => {
+            // response.blob()方法似乎有内存泄漏
+            // 2022-03-09
+            const blob = new Blob([new Uint8Array(arrayBuffer)]);
+            return createImageBitmap(blob);
+        }).then(thenMethod.bind(context)).then(res =>{
+            cb.call(context, null, res);
+            const index = workingRequests.indexOf(request);
+            workingRequests.splice(index, 1);
+            loopRequests();
+        }).catch(err => {
+            console.warn(err);
+            cb.call(context, err);
+            const index = workingRequests.indexOf(request);
+            workingRequests.splice(index, 1);
+            loopRequests();
+        });
 }
 
 function thenMethod(bitmap) {
@@ -568,7 +594,6 @@ function thenMethod(bitmap) {
         width = Math.min(maxSize, width);
         height = Math.min(maxSize, height);
     }
-
     offCanvas.width = width;
     offCanvas.height = height;
     offCtx.drawImage(bitmap, 0, 0, width, height);
