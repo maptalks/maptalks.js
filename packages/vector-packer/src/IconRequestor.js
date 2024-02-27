@@ -145,11 +145,11 @@ export default class IconRequestor {
                 img.onload = onload;
                 img.onerror = onerror;
                 img.onabort = onerror;
-                img.url = urlModifier && urlModifier(url) || url;
+                img.url = url;
                 img.crossOrigin = 'Anonymous';
                 hasRequests = true;
                 count++;
-                img.src = realUrl;
+                img.src = urlModifier && urlModifier(realUrl) || realUrl;
             }
         }
         if (!hasRequests) {

@@ -22,7 +22,7 @@ export default class StyledPoint {
 
 
     _replacer(str, key) {
-        return this.feature.properties[key] || 'default';
+        return this.feature.properties[key] || '';
     }
 
     getShape(iconAtlas, glyphAtlas) {
