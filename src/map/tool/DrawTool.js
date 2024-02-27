@@ -565,7 +565,7 @@ class DrawTool extends MapTool {
         }
         const registerMode = this._getRegisterMode();
         const clickCoords = this._clickCoords;
-        if (clickCoords.length < 2) {
+        if (!clickCoords || clickCoords.length < 2) {
             return;
         }
         const mode = this.getMode();
