@@ -34,7 +34,9 @@ const options = {
     //symbols of edit handles
     'centerHandleSymbol': createHandleSymbol('ellipse', 1),
     'vertexHandleSymbol': createHandleSymbol('square', 1),
-    'newVertexHandleSymbol': createHandleSymbol('square', 0.4)
+    'newVertexHandleSymbol': createHandleSymbol('square', 0.4),
+    'collision': false,
+    'collisionBufferSize': 0
 };
 
 /**

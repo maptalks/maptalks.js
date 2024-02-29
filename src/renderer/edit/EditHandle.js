@@ -7,6 +7,7 @@ import { isNil } from '../../core/util/';
 import { getSymbolHash } from '../../core/util/style';
 import { getEventContainerPoint } from '../../core/util/dom';
 import DragHandler from '../../handler/Drag';
+import { bufferBBOX, getDefaultBBOX } from '../../core/util/bbox';
 
 const resources = new ResourceCache();
 let prevX, prevY;
@@ -92,7 +93,7 @@ export default class EditHandle extends Eventable(Class) {
         if (x + w > 0 && x < map.width && y + h > 0 && y < map.height) {
             const dpr = map.getDevicePixelRatio();
             ctx.globalAlpha = this.opacity;
-            ctx.drawImage(this._img, Math.round((x + dx) * dpr), Math.round((y  + dy) * dpr), Math.round(w * dpr), Math.round(h * dpr));
+            ctx.drawImage(this._img, Math.round((x + dx) * dpr), Math.round((y + dy) * dpr), Math.round(w * dpr), Math.round(h * dpr));
             return true;
         }
         return false;
@@ -198,5 +199,38 @@ export default class EditHandle extends Eventable(Class) {
         this.fire('dragend', {
             containerPoint
         });
+    }
+
+    needCollision() {
+        const { target } = this;
+        return target && target.options && target.options.collision;
+    }
+
+    getBBOX(dpr) {
+        const { target, map } = this;
+        if (!target || !target.options || !map) {
+            return null;
+        }
+        const symbol = this.options['symbol'];
+        const dx = symbol['markerDx'] || 0;
+        const dy = symbol['markerDy'] || 0;
+        const { x, y } = this._point;
+        const w = this.w;
+        const h = this.h;
+        dpr = dpr || map.getDevicePixelRatio();
+        this.bbox = this.bbox || getDefaultBBOX();
+        const x1 = Math.round((x + dx) * dpr);
+        const y1 = Math.round((y + dy) * dpr);
+        const width = Math.round(w * dpr);
+        const height = Math.round(h * dpr);
+        this.bbox[0] = x1;
+        this.bbox[1] = y1;
+        this.bbox[2] = x1 + width;
+        this.bbox[3] = y1 + height;
+
+        const { options } = target;
+        const collisionBufferSize = options.collisionBufferSize || 0;
+        bufferBBOX(this.bbox, collisionBufferSize);
+        return this.bbox;
     }
 }
