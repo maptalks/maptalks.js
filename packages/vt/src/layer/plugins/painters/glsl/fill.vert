@@ -104,7 +104,7 @@ uniform mat4 projViewModelMatrix;
             #endif
             vec2 origin = uvOrigin + myPatternOffset;
             #ifdef HAS_PATTERN_ORIGIN
-                origin = origin - aPatternOrigin;
+                origin = origin - aPatternOrigin * tileScale;
             #endif
             float hasPatternWidth = sign(length(patternWidth));
             vec2 myPatternWidth = mix(patternSize, patternWidth, hasPatternWidth);

@@ -51,12 +51,18 @@ export default class IconRequestor {
                 self._ensureMaxSize(null, this.size);
                 width = this.size[0];
                 height = this.size[1];
-                ctx.canvas.width = width;
-                ctx.canvas.height = height;
+                const canvas = ctx.canvas;
+                canvas.width = width;
+                canvas.height = height;
                 ctx.imageSmoothingEnabled = false;
                 ctx.drawImage(this, 0, 0, width, height);
-                const data = ctx.getImageData(0, 0, width, height).data;
-                self._addCache(this.url, data, width, height);
+
+                // ctx.imageSmoothingEnabled = false;
+                // const canvas = ctx.canvas;
+                // resize(this, ctx);
+
+                const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+                self._addCache(this.url, data, canvas.width, canvas.height);
             } catch (err) {
                 //tainted canvas
                 console.warn(err);
@@ -228,11 +234,12 @@ export default class IconRequestor {
 
 
 
-// function resize(image, canvas) {
+// function resize(image, ctx) {
+//     const canvas = ctx.canvas;
 //     if (isPowerOfTwo(image.width) && isPowerOfTwo(image.height)) {
 //         canvas.width = image.width;
 //         canvas.height = image.height;
-//         canvas.getContext('2d').drawImage(image, 0, 0, image.width, image.height);
+//         ctx.drawImage(image, 0, 0, image.width, image.height);
 //         return image;
 //     }
 //     let width = image.width;
@@ -246,7 +253,7 @@ export default class IconRequestor {
 //     // const canvas = document.createElement('canvas');
 //     canvas.width = width;
 //     canvas.height = height;
-//     canvas.getContext('2d').drawImage(image, 0, 0, width, height);
+//     ctx.drawImage(image, 0, 0, width, height);
 //     const url = image.src;
 //     const idx = url.lastIndexOf('/') + 1;
 //     const filename = url.substring(idx);

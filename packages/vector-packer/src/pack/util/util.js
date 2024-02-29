@@ -146,3 +146,7 @@ export function generatePickingIndiceIndex(pickingIds, indices) {
     }
     return indiceIndex;
 }
+
+export function isPowerOfTwo(value) {
+    return (value & (value - 1)) === 0 && value !== 0;
+}

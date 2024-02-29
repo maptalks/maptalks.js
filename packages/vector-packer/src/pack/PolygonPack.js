@@ -1,6 +1,7 @@
 import VectorPack from './VectorPack';
 import StyledVector from './StyledVector';
 import classifyRings from './util/classify_rings';
+import { isPowerOfTwo } from './util/util';
 import earcut from 'earcut';
 import { isNil, normalizeColor } from '../style/Util';
 import { clipPolygon } from './util/clip_polygon';
@@ -171,13 +172,14 @@ export default class PolygonPack extends VectorPack {
             const image = this.iconAtlas.glyphMap[patternFile];
             if (image) {
                 const image = this.iconAtlas.positions[patternFile];
+                // 如果图形长宽不是二的n次方，uvStart和uvSize均需要略微缩小，避免缝隙产生
+                const needPadding = !isPowerOfTwo(image.displaySize[0]) || !isPowerOfTwo(image.displaySize[1]);
                 // fuzhenn/maptalks-designer#607
-                // uvStart增大一个像素，uvSize缩小一个像素，避免插值造成的缝隙
-                uvStart[0] = image.tl[0];
-                uvStart[1] = image.tl[1];
+                uvStart[0] = image.tl[0] + (needPadding && 1 || 0);
+                uvStart[1] = image.tl[1] + (needPadding && 1 || 0);
                 //uvSize - 1.0 是为了把256宽实际存为255，这样可以用Uint8Array来存储宽度为256的值
-                uvSize[0] = image.displaySize[0] - 1;
-                uvSize[1] = image.displaySize[1] - 1;
+                uvSize[0] = image.displaySize[0] - 1 - (needPadding && 2 || 0);
+                uvSize[1] = image.displaySize[1] - 1 - (needPadding && 2 || 0);
             }
         }
 

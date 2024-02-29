@@ -134,7 +134,7 @@ class FillPainter extends BasicPainter {
             Object.defineProperty(uniforms, 'uvOrigin', {
                 enumerable: true,
                 get: () => {
-                    const tileScale = geometry.properties.tileResolution / map.getResolution();
+                    const tileScale = uniforms.tileScale;
                     if (geometry.data.aPatternOrigin) {
                         tilePointUniform[0] = (tilePoint[0] * tileScale) % maxIconSize;
                         tilePointUniform[1] = (tilePoint[1] * tileScale) % maxIconSize;
