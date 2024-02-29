@@ -127,17 +127,24 @@ class FillPainter extends BasicPainter {
         }
 
         const iconAtlas = geometry.properties.iconAtlas;
+        // 直接用maxIconSize对uvOrigin取余，保证icon大小不大于maxIconSize时，余数是一致的，且能提高数据精度，避免精度不够造成的绘制问题
+        const maxIconSize = 2048;
         if (iconAtlas && geometry.data.aTexInfo) {
             const tilePointUniform = [];
             Object.defineProperty(uniforms, 'uvOrigin', {
                 enumerable: true,
                 get: () => {
+                    const tileScale = geometry.properties.tileResolution / map.getResolution();
                     if (geometry.data.aPatternOrigin) {
-                        return tilePoint;
+                        tilePointUniform[0] = (tilePoint[0] * tileScale) % maxIconSize;
+                        tilePointUniform[1] = (tilePoint[1] * tileScale) % maxIconSize;
+                        return tilePointUniform;
                     }
                     const patternOrigin = symbol.polygonPatternFileOrigin;
                     if (!patternOrigin) {
-                        return tilePoint;
+                        tilePointUniform[0] = (tilePoint[0] * tileScale) % maxIconSize;
+                        tilePointUniform[1] = (tilePoint[1] * tileScale) % maxIconSize;
+                        return tilePointUniform;
                     }
                     COORD0.set(patternOrigin[0], patternOrigin[1]);
                     map.coordToPointAtRes(COORD0, tileRes, COORD1);

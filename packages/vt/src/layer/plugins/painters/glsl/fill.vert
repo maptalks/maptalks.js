@@ -112,8 +112,8 @@ uniform mat4 projViewModelMatrix;
                 myPatternWidth = aPatternWidth;
             #endif
             // 没有patternWidth时
-            //瓦片左上角对应的纹理偏移量
-            vec2 originOffset = origin * tileScale * vec2(1.0, -1.0) / myPatternWidth;
+            //瓦片左上角对应的纹理偏移量, origin已经在uniform计算中考虑了tileScale（用于提升精度）
+            vec2 originOffset = origin * vec2(1.0, -1.0) / myPatternWidth;
 
             return mod(originOffset, 1.0) + computeUV(localVertex.xy * tileScale / tileRatio, myPatternWidth);
         #else
