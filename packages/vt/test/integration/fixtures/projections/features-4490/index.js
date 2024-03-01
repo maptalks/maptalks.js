@@ -63,11 +63,12 @@ const style = [
 module.exports = {
     style,
     data,
+    renderingCount: 7,
     view: {
         center: [0, 0],
         zoom: 6,
         spatialReference: {
-            projection: 'EPSG:4326'
+            projection: 'EPSG:4490'
         }
 
     }

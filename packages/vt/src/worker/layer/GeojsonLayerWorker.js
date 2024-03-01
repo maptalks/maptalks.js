@@ -1,6 +1,5 @@
 import { isString, isObject, extend, isNumber } from '../../common/Util';
 import Ajax from '../util/Ajax';
-import { log2 } from '../../common/Util';
 import geojsonvt from '@maptalks/geojson-vt';
 import BaseLayerWorker from './BaseLayerWorker';
 import bbox from '@maptalks/geojson-bbox';
@@ -25,12 +24,6 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
         options = options || {};
         if (!options.extent) {
             options.extent = 8192;
-        }
-        this.zoomOffset = 0;
-        if (options.tileSize) {
-            //for different tile size, set a zoom offset for geojson-vt
-            //https://github.com/mapbox/geojson-vt/issues/35
-            this.zoomOffset = -log2(options.tileSize / 256);
         }
         this.setData(options.data, cb);
     }
@@ -220,7 +213,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             }, 1);
             return 1;
         }
-        const tile = this.index.getTile(tileInfo.z + this.zoomOffset, tileInfo.x, tileInfo.y);
+        const tile = this.index.getTile(tileInfo.z, tileInfo.x, tileInfo.y);
         if (!tile || tile.features.length === 0) {
             setTimeout(function () {
                 cb(null, features, []);

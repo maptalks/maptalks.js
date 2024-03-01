@@ -15,6 +15,45 @@ const options = {
     generateOMBB: true
 };
 
+function get3857SpatialReference(maxZoom) {
+    return {
+        'projection': 'EPSG:3857',
+        'resolutions': (function () {
+            const resolutions = [];
+            const d = 6378137 * Math.PI;
+            for (let i = 0; i <= maxZoom + 1; i++) {
+                resolutions[i] = d / (256 * Math.pow(2, i));
+            }
+            return resolutions;
+        })(),
+        'fullExtent': {
+            'top': 6378137 * Math.PI,
+            'left': -6378137 * Math.PI,
+            'bottom': -6378137 * Math.PI,
+            'right': 6378137 * Math.PI
+        }
+    };
+}
+
+function get4326SpatialReference(maxZoom, code) {
+    return {
+        'projection': code,
+        'fullExtent': {
+            'top': 90,
+            'left': -180,
+            'bottom': -90,
+            'right': 180
+        },
+        'resolutions': (function () {
+            const resolutions = [];
+            for (let i = 0; i <= maxZoom + 1; i++) {
+                resolutions[i] = 180 / 2 / (Math.pow(2, i) * 128);
+            }
+            return resolutions;
+        })()
+    };
+}
+
 class GeoJSONVectorTileLayer extends VectorTileLayer {
 
     constructor(id, options = {}) {
@@ -24,7 +63,20 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         this.setData(options['data']);
     }
 
-    _prepareOptions() {}
+    onAdd() {
+        this._prepareOptions();
+    }
+
+    _prepareOptions() {
+        const map = this.getMap();
+        const maxNativeZoom = map.getMaxNativeZoom();
+        const projection = map.getProjection();
+        const is4326 = projection.code === 'EPSG:4326' || projection.code === 'EPSG:4490';
+        if (is4326) {
+            this.options.tileSystem = [1, -1, -180, 90];
+        }
+        this.options.spatialReference = is4326 ? get4326SpatialReference(maxNativeZoom, projection.code) : get3857SpatialReference(maxNativeZoom);
+    }
 
     getWorkerOptions() {
         const options = super.getWorkerOptions();
@@ -46,15 +98,6 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         options.generateOMBB = this.options.generateOMBB;
         options.convertFn = this.options.convertFn ? this.options.convertFn + '' : null;
         return options;
-    }
-
-    _initTileConfig() {
-        const sr = this.getSpatialReference();
-        if (sr && sr.getProjection() && (sr.getProjection().code === 'EPSG:4326' || sr.getProjection().code === 'EPSG:4490')) {
-            // geojson-vt 在4326投影下的tileSystem
-            this.options.tileSystem = [1, -1, -180, 90];
-        }
-        super['_initTileConfig']();
     }
 
     setData(data) {
