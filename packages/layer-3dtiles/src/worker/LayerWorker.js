@@ -50,6 +50,8 @@ const COMPRESSED_ERROR = {
     'TEXCOORD_1': 0.0001
 };
 
+let POS_FOR_NORMAL;
+
 export default class BaseLayerWorker {
 
     constructor(id, options, uploader, cb) {
@@ -101,9 +103,7 @@ export default class BaseLayerWorker {
      */
     loadTile(params, cb) {
         this._createLoaders(params.supportedFormats);
-        const service = params.service;
-        const url = params.url,
-            arraybuffer = params.arraybuffer;
+        const { service, url, arraybuffer } = params;
         const fetchOptions = service['fetchOptions'] || {};
         fetchOptions.referrer = params.referrer;
         fetchOptions.referrerPolicy = fetchOptions.referrerPolicy || 'origin';
@@ -198,7 +198,7 @@ export default class BaseLayerWorker {
 
     _read3DTile(arraybuffer, url, params, magic, cb) {
         magic = magic && magic.toLowerCase();
-        const service = params.service;
+        const { service } = params;
         if (magic === 'b3dm') {
             const promise = this._b3dmLoader.load(url, arraybuffer, 0, 0, { maxTextureSize: service.maxTextureSize || 1024 });
             promise.then(tile => {
@@ -272,21 +272,13 @@ export default class BaseLayerWorker {
     }
 
     _createMissedAttrs(primitive, gltf) {
-        const material = gltf.materials[primitive.material];
-        const isUnlit = material && material.extensions && material.extensions['KHR_materials_unlit'];
-        if (isUnlit) {
-            return;
-        }
-        const tangentAttr = primitive.attributes['TANGENT'];
-        if (tangentAttr) {
-            return;
-        }
-        const texCoordAttr = primitive.attributes['TEXCOORD_0'];
-        if (!texCoordAttr) {
+        if (!this._needCreateMissedAttrs(primitive, gltf)) {
             return;
         }
         if (!primitive.attributes['NORMAL']) {
-            const positions = primitive.attributes['POSITION'].array;
+            const array = primitive.attributes['POSITION'].array;
+            const count = array.length;
+            const positions = this._is4326() ? POS_FOR_NORMAL.subarray(0, count) : array;
             const indices = primitive.indices.array;
             const normals = buildNormals(positions, indices, new Float32Array(positions.length));
             primitive.attributes['NORMAL'] = {
@@ -328,7 +320,6 @@ export default class BaseLayerWorker {
             return;
         }
         const meshes = gltf.meshes;
-
         for (const primitiveIndex in meshes) {
             const primitives = meshes[primitiveIndex].primitives;
             primitives.forEach(primitive => {
@@ -339,9 +330,8 @@ export default class BaseLayerWorker {
                     if (NEED_COMPRESSED_ATTR[attrName] &&
                         attributes[attrName].array &&
                         attributes[attrName].array instanceof Float32Array) {
-                        const proj = this.options.projection;
                         let compressed_ratio = 1;
-                        if ((proj === 'EPSG:4326' || proj === 'EPSG:4490') && attrName === 'POSITION') {
+                        if (this._is4326() && attrName === 'POSITION') {
                             compressed_ratio = RATIO;
                             primitive.compressed_int16_params['compressed_ratio'] = compressed_ratio;
                         }
@@ -370,7 +360,7 @@ export default class BaseLayerWorker {
                 pntsData[attrName].array instanceof Float32Array) {
                 const proj = this.options.projection;
                 let compressed_ratio = 1;
-                if ((proj === 'EPSG:4326' || proj === 'EPSG:4490') && attrName === 'POSITION') {
+                if (this._is4326() && attrName === 'POSITION') {
                     compressed_ratio = RATIO;
                     pnts.compressed_int16_params['compressed_ratio'] = compressed_ratio;
                 }
@@ -851,10 +841,17 @@ export default class BaseLayerWorker {
         const projCenter = this._getProjCenter(center);
         // gltf.extensions['CESIUM_RTC'] = { center, projCenter };
         gltf.extensions['MAPTALKS_RTC'].projCenter = projCenter;
-        gltf.extensions['CESIUM_RTC'].rtcCoord = this._getCoordiate(center);
+        gltf.extensions['MAPTALKS_RTC'].rtcCoord = gltf.extensions['CESIUM_RTC'].rtcCoord = this._getCoordiate(center);
 
         iterateMesh(gltf, primitive => {
             if (primitive.attributes && primitive.attributes['POSITION']) {
+                const needCreateNormal = this._needCreateMissedAttrs(primitive, gltf);
+                if (needCreateNormal) {
+                    const length = primitive.attributes['POSITION'].array.length;
+                    if (!POS_FOR_NORMAL || POS_FOR_NORMAL.length < length) {
+                        POS_FOR_NORMAL = new Float32Array(length);
+                    }
+                }
                 if (primitive.attributes['NORMAL']) {
                     this._transformNormalOrTangent(primitive.attributes['NORMAL'], primitive.matrices, upAxis);
                 }
@@ -862,7 +859,7 @@ export default class BaseLayerWorker {
                     this._transformNormalOrTangent(primitive.attributes['TANGENT'], primitive.matrices, upAxis);
                 }
                 // debugger
-                const { newPositions } = this._projVertices(primitive.attributes['POSITION'], primitive.matrices, rtcCenter, gltf.extensions['MAPTALKS_RTC'], upAxis, transform, primitive.compressUniforms);
+                const { newPositions } = this._projVertices(primitive.attributes['POSITION'], primitive.matrices, rtcCenter, gltf.extensions['MAPTALKS_RTC'], upAxis, transform, primitive.compressUniforms, needCreateNormal);
                 const { componentType } = primitive.attributes['POSITION'];
                 if (componentType !== 5126) {
                     primitive.attributes['POSITION'].array = new Float32Array(newPositions);
@@ -920,7 +917,7 @@ export default class BaseLayerWorker {
         });
     }
 
-    _projVertices(vertices, matrices, rtcCenter, maptalksRTC, upAxis, transform, compressUniforms) {
+    _projVertices(vertices, matrices, rtcCenter, maptalksRTC, upAxis, transform, compressUniforms, needCreateNormal) {
         // 多个primitive可能共享同一个POSITION，此时只需要遍历一次
         // 例子: Batched/BatchedColors
         if (vertices.array.buffer.projected && vertices.array.buffer.projected[vertices.byteOffset]) {
@@ -945,6 +942,8 @@ export default class BaseLayerWorker {
             proj = [0, 0];
         const projCenter = maptalksRTC.projCenter;
 
+        const proj3857Center = project([], maptalksRTC.rtcCoord, 'EPSG:3857');
+
         const isTransformIdentity = transform && mat4.exactEquals(IDENTITY_MATRIX, transform);
         // debugger
         // let projPosition = new Array(array.length);
@@ -963,7 +962,7 @@ export default class BaseLayerWorker {
             pos_normConstant = decode_position_normConstant;
         }
         const newPositions = [];
-        iterateBufferData(vertices, (vertex) => {
+        iterateBufferData(vertices, (vertex, index) => {
             cartesian[0] = vertex[0] * pos_normConstant + pos_min[0];
             cartesian[1] = vertex[1] * pos_normConstant + pos_min[1];
             cartesian[2] = vertex[2] * pos_normConstant + pos_min[2];
@@ -986,6 +985,13 @@ export default class BaseLayerWorker {
                 vec3.set(degree, 0, 0, -6378137);
             } else {
                 cartesian3ToDegree(degree, cartesian);
+            }
+            if (needCreateNormal) {
+                const posArray = POS_FOR_NORMAL;
+                project(proj, degree, projection);
+                posArray[index * 3] = proj[0] - proj3857Center[0];
+                posArray[index * 3 + 1] = proj[0] - proj3857Center[1];
+                posArray[index * 3 + 2] = proj[0] - proj3857Center[2];
             }
             project(proj, degree, projection);
             // height = cartesian[2] ? projMeter(degree, proj, degree[2], projection) : 0;
@@ -1055,6 +1061,26 @@ export default class BaseLayerWorker {
     onRemove() {
         //nothing need to do now
     }
+
+    _is4326() {
+        return this.options.projection === 'EPSG:4326' || this.options.projection === 'EPSG:4490';
+    }
+
+    _needCreateMissedAttrs(primitive, gltf) {
+        if (!primitive.attributes['POSITION'] || isUnlit(primitive, gltf)) {
+            return false;
+        }
+        const tangentAttr = primitive.attributes['TANGENT'];
+        if (tangentAttr) {
+            return false;
+        }
+        const texCoordAttr = primitive.attributes['TEXCOORD_0'];
+        if (!texCoordAttr) {
+            return false;
+        }
+        return true;
+    }
+
 }
 
 function readString(buffer, offset, length) {
@@ -1249,4 +1275,10 @@ function findMinMax(array) {
         }
     }
     return { min , max };
+}
+
+function isUnlit(primitive, gltf) {
+    const material = gltf.materials[primitive.material];
+    const isUnlit = material && material.extensions && material.extensions['KHR_materials_unlit'];
+    return isUnlit;
 }

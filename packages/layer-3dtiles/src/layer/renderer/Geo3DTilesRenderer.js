@@ -1002,15 +1002,13 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         const code = map.getProjection().code.toLowerCase();
         if (code === 'identity') {
             const projection = this._getCoordProjection();
-            COORD_IN.x = position[0];
-            COORD_IN.y = position[1];
+            COORD_IN.set(position[0], position[1]);
             projection.unproject(COORD_IN, COORD_OUT);
             out[0] = COORD_OUT.x;
             out[1] = COORD_OUT.y;
             return out;
         } else {
-            COORD_IN.x = position[0];
-            COORD_IN.y = position[1];
+            COORD_IN.set(position[0], position[1]);
             map.getProjection().unproject(COORD_IN, COORD_OUT);
             out[0] = COORD_OUT.x;
             out[1] = COORD_OUT.y;
@@ -1020,8 +1018,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
 
     _lngLatToIdentityCoord(out, position) {
         const projection = this._getCoordProjection();
-        COORD_IN.x = position[0];
-        COORD_IN.y = position[1];
+        COORD_IN.set(position[0], position[1]);
         projection.project(COORD_IN, COORD_OUT);
         out[0] = COORD_OUT.x;
         out[1] = COORD_OUT.y;
@@ -1030,8 +1027,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
 
     _identityCoordToLngLat(out, coord) {
         const projection = this._getCoordProjection();
-        COORD_IN.x = coord[0];
-        COORD_IN.y = coord[1];
+        COORD_IN.set(coord[0], coord[1]);
         projection.unproject(COORD_IN, COORD_OUT);
         out[0] = COORD_OUT.x;
         out[1] = COORD_OUT.y;
