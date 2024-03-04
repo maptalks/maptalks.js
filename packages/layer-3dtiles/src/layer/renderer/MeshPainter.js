@@ -167,6 +167,7 @@ export default class MeshPainter {
                 continue;
             }
             const service = this._layer._getNodeService(node._rootIdx);
+            const debugNodes = service.debugNodes;
             const heightOffset = service.heightOffset || 0;
             const coordOffset = service.coordOffset || EMPTY_COORD_OFFSET;
             if (this._cmptMeshes[node.id]) {
@@ -192,6 +193,7 @@ export default class MeshPainter {
                     this._updateMeshLocalTransform(mesh[ii]);
                     mesh[ii]._originLocalTransform = mat4.copy([], mesh[ii].localTransform);
                 }
+                mesh[ii]._node = node;
                 if (magic === 'b3dm') {
                     if (mesh[ii].getBoundingBox && !intersectsBox(projViewMatrix, mesh[ii].getBoundingBox())) {
                         continue;
@@ -205,6 +207,9 @@ export default class MeshPainter {
                             HighlightUtil.highlightMesh(this._regl, mesh[ii], null, this._highlightTimestamp, batchIdMap);
                         }
                         HighlightUtil.showOnly(this._regl, mesh[ii], this._showOnlys && this._showOnlys[rootIdx], this._showOnlyTimeStamp, batchIdMap);
+                    }
+                    if (debugNodes && debugNodes.length && debugNodes.indexOf(mesh[ii]._node.id) < 0) {
+                        continue;
                     }
                     if (parentContext && parentContext.bloom && mesh[ii].properties.hlBloomMesh) {
                         mesh[ii].properties.hlBloomMesh.properties.depthFunc = 'always';
@@ -234,8 +239,6 @@ export default class MeshPainter {
                 //         }
                 //     });
                 // }
-
-                mesh[ii]._node = node;
 
                 if (!leafs[node.id]) {
                     parentMeshes.push(mesh[ii]);
