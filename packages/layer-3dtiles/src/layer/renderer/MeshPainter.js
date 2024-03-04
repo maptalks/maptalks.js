@@ -1948,7 +1948,9 @@ export default class MeshPainter {
         const data = {
             batchId: pickingId
         };
-        if (layer.options['debug']) {
+        const services = layer.options['services'];
+        const service = services && services[mesh.properties.serviceIndex];
+        if (service && service['debug']) {
             data.debugInfo = props;
         }
         if (props && props.batchTable) {
