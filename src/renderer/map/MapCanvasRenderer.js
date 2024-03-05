@@ -1011,6 +1011,7 @@ class MapCanvasRenderer extends MapRenderer {
         const tops = this.getTopElements();
         let updated = false;
         const dpr = this.map.getDevicePixelRatio();
+        const geos = [];
         for (let i = 0; i < tops.length; i++) {
             const top = tops[i];
             if (top.needCollision && top.needCollision()) {
@@ -1020,6 +1021,11 @@ class MapCanvasRenderer extends MapRenderer {
                         continue;
                     } else {
                         collisionIndex.insertBox(bbox);
+                    }
+                    const geometry = top.target && top.target._geometry;
+                    if (geometry && geos.indexOf(geometry) === -1) {
+                        geos.push(geometry);
+                        geometry.fire('handlecollision');
                     }
                 }
             }
