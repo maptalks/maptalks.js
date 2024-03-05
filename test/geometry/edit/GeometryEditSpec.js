@@ -10,13 +10,13 @@ describe('Geometry.Edit', function () {
             point._add(offset);
         }
         happen.mousedown(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
         for (var i = 0; i < 10; i++) {
             happen.mousemove(document, {
-                'clientX':point.x + i,
-                'clientY':point.y + i
+                'clientX': point.x + i,
+                'clientY': point.y + i
             });
         }
         happen.mouseup(document);
@@ -107,7 +107,7 @@ describe('Geometry.Edit', function () {
         it('not all markers can be edited', function () {
             for (var i = 0; i < COMMON_SYMBOL_TESTOR.markerSymbols.length; i++) {
                 var symbol = COMMON_SYMBOL_TESTOR.markerSymbols[i];
-                var marker = new maptalks.Marker(center, { symbol:symbol });
+                var marker = new maptalks.Marker(center, { symbol: symbol });
                 marker.addTo(layer);
                 marker.startEdit();
                 if (symbol['text-name']) {
@@ -129,10 +129,10 @@ describe('Geometry.Edit', function () {
 
         it('resize a vector marker', function () {
             var marker = new maptalks.Marker(map.getCenter(), {
-                symbol : {
-                    markerType:'ellipse',
-                    markerWidth:20,
-                    markerHeight:20
+                symbol: {
+                    markerType: 'ellipse',
+                    markerWidth: 20,
+                    markerHeight: 20
                 }
             }).addTo(layer);
             var size = marker.getSize();
@@ -159,17 +159,17 @@ describe('Geometry.Edit', function () {
 
         it('resize a vector marker with fix aspect ratio', function () {
             var marker = new maptalks.Marker(map.getCenter(), {
-                symbol : {
-                    markerType:'ellipse',
-                    markerWidth:20,
-                    markerHeight:20
+                symbol: {
+                    markerType: 'ellipse',
+                    markerWidth: 20,
+                    markerHeight: 20
                 }
             }).addTo(layer);
             var fired = false;
             marker.on('resizing', function () {
                 fired = true;
             });
-            marker.startEdit({ 'fixAspectRatio' : true });
+            marker.startEdit({ 'fixAspectRatio': true });
             var size = marker.getSize();
             dragGeometry(marker, new maptalks.Point(size.width / 2, 0));
             var symbol = marker.getSymbol();
@@ -259,7 +259,7 @@ describe('Geometry.Edit', function () {
             ellipse.on('resizing', function () {
                 fired = true;
             });
-            ellipse.startEdit({ 'fixAspectRatio' : true });
+            ellipse.startEdit({ 'fixAspectRatio': true });
             var size = ellipse.getSize();
             var ratio = ellipse.getWidth() / ellipse.getHeight();
             dragGeometry(ellipse, new maptalks.Point(size.width / 2, 0));
@@ -307,7 +307,7 @@ describe('Geometry.Edit', function () {
             rect.on('resizing', function () {
                 fired = true;
             });
-            rect.startEdit({ 'fixAspectRatio' : true });
+            rect.startEdit({ 'fixAspectRatio': true });
             var size = rect.getSize();
             var ratio = rect.getWidth() / rect.getHeight();
             dragGeometry(rect, new maptalks.Point(size.width / 2, 0));
@@ -334,7 +334,7 @@ describe('Geometry.Edit', function () {
             var size = polygon.getSize();
             dragGeometry(polygon, new maptalks.Point(size.width / 2, size.height / 2));
             expect(polygon.toGeoJSON()).not.to.be.eqlGeoJSON(o);
-            var expected = {"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[118.84682499999997,32.04653400000004],[118.85742312186676,32.04653400000004],[118.85751916135894,32.04196057399085],[118.84682499999997,32.04204242358057],[118.84682499999997,32.04653400000004]]]},"properties":null};
+            var expected = { "type": "Feature", "geometry": { "type": "Polygon", "coordinates": [[[118.84682499999997, 32.04653400000004], [118.85742312186676, 32.04653400000004], [118.85751916135894, 32.04196057399085], [118.84682499999997, 32.04204242358057], [118.84682499999997, 32.04653400000004]]] }, "properties": null };
             expect(polygon.toGeoJSON()).to.be.eqlGeoJSON(expected);
 
             polygon.undoEdit();
@@ -351,7 +351,7 @@ describe('Geometry.Edit', function () {
             expect(polygon.getCoordinates()[0].length).to.be(5);
 
             polygon.startEdit({
-                'removeVertexOn' : 'contextmenu'
+                'removeVertexOn': 'contextmenu'
             });
             var size = polygon.getSize();
             var domPosition = GET_PAGE_POSITION(container);
@@ -359,9 +359,9 @@ describe('Geometry.Edit', function () {
             point._add(new maptalks.Point(size.width / 2, size.height / 2));
 
             happen.once(eventContainer, {
-                'type' : 'contextmenu',
-                'clientX':point.x,
-                'clientY':point.y
+                'type': 'contextmenu',
+                'clientX': point.x,
+                'clientY': point.y
             });
 
             polygon.endEdit();
@@ -370,8 +370,8 @@ describe('Geometry.Edit', function () {
 
         it('update symbol when editing', function (done) {
             var circle = new maptalks.Circle(map.getCenter(), 1000, {
-                symbol : {
-                    'polygonFill' : '#f00'
+                symbol: {
+                    'polygonFill': '#f00'
                 }
             }).addTo(layer);
             circle.startEdit();
@@ -384,10 +384,31 @@ describe('Geometry.Edit', function () {
                     done();
                 });
                 circle.updateSymbol({
-                    'polygonFill' : '#ff0'
+                    'polygonFill': '#ff0'
                 });
             });
         });
+    });
+
+    it('polygon edit collision', function (done) {
+        const c = 0.00001;
+        const polygon = new maptalks.Polygon([[[0, 0], [c, 0], [c, c], [0, c], [0, 0]]])
+        polygon.addTo(layer);
+
+        var spy = sinon.spy();
+        polygon.on('handlecollision', spy);
+
+        map.setZoom(3);
+        setTimeout(() => {
+            polygon.startEdit({
+                collision:true
+            });
+            setTimeout(() => {
+                expect(spy.called).to.be.ok();
+                polygon.endEdit();
+                done();
+            }, 100);
+        }, 200);
     });
 
 

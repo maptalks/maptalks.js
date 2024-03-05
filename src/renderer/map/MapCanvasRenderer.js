@@ -6,6 +6,9 @@ import Point from '../../geo/Point';
 import Canvas2D from '../../core/Canvas';
 import MapRenderer from './MapRenderer';
 import Map from '../../map/Map';
+import CollisionIndex from '../../core/CollisionIndex';
+
+const tempCollisionIndex = new CollisionIndex();
 
 /**
  * @classdesc
@@ -1001,12 +1004,32 @@ class MapCanvasRenderer extends MapRenderer {
     drawTops() {
         // clear topLayer
         this.topCtx.clearRect(0, 0, this.topLayer.width, this.topLayer.height);
+        const collisionIndex = tempCollisionIndex;
+        collisionIndex.clear();
         this.map.fire('drawtopstart');
         this.map.fire('drawtops');
         const tops = this.getTopElements();
         let updated = false;
+        const dpr = this.map.getDevicePixelRatio();
+        const geos = [];
         for (let i = 0; i < tops.length; i++) {
-            if (tops[i].render(this.topCtx)) {
+            const top = tops[i];
+            if (top.needCollision && top.needCollision()) {
+                const bbox = top.getRenderBBOX(dpr);
+                if (bbox) {
+                    if (collisionIndex.collides(bbox)) {
+                        const geometry = top.target && top.target._geometry;
+                        if (geometry && geos.indexOf(geometry) === -1) {
+                            geos.push(geometry);
+                            geometry.fire('handlecollision');
+                        }
+                        continue;
+                    } else {
+                        collisionIndex.insertBox(bbox);
+                    }
+                }
+            }
+            if (top.render(this.topCtx)) {
                 updated = true;
             }
         }
