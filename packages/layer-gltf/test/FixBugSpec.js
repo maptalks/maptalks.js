@@ -1771,5 +1771,56 @@ describe('bug', () => {
             expect(height).to.be.eql(50);
             done();
         });
-    })
+    });
+
+    it('outline dislocation(maptalks/issues#619)', (done) => {
+        map.setCenter([130, 30]);
+        const newCenter = map.getCenter();
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gltfMarker = new maptalks.GLTFGeometry(newCenter, {
+            symbol: {
+                scaleX: 40,
+                scaleY: 40,
+                scaleZ: 40,
+                url: 'models/pump.glb'
+            }
+        }).addTo(gltflayer);
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        gltfMarker.on('load', () => {
+            gltfMarker.outline();
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2 + 41, map.height / 2 + 20, 1, 1);
+                expect(pixelMatch([75, 115, 96, 255], pixel)).to.be.eql(true);
+                done();
+            }, 100);
+        });
+    });
+
+    it('model can be clicked(maptalks/issues#619)', (done) => {
+        map.setCenter([130, 30]);
+        const newCenter = map.getCenter();
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gltfMarker = new maptalks.GLTFGeometry(newCenter, {
+            symbol: {
+                scaleX: 40,
+                scaleY: 40,
+                scaleZ: 40,
+                url: 'models/pump.glb'
+            }
+        }).addTo(gltflayer);
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        gltfMarker.on('click', (e) => {
+            expect(e.meshId).to.be.eql(0);
+            expect(e.nodeIndex).to.be.eql(0);
+            done();
+        });
+        gltfMarker.on('load', () => {
+            setTimeout(function () {
+                happen.click(eventContainer, {
+                    'clientX': clickContainerPoint.x + 40,
+                    'clientY': clickContainerPoint.y + 20
+                });
+            }, 100);
+        });
+    });
 });

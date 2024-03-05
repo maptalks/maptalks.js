@@ -277,10 +277,10 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
                 vert : pickingVert,
                 uniforms : [
                     {
-                        name : 'projViewModelMatrix',
+                        name : 'modelViewMatrix',
                         type : 'function',
                         fn : function (context, props) {
-                            return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
+                            return mat4.multiply([], props['viewMatrix'], props['modelMatrix']);
                         }
                     }
                 ]
@@ -561,6 +561,15 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
             this.extentShader = new reshader.MeshShader({
                 vert: sceneVert,
                 frag: extentFrag,
+                uniforms: [
+                    {
+                        name: 'modelViewMatrix',
+                        type: 'function',
+                        fn: (_, props) => {
+                            return mat4.multiply([], props['viewMatrix'], props['modelMatrix']);
+                        }
+                    },
+                ],
                 positionAttribute: 'POSITION',
                 extraCommandProps: {
                     viewport: this.viewport,
@@ -585,7 +594,8 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
         this._outlineScene = this._outlineScene || new reshader.Scene();
         this._outlineScene.setMeshes(outlineMeshes);
         this.renderer.render(this.extentShader, {
-            'projViewMatrix': this._uniforms.projViewMatrix
+            'projMatrix': this._uniforms.projMatrix,
+            'viewMatrix': this._uniforms.viewMatrix
         }, this._outlineScene, fbo);
     }
 
@@ -667,7 +677,8 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
             y,  // 屏幕坐标 y轴的值
             options.tolerance || 3,
             {
-                'projViewMatrix' : map.projViewMatrix,
+                'projMatrix': map.projMatrix,
+                'viewMatrix': map.viewMatrix,
                 'pointSize': this.layer.options['pointSize'] || 1.0
             },
             {

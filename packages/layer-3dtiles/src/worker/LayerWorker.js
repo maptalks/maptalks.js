@@ -358,7 +358,7 @@ export default class BaseLayerWorker {
             if (NEED_COMPRESSED_ATTR[attrName] &&
                 pntsData[attrName].array &&
                 pntsData[attrName].array instanceof Float32Array) {
-                const proj = this.options.projection;
+                // const proj = this.options.projection;
                 let compressed_ratio = 1;
                 if (this._is4326() && attrName === 'POSITION') {
                     compressed_ratio = RATIO;

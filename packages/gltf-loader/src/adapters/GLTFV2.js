@@ -135,7 +135,7 @@ export default class V2 extends GLTFAdapter {
 
     _createDataView(bufferView, bufferData, byteOffset) {
         byteOffset = !byteOffset ? 0 : byteOffset;
-        const start = bufferView.byteOffset + byteOffset;
+        const start = (bufferView.byteOffset || 0) + byteOffset;
         const length = bufferView.byteLength;
         const dataView = new Uint8Array(bufferData, start, length);
         return dataView;

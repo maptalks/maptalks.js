@@ -7,33 +7,41 @@ const options = {
     'imperial': false,
     'once': true,
     'symbol': {
-        'lineColor': '#f00',
+        'lineColor': "#e8542b",
         'lineWidth': 2,
-        'polygonFill': '#ddd',
-        'polygonOpacity': 0.4
+        'polygonFill': '#eee',
+        'polygonOpacity': 0.5
     },
     'vertexSymbol': {
         'markerType': 'ellipse',
-        'markerFill': '#fff',
-        'markerLineColor': '#669955',
-        'markerLineWidth': 3,
-        'markerWidth': 12,
-        'markerHeight': 12,
-        'markerDy': 6
+        'markerFill': '#e8542b',
+        'markerLineColor': '#fff',
+        'markerLineWidth': 2,
+        'markerWidth': 10,
+        'markerHeight': 10,
+        'markerDy': 0
     },
     'labelSymbol': {
-        'markerType': 'square',
-        'markerFill': 'rgb(135,196,240)',
-        'markerFillOpacity': '0.6',
-        'markerDx': -15,
-        'markerVerticalAlignment': 'middle',
-        'markerHorizontalAlignment': 'left',
-        'markerTextFit': 'both',
-        'markerTextFitPadding': [5, 5, 5, 10],
-        'textHorizontalAlignment': 'left',
-        'textSize': 16,
-        'textFill': '#fff',
-        'textDx': -25
+        'boxStyle' : {
+            'padding' : [15, 6],
+            'verticalAlignment' : 'top',
+            'horizontalAlignment' : 'left',
+            'minWidth' : 150,
+            'minHeight' : 30,
+            'symbol' : {
+                'markerType': 'square',
+                'markerFill': 'rgb(60, 60, 60)',
+                'markerFillOpacity' : 0.8,
+                'markerLineColor': '#fff',
+                'markerLineWidth': 2,
+                'textDx': -110
+            }
+        },
+        'textSymbol': {
+            'textFill': '#fff',
+            'textSize': 16,
+            'textVerticalAlignment': 'top'
+        }
     }
 };
 export default class Measure3DTool extends maptalks.DrawTool {
@@ -44,17 +52,11 @@ export default class Measure3DTool extends maptalks.DrawTool {
         this._drawCoordinates = [];
     }
 
-    addTo(gllayer) {
-        const map = gllayer.getMap();
+    addTo(map) {
         if (map) {
             super.addTo(map);
-            this._gllayer = gllayer;
             this._map = map;
             this._addHelperLayer();
-        } else {
-            gllayer.once('add', () => {
-                this.addTo(gllayer);
-            }, this);
         }
         return this;
     }
@@ -78,19 +80,33 @@ export default class Measure3DTool extends maptalks.DrawTool {
             .off('drawend', this._msOnDrawEnd, this);
     }
 
-    _getPickedCoordinate(coordinate) {
-        const identifyData = this._gllayer.identify(coordinate, { includeInternals: false })[0];
-        const pickedPoint = identifyData && identifyData.coordinate;
-        if (pickedPoint) {
-            return new maptalks.Coordinate(identifyData.coordinate);
-        } else {
+    _getPickedCoordinate(e) {
+        const { coordinate, containerPoint } = e;
+        const gllayer = this._map.getLayers((layer) => {
+            return layer.queryTerrainAtPoint;
+        })[0];
+        if (!gllayer) {
             coordinate.z = coordinate.z || 0;
             return coordinate;
         }
+        const identifyData = gllayer.identify(coordinate, { includeInternals: false })[0];
+        const pickedPoint = identifyData && identifyData.coordinate;
+        let pickCoord = null;
+        if (pickedPoint) {
+            pickCoord = new maptalks.Coordinate(identifyData.coordinate);
+        } else {
+            coordinate.z = coordinate.z || 0;
+            pickCoord = coordinate;
+        }
+        if (gllayer.getTerrainLayer()) {
+            const pickedTerrainCoord = gllayer.queryTerrainAtPoint(containerPoint);
+            return pickedTerrainCoord && pickedTerrainCoord.z > pickCoord.z ? pickedTerrainCoord : pickCoord;
+        }
+        return pickCoord;
     }
 
     _msOnDrawStart(e) {
-        const coordinate = this._getPickedCoordinate(e.coordinate);
+        const coordinate = this._getPickedCoordinate(e);
         if (!coordinate) {
             return;
         }
@@ -100,7 +116,7 @@ export default class Measure3DTool extends maptalks.DrawTool {
     }
 
     _msOnDrawVertex(e) {
-        const coordinate = this._getPickedCoordinate(e.coordinate);
+        const coordinate = this._getPickedCoordinate(e);
         if (!coordinate) {
             return;
         }
@@ -110,7 +126,7 @@ export default class Measure3DTool extends maptalks.DrawTool {
     }
 
     _msOnMouseMove(e) {
-        const coordinate = this._getPickedCoordinate(e.coordinate);
+        const coordinate = this._getPickedCoordinate(e);
         if (!coordinate) {
             return;
         }
@@ -124,7 +140,7 @@ export default class Measure3DTool extends maptalks.DrawTool {
     }
 
     _msOnDrawEnd(e) {
-        const coordinate = this._getPickedCoordinate(e.coordinate);
+        const coordinate = this._getPickedCoordinate(e);
         if (!coordinate) {
             return;
         }

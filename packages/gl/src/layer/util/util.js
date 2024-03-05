@@ -9,6 +9,7 @@ import { Coordinate } from 'maptalks';
  * @param  {...Object} src - sources
  * @return {Object}
  */
+const TEMP_VEC = [];
 export function extend(dest) {
     if (supportAssign) {
         Object.assign.apply(Object, arguments);
@@ -50,7 +51,9 @@ export function getGroundTransform(out, map) {
     const scaleX = extent.getWidth(), scaleY = extent.getHeight();
     const localTransform = out;
     mat4.identity(localTransform);
-    mat4.translate(localTransform, localTransform, map.cameraLookAt);
+    const trans = vec3.copy(TEMP_VEC, map.cameraLookAt);
+    trans[2] = 0;//避免地图中心点存在高度情况下，地面跟着抬升
+    mat4.translate(localTransform, localTransform, trans);
     mat4.scale(localTransform, localTransform, vec3.set(SCALE, scaleX, scaleY, 1));
     return localTransform;
 }

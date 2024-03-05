@@ -1,13 +1,12 @@
 import * as maptalks from 'maptalks';
 import Measure3DTool from './Measure3DTool';
-import { PointLayer } from '@maptalks/vt';
 
 const MEASURE_HEIGHT_NAMES = [['直线距离', '垂直高度', '水平距离'], ['spatial distance', 'vertical height', 'horizontal distance']];
 export default class Height3DTool extends Measure3DTool {
 
     _addHelperLayer() {
         super._addHelperLayer();
-        this._markerLayer = new PointLayer(maptalks.INTERNAL_LAYER_PREFIX + '_height3dtool_marker').addTo(this._map).bringToFront();
+        this._markerLayer = new maptalks.VectorLayer(maptalks.INTERNAL_LAYER_PREFIX + '_height3dtool_marker', { enableAltitude: true }).addTo(this._map).bringToFront();
         this._helperLayer = new maptalks.VectorLayer(maptalks.INTERNAL_LAYER_PREFIX + '_height3dtool', { enableAltitude: true }).addTo(this._map).bringToFront();
     }
 
@@ -62,25 +61,27 @@ export default class Height3DTool extends Measure3DTool {
             const language = this.options['language'] === 'zh-CN' ? 0 : 1;
             const unitContent = this._getUnitContent(distance);
             const content = MEASURE_HEIGHT_NAMES[language][i] + ':' + unitContent;
-            const labelSymbol = maptalks.Util.extend({ textName: content }, this.options.labelSymbol);
-            if (i < 2) {
-                labelSymbol['markerDx'] = 20;
-                labelSymbol['textDx'] = 25;
-                labelSymbol['markerHorizontalAlignment'] = 'right';
-                labelSymbol['textHorizontalAlignment'] = 'right';
-            }
-            const labelCoordinate = i === 1 ? from : new maptalks.Coordinate((from.x + to.x) / 2, (from.y + to.y) / 2, (from.z + to.z) / 2);
             const geometryCount = this._helperLayer.getGeometries().length;
             const id = 'label' + geometryCount + '_' + i;
+            const options = JSON.parse(JSON.stringify(this.options.labelSymbol));
+            options.id = id;
+            if (i < 2) {
+                options.boxStyle.symbol.textDx *= -1;
+            }
+            const labelCoordinate = i === 1 ? from : new maptalks.Coordinate((from.x + to.x) / 2, (from.y + to.y) / 2, (from.z + to.z) / 2);
             const label = this._markerLayer.getGeometryById(id);
+            const markerId = `${id}_marker`;
+            const marker = this._markerLayer.getGeometryById(markerId);
             if (!label) {
+                new maptalks.Label(content, labelCoordinate, options).addTo(this._markerLayer);
                 new maptalks.Marker(labelCoordinate, {
-                    id,
-                    symbol: [this.options['vertexSymbol'], labelSymbol]
+                    id: markerId,
+                    symbol: this.options['vertexSymbol']
                 }).addTo(this._markerLayer);
             } else {
-                label.setSymbol([this.options['vertexSymbol'], labelSymbol]);
+                label.setContent(content);
                 label.setCoordinates(labelCoordinate);
+                marker.setCoordinates(labelCoordinate);
             }
         }
     }

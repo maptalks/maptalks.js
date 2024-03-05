@@ -305,6 +305,22 @@ describe('GLTF', () => {
                 });
             });
         });
+
+        it('fix the source image could not be decode', (done) => {
+            const root = 'models/rw';
+            gltf.Ajax.getArrayBuffer(root + '/RW_nanren_1_1663921653346.glb', {}).then(json => {
+                const loader = new gltf.GLTFLoader(root, { buffer : json.data, byteOffset : 0 }, { requestImage : request });
+                loader.load().then(gltf => {
+                    expect(gltf.scene).to.be.eql(0);
+                    const textures = gltf.textures;
+                    expect(textures.length).to.be.eql(1);
+                    const materials = gltf.materials;
+                    expect(materials.length).to.be.eql(1);
+                    expect(textures[0].image.array.length).to.be.eql(4194304);
+                    done();
+                });
+            });
+        });
     });
 });
 describe('gltf v1', () => {

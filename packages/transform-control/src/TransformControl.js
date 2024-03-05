@@ -655,7 +655,10 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
         this.renderer = layerRenderer.renderer;
         this._picking = this.layerRenderer.getFBORayPicking();
         this._uniforms = {
-            'projViewMatrix' : map.projViewMatrix
+            'projViewMatrix' : map.projViewMatrix,
+            'projMatrix': map.projMatrix,
+            'viewMatrix': map.viewMatrix,
+            'pointSize': 1.0
         };
         layer.on('renderend', this.render, this);
         layer.on('resizeCanvas', this._resize, this);
@@ -674,7 +677,7 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
         }
         const dpr = map.getDevicePixelRatio();
         const x = containerPoint.x * dpr, y = containerPoint.y * dpr;
-        const uniforms = { projViewMatrix: this.map.projViewMatrix, pointSize: 1.0 };
+        const uniforms = this._uniforms;
         const inGroup = this.layerRenderer.canvas.gl && this.layerRenderer.canvas.gl.wrap;
         if (this._needRefreshPicking || inGroup || !this._pickTask || this._pickTask !== task) {
             this._picking.render(meshes, uniforms, true);

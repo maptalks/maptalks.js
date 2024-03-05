@@ -1316,6 +1316,52 @@ describe('gl tests', () => {
             });
             group.addTo(map);
         });
+
+        it('Measure3DTool support terrain', (done) => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12,
+                pitch: 60
+            });
+            const skinLayers = [
+                new maptalks.TileLayer('base', {
+                    urlTemplate: '/fixtures/google-256/{z}/{x}/{y}.jpg'
+                })
+            ];
+            const terrain = {
+                type: 'mapbox',
+                tileSize: 512,
+                spatialReference: 'preset-vt-3857',
+                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
+                tileStackDepth: 0
+            };
+            const group = new maptalks.GroupGLLayer('group', skinLayers, { terrain });
+            const center = map.getCenter();
+            let measuretool = null;
+            const containerPoint = new maptalks.Point(map.width / 2, map.height / 2);
+            function measure() {
+                measuretool.fire('drawstart', { coordinate: center, containerPoint });
+                measuretool.fire('mousemove', { coordinate: center.add(0.001, 0), containerPoint: containerPoint.add(10, 0) });
+                const result = measuretool.getMeasureResult();
+                expect(result.toFixed(2)).to.be.eql(16491.51);
+                measuretool.clear();
+                done();
+            }
+            group.once('terrainlayercreated', () => {
+                const terrainLayer = group.getTerrainLayer();
+                terrainLayer.once('terrainreadyandrender', () => {
+                    setTimeout(function() {
+                        measuretool = new maptalks.Height3DTool({
+                            enable: true
+                        }).addTo(map);
+                        setTimeout(function () {
+                            measure();
+                        }, 100);
+                    }, 100);
+                });
+            });
+            group.addTo(map);
+        });
     });
 
     context('skybox tests', () => {

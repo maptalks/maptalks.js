@@ -631,7 +631,7 @@ describe('add analysis', () => {
 
     it('add measure tool', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
         const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: modelUrl
@@ -649,7 +649,7 @@ describe('add analysis', () => {
         marker.on('load', () => {
             measuretool = new maptalks.Height3DTool({
                 enable: true
-            }).addTo(gllayer);
+            }).addTo(map);
             setTimeout(function () {
                 measure();
             }, 100);
