@@ -102,6 +102,7 @@ class GroundPainter {
             return;
         }
         const symbol = groundConfig && groundConfig.symbol;
+        const urlModifier = groundConfig.urlModifier;
         if (!symbol) {
             this._polygonFill = [1, 1, 1, 1];
             this._polygonOpacity = 1;
@@ -124,7 +125,7 @@ class GroundPainter {
                         this._polygonPatternFile['_pattern_src'] = polygonPatternFile;
                         this.setToRedraw();
                     };
-                    image.src = polygonPatternFile;
+                    image.src = urlModifier && urlModifier(polygonPatternFile) || polygonPatternFile;
                 }
             } else if (this._polygonPatternFile) {
                 this._polygonPatternFile.destroy();
@@ -443,6 +444,8 @@ class GroundPainter {
         }
         const material = {};
         let hasTexture = false;
+        const ground = this._layer.getGroundConfig();
+        this._loader.setURLModifier(ground.urlModifier);
         for (const p in materialConfig) {
             if (hasOwn(materialConfig, p)) {
                 if (p.indexOf('Texture') > 0) {

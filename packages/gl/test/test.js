@@ -1474,6 +1474,97 @@ describe('gl tests', () => {
             group.addTo(map);
         });
 
+        it('support lit ground with urlModifier', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            const sceneConfig = {
+                environment: {
+                    enable: true,
+                    mode: 1,
+                    level: 0
+                },
+                ground: {
+                    enable: true,
+                    renderPlugin: {
+                        type: 'lit'
+                    },
+                    symbol: {
+                        material: {
+                            'baseColorFactor': [1, 1, 1, 1],
+                            'baseColorTexture': '/resources/skybox_bridge/posx.jpg1'
+                        },
+                        polygonFill: [1, 1, 1, 1],
+                        polygonOpacity: 1
+                    },
+                    urlModifier: (url) => {
+                        if (url.indexOf('jpg1') > 0) {
+                            return url.replaceAll('jpg1', 'jpg');
+                        }
+                        return url;
+                    }
+                },
+                postProcess: {
+                    enable: true,
+                }
+            };
+            const group = new maptalks.GroupGLLayer('group', [], { sceneConfig });
+            group.addTo(map);
+            setTimeout(() => {
+                const canvas = map.getRenderer().canvas;
+                const ctx = canvas.getContext('2d');
+                const data = ctx.getImageData(192, 128, 1, 1);
+                const expected = new Uint8ClampedArray([74, 96, 114, 255]);
+                expect(data.data).to.be.eql(expected);
+                done();
+            }, 600);
+        });
+
+        it('support fill ground with urlModifier', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            const sceneConfig = {
+                environment: {
+                    enable: true,
+                    mode: 1,
+                    level: 0
+                },
+                ground: {
+                    enable: true,
+                    renderPlugin: {
+                        type: 'fill'
+                    },
+                    symbol: {
+                        polygonPatternFile: '/resources/skybox_bridge/posx.jpg1',
+                        polygonFill: [1, 1, 1, 1],
+                        polygonOpacity: 1
+                    },
+                    urlModifier: (url) => {
+                        if (url.indexOf('jpg1') > 0) {
+                            return url.replaceAll('jpg1', 'jpg');
+                        }
+                        return url;
+                    }
+                },
+                postProcess: {
+                    enable: true,
+                }
+            };
+            const group = new maptalks.GroupGLLayer('group', [], { sceneConfig });
+            group.addTo(map);
+            setTimeout(() => {
+                const canvas = map.getRenderer().canvas;
+                const ctx = canvas.getContext('2d');
+                const data = ctx.getImageData(192, 128, 1, 1);
+                const expected = new Uint8ClampedArray([62, 84, 102, 255]);
+                expect(data.data).to.be.eql(expected);
+                done();
+            }, 800);
+        });
+
         it('support skybox with 6 images', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
