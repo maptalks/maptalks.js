@@ -583,23 +583,31 @@ function loopRequests() {
 
 function thenMethod(bitmap) {
     let { width, height } = bitmap;
+    let resized = false;
     if (!isPowerOfTwo(width)) {
         width = floorPowerOfTwo(width);
+        resized = true;
     }
     if (!isPowerOfTwo(height)) {
         height = floorPowerOfTwo(height);
+        resized = true;
     }
     const maxSize = this.options['maxTextureSize'];
     if (maxSize) {
         width = Math.min(maxSize, width);
+        resized = resized || bitmap.width !== width;
         height = Math.min(maxSize, height);
+        resized = resized || bitmap.height !== height;
+    }
+    if (!resized) {
+        return { width, height, data: bitmap };
     }
     offCanvas.width = width;
     offCanvas.height = height;
     offCtx.drawImage(bitmap, 0, 0, width, height);
     bitmap.close();
     const imgData = offCtx.getImageData(0, 0, width, height);
-    return { width, height, data : new Uint8Array(imgData.data) };
+    return { width, height, data: new Uint8Array(imgData.data) };
 }
 
 function isPowerOfTwo(value) {

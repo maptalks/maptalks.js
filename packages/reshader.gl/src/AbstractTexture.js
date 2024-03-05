@@ -96,10 +96,11 @@ class AbstractTexture {
                 // delete persistent data to save memories
                 if (this.config.data) {
                     // imageBitmap
-                    if (this.config.data instanceof ImageBitmap) {
-                        this.config.data.close();
+                    if (!(this.config.data instanceof ImageBitmap)) {
+                        this.config.data = [];
+                        // this.config.data.close();
                     }
-                    this.config.data = [];
+
                 }
                 if (this.config.faces) {
                     this.config.faces = [];
@@ -144,6 +145,10 @@ class AbstractTexture {
         if (this.config && this.config.url) {
             URL.revokeObjectURL(this.config.url);
             this.resLoader.disposeRes(this.config.url);
+        }
+        if (this.config && (this.config.data instanceof ImageBitmap)) {
+            this.config.data.close()
+            this.config.data = [];
         }
         if (this._texture && !this._texture[KEY_DISPOSED]) {
             if (this._texture[REF_COUNT_KEY]) {
