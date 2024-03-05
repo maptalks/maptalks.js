@@ -1018,14 +1018,14 @@ class MapCanvasRenderer extends MapRenderer {
                 const bbox = top.getRenderBBOX(dpr);
                 if (bbox) {
                     if (collisionIndex.collides(bbox)) {
+                        const geometry = top.target && top.target._geometry;
+                        if (geometry && geos.indexOf(geometry) === -1) {
+                            geos.push(geometry);
+                            geometry.fire('handlecollision');
+                        }
                         continue;
                     } else {
                         collisionIndex.insertBox(bbox);
-                    }
-                    const geometry = top.target && top.target._geometry;
-                    if (geometry && geos.indexOf(geometry) === -1) {
-                        geos.push(geometry);
-                        geometry.fire('handlecollision');
                     }
                 }
             }
