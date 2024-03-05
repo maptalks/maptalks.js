@@ -178,8 +178,8 @@ export default class PointPack extends VectorPack {
             }
             const fontGlphy = glyphAtlas.positions[glyph.font];
             const { text } = glyph;
-            for (let i = 0; i < text.length; i++) {
-                if (!fontGlphy[text.charCodeAt(i)]) {
+            for (const codePoint of text) {
+                if (!fontGlphy[codePoint.codePointAt(0)]) {
                     return false;
                 }
             }
@@ -215,8 +215,8 @@ export default class PointPack extends VectorPack {
         if (iconGlyph.glyph && !this.options['atlas']) {
             const { font, text } = iconGlyph.glyph;
             const fontGlphy = glyphReqs[font] = glyphReqs[font] || {};
-            for (let i = 0; i < text.length; i++) {
-                fontGlphy[text.charCodeAt(i)] = 1;
+            for (const codePoint of text) {
+                fontGlphy[codePoint.codePointAt(0)] = 1;
                 //TODO mapbox-gl 这里对 vertical 字符做了特殊处理
             }
             if (this._textPlacement === 'line') {

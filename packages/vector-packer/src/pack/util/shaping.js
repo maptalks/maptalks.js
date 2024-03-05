@@ -130,7 +130,7 @@ function determineAverageLineWidth(logicalInput, //: string,
     let totalWidth = 0;
 
     for (let index = 0; index < logicalInput.length; index++) {
-        const glyph = glyphs[logicalInput.charCodeAt(index)];
+        const glyph = glyphs[logicalInput.codePointAt(index)];
         if (!glyph)
             continue;
         totalWidth += glyph.metrics.advance + spacing;
@@ -240,8 +240,9 @@ function determineLineBreaks(logicalInput, //: string,
     let currentX = 0;
 
     for (let i = 0; i < logicalInput.length; i++) {
-        const codePoint = logicalInput.charCodeAt(i);
+        const codePoint = logicalInput.codePointAt(i);
         const glyph = glyphs[codePoint];
+        if (!glyph) continue;
 
         if (glyph && !whitespace[codePoint])
             currentX += glyph.metrics.advance + spacing;
@@ -258,7 +259,7 @@ function determineLineBreaks(logicalInput, //: string,
                     currentX,
                     targetWidth,
                     potentialLineBreaks,
-                    calculatePenalty(codePoint, logicalInput.charCodeAt(i + 1)),
+                    calculatePenalty(codePoint, logicalInput.codePointAt(i + 1)),
                     false));
         }
     }
@@ -339,7 +340,7 @@ function shapeLines(shaping, //: Shaping,
 
         const lineStartIndex = positionedGlyphs.length;
         for (let i = 0; i < line.length; i++) {
-            const codePoint = line.charCodeAt(i);
+            const codePoint = line.codePointAt(i);
             const glyph = glyphs[codePoint];
 
             if (!glyph) continue;

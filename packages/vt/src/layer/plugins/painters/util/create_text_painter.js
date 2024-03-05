@@ -704,8 +704,8 @@ function getEntryKey(mesh, idx, label) {
     // const point = vec4.scale(ENTRY_WORLD_POS, ENTRY_WORLD_POS);
     // const posKey = Math.floor(point[0]) * Math.floor(point[1]) + (point[2] ? ('-' + Math.floor(point[2])) : '');
     let codeSum = 0;
-    for (let i = 0; i < label.length; i++) {
-        codeSum += label.charCodeAt(i);
+    for (const codePoint of label) {
+        codeSum += codePoint.codePointAt(0);
     }
     // if (getLabelContent(mesh, idx) === '湖北') {
     //     console.log('湖北', Math.floor(point[0]), Math.floor(point[1]), Math.floor(point[2]), codeSum);

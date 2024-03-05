@@ -1397,7 +1397,7 @@ function hashCode(s) {
     }
     let c;
     for (let i = 0; i < strlen; i++) {
-        c = s.charCodeAt(i);
+        c = s.codePointAt(i);
         hash = ((hash << 5) - hash) + c;
         hash = hash & hash; // Convert to 32bit integer
     }

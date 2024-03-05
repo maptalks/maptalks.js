@@ -111,10 +111,10 @@ export default class GlyphRequestor {
             tinySDF = entry.tinySDF = new TinySDF(24, buffer, 8, .25, fontFamily, fontWeight, textStyle);
 
         }
-        const chr = String.fromCharCode(charCode);
+        const chr = String.fromCodePoint(charCode);
         const metrics = tinySDF.ctx.measureText(chr);
         const width = Math.round(metrics.width);
-        const data = tinySDF.draw(String.fromCharCode(charCode), width + buffer * 2, 24 + buffer * 2);
+        const data = tinySDF.draw(chr, width + buffer * 2, 24 + buffer * 2);
 
         if (DEBUG_COUNTER < 4) {
             const sdfDebug = typeof document !== 'undefined' && document.getElementById('sdf-debug-' + DEBUG_COUNTER++);
@@ -132,7 +132,7 @@ export default class GlyphRequestor {
         //     bitmap: {
         //         width : 30,
         //         height : 30,
-        //         data : tinySDF.draw(String.fromCharCode(charCode))
+        //         data : tinySDF.draw(String.fromCodePoint(charCode))
         //     },
         //     metrics: {
         //         width: 24,

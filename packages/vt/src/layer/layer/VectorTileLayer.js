@@ -239,13 +239,11 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
 
     getWorkerOptions() {
-        const map = this.getMap();
         return {
             debug: this.options['debug'],
             debugTile: this.options['debugTile'],
             altitudeProperty: this.options['altitudeProperty'],
             tileSize: this.getTileSize().width,
-            baseRes: map.getGLRes(),
             //default render时，this._vtStyle有可能被default render设值
             style: this.isDefaultRender() ? { style: [], featureStyle: [] } : this._getComputedStyle(),
             features: this.options.debugTileData || this.options.features,

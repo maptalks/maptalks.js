@@ -90,12 +90,12 @@ export const verticalizedCharacterMap = {
     '｣': '﹂'
 };
 
-export default function verticalizePunctuation(input) {
+export default function verticalizePunctuation(str) {
     let output = '';
-
+    const input = Array.from(str);
     for (let i = 0; i < input.length; i++) {
-        const nextCharCode = input.charCodeAt(i + 1) || null;
-        const prevCharCode = input.charCodeAt(i - 1) || null;
+        const nextCharCode = input[i + 1].codePointAt(0) || null;
+        const prevCharCode = input[i - 1].codePointAt(0) || null;
 
         const canReplacePunctuation = (
             (!nextCharCode || !charHasRotatedVerticalOrientation(nextCharCode) || verticalizedCharacterMap[input[i + 1]]) &&
