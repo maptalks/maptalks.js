@@ -206,7 +206,7 @@ export default class EditHandle extends Eventable(Class) {
         return target && target.options && target.options.collision;
     }
 
-    getBBOX(dpr) {
+    getRenderBBOX(dpr) {
         const { target, map } = this;
         if (!target || !target.options || !map) {
             return null;

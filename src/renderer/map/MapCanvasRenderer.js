@@ -1015,7 +1015,7 @@ class MapCanvasRenderer extends MapRenderer {
         for (let i = 0; i < tops.length; i++) {
             const top = tops[i];
             if (top.needCollision && top.needCollision()) {
-                const bbox = top.getBBOX(dpr);
+                const bbox = top.getRenderBBOX(dpr);
                 if (bbox) {
                     if (collisionIndex.collides(bbox)) {
                         continue;
