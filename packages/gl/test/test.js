@@ -1414,6 +1414,66 @@ describe('gl tests', () => {
             const group = new maptalks.GroupGLLayer('group', [], { sceneConfig });
             group.addTo(map);
         });
+
+        it('support ambient with urlModifier', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12,
+                lights: {
+                    ambient: {
+                        resource: {
+                            url: './resources/env1.hdr',
+                            prefilterCubeSize: 32
+                        }
+                    },
+                    urlModifier: (url) => {
+                        if (url === './resources/env1.hdr') {
+                            return './resources/env.hdr';
+                        }
+                        return url
+                    }
+                }
+            });
+            const sceneConfig = {
+                environment: {
+                    enable: true,
+                    mode: 1,
+                    level: 0
+                },
+                ground: {
+                    enable: true,
+                    renderPlugin: {
+                        type: 'lit'
+                    },
+                    symbol: {
+                        material: {
+                            'baseColorFactor': [1, 1, 1, 1],
+                            'roughnessFactor': 0.,
+                            'metalnessFactor': 1,
+                            'outputSRGB': 0,
+                            'hsv': [0, 0, 0],
+                            'contrast': 1.5
+                        },
+                        polygonFill: [1, 1, 1, 1],
+                        polygonOpacity: 1
+                    }
+                },
+                postProcess: {
+                    enable: true,
+                }
+            };
+            map.on('updatelights', () => {
+                setTimeout(() => {
+                    const resources = map.getLightManager().getAmbientResource();
+                    expect(resources.prefilterMap).to.be.ok();
+                    expect(resources.sh).to.be.ok();
+                    done();
+                }, 200)
+            });
+            const group = new maptalks.GroupGLLayer('group', [], { sceneConfig });
+            group.addTo(map);
+        });
+
         it('support skybox with 6 images', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
@@ -1439,6 +1499,84 @@ describe('gl tests', () => {
                 directional: {
                     color : [0.1, 0.1, 0.1],
                     direction : [1, 0, -1]
+                }
+            };
+            map.setLights(lights);
+            map.setPitch(80);
+            const sceneConfig = {
+                environment: {
+                    enable: true,
+                    mode: 1,
+                    level: 0
+                },
+                ground: {
+                    enable: true,
+                    renderPlugin: {
+                        type: 'lit'
+                    },
+                    symbol: {
+                        material: {
+                            'baseColorFactor': [1, 1, 1, 1],
+                            'roughnessFactor': 0.,
+                            'metalnessFactor': 1,
+                            'outputSRGB': 0,
+                            'hsv': [0, 0, 0],
+                            'contrast': 1.5
+                        },
+                        polygonFill: [1, 1, 1, 1],
+                        polygonOpacity: 1
+                    }
+                },
+                postProcess: {
+                    enable: true,
+                }
+            };
+            map.on('updatelights', () => {
+                setTimeout(() => {
+                    const canvas = map.getRenderer().canvas;
+                    const ctx = canvas.getContext('2d');
+                    const data = ctx.getImageData(192, 128, 5, 5);
+                    const expected = new Uint8ClampedArray([238, 237, 205, 255, 236, 235, 203, 255, 234, 234, 201, 255, 233, 232, 200, 255, 231, 231, 199, 255, 238, 239, 207, 255, 236, 237, 205, 255, 235, 236, 204, 255, 234, 235, 203, 255, 233, 234, 203, 255, 238, 241, 209, 255, 236, 239, 207, 255, 235, 238, 207, 255, 235, 238, 207, 255, 235, 238, 206, 255, 238, 243, 211, 255, 236, 241, 209, 255, 236, 241, 209, 255, 236, 241, 210, 255, 237, 241, 210, 255, 236, 244, 214, 255, 235, 243, 213, 255, 235, 242, 213, 255, 235, 242, 213, 255, 235, 242, 213, 255]);
+                    expect(data.data).to.be.eql(expected);
+                    done();
+                }, 200)
+            });
+            const group = new maptalks.GroupGLLayer('group', [], { sceneConfig });
+            group.addTo(map);
+
+        });
+
+        it('support skybox with 6 images with urlModifier', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            const lights = {
+                ambient: {
+                    resource: {
+                        // url: './resources/venice_sunset_2k.hdr',
+                        url: {
+                            front: '/resources/skybox_bridge/posx.jpg1',
+                            back: '/resources/skybox_bridge/negx.jpg1',
+                            right: '/resources/skybox_bridge/posy.jpg1',
+                            left: '/resources/skybox_bridge/negy.jpg1',
+                            top: '/resources/skybox_bridge/posz.jpg1',
+                            bottom: '/resources/skybox_bridge/negz.jpg1'
+                        },
+                        prefilterCubeSize: 512,
+                    },
+                    exposure: 1.5,
+                    orientation: 0
+                },
+                directional: {
+                    color : [0.1, 0.1, 0.1],
+                    direction : [1, 0, -1]
+                },
+                urlModifier: (url) => {
+                    if (url.indexOf('jpg1') > 0) {
+                        return url.replaceAll('jpg1', 'jpg');
+                    }
+                    return url;
                 }
             };
             map.setLights(lights);

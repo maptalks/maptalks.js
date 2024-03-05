@@ -11,6 +11,10 @@ class ResourceLoader {
         this.resources = {};
     }
 
+    setURLModifier(urlModifier) {
+        this.urlModifier = urlModifier;
+    }
+
     get(url) {
         if (Array.isArray(url)) {
             return this._loadImages(url);

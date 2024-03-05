@@ -27,6 +27,7 @@ class LightManager {
 
     setConfig(config) {
         const oldConfig = this._config;
+        this._urlModifier = config.urlModifier;
         this._config = JSON.parse(JSON.stringify(config));
         let ambientUpdate = false;
         if (!config || !config.ambient || !config.ambient.resource) {
@@ -89,6 +90,7 @@ class LightManager {
         const onerror = function() {
             throw new Error(`skybox image with url(${this.src}) failed to load, please check the image's url.`);
         }
+        const urlModifier = this._urlModifier;
         if (url.top || url.nx) {
             // ambient with 6 images
             const { front, back, right, left, top, bottom } = url;
@@ -104,7 +106,7 @@ class LightManager {
                 const img = new Image();
                 img.onload = onload;
                 img.onerror = onerror;
-                img.src = envUrls[i];
+                img.src = urlModifier && urlModifier(envUrls[i]) || envUrls[i];
                 images[i] = img;
             }
         } else {
@@ -116,6 +118,7 @@ class LightManager {
                 // format: 'rgba',
                 flipY: true
             };
+            this._loader.setURLModifier(urlModifier);
             this._hdr = new reshader.Texture2D(
                 props,
                 this._loader
