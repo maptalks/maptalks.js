@@ -835,7 +835,7 @@ class UIComponent extends Eventable(Class) {
             if (this.options['rotateWithMap'] && bearing) {
                 r += ` rotateZ(${Math.round(-bearing)}deg)`;
             }
-            return 'translate3d(' + p.x + 'px,' + p.y + 'px, 0px)' + r;
+            return 'translate3d(' + Math.fround(p.x) + 'px,' + Math.fround(p.y) + 'px, 0px)' + r;
         } else {
             return 'translate(' + p.x + 'px,' + p.y + 'px)';
         }
