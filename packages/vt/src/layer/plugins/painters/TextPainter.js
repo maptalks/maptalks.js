@@ -454,7 +454,8 @@ export default class TextPainter extends CollisionPainter {
         }
         const pitch = map.getPitch();
         const bearing = map.getBearing();
-        const { lineTextPitch: linePitch, lineTextBearing: lineBearing } = mesh.properties;
+        const zoom = map.getZoom();
+        const { lineTextPitch: linePitch, lineTextBearing: lineBearing, lineTextZoom: lineZoom } = mesh.properties;
 
         // this._counter++;
 
@@ -485,7 +486,7 @@ export default class TextPainter extends CollisionPainter {
         if (enableCollision) {
             visElemts.count = 0;
         }
-        const needUpdate = linePitch === undefined || Math.abs(pitch - linePitch) > 2 || Math.abs(bearing - lineBearing) > 2;
+        const needUpdate = linePitch === undefined || Math.abs(pitch - linePitch) > 2 || Math.abs(bearing - lineBearing) > 2 || lineZoom !== zoom;
         this.forEachBox(mesh, (mesh, meshBoxes, mvpMatrix, labelIndex) => {
             const { start, end } = meshBoxes[0];
             let visible = visCache[labelIndex];
@@ -515,6 +516,7 @@ export default class TextPainter extends CollisionPainter {
         if (needUpdate) {
             mesh.properties.lineTextPitch = pitch;
             mesh.properties.lineTextBearing = bearing;
+            mesh.properties.lineTextZoom = zoom;
         }
         const aAltitudeArr = mesh.geometry.properties.aAltitude;
         if (aAltitudeArr && aAltitudeArr.dirty) {
