@@ -9,7 +9,6 @@ import { interpolated } from '@maptalks/function-type';
 import Color from 'color';
 import { DEFAULT_TEX_WIDTH } from '@maptalks/vector-packer';
 
-const EMPTY_UV_ORIGIN = [0, 0];
 const SCALE = [1, 1, 1];
 const DEFAULT_POLYGON_FILL = [1, 1, 1, 1];
 const EMPTY_UV_OFFSET = [0, 0];
@@ -181,18 +180,19 @@ class MeshPainter extends Painter {
         Object.defineProperty(mesh.uniforms, 'uvOrigin', {
             enumerable: true,
             get: () => {
-                const offset = this._computeUVOffset(uvOffsetUniform, symbolIndex, tilePoint, tileResolution, pointToMeter, isVectorTile);
-                return vec2.set(uvOriginUniform, offset[0] - offset[0] % 1, offset[1] - offset[1] % 1)
+                const offset = this._computeUVOffset(uvOriginUniform, symbolIndex, tilePoint, tileResolution, pointToMeter, isVectorTile);
+                return offset;
             }
         });
-        const uvOffsetUniform = [];
-        Object.defineProperty(mesh.uniforms, 'uvOffset', {
-            enumerable: true,
-            get: () => {
-                const offset = this._computeUVOffset(uvOffsetUniform, symbolIndex, tilePoint, tileResolution, pointToMeter, isVectorTile);
-                return vec2.set(uvOriginUniform, offset[0] % 1, offset[1] % 1);
-            }
-        });
+        // const uvOffsetUniform = [];
+        // Object.defineProperty(mesh.uniforms, 'uvOffset', {
+        //     enumerable: true,
+        //     get: () => {
+        //         const offset = this._computeUVOffset(uvOffsetUniform, symbolIndex, tilePoint, tileResolution, pointToMeter, isVectorTile);
+        //         return vec2.set(uvOriginUniform, 0, 0);
+        //     }
+        // });
+        mesh.setUniform('uvOffset', [0, 0]);
         Object.defineProperty(mesh.uniforms, 'hasAlpha', {
             enumerable: true,
             get: () => {
@@ -221,7 +221,9 @@ class MeshPainter extends Painter {
     _computeUVOffset(out, symbolIndex, tilePoint, tileResolution, pointToMeter, isVectorTile) {
         if (this.dataConfig.topUVMode === 1) {
             // 如果顶面纹理是ombb，不需要偏移
-            return EMPTY_UV_ORIGIN;
+            out[0] = 0;
+            out[1] = 0;
+            return out;
         }
         const map = this.getMap();
         const symbol = this.getSymbol(symbolIndex);

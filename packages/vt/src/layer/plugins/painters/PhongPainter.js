@@ -1,3 +1,4 @@
+import * as maptalks from 'maptalks';
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import { extend, hasOwn } from '../Util';
@@ -157,11 +158,18 @@ class PhongPainter extends MeshPainter {
         if (this.material) {
             this.material.dispose();
         }
+        const isVectorTile = this.layer instanceof maptalks.TileLayer;
         const materialConfig = this.getSymbols()[0].material;
         const material = {};
         for (const p in materialConfig) {
             if (hasOwn(materialConfig, p)) {
                 material[p] = materialConfig[p];
+                if (p === 'uvRotation') {
+                    material[p] = material[p] * Math.PI / 180;
+                    if (!isVectorTile) {
+                        material[p] *= -1;
+                    }
+                }
             }
         }
         this.material = new reshader.PhongMaterial(material);

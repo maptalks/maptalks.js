@@ -6,7 +6,6 @@ const material = {
     'roughnessFactor': 0,
     'metalnessFactor': 1,
     'noiseTexture': 'file://' + path.resolve(__dirname, '../../../resources/noise.png'),
-    'uvRotation': 60 * Math.PI / 180,
     'uvScale': [0.8, 0.7],
     'uvOffset': [0.1, 0.2],
     'outputSRGB': 0

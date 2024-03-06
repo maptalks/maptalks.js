@@ -1,3 +1,4 @@
+import * as maptalks from 'maptalks';
 import { reshader, mat4 } from '@maptalks/gl';
 import { extend, hasOwn, isNil } from '../../Util';
 import MeshPainter from '../MeshPainter';
@@ -294,6 +295,7 @@ class StandardPainter extends MeshPainter {
                 extend(symbolMaterial, config);
             }
         }
+        const isVectorTile = this.layer instanceof maptalks.TileLayer;
         const dataConfig = this.dataConfig;
         const materialConfig = config || this.getSymbols()[0].material;
         const material = {};
@@ -352,6 +354,12 @@ class StandardPainter extends MeshPainter {
                     hasTexture = true;
                 } else {
                     material[p] = materialConfig[p];
+                    if (p === 'uvRotation') {
+                        material[p] = Math.PI * material[p] / 180;
+                        if (!isVectorTile) {
+                            material[p] *= -1;
+                        }
+                    }
                 }
             }
         }
