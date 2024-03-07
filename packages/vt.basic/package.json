@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/vt.basic",
-  "version": "0.94.0",
+  "version": "0.95.0",
   "description": "Basic rendering plugin for maptalks VectorTileLayer",
   "main": "dist/maptalks.vt.basic.js",
   "private": true,
