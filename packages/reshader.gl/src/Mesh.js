@@ -266,7 +266,7 @@ class Mesh {
                                     return materialUniforms[p];
                                 }
                             });
-                        } else {
+                        } else if (this._realUniforms[p] === undefined) {
                             this._realUniforms[p] = materialUniforms[p];
                         }
                     }
@@ -288,7 +288,9 @@ class Mesh {
             if (matDirtyProps) {
                 const materialUniforms = this._material.getUniforms(regl);
                 for (const p of matDirtyProps) {
-                    this._realUniforms[p] = materialUniforms[p];
+                    if (!Object.getOwnPropertyDescriptor(this._realUniforms, p)) {
+                        this._realUniforms[p] = materialUniforms[p];
+                    }
                 }
                 this._material._clearDirtyProps();
             }
