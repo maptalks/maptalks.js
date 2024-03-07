@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/transform-control",
-  "version": "0.97.1",
+  "version": "0.97.2",
   "description": "a plugin to control model's translate、rotation and scale",
   "license": "UNLICENSED",
   "repository": {
@@ -43,8 +43,8 @@
     "rollup-plugin-terser": "^5.3.1"
   },
   "dependencies": {
-    "@maptalks/gl": "^0.97.1",
-    "@maptalks/gltf-loader": "^0.97.0"
+    "@maptalks/gl": "^0.97.2",
+    "@maptalks/gltf-loader": "^0.97.2"
   },
   "gitHead": "9eeea4807723d460fa7e09969c6556d53f6bed84"
 }

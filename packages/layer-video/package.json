@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/video-layer",
-  "version": "0.97.1",
+  "version": "0.97.2",
   "description": "A maptalks Layer to render video",
   "license": "UNLICENSED",
   "repository": {
@@ -26,7 +26,7 @@
     "prepare": "npm run lint && npm run build"
   },
   "devDependencies": {
-    "@maptalks/gl": "^0.97.1",
+    "@maptalks/gl": "^0.97.2",
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
     "@rollup/plugin-replace": "4.0.0",
