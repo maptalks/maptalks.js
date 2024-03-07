@@ -288,9 +288,7 @@ class Mesh {
             if (matDirtyProps) {
                 const materialUniforms = this._material.getUniforms(regl);
                 for (const p of matDirtyProps) {
-                    if (!Object.getOwnPropertyDescriptor(this._realUniforms, p)) {
-                        this._realUniforms[p] = materialUniforms[p];
-                    }
+                    this._realUniforms[p] = materialUniforms[p];
                 }
                 this._material._clearDirtyProps();
             }
