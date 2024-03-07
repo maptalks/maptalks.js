@@ -6,10 +6,10 @@ attribute vec3 aPosition;
 
 #if defined(HAS_MAP)
     attribute vec2 aTexCoord;
-    // uniform vec2 uvOrigin;
+    uniform vec2 uvOrigin;
     uniform vec2 uvScale;
     uniform vec2 uvOffset;
-    // uniform float uvRotation;
+    uniform float uvRotation;
 
     #ifdef HAS_I3S_UVREGION
         attribute vec4 uvRegion;
@@ -140,8 +140,20 @@ vec2 rotateUV(vec2 uv, float rotation) {
 #if defined(HAS_MAP)
   vec2 transformTexcoord(vec2 uv) {
     vec2 decodedTexCoord = decode_getTexcoord(uv);
-    vec2 texCoord = decodedTexCoord * uvScale + uvOffset;
-    return texCoord;
+    // vec2 texCoord = decodedTexCoord * uvScale + uvOffset;
+    #ifdef HAS_RANDOM_TEX
+        vec2 origin = uvOrigin;
+        vec2 texCoord = decodedTexCoord * uvScale + uvOffset;
+        return mod(origin, 1.0) + texCoord;
+    #else
+        vec2 origin = uvOrigin;
+        vec2 texCoord = decodedTexCoord * uvScale;
+        if (uvRotation != 0.0) {
+            origin = rotateUV(origin, uvRotation);
+            texCoord = rotateUV(texCoord, uvRotation);
+        }
+        return mod(origin, 1.0) + texCoord + uvOffset;
+    #endif
   }
 #endif
 

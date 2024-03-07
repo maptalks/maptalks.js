@@ -401,6 +401,7 @@ class GroundPainter {
         ));
         // uvOrigin 是 uvStart的整数部分
         this._ground.setUniform('uvOrigin', vec2.set(ARR2_4, uvStartX - (uvStartX % 1),  uvStartY - (uvStartY % 1)));
+        this._ground.setUniform('uvRotation', 0);
 
     }
 
