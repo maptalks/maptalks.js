@@ -154,18 +154,30 @@ export function hasOwn(obj, prop) {
     return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
-export function getUniqueIds(ids) {
-    let current = ids[ids.length - 1];
-    const result = [current];
-    // 倒序是因为后面的图形，碰撞时优先级更高， maptalks/issues#626
-    for (let i = ids.length - 2; i >= 0; i--) {
-        if (ids[i] !== current) {
-            result.push(ids[i]);
-            current = ids[i];
+export function getUniqueIds(ids, isReverse) {
+    if (isReverse) {
+        let current = ids[ids.length - 1];
+        const result = [current];
+        // 倒序是因为后面的图形，碰撞时优先级更高， maptalks/issues#626
+        for (let i = ids.length - 2; i >= 0; i--) {
+            if (ids[i] !== current) {
+                result.push(ids[i]);
+                current = ids[i];
+            }
         }
+        return result;
+    } else {
+        let current = ids[ids[0]];
+        const result = [current];
+        // 倒序是因为后面的图形，碰撞时优先级更高， maptalks/issues#626
+        for (let i = 1; i < ids.length; i++) {
+            if (ids[i] !== current) {
+                result.push(ids[i]);
+                current = ids[i];
+            }
+        }
+        return result;
     }
-    return result;
-
 }
 
 export function isArray(arr) {

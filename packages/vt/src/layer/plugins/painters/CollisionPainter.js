@@ -42,7 +42,8 @@ export default class CollisionPainter extends BasicPainter {
         const glData = args[0];
         geometry.properties.collideIds = (glData.featureIds && glData.featureIds.length && glData.isIdUnique) ? glData.featureIds : glData.data.aPickingId;
         // uniqueCollideIds 是 collideIds 去重后的值，碰撞检测时对其遍历，按每个值来计算检测结果
-        geometry.properties.uniqueCollideIds = getUniqueIds(geometry.properties.collideIds);
+        const isVectorTile = this.layer instanceof maptalks.TileLayer;
+        geometry.properties.uniqueCollideIds = getUniqueIds(geometry.properties.collideIds, !isVectorTile);
 
         return created;
     }

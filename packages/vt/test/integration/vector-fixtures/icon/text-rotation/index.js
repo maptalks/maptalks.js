@@ -25,7 +25,7 @@ const marker2 = new maptalks.Marker([0, 0.2], {
 });
 
 module.exports = {
-    data: [marker, marker2],
+    data: [marker2, marker],
     view: {
         center: [0, 0],
         zoom: 6

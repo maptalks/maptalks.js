@@ -22,7 +22,7 @@ const marker2 = new maptalks.Marker([0, 0.2], {
 });
 
 module.exports = {
-    data: [marker1, marker2],
+    data: [marker2, marker1],
     options: {
         collision: true,
         debugCollision: true,

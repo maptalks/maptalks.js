@@ -7,7 +7,8 @@ const marker = new maptalks.Marker([0, 0], {
         markerWidth: 30,
         markerHeight: 30,
         markerOpacity: 1,
-        markerRotation: 30
+        markerRotation: 30,
+        markerAllowOverlap: 1
     }
 });
 
@@ -16,8 +17,7 @@ const marker2 = new maptalks.Marker([0, 0], {
         markerFile: 'file://' + path.resolve(__dirname, '../../../resources/plane-min.png'),
         markerWidth: 30,
         markerHeight: 30,
-        markerOpacity: 1,
-        markerAllowOverlap: 1
+        markerOpacity: 1
     }
 });
 

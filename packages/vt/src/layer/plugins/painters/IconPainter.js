@@ -233,6 +233,7 @@ class IconPainter extends CollisionPainter {
     }
 
     _rebuildCollideIds(geometry, context) {
+        const isVectorTile = this.layer instanceof maptalks.TileLayer;
         // icon是沿线分布时，因为所有沿线生成的icon的aPickingId都是一样的，每个icon无法独立判断碰撞检测
         // 因此需要为每个icon和相应的text生成独立的collideId
         const { collideIds } = geometry.properties;
@@ -243,7 +244,7 @@ class IconPainter extends CollisionPainter {
                 newCollideIds.fill(id++, i, i + BOX_VERTEX_COUNT);
             }
             geometry.properties.collideIds = newCollideIds;
-            geometry.properties.uniqueCollideIds = getUniqueIds(newCollideIds);
+            geometry.properties.uniqueCollideIds = getUniqueIds(newCollideIds, !isVectorTile);
             context.markerCollideMap = {
                 old: collideIds,
                 new: newCollideIds
@@ -282,7 +283,7 @@ class IconPainter extends CollisionPainter {
                         currentCount = aCount[next];
                     }
                 }
-                geometry.properties.uniqueCollideIds = getUniqueIds(collideIds);
+                geometry.properties.uniqueCollideIds = getUniqueIds(collideIds, !isVectorTile);
             } else {
                 // 只定义了 text 属性
                 let id = 0;
@@ -295,7 +296,7 @@ class IconPainter extends CollisionPainter {
                         currentCount = aCount[next];
                     }
                 }
-                geometry.properties.uniqueCollideIds = getUniqueIds(collideIds);
+                geometry.properties.uniqueCollideIds = getUniqueIds(collideIds, !isVectorTile);
             }
 
         }
