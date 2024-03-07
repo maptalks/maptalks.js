@@ -454,8 +454,7 @@ export default class TextPainter extends CollisionPainter {
         }
         const pitch = map.getPitch();
         const bearing = map.getBearing();
-        const zoom = map.getZoom();
-        const { lineTextPitch: linePitch, lineTextBearing: lineBearing, lineTextZoom: lineZoom } = mesh.properties;
+        const { lineTextPitch: linePitch, lineTextBearing: lineBearing } = mesh.properties;
 
         // this._counter++;
 
@@ -486,7 +485,11 @@ export default class TextPainter extends CollisionPainter {
         if (enableCollision) {
             visElemts.count = 0;
         }
-        const needUpdate = linePitch === undefined || Math.abs(pitch - linePitch) > 2 || Math.abs(bearing - lineBearing) > 2 || lineZoom !== zoom;
+        const needUpdate = linePitch === undefined || !map.isInteracting() || (Math.abs(pitch - linePitch) > 2 || Math.abs(bearing - lineBearing) > 2);
+        if (needUpdate) {
+            // label box 刷新后，强制将 this._meshCollisionStale 设为true， 避免在updateBoxCollisionFading方法中仍旧使用缓存的collision对象。
+            this._meshCollisionStale = true;
+        }
         this.forEachBox(mesh, (mesh, meshBoxes, mvpMatrix, labelIndex) => {
             const { start, end } = meshBoxes[0];
             let visible = visCache[labelIndex];
@@ -516,7 +519,6 @@ export default class TextPainter extends CollisionPainter {
         if (needUpdate) {
             mesh.properties.lineTextPitch = pitch;
             mesh.properties.lineTextBearing = bearing;
-            mesh.properties.lineTextZoom = zoom;
         }
         const aAltitudeArr = mesh.geometry.properties.aAltitude;
         if (aAltitudeArr && aAltitudeArr.dirty) {
