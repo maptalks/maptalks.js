@@ -1,0 +1,31 @@
+import Extent from '../../geo/Extent';
+import Transformation from '../../geo/transformation/Transformation';
+export default class SpatialReference {
+    options: object;
+    _projection: any;
+    isEPSG: boolean;
+    _resolutions: Array<number>;
+    _pyramid: boolean;
+    _fullExtent: Extent;
+    _transformation: Transformation;
+    json: object;
+    static loadArcgis: (url: string, callback: Function, options: object) => void;
+    static loadWMTS: (url: string, callback: Function, options: object) => void;
+    constructor(options?: {});
+    static registerPreset(name: any, value: any): void;
+    static getPreset(preset: any): any;
+    static getAllPresets(): string[];
+    static getProjectionInstance(prjName: any): any;
+    static equals(sp1: any, sp2: any): boolean;
+    _initSpatialRef(): void;
+    getResolutions(): number[];
+    getResolution(zoom: number): number;
+    getProjection(): any;
+    getFullExtent(): Extent;
+    getTransformation(): Transformation;
+    getMinZoom(): number;
+    getMaxZoom(): number;
+    getZoomDirection(): number;
+    toJSON(): object;
+    isPyramid(): boolean;
+}

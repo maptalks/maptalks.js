@@ -1,0 +1,21 @@
+import Point from '../../geo/Point';
+export declare const DEFAULT_MARKER_SYMBOLS: {
+    markerWidth: number;
+    markerHeight: number;
+    markerLineWidth: number;
+};
+export declare function getVectorMarkerFixedExtent(out: any, symbol: any, size?: Array<number>): any;
+export declare function getDefaultHAlign(markerType: string): "right" | "middle";
+export declare function getDefaultVAlign(markerType: string): "bottom" | "middle" | "top";
+export declare function getVectorMarkerAnchor(symbol: any, w: number, h: number): Point;
+export declare function calVectorMarkerSize(out: any, symbol: any): any;
+export declare function getMarkerRotation(symbol: any, prop?: string): number;
+export declare function getImageMarkerFixedExtent(out: any, symbol: any, resources?: any): any;
+export declare function getTextMarkerFixedExtent(out: any, symbol: any, textDesc: any): any;
+export declare function getMarkerFixedExtent(out: any, symbol: any, resources: any, textDesc: any): any;
+export declare function isTextSymbol(symbol: any): boolean;
+export declare function isImageSymbol(symbol: any): boolean;
+export declare function isVectorSymbol(symbol: any): boolean;
+export declare function isPathSymbol(symbol: any): boolean;
+export declare const DYNAMIC_SYMBOL_PROPS: string[];
+export declare const SIZE_SYMBOL_PROPS: string[];
