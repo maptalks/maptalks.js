@@ -295,6 +295,9 @@ class GroundPainter {
                     return canvas.height;
                 }
             },
+            cull: {
+                enable: true
+            },
             depth: {
                 enable: true,
                 mask: () => {
