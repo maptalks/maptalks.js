@@ -61,6 +61,10 @@ const TEMP_TRANSLATION_MAT = [];
 
 const TEMP_SERVICE_MAT = [];
 
+const TEMP_PROJ_SCALE = [];
+const TEMP_DIST_SCALE = [];
+const TEMP_DIST_TO_PROJ_SCALE = [];
+
 const DEFAULT_SEMANTICS = {
     'POSITION': 'POSITION',
     'NORMAL': 'NORMAL',
@@ -119,9 +123,7 @@ export default class MeshPainter {
         this._createShaders();
         this._khrTechniqueWebglManager = new reshader.KHRTechniquesWebglManager(this._regl, this._getExtraCommandProps(), this._resLoader);
         const map = this.getMap();
-        if (map.altitudeToPoint) {
-            this._heightScale = map.altitudeToPoint(100, map.getGLRes()) / 100;
-        }
+        this._heightScale = map.altitudeToPoint(100, map.getGLRes()) / 100;
     }
 
     getI3DMMeshes() {
@@ -621,6 +623,10 @@ export default class MeshPainter {
 
         const tileTransform = this._getI3DMTileTransform(TEMP_TILE_TRANSFORM, projCenter, node);
 
+        const projScale = this._getProjScale(TEMP_PROJ_SCALE);
+        const distScale = this._getDistanceScale(TEMP_DIST_SCALE, rtcCoord);
+        const distToProjScale = vec3.div(TEMP_DIST_TO_PROJ_SCALE, distScale, projScale);
+
         const { POSITION, NORMAL_UP, NORMAL_RIGHT, SCALE, SCALE_NON_UNIFORM, INSTANCE_ROTATION } = i3dm;
         const instanceData = {
             'instance_vectorA': new Float32Array(instanceCount * 4),
@@ -731,6 +737,7 @@ export default class MeshPainter {
                 }
             }
             mat4.multiply(nodeMatrix, upAxisTransform, nodeMatrix);
+            mat4.scale(nodeMatrix, nodeMatrix, distToProjScale);
             mesh.setPositionMatrix(nodeMatrix);
 
             this._updateI3DMLocalTransform(mesh, tileTransform);
@@ -774,7 +781,7 @@ export default class MeshPainter {
     }
 
     _getI3DMTileTransform(out, projCenter, node) {
-        mat4.fromScaling(out, this._getProjScale(IDENTITY_SCALE));
+        mat4.fromScaling(out, this._getProjScale(TEMP_PROJ_SCALE));
         const translation = this._getCenterTranslation(TEMP_TRANSLATION, projCenter, node._rootIdx);
         mat4.multiply(out, mat4.fromTranslation(TEMP_TRANSLATION_MAT, translation), out);
         return out;
@@ -1021,7 +1028,8 @@ export default class MeshPainter {
         if (isSharedPosition) {
             // position被共享的模型，只能采用basisTo2D来绘制
             // 电信的模型如tokyo.html中的模型
-            const localTransform = this._getDistanceScaleTransform(TEMP_MATRIX1, rtcCoord);
+            const distanceScale = this._getDistanceScale(TEMP_DIST_SCALE, rtcCoord);
+            const localTransform = mat4.fromScaling(TEMP_MATRIX1, distanceScale);
             const projectedMatrix = this._computeProjectedTransform(TEMP_MATRIX2, node, rtcCenter, rtcCoord);
             const translation = this._getCenterTranslation(TEMP_TRANSLATION, projCenter, node._rootIdx);
             setTranslation(projectedMatrix, translation, projectedMatrix);
@@ -1042,13 +1050,8 @@ export default class MeshPainter {
     _computeProjectedTransform(out, node, rtcCenter, rtcCoord) {
         const map = this.getMap();
         const heightOffset = this._layer._getNodeService(node._rootIdx).heightOffset || 0;
-        const centerCoord = new maptalks.Coordinate(rtcCoord);
-        let heightScale;
-        if (map.altitudeToPoint) {
-            heightScale = this._heightScale;
-        } else {
-            heightScale = map.distanceToPointAtRes(100, 100, map.getGLRes(), centerCoord).y / 100;
-        }
+        const heightScale = this._heightScale;
+
         const nodeTransform = node.matrix ? mat4.copy(out, node.matrix) : mat4.identity(out);
         if (rtcCenter) {
             const realCenter = vec3.transformMat4(TEMP_RTCCENTER, rtcCenter, nodeTransform);
@@ -1087,22 +1090,11 @@ export default class MeshPainter {
         const point1 = map.coordToPointAtRes(target, glRes, TEMP_POINT2);
         const dx = point1.x - point0.x;
         const dy = point1.y - point0.y;
-        const heightScale = this._getHeightScale();
+        const heightScale = this._heightScale;
 
         const translation = vec3.set(TEMP_OFFSET, dx, dy, (coordOffset[2] || 0) * heightScale);
         const matrix = mat4.fromTranslation(out, translation);
         return matrix;
-    }
-
-    _getHeightScale() {
-        const map = this.getMap();
-        let heightScale;
-        if (map.altitudeToPoint) {
-            heightScale = this._heightScale;
-        } else {
-            heightScale = map.distanceToPointAtRes(100, 100, map.getGLRes(), TEMP_CENTER).y / 100;
-        }
-        return heightScale;
     }
 
     createCMPTMesh(data, id, node, cb) {
@@ -1396,7 +1388,7 @@ export default class MeshPainter {
     }
 
     _getCenterTranslation(out, projCenter, rootIdx) {
-        const heightScale = this._getHeightScale();
+        const heightScale = this._heightScale
         TEMP_CENTER.x = projCenter[0];
         TEMP_CENTER.y = projCenter[1];
         const center = this._prjToPoint(TEMP_CENTER);
@@ -1414,25 +1406,15 @@ export default class MeshPainter {
         mesh.localTransform = mat4.multiply(mesh.localTransform, serviceTransform, mesh._originLocalTransform);
     }
 
-    _getDistanceScaleTransform(out, rtcCoord) {
+    _getDistanceScale(out, rtcCoord) {
         // heightOffset 在 _computeProjectedTransform 中计算了，所以这里不用再重复计算。
-        const localTransform = mat4.identity(out);
         const map = this.getMap();
-        const scale = IDENTITY_SCALE;
         TEMP_CENTER.x = rtcCoord[0];
         TEMP_CENTER.y = rtcCoord[1];
         const zoomScale = map.distanceToPointAtRes(100, 100, map.getGLRes(), TEMP_CENTER);
-        let heightScale;
-        if (map.altitudeToPoint) {
-            heightScale = this._heightScale;
-        } else {
-            heightScale = zoomScale.y / 100;
-        }
-        vec3.set(scale, zoomScale.x / 100, zoomScale.y / 100, heightScale);
-        // const zScale = zoomScale.y / 100;
-        // vec3.set(scale, zoomScale.x / 100, zoomScale.y / 100, zScale);
-        mat4.scale(localTransform, localTransform, scale);
-        return localTransform;
+        const heightScale = this._heightScale;
+        vec3.set(out, zoomScale.x / 100, zoomScale.y / 100, heightScale);
+        return out;
     }
 
     _createShaders() {
@@ -1868,7 +1850,7 @@ export default class MeshPainter {
         const map = this.getMap();
         const zoomScale = 1 / map.getGLRes();
         // 高度坐标是米
-        const heightScale = this._getHeightScale();
+        const heightScale = this._heightScale;
         out[0] = out[1] = zoomScale;
         out[2] = heightScale;
         return out;
