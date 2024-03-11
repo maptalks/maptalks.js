@@ -319,6 +319,10 @@ export default class BaseLayerWorker {
         if (!gltf || !gltf.meshes || (gltf.extensionsUsed && gltf.extensionsUsed.indexOf('KHR_techniques_webgl') > -1)) {
             return;
         }
+        // 如果开启sharePosition，会造成tokyo.html爆内存，无法正常加载模型
+        if (gltf.asset && gltf.asset.sharePosition) {
+            return;
+        }
         const meshes = gltf.meshes;
         for (const primitiveIndex in meshes) {
             const primitives = meshes[primitiveIndex].primitives;
@@ -502,7 +506,7 @@ export default class BaseLayerWorker {
         if (!isSharePosition) {
             this._projectCoordinates(gltf, featureTable, params.upAxis, params.transform);
         } else {
-            // 如果position是共享的，不能用把坐标转为投影坐标的方式载入，还是只能用basisTo2D的方式载入
+            // 如果position是共享的，不能用把坐标转为投影坐标的方式载入，还是只能用enuToFixedFrame的方式载入
             gltf.asset.sharePosition = true;
             this._convertCoordinates(gltf, featureTable, params.upAxis, params.transform);
         }
