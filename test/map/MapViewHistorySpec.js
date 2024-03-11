@@ -57,7 +57,7 @@ describe('Map View History', function () {
                 renderer.callInNextFrame(function () {
                     map.zoomToPreviousView();
                     var next = map.zoomToNextView();
-                    expect(next.center).to.be.eql([0, 0]);
+                    expect(next.center).to.be.eql([0, 0, 0]);
                     expect(next.zoom).to.be.eql(zoom - 1);
 
                     expect(map.hasNextView()).not.to.be.ok();

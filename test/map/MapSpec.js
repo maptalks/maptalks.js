@@ -555,6 +555,7 @@ describe('Map.Spec', function () {
             map._getRenderer()._checkSizeInterval = 10;
             // this.timeout(map._getRenderer()._checkSizeInterval * 3);
             var center = map.getCenter();
+            center.z = center.z || 0;
             map.once('resize', function (param) {
                 expect(param).to.be.ok();
                 //center remains
@@ -917,5 +918,13 @@ describe('Map.Spec', function () {
             expect(map.getGLRes()).not.to.be(glRes);
             done();
         }, 100);
+    });
+
+    it('map\'s center has altitude', function() {
+        const center = map.getCenter();
+        center.z = 100;
+        map.setCenter(center);
+        const viewMatrix = map.viewMatrix;
+        expect(viewMatrix).to.be.eql([-1, 0, 0, -0, 0, 1, 0, 0, 0, 0, -1, 0, 173083.2338488889, -49314.063792176465, 0.0703125, 1]);
     });
 });

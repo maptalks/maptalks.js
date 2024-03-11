@@ -594,7 +594,7 @@ class Painter extends Class {
             return;
         }
         //Multiplexing offset
-        this.containerOffset = offset || mapStateCache.offset || map._pointToContainerPoint(renderer.southWest)._add(0, -map.height);
+        this.containerOffset = offset || mapStateCache.offset || map._pointToContainerPoint(renderer.middleWest)._add(0, -map.height / 2);
         this._beforePaint();
         const ctx = context || renderer.context;
         if (!ctx.isHitTesting) {

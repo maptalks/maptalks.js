@@ -71,7 +71,7 @@ describe('Control.Overview', function () {
         var overview = new maptalks.control.Overview();
         overview.addTo(map);
         map.on('viewchange', function () {
-            expect(overview._overview.getCenter().toArray()).to.be.eql([0, 0]);
+            expect(overview._overview.getCenter().toArray()).to.be.eql([0, 0, 0]);
             done();
         });
         map.setCenter([0, 0]);

@@ -379,7 +379,7 @@ describe('Map.Camera', function () {
 
             map.setPitch(70);
             var size3 = geometry.getSize();
-            expect(size3.width).to.be.above(size2.width);
+            expect(size2.width).to.be.above(size3.width);
             expect(size3.height).to.be.below(size2.height);
         });
     });
@@ -455,7 +455,7 @@ describe('Map.Camera', function () {
 
     describe('Set camera position', function () {
         it('pitch 0, bearing 0', function () {
-            map.setCameraPosition({
+            map.setCameraOrientation({
                 position: [0, 0, 10000],
                 pitch: 0,
                 bearing: 0,
@@ -468,7 +468,7 @@ describe('Map.Camera', function () {
         });
 
         it('pitch 45, bearing 45', function () {
-            map.setCameraPosition({
+            map.setCameraOrientation({
                 position: [0, 0, 10000],
                 pitch: 45,
                 bearing: 45,
@@ -481,7 +481,7 @@ describe('Map.Camera', function () {
         });
 
         it('pitch 45, bearing 135', function () {
-            map.setCameraPosition({
+            map.setCameraOrientation({
                 position: [0, 0, 10000],
                 pitch: 45,
                 bearing: 135,
@@ -494,7 +494,7 @@ describe('Map.Camera', function () {
         });
 
         it('pitch 45, bearing -45', function () {
-            map.setCameraPosition({
+            map.setCameraOrientation({
                 position: [0, 0, 10000],
                 pitch: 45,
                 bearing: -45,
@@ -507,7 +507,7 @@ describe('Map.Camera', function () {
         });
 
         it('pitch 45, bearing -135', function () {
-            map.setCameraPosition({
+            map.setCameraOrientation({
                 position: [0, 0, 10000],
                 pitch: 45,
                 bearing: -135,
@@ -520,7 +520,7 @@ describe('Map.Camera', function () {
         });
 
         it('position z', function () {
-            map.setCameraPosition({
+            map.setCameraOrientation({
                 position: [0, 0, 100],
                 pitch: 0,
                 bearing: 0,
@@ -628,6 +628,18 @@ describe('Map.Camera', function () {
         map.setBearing(45);
         // expect(maptalks.Util.join(map.domCssMatrix)).to.be.eql([31.819805153394643, -8.235571585149868, 0.7139488752261732, 0.6830127018922193, 31.819805153394636, 8.23557158514987, -0.7139488752261733, -0.6830127018922194, 0, -43.466662183008076, -0.27054191763364316, -0.25881904510252074, 0, 0, 46.83368719036461, 45].join());
         expect(maptalks.Util.join(map.domCssMatrix)).to.be.eql([31.819805153394643,-8.235571585149868,0.693731297039628,0.6830127018922193,31.819805153394636,8.23557158514987,-0.6937312970396281,-0.6830127018922194,0,-43.466662183008076,-0.2628807214860012,-0.25881904510252074,0,0,45.635325850044154,45].join());
+    });
+
+    it('setCameraPosition', function() {
+        const center = map.getCenter();
+        const position = new maptalks.Coordinate(center.x + 0.01, center.y + 0.01, 100);
+        map.setCameraPosition(position);
+        const zoom = map.getZoom();
+        const pitch = map.getPitch();
+        const bearing = map.getBearing();
+        expect(zoom).to.be.eql(14.899641034986649);
+        expect(pitch).to.be.eql(85.67228588474566);
+        expect(bearing).to.be.eql(139.8095157874954);
     });
 });
 
