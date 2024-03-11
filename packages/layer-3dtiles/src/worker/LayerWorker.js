@@ -541,6 +541,9 @@ export default class BaseLayerWorker {
             content.transferables.push(instanceRotation.buffer);
         }
 
+        const projection = this.options['projection'];
+        const isTransformIdentity = transform && mat4.exactEquals(IDENTITY_MATRIX, transform);
+
         const minmax = {
             xmin: Infinity,
             xmax: -Infinity,
@@ -551,13 +554,40 @@ export default class BaseLayerWorker {
         };
         findMinMaxOfPosition(data.POSITION.array, 3, rtcCenter, IDENTITY_MATRIX, minmax);
         const modelCenter = getCenterOfMinMax(minmax);
+        if (transform && !isTransformIdentity) {
+            vec3.transformMat4(modelCenter, modelCenter, transform);
+        }
+        const rtcCoord = this._getCoordiate(modelCenter);
+        const projCenter = [];
+        project(projCenter, rtcCoord, projection);
+        projCenter[2] = rtcCoord[2];
+
         const newRtcCenter = vec3.copy([], modelCenter);
+
+        const cartesian = [0, 0, 0];
+        const degree = [0, 0, 0];
+        const proj = [0, 0];
         const min = [Infinity, Infinity, Infinity];
         const max = [-Infinity, -Infinity, -Infinity];
         iterateBufferData(data.POSITION, (vertex) => {
-            vertex[0] = vertex[0] + rtcCenter[0] - newRtcCenter[0];
-            vertex[1] = vertex[1] + rtcCenter[1] - newRtcCenter[1];
-            vertex[2] = vertex[2] + rtcCenter[2] - newRtcCenter[2];
+            cartesian[0] = vertex[0] + rtcCenter[0];
+            cartesian[1] = vertex[1] + rtcCenter[1];
+            cartesian[2] = vertex[2] + rtcCenter[2];
+
+            if (transform && !isTransformIdentity) {
+                vec3.transformMat4(cartesian, cartesian, transform);
+            }
+            if (vec3.len(cartesian) === 0) {
+                vec3.set(degree, 0, 0, -6378137);
+            } else {
+                cartesian3ToDegree(degree, cartesian);
+            }
+            project(proj, degree, projection);
+
+            vertex[0] = proj[0] - projCenter[0];
+            vertex[1] = proj[1] - projCenter[1];
+            vertex[2] = degree[2] - projCenter[2];
+
             if (vertex[0] < min[0]) min[0] = vertex[0];
             if (vertex[1] < min[1]) min[1] = vertex[1];
             if (vertex[2] < min[2]) min[2] = vertex[2];
@@ -572,11 +602,10 @@ export default class BaseLayerWorker {
             vec3.transformMat4(modelCenter, modelCenter, transform);
         }
 
-        const rtcCoord = this._getCoordiate(modelCenter);
-
         content.rtcCenter = newRtcCenter;
         // content.instanceCenter = modelCenter;
         content.rtcCoord = rtcCoord;
+        content.projCenter = projCenter;
         content.rootIdx = rootIdx;
         const transferables = content.transferables;
         delete content.transferables;
@@ -779,6 +808,11 @@ export default class BaseLayerWorker {
      */
     _convertCoordinates(gltf, featureTable, upAxis, transform) {
         const { modelCenter, upAxisTransform, rtcCenter } = this._getModelCenter(gltf, featureTable, upAxis);
+
+        const projCenter = this._getProjCenter(modelCenter);
+        gltf.extensions['MAPTALKS_RTC'].projCenter = projCenter;
+        gltf.extensions['MAPTALKS_RTC'].rtcCoord = gltf.extensions['CESIUM_RTC'].rtcCoord = this._getCoordiate(modelCenter);
+
         const newRtcCenter = vec3.copy([], modelCenter);
 
         if (transform) {

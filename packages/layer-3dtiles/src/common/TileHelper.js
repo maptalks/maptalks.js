@@ -452,45 +452,16 @@ export const eastNorthUpToFixedFrame = localFrameToFixedFrameGenerator(
     "north"
 );
 const scratchRTCCoord = [];
-const scratchCenter = [];
-const scratchCartographic = [];
-const projectedPosition = []
 const scratchFromENU = [];
 const scratchToENU = [];
 const scratchRotation = [];
-const coord = { x: 0, y: 0 };
-const prjResult = { x: 0, y: 0 };
 const RADIAN = Math.PI / 180;
 
-export function basisTo2D(result, rtcCoord, matrix, projection, res, heightScale, heightOffset) {
+export function basisTo2D(result, rtcCoord, matrix, projection) {
     rtcCoord = vec3.copy(scratchRTCCoord, rtcCoord);
     const viewCenter = radianToCartesian3(scratchRTCCoord, rtcCoord[0] * RADIAN, rtcCoord[1] * RADIAN, rtcCoord[2]);
-    const rtcCenter = mat4.getTranslation(scratchCenter, matrix);
+
     const ellipsoid = projection.ellipsoid;
-
-    let cartographic;
-    if (vec3.len(rtcCenter) === 0) {
-        cartographic = vec3.set(scratchCartographic, 0, 0, -6378137);
-    } else {
-        // Get the 2D Center
-        cartographic = cartesian3ToDegree(
-            scratchCartographic,
-            rtcCenter
-        );
-    }
-    coord.x = cartographic[0];
-    coord.y = cartographic[1];
-    const prjCoord = projection.project(
-        coord,
-        prjResult
-    );
-
-    projectedPosition[0] = prjCoord.x / res;
-    projectedPosition[1] = prjCoord.y / res;
-    projectedPosition[2] = (cartographic[2] + heightOffset) * heightScale;
-
-    // cartographic[0] *= Math.PI / 180;
-    // cartographic[1] *= Math.PI / 180;
     // Assuming the instance are positioned in WGS84, invert the WGS84 transform to get the local transform and then convert to 2D
     const fromENU = eastNorthUpToFixedFrame(
         viewCenter,
@@ -499,9 +470,9 @@ export function basisTo2D(result, rtcCoord, matrix, projection, res, heightScale
     );
     const toENU = mat4.invert(scratchToENU, fromENU);
     const rotation = mat3.fromMat4(scratchRotation, matrix);
-    const local = multiplyByMatrix3(toENU, rotation, result);
+    multiplyByMatrix3(toENU, rotation, result);
     // mat4.multiply(result, swizzleMatrix, local); // Swap x, y, z for 2D
-    setTranslation(result, projectedPosition, local); // Use the projected center
+    // setTranslation(result, projectedPosition, local); // Use the projected center
     return result;
 }
 

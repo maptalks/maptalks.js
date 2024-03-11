@@ -54,6 +54,10 @@ const TEMP_OFFSET = [];
 const TEMP_TRANSLATION = [];
 const TEMP_MATRIX1 = [];
 const TEMP_MATRIX2 = [];
+const TEMP_ENU_ROT_MAT = [];
+
+const TEMP_TILE_TRANSFORM = [];
+const TEMP_TRANSLATION_MAT = [];
 
 const TEMP_SERVICE_MAT = [];
 
@@ -610,10 +614,12 @@ export default class MeshPainter {
         const { i3dm, featureTable, gltf, batchTable, batchTableBin, count } = data;
         const instanceCount = featureTable['INSTANCES_LENGTH'];
 
-        const { rtcCenter, rtcCoord } = data;
-        const localTransform = this._getTransform(TEMP_MATRIX1, rtcCoord);
+        const { rtcCenter, rtcCoord, projCenter } = data;
+
         const projectedMatrix = this._computeProjectedTransform(TEMP_MATRIX2, node, rtcCenter, rtcCoord);
-        mat4.multiply(localTransform, projectedMatrix, localTransform);
+        const enuRotMat = mat3.fromMat4(TEMP_ENU_ROT_MAT, projectedMatrix);
+
+        const tileTransform = this._getI3DMTileTransform(TEMP_TILE_TRANSFORM, projCenter, node);
 
         const { POSITION, NORMAL_UP, NORMAL_RIGHT, SCALE, SCALE_NON_UNIFORM, INSTANCE_ROTATION } = i3dm;
         const instanceData = {
@@ -645,6 +651,7 @@ export default class MeshPainter {
                 setColumn3(rotationMat3, normalRight, 0);
                 setColumn3(rotationMat3, normalUp, 1);
                 setColumn3(rotationMat3, normalForward, 2);
+                mat3.multiply(rotationMat3, enuRotMat, rotationMat3);
                 quat.fromMat3(quaternion, rotationMat3);
             } else if (INSTANCE_ROTATION) {
                 getItemAtBufferData(instanceRotMat3, INSTANCE_ROTATION, index);
@@ -707,6 +714,7 @@ export default class MeshPainter {
             mesh.properties.serviceIndex = node._rootIdx;
             mesh.properties.rtcCoord = rtcCoord;
             mesh.properties.rtcCenter = rtcCenter;
+            mesh.properties.projCenter = projCenter;
             mesh.properties.node = node;
             const defines = this._getGLTFMeshDefines(gltfMesh, geometry, material, node._rootIdx, gltf);
             if (gltfMesh.compressed_int16_params) {
@@ -725,7 +733,7 @@ export default class MeshPainter {
             mat4.multiply(nodeMatrix, upAxisTransform, nodeMatrix);
             mesh.setPositionMatrix(nodeMatrix);
 
-            this._updateI3DMLocalTransform(mesh, localTransform);
+            this._updateI3DMLocalTransform(mesh, tileTransform);
             mesh.setDefines(defines);
             mesh.properties.polygonOffset = { offset: 0, factor: 0 };
             meshes.push(mesh);
@@ -745,25 +753,31 @@ export default class MeshPainter {
         return meshes;
     }
 
-    _updateI3DMLocalTransform(mesh, localTransform) {
-        const { rtcCenter, rtcCoord, node } = mesh.properties;
-        if (!localTransform) {
-            localTransform = this._getTransform(TEMP_MATRIX1, rtcCoord);
-            const projectedMatrix = this._computeProjectedTransform(TEMP_MATRIX2, node, rtcCenter, rtcCoord);
-            mat4.multiply(localTransform, projectedMatrix, localTransform);
+    _updateI3DMLocalTransform(mesh, tileTransform) {
+        const { rtcCoord, node, projCenter } = mesh.properties;
+
+        if (!tileTransform) {
+            tileTransform = this._getI3DMTileTransform(TEMP_TILE_TRANSFORM, projCenter, node);
         }
 
         const service = this._layer._getNodeService(node._rootIdx);
         const matrix = mesh.localTransform || [];
         if (service.coordOffset) {
             const coordOffsetMatrix = this._computeCoordOffsetMatrix(TEMP_MATRIX2, node._rootIdx, rtcCoord);
-            mat4.multiply(matrix, coordOffsetMatrix, localTransform);
+            mat4.multiply(matrix, coordOffsetMatrix, tileTransform);
         } else {
-            mat4.copy(matrix, localTransform);
+            mat4.copy(matrix, tileTransform);
         }
         mesh.setLocalTransform(matrix);
         mesh.properties.heightOffset = service.heightOffset || 0;
         mesh.properties.coordOffset = service.coordOffset && service.coordOffset.slice(0) || EMPTY_COORD_OFFSET;
+    }
+
+    _getI3DMTileTransform(out, projCenter, node) {
+        mat4.fromScaling(out, this._getProjScale(IDENTITY_SCALE));
+        const translation = this._getCenterTranslation(TEMP_TRANSLATION, projCenter, node._rootIdx);
+        mat4.multiply(out, mat4.fromTranslation(TEMP_TRANSLATION_MAT, translation), out);
+        return out;
     }
 
     createB3DMMesh(data, id, node, cb) {
@@ -792,14 +806,7 @@ export default class MeshPainter {
 
         const isSharedPosition = gltf.asset.sharePosition;
         const upAxisTransform = this._getUpAxisTransform(node._upAxis);
-        let localTransform;
-        if (isSharedPosition) {
-            // position被共享的模型，只能采用basisTo2D来绘制
-            // 电信的模型如tokyo.html中的模型
-            localTransform = this._getTransform(TEMP_MATRIX1, rtcCoord);
-        } else {
-            localTransform = this._getB3DMTransform(TEMP_MATRIX1, rtcCoord, projCenter, node._rootIdx);
-        }
+        const tileTransform = this._getB3DMTileTransform(TEMP_TILE_TRANSFORM, isSharedPosition, rtcCoord, rtcCenter, projCenter, node);
         const service = this._layer._getNodeService(node._rootIdx);
         let shader = service.shader || 'pbr';
         if (service.unlit) {
@@ -907,7 +914,7 @@ export default class MeshPainter {
             mesh.properties.rtcCoord = rtcCoord;
             mesh.properties.rtcCenter = rtcCenter;
 
-            this._updateB3DMLocalMatrix(mesh, localTransform);
+            this._updateB3DMLocalMatrix(mesh, tileTransform);
             meshes.push(mesh);
             delete gltfMesh.attributes;
             mesh._originLocalTransform = mat4.copy([], mesh.localTransform);
@@ -991,27 +998,15 @@ export default class MeshPainter {
         }
     }
 
-    _updateB3DMLocalMatrix(mesh, localTransform) {
+    _updateB3DMLocalMatrix(mesh, tileTransform) {
         const { isSharedPosition, rtcCoord, rtcCenter, projCenter, nodeMatrix, node } = mesh.properties;
-        if (!localTransform) {
-            if (isSharedPosition) {
-                // position被共享的模型，只能采用basisTo2D来绘制
-                // 电信的模型如tokyo.html中的模型
-                localTransform = this._getTransform(TEMP_MATRIX1, rtcCoord);
-            } else {
-                localTransform = this._getB3DMTransform(TEMP_MATRIX1, rtcCoord, projCenter, node._rootIdx);
-            }
+        if (!tileTransform) {
+            tileTransform = this._getB3DMTileTransform(tileTransform || TEMP_TILE_TRANSFORM, isSharedPosition, rtcCoord, rtcCenter, projCenter, node)
         }
 
         const matrix = mesh.localTransform || mat4.identity([]);
 
-        if (isSharedPosition) {
-            const projectedMatrix = this._computeProjectedTransform(TEMP_MATRIX2, node, rtcCenter, rtcCoord);
-            mat4.multiply(matrix, localTransform, nodeMatrix);
-            mat4.multiply(matrix, projectedMatrix, matrix);
-        } else {
-            mat4.multiply(matrix, localTransform, nodeMatrix);
-        }
+        mat4.multiply(matrix, tileTransform, nodeMatrix);
         const service = this._layer._getNodeService(node._rootIdx);
         if (service.coordOffset) {
             const coordOffsetMatrix = this._computeCoordOffsetMatrix(TEMP_MATRIX2, node._rootIdx, rtcCoord);
@@ -1020,6 +1015,21 @@ export default class MeshPainter {
         mesh.setLocalTransform(matrix);
         mesh.properties.heightOffset = service.heightOffset || 0;
         mesh.properties.coordOffset = service.coordOffset && service.coordOffset.slice(0) || EMPTY_COORD_OFFSET;
+    }
+
+    _getB3DMTileTransform(out, isSharedPosition, rtcCoord, rtcCenter, projCenter, node) {
+        if (isSharedPosition) {
+            // position被共享的模型，只能采用basisTo2D来绘制
+            // 电信的模型如tokyo.html中的模型
+            const localTransform = this._getDistanceScaleTransform(TEMP_MATRIX1, rtcCoord);
+            const projectedMatrix = this._computeProjectedTransform(TEMP_MATRIX2, node, rtcCenter, rtcCoord);
+            const translation = this._getCenterTranslation(TEMP_TRANSLATION, projCenter, node._rootIdx);
+            setTranslation(projectedMatrix, translation, projectedMatrix);
+            mat4.multiply(out, projectedMatrix, localTransform);
+        } else {
+            this._getB3DMTransform(out, rtcCoord, projCenter, node._rootIdx);
+        }
+        return out;
     }
 
     _setWEB3DDecodeUniforms(mesh, attributes) {
@@ -1050,7 +1060,6 @@ export default class MeshPainter {
         const glRes = map.getGLRes();
         const projectedTransform = basisTo2D(computedTransform, rtcCoord, computedTransform, projection, glRes, heightScale, heightOffset);
         const translation = getTranslation(TEMP_TRANSLATION, projectedTransform);
-
         let offset = this._layer.options['offset'];
         if (isFunction(offset)) {
             const center = this._layer._getNodeBox(node.id).center;
@@ -1058,6 +1067,7 @@ export default class MeshPainter {
         }
         vec3.set(TEMP_OFFSET, offset[0], offset[1], 0);
         vec3.sub(translation, translation, TEMP_OFFSET);
+
         setTranslation(projectedTransform, translation, projectedTransform);
         return projectedTransform;
 
@@ -1377,29 +1387,26 @@ export default class MeshPainter {
     _getB3DMTransform(out, rtcCoord, projCenter, rootIdx) {
         const localTransform = mat4.identity(out);
 
-        const map = this.getMap();
+        const scale = this._getProjScale(IDENTITY_SCALE);
+        this._getCenterTranslation(TEMP_TRANSLATION, projCenter, rootIdx);
+
+        mat4.translate(localTransform, localTransform, TEMP_TRANSLATION);
+        mat4.scale(localTransform, localTransform, scale);
+        return localTransform;
+    }
+
+    _getCenterTranslation(out, projCenter, rootIdx) {
+        const heightScale = this._getHeightScale();
         TEMP_CENTER.x = projCenter[0];
         TEMP_CENTER.y = projCenter[1];
         const center = this._prjToPoint(TEMP_CENTER);
-        const scale = this._getProjScale();
-        // xy轴坐标是投影坐标，所以要乘以res
-        const zoomScale = 1 / (map.getGLZoom ? map.getResolution(map.getGLZoom()) : map.getGLRes());
-        TEMP_CENTER.x = rtcCoord[0];
-        TEMP_CENTER.y = rtcCoord[1];
-        // 高度坐标是米
-        const heightScale = this._getHeightScale();
-        // const heightScale = map.altitudeToPoint(100, map.getGLRes()) / 100;
         let offset = this._layer.options['offset'];
         if (isFunction(offset)) {
             offset = offset.call(this._layer, TEMP_CENTER);
         }
-
         const heightOffset = this._layer._getNodeService(rootIdx).heightOffset || 0;
-        vec3.set(TEMP_TRANSLATION, center.x - offset[0], center.y - offset[1], heightScale * projCenter[2] + heightScale * heightOffset);
-        mat4.translate(localTransform, localTransform, TEMP_TRANSLATION);
-        vec3.set(scale, zoomScale, zoomScale, heightScale);
-        mat4.scale(localTransform, localTransform, scale);
-        return localTransform;
+        vec3.set(out, center.x - offset[0], center.y - offset[1], heightScale * projCenter[2] + heightScale * heightOffset);
+        return out;
     }
 
     _updateServiceMatrix(mesh, node) {
@@ -1407,11 +1414,11 @@ export default class MeshPainter {
         mesh.localTransform = mat4.multiply(mesh.localTransform, serviceTransform, mesh._originLocalTransform);
     }
 
-    _getTransform(out, rtcCoord) {
+    _getDistanceScaleTransform(out, rtcCoord) {
         // heightOffset 在 _computeProjectedTransform 中计算了，所以这里不用再重复计算。
         const localTransform = mat4.identity(out);
         const map = this.getMap();
-        const scale = this._getProjScale();
+        const scale = IDENTITY_SCALE;
         TEMP_CENTER.x = rtcCoord[0];
         TEMP_CENTER.y = rtcCoord[1];
         const zoomScale = map.distanceToPointAtRes(100, 100, map.getGLRes(), TEMP_CENTER);
@@ -1421,7 +1428,7 @@ export default class MeshPainter {
         } else {
             heightScale = zoomScale.y / 100;
         }
-        vec3.set(scale, zoomScale.x / 100 * 1.01, zoomScale.y / 100 * 1.01, heightScale);
+        vec3.set(scale, zoomScale.x / 100, zoomScale.y / 100, heightScale);
         // const zScale = zoomScale.y / 100;
         // vec3.set(scale, zoomScale.x / 100, zoomScale.y / 100, zScale);
         mat4.scale(localTransform, localTransform, scale);
@@ -1857,8 +1864,14 @@ export default class MeshPainter {
     //     }
     // }
 
-    _getProjScale() {
-        return IDENTITY_SCALE;
+    _getProjScale(out) {
+        const map = this.getMap();
+        const zoomScale = 1 / map.getGLRes();
+        // 高度坐标是米
+        const heightScale = this._getHeightScale();
+        out[0] = out[1] = zoomScale;
+        out[2] = heightScale;
+        return out;
     }
 
     _coordToPoint(c) {
