@@ -517,33 +517,33 @@ export default class BaseLayerWorker {
         const data = content.i3dm;
         const rtcCenter = featureTable && featureTable['RTC_CENTER'] || [0, 0, 0];
 
-        if (featureTable['EAST_NORTH_UP'] && !data['NORMAL_UP'] && !data['NORMAL_UP_OCT32P']) {
-            // 3 * 3 rotation matrix
-            const instanceRotation = new Float32Array(data.POSITION.array.length * 3);
-            const vertexRotMat = [];
-            const vertexRotMa3 = [];
-            const v = [];
-            // create east north up normals
-            iterateBufferData(data.POSITION, (vertex, idx) => {
-                vec3.add(v, vertex, rtcCenter);
-                eastNorthUpToFixedFrame(
-                    v,
-                    null,
-                    vertexRotMat
-                );
-                mat3.fromMat4(vertexRotMa3, vertexRotMat);
-                const vertexMat3 = instanceRotation.subarray(idx * 9, (idx + 1) * 9);
-                mat3.copy(vertexMat3, vertexRotMa3);
-            });
-            data['INSTANCE_ROTATION'] = {
-                byteStride: 0,
-                byteOffset: 0,
-                itemSize: 9,
-                componentType: 5126,
-                array: instanceRotation
-            };
-            content.transferables.push(instanceRotation.buffer);
-        }
+        // if (featureTable['EAST_NORTH_UP'] && !data['NORMAL_UP'] && !data['NORMAL_UP_OCT32P']) {
+        //     // 3 * 3 rotation matrix
+        //     const instanceRotation = new Float32Array(data.POSITION.array.length * 3);
+        //     const vertexRotMat = [];
+        //     const vertexRotMa3 = [];
+        //     const v = [];
+        //     // create east north up normals
+        //     iterateBufferData(data.POSITION, (vertex, idx) => {
+        //         vec3.add(v, vertex, rtcCenter);
+        //         eastNorthUpToFixedFrame(
+        //             v,
+        //             null,
+        //             vertexRotMat
+        //         );
+        //         mat3.fromMat4(vertexRotMa3, vertexRotMat);
+        //         const vertexMat3 = instanceRotation.subarray(idx * 9, (idx + 1) * 9);
+        //         mat3.copy(vertexMat3, vertexRotMa3);
+        //     });
+        //     data['INSTANCE_ROTATION'] = {
+        //         byteStride: 0,
+        //         byteOffset: 0,
+        //         itemSize: 9,
+        //         componentType: 5126,
+        //         array: instanceRotation
+        //     };
+        //     content.transferables.push(instanceRotation.buffer);
+        // }
 
         const projection = this.options['projection'];
         const isTransformIdentity = transform && mat4.exactEquals(IDENTITY_MATRIX, transform);

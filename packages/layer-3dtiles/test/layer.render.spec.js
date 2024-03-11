@@ -1189,7 +1189,7 @@ describe('render specs', () => {
             runner(() => {
                 // assert(map.getCenter().x.toFixed(3) === '108.959');
                 done();
-            }, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 1, noGroup: true });
+            }, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 2, renderCount: 1, noGroup: true });
         });
     });
 

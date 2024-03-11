@@ -65,6 +65,8 @@ const TEMP_PROJ_SCALE = [];
 const TEMP_DIST_SCALE = [];
 const TEMP_DIST_TO_PROJ_SCALE = [];
 
+const TEMP_MATRIX_SCALE = [];
+
 const DEFAULT_SEMANTICS = {
     'POSITION': 'POSITION',
     'NORMAL': 'NORMAL',
@@ -626,6 +628,7 @@ export default class MeshPainter {
         const projScale = this._getProjScale(TEMP_PROJ_SCALE);
         const distScale = this._getDistanceScale(TEMP_DIST_SCALE, rtcCoord);
         const distToProjScale = vec3.div(TEMP_DIST_TO_PROJ_SCALE, distScale, projScale);
+        const distToProjScaleTransform = mat4.fromScaling(TEMP_MATRIX_SCALE, distToProjScale);
 
         const { POSITION, NORMAL_UP, NORMAL_RIGHT, SCALE, SCALE_NON_UNIFORM, INSTANCE_ROTATION } = i3dm;
         const instanceData = {
@@ -737,7 +740,7 @@ export default class MeshPainter {
                 }
             }
             mat4.multiply(nodeMatrix, upAxisTransform, nodeMatrix);
-            mat4.scale(nodeMatrix, nodeMatrix, distToProjScale);
+            mat4.multiply(nodeMatrix, distToProjScaleTransform, nodeMatrix);
             mesh.setPositionMatrix(nodeMatrix);
 
             this._updateI3DMLocalTransform(mesh, tileTransform);
