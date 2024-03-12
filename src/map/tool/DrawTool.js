@@ -32,7 +32,8 @@ const options = {
     'autoPanAtEdge': false,
     'ignoreMouseleave': true,
     'blockGeometryEvents': false,
-    'zIndex': Number.MAX_VALUE
+    'zIndex': Number.MAX_VALUE,
+    'enableAltitude': true
 };
 
 const registeredMode = {};

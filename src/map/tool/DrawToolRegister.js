@@ -12,17 +12,44 @@ import Circle from '../../geometry/Circle';
 import Polygon from '../../geometry/Polygon';
 import DrawTool from './DrawTool';
 
+function queryTerrainCoordinates(projection, prjCoords, mapEvent) {
+    const isArray = Array.isArray(prjCoords);
+    if (!isArray) {
+        prjCoords = [prjCoords];
+    }
+    let coordinates;
+    if (!mapEvent || !mapEvent.target || !mapEvent.target._queryTerrainInfo) {
+        coordinates = prjCoords.map(c => {
+            return projection.unproject(c);
+        });
+        return isArray ? coordinates : coordinates[0];
+    }
+    const map = mapEvent.target;
+    coordinates = prjCoords.map(c => {
+        //prj to container point
+        const point = map._prjToContainerPoint(c);
+        const terrain = map._queryTerrainInfo(point);
+        if (terrain && terrain.coordinate) {
+            return terrain.coordinate;
+        }
+        return projection.unproject(c);
+    });
+    return isArray ? coordinates : coordinates[0];
+}
+
 const circleHooks = {
-    'create': function (projection, prjCoord) {
-        const center = projection.unproject(prjCoord[0]);
+    'create': function (projection, prjCoord, mapEvent) {
+        // const center = projection.unproject(prjCoord[0]);
+        const center = queryTerrainCoordinates(projection, prjCoord[0], mapEvent);
         const circle = new Circle(center, 0);
         circle._setPrjCoordinates(prjCoord[0]);
         return circle;
     },
-    'update': function (projection, prjPath, geometry) {
+    'update': function (projection, prjPath, geometry, mapEvent) {
         const map = geometry.getMap();
         const prjCoord = Array.isArray(prjPath) ? prjPath[prjPath.length - 1] : prjPath;
-        const nextCoord = projection.unproject(prjCoord);
+        // const nextCoord = projection.unproject(prjCoord);
+        const nextCoord = queryTerrainCoordinates(projection, prjCoord, mapEvent);
         const radius = map.computeLength(geometry.getCenter(), nextCoord);
         geometry.setRadius(radius);
     },
@@ -113,36 +140,40 @@ DrawTool.registerMode('freeHandRectangle', extend({
 DrawTool.registerMode('point', {
     'clickLimit': 1,
     'action': ['click', 'mousemove'],
-    'create': function (projection, prjCoord) {
-        const center = projection.unproject(prjCoord[0]);
+    'create': function (projection, prjCoord, mapEvent) {
+        // const center = projection.unproject(prjCoord[0]);
+        const center = queryTerrainCoordinates(projection, prjCoord[0], mapEvent);
         const marker = new Marker(center);
-        marker._setPrjCoordinates(prjCoord[0]);
+        // marker._setPrjCoordinates(prjCoord[0]);
         return marker;
     },
     'generate': function (geometry) {
         return geometry;
     },
-    'update': function (projection, prjCoord, geometry) {
+    'update': function (projection, prjCoord, geometry, mapEvent) {
         if (Array.isArray(prjCoord)) {
             prjCoord = prjCoord[prjCoord.length - 1];
         }
         if (!prjCoord) {
             return geometry;
         }
-        const coordinate = projection.unproject(prjCoord);
+        // const coordinate = projection.unproject(prjCoord);
+        const coordinate = queryTerrainCoordinates(projection, prjCoord, mapEvent);
         geometry.setCoordinates(coordinate);
         return geometry;
     }
 });
 
 const polygonHooks = {
-    'create': function (projection, prjPath) {
-        const path = prjPath.map(c => projection.unproject(c));
+    'create': function (projection, prjPath, mapEvent) {
+        // const path = prjPath.map(c => projection.unproject(c));
+        const path = queryTerrainCoordinates(projection, prjPath, mapEvent);
         const line = new LineString(path);
         line._setPrjCoordinates(prjPath);
+        line.setCoordinates(path);
         return line;
     },
-    'update': function (projection, path, geometry) {
+    'update': function (projection, path, geometry, mapEvent) {
         const symbol = geometry.getSymbol();
         let prjCoords;
         if (Array.isArray(path)) {
@@ -151,9 +182,11 @@ const polygonHooks = {
             prjCoords = geometry._getPrjCoordinates();
             prjCoords.push(path);
         }
-        const coordinates = prjCoords.map(c => projection.unproject(c));
-        geometry.setCoordinates(coordinates);
+        // const coordinates = prjCoords.map(c => projection.unproject(c));
+        const coordinates = queryTerrainCoordinates(projection, prjCoords, mapEvent);
+
         geometry._setPrjCoordinates(prjCoords);
+        geometry.setCoordinates(coordinates);
         const layer = geometry.getLayer();
         if (layer) {
             let polygon = layer.getGeometryById('polygon');
@@ -171,6 +204,7 @@ const polygonHooks = {
             }
             if (polygon) {
                 polygon._setPrjCoordinates(prjCoords);
+                polygon.setCoordinates(coordinates);
             }
         }
     },
@@ -193,13 +227,14 @@ DrawTool.registerMode('freeHandPolygon', extend({
 }, polygonHooks));
 
 const lineStringHooks = {
-    'create': function (projection, prjPath) {
-        const path = prjPath.map(c => projection.unproject(c));
+    'create': function (projection, prjPath, mapEvent) {
+        // const path = prjPath.map(c => projection.unproject(c));
+        const path = queryTerrainCoordinates(projection, prjPath, mapEvent);
         const line = new LineString(path);
         line._setPrjCoordinates(prjPath);
         return line;
     },
-    'update': function (projection, prjPath, geometry) {
+    'update': function (projection, prjPath, geometry, mapEvent) {
         let prjCoords;
         if (Array.isArray(prjPath)) {
             prjCoords = prjPath;
@@ -207,9 +242,11 @@ const lineStringHooks = {
             prjCoords = geometry._getPrjCoordinates();
             prjCoords.push(prjPath);
         }
-        const path = prjCoords.map(c => projection.unproject(c));
-        geometry.setCoordinates(path);
+        // const path = prjCoords.map(c => projection.unproject(c));
+        // geometry.setCoordinates(path);
         geometry._setPrjCoordinates(prjCoords);
+        const path = queryTerrainCoordinates(projection, prjCoords, mapEvent);
+        geometry.setCoordinates(path);
     },
     'generate': function (geometry) {
         return geometry;

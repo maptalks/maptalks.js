@@ -932,14 +932,26 @@ class Painter extends Class {
             this.minAltitude = Number.MAX_VALUE;
             this.maxAltitude = Number.MIN_VALUE;
             return altitude.map(alt => {
-                const a = alt;
-                if (a < this.minAltitude) {
-                    this.minAltitude = a;
+                if (!Array.isArray(alt)) {
+                    const a = alt;
+                    if (a < this.minAltitude) {
+                        this.minAltitude = a;
+                    }
+                    if (a > this.maxAltitude) {
+                        this.maxAltitude = a;
+                    }
+                    return a;
                 }
-                if (a > this.maxAltitude) {
-                    this.maxAltitude = a;
-                }
-                return a;
+                return alt.map(alt => {
+                    const a = alt;
+                    if (a < this.minAltitude) {
+                        this.minAltitude = a;
+                    }
+                    if (a > this.maxAltitude) {
+                        this.maxAltitude = a;
+                    }
+                    return a;
+                });
             });
         } else {
             this.minAltitude = this.maxAltitude = altitude;
