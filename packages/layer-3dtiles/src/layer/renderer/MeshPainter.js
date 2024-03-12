@@ -31,6 +31,7 @@ const DEFAULT_MATERIAL_INFO = {
 
 const IDENTITY_SCALE = [1, 1, 1];
 const IDENTITY_MATRIX = mat4.identity([]);
+const EMPTY_TRANSLATION = [0, 0, 0];
 const EMPTY_COORD_OFFSET = [0, 0];
 // const P0 = [], P1 = [];
 
@@ -54,7 +55,9 @@ const TEMP_OFFSET = [];
 const TEMP_TRANSLATION = [];
 const TEMP_MATRIX1 = [];
 const TEMP_MATRIX2 = [];
-const TEMP_ENU_ROT_MAT = [];
+const TEMP_TILE_ROT_QUAT = [];
+const TEMP_SCALING = [];
+const TEMP_TILE_SCALING_MAT = [];
 
 const TEMP_TILE_TRANSFORM = [];
 const TEMP_TRANSLATION_MAT = [];
@@ -619,9 +622,15 @@ export default class MeshPainter {
         const instanceCount = featureTable['INSTANCES_LENGTH'];
 
         const { rtcCenter, rtcCoord, projCenter } = data;
-
         const projectedMatrix = this._computeProjectedTransform(TEMP_MATRIX2, node, rtcCenter, rtcCoord);
-        const enuRotMat = mat3.fromMat4(TEMP_ENU_ROT_MAT, projectedMatrix);
+        setTranslation(projectedMatrix, EMPTY_TRANSLATION, projectedMatrix);
+
+        const tileRotQuat = mat4.getRotation(TEMP_TILE_ROT_QUAT, projectedMatrix);
+        quat.normalize(tileRotQuat, tileRotQuat);
+
+        // quat.normalize(rotation, rotation);
+        const scaling = mat4.getScaling(TEMP_SCALING, projectedMatrix);
+        const tileScalingMat4 = mat4.fromScaling(TEMP_TILE_SCALING_MAT, scaling);
 
         const tileTransform = this._getI3DMTileTransform(TEMP_TILE_TRANSFORM, projCenter, node);
 
@@ -630,7 +639,7 @@ export default class MeshPainter {
         const distToProjScale = vec3.div(TEMP_DIST_TO_PROJ_SCALE, distScale, projScale);
         const distToProjScaleTransform = mat4.fromScaling(TEMP_MATRIX_SCALE, distToProjScale);
 
-        const { POSITION, NORMAL_UP, NORMAL_RIGHT, SCALE, SCALE_NON_UNIFORM, INSTANCE_ROTATION } = i3dm;
+        const { POSITION, NORMAL_UP, NORMAL_RIGHT, SCALE, SCALE_NON_UNIFORM } = i3dm;
         const instanceData = {
             'instance_vectorA': new Float32Array(instanceCount * 4),
             'instance_vectorB': new Float32Array(instanceCount * 4),
@@ -650,7 +659,6 @@ export default class MeshPainter {
         const quaternion = [];
         const scale = [];
         const matrix = [];
-        const instanceRotMat3 = new Float32Array(9);
         iterateBufferData(POSITION, (vertex, index) => {
             if (NORMAL_UP) {
                 getItemAtBufferData(normalRight, NORMAL_RIGHT, index);
@@ -660,12 +668,10 @@ export default class MeshPainter {
                 setColumn3(rotationMat3, normalRight, 0);
                 setColumn3(rotationMat3, normalUp, 1);
                 setColumn3(rotationMat3, normalForward, 2);
-                mat3.multiply(rotationMat3, enuRotMat, rotationMat3);
                 quat.fromMat3(quaternion, rotationMat3);
-            } else if (INSTANCE_ROTATION) {
-                getItemAtBufferData(instanceRotMat3, INSTANCE_ROTATION, index);
-                quat.fromMat3(quaternion, instanceRotMat3);
-            } else  {
+                quat.normalize(quaternion, quaternion);
+                quat.multiply(quaternion, tileRotQuat, quaternion);
+            } else {
                 quat.identity(quaternion);
             }
             if (SCALE) {
@@ -741,6 +747,12 @@ export default class MeshPainter {
             }
             mat4.multiply(nodeMatrix, upAxisTransform, nodeMatrix);
             mat4.multiply(nodeMatrix, distToProjScaleTransform, nodeMatrix);
+            // 如果没有 NORMAL_UP，需要把原来在 instance_vector 中计入的enu以及node上的transform应用在positionMatrix中
+            if (!featureTable['EAST_NORTH_UP'] && !NORMAL_UP) {
+                mat4.multiply(nodeMatrix, projectedMatrix, nodeMatrix);
+            } else {
+                mat4.multiply(nodeMatrix, tileScalingMat4, nodeMatrix);
+            }
             mesh.setPositionMatrix(nodeMatrix);
 
             this._updateI3DMLocalTransform(mesh, tileTransform);
@@ -1034,8 +1046,6 @@ export default class MeshPainter {
             const distanceScale = this._getDistanceScale(TEMP_DIST_SCALE, rtcCoord);
             const localTransform = mat4.fromScaling(TEMP_MATRIX1, distanceScale);
             const projectedMatrix = this._computeProjectedTransform(TEMP_MATRIX2, node, rtcCenter, rtcCoord);
-            const translation = this._getCenterTranslation(TEMP_TRANSLATION, projCenter, node._rootIdx);
-            setTranslation(projectedMatrix, translation, projectedMatrix);
             mat4.multiply(out, projectedMatrix, localTransform);
         } else {
             this._getB3DMTransform(out, rtcCoord, projCenter, node._rootIdx);
@@ -1053,7 +1063,6 @@ export default class MeshPainter {
     _computeProjectedTransform(out, node, rtcCenter, rtcCoord) {
         const map = this.getMap();
         const heightOffset = this._layer._getNodeService(node._rootIdx).heightOffset || 0;
-        const heightScale = this._heightScale;
 
         const nodeTransform = node.matrix ? mat4.copy(out, node.matrix) : mat4.identity(out);
         if (rtcCenter) {
@@ -1064,7 +1073,7 @@ export default class MeshPainter {
         const computedTransform = nodeTransform;
         const projection = map.getProjection();
         const glRes = map.getGLRes();
-        const projectedTransform = basisTo2D(computedTransform, rtcCoord, computedTransform, projection, glRes, heightScale, heightOffset);
+        const projectedTransform = basisTo2D(computedTransform, rtcCoord, computedTransform, projection, glRes, this._heightScale, heightOffset);
         const translation = getTranslation(TEMP_TRANSLATION, projectedTransform);
         let offset = this._layer.options['offset'];
         if (isFunction(offset)) {

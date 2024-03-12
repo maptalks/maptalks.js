@@ -596,7 +596,7 @@ describe('3dtiles layer', () => {
         let count = 0;
         layer.on('canvasisdirty', () => {
             count++;
-            if (count === 2) {
+            if (count === 1) {
                 layer.removeService(0);
                 setTimeout(() => {
                     const canvas = map.getRenderer().canvas;
@@ -605,7 +605,7 @@ describe('3dtiles layer', () => {
                     assert(color.data[3] === 0);
                     layer.addService(service);
                 }, 20);
-            } else if (count === 4) {
+            } else if (count === 2) {
                 setTimeout(() => {
                     const canvas = map.getRenderer().canvas;
                     const ctx = canvas.getContext('2d');

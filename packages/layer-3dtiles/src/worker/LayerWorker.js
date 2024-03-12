@@ -7,7 +7,6 @@ import PNTSLoader from '../loaders/PNTSLoader';
 import { stringFromUTF8Array } from '../common/Util';
 import { readMagic } from '../common/TileHelper';
 import { cartesian3ToDegree } from '../common/Transform';
-import { eastNorthUpToFixedFrame } from '../common/TileHelper';
 import { iterateMesh, iterateBufferData } from '../common/GLTFHelpers';
 /*import { I3SLoader } from '@loaders.gl/i3s';*/
 // import { convertS3MJSON } from './parsers/s3m/S3MHelper';

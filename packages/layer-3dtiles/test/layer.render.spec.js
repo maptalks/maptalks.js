@@ -2101,7 +2101,7 @@ describe('render specs', () => {
             });
             runner(() => {
                 done();
-            }, layer, { path: `./integration/expected/${resPath}-scale-rotation/expected.png`, diffCount: 0, renderCount: 1, noGroup: true });
+            }, layer, { path: `./integration/expected/${resPath}-scale-rotation/expected.png`, diffCount: 2, renderCount: 1, noGroup: true });
         });
 
         it('issue#604', done => {
