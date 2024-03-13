@@ -126,9 +126,9 @@ class AreaTool extends DistanceTool {
         if (param['point2d']) {
             prjCoord = this.getMap()._pointToPrj(param['point2d']);
         } else {
-            let prjCoords = param['geometry']._getPrjCoordinates();
+            let prjCoords = param['geometry']._getPrjCoordinates() || [];
             prjCoords = prjCoords.slice(0, prjCoords.length - 1);
-            param['geometry']._setPrjCoordinates(prjCoords);
+            // param['geometry']._setPrjCoordinates(prjCoords);
             prjCoord = prjCoords[prjCoords.length - 1];
         }
         if (param['geometry'].getShell().length < 3) {
