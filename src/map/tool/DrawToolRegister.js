@@ -12,6 +12,16 @@ import Circle from '../../geometry/Circle';
 import Polygon from '../../geometry/Polygon';
 import DrawTool from './DrawTool';
 
+/**
+ * 当地形存在时就不能通过update prj来控制Geometry的坐标数据了,因为有了地形后prj对应的
+ * Coordinate是另外一个Coordinate,如果还是update prj,那么就会导致Geometry的coordinates又变成非地形下的coordinate了
+ * 因为prj里没有考虑海拔
+ * @param {*} projection 
+ * @param {*} prjCoords 
+ * @param {*} mapEvent 
+ * @returns 
+ */
+
 function queryTerrainCoordinates(projection, prjCoords, mapEvent) {
     const isArray = Array.isArray(prjCoords);
     if (!isArray) {
