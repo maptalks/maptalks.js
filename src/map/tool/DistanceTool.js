@@ -244,17 +244,20 @@ class DistanceTool extends DrawTool {
 
     _msOnDrawStart(param) {
         const map = this.getMap();
-        const prjCoord = map._pointToPrj(param['point2d']);
+        // const prjCoord = map._pointToPrj(param['point2d']);
         const uid = UID();
         const layerId = 'distancetool_' + uid;
         const markerLayerId = 'distancetool_markers_' + uid;
         const zIndex = this.options.zIndex;
+        const enableAltitude = this.options.enableAltitude;
         if (!map.getLayer(layerId)) {
             this._measureLineLayer = new VectorLayer(layerId, {
-                zIndex
+                zIndex,
+                enableAltitude
             }).addTo(map);
             this._measureMarkerLayer = new VectorLayer(markerLayerId, {
-                zIndex
+                zIndex,
+                enableAltitude
             }).addTo(map);
         } else {
             this._measureLineLayer = map.getLayer(layerId);
@@ -264,14 +267,15 @@ class DistanceTool extends DrawTool {
         this._measureLayers.push(this._measureMarkerLayer);
         this._pushLayers([this._measureLineLayer, this._measureMarkerLayer]);
         //start marker
-        const marker = new Marker(param['coordinate'], {
+        const firstCoordinate = this._getFirstCoordinate() || param.coordinate;
+        const marker = new Marker(firstCoordinate.copy(), {
             'symbol': this.options['vertexSymbol']
         });
         //调用_setPrjCoordinates主要是为了解决repeatworld下，让它能标注在其他世界的问题
-        marker._setPrjCoordinates(prjCoord);
+        // marker._setPrjCoordinates(prjCoord);
         const content = this.translator.translate('distancetool.start');
-        const startLabel = new Label(content, param['coordinate'], this.options['labelOptions']);
-        startLabel._setPrjCoordinates(prjCoord);
+        const startLabel = new Label(content, firstCoordinate.copy(), this.options['labelOptions']);
+        // startLabel._setPrjCoordinates(prjCoord);
         this._lastVertex = startLabel;
         this._addVertexMarker(marker, startLabel);
     }
@@ -288,13 +292,14 @@ class DistanceTool extends DrawTool {
             this._tailLabel = new Label(ms, param['coordinate'], this.options['labelOptions'])
                 .addTo(this._measureMarkerLayer);
         }
-        const prjCoords = this._geometry._getPrjCoordinates();
-        const lastCoord = prjCoords[prjCoords.length - 1];
-        this._tailMarker.setCoordinates(param['coordinate']);
-        this._tailMarker._setPrjCoordinates(lastCoord);
+        // const prjCoords = this._geometry._getPrjCoordinates();
+        // const lastCoord = prjCoords[prjCoords.length - 1];
+        const lastCoordinate = this._getLasttCoordinate() || param.coordinate;
+        this._tailMarker.setCoordinates(lastCoordinate.copy());
+        // this._tailMarker._setPrjCoordinates(lastCoord);
         this._tailLabel.setContent(ms);
-        this._tailLabel.setCoordinates(param['coordinate']);
-        this._tailLabel._setPrjCoordinates(lastCoord);
+        this._tailLabel.setCoordinates(lastCoordinate.copy());
+        // this._tailLabel._setPrjCoordinates(lastCoord);
     }
 
     _msGetCoordsToMeasure(param) {
@@ -302,19 +307,22 @@ class DistanceTool extends DrawTool {
     }
 
     _msOnDrawVertex(param) {
-        const prjCoords = this._geometry._getPrjCoordinates();
-        const lastCoord = prjCoords[prjCoords.length - 1];
+        // const prjCoords = this._geometry._getPrjCoordinates();
+        // const lastCoord = prjCoords[prjCoords.length - 1];
+
+        const lastCoordinate = this._getLasttCoordinate() || param.coordinate;
+
         const geometry = param['geometry'];
         //vertex marker
-        const marker = new Marker(param['coordinate'], {
+        const marker = new Marker(lastCoordinate.copy(), {
             'symbol': this.options['vertexSymbol']
         });
 
         const length = this._measure(geometry);
-        const vertexLabel = new Label(length, param['coordinate'], this.options['labelOptions']);
+        const vertexLabel = new Label(length, lastCoordinate.copy(), this.options['labelOptions']);
         this._addVertexMarker(marker, vertexLabel);
-        vertexLabel._setPrjCoordinates(lastCoord);
-        marker._setPrjCoordinates(lastCoord);
+        // vertexLabel._setPrjCoordinates(lastCoord);
+        // marker._setPrjCoordinates(lastCoord);
         this._lastVertex = vertexLabel;
     }
 
@@ -334,7 +342,7 @@ class DistanceTool extends DrawTool {
 
     _msOnDrawEnd(param) {
         this._clearTailMarker();
-        if (param['geometry']._getPrjCoordinates().length < 2) {
+        if (param['geometry'].getCoordinates().length < 2) {
             this._lastMeasure = 0;
             this._clearMeasureLayers();
             return;
@@ -345,7 +353,10 @@ class DistanceTool extends DrawTool {
         }
         this._addClearMarker(this._lastVertex.getCoordinates(), this._lastVertex._getPrjCoordinates(), size['width']);
         const geo = param['geometry'].copy();
-        geo._setPrjCoordinates(param['geometry']._getPrjCoordinates());
+
+        geo.setCoordinates(param.geometry.getCoordinates());
+
+        // geo._setPrjCoordinates(param['geometry']._getPrjCoordinates());
         geo.addTo(this._measureLineLayer);
         this._lastMeasure = geo.getLength();
     }
@@ -380,7 +391,7 @@ class DistanceTool extends DrawTool {
             return false;
         }, this);
         endMarker.addTo(this._measureMarkerLayer);
-        endMarker._setPrjCoordinates(prjCoord);
+        // endMarker._setPrjCoordinates(prjCoord);
     }
 
     _clearTailMarker() {
@@ -397,6 +408,22 @@ class DistanceTool extends DrawTool {
     _clearMeasureLayers() {
         this._measureLineLayer.remove();
         this._measureMarkerLayer.remove();
+    }
+
+    _getFirstCoordinate() {
+        if (!this._geometry) {
+            return null;
+        }
+        const coordinates = this._geometry.getCoordinates() || [];
+        return coordinates[0];
+    }
+
+    _getLasttCoordinate() {
+        if (!this._geometry) {
+            return null;
+        }
+        const coordinates = this._geometry.getCoordinates() || [];
+        return coordinates[coordinates.length - 1];
     }
 
 }

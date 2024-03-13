@@ -945,7 +945,7 @@ class Painter extends Class {
                         this.maxAltitude = a;
                     }
                     return a;
-                })
+                });
                 return isArray ? result : result[0];
             });
         } else {

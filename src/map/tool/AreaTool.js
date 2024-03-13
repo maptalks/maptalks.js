@@ -24,7 +24,7 @@ const options = {
         'polygonFill': '#ffffff',
         'polygonOpacity': 0.5
     },
-    'language' : 'zh-CN'
+    'language': 'zh-CN'
 };
 
 /**
@@ -109,11 +109,12 @@ class AreaTool extends DistanceTool {
     }
 
     _msOnDrawVertex(param) {
-        const prjCoord = this.getMap()._pointToPrj(param['point2d']);
-        const vertexMarker = new Marker(param['coordinate'], {
+        // const prjCoord = this.getMap()._pointToPrj(param['point2d']);
+        const lastCoordinate = this._getLasttCoordinate() || param.coordinate;
+        const vertexMarker = new Marker(lastCoordinate.copy(), {
             'symbol': this.options['vertexSymbol']
         });
-        vertexMarker._setPrjCoordinates(prjCoord);
+        // vertexMarker._setPrjCoordinates(prjCoord);
         this._measure(param['geometry']);
         this._lastVertex = vertexMarker;
         this._addVertexMarker(vertexMarker);
@@ -130,25 +131,27 @@ class AreaTool extends DistanceTool {
             param['geometry']._setPrjCoordinates(prjCoords);
             prjCoord = prjCoords[prjCoords.length - 1];
         }
-        if (param['geometry']._getPrjCoordinates().length < 3) {
+        if (param['geometry'].getShell().length < 3) {
             this._lastMeasure = 0;
             this._clearMeasureLayers();
             return;
         }
 
         const ms = this._measure(param['geometry']);
-        const projection = this.getMap().getProjection();
-        const coord = projection.unproject(prjCoord);
-        const endLabel = new Label(ms, coord, this.options['labelOptions'])
+        // const projection = this.getMap().getProjection();
+        // const coord = projection.unproject(prjCoord);
+        const lastCoordinate = this._getLasttCoordinate();
+        const endLabel = new Label(ms, lastCoordinate.copy(), this.options['labelOptions'])
             .addTo(this._measureMarkerLayer);
-        endLabel._setPrjCoordinates(prjCoord);
+        // endLabel._setPrjCoordinates(prjCoord);
         let size = endLabel.getSize();
         if (!size) {
             size = new Size(10, 10);
         }
-        this._addClearMarker(coord, prjCoord, size['width']);
+        this._addClearMarker(lastCoordinate.copy(), prjCoord, size['width']);
         const geo = param['geometry'].copy();
-        geo._setPrjCoordinates(param['geometry']._getPrjCoordinates());
+        geo.setCoordinates(param.geometry.getCoordinates());
+        // geo._setPrjCoordinates(param['geometry']._getPrjCoordinates());
         geo.addTo(this._measureLineLayer);
         this._lastMeasure = geo.getArea();
     }

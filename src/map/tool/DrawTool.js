@@ -559,6 +559,7 @@ class DrawTool extends MapTool {
      * @private
      */
     _doubleClickHandler(event) {
+        event.enableAltitude = this.options.enableAltitude;
         if (!this._geometry) {
             return;
         }
