@@ -35,12 +35,15 @@ function queryTerrainCoordinates(projection, prjCoords, mapEvent) {
         return isArray ? coordinates : coordinates[0];
     }
     const map = mapEvent.target;
+    const enableAltitude = mapEvent.enableAltitude;
     coordinates = prjCoords.map(c => {
         //prj to container point
-        const point = map._prjToContainerPoint(c);
-        const terrain = map._queryTerrainInfo(point);
-        if (terrain && terrain.coordinate) {
-            return terrain.coordinate;
+        if (enableAltitude) {
+            const point = map._prjToContainerPoint(c);
+            const terrain = map._queryTerrainInfo(point);
+            if (terrain && terrain.coordinate) {
+                return terrain.coordinate;
+            }
         }
         return projection.unproject(c);
     });

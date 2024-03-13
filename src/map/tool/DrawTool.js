@@ -365,6 +365,7 @@ class DrawTool extends MapTool {
      * @private
      */
     _clickHandler(event) {
+        event.enableAltitude = this.options.enableAltitude;
         const map = this.getMap();
         const registerMode = this._getRegisterMode();
         // const coordinate = event['coordinate'];
@@ -498,6 +499,7 @@ class DrawTool extends MapTool {
      * @private
      */
     _mouseMoveHandler(event) {
+        event.enableAltitude = this.options.enableAltitude;
         const map = this.getMap();
         if (!map || map.isInteracting()) {
             return;
