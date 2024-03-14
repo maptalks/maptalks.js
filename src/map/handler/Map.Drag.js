@@ -129,8 +129,8 @@ class MapDragHandler extends Handler {
         const map = this.target;
         const queryCoord = map._queryTerrainInfo(p);
         if (queryCoord) {
-            const prjCoord = map.getProjection().project(queryCoord);
-            prjCoord.z = queryCoord.z;
+            const prjCoord = map.getProjection().project(queryCoord.coordinate);
+            prjCoord.z = queryCoord.altitude;
             return prjCoord;
         }
         return map._containerPointToPrj(p);
