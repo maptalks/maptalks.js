@@ -32,7 +32,7 @@ describe('Layer.CanvasLayer', function () {
 
         layer.draw = function (context, view, w, h) {
             expect(view.extent.isValid()).to.be.ok();
-            expect(view.southWest).to.be.ok();
+            expect(view.middleWest).to.be.ok();
             expect(view.zoom).to.be.eql(map.getZoom());
             expect(w).to.be.eql(size.width);
             expect(h).to.be.eql(size.height);

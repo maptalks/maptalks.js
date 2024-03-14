@@ -162,3 +162,16 @@ function hypot() {
     while (i--) y += arguments[i] * arguments[i];
     return Math.sqrt(y);
 }
+
+export function angle(a, b) {
+    normalize(a, a);
+    normalize(b, b);
+    const cosine = dot(a, b);
+    if (cosine > 1.0) {
+        return 0;
+    } else if (cosine < -1.0) {
+        return Math.PI;
+    } else {
+        return Math.acos(cosine);
+    }
+}

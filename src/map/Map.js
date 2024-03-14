@@ -235,6 +235,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
         this._zoomLevel = zoom;
         this._center = center;
+        this._centerZ = center.z;
 
         this.setSpatialReference(opts['spatialReference'] || opts['view']);
 
@@ -488,6 +489,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const center = projection.unproject(this._prjCenter);
         center.x = Math.round(center.x * 1E8) / 1E8;
         center.y = Math.round(center.y * 1E8) / 1E8;
+        center.z = this._centerZ;
         if (this.centerAltitude) {
             center.z = this.centerAltitude;
         }
@@ -521,6 +523,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             this._center = center;
             return this;
         }
+        this._centerZ = center.z || 0;
         this.onMoveStart();
         this._setPrjCenter(pcenter);
         this.onMoveEnd(this._parseEventFromCoord(this.getCenter()));
@@ -2005,6 +2008,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         delete this._glRes;
         const projection = this.getProjection();
         this._prjCenter = projection.project(this._center);
+        this._prjCenter.z = this._center.z;
         this._calcMatrices();
         const renderer = this._getRenderer();
         if (renderer) {
