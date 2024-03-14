@@ -34,7 +34,7 @@
     "report-coverage": "codecov",
     "test": "karma start build/karma.cover.config.js",
     "testIE": "karma start build/karma.ie.config.js",
-    "version": "npm run build",
+    "version": "npm run build && npm run doc && git add -A docs/api",
     "publish-next": "npm publish --tag next"
   },
   "unpkg": "dist/maptalks.js",
