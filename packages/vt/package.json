@@ -26,7 +26,7 @@
     "@maptalks/function-type": "^1.2.3",
     "@maptalks/geojson-bbox": "^1.0.4",
     "@maptalks/geojson-vt": "^3.5.0",
-    "@maptalks/gl": "^0.97.3",
+    "@maptalks/gl": "^0.97.4",
     "@maptalks/tbn-packer": "^1.4.1",
     "@maptalks/vector-packer": "^0.95.0",
     "@maptalks/vt-plugin": "^0.95.0",
