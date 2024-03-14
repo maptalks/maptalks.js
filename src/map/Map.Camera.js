@@ -282,16 +282,20 @@ Map.include(/** @lends Map.prototype */{
     },
 
     /**
-     * Set camera position
-     * @param {Object} params
-     * @property {Array} position
-     * @property {Number} pitch
-     * @property {Number} bearing
+     * Set camera's orientation
+     * @param {Object}   options - options
+     * @param {Coordinate | Array}  options.position  - position of the camera.
+     * @param {Number}   [options.pitch = 0]  - pitch of the camera
+     * @param {Number}   [options.bearing = 0]  - bearing of the camera
+     * @returns {Map} this
      */
     setCameraOrientation(params) {
-        const { position, pitch, bearing } = params;
+        const { position } = params;
+        let { pitch, bearing } = params;
+        pitch = pitch || 0;
+        bearing = bearing || 0;
         const { zoom, cameraToGroundDistance } = this.getFitZoomForCamera(position, pitch);
-        const dist = Math.sin(pitch * RADIAN) * cameraToGroundDistance;
+        const dist = Math.sin((pitch) * RADIAN) * cameraToGroundDistance;
         const wrapBearing = wrap(bearing, -180, 180);
         const bearingRadian = wrapBearing * RADIAN;
 
@@ -315,6 +319,11 @@ Map.include(/** @lends Map.prototype */{
     },
 
     //设置相机的坐标, 根据地图中心点和相机位置，反算地图的bearing、pitch、zoom
+    /**
+     * Set camera's position
+     * @param {Coordinate}   coordinate - camera's position
+     * @returns {Map} this
+     */
     setCameraPosition(coordinate) {
         const glRes = this.getGLRes();
         const cameraPoint = this.coordToPointAtRes(coordinate, glRes);
