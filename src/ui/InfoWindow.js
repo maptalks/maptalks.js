@@ -442,41 +442,6 @@ class InfoWindow extends UIComponent {
         return width;
     }
 
-    _bindDomEvents(dom, to) {
-        if (!dom) {
-            return;
-        }
-        const events = this._getDomEvents();
-        const bindEvent = to === 'on' ? on : off;
-        for (const eventName in events) {
-            bindEvent(dom, eventName, events[eventName], this);
-        }
-    }
-
-    _getDomEvents() {
-        return {
-            'mouseover': this._onDomMouseover,
-            'mouseout': this._onDomMouseout
-        };
-    }
-
-    // eslint-disable-next-line no-unused-vars
-    _onDomMouseover(domEvent) {
-        const map = this.getMap();
-        if (!map) {
-            return;
-        }
-        map.options['preventWheelScroll'] = false;
-    }
-
-    // eslint-disable-next-line no-unused-vars
-    _onDomMouseout(domEvent) {
-        const map = this.getMap();
-        if (!map) {
-            return;
-        }
-        map.options['preventWheelScroll'] = true;
-    }
 }
 
 InfoWindow.mergeOptions(options);
