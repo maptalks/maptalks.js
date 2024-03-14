@@ -1823,4 +1823,36 @@ describe('bug', () => {
             }, 100);
         });
     });
+
+    it('setBloom(maptalks/issues#630)', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFGeometry(center,
+            { symbol: { url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
+            }});
+        gltflayer.addGeometry(marker);
+
+        function cancelBloom() {
+            marker.setBloom(false);
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixel).to.be.eql([146, 146, 146, 255]);
+                done();
+            }, 100);
+        }
+        function checkColor() {
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixel).to.be.eql([255, 255, 255, 255]);
+                cancelBloom();
+            }, 200);
+        }
+        marker.on('load', () => {
+            marker.setBloom(true);
+            checkColor();
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
 });

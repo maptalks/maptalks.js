@@ -323,7 +323,6 @@ export default class GLTFMarker extends Marker {
         if (this._isTransparent()) {
             mesh.transparent = true;
         }
-        mesh.bloom = mesh.bloom || +!!this.isBloom();
         mesh.setUniform('uPickingId', this._getPickingId());
         mesh.properties.isAnimated = this.isAnimated();
     }
@@ -1014,7 +1013,7 @@ export default class GLTFMarker extends Marker {
     }
 
     setBloom(bloom) {
-        super.updateSymbol({ bloom });
+        this.updateSymbol({ bloom });
         return this;
     }
 
@@ -1210,6 +1209,11 @@ export default class GLTFMarker extends Marker {
 
     updateSymbol(symbol) {
         for (const name in symbol) {
+            if (name === 'bloom' && this._meshes) {
+                this._meshes.forEach(mesh => {
+                    mesh.bloom = +!!symbol[name];
+                });
+            }
             if (effectSymbols.has(name)) {
                 this._dirtyMarkerBBox = true;
                 break;
