@@ -110,7 +110,7 @@ class MapDragHandler extends Handler {
         const map = this.target;
         map.onMoveStart(param);
         const p = getEventContainerPoint(map._getActualEvent(param.domEvent), map.getContainer());
-        this.startPrjCoord = map._containerPointToPrj(p);
+        this.startPrjCoord = this._containerPointToPrj(p);
     }
 
     _moving(param) {
@@ -119,8 +119,21 @@ class MapDragHandler extends Handler {
         }
         const map = this.target;
         const p = getEventContainerPoint(map._getActualEvent(param.domEvent), map.getContainer());
-        map._setPrjCoordAtContainerPoint(this.startPrjCoord, p);
+        const point = map._prjToPoint(this._containerPointToPrj(p));
+        const offset = point._sub(map._prjToPoint(map._getPrjCenter()));
+        map._setPrjCoordAtOffsetToCenter(this.startPrjCoord, offset);
         map.onMoving(param);
+    }
+
+    _containerPointToPrj(p) {
+        const map = this.target;
+        const queryCoord = map._queryTerrainAtPoint(p);
+        if (queryCoord) {
+            const prjCoord = map.getProjection().project(queryCoord);
+            prjCoord.z = queryCoord.z;
+            return prjCoord;
+        }
+        return map._containerPointToPrj(p);
     }
 
     _moveEnd(param) {
