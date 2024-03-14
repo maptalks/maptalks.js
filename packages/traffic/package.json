@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/traffic",
-  "version": "0.97.2",
+  "version": "0.97.4",
   "description": "a tool to render traffic effect",
   "license": "UNLICENSED",
   "repository": {
@@ -28,7 +28,7 @@
     "prepare": "npm run build"
   },
   "devDependencies": {
-    "@maptalks/gltf-layer": "^0.97.2",
+    "@maptalks/gltf-layer": "^0.97.4",
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.0.4",

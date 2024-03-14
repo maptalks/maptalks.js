@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/gltf-layer",
-  "version": "0.97.2",
+  "version": "0.97.4",
   "description": "A maptalks Layer to render gltf",
   "license": "UNLICENSED",
   "repository": {
@@ -28,9 +28,9 @@
     "prepare": "npm run lint && npm run build"
   },
   "devDependencies": {
-    "@maptalks/gl": "^0.97.2",
-    "@maptalks/transcoders.draco": "^0.97.2",
-    "@maptalks/transform-control": "^0.97.2",
+    "@maptalks/gl": "^0.97.4",
+    "@maptalks/transcoders.draco": "^0.97.4",
+    "@maptalks/transform-control": "^0.97.4",
     "@maptalks/vt": "^0.92.0",
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-json": "^4.1.0",

@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/transcoders.crn",
-  "version": "0.97.2",
+  "version": "0.97.4",
   "description": "crn transcoder for @maptalks/gl",
   "main": "dist/transcoders.crn.js",
   "module": "dist/transcoders.crn.es.js",
@@ -23,7 +23,7 @@
   "author": "fuzhen",
   "license": "ISC",
   "devDependencies": {
-    "@maptalks/gl": "^0.97.2",
+    "@maptalks/gl": "^0.97.4",
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
     "@rollup/plugin-replace": "4.0.0",
