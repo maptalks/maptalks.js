@@ -19,7 +19,7 @@ import DrawTool from './DrawTool';
  * @param {*} projection
  * @param {*} prjCoords
  * @param {*} mapEvent
- * @returns
+ * @returns Coordinate | Coordinate[]
  */
 
 function queryTerrainCoordinates(projection, prjCoords, mapEvent) {
