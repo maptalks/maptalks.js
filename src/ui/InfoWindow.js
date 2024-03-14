@@ -1,5 +1,5 @@
 import { isFunction, isNumber, isObject, isString } from '../core/util';
-import { createEl, addDomEvent, removeDomEvent, on, off } from '../core/util/dom';
+import { createEl, addDomEvent, removeDomEvent } from '../core/util/dom';
 import Coordinate from '../geo/Coordinate';
 import Point from '../geo/Point';
 import Size from '../geo/Size';
