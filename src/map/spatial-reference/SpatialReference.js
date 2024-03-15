@@ -117,6 +117,7 @@ const DefaultSpatialReference = {
 DefaultSpatialReference['EPSG:4490'] = DefaultSpatialReference['EPSG:4326'];
 DefaultSpatialReference['PRESET-3857-512'] = DefaultSpatialReference['PRESET-VT-3857'];
 DefaultSpatialReference['PRESET-4326-512'] = DefaultSpatialReference['PRESET-VT-4326'];
+DefaultSpatialReference['PRESET-4490-512'] = DefaultSpatialReference['PRESET-VT-4326'];
 
 export default class SpatialReference {
     constructor(options = {}) {
