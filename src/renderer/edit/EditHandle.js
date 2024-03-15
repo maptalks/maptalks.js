@@ -233,4 +233,8 @@ export default class EditHandle extends Eventable(Class) {
         bufferBBOX(this.bbox, collisionBufferSize);
         return this.bbox;
     }
+
+    setZIndex(zIndex) {
+        this.options.zIndex = zIndex;
+    }
 }
