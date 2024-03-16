@@ -507,4 +507,23 @@ describe('Geometry.Events', function () {
             }, 100);
         }, 16);
     });
+
+    it('#2144 sector startAngle and endAngle<0', function (done) {
+        var sector = new maptalks.Sector(center, 100, -250, -220);
+        sector.addTo(layer);
+        map.setZoom(17);
+        var domPosition = GET_PAGE_POSITION(container);
+        var point = map.coordinateToContainerPoint(center).add(domPosition);
+        sector.on('click', function (param) {
+            expect(param.type).to.be.eql('click');
+            done();
+        });
+        setTimeout(() => {
+            happen.click(eventContainer, {
+                'clientX': point.x - 20,
+                'clientY': point.y - 30
+            });
+        }, 100);
+    });
+
 });
