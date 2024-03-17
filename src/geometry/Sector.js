@@ -83,6 +83,27 @@ class Sector extends Circle {
         return this;
     }
 
+    // The corrected angle is used for calculation and rendering
+    _correctAngles() {
+        let startAngle = this.getStartAngle(), endAngle = this.getEndAngle();
+        if (endAngle < startAngle) {
+            console.error('The ending angle should be greater than the starting angle ', startAngle, endAngle);
+            return [0, 0];
+        }
+        const angle = 360;
+        // const halfAngle = angle / 2;
+        if (endAngle - startAngle > angle) {
+            console.error('The difference between the end angle and the start angle is greater than 360 degrees ', startAngle, endAngle);
+            return [0, 0];
+        }
+        if (startAngle < 0) {
+            startAngle += angle;
+            endAngle += angle;
+        }
+        return [startAngle, endAngle];
+    }
+
+
     /**
      * Gets the shell of the sector as a polygon, number of the shell points is decided by [options.numberOfShellPoints]{@link Sector#options}
      * @return {Coordinate[]} - shell coordinates
@@ -95,13 +116,16 @@ class Sector extends Circle {
     }
 
     _getShell() {
+
+        const [startAngle, endAngle] = this._correctAngles();
+
         const measurer = this._getMeasurer(),
             center = this.getCoordinates(),
             numberOfPoints = this.options['numberOfShellPoints'] - 2,
             radius = this.getRadius(),
             shell = [center.copy()],
-            startAngle = this.getStartAngle(),
-            angle = this.getEndAngle() - startAngle;
+            // startAngle = this.getStartAngle(),
+            angle = endAngle - startAngle;
         let rad, dx, dy;
         for (let i = 0; i < numberOfPoints; i++) {
             rad = (angle * i / (numberOfPoints - 1) + startAngle) * Math.PI / 180;
@@ -147,8 +171,9 @@ class Sector extends Circle {
             // [0.0, 360.0)
             angle = atan2 < 0 ? (atan2 + 2 * Math.PI) * 360 / (2 * Math.PI) :
                 atan2 * 360 / (2 * Math.PI);
-        const sAngle = this.startAngle % 360,
-            eAngle = this.endAngle % 360;
+        const [startAngle, endAngle] = this._correctAngles();
+        const sAngle = startAngle % 360,
+            eAngle = endAngle % 360;
         let between = false;
         if (sAngle > eAngle) {
             between = !(angle > eAngle && angle < sAngle);
@@ -162,14 +187,16 @@ class Sector extends Circle {
         if (isNil(this._radius)) {
             return 0;
         }
-        return Math.PI * 2 * this._radius * Math.abs(this.startAngle - this.endAngle) / 360 + 2 * this._radius;
+        const [startAngle, endAngle] = this._correctAngles();
+        return Math.PI * 2 * this._radius * Math.abs(startAngle - endAngle) / 360 + 2 * this._radius;
     }
 
     _computeGeodesicArea() {
         if (isNil(this._radius)) {
             return 0;
         }
-        return Math.PI * Math.pow(this._radius, 2) * Math.abs(this.startAngle - this.endAngle) / 360;
+        const [startAngle, endAngle] = this._correctAngles();
+        return Math.PI * Math.pow(this._radius, 2) * Math.abs(startAngle - endAngle) / 360;
     }
 
     _toJSON(options) {
