@@ -7,6 +7,7 @@ import Actor from '../../core/worker/Actor';
 import Point from '../../geo/Point';
 import { imageFetchWorkerKey } from '../../core/worker/CoreWorkers';
 import { registerWorkerAdapter } from '../../core/worker/Worker';
+import { formatResouceUrl } from '../../core/ResouceProxy';
 
 const EMPTY_ARRAY = [];
 class ResourceWorkerConnection extends Actor {
@@ -790,10 +791,11 @@ class CanvasRenderer extends Class {
                 resolve(url);
                 return;
             }
+            const imageURL = formatResouceUrl(url[0]);
             const fetchInWorker = !isSVG(url[0]) && me._resWorkerConn && (layer.options['renderer'] !== 'canvas' || layer.options['decodeImageInWorker']);
             if (fetchInWorker) {
-                const uri = getAbsoluteURL(url[0]);
-                me._resWorkerConn.fetchImage(uri, (err, data) => {
+                // const uri = getAbsoluteURL(url[0]);
+                me._resWorkerConn.fetchImage(imageURL, (err, data) => {
                     if (err) {
                         if (err && typeof console !== 'undefined') {
                             console.warn(err);
@@ -837,7 +839,7 @@ class CanvasRenderer extends Class {
                     resources.markErrorResource(url);
                     resolve(url);
                 };
-                loadImage(img, url);
+                loadImage(img, [imageURL]);
             }
 
         };
