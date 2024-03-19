@@ -147,7 +147,7 @@ export function splitContent(content, font, wrapWidth, textWidth) {
 // const contentExpRe = /\{([\w_]+)\}/g;
 // export const CONTENT_EXPRE = /{([^}.]+)}/;
 // export const CONTENT_EXPRE = /{([\u0000-\u0019\u0021-\uFFFF]+)}/g;
-export const CONTENT_EXPRE = /\{([\w_]+)\}/g;
+// export const CONTENT_EXPRE = /\{([\w_]+)\}/g;
 const TEMPLATE_CHARS = ['{', '}'];
 /**
  * Replace variables wrapped by square brackets ({foo}) with actual values in props.
@@ -176,17 +176,12 @@ export function replaceVariable(str, props) {
         }
         return value;
     }
-    str = str.replace(CONTENT_EXPRE, function (str, key) {
-        return getValue(key);
-    });
     const [left, right] = TEMPLATE_CHARS;
-    if (str.indexOf(left) > -1 && str.indexOf(right) > -1) {
-        const keys = templateKeys(str);
-        for (let i = 0, len = keys.length; i < len; i++) {
-            const key = keys[i];
-            const value = getValue(key);
-            str = str.replace(`${left}${key}${right}`, value);
-        }
+    const keys = templateKeys(str);
+    for (let i = 0, len = keys.length; i < len; i++) {
+        const key = keys[i];
+        const value = getValue(key);
+        str = str.replaceAll(`${left}${key}${right}`, value);
     }
     return str;
 }
@@ -208,7 +203,7 @@ function templateKeys(str) {
         if (start && (char !== left && char !== right)) {
             key += char;
         }
-        if (char === right) {
+        if (char === right && key) {
             start = false;
             keys.push(key);
             key = EMPTY_STRING;
