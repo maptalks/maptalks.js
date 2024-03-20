@@ -1,7 +1,8 @@
-const commonjs = require('rollup-plugin-commonjs'),
-    resolve = require('rollup-plugin-node-resolve'),
-    babel = require('rollup-plugin-babel'),
-    json = require('rollup-plugin-json');
+const commonjs = require('@rollup/plugin-commonjs'),
+    resolve = require('@rollup/plugin-node-resolve'),
+    babel = require('@rollup/plugin-babel'),
+    json = require('@rollup/plugin-json'),
+    typescript = require('@rollup/plugin-typescript');
 const pkg = require('./package.json');
 
 const testing = process.env.BUILD === 'test';
@@ -10,10 +11,11 @@ const dev = process.env.BUILD === 'dev';
 const isDebug = testing || dev;
 const plugins = testing ?
     [
-        ['istanbul', {
-            // TileLayerGLRenderer is not testable on CI
-            exclude: ['test/**/*.js', 'src/core/mapbox/*.js', 'src/util/dom.js', 'src/renderer/layer/tilelayer/TileLayerGLRenderer.js', 'src/renderer/layer/ImageGLRenderable.js', 'node_modules/**/*']
-        }]]
+        // ['istanbul', {
+        //     // TileLayerGLRenderer is not testable on CI
+        //     exclude: ['test/**/*.js', 'src/core/mapbox/*.js', 'src/util/dom.js', 'src/renderer/layer/tilelayer/TileLayerGLRenderer.js', 'src/renderer/layer/ImageGLRenderable.js', 'node_modules/**/*']
+        // }]
+    ]
     :
     [];
 
@@ -29,11 +31,13 @@ const rollupPlugins = [
         main: true
     }),
     commonjs(),
+    typescript(),
     babel({
-        plugins
+        plugins,
+        babelHelpers: 'bundled'
     })
 ];
-const external = ['rbush', 'frustum-intersects', 'simplify-js', 'zousan'];
+const external = ['rbush', 'frustum-intersects', 'simplify-js'];
 
 const builds = [
     {
@@ -41,7 +45,7 @@ const builds = [
         plugins: rollupPlugins,
         output: [
             {
-                'sourcemap': isDebug,
+                'sourcemap': true,
                 'format': 'umd',
                 'name': 'maptalks',
                 banner,
@@ -56,7 +60,7 @@ const builds = [
         external,
         output: [
             {
-                'sourcemap': false,
+                'sourcemap': true,
                 'format': 'es',
                 banner,
                 'file': pkg.module
@@ -69,7 +73,7 @@ const builds = [
         plugins: rollupPlugins,
         output: [
             {
-                'sourcemap': false,
+                'sourcemap': true,
                 'format': 'es',
                 banner,
                 'file': pkg.module_browser

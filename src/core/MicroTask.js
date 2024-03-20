@@ -1,4 +1,3 @@
-import PromisePolyfill from './Promise';
 import { requestAnimFrame } from './util';
 import { isFunction, isNil, isNumber, now } from './util/common';
 import { getGlobalWorkerPool } from './worker/WorkerPool';
@@ -22,7 +21,7 @@ let tasks = [];
  */
 export function runTaskAsync(task) {
     startTasks();
-    const promise = new PromisePolyfill((resolve, reject) => {
+    const promise = new Promise((resolve, reject) => {
         if (!task) {
             reject(new Error('task is null'));
             return;
