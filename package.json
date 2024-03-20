@@ -26,7 +26,7 @@
     "build-test": "rollup -c --environment BUILD:test",
     "build-styles": "",
     "dev": "rollup --environment BUILD:dev -c -w",
-    "lint": "eslint src/**/*.js test/**/*.js",
+    "lint": "npx eslint src/**/*.js src/**/*.ts test/**/*.js",
     "pretest": "npm run build-test",
     "prepare": "npm run build",
     "preversion": "npm run lint",
@@ -55,6 +55,8 @@
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.6",
+    "eslint": "^8.57.0",
+    "eslint-plugin-mocha": "^10.4.1",
     "expect-maptalks": "^0.4.1",
     "expect.js": "^0.3.1",
     "happen": "^0.3.1",
@@ -71,7 +73,8 @@
     "rollup": "^4.13.0",
     "sinon": "^3.2.1",
     "tslib": "^2.6.2",
-    "typescript": "^5.4.2"
+    "typescript": "^5.4.2",
+    "typescript-eslint": "^7.3.1"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.13.0"

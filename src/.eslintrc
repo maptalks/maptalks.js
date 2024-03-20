@@ -1,18 +1,42 @@
 {
   "root": true,
-  "env": {
-    "es6": true
-  },
-  "parser": "babel-eslint",
+  "extends": [
+    "eslint:recommended"
+  ],
   "parserOptions": {
+    "ecmaVersion": 2020,
     "sourceType": "module"
   },
-  "extends": "maptalks",
-  "globals": {
+  "env": {
+    "browser": true,
+    "es6": true,
+    "node": true
   },
   "rules": {
-    "no-var" : "error",
-    "prefer-const": "error",
-    "global-require": 0
-  }
+    "no-prototype-builtins": "off"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.ts", "**/*.tsx"],
+      "env": { "browser": true, "es6": true, "node": true },
+      "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended"
+      ],
+      "globals": { "Atomics": "readonly", "SharedArrayBuffer": "readonly" },
+      "parser": "@typescript-eslint/parser",
+      "parserOptions": {
+        "ecmaVersion": 2018,
+        "sourceType": "module",
+        "project": "./tsconfig.json"
+      },
+      "plugins": ["@typescript-eslint"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off",
+        "no-prototype-builtins": "off"
+      }
+    }
+  ]
 }
+

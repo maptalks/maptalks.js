@@ -677,8 +677,6 @@ class Painter extends Class {
         ctx.isHitTesting = true;
         try {
             this.paint(null, ctx, this._hitPoint);
-        } catch (e) {
-            throw e;
         } finally {
             Canvas.setHitTesting(false);
         }
