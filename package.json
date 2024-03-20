@@ -72,5 +72,8 @@
     "sinon": "^3.2.1",
     "tslib": "^2.6.2",
     "typescript": "^5.4.2"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.13.0"
   }
 }

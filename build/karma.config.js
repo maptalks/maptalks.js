@@ -32,7 +32,8 @@ const karmaConfig = {
         '/resources/': '/base/test/resources/'
     },
     browsers: ['Chrome'],
-    reporters: ['mocha']
+    reporters: ['mocha'],
+    singleRun: true
 };
 
 module.exports = function (config) {
