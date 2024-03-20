@@ -3,11 +3,18 @@ import Handler from '../handler/Handler';
 import Browser from './Browser';
 
 /**
- * This library uses ES2015 class system. <br />
- * Class is the root class of class hierachy. <br />
+ *
+ * 基类（Class）
+ * 该库中所有的类都继承于该基类。
+ * 该类提供了定义新类时常用的工具方法，如管理options，添加 init hooks 等。
+ *
+ * @english
+ * This library uses ES2015 class system.
+ * Class is the root class of class hierachy.
  * It provides utility methods to make it easier to manage configration options, merge mixins and add init hooks.
+ *
  * @example
- * var defaultOptions = {
+ * const defaultOptions = {
  *     'foo' : 'bar'
  * };
  * class Foo extends maptalks.Class {
@@ -29,7 +36,6 @@ import Browser from './Browser';
  *
  * Foo.addInitHook('whenCreated');
  * @category core
- * @abstract
  */
 class Class {
 
@@ -37,9 +43,9 @@ class Class {
      * Create an object, set options if given and call all the init hooks.<br />
      * Options is where the object manages its configuration. Options passed to the object will be merged with parent's instead of overriding it.
      *
-     * @param  {Object} options - options to set
+     * @param options - options to set
      */
-    constructor(options) {
+    constructor(options: unknown) {
         if (!this || !this.setOptions) {
             throw new Error('Class instance is being created without "new" operator.');
         }
