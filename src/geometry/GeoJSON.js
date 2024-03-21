@@ -18,7 +18,6 @@ import MultiPolygon from './MultiPolygon';
 import GeometryCollection from './GeometryCollection';
 import Geometry from './Geometry';
 import { GEOJSON_TYPES } from '../core/Constants';
-import PromisePolyfill from './../core/Promise';
 import { runTaskAsync } from '../core/MicroTask';
 import Actor from '../core/worker/Actor';
 import { registerWorkerAdapter } from '../core/worker/Worker';
@@ -219,7 +218,7 @@ const GeoJSON = {
         if (isString(geoJSON)) {
             geoJSON = parseJSON(geoJSON);
         }
-        return new PromisePolyfill((resolve) => {
+        return new Promise((resolve) => {
             const resultGeos = [];
             if (geoJSON && (Array.isArray(geoJSON) || Array.isArray(geoJSON.features))) {
                 const pageSize = isNumber(countPerTime) ? Math.round(countPerTime) : 2000;
@@ -372,7 +371,7 @@ const GeoJSON = {
     * })
     * */
     fetch(url, countPerTime = 2000) {
-        return new PromisePolyfill((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             if (!url || !isString(url)) {
                 reject('url is error,It should be string');
                 return;

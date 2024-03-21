@@ -4,9 +4,11 @@ import Coordinate from '../Coordinate';
 import { WGS84Sphere } from '../measurer';
 import etmerc from './etmerc.js';
 
+/* eslint-disable no-loss-of-precision */
 // from proj_api.h
 const RAD_TO_DEG = 57.295779513082321,
     DEG_TO_RAD = 0.017453292519943296;
+/* eslint-enable no-loss-of-precision */
 
 // from pj_transform.c
 const SRS_WGS84_SEMIMAJOR = 6378137;

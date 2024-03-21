@@ -1,7 +1,6 @@
-import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn, getImageBitMap, getAbsoluteURL, calCanvasSize } from '../../core/util';
+import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn, getImageBitMap, calCanvasSize } from '../../core/util';
 import Class from '../../core/Class';
 import Browser from '../../core/Browser';
-import Promise from '../../core/Promise';
 import Canvas2D from '../../core/Canvas';
 import Actor from '../../core/worker/Actor';
 import Point from '../../geo/Point';

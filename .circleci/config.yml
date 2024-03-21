@@ -2,12 +2,14 @@
 #
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
 #
-version: 2
+version: 2.1
+orbs:
+  browser-tools: circleci/browser-tools@1.4.8
 jobs:
   build:
     docker:
       # specify the version you desire here
-      - image: circleci/node:14-browsers
+      - image: cimg/node:20.11-browsers
         environment:
           CHROME_BIN: "/usr/bin/google-chrome"
 
@@ -19,6 +21,7 @@ jobs:
     working_directory: ~/repo
 
     steps:
+      - browser-tools/install-chrome
       - checkout
 
       # Download and cache dependencies
@@ -37,6 +40,5 @@ jobs:
 
       # run tests!
       - run: npm test
-      - run: bash <(curl -s https://codecov.io/bash)
 
 
