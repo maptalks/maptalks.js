@@ -1,11 +1,16 @@
+import { MixinConstructor } from "src/core/Mixin";
+import Handler from "./Handler";
+
 /**
  * A mixin, to enable a class with [interaction handlers]{@link Handler}
  * @protected
  * @category handler
  * @mixin Handlerable
  */
-export default function (Base) {
-    return class extends Base {
+export default function <T extends MixinConstructor>(Base: T) {
+
+    return class Handlerable extends Base {
+        _handlers?: Handler[];
         /**
          * Register a handler
          * @param {String} name       - name of the handler
@@ -31,7 +36,7 @@ export default function (Base) {
 
             this._handlers.push(handler);
 
-            if (this.options[name]) {
+            if ((this as any).options[name]) {
                 handler.enable();
             }
             return this;

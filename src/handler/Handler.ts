@@ -7,9 +7,16 @@ import Eventable from '../core/Eventable';
  * @protected
  */
 class Handler {
-    constructor(target) {
+    target: any;
+    dom?: HTMLElement;
+    _enabled: boolean;
+
+    constructor(target: any) {
         this.target = target;
     }
+
+    addHooks(): void {}
+    removeHooks(): void {}
 
     /**
      * Enables the handler
@@ -52,5 +59,9 @@ class Handler {
     }
 }
 
+// cheats to ts compiler
+class HandlerMixin extends Eventable(Handler) {
 
-export default Eventable(Handler);
+}
+
+export default HandlerMixin;
