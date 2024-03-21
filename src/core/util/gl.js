@@ -48,7 +48,7 @@ export function compileShader(gl, type, source) {
  * Create the linked program object
  * @param {String} vert a vertex shader program (string)
  * @param {String} frag a fragment shader program (string)
- * @return {WebGLProgram} created program object, or null if the creation has failed
+ * @return created program object, or null if the creation has failed
  * @private
  */
 export function createProgram(gl, vert, frag) {
