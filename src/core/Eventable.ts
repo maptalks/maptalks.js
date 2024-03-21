@@ -15,6 +15,14 @@ type HandlerContext = {
     handler: HandlerFn,
     context: any
 };
+
+export type EventRecords = Record<string, HandlerFn>;
+
+export type BaseEventParams = {
+    type: string,
+    target: any
+};
+
 export type HandlerFn = (...args: any[]) => void | boolean;
 
 export default function <T extends MixinConstructor>(Base: T) {
@@ -34,12 +42,12 @@ export default function <T extends MixinConstructor>(Base: T) {
          * @example
          * foo.on('mousedown mousemove mouseup', onMouseEvent, foo);
          */
-        on(eventsOn: string, handlerFn: HandlerFn, context?: any): this {
+        on(eventsOn: string | EventRecords, handlerFn: any, context?: any): this {
             if (!eventsOn) {
                 return this;
             }
             if (!isString(eventsOn)) {
-                return this._switch('on', eventsOn, handlerFn);
+                return this._switch('on', eventsOn as EventRecords, handlerFn);
             }
             if (!handlerFn) {
                 return this;
@@ -47,6 +55,7 @@ export default function <T extends MixinConstructor>(Base: T) {
             if (!this._eventMap) {
                 this._eventMap = {};
             }
+            eventsOn = eventsOn as string;
             const eventTypes = eventsOn.toLowerCase().split(' ');
             let evtType;
             if (!context) {
@@ -123,13 +132,13 @@ export default function <T extends MixinConstructor>(Base: T) {
          * @example
          * foo.once('mousedown mousemove mouseup', onMouseEvent, foo);
          */
-        once(eventTypes: string | HandlerContext, handler: HandlerFn, context?: any) {
+        once(eventTypes: string | EventRecords, handler: any, context?: any) {
             if (!isString(eventTypes)) {
-                eventTypes = eventTypes as HandlerContext;
+                eventTypes = eventTypes as EventRecords;
                 const once = {};
                 for (const p in eventTypes) {
                     if (eventTypes.hasOwnProperty(p)) {
-                        once[p] = this._wrapOnceHandler(p, eventTypes[p], context);
+                        once[p] = this._wrapOnceHandler(p, eventTypes[p], handler);
                     }
                 }
                 return this._switch('on', once);
@@ -155,12 +164,12 @@ export default function <T extends MixinConstructor>(Base: T) {
          * @example
          * foo.off('mousedown mousemove mouseup', onMouseEvent, foo);
          */
-        off(eventsOff: string, handler: HandlerFn, context?: any) {
+        off(eventsOff: string | EventRecords, handler: any, context?: any) {
             if (!this._eventMap || !eventsOff) {
                 return this;
             }
             if (!isString(eventsOff)) {
-                return this._switch('off', eventsOff, handler);
+                return this._switch('off', eventsOff as EventRecords, handler);
             }
             if (!handler) {
                 return this;
@@ -169,6 +178,7 @@ export default function <T extends MixinConstructor>(Base: T) {
             if (!isNumber((handler as any)._id)) {
                 return this;
             }
+            eventsOff = eventsOff as string;
             const eventTypes = eventsOff.split(' ');
             let eventType, listeners, wrapKey;
             if (!context) {
@@ -242,10 +252,9 @@ export default function <T extends MixinConstructor>(Base: T) {
         }
 
         /**
+         * 返回所有监听的事件
+         * @english
          * Get all the listening event types
-         *
-         * @returns {String[]} events
-         * @function Eventable.getListeningEvents
          */
         getListeningEvents() {
             if (!this._eventMap) {
@@ -255,12 +264,12 @@ export default function <T extends MixinConstructor>(Base: T) {
         }
 
         /**
+         * 把时间监听拷贝给给定的目标对象
+         * @english
          * Copy all the event listener to the target object
-         * @param {Object} target - target object to copy to.
-         * @return {} this
-         * @function Eventable.copyEventListeners
+         * @param target - target object to copy to.
          */
-        copyEventListeners(target) {
+        copyEventRecords(target: EventableMixin) {
             const eventMap = target._eventMap;
             if (!eventMap) {
                 return this;
@@ -276,21 +285,22 @@ export default function <T extends MixinConstructor>(Base: T) {
         }
 
         /**
+         * 触发一个事件，并执行所有监听该事件的handler方法
+         *
+         * @english
          * Fire an event, causing all handlers for that event name to run.
          *
-         * @param  {String} eventType - an event type to fire
-         * @param  {Object} param     - parameters for the listener function.
-         * @return {} this
-         * @function Eventable.fire
+         * @param  eventType - an event type to fire
+         * @param  param     - parameters for the listener function.
          */
-        fire(...args) {
+        fire(eventType: string, param: BaseEventParams): this {
             if (this._eventParent) {
-                return this._eventParent.fire.call(this._eventParent, ...args);
+                return this._eventParent.fire.call(this._eventParent, eventType, param);
             }
-            return this._fire.call(this, ...args);
+            return this._fire.call(this, eventType, param);
         }
 
-        _wrapOnceHandler(evtType, handler, context) {
+        _wrapOnceHandler(evtType: string, handler: HandlerFn, context?: any) {
             // const me = this;
             const key = generateWrapKey(evtType);
             let called = false;
@@ -312,16 +322,16 @@ export default function <T extends MixinConstructor>(Base: T) {
             return fn;
         }
 
-        _switch(to: string, eventKeys, context?: any) {
-            for (const p in eventKeys) {
-                if (eventKeys.hasOwnProperty(p)) {
-                    this[to](p, eventKeys[p], context);
+        _switch(to: string, eventRecords: EventRecords, context?: any) {
+            for (const p in eventRecords) {
+                if (eventRecords.hasOwnProperty(p)) {
+                    this[to](p, eventRecords[p], context);
                 }
             }
             return this;
         }
 
-        _clearListeners(eventType) {
+        _clearListeners(eventType: string) {
             if (!this._eventMap || !isString(eventType)) {
                 return;
             }
@@ -337,13 +347,14 @@ export default function <T extends MixinConstructor>(Base: T) {
         }
 
         /**
+         * 设置一个事件父级对象，用来代替执行所有的事件监听
+         *
+         * @english
          * Set a event parent to handle all the events
-         * @param {Any} parent - event parent
-         * @return {Any} this
+         * @param parent - event parent
          * @private
-         * @function Eventable._setEventParent
          */
-        _setEventParent(parent) {
+        _setEventParent(parent: EventableMixin) {
             this._eventParent = parent;
             return this;
         }
@@ -353,7 +364,7 @@ export default function <T extends MixinConstructor>(Base: T) {
             return this;
         }
 
-        _fire(eventType, param) {
+        _fire(eventType: string, param: BaseEventParams) {
             if (!this._eventMap) {
                 return this;
             }
@@ -363,7 +374,10 @@ export default function <T extends MixinConstructor>(Base: T) {
                 return this;
             }
             if (!param) {
-                param = {};
+                param = {
+                    type: eventType,
+                    target: this._eventTarget || this
+                };
             }
             param['type'] = eventType;
             param['target'] = this._eventTarget || this;
