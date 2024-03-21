@@ -264,7 +264,7 @@ export default function <T extends MixinConstructor>(Base: T) {
         }
 
         /**
-         * 把时间监听拷贝给给定的目标对象
+         * 把事件监听拷贝给给定的目标对象
          * @english
          * Copy all the event listener to the target object
          * @param target - target object to copy to.
