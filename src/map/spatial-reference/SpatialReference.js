@@ -167,7 +167,9 @@ export default class SpatialReference {
             if (hasOwn(projections, p)) {
                 const names = projections[p].aliases || [];
                 const code = projections[p]['code'];
-                names.push(code);
+                if (code) {
+                    names.push(code);
+                }
                 for (let i = 0; i < names.length; i++) {
                     if (names[i].toLowerCase() === prjName) {
                         if (projections[p].create) {

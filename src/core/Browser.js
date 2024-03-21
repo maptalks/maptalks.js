@@ -76,6 +76,7 @@ if (!IS_NODE) {
         }, {
             get passive() {
                 supportsPassive = true;
+                return true;
             }
         });
         /*eslint-disable no-empty */
