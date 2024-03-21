@@ -1,5 +1,5 @@
-import Class from "src/core/Class";
-import { MixinConstructor } from "src/core/Mixin";
+import Class from "../core/Class";
+import { MixinConstructor } from "../core/Mixin";
 
 /**
  * Common methods for classes can be rendered, e.g. Map, Layers

@@ -1,4 +1,4 @@
-import { MixinConstructor } from "src/core/Mixin";
+import { MixinConstructor } from "../core/Mixin";
 import Handler from "./Handler";
 
 /**
