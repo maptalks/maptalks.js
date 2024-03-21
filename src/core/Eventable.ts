@@ -269,7 +269,7 @@ export default function <T extends MixinConstructor>(Base: T) {
          * Copy all the event listener to the target object
          * @param target - target object to copy to.
          */
-        copyEventRecords(target: EventableMixin) {
+        copyEventListeners(target: EventableMixin) {
             const eventMap = target._eventMap;
             if (!eventMap) {
                 return this;
