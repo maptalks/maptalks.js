@@ -242,8 +242,8 @@ Map.include(/** @lends Map.prototype */{
         const currentBearing = this.getBearing();
         this._setCameraMovement({
             bearing: currentBearing,
-            ...frameOptions[index],
-            duration: frameOptions[index].timestamp - frameOptions[index - 1].timestamp
+            duration: frameOptions[index].timestamp - frameOptions[index - 1].timestamp,
+            ...frameOptions[index]
         }, onFrame);
         const play = () => {
             this._animPlayer.play();

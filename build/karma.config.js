@@ -1,4 +1,4 @@
-module.exports = {
+const karmaConfig = {
     frameworks: ['mocha', 'expect', 'expect-maptalks', 'sinon', 'happen'],
     basePath: '..',
     client: {
@@ -31,14 +31,11 @@ module.exports = {
         '/lib/': '/base/assets/lib/',
         '/resources/': '/base/test/resources/'
     },
-    customLaunchers: {
-        IE10: {
-            base: 'IE',
-            'x-ua-compatible': 'IE=EmulateIE10'
-        },
-        IE9: {
-            base: 'IE',
-            'x-ua-compatible': 'IE=EmulateIE9'
-        }
-    }
+    browsers: ['Chrome'],
+    reporters: ['mocha'],
+    singleRun: true
 };
+
+module.exports = function (config) {
+    config.set(karmaConfig);
+}

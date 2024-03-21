@@ -44,7 +44,7 @@ export function clipSegment(a, b, bounds, useLastCode, round, noCut) {
 
     // save 2nd code to avoid calculating it on the next segment
     _lastCode = codeB;
-
+    /* eslint-disable no-constant-condition */
     while (true) {
         // if a,b is inside the clip window (trivial accept)
         if (!(codeA | codeB)) {
@@ -72,6 +72,7 @@ export function clipSegment(a, b, bounds, useLastCode, round, noCut) {
             codeB = newCode;
         }
     }
+    /* eslint-enable no-constant-condition */
 }
 
 /* @function clipPolygon(points: Point[], bounds: Bounds, round?: Boolean): Point[]

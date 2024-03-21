@@ -1,12 +1,22 @@
-import { IS_NODE, extend, isInteger, isNil, isNumber } from '../../core/util';
+import { IS_NODE, isInteger, isNil, isNumber } from '../../core/util';
 import { createGLContext, createProgram, enableVertexAttrib } from '../../core/util/gl';
-import Browser from '../../core/Browser';
 import * as mat4 from '../../core/util/mat4';
 import Canvas from '../../core/Canvas';
 import Point from '../../geo/Point';
+import { MixinConstructor } from '../../core/Mixin';
 
 // used to debug tiles
 const DEFAULT_BASE_COLOR = [1, 1, 1, 1];
+const TEMP_FLOAT32ARRAY = new Float32Array(8);
+const TEMP_INT16ARRAY = new Int16Array(8);
+
+export type TileRenderingCanvas = { gl?: TileRenderingContext, texture?: TileImageTexture } & HTMLCanvasElement;
+export type TileRenderingContext = { program: TileRenderingProgram, wrap: () => TileRenderingContext } & (WebGLRenderingContext | WebGL2RenderingContext);
+export type TileRenderingProgram = { fragmentShader: string, vertexShader: string } & WebGLProgram;
+export type TileImageType = { glBuffer?: TileImageBuffer, texture?: TileImageTexture } & (HTMLImageElement | HTMLCanvasElement);
+export type TileImageBuffer = { width?: number, height?: number, type?: string } & WebGLBuffer;
+export type TileImageTexture = WebGLTexture;
+export type VertexAttrib = [name: string, stride: number, type?: string];
 
 const shaders = {
     'vertexShader': `
@@ -51,8 +61,8 @@ const shaders = {
 };
 
 //reusable temporary variables
-const v2 = [0, 0],
-    v3 = [0, 0, 0],
+const v2: VertexAttrib = ['', 0],
+    v3: number[] = [0, 0, 0],
     arr16 = new Array(16);
 const DEBUG_POINT = new Point(20, 20);
 
@@ -61,8 +71,24 @@ const DEBUG_POINT = new Point(20, 20);
  * @mixin ImageGLRenderable
  * @protected
  */
-const ImageGLRenderable = Base => {
+const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
     const renderable = class extends Base {
+        gl: TileRenderingContext;
+        canvas: TileRenderingCanvas; // HTMLCHTMLCanvasElementnvasElement
+        canvas2?: TileRenderingCanvas;
+        _debugInfoCanvas?: TileRenderingCanvas;
+        program?: TileRenderingProgram;
+        // webgl point for layerAltitude
+        _layerAlt: number = 0;
+        _layerAltitude: number = 0;
+        layer?: any;
+        texBuffer?: TileImageBuffer;
+        _debugBuffer?: TileImageBuffer;
+        posBuffer?: TileImageBuffer;
+        _imageBuffers?: TileImageBuffer[];
+        _buffers?: TileImageBuffer[];
+        _textures?: TileImageTexture[];
+
 
         /**
          * Draw an image at x, y at map's gl zoom
@@ -73,8 +99,8 @@ const ImageGLRenderable = Base => {
          * @param {Number} h - height at map's gl zoom
          * @param {Number} opacity
          */
-        drawGLImage(image, x, y, w, h, scale, opacity, debug, baseColor) {
-            if (this.gl.program !== this.program) {
+        drawGLImage(image: TileImageType, x: number, y: number, w: number, h: number, scale: number, opacity: number, debugInfo: string, baseColor: number[]) {
+            if ((this.gl as any).program !== this.program) {
                 this.useProgram(this.program);
             }
             const gl = this.gl;
@@ -111,7 +137,7 @@ const ImageGLRenderable = Base => {
             const uMatrix = mat4.identity(arr16);
             mat4.translate(uMatrix, uMatrix, v3);
             mat4.scale(uMatrix, uMatrix, [scale, scale, 1]);
-            mat4.multiply(uMatrix, this.getMap().projViewMatrix, uMatrix);
+            mat4.multiply(uMatrix, (this as any).getMap().projViewMatrix, uMatrix);
             gl.uniformMatrix4fv(this.program['u_matrix'], false, uMatrix);
             gl.uniform1f(this.program['u_opacity'], opacity);
             gl.uniform1f(this.program['u_debug_line'], 0);
@@ -140,12 +166,12 @@ const ImageGLRenderable = Base => {
             this.enableVertexAttrib(v2);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-            if (debug) {
-                this.drawDebug(uMatrix, 0, 0, w, h, debug);
+            if (debugInfo) {
+                this.drawDebug(uMatrix, 0, 0, w, h, debugInfo);
             }
         }
 
-        drawDebug(uMatrix, x, y, w, h, debugInfo) {
+        drawDebug(uMatrix: number[], x: number, y: number, w: number, h: number, debugInfo: string) {
             const gl = this.gl;
             gl.disable(gl.DEPTH_TEST);
             gl.bindBuffer(gl.ARRAY_BUFFER, this._debugBuffer);
@@ -166,7 +192,7 @@ const ImageGLRenderable = Base => {
             //draw debug info
             let canvas = this._debugInfoCanvas;
             if (!canvas) {
-                const dpr = this.getMap().getDevicePixelRatio() > 1 ? 2 : 1;
+                const dpr = (this as any).getMap().getDevicePixelRatio() > 1 ? 2 : 1;
                 canvas = this._debugInfoCanvas = document.createElement('canvas');
                 canvas.width = 256 * dpr;
                 canvas.height = 32 * dpr;
@@ -198,12 +224,12 @@ const ImageGLRenderable = Base => {
             gl.enable(gl.DEPTH_TEST);
         }
 
-        bufferTileData(x, y, w, h, buffer) {
+        bufferTileData(x: number, y: number, w: number, h: number, buffer?: TileImageBuffer) {
             const x1 = x;
             const x2 = x + w;
             const y1 = y;
             const y2 = y - h;
-            let data;
+            let data: Int16Array | Float32Array;
             if (isInteger(x1) && isInteger(x2) && isInteger(y1) && isInteger(y2)) {
                 data = this.set8Int(
                     x1, y1,
@@ -222,37 +248,6 @@ const ImageGLRenderable = Base => {
             glBuffer.height = h;
             glBuffer.type = data instanceof Int16Array ? 'SHORT' : 'FLOAT';
             return glBuffer;
-        }
-
-        /**
-         * Draw the tile image as tins
-         * @param {HtmlElement} image
-         * @param {Array} vertices  - tin vertices
-         * @param {Array} texCoords - texture coords
-         * @param {Array} indices   - element indexes
-         * @param {number} opacity
-         */
-        drawTinImage(image, vertices, texCoords, indices, opacity) {
-            const gl = this.gl;
-            this.loadTexture(image);
-            gl.uniformMatrix4fv(this.program['u_matrix'], false, this.getMap().projViewMatrix);
-            gl.uniform1f(this.program['u_opacity'], opacity);
-
-            //bufferdata vertices
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
-            this.enableVertexAttrib(['a_position', 3]);
-            //TODO save buffer to avoid repeatedly bufferData
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.DYNAMIC_DRAW);
-
-            //bufferdata tex coords
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.texBuffer);
-            this.enableVertexAttrib(['a_texCoord', 2]);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoords), gl.DYNAMIC_DRAW);
-
-            //bufferdata indices
-            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.DYNAMIC_DRAW);
-            //draw
-            gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
         }
 
         /**
@@ -307,7 +302,7 @@ const ImageGLRenderable = Base => {
         /**
          * Resize GL canvas with renderer's 2D canvas
          */
-        resizeGLCanvas() {
+        resizeGLCanvas(): void {
             if (this.gl) {
                 this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
             }
@@ -323,7 +318,7 @@ const ImageGLRenderable = Base => {
         /**
          * Clear gl canvas
          */
-        clearGLCanvas() {
+        clearGLCanvas(): void {
             if (this.gl) {
                 this.gl.clearStencil(0xFF);
                 this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.STENCIL_BUFFER_BIT);
@@ -333,7 +328,7 @@ const ImageGLRenderable = Base => {
             }
         }
 
-        disposeImage(image) {
+        disposeImage(image: TileImageType): void {
             if (!image) {
                 return;
             }
@@ -347,7 +342,7 @@ const ImageGLRenderable = Base => {
             delete image.glBuffer;
         }
 
-        _createTexture(image) {
+        _createTexture(image: TileImageType): TileImageTexture {
             const gl = this.gl;
             const texture = this.getTexture() || gl.createTexture();   // Create a texture object
             // Bind the texture object to the target
@@ -371,9 +366,8 @@ const ImageGLRenderable = Base => {
 
         /**
          * Get a texture from cache or create one if cache is empty
-         * @returns {WebGLTexture}
          */
-        getTexture() {
+        getTexture(): TileImageTexture | null {
             if (!this._textures) {
                 this._textures = [];
             }
@@ -383,19 +377,17 @@ const ImageGLRenderable = Base => {
 
         /**
          * Save a texture to the cache
-         * @param {WebGLTexture} texture
          */
-        saveTexture(texture) {
+        saveTexture(texture: TileImageTexture): void {
             this._textures.push(texture);
         }
 
         /**
          * Load image into a text and bind it with WebGLContext
-         * @param {Image|Canvas} image
-         * @returns {WebGLTexture}
+         * @param image
          */
-        loadTexture(image) {
-            const map = this.getMap();
+        loadTexture(image: TileImageType): TileImageTexture {
+            const map = (this as any).getMap();
             const gl = this.gl;
             let texture = image.texture;   // Create a texture object
             if (!texture) {
@@ -416,9 +408,8 @@ const ImageGLRenderable = Base => {
 
         /**
          * Get a texture from cache or create one if cache is empty
-         * @returns {WebGLTexture}
          */
-        getImageBuffer() {
+        getImageBuffer(): TileImageBuffer | null {
             if (!this._imageBuffers) {
                 this._imageBuffers = [];
             }
@@ -430,7 +421,7 @@ const ImageGLRenderable = Base => {
          * Save a texture to the cache
          * @param {WebGLTexture} texture
          */
-        saveImageBuffer(buffer) {
+        saveImageBuffer(buffer: TileImageBuffer): void {
             if (!this._imageBuffers) {
                 this._imageBuffers = [];
             }
@@ -439,9 +430,9 @@ const ImageGLRenderable = Base => {
 
         /**
          * Load image into a text and bind it with WebGLContext
-         * @returns {WebGLTexture}
+         * @returns
          */
-        loadImageBuffer(data, glBuffer) {
+        loadImageBuffer(data: Float32Array | Int16Array, glBuffer: TileImageBuffer) {
             const gl = this.gl;
             // Create a buffer object
             const buffer = glBuffer || this.createImageBuffer();
@@ -499,7 +490,7 @@ const ImageGLRenderable = Base => {
          * Create a WebGL buffer
          * @returns {WebGLBuffer}
          */
-        createBuffer() {
+        createBuffer(): TileImageBuffer {
             const gl = this.gl;
             // Create the buffer object
             const buffer = gl.createBuffer();
@@ -522,17 +513,17 @@ const ImageGLRenderable = Base => {
          *  ['a_normal', 3, 'FLOAT']
          * ]);
          */
-        enableVertexAttrib(attributes) {
+        enableVertexAttrib(attributes: VertexAttrib): void {
             enableVertexAttrib(this.gl, this.gl.program, attributes);
         }
 
         /**
          * Create the linked program object
-         * @param {String} vert a vertex shader program (string)
-         * @param {String} frag a fragment shader program (string)
-         * @return {WebGLProgram} created program object, or null if the creation has failed
+         * @param vert a vertex shader program (string)
+         * @param frag a fragment shader program (string)
+         * @return created program object, or null if the creation has failed
          */
-        createProgram(vert, frag) {
+        createProgram(vert: string, frag: string): TileRenderingProgram {
             const gl = this.gl;
             const { program, vertexShader, fragmentShader } = createProgram(gl, vert, frag);
             const numUniforms = gl.getProgramParameter(program, 0x8B86);
@@ -552,7 +543,7 @@ const ImageGLRenderable = Base => {
          * use the given program
          * @param {WebGLProgram} program
          */
-        useProgram(program) {
+        useProgram(program: TileRenderingProgram) {
             const gl = this.gl;
             gl.useProgram(program);
             gl.program = program;
@@ -561,10 +552,10 @@ const ImageGLRenderable = Base => {
 
         /**
          * Enable a sampler, and set texture
-         * @param {WebGLSampler} sampler
-         * @param {ptr} texture id
+         * @param sampler
+         * @param texture id
          */
-        enableSampler(sampler, texIdx) {
+        enableSampler(sampler: string, texIdx?: number): WebGLUniformLocation {
             const gl = this.gl;
             const uSampler = this._getUniform(gl.program, sampler);
             if (!texIdx) {
@@ -575,7 +566,7 @@ const ImageGLRenderable = Base => {
             return uSampler;
         }
 
-        _initUniforms(program, uniforms) {
+        _initUniforms(program: TileRenderingProgram, uniforms: string[]): void {
             for (let i = 0; i < uniforms.length; i++) {
                 let name = uniforms[i];
                 let uniform = uniforms[i];
@@ -591,7 +582,7 @@ const ImageGLRenderable = Base => {
             }
         }
 
-        _getUniform(program, uniformName) {
+        _getUniform(program: TileRenderingProgram, uniformName: string): WebGLUniformLocation {
             const gl = this.gl;
             const uniform = gl.getUniformLocation(program, uniformName);
             if (!uniform) {
@@ -599,46 +590,39 @@ const ImageGLRenderable = Base => {
             }
             return uniform;
         }
-    };
 
-    extend(renderable.prototype, {
-        set8: function () {
-            const out = Browser.ie9 ? null : new Float32Array(8);
-            return function (a0, a1, a2, a3, a4, a5, a6, a7) {
-                out[0] = a0;
-                out[1] = a1;
-                out[2] = a2;
-                out[3] = a3;
-                out[4] = a4;
-                out[5] = a5;
-                out[6] = a6;
-                out[7] = a7;
-                return out;
-            };
-        }(),
+        set8(a0: number, a1: number, a2: number, a3: number, a4: number, a5: number, a6: number, a7: number) {
+            const out = TEMP_FLOAT32ARRAY;
+            out[0] = a0;
+            out[1] = a1;
+            out[2] = a2;
+            out[3] = a3;
+            out[4] = a4;
+            out[5] = a5;
+            out[6] = a6;
+            out[7] = a7;
+            return out;
+        }
 
-        set8Int: function () {
-            const out = Browser.ie9 ? null : new Int16Array(8);
-            return function (a0, a1, a2, a3, a4, a5, a6, a7) {
-                out[0] = a0;
-                out[1] = a1;
-                out[2] = a2;
-                out[3] = a3;
-                out[4] = a4;
-                out[5] = a5;
-                out[6] = a6;
-                out[7] = a7;
-                return out;
-            };
-        }()
-    });
-
+        set8Int(a0: number, a1: number, a2: number, a3: number, a4: number, a5: number, a6: number, a7: number) {
+            const out = TEMP_INT16ARRAY;
+            out[0] = a0;
+            out[1] = a1;
+            out[2] = a2;
+            out[3] = a3;
+            out[4] = a4;
+            out[5] = a5;
+            out[6] = a6;
+            out[7] = a7;
+            return out;
+        }
+    }
     return renderable;
 };
 
 export default ImageGLRenderable;
 
-function resize(image) {
+function resize(image: TileImageType): TileImageType {
     if (isPowerOfTwo(image.width) && isPowerOfTwo(image.height)) {
         return image;
     }
@@ -659,14 +643,14 @@ function resize(image) {
     return canvas;
 }
 
-export function isPowerOfTwo(value) {
+export function isPowerOfTwo(value: number) {
     return (value & (value - 1)) === 0 && value !== 0;
 }
 
-export function floorPowerOfTwo(value) {
+export function floorPowerOfTwo(value: number) {
     return Math.pow(2, Math.floor(Math.log(value) / Math.LN2));
 }
 
-function ceilPowerOfTwo(value) {
+function ceilPowerOfTwo(value: number) {
     return Math.pow(2, Math.ceil(Math.log(value) / Math.LN2));
 }

@@ -57,7 +57,7 @@ class Compass extends Control {
             this._bearing = bearing;
             setStyle(
                 this._compass,
-                `transform: rotate(${this._bearing}deg);`,
+                `transform: rotate(${this._bearing}deg);`
             );
         }
     }
