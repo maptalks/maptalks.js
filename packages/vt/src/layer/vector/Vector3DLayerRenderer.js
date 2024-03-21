@@ -448,14 +448,19 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
 
     _addCoord(center, x, y, z, count, coordinates) {
+        const needWarning = this.getMap().getProjection().isSphere();
         let invalid = false;
         if (coordinates[0] > 180 || coordinates[0] < -180) {
             invalid = true;
-            console.warn(`Layer(${this.layer.getId()}) has invalid longitude value: ${coordinates[0]}`);
+            if (needWarning) {
+                console.warn(`Layer(${this.layer.getId()}) has invalid longitude value: ${coordinates[0]}`);
+            }
         }
         if (coordinates[1] > 90 || coordinates[1] < -90) {
             invalid = true;
-            console.warn(`Layer(${this.layer.getId()}) has invalid latitude value: ${coordinates[1]}`);
+            if (needWarning) {
+                console.warn(`Layer(${this.layer.getId()}) has invalid latitude value: ${coordinates[1]}`);
+            }
         }
         if (invalid) {
             return;
