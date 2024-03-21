@@ -1,37 +1,47 @@
 import GlobalConfig from '../GlobalConfig';
+import { MixinConstructor } from './Mixin';
 import { extend, isString, isNil, UID, isNumber } from './util';
 import { stopPropagation } from './util/dom';
+
 /**
  * This provides methods used for event handling. It's a mixin and not meant to be used directly.
  * @mixin Eventable
  */
-
-function generateWrapKey(eventType) {
+function generateWrapKey(eventType: string): string {
     return 'Z__' + eventType;
 }
 
-const Eventable = Base =>
+type HandlerContext = {
+    handler: HandlerFn,
+    context: any
+};
+export type HandlerFn = (...args: any[]) => void | boolean;
 
-    class extends Base {
+export default function <T extends MixinConstructor>(Base: T) {
+    return class EventableMixin extends Base {
+        _eventMap?: Record<string, HandlerContext[]>;
+        _eventParent?: EventableMixin;
+        _eventTarget?: any;
         /**
+         * 注册事件的监听
+         *
+         * @english
          * Register a handler function to be called whenever this event is fired.
          *
-         * @param {String} eventsOn                  - event types to register, seperated by space if more than one.
-         * @param {Function} handler                 - handler function to be called
-         * @param {Object} [context=null]            - the context of the handler
-         * @return {Any} this
-         * @function Eventable.on
+         * @param eventsOn           - event types to register, seperated by space if more than one.
+         * @param handler            - handler function to be called
+         * @param context            - the context of the handler
          * @example
          * foo.on('mousedown mousemove mouseup', onMouseEvent, foo);
          */
-        on(eventsOn, handler, context) {
+        on(eventsOn: string, handlerFn: HandlerFn, context?: any): this {
             if (!eventsOn) {
                 return this;
             }
             if (!isString(eventsOn)) {
-                return this._switch('on', eventsOn, handler);
+                return this._switch('on', eventsOn, handlerFn);
             }
-            if (!handler) {
+            if (!handlerFn) {
                 return this;
             }
             if (!this._eventMap) {
@@ -40,12 +50,15 @@ const Eventable = Base =>
             const eventTypes = eventsOn.toLowerCase().split(' ');
             let evtType;
             if (!context) {
+                /* eslint-disable @typescript-eslint/no-this-alias */
                 context = this;
+                /* eslint-enable @typescript-eslint/no-this-alias */
             }
             //检测handler是否被监听过
+            const handler = handlerFn as any;
             const isAdd = isNumber(handler._id);
             handler._id = UID();
-            let handlerChain;
+            let handlerChain: HandlerContext[];
             for (let ii = 0, ll = eventTypes.length; ii < ll; ii++) {
                 evtType = eventTypes[ii];
                 const wrapKey = generateWrapKey(evtType);
@@ -85,31 +98,34 @@ const Eventable = Base =>
         }
 
         /**
+         * on方法的alias
+         *
+         * @english
          * Alias for [on]{@link Eventable.on}
          *
-         * @param {String} eventTypes     - event types to register, seperated by space if more than one.
-         * @param {Function} handler                 - handler function to be called
-         * @param {Object} [context=null]            - the context of the handler
-         * @return {} this
-         * @function Eventable.addEventListener
+         * @param eventTypes     - event types to register, seperated by space if more than one.
+         * @param handler        - handler function to be called
+         * @param context        - the context of the handler
          */
-        addEventListener() {
-            return this.on.apply(this, arguments);
+        addEventListener(...args): this {
+            return this.on.call(this, ...args);
         }
 
         /**
+         * 与on方法作用类似，但监听方法只会执行一次
+         *
+         * @english
          * Same as on, except the listener will only get fired once and then removed.
          *
-         * @param {String} eventTypes                - event types to register, seperated by space if more than one.
-         * @param {Function} handler                 - listener handler
-         * @param {Object} [context=null]            - the context of the handler
-         * @return {} this
+         * @param eventTypes         - event types to register, seperated by space if more than one.
+         * @param handler            - listener handler
+         * @param context            - the context of the handler
          * @example
          * foo.once('mousedown mousemove mouseup', onMouseEvent, foo);
-         * @function Eventable.once
          */
-        once(eventTypes, handler, context) {
+        once(eventTypes: string | HandlerContext, handler: HandlerFn, context?: any) {
             if (!isString(eventTypes)) {
+                eventTypes = eventTypes as HandlerContext;
                 const once = {};
                 for (const p in eventTypes) {
                     if (eventTypes.hasOwnProperty(p)) {
@@ -118,6 +134,7 @@ const Eventable = Base =>
                 }
                 return this._switch('on', once);
             }
+            eventTypes = eventTypes as string;
             const evetTypes = eventTypes.split(' ');
             for (let i = 0, l = evetTypes.length; i < l; i++) {
                 this.on(evetTypes[i], this._wrapOnceHandler(evetTypes[i], handler, context));
@@ -126,17 +143,19 @@ const Eventable = Base =>
         }
 
         /**
+         *
+         * 取消对事件的监听
+         *
+         * @english
          * Unregister the event handler for the specified event types.
          *
-         * @param {String} eventsOff                - event types to unregister, seperated by space if more than one.
-         * @param {Function} handler                - listener handler
-         * @param {Object} [context=null]           - the context of the handler
-         * @return {} this
+         * @param eventsOff         - event types to unregister, seperated by space if more than one.
+         * @param handler           - listener handler
+         * @param context           - the context of the handler
          * @example
          * foo.off('mousedown mousemove mouseup', onMouseEvent, foo);
-         * @function Eventable.off
          */
-        off(eventsOff, handler, context) {
+        off(eventsOff: string, handler: HandlerFn, context?: any) {
             if (!this._eventMap || !eventsOff) {
                 return this;
             }
@@ -147,13 +166,15 @@ const Eventable = Base =>
                 return this;
             }
             //没有监听过的handler直接忽略
-            if (!isNumber(handler._id)) {
+            if (!isNumber((handler as any)._id)) {
                 return this;
             }
             const eventTypes = eventsOff.split(' ');
             let eventType, listeners, wrapKey;
             if (!context) {
+                /* eslint-disable @typescript-eslint/no-this-alias */
                 context = this;
+                /* eslint-enable @typescript-eslint/no-this-alias */
             }
             for (let j = 0, jl = eventTypes.length; j < jl; j++) {
                 eventType = eventTypes[j].toLowerCase();
@@ -177,28 +198,30 @@ const Eventable = Base =>
         }
 
         /**
+         * off方法的别名 alias
+         *
+         * @english
          * Alias for [off]{@link Eventable.off}
          *
-         * @param {String} eventTypes    - event types to unregister, seperated by space if more than one.
-         * @param {Function} handler                - listener handler
-         * @param {Object} [context=null]           - the context of the handler
-         * @return {} this
-         * @function Eventable.removeEventListener
+         * @param eventTypes       - event types to unregister, seperated by space if more than one.
+         * @param handler          - listener handler
+         * @param context          - the context of the handler
          */
-        removeEventListener() {
-            return this.off.apply(this, arguments);
+        removeEventListener(...args) {
+            return this.off.call(this, ...args);
         }
 
         /**
+         * 是否监听了指定的事件
+         *
+         * @english
          * Returns listener's count registered for the event type.
          *
-         * @param {String} eventType        - an event type
-         * @param {Function} [hanlder=null] - listener function
-         * @param {Object} [context=null]   - the context of the handler
-         * @return {Number}
-         * @function Eventable.listens
+         * @param eventType       - an event type
+         * @param hanlder         - listener function
+         * @param context         - the context of the handler
          */
-        listens(eventType, handler, context) {
+        listens(eventType: string, handler?: HandlerFn, context?: any): number {
             if (!this._eventMap || !isString(eventType)) {
                 return 0;
             }
@@ -260,36 +283,36 @@ const Eventable = Base =>
          * @return {} this
          * @function Eventable.fire
          */
-        fire() {
+        fire(...args) {
             if (this._eventParent) {
-                return this._eventParent.fire.apply(this._eventParent, arguments);
+                return this._eventParent.fire.call(this._eventParent, ...args);
             }
-            return this._fire.apply(this, arguments);
+            return this._fire.call(this, ...args);
         }
 
         _wrapOnceHandler(evtType, handler, context) {
             // const me = this;
             const key = generateWrapKey(evtType);
             let called = false;
-            const fn = function onceHandler() {
+            const fn = function onceHandler(...args) {
                 if (called) {
                     return;
                 }
                 delete fn[key];
                 called = true;
                 if (context) {
-                    handler.apply(context, arguments);
+                    handler.call(context, ...args);
                 } else {
-                    handler.apply(this, arguments);
+                    handler.call(this, ...args);
                 }
-                onceHandler._called = true;
+                (onceHandler as any)._called = true;
                 // me.off(evtType, onceHandler, this);
             };
             fn[key] = handler;
             return fn;
         }
 
-        _switch(to, eventKeys, context) {
+        _switch(to: string, eventKeys, context?: any) {
             for (const p in eventKeys) {
                 if (eventKeys.hasOwnProperty(p)) {
                     this[to](p, eventKeys[p], context);
@@ -352,7 +375,7 @@ const Eventable = Base =>
                     continue;
                 }
                 const handler = queue[i].handler;
-                if (handler._called) {
+                if ((handler as any)._called) {
                     continue;
                 }
                 context = queue[i].context;
@@ -375,7 +398,7 @@ const Eventable = Base =>
                 const queueExcludeOnce = [];
                 for (let i = 0, len = eventQueue.length; i < len; i++) {
                     const handler = eventQueue[i].handler;
-                    if (!handler._called) {
+                    if (!(handler as any)._called) {
                         queueExcludeOnce.push(eventQueue[i]);
                     }
                 }
@@ -383,6 +406,5 @@ const Eventable = Base =>
             }
             return this;
         }
-    };
-
-export default Eventable;
+    }
+}
