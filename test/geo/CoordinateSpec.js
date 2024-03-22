@@ -100,6 +100,27 @@ describe('Coordinate', function () {
                 y: -3
             });
         });
+        
+        it('serialize carry z value ', function (done) {
+            const randomValue = () => {
+                return Math.round(Math.random() * 10);
+            }
+            const x = randomValue(), y = randomValue(), z = randomValue();
+            const coords = [x, y, z];
+            var c1 = new maptalks.Coordinate(x, y, z);
+            var c2 = new maptalks.Coordinate(coords);
+            [c1, c2].forEach(c => {
+                const json = c.toJSON();
+                expect(json).to.be.eql({
+                    x,
+                    y,
+                    z
+                });
+                const array = c.toArray();
+                expect(array).to.be.eql([x, y, z]);
+            });
+            done();
+        });
     });
 
 
