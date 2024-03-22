@@ -2,7 +2,7 @@ import Map from './Map';
 import Point from '../geo/Point';
 import Coordinate from '../geo/Coordinate';
 import * as mat4 from '../core/util/mat4';
-import { subtract, add, scale, normalize, dot, set, distance } from '../core/util/vec3';
+import { subtract, add, scale, normalize, dot, set, distance, angle } from '../core/util/vec3';
 import { clamp, interpolate, isNumber, isNil, wrap, toDegree, toRadian } from '../core/util';
 import { applyMatrix, matrixToQuaternion, quaternionToMatrix, lookAt, setPosition } from '../core/util/math';
 import Browser from '../core/Browser';
@@ -11,6 +11,7 @@ const RADIAN = Math.PI / 180;
 const DEFAULT_FOV = 0.6435011087932844;
 const TEMP_COORD = new Coordinate(0, 0);
 const TEMP_POINT = new Point(0, 0);
+const SOUTH = [0, -1, 0], BEARING = [];
 
 const altitudesHasData = (altitudes) => {
     if (isNumber(altitudes)) {
@@ -281,32 +282,20 @@ Map.include(/** @lends Map.prototype */{
     },
 
     /**
-     * Set camera position
-     * @param {Object} params
-     * @property {Array} position
-     * @property {Number} pitch
-     * @property {Number} bearing
+     * Set camera's orientation
+     * @param {Object}   options - options
+     * @param {Coordinate | Array}  options.position  - position of the camera.
+     * @param {Number}   [options.pitch = 0]  - pitch of the camera
+     * @param {Number}   [options.bearing = 0]  - bearing of the camera
+     * @returns {Map} this
      */
-    setCameraPosition(params) {
-        const { position, pitch, bearing } = params;
-
-        const cameraAltitude = position[2] * this._meterToGLPoint;
-
-        const centerAltitude = this.centerAltitude || 0;
-        const centerPointZ = centerAltitude * this._meterToGLPoint;
-
-        const cz = cameraAltitude - centerPointZ;
-
-        const pitchRadian = pitch * RADIAN;
-
-        const cameraToGroundDistance = cz / Math.cos(pitchRadian);
-
-        const dist = Math.sin(pitchRadian) * cameraToGroundDistance;
-
-        const cameraToCenterDistance = cameraToGroundDistance + centerPointZ;
-
-        const zoom = this._getZoomFromCameraToCenterDistance(cameraToCenterDistance);
-
+    setCameraOrientation(params) {
+        const { position } = params;
+        let { pitch, bearing } = params;
+        pitch = pitch || 0;
+        bearing = bearing || 0;
+        const { zoom, cameraToGroundDistance } = this.getFitZoomForCamera(position, pitch);
+        const dist = Math.sin((pitch) * RADIAN) * cameraToGroundDistance;
         const wrapBearing = wrap(bearing, -180, 180);
         const bearingRadian = wrapBearing * RADIAN;
 
@@ -329,7 +318,48 @@ Map.include(/** @lends Map.prototype */{
         return this;
     },
 
-    _getZoomFromCameraToCenterDistance(distance) {
+    //设置相机的坐标, 根据地图中心点和相机位置，反算地图的bearing、pitch、zoom
+    /**
+     * Set camera's position
+     * @param {Coordinate}   coordinate - camera's position
+     * @returns {Map} this
+     */
+    setCameraPosition(coordinate) {
+        const glRes = this.getGLRes();
+        const cameraPoint = this.coordToPointAtRes(coordinate, glRes);
+        cameraPoint.z = this.altitudeToPoint(coordinate.z || 0, glRes);
+        const center = this.getCenter();
+        const centerPoint = this.coordToPointAtRes(center, glRes);
+        centerPoint.z = this.altitudeToPoint(center.z, glRes);
+        const direction = subtract([], cameraPoint.toArray(), centerPoint.toArray());
+        set(this.cameraUp || [0, 0, 0], 0, 0, 1);
+        this._pitch = angle(direction, this.cameraUp);
+        set(BEARING, direction[0], direction[1], 0);
+        this._angle = -angle(BEARING, SOUTH);
+        this._zoomLevel = this.getFitZoomForCamera(coordinate, this._pitch).zoom;
+        this._calcMatrices();
+    },
+
+    getFitZoomForCamera(cameraPosition, pitch) {
+        const z = Array.isArray(cameraPosition) ? cameraPosition[2] : cameraPosition.z;
+        const cameraAltitude = z * this._meterToGLPoint;
+
+        const centerAltitude = this.centerAltitude || 0;
+        const centerPointZ = centerAltitude * this._meterToGLPoint;
+
+        const cz = cameraAltitude - centerPointZ;
+
+        const pitchRadian = pitch * RADIAN;
+
+        const cameraToGroundDistance = cz / Math.cos(pitchRadian);
+
+        const cameraToCenterDistance = cameraToGroundDistance + centerPointZ;
+
+        const zoom = this._getFitZoomForDistance(cameraToCenterDistance);
+        return { zoom, cameraToGroundDistance };
+    },
+
+    _getFitZoomForDistance(distance) {
         const ratio = this._getFovRatio();
         const scale = distance * ratio * 2 / (this.height || 1) * this.getGLRes();
         const resolutions = this._getResolutions();
@@ -712,7 +742,8 @@ Map.include(/** @lends Map.prototype */{
             }
 
             const center2D = this._prjToPointAtRes(this._prjCenter, glRes, TEMP_POINT);
-            const centerAltitude = this.centerAltitude || 0;
+            const altitude = this.getCenter().z;
+            const centerAltitude = altitude !== undefined ? altitude : this.centerAltitude || 0;
             const centerPointZ = centerAltitude * this._meterToGLPoint;
             this.cameraLookAt = set(this.cameraLookAt || [0, 0, 0], center2D.x, center2D.y, centerPointZ);
 
@@ -749,7 +780,8 @@ Map.include(/** @lends Map.prototype */{
             // let up = new vec3(0,1,0);
             // up.rotateZ(target,radians);
             const d = dist || 1;
-            const up = this.cameraUp = set(this.cameraUp || [0, 0, 0], Math.sin(bearing) * d, Math.cos(bearing) * d, 0);
+            // const up = this.cameraUp = set(this.cameraUp || [0, 0, 0], Math.sin(bearing) * d, Math.cos(bearing) * d, 0);
+            const up = this.cameraUp = this.getPitch() > 0 ?  set(this.cameraUp || [0, 0, 0], 0, 0, 1) : set(this.cameraUp || [0, 0, 0], Math.sin(bearing) * d, Math.cos(bearing) * d, 0);
             const m = this.cameraWorldMatrix = this.cameraWorldMatrix || createMat4();
             lookAt(m, this.cameraPosition, this.cameraLookAt, up);
 
@@ -775,7 +807,7 @@ Map.include(/** @lends Map.prototype */{
     },
 
     _recenterOnTerrain() {
-        if (this.centerAltitude === undefined) {
+        if (this.centerAltitude === undefined || this._centerZ !== undefined) {
             return;
         }
         let queriedAltitude = this._queryTerrainByProjCoord(this._prjCenter);

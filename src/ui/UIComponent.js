@@ -888,6 +888,45 @@ class UIComponent extends Eventable(Class) {
         }
         return false;
     }
+
+    _bindDomEvents(dom, to) {
+        if (!dom) {
+            return;
+        }
+        const events = this._getDomEvents() || {};
+        const bindEvent = to === 'on' ? on : off;
+        for (const eventName in events) {
+            bindEvent(dom, eventName, events[eventName], this);
+        }
+    }
+
+    _getDomEvents() {
+        return {
+            'mouseover': this._onDomMouseover,
+            'mouseout': this._onDomMouseout
+        };
+    }
+
+    _configMapPreventWheelScroll(preventWheelScroll) {
+        const map = this.getMap();
+        if (!map) {
+            return;
+        }
+        if (this.options.eventsPropagation) {
+            return;
+        }
+        map.options['preventWheelScroll'] = preventWheelScroll;
+    }
+
+    // eslint-disable-next-line no-unused-vars
+    _onDomMouseover(domEvent) {
+        this._configMapPreventWheelScroll(false);
+    }
+
+    // eslint-disable-next-line no-unused-vars
+    _onDomMouseout(domEvent) {
+        this._configMapPreventWheelScroll(true);
+    }
 }
 
 UIComponent.mergeOptions(options);

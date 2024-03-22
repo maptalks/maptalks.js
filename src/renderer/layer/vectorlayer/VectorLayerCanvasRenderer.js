@@ -401,7 +401,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     _updateMapStateCache() {
         const map = this.getMap();
-        const offset = map._pointToContainerPoint(this.southWest)._add(0, -map.height);
+        const offset = map._pointToContainerPoint(this.middleWest)._add(0, -map.height / 2);
         const resolution = map.getResolution();
         const pitch = map.getPitch();
         const bearing = map.getBearing();

@@ -20,23 +20,28 @@ describe('Util', function () {
             expect(r).to.eql(' is not .');
         });
 
-        // it('replace variables with unicode name', function () {
-        //     var str = 'Be {🙂}, not be {😢}.';
-        //     var r = maptalks.StringUtil.replaceVariable(str, {'🙂': 'happy', '😢': 'sad'});
-        //     expect(r).to.eql('Be happy, not be sad.');
-        // });
+        it('replace variables with unicode name', function () {
+            var str = 'Be {🙂}, not be {😢}.';
+            var r = maptalks.StringUtil.replaceVariable(str, {'🙂': 'happy', '😢': 'sad'});
+            expect(r).to.eql('Be happy, not be sad.');
+        });
 
-        // it('replace variables with chinese properties', function () {
-        //     var str = 'Be {心情0}, not be {心情1}.';
-        //     var r = maptalks.StringUtil.replaceVariable(str, {'心情0': 'happy', '心情1': 'sad'});
-        //     expect(r).to.eql('Be happy, not be sad.');
-        // });
+        it('replace variables with chinese properties', function () {
+            var str = 'Be {心情0}, not be {心情1}.';
+            var r = maptalks.StringUtil.replaceVariable(str, {'心情0': 'happy', '心情1': 'sad'});
+            expect(r).to.eql('Be happy, not be sad.');
+        });
 
-        // it('replace variables with chinese properties', function () {
-        //     var str = 'hello {属性+d_1}.';
-        //     var r = maptalks.StringUtil.replaceVariable(str, {'属性': 'world'});
-        //     expect(r).to.eql('hello');
-        // });
+        it('replace variables with chinese properties', function () {
+            var str = 'hello {属性+d_1}.';
+            var r = maptalks.StringUtil.replaceVariable(str, {'属性': 'world'});
+            expect(r).to.eql('hello .');
+        });
+        it('replace variables with any properties', function () {
+            var str = '{hello {world,maptalks,{name},{大家好},{🙂} {🙂🙂},{🙂  + 🙂},{輸入簡體字},{輸入簡體字 _ 大家好,a,b,cef#},{ الصين },{Так называемый,xxx},{xx{剪紙の継承者},{{{{中 정저우, 루쉰 박물관 구경하는 관람객}';
+            var r = maptalks.StringUtil.replaceVariable(str, { 'name': 'world', '大家好': '大家好' });
+            expect(r).to.eql('{hello {world,maptalks,world,大家好, ,,,,,,{xx,{{{');
+        });
     });
 
     it('sign', function () {

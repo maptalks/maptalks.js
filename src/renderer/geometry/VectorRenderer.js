@@ -149,8 +149,9 @@ Sector.include(el, {
         const map = this.getMap();
         const pt = map._prjToPointAtRes(this._getPrjCoordinates(), map.getGLRes());
         const size = this._getRenderSize(pt);
+        const [startAngle, endAngle] = this._correctAngles();
         return [pt, size[0],
-            [this.getStartAngle(), this.getEndAngle()]
+            [startAngle, endAngle]
         ];
     },
 

@@ -32,7 +32,8 @@ const options = {
     'autoPanAtEdge': false,
     'ignoreMouseleave': true,
     'blockGeometryEvents': false,
-    'zIndex': Number.MAX_VALUE
+    'zIndex': Number.MAX_VALUE,
+    'enableAltitude': true
 };
 
 const registeredMode = {};
@@ -364,6 +365,7 @@ class DrawTool extends MapTool {
      * @private
      */
     _clickHandler(event) {
+        event.enableAltitude = this.options.enableAltitude;
         const map = this.getMap();
         const registerMode = this._getRegisterMode();
         // const coordinate = event['coordinate'];
@@ -497,6 +499,7 @@ class DrawTool extends MapTool {
      * @private
      */
     _mouseMoveHandler(event) {
+        event.enableAltitude = this.options.enableAltitude;
         const map = this.getMap();
         if (!map || map.isInteracting()) {
             return;
@@ -556,6 +559,7 @@ class DrawTool extends MapTool {
      * @private
      */
     _doubleClickHandler(event) {
+        event.enableAltitude = this.options.enableAltitude;
         if (!this._geometry) {
             return;
         }

@@ -7,6 +7,7 @@ import Actor from '../../core/worker/Actor';
 import Point from '../../geo/Point';
 import { imageFetchWorkerKey } from '../../core/worker/CoreWorkers';
 import { registerWorkerAdapter } from '../../core/worker/Worker';
+import { formatResouceUrl } from '../../core/ResouceProxy';
 
 const EMPTY_ARRAY = [];
 class ResourceWorkerConnection extends Actor {
@@ -218,7 +219,7 @@ class CanvasRenderer extends Class {
     remove() {
         this.onRemove();
         delete this._loadingResource;
-        delete this.southWest;
+        delete this.middleWest;
         delete this.canvas;
         delete this.context;
         delete this.canvasExtent2D;
@@ -266,7 +267,7 @@ class CanvasRenderer extends Class {
             return null;
         }
         // size = this._extent2D.getSize(),
-        const containerPoint = map._pointToContainerPoint(this.southWest)._add(0, -map.height);
+        const containerPoint = map._pointToContainerPoint(this.middleWest)._add(0, -map.height / 2);
         return {
             'image': this.canvas,
             'layer': this.layer,
@@ -392,7 +393,7 @@ class CanvasRenderer extends Class {
 
     /**
      * Prepare rendering
-     * Set necessary properties, like this._renderZoom/ this.canvasExtent2D, this.southWest
+     * Set necessary properties, like this._renderZoom/ this.canvasExtent2D, this.middleWest
      * @private
      */
     prepareRender() {
@@ -400,8 +401,8 @@ class CanvasRenderer extends Class {
         const map = this.getMap();
         this._renderZoom = map.getZoom();
         this.canvasExtent2D = this._extent2D = map._get2DExtent();
-        //change from northWest to southWest, because northwest's point <=> containerPoint changes when pitch >= 72
-        this.southWest = map._containerPointToPoint(new Point(0, map.height));
+        //change from northWest to middleWest, because northwest's point <=> containerPoint changes when pitch >= 72
+        this.middleWest = map._containerPointToPoint(new Point(0, map.height / 2));
     }
 
     /**
@@ -575,10 +576,10 @@ class CanvasRenderer extends Class {
         if (!mask) {
             return false;
         }
-        const old = this.southWest;
+        const old = this.middleWest;
         const map = this.getMap();
-        //when clipping, layer's southwest needs to be reset for mask's containerPoint conversion
-        this.southWest = map._containerPointToPoint(new Point(0, map.height));
+        //when clipping, layer's middleWest needs to be reset for mask's containerPoint conversion
+        this.middleWest = map._containerPointToPoint(new Point(0, map.height / 2));
         context.save();
         const dpr = map.getDevicePixelRatio();
         if (dpr !== 1) {
@@ -607,20 +608,20 @@ class CanvasRenderer extends Class {
             context.restore();
         }
         context.clip();
-        this.southWest = old;
+        this.middleWest = old;
         return true;
     }
 
     /**
      * Get renderer's current view extent in 2d point
-     * @return {Object} view.extent, view.maskExtent, view.zoom, view.southWest
+     * @return {Object} view.extent, view.maskExtent, view.zoom, view.middleWest
      */
     getViewExtent() {
         return {
             'extent': this._extent2D,
             'maskExtent': this._maskExtent,
             'zoom': this._renderZoom,
-            'southWest': this.southWest
+            'middleWest': this.middleWest
         };
     }
 
@@ -790,10 +791,11 @@ class CanvasRenderer extends Class {
                 resolve(url);
                 return;
             }
+            const imageURL = formatResouceUrl(url[0]);
             const fetchInWorker = !isSVG(url[0]) && me._resWorkerConn && (layer.options['renderer'] !== 'canvas' || layer.options['decodeImageInWorker']);
             if (fetchInWorker) {
-                const uri = getAbsoluteURL(url[0]);
-                me._resWorkerConn.fetchImage(uri, (err, data) => {
+                // const uri = getAbsoluteURL(url[0]);
+                me._resWorkerConn.fetchImage(imageURL, (err, data) => {
                     if (err) {
                         if (err && typeof console !== 'undefined') {
                             console.warn(err);
@@ -837,7 +839,7 @@ class CanvasRenderer extends Class {
                     resources.markErrorResource(url);
                     resolve(url);
                 };
-                loadImage(img, url);
+                loadImage(img, [imageURL]);
             }
 
         };

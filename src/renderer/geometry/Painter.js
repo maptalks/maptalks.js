@@ -594,7 +594,7 @@ class Painter extends Class {
             return;
         }
         //Multiplexing offset
-        this.containerOffset = offset || mapStateCache.offset || map._pointToContainerPoint(renderer.southWest)._add(0, -map.height);
+        this.containerOffset = offset || mapStateCache.offset || map._pointToContainerPoint(renderer.middleWest)._add(0, -map.height / 2);
         this._beforePaint();
         const ctx = context || renderer.context;
         if (!ctx.isHitTesting) {
@@ -932,14 +932,21 @@ class Painter extends Class {
             this.minAltitude = Number.MAX_VALUE;
             this.maxAltitude = Number.MIN_VALUE;
             return altitude.map(alt => {
-                const a = alt;
-                if (a < this.minAltitude) {
-                    this.minAltitude = a;
+                const isArray = Array.isArray(alt);
+                if (!isArray) {
+                    alt = [alt];
                 }
-                if (a > this.maxAltitude) {
-                    this.maxAltitude = a;
-                }
-                return a;
+                const result = alt.map(al => {
+                    const a = al;
+                    if (a < this.minAltitude) {
+                        this.minAltitude = a;
+                    }
+                    if (a > this.maxAltitude) {
+                        this.maxAltitude = a;
+                    }
+                    return a;
+                });
+                return isArray ? result : result[0];
             });
         } else {
             this.minAltitude = this.maxAltitude = altitude;
