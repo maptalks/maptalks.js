@@ -25,10 +25,10 @@ class Coordinate extends Position {
      */
     static toNumberArrays(coordinates) {
         if (!Array.isArray(coordinates)) {
-            return [coordinates.x, coordinates.y];
+            return coordinates.toArray();
         }
         return forEachCoord(coordinates, function (coord) {
-            return [coord.x, coord.y];
+            return coord.toArray();
         });
     }
 
