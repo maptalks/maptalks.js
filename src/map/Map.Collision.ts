@@ -1,14 +1,28 @@
 import Map from './Map';
 import CollisionIndex from '../core/CollisionIndex';
+import UIComponent from '../ui/UIComponent';
+
+declare module "./Map" {
+    interface Map {
+        getCollisionIndex(): CollisionIndex
+        createCollisionIndex(): CollisionIndex
+        clearCollisionIndex(): this
+        _insertUICollidesQueue(): this
+        uiCollides(): this
+        _addUI(ui: UIComponent): this
+        _removeUI(ui: UIComponent): number
+    }
+}
 
 const UICollisionIndex = new CollisionIndex();
 
-Map.include(/** @lends Map.prototype */ {
+Map.include({
     /**
+     * 获取碰撞检测索引
+     * @english
      * Get map scope collision index
-     * @returns {CollisionIndex} collision index
      */
-    getCollisionIndex() {
+    getCollisionIndex(): CollisionIndex {
         if (!this._collisionIndex) {
             this.createCollisionIndex();
         }
@@ -16,20 +30,22 @@ Map.include(/** @lends Map.prototype */ {
     },
 
     /**
+     * 创建一个新的碰撞检测索引
+     * @english
      * Create a new collisionIndex
-     * @returns {CollisionIndex} new collision index
      */
-    createCollisionIndex() {
+    createCollisionIndex(): CollisionIndex {
         this.clearCollisionIndex();
         this._collisionIndex = new CollisionIndex();
         return this._collisionIndex;
     },
 
     /**
+     * 清除碰撞索引
+     * @english
      * Clear collision index
-     * @returns {Map} this
      */
-    clearCollisionIndex() {
+    clearCollisionIndex(): Map {
         this.collisionFrameTime = 0;
         if (this._collisionIndex) {
             this._collisionIndex.clear();
@@ -37,7 +53,7 @@ Map.include(/** @lends Map.prototype */ {
         return this;
     },
 
-    _insertUICollidesQueue() {
+    _insertUICollidesQueue(): Map {
         if (!this._uiCollidesQueue) {
             this._uiCollidesQueue = [];
         }
@@ -45,7 +61,7 @@ Map.include(/** @lends Map.prototype */ {
         return this;
     },
 
-    uiCollides() {
+    uiCollides(): Map {
         if (!this.uiList || this.uiList.length === 0 || !this._uiCollidesQueue || this._uiCollidesQueue.length === 0) {
             return this;
         }
@@ -99,7 +115,11 @@ Map.include(/** @lends Map.prototype */ {
         return this;
     },
 
-    _addUI(ui) {
+    /**
+     * @private
+     * @param ui - UIComponent对象
+     */
+    _addUI(ui: UIComponent): Map {
         if (!this.uiList) {
             this.uiList = [];
         }
@@ -114,7 +134,11 @@ Map.include(/** @lends Map.prototype */ {
         return this;
     },
 
-    _removeUI(ui) {
+     /**
+     * @private
+     * @param ui - UIComponent对象
+     */
+    _removeUI(ui: UIComponent): number {
         if (!this.uiList) {
             return -1;
         }
