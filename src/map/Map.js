@@ -177,7 +177,7 @@ const options = {
  *      ]
  * });
  */
-class Map extends Handlerable(Eventable(Renderable(Class))) {
+export class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     /**
      * @param {(string|HTMLElement|object)} container - The container to create the map on, can be:<br>
@@ -395,7 +395,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     /**
      * Callback when any option is updated
-     * @private
      * @param  {Object} conf - options to update
      * @return {Map}   this
      */

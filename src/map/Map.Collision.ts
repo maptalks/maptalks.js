@@ -21,6 +21,7 @@ Map.include({
      * 获取碰撞检测索引
      * @english
      * Get map scope collision index
+     * @memberof Map
      */
     getCollisionIndex(): CollisionIndex {
         if (!this._collisionIndex) {
@@ -33,6 +34,7 @@ Map.include({
      * 创建一个新的碰撞检测索引
      * @english
      * Create a new collisionIndex
+     * @memberof Map
      */
     createCollisionIndex(): CollisionIndex {
         this.clearCollisionIndex();
@@ -44,6 +46,7 @@ Map.include({
      * 清除碰撞索引
      * @english
      * Clear collision index
+     * @memberof Map
      */
     clearCollisionIndex(): Map {
         this.collisionFrameTime = 0;
@@ -116,6 +119,7 @@ Map.include({
     },
 
     /**
+     * @memberof Map
      * @private
      * @param ui - UIComponent对象
      */
@@ -134,7 +138,8 @@ Map.include({
         return this;
     },
 
-     /**
+    /**
+     * @memberof Map
      * @private
      * @param ui - UIComponent对象
      */
