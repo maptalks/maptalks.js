@@ -9,8 +9,9 @@
 ## 步骤
 
 准备：
+fork [maptalks工程](https://github.com/maptalks/maptalks.js)
 ```shell
-git clone https://github.com/maptalks/maptalks.js.git
+git clone https://github.com/[your github 账户名]/maptalks.js.git
 git checkout ts-dev
 git checkout -b [你的工作分支名]
 npm i
@@ -19,6 +20,7 @@ npm i
 先重命名，再改写并提交
 * 用 git mv 命令将 js 重命名为 ts 文件```git mv Foo.js Foo.ts```
 * (重要！)马上提交改动，```git commit```，这里务必马上提交，否则可能会丢失文件的历史记录
+* (重要！)检查文件的git历史是否能正常读取
 * 改写程序
   * 补充类的成员变量和类型说明，但只在 include mixin 中用到的成员变量无需声明
   * 补充函数的参数和返回值类型，如果类型不存在则定义新的类型
@@ -32,7 +34,7 @@ npm i
     * 事件在程序中是用[fire方法抛出的](https://github.com/maptalks/maptalks.js/blob/ts-dev/src/map/Map.js#L1547)，大部分有jsdoc的@event注释，事件名以下划线开头的为内部事件，不需要说明
 * 运行 ```npm run lint```，修改可能的错误
 * 运行 ```npm run build```，修改可能的错误
-* (重要！)提交修改，检查文件的git历史是否能正常读取
+* (重要！)提交修改，再次检查文件的git历史是否能正常读取
 * push到远程分支，创建pr（提交到ts-dev分支）
 * 等待ci测试结果，如果测试失败则修改错误
 * 通知其他成员，对该文件的改写进行简单的代码评审
