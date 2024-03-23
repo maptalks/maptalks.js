@@ -6,7 +6,7 @@ import Transformation from '../../geo/transformation/Transformation';
 import { Measurer } from '../../geo/measurer';
 const MAX_ZOOM = 23;
 
-type Projection = {
+export type Projection = {
     projection: string
     resolutions: number[]
     fullExtent: {
@@ -147,7 +147,6 @@ export default class SpatialReference {
     _fullExtent: Projection['fullExtent']
     _transformation: Transformation
     json: Projection
-
     constructor(options?: ProjectionCommon) {
         this.options = options;
         this._initSpatialRef();
@@ -167,6 +166,10 @@ export default class SpatialReference {
 
     static getAllPresets() {
         return Object.keys(DefaultSpatialReference);
+    }
+
+    static loadArcgis(url: string, cb: Function, options: any) {
+        return this
     }
 
     /**
@@ -319,7 +322,7 @@ export default class SpatialReference {
             }
         }
         if (!isNil(fullExtent['left'])) {
-            // 等待Extent和Coordinate补充类型
+            // TODO: 等待Extent和Coordinate补充类型
             // @ts-expect-error 
             this._fullExtent = new Extent(
                 new Coordinate(fullExtent['left'], fullExtent['top']),
