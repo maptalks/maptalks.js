@@ -394,7 +394,7 @@ export default function <T extends MixinConstructor>(Base: T) {
                 }
                 context = queue[i].context;
                 bubble = true;
-                passed = extend({}, param);
+                passed = extend({} as any, param);
                 if (context) {
                     bubble = queue[i].handler.call(context, passed);
                 } else {
