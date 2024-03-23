@@ -117,7 +117,7 @@ interface TemplateSymbol {
 }
 
 
-export function translateMarkerLineAndFill<T extends TemplateSymbol>(s: T) {
+export function translateMarkerLineAndFill<T extends Partial<TemplateSymbol>>(s: T) {
     const result = {
         'lineColor': s['markerLineColor'],
         'linePatternFile': s['markerLinePatternFile'],
