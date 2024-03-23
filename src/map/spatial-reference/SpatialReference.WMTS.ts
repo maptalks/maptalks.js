@@ -1,6 +1,5 @@
 import { isString } from '../../core/util';
 import Ajax from '../../core/Ajax';
-import SpatialReference from './SpatialReference';
 
 function getProjectionCode(code) {
     let newcode = '';
@@ -248,7 +247,7 @@ function parseTileMatrixSet(TileMatrixSet, options: any = {}) {
     };
 }
 
-SpatialReference.loadWMTS = function (url: string, cb: (_, layers?) => void, options = { 'jsonp': true }) {
+export const loadWMTS = (url: string, cb: (_, layers?) => void, options = { 'jsonp': true }) => {
     if (isString(url)) {
         // TODO: 等待补充Ajax类型定义
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -262,5 +261,7 @@ SpatialReference.loadWMTS = function (url: string, cb: (_, layers?) => void, opt
             cb(null, layers);
         }, options);
     }
-    return this;
+    // return this;
 };
+
+export default loadWMTS;

@@ -1,6 +1,5 @@
 import { isString, parseJSON } from '../../core/util';
 import Ajax from '../../core/Ajax';
-import SpatialReference from './SpatialReference';
 import { type Projection } from './SpatialReference';
 
 export type ArcgisConfig = {
@@ -52,7 +51,7 @@ function parse(arcConf: ArcgisConfig) {
  * @param options 
  * @returns 
  */
-SpatialReference.loadArcgis = (url: string, cb: (_, spatialRef?) => void, options: any = { 'jsonp': true }) => {
+const loadArcgis = (url: string, cb: (_, spatialRef?) => void, options: any = { 'jsonp': true }) => {
     if (isString(url) && url.substring(0, 1) !== '{') {
         // TODO: 等待补充Ajax类型定义
         Ajax.getJSON(url, (err, json) => {
@@ -70,5 +69,7 @@ SpatialReference.loadArcgis = (url: string, cb: (_, spatialRef?) => void, option
         const spatialRef = parse(url as any);
         cb(null, spatialRef);
     }
-    return this;
+    // return this;
 };
+
+export default loadArcgis;

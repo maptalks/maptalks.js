@@ -4,6 +4,8 @@ import Extent from '../../geo/Extent';
 import * as projections from '../../geo/projection';
 import Transformation from '../../geo/transformation/Transformation';
 import { Measurer } from '../../geo/measurer';
+import loadWMTS from './SpatialReference.WMTS'
+import loadArcgis from './SpatialReference.Arc'
 const MAX_ZOOM = 23;
 
 export type Projection = {
@@ -168,12 +170,13 @@ export default class SpatialReference {
         return Object.keys(DefaultSpatialReference);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     static loadArcgis(url: string, cb: (_, spatialRef?) => void, options: any) {
+        loadArcgis(url, cb, options)
         return this
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     static loadWMTS(url: string, cb: (_, spatialRef?) => void, options: any) {
+        loadWMTS(url,cb,options)
         return this
     }
 
