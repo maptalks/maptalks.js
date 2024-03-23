@@ -171,6 +171,10 @@ export default class SpatialReference {
     static loadArcgis(url: string, cb: Function, options: any) {
         return this
     }
+    static loadWMTS(url: string, cb: Function, options: any) {
+        return this
+    }
+
 
     /**
      * 获取投影类实例对象

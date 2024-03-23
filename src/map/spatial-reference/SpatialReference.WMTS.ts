@@ -97,6 +97,7 @@ function parseWMTSXML(str, requestUrl, options) {
     }
     const TileMatrixSets = [];
     for (let i = 0, len = content.childNodes.length; i < len; i++) {
+        // @ts-expect-error
         if (content.childNodes[i].localName === 'TileMatrixSet') {
             TileMatrixSets.push(content.childNodes[i]);
         }
@@ -174,7 +175,7 @@ function parseWMTSXML(str, requestUrl, options) {
     return result;
 }
 
-function parseTileMatrixSet(TileMatrixSet, options = {}) {
+function parseTileMatrixSet(TileMatrixSet, options: any = {}) {
     const TileMatrixs = getElementsByTagName(TileMatrixSet, 'TileMatrix');
     const resolutions = [], tileSystem = [], tileSize = [];
     let projection, tset, isGeoServer = false, levelStr;
@@ -246,9 +247,11 @@ function parseTileMatrixSet(TileMatrixSet, options = {}) {
     };
 }
 
-SpatialReference.loadWMTS = function (url, cb, options = { 'jsonp': true }) {
+SpatialReference.loadWMTS = function (url: string, cb: Function, options = { 'jsonp': true }) {
     if (isString(url)) {
-        Ajax.get(url, function (err, xml) {
+        // TODO: 等待补充Ajax类型定义
+        // @ts-expect-error
+        Ajax.get(url, (err, xml) => {
             if (err) {
                 cb(err);
                 return;
