@@ -2,13 +2,15 @@
 // Contains code from glmatrix.js
 
 
-type Matrix4 = [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number]
+export type Matrix4 = [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number]
 
-type Matrix4InOut = Matrix4 | number[]
+export type Matrix4InOut = Matrix4 | number[]
 
-type Vector3 = [number, number, number]
+export type Vector3 = [number, number, number]
 
-type Vector4 = [number, number, number, number]
+export type Vector4 = [number, number, number, number]
+
+export type Vector = Vector3 | Vector4
 
 export function perspective(out: Matrix4InOut, fovy: number, aspect: number, near: number, far: number) {
     var f = 1.0 / Math.tan(fovy / 2),
@@ -32,7 +34,7 @@ export function perspective(out: Matrix4InOut, fovy: number, aspect: number, nea
     return out;
 }
 
-export function translate(out: Matrix4InOut, a: Matrix4InOut, v: Vector3 | Vector4) {
+export function translate(out: Matrix4InOut, a: Matrix4InOut, v: Vector) {
     var x = v[0],
         y = v[1],
         z = v[2],
@@ -72,7 +74,7 @@ export function translate(out: Matrix4InOut, a: Matrix4InOut, v: Vector3 | Vecto
     return out;
 }
 
-export function scale(out: Matrix4InOut, a: Matrix4InOut, v: Vector4 | Vector3) {
+export function scale(out: Matrix4InOut, a: Matrix4InOut, v: Vector) {
     var x = v[0],
         y = v[1],
         z = v[2];
