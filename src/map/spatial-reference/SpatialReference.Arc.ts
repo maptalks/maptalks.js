@@ -52,7 +52,7 @@ function parse(arcConf: ArcgisConfig) {
  * @param options 
  * @returns 
  */
-SpatialReference.loadArcgis = (url: string, cb: Function, options: any = { 'jsonp': true }) => {
+SpatialReference.loadArcgis = (url: string, cb: (_, spatialRef?) => void, options: any = { 'jsonp': true }) => {
     if (isString(url) && url.substring(0, 1) !== '{') {
         // TODO: 等待补充Ajax类型定义
         Ajax.getJSON(url, (err, json) => {

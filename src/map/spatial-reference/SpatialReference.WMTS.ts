@@ -97,6 +97,7 @@ function parseWMTSXML(str, requestUrl, options) {
     }
     const TileMatrixSets = [];
     for (let i = 0, len = content.childNodes.length; i < len; i++) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         if (content.childNodes[i].localName === 'TileMatrixSet') {
             TileMatrixSets.push(content.childNodes[i]);
@@ -247,9 +248,10 @@ function parseTileMatrixSet(TileMatrixSet, options: any = {}) {
     };
 }
 
-SpatialReference.loadWMTS = function (url: string, cb: Function, options = { 'jsonp': true }) {
+SpatialReference.loadWMTS = function (url: string, cb: (_, layers?) => void, options = { 'jsonp': true }) {
     if (isString(url)) {
         // TODO: 等待补充Ajax类型定义
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         Ajax.get(url, (err, xml) => {
             if (err) {

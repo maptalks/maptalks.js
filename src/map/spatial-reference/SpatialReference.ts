@@ -168,10 +168,12 @@ export default class SpatialReference {
         return Object.keys(DefaultSpatialReference);
     }
 
-    static loadArcgis(url: string, cb: Function, options: any) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    static loadArcgis(url: string, cb: (_, spatialRef?) => void, options: any) {
         return this
     }
-    static loadWMTS(url: string, cb: Function, options: any) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    static loadWMTS(url: string, cb: (_, spatialRef?) => void, options: any) {
         return this
     }
 
@@ -327,13 +329,15 @@ export default class SpatialReference {
         }
         if (!isNil(fullExtent['left'])) {
             // TODO: 等待Extent和Coordinate补充类型
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-expect-error 
             this._fullExtent = new Extent(
                 new Coordinate(fullExtent['left'], fullExtent['top']),
                 new Coordinate(fullExtent['right'], fullExtent['bottom'])
             );
         } else {
-            // @ts-expect-error 
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
             //xmin, ymin, xmax, ymax
             this._fullExtent = new Extent(fullExtent);
             fullExtent['left'] = fullExtent['xmin'];
