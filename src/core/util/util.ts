@@ -1,10 +1,12 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/ban-types */
 import { IS_NODE } from './env';
 import Browser from '../Browser';
 import { isString, isNil } from './common';
 import Point from '../../geo/Point';
 
 // RequestAnimationFrame, inspired by Leaflet
-let requestAnimFrame, cancelAnimFrame;
+let requestAnimFrame: any, cancelAnimFrame: typeof clearTimeout;
 /* istanbul ignore next */
 (function () {
     if (IS_NODE) {
@@ -23,7 +25,7 @@ let requestAnimFrame, cancelAnimFrame;
         return setTimeout(fn, timeToCall);
     }
 
-    function getPrefixed(name) {
+    function getPrefixed(name: string) {
         return window['webkit' + name] || window['moz' + name] || window['ms' + name];
     }
     if (typeof (window) != 'undefined') {
@@ -39,19 +41,19 @@ let requestAnimFrame, cancelAnimFrame;
     /**
      * Polyfill of RequestAnimationFrame
      * @param  {Function} fn callback
-     * @return {Number}      request id
+     * @return {Number}  request id
      * @memberOf Util
      */
-    requestAnimFrame = function (fn) {
+    requestAnimFrame = function (fn: Function): number {
         return requestFn(fn);
     };
 
     /**
      * Polyfill of cancelAnimationFrame
-     * @param  {Number}      request id
+     * @param id id
      * @memberOf Util
      */
-    cancelAnimFrame = function (id) {
+    cancelAnimFrame = function (id: number) {
         if (id) {
             cancelFn(id);
         }
@@ -59,7 +61,7 @@ let requestAnimFrame, cancelAnimFrame;
 })();
 export { requestAnimFrame, cancelAnimFrame };
 
-export function isSVG(url) {
+export function isSVG(url: string) {
     const prefix = 'data:image/svg+xml';
     if (url.length > 4 && url.slice(-4) === '.svg') {
         return 1;
@@ -72,14 +74,16 @@ export function isSVG(url) {
 /**
  * Load a image, can be a remote one or a local file. <br>
  * If in node, a SVG image will be converted to a png file by [svg2img]{@link https://github.com/FuZhenn/node-svg2img}<br>
- * @param  {Image} img  - the image object to load.
- * @param  {Object[]} imgDesc - image's descriptor, it's an array. imgUrl[0] is the url string, imgUrl[1] is the width, imgUrl[2] is the height.
+ * @param img  - the image object to load.
+ * @param imgDesc - image's descriptor, it's an array. imgUrl[0] is the url string, imgUrl[1] is the width, imgUrl[2] is the height.
  * @private
  * @memberOf Util
  */
-export function loadImage(img, imgDesc) {
+export function loadImage(img: any, imgDesc: Object[]) {
     /* istanbul ignore next */
+    // @ts-expect-error
     if (IS_NODE && loadImage.node) {
+        // @ts-expect-error
         loadImage.node(img, imgDesc);
         return;
     }
@@ -95,20 +99,20 @@ export const GUID = UID;
 
 /**
  * Parse a JSON string to a object
- * @param {String} str      - a JSON string
- * @return {Object}
+ * @param str   - a JSON string
+ * @return
  * @memberOf Util
  */
-export function parseJSON(str) {
+export function parseJSON(str: string) {
     if (!str || !isString(str)) {
         return str;
     }
     return JSON.parse(str);
 }
 
-export function pushIn(dest) {
+export function pushIn<T extends { length: number }>(dest: T[], ...args: T[]) {
     for (let i = 1; i < arguments.length; i++) {
-        const src = arguments[i];
+        const src = args[i];
         if (src && src.length) {
             for (let ii = 0, ll = src.length; ii < ll; ii++) {
                 dest.push(src[ii]);
@@ -118,14 +122,14 @@ export function pushIn(dest) {
     return dest.length;
 }
 
-export function removeFromArray(obj, array) {
+export function removeFromArray<T>(obj: T, array: T[]) {
     const i = array.indexOf(obj);
     if (i > -1) {
         array.splice(i, 1);
     }
 }
 
-export function forEachCoord(arr, fn, context) {
+export function forEachCoord(arr: any[], fn: Function, context: any) {
     if (!Array.isArray(arr)) {
         return context ? fn.call(context, arr) : fn(arr);
     }
@@ -148,18 +152,18 @@ export function forEachCoord(arr, fn, context) {
     return result;
 }
 
-export function getValueOrDefault(v, d) {
+export function getValueOrDefault<T>(v: T, d: T) {
     return v === undefined ? d : v;
 }
 
 /**
  * Polyfill for Math.sign
- * @param  {Number} x
- * @return {Number}
+ * @param  x
+ * @return
  * @memberOf Util
  */
 /* istanbul ignore next */
-export function sign(x) {
+export function sign(x: number) {
     if (Math.sign) {
         return Math.sign(x);
     }
@@ -170,7 +174,7 @@ export function sign(x) {
     return x > 0 ? 1 : -1;
 }
 
-export function log2(x) {
+export function log2(x: number) {
     if (Math.log2) {
         return Math.log2(x);
     }
@@ -183,27 +187,27 @@ export function log2(x) {
     }
 }
 
-/*
+/**
  * Interpolate between two number.
  *
- * @param {Number} from
- * @param {Number} to
- * @param {Number} t interpolation factor between 0 and 1
- * @returns {Number} interpolated color
+ * @param from
+ * @param to
+ * @param t interpolation factor between 0 and 1
+ * @returns interpolated color
  */
-export function interpolate(a, b, t) {
+export function interpolate(a: number, b: number, t: number) {
     return (a * (1 - t)) + (b * t);
 }
 
-/*
+/**
  * constrain n to the given range, via modular arithmetic
- * @param {Number} n value
- * @param {Number} min the minimum value to be returned, inclusive
- * @param {Number} max the maximum value to be returned, inclusive
- * @returns {Number} constrained number
+ * @param n value
+ * @param min the minimum value to be returned, inclusive
+ * @param max the maximum value to be returned, inclusive
+ * @returns constrained number
  * @private
  */
-export function wrap(n, min, max) {
+export function wrap(n: number, min: number, max: number) {
     if (n === max || n === min) {
         return n;
     }
@@ -215,24 +219,24 @@ export function wrap(n, min, max) {
 /**
  * constrain n to the given range via min + max
  *
- * @param {Number} n value
- * @param {Number} min the minimum value to be returned
- * @param {Number} max the maximum value to be returned
- * @returns {Number} the clamped value
+ * @param n value
+ * @param min the minimum value to be returned
+ * @param max the maximum value to be returned
+ * @returns the clamped value
  * @private
  */
-export function clamp(n, min, max) {
+export function clamp(n: number, min: number, max: number) {
     return Math.min(max, Math.max(min, n));
 }
 
-/*
+/**
  * Is object an array and not empty.
- * @param {Object} obj
- * @return {Boolean} true|false
+ * @param obj
+ * @return true|false
  * @private
  * @memberOf Util
  */
-export function isArrayHasData(obj) {
+export function isArrayHasData(obj: Object): boolean {
     return Array.isArray(obj) && obj.length > 0;
 }
 
@@ -241,12 +245,12 @@ const urlPattern = /^([a-z][a-z\d+\-.]*:)?\/\//i;
 /**
  * Whether the input string is a valid url.
  * form: https://github.com/axios/axios/blob/master/lib/helpers/isAbsoluteURL.js
- * @param  {String}  url - url to check
- * @return {Boolean}
+ * @param url - url to check
+ * @return
  * @memberOf Util
  * @private
  */
-export function isURL(url) {
+export function isURL(url: string) {
     // A URL is considered absolute if it begins with "<scheme>://" or "//" (protocol-relative URL).
     // RFC 3986 defines scheme name as a sequence of characters beginning with a letter and followed
     // by any combination of letters, digits, plus, period, or hyphen.
@@ -262,7 +266,7 @@ const cssUrlReWithQuote = /^url\((['"])(.+)\1\)$/i;
 
 const cssUrlRe = /^url\(([^'"].*[^'"])\)$/i;
 
-export function isCssUrl(str) {
+export function isCssUrl(str: string) {
     if (!isString(str)) {
         return 0;
     }
@@ -275,7 +279,7 @@ export function isCssUrl(str) {
     return 3;
 }
 
-export function extractCssUrl(str) {
+export function extractCssUrl(str: string) {
     const test = isCssUrl(str);
     let matches;
     if (test === 3) {
@@ -298,15 +302,15 @@ const b64chrs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+
  * btoa or a polyfill in old browsers. <br>
  * Creates a base-64 encoded ASCII string from a String object in which each character in the string is treated as a byte of binary data.<br>
  * From https://github.com/davidchambers/Base64.js
- * @param  {Buffer} input - input string to convert
- * @return {String} ascii
+ * @param input - input string to convert
+ * @return ascii
  * @memberOf Util
  * @example
  *     const encodedData = Util.btoa(stringToEncode);
  */
 /* istanbul ignore next */
 /* eslint-disable no-sequences */
-export function btoa(input) {
+export function btoa(input: string) {
     if (Browser.btoa) {
         return window.btoa(input);
     }
@@ -331,7 +335,7 @@ export function btoa(input) {
     return output;
 }
 /* eslint-enable no-sequences */
-export function b64toBlob(b64Data, contentType) {
+export function b64toBlob(b64Data: string, contentType: string) {
     const byteCharacters = atob(b64Data);
     const arraybuffer = new ArrayBuffer(byteCharacters.length);
     const view = new Uint8Array(arraybuffer);
@@ -344,14 +348,14 @@ export function b64toBlob(b64Data, contentType) {
 
 /**
  * Compute degree bewteen 2 points.
- * @param  {Number} x0
- * @param  {Number} y0
- * @param  {Number} x1
- * @param  {Number} y1
- * @return {Number}    degree between 2 points
+ * @param  x0
+ * @param  y0
+ * @param  x1
+ * @param  y1
+ * @return    degree between 2 points
  * @memberOf Util
  */
-export function computeDegree(x0, y0, x1, y1) {
+export function computeDegree(x0: number, y0: number, x1: number, y1: number) {
     const dx = x1 - x0;
     const dy = y1 - y0;
     return Math.atan2(dy, dx);
@@ -360,7 +364,6 @@ export function computeDegree(x0, y0, x1, y1) {
 /**
  * Transparent 1X1 gif image
  * from https://css-tricks.com/snippets/html/base64-encode-of-1x1px-transparent-gif/
- * @type {String}
  * @memberOf Util
  */
 export const emptyImageUrl = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
@@ -368,13 +371,13 @@ export const emptyImageUrl = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5
 
 /**
  * shallow equal
- * @param  {Object} obj1
- * @param  {Object} obj2
- * @return {Boolean}
+ * @param  obj1
+ * @param  obj2
+ * @return
  * @private
  * @memberOf Util
  */
-export function equalMapView(obj1, obj2) {
+export function equalMapView(obj1: Object, obj2: Object) {
     if (!obj1 && !obj2) {
         return true;
     } else if (!obj1 || !obj2) {
@@ -392,7 +395,7 @@ export function equalMapView(obj1, obj2) {
     return true;
 }
 
-function approx(val, expected, delta) {
+function approx(val: number, expected: number, delta?: number) {
     if (delta == null) { delta = 1e-6; }
     return val >= expected - delta && val <= expected + delta;
 }
@@ -400,21 +403,22 @@ function approx(val, expected, delta) {
 /**
  * Flash something, show and hide by certain internal for times of count.
  *
- * @param {Number} [interval=100]     - interval of flash, in millisecond (ms)
- * @param {Number} [count=4]          - flash times
- * @param {Function} [cb=null]        - callback function when flash ended
- * @param {*} [context=null]          - callback context
- * @return {*} this
+ * @param interval   - interval of flash, in millisecond (ms)
+ * @param count      - flash times
+ * @param cb         - callback function when flash ended
+ * @param context    - callback context
+ * @return this
  * @private
  * @memberOf Util
  */
-export function flash(interval, count, cb, context) {
+export function flash(interval: number = 100, count: number = 4, cb: Function = null, context: any = null) {
     if (!interval) {
         interval = 100;
     }
     if (!count) {
         count = 4;
     }
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const me = this;
     const initVisible = this.isVisible();
     count *= 2;
@@ -451,7 +455,7 @@ export function flash(interval, count, cb, context) {
     return this;
 }
 
-export function _defaults(obj, defaults) {
+export function _defaults(obj: any, defaults: any) {
     const keys = Object.getOwnPropertyNames(defaults);
     for (let i = 0; i < keys.length; i++) {
         const key = keys[i];
@@ -463,7 +467,7 @@ export function _defaults(obj, defaults) {
     return obj;
 }
 
-export function getPointsResultPts(points = [], ptKey = '_pt') {
+export function getPointsResultPts(points: any[] = [], ptKey = '_pt') {
     const resultPoints = [];
     for (let i = 0, len = points.length; i < len; i++) {
         const point = points[i];
@@ -490,7 +494,7 @@ export function getPointsResultPts(points = [], ptKey = '_pt') {
 //     canvas.height = 1;
 //     BITMAP_CTX = canvas.getContext('2d');
 // }
-export function getImageBitMap(data, cb) {
+export function getImageBitMap<T>(data: { data: T }, cb: (d: T) => void | any) {
     cb(data.data);
     // const imageData = BITMAP_CTX.createImageData(data.width, data.height);
     // imageData.data.set(data.data);
@@ -499,7 +503,7 @@ export function getImageBitMap(data, cb) {
     // });
 }
 
-export function getAbsoluteURL(url) {
+export function getAbsoluteURL(url: string) {
     if (url && url.indexOf('http://') === 0 || url.indexOf('https://') === 0) {
         return url;
     }
@@ -516,7 +520,8 @@ const CANVAS_SIZE_TEMP = {
     width: 1,
     height: 1
 };
-export function calCanvasSize(size, devicePixelRatio = 1) {
+
+export function calCanvasSize(size: { width: number, height: number }, devicePixelRatio = 1) {
     const { width, height } = size;
     CANVAS_SIZE_TEMP.cssWidth = width + 'px';
     CANVAS_SIZE_TEMP.cssHeight = height + 'px';
