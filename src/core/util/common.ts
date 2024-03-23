@@ -20,7 +20,7 @@ export function now() {
  * @return
  * @memberOf Util
  */
-export function extend(dest: Object, ...args: Object[]) { // (Object[, Object, ...]) ->
+export function extend<T>(dest: T, ...args: T[]) { // (Object[, Object, ...]) ->
     for (let i = 1; i < args.length; i++) {
         const src = args[i];
         for (const k in src) {
@@ -46,7 +46,7 @@ export function isNil(obj: Object): obj is null {
  * @return
  * @memberOf Util
  */
-export function isNumber(val: Object): val is Number {
+export function isNumber(val: Object): val is number {
     return (typeof val === 'number') && !isNaN(val);
 }
 
@@ -66,7 +66,7 @@ export function isInteger(n: number) {
  * @return
  * @memberOf Util
  */
-export function isObject(obj: Object): obj is Object {
+export function isObject(obj: Object): obj is object {
     return typeof obj === 'object' && !!obj;
 }
 
@@ -76,7 +76,7 @@ export function isObject(obj: Object): obj is Object {
  * @return
  * @memberOf Util
  */
-export function isString(obj: Object): obj is String {
+export function isString(obj: Object): obj is string {
     if (isNil(obj)) {
         return false;
     }

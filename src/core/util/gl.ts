@@ -52,7 +52,7 @@ export function compileShader(gl: WebGL2RenderingContext, type: number, source: 
  * @return created program object, or null if the creation has failed
  * @private
  */
-export function createProgram(gl: WebGL2RenderingContext, vert: string, frag: string) {
+export function createProgram(gl: WebGL2RenderingContext | any, vert: string, frag: string) {
     const vertexShader = compileShader(gl, gl.VERTEX_SHADER, vert);
     const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, frag);
     if (!vertexShader || !fragmentShader) {
@@ -82,7 +82,7 @@ export function createProgram(gl: WebGL2RenderingContext, vert: string, frag: st
  * ]);
  * @private
  */
-export function enableVertexAttrib(gl: WebGL2RenderingContext, program: WebGLProgram, attributes: any[]) {
+export function enableVertexAttrib(gl: WebGL2RenderingContext | any, program: WebGLProgram, attributes: any[]) {
     if (Array.isArray(attributes[0])) {
         const FSIZE = Float32Array.BYTES_PER_ELEMENT;
         let STRIDE = 0;

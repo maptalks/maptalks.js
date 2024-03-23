@@ -126,9 +126,9 @@ export function setPosition(out: Matrix4InOut, v: Vector3) {
 }
 
 export function lookAt(te: Matrix4InOut, eye, target, up) {
-    const x = [0, 0, 0];
-    const y = [0, 0, 0];
-    const z = [0, 0, 0];
+    const x: Vector3 = [0, 0, 0];
+    const y: Vector3 = [0, 0, 0];
+    const z: Vector3 = [0, 0, 0];
     subtract(z, eye, target);
 
     if (length(z) === 0) {
