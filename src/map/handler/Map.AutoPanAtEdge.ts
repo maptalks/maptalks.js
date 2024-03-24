@@ -1,15 +1,6 @@
 import Handler from '../../handler/Handler';
 import Map from '../Map';
-
-// TODO:等待Coordinate，Geometry，Point补充类型
-export type Event = {
-    type: string
-    target: Map
-    coordinate: any
-    containerPoint: any
-    viewPoint: any
-    domEvent: Event
-}
+import { type Event } from './CommonType'
 
 // Edge Detection Distance(Units are pixels).
 const PANOFFSET = 30;
@@ -62,8 +53,6 @@ Map.mergeOptions({
     'autoPanAtEdge': false
 });
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
 Map.addOnLoadHook('addHandler', 'autoPanAtEdge', MapAutoPanAtEdgeHandler);
 
 export default MapAutoPanAtEdgeHandler;

@@ -2,18 +2,7 @@ import Handler from '../../handler/Handler';
 import Map from '../Map';
 import DrawTool from '../tool/DrawTool';
 import Extent from '../../geo/Extent';
-
-// TODO:等待Coordinate，Geometry，Point补充类型
-export type Param = {
-    type: string
-    target: Map
-    geometry: any
-    coordinate: any
-    containerPoint: any
-    viewPoint: any
-    domEvent: MouseEvent
-    ignoreEndEvent?: boolean
-}
+import { type Param } from './CommonType'
 
 class MapBoxZoomHander extends Handler {
     drawTool: DrawTool
@@ -86,8 +75,6 @@ Map.mergeOptions({
     }
 });
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
 Map.addOnLoadHook('addHandler', 'boxZoom', MapBoxZoomHander);
 
 export default MapBoxZoomHander;
