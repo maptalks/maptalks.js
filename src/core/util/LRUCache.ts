@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/ban-types */
 const isMapSupported = typeof Map === 'function';
 
-const nullOnRemove = () => {};
+const nullOnRemove = () => { };
 /**
  * from mapbox-gl-js
  * A [least-recently-used cache](http://en.wikipedia.org/wiki/Cache_algorithms)
@@ -10,11 +11,16 @@ const nullOnRemove = () => {};
  * @public
  */
 class ArrayLRUCache {
+    max: number
+    onRemove: Function
+    data: any
+    order: any[]
+
     /**
-     * @param {number} max number of permitted values
-     * @param {Function} onRemove callback called with items when they expire
+     * @param max number of permitted values
+     * @param onRemove callback called with items when they expire
      */
-    constructor(max, onRemove) {
+    constructor(max: number, onRemove: Function) {
         this.max = max;
         this.onRemove = onRemove || nullOnRemove;
         this.reset();
@@ -23,7 +29,7 @@ class ArrayLRUCache {
     /**
      * Clear the cache
      *
-     * @returns {LRUCache} this cache
+     * @returns this cache
      */
     reset() {
         for (const key in this.data) {
@@ -45,12 +51,11 @@ class ArrayLRUCache {
      * Add a key, value combination to the cache, trimming its size if this pushes
      * it over max length.
      *
-     * @param {string} key lookup key for the item
-     * @param {*} data any value
-     *
-     * @returns {LRUCache} this cache
+     * @param key lookup key for the item
+     * @param data any value
+     * @returns this cache
      */
-    add(key, data) {
+    add(key: string, data: any) {
 
         if (this.has(key)) {
             this.order.splice(this.order.indexOf(key), 1);
@@ -73,19 +78,19 @@ class ArrayLRUCache {
     /**
      * Determine whether the value attached to `key` is present
      *
-     * @param {String} key the key to be looked-up
-     * @returns {Boolean} whether the cache has this value
+     * @param key the key to be looked-up
+     * @returns whether the cache has this value
      */
-    has(key) {
+    has(key: string) {
         return key in this.data;
     }
 
     /**
      * List all keys in the cache
      *
-     * @returns {Array<string>} an array of keys in this cache.
+     * @returns an array of keys in this cache.
      */
-    keys() {
+    keys(): string[] {
         return this.order;
     }
 
@@ -93,10 +98,10 @@ class ArrayLRUCache {
      * Get the value attached to a specific key and remove data from cache.
      * If the key is not found, returns `null`
      *
-     * @param {string} key the key to look up
-     * @returns {*} the data, or null if it isn't found
+     * @param key the key to look up
+     * @returns the data, or null if it isn't found
      */
-    getAndRemove(key) {
+    getAndRemove(key: string) {
         if (!this.has(key)) { return null; }
 
         const data = this.data[key];
@@ -111,10 +116,10 @@ class ArrayLRUCache {
      * Get the value attached to a specific key without removing data
      * from the cache. If the key is not found, returns `null`
      *
-     * @param {string} key the key to look up
-     * @returns {*} the data, or null if it isn't found
+     * @param key the key to look up
+     * @returns the data, or null if it isn't found
      */
-    get(key) {
+    get(key: string) {
         if (!this.has(key)) { return null; }
 
         const data = this.data[key];
@@ -124,10 +129,10 @@ class ArrayLRUCache {
     /**
      * Remove a key/value combination from the cache.
      *
-     * @param {string} key the key for the pair to delete
-     * @returns {LRUCache} this cache
+     * @param key the key for the pair to delete
+     * @returns this cache
      */
-    remove(key) {
+    remove(key: string) {
         if (!this.has(key)) { return this; }
 
         const data = this.data[key];
@@ -141,10 +146,10 @@ class ArrayLRUCache {
     /**
      * Change the max size of the cache.
      *
-     * @param {number} max the max size of the cache
-     * @returns {LRUCache} this cache
+     * @param max the max size of the cache
+     * @returns this cache
      */
-    setMaxSize(max) {
+    setMaxSize(max: number) {
         this.max = max;
 
         while (this.order.length > this.max) {
@@ -160,7 +165,10 @@ let MapLRUCache;
 
 if (isMapSupported) {
     MapLRUCache = class {
-        constructor(max, onRemove) {
+        max: number
+        onRemove: Function
+        data: any
+        constructor(max: number, onRemove: Function) {
             this.max = max;
             this.onRemove = onRemove || nullOnRemove;
             this.reset();

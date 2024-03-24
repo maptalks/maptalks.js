@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-types */
+
 export function now() {
     return Date.now();
 }
@@ -13,14 +15,14 @@ export function now() {
 
 /**
  * Merges the properties of sources into destination object.
- * @param  {Object} dest   - object to extend
- * @param  {...Object} src - sources
- * @return {Object}
+ * @param args - sources
+ * @return
  * @memberOf Util
  */
-export function extend(dest) { // (Object[, Object, ...]) ->
-    for (let i = 1; i < arguments.length; i++) {
-        const src = arguments[i];
+export function extend<T = any>(...args: T[]) { // (Object[, Object, ...]) ->
+    const dest = args[0]
+    for (let i = 1; i < args.length; i++) {
+        const src = args[i];
         for (const k in src) {
             dest[k] = src[k];
         }
@@ -30,51 +32,51 @@ export function extend(dest) { // (Object[, Object, ...]) ->
 
 /**
  * Whether the object is null or undefined.
- * @param  {Object}  obj - object
- * @return {Boolean}
+ * @param  obj - object
+ * @return
  * @memberOf Util
  */
-export function isNil(obj) {
+export function isNil(obj: Object): obj is null {
     return obj == null;
 }
 
 /**
  * Whether val is a number and not a NaN.
- * @param  {Object}  val - val
- * @return {Boolean}
+ * @param  val - val
+ * @return
  * @memberOf Util
  */
-export function isNumber(val) {
+export function isNumber(val: Object): val is number {
     return (typeof val === 'number') && !isNaN(val);
 }
 
 /**
  * Whether a number is an integer
- * @param  {Number}  n
- * @return {Boolean}
+ * @param  n
+ * @return
  * @memberOf Util
  */
-export function isInteger(n) {
+export function isInteger(n: number) {
     return (n | 0) === n;
 }
 
 /**
  * Whether the obj is a javascript object.
- * @param  {Object}  obj  - object
- * @return {Boolean}
+ * @param obj  - object
+ * @return
  * @memberOf Util
  */
-export function isObject(obj) {
+export function isObject(obj: Object): obj is object {
     return typeof obj === 'object' && !!obj;
 }
 
 /**
  * Check whether the object is a string
- * @param {Object} obj
- * @return {Boolean}
+ * @param obj
+ * @return
  * @memberOf Util
  */
-export function isString(obj) {
+export function isString(obj: Object): obj is string {
     if (isNil(obj)) {
         return false;
     }
@@ -87,7 +89,7 @@ export function isString(obj) {
  * @return {Boolean}
  * @memberOf Util
  */
-export function isFunction(obj) {
+export function isFunction(obj: Object): obj is Function {
     if (isNil(obj)) {
         return false;
     }
@@ -95,26 +97,27 @@ export function isFunction(obj) {
 }
 
 const hasOwnProperty = Object.prototype.hasOwnProperty;
+
 /**
  * Check whether the object owns the property.
- * @param  {Object}  obj - object
- * @param  {String}  key - property
- * @return {Boolean}
+ * @param obj - object
+ * @param key - property
+ * @return
  * @memberOf Util
  */
-export function hasOwn(obj, key) {
+export function hasOwn(obj: Object, key: string): boolean {
     return hasOwnProperty.call(obj, key);
 }
 
 /**
  * Join an array, standard or a typed one.
- * @param  {Object[]} arr       array to join
- * @param  {String} seperator  seperator
- * @return {String}           result string
+ * @param  arr       array to join
+ * @param  seperator  seperator
+ * @return  result string
  * @private
  * @memberOf Util
  */
-export function join(arr, seperator) {
+export function join(arr: Object[], seperator: string): string {
     if (arr.join) {
         return arr.join(seperator || ',');
     } else {
@@ -125,10 +128,10 @@ export function join(arr, seperator) {
 /**
  * Determine if an object has any properties.
  * @param object The object to check.
- * @returns {boolean} The object is empty
+ * @returns The object is empty
  * @memberOf Util
  */
-export function isEmpty(object) {
+export function isEmpty(object: Object) {
     let property;
     for (property in object) {
         return false;
@@ -138,10 +141,10 @@ export function isEmpty(object) {
 
 const pi = Math.PI / 180;
 
-export function toRadian(d) {
+export function toRadian(d: number) {
     return d * pi;
 }
 
-export function toDegree(r) {
+export function toDegree(r: number) {
     return r / pi;
 }

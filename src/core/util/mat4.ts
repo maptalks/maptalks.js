@@ -1,7 +1,18 @@
 /*eslint-disable no-var*/
 // Contains code from glmatrix.js
 
-export function perspective(out, fovy, aspect, near, far) {
+
+export type Matrix4 = [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number]
+
+export type Matrix4InOut = Matrix4 | number[]
+
+export type Vector3 = [number, number, number]
+
+export type Vector4 = [number, number, number, number]
+
+export type Vector = Vector3 | Vector4
+
+export function perspective(out: Matrix4InOut, fovy: number, aspect: number, near: number, far: number) {
     var f = 1.0 / Math.tan(fovy / 2),
         nf = 1 / (near - far);
     out[0] = f / aspect;
@@ -23,7 +34,7 @@ export function perspective(out, fovy, aspect, near, far) {
     return out;
 }
 
-export function translate(out, a, v) {
+export function translate(out: Matrix4InOut, a: Matrix4InOut, v: Vector) {
     var x = v[0],
         y = v[1],
         z = v[2],
@@ -63,7 +74,7 @@ export function translate(out, a, v) {
     return out;
 }
 
-export function scale(out, a, v) {
+export function scale(out: Matrix4InOut, a: Matrix4InOut, v: Vector) {
     var x = v[0],
         y = v[1],
         z = v[2];
@@ -87,7 +98,7 @@ export function scale(out, a, v) {
     return out;
 }
 
-export function rotateX(out, a, rad) {
+export function rotateX(out: Matrix4InOut, a: Matrix4InOut, rad: number) {
     var s = Math.sin(rad),
         c = Math.cos(rad),
         a10 = a[4],
@@ -121,7 +132,7 @@ export function rotateX(out, a, rad) {
     return out;
 }
 
-export function rotateZ(out, a, rad) {
+export function rotateZ(out: Matrix4InOut, a: Matrix4InOut, rad: number) {
     var s = Math.sin(rad),
         c = Math.cos(rad),
         a00 = a[0],
@@ -175,7 +186,7 @@ export function rotateZ(out, a, rad) {
     return out;
 } */
 
-export function multiply(out, a, b) {
+export function multiply(out: Matrix4InOut, a: Matrix4InOut, b: Matrix4InOut) {
     var a00 = a[0],
         a01 = a[1],
         a02 = a[2],
@@ -223,7 +234,7 @@ export function multiply(out, a, b) {
     return out;
 }
 
-export function invert(out, a) {
+export function invert(out: Matrix4InOut, a: Matrix4InOut) {
     var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
         a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
         a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
@@ -273,10 +284,10 @@ export function invert(out, a) {
 /**
  * Set a mat4 to the identity matrix
  * @ignore
- * @param {mat4} out the receiving matrix
- * @returns {mat4} out
+ * @param out the receiving matrix
+ * @returns out
  */
-export function identity(out) {
+export function identity(out: Matrix4InOut) {
     out[0] = 1;
     out[1] = 0;
     out[2] = 0;
@@ -299,11 +310,11 @@ export function identity(out) {
 /**
  * Copy the values from one mat4 to another
  * @ignore
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the source matrix
- * @returns {mat4} out
+ * @param out the receiving matrix
+ * @param a the source matrix
+ * @returns out
  */
-export function copy(out, a) {
+export function copy(out: Matrix4InOut, a: Matrix4InOut) {
     out[0] = a[0];
     out[1] = a[1];
     out[2] = a[2];

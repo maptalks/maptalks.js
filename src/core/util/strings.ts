@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/ban-types */
 import { DEFAULT_TEXT_SIZE } from '../Constants';
 import { isString, isNil, isNumber } from './common';
 import Point from '../../geo/Point';
@@ -16,11 +18,11 @@ export const EMPTY_STRING = '';
 
 /**
  * Trim the string
- * @param {String} str
- * @return {String}
+ * @param str
+ * @return 
  * @memberOf StringUtil
  */
-export function trim(str) {
+export function trim(str: string) {
     return str.trim ? str.trim() : str.replace(/^\s+|\s+$/g, '');
 }
 
@@ -29,11 +31,11 @@ const specialPattern = /[\b\t\r\v\f]/igm;
 /**
  * Escape special characters from string.
  * Including: \b \t \r \v \f
- * @param  {String} str string to escape
- * @return {String}
+ * @param str string to escape
+ * @return
  * @memberOf StringUtil
  */
-export function escapeSpecialChars(str) {
+export function escapeSpecialChars(str: string) {
     if (!isString(str)) {
         return str;
     }
@@ -42,11 +44,11 @@ export function escapeSpecialChars(str) {
 
 /**
  * Split string by specified char
- * @param {String} chr - char to split
- * @return {String[]}
+ * @param chr - char to split
+ * @return
  * @memberOf StringUtil
  */
-export function splitWords(chr) {
+export function splitWords(chr: string) {
     return trim(chr).split(/\s+/);
 }
 
@@ -55,13 +57,15 @@ const rulerCtx = typeof document !== 'undefined' ? document.createElement('canva
 /**
  * Gets width of the text with a certain font.
  * More performant than stringLength.
- * @param {String} text - text to measure
- * @param {String} font - font of the text, same as the CSS font.
- * @return {Number}
+ * @param text - text to measure
+ * @param font - font of the text, same as the CSS font.
+ * @return
  * @memberOf StringUtil
  */
-export function stringWidth(text, font) {
+export function stringWidth(text: string, font?: string): number {
+    // @ts-expect-error
     if (stringWidth.node) {
+        // @ts-expect-error
         return stringWidth.node(text, font);
     }
     rulerCtx.font = font;
@@ -72,12 +76,12 @@ export function stringWidth(text, font) {
 
 /**
  * Gets size in pixel of the text with a certain font.
- * @param {String} text - text to measure
- * @param {String} font - font of the text, same as the CSS font.
- * @return {Size}
+ * @param text - text to measure
+ * @param font - font of the text, same as the CSS font.
+ * @return
  * @memberOf StringUtil
  */
-export function stringLength(text, font, size) {
+export function stringLength(text: string, font: string, size: number):Size {
     const w = stringWidth(text, font);
     // if (!font) {
     //     font = '_default_';
@@ -105,13 +109,13 @@ export function stringLength(text, font, size) {
 
 /**
  * Split text content by dom.
- * @param {String} content - content to split
- * @param {String} font - font of the text, same as the CSS font.
- * @return {Number} wrapWidth - width to wrap
+ * @param content - content to split
+ * @param font - font of the text, same as the CSS font.
+ * @return wrapWidth - width to wrap
  * @return {String[]}
  * @memberOf StringUtil
  */
-export function splitContent(content, font, wrapWidth, textWidth) {
+export function splitContent(content: string, font: string, wrapWidth: number, textWidth: number) {
     if (!content || content.length === 0) {
         return [{ 'text': '', 'width': 0 }];
     }
@@ -154,12 +158,12 @@ const TEMPLATE_CHARS = ['{', '}'];
  * @example
  *     // will returns 'John is awesome'
  *     const actual = replaceVariable('{foo} is awesome', {'foo' : 'John'});
- * @param {String} str      - string to replace
- * @param {Object} props    - variable value properties
- * @return {String}
+ * @param str      - string to replace
+ * @param props    - variable value properties
+ * @return
  * @memberOf StringUtil
  */
-export function replaceVariable(str, props) {
+export function replaceVariable(str:string, props:Object) {
     if (!isString(str)) {
         return str;
     }
@@ -181,6 +185,8 @@ export function replaceVariable(str, props) {
     for (let i = 0, len = keys.length; i < len; i++) {
         const key = keys[i];
         const value = getValue(key);
+        // TODO: 此特性仅在es2021版本可用，可能需要添加polyfill
+        // @ts-expect-error
         str = str.replaceAll(`${left}${key}${right}`, value);
     }
     return str;
@@ -217,9 +223,9 @@ function templateKeys(str) {
  * @return {Object} text descriptor
  * @memberOf StringUtil
  */
-export function describeText(textContent, symbol) {
+export function describeText(textContent: any, symbol: any) {
     if (isNumber(textContent)) {
-        textContent += '';
+        textContent += '' as any;
     }
     textContent = textContent || '';
     const maxHeight = symbol['textMaxHeight'] || 0;
@@ -238,7 +244,7 @@ export function describeText(textContent, symbol) {
  * @return {Point}
  * @memberOf StringUtil
  */
-export function getAlignPoint(size, horizontalAlignment, verticalAlignment) {
+export function getAlignPoint(size: Size, horizontalAlignment: string, verticalAlignment: string): Point {
     const width = size['width'],
         height = size['height'];
     let alignW, alignH;
@@ -269,7 +275,7 @@ export const DEFAULT_TEXTSIZE = 14;
  * @return {String}       CSS Font String
  * @memberOf StringUtil
  */
-export function getFont(style) {
+export function getFont(style: any) {
     if (style['textFont']) {
         return style['textFont'];
     } else {
@@ -284,7 +290,7 @@ export function getFont(style) {
     }
 }
 
-function formatFontFamily(font) {
+function formatFontFamily(font: string) {
     const fonts = font.split(',');
     for (let i = 0; i < fonts.length; i++) {
         if (fonts[i].trim) {
@@ -306,7 +312,7 @@ function formatFontFamily(font) {
  * @return {Object[]} the object's structure: { rowNum: rowNum, textSize: textSize, rows: textRows, rawSize : rawSize }
  * @memberOf StringUtil
  */
-export function splitTextToRow(text, style) {
+export function splitTextToRow(text: string, style: Object) {
     const font = getFont(style),
         lineSpacing = style['textLineSpacing'] || 0,
         size = stringLength(text, font, style['textSize']),
@@ -319,6 +325,7 @@ export function splitTextToRow(text, style) {
         wrapWidth = textWidth;
     }
     if (!isString(text)) {
+        // @ts-expect-error
         text += '';
     }
     let actualWidth = 0;
@@ -381,7 +388,7 @@ export function splitTextToRow(text, style) {
     };
 }
 
-export function hashCode(s) {
+export function hashCode(s: string) {
     let hash = 0;
     const strlen = s && s.length || 0;
     if (!strlen) {

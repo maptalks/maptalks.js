@@ -1,4 +1,5 @@
 import Point from '../../geo/Point';
+import Coordinate from '../../geo/Coordinate';
 
 
 export function clipLine(points, bounds, round, noCut) {
@@ -11,16 +12,16 @@ export function clipLine(points, bounds, round, noCut) {
 
         parts[k] = parts[k] || [];
         parts[k].push({
-            'point' : segment[0],
-            'index' : j
+            'point': segment[0],
+            'index': j
         });
 
         // if segment goes out of screen, or it's the last one, it's the end of the line part
         if ((segment[1] !== points[j + 1]) || (j === l - 2)) {
             // parts[k].push(segment[1]);
             parts[k].push({
-                'point' : segment[1],
-                'index' : j + 1
+                'point': segment[1],
+                'index': j + 1
             });
             k++;
         }
@@ -112,7 +113,7 @@ export function clipPolygon(points, bounds, round) {
                 }
                 clippedPoints.push(a);
 
-            // else if b is inside the clip window (a->b enters the screen)
+                // else if b is inside the clip window (a->b enters the screen)
             } else if (!(b._code & edge)) {
                 p = _getEdgeIntersection(b, a, edge, bounds, round);
                 p._code = _getBitCode(p, bounds);
@@ -127,13 +128,13 @@ export function clipPolygon(points, bounds, round) {
 
 /**
  * caculate the distance from a point to a segment.
- * @param {Point} p
- * @param {Point} p1
- * @param {Point} p2
- * @return {Number} distance from p to (p1, p2)
+ * @param p
+ * @param p1
+ * @param p2
+ * @return distance from p to (p1, p2)
  * @memberOf Util
  */
-export function distanceToSegment(p, p1, p2) {
+export function distanceToSegment(p: Point, p1: Point, p2: Point) {
     const x = p.x,
         y = p.y,
         x1 = p1.x,
@@ -160,12 +161,12 @@ export function distanceToSegment(p, p1, p2) {
 
 /**
  * Whether the coordinate is inside the polygon
- * @param {Polygon}         - polygon
- * @param {Coordinate}      - coordinate
- * @return {Boolean}
+ * @param p
+ * @param points
+ * @return
  * @memberOf Util
  */
-export function pointInsidePolygon(p, points) {
+export function pointInsidePolygon(p: Coordinate, points: Coordinate[]): boolean {
     let p1, p2;
     const len = points.length;
     let c = false;
@@ -233,15 +234,15 @@ function _getBitCode(p, bounds) {
 
 /**
  * Is the point within an ellipse
- * @param {Point} point
- * @param {Point} center ellipse's center
- * @param {Point} southeast ellipse's southeast point
- * @param {Number} tolerance
- * @returns {Boolean}
+ * @param  point
+ * @param  center ellipse's center
+ * @param  southeast ellipse's southeast point
+ * @param  tolerance
+ * @returns
  * @private
  * @memberOf Util
  */
-export function withInEllipse(point, center, southeast, tolerance) {
+export function withInEllipse(point: Point, center: Point, southeast: Point, tolerance: number) {
     point = new Point(point);
     const a = Math.abs(southeast.x - center.x),
         b = Math.abs(southeast.y - center.y),
