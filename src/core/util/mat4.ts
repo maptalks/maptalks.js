@@ -6,7 +6,7 @@ export type Matrix4 = [number, number, number, number, number, number, number, n
 
 export type Matrix4InOut = Matrix4 | number[]
 
-export type Vector3 = [number, number, number] | number[]
+export type Vector3 = [number, number, number]
 
 export type Vector4 = [number, number, number, number]
 

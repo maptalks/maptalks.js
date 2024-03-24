@@ -110,8 +110,8 @@ export function parseJSON(str: string) {
     return JSON.parse(str);
 }
 
-export function pushIn<T extends { length: number }>(...args: T[]) {
-    const dest = [args[0]]
+export function pushIn<T extends Array<any>>(...args: T[]) {
+    const dest = args[0]
     for (let i = 1; i < args.length; i++) {
         const src = args[i];
         if (src && src.length) {
