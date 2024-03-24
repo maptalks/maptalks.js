@@ -3,8 +3,9 @@ import PointExtent from '../../geo/PointExtent';
 import { isGradient } from './style';
 import { isNumber } from './common';
 import Canvas from '../Canvas';
+import { ResourceCache } from '../../renderer/layer/CanvasRenderer'
 
-export function drawImageMarker(ctx, image, point, symbol) {
+export function drawImageMarker(ctx: CanvasRenderingContext2D, image, point, symbol) {
     let w = symbol && symbol['markerWidth'];
     if (!isNumber(w)) {
         w = image.width;
@@ -16,12 +17,12 @@ export function drawImageMarker(ctx, image, point, symbol) {
     Canvas.image(ctx, image, point, symbol['markerWidth'] || image.width, symbol['markerHeight'] || image.height);
 }
 
-export function getImage(resources, url) {
+export function getImage(resources: ResourceCache, url: string) {
     const img = resources && resources.getImage(url);
     return img || null;
 }
 
-export function drawVectorMarker(ctx, point, symbol, resources) {
+export function drawVectorMarker(ctx: CanvasRenderingContext2D, point, symbol, resources: ResourceCache) {
     const strokeAndFill = translateMarkerLineAndFill(symbol);
     const style = symbol,
         markerType = style['markerType'].toLowerCase(),
@@ -38,6 +39,10 @@ export function drawVectorMarker(ctx, point, symbol, resources) {
             strokeAndFill['polygonGradientExtent'] = gradientExtent;
         }
     }
+
+    // TODO: 等待Canvas.js补充类型
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     Canvas.prepareCanvas(ctx, strokeAndFill, resources);
 
     const width = style['markerWidth'],
@@ -86,7 +91,10 @@ export function drawVectorMarker(ctx, point, symbol, resources) {
     return ctx.canvas;
 }
 
-function getGraidentExtent(point, w, h) {
+function getGraidentExtent(point: Point, w: number, h: number) {
+    // TODO: 等待PointExtent.js补充类型
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     const e = new PointExtent();
     e._combine(point);
     e['xmin'] += -w / 2;
@@ -96,7 +104,20 @@ function getGraidentExtent(point, w, h) {
     return e;
 }
 
-export function translateMarkerLineAndFill(s) {
+
+interface TemplateSymbol {
+    markerLineColor: any
+    markerLinePatternFile: any
+    markerLineWidth: any
+    markerLineOpacity: any
+    markerLineDasharray: any
+    markerFill: any
+    markerFillPatternFile: any
+    markerFillOpacity: any
+}
+
+
+export function translateMarkerLineAndFill<T extends Partial<TemplateSymbol>>(s: T) {
     const result = {
         'lineColor': s['markerLineColor'],
         'linePatternFile': s['markerLinePatternFile'],
@@ -115,7 +136,9 @@ export function translateMarkerLineAndFill(s) {
     return result;
 }
 
-export function getVectorMarkerPoints(markerType, width, height) {
+export type MarkerType = 'triangle' | 'cross' | 'diamond' | 'square' | 'rectangle' | 'x' | 'bar' | 'pin' | 'pie'
+
+export function getVectorMarkerPoints(markerType: MarkerType, width: number, height: number) {
     //half height and half width
     const hh = height / 2,
         hw = width / 2;

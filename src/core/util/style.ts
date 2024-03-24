@@ -1,24 +1,25 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { extend, isNil, isString, isObject, isNumber } from './common';
 import { hashCode } from './strings';
 import { isFunctionDefinition } from '@maptalks/function-type';
 
 /**
  * Whether the color is a gradient
- * @param  {Object}  g - color to test
- * @return {Boolean}
+ * @param g - color to test
+ * @return
  * @memberOf Util
  */
-export function isGradient(g) {
+export function isGradient(g: Object): boolean {
     return g && g['colorStops'];
 }
 
 /**
  * Get stamp of a gradient color object.
- * @param  {Object} g gradient color object
- * @return {String}     gradient stamp
+ * @param g gradient color object
+ * @return gradient stamp
  * @memberOf Util
  */
-export function getGradientStamp(g) {
+export function getGradientStamp(g: Object) {
     const keys = [g['type']];
     if (g['places']) {
         keys.push(g['places'].join());
@@ -34,17 +35,17 @@ export function getGradientStamp(g) {
 }
 
 // back-compatibility alias
-export function getSymbolStamp(symbol, prefix) {
+export function getSymbolStamp(symbol: Object, prefix: string) {
     return getSymbolHash(symbol, prefix);
 }
 
 /**
  * Get stamp of a symbol
- * @param  {Object|Object[]} symbol symbol
- * @return {String}        symbol's stamp
+ * @param symbol symbol
+ * @return symbol's stamp
  * @memberOf Util
  */
-export function getSymbolHash(symbol, prefix) {
+export function getSymbolHash(symbol: Object | Object[], prefix: string) {
     if (!symbol) {
         return 1;
     }
@@ -68,12 +69,12 @@ export function getSymbolHash(symbol, prefix) {
 
 /**
  * Reduce opacity of the color by ratio
- * @param  {Object|Object[]} symbol symbols to set
- * @param  {Number} ratio  ratio of opacity to reduce
- * @return {Object|Object[]}      new symbol or symbols
+ * @param symbol symbols to set
+ * @param ratio  ratio of opacity to reduce
+ * @return new symbol or symbols
  * @memberOf Util
  */
-export function lowerSymbolOpacity(symbol, ratio) {
+export function lowerSymbolOpacity(symbol: Object | Object[], ratio: number): Object | Object[] {
     function s(_symbol, _ratio) {
         const op = _symbol['opacity'];
         if (isNil(op)) {
@@ -99,13 +100,13 @@ export function lowerSymbolOpacity(symbol, ratio) {
 
 /**
  * Merges the properties of sources into the symbol. <br>
- * @param  {Object|Object[]} symbol symbol to extend
- * @param  {...Object} src - sources
- * @return {Object|Object[]}        merged symbol
+ * @param args - sources
+ * @return merged symbol
  * @memberOf Util
  */
-export function extendSymbol(symbol) {
-    let sources = Array.prototype.slice.call(arguments, 1);
+export function extendSymbol(...args: Object[]): Object | Object[] {
+    const symbol = args[0]
+    let sources = Array.prototype.slice.call(args, 1);
     if (!sources || !sources.length) {
         sources = [{}];
     }
@@ -129,12 +130,13 @@ export function extendSymbol(symbol) {
         return result;
     } else {
         const args = [{}, symbol];
+        // eslint-disable-next-line prefer-spread
         args.push.apply(args, sources);
         return extend.apply(this, args);
     }
 }
 
-export function parseStyleRootPath(style) {
+export function parseStyleRootPath(style: any) {
     if (style.symbol) {
         style = [style];
     }
@@ -164,7 +166,7 @@ export function parseStyleRootPath(style) {
     return style;
 }
 
-export function convertStylePath(styles, replacer) {
+export function convertStylePath(styles: any[], replacer: any) {
     for (let i = 0; i < styles.length; i++) {
         const { symbol } = styles[i];
         if (symbol) {
@@ -174,7 +176,7 @@ export function convertStylePath(styles, replacer) {
 
 }
 const URL_PATTERN = /(\{\$root\}|\{\$iconset\})/g;
-export function parseSymbolPath(symbol, replacer) {
+export function parseSymbolPath(symbol: any, replacer: string) {
     for (const p in symbol) {
         if (symbol.hasOwnProperty(p) && p !== 'textName') {
             if (isString(symbol[p]) && symbol[p].length > 2) {
@@ -188,7 +190,7 @@ export function parseSymbolPath(symbol, replacer) {
     }
 }
 
-function parseStops(value, replacer) {
+function parseStops(value: any, replacer: string) {
     const defaultValue = value['default'];
     if (isString(defaultValue)) {
         value['default'] = defaultValue.replace(URL_PATTERN, replacer);
@@ -214,7 +216,7 @@ function parseStops(value, replacer) {
  * geometry symbol has lineDasharray
  * @memberOf Util
  */
-export function isDashLine(symbolizers = []) {
+export function isDashLine(symbolizers: any[] = []) {
     if (!Array.isArray(symbolizers)) {
         symbolizers = [symbolizers];
     }
@@ -225,7 +227,7 @@ export function isDashLine(symbolizers = []) {
             continue;
         }
         const { lineDasharray, lineWidth } = symbolizer.style;
-        if (lineWidth && isNumber(lineWidth) && lineWidth > 0 && lineDasharray && Array.isArray(lineDasharray) && lineDasharray.length) {
+        if (lineWidth && isNumber(lineWidth) && (lineWidth as number) > 0 && lineDasharray && Array.isArray(lineDasharray) && lineDasharray.length) {
             return true;
         }
     }

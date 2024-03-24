@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { isNumber, isNil } from './common';
 import { sign, getValueOrDefault } from './util';
 import { getAlignPoint } from './strings';
 import Point from '../../geo/Point';
 import PointExtent from '../../geo/PointExtent';
 import Size from '../../geo/Size';
+import { type MarkerType } from './draw'
+import { ResourceCache } from '../../renderer/layer/CanvasRenderer'
 
 export const DEFAULT_MARKER_SYMBOLS = {
     markerWidth: 10,
@@ -21,7 +24,7 @@ const TEMP_DXDYPOINT = new Point(0, 0);
  *      \
  *     dxdy
  */
-function getDxDyRad(dxdy) {
+function getDxDyRad(dxdy?: Point) {
     if (!dxdy) {
         return 0;
     }
@@ -48,7 +51,7 @@ function getDxDyRad(dxdy) {
 }
 
 
-function getImageRotateBBOX(width, height, rad) {
+function getImageRotateBBOX(width: number, height: number, rad: number) {
     /**
      * p1(0,0)
      * p2(0,height)
@@ -81,7 +84,7 @@ function getImageRotateBBOX(width, height, rad) {
     return [minx, miny, maxx - minx, maxy - miny];
 }
 
-export function getMarkerRotationExtent(out, rad, width, height, dxdy, alignPoint) {
+export function getMarkerRotationExtent(out: PointExtent, rad: number, width: number, height: number, dxdy: Point, alignPoint: Point) {
     const x = dxdy.x + alignPoint.x, y = dxdy.y + alignPoint.y;
     TEMP_DXDYPOINT.x = x;
     TEMP_DXDYPOINT.y = y;
@@ -105,7 +108,7 @@ export function getMarkerRotationExtent(out, rad, width, height, dxdy, alignPoin
     minx += rx;
     miny += ry;
     //计算旋转图形后新的图形的BBOX
-    const [offsetX, offsetY, w, h] = getImageRotateBBOX(width, height, rad, alignPoint);
+    const [offsetX, offsetY, w, h] = getImageRotateBBOX(width, height, rad);
     minx += offsetX;
     miny += offsetY;
     const maxx = minx + Math.max(width, w), maxy = miny + Math.max(height, h);
@@ -118,7 +121,7 @@ function getVectorPadding(/*symbol*/) {
 }
 
 const DXDY = new Point(0, 0);
-function getFixedExtent(out, dx, dy, rotation, alignPoint, w, h) {
+function getFixedExtent(out: PointExtent, dx: number, dy: number, rotation: number, alignPoint: Point, w: number, h: number) {
     const dxdy = DXDY.set(dx, dy);
     if (rotation) {
         return getMarkerRotationExtent(out, rotation, w, h, dxdy, alignPoint);
@@ -132,8 +135,8 @@ function getFixedExtent(out, dx, dy, rotation, alignPoint, w, h) {
     return result;
 }
 
-const SIZE = [];
-export function getVectorMarkerFixedExtent(out, symbol, size) {
+const SIZE: any = [];
+export function getVectorMarkerFixedExtent(out: PointExtent, symbol: any, size?: [number, number]) {
     // const padding = getVectorPadding(symbol) * 2;
     size = size || calVectorMarkerSize(SIZE, symbol);
     if (size && (size[0] === 0 || size[1] === 0)) {
@@ -148,7 +151,7 @@ export function getVectorMarkerFixedExtent(out, symbol, size) {
         getMarkerRotation(symbol), alignPoint, size[0], size[1]);
 }
 
-export function getDefaultHAlign(markerType) {
+export function getDefaultHAlign(markerType?: MarkerType) {
     if (markerType === 'rectangle') {
         return 'right';
     } else {
@@ -156,7 +159,7 @@ export function getDefaultHAlign(markerType) {
     }
 }
 
-export function getDefaultVAlign(markerType) {
+export function getDefaultVAlign(markerType?: MarkerType) {
     if (markerType === 'bar' || markerType === 'pie' || markerType === 'pin') {
         return 'top';
     } else if (markerType === 'rectangle') {
@@ -168,7 +171,7 @@ export function getDefaultVAlign(markerType) {
 
 
 const TEMP_SIZE = new Size(0, 0);
-export function getVectorMarkerAnchor(symbol, w, h) {
+export function getVectorMarkerAnchor(symbol: any, w: number, h: number) {
     const padding = getVectorPadding();
     const shadow = 2 * (symbol['shadowBlur'] || 0),
         margin = shadow + padding;
@@ -185,8 +188,8 @@ export function getVectorMarkerAnchor(symbol, w, h) {
     return p;
 }
 
-export function calVectorMarkerSize(out, symbol) {
-    const padding = getVectorPadding(symbol);
+export function calVectorMarkerSize(out: [number, number], symbol: any) {
+    const padding = getVectorPadding();
     const width = getValueOrDefault(symbol['markerWidth'], DEFAULT_MARKER_SYMBOLS.markerWidth);
     const height = getValueOrDefault(symbol['markerHeight'], DEFAULT_MARKER_SYMBOLS.markerHeight);
     if (width === 0 || height === 0) {
@@ -203,14 +206,16 @@ export function calVectorMarkerSize(out, symbol) {
     return out;
 }
 
+// TODO: 等待PointExtent补充类型
+// @ts-expect-error
 const ROTATE_EXTENT = new PointExtent();
-function rotateExtent(fixedExtent, angle) {
+function rotateExtent(fixedExtent: PointExtent, angle: number) {
     const { xmin, ymin, xmax, ymax } = fixedExtent;
     ROTATE_EXTENT.set(xmin, ymin, xmax, ymax);
     return ROTATE_EXTENT.convertTo(p => p._rotate(angle), fixedExtent);
 }
 
-export function getMarkerRotation(symbol, prop = 'markerRotation') {
+export function getMarkerRotation(symbol:any, prop = 'markerRotation') {
     const r = symbol[prop];
     if (!isNumber(r)) {
         return 0;
@@ -219,7 +224,7 @@ export function getMarkerRotation(symbol, prop = 'markerRotation') {
     return -r * Math.PI / 180;
 }
 
-export function getImageMarkerFixedExtent(out, symbol, resources) {
+export function getImageMarkerFixedExtent(out: PointExtent, symbol: any, resources?: ResourceCache) {
     const url = symbol['markerFile'],
         img = resources ? resources.getImage(url) : null;
     const width = symbol['markerWidth'] || (img ? img.width : 0),
@@ -236,7 +241,7 @@ export function getImageMarkerFixedExtent(out, symbol, resources) {
 }
 
 
-export function getTextMarkerFixedExtent(out, symbol, textDesc) {
+export function getTextMarkerFixedExtent(out: PointExtent, symbol: any, textDesc: any) {
     const size = textDesc['size'];
     if (size && (size.width === 0 || size.height === 0)) {
         emptyExtent(out);
@@ -256,9 +261,10 @@ export function getTextMarkerFixedExtent(out, symbol, textDesc) {
     extent.ymax += textHaloRadius;
     return extent;
 }
-
+// @ts-expect-error
 const FIXED_EXTENT = new PointExtent();
-export function getMarkerFixedExtent(out, symbol, resources, textDesc) {
+export function getMarkerFixedExtent(out: PointExtent, symbol: any, resources: ResourceCache, textDesc: any) {
+    // @ts-expect-error
     const extent = out || new PointExtent();
     if (Array.isArray(symbol)) {
         const symbols = symbol;
@@ -283,7 +289,7 @@ export function getMarkerFixedExtent(out, symbol, resources, textDesc) {
 }
 
 
-export function isTextSymbol(symbol) {
+export function isTextSymbol(symbol: any) {
     if (!symbol) {
         return false;
     }
@@ -294,7 +300,7 @@ export function isTextSymbol(symbol) {
 }
 
 
-export function isImageSymbol(symbol) {
+export function isImageSymbol(symbol: any) {
     if (!symbol) {
         return false;
     }
@@ -304,7 +310,7 @@ export function isImageSymbol(symbol) {
     return false;
 }
 
-export function isVectorSymbol(symbol) {
+export function isVectorSymbol(symbol: any) {
     if (!symbol) {
         return false;
     }
@@ -314,7 +320,7 @@ export function isVectorSymbol(symbol) {
     return false;
 }
 
-export function isPathSymbol(symbol) {
+export function isPathSymbol(symbol: any) {
     if (!symbol) {
         return false;
     }
@@ -334,7 +340,7 @@ export const SIZE_SYMBOL_PROPS = [
     'textName', 'markerType', 'markerFile', 'textHaloRadius', 'shadowBlur', 'shadowOffsetX', 'shadowOffsetY', 'textWrapWidth'
 ];
 
-export function emptyExtent(extent) {
+export function emptyExtent(extent: PointExtent) {
     if (!extent) {
         return;
     }
