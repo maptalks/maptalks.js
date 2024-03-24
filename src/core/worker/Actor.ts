@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { getGlobalWorkerPool } from './WorkerPool';
 import { UID } from '../util';
 import { createAdapter } from './Worker';
@@ -46,8 +47,17 @@ const EMPTY_BUFFERS = [];
     });
  */
 class Actor {
-
-    constructor(workerKey) {
+    _delayMessages: any[]
+    initializing: boolean
+    workerKey: string
+    workerPool: any
+    currentActor: number
+    actorId: number
+    workers: any[]
+    callbacks: any
+    callbackID: number
+    receiveFn: any
+    constructor(workerKey: string) {
         startTasks();
         this._delayMessages = [];
         this.initializing = false;
@@ -88,7 +98,7 @@ class Actor {
 
     /**
      * If the actor is active
-     * @returns {Boolean}
+     * @returns
      */
     isActive() {
         return !!this.workers;
@@ -100,7 +110,7 @@ class Actor {
      * @param {ArrayBuffer[]} buffers - arraybuffers in data as transferables
      * @param {Function} cb - callback function when received message from worker thread
      */
-    broadcast(data, buffers, cb) {
+    broadcast(data: any, buffers: ArrayBuffer[], cb: Function) {
         if (this.initializing) {
             this._delayMessages.push({ command: 'broadcast', data, buffers, cb });
             return this;
@@ -120,7 +130,7 @@ class Actor {
      * @param {Function} cb - callback function when received message from worker thread
      * @param {Number} [workerId=undefined] - Optional, a particular worker id to which to send this message.
      */
-    send(data, buffers, cb, workerId) {
+    send(data: any, buffers: ArrayBuffer[], cb: Function, workerId?: number) {
         if (this.initializing) {
             this._delayMessages.push({ command: 'send', data, buffers, cb, workerId });
             return this;
@@ -139,7 +149,7 @@ class Actor {
      * SHOULD NOT BE OVERRIDED only if you know what you are doing.
      * @param {Object} message - response message from worker thread
      */
-    receive(message) {
+    receive(message: any) {
         const data = message.data,
             id = data.callback;
         const callback = this.callbacks[id];
@@ -148,7 +158,7 @@ class Actor {
             if (this.actorId === data.actorId) {
                 //request from worker to main thread
                 this[data.command](data.params, (err, cbData, buffers) => {
-                    const message = {
+                    const message: any = {
                         type: '<response>',
                         callback: data.callback
                     };
@@ -188,7 +198,7 @@ class Actor {
      * @param {Number} targetID The ID of the Worker to which to send this message. Omit to allow the dispatcher to choose.
      * @returns {Number} The ID of the worker to which the message was sent.
      */
-    post(data, buffers, targetID) {
+    post(data: any, buffers: ArrayBuffer[], targetID: number): number {
         if (typeof targetID !== 'number' || isNaN(targetID)) {
             // Use round robin to send requests to web workers.
             targetID = this.currentActor = (this.currentActor + 1) % this.workerPool.workerCount;
@@ -212,7 +222,7 @@ class Actor {
 
 }
 
-function asyncAll(array, fn, callback) {
+function asyncAll(array: any[], fn: Function, callback: Function) {
     if (!array.length) { callback(null, []); }
     let remaining = array.length;
     const results = new Array(array.length);
@@ -225,4 +235,5 @@ function asyncAll(array, fn, callback) {
         });
     });
 }
+
 export default Actor;
