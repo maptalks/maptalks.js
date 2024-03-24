@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { isFunction } from '../util/common.js';
 import { getWorkerPool, pushAdapterCreated } from './CoreWorkers.js';
 
@@ -25,7 +26,7 @@ let adapters = {};
     @global
     @static
  */
-export function registerWorkerAdapter(workerKey, adapter) {
+export function registerWorkerAdapter(workerKey: string, adapter: string | Function) {
     adapters[workerKey] = adapter;
 }
 
@@ -161,7 +162,7 @@ function compileWorkerSource() {
     return source;
 }
 
-let url;
+let url: string;
 
 export function getWorkerSourcePath() {
     if (typeof window === 'undefined') {
@@ -179,7 +180,7 @@ export function getWorkerSourcePath() {
 // Dynamic Create Adapter
 //利用worker通信向每个workerPool里的每个worker注入新的code
 //注意注入的代码在worker code里不是明文的，是个匿名函数挂到adapters,代码层面是看不到改段代码的
-export function createAdapter(key, cb) {
+export function createAdapter(key: string, cb: Function) {
     if (!adapters[key]) {
         console.error(`not find ${key} adapter`);
         return;
@@ -201,7 +202,7 @@ export function createAdapter(key, cb) {
         console.error('workerpool workers count is 0');
     }
     let count = 0;
-    const messageCB = (msg) => {
+    const messageCB = (msg: any) => {
         msg = msg.data || {};
         if (msg.adapterName === key) {
             count++;
@@ -214,10 +215,9 @@ export function createAdapter(key, cb) {
             }
         }
     };
-    workers.forEach(worker => {
+    workers.forEach((worker: Worker) => {
         worker.addEventListener('message', messageCB);
         worker.postMessage({ key, code: adapter, messageType: 'createAdapter' });
     });
-
 
 }
