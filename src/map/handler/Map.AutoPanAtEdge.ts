@@ -1,5 +1,6 @@
 import Handler from '../../handler/Handler';
 import Map from '../Map';
+import { type Event } from './CommonType'
 
 // Edge Detection Distance(Units are pixels).
 const PANOFFSET = 30;
@@ -19,7 +20,7 @@ class MapAutoPanAtEdgeHandler extends Handler {
         this.target.off('_mousemove', this._onMouseMove, this);
     }
 
-    _onMouseMove(event) {
+    _onMouseMove(event: Event) {
         const map = this.target;
         if (map.options['autoPanAtEdge']) {
             const { containerPoint } = event;
