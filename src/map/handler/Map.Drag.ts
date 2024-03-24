@@ -3,8 +3,27 @@ import { preventDefault, getEventContainerPoint } from '../../core/util/dom';
 import Handler from '../../handler/Handler';
 import DragHandler from '../../handler/Drag';
 import Map from '../Map';
+import { type Param } from './CommonType';
+
 
 class MapDragHandler extends Handler {
+    _dragHandler: DragHandler
+    startDragTime: number
+    startBearing: number
+    _mode: 'rotatePitch' | 'move'
+    preX: number
+    preY: number
+    startX: number
+    startY: number
+    // TODO:等待补充Coordinate类型定义
+    _startPrjCenter: any
+    // TODO:等待补充Coordinate类型定义
+    startPrjCoord: any
+    _rotateMode: 'rotate_pitch' | 'rotate' | 'pitch'
+    _db: number
+    // TODO:等待补充Map类型定义
+    // target: Map
+
     addHooks() {
         const map = this.target;
         if (!map) {
@@ -31,14 +50,14 @@ class MapDragHandler extends Handler {
         delete this._dragHandler;
     }
 
-    _cancelOn(domEvent) {
+    _cancelOn(domEvent: any) {
         if (this.target.isZooming() || this._ignore(domEvent)) {
             return true;
         }
         return false;
     }
 
-    _ignore(param) {
+    _ignore(param: any) {
         if (!param) {
             return false;
         }
@@ -48,7 +67,7 @@ class MapDragHandler extends Handler {
         return this.target._ignoreEvent(param) || this.target._isEventOutMap(param);
     }
 
-    _onMouseDown(param) {
+    _onMouseDown(param: any) {
         delete this.startDragTime;
         delete this._mode;
         const switchDragButton = this.target.options['switchDragButton'];
@@ -136,7 +155,7 @@ class MapDragHandler extends Handler {
         return map._containerPointToPrj(p);
     }
 
-    _moveEnd(param) {
+    _moveEnd(param: Param) {
         if (!this.startDragTime) {
             return;
         }
@@ -163,7 +182,7 @@ class MapDragHandler extends Handler {
         }
     }
 
-    _rotateStart(param) {
+    _rotateStart(param: Param) {
         this._start(param);
         delete this._rotateMode;
         this.startBearing = this.target.getBearing();
@@ -171,7 +190,7 @@ class MapDragHandler extends Handler {
         this._db = 0;
     }
 
-    _rotating(param) {
+    _rotating(param: Param) {
         const map = this.target;
         const mx = param['mousePos'].x,
             my = param['mousePos'].y;
@@ -222,7 +241,7 @@ class MapDragHandler extends Handler {
         }
     }
 
-    _rotateEnd(param) {
+    _rotateEnd(param: Param) {
         const map = this.target;
         const bearing = map.getBearing();
         this._clear();

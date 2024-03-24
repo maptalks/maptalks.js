@@ -17,6 +17,21 @@ const wheelZoomRate = 1 / 450;
 const maxScalePerFrame = 2;
 
 class MapScrollWheelZoomHandler extends Handler {
+    _thisScrollZoom: number
+    _wheelZoomRate: number
+    _defaultZoomRate: number
+    _delta: number
+    _zooming: boolean
+    _trackPadSuspect: number
+    _ensureTrackpad: boolean
+    _active: boolean
+    _timeout: NodeJS.Timeout
+    _requesting: number
+    _startZoom: number
+    _origin: any
+    _zoomOrigin: any
+    _lastWheelEvent: any
+
     constructor(target) {
         super(target);
         this._thisScrollZoom = this._scrollZoom.bind(this);
