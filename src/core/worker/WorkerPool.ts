@@ -2,14 +2,14 @@
 import { setWorkerPool, setWorkersCreated } from './CoreWorkers';
 import { getWorkerSourcePath } from './Worker';
 import GlobalConfig from '../../GlobalConfig';
-
+import { type Message } from './Actor'
 
 const hardwareConcurrency = typeof window !== 'undefined' ? (window.navigator.hardwareConcurrency || 4) : 0;
 const hardwareWorkerCount = Math.max(Math.floor(hardwareConcurrency / 2), 1);
 
 class MessageBatch {
     _limit: number
-    _messages: any[]
+    _messages: Message[]
     buffers: ArrayBuffer[]
     constructor(limit = 50) {
         this._limit = limit;
@@ -17,7 +17,7 @@ class MessageBatch {
         this.buffers = [];
     }
 
-    addMessage(msg: any, buffers: ArrayBuffer[]) {
+    addMessage(msg: Message, buffers: ArrayBuffer[]) {
         this._messages.push(msg);
         if (!Array.isArray(buffers)) {
             return;
@@ -45,9 +45,11 @@ class MessageBatch {
  * @private
  */
 export default class WorkerPool {
-    active: any
+    active: {
+        [key: number]: boolean
+    }
     workerCount: number
-    _messages: any[]
+    _messages: MessageBatch[][]
     _messageBuffers: ArrayBuffer[]
     workers: Worker[]
     constructor() {

@@ -6,6 +6,14 @@ import { createAdapter } from './Worker';
 import { adapterHasCreated, pushAdapterCreated, workersHasCreated } from './CoreWorkers';
 import { startTasks } from '../MicroTask';
 
+export type Message<T = any> = {
+    command: "broadcast" | 'send'
+    data: T
+    buffers: ArrayBuffer[]
+    cb: Function
+    workerId?: number
+}
+
 let dedicatedWorker = 0;
 
 const EMPTY_BUFFERS = [];
@@ -48,14 +56,16 @@ const EMPTY_BUFFERS = [];
     });
  */
 class Actor {
-    _delayMessages: any[]
+    _delayMessages: Message[]
     initializing: boolean
     workerKey: string
     workerPool: WorkerPool
     currentActor: number
     actorId: number
-    workers: any[]
-    callbacks: any
+    workers: Worker[]
+    callbacks: {
+        [key: string]: Function
+    }
     callbackID: number
     receiveFn: any
     constructor(workerKey: string) {
@@ -111,13 +121,15 @@ class Actor {
      * @param {ArrayBuffer[]} buffers - arraybuffers in data as transferables
      * @param {Function} cb - callback function when received message from worker thread
      */
-    broadcast(data: any, buffers: ArrayBuffer[], cb: Function) {
+    broadcast<T = any>(data: T, buffers: ArrayBuffer[], cb: Function) {
         if (this.initializing) {
             this._delayMessages.push({ command: 'broadcast', data, buffers, cb });
             return this;
         }
         cb = cb || function () { };
-        asyncAll(this.workers, (worker, done) => {
+        asyncAll(this.workers, (worker: Worker, done: Function) => {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
             this.send(data, buffers, done, worker.id);
         }, cb);
         return this;
@@ -131,7 +143,7 @@ class Actor {
      * @param {Function} cb - callback function when received message from worker thread
      * @param {Number} [workerId=undefined] - Optional, a particular worker id to which to send this message.
      */
-    send(data: any, buffers: ArrayBuffer[], cb: Function, workerId?: number) {
+    send<T = any>(data: T, buffers: ArrayBuffer[], cb: Function, workerId?: number) {
         if (this.initializing) {
             this._delayMessages.push({ command: 'send', data, buffers, cb, workerId });
             return this;
@@ -150,7 +162,7 @@ class Actor {
      * SHOULD NOT BE OVERRIDED only if you know what you are doing.
      * @param {Object} message - response message from worker thread
      */
-    receive(message: any) {
+    receive(message: Message) {
         const data = message.data,
             id = data.callback;
         const callback = this.callbacks[id];

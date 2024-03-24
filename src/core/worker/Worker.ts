@@ -2,7 +2,16 @@
 import { isFunction } from '../util/common.js';
 import { getWorkerPool, pushAdapterCreated } from './CoreWorkers.js';
 
-let adapters = {};
+type AdapterFunction = (exports: {
+    initialize: Function
+    onmessage: (message: any, postResponse: Function) => void
+}, global: any) => void
+
+type Adapter = string | AdapterFunction
+
+let adapters: {
+    [key: string]: Adapter
+} = {};
 /**
  * Register a worker adapter
  * @param {String} workerKey  - an unique key name of the worker adapter
@@ -26,7 +35,7 @@ let adapters = {};
     @global
     @static
  */
-export function registerWorkerAdapter(workerKey: string, adapter: string | Function) {
+export function registerWorkerAdapter(workerKey: string, adapter: Adapter) {
     adapters[workerKey] = adapter;
 }
 
@@ -146,6 +155,8 @@ function compileWorkerSource() {
         if (isFunction(adapter)) {
             if (adapter.length === 0) {
                 // new definition form of worker source
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-expect-error
                 adapter = adapter();
             }
         }
@@ -189,6 +200,8 @@ export function createAdapter(key: string, cb: Function) {
     if (isFunction(adapter)) {
         if (adapter.length === 0) {
             // new definition form of worker source
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
             adapter = adapter();
         }
     }
