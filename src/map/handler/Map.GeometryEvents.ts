@@ -172,7 +172,7 @@ const getGeoId = (geometry) => {
     return null;
 };
 
-const fireGeoEvent = (geometry, domEvent, type) => {
+const fireGeoEvent = (geometry, domEvent, type?) => {
     if (geometry._onEvent) {
         return geometry._onEvent(domEvent, type);
     }
@@ -185,6 +185,9 @@ const fireGeoEvent = (geometry, domEvent, type) => {
 };
 
 class MapGeometryEventsHandler extends Handler {
+    _mouseDownTime: number
+    _queryIdentifyTimeout: number
+    // target: Map;
 
     addHooks() {
         const map = this.target;
@@ -195,7 +198,7 @@ class MapGeometryEventsHandler extends Handler {
     removeHooks() {
         const map = this.target;
         const dom = map._panels.allLayers || map._containerDOM;
-        off(dom, EVENTS, this._identifyGeometryEvents, this);
+        off(dom, EVENTS, this._identifyGeometryEvents);
     }
 
     _identifyGeometryEvents(domEvent, type) {
@@ -280,6 +283,9 @@ class MapGeometryEventsHandler extends Handler {
             //return only one geometry on top,
             'filter': geometry => {
                 if (geometry instanceof Geometry) {
+                    // 等待Geometry补充类型
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-expect-error
                     const eventToFire = geometry._getEventTypeToFire(domEvent);
                     if (eventType === 'mousemove') {
                         if (!geometryCursorStyle && geometry.options['cursor']) {
@@ -290,6 +296,10 @@ class MapGeometryEventsHandler extends Handler {
                         // if (!geometry.listens('mousemove') && !geometry.listens('mouseover') && !geometry.listens('mouseenter')) {
                         //     return false;
                         // }
+
+                        // 等待Geometry补充类型
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-expect-error
                     } else if (!geometry.listens(eventToFire) && !geometry.listens(oneMoreEvent)) {
                         return false;
                     }
