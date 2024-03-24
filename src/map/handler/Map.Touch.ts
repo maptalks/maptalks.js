@@ -5,6 +5,17 @@ import Map from '../Map';
 
 //handler to zoom map by pinching
 class MapTouchZoomHandler extends Handler {
+    preY: number
+    _startP1: Point
+    _startP2: Point
+    _startDist: number
+    _startVector: Point
+    _startZoom: number
+    _startBearing: number
+    mode: 'rotate_zoom' | 'pitch' | 'rotate' | 'zoom'
+    _scale: number
+    _Origin: Point
+
     addHooks() {
         addDomEvent(this.target.getContainer(), 'touchstart', this._onTouchStart, this);
     }
@@ -30,10 +41,10 @@ class MapTouchZoomHandler extends Handler {
         this._startZoom = map.getZoom();
         this._startBearing = map.getBearing();
 
-        off(document, 'touchmove', this._onTouchMove, this);
-        off(document, 'touchend', this._onTouchEnd, this);
-        addDomEvent(document, 'touchmove', this._onTouchMove, this);
-        addDomEvent(document, 'touchend', this._onTouchEnd, this);
+        off(document as any, 'touchmove', this._onTouchMove);
+        off(document as any, 'touchend', this._onTouchEnd);
+        addDomEvent(document as any, 'touchmove', this._onTouchMove, this);
+        addDomEvent(document as any, 'touchend', this._onTouchEnd, this);
         if (map.options['preventTouch']) {
             preventDefault(event);
         }
@@ -118,8 +129,8 @@ class MapTouchZoomHandler extends Handler {
         delete this.preY;
         const map = this.target;
 
-        off(document, 'touchmove', this._onTouchMove, this);
-        off(document, 'touchend', this._onTouchEnd, this);
+        off(document as any, 'touchmove', this._onTouchMove);
+        off(document as any, 'touchend', this._onTouchEnd);
 
         if (this.mode === 'zoom' || this.mode === 'rotate_zoom') {
             const scale = this._scale;
