@@ -2,18 +2,22 @@
 import { setWorkerPool, setWorkersCreated } from './CoreWorkers';
 import { getWorkerSourcePath } from './Worker';
 import GlobalConfig from '../../GlobalConfig';
+import { type Message } from './Actor'
 
 const hardwareConcurrency = typeof window !== 'undefined' ? (window.navigator.hardwareConcurrency || 4) : 0;
 const hardwareWorkerCount = Math.max(Math.floor(hardwareConcurrency / 2), 1);
 
 class MessageBatch {
+    _limit: number
+    _messages: Message[]
+    buffers: ArrayBuffer[]
     constructor(limit = 50) {
         this._limit = limit;
         this._messages = [];
         this.buffers = [];
     }
 
-    addMessage(msg, buffers) {
+    addMessage(msg: Message, buffers: ArrayBuffer[]) {
         this._messages.push(msg);
         if (!Array.isArray(buffers)) {
             return;
@@ -41,6 +45,13 @@ class MessageBatch {
  * @private
  */
 export default class WorkerPool {
+    active: {
+        [key: number]: boolean
+    }
+    workerCount: number
+    _messages: MessageBatch[][]
+    _messageBuffers: ArrayBuffer[]
+    workers: Worker[]
     constructor() {
         this.active = {};
         this.workerCount = typeof window !== 'undefined' ? (GlobalConfig.workerCount || hardwareWorkerCount) : 0;
@@ -48,12 +59,14 @@ export default class WorkerPool {
         this._messageBuffers = [];
     }
 
-    acquire(id) {
+    acquire(id: number) {
         if (!this.workers) {
             this.workers = [];
             const url = getWorkerSourcePath();
             for (let i = 0; i < this.workerCount; i++) {
                 const worker = new Worker(url);
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-expect-error
                 worker.id = i;
                 this.workers.push(worker);
             }
@@ -65,7 +78,7 @@ export default class WorkerPool {
         return this.workers.slice();
     }
 
-    release(id) {
+    release(id: number) {
         delete this.active[id];
         if (Object.keys(this.active).length === 0) {
             this.workers.forEach((w) => {
@@ -75,7 +88,7 @@ export default class WorkerPool {
         }
     }
 
-    addMessage(workerId, data, buffers) {
+    addMessage(workerId: number, data: any, buffers: ArrayBuffer[]) {
         let batches = this._messages[workerId];
         if (!batches || !batches.length) {
             batches = this._messages[workerId] = [new MessageBatch()];
@@ -117,7 +130,7 @@ export default class WorkerPool {
 
 }
 
-let globalWorkerPool;
+let globalWorkerPool: WorkerPool;
 export function getGlobalWorkerPool() {
     if (!globalWorkerPool) {
         globalWorkerPool = new WorkerPool();
