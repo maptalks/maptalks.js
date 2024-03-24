@@ -1,6 +1,7 @@
 import Handler from '../../handler/Handler';
 import Map from '../Map';
 
+// TODO:等待Coordinate，Geometry，Point补充类型
 export type Event = {
     type: string
     target: Map
