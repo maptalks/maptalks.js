@@ -15,12 +15,12 @@ export function now() {
 
 /**
  * Merges the properties of sources into destination object.
- * @param dest   - object to extend
  * @param args - sources
  * @return
  * @memberOf Util
  */
-export function extend<T>(dest: T, ...args: T[]) { // (Object[, Object, ...]) ->
+export function extend<T = any>(...args: T[]) { // (Object[, Object, ...]) ->
+    const dest = args[0]
     for (let i = 1; i < args.length; i++) {
         const src = args[i];
         for (const k in src) {
