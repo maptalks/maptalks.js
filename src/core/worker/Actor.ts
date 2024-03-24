@@ -1,8 +1,18 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { getGlobalWorkerPool } from './WorkerPool';
+import WorkerPool from './WorkerPool';
 import { UID } from '../util';
 import { createAdapter } from './Worker';
 import { adapterHasCreated, pushAdapterCreated, workersHasCreated } from './CoreWorkers';
 import { startTasks } from '../MicroTask';
+
+export type Message<T = any> = {
+    command: "broadcast" | 'send'
+    data: T
+    buffers: ArrayBuffer[]
+    cb: Function
+    workerId?: number
+}
 
 let dedicatedWorker = 0;
 
@@ -46,8 +56,19 @@ const EMPTY_BUFFERS = [];
     });
  */
 class Actor {
-
-    constructor(workerKey) {
+    _delayMessages: Message[]
+    initializing: boolean
+    workerKey: string
+    workerPool: WorkerPool
+    currentActor: number
+    actorId: number
+    workers: Worker[]
+    callbacks: {
+        [key: string]: Function
+    }
+    callbackID: number
+    receiveFn: any
+    constructor(workerKey: string) {
         startTasks();
         this._delayMessages = [];
         this.initializing = false;
@@ -88,7 +109,7 @@ class Actor {
 
     /**
      * If the actor is active
-     * @returns {Boolean}
+     * @returns
      */
     isActive() {
         return !!this.workers;
@@ -100,13 +121,15 @@ class Actor {
      * @param {ArrayBuffer[]} buffers - arraybuffers in data as transferables
      * @param {Function} cb - callback function when received message from worker thread
      */
-    broadcast(data, buffers, cb) {
+    broadcast<T = any>(data: T, buffers: ArrayBuffer[], cb: Function) {
         if (this.initializing) {
             this._delayMessages.push({ command: 'broadcast', data, buffers, cb });
             return this;
         }
         cb = cb || function () { };
-        asyncAll(this.workers, (worker, done) => {
+        asyncAll(this.workers, (worker: Worker, done: Function) => {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
             this.send(data, buffers, done, worker.id);
         }, cb);
         return this;
@@ -120,7 +143,7 @@ class Actor {
      * @param {Function} cb - callback function when received message from worker thread
      * @param {Number} [workerId=undefined] - Optional, a particular worker id to which to send this message.
      */
-    send(data, buffers, cb, workerId) {
+    send<T = any>(data: T, buffers: ArrayBuffer[], cb: Function, workerId?: number) {
         if (this.initializing) {
             this._delayMessages.push({ command: 'send', data, buffers, cb, workerId });
             return this;
@@ -139,7 +162,7 @@ class Actor {
      * SHOULD NOT BE OVERRIDED only if you know what you are doing.
      * @param {Object} message - response message from worker thread
      */
-    receive(message) {
+    receive(message: Message) {
         const data = message.data,
             id = data.callback;
         const callback = this.callbacks[id];
@@ -148,7 +171,7 @@ class Actor {
             if (this.actorId === data.actorId) {
                 //request from worker to main thread
                 this[data.command](data.params, (err, cbData, buffers) => {
-                    const message = {
+                    const message: any = {
                         type: '<response>',
                         callback: data.callback
                     };
@@ -188,7 +211,7 @@ class Actor {
      * @param {Number} targetID The ID of the Worker to which to send this message. Omit to allow the dispatcher to choose.
      * @returns {Number} The ID of the worker to which the message was sent.
      */
-    post(data, buffers, targetID) {
+    post(data: any, buffers: ArrayBuffer[], targetID: number): number {
         if (typeof targetID !== 'number' || isNaN(targetID)) {
             // Use round robin to send requests to web workers.
             targetID = this.currentActor = (this.currentActor + 1) % this.workerPool.workerCount;
@@ -212,7 +235,7 @@ class Actor {
 
 }
 
-function asyncAll(array, fn, callback) {
+function asyncAll(array: any[], fn: Function, callback: Function) {
     if (!array.length) { callback(null, []); }
     let remaining = array.length;
     const results = new Array(array.length);
@@ -225,4 +248,5 @@ function asyncAll(array, fn, callback) {
         });
     });
 }
+
 export default Actor;

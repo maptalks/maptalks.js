@@ -1,7 +1,17 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { isFunction } from '../util/common.js';
 import { getWorkerPool, pushAdapterCreated } from './CoreWorkers.js';
 
-let adapters = {};
+type AdapterFunction = (exports: {
+    initialize: Function
+    onmessage: (message: any, postResponse: Function) => void
+}, global: any) => void
+
+type Adapter = string | AdapterFunction
+
+let adapters: {
+    [key: string]: Adapter
+} = {};
 /**
  * Register a worker adapter
  * @param {String} workerKey  - an unique key name of the worker adapter
@@ -25,7 +35,7 @@ let adapters = {};
     @global
     @static
  */
-export function registerWorkerAdapter(workerKey, adapter) {
+export function registerWorkerAdapter(workerKey: string, adapter: Adapter) {
     adapters[workerKey] = adapter;
 }
 
@@ -145,6 +155,8 @@ function compileWorkerSource() {
         if (isFunction(adapter)) {
             if (adapter.length === 0) {
                 // new definition form of worker source
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-expect-error
                 adapter = adapter();
             }
         }
@@ -161,7 +173,7 @@ function compileWorkerSource() {
     return source;
 }
 
-let url;
+let url: string;
 
 export function getWorkerSourcePath() {
     if (typeof window === 'undefined') {
@@ -179,7 +191,7 @@ export function getWorkerSourcePath() {
 // Dynamic Create Adapter
 //利用worker通信向每个workerPool里的每个worker注入新的code
 //注意注入的代码在worker code里不是明文的，是个匿名函数挂到adapters,代码层面是看不到改段代码的
-export function createAdapter(key, cb) {
+export function createAdapter(key: string, cb: Function) {
     if (!adapters[key]) {
         console.error(`not find ${key} adapter`);
         return;
@@ -188,6 +200,8 @@ export function createAdapter(key, cb) {
     if (isFunction(adapter)) {
         if (adapter.length === 0) {
             // new definition form of worker source
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
             adapter = adapter();
         }
     }
@@ -201,7 +215,7 @@ export function createAdapter(key, cb) {
         console.error('workerpool workers count is 0');
     }
     let count = 0;
-    const messageCB = (msg) => {
+    const messageCB = (msg: any) => {
         msg = msg.data || {};
         if (msg.adapterName === key) {
             count++;
@@ -214,10 +228,9 @@ export function createAdapter(key, cb) {
             }
         }
     };
-    workers.forEach(worker => {
+    workers.forEach((worker: Worker) => {
         worker.addEventListener('message', messageCB);
         worker.postMessage({ key, code: adapter, messageType: 'createAdapter' });
     });
-
 
 }
