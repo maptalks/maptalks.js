@@ -1,6 +1,15 @@
 import Handler from '../../handler/Handler';
 import Map from '../Map';
 
+export type Event = {
+    type: string
+    target: Map
+    coordinate: any
+    containerPoint: any
+    viewPoint: any
+    domEvent: Event
+}
+
 // Edge Detection Distance(Units are pixels).
 const PANOFFSET = 30;
 
@@ -19,7 +28,7 @@ class MapAutoPanAtEdgeHandler extends Handler {
         this.target.off('_mousemove', this._onMouseMove, this);
     }
 
-    _onMouseMove(event) {
+    _onMouseMove(event: Event) {
         const map = this.target;
         if (map.options['autoPanAtEdge']) {
             const { containerPoint } = event;
@@ -52,6 +61,8 @@ Map.mergeOptions({
     'autoPanAtEdge': false
 });
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 Map.addOnLoadHook('addHandler', 'autoPanAtEdge', MapAutoPanAtEdgeHandler);
 
 export default MapAutoPanAtEdgeHandler;
