@@ -1,6 +1,5 @@
 import { isString } from '../../core/util';
 import Ajax from '../../core/Ajax';
-import SpatialReference from './SpatialReference';
 
 function getProjectionCode(code) {
     let newcode = '';
@@ -97,6 +96,8 @@ function parseWMTSXML(str, requestUrl, options) {
     }
     const TileMatrixSets = [];
     for (let i = 0, len = content.childNodes.length; i < len; i++) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
         if (content.childNodes[i].localName === 'TileMatrixSet') {
             TileMatrixSets.push(content.childNodes[i]);
         }
@@ -174,7 +175,7 @@ function parseWMTSXML(str, requestUrl, options) {
     return result;
 }
 
-function parseTileMatrixSet(TileMatrixSet, options = {}) {
+function parseTileMatrixSet(TileMatrixSet, options: any = {}) {
     const TileMatrixs = getElementsByTagName(TileMatrixSet, 'TileMatrix');
     const resolutions = [], tileSystem = [], tileSize = [];
     let projection, tset, isGeoServer = false, levelStr;
@@ -246,9 +247,12 @@ function parseTileMatrixSet(TileMatrixSet, options = {}) {
     };
 }
 
-SpatialReference.loadWMTS = function (url, cb, options = { 'jsonp': true }) {
+export const loadWMTS = (url: string, cb: (_, layers?) => void, options = { 'jsonp': true }) => {
     if (isString(url)) {
-        Ajax.get(url, function (err, xml) {
+        // TODO: 等待补充Ajax类型定义
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        Ajax.get(url, (err, xml) => {
             if (err) {
                 cb(err);
                 return;
@@ -257,5 +261,7 @@ SpatialReference.loadWMTS = function (url, cb, options = { 'jsonp': true }) {
             cb(null, layers);
         }, options);
     }
-    return this;
+    // return this;
 };
+
+export default loadWMTS;
