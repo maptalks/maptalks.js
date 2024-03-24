@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { getGlobalWorkerPool } from './WorkerPool';
+import WorkerPool from './WorkerPool';
 import { UID } from '../util';
 import { createAdapter } from './Worker';
 import { adapterHasCreated, pushAdapterCreated, workersHasCreated } from './CoreWorkers';
@@ -50,7 +51,7 @@ class Actor {
     _delayMessages: any[]
     initializing: boolean
     workerKey: string
-    workerPool: any
+    workerPool: WorkerPool
     currentActor: number
     actorId: number
     workers: any[]
