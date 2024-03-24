@@ -160,7 +160,7 @@ export function transformMat4(out: Vec3, a: Vec3, m: Matrix4InOut) {
 
 function hypot(...args: number[]) {
     let y = 0;
-    let i = arguments.length;
+    let i = args.length;
     while (i--) y += args[i] * args[i];
     return Math.sqrt(y);
 }

@@ -100,12 +100,12 @@ export function lowerSymbolOpacity(symbol: Object | Object[], ratio: number): Ob
 
 /**
  * Merges the properties of sources into the symbol. <br>
- * @param symbol symbol to extend
  * @param args - sources
  * @return merged symbol
  * @memberOf Util
  */
-export function extendSymbol(symbol: Object | Object[], ...args: Object[]): Object | Object[] {
+export function extendSymbol(...args: Object[]): Object | Object[] {
+    const symbol = args[0]
     let sources = Array.prototype.slice.call(args, 1);
     if (!sources || !sources.length) {
         sources = [{}];
