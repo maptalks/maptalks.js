@@ -19,4 +19,5 @@ export type Param = {
     viewPoint: any
     domEvent: MouseEvent
     ignoreEndEvent?: boolean
+    interupted?: boolean
 }
