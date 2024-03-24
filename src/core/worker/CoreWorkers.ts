@@ -18,13 +18,13 @@ export function workersHasCreated() {
     return workersCreated;
 }
 
-const ADAPTER_CREATED_LIST = [];
+const ADAPTER_CREATED_LIST: string[] = [];
 
-export function adapterHasCreated(workerKey) {
+export function adapterHasCreated(workerKey: string) {
     return ADAPTER_CREATED_LIST.indexOf(workerKey) > -1;
 }
 
-export function pushAdapterCreated(workerKey) {
+export function pushAdapterCreated(workerKey: string) {
     if (!adapterHasCreated(workerKey)) {
         ADAPTER_CREATED_LIST.push(workerKey);
     }
