@@ -17,7 +17,7 @@
   },
   "overrides": [
     {
-      "files": ["**/*.ts", "**/*.tsx"],
+      "files": ["**/*.ts", "**/*.d.ts", "**/*.tsx"],
       "env": { "browser": true, "es6": true, "node": true },
       "extends": [
         "eslint:recommended",
