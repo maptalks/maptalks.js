@@ -156,9 +156,9 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * 是否正在编辑几何图形
      * @english
      * Whether the geometry is being edited.
-     * @return {Boolean}
+     * @return {boolean}
      */
-    isEditing(): Boolean {
+    isEditing(): boolean {
         if (this._editor) {
             return this._editor.isEditing();
         }
