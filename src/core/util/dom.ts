@@ -543,14 +543,12 @@ export function isMoveEvent(type?: string) {
 
 export const MOUSEMOVE_THROTTLE_TIME = 48;
 
-export function isMousemoveEventBlocked(target: HTMLElement, mousemoveThrottleTime: number) {
+export function isMousemoveEventBlocked(target: HTMLElement | any, mousemoveThrottleTime: number) {
     const currentTime = now();
     const TIME = mousemoveThrottleTime || MOUSEMOVE_THROTTLE_TIME;
-    // @ts-expect-error
     if (target._mousemoveTime && currentTime - target._mousemoveTime < TIME) {
         return true;
     }
-    // @ts-expect-error
     target._mousemoveTime = currentTime;
     return false;
 }
