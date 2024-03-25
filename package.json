@@ -21,7 +21,8 @@
   },
   "homepage": "https://maptalks.org",
   "scripts": {
-    "build": "npm run build-styles && npm run build-dev",
+    "tsc":"npx tsc",
+    "build": "npm run tsc && npm run build-styles && npm run build-dev",
     "build-dev": "rollup -c",
     "build-test": "rollup -c --environment BUILD:test",
     "build-styles": "",
