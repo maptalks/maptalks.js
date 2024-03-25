@@ -118,7 +118,7 @@ export function getMarkerPathBase64(symbol, width, height) {
 /**
  * Get external resources from the given symbol
  * @param  {Object} symbol      - symbol
- * @param  {Boolean} toAbsolute - whether convert url to aboslute
+ * @param  {Boolean} [toAbsolute] - whether convert url to aboslute
  * @return {String[]}           - resource urls
  * @memberOf Util
  */
