@@ -19,13 +19,12 @@ import LRUCache from '../../../core/util/LRUCache';
 import Canvas from '../../../core/Canvas';
 import Actor from '../../../core/worker/Actor';
 import { imageFetchWorkerKey } from '../../../core/worker/CoreWorkers';
+import { TileImageBuffer, TileImageTexture } from '../ImageGLRenderable';
 
 const TILE_POINT = new Point(0, 0);
 const TEMP_POINT = new Point(0, 0);
 const TEMP_POINT1 = new Point(0, 0);
 const TEMP_POINT2 = new Point(0, 0);
-
-type TileType = any; // todo: 等待 Tile 改造完成
 
 const EMPTY_ARRAY = [];
 class TileWorkerConnection extends Actor {
@@ -43,7 +42,7 @@ class TileWorkerConnection extends Actor {
     }
 
     // eslint-disable-next-line @typescript-eslint/ban-types
-    fetchImage(url: any, workerId: number, cb: Function, fetchOptions: any) {
+    fetchImage(url: string, workerId: number, cb: Function, fetchOptions: any) {
         url = this.checkUrl(url);
         const data = {
             url,
@@ -62,8 +61,7 @@ class TileWorkerConnection extends Actor {
  * @extends {renderer.CanvasRenderer}
  */
 class TileLayerCanvasRenderer extends CanvasRenderer {
-
-    tilesInView: { [key: string]: any };
+    tilesInView: TilesInViewType;
     tilesLoading: { [key: string]: any };
     _parentTiles: any[];
     _childTiles: any[];
@@ -72,7 +70,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         tileInfo: any;
         tileData: any;
     }[];
-    _tileQueueIds: Set<string>;
+    _tileQueueIds: Set<LayerId>;
     tileCache: typeof LRUCache;
     _compareTiles: any;
     _tileImageWorkerConn: TileWorkerConnection;
@@ -80,7 +78,17 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     _frameTiles: {
         empty: boolean;
         timestamp: number;
-    }
+    };
+
+    _terrainHelper: TerrainHelper;
+    _tilePlaceHolder: any;
+    _frameTileGrids: TileGrids;
+
+    drawingCurrentTiles: WithUndef<boolean>;
+    drawingChildTiles: WithUndef<boolean>;
+    drawingParentTiles: WithUndef<boolean>;
+    avgMinAltitude: number;
+    avgMaxAltitude: number;
 
     /**
      *
@@ -95,7 +103,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this._tileQueue = [];
         this._tileQueueIds = new Set();
         const tileSize = layer.getTileSize().width;
-        this.tileCache = new LRUCache(layer.options['maxCacheSize'] * tileSize / 512 * tileSize / 512, tile => {
+        this.tileCache = new LRUCache(layer.options['maxCacheSize'] * tileSize / 512 * tileSize / 512, (tile: Tile) => {
             this.deleteTile(tile);
         });
         if (Browser.decodeImageInWorker && this.layer.options['decodeImageInWorker'] && (layer.options['renderer'] === 'gl' || !Browser.safari && !Browser.iosWeixin)) {
@@ -108,7 +116,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return this._tileZoom;
     }
 
-    draw(timestamp: number, context) {
+    draw(timestamp: number, context): number {
         const map = this.getMap();
         if (!this.isDrawable()) {
             return;
@@ -154,9 +162,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 this.loadTileQueue(currentTiles.tileQueue);
             }
         }
-        const { tiles, childTiles, parentTiles, placeholders, loading, loadingCount, missedTiles, incompleteTiles } = currentTiles;
+        const { tiles, childTiles, parentTiles, placeholders, loading, loadingCount } = currentTiles;
 
-        this._drawTiles(tiles, parentTiles, childTiles, placeholders, context, missedTiles, incompleteTiles);
+        this._drawTiles(tiles, parentTiles, childTiles, placeholders, context);
         if (!loadingCount) {
             if (!loading) {
                 //redraw to remove parent tiles if any left in last paint
@@ -173,11 +181,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
     }
 
-    getTileGridsInCurrentFrame() {
+    getTileGridsInCurrentFrame(): TileGrids {
         return this._frameTileGrids;
     }
 
-    getCurrentTimestamp() {
+    getCurrentTimestamp(): number {
         return this._renderTimestamp || 0;
     }
 
@@ -253,7 +261,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                                 this.setToRedraw();
                             }
 
-                            if (this.isTileComplete(cached)) {
+                            if (this.isTileComplete()) {
                                 tiles.push(cached);
                             } else {
                                 tileLoading = true;
@@ -405,20 +413,20 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         };
     }
 
-    removeTileCache(tileId) {
+    removeTileCache(tileId: TileId) {
         delete this.tilesInView[tileId];
         this.tileCache.remove(tileId);
     }
 
-    isTileCachedOrLoading(tileId) {
+    isTileCachedOrLoading(tileId: TileId) {
         return this.tileCache.get(tileId) || this.tilesInView[tileId] || this.tilesLoading[tileId];
     }
 
-    isTileCached(tileId) {
+    isTileCached(tileId: TileId) {
         return !!(this.tileCache.get(tileId) || this.tilesInView[tileId]);
     }
 
-    isTileFadingIn(tileImage) {
+    isTileFadingIn(tileImage: Tile['image']) {
         return this._getTileFadingOpacity(tileImage) < 1;
     }
 
@@ -445,7 +453,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             }
         }
 
-        const renderInGL = this.layer.options.renderer === 'gl' && (!this.isGL || this.isGL());
+        // todo 当为 gl 模式时实例应为 TileLayerGLRenderer
+        const renderInGL = this.layer.options.renderer === 'gl' && (!(this as any).isGL || (this as any).isGL());
 
         const context = { tiles, parentTiles: this._parentTiles, childTiles: this._childTiles, parentContext };
         this.onDrawTileStart(context, parentContext);
@@ -510,8 +519,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         delete this.drawingParentTiles;
     }
 
-    onDrawTileStart() { }
-    onDrawTileEnd() { }
+    onDrawTileStart(context: RenderContext, parentContext: RenderContext) { }
+    onDrawTileEnd(context: RenderContext, parentContext: RenderContext) { }
 
     _drawTile(info, image, parentContext) {
         if (image) {
@@ -519,7 +528,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
     }
 
-    _drawTileAndCache(tile, parentContext) {
+    _drawTileAndCache(tile: Tile, parentContext) {
         if (this.isValidCachedTile(tile)) {
             this._addTileToCache(tile.info, tile.image);
             // this.tilesInView[tile.info.id] = tile;
@@ -527,11 +536,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this._drawTile(tile.info, tile.image, parentContext);
     }
 
-    drawOnInteracting(event, timestamp, context) {
+    drawOnInteracting(event: any, timestamp: number, context) {
         this.draw(timestamp, context);
     }
 
-    needToRedraw() {
+    needToRedraw(): boolean {
         const map = this.getMap();
         if (this._tileQueue.length) {
             return true;
@@ -548,19 +557,22 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return super.needToRedraw();
     }
 
-    hitDetect() {
+    hitDetect(): boolean {
         return false;
     }
 
-    // limit tile number to load when map is interacting
-    _getLoadLimit() {
+    /**
+     * @private
+     * limit tile number to load when map is interacting
+     */
+    _getLoadLimit(): number {
         if (this.getMap().isInteracting()) {
             return this.layer.options['loadingLimitOnInteracting'];
         }
         return this.layer.options['loadingLimit'] || 0;
     }
 
-    isDrawable() {
+    isDrawable(): boolean {
         if (this.getMap().getPitch()) {
             if (console) {
                 console.warn('TileLayer with canvas renderer can\'t be pitched, use gl renderer (\'renderer\' : \'gl\') instead.');
@@ -571,7 +583,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return true;
     }
 
-    clear() {
+    clear(): void {
         this.retireTiles(true);
         this.tileCache.reset();
         this.tilesInView = {};
@@ -583,11 +595,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         super.clear();
     }
 
-    _isLoadingTile(tileId) {
+    _isLoadingTile(tileId: TileId): boolean {
         return !!this.tilesLoading[tileId];
     }
 
-    clipCanvas(context) {
+    clipCanvas(context): boolean {
         // const mask = this.layer.getMask();
         // if (!mask) {
         //     return this._clipByPitch(context);
@@ -596,7 +608,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     // clip canvas to avoid rough edge of tiles
-    _clipByPitch(ctx) {
+    _clipByPitch(ctx: CanvasRenderingContext2D): boolean {
         const map = this.getMap();
         if (map.getPitch() <= map.options['maxVisualPitch']) {
             return false;
@@ -615,7 +627,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return true;
     }
 
-    loadTileQueue(tileQueue) {
+    loadTileQueue(tileQueue): void {
         for (const p in tileQueue) {
             if (tileQueue.hasOwnProperty(p)) {
                 const tile = tileQueue[p];
@@ -632,31 +644,36 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
     }
 
-    loadTile(tile) {
-        let tileImage = {};
+    loadTile(tile: Tile['info']): Tile['image'] {
+        let tileImage = {} as Tile['image'];
+        // fixme: 无相关定义，是否实现？
+        // @ts-expect-error todo
         if (this.loadTileBitmap) {
             const onLoad = (bitmap) => {
                 this.onTileLoad(bitmap, tile);
             };
+            // @ts-expect-error todo
             this.loadTileBitmap(tile['url'], tile, onLoad);
         } else if (this._tileImageWorkerConn && this.loadTileImage === this.constructor.prototype.loadTileImage) {
             this._fetchImage(tileImage, tile);
         } else {
             const tileSize = this.layer.getTileSize(tile.layer);
-            tileImage = new Image();
+            tileImage = new Image() as Tile['image'];
 
+            // @ts-expect-error todo
             tileImage.width = tileSize['width'];
+            // @ts-expect-error todo
             tileImage.height = tileSize['height'];
 
-            tileImage.onload = this.onTileLoad.bind(this, tileImage, tile);
-            tileImage.onerror = this.onTileError.bind(this, tileImage, tile);
+            (tileImage as any).onload = this.onTileLoad.bind(this, tileImage, tile);
+            (tileImage as any).onerror = this.onTileError.bind(this, tileImage, tile);
 
             this.loadTileImage(tileImage, tile['url']);
         }
         return tileImage;
     }
 
-    _fetchImage(image, tile) {
+    _fetchImage(image: any, tile: Tile['info']) {
         if (image instanceof Image) {
             image.src = tile.url;
         } else {
@@ -666,7 +683,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 if (err) {
                     this.onTileError(image, tile, err);
                 } else {
-                    getImageBitMap(data, bitmap => {
+                    getImageBitMap(data, (bitmap: Tile['image']) => {
                         this.onTileLoad(bitmap, tile);
                     });
                 }
@@ -677,7 +694,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
     }
 
-    loadTileImage(tileImage, url) {
+    loadTileImage(tileImage, url: string) {
         const crossOrigin = this.layer.options['crossOrigin'];
         if (!isNil(crossOrigin)) {
             tileImage.crossOrigin = crossOrigin;
@@ -685,7 +702,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return loadImage(tileImage, [url]);
     }
 
-    abortTileLoading(tileImage, tileInfo) {
+    abortTileLoading(tileImage: Tile['image'], tileInfo: Tile['info']): void {
         if (tileInfo && tileInfo.id !== undefined) {
             this.removeTileLoading(tileInfo);
         }
@@ -697,20 +714,20 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
     }
 
-    onTileLoad(tileImage, tileInfo) {
+    onTileLoad(tileImage: Tile['image'], tileInfo: Tile['info']): void {
         this.removeTileLoading(tileInfo);
         this._tileQueue.push({ tileInfo: tileInfo, tileData: tileImage });
         this._tileQueueIds.add(tileInfo.id);
         this.setToRedraw();
     }
 
-    removeTileLoading(tileInfo) {
+    removeTileLoading(tileInfo: Tile['info']): void {
         delete this.tilesLoading[tileInfo.id];
         // need to setToRedraw to let tiles blocked by loadingLimit continue to load
         this.setToRedraw();
     }
 
-    _consumeTileQueue() {
+    _consumeTileQueue(): void {
         let count = 0;
         const limit = this.layer.options['tileLimitPerFrame'];
         const queue = this._tileQueue;
@@ -721,7 +738,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 continue;
             }
             this._tileQueueIds.delete(tileInfo.id);
-            if (!this.checkTileInQueue(tileData, tileInfo)) {
+            if (!this.checkTileInQueue()) {
                 continue;
             }
             this.consumeTile(tileData, tileInfo);
@@ -746,11 +763,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.avgMaxAltitude = sumMax / count;
     }
 
-    checkTileInQueue() {
+    checkTileInQueue(): boolean {
         return true;
     }
 
-    consumeTile(tileImage, tileInfo) {
+    consumeTile(tileImage: Tile['image'], tileInfo: Tile['info']): void {
         if (!this.layer) {
             return;
         }
@@ -778,14 +795,14 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.setToRedraw();
     }
 
-    resetTileLoadTime(tileImage) {
+    resetTileLoadTime(tileImage: Tile['image']): void {
         // loadTime = 0 means a tile from onTileError
         if (tileImage.loadTime !== 0) {
             tileImage.loadTime = now();
         }
     }
 
-    onTileError(tileImage, tileInfo) {
+    onTileError(tileImage: Tile['image'], tileInfo: Tile['info'], error?: any) {
         if (!this.layer) {
             return;
         }
@@ -804,8 +821,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 this.removeTileLoading(tileInfo);
                 return;
             } else {
-                tileImage = new Image();
-                tileImage.src = errorUrl;
+                tileImage = new Image() as any;
+                (tileImage as HTMLImageElement).src = errorUrl;
             }
         }
         this.abortTileLoading(tileImage, tileInfo);
@@ -826,7 +843,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.layer.fire('tileerror', { tile: tileInfo });
     }
 
-    drawTile(tileInfo, tileImage) {
+    drawTile(tileInfo: Tile['info'], tileImage: Tile['image'], parentContext?: RenderContext) {
         if (!tileImage || !this.getMap()) {
             return;
         }
@@ -875,7 +892,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             ctx.save();
             ctx.strokeStyle = color;
             ctx.fillStyle = color;
-            ctx.strokeWidth = 10;
+            // ctx.strokeWidth = 10;
+            // ctx.lineWidth = 10
             ctx.font = '20px monospace';
             const point = new Point(x, y);
             Canvas2D.rectangle(ctx, point, { width: w, height: h }, 1, 0);
@@ -892,17 +910,17 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.setCanvasUpdated();
     }
 
-    getDebugInfo(tileId) {
+    getDebugInfo(tileId: TileId): string {
         const xyz = tileId.split('_');
         const length = xyz.length;
         return xyz[length - 3] + '/' + xyz[length - 2] + '/' + xyz[length - 1];
     }
 
-    findChildTiles(info) {
+    findChildTiles(info: Tile['info']) {
         return this._findChildTiles(info);
     }
 
-    _findChildTiles(info): TileType[] {
+    _findChildTiles(info: Tile['info']): Tile[] | any {
         const layer = this._getLayerOfTile(info.layer);
         const terrainTileMode = layer && layer.options['terrainTileMode'] && layer._isPyramidMode();
         if (!layer || !layer.options['background'] && !terrainTileMode || info.z > this.layer.getMaxZoom()) {
@@ -1055,7 +1073,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return children;
     }
 
-    _findChildTilesAt(children, pmin, pmax, layer, childZoom) {
+    _findChildTilesAt(children: Tile[], pmin: number, pmax: number, layer: any, childZoom: number) {
         const layerId = layer.getId(),
             res = layer.getSpatialReference().getResolution(childZoom);
         if (!res) {
@@ -1080,18 +1098,18 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
     }
 
-    findParentTile(info, targetDiff) {
+    findParentTile(info: Tile['info'], targetDiff?: number): Tile {
         return this._findParentTile(info, targetDiff);
     }
 
-    _findParentTile(info, targetDiff) {
+    _findParentTile(info: Tile['info'], targetDiff?: number): Tile {
         const map = this.getMap(),
             layer = this._getLayerOfTile(info.layer);
         if (!layer || !layer.options['background'] && !layer.options['terrainTileMode']) {
             return null;
         }
         const minZoom = layer.getMinZoom();
-        const zoomDiff = targetDiff || info.z - minZoom;
+        const zoomDiff: number = targetDiff || info.z - minZoom;
         if (layer._isPyramidMode()) {
             const endZoom = info.z - zoomDiff;
             for (let z = info.z - 1; z >= endZoom; z--) {
@@ -1136,19 +1154,19 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return null;
     }
 
-    isValidCachedTile(tile) {
+    isValidCachedTile(tile: Tile): boolean {
         return !!tile.image;
     }
 
-    isTileComplete(/*tile*/) {
+    isTileComplete() {
         return true;
     }
 
-    _getLayerOfTile(layerId) {
+    _getLayerOfTile(layerId: LayerId) {
         return this.layer.getChildLayer ? this.layer.getChildLayer(layerId) : this.layer;
     }
 
-    getCachedTile(tile, isParent) {
+    getCachedTile(tile: Tile, isParent: boolean) {
         const tileId = tile.id;
         const tilesInView = this.tilesInView;
         let cached = this.tileCache.getAndRemove(tileId);
@@ -1175,17 +1193,17 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return cached;
     }
 
-    _addTileToCache(tileInfo, tileImage) {
-        if (this.isValidCachedTile({ info: tileInfo, image: tileImage })) {
+    _addTileToCache(tileInfo: Tile['info'], tileImage: Tile['image']) {
+        if (this.isValidCachedTile({ info: tileInfo, image: tileImage } as Tile)) {
             this.tilesInView[tileInfo.id] = {
                 image: tileImage,
                 current: true,
                 info: tileInfo
-            };
+            } as Tile;
         }
     }
 
-    getTileOpacity(tileImage, tileInfo) {
+    getTileOpacity(tileImage: Tile['image'], tileInfo: Tile['info']): number {
         let opacity = this._getTileFadingOpacity(tileImage);
         if (this.layer.getChildLayer) {
             // in GroupTileLayer
@@ -1197,14 +1215,14 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return opacity;
     }
 
-    _getTileFadingOpacity(tileImage) {
+    _getTileFadingOpacity(tileImage: Tile['image']): number {
         if (!this.layer.options['fadeAnimation'] || !tileImage.loadTime) {
             return 1;
         }
         return Math.min(1, (now() - tileImage.loadTime) / this.layer.options['fadeDuration']);
     }
 
-    onRemove() {
+    onRemove(): void {
         this.clear();
         delete this.tileCache;
         delete this._tilePlaceHolder;
@@ -1212,11 +1230,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         super.onRemove();
     }
 
-    markCurrent(tile, isCurrent) {
+    markCurrent(tile: Tile, isCurrent?: boolean): void {
         tile.current = isCurrent;
     }
 
-    markTiles() {
+    markTiles(): number[] {
         let a = 0, b = 0;
         if (this.tilesLoading) {
             for (const p in this.tilesLoading) {
@@ -1233,7 +1251,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return [a, b];
     }
 
-    retireTiles(force?: boolean) {
+    retireTiles(force?: boolean): void {
         for (const i in this.tilesLoading) {
             const tile = this.tilesLoading[i];
             if (force || !tile.current) {
@@ -1256,7 +1274,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
     }
 
-    deleteTile(tile) {
+    deleteTile(tile: Tile): void {
         if (!tile || !tile.image) {
             return;
         }
@@ -1264,8 +1282,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (this._tileQueueIds.has(tileId)) {
             this._tileQueueIds.delete(tileId);
         }
-        if (tile.image.close) {
-            tile.image.close();
+        if ((tile.image as any).close) {
+            (tile.image as any).close();
         }
         if (tile.image instanceof Image) {
             tile.image.onload = null;
@@ -1273,15 +1291,15 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
     }
 
-    _generatePlaceHolder(res) {
+    _generatePlaceHolder(res: number): HTMLCanvasElement {
         const map = this.getMap();
         const placeholder = this.layer.options['placeholder'];
         if (!placeholder || map.getPitch()) {
             return null;
         }
-        const tileSize = this.layer.getTileSize(),
-            scale = res / map._getResolution(),
-            canvas = this._tilePlaceHolder = this._tilePlaceHolder || Canvas.createCanvas(1, 1, map.CanvasClass);
+        const tileSize = this.layer.getTileSize();
+        const scale = res / map._getResolution();
+        const canvas = this._tilePlaceHolder = this._tilePlaceHolder || Canvas.createCanvas(1, 1, map.CanvasClass);
         canvas.width = tileSize.width * scale;
         canvas.height = tileSize.height * scale;
         if (isFunction(placeholder)) {
@@ -1292,16 +1310,17 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return canvas;
     }
 
-    setTerrainHelper(helper) {
+    setTerrainHelper(helper: TerrainHelper) {
         this._terrainHelper = helper;
     }
 }
 
+// @ts-expect-error todo 等待 TileLayer 改造完成
 TileLayer.registerRenderer('canvas', TileLayerCanvasRenderer);
 
-function falseFn() { return false; }
+function falseFn(): boolean { return false; }
 
-function defaultPlaceholder(canvas) {
+function defaultPlaceholder(canvas: HTMLCanvasElement): void {
     const ctx = canvas.getContext('2d'),
         cw = canvas.width, ch = canvas.height,
         w = cw / 16, h = ch / 16;
@@ -1329,6 +1348,66 @@ function defaultPlaceholder(canvas) {
 
 export default TileLayerCanvasRenderer;
 
-function compareTiles(a: { info: { z: number; }; }, b: { info: { z: number; }; }) {
+function compareTiles(a: Tile, b: Tile): number {
     return Math.abs(this._tileZoom - a.info.z) - Math.abs(this._tileZoom - b.info.z);
+}
+
+export type TileId = string;
+export type LayerId = string | number;
+export type TerrainHelper = any;
+export type TileImage = (HTMLImageElement | HTMLCanvasElement | ImageBitmap) & {
+    loadTime: number;
+    glBuffer?: TileImageBuffer;
+    texture?: TileImageTexture;
+    onerrorTick?: number;
+}
+
+export interface Tile {
+    id: TileId;
+    info: {
+        x: number;
+        y: number;
+        z: number;
+        idx: number;
+        idy: number;
+        id: TileId;
+        layer: number | string;
+        children: [];
+        error: number;
+        offset: [number, number];
+        extent2d: any;
+        res: number;
+        url: string;
+        parent: any;
+        cache?: boolean;
+        // todo：检查是否存在定义
+        minAltitude?: number;
+        maxAltitude?: number;
+        _glScale: number;
+    };
+
+    image: TileImage;
+    current?: boolean;
+}
+
+export type RenderContext = any;
+
+export type TilesInViewType = {
+    [key: string]: Tile;
+}
+
+type Extent = any;
+
+export interface TileGrid {
+    extent:  Extent;
+    count:   number;
+    tiles:   Tile[];
+    parents: any[];
+    offset:  number[];
+    zoom:    number;
+}
+
+export interface TileGrids {
+    count: number;
+    tileGrids: TileGrid[];
 }

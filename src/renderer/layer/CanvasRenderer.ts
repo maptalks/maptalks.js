@@ -9,6 +9,7 @@ import Point from '../../geo/Point';
 import { imageFetchWorkerKey } from '../../core/worker/CoreWorkers';
 import { registerWorkerAdapter } from '../../core/worker/Worker';
 import { formatResouceUrl } from '../../core/ResouceProxy';
+import {TileImageTexture, TileRenderingContext} from "./ImageGLRenderable";
 
 const EMPTY_ARRAY = [];
 class ResourceWorkerConnection extends Actor {
@@ -28,8 +29,8 @@ interface SizeType {
     width: number;
     height: number;
 }
-
-type ImageType = HTMLImageElement | ImageBitmap | HTMLCanvasElement;
+export type CanvasRenderingCanvas = HTMLCanvasElement & { _parentTileTimestamp: number };
+export type ImageType = HTMLImageElement | ImageBitmap | HTMLCanvasElement;
 
 /**
  * @english
@@ -44,7 +45,7 @@ class CanvasRenderer extends Class {
     public resources: ResourceCache;
 
     public context: CanvasRenderingContext2D;
-    public canvas: HTMLCanvasElement;
+    public canvas: CanvasRenderingCanvas;
     public gl: WebGL2RenderingContext | WebGLRenderingContext;
     // TODO: 等待补充 Point 类型定义
     public middleWest: any;
