@@ -4,3 +4,4 @@ export * from './util';
 export * from './resource';
 export * from './style';
 export * from './strings';
+export * from './mat4';
