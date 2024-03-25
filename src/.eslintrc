@@ -9,6 +9,7 @@
   },
   "extends": "maptalks",
   "globals": {
+    "globalThis":"readonly"
   },
   "rules": {
     "no-var" : "error",

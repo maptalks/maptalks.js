@@ -230,7 +230,7 @@ const Ajax = {
                     img.onerror(err);
                 }
             } else if (imgData) {
-                const URL = window.URL || window.webkitURL;
+                const URL = globalThis.URL || globalThis.webkitURL;
                 const onload = img.onload;
                 img.onload = () => {
                     if (onload) {

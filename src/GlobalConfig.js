@@ -14,7 +14,7 @@ const GlobalConfig = {
     //idle 超时阈值
     idleTimeout: 1000,
     //worker 数量
-    workerCount: window.MAPTALKS_WORKER_COUNT || 0,
+    workerCount: globalThis.MAPTALKS_WORKER_COUNT || 0,
     //每个Worker Message中封装的task message数量
     taskCountPerWorkerMessage: 5
 };
