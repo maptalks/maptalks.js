@@ -4,6 +4,8 @@ import InfoWindow from '../../ui/InfoWindow';
 
 Geometry.include(/** @lends Geometry.prototype */ {
     /**
+     * 给要素设置信息窗口
+     * @english
      * Set an InfoWindow to the geometry
      * @param {Object} options - construct [options]{@link ui.InfoWindow#options} for the InfoWindow
      * @return {Geometry} this
@@ -13,7 +15,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      *     content  : '<div style="color:#f00">This is content of the InfoWindow</div>'
      * });
      */
-    setInfoWindow(options) {
+    setInfoWindow(options: InfoWindow): Geometry {
         this.removeInfoWindow();
         if (options instanceof InfoWindow) {
             this._infoWindow = options;
@@ -32,10 +34,12 @@ Geometry.include(/** @lends Geometry.prototype */ {
     },
 
     /**
+     * 获取InfoWindow实例
+     * @english
      * Get the InfoWindow instance.
      * @return {ui.InfoWindow}
      */
-    getInfoWindow() {
+    getInfoWindow(): InfoWindow {
         if (!this._infoWindow) {
             return null;
         }
@@ -43,11 +47,13 @@ Geometry.include(/** @lends Geometry.prototype */ {
     },
 
     /**
+     * 打开信息窗口，默认位于几何图形的中心。
+     * @english
      * Open the InfoWindow, default on the center of the geometry.
      * @param  {Coordinate} [coordinate=null] - coordinate to open the InfoWindow
      * @return {Geometry} this
      */
-    openInfoWindow(coordinate) {
+    openInfoWindow(coordinate: any): Geometry {
         if (!this.getMap()) {
             return this;
         }
@@ -66,10 +72,12 @@ Geometry.include(/** @lends Geometry.prototype */ {
     },
 
     /**
+     * 关闭信息窗口
+     * @english
      * Close the InfoWindow
      * @return {Geometry} this
      */
-    closeInfoWindow() {
+    closeInfoWindow(): Geometry {
         if (this._infoWindow) {
             this._infoWindow.hide();
         }
@@ -77,17 +85,25 @@ Geometry.include(/** @lends Geometry.prototype */ {
     },
 
     /**
+     * 移除信息窗口
+     * @english
      * Remove the InfoWindow
      * @return {Geometry} this
      */
-    removeInfoWindow() {
+    removeInfoWindow(): Geometry {
         this._unbindInfoWindow();
         delete this._infoWinOptions;
         delete this._infoWindow;
         return this;
     },
 
-    _bindInfoWindow() {
+    /**
+     * 给要素绑定信息窗口
+     * @english
+     * Bing InfoWindow to Geometry
+     * @returns {Geometry} this
+     */
+    _bindInfoWindow(): Geometry {
         const options = this._infoWinOptions;
         if (!options) {
             return this;
@@ -98,7 +114,13 @@ Geometry.include(/** @lends Geometry.prototype */ {
         return this;
     },
 
-    _unbindInfoWindow() {
+    /**
+     * 解绑要素窗口
+     * @english
+     * Unbind InfoWindow
+     * @returns {Geometry} this
+     */
+    _unbindInfoWindow(): Geometry {
         if (this._infoWindow) {
             this.closeInfoWindow();
             this._infoWindow.remove();

@@ -1,8 +1,18 @@
 import Geometry from '../Geometry';
 import GeometryEditor from '../editor/GeometryEditor';
+interface EditOptions {
+    symbol: null,
+    fixAspectRatio: false,
+    centerHandleSymbol: null,
+    vertexHandleSymbol: null,
+    newVertexHandleSymbol: null,
+    removeVertexOn: any,
+}
 
 Geometry.include(/** @lends Geometry.prototype */ {
     /**
+     * 开始编辑
+     * @english
      * Start to edit
      * @param {Object} [options=null]        - edit options
      * @param {Object} [options.symbol=null] - symbol for the geometry during editing
@@ -13,7 +23,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * @param {Object} [options.removeVertexOn=contextmenu] - event to remove a vertex from line or polygon, contextmenu by default
      * @return {Geometry} this
      */
-    startEdit(opts) {
+    startEdit(opts: EditOptions): Geometry {
         const map = this.getMap();
         if (!map || !this.options['editable']) {
             return this;
@@ -39,10 +49,12 @@ Geometry.include(/** @lends Geometry.prototype */ {
     },
 
     /**
+     * 结束编辑
+     * @english
      * End editing.
      * @return {Geometry} this
      */
-    endEdit() {
+    endEdit(): Geometry {
         if (this._editor) {
             this._editor.stop();
             delete this._editor;
@@ -66,10 +78,12 @@ Geometry.include(/** @lends Geometry.prototype */ {
     },
 
     /**
+     * 重新编辑
+     * @english
      * Redo the edit
      * @return {Geometry} this
      */
-    redoEdit() {
+    redoEdit(): Geometry {
         if (!this.isEditing()) {
             return this;
         }
@@ -89,10 +103,12 @@ Geometry.include(/** @lends Geometry.prototype */ {
     },
 
     /**
+     * 撤销编辑
+     * @english
      * Undo the edit
      * @return {Geometry} this
      */
-    undoEdit() {
+    undoEdit(): Geometry {
         if (!this.isEditing()) {
             return this;
         }
@@ -112,10 +128,12 @@ Geometry.include(/** @lends Geometry.prototype */ {
     },
 
     /**
+     * 取消编辑
+     * @english
      * cancel the edit
      * @return {Geometry} this
      */
-    cancelEdit() {
+    cancelEdit(): Geometry {
         if (!this.isEditing()) {
             return this;
         }
@@ -135,10 +153,12 @@ Geometry.include(/** @lends Geometry.prototype */ {
     },
 
     /**
+     * 是否正在编辑几何图形
+     * @english
      * Whether the geometry is being edited.
      * @return {Boolean}
      */
-    isEditing() {
+    isEditing(): Boolean {
         if (this._editor) {
             return this._editor.isEditing();
         }
