@@ -25,6 +25,7 @@ const TEMP_POINT = new Point(0, 0);
 const TEMP_POINT1 = new Point(0, 0);
 const TEMP_POINT2 = new Point(0, 0);
 
+type TileType = any; // todo: 等待 Tile 改造完成
 
 const EMPTY_ARRAY = [];
 class TileWorkerConnection extends Actor {
@@ -32,7 +33,7 @@ class TileWorkerConnection extends Actor {
         super(imageFetchWorkerKey);
     }
 
-    checkUrl(url) {
+    checkUrl(url: any) {
         if (!url || !isString(url)) {
             return url;
         }
@@ -41,7 +42,8 @@ class TileWorkerConnection extends Actor {
 
     }
 
-    fetchImage(url, workerId, cb, fetchOptions) {
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    fetchImage(url: any, workerId: number, cb: Function, fetchOptions: any) {
         url = this.checkUrl(url);
         const data = {
             url,
@@ -61,11 +63,30 @@ class TileWorkerConnection extends Actor {
  */
 class TileLayerCanvasRenderer extends CanvasRenderer {
 
+    tilesInView: { [key: string]: any };
+    tilesLoading: { [key: string]: any };
+    _parentTiles: any[];
+    _childTiles: any[];
+    _tileZoom: number;
+    _tileQueue: {
+        tileInfo: any;
+        tileData: any;
+    }[];
+    _tileQueueIds: Set<string>;
+    tileCache: typeof LRUCache;
+    _compareTiles: any;
+    _tileImageWorkerConn: TileWorkerConnection;
+    _renderTimestamp: number;
+    _frameTiles: {
+        empty: boolean;
+        timestamp: number;
+    }
+
     /**
      *
      * @param {TileLayer} layer - TileLayer to render
      */
-    constructor(layer) {
+    constructor(layer: TileLayer) {
         super(layer);
         this.tilesInView = {};
         this.tilesLoading = {};
@@ -83,11 +104,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this._compareTiles = compareTiles.bind(this);
     }
 
-    getCurrentTileZoom() {
+    getCurrentTileZoom(): number {
         return this._tileZoom;
     }
 
-    draw(timestamp, context) {
+    draw(timestamp: number, context) {
         const map = this.getMap();
         if (!this.isDrawable()) {
             return;
@@ -881,7 +902,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return this._findChildTiles(info);
     }
 
-    _findChildTiles(info) {
+    _findChildTiles(info): TileType[] {
         const layer = this._getLayerOfTile(info.layer);
         const terrainTileMode = layer && layer.options['terrainTileMode'] && layer._isPyramidMode();
         if (!layer || !layer.options['background'] && !terrainTileMode || info.z > this.layer.getMaxZoom()) {
@@ -1212,7 +1233,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return [a, b];
     }
 
-    retireTiles(force) {
+    retireTiles(force?: boolean) {
         for (const i in this.tilesLoading) {
             const tile = this.tilesLoading[i];
             if (force || !tile.current) {
@@ -1308,6 +1329,6 @@ function defaultPlaceholder(canvas) {
 
 export default TileLayerCanvasRenderer;
 
-function compareTiles(a, b) {
+function compareTiles(a: { info: { z: number; }; }, b: { info: { z: number; }; }) {
     return Math.abs(this._tileZoom - a.info.z) - Math.abs(this._tileZoom - b.info.z);
 }

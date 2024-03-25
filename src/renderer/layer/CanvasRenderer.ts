@@ -39,7 +39,7 @@ type ImageType = HTMLImageElement | ImageBitmap | HTMLCanvasElement;
  * @memberOf renderer
  * @extends Class
  */
-abstract class CanvasRenderer extends Class {
+class CanvasRenderer extends Class {
     public layer: any;
     public resources: ResourceCache;
 
@@ -66,10 +66,10 @@ abstract class CanvasRenderer extends Class {
     private _renderZoom: number;
     private _errorThrown: boolean;
 
-    abstract drawOnInteracting?(...args: any[]): void;
-    abstract checkResources?(): any[];
-    abstract getImageData?(): ImageData;
-    abstract draw?(...args: any[]): void;
+    drawOnInteracting?(...args: any[]): void;
+    checkResources?(): any[];
+    getImageData?(): ImageData;
+    draw?(...args: any[]): void;
 
     /**
      * @param  {Layer} layer the layer to render

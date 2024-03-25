@@ -5,15 +5,15 @@ import TileLayerGLRenderer from './TileLayerGLRenderer';
 import Extent from '../../../geo/Extent';
 import Point from '../../../geo/Point';
 
-function loadTile(tile) {
-    const tileSize = this.layer.getTileSize(),
-        canvasClass = this.canvas.constructor,
-        map = this.getMap();
+function loadTile(tile: any) {
+    const tileSize = this.layer.getTileSize();
+    const canvasClass = this.canvas.constructor;
+    const map = this.getMap();
     const r = map.getDevicePixelRatio();
     const tileCanvas = Canvas2D.createCanvas(tileSize['width'] * r, tileSize['height'] * r, canvasClass);
     tileCanvas['layer'] = this.layer;
-    const me = this;
     const point = new Point(tile['extent2d'].xmin, tile['extent2d'].ymax);
+    // @ts-expect-error 等待 Extent 改造完成
     const extent = new Extent(map.pointToCoordinate(point), map.pointToCoordinate(point.add(tileSize.width, tileSize.height)), map.getProjection());
     this.layer.drawTile(tileCanvas, {
         'url': tile['url'],
@@ -23,29 +23,31 @@ function loadTile(tile) {
         'z': tile['z'],
         'x' : tile['x'],
         'y' : tile['y']
-    }, error => {
+    }, (error: any) => {
         if (error) {
-            me.onTileError(tileCanvas, tile);
+            this.onTileError(tileCanvas, tile);
             return;
         }
-        me.onTileLoad(tileCanvas, tile);
+        this.onTileLoad(tileCanvas, tile);
     });
     return tileCanvas;
 }
 
 class CanvasRenderer extends TileLayerCanvasRenderer {
-    loadTile() {
-        return loadTile.apply(this, arguments);
+    loadTile(...args: any[]) {
+        return loadTile.apply(this, args);
     }
 }
 
 class GLRenderer extends TileLayerGLRenderer {
-    loadTile() {
-        return loadTile.apply(this, arguments);
+    loadTile(...args: any[]) {
+        return loadTile.apply(this, args);
     }
 }
 
+// @ts-expect-error todo 等待 CanvasTileLayer 改造完成
 CanvasTileLayer.registerRenderer('canvas', CanvasRenderer);
+// @ts-expect-error todo 等待 CanvasTileLayer 改造完成
 CanvasTileLayer.registerRenderer('gl', GLRenderer);
 
 export {
