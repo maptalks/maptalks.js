@@ -5,14 +5,13 @@
       "declaration": true,
       "allowJs": true,
       "module": "es2015",
-      "target": "es5",
+      "target": "ES5",
       "sourceMap": true,
       //dependencies lib version
       "lib": [
           "es5",
           "es2015",
-          "dom",
-          "WebWorker"
+          "dom"
       ],
       "outDir": "./dist/",
       "rootDir": "./src",
