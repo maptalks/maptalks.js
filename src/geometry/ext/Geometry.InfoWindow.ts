@@ -108,8 +108,8 @@ Geometry.include(/** @lends Geometry.prototype */ {
         if (!options) {
             return this;
         }
-        this._infoWindow = new InfoWindow();
-        this._infoWindow.mergeOptions(options)
+        // @ts-ignore
+        this._infoWindow = new InfoWindow(options);
         this._infoWindow.addTo(this);
 
         return this;
