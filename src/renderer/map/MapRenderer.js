@@ -1,10 +1,6 @@
 import { offsetDom } from '../../core/util/dom';
 import Class from '../../core/Class';
 import Point from '../../geo/Point';
-import GlobalConfig from '../../GlobalConfig';
-import { isNumber } from '../../core/util';
-import { checkFPS } from './../../core/worker/FPSCheckWorker';
-
 /**
  * @classdesc
  * Base class for all the map renderers.
@@ -24,13 +20,6 @@ class MapRenderer extends Class {
         this._thisDocDragStart = this._onDocDragStart.bind(this);
         this._thisDocDragEnd = this._onDocDragEnd.bind(this);
         this._thisDocDPRChange = this._onDocDPRChange.bind(this);
-        if (GlobalConfig.maxFPS <= 0) {
-            checkFPS((fps) => {
-                if (isNumber(fps) && fps > 0 && GlobalConfig.maxFPS <= 0) {
-                    GlobalConfig.maxFPS = fps;
-                }
-            })
-        }
     }
 
     callInNextFrame(fn) {
