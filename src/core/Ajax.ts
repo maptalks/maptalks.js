@@ -65,7 +65,7 @@ const Ajax = {
      *     }
      * );
      */
-    get: function (url: string, options?: any, cb?: Function) {
+    get: function (url: string, options?: any, cb?: any) {
         if (isFunction(options)) {
             const t = cb;
             cb = options;

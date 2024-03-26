@@ -9,7 +9,7 @@ import Point from '../../geo/Point';
 import { imageFetchWorkerKey } from '../../core/worker/CoreWorkers';
 import { registerWorkerAdapter } from '../../core/worker/Worker';
 import { formatResouceUrl } from '../../core/ResouceProxy';
-import {TileImageTexture, TileRenderingContext} from "./ImageGLRenderable";
+
 
 const EMPTY_ARRAY = [];
 class ResourceWorkerConnection extends Actor {

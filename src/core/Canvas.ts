@@ -308,7 +308,7 @@ const Canvas = {
         return `rgba(${fill[0] * 255},${fill[1] * 255},${fill[2] * 255},${(fill.length === 4 ? fill[3] : 1) * opacity})`;
     },
 
-    image(ctx, img, x, y, width, height) {
+    image(ctx, img, x, y, width?, height?) {
         ctx.canvas._drawn = true;
         try {
             if (isNumber(width) && isNumber(height)) {
@@ -524,7 +524,7 @@ const Canvas = {
         }
     },
 
-    polygon(ctx, points, lineOpacity, fillOpacity, lineDashArray, smoothness) {
+    polygon(ctx, points, lineOpacity, fillOpacity, lineDashArray?, smoothness?) {
         // if MultiPolygon clip
         if (ctx.isMultiClip) {
             Canvas._multiClip(ctx, points);

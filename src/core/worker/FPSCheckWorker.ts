@@ -1,4 +1,3 @@
-import Actor from "./Actor";
 import { registerWorkerAdapter } from './Worker';
 
 export const CHECK_FPS_WORKER_KEY = 'check_browser_max_fps';
