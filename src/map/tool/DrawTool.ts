@@ -4,10 +4,35 @@ import { extendSymbol } from '../../core/util/style';
 import { getExternalResources } from '../../core/util/resource';
 import { stopPropagation } from '../../core/util/dom';
 import Polygon from '../../geometry/Polygon';
+import Point from '../../geo/Point';
+import Geometry from '../../geometry/Geometry';
 import VectorLayer from '../../layer/VectorLayer';
 import MapTool from './MapTool';
 
+export type DrawToolOptions = {
+    mode?: string,
+    symbol?: any,
+    once?: boolean,
+    autoPanAtEdge?: boolean,
+    blockGeometryEvents?: boolean,
+    zIndex?: number,
+    doubleClickZoom?: boolean,
+    ignoreMouseleave?: boolean,
+    enableAltitude?: boolean
+}
+
+export type modeActionType = {
+    action?: string|Array<string>,
+    create?: any,
+    update?: any,
+    generate?: any,
+    clickLimit?: number|string
+}
+
 /**
+ * 配置项
+ * 
+ * @english
  * @property {Object} [options=null] - construct options
  * @property {String} [options.mode=null]   - mode of the draw tool
  * @property {Object} [options.symbol=null] - symbol of the geometries drawn
@@ -18,7 +43,7 @@ import MapTool from './MapTool';
  * @memberOf DrawTool
  * @instance
  */
-const options = {
+const options: DrawToolOptions = {
     'symbol': {
         'lineColor': '#000',
         'lineWidth': 2,
@@ -39,6 +64,9 @@ const options = {
 const registeredMode = {};
 
 /**
+ * 图形绘制工具类
+ * 
+ * @english
  * A map tool to help draw geometries.
  * @category maptool
  * @extends MapTool
@@ -53,15 +81,30 @@ const registeredMode = {};
  * }).addTo(map);
  */
 class DrawTool extends MapTool {
-
+    _vertexes: Array<any>;
+    _historyPointer: any;
+    _events: any;
+    _geometry?: any;
+    _drawToolLayer?: any;
+    _mapAutoPanAtEdge?: boolean;
+    _geometryEvents?: boolean;
+    _mapDoubleClickZoom?: boolean;
+    _ending: boolean;
+    _mapDraggable?: boolean;
+    _clickCoords?: Array<any>;
+    _layers?: Array<any>;
+    
     /**
+     * 为DrawTool注册一个新mode
+     * 
+     * @english
      * Register a new mode for DrawTool
-     * @param  {String} name       mode name
-     * @param  {Object} modeAction modeActions
-     * @param  {Object} modeAction.action the action of DrawTool: click, mousedown, clickDblclick
-     * @param  {Object} modeAction.create the create method of drawn geometry
-     * @param  {Object} modeAction.update the update method of drawn geometry
-     * @param  {Object} modeAction.generate the method to generate geometry at the end of drawing.
+     * @param name                  mode name
+     * @param modeAction            modeActions
+     * @param modeAction.action     the action of DrawTool: click, mousedown, clickDblclick
+     * @param modeAction.create     the create method of drawn geometry
+     * @param modeAction.update     the update method of drawn geometry
+     * @param modeAction.generate   the method to generate geometry at the end of drawing.
      * @example
      * //Register "CubicBezierCurve" mode to draw Cubic Bezier Curves.
      * DrawTool.registerMode('CubicBezierCurve', {
@@ -74,30 +117,36 @@ class DrawTool extends MapTool {
        }
      });
      */
-    static registerMode(name, modeAction) {
+    static registerMode(name: string, modeAction:modeActionType) {
         registeredMode[name.toLowerCase()] = modeAction;
     }
 
     /**
+     * 根据name获取mode actions
+     * 
+     * @english
      * Get mode actions by mode name
-     * @param  {String} name DrawTool mode name
-     * @return {Object}      mode actions
+     * @param name      DrawTool mode name
+     * @return          mode actions
      */
-    static getRegisterMode(name) {
+    static getRegisterMode(name: string):any {
         return registeredMode[name.toLowerCase()];
     }
 
     /**
+     * 实例化DrawTool工具
+     * 
+     * @english
      * In default, DrawTool supports the following modes: <br>
      * [Point, LineString, Polygon, Circle, Ellipse, Rectangle, ArcCurve, QuadBezierCurve, CubicBezierCurve] <br>
      * You can easily add new mode to DrawTool by calling [registerMode]{@link DrawTool.registerMode}
-     * @param {Object} [options=null] - construct options
-     * @param {String} [options.mode=null]   - mode of the draw tool
-     * @param {Object} [options.symbol=null] - symbol of the geometries drawn
-     * @param {Boolean} [options.once=null]  - whether disable immediately once drawn a geometry.
-     * @param {Boolean} [options.autoPanAtEdge=false]  - Whether to make edge judgement or not.
+     * @param options=null                  - construct options
+     * @param options.mode=null             - mode of the draw tool
+     * @param options.symbol=null           - symbol of the geometries drawn
+     * @param options.once=null             - whether disable immediately once drawn a geometry.
+     * @param options.autoPanAtEdge=false   - Whether to make edge judgement or not.
      */
-    constructor(options) {
+    constructor(options: DrawToolOptions) {
         super(options);
         this._checkMode();
         /**
@@ -118,10 +167,13 @@ class DrawTool extends MapTool {
     }
 
     /**
+     * 获取当前mode
+     * 
+     * @english
      * Get current mode of draw tool
-     * @return {String} mode
+     * @return mode
      */
-    getMode() {
+    getMode():string {
         if (this.options['mode']) {
             return this.options['mode'].toLowerCase();
         }
@@ -129,11 +181,15 @@ class DrawTool extends MapTool {
     }
 
     /**
+     * 设置mode
+     * 
+     * @english
      * Set mode of the draw tool
-     * @param {String} mode - mode of the draw tool
+     * @param mode - mode of the draw tool
+     * @returns {DrawTool} this
      * @expose
      */
-    setMode(mode) {
+    setMode(mode:string):DrawTool {
         if (this._geometry) {
             this._geometry.remove();
             delete this._geometry;
@@ -151,10 +207,13 @@ class DrawTool extends MapTool {
     }
 
     /**
+     * 获取DrawTool的symbol属性
+     * 
+     * @english
      * Get symbol of the draw tool
-     * @return {Object} symbol
+     * @return symbol
      */
-    getSymbol() {
+    getSymbol():any {
         const symbol = this.options['symbol'];
         if (symbol) {
             return extendSymbol(symbol);
@@ -164,11 +223,14 @@ class DrawTool extends MapTool {
     }
 
     /**
+     * 设置DrawTool的symbol属性
+     * 
+     * @english
      * Set draw tool's symbol
-     * @param {Object} symbol - symbol set
+     * @param symbol - symbol set
      * @returns {DrawTool} this
      */
-    setSymbol(symbol) {
+    setSymbol(symbol:any):DrawTool {
         if (!symbol) {
             return this;
         }
@@ -180,10 +242,13 @@ class DrawTool extends MapTool {
     }
 
     /**
+     * 获取当前绘制图形
+     * 
+     * @english
      * Get geometry is currently drawing
-     * @return {Geometry} geometry currently drawing
+     * @return geometry currently drawing
      */
-    getCurrentGeometry() {
+    getCurrentGeometry():Geometry {
         return this._geometry;
     }
 
@@ -229,10 +294,13 @@ class DrawTool extends MapTool {
     }
 
     /**
+     * 撤消绘图，仅适用于点击/删除模式
+     * 
+     * @english
      * Undo drawing, only applicable for click/dblclick mode
-     * @return {DrawTool} this
+     * @return this
      */
-    undo() {
+    undo():DrawTool {
         const registerMode = this._getRegisterMode();
         const action = registerMode.action;
         if (!this._shouldRecordHistory(action) || !this._historyPointer) {
@@ -244,10 +312,13 @@ class DrawTool extends MapTool {
     }
 
     /**
+     * 重做绘图，只适用于click/dblclick模式
+     * 
+     * @english
      * Redo drawing, only applicable for click/dblclick mode
-     * @return {DrawTool} this
+     * @return this
      */
-    redo() {
+    redo():DrawTool {
         const registerMode = this._getRegisterMode();
         const action = registerMode.action;
         if (!this._shouldRecordHistory(action) || isNil(this._historyPointer) || this._historyPointer === this._clickCoords.length) {
@@ -259,6 +330,9 @@ class DrawTool extends MapTool {
     }
 
     /**
+     * 检查历史记录
+     * 
+     * @english
      * check should recor history
      * @param actions
      * @returns {boolean}
@@ -342,31 +416,40 @@ class DrawTool extends MapTool {
     }
 
     /**
+     * 鼠标按下开始绘画
+     * 
+     * @english
      * mouse down start draw
      * @param event
      * @private
      */
-    _mouseDownHandler(event) {
+    _mouseDownHandler(event:any) {
         this._createGeometry(event);
     }
 
     /**
+     * 监听 mouse up 事件
+     * 
+     * @english
      * handle mouse up event
      * @param event
      * @private
      */
-    _mouseUpHandler(event) {
+    _mouseUpHandler(event:any) {
         this.endDraw(event);
     }
 
     /**
+     * 监听mouse first click点击事件
+     * 
+     * @english
      * handle mouse first click handle
      * @param event
      * @private
      */
-    _clickHandler(event) {
+    _clickHandler(event:any) {
         event.enableAltitude = this.options.enableAltitude;
-        const map = this.getMap();
+        const map:any = this.getMap();
         const registerMode = this._getRegisterMode();
         // const coordinate = event['coordinate'];
         //dbclick will trigger two click
@@ -404,17 +487,20 @@ class DrawTool extends MapTool {
                 return;
             }
             /**
+             * drawvertex事件
+             * 
+             * @english
              * drawvertex event.
              *
              * @event DrawTool#drawvertex
              * @type {Object}
-             * @property {String} type - drawvertex
-             * @property {DrawTool} target - draw tool
-             * @property {Geometry} geometry - geometry drawn
-             * @property {Coordinate} coordinate - coordinate of the event
-             * @property {Point} containerPoint  - container point of the event
-             * @property {Point} viewPoint       - view point of the event
-             * @property {Event} domEvent                 - dom event
+             * @property {String} type              - drawvertex
+             * @property {DrawTool} target          - draw tool
+             * @property {Geometry} geometry        - geometry drawn
+             * @property {Coordinate} coordinate    - coordinate of the event
+             * @property {Point} containerPoint     - container point of the event
+             * @property {Point} viewPoint          - view point of the event
+             * @property {Event} domEvent           - dom event
              */
             if (this._clickCoords.length <= 1) {
                 this._fireEvent('drawstart', event);
@@ -431,26 +517,31 @@ class DrawTool extends MapTool {
 
     /**
      * 第一次事件创建相关geometry
+     * 
      * @param event
      * @private
      */
-    _createGeometry(event) {
+    _createGeometry(event:any) {
         const mode = this.getMode();
+        const map:any = this.getMap()
         const registerMode = this._getRegisterMode();
-        const prjCoord = this.getMap()._pointToPrj(event['point2d']);
+        const prjCoord = map._pointToPrj(event['point2d']);
         const symbol = this.getSymbol();
         if (!this._geometry) {
             /**
+            * drawprepare事件。在drawstart之前。
+            * 
+            * @english
             * drawprepare event.Note that it occurs before drawstart
             *
             * @event DrawTool#drawprepare
             * @type {Object}
-            * @property {String} type - drawprepare
-            * @property {DrawTool} target - draw tool
+            * @property {String} type           - drawprepare
+            * @property {DrawTool} target       - draw tool
             * @property {Coordinate} coordinate - coordinate of the event
             * @property {Point} containerPoint  - container point of the event
             * @property {Point} viewPoint       - view point of the event
-            * @property {Event} domEvent                 - dom event
+            * @property {Event} domEvent        - dom event
             */
             this._fireEvent('drawprepare', event);
             this._clickCoords = [prjCoord];
@@ -463,6 +554,9 @@ class DrawTool extends MapTool {
             }
             this._addGeometryToStage(this._geometry);
             /**
+             * drawstart事件
+             * 
+             * @english
              * drawstart event.
              *
              * @event DrawTool#drawstart
@@ -494,13 +588,16 @@ class DrawTool extends MapTool {
 
 
     /**
+     * 监听鼠标移动
+     * 
+     * @english
      * handle mouse move event
      * @param event
      * @private
      */
     _mouseMoveHandler(event) {
         event.enableAltitude = this.options.enableAltitude;
-        const map = this.getMap();
+        const map:any = this.getMap();
         if (!map || map.isInteracting()) {
             return;
         }
@@ -538,6 +635,9 @@ class DrawTool extends MapTool {
             registerMode['update'](projection, prjCoord, this._geometry, event);
         }
         /**
+         * mousemove事件
+         * 
+         * @english
          * mousemove event.
          *
          * @event DrawTool#mousemove
@@ -554,6 +654,9 @@ class DrawTool extends MapTool {
     }
 
     /**
+     * 监听double click事件
+     * 
+     * @english
      * handle mouse double click event
      * @param event
      * @private
@@ -599,11 +702,14 @@ class DrawTool extends MapTool {
     }
 
     /**
+     * 结束当前绘制
+     * 
+     * @english
      * End current draw
-     * @param {Object} [param=null] params of drawend event
-     * @returns {DrawTool} this
+     * @param [param=null] params of drawend event
+     * @returns this
      */
-    endDraw(param) {
+    endDraw(param:any):DrawTool {
         if (!this._geometry || this._ending) {
             return this;
         }
@@ -647,12 +753,15 @@ class DrawTool extends MapTool {
     }
 
     /**
+     * 获取鼠标事件 ontainer point 信息
+     * 
+     * @english
      * Get container point of the mouse event
-     * @param  {Event} event -  mouse event
-     * @return {Point}
+     * @param event -  mouse event
+     * @return
      * @private
      */
-    _getMouseContainerPoint(event) {
+    _getMouseContainerPoint(event:Event):Point {
         const action = this._getRegisterMode()['action'];
         if (action[0].indexOf('mousedown') >= 0 || action[0].indexOf('touchstart') >= 0) {
             //prevent map's event propogation
@@ -674,7 +783,7 @@ class DrawTool extends MapTool {
     }
 
     _getSnapResult(snapTo, containerPoint) {
-        const map = this.getMap();
+        const map:any = this.getMap();
         const lastContainerPoints = [];
         if (this.options.edgeAutoComplete) {
             const lastCoord = this._clickCoords[(this._historyPointer || 1) - 1];
@@ -698,7 +807,7 @@ class DrawTool extends MapTool {
 
     _getDrawLayer() {
         const drawLayerId = INTERNAL_LAYER_PREFIX + 'drawtool';
-        let drawToolLayer = this._map.getLayer(drawLayerId);
+        let drawToolLayer:any = this._map.getLayer(drawLayerId);
         if (!drawToolLayer) {
             drawToolLayer = new VectorLayer(drawLayerId, {
                 'enableSimplify': false,
@@ -759,11 +868,13 @@ class DrawTool extends MapTool {
     }
 
     /**
+    * 设置Layer的zIndex 
+    * @english
     * set draw inner layers zIndex
     * @param  {Number} zIndex -  draw layer zIndex
-    * @return {this}
+    * @return this
     */
-    setLayerZIndex(zIndex) {
+    setLayerZIndex(zIndex):DrawTool {
         if (!isNumber(zIndex)) {
             return this;
         }

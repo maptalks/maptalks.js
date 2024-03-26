@@ -68,7 +68,7 @@ class VectorLayer extends OverlayLayer {
 
     /**
      * @param {String|Number} id - layer's id
-     * @param {Geometry|Geometry[]} [geometries=null] - geometries to add
+     * @param {Object} [geometries=null] - geometries to add
      * @param {Object}  [options=null]          - construct options
      * @param {Object}  [options.style=null]    - vectorlayer's style
      * @param {*}  [options.*=null]             - options defined in [VectorLayer]{@link VectorLayer#options}

@@ -127,7 +127,7 @@ export function getMarkerPathBase64(symbol: any, width?: number, height?: number
  * @return resource urls
  * @memberOf Util
  */
-export function getExternalResources(symbol: any, toAbsolute: boolean): string[] {
+export function getExternalResources(symbol: any, toAbsolute?: boolean): string[] {
     if (!symbol) {
         return [];
     }
