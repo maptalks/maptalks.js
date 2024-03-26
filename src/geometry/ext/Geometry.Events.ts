@@ -4,11 +4,13 @@ import Geometry from '../Geometry';
 
 Geometry.include(/** @lends Geometry.prototype */ {
     /**
+     * 所有事件的事件处理程序
+     * @english
      * The event handler for all the events.
      * @param  {Event} event - dom event
      * @private
      */
-    _onEvent: function (event, type) {
+    _onEvent(event: Event, type: string): void {
         const map = this.getMap();
         if (!map) {
             return;
@@ -26,7 +28,14 @@ Geometry.include(/** @lends Geometry.prototype */ {
         this._fireEvent(eventType, params);
     },
 
-    _getEventTypeToFire: function (domEvent) {
+    /**
+     * 获取事件类型
+     * @english
+     * Get the eventType of domEvent
+     * @param {any} domEvent 
+     * @returns 
+     */
+    _getEventTypeToFire(domEvent: any): string {
         // let eventType = domEvent.type;
         // //change event type to contextmenu
         // if (eventType === 'click' || eventType === 'mousedown') {
@@ -38,12 +47,14 @@ Geometry.include(/** @lends Geometry.prototype */ {
     },
 
     /**
+     * 生成事件参数
+     * @english
      * Generate event parameters
      * @param  {Event} event - dom event
      * @return {Object}
      * @private
      */
-    // _getEventParams: function (e) {
+    // _getEventParams(e: any): Object {
     //     const map = this.getMap();
     //     const eventParam = {
     //         'domEvent': e

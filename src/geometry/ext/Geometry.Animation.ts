@@ -1,11 +1,13 @@
 import { isFunction } from '../../core/util';
 import { extendSymbol } from '../../core/util/style';
-import { Animation } from '../../core/Animation';
+import { Animation, Player } from '../../core/Animation';
 import Coordinate from '../../geo/Coordinate';
 import Geometry from '../Geometry';
 
 Geometry.include(/** @lends Geometry.prototype */ {
     /**
+     * 要素动画
+     * @english
      * Animate the geometry
      *
      * @param  {Object}   styles          - styles to animate
@@ -30,7 +32,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * });
      * player.pause();
      */
-    animate: function (styles, options, step) {
+    animate(styles: any, options: any, step: any): Player {
         if (this._animPlayer) {
             this._animPlayer.finish();
         }
@@ -57,7 +59,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
             options['framer'] = framer;
         }
 
-        const player = Animation.animate(stylesToAnimate, options, frame => {
+        const player: any = Animation.animate(stylesToAnimate, options, frame => {
             if (map && map.isRemoved()) {
                 player.finish();
                 return;
@@ -105,11 +107,14 @@ Geometry.include(/** @lends Geometry.prototype */ {
         return this._animPlayer.play();
     },
     /**
+     * 为动画准备样式
+     * @english
      * Prepare styles for animation
      * @return {Object} styles
      * @private
      */
-    _prepareAnimationStyles: function (styles) {
+    _prepareAnimationStyles(styles: object): object {
+
         const symbol = this._getInternalSymbol();
         const stylesToAnimate = {};
         for (const p in styles) {
@@ -161,7 +166,13 @@ Geometry.include(/** @lends Geometry.prototype */ {
         return stylesToAnimate;
     },
 
-    _fireAnimateEvent: function (playState) {
+    /**
+     * 绑定动画事件
+     * @english
+     * Bind animation events
+     * @param {string} playState 
+     */
+    _fireAnimateEvent(playState: string): void {
         if (playState === 'finished') {
             delete this._animationStarted;
             /**
