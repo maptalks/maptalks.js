@@ -12,7 +12,6 @@ class MapBoxZoomHander extends Handler {
             'mode': 'boxZoom',
             // TODO: 等待DrawTool补充类型
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error
             'ignoreMouseleave': false
         });
     }
@@ -35,7 +34,6 @@ class MapBoxZoomHander extends Handler {
         if (param.domEvent.shiftKey) {
             // TODO: 等待DrawTool补充类型
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error
             this.drawTool.setSymbol(this.target.options['boxZoomSymbol']).on('drawend', this._boxZoom, this).addTo(this.target);
         }
     }

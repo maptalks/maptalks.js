@@ -11,6 +11,7 @@ import CubicBezierCurve from '../../geometry/CubicBezierCurve';
 import Circle from '../../geometry/Circle';
 import Polygon from '../../geometry/Polygon';
 import DrawTool from './DrawTool';
+import { modeActionType } from './DrawTool'
 
 /**
  * 当地形存在时就不能通过update prj来控制Geometry的坐标数据了,因为有了地形后prj对应的
@@ -50,7 +51,7 @@ function queryTerrainCoordinates(projection:any, prjCoords:any, mapEvent:any):Co
     return isArray ? coordinates : coordinates[0];
 }
 
-const circleHooks = {
+const circleHooks:modeActionType = {
     'create': function (projection, prjCoord, mapEvent) {
         // const center = projection.unproject(prjCoord[0]);
         const center = queryTerrainCoordinates(projection, prjCoord[0], mapEvent);
@@ -80,7 +81,7 @@ DrawTool.registerMode('freeHandCircle', extend({
     'action': ['mousedown touchstart', 'mousemove touchmove', 'mouseup touchend']
 }, circleHooks));
 
-const ellipseHooks = {
+const ellipseHooks:modeActionType = {
     'create': function (projection, prjCoord, mapEvent) {
         // const center = projection.unproject(prjCoord[0]);
         const center = queryTerrainCoordinates(projection, prjCoord[0], mapEvent);
@@ -119,7 +120,7 @@ DrawTool.registerMode('freeHandEllipse', extend({
     'action': ['mousedown touchstart', 'mousemove touchmove', 'mouseup touchend']
 }, ellipseHooks));
 
-const rectangleHooks = {
+const rectangleHooks:modeActionType = {
     'create': function (projection, prjCoords) {
         const rect:any = new Polygon([]);
         rect._firstClick = prjCoords[0];
@@ -182,7 +183,7 @@ DrawTool.registerMode('point', {
     }
 });
 
-const polygonHooks = {
+const polygonHooks:modeActionType = {
     'create': function (projection, prjPath, mapEvent) {
         // const path = prjPath.map(c => projection.unproject(c));
         const path:any = queryTerrainCoordinates(projection, prjPath, mapEvent);
@@ -246,7 +247,7 @@ DrawTool.registerMode('freeHandPolygon', extend({
     'action': ['mousedown touchstart', 'mousemove touchmove', 'mouseup touchend']
 }, polygonHooks));
 
-const lineStringHooks = {
+const lineStringHooks:modeActionType = {
     'create': function (projection, prjPath, mapEvent) {
         // const path = prjPath.map(c => projection.unproject(c));
         const path:any = queryTerrainCoordinates(projection, prjPath, mapEvent);
