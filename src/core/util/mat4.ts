@@ -1,7 +1,6 @@
 /*eslint-disable no-var*/
 // Contains code from glmatrix.js
 
-
 export type Matrix4 = [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number]
 
 export type Matrix4InOut = Matrix4 | number[]

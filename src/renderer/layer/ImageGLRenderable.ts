@@ -1,4 +1,4 @@
-import { IS_NODE, isInteger, isNil, isNumber } from '../../core/util';
+import { IS_NODE, isInteger, isNil, isNumber, type Vector3 } from '../../core/util';
 import { createGLContext, createProgram, enableVertexAttrib } from '../../core/util/gl';
 import * as mat4 from '../../core/util/mat4';
 import Canvas from '../../core/Canvas';
@@ -62,7 +62,7 @@ const shaders = {
 
 //reusable temporary variables
 const v2: VertexAttrib = ['', 0],
-    v3: number[] = [0, 0, 0],
+    v3: Vector3 = [0, 0, 0],
     arr16 = new Array(16);
 const DEBUG_POINT = new Point(20, 20);
 
