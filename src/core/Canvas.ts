@@ -35,7 +35,7 @@ const Canvas = {
         hitTesting = testing;
     },
 
-    createCanvas(width, height, canvasClass) {
+    createCanvas(width, height, canvasClass?) {
         let canvas;
         if (!IS_NODE) {
             canvas = createEl('canvas');
@@ -177,6 +177,7 @@ const Canvas = {
                     min.x + places[2] * width, min.y + places[3] * height
                 ];
             }
+            // eslint-disable-next-line prefer-spread
             gradient = ctx.createLinearGradient.apply(ctx, places);
         } else if (g['type'] === 'radial') {
             if (!places) {
@@ -191,9 +192,11 @@ const Canvas = {
                     min.x + places[3] * width, min.y + places[4] * height, width * places[5]
                 ];
             }
+            // eslint-disable-next-line prefer-spread
             gradient = ctx.createRadialGradient.apply(ctx, places);
         }
         g['colorStops'].forEach(stop => {
+            // eslint-disable-next-line prefer-spread
             gradient.addColorStop.apply(gradient, stop);
         });
         return gradient;
@@ -236,7 +239,7 @@ const Canvas = {
         ctx.clearRect(x1, y1, x2, y2);
     },
 
-    fillCanvas(ctx, fillOpacity, x, y) {
+    fillCanvas(ctx, fillOpacity, x?, y?) {
         if (hitTesting) {
             fillOpacity = 1;
         }
@@ -401,7 +404,7 @@ const Canvas = {
         }
     },
 
-    fillText(ctx, text, pt, rgba) {
+    fillText(ctx, text, pt, rgba?) {
         ctx.canvas._drawn = true;
         if (rgba) {
             ctx.fillStyle = rgba;
@@ -409,7 +412,7 @@ const Canvas = {
         ctx.fillText(text, pt.x, pt.y + textOffsetY);
     },
 
-    _stroke(ctx, strokeOpacity, x, y) {
+    _stroke(ctx, strokeOpacity, x?, y?) {
         if (hitTesting) {
             strokeOpacity = 1;
         }
@@ -447,7 +450,7 @@ const Canvas = {
         }
     },
 
-    _path(ctx, points, lineDashArray, lineOpacity, ignoreStrokePattern) {
+    _path(ctx, points, lineDashArray, lineOpacity, ignoreStrokePattern?) {
         if (!isArrayHasData(points)) {
             return;
         }
@@ -485,12 +488,13 @@ const Canvas = {
                     break;
                 }
                 nextPoint = points[i + 1];
-                drawDashLine(ctx, point, nextPoint, lineDashArray, isPatternLine);
+                // drawDashLine(ctx, point, nextPoint, lineDashArray, isPatternLine);
+                drawDashLine(ctx, point, nextPoint, lineDashArray);
             }
         }
     },
 
-    path(ctx, points, lineOpacity, fillOpacity, lineDashArray) {
+    path(ctx, points, lineOpacity, fillOpacity?, lineDashArray?) {
         if (!isArrayHasData(points)) {
             return;
         }
@@ -624,7 +628,7 @@ const Canvas = {
         }
     },
 
-    _ring(ctx, ring, lineDashArray, lineOpacity, ignorePattern) {
+    _ring(ctx, ring, lineDashArray, lineOpacity, ignorePattern?) {
         const isPattern = Canvas._isPattern(ctx.strokeStyle);
         if (!ignorePattern && isPattern && !ring[0].equals(ring[ring.length - 1])) {
             ring = ring.concat([ring[0]]);
@@ -637,7 +641,7 @@ const Canvas = {
         }
     },
 
-    paintSmoothLine(ctx, points, lineOpacity, smoothValue, close, tailIdx, tailRatio) {
+    paintSmoothLine(ctx, points, lineOpacity, smoothValue, close, tailIdx?, tailRatio?) {
         if (!points) {
             return;
         }
@@ -763,6 +767,7 @@ const Canvas = {
                 ctx.bezierCurveTo(ctrlPoints[0], ctrlPoints[1], ctrlPoints[2], ctrlPoints[3], ctrlPoints[4], ctrlPoints[5]);
                 points.splice(l - 1, count - (l - 1) - 1);
                 const lastPoint = new Point(ctrlPoints[4], ctrlPoints[5]);
+                // @ts-ignore
                 lastPoint.prevCtrlPoint = new Point(ctrlPoints[2], ctrlPoints[3]);
                 points.push(lastPoint);
                 count = points.length;
@@ -829,7 +834,9 @@ const Canvas = {
         const start = points[0];
         ctx.moveTo(start.x, start.y);
         const args = [ctx];
+        // eslint-disable-next-line prefer-spread
         args.push.apply(args, points.splice(1));
+        // eslint-disable-next-line prefer-spread
         Canvas._bezierCurveTo.apply(Canvas, args);
         Canvas.fillCanvas(ctx, fillOpacity);
         Canvas._stroke(ctx, lineOpacity);
