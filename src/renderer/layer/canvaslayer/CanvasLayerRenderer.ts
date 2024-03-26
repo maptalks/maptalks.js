@@ -2,6 +2,9 @@ import Canvas from '../../../core/Canvas';
 import CanvasRenderer from '../../../renderer/layer/CanvasRenderer';
 
 export default class CanvasLayerRenderer extends CanvasRenderer {
+    public buffer: HTMLCanvasElement;
+    private _drawContext: any[];
+    private _predrawed: boolean;
 
     getPrepareParams() {
         return [];
@@ -28,13 +31,13 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
         return super.needToRedraw();
     }
 
-    draw(...args) {
+    draw(...args: any[]) {
         this.prepareCanvas();
         this.prepareDrawContext();
         this._drawLayer(...args);
     }
 
-    drawOnInteracting(...args) {
+    drawOnInteracting(...args: any[]) {
         this._drawLayerOnInteracting(...args);
     }
 
@@ -62,37 +65,37 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
     }
 
 
-    onZoomStart(param) {
+    onZoomStart(param: any) {
         this.layer.onZoomStart(param);
         super.onZoomStart(param);
     }
 
-    onZooming(param) {
+    onZooming(param: any) {
         this.layer.onZooming(param);
         super.onZooming(param);
     }
 
-    onZoomEnd(param) {
+    onZoomEnd(param: any) {
         this.layer.onZoomEnd(param);
         super.onZoomEnd(param);
     }
 
-    onMoveStart(param) {
+    onMoveStart(param: any) {
         this.layer.onMoveStart(param);
         super.onMoveStart(param);
     }
 
-    onMoving(param) {
+    onMoving(param: any) {
         this.layer.onMoving(param);
         super.onMoving(param);
     }
 
-    onMoveEnd(param) {
+    onMoveEnd(param: any) {
         this.layer.onMoveEnd(param);
         super.onMoveEnd(param);
     }
 
-    onResize(param) {
+    onResize(param: any) {
         this.layer.onResize(param);
         super.onResize(param);
     }
@@ -100,7 +103,7 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
     prepareDrawContext() {
         if (!this._predrawed) {
             const params = ensureParams(this.getPrepareParams());
-            this._drawContext = this.layer.prepareToDraw.apply(this.layer, [this.context].concat(params));
+            this._drawContext = this.layer.prepareToDraw(this.context, ...params);
             if (!this._drawContext) {
                 this._drawContext = [];
             }
@@ -120,23 +123,26 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
             this.completeRender();
             return null;
         }
-        const args = [this.context, view];
+        const args: any[] = [this.context, view];
         const params = ensureParams(this.getDrawParams());
-        args.push.apply(args, params);
-        args.push.apply(args, this._drawContext);
-        return args;
+        return [
+            ...args,
+            ...params,
+            ...this._drawContext
+        ];
     }
 
-    _drawLayer(...args) {
+    _drawLayer(...args: any[]) {
         const params = this._prepareDrawParams();
         if (!params) {
             return;
         }
+        // eslint-disable-next-line prefer-spread
         this.layer.draw.apply(this.layer, params.concat(args));
         this.completeRender();
     }
 
-    _drawLayerOnInteracting(...args) {
+    _drawLayerOnInteracting(...args: any[]) {
         if (!this.layer.drawOnInteracting) {
             return;
         }
@@ -144,12 +150,12 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
         if (!params) {
             return;
         }
-        this.layer.drawOnInteracting.apply(this.layer, params.concat(args));
+        this.layer.drawOnInteracting(...params, ...args);
         this.completeRender();
     }
 }
 
-function ensureParams(params) {
+function ensureParams(params?: any | any[]) {
     if (!params) {
         params = [];
     }
