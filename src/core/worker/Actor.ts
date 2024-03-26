@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { getGlobalWorkerPool } from './WorkerPool';
 import WorkerPool from './WorkerPool';
-import { UID } from '../util';
+import { UID, isNumber } from '../util';
 import { createAdapter } from './Worker';
 import { adapterHasCreated, pushAdapterCreated, workersHasCreated } from './CoreWorkers';
-import { startTasks } from '../MicroTask';
+import { startTasks, pushLoopHook } from '../MicroTask';
+import { CHECK_FPS_WORKER_KEY } from './FPSCheckWorker';
+import GlobalConfig from '../../GlobalConfig';
 
 export type Message<T = any> = {
     command: "broadcast" | 'send'
@@ -250,3 +252,46 @@ function asyncAll(array: any[], fn: Function, callback: Function) {
 }
 
 export default Actor;
+
+
+let actor: Actor;
+
+class FPSCheckActor extends Actor {
+
+    constructor() {
+        super(CHECK_FPS_WORKER_KEY);
+    }
+}
+
+function checkFPS(cb: Function) {
+    if (!actor) {
+        actor = new FPSCheckActor();
+    }
+    actor.send({}, [], (err, data) => {
+        if (err) {
+            console.error(err);
+            cb();
+        } else {
+            cb(data.fps as number);
+        }
+    })
+}
+
+
+let checkFPSing = false;
+function checkBrowserMaxFPS() {
+    if (checkFPSing) {
+        return;
+    }
+    if (GlobalConfig.maxFPS <= 0) {
+        checkFPSing = true;
+        checkFPS((fps) => {
+            if (isNumber(fps) && fps > 0 && GlobalConfig.maxFPS <= 0) {
+                GlobalConfig.maxFPS = fps;
+            }
+            checkFPSing = false;
+        })
+    }
+}
+
+pushLoopHook(checkBrowserMaxFPS);
