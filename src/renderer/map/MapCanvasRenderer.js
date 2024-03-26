@@ -625,11 +625,11 @@ class MapCanvasRenderer extends MapRenderer {
     }
 
     _lockFrameRenderEnable() {
-        const { lockFrame, renderFrames } = this.map.options || {};
-        if (!lockFrame || GlobalConfig.maxFPS <= renderFrames) {
+        const { maxFPS } = this.map.options || {};
+        if (maxFPS <= 0 || GlobalConfig.maxFPS <= maxFPS) {
             return true;
         }
-        const count = Math.ceil(GlobalConfig.maxFPS / renderFrames);
+        const count = Math.ceil(GlobalConfig.maxFPS / maxFPS);
         return this._frameCycleRenderCount >= count;
     }
 
