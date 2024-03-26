@@ -1,15 +1,15 @@
 import TileLayer from '../../../layer/tile/TileLayer';
 import TileLayerCanvasRenderer from './TileLayerCanvasRenderer';
+import type { Tile, RenderContext} from './TileLayerCanvasRenderer';
 import ImageGLRenderable from '../ImageGLRenderable';
 import Point from '../../../geo/Point';
-
 
 const TILE_POINT = new Point(0, 0);
 
 const MESH_TO_TEST = { properties: {}};
 
 /**
- * @classdesc
+ * @english
  * Renderer class based on HTML5 WebGL for TileLayers
  * @class
  * @protected
@@ -20,11 +20,11 @@ const MESH_TO_TEST = { properties: {}};
 class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
 
     //override to set to always drawable
-    isDrawable() {
+    isDrawable(): boolean {
         return true;
     }
 
-    needToRedraw() {
+    needToRedraw(): boolean {
         const map = this.getMap();
         if (this.isGL() && !map.getPitch() && map.isZooming() && !map.isMoving() && !map.isRotating()) {
             return true;
@@ -32,7 +32,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         return super.needToRedraw();
     }
 
-    onDrawTileStart(context, parentContext) {
+    onDrawTileStart(context: RenderContext, parentContext: RenderContext): void {
         const gl = this.gl;
         gl.enable(gl.DEPTH_TEST);
         gl.depthFunc(gl.LEQUAL);
@@ -51,7 +51,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         }
     }
 
-    onDrawTileEnd(context, parentContext) {
+    onDrawTileEnd(context: RenderContext, parentContext: RenderContext): void {
         const gl = this.gl;
         if (parentContext && parentContext.renderTarget) {
             const fbo = parentContext.renderTarget.fbo;
@@ -61,7 +61,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         }
     }
 
-    drawTile(tileInfo, tileImage, parentContext) {
+    drawTile(tileInfo: Tile['info'], tileImage: Tile['image'], parentContext: RenderContext): void {
         if (parentContext && parentContext.sceneFilter) {
             if (!parentContext.sceneFilter(MESH_TO_TEST)) {
                 return;
@@ -98,7 +98,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         const polygonOffset = this.drawingCurrentTiles ? layerPolygonOffset : layerPolygonOffset + 1;
         gl.polygonOffset(polygonOffset, polygonOffset);
 
-        this.drawGLImage(tileImage, x, y, w, h, scale, opacity, debugInfo);
+        this.drawGLImage(tileImage as any, x, y, w, h, scale, opacity, debugInfo);
         if (this._getTileFadingOpacity(tileImage) < 1) {
             this.setToRedraw();
         } else {
@@ -106,21 +106,23 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         }
     }
 
-    _bindGLBuffer(image, w, h) {
+    _bindGLBuffer(image: Tile['image'], w: number, h: number): void {
         if (!image.glBuffer) {
             image.glBuffer = this.bufferTileData(0, 0, w, h);
         }
     }
 
-    loadTileImage(tileImage, url) {
-        //image must set cors in webgl
+    loadTileImage(tileImage: HTMLImageElement, url: string) {
+        // image must set cors in webgl
         const crossOrigin = this.layer.options['crossOrigin'];
         tileImage.crossOrigin = crossOrigin !== null ? crossOrigin : '';
         tileImage.src = url;
         return;
     }
 
-    // prepare gl, create program, create buffers and fill unchanged data: image samplers, texture coordinates
+    /**
+     * prepare gl, create program, create buffers and fill unchanged data: image samplers, texture coordinates
+     */
     onCanvasCreate() {
         //not in a GroupGLLayer
         if (!this.canvas.gl || !this.canvas.gl.wrap) {
@@ -128,12 +130,15 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         }
     }
 
-    createContext() {
+    createContext(): void {
         super.createContext();
         this.createGLContext();
     }
 
-    resizeCanvas(canvasSize) {
+    resizeCanvas(canvasSize: {
+        width: number;
+        height: number;
+    }) {
         if (!this.canvas) {
             return;
         }
@@ -141,7 +146,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         this.resizeGLCanvas();
     }
 
-    clearCanvas() {
+    clearCanvas(): void {
         if (!this.canvas) {
             return;
         }
@@ -160,9 +165,11 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         return img;
     }
 
-    // decide whether the layer is renderer with gl.
-    // when map is pitching, or fragmentShader is set in options
-    isGL() {
+    /**
+     * decide whether the layer is renderer with gl.
+     * when map is pitching, or fragmentShader is set in options
+     */
+    isGL(): boolean {
         if (this.canvas.gl && this.canvas.gl.wrap) {
             //in GroupGLLayer
             return true;
@@ -171,20 +178,21 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         return map && (map.getPitch() || map.getBearing()) || this.layer && !!this.layer.options['fragmentShader'];
     }
 
-    deleteTile(tile) {
+    deleteTile(tile: Tile) {
         super.deleteTile(tile);
         if (tile && tile.image) {
-            this.disposeImage(tile.image);
+            this.disposeImage(tile.image as any);
         }
         delete tile.image;
     }
 
-    onRemove() {
+    onRemove(): void {
         super.onRemove();
         this.removeGLCanvas();
     }
 }
 
+// @ts-expect-error todo 等待 TileLayer 改造完成
 TileLayer.registerRenderer('gl', TileLayerGLRenderer);
 
 export default TileLayerGLRenderer;

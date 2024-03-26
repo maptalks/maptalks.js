@@ -4,6 +4,7 @@ import * as mat4 from '../../core/util/mat4';
 import Canvas from '../../core/Canvas';
 import Point from '../../geo/Point';
 import { MixinConstructor } from '../../core/Mixin';
+import {Vector3} from "../../core/util/mat4";
 
 // used to debug tiles
 const DEFAULT_BASE_COLOR = [1, 1, 1, 1];
@@ -91,15 +92,19 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
 
 
         /**
+         * @english
          * Draw an image at x, y at map's gl zoom
-         * @param {Image|Canvas} image
-         * @param {Number} x - x at map's gl zoom
-         * @param {Number} y - y at map's gl zoom
-         * @param {Number} w - width at map's gl zoom
-         * @param {Number} h - height at map's gl zoom
-         * @param {Number} opacity
+         * @param image
+         * @param x x at map's gl zoom
+         * @param y y at map's gl zoom
+         * @param w width at map's gl zoom
+         * @param h height at map's gl zoom
+         * @param scale scale at map's gl zoom
+         * @param opacity
+         * @param debugInfo
+         * @param baseColor
          */
-        drawGLImage(image: TileImageType, x: number, y: number, w: number, h: number, scale: number, opacity: number, debugInfo: string, baseColor: number[]) {
+        drawGLImage(image: TileImageType, x: number, y: number, w: number, h: number, scale: number, opacity: number, debugInfo: string, baseColor?: number[]) {
             if ((this.gl as any).program !== this.program) {
                 this.useProgram(this.program);
             }
