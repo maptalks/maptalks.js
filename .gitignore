@@ -41,3 +41,4 @@ build/Release
 node_modules
 debug
 debug1
+types
