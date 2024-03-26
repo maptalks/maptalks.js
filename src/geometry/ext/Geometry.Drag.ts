@@ -21,6 +21,19 @@ const EVENTS = Browser.touch ? 'touchstart mousedown' : 'mousedown';
  */
 class GeometryDragHandler extends Handler {
 
+    public container: any
+
+    private _dragHandler: any
+    private _shadow: any
+    private _dragStageLayer: any
+    private _shadowConnectors: any
+    private _lastCoord: any
+    private _lastPoint: any
+    private _startParam: any
+    private _moved: boolean
+    private _isDragging: boolean
+
+
     /**
      * @param  {Geometry} target geometry target to drag
      */
@@ -33,6 +46,7 @@ class GeometryDragHandler extends Handler {
     }
 
     removeHooks() {
+        // @ts-ignore
         this._endDrag();
         this.target.off(EVENTS, this._startDrag, this);
         delete this.container;
@@ -85,7 +99,9 @@ class GeometryDragHandler extends Handler {
         const resources = this._dragStageLayer._getRenderer().resources;
 
         const shadowConnectors = [];
+        // @ts-ignore
         if (ConnectorLine._hasConnectors(target)) {
+            // @ts-ignore
             const connectors = ConnectorLine._getConnectors(target);
 
             for (let i = 0, l = connectors.length; i < l; i++) {
@@ -265,6 +281,7 @@ class GeometryDragHandler extends Handler {
             delete this._dragHandler;
         }
         if (this.container) {
+            // @ts-ignore
             off(this.container, 'mouseleave', this._endDrag, this);
         }
         if (!this.target) {
@@ -362,7 +379,7 @@ Geometry.mergeOptions({
     'dragOnAxis': null,
     'dragOnScreenAxis': false
 });
-
+// @ts-ignore
 Geometry.addInitHook('addHandler', 'draggable', GeometryDragHandler);
 
 Geometry.include(/** @lends Geometry.prototype */ {

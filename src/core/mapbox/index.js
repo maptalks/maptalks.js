@@ -10,7 +10,7 @@ import { extend } from '../util/common';
  */
 
 export * from '@maptalks/feature-filter';
-export * from '@maptalks/function-type';
+export { loadFunctionTypes }
 
 const arr = [],
     prop = {};

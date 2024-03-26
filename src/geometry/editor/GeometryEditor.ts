@@ -13,7 +13,12 @@ import * as Symbolizers from '../../renderer/geometry/symbolizers';
 
 const EDIT_STAGE_LAYER_PREFIX = INTERNAL_LAYER_PREFIX + '_edit_stage_';
 
-function createHandleSymbol(markerType, opacity) {
+
+interface vertexHandlesT {
+    k: number,
+    arr: Array<any>
+}
+function createHandleSymbol(markerType: string, opacity: number) {
     return {
         'markerType': markerType,
         'markerFill': '#fff',
@@ -49,6 +54,18 @@ const options = {
  * @mixes Eventable
  */
 class GeometryEditor extends Eventable(Class) {
+
+    private _geometry: any
+    private _originalSymbol: any
+    private _shadowLayer: any
+    private _shadow: any
+    private _geometryDraggble: boolean
+    private _history: any
+    private _historyPointer: any
+    private _editOutline: any
+    private _refreshHooks: Array<any>
+    private _updating: boolean
+    public editing: any
 
     /**
      * @param {Geometry} geometry geometry to edit
@@ -190,6 +207,7 @@ class GeometryEditor extends Eventable(Class) {
         this._switchGeometryEvents('off');
         const map = this.getMap();
         if (!map) {
+            // @ts-ignore
             this.fire('remove');
             return;
         }
@@ -210,6 +228,7 @@ class GeometryEditor extends Eventable(Class) {
             delete this._originalSymbol;
         }
         this.editing = false;
+        // @ts-ignore
         this.fire('remove');
     }
 
@@ -401,6 +420,7 @@ class GeometryEditor extends Eventable(Class) {
         handle.on('dragend', onHandleDragEnd, this);
         //拖动移图
         if (opts.onRefresh) {
+            // @ts-ignore
             handle.refresh = opts.onRefresh;
         }
         return handle;
@@ -858,7 +878,7 @@ class GeometryEditor extends Eventable(Class) {
             newVertexHandles = { 0: [] };
 
         //大面积调用这个方法是非常耗时的
-        function getVertexCoordinates(ringIndex = 0) {
+        function getVertexCoordinates(ringIndex: number = 0) {
             if (geoToEdit instanceof Polygon) {
                 const coordinates = geoToEdit.getCoordinates()[ringIndex] || [];
                 return coordinates.slice(0, coordinates.length - 1);
@@ -867,7 +887,7 @@ class GeometryEditor extends Eventable(Class) {
             }
         }
 
-        function getVertexPrjCoordinates(ringIndex = 0) {
+        function getVertexPrjCoordinates(ringIndex: number = 0) {
             if (ringIndex === 0) {
                 return geoToEdit._getPrjCoordinates();
             }
@@ -884,6 +904,7 @@ class GeometryEditor extends Eventable(Class) {
                     newVertexHandles[ringIndex][i][propertyOfVertexIndex] = i;
                 }
             }
+            // @ts-ignore
             me._updateCoordFromShadow();
         }
 
@@ -993,6 +1014,7 @@ class GeometryEditor extends Eventable(Class) {
                     handle.setContainerPoint(containerPoint._add(getDxDy()));
                 },
                 onUp: function () {
+                    // @ts-ignore
                     me._updateCoordFromShadow();
                 },
                 onDown: function (param, e) {
@@ -1002,6 +1024,7 @@ class GeometryEditor extends Eventable(Class) {
                 }
             });
             handle[propertyOfVertexIndex] = index;
+            // @ts-ignore
             handle._ringIndex = ringIndex;
             handle.on(me.options['removeVertexOn'], removeVertex);
             handle.setZIndex(vertexZIndex);
@@ -1062,6 +1085,7 @@ class GeometryEditor extends Eventable(Class) {
                     //add a new vertex handle
                     vertexHandles[ringIndex].splice(vertexIndex + 1, 0, createVertexHandle.call(me, vertexIndex + 1, ringIndex));
                     onVertexAddOrRemove();
+                    // @ts-ignore
                     me._updateCoordFromShadow();
                     pauseRefresh = false;
                 },
@@ -1123,6 +1147,7 @@ class GeometryEditor extends Eventable(Class) {
                 return;
             }
             for (const ringIndex in newVertexHandles) {
+                // @ts-ignore
                 const ringCoordinates = getVertexCoordinates(ringIndex);
                 for (let i = newVertexHandles[ringIndex].length - 1; i >= 0; i--) {
                     //reuse ringCoordinates
@@ -1137,6 +1162,7 @@ class GeometryEditor extends Eventable(Class) {
                 }
             }
             for (const ringIndex in vertexHandles) {
+                // @ts-ignore
                 const ringCoordinates = getVertexCoordinates(ringIndex);
                 for (let i = vertexHandles[ringIndex].length - 1; i >= 0; i--) {
                     //reuse ringCoordinates
