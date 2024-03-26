@@ -1,7 +1,6 @@
 import { offsetDom } from '../../core/util/dom';
 import Class from '../../core/Class';
 import Point from '../../geo/Point';
-
 /**
  * @classdesc
  * Base class for all the map renderers.

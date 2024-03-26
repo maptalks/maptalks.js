@@ -3,6 +3,7 @@ import { isFunction, isNil, isNumber, now } from './util/common';
 import { getGlobalWorkerPool } from './worker/WorkerPool';
 import Browser from './Browser';
 import GlobalConfig from '../GlobalConfig';
+import { checkFPS } from './worker/FPSCheckWorker';
 
 let tasks = [];
 
@@ -84,8 +85,24 @@ function loop() {
     }
     executeMicroTasks();
     broadcastIdleMessage = !broadcastIdleMessage;
+    checkBrowserMaxFPS();
 }
 
+let checkFPSing = false;
+function checkBrowserMaxFPS() {
+    if (checkFPSing) {
+        return;
+    }
+    if (GlobalConfig.maxFPS <= 0) {
+        checkFPSing = true;
+        checkFPS((fps) => {
+            if (isNumber(fps) && fps > 0 && GlobalConfig.maxFPS <= 0) {
+                GlobalConfig.maxFPS = fps;
+            }
+            checkFPSing = false;
+        })
+    }
+}
 let loopFrameTime = now();
 function frameLoop(deadline) {
     const { idleTimeRemaining, idleLog, idleTimeout, idleForceTimeThreshold } = GlobalConfig;
