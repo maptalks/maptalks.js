@@ -16,10 +16,10 @@ function isBlobURL(path) {
 
 function strContains(str1, str2) {
     if (isNumber(str1)) {
-        str1 += EMPTY_STRING;
+        str1 += EMPTY_STRING as any;
     }
     if (isNumber(str2)) {
-        str2 += EMPTY_STRING;
+        str2 += EMPTY_STRING as any;
     }
     if (!str1 || !str2) {
         return false;
@@ -30,7 +30,7 @@ function strContains(str1, str2) {
     return str1.indexOf(str2) > -1;
 }
 
-function handlerURL(path, configs = {}) {
+function handlerURL(path: string, configs = {}) {
     for (const local in configs) {
         const obj = configs[local];
         if (!obj || !obj.target) {
@@ -125,7 +125,7 @@ export const ResouceProxy = {
 
 export function formatResouceUrl(path) {
     if (isNumber(path)) {
-        path += EMPTY_STRING;
+        path += EMPTY_STRING as any;
     }
     if (!path) {
         console.error('resouce path is null,path:', path);

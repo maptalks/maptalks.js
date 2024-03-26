@@ -26,13 +26,13 @@ export function loadGeoSymbol(symbol, geo) {
     });
 }
 
-function set(arr, a0, a1) {
+function set(arr: any[], a0: any, a1: any) {
     arr[0] = a0;
     arr[1] = a1;
     return arr;
 }
 
-function setProp(prop, b, p, z) {
+function setProp(prop: any, b: number, p: number, z: number) {
     prop['{bearing}'] = b;
     prop['{pitch}'] = p;
     prop['{zoom}'] = z;
