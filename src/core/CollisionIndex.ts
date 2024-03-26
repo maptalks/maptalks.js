@@ -1,7 +1,14 @@
 import rbush from 'rbush';
 
+export type Search = {
+    minX?: number
+    minY?: number
+    maxX?: number
+    maxY?: number
+}
+
 //global temparary variables
-const search = {
+const search: Search = {
 };
 /**
  * 碰撞检测的实现思路：
@@ -13,6 +20,7 @@ const search = {
  *   2.2 如果没有，如果需要的，insert到collisionIndex中
  */
 class CollisionIndex {
+    _tree: any
     constructor() {
         this._tree = rbush(9, ['[0]', '[1]', '[2]', '[3]']);
     }
