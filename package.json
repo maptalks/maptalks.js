@@ -44,7 +44,6 @@
   "main": "dist/maptalks.js",
   "jsnext:main": "dist/maptalks.es-bundler.js",
   "style": "dist/maptalks.css",
-  "types": "types/index.d.ts",
   "dependencies": {
     "@maptalks/feature-filter": "^1.3.0",
     "@maptalks/function-type": "^1.3.1",
