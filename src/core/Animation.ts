@@ -87,6 +87,8 @@ const Easing = {
  * @protected
  */
 class Frame {
+    state: any
+    styles: any
     /**
      * Create an animation frame.
      * @param {Object} state  - animation state
@@ -112,6 +114,13 @@ class Frame {
  * @memberof animation
  */
 class Player {
+    _animation: any
+    options: any
+    _onFrame: any
+    playState: any
+    ready: any
+    finished: any
+    target: any
 
     /**
      * Create an animation player
@@ -398,12 +407,14 @@ const Animation = {
         const animation = Animation.framing(styles, options);
         const player = new Player(animation, options, step, target);
         return player;
-    }
+    },
+
+    _frameFn: () => { }
 };
 
 Animation._frameFn = Animation._run.bind(Animation);
 
-extend(Player.prototype, /** @lends animation.Player.prototype */{
+extend<any>(Player.prototype, /** @lends animation.Player.prototype */{
     _prepare() {
         const options = this.options;
         let duration = options['speed'] || options['duration'];
