@@ -3,9 +3,9 @@ import { isFunction, isNil, isNumber, now } from './util/common';
 import { getGlobalWorkerPool } from './worker/WorkerPool';
 import Browser from './Browser';
 import GlobalConfig from '../GlobalConfig';
-import { checkFPS } from './worker/FPSCheckWorker';
 
 let tasks = [];
+const loopHooks = [];
 
 /**
  *
@@ -85,24 +85,11 @@ function loop() {
     }
     executeMicroTasks();
     broadcastIdleMessage = !broadcastIdleMessage;
-    checkBrowserMaxFPS();
+    loopHooks.forEach(func => {
+        func();
+    });
 }
 
-let checkFPSing = false;
-function checkBrowserMaxFPS() {
-    if (checkFPSing) {
-        return;
-    }
-    if (GlobalConfig.maxFPS <= 0) {
-        checkFPSing = true;
-        checkFPS((fps) => {
-            if (isNumber(fps) && fps > 0 && GlobalConfig.maxFPS <= 0) {
-                GlobalConfig.maxFPS = fps;
-            }
-            checkFPSing = false;
-        })
-    }
-}
 let loopFrameTime = now();
 function frameLoop(deadline) {
     const { idleTimeRemaining, idleLog, idleTimeout, idleForceTimeThreshold } = GlobalConfig;
@@ -148,5 +135,14 @@ export function startTasks() {
         requestIdleCallback(frameLoop, { timeout: idleTimeout });
     } else {
         requestAnimFrame(frameLoop);
+    }
+}
+
+export function pushLoopHook(func) {
+    if (loopHooks.indexOf(func) > -1) {
+        return;
+    }
+    if (isFunction(func)) {
+        loopHooks.push(func);
     }
 }
