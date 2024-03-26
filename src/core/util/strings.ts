@@ -26,6 +26,16 @@ export function trim(str: string) {
     return str.trim ? str.trim() : str.replace(/^\s+|\s+$/g, '');
 }
 
+export function replaceAll(str: string, key: string, value: string) {
+    if (!str) {
+        return str;
+    }
+    while (str.indexOf(key) > -1) {
+        str = str.replace(key, value);
+    }
+    return str;
+}
+
 const specialPattern = /[\b\t\r\v\f]/igm;
 
 /**
@@ -81,7 +91,7 @@ export function stringWidth(text: string, font?: string): number {
  * @return
  * @memberOf StringUtil
  */
-export function stringLength(text: string, font: string, size: number):Size {
+export function stringLength(text: string, font: string, size: number): Size {
     const w = stringWidth(text, font);
     // if (!font) {
     //     font = '_default_';
@@ -163,7 +173,7 @@ const TEMPLATE_CHARS = ['{', '}'];
  * @return
  * @memberOf StringUtil
  */
-export function replaceVariable(str:string, props:Object) {
+export function replaceVariable(str: string, props: Object) {
     if (!isString(str)) {
         return str;
     }
@@ -185,9 +195,7 @@ export function replaceVariable(str:string, props:Object) {
     for (let i = 0, len = keys.length; i < len; i++) {
         const key = keys[i];
         const value = getValue(key);
-        // TODO: 此特性仅在es2021版本可用，可能需要添加polyfill
-        // @ts-expect-error
-        str = str.replaceAll(`${left}${key}${right}`, value);
+        str = replaceAll(str, `${left}${key}${right}`, value);
     }
     return str;
 }

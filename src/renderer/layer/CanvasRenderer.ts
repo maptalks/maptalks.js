@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-types */
+
 import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn, getImageBitMap, calCanvasSize } from '../../core/util';
 import Class from '../../core/Class';
 import Browser from '../../core/Browser';
@@ -7,6 +9,7 @@ import Point from '../../geo/Point';
 import { imageFetchWorkerKey } from '../../core/worker/CoreWorkers';
 import { registerWorkerAdapter } from '../../core/worker/Worker';
 import { formatResouceUrl } from '../../core/ResouceProxy';
+import {TileImageTexture, TileRenderingContext} from "./ImageGLRenderable";
 
 const EMPTY_ARRAY = [];
 class ResourceWorkerConnection extends Actor {
@@ -14,7 +17,7 @@ class ResourceWorkerConnection extends Actor {
         super(imageFetchWorkerKey);
     }
 
-    fetchImage(url, cb) {
+    fetchImage(url: string, cb: Function) {
         const data = {
             url
         };
@@ -22,8 +25,15 @@ class ResourceWorkerConnection extends Actor {
     }
 }
 
+interface SizeType {
+    width: number;
+    height: number;
+}
+export type CanvasRenderingCanvas = HTMLCanvasElement & { _parentTileTimestamp: number };
+export type ImageType = HTMLImageElement | ImageBitmap | HTMLCanvasElement;
+
 /**
- * @classdesc
+ * @english
  * Base Class to render layer on HTMLCanvasElement
  * @abstract
  * @protected
@@ -31,11 +41,41 @@ class ResourceWorkerConnection extends Actor {
  * @extends Class
  */
 class CanvasRenderer extends Class {
+    public layer: any;
+    public resources: ResourceCache;
+
+    public context: CanvasRenderingContext2D;
+    public canvas: CanvasRenderingCanvas;
+    public gl: WebGL2RenderingContext | WebGLRenderingContext;
+    // TODO: 等待补充 Point 类型定义
+    public middleWest: any;
+    // TODO: 等待补充Extent2D类型定义
+    public canvasExtent2D: any;
+    private _extent2D: any;
+    private _maskExtent: any;
+
+    private _painted: boolean;
+    private _drawTime: number;
+    private _frameTime: number;
+    private _resWorkerConn: ResourceWorkerConnection;
+
+    private _toRedraw: boolean;
+    private _loadingResource: boolean;
+    private _renderComplete: boolean;
+    private _canvasUpdated: boolean;
+
+    private _renderZoom: number;
+    private _errorThrown: boolean;
+
+    drawOnInteracting?(...args: any[]): void;
+    checkResources?(): any[];
+    getImageData?(): ImageData;
+    draw?(...args: any[]): void;
 
     /**
      * @param  {Layer} layer the layer to render
      */
-    constructor(layer) {
+    constructor(layer: any) {
         super();
         this.layer = layer;
         this._painted = false;
@@ -51,7 +91,7 @@ class CanvasRenderer extends Class {
      * Render the layer.
      * Call checkResources
      */
-    render(framestamp) {
+    render(framestamp: number): void {
         this.prepareRender();
         if (!this.getMap() || !this.layer.isVisible()) {
             return;
@@ -65,7 +105,7 @@ class CanvasRenderer extends Class {
         this._frameTime = framestamp;
     }
 
-    getFrameTimestamp() {
+    getFrameTimestamp(): number {
         return this._frameTime || 0;
     }
 
@@ -135,7 +175,7 @@ class CanvasRenderer extends Class {
     /**
      * @private
      */
-    testIfNeedRedraw() {
+    testIfNeedRedraw(): boolean {
         const map = this.getMap();
         if (this._loadingResource) {
             return false;
@@ -156,7 +196,7 @@ class CanvasRenderer extends Class {
      * Ask whether the layer renderer needs to redraw
      * @return {Boolean}
      */
-    needToRedraw() {
+    needToRedraw(): boolean {
         const map = this.getMap();
         if (map.isInteracting() || map.getRenderer().isViewChanged()) {
             // don't redraw when map is moving without any pitch
@@ -168,22 +208,20 @@ class CanvasRenderer extends Class {
     /**
      * A callback for overriding when drawOnInteracting is skipped due to low fps
      */
-    onSkipDrawOnInteracting() {
+    onSkipDrawOnInteracting(): void {}
 
-    }
-
-    isLoadingResource() {
+    isLoadingResource(): boolean {
         return this._loadingResource;
     }
 
-    isRenderComplete() {
+    isRenderComplete(): boolean {
         return !!this._renderComplete;
     }
 
     /**
      * Whether must call render instead of drawOnInteracting when map is interacting
      */
-    mustRenderOnInteracting() {
+    mustRenderOnInteracting(): boolean {
         return !this._painted;
     }
 
@@ -208,14 +246,14 @@ class CanvasRenderer extends Class {
      * @protected
      * @return {Boolean}
      */
-    isCanvasUpdated() {
+    isCanvasUpdated(): boolean {
         return !!this._canvasUpdated;
     }
 
     /**
      * Remove the renderer, will be called when layer is removed
      */
-    remove() {
+    remove(): void {
         this.onRemove();
         delete this._loadingResource;
         delete this.middleWest;
@@ -234,15 +272,15 @@ class CanvasRenderer extends Class {
         delete this.layer;
     }
 
-    onRemove() { }
+    onRemove(): void { }
 
-    onAdd() { }
+    onAdd(): void { }
 
     /**
      * Get map
      * @return {Map}
      */
-    getMap() {
+    getMap(): any {
         if (!this.layer) {
             return null;
         }
@@ -253,7 +291,7 @@ class CanvasRenderer extends Class {
      * Get renderer's Canvas image object
      * @return {HTMLCanvasElement}
      */
-    getCanvasImage() {
+    getCanvasImage(): any {
         const map = this.getMap();
         this._canvasUpdated = false;
         if (this._renderZoom !== map.getZoom() || !this.canvas || !this._extent2D) {
@@ -278,7 +316,7 @@ class CanvasRenderer extends Class {
     /**
      * Clear canvas
      */
-    clear() {
+    clear(): void {
         this.clearCanvas();
     }
 
@@ -287,24 +325,21 @@ class CanvasRenderer extends Class {
      * If you are sure that layer's canvas is blank, returns true to save unnecessary layer works of maps.
      * @return {Boolean}
      */
-    isBlank() {
-        if (!this._painted) {
-            return true;
-        }
-        return false;
+    isBlank(): boolean {
+        return !this._painted;
     }
 
     /**
      * Show the layer
      */
-    show() {
+    show(): void {
         this.setToRedraw();
     }
 
     /**
      * Hide the layer
      */
-    hide() {
+    hide(): void {
         this.clear();
         this.setToRedraw();
     }
@@ -312,7 +347,7 @@ class CanvasRenderer extends Class {
     /**
      * Set z-index of layer
      */
-    setZIndex(/*z*/) {
+    setZIndex(/*z*/): void {
         this.setToRedraw();
     }
 
@@ -321,7 +356,7 @@ class CanvasRenderer extends Class {
      * @param  {Point} point containerPoint
      * @return {Boolean}
      */
-    hitDetect(point) {
+    hitDetect(point): boolean {
         if (!this.context || (this.layer.isEmpty && this.layer.isEmpty()) || this.isBlank() || this._errorThrown || (this.layer.isVisible && !this.layer.isVisible())) {
             return false;
         }
@@ -361,11 +396,9 @@ class CanvasRenderer extends Class {
     /**
      * loadResource from resourceUrls
      * @param  {String[]} resourceUrls    - Array of urls to load
-     * @param  {Function} onComplete          - callback after loading complete
-     * @param  {Object} context         - callback's context
      * @returns {Promise[]}
      */
-    loadResources(resourceUrls) {
+    loadResources(resourceUrls: string[][]): Promise<any> {
         if (!this.resources) {
             /* eslint-disable no-use-before-define */
             this.resources = new ResourceCache();
@@ -395,7 +428,7 @@ class CanvasRenderer extends Class {
      * Set necessary properties, like this._renderZoom/ this.canvasExtent2D, this.middleWest
      * @private
      */
-    prepareRender() {
+    prepareRender(): void {
         delete this._renderComplete;
         const map = this.getMap();
         this._renderZoom = map.getZoom();
@@ -407,7 +440,7 @@ class CanvasRenderer extends Class {
     /**
      * Create renderer's Canvas
      */
-    createCanvas() {
+    createCanvas(): void {
         if (this.canvas) {
             return;
         }
@@ -433,11 +466,11 @@ class CanvasRenderer extends Class {
 
     }
 
-    onCanvasCreate() {
+    onCanvasCreate(): void {
 
     }
 
-    createContext() {
+    createContext(): void {
         //Be compatible with layer renderers that overrides create canvas and create gl/context
         if (this.gl && this.gl.canvas === this.canvas || this.context) {
             return;
@@ -455,7 +488,7 @@ class CanvasRenderer extends Class {
         }
     }
 
-    resetCanvasTransform() {
+    resetCanvasTransform(): void {
         if (!this.context) {
             return;
         }
@@ -467,7 +500,7 @@ class CanvasRenderer extends Class {
      * Resize the canvas
      * @param  {Size} canvasSize the size resizing to
      */
-    resizeCanvas(canvasSize) {
+    resizeCanvas(canvasSize?: SizeType): void {
         const canvas = this.canvas;
         if (!canvas) {
             return;
@@ -495,7 +528,7 @@ class CanvasRenderer extends Class {
     /**
      * Clear the canvas to blank
      */
-    clearCanvas() {
+    clearCanvas(): void {
         if (!this.context || !this.getMap()) {
             return;
         }
@@ -507,12 +540,13 @@ class CanvasRenderer extends Class {
     }
 
     /**
+     * @english
      * Prepare the canvas for rendering. <br>
      * 1. Clear the canvas to blank. <br>
      * 2. Clip the canvas by mask if there is any and return the mask's extent
      * @return {PointExtent} mask's extent of current zoom's 2d point.
      */
-    prepareCanvas() {
+    prepareCanvas(): any {
         if (!this.canvas) {
             this.createCanvas();
             this.createContext();
@@ -570,7 +604,7 @@ class CanvasRenderer extends Class {
         return maskExtent2D;
     }
 
-    clipCanvas(context) {
+    clipCanvas(context: CanvasRenderingContext2D & { isMultiClip: boolean, isClip: boolean }) {
         const mask = this.layer.getMask();
         if (!mask) {
             return false;
@@ -627,7 +661,7 @@ class CanvasRenderer extends Class {
     /**
      * call when rendering completes, this will fire necessary events and call setCanvasUpdated
      */
-    completeRender() {
+    completeRender(): void {
         if (this.getMap()) {
             this._renderComplete = true;
             /**
@@ -667,19 +701,19 @@ class CanvasRenderer extends Class {
         };
     }
 
-    /**
+    /* eslint-disable @typescript-eslint/no-unused-vars */
     /**
      * onZoomStart
      * @param  {Object} param event parameters
      */
-    onZoomStart() {
+    onZoomStart(param: any): void {
     }
 
     /**
     * onZoomEnd
     * @param  {Object} param event parameters
     */
-    onZoomEnd() {
+    onZoomEnd(param: any): void {
         this.setToRedraw();
     }
 
@@ -687,25 +721,25 @@ class CanvasRenderer extends Class {
     * onZooming
     * @param  {Object} param event parameters
     */
-    onZooming() { }
+    onZooming(param: any) { }
 
     /**
     * onMoveStart
     * @param  {Object} param event parameters
     */
-    onMoveStart() { }
+    onMoveStart(param: any) { }
 
     /**
     * onMoving
     * @param  {Object} param event parameters
     */
-    onMoving() { }
+    onMoving(param: any) { }
 
     /**
     * onMoveEnd
     * @param  {Object} param event parameters
     */
-    onMoveEnd() {
+    onMoveEnd(param: any) {
         this.setToRedraw();
     }
 
@@ -713,7 +747,7 @@ class CanvasRenderer extends Class {
     * onResize
     * @param  {Object} param event parameters
     */
-    onResize() {
+    onResize(param: any) {
         delete this._extent2D;
         this.resizeCanvas();
         this.setToRedraw();
@@ -723,19 +757,19 @@ class CanvasRenderer extends Class {
     * onDragRotateStart
     * @param  {Object} param event parameters
     */
-    onDragRotateStart() { }
+    onDragRotateStart(param: any) { }
 
     /**
     * onDragRotating
     * @param  {Object} param event parameters
     */
-    onDragRotating() { }
+    onDragRotating(param: any) { }
 
     /**
     * onDragRotateEnd
     * @param  {Object} param event parameters
     */
-    onDragRotateEnd() {
+    onDragRotateEnd(param: any) {
         this.setToRedraw();
     }
 
@@ -743,8 +777,10 @@ class CanvasRenderer extends Class {
     * onSpatialReferenceChange
     * @param  {Object} param event parameters
     */
-    onSpatialReferenceChange() {
+    onSpatialReferenceChange(param: any) {
     }
+
+    /* eslint-disable @typescript-eslint/no-unused-vars */
 
     /**
      * Get ellapsed time of previous drawing
@@ -764,7 +800,7 @@ class CanvasRenderer extends Class {
         this._drawAndRecord(framestamp);
     }
 
-    _drawAndRecord(framestamp) {
+    _drawAndRecord(framestamp: number) {
         if (!this.getMap()) {
             return;
         }
@@ -782,19 +818,19 @@ class CanvasRenderer extends Class {
 
     _promiseResource(url) {
         const layer = this.layer;
-        const me = this, resources = this.resources,
-            crossOrigin = layer.options['crossOrigin'];
+        const resources = this.resources;
+        const crossOrigin = layer.options['crossOrigin'];
         const renderer = layer.options['renderer'] || '';
-        return function (resolve) {
+        return (resolve) => {
             if (resources.isResourceLoaded(url, true)) {
                 resolve(url);
                 return;
             }
             const imageURL = formatResouceUrl(url[0]);
-            const fetchInWorker = !isSVG(url[0]) && me._resWorkerConn && (layer.options['renderer'] !== 'canvas' || layer.options['decodeImageInWorker']);
+            const fetchInWorker = !isSVG(url[0]) && this._resWorkerConn && (layer.options['renderer'] !== 'canvas' || layer.options['decodeImageInWorker']);
             if (fetchInWorker) {
                 // const uri = getAbsoluteURL(url[0]);
-                me._resWorkerConn.fetchImage(imageURL, (err, data) => {
+                this._resWorkerConn.fetchImage(imageURL, (err, data) => {
                     if (err) {
                         if (err && typeof console !== 'undefined') {
                             console.warn(err);
@@ -802,8 +838,8 @@ class CanvasRenderer extends Class {
                         resolve(url);
                         return;
                     }
-                    getImageBitMap(data, bitmap => {
-                        me._cacheResource(url, bitmap);
+                    getImageBitMap<ImageBitmap>(data, bitmap => {
+                        this._cacheResource(url, bitmap);
                         resolve(url);
                     });
                 });
@@ -819,8 +855,8 @@ class CanvasRenderer extends Class {
                     if (url[1]) { url[1] *= 2; }
                     if (url[2]) { url[2] *= 2; }
                 }
-                img.onload = function () {
-                    me._cacheResource(url, img);
+                img.onload = () => {
+                    this._cacheResource(url, img);
                     resolve(url);
                 };
                 img.onabort = function (err) {
@@ -840,12 +876,11 @@ class CanvasRenderer extends Class {
                 };
                 loadImage(img, [imageURL]);
             }
-
         };
 
     }
 
-    _cacheResource(url, img) {
+    _cacheResource(url: string[], img: ImageType) {
         if (!this.layer || !this.resources) {
             return;
         }
@@ -868,13 +903,19 @@ class CanvasRenderer extends Class {
 
 export default CanvasRenderer;
 
+type ResourceUrl = string | string[]
+
 export class ResourceCache {
+    resources: any;
+
+    private _errors: any;
+
     constructor() {
         this.resources = {};
         this._errors = {};
     }
 
-    addResource(url, img) {
+    addResource(url: string[], img) {
         this.resources[url[0]] = {
             image: img,
             width: +url[1],
@@ -895,7 +936,7 @@ export class ResourceCache {
         }
     }
 
-    isResourceLoaded(url, checkSVG) {
+    isResourceLoaded(url: ResourceUrl, checkSVG?: boolean) {
         if (!url) {
             return false;
         }
@@ -913,14 +954,14 @@ export class ResourceCache {
         return true;
     }
 
-    login(url) {
+    login(url: string) {
         const res = this.resources[url];
         if (res) {
             res.refCnt++;
         }
     }
 
-    logout(url) {
+    logout(url: string) {
         const res = this.resources[url];
         if (res && res.refCnt-- <= 0) {
             if (res.image && res.image.close) {
@@ -930,7 +971,7 @@ export class ResourceCache {
         }
     }
 
-    getImage(url) {
+    getImage(url: ResourceUrl) {
         const imgUrl = this._getImgUrl(url);
         if (!this.isResourceLoaded(url) || this._errors[imgUrl]) {
             return null;
@@ -938,11 +979,11 @@ export class ResourceCache {
         return this.resources[imgUrl].image;
     }
 
-    markErrorResource(url) {
+    markErrorResource(url: ResourceUrl) {
         this._errors[this._getImgUrl(url)] = 1;
     }
 
-    merge(res) {
+    merge(res: any) {
         if (!res) {
             return this;
         }
@@ -953,7 +994,7 @@ export class ResourceCache {
         return this;
     }
 
-    forEach(fn) {
+    forEach(fn: Function) {
         if (!this.resources) {
             return this;
         }
@@ -965,7 +1006,7 @@ export class ResourceCache {
         return this;
     }
 
-    _getImgUrl(url) {
+    _getImgUrl(url: ResourceUrl) {
         if (!Array.isArray(url)) {
             return url;
         }

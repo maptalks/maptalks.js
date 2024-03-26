@@ -1,4 +1,5 @@
 import { createProgram, enableVertexAttrib } from '../../../core/util/gl';
+import { TileRenderingContext, TileRenderingProgram, VertexAttrib } from '../ImageGLRenderable';
 
 const quadVertices = typeof Int8Array !== 'undefined' ? new Int8Array([
     // positions
@@ -8,7 +9,7 @@ const quadVertices = typeof Int8Array !== 'undefined' ? new Int8Array([
     1, -1, 0,
 ]) : [];
 
-const vert = `
+const vert: string = `
     attribute vec3 a_position;
     uniform mat4 transform;
 
@@ -18,7 +19,7 @@ const vert = `
     }
 `;
 
-const frag = `
+const frag: string = `
     precision mediump float;
     uniform vec3 color;
     void main()
@@ -28,7 +29,20 @@ const frag = `
 `;
 
 class QuadStencil {
-    constructor(gl, vertices, debug) {
+    gl: TileRenderingContext;
+    quadVertices: any;
+    attributes: VertexAttrib;
+    debug: boolean;
+    buffer: any;
+
+    program: TileRenderingProgram;
+    _savedProgram: TileRenderingProgram;
+    colorLoc: WebGLUniformLocation;
+    transformLoc: WebGLUniformLocation;
+
+    ref: GLint;
+
+    constructor(gl: TileRenderingContext, vertices: any[] | Int8Array, debug?: boolean) {
         this.gl = gl;
         this.quadVertices = vertices || quadVertices;
         this.attributes = ['a_position', 3, getType(vertices)];
@@ -61,7 +75,7 @@ class QuadStencil {
         gl.colorMask(false, false, false, false);
     }
 
-    end() {
+    end(): void {
         const gl = this.gl;
         gl.depthMask(true);
         this._restore();
@@ -71,7 +85,7 @@ class QuadStencil {
         gl.colorMask(true, true, true, true);
     }
 
-    draw(transform) {
+    draw(transform: number[]): void {
         const gl = this.gl;
         gl.uniformMatrix4fv(this.transformLoc, false, transform);
         gl.uniform3fv(this.colorLoc, [Math.random(), Math.random(), Math.random()]);
@@ -93,18 +107,18 @@ class QuadStencil {
         return this;
     }
 
-    stencilMask(mask) {
+    stencilMask(mask: number) {
         this.gl.stencilMask(mask);
         return this;
     }
 
-    stencilFunc(func, ref, mask) {
+    stencilFunc(func: number, ref: number, mask: number) {
         this.ref = ref;
         this.gl.stencilFunc(func, ref, mask);
         return this;
     }
 
-    stencilOp(fail, zfail, zpass) {
+    stencilOp(fail: number, zfail: number, zpass: number) {
         this.gl.stencilOp(fail, zfail, zpass);
         return this;
     }
@@ -149,7 +163,7 @@ class QuadStencil {
 
 export default QuadStencil;
 
-function getType(arr) {
+function getType(arr: any) {
     if (arr instanceof Float32Array) {
         return 'FLOAT';
     } else if (arr instanceof Int16Array) {

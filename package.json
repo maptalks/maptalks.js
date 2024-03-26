@@ -21,7 +21,8 @@
   },
   "homepage": "https://maptalks.org",
   "scripts": {
-    "build": "npm run build-styles && npm run build-dev",
+    "tsc": "npx tsc",
+    "build": "npm run tsc && npm run build-styles && npm run build-dev",
     "build-dev": "rollup -c",
     "build-test": "rollup -c --environment BUILD:test",
     "build-styles": "",
@@ -49,6 +50,7 @@
     "simplify-js": "^1.2.1"
   },
   "devDependencies": {
+    "@types/node": "^20.11.30",
     "@babel/preset-env": "^7.24.1",
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-commonjs": "^25.0.7",
@@ -77,6 +79,7 @@
     "typescript-eslint": "^7.3.1"
   },
   "optionalDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "^4.13.0"
+    "@rollup/rollup-linux-x64-gnu": "^4.13.0",
+    "@rollup/rollup-darwin-x64": "^4.13.0"
   }
 }
