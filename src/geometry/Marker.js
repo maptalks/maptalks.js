@@ -56,8 +56,8 @@ class Marker extends CenterMixin(Geometry) {
      * @param {Coordinate} coordinates      - coordinates of the marker
      * @param {Object} [options=null]       - construct options defined in [Marker]{@link Marker#options}
      */
-    constructor(coordinates, opts) {
-        super(opts);
+    constructor(coordinates, options) {
+        super(options);
         this.type = 'Point';
         //for subclass,Quickly determine whether a Geometry is a point
         this.isPoint = true;
