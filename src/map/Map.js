@@ -262,9 +262,8 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * Add hooks for additional codes when map's loading complete, useful for plugin developping.
      * Note that it can only be called before the map is created.
-     * @param {Function} fn
+     * @param {Function | any} fn
      * @returns {Map}
-     * @protected
      */
     static addOnLoadHook(fn) { // (Function) || (String, args...)
         const args = Array.prototype.slice.call(arguments, 1);

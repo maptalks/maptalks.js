@@ -1,5 +1,7 @@
 import Handler from '../../handler/Handler';
 import Map from '../Map';
+import { type Param } from './CommonType'
+
 
 class MapDoubleClickZoomHandler extends Handler {
     addHooks() {
@@ -16,7 +18,7 @@ class MapDoubleClickZoomHandler extends Handler {
         this.target.off('_dblclick', this._onDoubleClick, this);
     }
 
-    _onDoubleClick(param) {
+    _onDoubleClick(param: Param) {
         const map = this.target;
         if (map.options['doubleClickZoom']) {
             const oldZoom = map.getZoom(),

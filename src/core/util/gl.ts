@@ -1,10 +1,10 @@
 
-export function createGLContext(canvas, options) {
+export function createGLContext(canvas: HTMLCanvasElement, options: any) {
     const attributes = {
         'alpha': true,
-        'stencil' : true,
-        'preserveDrawingBuffer' : true,
-        'antialias' : false
+        'stencil': true,
+        'preserveDrawingBuffer': true,
+        'antialias': false
     };
     const names = ['webgl', 'experimental-webgl'];
     let context = null;
@@ -12,7 +12,7 @@ export function createGLContext(canvas, options) {
     for (let i = 0; i < names.length; ++i) {
         try {
             context = canvas.getContext(names[i], options || attributes);
-        } catch (e) {}
+        } catch (e) { }
         if (context) {
             break;
         }
@@ -29,7 +29,7 @@ export function createGLContext(canvas, options) {
 * @return created shader object, or null if the creation has failed.
 * @private
 */
-export function compileShader(gl, type, source) {
+export function compileShader(gl: WebGL2RenderingContext, type: number, source: string) {
     const shader = gl.createShader(type);
 
     gl.shaderSource(shader, source);
@@ -46,12 +46,13 @@ export function compileShader(gl, type, source) {
 
 /**
  * Create the linked program object
- * @param {String} vert a vertex shader program (string)
- * @param {String} frag a fragment shader program (string)
+ * @param gl WebGL2RenderingContext
+ * @param vert a vertex shader program (string)
+ * @param frag a fragment shader program (string)
  * @return created program object, or null if the creation has failed
  * @private
  */
-export function createProgram(gl, vert, frag) {
+export function createProgram(gl: WebGL2RenderingContext | any, vert: string, frag: string) {
     const vertexShader = compileShader(gl, gl.VERTEX_SHADER, vert);
     const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, frag);
     if (!vertexShader || !fragmentShader) {
@@ -72,7 +73,8 @@ export function createProgram(gl, vert, frag) {
 
 /**
  * Enable vertex attributes
- * @param {Array} attributes [[name, stride, type], [name, stride, type]...]
+ * @param gl WebGL2RenderingContext
+ * @param attributes [[name, stride, type], [name, stride, type]...]
  * @example
  * rendererr.enableVertexAttrib([
  *  ['a_position', 3, 'FLOAT'],
@@ -80,7 +82,7 @@ export function createProgram(gl, vert, frag) {
  * ]);
  * @private
  */
-export function enableVertexAttrib(gl, program, attributes) {
+export function enableVertexAttrib(gl: WebGL2RenderingContext | any, program: WebGLProgram, attributes: any[]) {
     if (Array.isArray(attributes[0])) {
         const FSIZE = Float32Array.BYTES_PER_ELEMENT;
         let STRIDE = 0;
@@ -105,15 +107,16 @@ export function enableVertexAttrib(gl, program, attributes) {
 }
 
 const DEPTH_FUNC_CONSTANTS = {
-    'never':    0x0200,
-    '<':        0x0201,
-    '=':        0x0202,
-    '<=':       0x0203,
-    '>':        0x0204,
-    '!=':       0x0205,
-    '>=':       0x0206,
-    'always':   0x0207
+    'never': 0x0200,
+    '<': 0x0201,
+    '=': 0x0202,
+    '<=': 0x0203,
+    '>': 0x0204,
+    '!=': 0x0205,
+    '>=': 0x0206,
+    'always': 0x0207
 };
-export function getDepthFunc(v) {
+
+export function getDepthFunc(v: keyof typeof DEPTH_FUNC_CONSTANTS) {
     return DEPTH_FUNC_CONSTANTS[v];
 }

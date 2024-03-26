@@ -4,9 +4,24 @@ import Extent from '../../geo/Extent';
 import * as projections from '../../geo/projection';
 import Transformation from '../../geo/transformation/Transformation';
 import { Measurer } from '../../geo/measurer';
+import loadWMTS from './SpatialReference.WMTS'
+import loadArcgis from './SpatialReference.Arc'
 const MAX_ZOOM = 23;
 
-const DefaultSpatialReference = {
+export type Projection = {
+    projection: string
+    resolutions: number[]
+    fullExtent: {
+        top: number
+        left: number
+        bottom: number
+        right: number
+    }
+}
+
+type ProjectionCommon = typeof projections.Common
+
+const DefaultSpatialReference: Record<string, Projection> = {
     'EPSG:3857': {
         'projection': 'EPSG:3857',
         'resolutions': (function () {
@@ -119,13 +134,27 @@ DefaultSpatialReference['PRESET-3857-512'] = DefaultSpatialReference['PRESET-VT-
 DefaultSpatialReference['PRESET-4326-512'] = DefaultSpatialReference['PRESET-VT-4326'];
 DefaultSpatialReference['PRESET-4490-512'] = DefaultSpatialReference['PRESET-VT-4326'];
 
+/**
+ * 空间参考类
+ * 
+ * @english 
+ * SpatialReference Class
+ */
 export default class SpatialReference {
-    constructor(options = {}) {
+    options: ProjectionCommon
+    _projection: ProjectionCommon
+    isEPSG: boolean
+    _resolutions: number[]
+    _pyramid: boolean
+    _fullExtent: Projection['fullExtent']
+    _transformation: Transformation
+    json: Projection
+    constructor(options?: ProjectionCommon) {
         this.options = options;
         this._initSpatialRef();
     }
 
-    static registerPreset(name, value) {
+    static registerPreset(name: string, value: Projection) {
         name = name && name.toUpperCase();
         if (DefaultSpatialReference[name]) {
             console.warn(`Spatial reference ${name} already registered.`);
@@ -133,7 +162,7 @@ export default class SpatialReference {
         DefaultSpatialReference[name] = value;
     }
 
-    static getPreset(preset) {
+    static getPreset(preset: string) {
         return DefaultSpatialReference[preset.toUpperCase()];
     }
 
@@ -141,7 +170,27 @@ export default class SpatialReference {
         return Object.keys(DefaultSpatialReference);
     }
 
-    static getProjectionInstance(projection) {
+    static loadArcgis(url: string, cb: (_, spatialRef?) => void, options: any) {
+        loadArcgis(url, cb, options)
+        return this
+    }
+
+    static loadWMTS(url: string, cb: (_, spatialRef?) => void, options: any) {
+        loadWMTS(url,cb,options)
+        return this
+    }
+
+
+    /**
+     * 获取投影类实例对象
+     * 
+     * @english 
+     * get Projection Class instance
+     * @param projection 
+     * @returns 
+     */
+    static getProjectionInstance(projection: any) {
+        // TODO: 等待补充Projection类的类型定义,Projection类目前为mixin模式
         if (!projection) {
             return null;
         }
@@ -191,7 +240,7 @@ export default class SpatialReference {
         return null;
     }
 
-    static equals(sp1, sp2) {
+    static equals(sp1: Projection, sp2: Projection) {
         if (isString(sp1) || isString(sp2)) {
             return sp1 === sp2;
         }
@@ -282,9 +331,16 @@ export default class SpatialReference {
             }
         }
         if (!isNil(fullExtent['left'])) {
-            this._fullExtent = new Extent(new Coordinate(fullExtent['left'], fullExtent['top']),
-                new Coordinate(fullExtent['right'], fullExtent['bottom']));
+            // TODO: 等待Extent和Coordinate补充类型
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error 
+            this._fullExtent = new Extent(
+                new Coordinate(fullExtent['left'], fullExtent['top']),
+                new Coordinate(fullExtent['right'], fullExtent['bottom'])
+            );
         } else {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
             //xmin, ymin, xmax, ymax
             this._fullExtent = new Extent(fullExtent);
             fullExtent['left'] = fullExtent['xmin'];
@@ -311,7 +367,7 @@ export default class SpatialReference {
         return this._resolutions || [];
     }
 
-    getResolution(zoom) {
+    getResolution(zoom: number) {
         let z = (zoom | 0);
         if (z < 0) {
             z = 0;

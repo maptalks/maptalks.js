@@ -1,22 +1,37 @@
 const minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
 
+export type Bbox = [number, number, number, number]
 
-export function getDefaultBBOX() {
+export function getDefaultBBOX(): Bbox {
     return [minx, miny, maxx, maxy];
 }
 
 export const BBOX_TEMP = getDefaultBBOX();
 
-//reset bbox
-export function resetBBOX(bbox) {
+/**
+ * 重置bbox
+ * 
+ * @english
+ * reset bbox
+ * @param bbox 
+ */
+export function resetBBOX(bbox: Bbox) {
     bbox[0] = minx;
     bbox[1] = miny;
     bbox[2] = maxx;
     bbox[3] = maxy;
 }
 
-//cal points bbox:linestring,polygon etc
-export function pointsBBOX(points, out) {
+/**
+ * cal points bbox:linestring,polygon etc
+ * 
+ * @english
+ * cal points bbox:linestring,polygon etc
+ * @param points 
+ * @param out 
+ * @returns 
+ */
+export function pointsBBOX(points: any, out: Bbox) {
     if (!points) {
         return;
     }
@@ -41,7 +56,7 @@ export function pointsBBOX(points, out) {
     }
 }
 
-export function setBBOX(bbox, x1, y1, x2, y2) {
+export function setBBOX(bbox: Bbox, x1?: number | Bbox, y1?: number, x2?: number, y2?: number) {
     if (x1 !== 0 && !x1) {
         return;
     }
@@ -58,11 +73,11 @@ export function setBBOX(bbox, x1, y1, x2, y2) {
     bbox[3] = Math.max(y2, bbox[3]);
 }
 
-export function validateBBOX(bbox) {
+export function validateBBOX(bbox?: Bbox) {
     return bbox && bbox[0] !== Infinity && bbox[0] !== undefined;
 }
 
-export function bufferBBOX(bbox, bufferSize = 0) {
+export function bufferBBOX(bbox: Bbox, bufferSize = 0) {
     bbox[0] -= bufferSize;
     bbox[1] -= bufferSize;
     bbox[2] += bufferSize;

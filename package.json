@@ -27,7 +27,7 @@
     "build-styles": "",
     "dev": "rollup --environment BUILD:dev -c -w",
     "lint": "npx eslint src/**/*.js src/**/*.ts test/**/*.js",
-    "pretest": "npm run build-test",
+    "pretest": "npm run lint && npm run build-test",
     "prepare": "npm run build",
     "preversion": "npm run lint",
     "test": "karma start build/karma.config.js",

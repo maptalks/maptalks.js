@@ -1,17 +1,20 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { RESOURCE_PROPERTIES, RESOURCE_SIZE_PROPERTIES } from '../Constants';
 import { IS_NODE } from './env';
 import { extend, isNil, isNumber, isString } from './common';
 import { extractCssUrl, btoa } from './util';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 import { isFunctionDefinition, getFunctionTypeResources } from '../mapbox';
 
 
 /**
  * Translate symbol properties to SVG properties
- * @param  {Object} s - object with symbol properties
- * @return {Object}   object with SVG properties
+ * @param s - object with symbol properties
+ * @return  object with SVG properties
  * @memberOf Util
  */
-export function translateToSVGStyles(s) {
+export function translateToSVGStyles(s: any) {
     const result = {
         'stroke': {
             'stroke': s['markerLineColor'],
@@ -34,11 +37,13 @@ export function translateToSVGStyles(s) {
 
 /**
  * Get SVG Base64 String from a marker symbol with (markerType : path)
- * @param  {Object} symbol - symbol with markerType of path
- * @return {String}        SVG Base64 String
+ * @param  symbol - symbol with markerType of path
+ * @param  width
+ * @param  height
+ * @return SVG Base64 String
  * @memberOf Util
  */
-export function getMarkerPathBase64(symbol, width, height) {
+export function getMarkerPathBase64(symbol: any, width?: number, height?: number): string {
     if (!symbol['markerPath']) {
         return null;
     }
@@ -46,10 +51,10 @@ export function getMarkerPathBase64(symbol, width, height) {
     const styles = translateToSVGStyles(symbol);
     //context.globalAlpha doesn't take effect with drawing SVG in IE9/10/11 and EGDE, so set opacity in SVG element.
     if (isNumber(symbol['markerOpacity'])) {
-        op = symbol['markerOpacity'];
+        op = symbol['markerOpacity'] as any;
     }
     if (isNumber(symbol['opacity'])) {
-        op *= symbol['opacity'];
+        op *= symbol['opacity'] as any;
     }
     const svgStyles = {};
     if (styles) {
@@ -111,18 +116,18 @@ export function getMarkerPathBase64(symbol, width, height) {
         svg.push(strPath);
     }
     svg.push('</svg>');
-    const b64 = 'data:image/svg+xml;base64,' + btoa(svg.join(' '));
+    const b64 = 'data:image/svg+xml;base64,' + btoa(svg.join(' ') as any);
     return b64;
 }
 
 /**
  * Get external resources from the given symbol
- * @param  {Object} symbol      - symbol
- * @param  {Boolean} [toAbsolute] - whether convert url to aboslute
- * @return {String[]}           - resource urls
+ * @param symbol     - symbol
+ * @param toAbsolute - whether convert url to aboslute
+ * @return resource urls
  * @memberOf Util
  */
-export function getExternalResources(symbol, toAbsolute) {
+export function getExternalResources(symbol: any, toAbsolute?: boolean): string[] {
     if (!symbol) {
         return [];
     }
@@ -182,11 +187,11 @@ export function getExternalResources(symbol, toAbsolute) {
 
 /**
  * Convert symbol's resources' urls from relative path to an absolute path.
- * @param  {Object} symbol
+ * @param symbol
  * @private
  * @memberOf Util
  */
-export function convertResourceUrl(symbol) {
+export function convertResourceUrl(symbol: any) {
     if (!symbol) {
         return null;
     }
@@ -207,7 +212,7 @@ export function convertResourceUrl(symbol) {
     return s;
 }
 
-function _convertUrl(res) {
+function _convertUrl(res: any) {
     if (isFunctionDefinition(res) && res.stops) {
         const stops = res.stops;
         for (let i = 0; i < stops.length; i++) {

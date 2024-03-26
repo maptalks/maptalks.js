@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /**
  * DOM utilities used internally.
  * Learned a lot from Leaflet.DomUtil
@@ -13,7 +15,7 @@ import { splitWords } from './strings';
 import Point from '../../geo/Point';
 import Size from '../../geo/Size';
 
-const first = (props) => {
+const first = <T>(props: T[]) => {
     return props[0];
 };
 
@@ -27,7 +29,7 @@ const first = (props) => {
  * @memberOf DomUtil
  * @private
  */
-const testProp = IS_NODE ? first : (props) => {
+const testProp = IS_NODE ? first : <T extends string | number | symbol>(props: T[]) => {
 
     const style = (document.documentElement && document.documentElement.style) || {};
 
@@ -45,45 +47,45 @@ const testProp = IS_NODE ? first : (props) => {
  * Vendor-prefixed fransform style name (e.g. `'webkitTransform'` for WebKit).
  * @property {String} TRANSFORM
  * @memberOf DomUtil
- * @type {String}
  */
 export const TRANSFORM = testProp(
-    ['transform', 'WebkitTransform', 'OTransform', 'MozTransform', 'msTransform']);
+    ['transform', 'WebkitTransform', 'OTransform', 'MozTransform', 'msTransform']
+);
 
 /**
  * Vendor-prefixed tfransform-origin name (e.g. `'webkitTransformOrigin'` for WebKit).
  * @property {String} TRANSFORMORIGIN
  * @memberOf DomUtil
- * @type {String}
  */
 export const TRANSFORMORIGIN = testProp(
-    ['transformOrigin', 'WebkitTransformOrigin', 'OTransformOrigin', 'MozTransformOrigin', 'msTransformOrigin']);
+    ['transformOrigin', 'WebkitTransformOrigin', 'OTransformOrigin', 'MozTransformOrigin', 'msTransformOrigin']
+);
 
 /**
  * Vendor-prefixed transition name (e.g. `'WebkitTransition'` for WebKit).
  * @property {String} TRANSITION
  * @memberOf DomUtil
- * @type {String}
  */
 export const TRANSITION = testProp(
-    ['transition', 'WebkitTransition', 'OTransition', 'MozTransition', 'msTransition']);
+    ['transition', 'WebkitTransition', 'OTransition', 'MozTransition', 'msTransition']
+);
 
 /**
  * Vendor-prefixed filter name (e.g. `'WebkitFilter'` for WebKit).
  * @property {String} FILTER
  * @memberOf DomUtil
- * @type {String}
  */
 export const CSSFILTER = testProp(
-    ['filter', 'WebkitFilter', 'OFilter', 'MozFilter', 'msFilter']);
+    ['filter', 'WebkitFilter', 'OFilter', 'MozFilter', 'msFilter']
+);
 
 /**
  * Create a html element.
- * @param {String} tagName
- * @returns {HTMLElement}
+ * @param tagName
+ * @returns
  * @memberOf DomUtil
  */
-export function createEl(tagName, className) {
+export function createEl(tagName: string, className?: string) {
     const el = document.createElement(tagName);
     if (className) {
         setClass(el, className);
@@ -93,13 +95,13 @@ export function createEl(tagName, className) {
 
 /**
  * Create a html element on the specified container
- * @param {String} tagName
- * @param {String} style - css styles
- * @param {HTMLElement} container
- * @return {HTMLElement}
+ * @param tagName
+ * @param style - css styles
+ * @param container
+ * @return
  * @memberOf DomUtil
  */
-export function createElOn(tagName, style, container) {
+export function createElOn(tagName: string, style: string, container: HTMLElement) {
     const el = createEl(tagName);
     if (style) {
         setStyle(el, style);
@@ -112,11 +114,11 @@ export function createElOn(tagName, style, container) {
 
 /**
  * Removes a html element.
- * @param {HTMLElement} node
+ * @param node
  * @memberOf DomUtil
  */
 /* istanbul ignore next */
-export function removeDomNode(node) {
+export function removeDomNode(node?: HTMLElement) {
     if (!node) {
         return this;
     }
@@ -135,13 +137,13 @@ export function removeDomNode(node) {
 
 /**
  * Adds a event listener to the dom element.
- * @param {HTMLElement} obj     - dom element to listen on
- * @param {String} typeArr      - event types, seperated by space
- * @param {Function} handler    - listener function
- * @param {Object} context      - function context
+ * @param  obj     - dom element to listen on
+ * @param  typeArr      - event types, seperated by space
+ * @param  handler    - listener function
+ * @param  context      - function context
  * @memberOf DomUtil
  */
-export function addDomEvent(obj, typeArr, handler, context) {
+export function addDomEvent(obj: HTMLElement, typeArr: string, handler: Function, context: Object) {
     if (!obj || !obj.addEventListener || !typeArr || !handler) {
         return this;
     }
@@ -180,13 +182,13 @@ export function addDomEvent(obj, typeArr, handler, context) {
 
 /**
  * Removes event listener from a dom element
- * @param {HTMLElement} obj         - dom element
- * @param {String} typeArr          - event types, separated by space
- * @param {Function} handler        - listening function
+ * @param  obj         - dom element
+ * @param  typeArr          - event types, separated by space
+ * @param  handler        - listening function
  * @memberOf DomUtil
  */
-export function removeDomEvent(obj, typeArr, handler) {
-    function doRemove(type, callback) {
+export function removeDomEvent(obj: HTMLElement, typeArr: string, handler: Function) {
+    function doRemove(type, callback?) {
         //mouse wheel in firefox
         if (type === 'mousewheel' && Browser.gecko) {
             type = 'DOMMouseScroll';
@@ -224,13 +226,13 @@ export function removeDomEvent(obj, typeArr, handler) {
 
 /**
  * Check if event type of the dom is listened by the handler
- * @param {HTMLElement} obj     - dom element to check
- * @param {String} typeArr      - event
- * @param {Function} handler    - the listening function
+ * @param  obj     - dom element to check
+ * @param  typeArr      - event
+ * @param  handler    - the listening function
  * @return {Number} - the handler's index in the listener chain, returns -1 if not.
  * @memberOf DomUtil
  */
-export function listensDomEvent(obj, type, handler) {
+export function listensDomEvent(obj: HTMLElement, type: string, handler: Function) {
     if (!obj || !obj['Z__' + type] || !handler) {
         return -1;
     }
@@ -249,7 +251,7 @@ export function listensDomEvent(obj, type, handler) {
  * @param {Event} event - browser event
  * @memberOf DomUtil
  */
-export function preventDefault(event) {
+export function preventDefault(event: Event) {
     if (event.preventDefault) {
         event.preventDefault();
     } else {
@@ -260,10 +262,11 @@ export function preventDefault(event) {
 
 /**
  * Stop browser event propagation
- * @param  {Event} e - browser event.
+ * @param   e - browser event.
  * @memberOf DomUtil
  */
-export function stopPropagation(e) {
+export function stopPropagation(e: Event) {
+    // @ts-expect-error
     e._cancelBubble = true;
     if (e.stopPropagation) {
         e.stopPropagation();
@@ -286,12 +289,12 @@ export function preventSelection(dom) {
 
 /**
  * Get the dom element's current position or offset its position by offset
- * @param  {HTMLElement} dom - HTMLElement
- * @param  {Point} [offset=null] - position to set.
- * @return {Point} - dom element's current position if offset is null.
+ * @param  dom - HTMLElement
+ * @param  offset - position to set.
+ * @return  dom element's current position if offset is null.
  * @memberOf DomUtil
  */
-export function offsetDom(dom, offset) {
+export function offsetDom(dom: HTMLElement, offset?: Point) {
     if (!dom) {
         return null;
     }
@@ -307,11 +310,11 @@ export function offsetDom(dom, offset) {
 
 /**
  * Compute dom's position
- * @param  {HTMLElement} dom
- * @return {Number[]}
+ * @param  dom
+ * @return
  * @memberOf DomUtil
  */
-export function computeDomPosition(dom) {
+export function computeDomPosition(dom: HTMLElement): number[] {
     const style = window.getComputedStyle(dom);
     const padding = [
         parseInt(style['padding-left']),
@@ -323,20 +326,24 @@ export function computeDomPosition(dom) {
         offsetHeight = dom.offsetHeight;
     const scaleX = offsetWidth ? rect.width / offsetWidth : 1,
         scaleY = offsetHeight ? rect.height / offsetHeight : 1;
+    // @ts-expect-error
     dom.__position = [rect.left + padding[0], rect.top + padding[1], scaleX, scaleY];
+    // @ts-expect-error
     return dom.__position;
 }
 
 /**
  * Get event's position from the top-left corner of the dom container
- * @param {Event} ev    event
- * @return {Point}
+ * @param ev    event
+ * @return
  * @memberOf DomUtil
  */
-export function getEventContainerPoint(ev, dom) {
+export function getEventContainerPoint(ev: MouseEvent, dom: HTMLElement) {
     if (!ev) {
+        // @ts-expect-error
         ev = window.event;
     }
+    // @ts-expect-error
     let domPos = dom.__position;
     if (!domPos) {
         domPos = computeDomPosition(dom);
@@ -348,18 +355,18 @@ export function getEventContainerPoint(ev, dom) {
     );
 }
 
-function endsWith(str, suffix) {
+function endsWith(str: string, suffix: string) {
     const l = str.length - suffix.length;
     return l >= 0 && str.indexOf(suffix, l) === l;
 }
 
 /**
  * set css style to the dom element
- * @param {HTMLElement} dom dom element
- * @param {String} strCss css text
+ * @param dom dom element
+ * @param strCss css text
  * @memberOf DomUtil
  */
-export function setStyle(dom, strCss) {
+export function setStyle(dom: HTMLElement, strCss: string) {
     let cssText = dom.style.cssText;
     if (!endsWith(cssText, ';')) {
         cssText += ';';
@@ -370,11 +377,11 @@ export function setStyle(dom, strCss) {
 
 /**
  * Whether the dom has the given css class.
- * @param {HTMLElement} el HTML Element
- * @param {String} name css class
+ * @param el HTML Element
+ * @param name css class
  * @memberOf DomUtil
  */
-export function hasClass(el, name) {
+export function hasClass(el: HTMLElement, name: string) {
     if (el.classList !== undefined) {
         return el.classList.contains(name);
     }
@@ -384,11 +391,11 @@ export function hasClass(el, name) {
 
 /**
  * add css class to dom element
- * @param {HTMLElement} el HTML Element
- * @param {String} name css class
+ * @param el HTML Element
+ * @param name css class
  * @memberOf DomUtil
  */
-export function addClass(el, name) {
+export function addClass(el: HTMLElement, name: string) {
     if (el.classList !== undefined && !hasClass(el, name)) {
         const classes = splitWords(name);
         for (let i = 0, len = classes.length; i < len; i++) {
@@ -403,14 +410,16 @@ export function addClass(el, name) {
 
 /**
  * Set dom's css class
- * @param {HTMLElement} el HTML Element
- * @param {String} name css class
+ * @param el HTML Element
+ * @param name css class
  * @memberOf DomUtil
  */
-export function setClass(el, name) {
+export function setClass(el: HTMLElement, name: string) {
+    // @ts-expect-error
     if (isNil(el.className.baseVal)) {
         el.className = name;
     } else {
+        // @ts-expect-error
         el.className.baseVal = name;
     }
     return this;
@@ -418,16 +427,17 @@ export function setClass(el, name) {
 
 /**
  * Get dom's css class
- * @param {String} name css class
- * @retrun {String} class字符串
+ * @param name css class
+ * @retrun class字符串
  * @memberOf DomUtil
  */
-export function getClass(el) {
+export function getClass(el: HTMLElement): string {
+    // @ts-expect-error
     return isNil(el.className.baseVal) ? el.className : el.className.baseVal;
 }
 
 
-export function setOpacity(el, value) {
+export function setOpacity(el: HTMLElement, value: string) {
     el.style.opacity = value;
     return this;
 }
@@ -445,12 +455,13 @@ export function setOpacity(el, value) {
 
 /**
  * Resets the 3D CSS transform of `el` so it is translated by `offset` pixels
- * @param {HTMLElement} el
- * @param {Point} offset
+ * @param el
+ * @param offset
  * @memberOf DomUtil
  */
-export function setTransform(el, offset) {
+export function setTransform(el: HTMLElement, offset: Point) {
     const pos = offset || new Point(0, 0);
+    // @ts-expect-error
     el.style[TRANSFORM] =
         Browser.any3d ?
             'translate3d(' + pos.x + 'px,' + pos.y + 'px,0px)' :
@@ -461,20 +472,24 @@ export function setTransform(el, offset) {
 
 export function setTransformMatrix(el, m) {
     const text = 'matrix(' + (isString(m) ? m : m.join()) + ')';
+    // @ts-expect-error
     if (el.style[TRANSFORM] !== text) {
+        // @ts-expect-error
         el.style[TRANSFORM] = text;
     }
     return this;
 }
 
 export function removeTransform(el) {
+    // @ts-expect-error
     if (el.style[TRANSFORM]) {
+        // @ts-expect-error
         el.style[TRANSFORM] = '';
     }
     return this;
 }
 
-export function isHTML(str) {
+export function isHTML(str: string) {
     return /<[a-z\][\s\S]*>/i.test(str);
 }
 
@@ -490,7 +505,7 @@ export function measureDom(parentTag, dom) {
     return result;
 }
 
-export function getDomRuler(tag) {
+export function getDomRuler(tag: any) {
     const span = document.createElement(tag);
     span.style.cssText = 'position:absolute;left:-10000px;top:-10000px;';
     document.body.appendChild(span);
@@ -522,13 +537,13 @@ export const on = addDomEvent;
  */
 export const off = removeDomEvent;
 
-export function isMoveEvent(type) {
+export function isMoveEvent(type?: string) {
     return type && (type === 'mousemove' || type === 'touchmove');
 }
 
 export const MOUSEMOVE_THROTTLE_TIME = 48;
 
-export function isMousemoveEventBlocked(target, mousemoveThrottleTime) {
+export function isMousemoveEventBlocked(target: HTMLElement | any, mousemoveThrottleTime: number) {
     const currentTime = now();
     const TIME = mousemoveThrottleTime || MOUSEMOVE_THROTTLE_TIME;
     if (target._mousemoveTime && currentTime - target._mousemoveTime < TIME) {

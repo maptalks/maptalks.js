@@ -1,11 +1,31 @@
 import { isString, parseJSON } from '../../core/util';
 import Ajax from '../../core/Ajax';
-import SpatialReference from './SpatialReference';
+import { type Projection } from './SpatialReference';
 
-function parse(arcConf) {
+export type ArcgisConfig = {
+    tileInfo: {
+        cols: number,
+        rows: number,
+        origin: {
+            x: number
+            y: number
+        },
+        lods: Array<{
+            resolution: number
+        }>
+    }
+    fullExtent: Projection['fullExtent']
+}
+
+/**
+ * 解析Arcgis空间参考配置
+ * @param arcConf 
+ * @returns 
+ */
+function parse(arcConf: ArcgisConfig) {
     const tileInfo = arcConf['tileInfo'],
         tileSize = [tileInfo['cols'], tileInfo['rows']],
-        resolutions = [],
+        resolutions: number[] = [],
         lods = tileInfo['lods'];
     for (let i = 0, len = lods.length; i < len; i++) {
         resolutions.push(lods[i]['resolution']);
@@ -24,9 +44,17 @@ function parse(arcConf) {
     };
 }
 
-SpatialReference.loadArcgis = function (url, cb, options = { 'jsonp': true }) {
+/**
+ * 加载Arcgis空间参考配置文件
+ * @param url arcgis spatialreference json file url
+ * @param cb 
+ * @param options 
+ * @returns 
+ */
+const loadArcgis = (url: string, cb: (_, spatialRef?) => void, options: any = { 'jsonp': true }) => {
     if (isString(url) && url.substring(0, 1) !== '{') {
-        Ajax.getJSON(url, function (err, json) {
+        // TODO: 等待补充Ajax类型定义
+        Ajax.getJSON(url, (err, json) => {
             if (err) {
                 cb(err);
                 return;
@@ -38,9 +66,10 @@ SpatialReference.loadArcgis = function (url, cb, options = { 'jsonp': true }) {
         if (isString(url)) {
             url = parseJSON(url);
         }
-        const spatialRef = parse(url);
+        const spatialRef = parse(url as any);
         cb(null, spatialRef);
-
     }
-    return this;
+    // return this;
 };
+
+export default loadArcgis;
