@@ -1,8 +1,8 @@
 import Actor from "./Actor";
 import { registerWorkerAdapter } from './Worker';
 
-const WORKER_KEY = 'check_browser_max_fps';
-const WORKER_CODE = `function (exports) {
+export const CHECK_FPS_WORKER_KEY = 'check_browser_max_fps';
+const CHECK_FPS_WORKER_CODE = `function (exports) {
     exports.initialize = function () {};
     function now(){
         return  new Date().getTime();
@@ -43,27 +43,4 @@ const WORKER_CODE = `function (exports) {
     }
 }`;
 
-registerWorkerAdapter(WORKER_KEY, function () { return WORKER_CODE; });
-
-let actor: Actor;
-
-class FPSCheckActor extends Actor {
-
-    constructor() {
-        super(WORKER_KEY);
-    }
-}
-
-export function checkFPS(cb: Function) {
-    if (!actor) {
-        actor = new FPSCheckActor();
-    }
-    actor.send({}, [], (err, data) => {
-        if (err) {
-            console.error(err);
-            cb();
-        } else {
-            cb(data.fps as number);
-        }
-    })
-}
+registerWorkerAdapter(CHECK_FPS_WORKER_KEY, function () { return CHECK_FPS_WORKER_CODE; });

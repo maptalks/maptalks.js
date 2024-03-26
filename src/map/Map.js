@@ -90,6 +90,7 @@ const REDRAW_OPTIONS_PROPERTIES = ['centerCross', 'fog', 'fogColor', 'debugSky']
  * @property {Boolean} [options.stopRenderOnOffscreen=true]           - whether to stop map rendering when container is offscreen
  * @property {Boolean} [options.originLatitudeForAltitude=40]         - default latitude for map.altitudeToPoint method
  * @property {Number} [options.mousemoveThrottleTime=48]         - mousemove event interval time(ms)
+ * @property {Number} [options.maxFPS=0]         - 0 means no frame is locked, otherwise the frame is locked
  * @memberOf Map
  * @instance
  */
@@ -151,7 +152,9 @@ const options = {
     'supportPluginEvent': true,
 
     'switchDragButton': false,
-    'mousemoveThrottleTime': MOUSEMOVE_THROTTLE_TIME
+    'mousemoveThrottleTime': MOUSEMOVE_THROTTLE_TIME,
+    'maxFPS': 0,
+    'debug': false
 };
 
 /**
