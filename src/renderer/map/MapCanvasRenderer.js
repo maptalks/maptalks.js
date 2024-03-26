@@ -7,6 +7,7 @@ import Canvas2D from '../../core/Canvas';
 import MapRenderer from './MapRenderer';
 import Map from '../../map/Map';
 import CollisionIndex from '../../core/CollisionIndex';
+import GlobalConfig from '../../GlobalConfig';
 
 const tempCollisionIndex = new CollisionIndex();
 
@@ -30,6 +31,7 @@ class MapCanvasRenderer extends MapRenderer {
         this._loopTime = 0;
         this._resizeEventList = [];
         this._resizeTime = -Infinity;
+        this._frameCycleRenderCount = 0;
     }
 
     load() {
@@ -622,6 +624,15 @@ class MapCanvasRenderer extends MapRenderer {
         };
     }
 
+    _lockFrameRenderEnable() {
+        const { lockFrame, renderFrames } = this.map.options || {};
+        if (!lockFrame || GlobalConfig.maxFPS <= renderFrames) {
+            return true;
+        }
+        const count = Math.ceil(GlobalConfig.maxFPS / renderFrames);
+        return this._frameCycleRenderCount >= count;
+    }
+
     /**
     * Main frame loop
     */
@@ -630,10 +641,16 @@ class MapCanvasRenderer extends MapRenderer {
             this._cancelFrameLoop();
             return;
         }
-        framestamp = framestamp || 0;
-        this._frameTimestamp = framestamp;
-        this._resizeCount = 0;
-        this.renderFrame(framestamp);
+        this._frameCycleRenderCount++;
+        if (this._lockFrameRenderEnable()) {
+            framestamp = framestamp || 0;
+            this._frameTimestamp = framestamp;
+            this._resizeCount = 0;
+            this.renderFrame(framestamp);
+            this._frameCycleRenderCount = 0;
+        } else if (this.map.options.debug) {
+            console.log('skip frame ing,frameCycleRenderCount:', this._frameCycleRenderCount);
+        }
         // Keep registering ourselves for the next animation frame
         this._animationFrame = requestAnimFrame((framestamp) => { this._frameLoop(framestamp); });
     }
