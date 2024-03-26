@@ -2,7 +2,7 @@ import { isArrayHasData, pushIn } from '../../../core/util';
 import CanvasRenderer from '../CanvasRenderer';
 
 /**
- * @classdesc
+ * @english
  * A parent renderer class for OverlayLayer to inherit by OverlayLayer's subclasses.
  * @protected
  * @memberOf renderer
@@ -10,11 +10,15 @@ import CanvasRenderer from '../CanvasRenderer';
  * @extends renderer.CanvasRenderer
  */
 class OverlayLayerRenderer extends CanvasRenderer {
+    _geosToCheck: any[];
+    _resourceChecked: boolean;
 
-    // possible memory leaks:
-    // 1. if geometries' symbols with external resources change frequently,
-    // resources of old symbols will still be stored.
-    // 2. removed geometries' resources won't be removed.
+    /**
+     * possible memory leaks:
+     * 1. if geometries' symbols with external resources change frequently,
+     * resources of old symbols will still be stored.
+     * 2. removed geometries' resources won't be removed.
+     */
     checkResources() {
         const geometries = this._geosToCheck || [];
         if (!this._resourceChecked && this.layer._geoList) {
@@ -33,7 +37,8 @@ class OverlayLayerRenderer extends CanvasRenderer {
                 continue;
             }
             if (!this.resources) {
-                resources.push.apply(resources, res);
+                // @tip 解构会有一定的性能影响，对于少量数据是否可以忽略
+                resources.push(...res);
             } else {
                 for (let i = 0; i < res.length; i++) {
                     const url = res[i][0];
@@ -49,12 +54,12 @@ class OverlayLayerRenderer extends CanvasRenderer {
         return resources;
     }
 
-    render() {
+    render(...args: any[]) {
         this.layer._sortGeometries();
-        return super.render.apply(this, arguments);
+        return super.render.apply(this, args);
     }
 
-    _addGeoToCheckRes(res) {
+    _addGeoToCheckRes(res: any | any[]) {
         if (!res) {
             return;
         }
@@ -64,10 +69,10 @@ class OverlayLayerRenderer extends CanvasRenderer {
         if (!this._geosToCheck) {
             this._geosToCheck = [];
         }
-        pushIn(this._geosToCheck, res);
+        pushIn<any>(this._geosToCheck, res);
     }
 
-    onGeometryAdd(geometries) {
+    onGeometryAdd(geometries: any | any[]) {
         this._addGeoToCheckRes(geometries);
         redraw(this);
     }
@@ -76,7 +81,7 @@ class OverlayLayerRenderer extends CanvasRenderer {
         redraw(this);
     }
 
-    onGeometrySymbolChange(e) {
+    onGeometrySymbolChange(e: { target: any; }) {
         this._addGeoToCheckRes(e.target);
         redraw(this);
     }
@@ -106,7 +111,7 @@ class OverlayLayerRenderer extends CanvasRenderer {
     }
 }
 
-function redraw(renderer) {
+function redraw(renderer: OverlayLayerRenderer): void {
     if (renderer.layer.options['drawImmediate']) {
         renderer.render();
     }

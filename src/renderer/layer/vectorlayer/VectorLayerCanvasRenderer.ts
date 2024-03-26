@@ -1,19 +1,19 @@
-import { getExternalResources } from '../../../core/util/resource';
+/* eslint-disable @typescript-eslint/ban-types */
+import { getExternalResources, now, getPointsResultPts } from '../../../core/util';
 import VectorLayer from '../../../layer/VectorLayer';
 import OverlayLayerCanvasRenderer from './OverlayLayerCanvasRenderer';
 import PointExtent from '../../../geo/PointExtent';
 import * as vec3 from '../../../core/util/vec3';
-import { now } from '../../../core/util/common';
-import { getPointsResultPts } from '../../../core/util';
 import CollisionIndex from '../../../core/CollisionIndex';
 import Canvas from '../../../core/Canvas';
+
 const TEMP_EXTENT = new PointExtent();
 const TEMP_VEC3 = [];
 const TEMP_FIXEDEXTENT = new PointExtent();
 const PLACEMENT_CENTER = 'center';
 const tempCollisionIndex = new CollisionIndex();
 
-function clearCanvas(canvas) {
+function clearCanvas(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
     if (!canvas) {
         return null;
     }
@@ -22,10 +22,9 @@ function clearCanvas(canvas) {
     return ctx;
 }
 
-function isDebug(layer) {
+function isDebug(layer: any) {
     return layer && layer.options.progressiveRender && layer.options.progressiveRenderDebug;
 }
-
 
 /**
  * @classdesc
@@ -37,6 +36,13 @@ function isDebug(layer) {
  * @param {VectorLayer} layer - layer to render
  */
 class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
+    _lastRenderTime: number;
+    _lastCollisionTime: number;
+    _imageData: ImageData;
+    _geosToDraw: any[];
+    _lastGeosToDraw: any[];
+
+    renderEnd: boolean;
 
     setToRedraw() {
         super.setToRedraw();
@@ -93,15 +99,15 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return this._imageData;
     }
 
-    clearImageData() {
+    clearImageData(): void {
         //每次渲染完成清除缓存的imageData
         this._imageData = null;
         delete this._imageData;
         this._lastRenderTime = now();
     }
 
-    checkResources() {
-        const resources = super.checkResources.apply(this, arguments);
+    checkResources(...args: any[]) {
+        const resources = super.checkResources.apply(this, args);
         let style = this.layer.getStyle();
         if (style) {
             if (!Array.isArray(style)) {
@@ -119,7 +125,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return resources;
     }
 
-    needToRedraw() {
+    needToRedraw(): boolean {
         if (this.isProgressiveRender() && !this.renderEnd) {
             return true;
         }
@@ -136,10 +142,8 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     /**
      * render layer
-     * @param  {Geometry[]} geometries   geometries to render
-     * @param  {Boolean} ignorePromise   whether escape step of promise
      */
-    draw() {
+    draw(): void {
         if (!this.getMap()) {
             return;
         }
@@ -156,14 +160,14 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this.completeRender();
     }
 
-    isBlank() {
+    isBlank(): boolean {
         if (!this.context) {
             return false;
         }
         if (this.isProgressiveRender()) {
             return false;
         }
-        return !this.context.canvas._drawn;
+        return !(this.context.canvas as any)._drawn;
     }
 
     drawOnInteracting() {
@@ -228,14 +232,14 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
      * Show and render
      * @override
      */
-    show() {
+    show(...args: any[]) {
         this.layer.forEach(function (geo) {
             geo._repaint();
         });
-        super.show.apply(this, arguments);
+        super.show.apply(this, args);
     }
 
-    forEachGeo(fn, context) {
+    forEachGeo(fn: Function, context) {
         this.layer.forEach(fn, context);
     }
 
@@ -705,6 +709,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 }
 
+// @ts-expect-error todo 等待 VectorLayer 改造完成
 VectorLayer.registerRenderer('canvas', VectorLayerRenderer);
 
 export default VectorLayerRenderer;
