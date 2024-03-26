@@ -1,6 +1,8 @@
 import Class from '../../core/Class';
 import Eventable from '../../core/Eventable';
 
+import type Map from '../Map';
+
 const key = '_map_tool';
 
 /**
@@ -20,6 +22,12 @@ const key = '_map_tool';
  * @mixes Eventable
  */
 class MapTool extends Eventable(Class) {
+    _map: Map;
+    _enabled?: boolean;
+    onEnable?(): void;
+    getEvents?(): void;
+    onDisable?(): void;
+    onAdd?(): void;
 
     /**
      * Adds the map tool to a map.
@@ -27,7 +35,7 @@ class MapTool extends Eventable(Class) {
      * @return {MapTool} this
      * @fires MapTool#add
      */
-    addTo(map) {
+    addTo(map:Map) {
         if (!map) {
             return this;
         }
@@ -153,14 +161,14 @@ class MapTool extends Eventable(Class) {
         this._switchEvents('on');
     }
 
-    _switchEvents(to) {
-        const events = this.getEvents();
+    _switchEvents(to: any) {
+        const events:any = this.getEvents();
         if (events) {
             this._map[to](events, this);
         }
     }
 
-    _fireEvent(eventName, param) {
+    _fireEvent(eventName:string, param?: any) {
         if (!param) {
             param = {};
         }
