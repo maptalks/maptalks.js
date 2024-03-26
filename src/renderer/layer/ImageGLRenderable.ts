@@ -4,7 +4,7 @@ import * as mat4 from '../../core/util/mat4';
 import Canvas from '../../core/Canvas';
 import Point from '../../geo/Point';
 import { MixinConstructor } from '../../core/Mixin';
-import {Vector3} from "../../core/util/mat4";
+// import {Vector3} from "../../core/util/mat4";
 
 // used to debug tiles
 const DEFAULT_BASE_COLOR = [1, 1, 1, 1];
