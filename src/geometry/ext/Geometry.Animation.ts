@@ -6,6 +6,7 @@ import Geometry from '../Geometry';
 
 Geometry.include(/** @lends Geometry.prototype */ {
     /**
+     * 要素动画
      * @english
      * Animate the geometry
      *
@@ -106,6 +107,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
         return this._animPlayer.play();
     },
     /**
+     * 为动画准备样式
      * @english
      * Prepare styles for animation
      * @return {Object} styles
@@ -164,6 +166,12 @@ Geometry.include(/** @lends Geometry.prototype */ {
         return stylesToAnimate;
     },
 
+    /**
+     * 绑定动画事件
+     * @english
+     * Bind animation events
+     * @param {string} playState 
+     */
     _fireAnimateEvent(playState: string): void {
         if (playState === 'finished') {
             delete this._animationStarted;
