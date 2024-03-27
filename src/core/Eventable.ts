@@ -293,7 +293,7 @@ export default function <T extends MixinConstructor>(Base: T) {
          * @param  eventType - an event type to fire
          * @param  param     - parameters for the listener function.
          */
-        fire(eventType: string, param: BaseEventParams): this {
+        fire<T extends BaseEventParams>(eventType: string, param: BaseEventParams | T): this {
             if (this._eventParent) {
                 return this._eventParent.fire.call(this._eventParent, eventType, param);
             }
@@ -364,7 +364,7 @@ export default function <T extends MixinConstructor>(Base: T) {
             return this;
         }
 
-        _fire(eventType: string, param: BaseEventParams) {
+        _fire<T extends BaseEventParams>(eventType: string, param: BaseEventParams | T) {
             if (!this._eventMap) {
                 return this;
             }

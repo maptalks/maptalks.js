@@ -519,7 +519,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         delete this.drawingParentTiles;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onDrawTileStart(context: RenderContext, parentContext: RenderContext) { }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onDrawTileEnd(context: RenderContext, parentContext: RenderContext) { }
 
     _drawTile(info, image, parentContext) {
@@ -802,6 +804,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onTileError(tileImage: Tile['image'], tileInfo: Tile['info'], error?: any) {
         if (!this.layer) {
             return;
@@ -843,6 +846,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.layer.fire('tileerror', { tile: tileInfo });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     drawTile(tileInfo: Tile['info'], tileImage: Tile['image'], parentContext?: RenderContext) {
         if (!tileImage || !this.getMap()) {
             return;
