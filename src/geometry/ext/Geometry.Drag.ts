@@ -14,6 +14,8 @@ const DRAG_STAGE_LAYER_ID = INTERNAL_LAYER_PREFIX + '_drag_stage';
 const EVENTS = Browser.touch ? 'touchstart mousedown' : 'mousedown';
 
 /**
+ * 几何图形的拖动处理程序
+ * @english
  * Drag handler for geometries.
  * @category handler
  * @extends Handler
@@ -41,25 +43,25 @@ class GeometryDragHandler extends Handler {
         super(target);
     }
 
-    addHooks() {
+    addHooks(): void {
         this.target.on(EVENTS, this._startDrag, this);
     }
 
-    removeHooks() {
+    removeHooks(): void {
         // @ts-ignore
         this._endDrag();
         this.target.off(EVENTS, this._startDrag, this);
         delete this.container;
     }
 
-    _prepareDragHandler() {
+    _prepareDragHandler(): void {
         this._dragHandler = new DragHandler(this.container);
         this._dragHandler.on('dragging', this._dragging, this)
             .on('mouseup', this._endDrag, this)
             .enable();
     }
 
-    _prepareShadow() {
+    _prepareShadow(): void {
         const target = this.target;
         const needShadow = target.getLayer().options['renderer'] === 'canvas';
         if (!needShadow) {
@@ -84,7 +86,7 @@ class GeometryDragHandler extends Handler {
         this._prepareShadowConnectors();
     }
 
-    _updateShadowSymbol(shadow, target) {
+    _updateShadowSymbol(shadow: any, target: any): void {
         shadow.setSymbol(target._getInternalSymbol());
         if (target.options['dragShadow']) {
             const symbol = lowerSymbolOpacity(shadow._getInternalSymbol(), 0.5);
@@ -92,7 +94,7 @@ class GeometryDragHandler extends Handler {
         }
     }
 
-    _prepareShadowConnectors() {
+    _prepareShadowConnectors(): void {
         //copy connectors
         const target = this.target;
         const shadow = this._shadow;
@@ -127,13 +129,13 @@ class GeometryDragHandler extends Handler {
         this._dragStageLayer.bringToFront().addGeometry(shadowConnectors);
     }
 
-    _onTargetUpdated() {
+    _onTargetUpdated(): void {
         if (this._shadow) {
             this._shadow.setSymbol(this.target._getSymbol());
         }
     }
 
-    _prepareDragStageLayer() {
+    _prepareDragStageLayer(): void {
         const map = this.target.getMap(),
             layer = this.target.getLayer();
         this._dragStageLayer = map.getLayer(DRAG_STAGE_LAYER_ID);
@@ -150,7 +152,7 @@ class GeometryDragHandler extends Handler {
         this._dragStageLayer._getRenderer().resources = resources;
     }
 
-    _startDrag(param) {
+    _startDrag(param: any): void {
         const map = this.target.getMap();
         if (!map) {
             return;
@@ -180,7 +182,7 @@ class GeometryDragHandler extends Handler {
         return;
     }
 
-    _dragging(param) {
+    _dragging(param: any): void {
         const target = this.target;
         const map = target.getMap();
         if (map._isEventOutMap(param['domEvent'])) {
@@ -208,6 +210,8 @@ class GeometryDragHandler extends Handler {
                 this._shadow._fireEvent('dragstart', e);
             }
             /**
+             * 拖拽开始事件
+             * @english
              * drag start event
              * @event Geometry#dragstart
              * @type {Object}
@@ -260,6 +264,8 @@ class GeometryDragHandler extends Handler {
         geo._fireEvent('dragging', e);
 
         /**
+         * 正在拖拽事件
+         * @english
          * dragging event
          * @event Geometry#dragging
          * @type {Object}
@@ -275,7 +281,7 @@ class GeometryDragHandler extends Handler {
         }
     }
 
-    _endDrag(param) {
+    _endDrag(param: any): void {
         if (this._dragHandler) {
             this._dragHandler.disable();
             delete this._dragHandler;
@@ -303,6 +309,8 @@ class GeometryDragHandler extends Handler {
             this._updateTargetAndRemoveShadow(e);
             if (this._moved) {
                 /**
+                 * 拖拽结束事件
+                 * @english
                  * dragend event
                  * @event Geometry#dragend
                  * @type {Object}
@@ -320,14 +328,14 @@ class GeometryDragHandler extends Handler {
 
     }
 
-    isDragging() {
+    isDragging(): boolean {
         if (!this._isDragging) {
             return false;
         }
         return true;
     }
 
-    _updateTargetAndRemoveShadow(eventParam) {
+    _updateTargetAndRemoveShadow(eventParam: any): void {
         if (!this._shadow) {
             return;
         }
@@ -359,7 +367,7 @@ class GeometryDragHandler extends Handler {
     }
 
     //find correct coordinate for coordOffset if geometry has altitude
-    _correctCoord(coord) {
+    _correctCoord(coord: any): any {
         const map = this.target.getMap();
         if (!map.getPitch()) {
             return coord;
@@ -384,10 +392,12 @@ Geometry.addInitHook('addHandler', 'draggable', GeometryDragHandler);
 
 Geometry.include(/** @lends Geometry.prototype */ {
     /**
+     * 是否正在拖到几何体
+     * @english
      * Whether the geometry is being dragged.
      * @reutrn {Boolean}
      */
-    isDragging() {
+    isDragging(): boolean {
         if (this._getParent()) {
             return this._getParent().isDragging();
         }
