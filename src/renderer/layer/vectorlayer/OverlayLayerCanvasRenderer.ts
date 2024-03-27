@@ -2,7 +2,10 @@ import { isArrayHasData, pushIn } from '../../../core/util';
 import CanvasRenderer from '../CanvasRenderer';
 
 /**
+ * OverlayLayer 的父呈现器类，供 OverlayLayer 的子类继承。
+ *
  * @english
+ *
  * A parent renderer class for OverlayLayer to inherit by OverlayLayer's subclasses.
  * @protected
  * @memberOf renderer
@@ -14,6 +17,7 @@ class OverlayLayerRenderer extends CanvasRenderer {
     _resourceChecked: boolean;
 
     /**
+     * @english
      * possible memory leaks:
      * 1. if geometries' symbols with external resources change frequently,
      * resources of old symbols will still be stored.
@@ -54,7 +58,7 @@ class OverlayLayerRenderer extends CanvasRenderer {
         return resources;
     }
 
-    render(...args: any[]) {
+    render(...args: any[]): void {
         this.layer._sortGeometries();
         return super.render.apply(this, args);
     }
@@ -106,7 +110,8 @@ class OverlayLayerRenderer extends CanvasRenderer {
         redraw(this);
     }
 
-    onGeometryPropertiesChange() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    onGeometryPropertiesChange(params: any) {
         redraw(this);
     }
 }

@@ -1,14 +1,16 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { getExternalResources, now, getPointsResultPts } from '../../../core/util';
+import { getExternalResources, now, getPointsResultPts, type Vector3 } from '../../../core/util';
 import VectorLayer from '../../../layer/VectorLayer';
 import OverlayLayerCanvasRenderer from './OverlayLayerCanvasRenderer';
 import PointExtent from '../../../geo/PointExtent';
 import * as vec3 from '../../../core/util/vec3';
 import CollisionIndex from '../../../core/CollisionIndex';
 import Canvas from '../../../core/Canvas';
+import type { Painter } from '../../geometry';
+import { Point } from '../../../geo';
 
 const TEMP_EXTENT = new PointExtent();
-const TEMP_VEC3 = [];
+const TEMP_VEC3: Vector3 = [] as unknown as Vector3;
 const TEMP_FIXEDEXTENT = new PointExtent();
 const PLACEMENT_CENTER = 'center';
 const tempCollisionIndex = new CollisionIndex();
@@ -27,6 +29,7 @@ function isDebug(layer: any) {
 }
 
 /**
+ * 基于 `HTML5 Canvas2D` 的渲染器类，用于矢量层
  * @classdesc
  * Renderer class based on HTML5 Canvas2D for VectorLayers
  * @protected
@@ -39,18 +42,28 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     _lastRenderTime: number;
     _lastCollisionTime: number;
     _imageData: ImageData;
-    _geosToDraw: any[];
+    _geosToDraw: GeoType[];
     _lastGeosToDraw: any[];
+    _hasPoint: boolean;
+    _onlyHasPoint: WithUndef<boolean>;
+    _displayExtent: Extent;
+    _drawnRes: number;
+    mapStateCache: MapStateCacheType;
 
     renderEnd: boolean;
+    pageGeos: GeoType[];
+    page: number;
+    maxTolerance: number;
+    geoPainterList: Painter[];
+    snapshotCanvas: HTMLCanvasElement;
 
-    setToRedraw() {
+    setToRedraw(): this {
         super.setToRedraw();
         this._resetProgressiveRender();
         return this;
     }
 
-    _geoIsCollision(geo, collisionIndex) {
+    _geoIsCollision(geo: GeoType, collisionIndex: any) {
         if (!geo) {
             return false;
         }
@@ -80,7 +93,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return false;
     }
 
-    getImageData() {
+    getImageData(): ImageData {
         //如果不开启geometry event 或者 渲染频率很高 不要取缓存了，因为getImageData是个很昂贵的操作
         if ((!this._lastRenderTime) || (now() - this._lastRenderTime) < 32) {
             return null;
@@ -239,7 +252,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         super.show.apply(this, args);
     }
 
-    forEachGeo(fn: Function, context) {
+    forEachGeo(fn: Function, context?: any) {
         this.layer.forEach(fn, context);
     }
 
@@ -300,7 +313,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return this;
     }
 
-    checkGeo(geo) {
+    checkGeo(geo: GeoType) {
         //点的话已经在批量处理里判断过了
         if (geo.isPoint && this._onlyHasPoint !== undefined) {
             if (geo._inCurrentView) {
@@ -361,9 +374,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return this;
     }
 
-    onZoomEnd() {
+    onZoomEnd(...args: any[]) {
         delete this.canvasExtent2D;
-        super.onZoomEnd.apply(this, arguments);
+        super.onZoomEnd.apply(this, args);
     }
 
     onRemove() {
@@ -376,7 +389,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         delete this.geoPainterList;
     }
 
-    onGeometryPropertiesChange(param) {
+    onGeometryPropertiesChange(param: any) {
         if (param) {
             this.layer._styleGeometry(param['target']);
         }
@@ -395,7 +408,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this._displayExtent = extent2D;
     }
 
-    identifyAtPoint(point, options = {}) {
+    identifyAtPoint(point: Point, options = {}) {
         const geometries = this.getGeosForIdentify();
         if (!geometries) {
             return [];
@@ -428,10 +441,14 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return this;
     }
 
-    // Better performance of batch coordinate conversion
-    // 优化前 11fps
-    // 优化后 15fps
-    _batchConversionMarkers(glRes) {
+    /**
+     * 使用批量坐标转换提升性能
+     * 优化前 11fps
+     * 优化后 15fps
+     * Better performance of batch coordinate conversion
+     * @param glRes
+     */
+    _batchConversionMarkers(glRes: number) {
         this._onlyHasPoint = undefined;
         if (!this._constructorIsThis()) {
             return [];
@@ -552,11 +569,11 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         });
     }
 
-    _constructorIsThis() {
+    _constructorIsThis(): boolean {
         return this.constructor === VectorLayerRenderer;
     }
 
-    isProgressiveRender() {
+    isProgressiveRender(): boolean {
         const layer = this.layer;
         if (!layer) {
             return false;
@@ -568,14 +585,14 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return progressiveRender;
     }
 
-    getGeosForIdentify() {
+    getGeosForIdentify(): GeoType[] {
         if (!this.isProgressiveRender()) {
             return this._geosToDraw || [];
         }
         return this.pageGeos || [];
     }
 
-    getGeoPainterList() {
+    getGeoPainterList(): Painter[] {
         if (!this.isProgressiveRender()) {
             const list = [];
             const geos = this._geosToDraw || [];
@@ -615,7 +632,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     }
 
-    _getCurrentNeedRenderGeos() {
+    _getCurrentNeedRenderGeos(): GeoType[] {
         const geos = this.layer._geoList || [];
         if (!this.isProgressiveRender()) {
             return geos;
@@ -711,5 +728,21 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
 // @ts-expect-error todo 等待 VectorLayer 改造完成
 VectorLayer.registerRenderer('canvas', VectorLayerRenderer);
+
+// todo 等待 Extent 改造完成
+type Extent = any;
+type GeoType = any;
+
+interface MapStateCacheType {
+    resolution: number;
+    pitch: number;
+    bearing: number;
+    glScale: number;
+    glRes: number;
+    _2DExtent: Extent;
+    glExtent: Extent;
+    containerExtent: Extent;
+    offset: number;
+}
 
 export default VectorLayerRenderer;
