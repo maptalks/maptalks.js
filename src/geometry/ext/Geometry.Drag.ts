@@ -48,7 +48,6 @@ class GeometryDragHandler extends Handler {
     }
 
     removeHooks(): void {
-        // @ts-ignore
         this._endDrag();
         this.target.off(EVENTS, this._startDrag, this);
         delete this.container;
@@ -101,9 +100,9 @@ class GeometryDragHandler extends Handler {
         const resources = this._dragStageLayer._getRenderer().resources;
 
         const shadowConnectors = [];
-        // @ts-ignore
+        // @ts-expect-error todo 补充ConnectorLine类型
         if (ConnectorLine._hasConnectors(target)) {
-            // @ts-ignore
+            // @ts-expect-error todo 补充ConnectorLine类型
             const connectors = ConnectorLine._getConnectors(target);
 
             for (let i = 0, l = connectors.length; i < l; i++) {
@@ -281,13 +280,13 @@ class GeometryDragHandler extends Handler {
         }
     }
 
-    _endDrag(param: any): void {
+    _endDrag(param?: any): void {
         if (this._dragHandler) {
             this._dragHandler.disable();
             delete this._dragHandler;
         }
         if (this.container) {
-            // @ts-ignore
+            // @ts-expect-error todo 待补充off参数类型
             off(this.container, 'mouseleave', this._endDrag, this);
         }
         if (!this.target) {
@@ -387,7 +386,7 @@ Geometry.mergeOptions({
     'dragOnAxis': null,
     'dragOnScreenAxis': false
 });
-// @ts-ignore
+// @ts-expect-error todo待补充addInitHook参数类型
 Geometry.addInitHook('addHandler', 'draggable', GeometryDragHandler);
 
 Geometry.include(/** @lends Geometry.prototype */ {

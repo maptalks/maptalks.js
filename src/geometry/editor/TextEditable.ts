@@ -105,7 +105,7 @@ const TextEditable = {
             'dx': offset.dx,
             'dy': offset.dy
         })
-            // @ts-ignore
+            // @ts-expect-error todo待补全UIMarker
             .addTo(map);
         this._setCursorToLast(this._textEditor);
     },
@@ -140,7 +140,7 @@ const TextEditable = {
             fill = symbol['markerFill'] || '#3398CC',
             spacing = symbol['textLineSpacing'] || 0;
         const editor = createEl('div');
-        // @ts-ignore
+        // @ts-expect-error todo
         editor.contentEditable = true;
         editor.style.cssText = `background:${fill}; border:1px solid ${lineColor};
             color:${textColor};font-size:${textSize}px;width:${width - 2}px;height:${height - 2}px;margin: auto;
@@ -148,7 +148,6 @@ const TextEditable = {
             overflow: hidden;-webkit-user-modify: read-write-plaintext-only;`;
 
         editor.innerText = content;
-        // @ts-ignore
         on(editor, 'mousedown dblclick', stopPropagation);
         editor.onkeyup = function (event) {
             const h: any = editor.style.height || 0;
@@ -166,9 +165,9 @@ const TextEditable = {
             range = window.getSelection();
             range.selectAllChildren(obj);
             range.collapseToEnd();
-            // @ts-ignore
+            // @ts-expect-error todo待确认document
         } else if (document.selection) {
-            // @ts-ignore
+            // @ts-expect-error todo待确认document
             range = document.selection.createRange();
             range.moveToElementText(obj);
             range.collapse(false);

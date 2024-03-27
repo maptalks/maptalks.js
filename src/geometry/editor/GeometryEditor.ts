@@ -229,7 +229,6 @@ class GeometryEditor extends Eventable(Class) {
         this._switchGeometryEvents('off');
         const map = this.getMap();
         if (!map) {
-            // @ts-ignore
             this.fire('remove');
             return;
         }
@@ -250,7 +249,6 @@ class GeometryEditor extends Eventable(Class) {
             delete this._originalSymbol;
         }
         this.editing = false;
-        // @ts-ignore
         this.fire('remove');
     }
 
@@ -302,7 +300,7 @@ class GeometryEditor extends Eventable(Class) {
      * create rectangle outline of the geometry
      * @private
      */
-    _createOrRefreshOutline(): void {
+    _createOrRefreshOutline(): any {
         const geometry = this._geometry;
         const outline = this._editOutline;
         if (!outline) {
@@ -450,7 +448,7 @@ class GeometryEditor extends Eventable(Class) {
         handle.on('dragend', onHandleDragEnd, this);
         //拖动移图
         if (opts.onRefresh) {
-            // @ts-ignore
+            // @ts-expect-error todo 待补充EditHandle类型
             handle.refresh = opts.onRefresh;
         }
         return handle;
@@ -464,7 +462,7 @@ class GeometryEditor extends Eventable(Class) {
      * @param {fn} onHandleMove callback
      * @private
      */
-    _createResizeHandles(blackList: Array<any>, onHandleMove: Function, onHandleUp: Function): any {
+    _createResizeHandles(blackList: Array<any>, onHandleMove: any, onHandleUp: any): any {
         //cursor styles.
         const cursors = [
             'nw-resize', 'n-resize', 'ne-resize',
@@ -918,7 +916,7 @@ class GeometryEditor extends Eventable(Class) {
             newVertexHandles = { 0: [] };
 
         //大面积调用这个方法是非常耗时的
-        function getVertexCoordinates(ringIndex: number = 0): any {
+        function getVertexCoordinates(ringIndex: any = 0): any {
             if (geoToEdit instanceof Polygon) {
                 const coordinates = geoToEdit.getCoordinates()[ringIndex] || [];
                 return coordinates.slice(0, coordinates.length - 1);
@@ -944,7 +942,6 @@ class GeometryEditor extends Eventable(Class) {
                     newVertexHandles[ringIndex][i][propertyOfVertexIndex] = i;
                 }
             }
-            // @ts-ignore
             me._updateCoordFromShadow();
         }
 
@@ -1054,7 +1051,6 @@ class GeometryEditor extends Eventable(Class) {
                     handle.setContainerPoint(containerPoint._add(getDxDy()));
                 },
                 onUp: function () {
-                    // @ts-ignore
                     me._updateCoordFromShadow();
                 },
                 onDown: function (param, e) {
@@ -1064,7 +1060,7 @@ class GeometryEditor extends Eventable(Class) {
                 }
             });
             handle[propertyOfVertexIndex] = index;
-            // @ts-ignore
+            // @ts-expect-error todo 待补全EditHandle类型
             handle._ringIndex = ringIndex;
             handle.on(me.options['removeVertexOn'], removeVertex);
             handle.setZIndex(vertexZIndex);
@@ -1125,7 +1121,6 @@ class GeometryEditor extends Eventable(Class) {
                     //add a new vertex handle
                     vertexHandles[ringIndex].splice(vertexIndex + 1, 0, createVertexHandle.call(me, vertexIndex + 1, ringIndex));
                     onVertexAddOrRemove();
-                    // @ts-ignore
                     me._updateCoordFromShadow();
                     pauseRefresh = false;
                 },
@@ -1187,7 +1182,6 @@ class GeometryEditor extends Eventable(Class) {
                 return;
             }
             for (const ringIndex in newVertexHandles) {
-                // @ts-ignore
                 const ringCoordinates = getVertexCoordinates(ringIndex);
                 for (let i = newVertexHandles[ringIndex].length - 1; i >= 0; i--) {
                     //reuse ringCoordinates
@@ -1202,7 +1196,6 @@ class GeometryEditor extends Eventable(Class) {
                 }
             }
             for (const ringIndex in vertexHandles) {
-                // @ts-ignore
                 const ringCoordinates = getVertexCoordinates(ringIndex);
                 for (let i = vertexHandles[ringIndex].length - 1; i >= 0; i--) {
                     //reuse ringCoordinates
@@ -1227,7 +1220,7 @@ class GeometryEditor extends Eventable(Class) {
         }
     }
 
-    _addRefreshHook(fn: Function): void {
+    _addRefreshHook(fn: any): void {
         if (!fn) {
             return;
         }
@@ -1242,7 +1235,7 @@ class GeometryEditor extends Eventable(Class) {
         this._recordHistory(method, ...args);
     }
 
-    _updateCoordFromShadow(ignoreRecord: any): void {
+    _updateCoordFromShadow(ignoreRecord?: any): void {
         const geoToEdit = this._shadow || this._geometry;
 
         const coords = geoToEdit.getCoordinates();
@@ -1304,7 +1297,7 @@ class GeometryEditor extends Eventable(Class) {
      * Get previous map view in view history
      * @return {Object} map view
      */
-    undo(): Object {
+    undo(): any {
         if (!this._history || this._historyPointer === 0) {
             return this;
         }
@@ -1319,7 +1312,7 @@ class GeometryEditor extends Eventable(Class) {
      * Get next view in view history
      * @return {Object} map view
      */
-    redo(): Object {
+    redo(): any {
         if (!this._history || this._historyPointer === this._history.length - 1) {
             return this;
         }
@@ -1361,15 +1354,15 @@ class GeometryEditor extends Eventable(Class) {
             record[0].forEach(o => {
                 const m = o[0],
                     args = o.slice(1);
-                geoToEdit[m].apply(geoToEdit, args);
+                geoToEdit[m].call(geoToEdit, args);
                 if (geoToEdit !== geo) {
-                    geo[m].apply(geo, args);
+                    geo[m].call(geo, args);
                 }
             });
         } else {
-            geoToEdit[record[0]].apply(geoToEdit, record[1]);
+            geoToEdit[record[0]].call(geoToEdit, record[1]);
             if (geoToEdit !== geo) {
-                geo[record[0]].apply(geo, record[1]);
+                geo[record[0]].call(geo, record[1]);
             }
         }
         this._updating = updating;
