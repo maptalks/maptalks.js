@@ -1354,15 +1354,15 @@ class GeometryEditor extends Eventable(Class) {
             record[0].forEach(o => {
                 const m = o[0],
                     args = o.slice(1);
-                geoToEdit[m].call(geoToEdit, args);
+                geoToEdit[m].call(geoToEdit, ...args);
                 if (geoToEdit !== geo) {
-                    geo[m].call(geo, args);
+                    geo[m].call(geo, ...args);
                 }
             });
         } else {
-            geoToEdit[record[0]].call(geoToEdit, record[1]);
+            geoToEdit[record[0]].call(geoToEdit, ...record[1]);
             if (geoToEdit !== geo) {
-                geo[record[0]].call(geo, record[1]);
+                geo[record[0]].call(geo, ...record[1]);
             }
         }
         this._updating = updating;
