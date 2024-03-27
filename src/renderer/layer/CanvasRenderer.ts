@@ -9,7 +9,6 @@ import Point from '../../geo/Point';
 import { imageFetchWorkerKey } from '../../core/worker/CoreWorkers';
 import { registerWorkerAdapter } from '../../core/worker/Worker';
 import { formatResouceUrl } from '../../core/ResouceProxy';
-import {TileImageTexture, TileRenderingContext} from "./ImageGLRenderable";
 
 const EMPTY_ARRAY = [];
 class ResourceWorkerConnection extends Actor {
@@ -51,8 +50,8 @@ class CanvasRenderer extends Class {
     public middleWest: any;
     // TODO: 等待补充Extent2D类型定义
     public canvasExtent2D: any;
-    private _extent2D: any;
-    private _maskExtent: any;
+    _extent2D: any;
+    _maskExtent: any;
 
     private _painted: boolean;
     private _drawTime: number;

@@ -108,7 +108,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
         if (!options) {
             return this;
         }
-        // @ts-ignore
+        // @ts-expect-error todo 需要等InfoWindow ts改造
         this._infoWindow = new InfoWindow(options);
         this._infoWindow.addTo(this);
 
