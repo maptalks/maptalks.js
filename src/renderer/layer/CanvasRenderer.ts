@@ -50,8 +50,8 @@ class CanvasRenderer extends Class {
     public middleWest: any;
     // TODO: 等待补充Extent2D类型定义
     public canvasExtent2D: any;
-    private _extent2D: any;
-    private _maskExtent: any;
+    _extent2D: any;
+    _maskExtent: any;
 
     private _painted: boolean;
     private _drawTime: number;
