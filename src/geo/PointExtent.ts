@@ -21,15 +21,18 @@ import Point from './Point';
  * var extent2 = new PointExtent(extent1);
  */
 class PointExtent extends Extent {
+    // @ts-expect-error todo need fix
+    _clazz: Point;
 
     /**
-     * @param {Number} x1   - x of point 1
-     * @param {Number} y1   - y of point 1
-     * @param {Number} x2   - x of point 2
-     * @param {Number} y2   - y of point 2
+     * @param p1
+     * @param p2
+     * @param p3
+     * @param p4
      */
-    constructor(p1, p2, p3, p4) {
+    constructor(p1?: number, p2?: number, p3?: number, p4?: number) {
         super(p1, p2, p3, p4);
+        // @ts-expect-error todo need fix
         this._clazz = Point;
     }
 }
