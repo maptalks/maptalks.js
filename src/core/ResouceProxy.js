@@ -72,9 +72,7 @@ function loadSprite(options = {}) {
     return new Promise((resolve, reject) => {
         const { imgUrl, jsonUrl } = options;
         if (!imgUrl || !jsonUrl) {
-            reject({
-                message: 'not find imgUrl/jsonUrl from options'
-            });
+            reject(new Error('not find imgUrl/jsonUrl from options'));
             console.error(options);
             return;
         }
@@ -90,9 +88,7 @@ function loadSprite(options = {}) {
         function parseSprite(json = {}, image) {
             const canvas = createCanvas();
             if (!canvas) {
-                reject({
-                    message: 'can not create canvas'
-                });
+                reject(new Error('can not create canvas'));
                 return;
             }
             const icons = [];
