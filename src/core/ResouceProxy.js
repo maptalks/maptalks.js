@@ -1,6 +1,6 @@
 import {
     extend, getAbsoluteURL, isNumber, isObject,
-    isString, isURL
+    isString, isURL, parseSVG
 } from './util';
 import { createEl } from './util/dom';
 import Browser from './Browser';
@@ -137,6 +137,56 @@ function loadSprite(options = {}) {
     });
 }
 
+function loadSvgs(svgs) {
+    return new Promise((resolve, reject) => {
+        if (!svgs || svgs.length === 0) {
+            reject(new Error('not find svgs'));
+            return;
+        }
+        const result = [];
+
+        const addToCache = (name, body) => {
+            const paths = parseSVG(body);
+            if (paths) {
+                ResouceProxy.addResource(name, paths);
+            }
+            const data={
+                name,
+                paths,
+                body: body
+            }
+            result.push(data);
+        };
+        //svg json collection
+        if (isString(svgs)) {
+            fetch(svgs).then(res => res.json()).then(json => {
+                json.forEach(svg => {
+                    const { name, body } = svg;
+                    addToCache(name, body);
+                });
+                resolve(result);
+            }).catch(err => {
+                console.log(err);
+                reject(err);
+            });
+            return;
+        }
+        //support svg symbols
+        // https://developer.mozilla.org/en-US/docs/web/svg/element/symbol
+        if (svgs instanceof NodeList) {
+            for (let i = 0, len = svgs.length; i < len; i++) {
+                const symbolNode = svgs[i];
+                const name = symbolNode.id;
+                const html = symbolNode.innerHTML;
+                const body = `<xml><svg>${html}</svg></xml>`;
+                if (name) {
+                    addToCache(name, body);
+                }
+            }
+            resolve(result);
+        }
+    });
+}
 /**
  * simple Resouce Proxy implementation
  *
@@ -258,7 +308,8 @@ export const ResouceProxy = {
     allResource() {
         return ResouceProxy.resources;
     },
-    loadSprite
+    loadSprite,
+    loadSvgs
 };
 
 export function formatResouceUrl(path) {
