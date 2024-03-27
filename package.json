@@ -22,7 +22,7 @@
   "homepage": "https://maptalks.org",
   "scripts": {
     "tsc": "npx tsc",
-    "build": "npm run tsc && npm run build-styles && npm run build-dev",
+    "build": "npm run lint && npm run tsc && npm run build-styles && npm run build-dev",
     "build-dev": "rollup -c",
     "build-test": "rollup -c --environment BUILD:test",
     "build-styles": "",
