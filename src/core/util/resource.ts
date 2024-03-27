@@ -6,6 +6,7 @@ import { extractCssUrl, btoa } from './util';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { isFunctionDefinition, getFunctionTypeResources } from '../mapbox';
+import Browser from '../Browser';
 
 
 /**
@@ -224,4 +225,10 @@ function _convertUrl(res: any) {
         res = extractCssUrl(res);
     }
     return res;
+}
+
+
+
+export function isImageBitMap(img) {
+    return img && Browser.decodeImageInWorker && img instanceof ImageBitmap;
 }
