@@ -242,7 +242,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             throw new Error('Invalid center when creating map.');
         }
         // prepare options
-        const opts = extend({}, options);
+        const opts = extend({} as any, options);
         const zoom = opts['zoom'];
         delete opts['zoom'];
         const center = new Coordinate(opts['center']);
@@ -866,7 +866,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * // convert to point in gl zoom
      * const glPoint = point.multi(this.getGLScale());
      */
-    getGLScale(zoom) {
+    getGLScale(zoom?: number) {
         if (isNil(zoom)) {
             zoom = this.getZoom();
         }
@@ -1218,7 +1218,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      *     return (layer instanceof VectorLayer);
      * });
      */
-    getLayers(filter) {
+    getLayers(filter?: (layer: Layer) => boolean) {
         return this._getLayers(function (layer) {
             if (layer === this._baseLayer || layer.getId().indexOf(INTERNAL_LAYER_PREFIX) >= 0) {
                 return false;
@@ -1925,7 +1925,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
 
-    _fireEvent(eventName, param?: { [key: string]: any }) {
+    _fireEvent(eventName: string, param?: { [key: string]: any }) {
         if (this._eventSilence) {
             return;
         }
@@ -1995,7 +1995,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         return result;
     }
 
-    _eachLayer(fn) {
+    _eachLayer(fn, ...args) {
         if (arguments.length < 2) {
             return;
         }
@@ -2068,9 +2068,11 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             height = this._containerDomContentRect.height;
             return new Size(width, height);
         }
-        if (!isNil(containerDOM.width) && !isNil(containerDOM.height)) {
-            width = containerDOM.width;
-            height = containerDOM.height;
+        //is Canvas
+        const canvasDom = containerDOM as HTMLCanvasElement;
+        if (!isNil(canvasDom.width) && !isNil(canvasDom.height)) {
+            width = canvasDom.width;
+            height = canvasDom.height;
             const dpr = this.getDevicePixelRatio();
             if (dpr !== 1 && containerDOM['layer']) {
                 //is a canvas tile of CanvasTileLayer
@@ -2078,8 +2080,8 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
                 height /= dpr;
             }
         } else if (!isNil(containerDOM.clientWidth) && !isNil(containerDOM.clientHeight)) {
-            width = parseInt(containerDOM.clientWidth, 0);
-            height = parseInt(containerDOM.clientHeight, 0);
+            width = parseInt(containerDOM.clientWidth + '', 0);
+            height = parseInt(containerDOM.clientHeight + '', 0);
         } else {
             throw new Error('can not get size of container');
         }
@@ -2172,7 +2174,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         } else {
             this._getRenderer().offsetPlatform(offset);
             this._mapViewCoord = this._getPrjCenter();
-            this._mapViewPoint = this._mapViewPoint.add(offset);
+            this._mapViewPoint = this._mapViewPoint.add(offset) as Point;
             return this;
         }
     }
@@ -2185,7 +2187,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         const offset = this._getViewPointFrameOffset();
         let panelOffset = this.offsetPlatform();
         if (offset) {
-            panelOffset = panelOffset.add(offset);
+            panelOffset = (panelOffset as any).add(offset);
         }
         return panelOffset;
     }
@@ -2223,7 +2225,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Point} 2D point
      * @private
      */
-    _prjToPoint(pCoord, zoom, out) {
+    _prjToPoint(pCoord, zoom?: number, out?: Point) {
         zoom = (isNil(zoom) ? this.getZoom() : zoom);
         const res = this._getResolution(zoom);
         return this._prjToPointAtRes(pCoord, res, out);
@@ -2257,7 +2259,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Coordinate} projected coordinate
      * @private
      */
-    _pointToPrj(point, zoom?: number, out?: Point) {
+    _pointToPrj(point, zoom?: number, out?: Coordinate) {
         zoom = (isNil(zoom) ? this.getZoom() : zoom);
         const res = this._getResolution(zoom);
         return this._pointToPrjAtRes(point, res, out);
@@ -2321,8 +2323,8 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Coordinate}
      * @private
      */
-    _containerPointToPrj(containerPoint, out?: Point) {
-        return this._pointToPrj(this._containerPointToPoint(containerPoint, undefined, out), undefined, out);
+    _containerPointToPrj(containerPoint, out?: Coordinate) {
+        return this._pointToPrj(this._containerPointToPoint(containerPoint, undefined, out as Point), undefined, out);
     }
 
 
@@ -2358,40 +2360,39 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 }
 
-declare module Map {
-    interface Map {
-        coordinateToPoint(coordinate: Coordinate, zoom?: number, out?: Point): Point;
-        coordinateToPointAtRes(coordinate: Coordinate, res?: number, out?: Point): Point;
-        pointToCoordinate(point: Point, zoom?: number, out?: Coordinate): Coordinate;
-        pointAtResToCoordinate(point: Point, res?: number, out?: Coordinate): Coordinate;
-        coordinateToViewPoint(coordinate: Coordinate, out?: Point, altitude?: number): Point;
-        viewPointToCoordinate(viewPoint: Point, out?: Coordinate): Coordinate;
-        coordinateToContainerPoint(coordinate: Coordinate, zoom?: number, out?: Point): Point;
-        coordinateToContainerPointAtRes(coordinate: Coordinate, res?: number, out?: Point): Point;
-        coordinatesToContainerPoints(coordinates: Array<Coordinate>, zoom?: number): Array<Point>;
-        coordinatesToContainerPointsAtRes(coordinates: Array<Coordinate>, res?: number): Array<Point>;
-        containerPointToCoordinate(containerPoint: Point, out?: Coordinate): Coordinate;
-        containerToExtent(containerExtent: PointExtent): Extent;
-        distanceToPixel(xDist: number, yDist: number, zoom?: number): Size;
-        distanceToPoint(xDist: number, yDist: number, zoom?: number, paramCenter?: Coordinate): Point;
-        distanceToPointAtRes(xDist: number, yDist: number, res?: number, paramCenter?: Coordinate, out?: Point): Point;
-        altitudeToPoint(altitude: number, res?: number, originCenter?: Coordinate): Point;
-        pointAtResToAltitude(point: Point, res?: number, originCenter?: Coordinate): number;
-        pixelToDistance(width: number, height: number): number;
-        pointToDistance(dx: number, dy: number, zoom?: number): number;
-        pointAtResToDistance(dx: number, dy: number, res?: number, paramCenter?: Coordinate): number;
-        locateByPoint(coordinate: Coordinate, px: number, py: number): Coordinate;
-        _get2DExtent(zoom?: number, out?: PointExtent): PointExtent;
-        _get2DExtentAtRes(res?: number, out?: PointExtent): PointExtent;
-        _pointToExtent(extent2D: PointExtent): Extent;
-        _getViewPointFrameOffset(): Point | null;
-        _viewPointToPrj(viewPoint: Point, out?: Point): Point;
-        _prjToContainerPoint(pCoordinate: Coordinate, zoom?: number, out?: Point, altitude?: number): Point;
-        _prjToContainerPointAtRes(pCoordinate: Coordinate, res?: number, out?: Point, altitude?: number): Point;
-        _prjToViewPoint(pCoordinate: Coordinate, out?: Point, altitude?: number): Point;
-        _viewPointToPoint(viewPoint: Point, zoom?: number, out?: Point): Point;
-        _pointToViewPoint(point: Point, zoom?: number, out?: Point): Point;
-    }
+export interface Map {
+    coordinateToPoint(coordinate: Coordinate, zoom?: number, out?: Point): Point;
+    coordinateToPointAtRes(coordinate: Coordinate, res?: number, out?: Point): Point;
+    pointToCoordinate(point: Point, zoom?: number, out?: Coordinate): Coordinate;
+    pointAtResToCoordinate(point: Point, res?: number, out?: Coordinate): Coordinate;
+    coordinateToViewPoint(coordinate: Coordinate, out?: Point, altitude?: number): Point;
+    viewPointToCoordinate(viewPoint: Point, out?: Coordinate): Coordinate;
+    coordinateToContainerPoint(coordinate: Coordinate, zoom?: number, out?: Point): Point;
+    coordinateToContainerPointAtRes(coordinate: Coordinate, res?: number, out?: Point): Point;
+    coordinatesToContainerPoints(coordinates: Array<Coordinate>, zoom?: number): Array<Point>;
+    coordinatesToContainerPointsAtRes(coordinates: Array<Coordinate>, res?: number): Array<Point>;
+    containerPointToCoordinate(containerPoint: Point, out?: Coordinate): Coordinate;
+    containerToExtent(containerExtent: PointExtent): Extent;
+    distanceToPixel(xDist: number, yDist: number, zoom?: number): Size;
+    distanceToPoint(xDist: number, yDist: number, zoom?: number, paramCenter?: Coordinate): Point;
+    distanceToPointAtRes(xDist: number, yDist: number, res?: number, paramCenter?: Coordinate, out?: Point): Point;
+    altitudeToPoint(altitude: number, res?: number, originCenter?: Coordinate): Point;
+    pointAtResToAltitude(point: Point, res?: number, originCenter?: Coordinate): number;
+    pixelToDistance(width: number, height: number): number;
+    pointToDistance(dx: number, dy: number, zoom?: number): number;
+    pointAtResToDistance(dx: number, dy: number, res?: number, paramCenter?: Coordinate): number;
+    locateByPoint(coordinate: Coordinate, px: number, py: number): Coordinate;
+    _get2DExtent(zoom?: number, out?: PointExtent): PointExtent;
+    _get2DExtentAtRes(res?: number, out?: PointExtent): PointExtent;
+    _pointToExtent(extent2D: PointExtent): Extent;
+    _getViewPointFrameOffset(): Point | null;
+    _viewPointToPrj(viewPoint: Point, out?: Point): Point;
+    _prjToContainerPoint(pCoordinate: Coordinate, zoom?: number, out?: Point, altitude?: number): Point;
+    _prjToContainerPointAtRes(pCoordinate: Coordinate, res?: number, out?: Point, altitude?: number): Point;
+    _prjToViewPoint(pCoordinate: Coordinate, out?: Point, altitude?: number): Point;
+    _viewPointToPoint(viewPoint: Point, zoom?: number, out?: Point): Point;
+    _pointToViewPoint(point: Point, zoom?: number, out?: Point): Point;
+
 }
 
 Map.include(/** @lends Map.prototype */{

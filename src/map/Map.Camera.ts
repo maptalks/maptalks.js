@@ -7,6 +7,24 @@ import { clamp, interpolate, isNumber, isNil, wrap, toDegree, toRadian } from '.
 import { applyMatrix, matrixToQuaternion, quaternionToMatrix, lookAt, setPosition } from '../core/util/math';
 import Browser from '../core/Browser';
 
+
+declare module "./Map" {
+    interface Map {
+        getFov(): number;
+        setFov(fov: number): this;
+        getBearing(): number;
+        setBearing(bearing: number): this;
+        _setBearing(bearing: number): this;
+        getPitch(): number;
+        setPitch(pitch: number): this;
+        _setPitch(pitch: number): this;
+        _calcMatrices(): void;
+        _containerPointToPoint(p: Point, zoom?: number, out?: Point): Point;
+
+    }
+}
+
+
 const RADIAN = Math.PI / 180;
 const DEFAULT_FOV = 0.6435011087932844;
 const TEMP_COORD = new Coordinate(0, 0);
@@ -781,7 +799,7 @@ Map.include(/** @lends Map.prototype */{
             // up.rotateZ(target,radians);
             const d = dist || 1;
             // const up = this.cameraUp = set(this.cameraUp || [0, 0, 0], Math.sin(bearing) * d, Math.cos(bearing) * d, 0);
-            const up = this.cameraUp = this.getPitch() > 0 ?  set(this.cameraUp || [0, 0, 0], 0, 0, 1) : set(this.cameraUp || [0, 0, 0], Math.sin(bearing) * d, Math.cos(bearing) * d, 0);
+            const up = this.cameraUp = this.getPitch() > 0 ? set(this.cameraUp || [0, 0, 0], 0, 0, 1) : set(this.cameraUp || [0, 0, 0], Math.sin(bearing) * d, Math.cos(bearing) * d, 0);
             const m = this.cameraWorldMatrix = this.cameraWorldMatrix || createMat4();
             lookAt(m, this.cameraPosition, this.cameraLookAt, up);
 

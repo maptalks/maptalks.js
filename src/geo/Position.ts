@@ -13,9 +13,9 @@ export type PositionArray = [NumberAble, NumberAble] | [NumberAble, NumberAble, 
 export type PositionLike = Position | PositionJson | PositionArray;
 
 export interface Constructable<T> {
-    new(x: PositionLike) : T;
-    new(x: [NumberAble, NumberAble] | [NumberAble, NumberAble, NumberAble]) : T;
-    new(x: NumberAble, y: NumberAble, z?: NumberAble) : T;
+    new(x: PositionLike): T;
+    new(x: [NumberAble, NumberAble] | [NumberAble, NumberAble, NumberAble]): T;
+    new(x: NumberAble, y: NumberAble, z?: NumberAble): T;
 }
 
 /**
@@ -173,7 +173,7 @@ abstract class Position {
      * @param {Number} [y=undefined] - optional, coordinate to add
      * @returns result
      */
-    add(x, y) {
+    add(x, y?: number) {
         let nx, ny;
         if (!isNil(x.x)) {
             nx = this.x + x.x;
@@ -189,7 +189,7 @@ abstract class Position {
     }
 
     //destructive substract
-    _sub(x, y) {
+    _sub(x, y?: number) {
         if (!isNil(x.x)) {
             this.x -= x.x;
             this.y -= x.y;
