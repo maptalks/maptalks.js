@@ -5,22 +5,21 @@ import { Geometry } from '../geometry';
 import { createFilter, getFilterFeature, compileStyle } from '@maptalks/feature-filter';
 import Layer from './Layer';
 import GeoJSON from '../geometry/GeoJSON';
-import { LayerOptions } from './Layer'
 
 function isGeometry(geo) {
     return geo && (geo instanceof Geometry);
 }
 
 /**
- * @property options.drawImmediate=false - (Only for layer rendered with [CanvasRenderer]{@link renderer.CanvasRenderer}) <br>
+ * @property {Boolean}  [options.drawImmediate=false] - (Only for layer rendered with [CanvasRenderer]{@link renderer.CanvasRenderer}) <br>
  *                                                    In default, for performance reason, layer will be drawn in a frame requested by RAF(RequestAnimationFrame).<br>
  *                                                    Set drawImmediate to true to draw immediately.<br>
  *                                                    This is necessary when layer's drawing is wrapped with another frame requested by RAF.
- * @property options.geometryEventTolerance=1         - tolerance for geometry events
+ * @property {Boolean} [options.geometryEventTolerance=1]         - tolerance for geometry events
  * @memberOf OverlayLayer
  * @instance
  */
-const options: OverlayLayerOptions = {
+const options = {
     'drawImmediate': false,
     'geometryEvents': true,
     'geometryEventTolerance': 1
@@ -30,10 +29,6 @@ const options: OverlayLayerOptions = {
 const TMP_EVENTS_ARR = [];
 
 /**
- * layers 的基础类，可用于 geometries 的添加移除
- * 抽象类,不准备实例化
- * 
- * @english
  * @classdesc
  * Base class of all the layers that can add/remove geometries. <br>
  * It is abstract and not intended to be instantiated.
@@ -42,15 +37,8 @@ const TMP_EVENTS_ARR = [];
  * @extends Layer
  */
 class OverlayLayer extends Layer {
-    _maxZIndex: number
-    _minZIndex: number
-    _geoMap: any
-    _geoList: Array<any>
-    _toSort: boolean
-    _cookedStyles: any
-    _clearing: boolean
-    
-    constructor(id:string, geometries:any, options: OverlayLayerOptions&LayerOptions) {
+
+    constructor(id, geometries, options) {
         if (geometries && (!isGeometry(geometries) && !Array.isArray(geometries) && GEOJSON_TYPES.indexOf(geometries.type) < 0)) {
             options = geometries;
             geometries = null;
@@ -93,14 +81,11 @@ class OverlayLayer extends Layer {
     // }
 
     /**
-     * 通过 id 获取 geometry
-     * 
-     * @english
      * Get a geometry by its id
-     * @param id   - id of the geometry
-     * @return
+     * @param  {String|Number} id   - id of the geometry
+     * @return {Geometry}
      */
-    getGeometryById(id:string):Geometry {
+    getGeometryById(id) {
         if (isNil(id) || id === '') {
             return null;
         }
@@ -111,15 +96,12 @@ class OverlayLayer extends Layer {
     }
 
     /**
-     * 获取所有geometries，如果提供 filter() 方法,则根据方法返回
-     * 
-     * @english
      * Get all the geometries or the ones filtered if a filter function is provided.
-     * @param filter=undefined   - a function to filter the geometries
-     * @param context=undefined  - context of the filter function, value to use as this when executing filter.
-     * @return
+     * @param {Function} [filter=undefined]  - a function to filter the geometries
+     * @param {Object} [context=undefined]   - context of the filter function, value to use as this when executing filter.
+     * @return {Geometry[]}
      */
-    getGeometries(filter?:(any)=>void, context?:any):any|Array<Geometry>{
+    getGeometries(filter, context) {
         if (!filter) {
             return this._geoList.slice(0);
         }
@@ -140,13 +122,10 @@ class OverlayLayer extends Layer {
     }
 
     /**
-     * 获取第一个geometry, geometry 位于底部
-     * 
-     * @english
      * Get the first geometry, the geometry at the bottom.
-     * @return first geometry
+     * @return {Geometry} first geometry
      */
-    getFirstGeometry():Geometry {
+    getFirstGeometry() {
         if (!this._geoList.length) {
             return null;
         }
@@ -154,13 +133,10 @@ class OverlayLayer extends Layer {
     }
 
     /**
-     * 获取最后一个geometry, geometry 位于上部
-     * 
-     * @english
      * Get the last geometry, the geometry on the top
-     * @return last geometry
+     * @return {Geometry} last geometry
      */
-    getLastGeometry():Geometry {
+    getLastGeometry() {
         const len = this._geoList.length;
         if (len === 0) {
             return null;
@@ -169,19 +145,14 @@ class OverlayLayer extends Layer {
     }
 
     /**
-     * 获取 geometries 个数
-     * 
      * Get count of the geometries
-     * @return count
+     * @return {Number} count
      */
-    getCount():number {
+    getCount() {
         return this._geoList.length;
     }
 
     /**
-     * 获取 geometries 的 extent, 如果 layer 为空,返回 null
-     * 
-     * @english
      * Get extent of all the geometries in the layer, return null if the layer is empty.
      * @return {Extent} - extent of the layer
      */
@@ -189,8 +160,6 @@ class OverlayLayer extends Layer {
         if (this.getCount() === 0) {
             return null;
         }
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore /src/gro/Extent.js-Ts  获取Extent符合参数的type
         const extent = new Extent(this.getProjection());
         this.forEach(g => {
             extent._combine(g.getExtent());
@@ -199,15 +168,12 @@ class OverlayLayer extends Layer {
     }
 
     /**
-     * 按顺序为图层中的每个 geometry 执行一次提供的回调。
-     * 
-     * @english
      * Executes the provided callback once for each geometry present in the layer in order.
-     * @param fn - a callback function
-     * @param context=undefined   - callback's context, value to use as this when executing callback.
-     * @return this
+     * @param  {Function} fn - a callback function
+     * @param  {*} [context=undefined]   - callback's context, value to use as this when executing callback.
+     * @return {OverlayLayer} this
      */
-    forEach(fn:(any,number) => void, context?:undefined|any):OverlayLayer {
+    forEach(fn, context) {
         const copyOnWrite = this._geoList.slice(0);
         for (let i = 0, l = copyOnWrite.length; i < l; i++) {
             if (!context) {
@@ -220,15 +186,12 @@ class OverlayLayer extends Layer {
     }
 
     /**
-     * 创建一个包含所有通过由提供的函数实现的测试的 geometries 的 GeometryCollection。
-     * 
-     * @english
      * Creates a GeometryCollection with all the geometries that pass the test implemented by the provided function.
-     * @param fn      - Function to test each geometry
-     * @param context=undefined  - Function's context, value to use as this when executing function.
-     * @return  A GeometryCollection with all the geometries that pass the test
+     * @param  {Function} fn      - Function to test each geometry
+     * @param  {*} [context=undefined]  - Function's context, value to use as this when executing function.
+     * @return {GeometryCollection} A GeometryCollection with all the geometries that pass the test
      */
-    filter(fn:(any) => void, context:undefined|any):any {
+    filter(fn, context) {
         const selected = [];
         const isFn = isFunction(fn);
         const filter = isFn ? fn : createFilter(fn);
@@ -243,29 +206,23 @@ class OverlayLayer extends Layer {
     }
 
     /**
-     * layer 是否为空
-     * 
-     * @english
      * Whether the layer is empty.
      * @return {Boolean}
      */
-    isEmpty():boolean {
+    isEmpty() {
         return !this._geoList.length;
     }
 
     /**
-     * 为 layer 添加 geometries
-     * 
-     * @english
      * Adds one or more geometries to the layer
-     * @param geometries - one or more geometries
-     * @param fitView=false                                         - automatically set the map to a fit center and zoom for the geometries
-     * @param fitView.easing=out                                    - default animation type
-     * @param fitView.duration=map.options.zoomAnimationDuration    - default animation time
-     * @param fitView.step=null                                     - step function during animation, animation frame as the parameter
-     * @return this
+     * @param {Geometry|Geometry[]} geometries - one or more geometries
+     * @param {Boolean|Object} [fitView=false]  - automatically set the map to a fit center and zoom for the geometries
+     * @param {String} [fitView.easing=out]  - default animation type
+     * @param {Number} [fitView.duration=map.options.zoomAnimationDuration]  - default animation time
+     * @param {Function} [fitView.step=null]  - step function during animation, animation frame as the parameter
+     * @return {OverlayLayer} this
      */
-    addGeometry(geometries:any|Array<any>, fitView?:boolean|addGeometryFitViewOptions):OverlayLayer {
+    addGeometry(geometries, fitView) {
         if (!geometries) {
             return this;
         }
@@ -273,9 +230,7 @@ class OverlayLayer extends Layer {
             return this.addGeometry(GeoJSON.toGeometry(geometries), fitView);
         } else if (!Array.isArray(geometries)) {
             const count = arguments.length;
-            // eslint-disable-next-line prefer-rest-params
             const last = arguments[count - 1];
-            // eslint-disable-next-line prefer-rest-params
             geometries = Array.prototype.slice.call(arguments, 0, count - 1);
             fitView = last;
             if (last && isObject(last) && (('type' in last) || isGeometry(last))) {
@@ -289,8 +244,6 @@ class OverlayLayer extends Layer {
         this._initCache();
         let extent;
         if (fitView) {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore /src/gro/Extent.js-Ts  允许Extent不传参数
             extent = new Extent();
         }
         this._toSort = this._maxZIndex > 0;
@@ -304,8 +257,6 @@ class OverlayLayer extends Layer {
                 continue;
             }
             if (!isGeometry(geo)) {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore 未找到fromJSON属性
                 geo = Geometry.fromJSON(geo);
                 if (Array.isArray(geo)) {
                     for (let ii = 0, ll = geo.length; ii < ll; ii++) {
@@ -331,13 +282,7 @@ class OverlayLayer extends Layer {
                 const z = map.getFitZoom(extent);
 
                 if (isObject(fitView)) {
-                    
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
                     const step = isFunction(fitView.step) ? fitView.step : () => undefined;
-
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore 当前 map 接口中目前没有animateTo方法
                     map.animateTo({
                         center,
                         zoom: z,
@@ -351,8 +296,6 @@ class OverlayLayer extends Layer {
             }
         }
         /**
-         * addgeo 事件
-         * 
          * addgeo event.
          *
          * @event OverlayLayer#addgeo
@@ -362,17 +305,12 @@ class OverlayLayer extends Layer {
          * @property {Geometry[]} geometries - the geometries to add
          */
         this.fire('addgeo', {
-            'type': 'addgeo',
-            'target': this,
             'geometries': geometries
         });
         return this;
     }
 
     /**
-     * 所有 geometries 最小的 zIndex
-     * 
-     * @english
      * Get minimum zindex of geometries
      */
     getGeoMinZIndex() {
@@ -380,9 +318,6 @@ class OverlayLayer extends Layer {
     }
 
     /**
-     * 所有 geometries 最大的 zIndex
-     * 
-     * @english
      * Get maximum zindex of geometries
      */
     getGeoMaxZIndex() {
@@ -414,9 +349,6 @@ class OverlayLayer extends Layer {
             extent._combine(geo.getExtent());
         }
         /**
-         * add 事件
-         * 
-         * @english
          * add event.
          *
          * @event Geometry#add
@@ -434,14 +366,11 @@ class OverlayLayer extends Layer {
     }
 
     /**
-     * 移除一个或多个geometries
-     * 
-     * @english
      * Removes one or more geometries from the layer
-     * @param  geometries - geometry ids or geometries to remove
-     * @returns this
+     * @param  {String|String[]|Geometry|Geometry[]} geometries - geometry ids or geometries to remove
+     * @returns {OverlayLayer} this
      */
-    removeGeometry(geometries:string|string[]|Geometry|Geometry[]|any):OverlayLayer {
+    removeGeometry(geometries) {
         if (!Array.isArray(geometries)) {
             return this.removeGeometry([geometries]);
         }
@@ -453,9 +382,6 @@ class OverlayLayer extends Layer {
             geometries[i].remove();
         }
         /**
-         * removegeo 事件
-         * 
-         * @english 
          * removegeo event.
          *
          * @event OverlayLayer#removegeo
@@ -465,21 +391,16 @@ class OverlayLayer extends Layer {
          * @property {Geometry[]} geometries - the geometries to remove
          */
         this.fire('removegeo', {
-            'type': 'removegeo',
-            'target': this,
             'geometries': geometries
         });
         return this;
     }
 
     /**
-     * 清除 layer
-     * 
-     * @english
      * Clear all geometries in this layer
-     * @returns this
+     * @returns {OverlayLayer} this
      */
-    clear():OverlayLayer {
+    clear() {
         this._clearing = true;
         this.forEach(geo => {
             geo.remove();
@@ -497,9 +418,6 @@ class OverlayLayer extends Layer {
         }
         this._clearing = false;
         /**
-         * clear 事件
-         * 
-         * @english
          * clear event.
          *
          * @event OverlayLayer#clear
@@ -512,14 +430,11 @@ class OverlayLayer extends Layer {
     }
 
     /**
-     * 移除geometry 回调函数
-     * 
-     * @english
      * Called when geometry is being removed to clear the context concerned.
-     * @param geometry - the geometry instance to remove
+     * @param  {Geometry} geometry - the geometry instance to remove
      * @protected
      */
-    onRemoveGeometry(geometry:any|Geometry) {
+    onRemoveGeometry(geometry) {
         if (!geometry || this._clearing) { return; }
         //考察geometry是否属于该图层
         if (this !== geometry.getLayer()) {
@@ -543,13 +458,10 @@ class OverlayLayer extends Layer {
     }
 
     /**
-     * 获取 layer 的 style
-     * 
-     * @english
      * Gets layer's style.
-     * @return layer's style
+     * @return {Object|Object[]} layer's style
      */
-    getStyle():any|any[] {
+    getStyle() {
         if (!this.options['style']) {
             return null;
         }
@@ -557,14 +469,10 @@ class OverlayLayer extends Layer {
     }
 
     /**
-     * layer 设置 style, 用样式符号对满足条件的 geometries进行样式修改
-     * 基于[mapbox-gl-js's style specification]， {https://www.mapbox.com/mapbox-gl-js/style-spec/#types-filter}.
-     * 
-     * @english
      * Sets style to the layer, styling the geometries satisfying the condition with style's symbol. <br>
      * Based on filter type in [mapbox-gl-js's style specification]{https://www.mapbox.com/mapbox-gl-js/style-spec/#types-filter}.
-     * @param style - layer's style
-     * @returns this
+     * @param {Object|Object[]} style - layer's style
+     * @returns {VectorLayer} this
      * @fires VectorLayer#setstyle
      * @example
      * layer.setStyle([
@@ -578,7 +486,7 @@ class OverlayLayer extends Layer {
         }
       ]);
      */
-    setStyle(style:any|any[]):OverlayLayer {
+    setStyle(style) {
         this.options.style = style;
         style = parseStyleRootPath(style);
         this._cookedStyles = compileStyle(style);
@@ -586,8 +494,6 @@ class OverlayLayer extends Layer {
             this._styleGeometry(geometry);
         }, this);
         /**
-         * setstyle 事件
-         * @english
          * setstyle event.
          *
          * @event VectorLayer#setstyle
@@ -597,14 +503,12 @@ class OverlayLayer extends Layer {
          * @property {Object|Object[]}       style - style to set
          */
         this.fire('setstyle', {
-            'type':'setstyle',
-            'target': this,
             'style': style
         });
         return this;
     }
 
-    _styleGeometry(geometry:any):boolean {
+    _styleGeometry(geometry) {
         if (!this._cookedStyles) {
             return false;
         }
@@ -619,14 +523,11 @@ class OverlayLayer extends Layer {
     }
 
     /**
-     * 移除 style
-     * 
-     * @english
      * Removes layers' style
-     * @returns this
+     * @returns {VectorLayer} this
      * @fires VectorLayer#removestyle
      */
-    removeStyle():OverlayLayer {
+    removeStyle() {
         if (!this.options.style) {
             return this;
         }
@@ -636,8 +537,6 @@ class OverlayLayer extends Layer {
             geometry._setExternSymbol(null);
         }, this);
         /**
-         * removestyle 事件
-         * @english
          * removestyle event.
          *
          * @event VectorLayer#removestyle
@@ -671,8 +570,8 @@ class OverlayLayer extends Layer {
     }
 
     _updateZIndex(...zIndex) {
-        this._maxZIndex = Math.max(this._maxZIndex, Math.max(...zIndex));
-        this._minZIndex = Math.min(this._minZIndex, Math.min(...zIndex));
+        this._maxZIndex = Math.max(this._maxZIndex, Math.max.apply(Math, zIndex));
+        this._minZIndex = Math.min(this._minZIndex, Math.min.apply(Math, zIndex));
     }
 
     _sortGeometries() {
@@ -825,8 +724,6 @@ class OverlayLayer extends Layer {
             }
             for (let j = 0, len1 = eventTypes.length; j < len1; j++) {
                 const eventType = eventTypes[j];
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
                 const listens = geometry.listens(eventType);
                 if (listens > 0) {
                     return true;
@@ -840,14 +737,3 @@ class OverlayLayer extends Layer {
 OverlayLayer.mergeOptions(options);
 
 export default OverlayLayer;
-
-export type OverlayLayerOptions = {
-    drawImmediate?: boolean,
-    geometryEvents?: boolean,
-    geometryEventTolerance?: number
-}
-type addGeometryFitViewOptions = {
-    easing?: string,
-    duration?: number,
-    step?: (any)=>void
-}
