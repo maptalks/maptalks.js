@@ -19,8 +19,8 @@ type HandlerContext = {
 export type EventRecords = Record<string, HandlerFn>;
 
 export type BaseEventParams = {
-    type: string,
-    target: any
+    type?: string,
+    target?: any
 };
 
 export type HandlerFn = (...args: any[]) => void | boolean;

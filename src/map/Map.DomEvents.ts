@@ -9,6 +9,19 @@ import {
     isMousemoveEventBlocked
 } from '../core/util/dom';
 import Map from './Map';
+import { Coordinate } from '../geo';
+
+declare module "./Map" {
+    interface Map {
+        _removeDomEvents(): void;
+        _parseEvent(e: EventTarget, type: string);
+        _parseEventFromCoord(coord: Coordinate): any;
+        //Further improvement is needed. Here, only the methods used in the Map are listed. In order to pass the compilation, any errors were used everywhere
+
+    }
+}
+
+
 
 function dragEventHanlder(event) {
     event.stopPropagation();
@@ -207,7 +220,9 @@ Map.include(/** @lends Map.prototype */ {
 
     _removeDomEvents() {
         const dom = this._panels.mapWrapper || this._containerDOM;
+        //@ts-expect-error 可能写错了
         removeDomEvent(dom, events, this._handleDOMEvent, this);
+        //@ts-expect-error 可能写错了
         removeDomEvent(dom, DRAGEVENTS, dragEventHanlder, this);
     },
 
@@ -340,7 +355,7 @@ Map.include(/** @lends Map.prototype */ {
         if (!e) {
             return null;
         }
-        let eventParam = {
+        let eventParam: { [key: string]: any } = {
             'domEvent': e
         };
         if (type !== 'keypress') {

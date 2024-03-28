@@ -250,7 +250,7 @@ class Extent {
      * @params {Coorindate} [out=undefined] - optional point to receive result
      * @return {Coordinate}
      */
-    getMin(out) {
+    getMin(out?: Coordinate) {
         if (out) {
             out.set(this['xmin'], this['ymin']);
             return out;
@@ -263,7 +263,7 @@ class Extent {
      * @params {Coorindate} [out=undefined] - optional point to receive result
      * @return {Coordinate}
      */
-    getMax(out) {
+    getMax(out?: Coordinate) {
         if (out) {
             out.set(this['xmax'], this['ymax']);
             return out;
@@ -586,7 +586,7 @@ class Extent {
      * @param  {Function} fn convert function on each point
      * @return {Extent}
      */
-    convertTo(fn, out) {
+    convertTo(fn, out?: Extent) {
         if (!this.isValid()) {
             return null;
         }

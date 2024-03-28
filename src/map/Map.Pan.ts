@@ -3,6 +3,19 @@ import Point from '../geo/Point';
 import Map from './Map';
 import { isFunction } from '../core/util';
 
+
+
+declare module "./Map" {
+    interface Map {
+
+        panTo(coordinate: Coordinate, options: any, step?: (frame) => void);
+        _panTo(prjCoord: Coordinate, options?: any);
+        //Further improvement is needed. Here, only the methods used in the Map are listed. In order to pass the compilation, any errors were used everywhere
+
+    }
+}
+
+
 Map.include(/** @lends Map.prototype */ {
 
     /**
