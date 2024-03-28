@@ -12,11 +12,9 @@ import Common from './Common';
  * @name Identity
  * @mixes measurer.Common
  */
-export default extend(/** @lends measurer.Identity */{
+export default extend<any>(/** @lends measurer.Identity */{
     /**
      * the code of the measurer
-     * @static
-     * @type {String}
      */
     'measure': 'IDENTITY',
     /**

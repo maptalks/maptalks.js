@@ -1,17 +1,34 @@
 import Point from './Point';
-import { isNumber } from '../core/util/common';
+import { isNumber } from '../core/util';
+
+type JsonSize = {
+    width: number;
+    height: number;
+}
+
+type ArraySize = [number, number];
+
+type SizeLike = Size | JsonSize | ArraySize;
 
 /**
+ * 表示一个大小的实现类
+ *
+ * @english
  * Represents a size.
  * @category basic types
  */
 class Size {
+    public width: number;
+    public height: number;
 
     /**
-     * @param {Number} width - width value
-     * @param {Number} height - height value
+     * @param width width value
+     * @param height - height value
      */
-    constructor(width, height) {
+    constructor(width: SizeLike)
+    constructor(width: ArraySize)
+    constructor(width: number, height: number)
+    constructor(width: any, height?: any) {
         if (isNumber(width) && isNumber(height)) {
             /**
              * @property {Number} width - width
@@ -32,7 +49,6 @@ class Size {
 
     /**
      * Returns a copy of the size
-     * @return {Size} copy
      */
     copy() {
         return new Size(this['width'], this['height']);
@@ -57,23 +73,22 @@ class Size {
 
     /**
      * Compare with another size to see whether they are equal.
-     * @param {Size} size - size to compare
-     * @return {Boolean}
+     * @param size - size to compare
      */
-    equals(size) {
+    equals(size: Size) {
         return this['width'] === size['width'] && this['height'] === size['height'];
     }
 
     /**
      * Returns the result of multiplication of the current size by the given number.
-     * @param {Number} ratio - ratio to multi
-     * @return {Size} result
+     * @param ratio - ratio to multi
+     * @return result
      */
-    multi(ratio) {
+    multi(ratio: number) {
         return new Size(this['width'] * ratio, this['height'] * ratio);
     }
 
-    _multi(ratio) {
+    _multi(ratio: number) {
         this['width'] *= ratio;
         this['height'] *= ratio;
         return this;
@@ -87,7 +102,7 @@ class Size {
 
     /**
      * Converts the size object to a [Point]{Point}
-     * @return {Point} point
+     * @return point
      */
     toPoint() {
         return new Point(this['width'], this['height']);
@@ -95,15 +110,14 @@ class Size {
 
     /**
      * Converts the size object to an array [width, height]
-     * @return {Number[]}
      */
     toArray() {
         return [this['width'], this['height']];
     }
 
     /**
-     * Convert the size object to a json object {width : .., height : ..}
-     * @return {Object} json
+     * Convert the size object to a json object {width : ., height : .}
+     * @return json
      */
     toJSON() {
         return {

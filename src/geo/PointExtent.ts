@@ -21,9 +21,6 @@ import Point from './Point';
  * var extent2 = new PointExtent(extent1);
  */
 class PointExtent extends Extent {
-    // @ts-expect-error todo need fix
-    _clazz: Point;
-
     /**
      * @param p1
      * @param p2
@@ -32,7 +29,6 @@ class PointExtent extends Extent {
      */
     constructor(p1?: number, p2?: number, p3?: number, p4?: number) {
         super(p1, p2, p3, p4);
-        // @ts-expect-error todo need fix
         this._clazz = Point;
     }
 }

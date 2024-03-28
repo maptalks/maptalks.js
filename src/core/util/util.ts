@@ -130,7 +130,7 @@ export function removeFromArray<T>(obj: T, array: T[]) {
     }
 }
 
-export function forEachCoord(arr: any[], fn: Function, context: any) {
+export function forEachCoord(arr: any[], fn: Function, context?: any) {
     if (!Array.isArray(arr)) {
         return context ? fn.call(context, arr) : fn(arr);
     }

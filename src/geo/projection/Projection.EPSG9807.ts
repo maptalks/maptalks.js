@@ -6,8 +6,8 @@ import etmerc from './etmerc.js';
 
 /* eslint-disable no-loss-of-precision */
 // from proj_api.h
-const RAD_TO_DEG = 57.295779513082321,
-    DEG_TO_RAD = 0.017453292519943296;
+// eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+const RAD_TO_DEG = 57.295779513082321, DEG_TO_RAD = 0.017453292519943296;
 /* eslint-enable no-loss-of-precision */
 
 // from pj_transform.c
@@ -27,11 +27,11 @@ const aliases = ['Traverse_Mercator'];
  * @mixes projection.Common
  * @mixes measurer.WGS84Sphere
  */
-export default extend({}, Common, {
+export default extend<any>({}, Common, {
     code: 'EPSG:9807',
     aliases,
     create(params) {
-        const P = {
+        const P: any = {
             a: SRS_WGS84_SEMIMAJOR,
             es: SRS_WGS84_ESQUARED,
             x0: isNil(params.falseEasting) ? 500000 : params.falseEasting,
@@ -44,7 +44,7 @@ export default extend({}, Common, {
         };
         etmerc(P);
         const lp = { lam: 0, phi: 0 };
-        const xy = {};
+        const xy: any = {};
         let originX = 0;
         let originY = 0;
         if (P.originLam0 || P.originPhi0) {
