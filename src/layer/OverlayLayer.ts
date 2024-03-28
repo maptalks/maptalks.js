@@ -5,7 +5,6 @@ import { Geometry } from '../geometry';
 import { createFilter, getFilterFeature, compileStyle } from '@maptalks/feature-filter';
 import Layer from './Layer';
 import GeoJSON from '../geometry/GeoJSON';
-import { LayerOptions } from './Layer'
 
 function isGeometry(geo) {
     return geo && (geo instanceof Geometry);
