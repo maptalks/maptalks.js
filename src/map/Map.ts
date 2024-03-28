@@ -1261,13 +1261,18 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Map} this
      * @fires Map#addlayer
      */
-    addLayer(layers: Layer | Array<Layer>): this {
+    addLayer(layers: Layer | Array<Layer>, ...otherLayers: Array<Layer>): this {
         if (!layers) {
             return this;
         }
+
         if (!Array.isArray(layers)) {
-            layers = Array.prototype.slice.call(arguments, 0);
-            return this.addLayer(layers);
+            layers = [layers];
+            // layers = Array.prototype.slice.call(arguments, 0);
+            // return this.addLayer(layers);
+        }
+        if (otherLayers && otherLayers.length) {
+            layers = layers.concat(otherLayers);
         }
         if (!this._layerCache) {
             this._layerCache = {};
