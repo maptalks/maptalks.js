@@ -9,12 +9,14 @@ import UIMarker from '../../ui/UIMarker';
  */
 const TextEditable = {
     /**
+     * 开始编辑文本，每当点击地图时，编辑将自动结束
+     * @english
      * Start to edit the text, editing will be ended automatically whenever map is clicked.
      *
      * @return {TextMarker} this
      * @fires TextMarker#edittextstart
      */
-    startEditText() {
+    startEditText(): TextMarker {
         if (!this.getMap()) {
             return this;
         }
@@ -33,6 +35,8 @@ const TextEditable = {
     },
 
     /**
+     * 结束编辑
+     * @english
      * End text edit.
      *
      * @return {TextMarker} this
@@ -66,6 +70,8 @@ const TextEditable = {
     },
 
     /**
+     * 是否正在编辑文本
+     * @english
      * Whether the text is being edited.
      *
      * @return {Boolean}
@@ -78,29 +84,33 @@ const TextEditable = {
     },
 
     /**
+     * 获取正在编辑的文本对象
+     * @english
      * Get the text editor which is an [ui.UIMarker]{@link ui.UIMarker}
      * @return {ui.UIMarker} text editor
      */
-    getTextEditor() {
+    getTextEditor(): UIMarker {
         return this._editUIMarker;
     },
 
-    _prepareEditor() {
+    _prepareEditor(): void {
         const map = this.getMap();
         const editContainer = this._createEditor();
         this._textEditor = editContainer;
         map.on('mousedown', this.endEditText, this);
         const offset = this._getEditorOffset();
         this._editUIMarker = new UIMarker(this.getCoordinates(), {
-            'animation' : null,
+            'animation': null,
             'content': editContainer,
             'dx': offset.dx,
             'dy': offset.dy
-        }).addTo(map);
+        })
+            // @ts-expect-error todo待补全UIMarker
+            .addTo(map);
         this._setCursorToLast(this._textEditor);
     },
 
-    _getEditorOffset() {
+    _getEditorOffset(): object {
         const symbol = this._getInternalSymbol() || {};
         let dx = 0,
             dy = 0;
@@ -118,7 +128,7 @@ const TextEditable = {
         };
     },
 
-    _createEditor() {
+    _createEditor(): HTMLElement {
         const content = this.getContent();
         const labelSize = this.getSize(),
             symbol = this._getInternalSymbol() || {},
@@ -130,6 +140,7 @@ const TextEditable = {
             fill = symbol['markerFill'] || '#3398CC',
             spacing = symbol['textLineSpacing'] || 0;
         const editor = createEl('div');
+        // @ts-expect-error todo
         editor.contentEditable = true;
         editor.style.cssText = `background:${fill}; border:1px solid ${lineColor};
             color:${textColor};font-size:${textSize}px;width:${width - 2}px;height:${height - 2}px;margin: auto;
@@ -139,7 +150,7 @@ const TextEditable = {
         editor.innerText = content;
         on(editor, 'mousedown dblclick', stopPropagation);
         editor.onkeyup = function (event) {
-            const h = editor.style.height || 0;
+            const h: any = editor.style.height || 0;
             if (event.keyCode === 13) {
                 editor.style.height = (parseInt(h) + textSize / 2) + 'px';
             }
@@ -154,7 +165,9 @@ const TextEditable = {
             range = window.getSelection();
             range.selectAllChildren(obj);
             range.collapseToEnd();
+            // @ts-expect-error todo待确认document
         } else if (document.selection) {
+            // @ts-expect-error todo待确认document
             range = document.selection.createRange();
             range.moveToElementText(obj);
             range.collapse(false);

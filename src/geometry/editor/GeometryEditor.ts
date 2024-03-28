@@ -13,7 +13,24 @@ import * as Symbolizers from '../../renderer/geometry/symbolizers';
 
 const EDIT_STAGE_LAYER_PREFIX = INTERNAL_LAYER_PREFIX + '_edit_stage_';
 
-function createHandleSymbol(markerType, opacity) {
+type geometrySymbol = {
+    'markerType': string,
+    'markerFill': string,
+    'markerLineColor': string,
+    'markerLineWidth': number,
+    'markerWidth': number,
+    'markerHeight': number,
+    'opacity': number
+}
+type GeometryEvents = {
+    'symbolchange': any,
+    // prevent _exeAndReset when dragging geometry in gl layers
+    'dragstart': any,
+    'dragend': any,
+    'positionchange shapechange': any,
+}
+
+function createHandleSymbol(markerType: string, opacity: number): geometrySymbol {
     return {
         'markerType': markerType,
         'markerFill': '#fff',
@@ -42,6 +59,8 @@ const options = {
 };
 
 /**
+ * 内部使用的几何图形编辑器
+ * @english
  * Geometry editor used internally for geometry editing.
  * @category geometry
  * @protected
@@ -49,6 +68,18 @@ const options = {
  * @mixes Eventable
  */
 class GeometryEditor extends Eventable(Class) {
+
+    private _geometry: any
+    private _originalSymbol: any
+    private _shadowLayer: any
+    private _shadow: any
+    private _geometryDraggble: boolean
+    private _history: any
+    private _historyPointer: any
+    private _editOutline: any
+    private _refreshHooks: Array<any>
+    private _updating: boolean
+    public editing: any
 
     /**
      * @param {Geometry} geometry geometry to edit
@@ -64,17 +95,21 @@ class GeometryEditor extends Eventable(Class) {
     }
 
     /**
+     * 获取地图对象
+     * @english
      * Get map
      * @return {Map} map
      */
-    getMap() {
+    getMap(): any {
         return this._geometry.getMap();
     }
 
     /**
+     * 准备编辑
+     * @english
      * Prepare to edit
      */
-    prepare() {
+    prepare(): void {
         const map = this.getMap();
         if (!map) {
             return;
@@ -91,7 +126,7 @@ class GeometryEditor extends Eventable(Class) {
         this._prepareEditStageLayer();
     }
 
-    _prepareEditStageLayer() {
+    _prepareEditStageLayer(): void {
         const layer = this._geometry.getLayer();
         if (layer.options['renderer'] !== 'canvas') {
             // doesn't need shadow if it's webgl or gpu renderer
@@ -109,9 +144,11 @@ class GeometryEditor extends Eventable(Class) {
     }
 
     /**
+     * 开始编辑
+     * @english
      * Start to edit
      */
-    start() {
+    start(): void {
         if (!this._geometry || !this._geometry.getMap() || this._geometry.editing) {
             return;
         }
@@ -181,9 +218,11 @@ class GeometryEditor extends Eventable(Class) {
     }
 
     /**
+     * 停止编辑
+     * @english
      * Stop editing
      */
-    stop() {
+    stop(): void {
         delete this._history;
         delete this._historyPointer;
         delete this._editOutline;
@@ -214,17 +253,19 @@ class GeometryEditor extends Eventable(Class) {
     }
 
     /**
+     * 编辑器是否在编辑
+     * @english
      * Whether the editor is editing
      * @return {Boolean}
      */
-    isEditing() {
+    isEditing(): boolean {
         if (isNil(this.editing)) {
             return false;
         }
         return this.editing;
     }
 
-    _getGeometryEvents() {
+    _getGeometryEvents(): GeometryEvents {
         return {
             'symbolchange': this._onGeoSymbolChange,
             // prevent _exeAndReset when dragging geometry in gl layers
@@ -234,7 +275,7 @@ class GeometryEditor extends Eventable(Class) {
         };
     }
 
-    _switchGeometryEvents(oper) {
+    _switchGeometryEvents(oper: any): void {
         if (this._geometry) {
             const events = this._getGeometryEvents();
             for (const p in events) {
@@ -243,21 +284,23 @@ class GeometryEditor extends Eventable(Class) {
         }
     }
 
-    _onGeoSymbolChange(param) {
+    _onGeoSymbolChange(param: any): void {
         if (this._shadow) {
             this._shadow.setSymbol(param.target._getInternalSymbol());
         }
     }
 
-    _onMarkerDragEnd() {
+    _onMarkerDragEnd(): void {
         this._update('setCoordinates', this._shadow.getCoordinates().toArray());
     }
 
     /**
+     * 创建几何图形的矩形轮廓
+     * @english
      * create rectangle outline of the geometry
      * @private
      */
-    _createOrRefreshOutline() {
+    _createOrRefreshOutline(): any {
         const geometry = this._geometry;
         const outline = this._editOutline;
         if (!outline) {
@@ -280,7 +323,7 @@ class GeometryEditor extends Eventable(Class) {
     }
 
 
-    _createCenterHandle() {
+    _createCenterHandle(): void {
         const map = this.getMap();
         const symbol = this.options['centerHandleSymbol'];
         let shadow;
@@ -288,14 +331,14 @@ class GeometryEditor extends Eventable(Class) {
         const handle = this.createHandle(cointainerPoint, {
             'symbol': symbol,
             'cursor': 'move',
-            onDown: () => {
+            onDown: (): void => {
                 if (this._shadow) {
                     shadow = this._shadow.copy();
                     const symbol = lowerSymbolOpacity(shadow._getInternalSymbol(), 0.5);
                     shadow.setSymbol(symbol).addTo(this._geometry.getLayer());
                 }
             },
-            onMove: (param) => {
+            onMove: (param): void => {
                 const offset = param['coordOffset'];
                 if (shadow) {
                     shadow.translate(offset);
@@ -303,7 +346,7 @@ class GeometryEditor extends Eventable(Class) {
                     this._geometry.translate(offset);
                 }
             },
-            onUp: () => {
+            onUp: (): void => {
                 if (shadow) {
                     const shadowFirst = shadow.getFirstCoordinate();
                     const first = this._geometry.getFirstCoordinate();
@@ -313,15 +356,15 @@ class GeometryEditor extends Eventable(Class) {
                 }
             }
         });
-        this._addRefreshHook(() => {
+        this._addRefreshHook((): void => {
             const center = this._geometry.getCenter();
             handle.setContainerPoint(map.coordToContainerPoint(center));
         });
     }
 
-    _createHandleInstance(containerPoint, opts) {
+    _createHandleInstance(containerPoint: any, opts: any): EditHandle {
         const map = this.getMap();
-        const symbol = loadFunctionTypes(opts['symbol'], () => {
+        const symbol = loadFunctionTypes(opts['symbol'], (): any => {
             return [
                 map.getZoom(),
                 {
@@ -337,18 +380,20 @@ class GeometryEditor extends Eventable(Class) {
         return handle;
     }
 
-    createHandle(containerPoint, opts) {
+    createHandle(containerPoint: any, opts: any): EditHandle {
         if (!opts) {
             opts = {};
         }
         const handle = this._createHandleInstance(containerPoint, opts);
         const me = this;
 
-        function onHandleDragstart(param) {
+        function onHandleDragstart(param: any): boolean {
             this._updating = true;
             if (opts.onDown) {
                 opts.onDown.call(me, param['containerPoint'], param);
                 /**
+                 * 更改几何图形启动事件，在拖动以更改几何图形时激发
+                 * @english
                  * change geometry shape start event, fired when drag to change geometry shape.
                  *
                  * @event Geometry#handledragstart
@@ -361,11 +406,13 @@ class GeometryEditor extends Eventable(Class) {
             return false;
         }
 
-        function onHandleDragging(param) {
+        function onHandleDragging(param: any): boolean {
             me._hideContext();
             if (opts.onMove) {
                 opts.onMove.call(me, param);
                 /**
+                 * 更改几何图形事件，在拖动以更改几何图形时激发
+                 * @english
                  * changing geometry shape event, fired when dragging to change geometry shape.
                  *
                  * @event Geometry#handledragging
@@ -378,7 +425,7 @@ class GeometryEditor extends Eventable(Class) {
             return false;
         }
 
-        function onHandleDragEnd(ev) {
+        function onHandleDragEnd(ev: any): boolean {
             if (opts.onUp) {
                 //run mouseup code for handle delete etc
                 opts.onUp.call(me, ev);
@@ -401,18 +448,21 @@ class GeometryEditor extends Eventable(Class) {
         handle.on('dragend', onHandleDragEnd, this);
         //拖动移图
         if (opts.onRefresh) {
+            // @ts-expect-error todo 待补充EditHandle类型
             handle.refresh = opts.onRefresh;
         }
         return handle;
     }
 
     /**
+     * 为几何图形创建可以调整大小的事件
+     * @english
      * create resize handles for geometry that can resize.
      * @param {Array} blackList handle indexes that doesn't display, to prevent change a geometry's coordinates
      * @param {fn} onHandleMove callback
      * @private
      */
-    _createResizeHandles(blackList, onHandleMove, onHandleUp) {
+    _createResizeHandles(blackList: Array<any>, onHandleMove: any, onHandleUp: any): any {
         //cursor styles.
         const cursors = [
             'nw-resize', 'n-resize', 'ne-resize',
@@ -429,7 +479,7 @@ class GeometryEditor extends Eventable(Class) {
         //marker做特殊处理，利用像素求锚点
         const isMarker = geometry instanceof Marker;
 
-        function getResizeAnchors() {
+        function getResizeAnchors(): any {
             if (isMarker) {
                 const ext = geometry.getContainerExtent();
                 return [
@@ -465,7 +515,7 @@ class GeometryEditor extends Eventable(Class) {
             anchorIndexes = {},
             map = this.getMap(),
             handleSymbol = this.options['vertexHandleSymbol'];
-        const fnLocateHandles = () => {
+        const fnLocateHandles = (): void => {
             const anchors = getResizeAnchors();
             for (let i = 0; i < anchors.length; i++) {
                 //ignore anchors in blacklist
@@ -482,14 +532,14 @@ class GeometryEditor extends Eventable(Class) {
                         'symbol': handleSymbol,
                         'cursor': cursors[i],
                         'axis': axis[i],
-                        onMove: (function (_index) {
-                            return function (e) {
+                        onMove: (function (_index: number): any {
+                            return function (e: any): void {
                                 me._updating = true;
                                 onHandleMove(e.containerPoint, _index);
                                 geometry.fire('resizing');
                             };
                         })(i),
-                        onUp: () => {
+                        onUp: (): void => {
                             me._updating = false;
                             onHandleUp();
                         }
@@ -511,10 +561,12 @@ class GeometryEditor extends Eventable(Class) {
     }
 
     /**
+     * 创建标记编辑器
+     * @english
      * Create marker editor
      * @private
      */
-    createMarkerEditor() {
+    createMarkerEditor(): void {
         const geometryToEdit = this._shadow || this._geometry,
             map = this.getMap();
         if (!geometryToEdit._canEdit()) {
@@ -573,7 +625,7 @@ class GeometryEditor extends Eventable(Class) {
             aspectRatio = size.width / size.height;
         }
 
-        const resizeHandles = this._createResizeHandles(blackList, (containerPoint, i) => {
+        const resizeHandles = this._createResizeHandles(blackList, (containerPoint: any, i: number): void => {
             if (blackList && blackList.indexOf(i) >= 0) {
                 //need to change marker's coordinates
                 const newCoordinates = map.containerPointToCoordinate(containerPoint.sub(dxdy));
@@ -631,11 +683,11 @@ class GeometryEditor extends Eventable(Class) {
                     }
                 }
             }
-        }, () => {
+        }, (): void => {
             this._update(getUpdates());
         });
 
-        function getUpdates() {
+        function getUpdates(): any {
             const updates = [
                 ['setCoordinates', geometryToEdit.getCoordinates().toArray()]
             ];
@@ -650,10 +702,12 @@ class GeometryEditor extends Eventable(Class) {
     }
 
     /**
+     * 创建圆形编辑器
+     * @english
      * Create circle editor
      * @private
      */
-    createCircleEditor() {
+    createCircleEditor(): void {
         const geo = this._shadow || this._geometry;
         const map = this.getMap();
 
@@ -674,16 +728,18 @@ class GeometryEditor extends Eventable(Class) {
             if (geo !== this._geometry) {
                 this._geometry.setRadius(r);
             }
-        }, () => {
+        }, (): void => {
             this._update('setRadius', geo.getRadius());
         });
     }
 
     /**
+     * 创建椭圆或者矩形编辑器
+     * @english
      * editor of ellipse or rectangle
      * @private
      */
-    createEllipseOrRectEditor() {
+    createEllipseOrRectEditor(): void {
         //defines what can be resized by the handle
         //0: resize width; 1: resize height; 2: resize both width and height.
         const resizeAbilities = [
@@ -703,7 +759,7 @@ class GeometryEditor extends Eventable(Class) {
         if (this.options['fixAspectRatio']) {
             aspectRatio = geometryToEdit.getWidth() / geometryToEdit.getHeight();
         }
-        const resizeHandles = this._createResizeHandles(null, (mouseContainerPoint, i) => {
+        const resizeHandles = this._createResizeHandles(null, (mouseContainerPoint: any, i: number): void => {
             //ratio of width and height
             const r = isRect ? 1 : 2;
             let pointSub, w, h;
@@ -824,11 +880,11 @@ class GeometryEditor extends Eventable(Class) {
                     this._geometry.setHeight(h * r);
                 }
             }
-        }, () => {
+        }, (): void => {
             this._update(getUpdates());
         });
 
-        function getUpdates() {
+        function getUpdates(): object {
             return [
                 ['setCoordinates', geometryToEdit.getCoordinates().toArray()],
                 ['setWidth', geometryToEdit.getWidth()],
@@ -838,10 +894,12 @@ class GeometryEditor extends Eventable(Class) {
     }
 
     /**
+     * 创建多边形编辑器
+     * @english
      * Editor for polygon
      * @private
      */
-    createPolygonEditor() {
+    createPolygonEditor(): void {
 
         const map = this.getMap(),
             geoToEdit = this._shadow || this._geometry,
@@ -858,7 +916,7 @@ class GeometryEditor extends Eventable(Class) {
             newVertexHandles = { 0: [] };
 
         //大面积调用这个方法是非常耗时的
-        function getVertexCoordinates(ringIndex = 0) {
+        function getVertexCoordinates(ringIndex: any = 0): any {
             if (geoToEdit instanceof Polygon) {
                 const coordinates = geoToEdit.getCoordinates()[ringIndex] || [];
                 return coordinates.slice(0, coordinates.length - 1);
@@ -867,14 +925,14 @@ class GeometryEditor extends Eventable(Class) {
             }
         }
 
-        function getVertexPrjCoordinates(ringIndex = 0) {
+        function getVertexPrjCoordinates(ringIndex: number = 0): any {
             if (ringIndex === 0) {
                 return geoToEdit._getPrjCoordinates();
             }
             return geoToEdit._getPrjHoles()[ringIndex - 1];
         }
 
-        function onVertexAddOrRemove() {
+        function onVertexAddOrRemove(): void {
             //restore index property of each handles.
             for (const ringIndex in vertexHandles) {
                 for (let i = vertexHandles[ringIndex].length - 1; i >= 0; i--) {
@@ -887,7 +945,7 @@ class GeometryEditor extends Eventable(Class) {
             me._updateCoordFromShadow();
         }
 
-        function removeVertex(param) {
+        function removeVertex(param: any): void {
             me._updating = true;
             const handle = param['target'],
                 index = handle[propertyOfVertexIndex];
@@ -939,7 +997,7 @@ class GeometryEditor extends Eventable(Class) {
             me._updating = false;
         }
 
-        function moveVertexHandle(handleConatainerPoint, index, ringIndex = 0) {
+        function moveVertexHandle(handleConatainerPoint: any, index: number, ringIndex: number = 0): void {
             //for adsorption effect
             const snapTo = me._geometry.snapTo;
             if (snapTo && isFunction(snapTo)) {
@@ -969,14 +1027,14 @@ class GeometryEditor extends Eventable(Class) {
         }
 
         const hanldeDxdy = new Point(0, 0);
-        function getDxDy() {
+        function getDxDy(): any {
             const compiledSymbol = geoToEdit._getCompiledSymbol();
             hanldeDxdy.x = compiledSymbol.lineDx || 0;
             hanldeDxdy.y = compiledSymbol.lineDy || 0;
             return hanldeDxdy;
         }
 
-        function createVertexHandle(index, ringIndex = 0, ringCoordinates) {
+        function createVertexHandle(index: number, ringIndex: number = 0, ringCoordinates: any) {
             //not get geometry coordiantes when ringCoordinates is not null
             //每个vertex都去获取geometry的coordinates太耗时了，应该所有vertex都复用传进来的ringCoordinates
             let vertex = (ringCoordinates || getVertexCoordinates(ringIndex))[index];
@@ -1002,6 +1060,7 @@ class GeometryEditor extends Eventable(Class) {
                 }
             });
             handle[propertyOfVertexIndex] = index;
+            // @ts-expect-error todo 待补全EditHandle类型
             handle._ringIndex = ringIndex;
             handle.on(me.options['removeVertexOn'], removeVertex);
             handle.setZIndex(vertexZIndex);
@@ -1009,7 +1068,7 @@ class GeometryEditor extends Eventable(Class) {
         }
 
         let pauseRefresh = false;
-        function createNewVertexHandle(index, ringIndex = 0, ringCoordinates) {
+        function createNewVertexHandle(index: number, ringIndex: number = 0, ringCoordinates: any): any {
             let vertexCoordinates = ringCoordinates || getVertexCoordinates(ringIndex);
             let nextVertex;
             if (index + 1 >= vertexCoordinates.length) {
@@ -1022,7 +1081,7 @@ class GeometryEditor extends Eventable(Class) {
                 'symbol': me.options['newVertexHandleSymbol'],
                 'cursor': 'pointer',
                 'axis': null,
-                onDown: function (param, e) {
+                onDown: function (param: any, e: any): any {
                     if (e && e.domEvent && e.domEvent.button === 2) {
                         return;
                     }
@@ -1047,10 +1106,10 @@ class GeometryEditor extends Eventable(Class) {
                     newVertexHandles[ringIndex].splice(vertexIndex, 0, createNewVertexHandle.call(me, vertexIndex, ringIndex), createNewVertexHandle.call(me, vertexIndex + 1, ringIndex));
                     pauseRefresh = true;
                 },
-                onMove: function () {
+                onMove: function (): void {
                     moveVertexHandle(handle.getContainerPoint(), handle[propertyOfVertexIndex] + 1, ringIndex);
                 },
-                onUp: function (e) {
+                onUp: function (e: any): void {
                     if (e && e.domEvent && e.domEvent.button === 2) {
                         pauseRefresh = false;
                         return;
@@ -1118,7 +1177,7 @@ class GeometryEditor extends Eventable(Class) {
         if (renderer) {
             renderer.sortTopElements();
         }
-        this._addRefreshHook(() => {
+        this._addRefreshHook((): void => {
             if (pauseRefresh) {
                 return;
             }
@@ -1146,7 +1205,7 @@ class GeometryEditor extends Eventable(Class) {
         });
     }
 
-    _refresh() {
+    _refresh(): void {
         if (this._refreshHooks) {
             for (let i = this._refreshHooks.length - 1; i >= 0; i--) {
                 this._refreshHooks[i].call(this);
@@ -1154,14 +1213,14 @@ class GeometryEditor extends Eventable(Class) {
         }
     }
 
-    _hideContext() {
+    _hideContext(): void {
         if (this._geometry) {
             this._geometry.closeMenu();
             this._geometry.closeInfoWindow();
         }
     }
 
-    _addRefreshHook(fn) {
+    _addRefreshHook(fn: any): void {
         if (!fn) {
             return;
         }
@@ -1171,12 +1230,12 @@ class GeometryEditor extends Eventable(Class) {
         this._refreshHooks.push(fn);
     }
 
-    _update(method, ...args) {
+    _update(method: any, ...args: any): void {
         this._exeHistory([method, args]);
         this._recordHistory(method, ...args);
     }
 
-    _updateCoordFromShadow(ignoreRecord) {
+    _updateCoordFromShadow(ignoreRecord?: any): void {
         const geoToEdit = this._shadow || this._geometry;
 
         const coords = geoToEdit.getCoordinates();
@@ -1190,7 +1249,7 @@ class GeometryEditor extends Eventable(Class) {
         this._updating = updating;
     }
 
-    _recordHistory(method, ...args) {
+    _recordHistory(method: any, ...args: any): void {
         if (!this._history) {
             this._history = [];
             this._historyPointer = 0;
@@ -1210,6 +1269,8 @@ class GeometryEditor extends Eventable(Class) {
         this._history.push([method, args]);
         this._historyPointer = this._history.length - 1;
         /**
+         * 编辑记录事件，在发生编辑并正在记录时激发
+         * @english
          * edit record event, fired when an edit happend and being recorded
          *
          * @event Geometry#editrecord
@@ -1220,7 +1281,7 @@ class GeometryEditor extends Eventable(Class) {
         this._geometry.fire('editrecord');
     }
 
-    cancel() {
+    cancel(): GeometryEditor {
         if (!this._history || this._historyPointer === 0) {
             return this;
         }
@@ -1231,10 +1292,12 @@ class GeometryEditor extends Eventable(Class) {
     }
 
     /**
+     * 获取视图历史记录中的上一个地图视图
+     * @english
      * Get previous map view in view history
      * @return {Object} map view
      */
-    undo() {
+    undo(): any {
         if (!this._history || this._historyPointer === 0) {
             return this;
         }
@@ -1244,10 +1307,12 @@ class GeometryEditor extends Eventable(Class) {
     }
 
     /**
+     * 获取视图历史记录中的下一个地图视图
+     * @english
      * Get next view in view history
      * @return {Object} map view
      */
-    redo() {
+    redo(): any {
         if (!this._history || this._historyPointer === this._history.length - 1) {
             return this;
         }
@@ -1256,7 +1321,7 @@ class GeometryEditor extends Eventable(Class) {
         return this;
     }
 
-    _exeAndReset(record) {
+    _exeAndReset(record: any): void {
         if (this._updating) {
             return;
         }
@@ -1269,15 +1334,15 @@ class GeometryEditor extends Eventable(Class) {
         this.start();
     }
 
-    _onDragStart() {
+    _onDragStart(): void {
         this._updating = true;
     }
 
-    _onDragEnd() {
+    _onDragEnd(): void {
         this._updating = false;
     }
 
-    _exeHistory(record) {
+    _exeHistory(record: any): void {
         if (!Array.isArray(record)) {
             return;
         }
@@ -1289,15 +1354,15 @@ class GeometryEditor extends Eventable(Class) {
             record[0].forEach(o => {
                 const m = o[0],
                     args = o.slice(1);
-                geoToEdit[m].apply(geoToEdit, args);
+                geoToEdit[m].call(geoToEdit, ...args);
                 if (geoToEdit !== geo) {
-                    geo[m].apply(geo, args);
+                    geo[m].call(geo, ...args);
                 }
             });
         } else {
-            geoToEdit[record[0]].apply(geoToEdit, record[1]);
+            geoToEdit[record[0]].call(geoToEdit, ...record[1]);
             if (geoToEdit !== geo) {
-                geo[record[0]].apply(geo, record[1]);
+                geo[record[0]].call(geo, ...record[1]);
             }
         }
         this._updating = updating;
