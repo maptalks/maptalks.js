@@ -903,7 +903,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * Caculate the zoom level that contains the given extent with the maximum zoom level possible.
      * @param {Extent} extent
-     * @param  {Boolean} isFraction - can return fractional zoom
+     * @param  {Boolean} [isFraction] - can return fractional zoom
      * @param  {Object} [padding] [padding] - padding
      * @param  {Object} [padding.paddingLeft] - Sets the amount of padding in the left of a map container
      * @param  {Object} [padding.paddingTop] - Sets the amount of padding in the top of a map container
