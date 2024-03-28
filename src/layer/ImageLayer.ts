@@ -201,7 +201,7 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
     }
     
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _drawImages(timestamp?:any, context?:any) {
+    _drawImages(timestamp?:number, context?:any) {
         const imgData = this.layer._imageData;
         const map = this.getMap();
         const mapExtent = map._get2DExtentAtRes(map.getGLRes());
@@ -250,13 +250,13 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    drawOnInteracting(event?:any, timestamp?:any, context?:any) {
+    drawOnInteracting(event?:any, timestamp?:number, context?:any) {
         this.draw();
     }
 }
 
 export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRenderer) {
-    drawOnInteracting(event:any, timestamp:any, context:any) {
+    drawOnInteracting(event:any, timestamp:number, context:any) {
         this.draw(timestamp, context);
     }
 
@@ -274,7 +274,7 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
         }
     }
 
-    _drawImages(timestamp?:any, parentContext?:any) {
+    _drawImages(timestamp?:number, parentContext?:any) {
         const gl = this.gl;
         if (parentContext && parentContext.renderTarget) {
             const fbo = parentContext.renderTarget.fbo;
