@@ -136,8 +136,8 @@ DefaultSpatialReference['PRESET-4490-512'] = DefaultSpatialReference['PRESET-VT-
 
 /**
  * 空间参考类
- * 
- * @english 
+ *
+ * @english
  * SpatialReference Class
  */
 export default class SpatialReference {
@@ -149,7 +149,7 @@ export default class SpatialReference {
     _fullExtent: Projection['fullExtent']
     _transformation: Transformation
     json: Projection
-    constructor(options?: ProjectionCommon) {
+    constructor(options: ProjectionCommon = ({} as ProjectionCommon)) {
         this.options = options;
         this._initSpatialRef();
     }
@@ -183,11 +183,11 @@ export default class SpatialReference {
 
     /**
      * 获取投影类实例对象
-     * 
-     * @english 
+     *
+     * @english
      * get Projection Class instance
-     * @param projection 
-     * @returns 
+     * @param projection
+     * @returns
      */
     static getProjectionInstance(projection: any) {
         // TODO: 等待补充Projection类的类型定义,Projection类目前为mixin模式
@@ -333,7 +333,7 @@ export default class SpatialReference {
         if (!isNil(fullExtent['left'])) {
             // TODO: 等待Extent和Coordinate补充类型
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error 
+            // @ts-expect-error
             this._fullExtent = new Extent(
                 new Coordinate(fullExtent['left'], fullExtent['top']),
                 new Coordinate(fullExtent['right'], fullExtent['bottom'])
