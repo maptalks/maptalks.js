@@ -1,10 +1,34 @@
 import {
     extend, getAbsoluteURL, isNumber, isObject,
-    isString, isURL
+    isString, isURL, parseSVG
 } from './util';
+import { createEl } from './util/dom';
+import Browser from './Browser';
+import Ajax from './Ajax';
 
 const EMPTY_STRING = '';
 const BASE64_REG = /data:image\/.*;base64,/;
+
+
+function createCanvas() {
+    let canvas;
+    if (Browser.IS_NODE) {
+        console.error('Current environment does not support canvas dom');
+    } else {
+        canvas = createEl('canvas');
+    }
+    return canvas;
+}
+
+function createOffscreenCanvas() {
+    let offscreenCanvas;
+    if (Browser.decodeImageInWorker) {
+        offscreenCanvas = new OffscreenCanvas(2, 2);
+    }
+    return offscreenCanvas;
+}
+
+
 
 function isBase64URL(path) {
     return BASE64_REG.test(path);
@@ -44,6 +68,125 @@ function handlerURL(path, configs = {}) {
     return EMPTY_STRING;
 }
 
+function loadSprite(options = {}) {
+    return new Promise((resolve, reject) => {
+        const { imgUrl, jsonUrl } = options;
+        if (!imgUrl || !jsonUrl) {
+            reject(new Error('not find imgUrl/jsonUrl from options'));
+            console.error(options);
+            return;
+        }
+
+        function getCtx(canvas, width, height) {
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, width, height);
+            return ctx;
+        }
+
+        function parseSprite(json = {}, image) {
+            const canvas = createCanvas();
+            if (!canvas) {
+                reject(new Error('can not create canvas'));
+                return;
+            }
+            const icons = [];
+            for (const name in json) {
+                const spriteItem = json[name];
+                icons.push({
+                    name,
+                    spriteItem
+                });
+            }
+            const offscreenCanvas = createOffscreenCanvas();
+            icons.forEach(icon => {
+                const { name, spriteItem } = icon;
+                const { x, y, width, height } = spriteItem;
+                let resource;
+                if (offscreenCanvas) {
+                    const ctx = getCtx(offscreenCanvas, width, height);
+                    ctx.drawImage(image, x, y, width, height, 0, 0, width, height);
+                    resource = offscreenCanvas.transferToImageBitmap();
+                } else {
+                    const ctx = getCtx(canvas, width, height);
+                    ctx.drawImage(image, x, y, width, height, 0, 0, width, height);
+                    resource = canvas.toDataURL();
+                }
+                icon.resource = resource;
+                ResouceProxy.addResource(name, resource);
+            });
+            resolve(icons);
+        }
+
+        Ajax.getJSON(jsonUrl, {}, (err, json) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            const img = new Image();
+            img.onload = () => {
+                parseSprite(json, img);
+            };
+            img.onerror = (err) => {
+                reject(err);
+                return;
+            };
+            Ajax.getImage(img, imgUrl, {});
+        });
+    });
+}
+
+function loadSvgs(svgs) {
+    return new Promise((resolve, reject) => {
+        if (!svgs || svgs.length === 0) {
+            reject(new Error('not find svgs'));
+            return;
+        }
+        const result = [];
+
+        const addToCache = (name, body) => {
+            const paths = parseSVG(body);
+            if (paths) {
+                ResouceProxy.addResource(name, paths);
+            }
+            const data={
+                name,
+                paths,
+                body: body
+            }
+            result.push(data);
+        };
+        //svg json collection
+        if (isString(svgs)) {
+            fetch(svgs).then(res => res.json()).then(json => {
+                json.forEach(svg => {
+                    const { name, body } = svg;
+                    addToCache(name, body);
+                });
+                resolve(result);
+            }).catch(err => {
+                console.log(err);
+                reject(err);
+            });
+            return;
+        }
+        //support svg symbols
+        // https://developer.mozilla.org/en-US/docs/web/svg/element/symbol
+        if (svgs instanceof NodeList) {
+            for (let i = 0, len = svgs.length; i < len; i++) {
+                const symbolNode = svgs[i];
+                const name = symbolNode.id;
+                const html = symbolNode.innerHTML;
+                const body = `<xml><svg>${html}</svg></xml>`;
+                if (name) {
+                    addToCache(name, body);
+                }
+            }
+            resolve(result);
+        }
+    });
+}
 /**
  * simple Resouce Proxy implementation
  *
@@ -85,6 +228,7 @@ function handlerURL(path, configs = {}) {
 export const ResouceProxy = {
 
     host: EMPTY_STRING,
+    resources: {},
     proxy: {
         // '/api/': {
         //     target: 'https://www.maptalks.com/api/'
@@ -120,7 +264,52 @@ export const ResouceProxy = {
             proxy: extend({}, ResouceProxy.proxy || {}),
             origin: extend({}, ResouceProxy.origin || {})
         };
-    }
+    },
+    getResource(name) {
+
+        return ResouceProxy.resources[name];
+
+    },
+
+    /**
+     * remove resource
+     * @param {String} name
+     */
+    removeResource(name) {
+        delete ResouceProxy.resources[name];
+    },
+
+    /**
+     * add resource
+     * @param {String} name
+     * @param {Object} res
+     */
+    addResource(name, res) {
+        if (ResouceProxy.resources[name]) {
+            console.warn(`${name} resource Already exists,the ${name} Cannot be added,the resource name Cannot repeat `);
+            return;
+        }
+        ResouceProxy.resources[name] = res;
+    },
+
+    /**
+    * update  resource (remove and add)
+     * @param {String} name
+     * @param {Object} res
+     */
+    updateResource(name, res) {
+        ResouceProxy.resources[name] = res;
+    },
+
+    /**
+     * get all resource [key,value]
+     * @returns {Object} source
+     */
+    allResource() {
+        return ResouceProxy.resources;
+    },
+    loadSprite,
+    loadSvgs
 };
 
 export function formatResouceUrl(path) {
@@ -136,6 +325,9 @@ export function formatResouceUrl(path) {
     }
     if (isBase64URL(path) || isBlobURL(path)) {
         return path;
+    }
+    if (path[0] === '$') {
+        return ResouceProxy.getResource(path.substring(1, Infinity)) || '';
     }
     const origin = ResouceProxy.origin || {};
     //is isAbsoluteURL
