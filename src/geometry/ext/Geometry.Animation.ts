@@ -6,7 +6,7 @@ import Geometry from '../Geometry';
 
 Geometry.include(/** @lends Geometry.prototype */ {
     /**
-     * 要素动画
+     * 几何体动画
      * @english
      * Animate the geometry
      *

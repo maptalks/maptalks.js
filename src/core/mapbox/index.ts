@@ -1,4 +1,4 @@
-import { loadFunctionTypes } from '@maptalks/function-type';
+import { loadFunctionTypes, isFunctionDefinition, getFunctionTypeResources, interpolated, hasFunctionDefinition } from '@maptalks/function-type';
 import { extend } from '../util/common';
 
 /**
@@ -10,11 +10,11 @@ import { extend } from '../util/common';
  */
 
 export * from '@maptalks/feature-filter';
-export * from '@maptalks/function-type';
+export { loadFunctionTypes, isFunctionDefinition, getFunctionTypeResources, interpolated, hasFunctionDefinition }
 
 const arr = [],
     prop = {};
-export function loadGeoSymbol(symbol, geo) {
+export function loadGeoSymbol(symbol, geo): any {
     return loadFunctionTypes(symbol, () => {
         const map = geo.getMap();
         return set(arr, map ? map.getZoom() : 12,
@@ -26,13 +26,13 @@ export function loadGeoSymbol(symbol, geo) {
     });
 }
 
-function set(arr, a0, a1) {
+function set(arr: any, a0: any, a1: any): any {
     arr[0] = a0;
     arr[1] = a1;
     return arr;
 }
 
-function setProp(prop, b, p, z) {
+function setProp(prop: any, b: any, p: any, z: any): any {
     prop['{bearing}'] = b;
     prop['{pitch}'] = p;
     prop['{zoom}'] = z;
