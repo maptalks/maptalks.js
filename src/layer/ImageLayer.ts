@@ -7,18 +7,34 @@ import CanvasRenderer from '../renderer/layer/CanvasRenderer';
 import { ResourceCache } from '../renderer/layer/CanvasRenderer';
 import Extent from '../geo/Extent';
 import Layer from './Layer';
+import {LayerOptions} from './Layer'
+
+enum depthFuncEnum {
+    'never', '<', '=', '<=',' >', '!=', '>=', 'always'
+}
+
+export type ImageLayerOptions = {
+    crossOrigin?:  'gl' | 'canvas',
+    renderer?: string,
+    alphaTest?: number,
+    depthMask?: boolean,
+    depthFunc?: keyof typeof depthFuncEnum
+}
 
 /**
- * @property {Object}              options                     - ImageLayer's options
- * @property {String}              [options.crossOrigin=null]    - image's corssOrigin
- * @property {String}              [options.renderer=gl]         - ImageLayer's renderer, canvas or gl. gl tiles requires image CORS that canvas doesn't. canvas tiles can't pitch.
- * @property {Number}              [options.alphaTest=0]         - only for gl renderer, pixels alpha <= alphaTest will be discarded
- * @property {Boolean}             [options.depthMask=true]      - only for gl renderer, whether to write into depth buffer
- * @property {Boolean}             [options.depthFunc=String]    - only for gl renderer, depth function, available values: never,<, =, <=, >, !=, >=, always
+ * 配置参数
+ * 
+ * @english
+ * @property options                     - ImageLayer's options
+ * @property options.crossOrigin=null    - image's corssOrigin
+ * @property options.renderer=gl         - ImageLayer's renderer, canvas or gl. gl tiles requires image CORS that canvas doesn't. canvas tiles can't pitch.
+ * @property options.alphaTest=0         - only for gl renderer, pixels alpha <= alphaTest will be discarded
+ * @property options.depthMask=true      - only for gl renderer, whether to write into depth buffer
+ * @property options.depthFunc=String    - only for gl renderer, depth function, available values: never,<, =, <=, >, !=, >=, always
  * @memberOf ImageLayer
  * @instance
  */
-const options = {
+const options:ImageLayerOptions = {
     renderer: Browser.webgl ? 'gl' : 'canvas',
     crossOrigin: null,
     alphaTest: 0,
@@ -29,13 +45,16 @@ const options = {
 const TEMP_POINT = new Point(0, 0);
 
 /**
+ * images layer,可指定图像地理位置及透明的
+ * 
+ * @english
  * @classdesc
  * A layer used to display images, you can specify each image's geographic extent and opacity
  * @category layer
  * @extends Layer
- * @param {String|Number} id - tile layer's id
- * @param {Object[]} [images=null] - images
- * @param {Object} [options=null] - options defined in [ImageLayer]{@link ImageLayer#options}
+ * @param id - tile layer's id
+ * @param images=null - images
+ * @param options=null - options defined in [ImageLayer]{@link ImageLayer#options}
  * @example
  * new ImageLayer("images", [{
         url : 'http://example.com/foo.png',
@@ -44,8 +63,10 @@ const TEMP_POINT = new Point(0, 0);
     }])
  */
 class ImageLayer extends Layer {
+    _images: Array<any>|any 
+    _imageData: any
 
-    constructor(id, images, options) {
+    constructor(id:string|number, images?: Array<any>|any, options?: ImageLayerOptions&LayerOptions) {
         if (images && !Array.isArray(images) && !images.url) {
             options = images;
             images = null;
@@ -59,25 +80,31 @@ class ImageLayer extends Layer {
     }
 
     /**
+     * 设置图像并重新绘制
+     * 
+     * @english
      * Set images and redraw
-     * @param {Object[]} images - new images
-     * @return {ImageLayer} this
+     * @param images - new images
+     * @return this
      */
-    setImages(images) {
+    setImages(images:Array<any>):ImageLayer {
         this._images = images;
         this._prepareImages(images);
         return this;
     }
 
     /**
+     * 获取图像
+     * 
+     * @english
      * Get images
-     * @return {Object[]}
+     * @return
      */
-    getImages() {
+    getImages():Array<any> {
         return this._images;
     }
 
-    _prepareImages(images) {
+    _prepareImages(images:Array<any>) {
         images = images || [];
         if (!Array.isArray(images)) {
             images = [images];
@@ -85,9 +112,13 @@ class ImageLayer extends Layer {
         const map = this.getMap();
         const glRes = map.getGLRes();
         this._imageData = images.map(img => {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore 需/src/geo/Extent.js -> ts 并支持只传一个参数
             const extent = new Extent(img.extent);
             return extend({}, img, {
                 extent: extent,
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore 需/src/geo/Extent.js -> ts 并支持少传out参数
                 extent2d: extent.convertTo(c => map.coordToPointAtRes(c, glRes))
             });
         });
@@ -103,7 +134,9 @@ ImageLayer.mergeOptions(options);
 
 const EMPTY_ARRAY = [];
 
-export class ImageLayerCanvasRenderer extends CanvasRenderer {
+export class ImageLayerCanvasRenderer extends CanvasRenderer {    
+    _imageLoaded: boolean
+
     isDrawable() {
         if (this.getMap().getPitch()) {
             if (console) {
@@ -155,17 +188,20 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
         this.setToRedraw();
     }
 
-    draw(timestamp, context) {
+    draw(timestamp?:any, context?:any) {
         if (!this.isDrawable()) {
             return;
         }
         this.prepareCanvas();
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore 属性“_painted”为类“CanvasRenderer”私有属性,是否新增get、set方法
         this._painted = false;
         this._drawImages(timestamp, context);
         this.completeRender();
     }
-
-    _drawImages() {
+    
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _drawImages(timestamp?:any, context?:any) {
         const imgData = this.layer._imageData;
         const map = this.getMap();
         const mapExtent = map._get2DExtentAtRes(map.getGLRes());
@@ -174,6 +210,8 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
                 const extent = imgData[i].extent2d;
                 const image = this.resources && this.resources.getImage(imgData[i].url);
                 if (image && mapExtent.intersects(extent)) {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    //@ts-ignore 属性“_painted”为类“CanvasRenderer”私有属性,是否新增get、set方法
                     this._painted = true;
                     this._drawImage(image, extent, imgData[i].opacity || 1);
                 }
@@ -181,7 +219,7 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
         }
     }
 
-    _drawImage(image, extent, opacity) {
+    _drawImage(image:any, extent:any, opacity: number) {
         let globalAlpha = 0;
         const ctx = this.context;
         if (opacity < 1) {
@@ -211,13 +249,14 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
         }
     }
 
-    drawOnInteracting() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    drawOnInteracting(event?:any, timestamp?:any, context?:any) {
         this.draw();
     }
 }
 
 export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRenderer) {
-    drawOnInteracting(event, timestamp, context) {
+    drawOnInteracting(event:any, timestamp:any, context:any) {
         this.draw(timestamp, context);
     }
 
@@ -235,7 +274,7 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
         }
     }
 
-    _drawImages(timestamp, parentContext) {
+    _drawImages(timestamp?:any, parentContext?:any) {
         const gl = this.gl;
         if (parentContext && parentContext.renderTarget) {
             const fbo = parentContext.renderTarget.fbo;
@@ -259,7 +298,7 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
         return true;
     }
 
-    _drawImage(image, extent, opacity) {
+    _drawImage(image:any, extent:any, opacity:any) {
         this.drawGLImage(image, extent.xmin, extent.ymax, extent.getWidth(), extent.getHeight(), 1, opacity);
     }
 
@@ -295,8 +334,11 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
         super.onRemove();
     }
 }
-
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore registerRenderer(name:string, clazz: Class) TypeError ImageLayerCanvasRenderer 不满足Class类型
 ImageLayer.registerRenderer('canvas', ImageLayerCanvasRenderer);
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore registerRenderer(name:string, clazz: Class) TypeError ImageLayerGLRenderer 不满足Class类型
 ImageLayer.registerRenderer('gl', ImageLayerGLRenderer);
 
 export default ImageLayer;

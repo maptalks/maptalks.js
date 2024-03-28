@@ -104,7 +104,7 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
          * @param debugInfo
          * @param baseColor
          */
-        drawGLImage(image: TileImageType, x: number, y: number, w: number, h: number, scale: number, opacity: number, debugInfo: string, baseColor?: number[]) {
+        drawGLImage(image: TileImageType, x?: number, y?: number, w?: number, h?: number, scale?: number, opacity?: number, debugInfo?: string, baseColor?: number[]) {
             if ((this.gl as any).program !== this.program) {
                 this.useProgram(this.program);
             }

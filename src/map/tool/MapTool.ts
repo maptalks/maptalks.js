@@ -1,7 +1,7 @@
 import Class from '../../core/Class';
 import Eventable from '../../core/Eventable';
 
-import type Map from '../Map';
+import type { Map } from '../../map';
 
 const key = '_map_tool';
 
