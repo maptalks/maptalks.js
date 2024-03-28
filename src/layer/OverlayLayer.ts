@@ -843,7 +843,7 @@ export default OverlayLayer;
 export type OverlayLayerOptions = {
     drawImmediate?: boolean,
     geometryEvents?: boolean,
-    geometryEventTolerance?: number
+    geometryEventTolerance?: number,    
 }
 type addGeometryFitViewOptions = {
     easing?: string,
