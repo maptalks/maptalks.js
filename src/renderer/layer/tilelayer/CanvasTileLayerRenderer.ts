@@ -13,7 +13,6 @@ function loadTile(tile: any) {
     const tileCanvas = Canvas2D.createCanvas(tileSize['width'] * r, tileSize['height'] * r, canvasClass);
     tileCanvas['layer'] = this.layer;
     const point = new Point(tile['extent2d'].xmin, tile['extent2d'].ymax);
-    // @ts-expect-error 等待 Extent 改造完成
     const extent = new Extent(map.pointToCoordinate(point), map.pointToCoordinate(point.add(tileSize.width, tileSize.height)), map.getProjection());
     this.layer.drawTile(tileCanvas, {
         'url': tile['url'],

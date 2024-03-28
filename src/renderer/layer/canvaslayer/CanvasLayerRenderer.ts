@@ -3,8 +3,8 @@ import CanvasRenderer from '../../../renderer/layer/CanvasRenderer';
 
 export default class CanvasLayerRenderer extends CanvasRenderer {
     public buffer: HTMLCanvasElement;
-    private _drawContext: any[];
-    private _predrawed: boolean;
+    _drawContext: any[];
+    _predrawed: boolean;
 
     getPrepareParams() {
         return [];

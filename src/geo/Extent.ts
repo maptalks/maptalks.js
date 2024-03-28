@@ -38,22 +38,28 @@ const TEMP_COMBINE = [];
  * var extent2 = new Extent(extent1);
  */
 class Extent {
+    _clazz: any;
+    _dirty: boolean;
 
-    /**
-     * @param {Number} x1   - x of coordinate 1
-     * @param {Number} y1   - y of coordinate 1
-     * @param {Number} x2   - x of coordinate 2
-     * @param {Number} y2   - y of coordinate 2
-     */
-    constructor(p1, p2, p3, p4) {
+    projection: any;
+    xmin: number;
+    xmax: number;
+    ymin: number;
+    ymax: number;
+    pxmin: number;
+    pxmax: number;
+    pymin: number;
+    pymax: number;
+
+    constructor(...args: any[]) {
         this._clazz = Coordinate;
-        const l = arguments.length;
-        const proj = l > 0 ? arguments[l - 1] : null;
+        const l = args.length; // todo 最后一个参数是投影
+        const proj = l > 0 ? args[l - 1] : null;
         if (proj && proj.unproject) {
-            this.projection = arguments[l - 1];
+            this.projection = args[l - 1];
         }
         this._dirty = true;
-        this._initialize(p1, p2, p3, p4);
+        this._initialize(args[0], args[1], args[2], args[3]);
     }
 
     _initialize(p1, p2, p3, p4) {
@@ -159,12 +165,12 @@ class Extent {
 
     /**
      * Add the extent with a coordinate or a point.
-     * @param {Coordinate|Point} p - point or coordinate to add
      * @returns {Extent} a new extent
+     * @param args
      */
-    add() {
-        const e = new this.constructor(this['xmin'], this['ymin'], this['xmax'], this['ymax'], this.projection);
-        return e._add.apply(e, arguments);
+    add(...args: any[]) {
+        const e = new (this.constructor as any)(this['xmin'], this['ymin'], this['xmax'], this['ymax'], this.projection);
+        return e._add.call(e, ...args);
     }
 
     _scale(s) {
@@ -197,27 +203,27 @@ class Extent {
         return this;
     }
 
-    _substract() {
-        return this._sub.apply(this, arguments);
+    _substract(p: any) {
+        return this._sub(p);
     }
 
     /**
      * Substract the extent with a coordinate or a point.
-     * @param {Coordinate|Point} p - point or coordinate to substract
-     * @returns {Extent} a new extent
+     * @returns a new extent
+     * @param args
      */
-    sub() {
-        const e = new this.constructor(this['xmin'], this['ymin'], this['xmax'], this['ymax'], this.projection);
-        return e._sub.apply(e, arguments);
+    sub(...args: any[]) {
+        const e = new (this.constructor as any)(this['xmin'], this['ymin'], this['xmax'], this['ymax'], this.projection);
+        return e._sub.call(e, ...args);
     }
 
     /**
      * Alias for sub
-     * @param {Coordinate|Point} p - point or coordinate to substract
-     * @returns {Extent} a new extent
+     * @returns a new extent
+     * @param args
      */
-    substract() {
-        return this.sub.apply(this, arguments);
+    substract(...args: any[]) {
+        return this.sub.call(this, ...args);
     }
 
 
@@ -226,7 +232,7 @@ class Extent {
      * @return {Extent} rounded extent
      */
     round() {
-        return new this.constructor(Math.round(this['xmin']), Math.round(this['ymin']),
+        return new (this.constructor as any)(Math.round(this['xmin']), Math.round(this['ymin']),
             Math.round(this['xmax']), Math.round(this['ymax']), this.projection);
     }
 
@@ -270,7 +276,7 @@ class Extent {
      * @params {Coorindate} [out=undefined] - optional point to receive result
      * @return {Coordinate}
      */
-    getCenter(out) {
+    getCenter(out?: Coordinate) {
         const x = (this['xmin'] + this['xmax']) / 2;
         const y = (this['ymin'] + this['ymax']) / 2;
         if (out) {
@@ -455,7 +461,7 @@ class Extent {
             return this;
         }
         const ext = this.__combine(extent);
-        return new this.constructor(ext[0], ext[1], ext[2], ext[3], this.projection);
+        return new (this.constructor as any)(ext[0], ext[1], ext[2], ext[3], this.projection);
     }
 
     /**
@@ -478,7 +484,7 @@ class Extent {
             min = proj.unproject(min, min);
             max = proj.unproject(max, max);
         }
-        return new this.constructor(min, max, proj);
+        return new (this.constructor as any)(min, max, proj);
     }
 
     /**
@@ -494,7 +500,7 @@ class Extent {
         } else {
             w = h = distance;
         }
-        return new this.constructor(this['xmin'] - w, this['ymin'] - h, this['xmax'] + w, this['ymax'] + h, this.projection);
+        return new (this.constructor as any)(this['xmin'] - w, this['ymin'] - h, this['xmax'] + w, this['ymax'] + h, this.projection);
     }
 
     _expand(distance) {
@@ -572,7 +578,7 @@ class Extent {
      * @return {Extent} copy
      */
     copy() {
-        return new this.constructor(this['xmin'], this['ymin'], this['xmax'], this['ymax'], this.projection);
+        return new (this.constructor as any)(this['xmin'], this['ymin'], this['xmax'], this['ymax'], this.projection);
     }
 
     /**
@@ -584,7 +590,7 @@ class Extent {
         if (!this.isValid()) {
             return null;
         }
-        const e = out || new this.constructor();
+        const e = out || new (this.constructor as any)();
         if (out) {
             e.set(null, null, null, null);
         }

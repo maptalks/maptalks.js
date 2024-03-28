@@ -63,5 +63,5 @@ export const Measurer = {
         }
         return null;
     }
-};
+} as any;
 

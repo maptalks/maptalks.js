@@ -13,14 +13,12 @@ import Position from './Position';
  * @extends Position
  */
 class Point extends Position {
-
     /**
      * Compare with another point with a delta
-     * @param {Point} p
-     * @param {Number} delta
-     * @return {Boolean}
+     * @param p
+     * @param delta
      */
-    closeTo(p, delta) {
+    closeTo(p: Point, delta?: number): boolean {
         if (!delta) {
             delta = 0;
         }
@@ -34,7 +32,7 @@ class Point extends Position {
      * coordinates.
      * @return {Number} magnitude
      */
-    mag() {
+    mag(): number {
         return Math.sqrt(this.x * this.x + this.y * this.y);
     }
 
@@ -46,10 +44,10 @@ class Point extends Position {
      * @return {Point} unit vector point
      */
     unit() {
-        return this.copy()._unit();
+        return (this.copy() as Point)._unit();
     }
 
-    _unit() {
+    _unit(): this {
         this._div(this.mag());
         return this;
     }
@@ -61,7 +59,7 @@ class Point extends Position {
      * @return {Point} perpendicular point
      */
     perp() {
-        return this.copy()._perp();
+        return (this.copy() as Point)._perp();
     }
 
     _perp() {
@@ -71,15 +69,13 @@ class Point extends Position {
         return this;
     }
 
-
-
     /**
      * Get the angle between this point and another point, in radians
      * from mapbox/point-geometry
-     * @param {Point} b the other point
-     * @return {Number} angle
+     * @param b the other point
+     * @returns angle
      */
-    angleWith(b) {
+    angleWith(b: Point): number {
         return this.angleWithSep(b.x, b.y);
     }
 
@@ -113,11 +109,11 @@ class Point extends Position {
      * given in radians
      * from mapbox/point-geometry
      *
-     * @param {Number} a angle to rotate around, in radians
-     * @return {Point} output point
+     * @param a angle to rotate around, in radians
+     * @returns output point
      */
-    rotate(a) {
-        return this.copy()._rotate(a);
+    rotate(a: number) {
+        return (this.copy() as Point)._rotate(a);
     }
 }
 
