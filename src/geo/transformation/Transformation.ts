@@ -9,6 +9,8 @@ import Point from '../Point';
  * @protected
  */
 class Transformation {
+    public matrix: number[];
+
     /**
      * The base 2d point system is a fixed system that is consistent with HTML coordinate system: on X-Axis, left is smaller and right is larger; on Y-Axis, top is smaller and bottom is larger. <br>
      * As map's coordinates may not be in the same order(e.g. on a mercator projected earth, top is larger and bottom is smaller), <br>
@@ -19,9 +21,9 @@ class Transformation {
      * c : x of the origin point of the projected coordinate system <br>
      * d : y of the origin point of the projected coordinate system <br>
      * e.g.: Transformation parameters for Google map: [1, -1, -20037508.34, 20037508.34] <br>
-     * @param  {Number[]} matrix transformation array
+     * @param  matrix transformation array
      */
-    constructor(matrix) {
+    constructor(matrix: number[]) {
         this.matrix = matrix;
     }
 

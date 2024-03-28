@@ -1,3 +1,5 @@
+import Coordinate from '../Coordinate'
+
 /**
  * This provides methods used for event handling. It's a mixin and not meant to be used directly.
  * @mixin Common
@@ -7,12 +9,12 @@
 export default {
     /**
      * Measure length between coordinate c1 and coordinate c2
-     * @param  {coordinate} c1 coordinate
-     * @param  {coordinate} c2 coordinate
-     * @return {Number}    length
+     * @param c1 coordinate
+     * @param c2 coordinate
+     * @return length
      * @function measurer.Common.measureLength
      */
-    measureLength: function (c1, c2) {
+    measureLength: function (c1: Coordinate, c2: Coordinate): number {
         if (!Array.isArray(c1)) {
             return this.measureLenBetween(c1, c2);
         }

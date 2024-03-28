@@ -53,18 +53,18 @@ class CanvasRenderer extends Class {
     _extent2D: any;
     _maskExtent: any;
 
-    private _painted: boolean;
-    private _drawTime: number;
-    private _frameTime: number;
-    private _resWorkerConn: ResourceWorkerConnection;
+    _painted: boolean;
+    _drawTime: number;
+    _frameTime: number;
+    _resWorkerConn: ResourceWorkerConnection;
 
-    private _toRedraw: boolean;
-    private _loadingResource: boolean;
-    private _renderComplete: boolean;
-    private _canvasUpdated: boolean;
+    _toRedraw: boolean;
+    _loadingResource: boolean;
+    _renderComplete: boolean;
+    _canvasUpdated: boolean;
 
-    private _renderZoom: number;
-    private _errorThrown: boolean;
+    _renderZoom: number;
+    _errorThrown: boolean;
 
     drawOnInteracting?(...args: any[]): void;
     checkResources?(): any[];

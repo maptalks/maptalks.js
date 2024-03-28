@@ -8,14 +8,16 @@ import Common from './Common';
  * @private
  */
 class Sphere {
+    public radius: number;
+
     /**
-     * @param  {Number} radius Sphere's radius
+     * @param radius Sphere's radius
      */
-    constructor(radius) {
+    constructor(radius: number) {
         this.radius = radius;
     }
 
-    measureLenBetween(c1, c2) {
+    measureLenBetween(c1, c2): number {
         if (!c1 || !c2) {
             return 0;
         }
@@ -115,7 +117,7 @@ class Sphere {
 }
 
 // from turf.js
-function rhumbBearing(start, end, options = {}) {
+function rhumbBearing(start, end, options: any = {}) {
     let bear360;
     if (options.final) bear360 = calculateRhumbBearing(end, start);
     else bear360 = calculateRhumbBearing(start, end);
@@ -182,7 +184,7 @@ function calculateRhumbDestination(origin, distance, bearing, radius) {
  * @name WGS84Sphere
  * @mixes measurer.Common
  */
-export const WGS84Sphere = extend(/** @lends measurer.WGS84Sphere */{
+export const WGS84Sphere = extend<any>(/** @lends measurer.WGS84Sphere */{
     'measure': 'EPSG:4326',
     sphere: new Sphere(6378137),
     /**
@@ -191,46 +193,44 @@ export const WGS84Sphere = extend(/** @lends measurer.WGS84Sphere */{
      * @param  {Coordinate} c2
      * @return {Number}
      */
-    measureLenBetween() {
-        return this.sphere.measureLenBetween.apply(this.sphere, arguments);
+    measureLenBetween(c1, c2) {
+        return this.sphere.measureLenBetween(c1, c2);
     },
     /**
      * Measure the area closed by the given coordinates.
-     * @param  {Coordinate[]} coordinates
      * @return {number}
      */
-    measureArea() {
-        return this.sphere.measureArea.apply(this.sphere, arguments);
+    measureArea(...args: Coordinate[]) {
+        return this.sphere.measureArea.call(this.sphere, ...args);
     },
 
-    _locate() {
-        return this.sphere._locate.apply(this.sphere, arguments);
+    _locate(...args: any[]) {
+        return this.sphere._locate.call(this.sphere, ...args);
     },
 
     /**
      * Locate a coordinate from the given source coordinate with a x-axis distance and a y-axis distance.
-     * @param  {Coordinate} c     - source coordinate
-     * @param  {Number} xDist              - x-axis distance
-     * @param  {Number} yDist              - y-axis distance
+     * @param c     - source coordinate
+     * @param xDist              - x-axis distance
+     * @param yDist              - y-axis distance
      * @return {Coordinate}
      */
-    locate() {
-        return this.sphere.locate.apply(this.sphere, arguments);
+    locate(...args: any[]) {
+        return this.sphere.locate.call(this.sphere, ...args);
     },
 
-    _rotate() {
-        return this.sphere._rotate.apply(this.sphere, arguments);
+    _rotate(...args: any[]) {
+        return this.sphere._rotate.call(this.sphere, ...args);
     },
 
     /**
      * Rotate a coordinate of given angle around pivot
-     * @param {Coordinate} c  - source coordinate
-     * @param {Coordinate} pivot - pivot
-     * @param {Number} angle - angle in degree
-     * @return {Coordinate}
+     * @param c  - source coordinate
+     * @param pivot - pivot
+     * @param angle - angle in degree
      */
-    rotate() {
-        return this.sphere.rotate.apply(this.sphere, arguments);
+    rotate(...args: any[]) {
+        return this.sphere.rotate.call(this.sphere, ...args);
     }
 }, Common);
 
@@ -243,29 +243,28 @@ export const WGS84Sphere = extend(/** @lends measurer.WGS84Sphere */{
  * @name BaiduSphere
  * @mixes measurer.Common
  */
-export const BaiduSphere = extend(/** @lends measurer.BaiduSphere */{
+export const BaiduSphere = extend<any>(/** @lends measurer.BaiduSphere */{
     'measure': 'BAIDU',
     sphere: new Sphere(6370996.81),
     /**
      * Measure the length between 2 coordinates.
      * @param  {Coordinate} c1
      * @param  {Coordinate} c2
-     * @return {Number}
      */
-    measureLenBetween() {
-        return this.sphere.measureLenBetween.apply(this.sphere, arguments);
+    measureLenBetween(...args: Coordinate[]): number {
+        return this.sphere.measureLenBetween.call(this.sphere, ...args);
     },
     /**
      * Measure the area closed by the given coordinates.
      * @param  {Coordinate[]} coordinates
      * @return {number}
      */
-    measureArea() {
-        return this.sphere.measureArea.apply(this.sphere, arguments);
+    measureArea(...args: any[]) {
+        return this.sphere.measureArea.call(this.sphere, ...args);
     },
 
-    _locate() {
-        return this.sphere._locate.apply(this.sphere, arguments);
+    _locate(...args: any[]) {
+        return this.sphere._locate.call(this.sphere, ...args);
     },
 
     /**
@@ -276,22 +275,20 @@ export const BaiduSphere = extend(/** @lends measurer.BaiduSphere */{
      * @param  {Point} [out=null]          - optional object to receive result
      * @return {Coordinate}
      */
-    locate() {
-        return this.sphere.locate.apply(this.sphere, arguments);
+    locate(...args: any[]) {
+        return this.sphere.locate.call(this.sphere, ...args);
     },
 
-    _rotate() {
-        return this.sphere._rotate.apply(this.sphere, arguments);
+    _rotate(...args: any[]) {
+        return this.sphere._rotate.call(this.sphere, ...args);
     },
 
     /**
      * Rotate a coordinate of given angle around pivot
-     * @param {Coordinate} c  - source coordinate
-     * @param {Coordinate} pivot - pivot
-     * @param {Number} angle - angle in degree
      * @return {Coordinate}
+     * @param args
      */
-    rotate() {
-        return this.sphere.rotate.apply(this.sphere, arguments);
+    rotate(...args: any[]) {
+        return this.sphere.rotate.call(this.sphere, ...args);
     }
 }, Common);
