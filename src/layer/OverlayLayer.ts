@@ -50,7 +50,7 @@ class OverlayLayer extends Layer {
     _cookedStyles: any
     _clearing: boolean
     
-    constructor(id:number|string, geometries:any, options: OverlayLayerOptions&LayerOptions) {
+    constructor(id:string, geometries:any, options: OverlayLayerOptions&LayerOptions) {
         if (geometries && (!isGeometry(geometries) && !Array.isArray(geometries) && GEOJSON_TYPES.indexOf(geometries.type) < 0)) {
             options = geometries;
             geometries = null;

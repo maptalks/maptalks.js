@@ -87,7 +87,7 @@ class VectorLayer extends OverlayLayer {
      * @param options.style=null    - vectorlayer's style
      * @param options.*=null        - options defined in [VectorLayer]{@link VectorLayer#options}
      */
-    constructor(id:string|number, geometries?:any, options?:VectorLayerOptions&LayerOptions) {
+    constructor(id:string, geometries?:any, options?:VectorLayerOptions&LayerOptions) {
         super(id, geometries, options);
     }
 

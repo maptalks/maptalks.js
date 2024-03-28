@@ -14,8 +14,8 @@ enum depthFuncEnum {
 }
 
 export type ImageLayerOptions = {
-    crossOrigin?:  'gl' | 'canvas',
-    renderer?: string,
+    crossOrigin?: string,
+    renderer?: 'canvas'|'gl'|'dom',
     alphaTest?: number,
     depthMask?: boolean,
     depthFunc?: keyof typeof depthFuncEnum
@@ -66,7 +66,7 @@ class ImageLayer extends Layer {
     _images: Array<any>|any 
     _imageData: any
 
-    constructor(id:string|number, images?: Array<any>|any, options?: ImageLayerOptions&LayerOptions) {
+    constructor(id: string, images?: Array<any> | any, options?: ImageLayerOptions & LayerOptions) {
         if (images && !Array.isArray(images) && !images.url) {
             options = images;
             images = null;
@@ -188,13 +188,13 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
         this.setToRedraw();
     }
 
-    draw(timestamp?:any, context?:any) {
+    draw(timestamp?:number, context?:any) {
         if (!this.isDrawable()) {
             return;
         }
         this.prepareCanvas();
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-ignore 属性“_painted”为类“CanvasRenderer”私有属性,是否新增get、set方法
+        // @ts-ignore
         this._painted = false;
         this._drawImages(timestamp, context);
         this.completeRender();
@@ -211,7 +211,7 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
                 const image = this.resources && this.resources.getImage(imgData[i].url);
                 if (image && mapExtent.intersects(extent)) {
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    //@ts-ignore 属性“_painted”为类“CanvasRenderer”私有属性,是否新增get、set方法
+                    // @ts-ignore
                     this._painted = true;
                     this._drawImage(image, extent, imgData[i].opacity || 1);
                 }

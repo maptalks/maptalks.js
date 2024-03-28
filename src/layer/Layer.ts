@@ -72,7 +72,7 @@ const options:LayerOptions = {
 class Layer extends JSONAble(Eventable(Renderable(Class))) {
     _canvas: any|undefined
     _renderer: any|undefined
-    _id: string|number|any
+    _id: string
     _zIndex: number
     map: Map
     _mask: any
@@ -82,7 +82,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     _silentConfig: boolean|undefined|any
     
 
-    constructor(id:string|number|any, options: LayerOptions) {
+    constructor(id:string, options: LayerOptions) {
         let canvas;
         if (options) {
             canvas = options.canvas;
@@ -146,7 +146,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @return this
      * @fires Layer#idchange
      */
-    setId(id:string|number):Layer {
+    setId(id:string):Layer {
         const old = this._id;
         if (!isNil(id)) {
             id = id + '';
@@ -824,6 +824,6 @@ export type LayerOptions = {
     collision?: boolean,
     collisionScope?: string,
     hitDetect?: boolean,
-    canvas?: any,
+    canvas?: HTMLCanvasElement,
     mask?:any
 }

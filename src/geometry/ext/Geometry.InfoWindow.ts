@@ -1,21 +1,22 @@
 import { extend } from '../../core/util';
 import Geometry from '../Geometry';
 import InfoWindow from '../../ui/InfoWindow';
+import Coordinate from '../../geo/Coordinate';
 
 Geometry.include(/** @lends Geometry.prototype */ {
     /**
      * 给几何体设置信息窗口
      * @english
      * Set an InfoWindow to the geometry
-     * @param {Object} options - construct [options]{@link ui.InfoWindow#options} for the InfoWindow
-     * @return {Geometry} this
+     * @param options - construct [options]{@link ui.InfoWindow#options} for the InfoWindow
+     * @return this
      * @example
      * geometry.setInfoWindow({
      *     title    : 'This is a title',
      *     content  : '<div style="color:#f00">This is content of the InfoWindow</div>'
      * });
      */
-    setInfoWindow(options: InfoWindow): Geometry {
+    setInfoWindow(options: any): Geometry {
         this.removeInfoWindow();
         if (options instanceof InfoWindow) {
             this._infoWindow = options;
@@ -50,10 +51,10 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * 打开信息窗口，默认位于几何图形的中心。
      * @english
      * Open the InfoWindow, default on the center of the geometry.
-     * @param  {Coordinate} [coordinate=null] - coordinate to open the InfoWindow
-     * @return {Geometry} this
+     * @param  coordinate=null - coordinate to open the InfoWindow
+     * @return this
      */
-    openInfoWindow(coordinate: any): Geometry {
+    openInfoWindow(coordinate?: Coordinate): Geometry {
         if (!this.getMap()) {
             return this;
         }
