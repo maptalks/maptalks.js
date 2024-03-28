@@ -1,5 +1,4 @@
 import Coordinate from '../geo/Coordinate';
-import Geometry from './Geometry'
 
 /**
  * 基于几何图形的通用方法
