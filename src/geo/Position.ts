@@ -153,7 +153,7 @@ abstract class Position {
     }
 
     //destructive add
-    _add(x, y) {
+    _add(x, y?: number) {
         if (!isNil(x.x)) {
             this.x += x.x;
             this.y += x.y;

@@ -20,6 +20,8 @@ declare module "./Map" {
         _setPitch(pitch: number): this;
         _calcMatrices(): void;
         _containerPointToPoint(p: Point, zoom?: number, out?: Point): Point;
+        _recenterOnTerrain(): void;
+        //Further improvement is needed. Here, only the methods used in the Map are listed. In order to pass the compilation, any errors were used everywhere
 
     }
 }
@@ -29,7 +31,7 @@ const RADIAN = Math.PI / 180;
 const DEFAULT_FOV = 0.6435011087932844;
 const TEMP_COORD = new Coordinate(0, 0);
 const TEMP_POINT = new Point(0, 0);
-const SOUTH = [0, -1, 0], BEARING = [];
+const SOUTH = [0, -1, 0], BEARING = []
 
 const altitudesHasData = (altitudes) => {
     if (isNumber(altitudes)) {
@@ -349,11 +351,11 @@ Map.include(/** @lends Map.prototype */{
         const center = this.getCenter();
         const centerPoint = this.coordToPointAtRes(center, glRes);
         centerPoint.z = this.altitudeToPoint(center.z, glRes);
-        const direction = subtract([], cameraPoint.toArray(), centerPoint.toArray());
+        const direction = subtract([] as any, cameraPoint.toArray(), centerPoint.toArray());
         set(this.cameraUp || [0, 0, 0], 0, 0, 1);
         this._pitch = angle(direction, this.cameraUp);
-        set(BEARING, direction[0], direction[1], 0);
-        this._angle = -angle(BEARING, SOUTH);
+        set(BEARING as any, direction[0], direction[1], 0);
+        this._angle = -angle(BEARING as any, SOUTH as any);
         this._zoomLevel = this.getFitZoomForCamera(coordinate, this._pitch).zoom;
         this._calcMatrices();
     },
@@ -507,7 +509,7 @@ Map.include(/** @lends Map.prototype */{
                     this._altitudeScale = this.altitudeToPoint(100, this.getGLRes()) / 100;
                 }
                 const scale = this._glScale;
-                set(a, out.x * scale, out.y * scale, altitude * this._altitudeScale);
+                set(a as any, out.x * scale, out.y * scale, altitude * this._altitudeScale);
                 const t = this._projIfBehindCamera(a, this.cameraPosition, this.cameraForward);
                 applyMatrix(t, t, this.projViewMatrix);
                 out.x = (t[0] * w2) + w2;
@@ -526,11 +528,11 @@ Map.include(/** @lends Map.prototype */{
         const proj = new Array(3);
         const sub = new Array(3);
         return function (position, cameraPos, camForward) {
-            subtract(vectorFromCam, position, cameraPos);
-            const camNormDot = dot(camForward, vectorFromCam);
+            subtract(vectorFromCam as any, position, cameraPos);
+            const camNormDot = dot(camForward, vectorFromCam as any);
             if (camNormDot <= 0) {
-                scale(proj, camForward, camNormDot * 1.01);
-                add(position, cameraPos, subtract(sub, vectorFromCam, proj));
+                scale(proj as any, camForward, camNormDot * 1.01);
+                add(position, cameraPos, subtract(sub as any, vectorFromCam as any, proj  as any));
             }
             return position;
         };
@@ -557,14 +559,14 @@ Map.include(/** @lends Map.prototype */{
         return function (p, res, out) {
             if (this.isTransforming()) {
                 const w2 = this.width / 2 || 1, h2 = this.height / 2 || 1;
-                set(cp, (p.x - w2) / w2, (h2 - p.y) / h2, 0);
+                set(cp  as any, (p.x - w2) / w2, (h2 - p.y) / h2, 0);
 
-                set(coord0, cp[0], cp[1], 0);
-                set(coord1, cp[0], cp[1], 1);
+                set(coord0  as any, cp[0], cp[1], 0);
+                set(coord1  as any, cp[0], cp[1], 1);
                 coord0[3] = coord1[3] = 1;
 
-                applyMatrix(coord0, coord0, this.projViewMatrixInverse);
-                applyMatrix(coord1, coord1, this.projViewMatrixInverse);
+                applyMatrix(coord0, coord0  as any, this.projViewMatrixInverse);
+                applyMatrix(coord1, coord1  as any, this.projViewMatrixInverse);
                 const x0 = coord0[0];
                 const x1 = coord1[0];
                 const y0 = coord0[1];
@@ -731,8 +733,8 @@ Map.include(/** @lends Map.prototype */{
             const width = this.width || 1;
             const height = this.height || 1;
             const cameraToCenterDistance = 0.5 / Math.tan(this._fov / 2) * height;
-            mat4.scale(m, this.projMatrix, minusY);
-            mat4.translate(m, m, set(arr, 0, 0, -cameraToCenterDistance));//[0, 0, cameraToCenterDistance]
+            mat4.scale(m, this.projMatrix, minusY  as any);
+            mat4.translate(m, m, set(arr as any, 0, 0, -cameraToCenterDistance));//[0, 0, cameraToCenterDistance]
             if (this._pitch) {
                 mat4.rotateX(m, m, this._pitch);
             }
@@ -740,7 +742,7 @@ Map.include(/** @lends Map.prototype */{
                 mat4.rotateZ(m, m, this._angle);
             }
             mat4.identity(m1);
-            mat4.scale(m1, m1, set(arr, width / 2, -height / 2, 1)); //[this.width / 2, -this.height / 2, 1]
+            mat4.scale(m1, m1, set(arr as any, width / 2, -height / 2, 1)); //[this.width / 2, -this.height / 2, 1]
             return mat4.multiply(this.domCssMatrix || createMat4(), m1, m);
         };
     }(),
