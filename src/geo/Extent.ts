@@ -51,22 +51,15 @@ class Extent {
     pymin: number;
     pymax: number;
 
-    /**
-     * @param p1  x of coordinate 1
-     * @param p2  y of coordinate 1
-     * @param p3  x of coordinate 2
-     * @param p4  y of coordinate 2
-     * @param args
-     */
-    constructor(p1: any, p2: any, p3?: number, p4?: number, ...args: any[]) {
+    constructor(...args: any[]) {
         this._clazz = Coordinate;
-        const l = arguments.length;
+        const l = args.length; // todo 最后一个参数是投影
         const proj = l > 0 ? args[l - 1] : null;
         if (proj && proj.unproject) {
             this.projection = args[l - 1];
         }
         this._dirty = true;
-        this._initialize(p1, p2, p3, p4);
+        this._initialize(args[0], args[1], args[2], args[3]);
     }
 
     _initialize(p1, p2, p3, p4) {
