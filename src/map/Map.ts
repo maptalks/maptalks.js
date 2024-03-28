@@ -94,7 +94,7 @@ const REDRAW_OPTIONS_PROPERTIES = ['centerCross', 'fog', 'fogColor', 'debugSky']
  * @memberOf Map
  * @instance
  */
-const options = {
+const options: MapOptionsType = {
     'maxVisualPitch': 70,
     'maxPitch': 80,
     'centerCross': false,
@@ -181,6 +181,44 @@ const options = {
  * });
  */
 export class Map extends Handlerable(Eventable(Renderable(Class))) {
+    VERSION: number;
+    _loaded: boolean;
+    _panels: { [key: string]: HTMLDivElement };
+    _baseLayer: Layer;
+    _layers: Array<Layer>;
+    _zoomLevel: number;
+    _center: Coordinate;
+    _centerZ: number;
+    _mapViewPoint: Point;
+    isMap: boolean;
+    _containerDOM: HTMLDivElement | HTMLCanvasElement;
+    _spatialReference: SpatialReference;
+    _originLng: number;
+    _altitudeOriginDirty: boolean;
+    _cursor: string;
+    _prjCenter: Point;
+    centerAltitude: number;
+    width: number;
+    height: number;
+    _prjMaxExtent: PointerEvent;
+    _glRes: number;
+    _zooming: boolean;
+    _layerCache: { [key: string]: Layer };
+    _mapViewCoord: Coordinate;
+    _eventSilence: boolean;
+    _moving: boolean;
+    _originCenter: Coordinate;
+    _suppressRecenter: boolean;
+    _dragRotating: boolean;
+    CanvasClass: any;
+    _priorityCursor: string;
+    _initTime: number;
+    _renderer: any;
+    _containerDomContentRect: DOMRect;
+    _mapRes: number;
+    _onLoadHooks: Array<(...args) => void>;
+    static VERSION: number;
+
 
     /**
      * @param {(string|HTMLElement|object)} container - The container to create the map on, can be:<br>
@@ -195,7 +233,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Layer[]} [options.layers=null] - layers that will be added to map initially.
      * @param {*} options.* - any other option defined in [Map.options]{@link Map#options}      [description]
      */
-    constructor(container, options) {
+    constructor(container: string | HTMLDivElement | HTMLCanvasElement, options: MapOptionsType & { center: Coordinate, zoom: number }) {
         if (!options) {
             throw new Error('Invalid options when creating map.');
         }
@@ -507,7 +545,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {Number} [padding.paddingBottom] - Sets the amount of padding in the bottom of a map container
      * @return {Map} this
      */
-    setCenter(center, padding) {
+    setCenter(center, padding?: any) {
         if (!center) {
             return this;
         }
@@ -1633,7 +1671,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @private
      * @fires Map#movestart
      */
-    onMoveStart(param) {
+    onMoveStart(param?: any) {
         if (this._mapAnimPlayer) {
             this._stopAnim(this._mapAnimPlayer);
         }
@@ -1885,7 +1923,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
 
-    _fireEvent(eventName, param) {
+    _fireEvent(eventName, param?: { [key: string]: any }) {
         if (this._eventSilence) {
             return;
         }
@@ -2875,3 +2913,79 @@ Map.include(/** @lends Map.prototype */{
 Map.mergeOptions(options);
 
 export default Map;
+
+export type MapOptionsType = {
+    // center: Array<number> | Coordinate;
+    // zoom: number;
+    baseLayer?: Layer;
+    layers?: Array<Layer>;
+    draggable?: boolean;
+    dragPan?: boolean;
+    dragRotate?: boolean;
+    dragPitch?: boolean;
+    dragRotatePitch?: boolean;
+    touchGesture?: boolean;
+    touchZoom?: boolean;
+    touchRotate?: boolean;
+    touchPitch?: boolean;
+    touchZoomRotate?: boolean;
+    doubleClickZoom?: boolean;
+    scrollWheelZoom?: boolean;
+    geometryEvents?: boolean;
+    control?: boolean;
+    attribution?: boolean;
+    zoomControl?: boolean;
+    scaleControl?: boolean;
+    overviewControl?: boolean;
+    fog?: boolean;
+    fogColor?: string;
+    devicePixelRatio?: number;
+    heightFactor?: number;
+    cameraInfiniteFar?: boolean;
+    originLatitudeForAltitude?: number;
+
+    viewHistory?: boolean;
+    viewHistoryCount?: number;
+    seamlessZoom?: boolean;
+    maxVisualPitch?: number;
+    maxPitch?: number;
+    centerCross?: boolean;
+    zoomInCenter?: boolean;
+    zoomOrigin?: any;
+    zoomAnimation?: boolean;
+    zoomAnimationDuration?: number;
+    panAnimation?: boolean;
+    panAnimationDuration?: number;
+    rotateAnimation?: boolean;
+    rotateAnimationDuration?: number;
+    zoomable?: boolean;
+    enableInfoWindow?: boolean;
+    hitDetect?: boolean;
+    hitDetectLimit?: number;
+    fpsOnInteracting?: number;
+    layerCanvasLimitOnInteracting?: number;
+    maxZoom?: number;
+    minZoom?: number;
+    maxExtent?: Extent;
+    fixCenterOnResize?: boolean;
+    checkSize?: boolean;
+    checkSizeInterval?: number;
+    renderer?: 'canvas' | 'gl';
+    cascadePitches?: Array<number>;
+    renderable?: boolean;
+    clickTimeThreshold?: number;
+    stopRenderOnOffscreen?: boolean;
+    preventWheelScroll?: boolean;
+    preventTouch?: boolean;
+    supportPluginEvent?: boolean;
+    switchDragButton?: boolean;
+    mousemoveThrottleTime?: number;
+    maxFPS?: number;
+    debug?: boolean;
+
+
+
+
+
+
+}
