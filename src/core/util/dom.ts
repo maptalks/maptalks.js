@@ -143,7 +143,7 @@ export function removeDomNode(node?: HTMLElement) {
  * @param  context      - function context
  * @memberOf DomUtil
  */
-export function addDomEvent(obj: HTMLElement, typeArr: string, handler: Function, context: Object) {
+export function addDomEvent(obj: HTMLElement, typeArr: string, handler: Function, context?: Object) {
     if (!obj || !obj.addEventListener || !typeArr || !handler) {
         return this;
     }

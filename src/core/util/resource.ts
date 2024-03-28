@@ -3,10 +3,7 @@ import { RESOURCE_PROPERTIES, RESOURCE_SIZE_PROPERTIES } from '../Constants';
 import { IS_NODE } from './env';
 import { extend, isNil, isNumber, isString } from './common';
 import { extractCssUrl, btoa } from './util';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
 import { isFunctionDefinition, getFunctionTypeResources } from '../mapbox';
-
 
 /**
  * Translate symbol properties to SVG properties
