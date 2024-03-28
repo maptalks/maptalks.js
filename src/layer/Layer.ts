@@ -63,6 +63,17 @@ const options = {
  * @mixes Renderable
  */
 class Layer extends JSONAble(Eventable(Renderable(Class))) {
+    _canvas: any|undefined
+    _renderer: any|undefined
+    _id: string
+    _zIndex: number
+    map: any
+    _mask: any
+    _loaded: boolean
+    _collisionIndex: CollisionIndex
+    _optionsHook?(conf?:any): void
+    _silentConfig: boolean|undefined|any
+    
 
     constructor(id, options) {
         let canvas;
@@ -76,6 +87,8 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         if (options) {
             this.setZIndex(options.zIndex);
             if (options.mask) {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore 未找到fromJSON属性
                 this.setMask(Geometry.fromJSON(options.mask));
             }
         }
@@ -134,6 +147,8 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
          * @property {String} new        - value of the new id
          */
         this.fire('idchange', {
+            'type': 'idchange',
+            'target': this,
             'old': old,
             'new': id
         });
@@ -177,7 +192,11 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
          * @property {Layer} target    - the layer fires the event
          * @property {Number} zIndex        - value of the zIndex
          */
-        this.fire('setzindex', { zIndex });
+        this.fire('setzindex', {
+            'type': 'setzindex',
+            'target': this,
+            zIndex
+        });
         return this;
     }
 
@@ -233,7 +252,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         * @property {Layer} target    - the layer fires the event
         * @property {Number} opacity        - value of the opacity
         */
-        this.fire('setopacity', { opacity: op });
+        this.fire('setopacity', { type: 'setopacity',target:this,opacity: op });
         return this;
     }
 
@@ -564,9 +583,13 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     _initRenderer() {
         const renderer = this.options['renderer'];
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         if (!this.constructor.getRendererClass) {
             return;
         }
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         const clazz = this.constructor.getRendererClass(renderer);
         if (!clazz) {
             throw new Error('Invalid renderer for Layer(' + this.getId() + '):' + renderer);
@@ -591,6 +614,8 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
          * @property {Any} renderer    - renderer of the layer
          */
         this.fire('renderercreate', {
+            'type':'renderercreate',
+            'target':this,
             'renderer': this._renderer
         });
     }
@@ -648,12 +673,13 @@ Layer.prototype.fire = function (eventType, param) {
     }
     if (this.map) {
         if (!param) {
-            param = {};
+            param;
         }
         param['type'] = eventType;
         param['target'] = this;
         this.map._onLayerEvent(param);
     }
+    // eslint-disable-next-line prefer-rest-params
     fire.apply(this, arguments);
     if (['show', 'hide'].indexOf(eventType) > -1) {
         /**
