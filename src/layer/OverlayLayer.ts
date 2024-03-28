@@ -50,7 +50,7 @@ class OverlayLayer extends Layer {
     _cookedStyles: any
     _clearing: boolean
     
-    constructor(id:string, geometries:any, options: OverlayLayerOptions&LayerOptions) {
+    constructor(id:string|number, geometries:any, options: OverlayLayerOptions) {
         if (geometries && (!isGeometry(geometries) && !Array.isArray(geometries) && GEOJSON_TYPES.indexOf(geometries.type) < 0)) {
             options = geometries;
             geometries = null;
@@ -100,7 +100,7 @@ class OverlayLayer extends Layer {
      * @param id   - id of the geometry
      * @return
      */
-    getGeometryById(id:string):Geometry {
+    getGeometryById(id:string|number):Geometry {
         if (isNil(id) || id === '') {
             return null;
         }
@@ -323,7 +323,7 @@ class OverlayLayer extends Layer {
                 geos.push(geo);
             }
         }
-        const map = this.getMap();
+        const map:any = this.getMap();
         if (map) {
             this._getRenderer().onGeometryAdd(geos);
             if (extent && !isNil(extent.xmin)) {
