@@ -200,7 +200,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     centerAltitude: number;
     width: number;
     height: number;
-    _prjMaxExtent: PointerEvent;
+    _prjMaxExtent: PointExtent;
     _glRes: number;
     _zooming: boolean;
     _layerCache: { [key: string]: Layer };
@@ -217,6 +217,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     _containerDomContentRect: DOMRect;
     _mapRes: number;
     _onLoadHooks: Array<(...args) => void>;
+    cameraCenterDistance: number;
     static VERSION: number;
 
 
@@ -233,7 +234,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Layer[]} [options.layers=null] - layers that will be added to map initially.
      * @param {*} options.* - any other option defined in [Map.options]{@link Map#options}      [description]
      */
-    constructor(container: string | HTMLDivElement | HTMLCanvasElement, options: MapOptionsType & { center: Coordinate, zoom: number }) {
+    constructor(container: string | HTMLDivElement | HTMLCanvasElement | Object, options: MapOptionsType & { center: Array<number> | Coordinate, zoom: number }) {
         if (!options) {
             throw new Error('Invalid options when creating map.');
         }
@@ -573,7 +574,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Get map's size (width and height) in pixel.
      * @return {Size}
      */
-    getSize() {
+    getSize(): Size {
         if (isNil(this.width) || isNil(this.height)) {
             return this._getContainerDomSize();
         }
@@ -960,10 +961,11 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         let size = this.getSize();
         const paddingSize = this._getPaddingSize(padding);
         if (paddingSize) {
-            size = {
+            const rect = {
                 width: size.width - (paddingSize.width || 0),
                 height: size.height - (paddingSize.height || 0)
             };
+            size = new Size(rect.width, rect.height);
         }
         const containerExtent = extent.convertTo(p => this.coordToPoint(p));
         const w = containerExtent.getWidth(),
@@ -1046,9 +1048,9 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {Number} [padding.paddingBottom] - Sets the amount of padding in the bottom of a map container
      * @return {Coordinate}
      */
-    _getCenterByPadding(center, zoom, padding = {}) {
+    _getCenterByPadding(center: Coordinate, zoom?: number, padding?: paddingType) {
         const point = this.coordinateToPoint(center, zoom);
-        const { paddingLeft = 0, paddingRight = 0, paddingTop = 0, paddingBottom = 0 } = padding;
+        const { paddingLeft = 0, paddingRight = 0, paddingTop = 0, paddingBottom = 0 } = padding || { paddingBottom: 0, paddingLeft: 0, paddingRight: 0, paddingTop: 0 };
         let pX = 0;
         let pY = 0;
         if (paddingLeft || paddingRight) {
@@ -1449,7 +1451,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * shorter alias for coordinateToPoint
      */
-    coordToPoint(coordinate, zoom, out) {
+    coordToPoint(coordinate, zoom?: number, out?: Point) {
         return this.coordinateToPoint(coordinate, zoom, out);
     }
 
@@ -2164,7 +2166,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Gets map panel's current view point.
      * @return {Point}
      */
-    offsetPlatform(offset) {
+    offsetPlatform(offset?: Point) {
         if (!offset) {
             return this._mapViewPoint;
         } else {
@@ -2200,7 +2202,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Number} resolution
      * @private
      */
-    _getResolution(zoom) {
+    _getResolution(zoom?: number) {
         if ((zoom === undefined || zoom === this._zoomLevel) && this._mapRes !== undefined) {
             return this._mapRes;
         }
@@ -2255,7 +2257,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Coordinate} projected coordinate
      * @private
      */
-    _pointToPrj(point, zoom, out) {
+    _pointToPrj(point, zoom?: number, out?: Point) {
         zoom = (isNil(zoom) ? this.getZoom() : zoom);
         const res = this._getResolution(zoom);
         return this._pointToPrjAtRes(point, res, out);
@@ -2319,7 +2321,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Coordinate}
      * @private
      */
-    _containerPointToPrj(containerPoint, out) {
+    _containerPointToPrj(containerPoint, out?: Point) {
         return this._pointToPrj(this._containerPointToPoint(containerPoint, undefined, out), undefined, out);
     }
 
@@ -2353,6 +2355,42 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             }
         }
         return this;
+    }
+}
+
+declare module Map {
+    interface Map {
+        coordinateToPoint(coordinate: Coordinate, zoom?: number, out?: Point): Point;
+        coordinateToPointAtRes(coordinate: Coordinate, res?: number, out?: Point): Point;
+        pointToCoordinate(point: Point, zoom?: number, out?: Coordinate): Coordinate;
+        pointAtResToCoordinate(point: Point, res?: number, out?: Coordinate): Coordinate;
+        coordinateToViewPoint(coordinate: Coordinate, out?: Point, altitude?: number): Point;
+        viewPointToCoordinate(viewPoint: Point, out?: Coordinate): Coordinate;
+        coordinateToContainerPoint(coordinate: Coordinate, zoom?: number, out?: Point): Point;
+        coordinateToContainerPointAtRes(coordinate: Coordinate, res?: number, out?: Point): Point;
+        coordinatesToContainerPoints(coordinates: Array<Coordinate>, zoom?: number): Array<Point>;
+        coordinatesToContainerPointsAtRes(coordinates: Array<Coordinate>, res?: number): Array<Point>;
+        containerPointToCoordinate(containerPoint: Point, out?: Coordinate): Coordinate;
+        containerToExtent(containerExtent: PointExtent): Extent;
+        distanceToPixel(xDist: number, yDist: number, zoom?: number): Size;
+        distanceToPoint(xDist: number, yDist: number, zoom?: number, paramCenter?: Coordinate): Point;
+        distanceToPointAtRes(xDist: number, yDist: number, res?: number, paramCenter?: Coordinate, out?: Point): Point;
+        altitudeToPoint(altitude: number, res?: number, originCenter?: Coordinate): Point;
+        pointAtResToAltitude(point: Point, res?: number, originCenter?: Coordinate): number;
+        pixelToDistance(width: number, height: number): number;
+        pointToDistance(dx: number, dy: number, zoom?: number): number;
+        pointAtResToDistance(dx: number, dy: number, res?: number, paramCenter?: Coordinate): number;
+        locateByPoint(coordinate: Coordinate, px: number, py: number): Coordinate;
+        _get2DExtent(zoom?: number, out?: PointExtent): PointExtent;
+        _get2DExtentAtRes(res?: number, out?: PointExtent): PointExtent;
+        _pointToExtent(extent2D: PointExtent): Extent;
+        _getViewPointFrameOffset(): Point | null;
+        _viewPointToPrj(viewPoint: Point, out?: Point): Point;
+        _prjToContainerPoint(pCoordinate: Coordinate, zoom?: number, out?: Point, altitude?: number): Point;
+        _prjToContainerPointAtRes(pCoordinate: Coordinate, res?: number, out?: Point, altitude?: number): Point;
+        _prjToViewPoint(pCoordinate: Coordinate, out?: Point, altitude?: number): Point;
+        _viewPointToPoint(viewPoint: Point, zoom?: number, out?: Point): Point;
+        _pointToViewPoint(point: Point, zoom?: number, out?: Point): Point;
     }
 }
 
@@ -2982,10 +3020,11 @@ export type MapOptionsType = {
     mousemoveThrottleTime?: number;
     maxFPS?: number;
     debug?: boolean;
+}
 
-
-
-
-
-
+export type paddingType = {
+    paddingLeft: number;
+    paddingRight: number;
+    paddingTop: number;
+    paddingBottom: number;
 }

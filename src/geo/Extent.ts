@@ -586,7 +586,7 @@ class Extent {
      * @param  {Function} fn convert function on each point
      * @return {Extent}
      */
-    convertTo(fn, out) {
+    convertTo(fn, out?: Extent) {
         if (!this.isValid()) {
             return null;
         }
