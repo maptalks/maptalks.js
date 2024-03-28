@@ -174,4 +174,4 @@ export default /** @lends projection.Common */ {
         }
         return this.extent;
     }
-};
+} as any;

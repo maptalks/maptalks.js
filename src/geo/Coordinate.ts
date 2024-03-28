@@ -14,7 +14,6 @@ import Position from './Position';
  * @extends Position
  */
 class Coordinate extends Position {
-
     /**
      * Convert one or more Coordinate objects to GeoJSON style coordinates
      * @param  {Coordinate|Coordinate[]} coordinates - coordinates to convert
@@ -51,7 +50,7 @@ class Coordinate extends Position {
             const child = coordinates[i];
             if (Array.isArray(child)) {
                 if (isNumber(child[0])) {
-                    result.push(new Coordinate(child));
+                    result.push(new Coordinate(child as any));
                 } else {
                     result.push(Coordinate.toCoordinates(child));
                 }
@@ -63,8 +62,6 @@ class Coordinate extends Position {
         }
         return result;
     }
-
-
 }
 
 export default Coordinate;

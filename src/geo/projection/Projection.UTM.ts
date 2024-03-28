@@ -12,7 +12,7 @@ import PROJ9807 from './Projection.EPSG9807';
  * @mixes projection.EPSG4326
  * @mixes measurer.WGS84Sphere
  */
-export default extend({}, PROJ9807, /** @lends projection.EPSG4490 */ {
+export default extend<any>({}, PROJ9807, /** @lends projection.EPSG4490 */ {
     /**
      * "EPSG:4490", Code of the projection
      * @type {String}
@@ -21,7 +21,7 @@ export default extend({}, PROJ9807, /** @lends projection.EPSG4490 */ {
     code: 'utm',
     aliases: [],
     create(params) {
-        const P = {};
+        const P: any = {};
         let zone = parseInt(params.zone);
         P.falseNorthing = params.south ? 10000000 : 0;
         P.falseEasting = 500000;
