@@ -82,7 +82,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     _silentConfig: boolean|any|undefined
     
 
-    constructor(id:string|number, options: LayerOptions) {
+    constructor(id:string|number, options: any) {
         let canvas;
         if (options) {
             canvas = options.canvas;
