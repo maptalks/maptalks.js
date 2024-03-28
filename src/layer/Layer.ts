@@ -79,7 +79,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     _loaded: boolean
     _collisionIndex: CollisionIndex
     _optionsHook?(conf?:any): void
-    _silentConfig: boolean|undefined|any
+    _silentConfig: boolean|any|undefined
     
 
     constructor(id:string|number, options: LayerOptions) {
@@ -108,7 +108,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @english
      * load the tile layer, can't be overrided by sub-classes
      */
-    load() {
+    load():Layer {
         if (!this.getMap()) {
             return this;
         }
@@ -133,7 +133,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * Get the layer id
      * @returns id
      */
-    getId():string {
+    getId():string|number {
         return this._id;
     }
 
@@ -270,9 +270,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * 
      * @english
      * Get layer's opacity
-     * @returns {Number}
+     * @returns
      */
-    getOpacity() {
+    getOpacity():number {
         return this.options['opacity'];
     }
 
@@ -320,9 +320,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * 
      * @english
      * Get the map that the layer added to
-     * @returns {Map}
+     * @returns
      */
-    getMap() {
+    getMap():Map {
         if (this.map) {
             return this.map;
         }
@@ -367,7 +367,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * 
      * @english
      * Brings the layer under the bottom of all the layers
-     * @returns {Layer} this
+     * @returns this
      */
     bringToBack():Layer {
         const layers = this._getLayerList();
@@ -514,9 +514,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * 
      * @english
      * Get the mask geometry of the layer
-     * @return {Geometry}
+     * @return
      */
-    getMask() {
+    getMask():Geometry {
         return this._mask;
     }
 
@@ -526,9 +526,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @english
      * Set a mask geometry on the layer, only the area in the mask will be displayed.
      * @param {Geometry} mask - mask geometry, can only be a Marker with vector symbol, a Polygon or a MultiPolygon
-     * @returns {Layer} this
+     * @returns this
      */
-    setMask(mask: any) {
+    setMask(mask: any):Layer {
         if (!((mask.type === 'Point' && mask._isVectorMarker()) || mask.type === 'Polygon' || mask.type === 'MultiPolygon')) {
             throw new Error('Mask for a layer must be a marker with vector marker symbol or a Polygon(MultiPolygon).');
         }
@@ -561,9 +561,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * 
      * @engilsh
      * Remove the mask
-     * @returns {Layer} this
+     * @returns this
      */
-    removeMask() {
+    removeMask():Layer {
         delete this._mask;
         delete this.options.mask;
         if (!this.getMap() || this.getMap().isZooming()) {
@@ -607,9 +607,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * 
      * @english
      * Get layer's collision index
-     * @returns {CollisionIndex}
+     * @returns
      */
-    getCollisionIndex() {
+    getCollisionIndex():CollisionIndex {
         if (this.options['collisionScope'] === 'layer') {
             if (!this._collisionIndex) {
                 this._collisionIndex = new CollisionIndex();
