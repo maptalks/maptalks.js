@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
-import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn, getImageBitMap, calCanvasSize } from '../../core/util';
+import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn, getImageBitMap, calCanvasSize, isImageBitMap } from '../../core/util';
 import Class from '../../core/Class';
 import Browser from '../../core/Browser';
 import Canvas2D from '../../core/Canvas';
@@ -207,7 +207,7 @@ class CanvasRenderer extends Class {
     /**
      * A callback for overriding when drawOnInteracting is skipped due to low fps
      */
-    onSkipDrawOnInteracting(): void {}
+    onSkipDrawOnInteracting(): void { }
 
     isLoadingResource(): boolean {
         return this._loadingResource;
@@ -826,6 +826,18 @@ class CanvasRenderer extends Class {
                 return;
             }
             const imageURL = formatResouceUrl(url[0]);
+
+            if (isImageBitMap(imageURL)) {
+                createImageBitmap(imageURL).then(newbitmap => {
+                    //新的数据为layer提供服务
+                    this._cacheResource(url, newbitmap);
+                    resolve(url);
+                }).catch(err => {
+                    console.error(err);
+                    resolve(url);
+                });
+                return;
+            }
             const fetchInWorker = !isSVG(url[0]) && this._resWorkerConn && (layer.options['renderer'] !== 'canvas' || layer.options['decodeImageInWorker']);
             if (fetchInWorker) {
                 // const uri = getAbsoluteURL(url[0]);

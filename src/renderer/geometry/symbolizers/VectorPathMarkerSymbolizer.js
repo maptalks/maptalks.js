@@ -1,8 +1,9 @@
-import { isNil, extend } from '../../../core/util';
+import { isNil, extend, isString } from '../../../core/util';
 import Browser from '../../../core/Browser';
 import { getMarkerPathBase64 } from '../../../core/util/resource';
 import ImageMarkerSymbolizer from './ImageMarkerSymbolizer';
 import { isPathSymbol } from '../../../core/util/marker';
+import { ResouceProxy } from '../../../core/ResouceProxy';
 
 export default class VectorPathMarkerSymbolizer extends ImageMarkerSymbolizer {
 
@@ -20,8 +21,12 @@ export default class VectorPathMarkerSymbolizer extends ImageMarkerSymbolizer {
             symbol['markerHeight'] = 80;
         }
         super(symbol, geometry, painter);
-        symbol = extend(symbol, this.translate());
+        symbol = extend({}, symbol, this.translate());
         const style = this.style = this._defineStyle(symbol);
+        const markerPath = style.markerPath;
+        if (isString(markerPath) && markerPath[0] === '$') {
+            style.markerPath = ResouceProxy.getResource(markerPath.substring(1, Infinity)) || '';
+        }
         if (Browser.gecko) {
             // Firefox requires valid width and height attributes in SVG's root element.
             this._url = [getMarkerPathBase64(style, style['markerWidth'], style['markerHeight']), style['markerWidth'], style['markerHeight']];
