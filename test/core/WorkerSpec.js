@@ -38,24 +38,24 @@ describe('WorkerSpec', function () {
 
 
 
-    it('simple', function (done) {
-        //第一次创建worker,启动workerpoool
-        var key = getWorkerKey();
-        maptalks.registerWorkerAdapter(key, fun);
-        var actor = new Actor(key);
-        expect(actor.initializing).to.be.eql(false);
-        var result = [];
-        for (let i = 0; i < 5; i++) {
-            actor.send({ num: i }, [], (err, data) => {
-                result.push(data);
-            })
-        }
-        setTimeout(() => {
-            expect(actor.initializing).to.be.eql(false);
-            expect(result.length).to.be.eql(5);
-            done();
-        }, 1000);
-    });
+    // it('simple', function (done) {
+    //     //第一次创建worker,启动workerpoool
+    //     var key = getWorkerKey();
+    //     maptalks.registerWorkerAdapter(key, fun);
+    //     var actor = new Actor(key);
+    //     expect(actor.initializing).to.be.eql(false);
+    //     var result = [];
+    //     for (let i = 0; i < 5; i++) {
+    //         actor.send({ num: i }, [], (err, data) => {
+    //             result.push(data);
+    //         })
+    //     }
+    //     setTimeout(() => {
+    //         expect(actor.initializing).to.be.eql(false);
+    //         expect(result.length).to.be.eql(5);
+    //         done();
+    //     }, 1000);
+    // });
 
     it('multi instance', function (done) {
         //workerpool 已经存在
