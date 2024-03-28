@@ -30,7 +30,7 @@ var RAD_TO_DEG = 57.295779513082321;
 // common
 var EPS10 = 1e-10;
 
-function e_error() {}
+function e_error(n?: number) {}
 
 function pj_etmerc(P) {
   var cgb = [],
@@ -221,7 +221,6 @@ function pj_etmerc(P) {
     return [r * hr - i * hi, r * hi + i * hr];
   }
 }
-
 
 export default pj_etmerc;
 /* eslint-enable */

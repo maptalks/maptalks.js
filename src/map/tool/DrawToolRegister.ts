@@ -136,7 +136,7 @@ const rectangleHooks:modeActionType = {
             [containerPoint.x, containerPoint.y],
             [firstClick.x, containerPoint.y],
         ];
-        const prjs = ring.map(c => map._containerPointToPrj(new Point(c)));
+        const prjs = ring.map((c: any) => map._containerPointToPrj(new Point(c)));
         const coordinates = queryTerrainCoordinates(projection, prjs, mapEvent);
         // geometry.setCoordinates(ring.map(c => map.containerPointToCoord(new Point(c))));
         // geometry._setPrjCoordinates(prjs);

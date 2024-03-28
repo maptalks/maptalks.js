@@ -48,8 +48,6 @@ class MapBoxZoomHander extends Handler {
             h = symbol.markerHeight;
 
         // TODO: 等待Geometry补充类型
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
         const extent = new Extent(center, map.locateByPoint(center, w, h), map.getProjection());
         const zoom = map.getFitZoom(extent);
         map._animateTo({
