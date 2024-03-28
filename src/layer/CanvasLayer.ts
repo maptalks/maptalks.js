@@ -1,20 +1,32 @@
 import CanvasLayerRenderer from '../renderer/layer/canvaslayer/CanvasLayerRenderer';
 import Layer from './Layer';
 
+export type CanvasLayerOptions = {
+    doubleBuffer?: boolean,
+    animation?: boolean,
+    fps?: number|string
+}
 /**
- * @property {Object} options                  - configuration options
- * @property {Boolean} [options.doubleBuffer=false]    - layer is rendered with doubleBuffer
- * @property {Boolean} [options.animation=false]       - if the layer is an animated layer
- * @property {Boolean} [fps=1000 / 16]                 - animation fps
+ * @property options                       - configuration options
+ * @property options.doubleBuffer=false    - layer is rendered with doubleBuffer
+ * @property options.animation=false       - if the layer is an animated layer
+ * @property fps=1000 / 16                 - animation fps
  * @memberOf CanvasLayer
  * @instance
  */
-const options = {
+
+const options:CanvasLayerOptions = {
     'doubleBuffer'  : false,
     'animation'     : false
 };
 
 /**
+ * 一个带有HTML5 2D canvas的layer
+ * CanvasLayer为canvas操作提供了一些接口方法
+ * 你可以直接使用CanvasLayer,但不能通过JSON序列化/反序列化实现CanvasLayer
+ * 更推荐使用子类扩展CanvasLayer，并在子类中实现canvas绘画
+ * 
+ * @english
  * A layer with a HTML5 2D canvas context.<br>
  * CanvasLayer provides some interface methods for canvas context operations. <br>
  * You can use it directly, but can't serialize/deserialize a CanvasLayer with JSON in this way. <br>
@@ -44,6 +56,9 @@ class CanvasLayer extends Layer {
     }
 
     /**
+     * 准备画布的接口函数
+     * 
+     * @engilsh
      * An optional interface function called only once before the first draw, useful for preparing your canvas operations.
      * @param  {CanvasRenderingContext2D } context - CanvasRenderingContext2D of the layer canvas.
      * @return {Object[]} objects that will be passed to function draw(context, ..) as parameters.
@@ -51,13 +66,22 @@ class CanvasLayer extends Layer {
     prepareToDraw() {}
 
     /**
+     * 绘制something的接口函数
+     * 
+     * @engilsh
      * The required interface function to draw things on the layer canvas.
      * @param  {CanvasRenderingContext2D} context - CanvasRenderingContext2D of the layer canvas.
      * @param  {*} params.. - parameters returned by function prepareToDraw(context).
      */
-    draw() {}
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    draw(...params) {}
 
     /**
+     * map交互绘制接口
+     * 默认情况调用draw()
+     * 如果你知道如何提升绘制性能可以重新此方法
+     * 
+     * @english
      * An optional interface function to draw while map is interacting.
      * By default, it will call draw method instead.
      * You can override this method if you are clear with what to draw when interacting to improve performance.
@@ -69,10 +93,13 @@ class CanvasLayer extends Layer {
     // }
 
     /**
+     * 重绘
+     * 
+     * @english
      * Redraw the layer
-     * @return {CanvasLayer} this
+     * @return this
      */
-    redraw() {
+    redraw():CanvasLayer {
         if (this._getRenderer()) {
             this._getRenderer().setToRedraw();
         }
@@ -80,36 +107,48 @@ class CanvasLayer extends Layer {
     }
 
     /**
+     * 播放
+     * 
+     * @english
      * Start animation
-     * @return {CanvasLayer} this
+     * @return this
      */
-    play() {
+    play():CanvasLayer {
         this.config('animation', true);
         return this;
     }
 
     /**
+     * 暂停
+     * 
+     * @english
      * Pause the animation
-     * @return {CanvasLayer} this
+     * @return this
      */
-    pause() {
+    pause():CanvasLayer {
         this.config('animation', false);
         return this;
     }
 
     /**
+     * 是否正在播放
+     * 
+     * @english
      * If the animation is playing
-     * @return {Boolean}
+     * @return
      */
-    isPlaying() {
+    isPlaying():boolean {
         return this.options['animation'];
     }
 
     /**
+     * 清空画布
+     * 
+     * @engilsh
      * Clear layer's canvas
-     * @return {CanvasLayer} this
+     * @return this
      */
-    clearCanvas() {
+    clearCanvas():CanvasLayer {
         if (this._getRenderer()) {
             this._getRenderer().clearCanvas();
         }
@@ -117,10 +156,13 @@ class CanvasLayer extends Layer {
     }
 
     /**
+     * 要求map不触发任何事件下重绘canvas
+     * 
+     * @engilsh
      * Ask the map to redraw the layer canvas without firing any event.
-     * @return {CanvasLayer} this
+     * @return this
      */
-    requestMapToRender() {
+    requestMapToRender():CanvasLayer {
         if (this._getRenderer()) {
             this._getRenderer().requestMapToRender();
         }
@@ -128,10 +170,13 @@ class CanvasLayer extends Layer {
     }
 
     /**
+     * 要求map触发layerload事件重绘canvas
+     * 
+     * @engilsh
      * Ask the map to redraw the layer canvas and fire layerload event
-     * @return {CanvasLayer} this
+     * @return this
      */
-    completeRender() {
+    completeRender():CanvasLayer {
         if (this._getRenderer()) {
             this._getRenderer().completeRender();
         }
@@ -139,69 +184,98 @@ class CanvasLayer extends Layer {
     }
 
     /**
+     * canvas创建完成后的回调函数
+     * 
+     * @english
      * Callback function when layer's canvas is created. <br>
      * Override it to do anything needed.
      */
-    onCanvasCreate() {
+    onCanvasCreate():CanvasLayer {
         return this;
     }
 
     /**
+     * map zoomstart事件回调
+     * 
+     * @engilsh
      * The event callback for map's zoomstart event.
      * @param  {Object} param - event parameter
      */
     onZoomStart() {}
 
     /**
+     * map zooming事件回调
+     * 
+     * @engilsh
      * The event callback for map's zooming event.
      * @param  {Object} param - event parameter
      */
     onZooming() {}
 
     /**
+     * map zoomend事件回调
+     * 
+     * @engilsh
      * The event callback for map's zoomend event.
      * @param  {Object} param - event parameter
      */
     onZoomEnd() {}
 
     /**
+     * map movestart事件回调
+     * 
+     * @engilsh
      * The event callback for map's movestart event.
      * @param  {Object} param - event parameter
      */
     onMoveStart() {}
 
     /**
+     * map moving事件回调
+     * 
+     * @engilsh
      * The event callback for map's moving event.
      * @param  {Object} param - event parameter
      */
     onMoving() {}
 
     /**
+     * map moveend事件回调
+     * 
+     * @engilsh
      * The event callback for map's moveend event.
      * @param  {Object} param - event parameter
      */
     onMoveEnd() {}
 
     /**
+     * map resize事件回调
+     * 
+     * @engilsh
      * The event callback for map's resize event.
      * @param  {Object} param - event parameter
      */
     onResize() {}
 
     /**
+     * double buffer的回调函数
+     * 默认情况下just draws and return，如果你需要在绘制之前处理canvas，可以重写改函数
+     * 
+     * @engilsh
      * The callback function to double buffer. <br>
      * In default, it just draws and return, and you can override it if you need to process the canvas image before drawn.
      * @param  {CanvasRenderingContext2D} bufferContext CanvasRenderingContext2D of double buffer of the layer canvas.
      * @param  {CanvasRenderingContext2D} context CanvasRenderingContext2D of the layer canvas.
      */
-    doubleBuffer(bufferContext/*, context*/) {
+    doubleBuffer(bufferContext:CanvasRenderingContext2D/*, context?:CanvasRenderingContext2D*/):CanvasLayer {
         bufferContext.clearRect(0, 0, bufferContext.canvas.width, bufferContext.canvas.height);
         return this;
     }
 }
 
 CanvasLayer.mergeOptions(options);
-
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore registerRenderer(name:string, clazz: Class) TypeError CanvasLayerRenderer 不满足Class类型
 CanvasLayer.registerRenderer('canvas', CanvasLayerRenderer);
 
 export default CanvasLayer;
