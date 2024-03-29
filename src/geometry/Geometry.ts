@@ -31,13 +31,14 @@ import VectorLayer from '../layer/VectorLayer';
 import { SizeLike } from '../geo/Size';
 import * as projections from '../geo/projection';
 import { addGeometryFitViewOptions } from '../layer/OverlayLayer'
+import GeometryCollection from './GeometryCollection'
 
 type ProjectionCommon = typeof projections.Common
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_EXTENT = new PointExtent();
 const TEMP_PROPERTIES = {};
 
-function validateExtent(extent) {
+function validateExtent(extent: Extent): boolean {
     if (!extent) {
         return false;
     }
@@ -93,7 +94,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     public _layer: VectorLayer
     public _angle: number
     public _pivot: Coordinate
-    public _id: any
+    public _id: string | number
     public properties: any
     public _symbol: any
     public _symbolUpdated: any
@@ -103,11 +104,11 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     public _eventSymbolProperties: any
     public _sizeSymbol: any
     public _internalId: number
-    public _extent: any
-    public _fixedExtent: any
+    public _extent: Extent
+    public _fixedExtent: PointExtent
     public _extent2d: any
     public _externSymbol: any
-    public _parent: any
+    public _parent: Geometry | GeometryCollection
     public _silence: boolean
     public getShell: any
     public _animPlayer: any
@@ -120,7 +121,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     public _infoWinOptions: any
     public _minAlt: number
     public _maxAlt: number
-    getGeometries?(): any;
+    getGeometries?(): Geometry[];
     getCoordinates?(): Coordinate;
     setCoordinates?(coordinate: PositionLike): Geometry;
     _computeCenter?(T: any): Coordinate;
@@ -130,14 +131,14 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     isEditing?(): boolean;
     _unbindMenu?(): void;
     _unbindInfoWindow?(): void;
-    _computeGeodesicLength?(T: any): any;
-    _computeGeodesicArea?(T: any): any;
-    getRotateOffsetAngle?(): any;
+    _computeGeodesicLength?(T: any): number;
+    _computeGeodesicArea?(T: any): number;
+    getRotateOffsetAngle?(): number;
     _bindInfoWindow?(): void;
     _bindMenu?(): void;
     closeMenu?(): void;
     closeInfoWindow?(): void;
-    _computePrjExtent?(T: any): any;
+    _computePrjExtent?(T: null | ProjectionCommon): Extent;
 
 
     constructor(options: any) {
@@ -1567,7 +1568,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @param {GeometryCollection} geometry - parent geometry
      * @private
      */
-    _setParent(geometry?: any): void {
+    _setParent(geometry?: Geometry | GeometryCollection): void {
         if (geometry) {
             this._parent = geometry;
         }
