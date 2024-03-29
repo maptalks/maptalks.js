@@ -673,7 +673,10 @@ Layer.prototype.fire = function (eventType, param) {
     }
     if (this.map) {
         if (!param) {
-            param;
+            param = {
+                type: eventType,
+                target: this
+            };
         }
         param['type'] = eventType;
         param['target'] = this;
