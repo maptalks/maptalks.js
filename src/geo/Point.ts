@@ -1,4 +1,16 @@
+import { isNil, isNumber } from '../core/util';
+
 import Position from './Position';
+
+export type PointJson = {
+    x: number;
+    y: number;
+    z?: number;
+}
+
+export type PointArray = [number, number] | [number, number, number];
+
+export type PointLike = Point | PointJson | PointArray;
 
 /**
  * 2D 点实现
@@ -10,17 +22,18 @@ import Position from './Position';
  * var point = new Point(1000, 1000);
  * @example
  *
- * var point = new Point([1000,1000]);
+ * var point = new Point([1000, 1000]);
  * @example
  *
- * var point = new Point({x:1000, y:1000});
+ * var point = new Point({ x:1000, y:1000 });
  * @category basic types
- * @extends Position
  */
 class Point extends Position {
     /**
+     * 使用差值与另一个点进行比较，判断是否临近
      *
      * @english
+     *
      * Compare with another point with a delta
      * @param p
      * @param delta
@@ -31,16 +44,6 @@ class Point extends Position {
         }
         return this.x >= (p.x - delta) && this.x <= (p.x + delta) &&
             this.y >= (p.y - delta) && this.y <= (p.y + delta);
-    }
-
-    /**
-     * Return the magitude of this point: this is the Euclidean
-     * distance from the 0, 0 coordinate to this point's x and y
-     * coordinates.
-     * @returns magnitude
-     */
-    mag(): number {
-        return Math.sqrt(this.x * this.x + this.y * this.y);
     }
 
     /**
@@ -122,6 +125,10 @@ class Point extends Position {
     }
 
     /**
+     * 返回该点绝对值的 `Point` 对象（不会改变原始数据）
+     *
+     * @english
+     *
      * Return abs value of the point
      * @returns abs point
      */
@@ -130,11 +137,184 @@ class Point extends Position {
     }
 
     /**
+     * 类似于数学中的四舍五入，对点的 x 和 y 坐标进行舍入，返回一个新 Point
+     *
+     * @english
+     *
      * Like math.round, rounding the point's xy.
      * @returns rounded point
      */
     round() {
         return new Point(Math.round(this.x), Math.round(this.y));
+    }
+
+    /**
+     * 对点的 x 和 y 坐标向上取整，返回一个新 Point
+     *
+     * @english
+     *
+     * Like math.ceil, ceil the point's xy.
+     * @returns ceiled point
+     */
+    ceil() {
+        return new Point(Math.ceil(this.x), Math.ceil(this.y));
+    }
+
+    /**
+     * 对点的 x 和 y 坐标向下取整，返回一个新 Point
+     *
+     * @english
+     *
+     * Like math.floor, floor the point's xy.
+     * @returns floored point
+     */
+    floor() {
+        return new Point(Math.floor(this.x), Math.floor(this.y));
+    }
+
+    /**
+     * 返回当前点的 copy
+     *
+     * @english
+     *
+     * Returns a copy of the point
+     * @returns copy
+     */
+    copy() {
+        return new Point(this.x, this.y, this.z);
+    }
+
+    /**
+     * 坐标数字保留指定位数的小数
+     *
+     * @english
+     *
+     * Formats point number using fixed-point notation.
+     * @param n - The number of digits to appear after the decimal point
+     * @returns fixed point
+     */
+    toFixed(n: number) {
+        return new Point(this.x.toFixed(n), this.y.toFixed(n), isNumber(this.z) ? this.z.toFixed(n) : undefined);
+    }
+
+    /**
+     * 与传入坐标相加，返回一个新 Point
+     *
+     * @english
+     *
+     * Returns the result of addition of another coordinate.
+     * @param x - point to add
+     * @returns result
+     */
+    add(x: PointLike): Point;
+
+    /**
+     * 与传入坐标相加，返回一个新 Point
+     *
+     * @english
+     *
+     * Returns the result of addition of another coordinate.
+     * @param x - point to add
+     * @param y - point to add
+     * @returns result
+     */
+    add(x: number, y: number): Point;
+
+    /**
+     * 与传入坐标相加，返回一个新 Point
+     *
+     * @english
+     *
+     * Returns the result of addition of another coordinate.
+     * @param x - point to add
+     * @param y - point to add
+     * @returns result
+     */
+    add(x: any, y?: number) {
+        let nx, ny;
+        if (!isNil(x.x)) {
+            nx = this.x + x.x;
+            ny = this.y + x.y;
+        } else if (!isNil(x[0])) {
+            nx = this.x + x[0];
+            ny = this.y + x[1];
+        } else {
+            nx = this.x + x;
+            ny = this.y + y;
+        }
+        return new Point(nx, ny);
+    }
+
+    /**
+     * 与传入坐标相减，返回一个新 Point。
+     *
+     * @english
+     *
+     * Returns the result of subtraction of another point.
+     * @param x - point to add
+     * @returns result
+     */
+    sub(x: PointLike): Point;
+
+    /**
+     * 与传入坐标相减，返回一个新 Point。
+     *
+     * @english
+     *
+     * Returns the result of subtraction of another point.
+     * @param x - point to add
+     * @param y - point to add
+     * @returns result
+     */
+    sub(x: number, y: number): Point;
+
+    /**
+     * 与传入坐标相减，返回一个新 Point。
+     *
+     * @english
+     *
+     * Returns the result of subtraction of another point.
+     * @param x - point to add
+     * @param [y=undefined] - optional, point to add
+     * @returns result
+     */
+    sub(x: any, y?: number): any {
+        let nx, ny;
+        if (!isNil(x.x)) {
+            nx = this.x - x.x;
+            ny = this.y - x.y;
+        } else if (!isNil(x[0])) {
+            nx = this.x - x[0];
+            ny = this.y - x[1];
+        } else {
+            nx = this.x - x;
+            ny = this.y - y;
+        }
+        return new Point(nx, ny);
+    }
+
+    /**
+     * Returns the result of multiplication of the current coordinate by the given number.
+     * @param ratio - ratio to multi
+     * @returns result
+     */
+    multi(ratio: number) {
+        return new Point(this.x * ratio, this.y * ratio);
+    }
+
+    /**
+     * 与另外一个 point 进行比较，以查看它们是否相等
+     *
+     * @english
+     *
+     * Compare with another point to see whether they are equal.
+     * @param c - point to compare
+     */
+    equals(c: Point) {
+        if (!(c instanceof this.constructor)) {
+            return false;
+        }
+        return this.x === c.x && this.y === c.y && this.z === c.z;
     }
 }
 

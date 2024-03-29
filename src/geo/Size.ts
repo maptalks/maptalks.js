@@ -8,6 +8,18 @@ export type JsonSize = {
 
 export type ArraySize = [number, number];
 
+/**
+ * A {@link Size} object
+ *
+ * @category basic types
+ *
+ * @example
+ * ```ts
+ * let size1 = new Size(100, 100);
+ * let size2 = [100，100];
+ * let size3 = { width: 100, height: 100 };
+ * ```
+ */
 export type SizeLike = Size | JsonSize | ArraySize;
 
 /**
@@ -16,32 +28,41 @@ export type SizeLike = Size | JsonSize | ArraySize;
  * @english
  * Represents a size.
  * @category basic types
+ *
+ * @example
+ *
+ * ```ts
+ * const a1 = new Size(1, 2);
+ * const a2 = new Size([1, 2]);
+ * const a3 = new Size({ width: 1, height: 2 });
+ * const a4 = new Size(a3);
+ * ```
  */
 class Size {
     public width: number;
     public height: number;
 
     /**
-     * @param width width value
+     * @param width - width value
      */
     constructor(width: SizeLike)
     /**
-     * @param width width value
+     * @param width - width value
      */
     constructor(width: ArraySize)
     /**
-     * @param width width value
-     * @param height height value
+     * @param width - width value
+     * @param height - height value
      */
     constructor(width: number, height: number)
     constructor(width: any, height?: any) {
         if (isNumber(width) && isNumber(height)) {
             /**
-             * @property {Number} width - width
+             * @property width - width
              */
             this.width = width;
             /**
-             * @property {Number} height - height
+             * @property height - height
              */
             this.height = height;
         } else if (isNumber(width['width'])) {
@@ -67,7 +88,7 @@ class Size {
      *
      * @english
      * Returns the result of addition of another size.
-     * @param x Size
+     * @param x - Size
      * @returns result
      */
     add(x: Size): Size
@@ -76,8 +97,8 @@ class Size {
      *
      * @english
      * Returns the result of addition of another size.
-     * @param x x value
-     * @param y y value
+     * @param x - x value
+     * @param y - y value
      * @returns result
      */
     add(x: number, y: number): Size
@@ -98,17 +119,17 @@ class Size {
      *
      * @english
      * Compare with another size to see whether they are equal.
-     * @param size size to compare
+     * @param size - size to compare
      */
     equals(size: Size) {
         return this['width'] === size['width'] && this['height'] === size['height'];
     }
 
     /**
-     *
+     * 返回当前大小与给定数字相乘的结果
      * @english
      * Returns the result of multiplication of the current size by the given number.
-     * @param ratio ratio to multi
+     * @param ratio - ratio to multi
      * @returns result
      */
     multi(ratio: number): Size {
@@ -128,7 +149,7 @@ class Size {
     }
 
     /**
-     *
+     * 将当前 `Size` 对象转为一个点对象 {@link Point}
      * @english
      * Converts the size object to a {@link Point}
      * @returns point
@@ -138,7 +159,7 @@ class Size {
     }
 
     /**
-     *
+     * 将 `Size` 对象转换为数组
      * @english
      * Converts the size object to an array [width, height]
      */
@@ -147,6 +168,7 @@ class Size {
     }
 
     /**
+     * 将 `Size` 实例对象转换为 包含 `width` 和 `height` 的 json 对象
      * Convert the size object to a json object {width : ., height : .}
      * @returns json
      */
