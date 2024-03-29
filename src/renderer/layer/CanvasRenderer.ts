@@ -8,7 +8,7 @@ import Actor from '../../core/worker/Actor';
 import Point from '../../geo/Point';
 import { imageFetchWorkerKey } from '../../core/worker/CoreWorkers';
 import { registerWorkerAdapter } from '../../core/worker/Worker';
-import { formatResouceUrl } from '../../core/ResouceProxy';
+import { formatResourceUrl } from '../../core/ResourceProxy';
 
 const EMPTY_ARRAY = [];
 class ResourceWorkerConnection extends Actor {
@@ -825,7 +825,7 @@ class CanvasRenderer extends Class {
                 resolve(url);
                 return;
             }
-            const imageURL = formatResouceUrl(url[0]);
+            const imageURL = formatResourceUrl(url[0]);
 
             if (isImageBitMap(imageURL)) {
                 createImageBitmap(imageURL).then(newbitmap => {

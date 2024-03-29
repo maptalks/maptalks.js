@@ -3,7 +3,7 @@ import Browser from '../../../core/Browser';
 import { getMarkerPathBase64 } from '../../../core/util/resource';
 import ImageMarkerSymbolizer from './ImageMarkerSymbolizer';
 import { isPathSymbol } from '../../../core/util/marker';
-import { ResouceProxy } from '../../../core/ResouceProxy';
+import { ResourceProxy } from '../../../core/ResourceProxy';
 
 export default class VectorPathMarkerSymbolizer extends ImageMarkerSymbolizer {
 
@@ -25,7 +25,7 @@ export default class VectorPathMarkerSymbolizer extends ImageMarkerSymbolizer {
         const style = this.style = this._defineStyle(symbol);
         const markerPath = style.markerPath;
         if (isString(markerPath) && markerPath[0] === '$') {
-            style.markerPath = ResouceProxy.getResource(markerPath.substring(1, Infinity)) || '';
+            style.markerPath = ResourceProxy.getResource(markerPath.substring(1, Infinity)) || '';
         }
         if (Browser.gecko) {
             // Firefox requires valid width and height attributes in SVG's root element.

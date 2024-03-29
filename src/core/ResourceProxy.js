@@ -114,7 +114,7 @@ function loadSprite(options = {}) {
                     resource = canvas.toDataURL();
                 }
                 icon.resource = resource;
-                ResouceProxy.addResource(name, resource);
+                ResourceProxy.addResource(name, resource);
             });
             resolve(icons);
         }
@@ -148,7 +148,7 @@ function loadSvgs(svgs) {
         const addToCache = (name, body) => {
             const paths = parseSVG(body);
             if (paths) {
-                ResouceProxy.addResource(name, paths);
+                ResourceProxy.addResource(name, paths);
             }
             const data={
                 name,
@@ -193,9 +193,9 @@ function loadSvgs(svgs) {
  * https://www.webpackjs.com/configuration/dev-server/#devserverproxy
  */
 
-// const { ResouceProxy, formatResouceUrl } = maptalks;
+// const { ResourceProxy, formatResouceUrl } = maptalks;
 // function test1() {
-//     ResouceProxy.proxy = {
+//     ResourceProxy.proxy = {
 //         '/geojson/': {
 //             target: 'https://geo.datav.aliyun.com/areas_v3/bound/'
 //         }
@@ -205,7 +205,7 @@ function loadSvgs(svgs) {
 // }
 
 // function test2() {
-//     ResouceProxy.origin = {
+//     ResourceProxy.origin = {
 //         'https://www.maptalks.com/': {
 //             target: 'https://geo.datav.aliyun.com/areas_v3/'
 //         }
@@ -215,7 +215,7 @@ function loadSvgs(svgs) {
 // }
 
 // function test3() {
-//     ResouceProxy.host = 'https://geo.datav.aliyun.com/areas_v3/bound'
+//     ResourceProxy.host = 'https://geo.datav.aliyun.com/areas_v3/bound'
 //     const url = formatResouceUrl('/350000_full.json');
 //     console.log(url);
 // }
@@ -225,7 +225,7 @@ function loadSvgs(svgs) {
 //     console.log(url);
 // }
 
-export const ResouceProxy = {
+export const ResourceProxy = {
 
     host: EMPTY_STRING,
     resources: {},
@@ -252,7 +252,7 @@ export const ResouceProxy = {
                 json = JSON.parse(json);
             }
             if (isObject(json)) {
-                extend(ResouceProxy, json);
+                extend(ResourceProxy, json);
             }
         } catch (error) {
             console.error(error);
@@ -260,14 +260,14 @@ export const ResouceProxy = {
     },
     toJSON() {
         return {
-            host: ResouceProxy.host,
-            proxy: extend({}, ResouceProxy.proxy || {}),
-            origin: extend({}, ResouceProxy.origin || {})
+            host: ResourceProxy.host,
+            proxy: extend({}, ResourceProxy.proxy || {}),
+            origin: extend({}, ResourceProxy.origin || {})
         };
     },
     getResource(name) {
 
-        return ResouceProxy.resources[name];
+        return ResourceProxy.resources[name];
 
     },
 
@@ -276,7 +276,7 @@ export const ResouceProxy = {
      * @param {String} name
      */
     removeResource(name) {
-        delete ResouceProxy.resources[name];
+        delete ResourceProxy.resources[name];
     },
 
     /**
@@ -285,11 +285,11 @@ export const ResouceProxy = {
      * @param {Object} res
      */
     addResource(name, res) {
-        if (ResouceProxy.resources[name]) {
+        if (ResourceProxy.resources[name]) {
             console.warn(`${name} resource Already exists,the ${name} Cannot be added,the resource name Cannot repeat `);
             return;
         }
-        ResouceProxy.resources[name] = res;
+        ResourceProxy.resources[name] = res;
     },
 
     /**
@@ -298,7 +298,7 @@ export const ResouceProxy = {
      * @param {Object} res
      */
     updateResource(name, res) {
-        ResouceProxy.resources[name] = res;
+        ResourceProxy.resources[name] = res;
     },
 
     /**
@@ -306,13 +306,13 @@ export const ResouceProxy = {
      * @returns {Object} source
      */
     allResource() {
-        return ResouceProxy.resources;
+        return ResourceProxy.resources;
     },
     loadSprite,
     loadSvgs
 };
 
-export function formatResouceUrl(path) {
+export function formatResourceUrl(path) {
     if (isNumber(path)) {
         path += EMPTY_STRING;
     }
@@ -327,9 +327,9 @@ export function formatResouceUrl(path) {
         return path;
     }
     if (path[0] === '$') {
-        return ResouceProxy.getResource(path.substring(1, Infinity)) || '';
+        return ResourceProxy.getResource(path.substring(1, Infinity)) || '';
     }
-    const origin = ResouceProxy.origin || {};
+    const origin = ResourceProxy.origin || {};
     //is isAbsoluteURL
     const isAbsoluteURL = isURL(path);
     if (isAbsoluteURL && isObject(origin)) {
@@ -340,14 +340,14 @@ export function formatResouceUrl(path) {
         return path;
     }
     //relative URL
-    const proxys = ResouceProxy.proxy || {};
+    const proxys = ResourceProxy.proxy || {};
     if (isObject(proxys)) {
         const url = handlerURL(path, proxys);
         if (url) {
             return url;
         }
     }
-    const { host } = ResouceProxy;
+    const { host } = ResourceProxy;
     if (!isAbsoluteURL && host && isString(host)) {
         return `${host}${path}`;
     }

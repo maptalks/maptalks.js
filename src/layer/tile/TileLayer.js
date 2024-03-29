@@ -20,7 +20,7 @@ import Layer from '../Layer';
 import SpatialReference from '../../map/spatial-reference/SpatialReference';
 import { intersectsBox } from 'frustum-intersects';
 import * as vec3 from '../../core/util/vec3';
-import { formatResouceUrl } from '../../core/ResouceProxy';
+import { formatResourceUrl } from '../../core/ResourceProxy';
 
 const DEFAULT_MAXERROR = 1;
 const TEMP_POINT = new Point(0, 0);
@@ -342,7 +342,7 @@ class TileLayer extends Layer {
             res,
             extent2d,
             id: tileId || this._getTileId(x, y, z),
-            url: formatResouceUrl(url),
+            url: formatResourceUrl(url),
             offset,
             error,
             children: []
