@@ -9,9 +9,20 @@ import Coordinate from '../geo/Coordinate';
 import Point from '../geo/Point';
 import { LineString, Curve } from '../geometry';
 import PointExtent from '../geo/PointExtent';
+import { LayerOptions } from './Layer'
 
+type VectorLayerToJSONOptions = {
+    geometries: any,
+    clipExtent: Extent
+}
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore /src/geo/PointExtent.js -> Ts 支持不传参数
 const TEMP_EXTENT = new PointExtent();
 /**
+ * 配置参数
+ * 
+ * @english
  * @property {Object}  options - VectorLayer's options
  * @property {Boolean} options.debug=false           - whether the geometries on the layer is in debug mode.
  * @property {Boolean} options.enableSimplify=true   - whether to simplify geometries before rendering.
@@ -35,7 +46,7 @@ const TEMP_EXTENT = new PointExtent();
  * @memberOf VectorLayer
  * @instance
  */
-const options = {
+const options:VectorLayerOptions = {
     'debug': false,
     'enableSimplify': true,
     'defaultIconSize': [20, 20],
@@ -59,6 +70,9 @@ const options = {
 // Polyline is for custom line geometry
 // const TYPES = ['LineString', 'Polyline', 'Polygon', 'MultiLineString', 'MultiPolygon'];
 /**
+ * 用于管理、呈现 geometries 的 layer
+ * 
+ * @english
  * @classdesc
  * A layer for managing and rendering geometries.
  * @category layer
@@ -67,13 +81,13 @@ const options = {
 class VectorLayer extends OverlayLayer {
 
     /**
-     * @param {String|Number} id - layer's id
-     * @param {Object} [geometries=null] - geometries to add
-     * @param {Object}  [options=null]          - construct options
-     * @param {Object}  [options.style=null]    - vectorlayer's style
-     * @param {*}  [options.*=null]             - options defined in [VectorLayer]{@link VectorLayer#options}
+     * @param id                    - layer's id
+     * @param geometries=null       - geometries to add
+     * @param options=null          - construct options
+     * @param options.style=null    - vectorlayer's style
+     * @param options.*=null        - options defined in [VectorLayer]{@link VectorLayer#options}
      */
-    constructor(id, geometries, options) {
+    constructor(id:string, geometries?:any, options?:VectorLayerOptions&LayerOptions) {
         super(id, geometries, options);
     }
 
@@ -88,6 +102,9 @@ class VectorLayer extends OverlayLayer {
     }
 
     /**
+     * 通过给定 coordinate 识别 geometries
+     * 
+     * @english
      * Identify the geometries on the given coordinate
      * @param  {maptalks.Coordinate} coordinate   - coordinate to identify
      * @param  {Object} [options=null]  - options
@@ -95,7 +112,7 @@ class VectorLayer extends OverlayLayer {
      * @param  {Object} [options.count=null]  - result count
      * @return {Geometry[]} geometries identified
      */
-    identify(coordinate, options = {}) {
+    identify(coordinate:any, options = {}):Geometry[] {
         const renderer = this.getRenderer();
         if (!(coordinate instanceof Coordinate)) {
             coordinate = new Coordinate(coordinate);
@@ -109,6 +126,9 @@ class VectorLayer extends OverlayLayer {
     }
 
     /**
+     * 通过给定 point 识别 geometries
+     * 
+     * @english
      * Identify the geometries on the given container point
      * @param  {maptalks.Point} point   - container point to identify
      * @param  {Object} [options=null]  - options
@@ -128,7 +148,7 @@ class VectorLayer extends OverlayLayer {
         return this._hitGeos(this._geoList, point, options);
     }
 
-    _hitGeos(geometries, cp, options = {}) {
+    _hitGeos(geometries, cp, options:any = {}) {
         if (!geometries || !geometries.length) {
             return [];
         }
@@ -199,6 +219,8 @@ class VectorLayer extends OverlayLayer {
                     continue;
                 }
             }
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore /src/geometry/LineString.js -> ts LineString 无 _getArrowStyle 属性
             if (!(geo instanceof LineString) || (!geo._getArrowStyle() && !(geo instanceof Curve))) {
                 // Except for LineString with arrows or curves
                 let extent = geo.getContainerExtent(TEMP_EXTENT);
@@ -226,16 +248,20 @@ class VectorLayer extends OverlayLayer {
     }
 
     /**
+     * 输出 VectorLayer 的 json
+     * 
+     * @english
      * Export the VectorLayer's JSON. <br>
      * @param  {Object} [options=null] - export options
      * @param  {Object} [options.geometries=null] - If not null and the layer is a [OverlayerLayer]{@link OverlayLayer},
      *                                            the layer's geometries will be exported with the given "options.geometries" as a parameter of geometry's toJSON.
      * @param  {Extent} [options.clipExtent=null] - if set, only the geometries intersectes with the extent will be exported.
-     * @return {Object} layer's JSON
+     * @return layer's JSON
      */
-    toJSON(options) {
+    
+     toJSON(options:VectorLayerToJSONOptions):any {
         if (!options) {
-            options = {};
+            options;
         }
         const profile = {
             'type': this.getJSONType(),
@@ -247,6 +273,8 @@ class VectorLayer extends OverlayLayer {
             if (options['clipExtent']) {
                 const map = this.getMap();
                 const projection = map ? map.getProjection() : null;
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore 需/src/geo/Extent.js -> ts 并支持只传两个个参数
                 clipExtent = new Extent(options['clipExtent'], projection);
             }
             const geoJSONs = [];
@@ -266,6 +294,9 @@ class VectorLayer extends OverlayLayer {
     }
 
     /**
+     * 通过 json 生成 VectorLayer
+     * 
+     * @english
      * Reproduce a VectorLayer from layer's JSON.
      * @param  {Object} layerJSON - layer's JSON
      * @return {VectorLayer}
@@ -281,6 +312,8 @@ class VectorLayer extends OverlayLayer {
         const geoJSONs = json['geometries'];
         const geometries = [];
         for (let i = 0; i < geoJSONs.length; i++) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore 未找到fromJSON属性
             const geo = Geometry.fromJSON(geoJSONs[i]);
             if (geo) {
                 geometries.push(geo);
@@ -304,3 +337,27 @@ VectorLayer.mergeOptions(options);
 VectorLayer.registerJSONType('VectorLayer');
 
 export default VectorLayer;
+
+export type VectorLayerOptions = {
+    debug?: boolean,
+    enableSimplify?: boolean,
+    cursor?: string,
+    geometryEvents?: boolean
+    defaultIconSize?: [number, number],
+    cacheVectorOnCanvas?: boolean,
+    cacheSvgOnCanvas?: any,
+    enableAltitude?: boolean,
+    altitudeProperty?: string,
+    drawAltitude?: boolean,
+    sortByDistanceToCamera?: boolean,
+    roundPoint?: boolean,
+    altitude?: number,
+    clipBBoxBufferSize?: number,
+    collision?: boolean,
+    collisionBufferSize?: number,
+    collisionDelay?: number,
+    collisionScope?: string,
+    progressiveRender?: boolean,
+    progressiveRenderCount?: number,
+    progressiveRenderDebug?: boolean
+};
