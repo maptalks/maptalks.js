@@ -25,6 +25,14 @@ type SVGItemType = {
     paths: Array<any>;
     body: string
 }
+
+type SVGOptionsType = {
+    url?: string,
+    symbols?: Array<SVGSymbolElement>;
+    fill?: string;
+    stroke?: string;
+}
+
 const EMPTY_STRING: string = '';
 const BASE64_REG = /data:image\/.*;base64,/;
 
@@ -156,17 +164,36 @@ function loadSprite(options: SpriteOptionsType = { imgUrl: '', jsonUrl: '' }) {
     });
 }
 
-function loadSvgs(svgs: string | Array<SVGSymbolElement>) {
+function loadSvgs(svgs: string | Array<SVGSymbolElement> | SVGOptionsType) {
     return new Promise((resolve, reject) => {
-        if (!svgs || svgs.length === 0) {
-            reject(new Error('not find svgs'));
+        let url: string = '', symbols: Array<SVGSymbolElement> = [], fillColor: string = '', strokeColor: string = '';
+        if (Array.isArray(svgs) || ((svgs as any) instanceof NodeList)) {
+            symbols = svgs as Array<SVGSVGElement>;
+        } else if (isObject(svgs)) {
+            const opts = svgs as SVGOptionsType;
+            url = opts.url;
+            symbols = opts.symbols;
+            fillColor = opts.fill;
+            strokeColor = opts.stroke;
+        } else if (isString(svgs)) {
+            url = svgs;
+        }
+        if (!url && (symbols && symbols.length === 0)) {
+            reject(new Error('not find svgs data'));
             return;
         }
         const result = [];
-
         const addToCache = (name: string, body: string) => {
             const paths = parseSVG(body);
             if (paths) {
+                paths.forEach(path => {
+                    if (fillColor) {
+                        path.fill = fillColor;
+                    }
+                    if (strokeColor) {
+                        path.stroke = strokeColor;
+                    }
+                });
                 ResourceProxy.addResource(name, paths as any);
             }
             const data: SVGItemType = {
@@ -177,8 +204,8 @@ function loadSvgs(svgs: string | Array<SVGSymbolElement>) {
             result.push(data);
         };
         //svg json collection
-        if (isString(svgs)) {
-            fetch(svgs).then(res => res.json()).then(json => {
+        if (url && isString(url)) {
+            fetch(url).then(res => res.json()).then(json => {
                 json.forEach(svg => {
                     const { name, body } = svg;
                     addToCache(name, body);
@@ -192,9 +219,9 @@ function loadSvgs(svgs: string | Array<SVGSymbolElement>) {
         }
         //support svg symbols
         // https://developer.mozilla.org/en-US/docs/web/svg/element/symbol
-        if (svgs instanceof NodeList || Array.isArray(svgs)) {
-            for (let i = 0, len = svgs.length; i < len; i++) {
-                const symbolNode = svgs[i];
+        if (symbols) {
+            for (let i = 0, len = symbols.length; i < len; i++) {
+                const symbolNode = symbols[i];
                 const name = symbolNode.id;
                 const html = symbolNode.innerHTML;
                 const body = `<xml><svg>${html}</svg></xml>`;
