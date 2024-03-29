@@ -33,7 +33,7 @@ abstract class Position {
     constructor(x: PositionLike)
     constructor(x: PositionArray)
     constructor(x: NumberAble, y: NumberAble, z?: NumberAble)
-    constructor(x: any, y?: any, z?: number) {
+    constructor(x: any, y?: NumberAble, z?: number) {
         if (!isNil(x) && !isNil(y)) {
             /**
              * @property x {Number} - x value
@@ -78,9 +78,11 @@ abstract class Position {
      * Return abs value of the point
      * @returns abs point
      */
-    abs() {
-        return new (this.constructor as Constructable<Position>)(Math.abs(this.x), Math.abs(this.y));
-    }
+    // abs() {
+    //     return new (this.constructor as Constructable<T>)(Math.abs(this.x), Math.abs(this.y));
+    // }
+
+    abstract abs(): any;
 
     //destructive abs
     _abs() {
@@ -99,9 +101,11 @@ abstract class Position {
      * Like math.round, rounding the point's xy.
      * @returns rounded point
      */
-    round() {
-        return new (this.constructor as Constructable<Position>)(Math.round(this.x), Math.round(this.y));
-    }
+    // round() {
+    //     return new (this.constructor as Constructable<T>)(Math.round(this.x), Math.round(this.y));
+    // }
+
+    abstract round(): any;
 
     _ceil() {
         this.x = Math.ceil(this.x);
@@ -110,15 +114,15 @@ abstract class Position {
     }
 
     ceil() {
-        return new (this.constructor as Constructable<Position>)(Math.ceil(this.x), Math.ceil(this.y));
+        return new (this.constructor as Constructable<T>)(Math.ceil(this.x), Math.ceil(this.y));
     }
 
     /**
      * Returns the distance between the current and the given point.
-     * @param  {Coordinate|Point} point - another point
-     * @return {Number} distance
+     * @param  point - another point
+     * @returns distance
      */
-    distanceTo(point) {
+    distanceTo(point): number {
         const x = point.x - this.x,
             y = point.y - this.y;
         return Math.sqrt(x * x + y * y);
@@ -141,7 +145,7 @@ abstract class Position {
     }
 
     floor() {
-        return new (this.constructor as Constructable<Position>)(Math.floor(this.x), Math.floor(this.y));
+        return new (this.constructor as Constructable<T>)(Math.floor(this.x), Math.floor(this.y));
     }
 
     /**
@@ -149,7 +153,7 @@ abstract class Position {
      * @returns copy
      */
     copy() {
-        return new (this.constructor as Constructable<Position>)(this.x, this.y, this.z);
+        return new (this.constructor as Constructable<T>)(this.x, this.y, this.z);
     }
 
     //destructive add
@@ -185,7 +189,7 @@ abstract class Position {
             nx = this.x + x;
             ny = this.y + y;
         }
-        return new (this.constructor as Constructable<Position>)(nx, ny);
+        return new (this.constructor as Constructable<T>)(nx, ny);
     }
 
     //destructive substract
@@ -225,7 +229,7 @@ abstract class Position {
             nx = this.x - x;
             ny = this.y - y;
         }
-        return new (this.constructor as Constructable<Position>)(nx, ny);
+        return new (this.constructor as Constructable<T>)(nx, ny);
     }
 
     /**
@@ -243,7 +247,7 @@ abstract class Position {
      * @returns result
      */
     multi(ratio: number) {
-        return new (this.constructor as Constructable<Position>)(this.x * ratio, this.y * ratio);
+        return new (this.constructor as Constructable<T>)(this.x * ratio, this.y * ratio);
     }
 
     _multi(ratio: number) {
@@ -278,7 +282,7 @@ abstract class Position {
      * Compare with another coordinate to see whether they are equal.
      * @param c coordinate to compare
      */
-    equals(c: Position) {
+    equals(c: T) {
         if (!(c instanceof this.constructor)) {
             return false;
         }
@@ -325,7 +329,7 @@ abstract class Position {
      * @param n The number of digits to appear after the decimal point
      * @returns fixed coordinate
      */
-    toFixed<T extends Position>(n: number) {
+    toFixed(n: number) {
         return new (this.constructor as Constructable<T>)(this.x.toFixed(n), this.y.toFixed(n), isNumber(this.z) ? this.z.toFixed(n) : undefined);
     }
 

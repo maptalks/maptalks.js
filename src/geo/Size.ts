@@ -1,14 +1,14 @@
 import Point from './Point';
 import { isNumber } from '../core/util';
 
-type JsonSize = {
+export type JsonSize = {
     width: number;
     height: number;
 }
 
-type ArraySize = [number, number];
+export type ArraySize = [number, number];
 
-type SizeLike = Size | JsonSize | ArraySize;
+export type SizeLike = Size | JsonSize | ArraySize;
 
 /**
  * 表示一个大小的实现类
@@ -23,10 +23,16 @@ class Size {
 
     /**
      * @param width width value
-     * @param height - height value
      */
     constructor(width: SizeLike)
+    /**
+     * @param width width value
+     */
     constructor(width: ArraySize)
+    /**
+     * @param width width value
+     * @param height height value
+     */
     constructor(width: number, height: number)
     constructor(width: any, height?: any) {
         if (isNumber(width) && isNumber(height)) {
@@ -48,6 +54,8 @@ class Size {
     }
 
     /**
+     * 返回 `Size` 的拷贝
+     * @english
      * Returns a copy of the size
      */
     copy() {
@@ -55,12 +63,26 @@ class Size {
     }
 
     /**
+     * 返回当前`Size` 与另一个 `Size` 相加的结果
+     *
+     * @english
      * Returns the result of addition of another size.
-     * @param {Size} size - size to add
-     * @return {Size} result
+     * @param x Size
+     * @returns result
      */
-    add(x, y) {
-        let w, h;
+    add(x: Size): Size
+    /**
+     * 返回当前`Size` 与另一个 `Size` 相加的结果
+     *
+     * @english
+     * Returns the result of addition of another size.
+     * @param x x value
+     * @param y y value
+     * @returns result
+     */
+    add(x: number, y: number): Size
+    add(x: any, y?: any) {
+        let w: number, h: number;
         if (x instanceof Size) {
             w = this.width + x.width;
             h = this.height + x.height;
@@ -72,19 +94,24 @@ class Size {
     }
 
     /**
+     * 与另一个 `Size` 进行比较，以判断它们是否相等。
+     *
+     * @english
      * Compare with another size to see whether they are equal.
-     * @param size - size to compare
+     * @param size size to compare
      */
     equals(size: Size) {
         return this['width'] === size['width'] && this['height'] === size['height'];
     }
 
     /**
+     *
+     * @english
      * Returns the result of multiplication of the current size by the given number.
-     * @param ratio - ratio to multi
-     * @return result
+     * @param ratio ratio to multi
+     * @returns result
      */
-    multi(ratio: number) {
+    multi(ratio: number): Size {
         return new Size(this['width'] * ratio, this['height'] * ratio);
     }
 
@@ -101,14 +128,18 @@ class Size {
     }
 
     /**
-     * Converts the size object to a [Point]{Point}
-     * @return point
+     *
+     * @english
+     * Converts the size object to a {@link Point}
+     * @returns point
      */
-    toPoint() {
+    toPoint(): Point {
         return new Point(this['width'], this['height']);
     }
 
     /**
+     *
+     * @english
      * Converts the size object to an array [width, height]
      */
     toArray() {
@@ -117,9 +148,9 @@ class Size {
 
     /**
      * Convert the size object to a json object {width : ., height : .}
-     * @return json
+     * @returns json
      */
-    toJSON() {
+    toJSON(): JsonSize {
         return {
             'width': this['width'],
             'height': this['height']

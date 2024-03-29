@@ -39,6 +39,14 @@ class CRS {
         });
     }
 
+    /**
+     * 使用 maptalks 创建 [epsg](https://spatialreference.org/ref/epsg/) 形式的 CRS
+     * @english
+     * Create a [epsg](https://spatialreference.org/ref/epsg/) style CRS used by maptalks <br>
+     * @example
+     * var crs_wgs84 = CRS.createProj4("EPSG:4326");
+     * @param code a proj4 projection string.
+     */
     static fromProjectionCode(code: string): WithNull<CRS> {
         if (!code) {
             return null;

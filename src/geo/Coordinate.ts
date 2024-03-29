@@ -1,5 +1,6 @@
 import { isNumber, forEachCoord } from '../core/util';
 import Position from './Position';
+
 /**
  * Represents a coordinate point <br>
  * e.g. <br>

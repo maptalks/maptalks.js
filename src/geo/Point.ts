@@ -1,19 +1,26 @@
 import Position from './Position';
 
 /**
+ * 2D 点实现
+ * @english
  * Represents a 2d point.<br>
  * Can be created in serveral ways:
  * @example
+ *
  * var point = new Point(1000, 1000);
  * @example
+ *
  * var point = new Point([1000,1000]);
  * @example
+ *
  * var point = new Point({x:1000, y:1000});
  * @category basic types
  * @extends Position
  */
 class Point extends Position {
     /**
+     *
+     * @english
      * Compare with another point with a delta
      * @param p
      * @param delta
@@ -30,7 +37,7 @@ class Point extends Position {
      * Return the magitude of this point: this is the Euclidean
      * distance from the 0, 0 coordinate to this point's x and y
      * coordinates.
-     * @return {Number} magnitude
+     * @returns magnitude
      */
     mag(): number {
         return Math.sqrt(this.x * this.x + this.y * this.y);
@@ -41,10 +48,10 @@ class Point extends Position {
      * that the distance from the resulting point to the 0, 0
      * coordinate will be equal to 1 and the angle from the resulting
      * point to the 0, 0 coordinate will be the same as before.
-     * @return {Point} unit vector point
+     * @returns unit vector point
      */
     unit() {
-        return (this.copy() as Point)._unit();
+        return this.copy()._unit();
     }
 
     _unit(): this {
@@ -56,16 +63,14 @@ class Point extends Position {
      * Compute a perpendicular point, where the new y coordinate
      * is the old x coordinate and the new x coordinate is the old y
      * coordinate multiplied by -1
-     * @return {Point} perpendicular point
+     * @returns perpendicular point
      */
     perp() {
-        return (this.copy() as Point)._perp();
+        return this.copy()._perp();
     }
 
     _perp() {
-        const y = this.y;
-        this.y = this.x;
-        this.x = -y;
+        [this.x, this.y] = [-this.y, this.x]
         return this;
     }
 
@@ -84,17 +89,17 @@ class Point extends Position {
      * the cross product a x b = |a||b|sin(θ) for θ.
      * from mapbox/point-geometry
      *
-     * @param {Number} x the x-coordinate
-     * @param {Number} y the y-coordinate
-     * @return {Number} the angle in radians
+     * @param x the x-coordinate
+     * @param y the y-coordinate
+     * @returns the angle in radians
      */
-    angleWithSep(x, y) {
+    angleWithSep(x: number, y: number) {
         return Math.atan2(
             this.x * y - this.y * x,
             this.x * x + this.y * y);
     }
 
-    _rotate(angle) {
+    _rotate(angle: number) {
         const cos = Math.cos(angle),
             sin = Math.sin(angle),
             x = cos * this.x - sin * this.y,
@@ -113,7 +118,23 @@ class Point extends Position {
      * @returns output point
      */
     rotate(a: number) {
-        return (this.copy() as Point)._rotate(a);
+        return this.copy()._rotate(a);
+    }
+
+    /**
+     * Return abs value of the point
+     * @returns abs point
+     */
+    abs() {
+        return new Point(Math.abs(this.x), Math.abs(this.y));
+    }
+
+    /**
+     * Like math.round, rounding the point's xy.
+     * @returns rounded point
+     */
+    round() {
+        return new Point(Math.round(this.x), Math.round(this.y));
     }
 }
 
