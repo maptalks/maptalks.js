@@ -148,7 +148,7 @@ class VectorLayer extends OverlayLayer {
         return this._hitGeos(this._geoList, point, options);
     }
 
-    _hitGeos(geometries, cp, options:any = {}) {
+    _hitGeos(geometries, cp, options:any) {
         if (!geometries || !geometries.length) {
             return [];
         }
@@ -261,7 +261,10 @@ class VectorLayer extends OverlayLayer {
     
      toJSON(options:VectorLayerToJSONOptions):any {
         if (!options) {
-            options;
+            options = {
+                'clipExtent': null,
+                'geometries': null
+            };
         }
         const profile = {
             'type': this.getJSONType(),
