@@ -245,7 +245,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             throw new Error('Invalid center when creating map.');
         }
         // prepare options
-        const opts = extend({} as any, options);
+        const opts = extend({} as any, options) as MapOptionsType;
         const zoom = opts['zoom'];
         delete opts['zoom'];
         const center = new Coordinate(opts['center']);
@@ -1053,7 +1053,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     _getCenterByPadding(center: Coordinate, zoom?: number, padding?: MapPaddingType) {
         const point = this.coordinateToPoint(center, zoom);
-        const { paddingLeft = 0, paddingRight = 0, paddingTop = 0, paddingBottom = 0 } = padding || { paddingBottom: 0, paddingLeft: 0, paddingRight: 0, paddingTop: 0 };
+        const { paddingLeft = 0, paddingRight = 0, paddingTop = 0, paddingBottom = 0 } = padding || {};
         let pX = 0;
         let pY = 0;
         if (paddingLeft || paddingRight) {

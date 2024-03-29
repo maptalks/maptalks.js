@@ -18,12 +18,19 @@ type HandlerContext = {
 
 export type EventRecords = Record<string, HandlerFn>;
 
-export type BaseEventParams = {
+export type BaseEventParamsType = {
     type?: string,
-    target?: any
+    target?: any;
+    [propName: string]: any;
 };
 
-export type HandlerFn = (...args: any[]) => void | boolean;
+export type HandlerFnResultType = {
+    type: string;
+    target: any;
+    [propName: string]: any;
+}
+
+export type HandlerFn = (result: HandlerFnResultType) => void | boolean;
 
 export default function <T extends MixinConstructor>(Base: T) {
     return class EventableMixin extends Base {
@@ -293,7 +300,7 @@ export default function <T extends MixinConstructor>(Base: T) {
          * @param  eventType - an event type to fire
          * @param  param     - parameters for the listener function.
          */
-        fire<T extends BaseEventParams>(eventType: string, param?: BaseEventParams | T): this {
+        fire(eventType: string, param?: BaseEventParamsType): this {
             if (this._eventParent) {
                 return this._eventParent.fire.call(this._eventParent, eventType, param);
             }
@@ -364,7 +371,7 @@ export default function <T extends MixinConstructor>(Base: T) {
             return this;
         }
 
-        _fire<T extends BaseEventParams>(eventType: string, param: BaseEventParams | T) {
+        _fire(eventType: string, param: BaseEventParamsType) {
             if (!this._eventMap) {
                 return this;
             }
