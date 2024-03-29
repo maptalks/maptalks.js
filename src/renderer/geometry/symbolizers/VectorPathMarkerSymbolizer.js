@@ -1,4 +1,4 @@
-import { isNil, extend, isString } from '../../../core/util';
+import { isNil, extend } from '../../../core/util';
 import Browser from '../../../core/Browser';
 import { getMarkerPathBase64 } from '../../../core/util/resource';
 import ImageMarkerSymbolizer from './ImageMarkerSymbolizer';
