@@ -1,6 +1,8 @@
 import { isNil, isNumber } from '../core/util';
-import type Point from './Point'
-import type Coordinate from './Coordinate'
+import type Point from './Point';
+import type { PointArray, PointJson } from './Point';
+import type Coordinate from './Coordinate';
+import type { CoordinateArray, CoordinateJson } from './Coordinate';
 
 type NumberAble = number | string
 
@@ -12,7 +14,7 @@ export type PositionJson<T> = {
 
 export type PositionArray<T> = [T, T] | [T, T, T];
 
-export type PositionLike = Point | Coordinate | PositionJson<NumberAble> | PositionArray<NumberAble>;
+export type PositionLike = Point | Coordinate | PositionJson<NumberAble> | PositionArray<NumberAble> | PointJson | PointArray | CoordinateJson | CoordinateArray;
 
 /**
  * `Point` 和 `Coordinate` 的抽象类

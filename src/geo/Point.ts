@@ -47,6 +47,10 @@ class Point extends Position {
     }
 
     /**
+     * 计算对应的单位向量
+     * 这意味着计算点到[0, 0]坐标的距离将等于1，并且从计算点到[0, 0]坐标的角度与之前相同
+     * @english
+     *
      * Calculate this point but as a unit vector from 0, 0, meaning
      * that the distance from the resulting point to the 0, 0
      * coordinate will be equal to 1 and the angle from the resulting
@@ -63,6 +67,10 @@ class Point extends Position {
     }
 
     /**
+     * 计算一个垂直点，其中新的y坐标是旧的x坐标，而新的x坐标是旧的y坐标乘以-1。
+     *
+     * @english
+     *
      * Compute a perpendicular point, where the new y coordinate
      * is the old x coordinate and the new x coordinate is the old y
      * coordinate multiplied by -1
@@ -78,16 +86,24 @@ class Point extends Position {
     }
 
     /**
+     * 获取这个点与另一个点之间的角度，单位为弧度
+     *
+     * @english
+     *
      * Get the angle between this point and another point, in radians
      * from mapbox/point-geometry
-     * @param b the other point
+     * @param b - the other point
      * @returns angle
      */
     angleWith(b: Point): number {
         return this.angleWithSep(b.x, b.y);
     }
 
-    /*
+    /**
+     * 找到两个向量之间的角度
+     *
+     * @english
+     *
      * Find the angle of the two vectors, solving the formula for
      * the cross product a x b = |a||b|sin(θ) for θ.
      * from mapbox/point-geometry
@@ -113,6 +129,10 @@ class Point extends Position {
     }
 
     /**
+     * 围绕0,0原点旋转这个点，旋转角度a以弧度为单位
+     *
+     * @english
+     *
      * Rotate this point around the 0, 0 origin by an angle a,
      * given in radians
      * from mapbox/point-geometry

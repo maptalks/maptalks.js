@@ -38,49 +38,61 @@ export type CoordinateLike = Coordinate | CoordinateJson | CoordinateArray;
  */
 class Coordinate extends Position {
     /**
+     * 将一个或多个坐标对象转换为GeoJSON风格的坐标。
+     *
+     * @english
+     *
      * Convert one or more Coordinate objects to GeoJSON style coordinates
-     * @param  {Coordinate|Coordinate[]} coordinates - coordinates to convert
-     * @return {Number[]|Number[][]}
+     * @param coordinates - coordinates to convert
      * @example
+     *
+     * ```ts
      * // result is [[100,0], [101,1]]
-     * var numCoords = Coordinate.toNumberArrays([new Coordinate(100,0), new Coordinate(101,1)]);
+     * const numCoords = Coordinate.toNumberArrays([new Coordinate(100,0), new Coordinate(101,1)]);
+     * ```
      */
-    static toNumberArrays(coordinates) {
+    static toNumberArrays(coordinates: Coordinate | Coordinate[]) {
         if (!Array.isArray(coordinates)) {
             return coordinates.toArray();
         }
-        return forEachCoord(coordinates, function (coord) {
+        return forEachCoord(coordinates, function (coord: Coordinate) {
             return coord.toArray();
         });
     }
 
     /**
+     * 将一个或多个GeoJSON风格的坐标转换为坐标对象。
+     *
+     * @english
+     *
      * Convert one or more GeoJSON style coordiantes to Coordinate objects
-     * @param  {Number[]|Number[][]} coordinates - coordinates to convert
-     * @return {Coordinate|Coordinate[]}
+     * @param coordinates - coordinates to convert
      * @example
-     * var coordinates = Coordinate.toCoordinates([[100,0], [101,1]]);
+     *
+     * ```ts
+     * const coordinates = Coordinate.toCoordinates([[100,0], [101,1]]);
+     * ```
      */
-    static toCoordinates(coordinates) {
+    static toCoordinates(coordinates: CoordinateArray | CoordinateArray[] | Coordinate | Coordinate[]) {
         if (isNumber(coordinates[0]) && isNumber(coordinates[1])) {
-            return new Coordinate(coordinates);
+            return new Coordinate(coordinates as CoordinateArray);
         }
         if (coordinates instanceof Coordinate) {
             return coordinates;
         }
-        const result = [];
+        const result: Coordinate[] = [];
         for (let i = 0, len = coordinates.length; i < len; i++) {
             const child = coordinates[i];
             if (Array.isArray(child)) {
                 if (isNumber(child[0])) {
-                    result.push(new Coordinate(child as any));
+                    result.push(new Coordinate(child as CoordinateArray));
                 } else {
-                    result.push(Coordinate.toCoordinates(child));
+                    result.push(Coordinate.toCoordinates(child) as Coordinate);
                 }
             } else if (child instanceof Coordinate) {
                 result.push(child);
             } else {
-                result.push(new Coordinate(child));
+                result.push(new Coordinate(child as unknown as CoordinateArray));
             }
         }
         return result;

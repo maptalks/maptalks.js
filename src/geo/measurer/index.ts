@@ -46,7 +46,7 @@ export const Measurer = {
      * @return {Object} a measurer object
      * @function measurer.Measurer.getInstance
      */
-    getInstance(name) {
+    getInstance(name?: string) {
         if (!name) {
             return DEFAULT;
         }
