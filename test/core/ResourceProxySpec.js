@@ -85,6 +85,25 @@ describe('ResourceProxy.Spec', function () {
             }, 200);
         })
     });
+    
+    it('load sprite custom sourceName', function (done) {
+        ResourceProxy.loadSprite({
+            imgUrl: hostUrl + '/sprite.png',
+            jsonUrl: hostUrl + '/sprite.json',
+            sourceName: 'sprite/'
+        }).then(function (result) {
+            layer.clear();
+            new maptalks.Marker(map.getCenter(), {
+                symbol: {
+                    markerFile: "$sprite/116"
+                }
+            }).addTo(layer);
+            setTimeout(() => {
+                expect(layer).to.be.painted(0, -5);
+                done();
+            }, 200);
+        })
+    });
 
     it('load svgs', function (done) {
         ResourceProxy.loadSvgs(hostUrl + '/svgs.json').then(function (result) {
@@ -93,6 +112,51 @@ describe('ResourceProxy.Spec', function () {
                 symbol: {
                     markerType: 'path',
                     markerPath: '$airfield.svg',//use $ get icon data
+                    'markerPathWidth': 15,
+                    'markerPathHeight': 15,
+                    'markerWidth': 30,
+                    'markerHeight': 30
+                }
+            }).addTo(layer);
+            setTimeout(() => {
+                expect(layer).to.be.painted(0, -1);
+                done();
+            }, 200);
+        })
+    });
+
+    it('load svgs with object params', function (done) {
+        ResourceProxy.loadSvgs({
+            url: hostUrl + '/svgs.json'
+        }).then(function (result) {
+            layer.clear();
+            new maptalks.Marker(map.getCenter(), {
+                symbol: {
+                    markerType: 'path',
+                    markerPath: '$airfield.svg',//use $ get icon data
+                    'markerPathWidth': 15,
+                    'markerPathHeight': 15,
+                    'markerWidth': 30,
+                    'markerHeight': 30
+                }
+            }).addTo(layer);
+            setTimeout(() => {
+                expect(layer).to.be.painted(0, -1);
+                done();
+            }, 200);
+        })
+    });
+
+    it('load svgs custom resourceName', function (done) {
+        ResourceProxy.loadSvgs({
+            url: hostUrl + '/svgs.json',
+            sourceName: 'svgs/'
+        }).then(function (result) {
+            layer.clear();
+            new maptalks.Marker(map.getCenter(), {
+                symbol: {
+                    markerType: 'path',
+                    markerPath: '$svgs/airfield.svg',//use $ get icon data
                     'markerPathWidth': 15,
                     'markerPathHeight': 15,
                     'markerWidth': 30,
