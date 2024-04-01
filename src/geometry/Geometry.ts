@@ -121,6 +121,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     public _infoWinOptions: any
     public _minAlt: number
     public _maxAlt: number
+    startEdit?(T?: any): any
     getGeometries?(): Geometry[];
     getCoordinates?(): Coordinate;
     setCoordinates?(coordinate: PositionLike): Geometry;
@@ -642,7 +643,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         // return this._containsPoint(this.getMap()._containerPointToPoint(new Point(containerPoint)), t);
     }
 
-    _containsPoint(containerPoint: any, t: any): any {
+    _containsPoint(containerPoint: Point, t: any): any {
         const painter = this._getPainter();
         if (!painter) {
             return false;
@@ -1593,7 +1594,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         this.fire(eventName, param);
     }
 
-    _toJSON(options: any): any {
+    _toJSON(options?: any): any {
         return {
             'feature': this.toGeoJSON(options)
         };

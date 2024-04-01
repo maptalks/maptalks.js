@@ -6,6 +6,11 @@ import PointExtent from '../geo/PointExtent';
 import Extent from '../geo/Extent';
 import Geometry from './Geometry';
 import GlobalConfig from '../GlobalConfig';
+import * as projections from '../geo/projection';
+import Point from '../geo/Point';
+
+type ProjectionCommon = typeof projections.Common
+
 
 const TEMP_EXTENT = new PointExtent();
 
@@ -23,17 +28,23 @@ const TEMP_EXTENT = new PointExtent();
  */
 class GeometryCollection extends Geometry {
 
+    public _geometries: Geometry[]
+    public _pickGeometryIndex: number
+    public _originalSymbol: any
+    public _draggbleBeforeEdit: any
+    public _editing: boolean
+
     /**
      * @param {Geometry[]} geometries - GeometryCollection's geometries
      * @param {Object} [options=null] - options defined in [nGeometryCollection]{@link GeometryCollection#options}
      */
-    constructor(geometries, opts) {
+    constructor(geometries?: Geometry[], opts?: any) {
         super(opts);
         this.type = 'GeometryCollection';
         this.setGeometries(geometries);
     }
 
-    getContainerExtent(out) {
+    getContainerExtent(out?: PointExtent): PointExtent {
         const extent = out || new PointExtent();
         this.forEach(geo => {
             extent._combine(geo.getContainerExtent(TEMP_EXTENT));
@@ -42,12 +53,14 @@ class GeometryCollection extends Geometry {
     }
 
     /**
+     * 将多个几何图形设置到几何图形集合
+     * @english
      * Set new geometries to the geometry collection
      * @param {Geometry[]} geometries
      * @return {GeometryCollection} this
      * @fires GeometryCollection#shapechange
      */
-    setGeometries(_geometries) {
+    setGeometries(_geometries: Geometry[]): GeometryCollection {
         const geometries = this._checkGeometries(_geometries || []);
         const symbol = this._getSymbol();
         const options = this.config();
@@ -73,20 +86,24 @@ class GeometryCollection extends Geometry {
     }
 
     /**
+     * 获取几何集合中的几何图形们
+     * @english
      * Get geometries of the geometry collection
      * @return {Geometry[]} geometries
      */
-    getGeometries() {
+    getGeometries(): Geometry[] {
         return this._geometries || [];
     }
 
     /**
+     * 按顺序对集合中存在的每个几何体执行一次提供的回调。
+     * @english
      * Executes the provided callback once for each geometry present in the collection in order.
      * @param  {Function} fn             - a callback function
      * @param  {*} [context=undefined]   - callback's context
      * @return {GeometryCollection} this
      */
-    forEach(fn, context) {
+    forEach(fn: any, context?: any): GeometryCollection {
         const geometries = this.getGeometries();
         for (let i = 0, l = geometries.length; i < l; i++) {
             if (!geometries[i]) {
@@ -102,6 +119,8 @@ class GeometryCollection extends Geometry {
     }
 
     /**
+     * 创建一个几何集合类，这个集合类的所有元素都通过所提供的函数实现的测试
+     * @english
      * Creates a GeometryCollection with all elements that pass the test implemented by the provided function.
      * @param  {Function} fn      - Function to test each geometry
      * @param  {*} [context=undefined]    - Function's context
@@ -111,7 +130,7 @@ class GeometryCollection extends Geometry {
      * @example
      * var filtered = collection.filter(geometry => geometry.getProperties().foo === 'bar');
      */
-    filter(fn, context) {
+    filter(fn?: any, context?: any): GeometryCollection {
         if (!fn) {
             return new GeometryCollection();
         }
@@ -130,54 +149,65 @@ class GeometryCollection extends Geometry {
     }
 
     /**
+     * 按给定偏移平移或移动几何体集合。
+     * @english
      * Translate or move the geometry collection by the given offset.
      * @param  {Coordinate} offset - translate offset
      * @return {GeometryCollection} this
      */
-    translate(offset) {
+    translate(offset?: Coordinate): GeometryCollection {
         if (!offset) {
             return this;
         }
         if (this.isEmpty()) {
             return this;
         }
+        // eslint-disable-next-line prefer-rest-params
         const args = arguments;
-        this.forEach(function (geometry) {
+        this.forEach(function (geometry: Geometry) {
             if (geometry && geometry.translate) {
-                geometry.translate.apply(geometry, args);
+                // eslint-disable-next-line prefer-spread
+                geometry.translate.call(geometry, args);
             }
         });
         return this;
     }
 
     /**
+     * 几何图形集合是否为空
+     * @english
      * Whether the geometry collection is empty
      * @return {Boolean}
      */
-    isEmpty() {
+    isEmpty(): boolean {
         return !isArrayHasData(this.getGeometries());
     }
 
     /**
+     * 移除本身，如果图层含有的话
+     * @english
      * remove itself from the layer if any.
      * @returns {Geometry} this
      * @fires GeometryCollection#removestart
      * @fires GeometryCollection#remove
      * @fires GeometryCollection#removeend
      */
-    remove() {
-        this.forEach(function (geometry) {
+    remove(): any {
+        this.forEach(function (geometry: Geometry) {
             geometry._unbind();
         });
+        // eslint-disable-next-line prefer-rest-params
         return Geometry.prototype.remove.apply(this, arguments);
     }
 
     /**
+     * 显示几何集合
+     * @english
      * Show the geometry collection.
      * @return {GeometryCollection} this
      * @fires GeometryCollection#show
      */
-    show() {
+    show(): GeometryCollection {
         this.options['visible'] = true;
         this.forEach(function (geometry) {
             geometry.show();
@@ -186,11 +216,13 @@ class GeometryCollection extends Geometry {
     }
 
     /**
+     * 隐藏几何集合
+     * @english
      * Hide the geometry collection.
      * @return {GeometryCollection} this
      * @fires GeometryCollection#hide
      */
-    hide() {
+    hide(): GeometryCollection {
         this.options['visible'] = false;
         this.forEach(function (geometry) {
             geometry.hide();
@@ -198,13 +230,13 @@ class GeometryCollection extends Geometry {
         return this;
     }
 
-    onConfig(config) {
-        this.forEach(function (geometry) {
+    onConfig(config?: string | Record<string, any>) {
+        this.forEach(function (geometry: Geometry) {
             geometry.config(config);
         });
     }
 
-    getSymbol() {
+    getSymbol(): any {
         let s = super.getSymbol();
         if (!s) {
             const symbols = [];
@@ -225,7 +257,7 @@ class GeometryCollection extends Geometry {
         return s;
     }
 
-    setSymbol(s) {
+    setSymbol(s?: any): GeometryCollection {
         if (s && s['children']) {
             this._symbol = null;
             this.forEach((g, i) => {
@@ -244,7 +276,7 @@ class GeometryCollection extends Geometry {
         return this;
     }
 
-    _setExternSymbol(symbol) {
+    _setExternSymbol(symbol: any): GeometryCollection {
         symbol = this._prepareSymbol(symbol);
         this._externSymbol = symbol;
         this.forEach(function (geometry) {
@@ -255,11 +287,14 @@ class GeometryCollection extends Geometry {
     }
 
     /**
+     * 绑定几何几何到一个图层
+     * @english
      * bind this geometry collection to a layer
      * @param  {Layer} layer
      * @private
      */
-    _bindLayer() {
+    _bindLayer(): void {
+        // eslint-disable-next-line prefer-rest-params
         super._bindLayer.apply(this, arguments);
         this._bindGeometriesToLayer();
     }
@@ -272,11 +307,13 @@ class GeometryCollection extends Geometry {
     }
 
     /**
+     * 检查几何图形的类型是否有效
+     * @english
      * Check whether the type of geometries is valid
      * @param  {Geometry[]} geometries - geometries to check
      * @private
      */
-    _checkGeometries(geometries) {
+    _checkGeometries(geometries: Geometry[]): Geometry[] {
         const invalidGeoError = 'The geometry added to collection is invalid.';
         geometries = Array.isArray(geometries) ? geometries : [geometries];
         const filterGeometries = [];
@@ -300,11 +337,11 @@ class GeometryCollection extends Geometry {
         return filterGeometries;
     }
 
-    _checkGeo(geo) {
+    _checkGeo(geo: any): boolean {
         return (geo instanceof Geometry);
     }
 
-    _updateCache() {
+    _updateCache(): void {
         this._clearCache();
         if (this.isEmpty()) {
             return;
@@ -316,17 +353,17 @@ class GeometryCollection extends Geometry {
         });
     }
 
-    _removePainter() {
+    _removePainter(): void {
         if (this._painter) {
             this._painter.remove();
         }
         delete this._painter;
-        this.forEach(function (geometry) {
+        this.forEach(function (geometry: Geometry) {
             geometry._removePainter();
         });
     }
 
-    _computeCenter(projection) {
+    _computeCenter(projection: null | ProjectionCommon): Coordinate {
         if (!projection || this.isEmpty()) {
             return null;
         }
@@ -351,7 +388,7 @@ class GeometryCollection extends Geometry {
         return new Coordinate(sumX / counter, sumY / counter);
     }
 
-    _containsPoint(point, t) {
+    _containsPoint(point: Point, t: any): boolean {
         if (this.isEmpty()) {
             return false;
         }
@@ -367,7 +404,7 @@ class GeometryCollection extends Geometry {
     }
 
     // fix #2177 GeometryCollection hitTolerance always is 0
-    _hitTestTolerance() {
+    _hitTestTolerance(): number {
         const geometries = this.getGeometries();
         let hitTolerance = 0;
         for (let i = 0, len = geometries.length; i < len; i++) {
@@ -377,15 +414,15 @@ class GeometryCollection extends Geometry {
         return hitTolerance;
     }
 
-    _computeExtent(projection) {
+    _computeExtent(projection: null | ProjectionCommon): any {
         return computeExtent.call(this, projection, '_computeExtent');
     }
 
-    _computePrjExtent(projection) {
+    _computePrjExtent(projection: null | ProjectionCommon): any {
         return computeExtent.call(this, projection, '_computePrjExtent');
     }
 
-    _computeGeodesicLength(projection) {
+    _computeGeodesicLength(projection: null | ProjectionCommon): number {
         if (!projection || this.isEmpty()) {
             return 0;
         }
@@ -400,7 +437,7 @@ class GeometryCollection extends Geometry {
         return result;
     }
 
-    _computeGeodesicArea(projection) {
+    _computeGeodesicArea(projection: null | ProjectionCommon): number {
         if (!projection || this.isEmpty()) {
             return 0;
         }
@@ -416,7 +453,7 @@ class GeometryCollection extends Geometry {
     }
 
     //for toGeoJSON
-    _exportGeoJSONGeometry() {
+    _exportGeoJSONGeometry(): any {
         const children = [];
         if (!this.isEmpty()) {
             const geometries = this.getGeometries();
@@ -433,7 +470,7 @@ class GeometryCollection extends Geometry {
         };
     }
     //for toJSON
-    _toJSON(options) {
+    _toJSON(options?: any): any {
         //fix call from feature-filter package
         options = extend({}, options);
         //Geometry了用的是toGeoJSON(),如果里面包含特殊图形(Circle等),就不能简单的用toGeoJSON代替了，否则反序列化回来就不是原来的图形了
@@ -480,11 +517,13 @@ class GeometryCollection extends Geometry {
     }
 
     /**
+     * 如果通过[ConnectorLine]连接，则获取连接点
+     * @english
      * Get connect points if being connected by [ConnectorLine]{@link ConnectorLine}
      * @private
      * @return {Coordinate[]}
      */
-    _getConnectPoints() {
+    _getConnectPoints(): Coordinate[] {
         const extent = this.getExtent();
         const anchors = [
             new Coordinate(extent.xmin, extent.ymax),
@@ -495,7 +534,7 @@ class GeometryCollection extends Geometry {
         return anchors;
     }
 
-    _getExternalResources() {
+    _getExternalResources(): any {
         if (this.isEmpty()) {
             return [];
         }
@@ -522,7 +561,7 @@ class GeometryCollection extends Geometry {
 
     //----------Overrides editor methods in Geometry-----------------
 
-    startEdit(opts) {
+    startEdit(opts?: any): GeometryCollection {
         if (this.isEmpty()) {
             return this;
         }
@@ -551,7 +590,7 @@ class GeometryCollection extends Geometry {
         return this;
     }
 
-    endEdit() {
+    endEdit(): GeometryCollection {
         if (this.isEmpty()) {
             return this;
         }
@@ -570,7 +609,7 @@ class GeometryCollection extends Geometry {
         return this;
     }
 
-    isEditing() {
+    isEditing(): boolean {
         if (!this._editing) {
             return false;
         }
@@ -589,7 +628,7 @@ GeometryCollection.registerJSONType('GeometryCollection');
 
 export default GeometryCollection;
 
-function computeExtent(projection, fn) {
+function computeExtent(projection: null | ProjectionCommon, fn: any): null | Extent {
     if (this.isEmpty()) {
         return null;
     }
@@ -608,7 +647,7 @@ function computeExtent(projection, fn) {
     return extent;
 }
 
-function isSelf(geom) {
+function isSelf(geom: any): boolean {
     return (geom instanceof GeometryCollection);
 }
 
