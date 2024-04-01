@@ -1,6 +1,8 @@
 import Coordinate from '../geo/Coordinate';
 
 /**
+ * 基于几何图形的通用方法
+ * @english
  * Common methods for geometry classes that base on a center, e.g. Marker, Circle, Ellipse , etc
  * @mixin CenterMixin
  */
@@ -8,27 +10,31 @@ export default function (Base) {
     return class extends Base {
 
         /**
+         * 获取几何图形的中心点
+         * @english
          * Get geometry's center
          * @return {Coordinate} - center of the geometry
          * @function CenterMixin.getCoordinates
          */
-        getCoordinates() {
+        getCoordinates(): Coordinate {
             return this._coordinates;
         }
 
         /**
+         * 设置几何图形的中心点
+         * @english
          * Set a new center to the geometry
          * @param {Coordinate|Number[]} coordinates - new center
          * @return {Geometry} this
          * @fires Geometry#positionchange
          * @function CenterMixin.setCoordinates
          */
-        setCoordinates(coordinates) {
+        setCoordinates(coordinates): any {
             const center = (coordinates instanceof Coordinate) ? coordinates : new Coordinate(coordinates);
             this._coordinates = center;
             if (!this.getMap()) {
                 //When not on a layer or when creating a new one, temporarily save the coordinates,
-                this._dirtyCoords  = true;
+                this._dirtyCoords = true;
                 this.onPositionChanged();
                 return this;
             }
@@ -38,7 +44,7 @@ export default function (Base) {
         }
 
         //Gets view point of the geometry's center
-        _getCenter2DPoint(res) {
+        _getCenter2DPoint(res: any): any {
             const map = this.getMap();
             if (!map) {
                 return null;
@@ -51,7 +57,7 @@ export default function (Base) {
             return map._prjToPointAtRes(pcenter, res);
         }
 
-        _getPrjCoordinates() {
+        _getPrjCoordinates(): any {
             const projection = this._getProjection();
             this._verifyProjection();
             if (!this._pcenter && projection) {
@@ -63,13 +69,13 @@ export default function (Base) {
         }
 
         //Set center by projected coordinates
-        _setPrjCoordinates(pcenter) {
+        _setPrjCoordinates(pcenter: Coordinate): void {
             this._pcenter = pcenter;
             this.onPositionChanged();
         }
 
         //update cached const iables if geometry is updated.
-        _updateCache() {
+        _updateCache(): void {
             this._clearCache();
             const projection = this._getProjection();
             if (this._pcenter && projection) {
@@ -77,12 +83,12 @@ export default function (Base) {
             }
         }
 
-        _clearProjection() {
+        _clearProjection(): void {
             this._pcenter = null;
             super._clearProjection();
         }
 
-        _computeCenter() {
+        _computeCenter(): Coordinate | null {
             return this._coordinates ? this._coordinates.copy() : null;
         }
     };
