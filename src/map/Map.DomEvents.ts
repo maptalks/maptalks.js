@@ -9,16 +9,29 @@ import {
     isMousemoveEventBlocked
 } from '../core/util/dom';
 import Map from './Map';
-import { Coordinate } from '../geo';
+import { Coordinate, Point } from '../geo';
 
 declare module "./Map" {
     interface Map {
         _removeDomEvents(): void;
-        _parseEvent(e: EventTarget, type: string);
-        _parseEventFromCoord(coord: Coordinate): any;
-        //Further improvement is needed. Here, only the methods used in the Map are listed. In order to pass the compilation, any errors were used everywhere
+        _ignoreEvent(domEvent: MapEventDomType): boolean;
+        _isEventOutMap(domEvent: MapEventDomType): boolean;
+        _parseEvent(e: EventTarget, type: string): MapEventDataType;
+        _parseEventFromCoord(coord: Coordinate): MapEventDataType;
+        _fireDOMEvent(target: any, e: MapEventDomType, type: string);
+        _getEventParams(e: MapEventDomType): MapEventDataType;
 
     }
+}
+
+export type MapEventDomType = MouseEvent | TouchEvent | DragEvent;
+export type MapEventDataType = {
+    coordinate?: Coordinate;
+    containerPoint?: Point;
+    viewPoint?: Point;
+    point2d?: Point;
+    domEvent?: MouseEvent | DragEvent | TouchEvent;
+    terrain?: { coordinate: Coordinate, altitude: number } | null;
 }
 
 
@@ -226,13 +239,13 @@ Map.include(/** @lends Map.prototype */ {
         removeDomEvent(dom, DRAGEVENTS, dragEventHanlder, this);
     },
 
-    _handleDOMEvent(e) {
+    _handleDOMEvent(e: MapEventDomType) {
         if (e && e.type === 'drop') {
             // https://developer.mozilla.org/zh-CN/docs/Web/API/HTML_Drag_and_Drop_API
             e.stopPropagation();
             e.preventDefault();
             let eventParam = this._parseEvent(e, e.type);
-            eventParam = extend({}, eventParam, { dataTransfer: e.dataTransfer });
+            eventParam = extend({}, eventParam, { dataTransfer: (e as DragEvent).dataTransfer });
             this._fireEvent(e.type, eventParam);
             return;
         }
@@ -241,7 +254,7 @@ Map.include(/** @lends Map.prototype */ {
         if (isMoveEvent(type) && !GlobalConfig.isTest && isMousemoveEventBlocked(this, this.options['mousemoveThrottleTime'])) {
             return;
         }
-        const isMouseDown = type === 'mousedown' || (type === 'touchstart' && (!e.touches || e.touches.length === 1));
+        const isMouseDown = type === 'mousedown' || (type === 'touchstart' && (!(e as TouchEvent).touches || (e as TouchEvent).touches.length === 1));
         // prevent default contextmenu
         if (isMouseDown) {
             this._domMouseDownTime = now();
@@ -334,7 +347,7 @@ Map.include(/** @lends Map.prototype */ {
         return false;
     },
 
-    _isEventOutMap(domEvent) {
+    _isEventOutMap(domEvent: MapEventDomType) {
         if (this.getPitch() > this.options['maxVisualPitch']) {
             const actualEvent = this._getActualEvent(domEvent);
             const eventPos = getEventContainerPoint(actualEvent, this._containerDOM);
@@ -345,17 +358,17 @@ Map.include(/** @lends Map.prototype */ {
         return false;
     },
 
-    _wrapTerrainData(eventParam) {
+    _wrapTerrainData(eventParam: MapEventDataType) {
         if (eventParam.containerPoint && !eventParam.terrain) {
             eventParam.terrain = this._queryTerrainInfo(eventParam.containerPoint);
         }
     },
 
-    _parseEvent(e, type) {
+    _parseEvent(e: MapEventDomType, type: string): MapEventDataType {
         if (!e) {
             return null;
         }
-        let eventParam: { [key: string]: any } = {
+        let eventParam: MapEventDataType = {
             'domEvent': e
         };
         if (type !== 'keypress') {
@@ -380,7 +393,7 @@ Map.include(/** @lends Map.prototype */ {
         return eventParam;
     },
 
-    _parseEventFromCoord(coord) {
+    _parseEventFromCoord(coord: Coordinate): MapEventDataType {
         const containerPoint = this.coordToContainerPoint(coord),
             viewPoint = this.containerPointToViewPoint(containerPoint);
         const e = {
@@ -392,13 +405,14 @@ Map.include(/** @lends Map.prototype */ {
         return e;
     },
 
-    _getActualEvent(e) {
+    _getActualEvent(e: MapEventDomType) {
+        e = e as TouchEvent;
         return e.touches && e.touches.length > 0 ?
             e.touches[0] : e.changedTouches && e.changedTouches.length > 0 ?
                 e.changedTouches[0] : e;
     },
 
-    _fireDOMEvent(target, e, type) {
+    _fireDOMEvent(target, e: MapEventDomType, type: string) {
         if (this.isRemoved()) {
             return;
         }
@@ -427,7 +441,7 @@ Map.include(/** @lends Map.prototype */ {
     // }
 
     // Extract _ geteventparams is reused in other plug-ins,such as maptalks.three plugin
-    _getEventParams(e) {
+    _getEventParams(e): MapEventDataType {
         const map = this;
         const eventParam = {
             'domEvent': e
