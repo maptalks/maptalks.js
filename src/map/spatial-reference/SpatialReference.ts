@@ -11,8 +11,8 @@ const MAX_ZOOM = 23;
 
 export type Projection = {
     projection: string
-    resolutions: number[]
-    fullExtent: {
+    resolutions?: number[]
+    fullExtent?: {
         top: number
         left: number
         bottom: number
@@ -175,7 +175,7 @@ export default class SpatialReference {
     }
 
     static loadWMTS(url: string, cb: (_, spatialRef?) => void, options: any) {
-        loadWMTS(url,cb,options)
+        loadWMTS(url, cb, options)
         return this
     }
 

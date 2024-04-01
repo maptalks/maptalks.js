@@ -816,7 +816,7 @@ class CanvasRenderer extends Class {
                 resolve(url);
                 return;
             }
-            const imageURL = formatResouceUrl(url[0]);
+            const imageURL = formatResourceUrl(url[0]);
 
             if (isImageBitMap(imageURL)) {
                 createImageBitmap(imageURL).then(newbitmap => {

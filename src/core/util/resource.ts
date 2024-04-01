@@ -5,6 +5,7 @@ import { extend, isNil, isNumber, isString } from './common';
 import { extractCssUrl, btoa } from './util';
 import { isFunctionDefinition, getFunctionTypeResources } from '../mapbox';
 import Browser from '../Browser';
+import { ResourceProxy } from '../ResourceProxy';
 
 /**
  * Translate symbol properties to SVG properties
@@ -71,8 +72,13 @@ export function getMarkerPathBase64(symbol: any, width?: number, height?: number
             }
         }
     }
-
-    const pathes = Array.isArray(symbol['markerPath']) ? symbol['markerPath'] : [symbol['markerPath']];
+    let pathes;
+    const markerPath = symbol.markerPath;
+    if (isString(markerPath) && markerPath[0] === '$') {
+        pathes = ResourceProxy.getResource(markerPath.substring(1, Infinity)) || [];
+    } else {
+        pathes = Array.isArray(symbol['markerPath']) ? symbol['markerPath'] : [symbol['markerPath']];
+    }
     let path;
     const pathesToRender = [];
     for (let i = 0; i < pathes.length; i++) {
