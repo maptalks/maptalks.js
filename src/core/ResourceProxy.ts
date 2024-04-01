@@ -17,7 +17,8 @@ type ProxyConfig = {
 
 type SpriteOptionsType = {
     imgUrl: string;
-    jsonUrl: string
+    jsonUrl: string;
+    sourceName?: string;
 }
 
 type SVGItemType = {
@@ -29,6 +30,7 @@ type SVGItemType = {
 type SVGOptionsType = {
     url?: string,
     symbols?: Array<SVGSymbolElement>;
+    sourceName?: string;
     fill?: string;
     stroke?: string;
 }
@@ -127,6 +129,7 @@ function loadSprite(options: SpriteOptionsType = { imgUrl: '', jsonUrl: '' }) {
                 });
             }
             const offscreenCanvas = createOffscreenCanvas();
+            const sourceName = options.sourceName || "";
             icons.forEach(icon => {
                 const { name, spriteItem } = icon;
                 const { x, y, width, height } = spriteItem;
@@ -141,7 +144,7 @@ function loadSprite(options: SpriteOptionsType = { imgUrl: '', jsonUrl: '' }) {
                     resource = canvas.toDataURL();
                 }
                 icon.resource = resource;
-                ResourceProxy.addResource(name, resource);
+                ResourceProxy.addResource(sourceName + name, resource);
             });
             resolve(icons);
         }
@@ -166,7 +169,7 @@ function loadSprite(options: SpriteOptionsType = { imgUrl: '', jsonUrl: '' }) {
 
 function loadSvgs(svgs: string | Array<SVGSymbolElement> | SVGOptionsType) {
     return new Promise((resolve, reject) => {
-        let url: string = '', symbols: Array<SVGSymbolElement> = [], fillColor: string = '', strokeColor: string = '';
+        let url: string = '', symbols: Array<SVGSymbolElement> = [], fillColor: string = '', strokeColor: string = '', sourceName = '';
         if (Array.isArray(svgs) || ((svgs as any) instanceof NodeList)) {
             symbols = svgs as Array<SVGSVGElement>;
         } else if (isObject(svgs)) {
@@ -175,6 +178,7 @@ function loadSvgs(svgs: string | Array<SVGSymbolElement> | SVGOptionsType) {
             symbols = opts.symbols;
             fillColor = opts.fill;
             strokeColor = opts.stroke;
+            sourceName = opts.sourceName || '';
         } else if (isString(svgs)) {
             url = svgs;
         }
@@ -194,7 +198,7 @@ function loadSvgs(svgs: string | Array<SVGSymbolElement> | SVGOptionsType) {
                         path.stroke = strokeColor;
                     }
                 });
-                ResourceProxy.addResource(name, paths as any);
+                ResourceProxy.addResource(sourceName + name, paths as any);
             }
             const data: SVGItemType = {
                 name,
