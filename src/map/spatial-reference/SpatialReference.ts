@@ -198,6 +198,8 @@ export default class SpatialReference {
             proj = {
                 code: projection
             };
+        } else {
+            proj = projection;
         }
         // a custom one
         if (proj.project) {
