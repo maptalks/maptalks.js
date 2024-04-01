@@ -2,8 +2,9 @@ import { extend, isNil, hasOwn, sign, isString } from '../../core/util';
 import Coordinate from '../../geo/Coordinate';
 import Extent from '../../geo/Extent';
 import * as projections from '../../geo/projection';
+import type { CommonProjectionType } from '../../geo/projection';
 import Transformation from '../../geo/transformation/Transformation';
-import { Measurer } from '../../geo/measurer';
+import { Measurer, DEFAULT } from '../../geo/measurer';
 import loadWMTS from './SpatialReference.WMTS'
 import loadArcgis from './SpatialReference.Arc'
 const MAX_ZOOM = 23;
@@ -18,8 +19,6 @@ export type Projection = {
         right: number
     }
 }
-
-type ProjectionCommon = typeof projections.Common
 
 const DefaultSpatialReference: Record<string, Projection> = {
     'EPSG:3857': {
@@ -141,15 +140,15 @@ DefaultSpatialReference['PRESET-4490-512'] = DefaultSpatialReference['PRESET-VT-
  * SpatialReference Class
  */
 export default class SpatialReference {
-    options: ProjectionCommon
-    _projection: ProjectionCommon
+    options: CommonProjectionType
+    _projection: CommonProjectionType
     isEPSG: boolean
     _resolutions: number[]
     _pyramid: boolean
     _fullExtent: Projection['fullExtent']
     _transformation: Transformation
     json: Projection
-    constructor(options: ProjectionCommon = ({} as ProjectionCommon)) {
+    constructor(options: CommonProjectionType = ({} as CommonProjectionType)) {
         this.options = options;
         this._initSpatialRef();
     }
@@ -289,7 +288,7 @@ export default class SpatialReference {
         }
         projection = extend({}, projections.Common, projection);
         if (!projection.measureLength) {
-            extend(projection, Measurer.DEFAULT);
+            extend(projection, DEFAULT);
         }
         this._projection = projection;
         let defaultSpatialRef,
@@ -356,7 +355,7 @@ export default class SpatialReference {
         //set left, right, top, bottom value
         extend(this._fullExtent, fullExtent);
 
-        this._projection.fullExtent = fullExtent;
+        (this._projection as any).fullExtent = fullExtent;
 
         const a = fullExtent['right'] >= fullExtent['left'] ? 1 : -1,
             b = fullExtent['top'] >= fullExtent['bottom'] ? -1 : 1;

@@ -1,26 +1,19 @@
 import { extend } from '../../core/util';
-import PROJ9807 from './Projection.EPSG9807';
+import PROJ9807, { type EPSG9807ProjectionType } from './Projection.EPSG9807';
 
-/**
- * Universal Traverse Mercator projection
- *
- * @class
- * @category geo
- * @protected
- * @memberOf projection
- * @name EPSG4490
- * @mixes projection.EPSG4326
- * @mixes measurer.WGS84Sphere
- */
-export default extend<any>({}, PROJ9807, /** @lends projection.EPSG4490 */ {
+export interface UTMProjectionParams {
+    zone: string;
+    south: boolean;
+}
+
+const UTMProjection = {
     /**
      * "EPSG:4490", Code of the projection
-     * @type {String}
      * @constant
      */
     code: 'utm',
     aliases: [],
-    create(params) {
+    create(params: Partial<UTMProjectionParams>) {
         const P: any = {};
         let zone = parseInt(params.zone);
         P.falseNorthing = params.south ? 10000000 : 0;
@@ -34,4 +27,18 @@ export default extend<any>({}, PROJ9807, /** @lends projection.EPSG4490 */ {
         P.scaleFactor = 0.9996;
         return PROJ9807.create(P);
     }
-});
+};
+
+export type UTMProjectionType = EPSG9807ProjectionType & typeof UTMProjection;
+
+/**
+ * Universal Traverse Mercator projection
+ *
+ * @class
+ * @category geo
+ * @protected
+ * @memberOf projection
+ * @name EPSG4490
+ * {@inheritDoc projection.EPSG9807}
+ */
+export default extend<UTMProjectionType, EPSG9807ProjectionType, typeof UTMProjection>({} as UTMProjectionType, PROJ9807, UTMProjection);
