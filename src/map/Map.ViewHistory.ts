@@ -1,8 +1,25 @@
 import { equalMapView } from '../core/util';
-import Map from './Map';
+import Map, { MapAnimationOptionsType, MapViewType } from './Map';
+
+declare module "./Map" {
+    interface Map {
+
+        zoomToPreviousView(options?: any): MapViewType;
+        hasPreviousView(): boolean;
+        zoomToNextView(options?: any): MapViewType;
+        hasNextView(): boolean;
+        getViewHistory(): Array<MapViewType>;
+        _onViewChange(view: MapViewType): void;
+        _getCurrentView(): MapViewType;
+
+
+    }
+}
+
+
 
 Map.include(/** @lends Map.prototype */ {
-    _onViewChange(view) {
+    _onViewChange(view: MapViewType) {
         if (!this._viewHistory) {
             this._viewHistory = [];
             this._viewHistoryPointer = 0;
@@ -43,7 +60,7 @@ Map.include(/** @lends Map.prototype */ {
      * Zoom to the previous map view in view history
      * @return {Object} map view
      */
-    zoomToPreviousView(options = {}) {
+    zoomToPreviousView(options: MapAnimationOptionsType = {}) {
         if (!this.hasPreviousView()) {
             return null;
         }
@@ -67,7 +84,7 @@ Map.include(/** @lends Map.prototype */ {
      * Zoom to the next view in view history
      * @return {Object} map view
      */
-    zoomToNextView(options = {}) {
+    zoomToNextView(options: MapAnimationOptionsType = {}) {
         if (!this.hasNextView()) {
             return null;
         }
@@ -80,14 +97,14 @@ Map.include(/** @lends Map.prototype */ {
      * Whether has more next view
      * @return {Boolean}
      */
-    hasNextView() {
+    hasNextView(): boolean {
         if (!this._viewHistory || this._viewHistoryPointer === this._viewHistory.length - 1) {
             return false;
         }
         return true;
     },
 
-    _zoomToView(view, options) {
+    _zoomToView(view: MapViewType, options: MapAnimationOptionsType) {
         const old = this.getView();
         if (options['animation']) {
             this._animateTo(view, {
@@ -107,11 +124,11 @@ Map.include(/** @lends Map.prototype */ {
      * Get map view history
      * @return {Object[]}
      */
-    getViewHistory() {
+    getViewHistory(): Array<MapViewType> {
         return this._viewHistory;
     },
 
-    _fireViewChange(old, view) {
+    _fireViewChange(old: MapViewType, view: MapViewType) {
         this._fireEvent('viewchange', {
             'old': old,
             'new': view
@@ -119,7 +136,7 @@ Map.include(/** @lends Map.prototype */ {
         this._insertUICollidesQueue();
     },
 
-    _getCurrentView() {
+    _getCurrentView(): MapViewType {
         if (!this._viewHistory) {
             return null;
         }
