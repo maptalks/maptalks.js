@@ -12,13 +12,23 @@ import TileSystem from './TileSystem';
  * @private
  */
 class TileConfig {
+    map: any;
+    tileSize: any;
+    fullExtent: Extent;
+    private _xScale: number;
+    private _yScale: number;
+    private _pointOrigin: any;
+    private _glRes: any;
+    tileSystem: TileSystem;
+    transformation: Transformation;
+    private _tileFullIndex: any;
 
     /**
-     * @param {TileSystem} tileSystem  - tileSystem
-     * @param {Extent} fullExtent      - fullExtent of the tile layer
-     * @param {Size} tileSize          - tile size
+     * @param tileSystem  - tileSystem
+     * @param fullExtent      - fullExtent of the tile layer
+     * @param tileSize          - tile size
      */
-    constructor(map, tileSystem, fullExtent, tileSize) {
+    constructor(map: any, tileSystem: TileSystem, fullExtent: Extent, tileSize: any) {
         this.map = map;
         this.tileSize = tileSize;
         this.fullExtent = fullExtent;
@@ -30,7 +40,7 @@ class TileConfig {
         this._glRes = glRes;
     }
 
-    prepareTileInfo(tileSystem, fullExtent) {
+    prepareTileInfo(tileSystem: TileSystem, fullExtent: Extent) {
         if (isString(tileSystem)) {
             tileSystem = TileSystem[tileSystem.toLowerCase()];
         } else if (Array.isArray(tileSystem)) {
@@ -52,11 +62,11 @@ class TileConfig {
 
     /**
      * Get index of point's tile
-     * @param  {Point} point - transformed point, this.transformation.transform(pCoord)
-     * @param  {Number} res  - current resolution
-     * @return {Object}       tile index
+     * @param point - transformed point, this.transformation.transform(pCoord)
+     * @param res  - current resolution
+     * @return       tile index
      */
-    _getTileNum(point, res) {
+    _getTileNum(point: Point, res: number): { x: number, y: number } {
         const tileSystem = this.tileSystem,
             tileSize = this['tileSize'],
             delta = 1E-7;
@@ -71,13 +81,15 @@ class TileConfig {
 
     /**
      * Get tile index and offset from tile's northwest
-     * @param  {Coordinate} pCoord   - projected coordinate
-     * @param  {Number} res - current resolution
-     * @return {Object}   tile index and offset
+     * @param pCoord   - projected coordinate
+     * @param res - current resolution
+     * @return   tile index and offset
      */
-    getTileIndex(pCoord, res, repeatWorld) {
+    getTileIndex(pCoord: Coordinate, res: number, repeatWorld: any): TileIndex {
         const tileSystem = this.tileSystem;
         // tileSize = this['tileSize'];
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         const point = this.transformation.transform(pCoord, 1);
         const tileIndex = this._getTileNum(point, res);
 
@@ -102,14 +114,21 @@ class TileConfig {
 
     /**
      * Get neibor's tile index
-     * @param  {Number} tileX
-     * @param  {Number} tileY
-     * @param  {Number} offsetX
-     * @param  {Number} offsetY
-     * @param  {Number} zoomLevel
-     * @return {Object}  tile's neighbor index
+     * @param tileX
+     * @param tileY
+     * @param offsetX
+     * @param offsetY
+     * @param zoomLevel
+     * @return  tile's neighbor index
      */
-    getNeighorTileIndex(tileX, tileY, offsetX, offsetY, res, repeatWorld) {
+    getNeighorTileIndex(
+        tileX: number,
+        tileY: number,
+        offsetX: number,
+        offsetY: number,
+        res: number,
+        repeatWorld: any
+    ): TileIndex {
         const tileSystem = this.tileSystem;
         let x = (tileX + tileSystem['scale']['x'] * offsetX);
         let y = (tileY - tileSystem['scale']['y'] * offsetY);
@@ -160,7 +179,7 @@ class TileConfig {
         };
     }
 
-    _getTileFullIndex(res) {
+    _getTileFullIndex(res: any) {
         if (!this._tileFullIndex) {
             this._tileFullIndex = {};
         }
@@ -169,7 +188,11 @@ class TileConfig {
         }
         const ext = this.fullExtent;
         const transformation = this.transformation;
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         const nwIndex = this._getTileNum(transformation.transform(new Coordinate(ext['left'], ext['top']), 1), res);
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         const seIndex = this._getTileNum(transformation.transform(new Coordinate(ext['right'], ext['bottom']), 1), res);
 
         const tileSystem = this.tileSystem;
@@ -189,12 +212,12 @@ class TileConfig {
 
     /**
      * Get tile's north west's projected coordinate
-     * @param  {Number} tileX
-     * @param  {Number} tileY
-     * @param  {Number} res
-     * @return {Number[]}
+     * @param tileX
+     * @param tileY
+     * @param res
+     * @return
      */
-    getTilePrjNW(tileX, tileY, res, out) {
+    getTilePrjNW(tileX: number, tileY: number, res: number, out?:any): Coordinate {
         const tileSystem = this.tileSystem;
         const tileSize = this['tileSize'];
         const y = tileSystem['origin']['y'] + this._yScale * tileSystem['scale']['y'] * (tileY + (tileSystem['scale']['y'] === 1 ? 1 : 0)) * res * tileSize['height'];
@@ -206,7 +229,7 @@ class TileConfig {
         return new Coordinate(x, y);
     }
 
-    getTilePointNW(tileX, tileY, res, out) {
+    getTilePointNW(tileX: number, tileY: number, res: number, out: any): Point {
         // res = res / this._glRes;
         const scale = this._glRes / res;
         const tileSystem = this.tileSystem;
@@ -222,12 +245,12 @@ class TileConfig {
 
     /**
      * Get tile's south east's projected coordinate
-     * @param  {Number} tileX
-     * @param  {Number} tileY
-     * @param  {Number} res
-     * @return {Number[]}
+     * @param tileX
+     * @param tileY
+     * @param res
+     * @return
      */
-    getTilePrjSE(tileX, tileY, res, out) {
+    getTilePrjSE(tileX: number, tileY: number, res: number, out?: any): Coordinate {
         const tileSystem = this.tileSystem;
         const tileSize = this['tileSize'];
         const y = tileSystem['origin']['y'] + this._yScale * tileSystem['scale']['y'] * (tileY + (tileSystem['scale']['y'] === 1 ? 0 : 1)) * res * tileSize['height'];
@@ -239,7 +262,7 @@ class TileConfig {
         return new Coordinate(x, y);
     }
 
-    getTilePointSE(tileX, tileY, res, out) {
+    getTilePointSE(tileX: number, tileY: number, res: number, out?: any): Point {
         const scale = this._glRes / res;
         const tileSystem = this.tileSystem;
         const tileSize = this['tileSize'];
@@ -254,12 +277,12 @@ class TileConfig {
 
     /**
      * Get tile's projected extent
-     * @param  {Number} tileX
-     * @param  {Number} tileY
-     * @param  {Number} res
-     * @return {Extent}
+     * @param tileX
+     * @param tileY
+     * @param res
+     * @return
      */
-    getTilePrjExtent(tileX, tileY, res) {
+    getTilePrjExtent(tileX: number, tileY: number, res: number): Extent {
         const nw = this.getTilePrjNW(tileX, tileY, res),
             se = this.getTilePrjSE(tileX, tileY, res);
         return new Extent(nw, se);
@@ -267,3 +290,11 @@ class TileConfig {
 }
 
 export default TileConfig;
+
+type TileIndex = {
+    x: number;
+    y: number;
+    idx: number;
+    idy: number;
+    out: any;
+}
