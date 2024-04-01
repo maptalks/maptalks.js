@@ -4,18 +4,47 @@ import zhCn from '../lang/languages/zh-CN.json';
 import esMX from '../lang/languages/es-MX.json';
 import enUS from '../lang/languages/en-US.json';
 
+export interface ILanguage {
+    distancetool: Distancetool
+    areatool: Areatool
+}
+
+interface Distancetool {
+    start: string
+    units: Units
+}
+
+interface Areatool {
+    units: Units
+}
+
+interface Units {
+    mile: string
+    feet: string
+    kilometer: string
+    meter: string
+}
+
+export type Lang = 'zh-CN' | 'es-MX' | 'en-US'
+
+
 /**
  *  Maptalks text's language
 */
 export class TranslatorError extends Error {
-    constructor(msg) {
+    constructor(msg: string) {
         super('Translator: ' + msg);
         this.name = 'TranslatorError';
     }
 }
 
 class Translator extends Class {
-    constructor(lang) {
+    languages: {
+        [key: string]: ILanguage
+    }
+    nodes: ILanguage
+
+    constructor(lang: Lang) {
         super();
 
         this.languages = {
@@ -23,7 +52,7 @@ class Translator extends Class {
             'es-MX': esMX,
             'en-US': enUS
         };
-        this.nodes = {};
+        // this.nodes = {};
         this.setLang(lang || 'zh-CN');
     }
 
@@ -32,13 +61,13 @@ class Translator extends Class {
      *  @param {string} lang - Available Langs (zh-CN, en-US, es-MX)
      *  @example setLang('zh-CN')
     */
-    setLang(lang) {
+    setLang(lang: Lang) {
         const newLanguageNodes = this.languages[lang];
         if (!newLanguageNodes) throw new TranslatorError('Setted Lang does not exist');
         this.nodes = newLanguageNodes;
     }
 
-    _validateNestedProps(nestedProps) {
+    _validateNestedProps(nestedProps: string[]) {
         nestedProps.forEach(p => {
             if (p === '') throw new TranslatorError('Any of sides of a dot "." cannot be empty');
         });
@@ -49,7 +78,7 @@ class Translator extends Class {
      *  @return {string} Text to show in screen
      *  @example document.write(translate('areatool.units.kilometer'))
     */
-    translate(textNode = null) {
+    translate(textNode: string | null = null): string {
         if (textNode == null)
             throw new TranslatorError('Missing parameter textNode');
         if (typeof textNode === 'string') {
@@ -62,12 +91,12 @@ class Translator extends Class {
                 try {
                     let translatedText = null;
                     switch (nestedProps.length) {
-                    case 2 :
-                        translatedText = this.nodes[nestedProps[0]][nestedProps[1]];
-                        break;
-                    case 3 :
-                        translatedText = this.nodes[nestedProps[0]][nestedProps[1]][nestedProps[2]];
-                        break;
+                        case 2:
+                            translatedText = this.nodes[nestedProps[0]][nestedProps[1]];
+                            break;
+                        case 3:
+                            translatedText = this.nodes[nestedProps[0]][nestedProps[1]][nestedProps[2]];
+                            break;
                     }
                     return translatedText;
                 } catch (err) {
