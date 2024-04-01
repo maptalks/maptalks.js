@@ -776,7 +776,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @param  {Object} layerJSON - layer's JSON
      * @return {Layer}
      */
-    static fromJSON = function (layerJSON: { [key: string]: any }): Layer | null {
+    static fromJSON(layerJSON: { [key: string]: any }): Layer | null {
         if (!layerJSON) {
             return null;
         }
