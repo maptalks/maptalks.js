@@ -6,6 +6,8 @@ import Browser from '../../core/Browser';
 import Canvas2D from '../../core/Canvas';
 import Actor from '../../core/worker/Actor';
 import Point from '../../geo/Point';
+import Extent from '../../geo/Extent';
+import { SizeLike } from '../../geo/Size';
 import { imageFetchWorkerKey } from '../../core/worker/CoreWorkers';
 import { registerWorkerAdapter } from '../../core/worker/Worker';
 import { formatResouceUrl } from '../../core/ResouceProxy';
@@ -24,10 +26,6 @@ class ResourceWorkerConnection extends Actor {
     }
 }
 
-interface SizeType {
-    width: number;
-    height: number;
-}
 export type CanvasRenderingCanvas = HTMLCanvasElement & { _parentTileTimestamp: number };
 export type ImageType = HTMLImageElement | ImageBitmap | HTMLCanvasElement;
 
@@ -46,12 +44,10 @@ class CanvasRenderer extends Class {
     public context: CanvasRenderingContext2D;
     public canvas: CanvasRenderingCanvas;
     public gl: WebGL2RenderingContext | WebGLRenderingContext;
-    // TODO: 等待补充 Point 类型定义
-    public middleWest: any;
-    // TODO: 等待补充Extent2D类型定义
-    public canvasExtent2D: any;
-    _extent2D: any;
-    _maskExtent: any;
+    public middleWest: Point;
+    public canvasExtent2D: Extent;
+    _extent2D: Extent;
+    _maskExtent: Extent;
 
     _painted: boolean;
     _drawTime: number;
@@ -193,7 +189,6 @@ class CanvasRenderer extends Class {
 
     /**
      * Ask whether the layer renderer needs to redraw
-     * @return {Boolean}
      */
     needToRedraw(): boolean {
         const map = this.getMap();
@@ -277,7 +272,6 @@ class CanvasRenderer extends Class {
 
     /**
      * Get map
-     * @return {Map}
      */
     getMap(): any {
         if (!this.layer) {
@@ -288,7 +282,6 @@ class CanvasRenderer extends Class {
 
     /**
      * Get renderer's Canvas image object
-     * @return {HTMLCanvasElement}
      */
     getCanvasImage(): any {
         const map = this.getMap();
@@ -322,7 +315,6 @@ class CanvasRenderer extends Class {
     /**
      * A method to help improve performance.
      * If you are sure that layer's canvas is blank, returns true to save unnecessary layer works of maps.
-     * @return {Boolean}
      */
     isBlank(): boolean {
         return !this._painted;
@@ -352,10 +344,9 @@ class CanvasRenderer extends Class {
 
     /**
      * Detect if there is anything painted on the given point
-     * @param  {Point} point containerPoint
-     * @return {Boolean}
+     * @param point containerPoint
      */
-    hitDetect(point): boolean {
+    hitDetect(point: Point): boolean {
         if (!this.context || (this.layer.isEmpty && this.layer.isEmpty()) || this.isBlank() || this._errorThrown || (this.layer.isVisible && !this.layer.isVisible())) {
             return false;
         }
@@ -497,9 +488,9 @@ class CanvasRenderer extends Class {
 
     /**
      * Resize the canvas
-     * @param  {Size} canvasSize the size resizing to
+     * @param canvasSize the size resizing to
      */
-    resizeCanvas(canvasSize?: SizeType): void {
+    resizeCanvas(canvasSize?: SizeLike): void {
         const canvas = this.canvas;
         if (!canvas) {
             return;

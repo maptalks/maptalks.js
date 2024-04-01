@@ -17,15 +17,18 @@ export type PointLike = Point | PointJson | PointArray;
  * @english
  * Represents a 2d point.<br>
  * Can be created in serveral ways:
+ *
  * @example
+ *
+ * ```ts
  *
  * var point = new Point(1000, 1000);
- * @example
  *
  * var point = new Point([1000, 1000]);
- * @example
  *
  * var point = new Point({ x:1000, y:1000 });
+ * ```
+ *
  * @category basic types
  */
 class Point extends Position {
