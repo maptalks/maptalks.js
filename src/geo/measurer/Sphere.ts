@@ -52,9 +52,9 @@ class Sphere {
      */
     measureArea(coordinates: CoordsLike[]) {
         const a = toRadian(this.radius);
-        let b = 0,
-            c = coordinates,
-            d = c.length;
+        let b = 0;
+        const c = coordinates;
+        const d = c.length;
         if (d < 3) {
             return 0;
         }

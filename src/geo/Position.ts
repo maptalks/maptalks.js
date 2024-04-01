@@ -14,7 +14,7 @@ export type PositionJson<T> = {
 
 export type PositionArray<T> = [T, T] | [T, T, T];
 
-export type PositionLike = Point | Coordinate | PositionJson<NumberAble> | PositionArray<NumberAble> | PointJson | PointArray | CoordinateJson | CoordinateArray;
+export type PositionLike = Point | Coordinate | PositionJson<NumberAble> | PointJson | CoordinateJson;
 
 /**
  * `Point` 和 `Coordinate` 的抽象类
@@ -29,6 +29,9 @@ abstract class Position {
     public z: WithUndef<number>;
 
     constructor(x: PositionLike)
+    constructor(x: PositionArray<NumberAble>)
+    constructor(x: PointArray)
+    constructor(x: CoordinateArray)
     constructor(x: NumberAble, y: NumberAble, z?: NumberAble)
     constructor(x: any, y?: NumberAble, z?: number) {
         if (!isNil(x) && !isNil(y)) {

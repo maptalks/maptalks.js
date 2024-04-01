@@ -370,7 +370,9 @@ class Extent {
      * Get the minimum point
      * @params [out=undefined] - optional point to receive result
      */
-    getMin(out?: Position) {
+    getMin(out?: Point): Point;
+    getMin(out?: Coordinate): Coordinate;
+    getMin(out?: Position): Position {
         if (out) {
             out.set(this['xmin'], this['ymin']);
             return out;
@@ -385,6 +387,8 @@ class Extent {
      * Get the maximum point
      * @params [out=undefined] - optional point to receive result
      */
+    getMax(out?: Point): Point;
+    getMax(out?: Coordinate): Coordinate;
     getMax(out?: Position) {
         if (out) {
             out.set(this['xmax'], this['ymax']);

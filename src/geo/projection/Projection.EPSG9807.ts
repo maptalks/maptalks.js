@@ -30,6 +30,7 @@ export interface EPSG9807ProjectionParams {
 const EPSG9807Projection = {
     code: 'EPSG:9807',
     aliases,
+    centralMeridian: 0,
     create(params: Partial<EPSG9807ProjectionParams>) {
         const P: Record<string, any> = {
             a: SRS_WGS84_SEMIMAJOR,

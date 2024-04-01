@@ -22,9 +22,9 @@ import Extent from '../geo/Extent';
 import Coordinate from '../geo/Coordinate';
 import Layer from '../layer/Layer';
 import Renderable from '../renderer/Renderable';
-import SpatialReference, { Projection } from './spatial-reference/SpatialReference';
+import SpatialReference, { type SpatialReferenceType } from './spatial-reference/SpatialReference';
 import { computeDomPosition, MOUSEMOVE_THROTTLE_TIME } from '../core/util/dom';
-import EPSG9807 from '../geo/projection/Projection.EPSG9807.js';
+import EPSG9807, { type EPSG9807ProjectionType } from '../geo/projection/Projection.EPSG9807.js';
 
 const TEMP_COORD = new Coordinate(0, 0);
 const TEMP_POINT = new Point(0, 0);
@@ -378,7 +378,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             })()
         });
      */
-    setSpatialReference(ref: Projection) {
+    setSpatialReference(ref: SpatialReferenceType) {
         const oldRef = this.options['spatialReference'];
         if (this._loaded && SpatialReference.equals(oldRef, ref)) {
             return this;
@@ -387,7 +387,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this;
     }
 
-    _updateSpatialReference(ref, oldRef) {
+    _updateSpatialReference(ref: SpatialReferenceType, oldRef) {
         if (isString(ref)) {
             ref = SpatialReference.getPreset(ref);
         }
@@ -402,7 +402,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
         this._resetMapStatus();
         if (EPSG9807.is(projection.code)) {
-            this._originLng = projection.centralMeridian;
+            this._originLng = (projection as EPSG9807ProjectionType).centralMeridian;
             this._altitudeOriginDirty = true;
         }
         /**
@@ -1182,7 +1182,6 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
                 this._fireEvent('baselayerchangeend');
             }
         }
-        //@ts-expect-error 等待Layer typing
         this._baseLayer.on('layerload', onbaseLayerload, this);
         if (this._loaded) {
             this._baseLayer.load();
@@ -1284,7 +1283,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             if (isNil(id)) {
                 throw new Error('Invalid id for the layer: ' + id);
             }
-            //@ts-expect-error 等待Layer typing
+
             if (layer.getMap() === this) {
                 continue;
             }
@@ -1611,7 +1610,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Coordinate} Result coordinate
      */
     locate(coordinate: Coordinate, dx: number, dy: number): Coordinate {
-        return this.getProjection()._locate(new Coordinate(coordinate), dx, dy);
+        return (this.getProjection() as any)._locate(new Coordinate(coordinate), dx, dy);
     }
 
 
@@ -2183,14 +2182,14 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Gets map panel's current view point.
      * @return {Point}
      */
-    offsetPlatform(offset?: Point) {
+    offsetPlatform(offset?: Point): Point {
         if (!offset) {
             return this._mapViewPoint;
         } else {
             this._getRenderer().offsetPlatform(offset);
             this._mapViewCoord = this._getPrjCenter();
             this._mapViewPoint = this._mapViewPoint.add(offset) as Point;
-            return this;
+            return this._mapViewPoint;
         }
     }
 
@@ -2198,7 +2197,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Get map's view point, adding in frame offset
      * @return {Point} map view point
      */
-    getViewPoint() {
+    getViewPoint(): Point {
         const offset = this._getViewPointFrameOffset();
         let panelOffset = this.offsetPlatform();
         if (offset) {
@@ -2355,7 +2354,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
     //fix prj value when current view is world wide
     _fixPrjOnWorldWide(prjCoord: Coordinate) {
-        const projection = this.getProjection();
+        const projection = this.getProjection() as any;
         if (projection && projection.fullExtent && prjCoord) {
             const { left, bottom, top, right } = projection.fullExtent || {};
             if (isNumber(left)) {
@@ -2447,7 +2446,7 @@ export type MapOptionsType = {
     mousemoveThrottleTime?: number;
     maxFPS?: number;
     debug?: boolean;
-    spatialReference?: Projection,
+    spatialReference?: SpatialReferenceType,
     autoPanAtEdge?: boolean;
     boxZoom?: boolean;
     boxZoomSymbol?: {

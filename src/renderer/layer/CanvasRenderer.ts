@@ -10,7 +10,7 @@ import Extent from '../../geo/Extent';
 import { SizeLike } from '../../geo/Size';
 import { imageFetchWorkerKey } from '../../core/worker/CoreWorkers';
 import { registerWorkerAdapter } from '../../core/worker/Worker';
-import { formatResouceUrl } from '../../core/ResouceProxy';
+import { formatResourceUrl } from '../../core/ResourceProxy';
 
 const EMPTY_ARRAY = [];
 class ResourceWorkerConnection extends Actor {
