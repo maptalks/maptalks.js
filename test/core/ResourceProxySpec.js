@@ -1,13 +1,13 @@
-describe('ResouceProxy.Spec', function () {
-    const { ResouceProxy, formatResouceUrl } = maptalks;
+describe('ResourceProxy.Spec', function () {
+    const { ResourceProxy, formatResourceUrl } = maptalks;
     var hostUrl = 'http://localhost:9876/resources';
 
     const MTKHOST = 'https://www.maptalks.com';
 
-    ResouceProxy.proxy['/geojson/'] = {
+    ResourceProxy.proxy['/geojson/'] = {
         target: `${MTKHOST}/geojson/`
     }
-    ResouceProxy.origin['https://www.abc.com/'] = {
+    ResourceProxy.origin['https://www.abc.com/'] = {
         target: `${MTKHOST}/`
     }
 
@@ -35,20 +35,20 @@ describe('ResouceProxy.Spec', function () {
 
 
     it('local proxy', function (done) {
-        expect(formatResouceUrl('/geojson/a.geojson')).to.equal(`${MTKHOST}/geojson/a.geojson`);
-        expect(formatResouceUrl('/geojson/a/b/c.geojson')).to.equal(`${MTKHOST}/geojson/a/b/c.geojson`);
+        expect(formatResourceUrl('/geojson/a.geojson')).to.equal(`${MTKHOST}/geojson/a.geojson`);
+        expect(formatResourceUrl('/geojson/a/b/c.geojson')).to.equal(`${MTKHOST}/geojson/a/b/c.geojson`);
         done();
     });
 
     it('origin proxy', function (done) {
-        expect(formatResouceUrl('https://www.abc.com/a')).to.equal(`${MTKHOST}/a`);
-        expect(formatResouceUrl('https://www.abc.com/a/b/c')).to.equal(`${MTKHOST}/a/b/c`);
+        expect(formatResourceUrl('https://www.abc.com/a')).to.equal(`${MTKHOST}/a`);
+        expect(formatResourceUrl('https://www.abc.com/a/b/c')).to.equal(`${MTKHOST}/a/b/c`);
         done();
     });
 
     it('base64', function (done) {
         var base64 = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-        expect(formatResouceUrl(base64)).to.equal(base64);
+        expect(formatResourceUrl(base64)).to.equal(base64);
         done();
     });
 
@@ -57,19 +57,19 @@ describe('ResouceProxy.Spec', function () {
             return res.blob();
         }).then(function (blob) {
             var url = URL.createObjectURL(blob);
-            expect(formatResouceUrl(url)).to.equal(url);
+            expect(formatResourceUrl(url)).to.equal(url);
             done();
         })
     });
 
-    it('get resource from  ResouceProxy', function (done) {
-        ResouceProxy.addResource('abc', `${MTKHOST}/abc.png`);
-        expect(formatResouceUrl('$abc')).to.equal(`${MTKHOST}/abc.png`);
+    it('get resource from  ResourceProxy', function (done) {
+        ResourceProxy.addResource('abc', `${MTKHOST}/abc.png`);
+        expect(formatResourceUrl('$abc')).to.equal(`${MTKHOST}/abc.png`);
         done();
     });
 
     it('load sprite', function (done) {
-        ResouceProxy.loadSprite({
+        ResourceProxy.loadSprite({
             imgUrl: hostUrl + '/sprite.png',
             jsonUrl: hostUrl + '/sprite.json'
         }).then(function (result) {
@@ -87,7 +87,7 @@ describe('ResouceProxy.Spec', function () {
     });
 
     it('load svgs', function (done) {
-        ResouceProxy.loadSvgs(hostUrl + '/svgs.json').then(function (result) {
+        ResourceProxy.loadSvgs(hostUrl + '/svgs.json').then(function (result) {
             layer.clear();
             new maptalks.Marker(map.getCenter(), {
                 symbol: {

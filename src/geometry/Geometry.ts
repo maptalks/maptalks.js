@@ -535,7 +535,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      *
      * @returns {PointExtent}
      */
-    getContainerExtent(out?: Point): PointExtent {
+    getContainerExtent(out?: PointExtent): PointExtent {
         const extent2d = this.get2DExtent();
         if (!extent2d || !extent2d.isValid()) {
             return null;

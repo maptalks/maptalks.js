@@ -1,6 +1,6 @@
 import { version } from '../package.json';
 export { default as GlobalConfig } from './GlobalConfig';
-export * from './core/ResouceProxy';
+export * from './core/ResourceProxy';
 export * from './core/Constants';
 export { default as Browser } from './core/Browser';
 import * as Util from './core/util';

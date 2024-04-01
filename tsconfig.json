@@ -7,6 +7,8 @@
       "module": "es2015",
       "target": "ES5",
       "sourceMap": true,
+      "resolveJsonModule": true,
+      "allowSyntheticDefaultImports": true,
       //dependencies lib version
       "lib": [
           "es5",
