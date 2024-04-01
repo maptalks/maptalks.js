@@ -8,7 +8,13 @@ declare module "./Map" {
 
         _zoom(nextZoom: number, origin?: Point);
         _zoomAnimation(nextZoom: number, origin?: Point, startScale?: number);
-        //Further improvement is needed. Here, only the methods used in the Map are listed. In order to pass the compilation, any errors were used everywhere
+        _checkZoomOrigin(origin?: Point): Point;
+        _startZoomAnim(nextZoom: number, origin?: Point, startScale?: number);
+        onZoomStart(nextZoom: number, origin?: Point);
+        onZooming(nextZoom: number, origin?: Point, startScale?: number);
+        onZoomEnd(nextZoom: number, origin?: Point);
+        _zoomTo(nextZoom: number, origin?: Point);
+        _checkZoom(nextZoom: number): number;
 
     }
 }
@@ -16,7 +22,7 @@ declare module "./Map" {
 
 Map.include(/** @lends Map.prototype */{
 
-    _zoom(nextZoom, origin) {
+    _zoom(nextZoom: number, origin?: Point) {
         if (!this.options['zoomable'] || this.isZooming()) { return; }
         origin = this._checkZoomOrigin(origin);
         nextZoom = this._checkZoom(nextZoom);
@@ -25,7 +31,7 @@ Map.include(/** @lends Map.prototype */{
         this.onZoomEnd(nextZoom, origin);
     },
 
-    _zoomAnimation(nextZoom, origin, startScale) {
+    _zoomAnimation(nextZoom: number, origin?: Point, startScale?: number) {
         if (!this.options['zoomable'] || this.isZooming()) { return; }
 
         nextZoom = this._checkZoom(nextZoom);
@@ -36,7 +42,7 @@ Map.include(/** @lends Map.prototype */{
         this._startZoomAnim(nextZoom, origin, startScale);
     },
 
-    _checkZoomOrigin(origin) {
+    _checkZoomOrigin(origin?: Point) {
         if (!origin || this.options['zoomInCenter']) {
             origin = new Point(this.width / 2, this.height / 2);
         }
@@ -46,7 +52,7 @@ Map.include(/** @lends Map.prototype */{
         return origin;
     },
 
-    _startZoomAnim(nextZoom, origin, startScale) {
+    _startZoomAnim(nextZoom: number, origin?: Point, startScale?: number) {
         if (isNil(startScale)) {
             startScale = 1;
         }
@@ -62,7 +68,7 @@ Map.include(/** @lends Map.prototype */{
         });
     },
 
-    onZoomStart(nextZoom, origin) {
+    onZoomStart(nextZoom: number, origin?: Point) {
         if (!this.options['zoomable'] || this.isZooming()) { return; }
         if (this._mapAnimPlayer) {
             this._stopAnim(this._mapAnimPlayer);
@@ -83,7 +89,7 @@ Map.include(/** @lends Map.prototype */{
         this._fireEvent('zoomstart', { 'from': this._startZoomVal, 'to': nextZoom });
     },
 
-    onZooming(nextZoom, origin, startScale) {
+    onZooming(nextZoom: number, origin?: Point, startScale?: number) {
         if (!this.options['zoomable']) { return; }
         const frameZoom = this._frameZoom;
         if (frameZoom === nextZoom) {
@@ -107,14 +113,14 @@ Map.include(/** @lends Map.prototype */{
                 //FIXME Math.cos(pitch * Math.PI / 180) is just a magic num, works when tilting but may have problem when rotating
                 originOffset.y /= Math.cos(pitch * Math.PI / 180);
             }
-            origin = origin.add(originOffset);
+            origin = origin.add(originOffset) as Point;
         }
         const matrix = {
             'view': [scale, 0, 0, scale, (origin.x - offset.x) * (1 - scale), (origin.y - offset.y) * (1 - scale)]
         };
         const dpr = this.getDevicePixelRatio();
         if (dpr !== 1) {
-            origin = origin.multi(dpr);
+            origin = origin.multi(dpr) as Point;
         }
         matrix['container'] = [scale, 0, 0, scale, origin.x * (1 - scale), origin.y * (1 - scale)];
         /**
@@ -130,7 +136,7 @@ Map.include(/** @lends Map.prototype */{
         this._frameZoom = nextZoom;
     },
 
-    onZoomEnd(nextZoom, origin) {
+    onZoomEnd(nextZoom: number, origin?: Point) {
         if (!this.options['zoomable']) { return; }
         const startZoomVal = this._startZoomVal;
         this._zoomTo(nextZoom, origin);
@@ -154,7 +160,7 @@ Map.include(/** @lends Map.prototype */{
         }
     },
 
-    _zoomTo(nextZoom, origin) {
+    _zoomTo(nextZoom: number, origin?: Point) {
         this._zoomLevel = nextZoom;
         this._calcMatrices();
         if (origin) {
@@ -164,7 +170,7 @@ Map.include(/** @lends Map.prototype */{
         }
     },
 
-    _checkZoom(nextZoom) {
+    _checkZoom(nextZoom: number) {
         const maxZoom = this.getMaxZoom(),
             minZoom = this.getMinZoom();
         if (nextZoom < minZoom) {
