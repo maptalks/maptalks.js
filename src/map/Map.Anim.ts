@@ -13,7 +13,7 @@ declare module "./Map" {
         _stopAnim(player?: Player): void;
         animateTo(view: MapViewType, options?: MapAnimationOptionsType, step?: (frame) => void): Player;
         flyTo(view: MapViewType, options?: MapAnimationOptionsType, step?: (frame) => void): this;
-        isAnimating():boolean;
+        isAnimating(): boolean;
     }
 }
 

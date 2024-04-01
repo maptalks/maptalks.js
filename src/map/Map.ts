@@ -2579,7 +2579,6 @@ export type MapOptionsType = {
     };
     onlyVisibleGeometryEvents?: boolean;
 
-
 }
 
 export type MapPaddingType = {
