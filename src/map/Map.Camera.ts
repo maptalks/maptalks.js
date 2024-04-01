@@ -540,11 +540,7 @@ Map.include(/** @lends Map.prototype */{
             const camNormDot = dot(camForward, vectorFromCam as any);
             if (camNormDot <= 0) {
                 scale(proj as any, camForward, camNormDot * 1.01);
-<<<<<<< HEAD
                 add(position, cameraPos, subtract(sub as any, vectorFromCam as any, proj as any));
-=======
-                add(position, cameraPos, subtract(sub as any, vectorFromCam as any, proj  as any));
->>>>>>> 703f6e0d264e95f862cd780962df713821cd0425
             }
             return position;
         };
@@ -571,7 +567,6 @@ Map.include(/** @lends Map.prototype */{
         return function (p, res, out) {
             if (this.isTransforming()) {
                 const w2 = this.width / 2 || 1, h2 = this.height / 2 || 1;
-<<<<<<< HEAD
                 set(cp as any, (p.x - w2) / w2, (h2 - p.y) / h2, 0);
 
                 set(coord0 as any, cp[0], cp[1], 0);
@@ -580,16 +575,6 @@ Map.include(/** @lends Map.prototype */{
 
                 applyMatrix(coord0, coord0 as any, this.projViewMatrixInverse);
                 applyMatrix(coord1, coord1 as any, this.projViewMatrixInverse);
-=======
-                set(cp  as any, (p.x - w2) / w2, (h2 - p.y) / h2, 0);
-
-                set(coord0  as any, cp[0], cp[1], 0);
-                set(coord1  as any, cp[0], cp[1], 1);
-                coord0[3] = coord1[3] = 1;
-
-                applyMatrix(coord0, coord0  as any, this.projViewMatrixInverse);
-                applyMatrix(coord1, coord1  as any, this.projViewMatrixInverse);
->>>>>>> 703f6e0d264e95f862cd780962df713821cd0425
                 const x0 = coord0[0];
                 const x1 = coord1[0];
                 const y0 = coord0[1];
@@ -756,11 +741,7 @@ Map.include(/** @lends Map.prototype */{
             const width = this.width || 1;
             const height = this.height || 1;
             const cameraToCenterDistance = 0.5 / Math.tan(this._fov / 2) * height;
-<<<<<<< HEAD
             mat4.scale(m, this.projMatrix, minusY as any);
-=======
-            mat4.scale(m, this.projMatrix, minusY  as any);
->>>>>>> 703f6e0d264e95f862cd780962df713821cd0425
             mat4.translate(m, m, set(arr as any, 0, 0, -cameraToCenterDistance));//[0, 0, cameraToCenterDistance]
             if (this._pitch) {
                 mat4.rotateX(m, m, this._pitch);
