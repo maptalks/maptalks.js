@@ -1,7 +1,21 @@
 import Coordinate from '../geo/Coordinate';
 import Point from '../geo/Point';
-import Map from './Map';
+import Map, { MapAnimationOptionsType } from './Map';
 import { isFunction } from '../core/util';
+
+
+
+declare module "./Map" {
+    interface Map {
+
+        panTo(coordinate: Coordinate, options?: MapAnimationOptionsType, step?: (frame) => void): this;
+        _panTo(prjCoord: Coordinate, options?: MapAnimationOptionsType): this;
+        panBy(offset: Point, options?: MapAnimationOptionsType, step?: (frame) => void): this;
+        _panAnimation(target: Coordinate, t: number, cb?: (frame) => void): void;
+
+    }
+}
+
 
 Map.include(/** @lends Map.prototype */ {
 
@@ -13,7 +27,7 @@ Map.include(/** @lends Map.prototype */ {
      * @param {Boolean} [options.duration=600] - pan animation duration
      * @return {Map} this
      */
-    panTo: function (coordinate, options = {}, step) {
+    panTo: function (coordinate, options: MapAnimationOptionsType = {}, step) {
         if (!coordinate) {
             return this;
         }
@@ -31,7 +45,7 @@ Map.include(/** @lends Map.prototype */ {
         return this;
     },
 
-    _panTo: function (prjCoord, options = {}) {
+    _panTo: function (prjCoord, options: MapAnimationOptionsType = {}) {
         if (typeof (options['animation']) === 'undefined' || options['animation']) {
             return this._panAnimation(prjCoord, options['duration']);
         } else {
@@ -50,12 +64,12 @@ Map.include(/** @lends Map.prototype */ {
      * @param {Boolean} [options.duration=600] - pan animation duration
      * @return {Map} this
      */
-    panBy: function (offset, options = {}, step) {
+    panBy: function (offset, options: MapAnimationOptionsType = {}, step?: (frame) => void) {
         if (!offset) {
             return this;
         }
         if (isFunction(options)) {
-            step = options;
+            step = (options as (frame) => void);
             options = {};
         }
         offset = new Point(offset);
@@ -87,7 +101,7 @@ Map.include(/** @lends Map.prototype */ {
         return this;
     },
 
-    _panAnimation: function (target, t, cb) {
+    _panAnimation: function (target: Coordinate, t: number, cb: (frame) => void) {
         return this._animateTo({
             'prjCenter': target
         }, {

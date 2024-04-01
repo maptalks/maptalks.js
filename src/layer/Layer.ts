@@ -7,29 +7,32 @@ import CanvasRenderer from '../renderer/layer/CanvasRenderer';
 import CollisionIndex from '../core/CollisionIndex';
 import Geometry from '../geometry/Geometry';
 import Browser from '../core/Browser';
+import type { Map } from '../map';
 
 /**
- * @property {Object}  [options=null] - base options of layer.
- * @property {String}  [options.attribution= null] - the attribution of this layer, you can specify company or other information of this layer.
- * @property {Number}  [options.minZoom=null] - the minimum zoom to display the layer, set to -1 to unlimit it.
- * @property {Number}  [options.maxZoom=null] - the maximum zoom to display the layer, set to -1 to unlimit it.
- * @property {Boolean} [options.visible=true] - whether to display the layer.
- * @property {Number}  [options.opacity=1] - opacity of the layer, from 0 to 1.
- * @property {Number}  [options.zIndex=undefined] - z index of the layer
- * @property {Boolean} [options.hitDetect=true] - Whether to enable hit detection for layers for cursor styles on this map, disable it to improve performance.
- * @property {String}  [options.renderer=canvas]  - renderer type, "canvas" in default.
- * @property {String}   [options.globalCompositeOperation=null] - (Only for layer rendered with [CanvasRenderer]{@link renderer.CanvasRenderer}) globalCompositeOperation of layer's canvas 2d context.
- * @property {String}   [options.debugOutline='#0f0']  - debug outline's color.
- * @property {String}   [options.cssFilter=null]       - css filter apply to canvas context's filter
- * @property {Boolean}  [options.forceRenderOnMoving=false]    - force to render layer when map is moving
- * @property {Boolean}  [options.forceRenderOnZooming=false]   - force to render layer when map is zooming
- * @property {Boolean}  [options.forceRenderOnRotating=false]  - force to render layer when map is Rotating
- *
- * @property {String}   [options.collisionScope=layer]         - layer's collision scope: layer or map
+ * 配置项
+ * 
+ * @english
+ * @property options=null                           - base options of layer.
+ * @property options.attribution=null               - the attribution of this layer, you can specify company or other information of this layer.
+ * @property options.minZoom=null                   - the minimum zoom to display the layer, set to -1 to unlimit it.
+ * @property options.maxZoom=null                   - the maximum zoom to display the layer, set to -1 to unlimit it.
+ * @property options.visible=true                   - whether to display the layer.
+ * @property options.opacity=1                      - opacity of the layer, from 0 to 1.
+ * @property options.zIndex=undefined               - z index of the layer
+ * @property options.hitDetect=true                 - Whether to enable hit detection for layers for cursor styles on this map, disable it to improve performance.
+ * @property options.renderer=canvas                - renderer type, "canvas" in default.
+ * @property options.globalCompositeOperation=null  - (Only for layer rendered with [CanvasRenderer]{@link renderer.CanvasRenderer}) globalCompositeOperation of layer's canvas 2d context.context.globalCompositeOperation, 'source-over' in default
+ * @property options.debugOutline='#0f0'            - debug outline's color.
+ * @property options.cssFilter=null                 - css filter apply to canvas context's filter
+ * @property options.forceRenderOnMoving=false      - force to render layer when map is moving
+ * @property options.forceRenderOnZooming=false     - force to render layer when map is zooming
+ * @property options.forceRenderOnRotating=false    - force to render layer when map is Rotating
+ * @property options.collisionScope=layer           - layer's collision scope: layer or map
  * @memberOf Layer
  * @instance
  */
-const options = {
+const options: LayerOptions = {
     'attribution': null,
     'minZoom': null,
     'maxZoom': null,
@@ -51,6 +54,10 @@ const options = {
 };
 
 /**
+ * layers的基础类，定义了所有layers公共方法。
+ * 抽象类，不做实例化打算
+ * 
+ * @english
  * @classdesc
  * Base class for all the layers, defines common methods that all the layer classes share. <br>
  * It is abstract and not intended to be instantiated.
@@ -63,8 +70,19 @@ const options = {
  * @mixes Renderable
  */
 class Layer extends JSONAble(Eventable(Renderable(Class))) {
+    _canvas: any | undefined
+    _renderer: any | undefined
+    _id: string
+    _zIndex: number
+    map: Map
+    _mask: any
+    _loaded: boolean
+    _collisionIndex: CollisionIndex
+    _optionsHook?(conf?: any): void
+    _silentConfig: boolean | undefined | any
 
-    constructor(id, options) {
+
+    constructor(id: string | number, options: LayerOptions) {
         let canvas;
         if (options) {
             canvas = options.canvas;
@@ -76,6 +94,8 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         if (options) {
             this.setZIndex(options.zIndex);
             if (options.mask) {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore 未找到fromJSON属性
                 this.setMask(Geometry.fromJSON(options.mask));
             }
         }
@@ -83,6 +103,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     /**
+     * 加载tile layer,不能被子类重写
+     * 
+     * @english
      * load the tile layer, can't be overrided by sub-classes
      */
     load() {
@@ -104,36 +127,47 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     /**
+     * 获取layer Id
+     * 
+     * @english
      * Get the layer id
-     * @returns {String} id
+     * @returns id
      */
-    getId() {
+    getId(): string {
         return this._id;
     }
 
     /**
+     * 为layer新设一个 Id
+     * 
+     * @english
      * Set a new id to the layer
-     * @param {String} id - new layer id
-     * @return {Layer} this
+     * @param id - new layer id
+     * @return this
      * @fires Layer#idchange
      */
-    setId(id) {
+    setId(id: string | number): Layer {
         const old = this._id;
         if (!isNil(id)) {
             id = id + '';
         }
         this._id = id;
         /**
+         * idchange 事件
+         * 
+         * @english
          * idchange event.
          *
          * @event Layer#idchange
          * @type {Object}
-         * @property {String} type - idchange
-         * @property {Layer} target    - the layer fires the event
-         * @property {String} old        - value of the old id
-         * @property {String} new        - value of the new id
+         * @property {String} type      - idchange
+         * @property {Layer} target     - the layer fires the event
+         * @property {String} old       - value of the old id
+         * @property {String} new       - value of the new id
          */
         this.fire('idchange', {
+            'type': 'idchange',
+            'target': this,
             'old': old,
             'new': id
         });
@@ -141,21 +175,27 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     /**
+     * 将图层添加至 map
+     * 
+     * @english
      * Adds itself to a map.
-     * @param {Map} map - map added to
-     * @return {Layer} this
+     * @param map - map added to
+     * @return this
      */
-    addTo(map) {
+    addTo(map: Map): Layer {
         map.addLayer(this);
         return this;
     }
 
     /**
+     * 为layer 设置zIndex
+     * 
+     * @engilsh
      * Set a z-index to the layer
-     * @param {Number} zIndex - layer's z-index
-     * @return {Layer} this
+     * @param zIndex - layer's z-index
+     * @return this
      */
-    setZIndex(zIndex) {
+    setZIndex(zIndex: number): Layer {
         this._zIndex = zIndex;
         if (isNil(zIndex)) {
             delete this.options['zIndex'];
@@ -169,47 +209,66 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             this._renderer.setZIndex(zIndex);
         }
         /**
+         * setzindex 事件
+         * 
+         * @english
          * setzindex event.
          *
          * @event Layer#setzindex
          * @type {Object}
-         * @property {String} type - setzindex
-         * @property {Layer} target    - the layer fires the event
-         * @property {Number} zIndex        - value of the zIndex
+         * @property {String} type      - setzindex
+         * @property {Layer} target     - the layer fires the event
+         * @property {Number} zIndex    - value of the zIndex
          */
-        this.fire('setzindex', { zIndex });
+        this.fire('setzindex', {
+            'type': 'setzindex',
+            'target': this,
+            zIndex
+        });
         return this;
     }
 
     /**
+     * 获取layer 的 zIndex
+     * 
+     * @english
      * Get the layer's z-index
-     * @return {Number}
+     * @return
      */
-    getZIndex() {
+    getZIndex(): number {
         return this._zIndex || 0;
     }
 
     /**
+     * 获取 layer 的 minZoom 
+     * 
+     * @english
      * Get Layer's minZoom to display
-     * @return {Number}
+     * @return
      */
-    getMinZoom() {
+    getMinZoom(): number {
         const map = this.getMap();
         const minZoom = this.options['minZoom'];
         return map ? Math.max(map.getMinZoom(), minZoom || 0) : minZoom;
     }
 
     /**
+     * 获取layer 的 maxZoom
+     * 
+     * @english
      * Get Layer's maxZoom to display
-     * @return {Number}
+     * @return
      */
-    getMaxZoom() {
+    getMaxZoom(): number {
         const map = this.getMap();
         const maxZoom = this.options['maxZoom'];
         return map ? Math.min(map.getMaxZoom(), isNil(maxZoom) ? Infinity : maxZoom) : maxZoom;
     }
 
     /**
+     * 获取 layer 的 opacity
+     * 
+     * @english
      * Get layer's opacity
      * @returns {Number}
      */
@@ -218,13 +277,19 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     /**
+     * 设置 layer 的 opacity
+     * 
+     * @english
      * Set opacity to the layer
-     * @param {Number} opacity - layer's opacity
-     * @return {Layer} this
+     * @param opacity - layer's opacity
+     * @return this
      */
-    setOpacity(op) {
+    setOpacity(op: number): Layer {
         this.config('opacity', op);
         /**
+        * setopacity 事件
+        * 
+        * @english 
         * setopacity event.
         *
         * @event Layer#setopacity
@@ -233,21 +298,27 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         * @property {Layer} target    - the layer fires the event
         * @property {Number} opacity        - value of the opacity
         */
-        this.fire('setopacity', { opacity: op });
+        this.fire('setopacity', { type: 'setopacity', target: this, opacity: op });
         return this;
     }
 
     /**
+     * layer 是否为 HTML5 Canvas 渲染
+     * 
+     * @english
      * If the layer is rendered by HTML5 Canvas.
-     * @return {Boolean}
+     * @return
      * @protected
      */
-    isCanvasRender() {
+    isCanvasRender(): boolean {
         const renderer = this._getRenderer();
         return (renderer && (renderer instanceof CanvasRenderer));
     }
 
     /**
+     * 获取图层所在 map
+     * 
+     * @english
      * Get the map that the layer added to
      * @returns {Map}
      */
@@ -259,19 +330,25 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     /**
+     * 获取 layer 所在map 的 projection 
+     * 
+     * @english
      * Get projection of layer's map
-     * @returns {Object}
+     * @returns
      */
-    getProjection() {
+    getProjection(): any {
         const map = this.getMap();
         return map ? map.getProjection() : null;
     }
 
     /**
+     * 将图层置顶
+     * 
+     * @english
      * Brings the layer to the top of all the layers
-     * @returns {Layer} this
+     * @returns this
      */
-    bringToFront() {
+    bringToFront(): Layer {
         const layers = this._getLayerList();
         if (!layers.length) {
             return this;
@@ -286,10 +363,13 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     /**
+     * 将图层置底
+     * 
+     * @english
      * Brings the layer under the bottom of all the layers
      * @returns {Layer} this
      */
-    bringToBack() {
+    bringToBack(): Layer {
         const layers = this._getLayerList();
         if (!layers.length) {
             return this;
@@ -304,10 +384,13 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     /**
+     * 显示图层
+     * 
+     * @english
      * Show the layer
-     * @returns {Layer} this
+     * @returns this
      */
-    show() {
+    show(): Layer {
         if (!this.options['visible']) {
             this.options['visible'] = true;
             const renderer = this.getRenderer();
@@ -318,6 +401,8 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             const map = this.getMap();
             if (renderer && map) {
                 //fire show at renderend to make sure layer is shown
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore Map 缺少once方法
                 map.once('renderend', () => {
                     this.fire('show');
                 });
@@ -337,10 +422,13 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     /**
+     * 隐藏图层
+     * 
+     * @english
      * Hide the layer
-     * @returns {Layer} this
+     * @returns this
      */
-    hide() {
+    hide(): Layer {
         if (this.options['visible']) {
             this.options['visible'] = false;
             const renderer = this.getRenderer();
@@ -351,11 +439,16 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             const map = this.getMap();
             if (renderer && map) {
                 //fire hide at renderend to make sure layer is hidden
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore Map 缺少once方法
                 map.once('renderend', () => {
                     this.fire('hide');
                 });
             } else {
                 /**
+                 * hide事件
+                 * 
+                 * @english
                  * hide event.
                  *
                  * @event Layer#hide
@@ -371,10 +464,13 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     /**
+     * layer 的当前 visible 状态
+     * 
+     * @english
      * Whether the layer is visible now.
-     * @return {Boolean}
+     * @return
      */
-    isVisible() {
+    isVisible(): boolean {
         if (isNumber(this.options['opacity']) && this.options['opacity'] <= 0) {
             return false;
         }
@@ -394,10 +490,13 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     /**
+     * 移除图层
+     * 
+     * @english
      * Remove itself from the map added to.
-     * @returns {Layer} this
+     * @returns this
      */
-    remove() {
+    remove(): Layer {
         if (this.map) {
             const renderer = this.map.getRenderer();
             this.map.removeLayer(this);
@@ -411,6 +510,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     /**
+     * 获取 mask geometry
+     * 
+     * @english
      * Get the mask geometry of the layer
      * @return {Geometry}
      */
@@ -419,11 +521,14 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     /**
+     * 设置mask geometry, 只显示掩码的区域
+     * 
+     * @english
      * Set a mask geometry on the layer, only the area in the mask will be displayed.
      * @param {Geometry} mask - mask geometry, can only be a Marker with vector symbol, a Polygon or a MultiPolygon
      * @returns {Layer} this
      */
-    setMask(mask) {
+    setMask(mask: any) {
         if (!((mask.type === 'Point' && mask._isVectorMarker()) || mask.type === 'Polygon' || mask.type === 'MultiPolygon')) {
             throw new Error('Mask for a layer must be a marker with vector marker symbol or a Polygon(MultiPolygon).');
         }
@@ -452,6 +557,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     /**
+     * 移除mask
+     * 
+     * @engilsh
      * Remove the mask
      * @returns {Layer} this
      */
@@ -469,11 +577,14 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     /**
+     * 准备层的加载，是一个由子类重写的方法。
+     * 
+     * @english
      * Prepare Layer's loading, this is a method intended to be overrided by subclasses.
-     * @return {Boolean} true to continue loading, false to cease.
+     * @return true to continue loading, false to cease.
      * @protected
      */
-    onLoad() {
+    onLoad(): boolean {
         return true;
     }
 
@@ -481,14 +592,20 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     /**
+     * 是否加载layer
+     * 
+     * @english
      * Whether the layer is loaded
-     * @return {Boolean}
+     * @return
      */
-    isLoaded() {
+    isLoaded(): boolean {
         return !!this._loaded;
     }
 
     /**
+     * 获取collision index
+     * 
+     * @english
      * Get layer's collision index
      * @returns {CollisionIndex}
      */
@@ -507,6 +624,10 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     /**
+     * 清除 layer 的 collision index。
+     * 如果 collisionScope !== 'layer' 将忽略
+     * 
+     * @english
      * Clear layer's collision index.
      * Will ignore if collisionScope is not layer
      */
@@ -547,7 +668,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     onRemove() { }
 
-    _bindMap(map, zIndex) {
+    _bindMap(map, zIndex?: number) {
         if (!map) {
             return;
         }
@@ -564,9 +685,13 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     _initRenderer() {
         const renderer = this.options['renderer'];
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         if (!this.constructor.getRendererClass) {
             return;
         }
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         const clazz = this.constructor.getRendererClass(renderer);
         if (!clazz) {
             throw new Error('Invalid renderer for Layer(' + this.getId() + '):' + renderer);
@@ -582,6 +707,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         this.onRendererCreate();
 
         /**
+         * renderercreate 事件, 当 renderer 创建完成后触发
+         * 
+         * @english
          * renderercreate event, fired when renderer is created.
          *
          * @event Layer#renderercreate
@@ -591,6 +719,8 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
          * @property {Any} renderer    - renderer of the layer
          */
         this.fire('renderercreate', {
+            'type': 'renderercreate',
+            'target': this,
             'renderer': this._renderer
         });
     }
@@ -636,27 +766,56 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         }
         return painter.get2DExtent();
     }
+
+    toJSON(options?: any) {
+        return options;
+    }
+
+    /**
+     * Reproduce a Layer from layer's JSON.
+     * @param  {Object} layerJSON - layer's JSON
+     * @return {Layer}
+     */
+    static fromJSON(layerJSON: { [key: string]: any }): Layer | null {
+        if (!layerJSON) {
+            return null;
+        }
+        const layerType = layerJSON['type'];
+        const clazz = Layer.getJSONClass(layerType) as any;
+        if (!clazz || !clazz.fromJSON) {
+            throw new Error('unsupported layer type:' + layerType);
+        }
+        return clazz.fromJSON(layerJSON);
+    }
 }
 
 Layer.mergeOptions(options);
 
 const fire = Layer.prototype.fire;
 
-Layer.prototype.fire = function (eventType, param) {
+Layer.prototype.fire = function (eventType: string, param) {
     if (eventType === 'layerload') {
         this._loaded = true;
     }
     if (this.map) {
         if (!param) {
-            param = {};
+            param = {
+                'type': null,
+                'target': null
+            };
         }
         param['type'] = eventType;
         param['target'] = this;
         this.map._onLayerEvent(param);
     }
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    // eslint-disable-next-line prefer-rest-params
     fire.apply(this, arguments);
     if (['show', 'hide'].indexOf(eventType) > -1) {
         /**
+        * visiblechange 事件
+        * @english
         * visiblechange event.
         *
         * @event Layer#visiblechange
@@ -671,3 +830,27 @@ Layer.prototype.fire = function (eventType, param) {
 };
 
 export default Layer;
+
+export type LayerOptions = {
+    attribution?: string,
+    minZoom?: number,
+    maxZoom?: number,
+    visible?: boolean,
+    opacity?: number | string,
+    zIndex?: number
+    globalCompositeOperation?: string,
+    renderer?: string,
+    debugOutline?: string,
+    cssFilter?: string,
+    forceRenderOnMoving?: boolean,
+    forceRenderOnZooming?: boolean,
+    forceRenderOnRotating?: boolean,
+    collision?: boolean,
+    collisionScope?: string,
+    hitDetect?: boolean,
+    canvas?: HTMLCanvasElement,
+    mask?: any,
+    drawImmediate?: boolean,
+    geometryEvents?: boolean,
+    geometryEventTolerance?: number,
+}

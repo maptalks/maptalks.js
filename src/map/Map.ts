@@ -9,7 +9,9 @@ import {
     sign,
     UID,
     b64toBlob,
-    isNumber
+    isNumber,
+    isObject,
+    isArrayHasData
 } from '../core/util';
 import Class from '../core/Class';
 import Browser from '../core/Browser';
@@ -22,7 +24,7 @@ import Extent from '../geo/Extent';
 import Coordinate from '../geo/Coordinate';
 import Layer from '../layer/Layer';
 import Renderable from '../renderer/Renderable';
-import SpatialReference from './spatial-reference/SpatialReference';
+import SpatialReference, { Projection } from './spatial-reference/SpatialReference';
 import { computeDomPosition, MOUSEMOVE_THROTTLE_TIME } from '../core/util/dom';
 import EPSG9807 from '../geo/projection/Projection.EPSG9807.js';
 
@@ -94,7 +96,7 @@ const REDRAW_OPTIONS_PROPERTIES = ['centerCross', 'fog', 'fogColor', 'debugSky']
  * @memberOf Map
  * @instance
  */
-const options = {
+const options: MapOptionsType = {
     'maxVisualPitch': 70,
     'maxPitch': 80,
     'centerCross': false,
@@ -181,6 +183,48 @@ const options = {
  * });
  */
 export class Map extends Handlerable(Eventable(Renderable(Class))) {
+    VERSION: number;
+    _loaded: boolean;
+    _panels: { [key: string]: HTMLDivElement };
+    _baseLayer: Layer;
+    _layers: Array<Layer>;
+    _zoomLevel: number;
+    _center: Coordinate;
+    _centerZ: number;
+    _mapViewPoint: Point;
+    isMap: boolean;
+    _containerDOM: HTMLDivElement | HTMLCanvasElement;
+    _spatialReference: SpatialReference;
+    _originLng: number;
+    _altitudeOriginDirty: boolean;
+    _cursor: string;
+    _prjCenter: Coordinate;
+    centerAltitude: number;
+    width: number;
+    height: number;
+    _prjMaxExtent: PointExtent;
+    _glRes: number;
+    _zooming: boolean;
+    _layerCache: { [key: string]: Layer };
+    _mapViewCoord: Coordinate;
+    _eventSilence: boolean;
+    _moving: boolean;
+    _originCenter: Coordinate;
+    _suppressRecenter: boolean;
+    _dragRotating: boolean;
+    CanvasClass: any;
+    _priorityCursor: string;
+    _initTime: number;
+    _renderer: any;
+    _containerDomContentRect: DOMRect;
+    _mapRes: number;
+    _onLoadHooks: Array<(...args) => void>;
+    cameraCenterDistance: number;
+    renderer: any;
+    options: MapOptionsType;
+    static VERSION: number;
+    JSON_VERSION: '1.0';
+
 
     /**
      * @param {(string|HTMLElement|object)} container - The container to create the map on, can be:<br>
@@ -195,7 +239,8 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Layer[]} [options.layers=null] - layers that will be added to map initially.
      * @param {*} options.* - any other option defined in [Map.options]{@link Map#options}      [description]
      */
-    constructor(container, options) {
+    constructor(container: MapContainerType,
+        options: MapOptionsType & { center: Array<number> | Coordinate, zoom: number }) {
         if (!options) {
             throw new Error('Invalid options when creating map.');
         }
@@ -203,7 +248,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             throw new Error('Invalid center when creating map.');
         }
         // prepare options
-        const opts = extend({}, options);
+        const opts = extend({} as any, options) as MapOptionsType;
         const zoom = opts['zoom'];
         delete opts['zoom'];
         const center = new Coordinate(opts['center']);
@@ -268,10 +313,10 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Function | any} fn
      * @returns {Map}
      */
-    static addOnLoadHook(fn) { // (Function) || (String, args...)
-        const args = Array.prototype.slice.call(arguments, 1);
+    static addOnLoadHook(fn: string | ((...args) => void), ...args) { // (Function) || (String, args...)
+        // const args = Array.prototype.slice.call(arguments, 1);
         const onload = typeof fn === 'function' ? fn : function () {
-            this[fn].apply(this, args);
+            this[fn].call(this, ...args);
         };
         this.prototype._onLoadHooks = this.prototype._onLoadHooks || [];
         this.prototype._onLoadHooks.push(onload);
@@ -336,7 +381,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             })()
         });
      */
-    setSpatialReference(ref) {
+    setSpatialReference(ref: Projection) {
         const oldRef = this.options['spatialReference'];
         if (this._loaded && SpatialReference.equals(oldRef, ref)) {
             return this;
@@ -375,7 +420,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
          */
         this._fireEvent('spatialreferencechange', {
             'old': oldRef,
-            'new': extend({}, this.options['spatialReference'])
+            'new': extend({} as any, this.options['spatialReference'])
         });
         return this;
     }
@@ -400,7 +445,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {Object} conf - options to update
      * @return {Map}   this
      */
-    onConfig(conf) {
+    onConfig(conf: { [key: string]: any }) {
         const ref = conf['spatialReference'] || conf['view'];
         if (!isNil(ref)) {
             this._updateSpatialReference(ref, null);
@@ -461,7 +506,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @example
      * map.setCursor('url(cursor.png) 4 12, auto');
      */
-    setCursor(cursor) {
+    setCursor(cursor: string) {
         delete this._cursor;
         this._trySetCursor(cursor);
         this._cursor = cursor;
@@ -482,7 +527,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Get center of the map.
      * @return {Coordinate}
      */
-    getCenter() {
+    getCenter(): Coordinate {
         if (!this._loaded || !this._prjCenter) {
             return this._center;
         }
@@ -507,7 +552,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {Number} [padding.paddingBottom] - Sets the amount of padding in the bottom of a map container
      * @return {Map} this
      */
-    setCenter(center, padding) {
+    setCenter(center: Coordinate, padding?: MapPaddingType) {
         if (!center) {
             return this;
         }
@@ -535,7 +580,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Get map's size (width and height) in pixel.
      * @return {Size}
      */
-    getSize() {
+    getSize(): Size {
         if (isNil(this.width) || isNil(this.height)) {
             return this._getContainerDomSize();
         }
@@ -625,7 +670,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @example
      * map.setMaxExtent(map.getExtent());
      */
-    setMaxExtent(extent) {
+    setMaxExtent(extent: Extent) {
         if (extent) {
             const maxExt = new Extent(extent, this.getProjection());
             this.options['maxExtent'] = maxExt;
@@ -661,7 +706,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {Boolean} isFraction - can return fractional zoom
      * @return {Number} zoom fit for scale starting from fromZoom
      */
-    getZoomForScale(scale, fromZoom, isFraction) {
+    getZoomForScale(scale: number, fromZoom?: number, isFraction?: boolean) {
         const zoom = this.getZoom();
         if (isNil(fromZoom)) {
             fromZoom = zoom;
@@ -681,7 +726,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
     }
 
-    getZoomFromRes(res) {
+    getZoomFromRes(res: number): number {
         const resolutions = this._getResolutions(),
             minRes = this._getResolution(this.getMinZoom()),
             maxRes = this._getResolution(this.getMaxZoom());
@@ -718,7 +763,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Boolean} [options.animation=true] whether zoom is animation, true by default
      * @returns {Map} this
      */
-    setZoom(zoom, options = { 'animation': true }) {
+    setZoom(zoom: number, options = { 'animation': true }) {
         if (isNaN(zoom) || isNil(zoom)) {
             return this;
         }
@@ -735,7 +780,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Get the max zoom that the map can be zoom to.
      * @return {Number}
      */
-    getMaxZoom() {
+    getMaxZoom(): number {
         if (!isNil(this.options['maxZoom'])) {
             return this.options['maxZoom'];
         }
@@ -747,7 +792,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Number} maxZoom
      * @returns {Map} this
      */
-    setMaxZoom(maxZoom) {
+    setMaxZoom(maxZoom: number) {
         const viewMaxZoom = this.getMaxNativeZoom();
         if (maxZoom > viewMaxZoom) {
             maxZoom = viewMaxZoom;
@@ -764,7 +809,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Get the min zoom that the map can be zoom to.
      * @return {Number}
      */
-    getMinZoom() {
+    getMinZoom(): number {
         if (!isNil(this.options['minZoom'])) {
             return this.options['minZoom'];
         }
@@ -776,7 +821,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Number} minZoom
      * @return {Map} this
      */
-    setMinZoom(minZoom) {
+    setMinZoom(minZoom: number) {
         if (minZoom !== null) {
             minZoom = +minZoom;
             const viewMinZoom = this._spatialReference.getMinZoom();
@@ -795,7 +840,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Maximum zoom the map has
      * @return {Number}
      */
-    getMaxNativeZoom() {
+    getMaxNativeZoom(): number {
         const ref = this.getSpatialReference();
         if (!ref) {
             return null;
@@ -807,7 +852,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Resolution for world point in WebGL context
      * @returns {Number}
      */
-    getGLRes() {
+    getGLRes(): number {
         if (this._glRes) {
             return this._glRes;
         }
@@ -827,7 +872,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * // convert to point in gl zoom
      * const glPoint = point.multi(this.getGLScale());
      */
-    getGLScale(zoom) {
+    getGLScale(zoom?: number): number {
         if (isNil(zoom)) {
             zoom = this.getZoom();
         }
@@ -872,7 +917,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Number} zoom
      * @return {Map} this
      */
-    setCenterAndZoom(center, zoom) {
+    setCenterAndZoom(center: Coordinate, zoom?: number) {
         if (!isNil(zoom) && this._zoomLevel !== zoom) {
             this.setCenter(center);
             this.setZoom(zoom, { animation: false });
@@ -911,7 +956,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {Object} [padding.paddingBottom] - Sets the amount of padding in the bottom of a map container
      * @return {Number} zoom fit for scale starting from fromZoom
      */
-    getFitZoom(extent, isFraction, padding) {
+    getFitZoom(extent: Extent, isFraction?: boolean, padding?: MapPaddingType) {
         if (!extent || !(extent instanceof Extent)) {
             return this._zoomLevel;
         }
@@ -922,10 +967,11 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         let size = this.getSize();
         const paddingSize = this._getPaddingSize(padding);
         if (paddingSize) {
-            size = {
+            const rect = {
                 width: size.width - (paddingSize.width || 0),
                 height: size.height - (paddingSize.height || 0)
             };
+            size = new Size(rect.width, rect.height);
         }
         const containerExtent = extent.convertTo(p => this.coordToPoint(p));
         const w = containerExtent.getWidth(),
@@ -942,9 +988,9 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Get map's current view (center/zoom/pitch/bearing)
      * @return {Object} { center : *, zoom : *, pitch : *, bearing : * }
      */
-    getView() {
+    getView(): MapViewType {
         return {
-            'center': this.getCenter().toArray(),
+            'center': this.getCenter().toArray() as any,
             'zoom': this.getZoom(),
             'pitch': this.getPitch(),
             'bearing': this.getBearing()
@@ -956,12 +1002,12 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Object} view - a object containing center/zoom/pitch/bearing
      * return {Map} this
      */
-    setView(view) {
+    setView(view: MapViewType) {
         if (!view) {
             return this;
         }
         if (view['center']) {
-            this.setCenter(view['center']);
+            this.setCenter(view['center'] as Coordinate);
         }
         if (view['zoom'] !== null && !isNaN(+view['zoom'])) {
             this.setZoom(+view['zoom'], { 'animation': false });
@@ -980,7 +1026,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Number} zoom - zoom or current zoom if not given
      * @return {Number} resolution
      */
-    getResolution(zoom) {
+    getResolution(zoom?: number) {
         return this._getResolution(zoom);
     }
 
@@ -989,7 +1035,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Number} zoom - zoom or current zoom if not given
      * @return {Number} scale
      */
-    getScale(zoom) {
+    getScale(zoom?: number) {
         const z = (isNil(zoom) ? this.getZoom() : zoom);
         const max = this._getResolution(this.getMaxNativeZoom()),
             res = this._getResolution(z);
@@ -1008,9 +1054,9 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {Number} [padding.paddingBottom] - Sets the amount of padding in the bottom of a map container
      * @return {Coordinate}
      */
-    _getCenterByPadding(center, zoom, padding = {}) {
+    _getCenterByPadding(center: Coordinate, zoom?: number, padding?: MapPaddingType) {
         const point = this.coordinateToPoint(center, zoom);
-        const { paddingLeft = 0, paddingRight = 0, paddingTop = 0, paddingBottom = 0 } = padding;
+        const { paddingLeft = 0, paddingRight = 0, paddingTop = 0, paddingBottom = 0 } = padding || {};
         let pX = 0;
         let pY = 0;
         if (paddingLeft || paddingRight) {
@@ -1043,7 +1089,8 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {Function} step - step function for animation
      * @return {Map | player} - this
      */
-    fitExtent(extent, zoomOffset, options = {}, step) {
+    fitExtent(extent: Extent, zoomOffset?: number, options?: MapFitType, step?: (frame) => void) {
+        options = (options || {} as any);
         if (!extent) {
             return this;
         }
@@ -1082,7 +1129,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @fires Map#baselayerchangestart
      * @fires Map#baselayerchangeend
      */
-    setBaseLayer(baseLayer) {
+    setBaseLayer(baseLayer: Layer) {
         let isChange = false;
         if (this._baseLayer) {
             isChange = true;
@@ -1138,6 +1185,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
                 this._fireEvent('baselayerchangeend');
             }
         }
+
         this._baseLayer.on('layerload', onbaseLayerload, this);
         if (this._loaded) {
             this._baseLayer.load();
@@ -1178,7 +1226,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      *     return (layer instanceof VectorLayer);
      * });
      */
-    getLayers(filter) {
+    getLayers(filter?: (layer: Layer) => boolean): Array<Layer> {
         return this._getLayers(function (layer) {
             if (layer === this._baseLayer || layer.getId().indexOf(INTERNAL_LAYER_PREFIX) >= 0) {
                 return false;
@@ -1195,7 +1243,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {String} id - layer id
      * @return {Layer}
      */
-    getLayer(id) {
+    getLayer(id: string): Layer | null {
         if (!id) {
             return null;
         }
@@ -1216,13 +1264,18 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Map} this
      * @fires Map#addlayer
      */
-    addLayer(layers) {
+    addLayer(layers: Layer | Array<Layer>, ...otherLayers: Array<Layer>): this {
         if (!layers) {
             return this;
         }
+
         if (!Array.isArray(layers)) {
-            layers = Array.prototype.slice.call(arguments, 0);
-            return this.addLayer(layers);
+            layers = [layers];
+            // layers = Array.prototype.slice.call(arguments, 0);
+            // return this.addLayer(layers);
+        }
+        if (otherLayers && otherLayers.length) {
+            layers = layers.concat(otherLayers);
         }
         if (!this._layerCache) {
             this._layerCache = {};
@@ -1271,7 +1324,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Map} this
      * @fires Map#removelayer
      */
-    removeLayer(layers) {
+    removeLayer(layers: Layer | Array<Layer>): this {
         if (!layers) {
             return this;
         }
@@ -1288,7 +1341,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
                 continue;
             }
             const map = layer.getMap();
-            if (!map || map !== this) {
+            if (!map || (map as any) !== this) {
                 continue;
             }
             removed.push(layer);
@@ -1336,7 +1389,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * map.sortLayers([layer2, layer3, layer1]);
      * map.sortLayers(['3', '2', '1']); // sort by layer ids.
      */
-    sortLayers(layers) {
+    sortLayers(layers: Array<Layer>) {
         if (!layers || !Array.isArray(layers)) {
             return this;
         }
@@ -1345,9 +1398,9 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         for (let i = 0, l = layers.length; i < l; i++) {
             let layer = layers[i];
             if (isString(layers[i])) {
-                layer = this.getLayer(layer);
+                layer = this.getLayer(layer as any);
             }
-            if (!(layer instanceof Layer) || !layer.getMap() || layer.getMap() !== this) {
+            if (!(layer instanceof Layer) || !layer.getMap() || layer.getMap() as any !== this) {
                 throw new Error('It must be a layer added to this map to order.');
             }
             if (layer.getZIndex() < minZ) {
@@ -1371,7 +1424,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {String} [options.fileName=export] - specify the file name, if options.save is true.
      * @return {String} image of base64 format.
      */
-    toDataURL(options) {
+    toDataURL(options?: MapDataURLType): string | null {
         if (!options) {
             options = {};
         }
@@ -1411,28 +1464,28 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * shorter alias for coordinateToPoint
      */
-    coordToPoint(coordinate, zoom, out) {
+    coordToPoint(coordinate: Coordinate, zoom?: number, out?: Point) {
         return this.coordinateToPoint(coordinate, zoom, out);
     }
 
     /**
      * shorter alias for coordinateToPointAtRes
      */
-    coordToPointAtRes(coordinate, res, out) {
+    coordToPointAtRes(coordinate: Coordinate, res?: number, out?: Point) {
         return this.coordinateToPointAtRes(coordinate, res, out);
     }
 
     /**
      * shorter alias for pointToCoordinate
      */
-    pointToCoord(point, zoom, out) {
+    pointToCoord(point: Point, zoom?: number, out?: Coordinate) {
         return this.pointToCoordinate(point, zoom, out);
     }
 
     /**
      * shorter alias for pointAtResToCoordinate
      */
-    pointAtResToCoord(point, res, out) {
+    pointAtResToCoord(point: Point, res?: number, out?: Coordinate) {
         return this.pointAtResToCoordinate(point, res, out);
     }
 
@@ -1440,21 +1493,21 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * shorter alias for coordinateToViewPoint
      */
-    coordToViewPoint(coordinate, out, altitude) {
+    coordToViewPoint(coordinate: Coordinate, out?: Point, altitude?: number) {
         return this.coordinateToViewPoint(coordinate, out, altitude);
     }
 
     /**
      * shorter alias for viewPointToCoordinate
      */
-    viewPointToCoord(viewPoint, out) {
+    viewPointToCoord(viewPoint: Point, out?: Coordinate) {
         return this.viewPointToCoordinate(viewPoint, out);
     }
 
     /**
      * shorter alias for coordinateToContainerPoint
      */
-    coordToContainerPoint(coordinate, zoom, out) {
+    coordToContainerPoint(coordinate: Coordinate, zoom?: number, out?: Point) {
         return this.coordinateToContainerPoint(coordinate, zoom, out);
     }
 
@@ -1462,7 +1515,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * shorter alias for containerPointToCoordinate
      */
-    containerPointToCoord(containerPoint, out) {
+    containerPointToCoord(containerPoint: Point, out?: Coordinate) {
         return this.containerPointToCoordinate(containerPoint, out);
     }
 
@@ -1473,11 +1526,11 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {Point} [out=undefined]    - optional point to receive result
      * @returns {Point}
      */
-    containerPointToViewPoint(containerPoint, out) {
+    containerPointToViewPoint(containerPoint: Point, out?: Point) {
         if (out) {
             out.set(containerPoint.x, containerPoint.y);
         } else {
-            out = containerPoint.copy();
+            out = containerPoint.copy() as Point;
         }
         return out._sub(this.getViewPoint());
     }
@@ -1489,11 +1542,11 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {Point} [out=undefined]    - optional point to receive result
      * @returns {Point}
      */
-    viewPointToContainerPoint(viewPoint, out) {
+    viewPointToContainerPoint(viewPoint: Point, out?: Point) {
         if (out) {
             out.set(viewPoint.x, viewPoint.y);
         } else {
-            out = viewPoint.copy();
+            out = viewPoint.copy() as Point;
         }
         return out._add(this.getViewPoint());
     }
@@ -1503,7 +1556,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Map} this
      * @fires Map#resize
      */
-    checkSize(force) {
+    checkSize(force?: boolean) {
         const justStart = ((now() - this._initTime) < 1500) && this.width === 0 || this.height === 0;
 
         const watched = this._getContainerDomSize(),
@@ -1559,7 +1612,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {Number} dy           - meter distance on Y axis
      * @return {Coordinate} Result coordinate
      */
-    locate(coordinate, dx, dy) {
+    locate(coordinate: Coordinate, dx: number, dy: number): Coordinate {
         return this.getProjection()._locate(new Coordinate(coordinate), dx, dy);
     }
 
@@ -1568,7 +1621,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Return map's main panel
      * @returns {HTMLElement}
      */
-    getMainPanel() {
+    getMainPanel(): HTMLDivElement {
         return this._getRenderer().getMainPanel();
     }
 
@@ -1633,7 +1686,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @private
      * @fires Map#movestart
      */
-    onMoveStart(param) {
+    onMoveStart(param?: any) {
         if (this._mapAnimPlayer) {
             this._stopAnim(this._mapAnimPlayer);
         }
@@ -1755,18 +1808,18 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Number} padding - test padding
      * @returns {Boolean}
      */
-    isOffscreen(box, viewportPadding = 0) {
+    isOffscreen(box: PointExtent | Array<number>, viewportPadding = 0) {
         const { width, height } = this;
         const screenRightBoundary = width + viewportPadding;
         const screenBottomBoundary = height + viewportPadding;
-        let { xmin, ymin, xmax, ymax } = box;
+        let { xmin, ymin, xmax, ymax } = (box as PointExtent);
         if (Array.isArray(box)) {
             [xmin, ymin, xmax, ymax] = box;
         }
         return xmax < viewportPadding || xmin >= screenRightBoundary || ymax < viewportPadding || ymin > screenBottomBoundary;
     }
 
-    getRenderer() {
+    getRenderer(): any {
         return this._getRenderer();
     }
 
@@ -1774,7 +1827,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Get map's devicePixelRatio, you can override it by setting devicePixelRatio in options.
      * @returns {Number}
      */
-    getDevicePixelRatio() {
+    getDevicePixelRatio(): number {
         return this.options['devicePixelRatio'] || Browser.devicePixelRatio || 1;
     }
 
@@ -1783,7 +1836,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Number} dpr
      * @returns {Map} this
      */
-    setDevicePixelRatio(dpr) {
+    setDevicePixelRatio(dpr: number) {
         if (isNumber(dpr) && dpr > 0 && dpr !== this.options['devicePixelRatio']) {
             this.options['devicePixelRatio'] = dpr;
             this.checkSize(true);
@@ -1793,14 +1846,14 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     //-----------------------------------------------------------
 
-    _initContainer(container) {
+    _initContainer(container: MapContainerType) {
         if (isString(container)) {
-            this._containerDOM = document.getElementById(container);
+            this._containerDOM = document.getElementById(container) as HTMLDivElement;
             if (!this._containerDOM) {
                 throw new Error('Invalid container when creating map: \'' + container + '\'');
             }
         } else {
-            this._containerDOM = container;
+            this._containerDOM = container as HTMLDivElement;
             if (IS_NODE) {
                 //Reserve container's constructor in node for canvas creating.
                 this.CanvasClass = this._containerDOM.constructor;
@@ -1808,6 +1861,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
 
         if (this._containerDOM.childNodes && this._containerDOM.childNodes.length > 0) {
+            //@ts-expect-error I don't know either
             if (this._containerDOM.childNodes[0].className === 'maptalks-wrapper') {
                 throw new Error('Container is already loaded with another map instance, use map.remove() to clear it.');
             }
@@ -1819,7 +1873,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @private
      * @param  {String} cursor css cursor
      */
-    _trySetCursor(cursor) {
+    _trySetCursor(cursor: string) {
         if (!this._cursor && !this._priorityCursor) {
             if (!cursor) {
                 cursor = 'default';
@@ -1829,7 +1883,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this;
     }
 
-    _setPriorityCursor(cursor) {
+    _setPriorityCursor(cursor: string) {
         if (!cursor) {
             let hasCursor = false;
             if (this._priorityCursor) {
@@ -1846,7 +1900,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this;
     }
 
-    _setCursorToPanel(cursor) {
+    _setCursorToPanel(cursor: string) {
         const panel = this.getMainPanel();
         if (panel && panel.style && panel.style.cursor !== cursor) {
             panel.style.cursor = cursor;
@@ -1855,7 +1909,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
 
 
     //remove a layer from the layerList
-    _removeLayer(layer, layerList) {
+    _removeLayer(layer: Layer, layerList: Array<Layer>) {
         if (!layer || !layerList) {
             return;
         }
@@ -1870,22 +1924,25 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             return;
         }
         for (let i = 0, l = this._layers.length; i < l; i++) {
-            this._layers[i]._order = i;
-            if (this._layers[i].sortLayersByZIndex) {
-                this._layers[i].sortLayersByZIndex();
+
+            // this._layers[i]._order = i;
+            const layer = this._layers[i] as any;
+            layer._order = i;
+            if (layer.sortLayersByZIndex) {
+                layer.sortLayersByZIndex();
             }
         }
         this._layers.sort(function (a, b) {
             const c = a.getZIndex() - b.getZIndex();
             if (c === 0) {
-                return a._order - b._order;
+                return (a as any)._order - (b as any)._order;
             }
             return c;
         });
     }
 
 
-    _fireEvent(eventName, param) {
+    _fireEvent(eventName: string, param?: { [key: string]: any }) {
         if (this._eventSilence) {
             return;
         }
@@ -1917,7 +1974,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     _initRenderer() {
         const renderer = this.options['renderer'];
-        const clazz = Map.getRendererClass(renderer);
+        const clazz = Map.getRendererClass(renderer) as any;
         this._renderer = new clazz(this);
         this._renderer.load();
     }
@@ -1944,7 +2001,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Layer[]}
      * @private
      */
-    _getLayers(filter) {
+    _getLayers(filter?: (layer: Layer) => boolean) {
         const layers = this._baseLayer ? [this._baseLayer].concat(this._layers) : this._layers;
         const result = [];
         for (let i = 0; i < layers.length; i++) {
@@ -1955,11 +2012,11 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         return result;
     }
 
-    _eachLayer(fn) {
+    _eachLayer(fn, ...layerLists) {
         if (arguments.length < 2) {
             return;
         }
-        let layerLists = Array.prototype.slice.call(arguments, 1);
+        // let layerLists = Array.prototype.slice.call(arguments, 1);
         if (layerLists && !Array.isArray(layerLists)) {
             layerLists = [layerLists];
         }
@@ -2017,7 +2074,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
     }
 
-    _getContainerDomSize() {
+    _getContainerDomSize(): Size | null {
         if (!this._containerDOM) {
             return null;
         }
@@ -2028,9 +2085,11 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             height = this._containerDomContentRect.height;
             return new Size(width, height);
         }
-        if (!isNil(containerDOM.width) && !isNil(containerDOM.height)) {
-            width = containerDOM.width;
-            height = containerDOM.height;
+        //is Canvas
+        const canvasDom = containerDOM as HTMLCanvasElement;
+        if (!isNil(canvasDom.width) && !isNil(canvasDom.height)) {
+            width = canvasDom.width;
+            height = canvasDom.height;
             const dpr = this.getDevicePixelRatio();
             if (dpr !== 1 && containerDOM['layer']) {
                 //is a canvas tile of CanvasTileLayer
@@ -2038,15 +2097,15 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
                 height /= dpr;
             }
         } else if (!isNil(containerDOM.clientWidth) && !isNil(containerDOM.clientHeight)) {
-            width = parseInt(containerDOM.clientWidth, 0);
-            height = parseInt(containerDOM.clientHeight, 0);
+            width = parseInt(containerDOM.clientWidth + '', 0);
+            height = parseInt(containerDOM.clientHeight + '', 0);
         } else {
             throw new Error('can not get size of container');
         }
         return new Size(width, height);
     }
 
-    _updateMapSize(mSize) {
+    _updateMapSize(mSize: Size) {
         this.width = mSize['width'];
         this.height = mSize['height'];
         this._getRenderer().updateMapSize(mSize);
@@ -2063,7 +2122,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this._prjCenter;
     }
 
-    _setPrjCenter(pcenter) {
+    _setPrjCenter(pcenter: Coordinate) {
         this._prjCenter = pcenter;
         if (this.isInteracting() && !this.isMoving()) {
             // when map is not moving, map's center is updated but map platform won't
@@ -2073,7 +2132,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         this._calcMatrices();
     }
 
-    _setPrjCoordAtContainerPoint(coordinate, point) {
+    _setPrjCoordAtContainerPoint(coordinate: Coordinate, point: Point) {
         if (!this.centerAltitude && point.x === this.width / 2 && point.y === this.height / 2) {
             return this;
         }
@@ -2083,13 +2142,13 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this;
     }
 
-    _setPrjCoordAtOffsetToCenter(prjCoord, offset) {
+    _setPrjCoordAtOffsetToCenter(prjCoord: Coordinate, offset: Point) {
         const pcenter = this._pointToPrj(this._prjToPoint(prjCoord).sub(offset));
         this._setPrjCenter(pcenter);
         return this;
     }
 
-    _verifyExtent(prjCenter) {
+    _verifyExtent(prjCenter: Coordinate) {
         if (!prjCenter) {
             return false;
         }
@@ -2109,7 +2168,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @private
      * @returns {Coordinate} the new projected center.
      */
-    _offsetCenterByPixel(pixel) {
+    _offsetCenterByPixel(pixel: Point) {
         const pos = TEMP_POINT.set(this.width / 2 - pixel.x, this.height / 2 - pixel.y);
         const coord = this._containerPointToPrj(pos, TEMP_COORD);
         const containerCenter = TEMP_POINT.set(this.width / 2, this.height / 2);
@@ -2126,13 +2185,13 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Gets map panel's current view point.
      * @return {Point}
      */
-    offsetPlatform(offset) {
+    offsetPlatform(offset?: Point) {
         if (!offset) {
             return this._mapViewPoint;
         } else {
             this._getRenderer().offsetPlatform(offset);
             this._mapViewCoord = this._getPrjCenter();
-            this._mapViewPoint = this._mapViewPoint.add(offset);
+            this._mapViewPoint = this._mapViewPoint.add(offset) as Point;
             return this;
         }
     }
@@ -2145,7 +2204,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         const offset = this._getViewPointFrameOffset();
         let panelOffset = this.offsetPlatform();
         if (offset) {
-            panelOffset = panelOffset.add(offset);
+            panelOffset = (panelOffset as any).add(offset);
         }
         return panelOffset;
     }
@@ -2162,7 +2221,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Number} resolution
      * @private
      */
-    _getResolution(zoom) {
+    _getResolution(zoom?: number) {
         if ((zoom === undefined || zoom === this._zoomLevel) && this._mapRes !== undefined) {
             return this._mapRes;
         }
@@ -2183,13 +2242,13 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Point} 2D point
      * @private
      */
-    _prjToPoint(pCoord, zoom, out) {
+    _prjToPoint(pCoord, zoom?: number, out?: Point) {
         zoom = (isNil(zoom) ? this.getZoom() : zoom);
         const res = this._getResolution(zoom);
         return this._prjToPointAtRes(pCoord, res, out);
     }
 
-    _prjToPointAtRes(pCoord, res, out) {
+    _prjToPointAtRes(pCoord: Coordinate, res?: number, out?: Point): Point {
         return this._spatialReference.getTransformation().transform(pCoord, res, out);
     }
 
@@ -2200,7 +2259,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Point} 2D point
      * @private
      */
-    _prjsToPointsAtRes(pCoords, res, resultPoints = []) {
+    _prjsToPointsAtRes(pCoords: Array<Coordinate>, res?: number, resultPoints = []): Array<Point> {
         const transformation = this._spatialReference.getTransformation();
         const pts = [];
         for (let i = 0, len = pCoords.length; i < len; i++) {
@@ -2217,13 +2276,13 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Coordinate} projected coordinate
      * @private
      */
-    _pointToPrj(point, zoom, out) {
+    _pointToPrj(point: Point, zoom?: number, out?: Coordinate): Coordinate {
         zoom = (isNil(zoom) ? this.getZoom() : zoom);
         const res = this._getResolution(zoom);
         return this._pointToPrjAtRes(point, res, out);
     }
 
-    _pointToPrjAtRes(point, res, out) {
+    _pointToPrjAtRes(point: Point, res?: number, out?: Coordinate): Coordinate {
         return this._spatialReference.getTransformation().untransform(point, res, out);
     }
 
@@ -2234,7 +2293,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Point} point at current zoom
      * @private
      */
-    _pointToPoint(point, zoom, out) {
+    _pointToPoint(point: Point, zoom?: number, out?: Point): Point {
         if (!isNil(zoom)) {
             return this._pointAtResToPoint(point, this._getResolution(zoom), out);
         }
@@ -2242,17 +2301,17 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             out.x = point.x;
             out.y = point.y;
         } else {
-            out = point.copy();
+            out = point.copy() as Point;
         }
         return out;
     }
 
-    _pointAtResToPoint(point, res, out) {
+    _pointAtResToPoint(point: Point, res?: number, out?: Point): Point {
         if (out) {
             out.x = point.x;
             out.y = point.y;
         } else {
-            out = point.copy();
+            out = point.copy() as Point;
         }
         return out._multi(res / this._getResolution());
     }
@@ -2264,12 +2323,12 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Point} point at target res
      * @private
      */
-    _pointToPointAtRes(point, res, out) {
+    _pointToPointAtRes(point: Point, res?: number, out?: Point): Point {
         if (out) {
             out.x = point.x;
             out.y = point.y;
         } else {
-            out = point.copy();
+            out = point.copy() as Point;
         }
         return out._multi(this._getResolution() / res);
     }
@@ -2281,8 +2340,8 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Coordinate}
      * @private
      */
-    _containerPointToPrj(containerPoint, out) {
-        return this._pointToPrj(this._containerPointToPoint(containerPoint, undefined, out), undefined, out);
+    _containerPointToPrj(containerPoint: Point, out?: Coordinate) {
+        return this._pointToPrj(this._containerPointToPoint(containerPoint, undefined, out as Point), undefined, out);
     }
 
 
@@ -2297,7 +2356,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
     }
     //fix prj value when current view is world wide
-    _fixPrjOnWorldWide(prjCoord) {
+    _fixPrjOnWorldWide(prjCoord: Coordinate) {
         const projection = this.getProjection();
         if (projection && projection.fullExtent && prjCoord) {
             const { left, bottom, top, right } = projection.fullExtent || {};
@@ -2316,562 +2375,257 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
         return this;
     }
-}
-
-Map.include(/** @lends Map.prototype */{
 
     /**
-     * Converts a coordinate to the 2D point in current zoom or in the specific zoom. <br>
-     * The 2D point's coordinate system's origin is the same with map's origin.
-     * Usually used in plugin development.
-     * @param  {Coordinate} coordinate - coordinate
-     * @param  {Number} [zoom=undefined]  - zoom level
-     * @param  {Point} [out=undefined]    - optional point to receive result
-     * @return {Point}  2D point
-     * @function
-     * @example
-     * var point = map.coordinateToPoint(new Coordinate(121.3, 29.1));
+     * Export the map's json, a snapshot of the map in JSON format.<br>
+     * It can be used to reproduce the instance by [fromJSON]{@link Map#fromJSON} method
+     * @param  {Object} [options=null] - export options
+     * @param  {Boolean|Object} [options.baseLayer=null] - whether to export base layer's JSON, if yes, it will be used as layer's toJSON options.
+     * @param  {Boolean|Extent} [options.clipExtent=null] - if set with an extent instance, only the geometries intersectes with the extent will be exported.
+     *                                                             If set to true, map's current extent will be used.
+     * @param  {Boolean|Object|Object[]} [options.layers=null] - whether to export other layers' JSON, if yes, it will be used as layer's toJSON options.
+     *                                                        It can also be an array of layer export options with a "id" attribute to filter the layers to export.
+     * @return {Object} layer's JSON
      */
-    coordinateToPoint(coordinate, zoom, out) {
-        const res = this._getResolution(zoom);
-        return this.coordinateToPointAtRes(coordinate, res, out);
-    },
-
-    /**
-     * Converts a coordinate to the 2D point at specified resolution. <br>
-     * The 2D point's coordinate system's origin is the same with map's origin.
-     * Usually used in plugin development.
-     * @param  {Coordinate} coordinate - coordinate
-     * @param  {Number} [res=undefined]  - target resolution
-     * @param  {Point} [out=undefined]    - optional point to receive result
-     * @return {Point}  2D point
-     * @function
-     * @example
-     * var point = map.coordinateToPoint(new Coordinate(121.3, 29.1));
-     */
-    coordinateToPointAtRes: function () {
-        const COORD = new Coordinate(0, 0);
-        return function (coordinate, res, out) {
-            const prjCoord = this.getProjection().project(coordinate, COORD);
-            return this._prjToPointAtRes(prjCoord, res, out);
-        };
-    }(),
-
-    /**
-     * Converts a 2D point in current zoom or a specific zoom to a coordinate.
-     * Usually used in plugin development.
-     * @param  {Point} point - 2D point
-     * @param  {Number} zoom  - point's zoom level
-     * @param  {Coordinate} [out=undefined]    - optional coordinate to receive result
-     * @return {Coordinate} coordinate
-     * @function
-     * @example
-     * var coord = map.pointToCoordinate(new Point(4E6, 3E4));
-     */
-    pointToCoordinate: function () {
-        const COORD = new Coordinate(0, 0);
-        return function (point, zoom, out) {
-            const prjCoord = this._pointToPrj(point, zoom, COORD);
-            return this.getProjection().unproject(prjCoord, out);
-        };
-    }(),
-
-    /**
-     * Converts a 2D point at specific resolution to a coordinate.
-     * Usually used in plugin development.
-     * @param  {Point} point - 2D point
-     * @param  {Number} res  - point's resolution
-     * @param  {Coordinate} [out=undefined]    - optional coordinate to receive result
-     * @return {Coordinate} coordinate
-     * @function
-     * @example
-     * var coord = map.pointAtResToCoordinate(new Point(4E6, 3E4), map.getResolution());
-     */
-    pointAtResToCoordinate: function () {
-        const COORD = new Coordinate(0, 0);
-        return function (point, res, out) {
-            const prjCoord = this._pointToPrjAtRes(point, res, COORD);
-            return this.getProjection().unproject(prjCoord, out);
-        };
-    }(),
-
-
-    /**
-     * Converts a geographical coordinate to view point.<br>
-     * A view point is a point relative to map's mapPlatform panel's position. <br>
-     * Usually used in plugin development.
-     * @param {Coordinate} coordinate
-     * @param  {Point} [out=undefined]    - optional point to receive result
-     * @return {Point}
-     * @function
-     */
-    coordinateToViewPoint: function () {
-        const COORD = new Coordinate(0, 0);
-        return function (coordinate, out, altitude) {
-            return this._prjToViewPoint(this.getProjection().project(coordinate, COORD), out, altitude);
-        };
-    }(),
-
-    /**
-     * Converts a view point to the geographical coordinate.
-     * Usually used in plugin development.
-     * @param {Point} viewPoint
-     * @param  {Coordinate} [out=undefined]    - optional coordinate to receive result
-     * @return {Coordinate}
-     * @function
-     */
-    viewPointToCoordinate: function () {
-        const COORD = new Coordinate(0, 0);
-        return function (viewPoint, out) {
-            return this.getProjection().unproject(this._viewPointToPrj(viewPoint, COORD), out);
-        };
-    }(),
-
-    /**
-     * Convert a geographical coordinate to the container point. <br>
-     *  A container point is a point relative to map container's top-left corner. <br>
-     * @param {Coordinate}                - coordinate
-     * @param  {Number} [zoom=undefined]  - zoom level
-     * @param  {Point} [out=undefined]    - optional point to receive result
-     * @return {Point}
-     * @function
-     */
-    coordinateToContainerPoint(coordinate, zoom, out) {
-        const res = this._getResolution(zoom);
-        return this.coordinateToContainerPointAtRes(coordinate, res, out);
-    },
-
-    coordinateToContainerPointAtRes: function () {
-        const COORD = new Coordinate(0, 0);
-        return function (coordinate, res, out) {
-            const pCoordinate = this.getProjection().project(coordinate, COORD);
-            return this._prjToContainerPointAtRes(pCoordinate, res, out);
-        };
-    }(),
-
-    /**
-     * Convert a geographical coordinate to the container point. <br>
-     * Batch conversion for better performance <br>
-     *  A container point is a point relative to map container's top-left corner. <br>
-     * @param  {Coordinate[]} Coordinate - coordinates
-     * @param  {Number} [zoom=undefined]  - zoom level
-     * @return {Point[]}
-     * @function
-     */
-    coordinatesToContainerPoints(coordinates, zoom) {
-        const res = this._getResolution(zoom);
-        return this.coordinatesToContainerPointsAtRes(coordinates, res);
-    },
-
-    /**
-     * Convert a geographical coordinate to the container point. <br>
-     * Batch conversion for better performance <br>
-     *  A container point is a point relative to map container's top-left corner. <br>
-     * @param {Coordinate[]}                - coordinates
-     * @param  {Number} [resolution=undefined]  - container points' resolution
-     * @return {Point[]}
-     * @function
-     */
-    coordinatesToContainerPointsAtRes: function () {
-        return function (coordinates, resolution) {
-            const pts = [];
-            const transformation = this._spatialReference.getTransformation();
-            const res = resolution / this._getResolution();
-            const projection = this.getProjection();
-            const prjOut = new Coordinate(0, 0);
-            const isTransforming = this.isTransforming();
-            const centerPoint = this._prjToPoint(this._getPrjCenter(), undefined, TEMP_COORD);
-            for (let i = 0, len = coordinates.length; i < len; i++) {
-                const pCoordinate = projection.project(coordinates[i], prjOut);
-                let point = transformation.transform(pCoordinate, resolution);
-                point = point._multi(res);
-                this._toContainerPoint(point, isTransforming, coordinates[i].z, centerPoint);
-                pts.push(point);
-            }
-            return pts;
-        };
-    }(),
-
-    /**
-     * Converts a container point to geographical coordinate.
-     * @param {Point}
-     * @param  {Coordinate} [out=undefined]    - optional coordinate to receive result
-     * @return {Coordinate}
-     * @function
-     */
-    containerPointToCoordinate: function () {
-        const COORD = new Coordinate(0, 0);
-        return function (containerPoint, out) {
-            const pCoordinate = this._containerPointToPrj(containerPoint, COORD);
-            return this.getProjection().unproject(pCoordinate, out);
-        };
-    }(),
-
-    /**
-     * Converts a container point extent to the geographic extent.
-     * @param  {PointExtent} containerExtent - containeproints extent
-     * @return {Extent}  geographic extent
-     * @function
-     */
-    containerToExtent: function () {
-        const POINT0 = new Point(0, 0);
-        const POINT1 = new Point(0, 0);
-        return function (containerExtent) {
-            const extent2D = new PointExtent(
-                this._containerPointToPoint(containerExtent.getMin(POINT0), undefined, POINT0),
-                this._containerPointToPoint(containerExtent.getMax(POINT1), undefined, POINT1)
-            );
-            return this._pointToExtent(extent2D);
-        };
-    }(),
-
-    /**
-     * Converts geographical distances to the pixel length.<br>
-     * The value varis with difference zoom level.
-     *
-     * @param  {Number} xDist - distance on X axis.
-     * @param  {Number} yDist - distance on Y axis.
-     * @return {Size} result.width: pixel length on X axis; result.height: pixel length on Y axis
-     * @function
-     */
-    distanceToPixel: function () {
-        const POINT0 = new Point(0, 0);
-        const POINT1 = new Point(0, 0);
-        return function (xDist, yDist, zoom) {
-            const projection = this.getProjection();
-            if (!projection) {
-                return null;
-            }
-            const scale = this.getScale() / this.getScale(zoom);
-            const center = this.getCenter(),
-                target = projection.locate(center, xDist, yDist);
-            const p0 = this.coordToContainerPoint(center, undefined, POINT0),
-                p1 = this.coordToContainerPoint(target, undefined, POINT1);
-            p1._sub(p0)._multi(scale)._abs();
-            return new Size(p1.x, p1.y);
-        };
-    }(),
-
-    /**
-     * Converts geographical distances to the 2d point length.<br>
-     * The value varis with difference zoom level.
-     *
-     * @param  {Number} xDist - distance on X axis.
-     * @param  {Number} yDist - distance on Y axis.
-     * @param  {Number} zoom - point's zoom
-     * @return {Point}
-     * @function
-     */
-    distanceToPoint(xDist, yDist, zoom, paramCenter) {
-        const res = this._getResolution(zoom);
-        return this.distanceToPointAtRes(xDist, yDist, res, paramCenter);
-    },
-
-    /**
-     * Converts geographical distances to the 2d point length at specified resolution.
-     *
-     * @param  {Number} xDist - distance on X axis.
-     * @param  {Number} yDist - distance on Y axis.
-     * @param  {Number} res - target resolution
-     * @return {Point}
-     * @function
-     */
-    distanceToPointAtRes: function () {
-        const POINT = new Point(0, 0);
-        const COORD = new Coordinate(0, 0);
-        return function (xDist, yDist, res, paramCenter, out) {
-            const projection = this.getProjection();
-            if (!projection) {
-                return null;
-            }
-            const center = paramCenter || this.getCenter(),
-                target = projection.locate(center, xDist, yDist, COORD);
-            const p0 = this.coordToPointAtRes(center, res, POINT),
-                p1 = this.coordToPointAtRes(target, res, out);
-            p1._sub(p0)._abs();
-            return p1;
-        };
-    }(),
-
-
-    /**
-     * Converts height/altitude  to the 2d point
-     *
-     * @param  {Number} altitude - the value of altitude,suche as: map.altitudeToPoint(100);
-     * @param  {Number} res - target resolution
-     * @param  {Coordinate} [originCenter=null] - optional original coordinate for caculation
-     * @return {Number}
-     * @function
-     */
-    altitudeToPoint: function () {
-        const DEFAULT_CENTER = new Coordinate(0, 40);
-        const POINT = new Point(0, 0);
-        return function (altitude = 0, res, originCenter) {
-            if (this._altitudeOriginDirty) {
-                DEFAULT_CENTER.x = this._originLng;
-                this._altitudeOriginDirty = false;
-            }
-            const p = this.distanceToPointAtRes(altitude, altitude, res, originCenter || DEFAULT_CENTER, POINT);
-            if (altitude < 0 && p.x > 0) {
-                p.x = -p.x;
-            }
-            const heightFactor = this.options['heightFactor'];
-            if (heightFactor && heightFactor !== 1) {
-                p.x *= heightFactor;
-                p.y *= heightFactor;
-            }
-            return p.x;
-        };
-    }(),
-
-    pointAtResToAltitude: function () {
-        const DEFAULT_CENTER = new Coordinate(0, 40);
-        return function (point = 0, res, originCenter) {
-            const altitude = this.pointAtResToDistance(point, 0, res, originCenter || DEFAULT_CENTER);
-            return altitude;
-        };
-    }(),
-
-
-    /**
-     * Converts pixel size to geographical distance.
-     *
-     * @param  {Number} width - pixel width
-     * @param  {Number} height - pixel height
-     * @return {Number}  distance - Geographical distance
-     * @function
-     */
-    pixelToDistance: function () {
-        const COORD0 = new Coordinate(0, 0);
-        const COORD1 = new Coordinate(0, 0);
-        const TARGET0 = new Coordinate(0, 0);
-        const TARGET1 = new Coordinate(0, 0);
-        return function (width, height) {
-            const projection = this.getProjection();
-            if (!projection) {
-                return null;
-            }
-            const fullExt = this.getFullExtent();
-            const d = fullExt['top'] > fullExt['bottom'] ? -1 : 1;
-            const coord0 = COORD0.set(this.width / 2, this.height / 2);
-            const coord1 = COORD1.set(this.width / 2 + width, this.height / 2 + d * height);
-            // 考虑高度海拔后，容器中心点的坐标就不一定是center了
-            const target0 = this.containerPointToCoord(coord0, TARGET0);
-            const target1 = this.containerPointToCoord(coord1, TARGET1);
-            return projection.measureLength(target0, target1);
-        };
-    }(),
-
-    /**
-     * Converts 2d point distances to geographic length.<br>
-     *
-     * @param  {Number} dx - distance on X axis.
-     * @param  {Number} dy - distance on Y axis.
-     * @param  {Number} zoom - point's zoom
-     * @return {Number} distance
-     * @function
-     */
-    pointToDistance(dx, dy, zoom) {
-        const res = this.getResolution(zoom);
-        return this.pointAtResToDistance(dx, dy, res);
-    },
-
-    /**
-     * Converts 2d point distances to geographic length.<br>
-     *
-     * @param  {Number} dx - distance on X axis.
-     * @param  {Number} dy - distance on Y axis.
-     * @param  {Number} res - point's resolution
-     * @return {Number} distance
-     * @function
-     */
-    pointAtResToDistance: function () {
-        const POINT = new Point(0, 0);
-        const PRJ_COORD = new Coordinate(0, 0);
-        const COORD0 = new Coordinate(0, 0);
-        const COORD1 = new Coordinate(0, 0);
-        return function (dx, dy, res, paramCenter) {
-            const projection = this.getProjection();
-            if (!projection) {
-                return null;
-            }
-            const prjCoord = paramCenter ? projection.project(paramCenter, PRJ_COORD) : this._getPrjCenter();
-            const c = this._prjToPointAtRes(prjCoord, res, POINT);
-            c._add(dx, dy);
-            const target = this.pointAtResToCoord(c, res, COORD0);
-            const src = paramCenter ? paramCenter : projection.unproject(prjCoord, COORD1);
-            return projection.measureLength(src, target);
-        };
-    }(),
-
-
-    /**
-     * Computes the coordinate from the given pixel distance.
-     * @param  {Coordinate} coordinate - source coordinate
-     * @param  {Number} px           - pixel distance on X axis
-     * @param  {Number} py           - pixel distance on Y axis
-     * @return {Coordinate} Result coordinate
-     * @function
-     */
-    locateByPoint: function () {
-        const POINT = new Point(0, 0);
-        return function (coordinate, px, py) {
-            const point = this.coordToContainerPoint(coordinate, undefined, POINT);
-            return this.containerPointToCoord(point._add(px, py));
-        };
-    }(),
-
-    /**
-     * Get map's extent in view points.
-     * @param {Number} zoom - zoom
-     * @return {PointExtent}
-     * @private
-     * @function
-     */
-    _get2DExtent(zoom, out) {
-        let cached;
-        if ((zoom === undefined || zoom === this._zoomLevel) && this._mapExtent2D) {
-            cached = this._mapExtent2D;
+    toJSON(options?: MapOptionsType): { [key: string]: any } {
+        if (!options) {
+            options = {};
         }
-        if (cached) {
-            if (out) {
-                out.set(cached['xmin'], cached['ymin'], cached['xmax'], cached['ymax']);
-                return out;
-            }
-            return cached.copy();
+        const json = {
+            'jsonVersion': this['JSON_VERSION'],
+            'version': this.VERSION,
+            'extent': this.getExtent().toJSON()
+        };
+        json['options'] = this.config();
+        json['options']['center'] = this.getCenter();
+        json['options']['zoom'] = this.getZoom();
+        json['options']['bearing'] = this.getBearing();
+        json['options']['pitch'] = this.getPitch();
+
+        const baseLayer = this.getBaseLayer();
+        if ((isNil(options['baseLayer']) || options['baseLayer']) && baseLayer) {
+            json['baseLayer'] = baseLayer.toJSON(options['baseLayer']);
         }
-        const res = this._getResolution(zoom);
-        return this._get2DExtentAtRes(res, out);
-    },
-
-    _get2DExtentAtRes: function () {
-        const POINT = new Point(0, 0);
-        return function (res, out) {
-            if (res === this._mapGlRes && this._mapGlExtent2D) {
-                return this._mapGlExtent2D;
+        const extraLayerOptions = {};
+        if (options['clipExtent']) {
+            //if clipExtent is set, only geometries intersecting with extent will be exported.
+            //clipExtent's value can be an extent or true (map's current extent)
+            if (options['clipExtent'] === true) {
+                extraLayerOptions['clipExtent'] = this.getExtent();
+            } else {
+                extraLayerOptions['clipExtent'] = options['clipExtent'];
             }
-            const cExtent = this.getContainerExtent();
-            return cExtent.convertTo(c => this._containerPointToPointAtRes(c, res, POINT), out);
-        };
-    }(),
+        }
+        const layersJSON = [];
+        if (isNil(options['layers']) || (options['layers'] && !Array.isArray(options['layers']))) {
+            const layers = this.getLayers();
+            for (let i = 0, len = layers.length; i < len; i++) {
+                if (!layers[i].toJSON) {
+                    continue;
+                }
+                const opts = extend({}, isObject(options['layers']) ? options['layers'] : {}, extraLayerOptions);
+                layersJSON.push(layers[i].toJSON(opts));
+            }
+            json['layers'] = layersJSON;
+        } else if (isArrayHasData(options['layers'])) {
+            const layers = options['layers'];
+            for (let i = 0; i < layers.length; i++) {
+                const exportOption = layers[i];
+                const layer = this.getLayer(exportOption['id']);
+                if (!layer.toJSON) {
+                    continue;
+                }
+                const opts = extend({}, exportOption['options'], extraLayerOptions);
+                layersJSON.push(layer.toJSON(opts));
+            }
+            json['layers'] = layersJSON;
+        } else {
+            json['layers'] = [];
+        }
+        return json;
+    }
 
     /**
-     * Converts a view point extent to the geographic extent.
-     * @param  {PointExtent} extent2D - view points extent
-     * @return {Extent}  geographic extent
-     * @protected
+     * Reproduce a map from map's profile JSON.
+     * @param {(string|HTMLElement|object)} container - The container to create the map on, can be:<br>
+     *                                          1. A HTMLElement container.<br/>
+     *                                          2. ID of a HTMLElement container.<br/>
+     *                                          3. A canvas compatible container in node,
+     *                                          e.g. [node-canvas]{@link https://github.com/Automattic/node-canvas},
+     *                                              [canvas2svg]{@link https://github.com/gliffy/canvas2svg}
+     * @param  {Object} mapJSON - map's profile JSON
+     * @param  {Object} [options=null] - options
+     * @param  {Object} [options.baseLayer=null] - whether to import the baseLayer
+     * @param  {Object} [options.layers=null]    - whether to import the layers
+     * @return {Map}
+     * @static
      * @function
+     * @example
+     * var map = Map.fromJSON('map', mapProfile);
      */
-    _pointToExtent: function () {
-        const COORD0 = new Coordinate(0, 0);
-        const COORD1 = new Coordinate(0, 0);
-        return function (extent2D) {
-            const min2d = extent2D.getMin(),
-                max2d = extent2D.getMax();
-            const fullExtent = this.getFullExtent();
-            const [minx, maxx] = (!fullExtent || fullExtent.left <= fullExtent.right) ? [min2d.x, max2d.x] : [max2d.x, min2d.x];
-            const [miny, maxy] = (!fullExtent || fullExtent.top > fullExtent.bottom) ? [max2d.y, min2d.y] : [min2d.y, max2d.y];
-            const min = min2d.set(minx, maxy);
-            const max = max2d.set(maxx, miny);
-            return new Extent(
-                this.pointToCoord(min, undefined, COORD0),
-                this.pointToCoord(max, undefined, COORD1),
-                this.getProjection()
-            );
-        };
-    }(),
-
-
-    /**
-     * When moving map, map's center is updated in real time, but platform will be moved in the next frame to keep syncing with other layers
-     * Get the offset in current frame and the next frame
-     * @return {Point} view point offset
-     * @private
-     * @function
-     */
-    _getViewPointFrameOffset: function () {
-        const POINT = new Point(0, 0);
-        return function () {
-            // when zooming, view point is not updated, and container is being transformed with matrix.
-            // so ignore the frame offset
-            if (this.isZooming()) {
-                return null;
-            }
-            const pcenter = this._getPrjCenter();
-            if (this._mapViewCoord && !this._mapViewCoord.equals(pcenter)) {
-                return this._prjToContainerPoint(this._mapViewCoord)._sub(this._prjToContainerPoint(pcenter, undefined, POINT));
-            }
+    static fromJSON(container: MapContainerType, profile: { [key: string]: any }, options?: MapOptionsType) {
+        if (!container || !profile) {
             return null;
-        };
-    }(),
+        }
+        if (!options) {
+            options = {};
+        }
+        const map = new Map(container, profile['options']);
+        if (isNil(options['baseLayer']) || options['baseLayer']) {
+            const baseLayer = Layer.fromJSON(profile['baseLayer']);
+            if (baseLayer) {
+                map.setBaseLayer(baseLayer);
+            }
+        }
+        if (isNil(options['layers']) || options['layers']) {
+            const layers = [];
+            const layerJSONs = profile['layers'];
+            for (let i = 0; i < layerJSONs.length; i++) {
+                const layer = Layer.fromJSON(layerJSONs[i]);
+                layers.push(layer);
+            }
+            map.addLayer(layers);
+        }
 
-    /**
-     * transform view point to geographical projected coordinate
-     * @param  {Point} viewPoint
-     * @param  {Coordinate} [out=undefined]  - optional coordinate to receive result
-     * @return {Coordinate}
-     * @private
-     * @function
-     */
-    _viewPointToPrj: function () {
-        const POINT = new Point(0, 0);
-        return function (viewPoint, out) {
-            return this._containerPointToPrj(this.viewPointToContainerPoint(viewPoint, POINT), out);
-        };
-    }(),
+        return map;
+    }
 
-    /**
-     * transform geographical projected coordinate to container point
-     * @param  {Coordinate} pCoordinate
-     * @param  {Number} zoom target zoom
-     * @param  {Point} [out=undefined]    - optional point to receive result
-     * @return {Point}
-     * @private
-     * @function
-     */
-    _prjToContainerPoint(pCoordinate, zoom, out, altitude) {
-        const res = this._getResolution(zoom);
-        return this._prjToContainerPointAtRes(pCoordinate, res, out, altitude);
-    },
-
-    _prjToContainerPointAtRes: function () {
-        const POINT = new Point(0, 0);
-        return function (pCoordinate, res, out, altitude) {
-            return this._pointAtResToContainerPoint(this._prjToPointAtRes(pCoordinate, res, POINT), res, altitude || 0, out);
-        };
-    }(),
-
-    /**
-     * transform geographical projected coordinate to view point
-     * @param  {Coordinate} pCoordinate
-     * @return {Point}
-     * @private
-     * @function
-     */
-    _prjToViewPoint: function () {
-        const POINT = new Point(0, 0);
-        return function (pCoordinate, out, altitude) {
-            const containerPoint = this._prjToContainerPoint(pCoordinate, undefined, POINT, altitude);
-            return this.containerPointToViewPoint(containerPoint, out);
-        };
-    }(),
-
-    _viewPointToPoint: function () {
-        const POINT = new Point(0, 0);
-        return function (viewPoint, zoom, out) {
-            return this._containerPointToPoint(this.viewPointToContainerPoint(viewPoint, POINT), zoom, out);
-        };
-    }(),
-
-    _pointToViewPoint: function () {
-        const COORD = new Coordinate(0, 0);
-        return function (point, zoom, out) {
-            return this._prjToViewPoint(this._pointToPrj(point, zoom, COORD), out);
-        };
-    }(),
-
-});
+}
 
 Map.mergeOptions(options);
 
 export default Map;
+
+export type MapOptionsType = {
+    // center: Array<number> | Coordinate;
+    // zoom: number;
+    baseLayer?: Layer;
+    layers?: Array<Layer>;
+    draggable?: boolean;
+    dragPan?: boolean;
+    dragRotate?: boolean;
+    dragPitch?: boolean;
+    dragRotatePitch?: boolean;
+    touchGesture?: boolean;
+    touchZoom?: boolean;
+    touchRotate?: boolean;
+    touchPitch?: boolean;
+    touchZoomRotate?: boolean;
+    doubleClickZoom?: boolean;
+    scrollWheelZoom?: boolean;
+    geometryEvents?: boolean;
+    control?: boolean;
+    attribution?: boolean;
+    zoomControl?: boolean;
+    scaleControl?: boolean;
+    overviewControl?: boolean;
+    fog?: boolean;
+    fogColor?: string;
+    devicePixelRatio?: number;
+    heightFactor?: number;
+    cameraInfiniteFar?: boolean;
+    originLatitudeForAltitude?: number;
+
+    viewHistory?: boolean;
+    viewHistoryCount?: number;
+    seamlessZoom?: boolean;
+    maxVisualPitch?: number;
+    maxPitch?: number;
+    centerCross?: boolean;
+    zoomInCenter?: boolean;
+    zoomOrigin?: Array<number>;
+    zoomAnimation?: boolean;
+    zoomAnimationDuration?: number;
+    panAnimation?: boolean;
+    panAnimationDuration?: number;
+    rotateAnimation?: boolean;
+    rotateAnimationDuration?: number;
+    zoomable?: boolean;
+    enableInfoWindow?: boolean;
+    hitDetect?: boolean;
+    hitDetectLimit?: number;
+    fpsOnInteracting?: number;
+    layerCanvasLimitOnInteracting?: number;
+    maxZoom?: number;
+    minZoom?: number;
+    maxExtent?: Extent;
+    fixCenterOnResize?: boolean;
+    checkSize?: boolean;
+    checkSizeInterval?: number;
+    renderer?: 'canvas' | 'gl';
+    cascadePitches?: Array<number>;
+    renderable?: boolean;
+    clickTimeThreshold?: number;
+    stopRenderOnOffscreen?: boolean;
+    preventWheelScroll?: boolean;
+    preventTouch?: boolean;
+    supportPluginEvent?: boolean;
+    switchDragButton?: boolean;
+    mousemoveThrottleTime?: number;
+    maxFPS?: number;
+    debug?: boolean;
+    spatialReference?: Projection,
+    autoPanAtEdge?: boolean;
+    boxZoom?: boolean;
+    boxZoomSymbol?: {
+        'markerType': string;
+        'markerLineWidth': number;
+        'markerLineColor': string;
+        'markerLineDasharray': Array<number>;
+        'markerFillOpacity': number;
+        'markerFill': string;
+        'markerWidth': number;
+        'markerHeight': number;
+    };
+    onlyVisibleGeometryEvents?: boolean;
+
+
+}
+
+export type MapPaddingType = {
+    paddingLeft: number;
+    paddingRight: number;
+    paddingTop: number;
+    paddingBottom: number;
+}
+
+export type MapViewType = {
+    center?: Array<number> | Coordinate,
+    zoom?: number;
+    pitch?: number;
+    bearing?: number;
+    height?: number;
+}
+
+export type MapFitType = {
+    isFraction?: boolean;
+    animation?: boolean;
+    duration?: number;
+    easing?: string;
+} & MapPaddingType;
+
+export type MapDataURLType = {
+    mimeType?: string;
+    fileName?: string;
+    quality?: number;
+    save?: boolean;
+}
+
+export type MapAnimationOptionsType = {
+    duration?: number;
+    easing?: string;
+    repeat?: boolean;
+}
+
+export type MapIdentifyOptionsType = {
+    tolerance?: number;
+    eventTypes?: Array<string>;
+    layers?: Array<Layer>;
+    count?: number;
+    includeInvisible?: boolean;
+    includeInternals?: boolean;
+
+
+}
+
+export type MapContainerType = string | HTMLDivElement | HTMLCanvasElement | { [key: string]: any };

@@ -2,7 +2,28 @@ import { INTERNAL_LAYER_PREFIX } from '../core/Constants';
 import { isNil, isString, isArrayHasData, pushIn, isFunction } from '../core/util';
 import Coordinate from '../geo/Coordinate';
 import Point from '../geo/Point';
-import Map from './Map';
+import { type Geometry } from '../geometry';
+import Map, { MapIdentifyOptionsType } from './Map';
+
+type identifyOptionsType = MapIdentifyOptionsType & { coordinate: Coordinate };
+type identifyAtPointOptionsType = MapIdentifyOptionsType & { containerPoint: Point };
+type MapIdentifyCBType = (geos: Array<Geometry>) => void;
+
+
+declare module "./Map" {
+    interface Map {
+
+        computeLength(coord1: Coordinate, coord2: Coordinate): number;
+        computeGeometryLength(geometry: Geometry): number;
+        computeGeometryArea(geometry: Geometry): number;
+        identify(opts: identifyOptionsType, cb: MapIdentifyCBType): void;
+        identifyAtPoint(opts: identifyAtPointOptionsType, cb: MapIdentifyCBType): void;
+
+
+    }
+}
+
+
 
 /**
  * Methods of topo computations
@@ -16,7 +37,7 @@ Map.include(/** @lends Map.prototype */ {
      * @example
      * var distance = map.computeLength([0, 0], [0, 20]);
      */
-    computeLength: function (coord1, coord2) {
+    computeLength: function (coord1: Coordinate, coord2: Coordinate): number {
         if (!this.getProjection()) {
             return null;
         }
@@ -33,8 +54,8 @@ Map.include(/** @lends Map.prototype */ {
      * @param {Geometry} geometry - geometry to caculate
      * @return {Number} length, unit is meter
      */
-    computeGeometryLength: function (geometry) {
-        return geometry._computeGeodesicLength(this.getProjection());
+    computeGeometryLength: function (geometry: Geometry): number {
+        return (geometry as any)._computeGeodesicLength(this.getProjection());
     },
 
     /**
@@ -42,8 +63,8 @@ Map.include(/** @lends Map.prototype */ {
      * @param  {Geometry} geometry - geometry to caculate
      * @return {Number} area, unit is sq.meter
      */
-    computeGeometryArea: function (geometry) {
-        return geometry._computeGeodesicArea(this.getProjection());
+    computeGeometryArea: function (geometry: Geometry): number {
+        return (geometry as any)._computeGeodesicArea(this.getProjection());
     },
 
     /**
@@ -67,9 +88,9 @@ Map.include(/** @lends Map.prototype */ {
      *      console.log(geos);
      *  });
      */
-    identify: function (opts, callback) {
-        opts = opts || {};
-        const coordinate = new Coordinate(opts['coordinate']);
+    identify: function (opts: identifyOptionsType, callback: MapIdentifyCBType) {
+        opts = (opts || {}) as MapIdentifyOptionsType & { coordinate: Coordinate }
+        const coordinate = new Coordinate(opts.coordinate);
         return this._identify(opts, callback, layer => layer.identify(coordinate, opts));
     },
 
@@ -94,10 +115,10 @@ Map.include(/** @lends Map.prototype */ {
      *      console.log(geos);
      *  });
      */
-    identifyAtPoint: function (opts, callback) {
+    identifyAtPoint: function (opts: identifyAtPointOptionsType, callback: MapIdentifyCBType) {
         const isMapGeometryEvent = opts.includeInternals;
         const tolerance = opts.tolerance;
-        opts = opts || {};
+        opts = (opts || {}) as identifyAtPointOptionsType;
         const containerPoint = new Point(opts['containerPoint']);
         const coordinate = this.containerPointToCoord(containerPoint);
         return this._identify(opts, callback, layer => {

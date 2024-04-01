@@ -6,11 +6,40 @@ import { createEl } from './util/dom';
 import Browser from './Browser';
 import Ajax from './Ajax';
 
-const EMPTY_STRING = '';
+type ProxyItemType = {
+    target: string,
+    [propName: string]: any;
+}
+
+type ProxyConfig = {
+    [key: string]: ProxyItemType
+}
+
+type SpriteOptionsType = {
+    imgUrl: string;
+    jsonUrl: string;
+    sourceName?: string;
+}
+
+type SVGItemType = {
+    name: string;
+    paths: Array<any>;
+    body: string
+}
+
+type SVGOptionsType = {
+    url?: string,
+    symbols?: Array<SVGSymbolElement>;
+    sourceName?: string;
+    fill?: string;
+    stroke?: string;
+}
+
+const EMPTY_STRING: string = '';
 const BASE64_REG = /data:image\/.*;base64,/;
 
 
-function createCanvas() {
+function createCanvas(): HTMLCanvasElement | undefined {
     let canvas;
     if (Browser.IS_NODE) {
         console.error('Current environment does not support canvas dom');
@@ -20,7 +49,7 @@ function createCanvas() {
     return canvas;
 }
 
-function createOffscreenCanvas() {
+function createOffscreenCanvas(): OffscreenCanvas | undefined {
     let offscreenCanvas;
     if (Browser.decodeImageInWorker) {
         offscreenCanvas = new OffscreenCanvas(2, 2);
@@ -30,20 +59,20 @@ function createOffscreenCanvas() {
 
 
 
-function isBase64URL(path) {
+function isBase64URL(path: string) {
     return BASE64_REG.test(path);
 }
 
-function isBlobURL(path) {
+function isBlobURL(path: string) {
     return path.indexOf('blob:') === 0;
 }
 
-function strContains(str1, str2) {
+function strContains(str1: string, str2: string) {
     if (isNumber(str1)) {
-        str1 += EMPTY_STRING;
+        (str1 as string) += EMPTY_STRING;
     }
     if (isNumber(str2)) {
-        str2 += EMPTY_STRING;
+        (str2 as string) += EMPTY_STRING;
     }
     if (!str1 || !str2) {
         return false;
@@ -54,7 +83,7 @@ function strContains(str1, str2) {
     return str1.indexOf(str2) > -1;
 }
 
-function handlerURL(path, configs = {}) {
+function handlerURL(path: string, configs: ProxyConfig = {}) {
     for (const local in configs) {
         const obj = configs[local];
         if (!obj || !obj.target) {
@@ -68,7 +97,7 @@ function handlerURL(path, configs = {}) {
     return EMPTY_STRING;
 }
 
-function loadSprite(options = {}) {
+function loadSprite(options: SpriteOptionsType = { imgUrl: '', jsonUrl: '' }) {
     return new Promise((resolve, reject) => {
         const { imgUrl, jsonUrl } = options;
         if (!imgUrl || !jsonUrl) {
@@ -100,6 +129,7 @@ function loadSprite(options = {}) {
                 });
             }
             const offscreenCanvas = createOffscreenCanvas();
+            const sourceName = options.sourceName || "";
             icons.forEach(icon => {
                 const { name, spriteItem } = icon;
                 const { x, y, width, height } = spriteItem;
@@ -114,7 +144,7 @@ function loadSprite(options = {}) {
                     resource = canvas.toDataURL();
                 }
                 icon.resource = resource;
-                ResouceProxy.addResource(name, resource);
+                ResourceProxy.addResource(sourceName + name, resource);
             });
             resolve(icons);
         }
@@ -137,20 +167,40 @@ function loadSprite(options = {}) {
     });
 }
 
-function loadSvgs(svgs) {
+function loadSvgs(svgs: string | Array<SVGSymbolElement> | SVGOptionsType) {
     return new Promise((resolve, reject) => {
-        if (!svgs || svgs.length === 0) {
-            reject(new Error('not find svgs'));
+        let url: string = '', symbols: Array<SVGSymbolElement> = [], fillColor: string = '', strokeColor: string = '', sourceName = '';
+        if (Array.isArray(svgs) || ((svgs as any) instanceof NodeList)) {
+            symbols = svgs as Array<SVGSVGElement>;
+        } else if (isObject(svgs)) {
+            const opts = svgs as SVGOptionsType;
+            url = opts.url;
+            symbols = opts.symbols;
+            fillColor = opts.fill;
+            strokeColor = opts.stroke;
+            sourceName = opts.sourceName || '';
+        } else if (isString(svgs)) {
+            url = svgs;
+        }
+        if (!url && (symbols && symbols.length === 0)) {
+            reject(new Error('not find svgs data'));
             return;
         }
         const result = [];
-
-        const addToCache = (name, body) => {
+        const addToCache = (name: string, body: string) => {
             const paths = parseSVG(body);
             if (paths) {
-                ResouceProxy.addResource(name, paths);
+                paths.forEach(path => {
+                    if (fillColor) {
+                        path.fill = fillColor;
+                    }
+                    if (strokeColor) {
+                        path.stroke = strokeColor;
+                    }
+                });
+                ResourceProxy.addResource(sourceName + name, paths as any);
             }
-            const data={
+            const data: SVGItemType = {
                 name,
                 paths,
                 body: body
@@ -158,8 +208,8 @@ function loadSvgs(svgs) {
             result.push(data);
         };
         //svg json collection
-        if (isString(svgs)) {
-            fetch(svgs).then(res => res.json()).then(json => {
+        if (url && isString(url)) {
+            fetch(url).then(res => res.json()).then(json => {
                 json.forEach(svg => {
                     const { name, body } = svg;
                     addToCache(name, body);
@@ -173,9 +223,9 @@ function loadSvgs(svgs) {
         }
         //support svg symbols
         // https://developer.mozilla.org/en-US/docs/web/svg/element/symbol
-        if (svgs instanceof NodeList) {
-            for (let i = 0, len = svgs.length; i < len; i++) {
-                const symbolNode = svgs[i];
+        if (symbols) {
+            for (let i = 0, len = symbols.length; i < len; i++) {
+                const symbolNode = symbols[i];
                 const name = symbolNode.id;
                 const html = symbolNode.innerHTML;
                 const body = `<xml><svg>${html}</svg></xml>`;
@@ -184,7 +234,9 @@ function loadSvgs(svgs) {
                 }
             }
             resolve(result);
+            return;
         }
+        reject(new Error('not support svgs params type'))
     });
 }
 /**
@@ -193,9 +245,9 @@ function loadSvgs(svgs) {
  * https://www.webpackjs.com/configuration/dev-server/#devserverproxy
  */
 
-// const { ResouceProxy, formatResouceUrl } = maptalks;
+// const { ResourceProxy, formatResouceUrl } = maptalks;
 // function test1() {
-//     ResouceProxy.proxy = {
+//     ResourceProxy.proxy = {
 //         '/geojson/': {
 //             target: 'https://geo.datav.aliyun.com/areas_v3/bound/'
 //         }
@@ -205,7 +257,7 @@ function loadSvgs(svgs) {
 // }
 
 // function test2() {
-//     ResouceProxy.origin = {
+//     ResourceProxy.origin = {
 //         'https://www.maptalks.com/': {
 //             target: 'https://geo.datav.aliyun.com/areas_v3/'
 //         }
@@ -215,7 +267,7 @@ function loadSvgs(svgs) {
 // }
 
 // function test3() {
-//     ResouceProxy.host = 'https://geo.datav.aliyun.com/areas_v3/bound'
+//     ResourceProxy.host = 'https://geo.datav.aliyun.com/areas_v3/bound'
 //     const url = formatResouceUrl('/350000_full.json');
 //     console.log(url);
 // }
@@ -225,10 +277,10 @@ function loadSvgs(svgs) {
 //     console.log(url);
 // }
 
-export const ResouceProxy = {
+export const ResourceProxy = {
 
     host: EMPTY_STRING,
-    resources: {},
+    resources: {} as { [key: string]: any },
     proxy: {
         // '/api/': {
         //     target: 'https://www.maptalks.com/api/'
@@ -236,7 +288,7 @@ export const ResouceProxy = {
         // '/doc/': {
         //     target: 'https://www.maptalks.com/doc/'
         // }
-    },
+    } as ProxyConfig,
     origin: {
         // 'https://www.maptalks.com/api/': {
         //     target: 'https://www.deyihu.com/api/'
@@ -244,7 +296,7 @@ export const ResouceProxy = {
         // 'https://www.maptalks.com/doc/': {
         //     target: 'https://www.deyihu.com/doc/'
         // }
-    },
+    } as ProxyConfig,
 
     fromJSON(json) {
         try {
@@ -252,7 +304,7 @@ export const ResouceProxy = {
                 json = JSON.parse(json);
             }
             if (isObject(json)) {
-                extend(ResouceProxy, json);
+                extend(ResourceProxy, json);
             }
         } catch (error) {
             console.error(error);
@@ -260,23 +312,22 @@ export const ResouceProxy = {
     },
     toJSON() {
         return {
-            host: ResouceProxy.host,
-            proxy: extend({}, ResouceProxy.proxy || {}),
-            origin: extend({}, ResouceProxy.origin || {})
+            host: ResourceProxy.host,
+            proxy: extend({}, ResourceProxy.proxy || {}),
+            origin: extend({}, ResourceProxy.origin || {})
         };
     },
-    getResource(name) {
 
-        return ResouceProxy.resources[name];
-
+    getResource(name: string) {
+        return ResourceProxy.resources[name];
     },
 
     /**
      * remove resource
      * @param {String} name
      */
-    removeResource(name) {
-        delete ResouceProxy.resources[name];
+    removeResource(name: string) {
+        delete ResourceProxy.resources[name];
     },
 
     /**
@@ -284,12 +335,12 @@ export const ResouceProxy = {
      * @param {String} name
      * @param {Object} res
      */
-    addResource(name, res) {
-        if (ResouceProxy.resources[name]) {
+    addResource(name: string, res: string | ImageBitmap) {
+        if (ResourceProxy.resources[name]) {
             console.warn(`${name} resource Already exists,the ${name} Cannot be added,the resource name Cannot repeat `);
             return;
         }
-        ResouceProxy.resources[name] = res;
+        ResourceProxy.resources[name] = res;
     },
 
     /**
@@ -297,8 +348,8 @@ export const ResouceProxy = {
      * @param {String} name
      * @param {Object} res
      */
-    updateResource(name, res) {
-        ResouceProxy.resources[name] = res;
+    updateResource(name: string, res: string | ImageBitmap) {
+        ResourceProxy.resources[name] = res;
     },
 
     /**
@@ -306,15 +357,15 @@ export const ResouceProxy = {
      * @returns {Object} source
      */
     allResource() {
-        return ResouceProxy.resources;
+        return ResourceProxy.resources;
     },
     loadSprite,
     loadSvgs
 };
 
-export function formatResouceUrl(path) {
+export function formatResourceUrl(path: string) {
     if (isNumber(path)) {
-        path += EMPTY_STRING;
+        (path as string) += EMPTY_STRING;
     }
     if (!path) {
         console.error('resouce path is null,path:', path);
@@ -327,9 +378,9 @@ export function formatResouceUrl(path) {
         return path;
     }
     if (path[0] === '$') {
-        return ResouceProxy.getResource(path.substring(1, Infinity)) || '';
+        return ResourceProxy.getResource(path.substring(1, Infinity)) || '';
     }
-    const origin = ResouceProxy.origin || {};
+    const origin = ResourceProxy.origin || {};
     //is isAbsoluteURL
     const isAbsoluteURL = isURL(path);
     if (isAbsoluteURL && isObject(origin)) {
@@ -340,14 +391,14 @@ export function formatResouceUrl(path) {
         return path;
     }
     //relative URL
-    const proxys = ResouceProxy.proxy || {};
+    const proxys = ResourceProxy.proxy || {};
     if (isObject(proxys)) {
         const url = handlerURL(path, proxys);
         if (url) {
             return url;
         }
     }
-    const { host } = ResouceProxy;
+    const { host } = ResourceProxy;
     if (!isAbsoluteURL && host && isString(host)) {
         return `${host}${path}`;
     }

@@ -153,7 +153,7 @@ abstract class Position {
     }
 
     //destructive add
-    _add(x, y) {
+    _add(x, y?: number) {
         if (!isNil(x.x)) {
             this.x += x.x;
             this.y += x.y;
@@ -173,7 +173,7 @@ abstract class Position {
      * @param {Number} [y=undefined] - optional, coordinate to add
      * @returns result
      */
-    add(x: any, y?: number) {
+    add(x, y?: number) {
         let nx, ny;
         if (!isNil(x.x)) {
             nx = this.x + x.x;
@@ -189,7 +189,7 @@ abstract class Position {
     }
 
     //destructive substract
-    _sub(x, y) {
+    _sub(x, y?: number) {
         if (!isNil(x.x)) {
             this.x -= x.x;
             this.y -= x.y;
