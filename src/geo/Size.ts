@@ -8,7 +8,7 @@ type JsonSize = {
 
 type ArraySize = [number, number];
 
-type SizeLike = Size | JsonSize | ArraySize;
+export type SizeLike = Size | JsonSize | ArraySize;
 
 /**
  * 表示一个大小的实现类

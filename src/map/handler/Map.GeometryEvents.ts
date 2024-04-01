@@ -296,10 +296,6 @@ class MapGeometryEventsHandler extends Handler {
                         // if (!geometry.listens('mousemove') && !geometry.listens('mouseover') && !geometry.listens('mouseenter')) {
                         //     return false;
                         // }
-
-                        // 等待Geometry补充类型
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-expect-error
                     } else if (!geometry.listens(eventToFire) && !geometry.listens(oneMoreEvent)) {
                         return false;
                     }
