@@ -1,8 +1,21 @@
-import { Animation } from '../core/Animation';
+import { Animation, Player } from '../core/Animation';
 import Coordinate from '../geo/Coordinate';
 import Point from '../geo/Point';
 import Map from './Map';
 import { isNil, isFunction, hasOwn, extend, clamp } from '../core/util';
+
+
+declare module "./Map" {
+    interface Map {
+        _mapAnimPlayer: Player;
+        isRotating(): boolean;
+        _animateTo(view: MapViewType, options: any, step?: (frame) => void): Player;
+        _stopAnim(player?: Player): void;
+        //Further improvement is needed. Here, only the methods used in the Map are listed. In order to pass the compilation, any errors were used everywhere
+
+    }
+}
+
 
 // function equalView(view1, view2) {
 //     for (const p in view1) {
@@ -103,7 +116,7 @@ Map.include(/** @lends Map.prototype */{
             'repeat': options['repeat']
         }, frame => {
             if (this.isRemoved()) {
-                player.finish();
+                (player as any).finish();
                 return;
             }
             if (player.playState === 'running') {
@@ -142,7 +155,7 @@ Map.include(/** @lends Map.prototype */{
                  */
                 this._fireEvent('animating');
             } else if (player.playState !== 'paused' || player === this._mapAnimPlayer) {
-                if (!player._interupted) {
+                if (!(player as any)._interupted) {
                     if (props['center']) {
                         this._setPrjCenter(projection.project(props['center'][1]));
                     } else if (props['prjCenter']) {
@@ -256,7 +269,7 @@ Map.include(/** @lends Map.prototype */{
         const from = projection.project(this.getCenter());
         const delta = center.sub(from);
 
-        let rho = options.curve;
+        let rho = (options as any).curve;
         // w₀: Initial visible span, measured in pixels at the initial scale.
         const w0 = Math.max(this.width, this.height),
             // w₁: Final visible span, measured in pixels with respect to the initial scale.
@@ -266,7 +279,7 @@ Map.include(/** @lends Map.prototype */{
             u1 = delta.mag();
 
         if ('minZoom' in options) {
-            const animMinZoom = clamp(Math.min(options.minZoom, startZoom, zoom), minZoom, maxZoom);
+            const animMinZoom = clamp(Math.min((options as any).minZoom, startZoom, zoom), minZoom, maxZoom);
             // w<sub>m</sub>: Maximum visible span, measured in pixels with respect to the initial
             // scale.
             const wMax = w0 / zoomScale(animMinZoom, startZoom);
@@ -326,14 +339,14 @@ Map.include(/** @lends Map.prototype */{
             'framer': framer
         }, frame => {
             if (this.isRemoved()) {
-                player.finish();
+                (player as any).finish();
                 return;
             }
             const k = frame.styles.k;
             // s: The distance traveled along the flight path, measured in ρ-screenfuls.
             const s = k * S;
             const scale = 1 / w(s);
-            const props = {};
+            const props = {} as any;
             if (view.center) {
                 const newCenter = k === 1 ? center : from.add(delta.multi(u(s)));
                 props.prjCenter = [center, newCenter];
@@ -367,7 +380,7 @@ Map.include(/** @lends Map.prototype */{
                 }
                 this._fireEvent('animating');
             } else if (player.playState !== 'paused' || player === this._mapAnimPlayer) {
-                if (!player._interupted) {
+                if (!(player as any)._interupted) {
                     if (props['prjCenter']) {
                         this._setPrjCenter(props['prjCenter'][1]);
                     }
@@ -383,7 +396,7 @@ Map.include(/** @lends Map.prototype */{
             if (step) {
                 step(frame);
             }
-        });
+        }, {});
 
         this._startAnim({
             center: view.center,

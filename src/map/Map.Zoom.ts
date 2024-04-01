@@ -2,6 +2,18 @@ import { isNil } from '../core/util';
 import Point from '../geo/Point';
 import Map from './Map';
 
+
+declare module "./Map" {
+    interface Map {
+
+        _zoom(nextZoom: number, origin?: Point);
+        _zoomAnimation(nextZoom: number, origin?: Point, startScale?: number);
+        //Further improvement is needed. Here, only the methods used in the Map are listed. In order to pass the compilation, any errors were used everywhere
+
+    }
+}
+
+
 Map.include(/** @lends Map.prototype */{
 
     _zoom(nextZoom, origin) {
@@ -42,11 +54,11 @@ Map.include(/** @lends Map.prototype */{
         const duration = this.options['zoomAnimationDuration'] * Math.abs(endScale - startScale) / Math.abs(endScale - 1);
         this._frameZoom = this._startZoomVal;
         this._animateTo({
-            'zoom' : nextZoom,
-            'around' : origin
+            'zoom': nextZoom,
+            'around': origin
         }, {
-            'continueOnViewChanged' : true,
-            'duration' : duration
+            'continueOnViewChanged': true,
+            'duration': duration
         });
     },
 
@@ -68,7 +80,7 @@ Map.include(/** @lends Map.prototype */{
           * @property {Number} from                    - zoom level zooming from
           * @property {Number} to                      - zoom level zooming to
           */
-        this._fireEvent('zoomstart', { 'from' : this._startZoomVal, 'to': nextZoom });
+        this._fireEvent('zoomstart', { 'from': this._startZoomVal, 'to': nextZoom });
     },
 
     onZooming(nextZoom, origin, startScale) {
@@ -98,13 +110,13 @@ Map.include(/** @lends Map.prototype */{
             origin = origin.add(originOffset);
         }
         const matrix = {
-            'view' : [scale, 0, 0, scale, (origin.x - offset.x) *  (1 - scale), (origin.y - offset.y) *  (1 - scale)]
+            'view': [scale, 0, 0, scale, (origin.x - offset.x) * (1 - scale), (origin.y - offset.y) * (1 - scale)]
         };
         const dpr = this.getDevicePixelRatio();
         if (dpr !== 1) {
             origin = origin.multi(dpr);
         }
-        matrix['container'] = [scale, 0, 0, scale, origin.x * (1 - scale), origin.y *  (1 - scale)];
+        matrix['container'] = [scale, 0, 0, scale, origin.x * (1 - scale), origin.y * (1 - scale)];
         /**
           * zooming event
           * @event Map#zooming
@@ -114,7 +126,7 @@ Map.include(/** @lends Map.prototype */{
           * @property {Number} from                    - zoom level zooming from
           * @property {Number} to                      - zoom level zooming to
           */
-        this._fireEvent('zooming', { 'from' : this._startZoomVal, 'to': nextZoom, 'origin' : origin, 'matrix' : matrix });
+        this._fireEvent('zooming', { 'from': this._startZoomVal, 'to': nextZoom, 'origin': origin, 'matrix': matrix });
         this._frameZoom = nextZoom;
     },
 
@@ -136,7 +148,7 @@ Map.include(/** @lends Map.prototype */{
           * @property {Number} from                    - zoom level zooming from
           * @property {Number} to                      - zoom level zooming to
           */
-        this._fireEvent('zoomend', { 'from' : startZoomVal, 'to': nextZoom });
+        this._fireEvent('zoomend', { 'from': startZoomVal, 'to': nextZoom });
         if (!this._verifyExtent(this._getPrjCenter())) {
             this._panTo(this._prjMaxExtent.getCenter());
         }
