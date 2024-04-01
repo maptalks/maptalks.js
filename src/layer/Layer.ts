@@ -786,7 +786,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             throw new Error('unsupported layer type:' + layerType);
         }
         return clazz.fromJSON(layerJSON);
-    };
+    }
 }
 
 Layer.mergeOptions(options);
