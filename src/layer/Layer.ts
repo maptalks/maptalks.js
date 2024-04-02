@@ -70,7 +70,7 @@ const options: LayerOptions = {
  * @mixes Renderable
  */
 class Layer extends JSONAble(Eventable(Renderable(Class))) {
-    _canvas: any | undefined
+    _canvas: HTMLCanvasElement;
     _renderer: any | undefined
     _id: string
     _zIndex: number
@@ -80,9 +80,10 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     _collisionIndex: CollisionIndex
     _optionsHook?(conf?: any): void
     _silentConfig: boolean | undefined | any
+    options: LayerOptions;
 
 
-    constructor(id: string | number, options: LayerOptions) {
+    constructor(id: string, options?: LayerOptions) {
         let canvas;
         if (options) {
             canvas = options.canvas;
@@ -146,7 +147,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @return this
      * @fires Layer#idchange
      */
-    setId(id: string | number): Layer {
+    setId(id: string | number): this {
         const old = this._id;
         if (!isNil(id)) {
             id = id + '';
@@ -182,7 +183,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @param map - map added to
      * @return this
      */
-    addTo(map: Map): Layer {
+    addTo(map: Map): this {
         map.addLayer(this);
         return this;
     }
@@ -195,7 +196,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @param zIndex - layer's z-index
      * @return this
      */
-    setZIndex(zIndex: number): Layer {
+    setZIndex(zIndex: number): this {
         this._zIndex = zIndex;
         if (isNil(zIndex)) {
             delete this.options['zIndex'];
@@ -284,7 +285,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @param opacity - layer's opacity
      * @return this
      */
-    setOpacity(op: number): Layer {
+    setOpacity(op: number): this {
         this.config('opacity', op);
         /**
         * setopacity 事件
@@ -348,7 +349,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * Brings the layer to the top of all the layers
      * @returns this
      */
-    bringToFront(): Layer {
+    bringToFront(): this {
         const layers = this._getLayerList();
         if (!layers.length) {
             return this;
@@ -369,7 +370,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * Brings the layer under the bottom of all the layers
      * @returns {Layer} this
      */
-    bringToBack(): Layer {
+    bringToBack(): this {
         const layers = this._getLayerList();
         if (!layers.length) {
             return this;
@@ -390,7 +391,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * Show the layer
      * @returns this
      */
-    show(): Layer {
+    show(): this {
         if (!this.options['visible']) {
             this.options['visible'] = true;
             const renderer = this.getRenderer();
@@ -428,7 +429,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * Hide the layer
      * @returns this
      */
-    hide(): Layer {
+    hide(): this {
         if (this.options['visible']) {
             this.options['visible'] = false;
             const renderer = this.getRenderer();
@@ -496,7 +497,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * Remove itself from the map added to.
      * @returns this
      */
-    remove(): Layer {
+    remove(): this {
         if (this.map) {
             const renderer = this.map.getRenderer();
             this.map.removeLayer(this);
@@ -528,7 +529,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @param {Geometry} mask - mask geometry, can only be a Marker with vector symbol, a Polygon or a MultiPolygon
      * @returns {Layer} this
      */
-    setMask(mask: any) {
+    setMask(mask: any): this {
         if (!((mask.type === 'Point' && mask._isVectorMarker()) || mask.type === 'Polygon' || mask.type === 'MultiPolygon')) {
             throw new Error('Mask for a layer must be a marker with vector marker symbol or a Polygon(MultiPolygon).');
         }
@@ -563,7 +564,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * Remove the mask
      * @returns {Layer} this
      */
-    removeMask() {
+    removeMask(): this {
         delete this._mask;
         delete this.options.mask;
         if (!this.getMap() || this.getMap().isZooming()) {
@@ -836,17 +837,17 @@ export type LayerOptions = {
     minZoom?: number,
     maxZoom?: number,
     visible?: boolean,
-    opacity?: number | string,
+    opacity?: number,
     zIndex?: number
     globalCompositeOperation?: string,
-    renderer?: string,
+    renderer?: 'canvas' | 'gl' | 'dom',
     debugOutline?: string,
     cssFilter?: string,
     forceRenderOnMoving?: boolean,
     forceRenderOnZooming?: boolean,
     forceRenderOnRotating?: boolean,
     collision?: boolean,
-    collisionScope?: string,
+    collisionScope?: 'layer' | 'map',
     hitDetect?: boolean,
     canvas?: HTMLCanvasElement,
     mask?: any,

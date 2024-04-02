@@ -15,6 +15,8 @@ import Eventable from '../core/Eventable';
 import Size from '../geo/Size';
 import Geometry from '../geometry/Geometry';
 import Coordinate from '../geo/Coordinate';
+import type { Map } from './../map/Map';
+import { Point } from '../geo';
 
 /**
  * @property {Object} options
@@ -38,7 +40,7 @@ import Coordinate from '../geo/Coordinate';
  * @memberOf ui.UIComponent
  * @instance
  */
-const options = {
+const options: UIComponentOptionsType = {
     'eventsPropagation': false,
     'eventsToStop': null,
     'dx': 0,
@@ -71,7 +73,19 @@ const options = {
  * @memberOf ui
  * @extends Class
  */
-class UIComponent extends Eventable(Class) {
+abstract class UIComponent extends Eventable(Class) {
+
+    options: UIComponentOptionsType;
+    _owner: Map | Geometry;
+    _coordinate: Coordinate;
+    _showBySymbolChange: boolean;
+    _mapEventsOn: boolean;
+    __uiDOM: HTMLElement;
+    _pos: Point;
+    _autoPanId: NodeJS.Timeout;
+    _domContentRect: { width: number, height: number };
+    _size: Size;
+    _resizeObserver: ResizeObserver;
 
     /**
      *  Some instance methods subclasses needs to implement:  <br>
@@ -90,10 +104,32 @@ class UIComponent extends Eventable(Class) {
      * function onRemove : void  <br>
      * @param  {Object} options configuration options
      */
-    constructor(options) {
+    constructor(options: UIComponentOptionsType) {
         super(options);
         this.proxyOptions();
     }
+
+    onAdd() {
+
+    }
+
+    onRemove() {
+
+    }
+
+    onDomRemove() {
+
+    }
+
+    getEvents(): { [key: string]: () => void } {
+        return {};
+    }
+
+    getOwnerEvents(): { [key: string]: () => void } {
+        return {};
+    }
+
+    abstract buildOn(map?: Map): HTMLElement;
 
     /**
      * Adds the UI Component to a geometry or a map
@@ -125,15 +161,15 @@ class UIComponent extends Eventable(Class) {
      * @return {Map} map instance
      * @override
      */
-    getMap() {
+    getMap(): Map {
         if (!this._owner) {
             return null;
         }
         // is a map
-        if (this._owner.getBaseLayer) {
-            return this._owner;
+        if ((this._owner as Map).getBaseLayer) {
+            return this._owner as Map;
         }
-        return this._owner.getMap();
+        return (this._owner as Geometry).getMap();
     }
 
     _collides() {
@@ -146,7 +182,7 @@ class UIComponent extends Eventable(Class) {
         return this;
     }
 
-    _collidesEffect(show) {
+    _collidesEffect(show: boolean) {
         const dom = this.getDOM();
         if (!dom) {
             return this;
@@ -177,7 +213,7 @@ class UIComponent extends Eventable(Class) {
      * @fires ui.UIComponent#showstart
      * @fires ui.UIComponent#showend
      */
-    show(coordinate) {
+    show(coordinate: Coordinate) {
         const map = this.getMap();
         if (!map) {
             return this;
@@ -209,7 +245,7 @@ class UIComponent extends Eventable(Class) {
         if (!this._mapEventsOn) {
             this._switchMapEvents('on');
         }
-        const dom = this.__uiDOM = this.buildOn(map);
+        const dom = this.__uiDOM = this.buildOn();
         dom['eventsPropagation'] = this.options['eventsPropagation'];
         this._observerDomSize(dom);
         const zIndex = this.options.zIndex;
@@ -233,13 +269,13 @@ class UIComponent extends Eventable(Class) {
         this._measureSize(dom);
 
         if (this._singleton()) {
-            dom._uiComponent = this;
+            (dom as any)._uiComponent = this;
             map[this._uiDomKey()] = dom;
         }
 
         this._setPosition();
 
-        dom.style[TRANSITION] = null;
+        dom.style[TRANSITION as string] = null;
 
         container.appendChild(dom);
 
@@ -252,14 +288,14 @@ class UIComponent extends Eventable(Class) {
 
         if (anim.ok) {
             if (anim.fade) {
-                dom.style.opacity = 0;
+                dom.style.opacity = 0 + '';
             }
             if (anim.scale) {
-                if (this.getTransformOrigin) {
-                    const origin = this.getTransformOrigin();
-                    dom.style[TRANSFORMORIGIN] = origin;
+                if ((this as any).getTransformOrigin) {
+                    const origin = (this as any).getTransformOrigin();
+                    dom.style[TRANSFORMORIGIN as string] = origin;
                 }
-                dom.style[TRANSFORM] = this._toCSSTranslate(this._pos) + ' scale(0)';
+                dom.style[TRANSFORM as string] = this._toCSSTranslate(this._pos) + ' scale(0)';
             }
         }
         //not support zoom filter show dom
@@ -283,10 +319,10 @@ class UIComponent extends Eventable(Class) {
             dom.offsetHeight;
             /* eslint-enable no-unused-expressions */
             if (transition) {
-                dom.style[TRANSITION] = transition;
+                dom.style[TRANSITION as string] = transition;
             }
             if (anim.fade) {
-                dom.style.opacity = 1;
+                dom.style.opacity = 1 + '';
             }
             if (anim.scale) {
                 dom.style[TRANSFORM] = this._toCSSTranslate(this._pos) + ' scale(1)';
@@ -347,7 +383,7 @@ class UIComponent extends Eventable(Class) {
             }, this.options['animationDuration']);
         }
         if (anim.fade) {
-            dom.style.opacity = 0;
+            dom.style.opacity = 0 + '';
         }
         if (anim.scale) {
             dom.style[TRANSFORM] = this._toCSSTranslate(this._pos) + ' scale(0)';
@@ -440,7 +476,7 @@ class UIComponent extends Eventable(Class) {
      * set Dom Node zIndex
      *
      */
-    setZIndex(zIndex) {
+    setZIndex(zIndex: number) {
         if (!isNumber(zIndex)) {
             return this;
         }
@@ -448,14 +484,14 @@ class UIComponent extends Eventable(Class) {
         if (!dom) {
             return this;
         }
-        dom.style.zIndex = zIndex;
+        dom.style.zIndex = zIndex + '';
         if (zIndex !== this.options.zIndex) {
             this.options.zIndex = zIndex;
         }
         return this;
     }
 
-    _roundPoint(point) {
+    _roundPoint(point: Point) {
         if (this.options.roundPoint) {
             point = point._round();
         }
@@ -467,8 +503,8 @@ class UIComponent extends Eventable(Class) {
             return null;
         }
         const p = this._roundPoint(this._getViewPoint());
-        if (this.getOffset) {
-            const o = this._roundPoint(this.getOffset());
+        if ((this as any).getOffset) {
+            const o = this._roundPoint((this as any).getOffset());
             if (o) {
                 p._add(o);
             }
@@ -479,7 +515,9 @@ class UIComponent extends Eventable(Class) {
     _getAnimation() {
         const anim = {
             'fade': false,
-            'scale': false
+            'scale': false,
+            'ok': false,
+            'transition': ''
         };
         const animations = this.options['animation'] ? this.options['animation'].split(',') : [];
         for (let i = 0; i < animations.length; i++) {
@@ -507,10 +545,10 @@ class UIComponent extends Eventable(Class) {
         let altitude = 0;
         //后期有了地形后，拿到的数据会带altitude，这里适配下,以后点击地图拿到的数据应该带海拔的（lng,lat,alt）
         const coordinates = this._coordinate || {};
-        if (isNumber(coordinates.z)) {
-            altitude = coordinates.z;
-        } else if (this._owner && this._owner.getAltitude) {
-            altitude = this._owner.getAltitude() || 0;
+        if (isNumber((coordinates as Coordinate).z)) {
+            altitude = (coordinates as Coordinate).z;
+        } else if (this._owner && (this._owner as Geometry).getAltitude) {
+            altitude = (this._owner as Geometry).getAltitude() as number || 0;
             //altitude is array from linestring ,polygon etc when coordinates carry z value [[x,y,z],[x,y,z],....];
             if (!isNumber(altitude)) {
                 altitude = 0;
@@ -521,7 +559,7 @@ class UIComponent extends Eventable(Class) {
             ._add(this.options['dx'], this.options['dy']);
     }
 
-    _meterToPoint(center, altitude) {
+    _meterToPoint(center: Coordinate, altitude: number) {
         return altitude;
         // const map = this.getMap();
         // return map.altitudeToPoint(altitude, map._getResolution()) * sign(altitude);
@@ -580,12 +618,12 @@ class UIComponent extends Eventable(Class) {
         }
 
         const containerPoint0 = map.viewPointToContainerPoint(point);
-        const offset = this.getOffset();
+        const offset = (this as any).getOffset();
         const containerPoint = containerPoint0.add(offset);
 
         const prjCoord = map._viewPointToPrj(point);
-        const domWidth = parseInt(dom.clientWidth);
-        const domHeight = parseInt(dom.clientHeight);
+        const domWidth = parseInt(dom.clientWidth + '');
+        const domHeight = parseInt(dom.clientHeight + '');
         const margin = 50;
         let left = 0,
             top = 0;
@@ -619,7 +657,7 @@ class UIComponent extends Eventable(Class) {
      * @return {Size} size
      * @private
      */
-    _measureSize(dom) {
+    _measureSize(dom: HTMLElement) {
         const container = this._getUIContainer();
         dom.style.position = 'absolute';
         // dom.style.left = -99999 + 'px';
@@ -663,7 +701,7 @@ class UIComponent extends Eventable(Class) {
                 }
                 removeDomNode(map[key]);
                 //remove map bind events
-                if (uiComponent && !this.hideDom) {
+                if (uiComponent && !(this as any).hideDom) {
                     uiComponent._switchMapEvents('off');
                 }
                 delete map[key];
@@ -705,7 +743,7 @@ class UIComponent extends Eventable(Class) {
         return 'UIComponent';
     }
 
-    _switchMapEvents(to) {
+    _switchMapEvents(to: string) {
         const map = this.getMap();
         if (!map) {
             return;
@@ -724,7 +762,7 @@ class UIComponent extends Eventable(Class) {
         }
     }
 
-    _switchEvents(to) {
+    _switchEvents(to: string) {
         //At the beginning,not bind map events,bind evetns when show
         // this._switchMapEvents(to);
         const ownerEvents = this._getOwnerEvents();
@@ -748,7 +786,7 @@ class UIComponent extends Eventable(Class) {
     }
 
     _getOwnerEvents() {
-        const events = {};
+        const events: { [key: string]: (...args) => void } = {};
         if (this._owner && (this._owner instanceof Geometry)) {
             events.positionchange = this.onGeometryPositionChange;
             events.symbolchange = this._updatePosition;
@@ -820,7 +858,7 @@ class UIComponent extends Eventable(Class) {
         dom.style[TRANSFORM] = this._toCSSTranslate(p) + ' scale(1)';
     }
 
-    _toCSSTranslate(p) {
+    _toCSSTranslate(p: Point) {
         if (!p) {
             return '';
         }
@@ -841,7 +879,7 @@ class UIComponent extends Eventable(Class) {
         }
     }
 
-    _observerDomSize(dom) {
+    _observerDomSize(dom: HTMLElement) {
         if (!dom || !Browser.resizeObserver || this._resizeObserver) {
             return this;
         }
@@ -882,14 +920,14 @@ class UIComponent extends Eventable(Class) {
      * @param {Geometry||ui.UIMarker} owner
      * @return {Boolean}
      */
-    static isSupport(owner) {
+    static isSupport(owner: Geometry | Map) {
         if (owner && isFunction(owner.on) && isFunction(owner.off) && isFunction(owner.getCenter)) {
             return true;
         }
         return false;
     }
 
-    _bindDomEvents(dom, to) {
+    _bindDomEvents(dom: HTMLElement, to: string) {
         if (!dom) {
             return;
         }
@@ -907,7 +945,7 @@ class UIComponent extends Eventable(Class) {
         };
     }
 
-    _configMapPreventWheelScroll(preventWheelScroll) {
+    _configMapPreventWheelScroll(preventWheelScroll: boolean) {
         const map = this.getMap();
         if (!map) {
             return;
@@ -919,12 +957,12 @@ class UIComponent extends Eventable(Class) {
     }
 
     // eslint-disable-next-line no-unused-vars
-    _onDomMouseover(domEvent) {
+    _onDomMouseover() {
         this._configMapPreventWheelScroll(false);
     }
 
     // eslint-disable-next-line no-unused-vars
-    _onDomMouseout(domEvent) {
+    _onDomMouseout() {
         this._configMapPreventWheelScroll(true);
     }
 }
@@ -932,3 +970,25 @@ class UIComponent extends Eventable(Class) {
 UIComponent.mergeOptions(options);
 
 export default UIComponent;
+
+type UIComponentOptionsType = {
+    eventsPropagation?: boolean;
+    eventsToStop?: string;
+    dx?: number;
+    dy?: number;
+    autoPan?: boolean;
+    autoPanDuration?: number;
+    single?: boolean;
+    animation?: string;
+    animationOnHide?: boolean;
+    animationDuration?: number;
+    pitchWithMap?: boolean;
+    rotateWithMap?: boolean;
+    visible?: boolean;
+    roundPoint?: boolean;
+    collision?: boolean;
+    collisionBufferSize?: number;
+    collisionWeight?: number;
+    collisionFadeIn?: boolean;
+    zIndex?: number;
+}
