@@ -1,4 +1,4 @@
-import { isNil, isNumber } from '../core/util';
+import { isNil, isNumber } from '../core/util/common';
 import type Point from './Point';
 import type { PointArray, PointJson } from './Point';
 import type Coordinate from './Coordinate';
