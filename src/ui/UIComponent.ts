@@ -73,7 +73,7 @@ const options: UIComponentOptionsType = {
  * @memberOf ui
  * @extends Class
  */
-class UIComponent extends Eventable(Class) {
+abstract class UIComponent extends Eventable(Class) {
 
     options: UIComponentOptionsType;
     _owner: Map | Geometry;
@@ -129,9 +129,7 @@ class UIComponent extends Eventable(Class) {
         return {};
     }
 
-    buildOn(): HTMLElement {
-        return null;
-    }
+    abstract buildOn(map?: Map): HTMLElement;
 
     /**
      * Adds the UI Component to a geometry or a map

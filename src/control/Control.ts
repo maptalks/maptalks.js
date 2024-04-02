@@ -14,7 +14,13 @@ import Map from '../map/Map';
  * @extends Class
  * @mixes Eventable
  */
-class Control extends Eventable(Class) {
+abstract class Control extends Eventable(Class) {
+
+
+    _map: Map;
+    __ctrlContainer: HTMLElement;
+    _controlDom: HTMLElement;
+    static positions: { [key: string]: PositionType };
 
     /**
      * Methods needs to implement:  <br>
@@ -29,12 +35,22 @@ class Control extends Eventable(Class) {
      *  <br>
      * @param  {Object} [options=null] configuration options
      */
-    constructor(options) {
+    constructor(options: ControlOptionsType) {
         if (options && options['position'] && !isString(options['position'])) {
             options['position'] = extend({}, options['position']);
         }
         super(options);
     }
+
+    onAdd() {
+
+    }
+
+    onRemove() {
+
+    }
+
+    abstract buildOn(map?: Map): HTMLElement;
 
     /**
      * Adds the control to a map.
@@ -42,7 +58,7 @@ class Control extends Eventable(Class) {
      * @returns {control.Control} this
      * @fires control.Control#add
      */
-    addTo(map) {
+    addTo(map: Map) {
         this.remove();
         if (!map.options['control']) {
             return this;
@@ -97,7 +113,7 @@ class Control extends Eventable(Class) {
      * Get the position of the control
      * @return {Object}
      */
-    getPosition() {
+    getPosition(): PositionType {
         return extend({}, this._parse(this.options['position']));
     }
 
@@ -107,7 +123,7 @@ class Control extends Eventable(Class) {
      * @return {control.Control} this
      * @fires control.Control#positionchange
      */
-    setPosition(position) {
+    setPosition(position: ControlPositionType) {
         if (isString(position)) {
             this.options['position'] = position;
         } else {
@@ -121,20 +137,20 @@ class Control extends Eventable(Class) {
      * Get the container point of the control.
      * @return {Point}
      */
-    getContainerPoint() {
+    getContainerPoint(): Point {
         const position = this.getPosition();
 
         const size = this.getMap().getSize();
         let x, y;
         if (!isNil(position['left'])) {
-            x = parseInt(position['left']);
+            x = parseInt(position['left'] + '');
         } else if (!isNil(position['right'])) {
-            x = size['width'] - parseInt(position['right']);
+            x = size['width'] - parseInt(position['right'] + '');
         }
         if (!isNil(position['top'])) {
-            y = parseInt(position['top']);
+            y = parseInt(position['top'] + '');
         } else if (!isNil(position['bottom'])) {
-            y = size['height'] - parseInt(position['bottom']);
+            y = size['height'] - parseInt(position['bottom'] + '');
         }
         return new Point(x, y);
     }
@@ -210,12 +226,12 @@ class Control extends Eventable(Class) {
         return this;
     }
 
-    _parse(position) {
+    _parse(position: ControlPositionType): PositionType {
         let p = position;
         if (isString(position)) {
-            p = Control['positions'][p];
+            p = Control['positions'][p as string];
         }
-        return p;
+        return p as PositionType;
     }
 
     _updatePosition() {
@@ -231,7 +247,7 @@ class Control extends Eventable(Class) {
             if (position.hasOwnProperty(p)) {
                 let v = position[p] || 0;
                 if (isNumber(v)) {
-                    v += 'px';
+                    (v as any) += 'px';
                 }
                 this.__ctrlContainer.style[p] = v;
             }
@@ -270,6 +286,19 @@ Control.positions = {
         'right': 20
     }
 };
+
+export type PositionType = {
+    top?: number | string;
+    bottom?: number | string;
+    left?: number | string;
+    right?: number | string;
+};
+
+export type ControlPositionType = string | PositionType;
+
+export type ControlOptionsType = {
+    postion?: ControlPositionType
+}
 
 Map.mergeOptions({
     'control': true
