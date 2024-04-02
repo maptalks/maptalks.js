@@ -1,13 +1,15 @@
 import Curve from './Curve';
 import Canvas from '../core/Canvas';
-
+type ArcCurveOptionsType = {
+    arcDegree?: number;
+}
 /**
  * @property {Object} options
  * @property {Number} [options.arcDegree=90]           - circle arc's degree.
  * @memberOf ArcCurve
  * @instance
  */
-const options = {
+const options: ArcCurveOptionsType = {
     'arcDegree': 90
 };
 
@@ -33,11 +35,14 @@ const options = {
  *     }
  * ).addTo(layer);
  */
+//@ts-expect-error todo
 class ArcCurve extends Curve {
 
+    _paintArrow?(a, b, c): void;
 
 
-    _toJSON(options) {
+
+    _toJSON(options: any): any {
         return {
             'feature': this.toGeoJSON(options),
             'subType': 'ArcCurve'
@@ -52,7 +57,7 @@ class ArcCurve extends Curve {
         this._paintArrow(ctx, points, lineOpacity);
     }
 
-    static fromJSON(json) {
+    static fromJSON(json: any) {
         const feature = json['feature'];
         const arc = new ArcCurve(feature['geometry']['coordinates'], json['options']);
         arc.setProperties(feature['properties']);

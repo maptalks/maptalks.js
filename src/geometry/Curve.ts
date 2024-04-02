@@ -1,12 +1,18 @@
 import LineString from './LineString';
 import Canvas2d from '../core/Canvas';
+type CurveOptionsType = {
+    enableSimplify?: boolean;
+    enableClip?: boolean;
 
-const options = {
-    'enableSimplify' : false,
-    'enableClip' : false
+}
+const options: CurveOptionsType = {
+    'enableSimplify': false,
+    'enableClip': false
 };
 
 /**
+ * 曲线样式LineString，所有曲线的抽象父类。
+ * @english
  * Curve style LineString, an abstract parent class for all the curves.
  * @category geometry
  * @abstract
@@ -18,7 +24,10 @@ const options = {
  */
 class Curve extends LineString {
 
-    _arc(ctx, points, lineOpacity) {
+    _getArrowShape?(a, b, c, d, e): any;
+
+
+    _arc(ctx: CanvasRenderingContext2D, points: any, lineOpacity: number): void {
         const degree = this.options['arcDegree'] * Math.PI / 180;
         for (let i = 1, l = points.length; i < l; i++) {
             const c = Canvas2d._arcBetween(ctx, points[i - 1], points[i], degree);
@@ -30,29 +39,29 @@ class Curve extends LineString {
         }
     }
 
-    _quadraticCurve(ctx, points) {
+    _quadraticCurve(ctx: CanvasRenderingContext2D, points: any): void {
         if (points.length <= 2) {
             Canvas2d._path(ctx, points);
             return;
         }
-        let i, l;
+        let i: number, l: number;
         for (i = 2, l = points.length; i < l; i += 2) {
             ctx.quadraticCurveTo(points[i - 1].x, points[i - 1].y, points[i].x, points[i].y);
         }
         i -= 1;
         if (i < l) {
-            for (;i < l; i++) {
+            for (; i < l; i++) {
                 ctx.lineTo(points[i].x, points[i].y);
             }
         }
     }
 
-    _bezierCurve(ctx, points) {
+    _bezierCurve(ctx: CanvasRenderingContext2D, points: any): void {
         if (points.length <= 3) {
             Canvas2d._path(ctx, points);
             return;
         }
-        let i, l;
+        let i: number, l: number;
         for (i = 1, l = points.length; i + 2 < l; i += 3) {
             ctx.bezierCurveTo(points[i].x, points[i].y, points[i + 1].x, points[i + 1].y, points[i + 2].x, points[i + 2].y);
         }
@@ -63,9 +72,9 @@ class Curve extends LineString {
         }
     }
 
-    _getCurveArrowPoints(arrows, segments, lineWidth, arrowStyle, tolerance, step) {
+    _getCurveArrowPoints(arrows: any[], segments: [], lineWidth: number, arrowStyle: any, tolerance: any, step: number): void {
         const l = segments.length;
-        let i;
+        let i: number;
         for (i = step; i < l; i += step) {
             const arrow = this._getArrowShape(segments[i - 1], segments[i], lineWidth, arrowStyle, tolerance);
             if (arrow) {

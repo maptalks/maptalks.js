@@ -2,6 +2,8 @@ import Curve from './Curve';
 import Canvas from '../core/Canvas';
 
 /**
+ * 三次贝塞尔曲线
+ * @english
  * Cubic Bezier Curve
  * @category geometry
  * @extends Curve
@@ -21,16 +23,19 @@ import Canvas from '../core/Canvas';
  *     }
  * ).addTo(layer);
  */
+//@ts-expect-error todo
 class CubicBezierCurve extends Curve {
 
-    static fromJSON(json) {
+    _paintArrow?(a: CanvasRenderingContext2D, b: any, c: number): void
+
+    static fromJSON(json: any) {
         const feature = json['feature'];
         const curve = new CubicBezierCurve(feature['geometry']['coordinates'], json['options']);
         curve.setProperties(feature['properties']);
         return curve;
     }
 
-    _toJSON(options) {
+    _toJSON(options: any): any {
         return {
             'feature': this.toGeoJSON(options),
             'subType': 'CubicBezierCurve'
@@ -38,7 +43,7 @@ class CubicBezierCurve extends Curve {
     }
 
     // paint method on canvas
-    _paintOn(ctx, points, lineOpacity) {
+    _paintOn(ctx: CanvasRenderingContext2D, points: any, lineOpacity: number): void {
         ctx.beginPath();
         ctx.moveTo(points[0].x, points[0].y);
         this._bezierCurve(ctx, points);
@@ -46,7 +51,7 @@ class CubicBezierCurve extends Curve {
         this._paintArrow(ctx, points, lineOpacity);
     }
 
-    _getArrowPoints(arrows, segments, lineWidth, arrowStyle, tolerance) {
+    _getArrowPoints(arrows: any[], segments: [], lineWidth: number, arrowStyle: any, tolerance: any) {
         return this._getCurveArrowPoints(arrows, segments, lineWidth, arrowStyle, tolerance, 3);
     }
 }
