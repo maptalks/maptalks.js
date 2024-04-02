@@ -22,6 +22,9 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
     }
 
     symbolize(ctx, resources) {
+        if (!this.isVisible()) {
+            return;
+        }
         const style = this.style;
         if (!this.painter.isHitTesting() && (style['markerWidth'] === 0 || style['markerHeight'] === 0 || style['markerOpacity'] === 0)) {
             return;

@@ -728,6 +728,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (!symbol) {
             return true;
         }
+        if (!this.symbolIsVisible()) {
+            return false;
+        }
         if (Array.isArray(symbol)) {
             if (!symbol.length) {
                 return true;
@@ -741,6 +744,30 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         } else {
             return (isNil(symbol['opacity']) || isObject(symbol['opacity']) || (isNumber(symbol['opacity']) && symbol['opacity'] > 0));
         }
+    }
+
+    symbolIsVisible(): boolean {
+        //function-type
+        let symbols = this._getCompiledSymbol();
+        if (!symbols) {
+            return true;
+        }
+        if (!Array.isArray(symbols)) {
+            symbols = [symbols];
+        }
+
+        for (let i = 0, len = symbols.length; i < len; i++) {
+            const symbol = symbols[i];
+            if (!symbol) {
+                continue;
+            }
+            const isVisible = symbol.visible;
+            if (isVisible !== false && isVisible !== 0) {
+                return true;
+            }
+        }
+        return false;
+
     }
 
     /**
@@ -1410,6 +1437,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     _paint(extent: Extent): void {
+        if (!this.symbolIsVisible()) {
+            return;
+        }
         if (this._painter) {
             if (this._dirtyCoords) {
                 delete this._dirtyCoords;
