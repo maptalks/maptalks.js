@@ -32,7 +32,6 @@ import * as projections from '../geo/projection';
 import OverlayLayer, { addGeometryFitViewOptions } from '../layer/OverlayLayer'
 import GeometryCollection from './GeometryCollection'
 import type { Map } from '../map';
-import GeoJSON from './GeoJSON';
 
 type ProjectionCommon = typeof projections.Common
 const TEMP_POINT0 = new Point(0, 0);
@@ -167,43 +166,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     static fromJSON(json: { [key: string]: any } | Array<{ [key: string]: any }>): Geometry | Array<Geometry> {
-        if (Array.isArray(json)) {
-            let result = [];
-            for (let i = 0, len = json.length; i < len; i++) {
-                const c = Geometry.fromJSON(json[i]);
-                if (Array.isArray(json)) {
-                    result = result.concat(c);
-                } else {
-                    result.push(c);
-                }
-            }
-            return result;
-        }
-
-        if (json && !json['feature']) {
-            return GeoJSON.toGeometry(json);
-        }
-        let geometry;
-        if (json['subType']) {
-            //@ts-expect-error 等待Geometry typing
-            geometry = Geometry.getJSONClass(json['subType']).fromJSON(json);
-            if (!isNil(json['feature']['id'])) {
-                geometry.setId(json['feature']['id']);
-            }
-        } else {
-            //feature可能是GeometryCollection，里面可能包含Circle等
-            geometry = GeoJSON.toGeometry(json['feature']);
-            if (json['options']) {
-                geometry.config(json['options']);
-            }
-        }
-        if (json['symbol']) {
-            geometry.setSymbol(json['symbol']);
-        }
-        if (json['infoWindow']) {
-            geometry.setInfoWindow(json['infoWindow']);
-        }
-        return geometry;
+        return json as Geometry;
     }
 
     /**
