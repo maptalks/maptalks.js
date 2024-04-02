@@ -24,13 +24,13 @@
   "license": "ISC",
   "devDependencies": {
     "@maptalks/gl": "^0.97.4",
-    "@rollup/plugin-commonjs": "^20.0.0",
-    "@rollup/plugin-node-resolve": "^13.0.4",
-    "@rollup/plugin-replace": "4.0.0",
-    "eslint": "^8.46.0",
-    "eslint-plugin-mocha": "^10.1.0",
-    "rollup": "^2.56.2",
-    "rollup-plugin-terser": "^5.3.1"
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-replace": "^5.0.5",
+    "@rollup/plugin-terser": "0.4.4",
+    "eslint": "^8.57.0",
+    "eslint-plugin-mocha": "^10.4.1",
+    "rollup": "^4.13.0"
   },
   "gitHead": "9eeea4807723d460fa7e09969c6556d53f6bed84"
 }

@@ -25,11 +25,11 @@
   "devDependencies": {
     "@maptalks/gl": "^0.97.4",
     "@maptalks/gltf-layer": "^0.97.4",
-    "@rollup/plugin-commonjs": "^20.0.0",
-    "@rollup/plugin-node-resolve": "^13.0.4",
-    "@rollup/plugin-replace": "4.0.0",
-    "eslint": "^8.46.0",
-    "eslint-plugin-mocha": "^10.1.0",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-replace": "^5.0.5",
+    "eslint": "^8.57.0",
+    "eslint-plugin-mocha": "^10.4.1",
     "expect.js": "^0.3.1",
     "karma": "^6.4.1",
     "karma-chrome-launcher": "^3.1.1",
@@ -37,10 +37,9 @@
     "karma-mocha": "^2.0.1",
     "karma-mocha-reporter": "^2.2.5",
     "maptalks": "^1.0.0-rc.28",
-    "mocha": "^9.0.3",
+    "mocha": "^10.3.0",
     "pixelmatch": "^4.0.2",
-    "rollup": "^2.56.2",
-    "rollup-plugin-terser": "^5.3.1"
+    "rollup": "^4.13.0"
   },
   "dependencies": {
     "@turf/along": "^6.5.0",

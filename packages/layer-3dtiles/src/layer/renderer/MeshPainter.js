@@ -107,7 +107,6 @@ export default class MeshPainter {
         this._layer = layer;
         this._canvas = layer.getRenderer().canvas;
         this.pickingFBO = layer.getRenderer().pickingFBO;
-        this._spatialReference = new maptalks.SpatialReference();
         this._regl = regl;
         this._renderer = new reshader.Renderer(regl);
         this._loading = {};

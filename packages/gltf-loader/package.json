@@ -19,10 +19,11 @@
     "dist/gltf-loader.es.js"
   ],
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^20.0.0",
-    "@rollup/plugin-node-resolve": "^13.0.4",
-    "eslint": "^8.46.0",
-    "eslint-plugin-mocha": "^10.1.0",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "0.4.4",
+    "eslint": "^8.57.0",
+    "eslint-plugin-mocha": "^10.4.1",
     "expect.js": "^0.3.1",
     "karma": "^6.4.1",
     "karma-chrome-launcher": "^3.1.1",
@@ -30,9 +31,8 @@
     "karma-mocha": "^2.0.1",
     "karma-mocha-reporter": "^2.2.5",
     "maptalks": "^1.0.0-rc.28",
-    "mocha": "^9.0.3",
-    "rollup": "^2.56.2",
-    "rollup-plugin-terser": "^5.3.1"
+    "mocha": "^10.3.0",
+    "rollup": "^4.13.0"
   },
   "dependencies": {
     "gl-matrix": "^2.6.1"

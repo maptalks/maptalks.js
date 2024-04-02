@@ -1,7 +1,7 @@
 const { nodeResolve } = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
 const replace = require('@rollup/plugin-replace');
-const terser = require('rollup-plugin-terser').terser;
+const terser = require('@rollup/plugin-terser');
 const pkg = require('./package.json');
 
 function glsl() {

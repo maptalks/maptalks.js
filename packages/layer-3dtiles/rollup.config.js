@@ -1,6 +1,6 @@
 const { nodeResolve: resolve } = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
-const terser = require('rollup-plugin-terser').terser;
+const terser = require('@rollup/plugin-terser');
 const replace = require('@rollup/plugin-replace');
 const pkg = require('./package.json');
 
@@ -58,7 +58,7 @@ function transformBackQuote() {
                 .replace(/\\/g, '\\\\')
                 .replace(/`/g, '\\`')
                 .replace(/\$\{/g, '${e}');
-            var transformedCode = 'const e = "${"; const code = `' + code + '`;\n';
+            let transformedCode = 'const e = "${"; const code = `' + code + '`;\n';
             transformedCode += 'export default code';
             return {
                 code: transformedCode,

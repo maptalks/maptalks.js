@@ -27,13 +27,13 @@
   },
   "devDependencies": {
     "@maptalks/rollup-plugin-glsl-minify": "^0.1.7",
-    "@rollup/plugin-commonjs": "^20.0.0",
-    "@rollup/plugin-node-resolve": "^13.0.4",
-    "eslint": "^8.46.0",
-    "eslint-plugin-mocha": "^10.1.0",
-    "mocha": "^9.0.3",
-    "rollup": "^2.56.2",
-    "rollup-plugin-terser": "^5.3.1"
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "0.4.4",
+    "eslint": "^8.57.0",
+    "eslint-plugin-mocha": "^10.4.1",
+    "mocha": "^10.3.0",
+    "rollup": "^4.13.0"
   },
   "gitHead": "9eeea4807723d460fa7e09969c6556d53f6bed84"
 }

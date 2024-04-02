@@ -1,6 +1,6 @@
 const { nodeResolve } = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
-const terser = require('rollup-plugin-terser').terser;
+const terser = require('@rollup/plugin-terser');
 const nodePolyfills = require('rollup-plugin-polyfill-node');
 const replace = require('@rollup/plugin-replace');
 const pkg = require('./package.json');
