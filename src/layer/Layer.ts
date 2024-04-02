@@ -32,7 +32,7 @@ import type { Map } from '../map';
  * @memberOf Layer
  * @instance
  */
-const options:LayerOptions = {
+const options: LayerOptions = {
     'attribution': null,
     'minZoom': null,
     'maxZoom': null,
@@ -70,19 +70,19 @@ const options:LayerOptions = {
  * @mixes Renderable
  */
 class Layer extends JSONAble(Eventable(Renderable(Class))) {
-    _canvas: any|undefined
-    _renderer: any|undefined
+    _canvas: any | undefined
+    _renderer: any | undefined
     _id: string
     _zIndex: number
     map: Map
     _mask: any
     _loaded: boolean
     _collisionIndex: CollisionIndex
-    _optionsHook?(conf?:any): void
-    _silentConfig: boolean|undefined|any
+    _optionsHook?(conf?: any): void
+    _silentConfig: boolean | undefined | any
 
 
-    constructor(id:string|number, options: LayerOptions) {
+    constructor(id: string | number, options: LayerOptions) {
         let canvas;
         if (options) {
             canvas = options.canvas;
@@ -133,7 +133,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * Get the layer id
      * @returns id
      */
-    getId():string {
+    getId(): string {
         return this._id;
     }
 
@@ -146,7 +146,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @return this
      * @fires Layer#idchange
      */
-    setId(id:string|number):Layer {
+    setId(id: string | number): Layer {
         const old = this._id;
         if (!isNil(id)) {
             id = id + '';
@@ -182,7 +182,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @param map - map added to
      * @return this
      */
-    addTo(map:Map):Layer {
+    addTo(map: Map): Layer {
         map.addLayer(this);
         return this;
     }
@@ -195,7 +195,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @param zIndex - layer's z-index
      * @return this
      */
-    setZIndex(zIndex:number):Layer {
+    setZIndex(zIndex: number): Layer {
         this._zIndex = zIndex;
         if (isNil(zIndex)) {
             delete this.options['zIndex'];
@@ -235,7 +235,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * Get the layer's z-index
      * @return
      */
-    getZIndex():number {
+    getZIndex(): number {
         return this._zIndex || 0;
     }
 
@@ -246,7 +246,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * Get Layer's minZoom to display
      * @return
      */
-    getMinZoom():number {
+    getMinZoom(): number {
         const map = this.getMap();
         const minZoom = this.options['minZoom'];
         return map ? Math.max(map.getMinZoom(), minZoom || 0) : minZoom;
@@ -259,7 +259,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * Get Layer's maxZoom to display
      * @return
      */
-    getMaxZoom():number {
+    getMaxZoom(): number {
         const map = this.getMap();
         const maxZoom = this.options['maxZoom'];
         return map ? Math.min(map.getMaxZoom(), isNil(maxZoom) ? Infinity : maxZoom) : maxZoom;
@@ -284,7 +284,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @param opacity - layer's opacity
      * @return this
      */
-    setOpacity(op: number):Layer {
+    setOpacity(op: number): Layer {
         this.config('opacity', op);
         /**
         * setopacity 事件
@@ -298,7 +298,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         * @property {Layer} target    - the layer fires the event
         * @property {Number} opacity        - value of the opacity
         */
-        this.fire('setopacity', { type: 'setopacity',target:this,opacity: op });
+        this.fire('setopacity', { type: 'setopacity', target: this, opacity: op });
         return this;
     }
 
@@ -310,7 +310,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @return
      * @protected
      */
-    isCanvasRender():boolean {
+    isCanvasRender(): boolean {
         const renderer = this._getRenderer();
         return (renderer && (renderer instanceof CanvasRenderer));
     }
@@ -336,7 +336,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * Get projection of layer's map
      * @returns
      */
-    getProjection():any {
+    getProjection(): any {
         const map = this.getMap();
         return map ? map.getProjection() : null;
     }
@@ -348,7 +348,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * Brings the layer to the top of all the layers
      * @returns this
      */
-    bringToFront():Layer {
+    bringToFront(): Layer {
         const layers = this._getLayerList();
         if (!layers.length) {
             return this;
@@ -369,7 +369,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * Brings the layer under the bottom of all the layers
      * @returns {Layer} this
      */
-    bringToBack():Layer {
+    bringToBack(): Layer {
         const layers = this._getLayerList();
         if (!layers.length) {
             return this;
@@ -390,7 +390,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * Show the layer
      * @returns this
      */
-    show():Layer {
+    show(): Layer {
         if (!this.options['visible']) {
             this.options['visible'] = true;
             const renderer = this.getRenderer();
@@ -428,7 +428,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * Hide the layer
      * @returns this
      */
-    hide():Layer {
+    hide(): Layer {
         if (this.options['visible']) {
             this.options['visible'] = false;
             const renderer = this.getRenderer();
@@ -470,7 +470,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * Whether the layer is visible now.
      * @return
      */
-    isVisible():boolean {
+    isVisible(): boolean {
         if (isNumber(this.options['opacity']) && this.options['opacity'] <= 0) {
             return false;
         }
@@ -496,7 +496,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * Remove itself from the map added to.
      * @returns this
      */
-    remove():Layer {
+    remove(): Layer {
         if (this.map) {
             const renderer = this.map.getRenderer();
             this.map.removeLayer(this);
@@ -584,7 +584,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @return true to continue loading, false to cease.
      * @protected
      */
-    onLoad():boolean {
+    onLoad(): boolean {
         return true;
     }
 
@@ -598,7 +598,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * Whether the layer is loaded
      * @return
      */
-    isLoaded():boolean {
+    isLoaded(): boolean {
         return !!this._loaded;
     }
 
@@ -719,8 +719,8 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
          * @property {Any} renderer    - renderer of the layer
          */
         this.fire('renderercreate', {
-            'type':'renderercreate',
-            'target':this,
+            'type': 'renderercreate',
+            'target': this,
             'renderer': this._renderer
         });
     }
@@ -766,13 +766,34 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         }
         return painter.get2DExtent();
     }
+
+    toJSON(options?: any) {
+        return options;
+    }
+
+    /**
+     * Reproduce a Layer from layer's JSON.
+     * @param  {Object} layerJSON - layer's JSON
+     * @return {Layer}
+     */
+    static fromJSON(layerJSON: { [key: string]: any }): Layer | null {
+        if (!layerJSON) {
+            return null;
+        }
+        const layerType = layerJSON['type'];
+        const clazz = Layer.getJSONClass(layerType) as any;
+        if (!clazz || !clazz.fromJSON) {
+            throw new Error('unsupported layer type:' + layerType);
+        }
+        return clazz.fromJSON(layerJSON);
+    }
 }
 
 Layer.mergeOptions(options);
 
 const fire = Layer.prototype.fire;
 
-Layer.prototype.fire = function (eventType:string, param) {
+Layer.prototype.fire = function (eventType: string, param) {
     if (eventType === 'layerload') {
         this._loaded = true;
     }
@@ -815,7 +836,7 @@ export type LayerOptions = {
     minZoom?: number,
     maxZoom?: number,
     visible?: boolean,
-    opacity?: number|string,
+    opacity?: number | string,
     zIndex?: number
     globalCompositeOperation?: string,
     renderer?: string,

@@ -18,6 +18,7 @@ import { convertResourceUrl, getExternalResources } from '../core/util/resource'
 import { replaceVariable, describeText } from '../core/util/strings';
 import { isTextSymbol } from '../core/util/marker';
 import Coordinate from '../geo/Coordinate';
+import { PositionLike } from '../geo/Position';
 import Point from '../geo/Point';
 import Extent from '../geo/Extent';
 import PointExtent from '../geo/PointExtent';
@@ -26,12 +27,18 @@ import CollectionPainter from '../renderer/geometry/CollectionPainter';
 import SpatialReference from '../map/spatial-reference/SpatialReference';
 import { isFunctionDefinition } from '../core/mapbox';
 import { getDefaultBBOX, pointsBBOX } from '../core/util/bbox';
+import VectorLayer from '../layer/VectorLayer';
+import { SizeLike } from '../geo/Size';
+import * as projections from '../geo/projection';
+import { addGeometryFitViewOptions } from '../layer/OverlayLayer'
+import GeometryCollection from './GeometryCollection'
 
+type ProjectionCommon = typeof projections.Common
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_EXTENT = new PointExtent();
 const TEMP_PROPERTIES = {};
 
-function validateExtent(extent) {
+function validateExtent(extent: Extent): boolean {
     if (!extent) {
         return false;
     }
@@ -66,6 +73,10 @@ const options = {
 };
 
 /**
+ * 所有几何图形的基类。
+ * 它定义了所有几何图形类共享的通用方法。
+ * 它是抽象的，不打算被实例化而是被扩展。
+ * @english
  * Base class for all the geometries. <br/>
  * It defines common methods that all the geometry classes share. <br>
  * It is abstract and not intended to be instantiated but extended.
@@ -79,8 +90,59 @@ const options = {
  * @mixes ui.Menuable
  */
 class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
+    public type: string;
+    public _layer: VectorLayer
+    public _angle: number
+    public _pivot: Coordinate
+    public _id: string | number
+    public properties: any
+    public _symbol: any
+    public _symbolUpdated: any
+    public _compiledSymbol: any
+    public _symbolHash: any
+    public _textDesc: any
+    public _eventSymbolProperties: any
+    public _sizeSymbol: any
+    public _internalId: number
+    public _extent: Extent
+    public _fixedExtent: PointExtent
+    public _extent2d: any
+    public _externSymbol: any
+    public _parent: Geometry | GeometryCollection
+    public _silence: boolean
+    public getShell: any
+    public _animPlayer: any
+    public _projCode: any
+    public _painter: CollectionPainter | Painter
+    public _maskPainter: CollectionPainter | Painter
+    public _dirtyCoords: any
+    public _pcenter: Coordinate
+    public _coordinates: Coordinate
+    public _infoWinOptions: any
+    public _minAlt: number
+    public _maxAlt: number
+    startEdit?(T?: any): any
+    getGeometries?(): Geometry[];
+    getCoordinates?(): Coordinate;
+    setCoordinates?(coordinate: PositionLike): Geometry;
+    _computeCenter?(T: any): Coordinate;
+    _computeExtent?(T: any): Extent;
+    onRemove?(): void;
+    endEdit?(): void;
+    isEditing?(): boolean;
+    _unbindMenu?(): void;
+    _unbindInfoWindow?(): void;
+    _computeGeodesicLength?(T: any): number;
+    _computeGeodesicArea?(T: any): number;
+    getRotateOffsetAngle?(): number;
+    _bindInfoWindow?(): void;
+    _bindMenu?(): void;
+    closeMenu?(): void;
+    closeInfoWindow?(): void;
+    _computePrjExtent?(T: null | ProjectionCommon): Extent;
 
-    constructor(options) {
+
+    constructor(options: any) {
         const opts = extend({}, options);
         const symbol = opts['symbol'];
         const properties = opts['properties'];
@@ -103,11 +165,13 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 获取几何图形第一个坐标点
+     * @english
      * Returns the first coordinate of the geometry.
      *
      * @return {Coordinate} First Coordinate
      */
-    getFirstCoordinate() {
+    getFirstCoordinate(): Coordinate {
         if (this.type === 'GeometryCollection') {
             const geometries = this.getGeometries();
             if (!geometries.length) {
@@ -126,11 +190,13 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 获取几何图形最后一个坐标点
+     * @english
      * Returns the last coordinate of the geometry.
      *
      * @return {Coordinate} Last Coordinate
      */
-    getLastCoordinate() {
+    getLastCoordinate(): Coordinate {
         if (this.type === 'GeometryCollection') {
             const geometries = this.getGeometries();
             if (!geometries.length) {
@@ -149,22 +215,26 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 将几何图形添加到指定图层上
+     * @english
      * Adds the geometry to a layer
      * @param {Layer} layer    - layer add to
      * @param {Boolean} [fitview=false] - automatically set the map to a fit center and zoom for the geometry
      * @return {Geometry} this
      * @fires Geometry#add
      */
-    addTo(layer, fitview) {
+    addTo(layer: VectorLayer, fitview?: boolean | addGeometryFitViewOptions): Geometry {
         layer.addGeometry(this, fitview);
         return this;
     }
 
     /**
+     * 获取几何图形所在的图层
+     * @english
      * Get the layer which this geometry added to.
      * @returns {Layer} - layer added to
      */
-    getLayer() {
+    getLayer(): VectorLayer {
         if (!this._layer) {
             return null;
         }
@@ -172,10 +242,12 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 获取几何图形所在的地图对象
+     * @english
      * Get the map which this geometry added to
      * @returns {Map} - map added to
      */
-    getMap() {
+    getMap(): any {
         if (!this._layer) {
             return null;
         }
@@ -183,20 +255,24 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 获取几何图形的id
+     * @english
      * Gets geometry's id. Id is set by setId or constructor options.
      * @returns {String|Number} geometry的id
      */
-    getId() {
+    getId(): string | number {
         return this._id;
     }
 
     /**
+     * 给几何图形设置id
+     * @english
      * Set geometry's id.
      * @param {String} id - new id
      * @returns {Geometry} this
      * @fires Geometry#idchange
      */
-    setId(id) {
+    setId(id: string | number): Geometry {
         const oldId = this.getId();
         this._id = id;
         /**
@@ -218,11 +294,13 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 获取几何图形的属性
+     * @english
      * Get geometry's properties. Defined by GeoJSON as [feature's properties]{@link http://geojson.org/geojson-spec.html#feature-objects}.
      *
      * @returns {Object} properties
      */
-    getProperties() {
+    getProperties(): any {
         if (!this.properties) {
             if (this._getParent()) {
                 return this._getParent().getProperties();
@@ -233,12 +311,13 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 给几何图形设置新的属性
      * Set a new properties to geometry.
      * @param {Object} properties - new properties
      * @returns {Geometry} this
      * @fires Geometry#propertieschange
      */
-    setProperties(properties) {
+    setProperties(properties: any): Geometry {
         const old = this.properties;
         this.properties = isObject(properties) ? extend({}, properties) : properties;
         //such as altitude update
@@ -263,18 +342,22 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 获取几何图形的类型,例如“点”,"线"
+     * @english
      * Get type of the geometry, e.g. "Point", "LineString"
      * @returns {String} type of the geometry
      */
-    getType() {
+    getType(): string {
         return this.type;
     }
 
     /**
+     * 获取几何图形的样式
+     * @english
      * Get symbol of the geometry
      * @returns {Object} geometry's symbol
      */
-    getSymbol() {
+    getSymbol(): any {
         const s = this._symbol;
         if (s) {
             if (!Array.isArray(s)) {
@@ -287,13 +370,15 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 给几何图形设置样式
+     * @english
      * Set a new symbol to style the geometry.
      * @param {Object} symbol - new symbol
      * @see {@tutorial symbol Style a geometry with symbols}
      * @return {Geometry} this
      * @fires Geometry#symbolchange
      */
-    setSymbol(symbol) {
+    setSymbol(symbol: any): Geometry {
         this._symbolUpdated = symbol;
         this._symbol = this._prepareSymbol(symbol);
         this.onSymbolChanged();
@@ -303,10 +388,12 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 获取样式的哈希值
+     * @english
      * Get symbol's hash code
      * @return {String}
      */
-    getSymbolHash() {
+    getSymbolHash(): string {
         if (!this._symbolHash) {
             this._symbolHash = getSymbolHash(this._symbolUpdated);
         }
@@ -314,6 +401,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 更新几何图形当前的样式
+     * @english
      * Update geometry's current symbol.
      *
      * @param  {Object | Array} props - symbol properties to update
@@ -334,7 +423,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      *     markerWidth : 40
      * });
      */
-    updateSymbol(props) {
+    updateSymbol(props: any): Geometry {
         if (!props) {
             return this;
         }
@@ -369,10 +458,12 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 如果几何图形有文本内容，就获取它
+     * @english
      * Get geometry's text content if it has
      * @returns {String}
      */
-    getTextContent() {
+    getTextContent(): any {
         const symbol = this._getInternalSymbol();
         if (Array.isArray(symbol)) {
             const contents = [];
@@ -388,7 +479,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return replaceVariable(symbol && symbol['textName'], this.getProperties());
     }
 
-    getTextDesc() {
+    getTextDesc(): any {
         if (!this._textDesc) {
             const textContent = this.getTextContent();
             // if textName='',this is error
@@ -409,20 +500,24 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 获取几何图形中心点
+     * @english
      * Get the geographical center of the geometry.
      *
      * @returns {Coordinate}
      */
-    getCenter() {
+    getCenter(): Coordinate {
         return this._computeCenter(this._getMeasurer());
     }
 
     /**
+     * 获取几何图形的包围盒范围
+     * @english
      * Get the geometry's geographical extent
      *
      * @returns {Extent} geometry's extent
      */
-    getExtent() {
+    getExtent(): Extent {
         const prjExt = this._getPrjExtent();
         const projection = this._getProjection();
         if (prjExt && projection) {
@@ -435,11 +530,13 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 获取几何图形的屏幕像素范围
+     * @english
      * Get geometry's screen extent in pixel
      *
      * @returns {PointExtent}
      */
-    getContainerExtent(out) {
+    getContainerExtent(out?: PointExtent): PointExtent {
         const extent2d = this.get2DExtent();
         if (!extent2d || !extent2d.isValid()) {
             return null;
@@ -472,7 +569,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return extent;
     }
 
-    _getFixedExtent() {
+    _getFixedExtent(): PointExtent {
         // only for LineString and Polygon, Marker's will be overrided
         if (!this._fixedExtent) {
             this._fixedExtent = new PointExtent();
@@ -487,7 +584,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return this._fixedExtent;
     }
 
-    get2DExtent() {
+    get2DExtent(): PointExtent {
         const map = this.getMap();
         if (!map) {
             return null;
@@ -511,16 +608,20 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 获取几何体的像素大小，不同缩放级别的像素大小可能会有所不同。
+     * @english
      * Get pixel size of the geometry, which may vary in different zoom levels.
      *
      * @returns {Size}
      */
-    getSize() {
+    getSize(): SizeLike {
         const extent = this.getContainerExtent();
         return extent ? extent.getSize() : null;
     }
 
     /**
+     * 几何体是否包含输入容器点
+     * @english
      * Whehter the geometry contains the input container point.
      *
      * @param  {Point|Coordinate} point - input container point or coordinate
@@ -531,7 +632,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      *     .addTo(layer);
      * var contains = circle.containsPoint(new maptalks.Point(400, 300));
      */
-    containsPoint(containerPoint, t) {
+    containsPoint(containerPoint: any, t: any): any {
         if (!this.getMap()) {
             throw new Error('The geometry is required to be added on a map to perform "containsPoint".');
         }
@@ -542,7 +643,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         // return this._containsPoint(this.getMap()._containerPointToPoint(new Point(containerPoint)), t);
     }
 
-    _containsPoint(containerPoint, t) {
+    _containsPoint(containerPoint: Point, t: any): any {
         const painter = this._getPainter();
         if (!painter) {
             return false;
@@ -555,12 +656,14 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 显示几何图形
+     * @english
      * Show the geometry.
      *
      * @return {Geometry} this
      * @fires Geometry#show
      */
-    show() {
+    show(): Geometry {
         this.options['visible'] = true;
         if (this.getMap()) {
             const painter = this._getPainter();
@@ -581,12 +684,14 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 隐藏几何图形
+     * @english
      * Hide the geometry
      *
      * @return {Geometry} this
      * @fires Geometry#hide
      */
-    hide() {
+    hide(): Geometry {
         this.options['visible'] = false;
         if (this.getMap()) {
             this.onHide();
@@ -608,11 +713,13 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 几何图形是否可见
+     * @english
      * Whether the geometry is visible
      *
      * @returns {Boolean}
      */
-    isVisible() {
+    isVisible(): boolean {
         if (!this.options['visible']) {
             return false;
         }
@@ -636,23 +743,29 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 获取几何图形所在层级，默认是0
+     * @english
      * Get zIndex of the geometry, default is 0
      * @return {Number} zIndex
      */
-    getZIndex() {
+    getZIndex(): number {
         return this.options['zIndex'] || 0;
     }
 
     /**
+     * 给几何图形设置新的层级并触发zindexchange事件（将导致层对几何体进行排序并进行渲染）
+     * @english
      * Set a new zIndex to Geometry and fire zindexchange event (will cause layer to sort geometries and render)
      * @param {Number} zIndex - new zIndex
      * @return {Geometry} this
      * @fires Geometry#zindexchange
      */
-    setZIndex(zIndex) {
+    setZIndex(zIndex: number): Geometry {
         const old = this.options['zIndex'];
         this.options['zIndex'] = zIndex;
         /**
+         * 层级改变事件，当几何图形层级发生改变将会触发
+         * @english
          * zindexchange event, fired when geometry's zIndex is changed.
          *
          * @event Geometry#zindexchange
@@ -671,23 +784,29 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 仅将新的zIndex设置为Geometry，而不触发zindexchange事件
+     * 当需要更新许多几何图形的zIndex时，可以用来提高性能
+     * 当更新了N个几何体时，可以将setZIndexSilently与（N-1）个几何体一起使用，并将setZIendex与要排序和渲染的层的最后一个几何体一同使用。
+     * @english
      * Only set a new zIndex to Geometry without firing zindexchange event. <br>
      * Can be useful to improve perf when a lot of geometries' zIndex need to be updated. <br>
      * When updated N geometries, You can use setZIndexSilently with (N-1) geometries and use setZIndex with the last geometry for layer to sort and render.
      * @param {Number} zIndex - new zIndex
      * @return {Geometry} this
      */
-    setZIndexSilently(zIndex) {
+    setZIndexSilently(zIndex: number): Geometry {
         this.options['zIndex'] = zIndex;
         return this;
     }
 
     /**
+     * 将几何图形至于顶层
+     * @english
      * Bring the geometry on the top
      * @return {Geometry} this
      * @fires Geometry#zindexchange
      */
-    bringToFront() {
+    bringToFront(): Geometry {
         const layer = this.getLayer();
         if (!layer || !layer.getGeoMaxZIndex) {
             return this;
@@ -698,11 +817,13 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 将几何图形置于底层
+     * @english
      * Bring the geometry to the back
      * @return {Geometry} this
      * @fires Geometry#zindexchange
      */
-    bringToBack() {
+    bringToBack(): Geometry {
         const layer = this.getLayer();
         if (!layer || !layer.getGeoMinZIndex) {
             return this;
@@ -713,6 +834,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 按给定偏移平移或移动几何体
+     * @english
      * Translate or move the geometry by the given offset.
      *
      * @param  {Coordinate} offset - translate offset
@@ -729,7 +852,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @fires Geometry#positionchange
      * @fires Geometry#shapechange
      */
-    translate(x, y) {
+    translate(x: any, y?: any): any {
         if (isNil(x)) {
             return this;
         }
@@ -755,6 +878,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 闪烁几何图形，按一定的内部显示和隐藏计数次数。
+     * @english
      * Flash the geometry, show and hide by certain internal for times of count.
      *
      * @param {Number} [interval=100]     - interval of flash, in millisecond (ms)
@@ -763,16 +888,19 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @param {*} [context=null]          - callback context
      * @return {Geometry} this
      */
-    flash(interval, count, cb, context) {
+    flash(interval: number, count: number, cb: any, context: any): Geometry {
         return flash.call(this, interval, count, cb, context);
     }
 
     /**
+     * 返回不包含事件侦听器的几何体的副本。
+     * @english
      * Returns a copy of the geometry without the event listeners.
      * @returns {Geometry} copy
      */
     copy() {
         const json = this.toJSON();
+        // @ts-expect-error todo Geometry
         const ret = Geometry.fromJSON(json);
         //restore visibility
         ret.options['visible'] = true;
@@ -781,6 +909,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
 
     /**
+     * 将其自身从图层中移除（如果有的话）。
+     * @english
      * remove itself from the layer if any.
      * @returns {Geometry} this
      * @fires Geometry#removestart
@@ -824,6 +954,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 将几何对象导出成geojson对象
+     * @english
      * Exports [geometry]{@link http://geojson.org/geojson-spec.html#feature-objects} out of a GeoJSON feature.
      * @return {Object} GeoJSON Geometry
      */
@@ -833,6 +965,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 导出geojson对象中的一个feature
+     * @english
      * Exports a GeoJSON feature.
      * @param {Object} [opts=null]              - export options
      * @param {Boolean} [opts.geometry=true]    - whether export geometry
@@ -864,6 +998,11 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 从几何体中导出一个配置文件json。
+     * 除了导出特性对象，概要文件json还包含符号、构造选项和信息窗口信息。
+     * 配置文件json可以存储在其他地方，稍后用于重现几何图形
+     * 由于函数的序列化问题，概要文件json中不包括事件侦听器和上下文菜单
+     * @english
      * Export a profile json out of the geometry. <br>
      * Besides exporting the feature object, a profile json also contains symbol, construct options and infowindow info.<br>
      * The profile json can be stored somewhere else and be used to reproduce the geometry later.<br>
@@ -904,7 +1043,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @param {Boolean} [opts.infoWindow=true]  - whether export infowindow
      * @return {Object} profile json object
      */
-    toJSON(options) {
+    toJSON(options?: any) {
         //一个Graphic的profile
         /*
             //因为响应函数无法被序列化, 所以menu, 事件listener等无法被包含在graphic中
@@ -919,28 +1058,34 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 获取几何图形的地理长度
+     * @english
      * Get the geographic length of the geometry.
      * @returns {Number} geographic length, unit is meter
      */
-    getLength() {
+    getLength(): number {
         return this._computeGeodesicLength(this._getMeasurer());
     }
 
     /**
+     * 获取几何图形的面积
+     * @english
      * Get the geographic area of the geometry.
      * @returns {Number} geographic area, unit is sq.meter
      */
-    getArea() {
+    getArea(): number {
         return this._computeGeodesicArea(this._getMeasurer());
     }
 
     /**
+     * 按给定角度围绕轴心点旋转几何体
+     * @english
      * Rotate the geometry of given angle around a pivot point
      * @param {Number} angle - angle to rotate in degree
      * @param {Coordinate} [pivot=null]  - optional, will be the geometry's center by default
      * @returns {Geometry} this
      */
-    rotate(angle, pivot) {
+    rotate(angle: number, pivot: Coordinate): Geometry {
         if (!isNumber(angle)) {
             console.error(`angle:${angle} is not number`);
             return this;
@@ -977,7 +1122,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return this;
     }
 
-    _rotatePrjCoordinates(coordinates) {
+    _rotatePrjCoordinates(coordinates: Coordinate): any {
         if (!coordinates || this._angle === 0 || !this._pivot) {
             return coordinates;
         }
@@ -1032,21 +1177,23 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return rotatePrjCoordinates[0];
     }
 
-    isRotated() {
+    isRotated(): any {
         return isNumber(this._angle) && this._pivot;
     }
 
     /**
+     * 获取连线的连接点
+     * @english
      * Get the connect points for [ConnectorLine]{@link ConnectorLine}
      * @return {Coordinate[]} connect points
      * @private
      */
-    _getConnectPoints() {
+    _getConnectPoints(): Coordinate[] {
         return [this.getCenter()];
     }
 
     //options initializing
-    _initOptions(options) {
+    _initOptions(options: any): void {
         const opts = extend({}, options);
         const symbol = opts['symbol'];
         const properties = opts['properties'];
@@ -1067,7 +1214,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     //bind the geometry to a layer
-    _bindLayer(layer) {
+    _bindLayer(layer: VectorLayer): void {
         if (layer === this.getLayer()) {
             return;
         }
@@ -1083,7 +1230,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         // this.callInitHooks();
     }
 
-    _prepareSymbol(symbol) {
+    _prepareSymbol(symbol: any): any {
         if (Array.isArray(symbol)) {
             const cookedSymbols = [];
             for (let i = 0; i < symbol.length; i++) {
@@ -1097,7 +1244,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return null;
     }
 
-    _checkAndCopySymbol(symbol) {
+    _checkAndCopySymbol(symbol: any): any {
         const s = {};
         for (const i in symbol) {
             if (NUMERICAL_PROPERTIES[i] && isString(symbol[i])) {
@@ -1109,16 +1256,18 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return s;
     }
 
-    _getSymbol() {
+    _getSymbol(): any {
         return this._symbol;
     }
 
     /**
+     * 将外部符号设置为几何体，例如VectorLayer的setStyle中的样式
+     * @english
      * Sets a external symbol to the geometry, e.g. style from VectorLayer's setStyle
      * @private
      * @param {Object} symbol - external symbol
      */
-    _setExternSymbol(symbol) {
+    _setExternSymbol(symbol: any): Geometry {
         this._eventSymbolProperties = symbol;
         if (!this._symbol) {
             delete this._textDesc;
@@ -1128,7 +1277,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return this;
     }
 
-    _getInternalSymbol() {
+    _getInternalSymbol(): any {
         if (this._symbol) {
             return this._symbol;
         } else if (this._externSymbol) {
@@ -1139,7 +1288,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return null;
     }
 
-    _getPrjExtent() {
+    _getPrjExtent(): Extent {
         const p = this._getProjection();
         this._verifyProjection();
         if (!this._extent && p) {
@@ -1148,7 +1297,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return this._extent;
     }
 
-    _unbind() {
+    _unbind(): void {
         const layer = this.getLayer();
         if (!layer) {
             return;
@@ -1178,23 +1327,23 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         delete this._extent;
     }
 
-    _getInternalId() {
+    _getInternalId(): number {
         return this._internalId;
     }
 
     //只能被图层调用
-    _setInternalId(id) {
+    _setInternalId(id: number): void {
         this._internalId = id;
     }
 
-    _getMeasurer() {
+    _getMeasurer(): any {
         if (this._getProjection()) {
             return this._getProjection();
         }
         return SpatialReference.getProjectionInstance(this.options['defaultProjection']);
     }
 
-    _getProjection() {
+    _getProjection(): null | ProjectionCommon {
         const map = this.getMap();
         if (map) {
             return map.getProjection();
@@ -1202,7 +1351,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return null;
     }
 
-    _verifyProjection() {
+    _verifyProjection(): void {
         const projection = this._getProjection();
         if (this._projCode && projection && this._projCode !== projection.code) {
             this._clearProjection();
@@ -1211,12 +1360,12 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     //获取geometry样式中依赖的外部图片资源
-    _getExternalResources() {
+    _getExternalResources(): string[] {
         const symbol = this._getInternalSymbol();
         return getExternalResources(symbol);
     }
 
-    _getPainter() {
+    _getPainter(): any {
         //for performance
         if (this._painter) {
             return this._painter;
@@ -1224,13 +1373,17 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         const layer = this.getLayer();
         if (!this._painter && layer) {
             if (GEOMETRY_COLLECTION_TYPES.indexOf(this.type) !== -1) {
+                //@ts-expect-error todo 待vectorlayer ts完善
                 if (layer.constructor.getCollectionPainterClass) {
+                    //@ts-expect-error todo 待vectorlayer ts完善
                     const clazz = layer.constructor.getCollectionPainterClass();
                     if (clazz) {
                         this._painter = new clazz(this);
                     }
                 }
+                //@ts-expect-error todo 待vectorlayer ts完善
             } else if (layer.constructor.getPainterClass) {
+                //@ts-expect-error todo 待vectorlayer ts完善
                 const clazz = layer.constructor.getPainterClass();
                 if (clazz) {
                     this._painter = new clazz(this);
@@ -1240,7 +1393,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return this._painter;
     }
 
-    _getMaskPainter() {
+    _getMaskPainter(): CollectionPainter | Painter {
         if (this._maskPainter) {
             return this._maskPainter;
         }
@@ -1248,14 +1401,14 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return this._maskPainter;
     }
 
-    _removePainter() {
+    _removePainter(): void {
         if (this._painter) {
             this._painter.remove();
         }
         delete this._painter;
     }
 
-    _paint(extent) {
+    _paint(extent: Extent): void {
         if (this._painter) {
             if (this._dirtyCoords) {
                 delete this._dirtyCoords;
@@ -1269,29 +1422,29 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
     }
 
-    _clearCache() {
+    _clearCache(): void {
         delete this._extent;
         delete this._extent2d;
         this._clearAltitudeCache();
     }
 
-    _clearProjection() {
+    _clearProjection(): void {
         delete this._extent;
         delete this._extent2d;
     }
 
-    _repaint() {
+    _repaint(): void {
         if (this._painter) {
             this._painter.repaint();
         }
     }
 
-    onHide() {
+    onHide(): void {
         this.closeMenu();
         this.closeInfoWindow();
     }
 
-    onShapeChanged() {
+    onShapeChanged(): void {
         this._clearCache();
         this._repaint();
         /**
@@ -1305,7 +1458,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         this._fireEvent('shapechange');
     }
 
-    onPositionChanged() {
+    onPositionChanged(): void {
         this._clearCache();
         this._repaint();
         /**
@@ -1319,11 +1472,11 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         this._fireEvent('positionchange');
     }
 
-    onSymbolChanged() {
+    onSymbolChanged(): void {
         if (this._painter) {
             this._painter.refreshSymbol();
         }
-        const e = {};
+        const e: any = {};
         if (this._eventSymbolProperties) {
             e.properties = JSON.parse(JSON.stringify(this._eventSymbolProperties));
             delete this._eventSymbolProperties;
@@ -1344,7 +1497,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         this._fireEvent('symbolchange', e);
     }
 
-    _genSizeSymbol() {
+    _genSizeSymbol(): void {
         const symbol = this._getInternalSymbol();
         if (!symbol) {
             delete this._sizeSymbol;
@@ -1365,7 +1518,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
     }
 
-    _getSizeSymbol(symbol) {
+    _getSizeSymbol(symbol: any): any {
         const symbolSize = loadGeoSymbol({
             lineWidth: symbol['lineWidth'],
             lineDx: symbol['lineDx'],
@@ -1377,7 +1530,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return symbolSize;
     }
 
-    _getCompiledSymbol() {
+    _getCompiledSymbol(): any {
         if (this._compiledSymbol) {
             return this._compiledSymbol;
         }
@@ -1385,7 +1538,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return this._compiledSymbol;
     }
 
-    onConfig(conf) {
+    onConfig(conf: any): void {
         let properties;
         if (conf['properties']) {
             properties = conf['properties'];
@@ -1410,21 +1563,23 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * 将父对象设置为几何体，通常是“多重多边形”、“几何集合”等
+     * @english
      * Set a parent to the geometry, which is usually a MultiPolygon, GeometryCollection, etc
      * @param {GeometryCollection} geometry - parent geometry
      * @private
      */
-    _setParent(geometry) {
+    _setParent(geometry?: Geometry | GeometryCollection): void {
         if (geometry) {
             this._parent = geometry;
         }
     }
 
-    _getParent() {
+    _getParent(): any {
         return this._parent;
     }
 
-    _fireEvent(eventName, param) {
+    _fireEvent(eventName: string, param?: any) {
         if (this._silence) {
             return;
         }
@@ -1439,13 +1594,13 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         this.fire(eventName, param);
     }
 
-    _toJSON(options) {
+    _toJSON(options?: any): any {
         return {
             'feature': this.toGeoJSON(options)
         };
     }
 
-    _exportGraphicOptions(options) {
+    _exportGraphicOptions(options: any): any {
         const json = {};
         if (isNil(options['options']) || options['options']) {
             json['options'] = this.config();
@@ -1461,7 +1616,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return json;
     }
 
-    _exportGeoJSONGeometry() {
+    _exportGeoJSONGeometry(): any {
         const points = this.getCoordinates();
         const coordinates = Coordinate.toNumberArrays(points);
         return {
@@ -1470,7 +1625,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         };
     }
 
-    _exportProperties() {
+    _exportProperties(): any {
         let properties = null;
         const geoProperties = this.getProperties();
         if (!isNil(geoProperties)) {
@@ -1483,7 +1638,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return properties;
     }
 
-    _hitTestTolerance() {
+    _hitTestTolerance(): number {
         return 0;
     }
 
@@ -1491,7 +1646,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     //------------- altitude + layer.altitude -------------
     //this is for vectorlayer
     //内部方法 for render,返回的值受layer和layer.options.enableAltitude,layer.options.altitude影响
-    _getAltitude() {
+    _getAltitude(): number | number[] {
         const layer = this.getLayer();
         if (!layer) {
             return 0;
@@ -1524,7 +1679,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     //this for user
-    getAltitude() {
+    getAltitude(): number | number[] | null {
         const layer = this.getLayer();
         const altitudeProperty = getAltitudeProperty(layer);
         const properties = this.properties || TEMP_PROPERTIES;
@@ -1539,7 +1694,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return 0;
     }
 
-    hasAltitude() {
+    hasAltitude(): boolean {
         const altitude = this._getAltitude();
         if (!altitude) {
             return false;
@@ -1547,7 +1702,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return true;
     }
 
-    setAltitude(alt) {
+    setAltitude(alt: any): Geometry {
         if (!isNumber(alt)) {
             return this;
         }
@@ -1584,7 +1739,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return this;
     }
 
-    _genMinMaxAlt() {
+    _genMinMaxAlt(): void {
         const altitude = this._getAltitude();
         if (Array.isArray(altitude)) {
             this._minAlt = Number.MAX_VALUE;
@@ -1603,7 +1758,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
     }
 
-    getMinAltitude() {
+    getMinAltitude(): number {
         if (this._minAlt === undefined) {
             this._genMinMaxAlt();
         }
@@ -1613,7 +1768,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return this._minAlt;
     }
 
-    getMaxAltitude() {
+    getMaxAltitude(): number {
         if (this._maxAlt === undefined) {
             this._genMinMaxAlt();
         }
@@ -1624,7 +1779,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     //clear alt cache
-    _clearAltitudeCache() {
+    _clearAltitudeCache(): Geometry {
         this._minAlt = undefined;
         this._maxAlt = undefined;
         return this;
@@ -1634,7 +1789,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
 Geometry.mergeOptions(options);
 
-function getAltitudeProperty(layer) {
+function getAltitudeProperty(layer: VectorLayer): string {
     let altitudeProperty = 'altitude';
     if (layer) {
         const layerOpts = layer.options;
@@ -1643,7 +1798,7 @@ function getAltitudeProperty(layer) {
     return altitudeProperty;
 }
 
-function getGeometryCoordinatesAlts(geometry, layerAlt, enableAltitude) {
+function getGeometryCoordinatesAlts(geometry: Geometry, layerAlt: number, enableAltitude: boolean): number | number[] | null {
     const coordinates = geometry.getCoordinates ? geometry.getCoordinates() : null;
     if (coordinates) {
         const tempAlts = [];
@@ -1659,7 +1814,7 @@ function getGeometryCoordinatesAlts(geometry, layerAlt, enableAltitude) {
     return null;
 }
 
-function setCoordinatesAlt(coordinates, alt) {
+function setCoordinatesAlt(coordinates: Coordinate, alt: number): void {
     if (Array.isArray(coordinates)) {
         for (let i = 0, len = coordinates.length; i < len; i++) {
             setCoordinatesAlt(coordinates[i], alt);
@@ -1669,7 +1824,7 @@ function setCoordinatesAlt(coordinates, alt) {
     }
 }
 
-function coordinatesHasAlt(coordinates, tempAlts) {
+function coordinatesHasAlt(coordinates: Coordinate, tempAlts: number[]) {
     if (tempAlts.length) {
         return;
     }
@@ -1682,7 +1837,7 @@ function coordinatesHasAlt(coordinates, tempAlts) {
     }
 }
 
-function getCoordinatesAlts(coordinates, layerAlt, enableAltitude) {
+function getCoordinatesAlts(coordinates: Coordinate, layerAlt: number, enableAltitude: boolean): number | number[] {
     if (Array.isArray(coordinates)) {
         const alts = [];
         for (let i = 0, len = coordinates.length; i < len; i++) {
@@ -1699,7 +1854,7 @@ function getCoordinatesAlts(coordinates, layerAlt, enableAltitude) {
     }
 }
 
-function getSegmentAngle(cx, cy, x, y) {
+function getSegmentAngle(cx: number, cy: number, x: number, y: number): number {
     if (cx === x) {
         if (y > cy) {
             return -90;
