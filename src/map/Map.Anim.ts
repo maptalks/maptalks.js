@@ -9,10 +9,11 @@ declare module "./Map" {
     interface Map {
         _mapAnimPlayer: Player;
         isRotating(): boolean;
-        _animateTo(view: MapViewType, options: any, step?: (frame) => void): Player;
+        _animateTo(view: MapViewType, options?: MapAnimationOptionsType, step?: (frame) => void): Player;
         _stopAnim(player?: Player): void;
-        //Further improvement is needed. Here, only the methods used in the Map are listed. In order to pass the compilation, any errors were used everywhere
-
+        animateTo(view: MapViewType, options?: MapAnimationOptionsType, step?: (frame) => void): Player;
+        flyTo(view: MapViewType, options?: MapAnimationOptionsType, step?: (frame) => void): this;
+        isAnimating(): boolean;
     }
 }
 

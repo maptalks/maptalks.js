@@ -9,7 +9,9 @@ import {
     sign,
     UID,
     b64toBlob,
-    isNumber
+    isNumber,
+    isObject,
+    isArrayHasData
 } from '../core/util';
 import Class from '../core/Class';
 import Browser from '../core/Browser';
@@ -221,6 +223,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     renderer: any;
     options: MapOptionsType;
     static VERSION: number;
+    JSON_VERSION: '1.0';
 
 
     /**
@@ -1182,6 +1185,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
                 this._fireEvent('baselayerchangeend');
             }
         }
+
         this._baseLayer.on('layerload', onbaseLayerload, this);
         if (this._loaded) {
             this._baseLayer.load();
@@ -2371,6 +2375,121 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
         return this;
     }
+
+    /**
+     * Export the map's json, a snapshot of the map in JSON format.<br>
+     * It can be used to reproduce the instance by [fromJSON]{@link Map#fromJSON} method
+     * @param  {Object} [options=null] - export options
+     * @param  {Boolean|Object} [options.baseLayer=null] - whether to export base layer's JSON, if yes, it will be used as layer's toJSON options.
+     * @param  {Boolean|Extent} [options.clipExtent=null] - if set with an extent instance, only the geometries intersectes with the extent will be exported.
+     *                                                             If set to true, map's current extent will be used.
+     * @param  {Boolean|Object|Object[]} [options.layers=null] - whether to export other layers' JSON, if yes, it will be used as layer's toJSON options.
+     *                                                        It can also be an array of layer export options with a "id" attribute to filter the layers to export.
+     * @return {Object} layer's JSON
+     */
+    toJSON(options?: MapOptionsType): { [key: string]: any } {
+        if (!options) {
+            options = {};
+        }
+        const json = {
+            'jsonVersion': this['JSON_VERSION'],
+            'version': this.VERSION,
+            'extent': this.getExtent().toJSON()
+        };
+        json['options'] = this.config();
+        json['options']['center'] = this.getCenter();
+        json['options']['zoom'] = this.getZoom();
+        json['options']['bearing'] = this.getBearing();
+        json['options']['pitch'] = this.getPitch();
+
+        const baseLayer = this.getBaseLayer();
+        if ((isNil(options['baseLayer']) || options['baseLayer']) && baseLayer) {
+            json['baseLayer'] = baseLayer.toJSON(options['baseLayer']);
+        }
+        const extraLayerOptions = {};
+        if (options['clipExtent']) {
+            //if clipExtent is set, only geometries intersecting with extent will be exported.
+            //clipExtent's value can be an extent or true (map's current extent)
+            if (options['clipExtent'] === true) {
+                extraLayerOptions['clipExtent'] = this.getExtent();
+            } else {
+                extraLayerOptions['clipExtent'] = options['clipExtent'];
+            }
+        }
+        const layersJSON = [];
+        if (isNil(options['layers']) || (options['layers'] && !Array.isArray(options['layers']))) {
+            const layers = this.getLayers();
+            for (let i = 0, len = layers.length; i < len; i++) {
+                if (!layers[i].toJSON) {
+                    continue;
+                }
+                const opts = extend({}, isObject(options['layers']) ? options['layers'] : {}, extraLayerOptions);
+                layersJSON.push(layers[i].toJSON(opts));
+            }
+            json['layers'] = layersJSON;
+        } else if (isArrayHasData(options['layers'])) {
+            const layers = options['layers'];
+            for (let i = 0; i < layers.length; i++) {
+                const exportOption = layers[i];
+                const layer = this.getLayer(exportOption['id']);
+                if (!layer.toJSON) {
+                    continue;
+                }
+                const opts = extend({}, exportOption['options'], extraLayerOptions);
+                layersJSON.push(layer.toJSON(opts));
+            }
+            json['layers'] = layersJSON;
+        } else {
+            json['layers'] = [];
+        }
+        return json;
+    }
+
+    /**
+     * Reproduce a map from map's profile JSON.
+     * @param {(string|HTMLElement|object)} container - The container to create the map on, can be:<br>
+     *                                          1. A HTMLElement container.<br/>
+     *                                          2. ID of a HTMLElement container.<br/>
+     *                                          3. A canvas compatible container in node,
+     *                                          e.g. [node-canvas]{@link https://github.com/Automattic/node-canvas},
+     *                                              [canvas2svg]{@link https://github.com/gliffy/canvas2svg}
+     * @param  {Object} mapJSON - map's profile JSON
+     * @param  {Object} [options=null] - options
+     * @param  {Object} [options.baseLayer=null] - whether to import the baseLayer
+     * @param  {Object} [options.layers=null]    - whether to import the layers
+     * @return {Map}
+     * @static
+     * @function
+     * @example
+     * var map = Map.fromJSON('map', mapProfile);
+     */
+    static fromJSON(container: MapContainerType, profile: { [key: string]: any }, options?: MapOptionsType) {
+        if (!container || !profile) {
+            return null;
+        }
+        if (!options) {
+            options = {};
+        }
+        const map = new Map(container, profile['options']);
+        if (isNil(options['baseLayer']) || options['baseLayer']) {
+            const baseLayer = Layer.fromJSON(profile['baseLayer']);
+            if (baseLayer) {
+                map.setBaseLayer(baseLayer);
+            }
+        }
+        if (isNil(options['layers']) || options['layers']) {
+            const layers = [];
+            const layerJSONs = profile['layers'];
+            for (let i = 0; i < layerJSONs.length; i++) {
+                const layer = Layer.fromJSON(layerJSONs[i]);
+                layers.push(layer);
+            }
+            map.addLayer(layers);
+        }
+
+        return map;
+    }
+
 }
 
 Map.mergeOptions(options);
@@ -2489,6 +2608,23 @@ export type MapDataURLType = {
     fileName?: string;
     quality?: number;
     save?: boolean;
+}
+
+export type MapAnimationOptionsType = {
+    duration?: number;
+    easing?: string;
+    repeat?: boolean;
+}
+
+export type MapIdentifyOptionsType = {
+    tolerance?: number;
+    eventTypes?: Array<string>;
+    layers?: Array<Layer>;
+    count?: number;
+    includeInvisible?: boolean;
+    includeInternals?: boolean;
+
+
 }
 
 export type MapContainerType = string | HTMLDivElement | HTMLCanvasElement | { [key: string]: any };

@@ -1,13 +1,26 @@
 import Map from './Map';
 
+declare module "./Map" {
+    interface Map {
+        isFullScreen(): boolean;
+        requestFullScreen(dom?: HTMLDivElement): this;
+        cancelFullScreen(): this;
+        _requestFullScreen(dom: HTMLDivElement): void;
+        _cancelFullScreen(): void;
+
+    }
+}
+
+
 Map.include(/** @lends Map.prototype */ {
     /**
      * @return {Boolean} Element is currently in fullscreen.
      */
     isFullScreen() {
+        const doc = document as any;
         return !!(
-            document.webkitIsFullScreen || document.mozFullScreen ||
-            document.msFullscreenElement || document.fullscreenElement
+            doc.webkitIsFullScreen || doc.mozFullScreen ||
+            doc.msFullscreenElement || doc.fullscreenElement
         );
     },
 
@@ -80,12 +93,13 @@ Map.include(/** @lends Map.prototype */ {
     },
 
     _cancelFullScreen() {
+        const doc=document as any;
         if (document.exitFullscreen) {
             document.exitFullscreen();
-        } else if (document.mozCancelFullScreen) {
-            document.mozCancelFullScreen();
-        } else if (document.webkitCancelFullScreen) {
-            document.webkitCancelFullScreen();
+        } else if (doc.mozCancelFullScreen) {
+            doc.mozCancelFullScreen();
+        } else if (doc.webkitCancelFullScreen) {
+            doc.webkitCancelFullScreen();
         } else {
             const features = 'fullscreen=no,status=yes,resizable=yes,scrollbars=no,' +
                 'titlebar=no,menubar=yes,location=yes,toolbar=yes,z-look=yes';

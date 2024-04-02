@@ -766,6 +766,27 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         }
         return painter.get2DExtent();
     }
+
+    toJSON(options?: any) {
+        return options;
+    }
+
+    /**
+     * Reproduce a Layer from layer's JSON.
+     * @param  {Object} layerJSON - layer's JSON
+     * @return {Layer}
+     */
+    static fromJSON(layerJSON: { [key: string]: any }): Layer | null {
+        if (!layerJSON) {
+            return null;
+        }
+        const layerType = layerJSON['type'];
+        const clazz = Layer.getJSONClass(layerType) as any;
+        if (!clazz || !clazz.fromJSON) {
+            throw new Error('unsupported layer type:' + layerType);
+        }
+        return clazz.fromJSON(layerJSON);
+    }
 }
 
 Layer.mergeOptions(options);
