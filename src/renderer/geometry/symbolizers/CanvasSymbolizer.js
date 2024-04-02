@@ -51,6 +51,10 @@ class CanvasSymbolizer extends Symbolizer {
     hide() { }
 
     _defineStyle(style) {
+        if (this.symbol) {
+            style.visible = this.symbol.visible;
+            style.opacity = this.symbol.opacity;
+        }
         return loadGeoSymbol(style, this.geometry);
     }
 }
