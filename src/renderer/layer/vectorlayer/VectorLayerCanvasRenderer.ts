@@ -2,6 +2,7 @@
 import { getExternalResources, now, getPointsResultPts, type Vector3 } from '../../../core/util';
 import VectorLayer from '../../../layer/VectorLayer';
 import OverlayLayerCanvasRenderer from './OverlayLayerCanvasRenderer';
+import Extent from '../../../geo/Extent';
 import PointExtent from '../../../geo/PointExtent';
 import * as vec3 from '../../../core/util/vec3';
 import CollisionIndex from '../../../core/CollisionIndex';
@@ -30,13 +31,14 @@ function isDebug(layer: any) {
 
 /**
  * 基于 `HTML5 Canvas2D` 的渲染器类，用于矢量层
- * @classdesc
+ *
+ * @english
  * Renderer class based on HTML5 Canvas2D for VectorLayers
  * @protected
- * @memberOf renderer
+ * @group renderer
  * @name VectorLayerCanvasRenderer
  * @extends renderer.OverlaylayerCanvasRenderer
- * @param {VectorLayer} layer - layer to render
+ * @param layer - layer to render
  */
 class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     _lastRenderTime: number;
@@ -730,7 +732,6 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 VectorLayer.registerRenderer('canvas', VectorLayerRenderer);
 
 // todo 等待 Extent 改造完成
-type Extent = any;
 type GeoType = any;
 
 interface MapStateCacheType {

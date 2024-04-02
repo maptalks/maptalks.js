@@ -1,22 +1,20 @@
 import { isNil, isNumber } from '../core/util';
+import type Point from './Point';
+import type { PointArray, PointJson } from './Point';
+import type Coordinate from './Coordinate';
+import type { CoordinateArray, CoordinateJson } from './Coordinate';
 
 type NumberAble = number | string
 
-export type PositionJson = {
-    x: NumberAble;
-    y: NumberAble;
-    z?: NumberAble;
+export type PositionJson<T> = {
+    x: T;
+    y: T;
+    z?: T;
 }
 
-export type PositionArray = [NumberAble, NumberAble] | [NumberAble, NumberAble, NumberAble];
+export type PositionArray<T> = [T, T] | [T, T, T];
 
-export type PositionLike = Position | PositionJson | PositionArray;
-
-export interface Constructable<T> {
-    new(x: PositionLike): T;
-    new(x: [NumberAble, NumberAble] | [NumberAble, NumberAble, NumberAble]): T;
-    new(x: NumberAble, y: NumberAble, z?: NumberAble): T;
-}
+export type PositionLike = Point | Coordinate | PositionJson<NumberAble> | PointJson | CoordinateJson;
 
 /**
  * `Point` 和 `Coordinate` 的抽象类
@@ -31,9 +29,11 @@ abstract class Position {
     public z: WithUndef<number>;
 
     constructor(x: PositionLike)
-    constructor(x: PositionArray)
+    constructor(x: PositionArray<NumberAble>)
+    constructor(x: PointArray)
+    constructor(x: CoordinateArray)
     constructor(x: NumberAble, y: NumberAble, z?: NumberAble)
-    constructor(x: any, y?: any, z?: number) {
+    constructor(x: any, y?: NumberAble, z?: number) {
         if (!isNil(x) && !isNil(y)) {
             /**
              * @property x {Number} - x value
@@ -62,10 +62,14 @@ abstract class Position {
     }
 
     /**
+     * 设置点或坐标的 x、y 值
+     *
+     * @english
+     *
      * Set point or coordinate's x, y value
-     * @param x x value
-     * @param y y value
-     * @param z z value
+     * @param x - x value
+     * @param y - y value
+     * @param z - z value
      */
     set(x: number, y: number, z?: number) {
         this.x = x;
@@ -74,86 +78,107 @@ abstract class Position {
         return this;
     }
 
-    /**
-     * Return abs value of the point
-     * @returns abs point
-     */
-    abs() {
-        return new (this.constructor as Constructable<Position>)(Math.abs(this.x), Math.abs(this.y));
-    }
+    abstract abs(): Point | Coordinate;
 
-    //destructive abs
+    /**
+     * 修改原数据的绝对值
+     *
+     * @english
+     * destructive abs
+     */
     _abs() {
         this.x = Math.abs(this.x);
         this.y = Math.abs(this.y);
         return this;
     }
 
+    /**
+     * 对原数据的 x 和 y 四舍五入
+     *
+     * @english
+     * destructive round
+     */
     _round() {
         this.x = Math.round(this.x);
         this.y = Math.round(this.y);
         return this;
     }
 
-    /**
-     * Like math.round, rounding the point's xy.
-     * @returns rounded point
-     */
-    round() {
-        return new (this.constructor as Constructable<Position>)(Math.round(this.x), Math.round(this.y));
-    }
+    abstract round(): Point | Coordinate;
 
+    /**
+     * 对原数据的 x 和 y 进行向上取整
+     *
+     * @english
+     * destructive ceil
+     */
     _ceil() {
         this.x = Math.ceil(this.x);
         this.y = Math.ceil(this.y);
         return this;
     }
 
-    ceil() {
-        return new (this.constructor as Constructable<Position>)(Math.ceil(this.x), Math.ceil(this.y));
-    }
+    abstract ceil(): Point | Coordinate;
 
     /**
+     * 返回当前点与给定点之间的距离
+     *
+     * @english
+     *
      * Returns the distance between the current and the given point.
-     * @param  {Coordinate|Point} point - another point
-     * @return {Number} distance
+     * @param  point - another point
+     * @returns distance
      */
-    distanceTo(point) {
+    distanceTo(point: Point | Coordinate): number {
         const x = point.x - this.x,
             y = point.y - this.y;
         return Math.sqrt(x * x + y * y);
     }
 
     /**
+     * 返回该点的大小：这是从 0,0 坐标到该点的 x 和 y 坐标的欧几里得距离
+     *
+     * @english
+     *
      * Return the magnitude of this point: this is the Euclidean
      * distance from the 0, 0 coordinate to this point's x and y
      * coordinates.
-     * @return {Number} magnitude
+     * @returns magnitude
      */
     mag() {
         return Math.sqrt(this.x * this.x + this.y * this.y);
     }
 
+    /**
+     * 对原数据的 x 和 y 进行向下取整
+     *
+     * @english
+     * destructive floor
+     */
     _floor() {
         this.x = Math.floor(this.x);
         this.y = Math.floor(this.y);
         return this;
     }
 
-    floor() {
-        return new (this.constructor as Constructable<Position>)(Math.floor(this.x), Math.floor(this.y));
-    }
+    abstract floor(): Point | Coordinate;
+
+    abstract copy(): Point | Coordinate;
+
+    _add(x: PositionLike): this;
+    _add(x: number, y: number): this;
 
     /**
-     * Returns a copy of the coordinate
-     * @returns copy
+     * 对原数据的 x 和 y 与传入坐标相加
+     *
+     * @english
+     *
+     * destructive add
+     *
+     * @param x
+     * @param y
      */
-    copy() {
-        return new (this.constructor as Constructable<Position>)(this.x, this.y, this.z);
-    }
-
-    //destructive add
-    _add(x, y?: number) {
+    _add(x: any, y?: number) {
         if (!isNil(x.x)) {
             this.x += x.x;
             this.y += x.y;
@@ -167,29 +192,21 @@ abstract class Position {
         return this;
     }
 
-    /**
-     * Returns the result of addition of another coordinate.
-     * @param {Coordinate|Point|Array|Number} x - coordinate to add
-     * @param {Number} [y=undefined] - optional, coordinate to add
-     * @returns result
-     */
-    add(x, y?: number) {
-        let nx, ny;
-        if (!isNil(x.x)) {
-            nx = this.x + x.x;
-            ny = this.y + x.y;
-        } else if (!isNil(x[0])) {
-            nx = this.x + x[0];
-            ny = this.y + x[1];
-        } else {
-            nx = this.x + x;
-            ny = this.y + y;
-        }
-        return new (this.constructor as Constructable<Position>)(nx, ny);
-    }
+    abstract add(x: any, y?: number): Point | Coordinate;
 
-    //destructive substract
-    _sub(x, y?: number) {
+    _sub(x: PositionLike): this;
+    _sub(x: number, y: number): this;
+    /**
+     * 对原数据的 x 和 y 与传入坐标相减
+     *
+     * @english
+     *
+     * destructive substract
+     *
+     * @param x
+     * @param y
+     */
+    _sub(x: any, y?: number) {
         if (!isNil(x.x)) {
             this.x -= x.x;
             this.y -= x.y;
@@ -203,48 +220,41 @@ abstract class Position {
         return this;
     }
 
-    _substract(...args) {
-        return this._sub.call(this, ...args);
-    }
-
     /**
-     * Returns the result of subtraction of another coordinate.
-     * @param {Coordinate|Point|Array|Number} x - coordinate to add
-     * @param {Number} [y=undefined] - optional, coordinate to add
-     * @returns result
+     * `_sub` 方法的别名
+     *
+     * @english
+     *
+     * Alias for _sub
+     *
+     * @param x
+     * @param y
      */
-    sub(x, y?: any): any {
-        let nx, ny;
-        if (!isNil(x.x)) {
-            nx = this.x - x.x;
-            ny = this.y - x.y;
-        } else if (!isNil(x[0])) {
-            nx = this.x - x[0];
-            ny = this.y - x[1];
-        } else {
-            nx = this.x - x;
-            ny = this.y - y;
+    _substract(x: PositionLike | number, y?: number) {
+        if (isNumber(y)) {
+            return this._sub(x as number, y);
         }
-        return new (this.constructor as Constructable<Position>)(nx, ny);
+
+        return this._sub(x as PositionLike);
     }
 
+    abstract sub(x: any, y?: number): Point | Coordinate;
+
     /**
+     * `sub` 方法的别名。
+     *
+     * @english
+     *
      * Alias for sub
      * @returns result
-     * @param args
+     * @param x
+     * @param y
      */
-    substract(...args: any[]) {
-        return this.sub.call(this, ...args);
+    substract(x: PositionLike | number, y?: number) {
+        return this.sub(x, y);
     }
 
-    /**
-     * Returns the result of multiplication of the current coordinate by the given number.
-     * @param ratio - ratio to multi
-     * @returns result
-     */
-    multi(ratio: number) {
-        return new (this.constructor as Constructable<Position>)(this.x * ratio, this.y * ratio);
-    }
+    abstract multi(ratio: number): Point | Coordinate;
 
     _multi(ratio: number) {
         this.x *= ratio;
@@ -253,10 +263,12 @@ abstract class Position {
     }
 
     /**
-     * 返回当前坐标除以给定数字。
+     * 返回当前坐标除以给定数字
+     *
      * @english
+     *
      * Returns the result of division of the current point by the given number.
-     * @param n number to div
+     * @param n - number to div
      * @returns result
      */
     div(n: number) {
@@ -264,54 +276,51 @@ abstract class Position {
     }
 
     /**
+     * 除以给定的数字
+     *
+     * @english
+     *
      * div by the given number
-     * @private
      * @param n
      */
     _div(n: number) {
         return this._multi(1 / n);
     }
 
-    /**
-     * 与另外一个坐标进行比较，以查看它们是否相等。
-     * @english
-     * Compare with another coordinate to see whether they are equal.
-     * @param c coordinate to compare
-     */
-    equals(c: Position) {
-        if (!(c instanceof this.constructor)) {
-            return false;
-        }
-        return this.x === c.x && this.y === c.y && this.z === c.z;
-    }
+    abstract equals(c: Point | Coordinate): boolean;
 
     /**
      * `Coordinate` / `Point`是否是 `NaN`
+     *
      * @english
+     *
      * Whether the coordinate is NaN
      * @returns
-     * @private
      */
-    _isNaN() {
+    _isNaN(): boolean {
         return isNaN(this.x) || isNaN(this.y) || isNumber(this.z) && isNaN(this.z);
     }
 
     /**
      * `Coordinate` / `Point`是否为零
+     *
      * @english
+     *
      * Whether the coordinate/point is zero
      */
-    isZero() {
+    isZero(): boolean {
         return this.x === 0 && this.y === 0;
     }
 
     /**
      * 转换为数组形式
+     *
      * @english
+     *
      * Convert to a number array [x, y]
      * @returns number array
      */
-    toArray(): PositionArray {
+    toArray(): PositionArray<number> {
         if (isNumber(this.z)) {
             return [this.x, this.y, this.z];
         }
@@ -320,14 +329,14 @@ abstract class Position {
 
     /**
      * 坐标数字保留指定位数的小数
+     *
      * @english
+     *
      * Formats coordinate number using fixed-point notation.
-     * @param n The number of digits to appear after the decimal point
+     * @param n - The number of digits to appear after the decimal point
      * @returns fixed coordinate
      */
-    toFixed<T extends Position>(n: number) {
-        return new (this.constructor as Constructable<T>)(this.x.toFixed(n), this.y.toFixed(n), isNumber(this.z) ? this.z.toFixed(n) : undefined);
-    }
+    abstract toFixed(n: number): Point | Coordinate;
 
     /**
      * 转换到 json 对象
@@ -336,11 +345,11 @@ abstract class Position {
      * Convert to a json object {x : .., y : ..}
      * @returns json
      */
-    toJSON(): PositionJson {
+    toJSON(): PositionJson<number> {
         const json = {
             x: this.x,
             y: this.y
-        } as PositionJson;
+        } as PositionJson<number>;
         if (isNumber(this.z)) {
             json.z = this.z;
         }

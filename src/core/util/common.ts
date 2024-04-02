@@ -15,13 +15,18 @@ export function now() {
 
 /**
  * Merges the properties of sources into destination object.
- * @param args - sources
+ * @param dest
+ * @param source
  * @return
- * @memberOf Util
+ * @module Util
  */
-export function extend<T = any>(...args: T[]) { // (Object[, Object, ...]) ->
-    const dest = args[0]
-    for (let i = 1; i < args.length; i++) {
+export function extend<T extends {}, U>(dest: T, source: U): T & U;
+export function extend<T extends {}, U, V>(dest: T, source1: U, source2: V): T & U & V;
+export function extend<T extends {}, U, V, W>(dest: T, source1: U, source2: V, source3: W): T & U & V & W;
+export function extend<T extends {}, U, V, W, X>(dest: T, source1: U, source2: V, source3: W, source4: X): T & U & V & W & X;
+export function extend(dest: object, ...args: Array<any>): any;
+export function extend(dest: object, ...args: Array<any>) { // (Object[, Object, ...]) ->
+    for (let i = 0; i < args.length; i++) {
         const src = args[i];
         for (const k in src) {
             dest[k] = src[k];
