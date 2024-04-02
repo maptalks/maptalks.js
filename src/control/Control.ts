@@ -20,6 +20,7 @@ abstract class Control extends Eventable(Class) {
     _map: Map;
     __ctrlContainer: HTMLElement;
     _controlDom: HTMLElement;
+    options: ControlOptionsType;
     static positions: { [key: string]: PositionType };
 
     /**
@@ -297,7 +298,7 @@ export type PositionType = {
 export type ControlPositionType = string | PositionType;
 
 export type ControlOptionsType = {
-    postion?: ControlPositionType
+    position?: ControlPositionType
 }
 
 Map.mergeOptions({
