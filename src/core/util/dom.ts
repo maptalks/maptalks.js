@@ -50,7 +50,7 @@ const testProp = IS_NODE ? first : <T extends string | number | symbol>(props: T
  */
 export const TRANSFORM = testProp(
     ['transform', 'WebkitTransform', 'OTransform', 'MozTransform', 'msTransform']
-);
+) as string;
 
 /**
  * Vendor-prefixed tfransform-origin name (e.g. `'webkitTransformOrigin'` for WebKit).
@@ -59,7 +59,7 @@ export const TRANSFORM = testProp(
  */
 export const TRANSFORMORIGIN = testProp(
     ['transformOrigin', 'WebkitTransformOrigin', 'OTransformOrigin', 'MozTransformOrigin', 'msTransformOrigin']
-);
+) as string;
 
 /**
  * Vendor-prefixed transition name (e.g. `'WebkitTransition'` for WebKit).
@@ -68,7 +68,7 @@ export const TRANSFORMORIGIN = testProp(
  */
 export const TRANSITION = testProp(
     ['transition', 'WebkitTransition', 'OTransition', 'MozTransition', 'msTransition']
-);
+) as string;
 
 /**
  * Vendor-prefixed filter name (e.g. `'WebkitFilter'` for WebKit).
@@ -77,7 +77,7 @@ export const TRANSITION = testProp(
  */
 export const CSSFILTER = testProp(
     ['filter', 'WebkitFilter', 'OFilter', 'MozFilter', 'msFilter']
-);
+) as string;
 
 /**
  * Create a html element.
@@ -461,7 +461,6 @@ export function setOpacity(el: HTMLElement, value: string) {
  */
 export function setTransform(el: HTMLElement, offset: Point) {
     const pos = offset || new Point(0, 0);
-    // @ts-expect-error
     el.style[TRANSFORM] =
         Browser.any3d ?
             'translate3d(' + pos.x + 'px,' + pos.y + 'px,0px)' :
@@ -472,18 +471,14 @@ export function setTransform(el: HTMLElement, offset: Point) {
 
 export function setTransformMatrix(el, m) {
     const text = 'matrix(' + (isString(m) ? m : m.join()) + ')';
-    // @ts-expect-error
     if (el.style[TRANSFORM] !== text) {
-        // @ts-expect-error
         el.style[TRANSFORM] = text;
     }
     return this;
 }
 
 export function removeTransform(el) {
-    // @ts-expect-error
     if (el.style[TRANSFORM]) {
-        // @ts-expect-error
         el.style[TRANSFORM] = '';
     }
     return this;

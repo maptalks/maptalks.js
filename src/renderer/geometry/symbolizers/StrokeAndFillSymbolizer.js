@@ -37,6 +37,9 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
     }
 
     symbolize(ctx, resources) {
+        if (!this.isVisible()) {
+            return;
+        }
         const style = this.style;
         if (style['polygonOpacity'] === 0 && style['lineOpacity'] === 0 && !this.painter.isHitTesting()) {
             return;

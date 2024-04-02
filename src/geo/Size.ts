@@ -1,14 +1,26 @@
 import Point from './Point';
-import { isNumber } from '../core/util';
+import { isNumber } from '../core/util/common';
 
-type JsonSize = {
+export type JsonSize = {
     width: number;
     height: number;
 }
 
-type ArraySize = [number, number];
+export type ArraySize = [number, number];
 
-export type SizeLike = Size | JsonSize | ArraySize;
+/**
+ * A {@link Size} object
+ *
+ * @category basic types
+ *
+ * @example
+ * ```ts
+ * let size1 = new Size(100, 100);
+ * let size2 = [100，100];
+ * let size3 = { width: 100, height: 100 };
+ * ```
+ */
+export type SizeLike = Size | JsonSize;
 
 /**
  * 表示一个大小的实现类
@@ -16,26 +28,41 @@ export type SizeLike = Size | JsonSize | ArraySize;
  * @english
  * Represents a size.
  * @category basic types
+ *
+ * @example
+ *
+ * ```ts
+ * const a1 = new Size(1, 2);
+ * const a2 = new Size([1, 2]);
+ * const a3 = new Size({ width: 1, height: 2 });
+ * const a4 = new Size(a3);
+ * ```
  */
 class Size {
     public width: number;
     public height: number;
 
     /**
-     * @param width width value
-     * @param height - height value
+     * @param width - width value
      */
     constructor(width: SizeLike)
+    /**
+     * @param width - width value
+     */
     constructor(width: ArraySize)
+    /**
+     * @param width - width value
+     * @param height - height value
+     */
     constructor(width: number, height: number)
     constructor(width: any, height?: any) {
         if (isNumber(width) && isNumber(height)) {
             /**
-             * @property {Number} width - width
+             * @property width - width
              */
             this.width = width;
             /**
-             * @property {Number} height - height
+             * @property height - height
              */
             this.height = height;
         } else if (isNumber(width['width'])) {
@@ -48,6 +75,8 @@ class Size {
     }
 
     /**
+     * 返回 `Size` 的拷贝
+     * @english
      * Returns a copy of the size
      */
     copy() {
@@ -55,12 +84,39 @@ class Size {
     }
 
     /**
+     * @overload
+     *
+     * 返回当前`Size` 与另一个 `Size` 相加的结果
+     *
+     * @english
      * Returns the result of addition of another size.
-     * @param {Size} size - size to add
-     * @return {Size} result
+     * @param x - Size
+     * @returns result
      */
-    add(x, y) {
-        let w, h;
+    add(x: Size): Size
+    /**
+     * @overload
+     *
+     * 返回当前`Size` 的 xy 与传入的 xy 相加的结果
+     *
+     * @english
+     * Returns the result of addition of another size.
+     * @param x - x
+     * @param y - y
+     * @returns result
+     */
+    add(x: number, y: number): Size
+    /**
+     * 返回当前`Size` 与另一个 `Size` 相加的结果
+     *
+     * @english
+     * Returns the result of addition of another size.
+     * @param x - x value
+     * @param y - y value
+     * @returns result
+     */
+    add(x: any, y?: any) {
+        let w: number, h: number;
         if (x instanceof Size) {
             w = this.width + x.width;
             h = this.height + x.height;
@@ -72,6 +128,9 @@ class Size {
     }
 
     /**
+     * 与另一个 `Size` 进行比较，以判断它们是否相等。
+     *
+     * @english
      * Compare with another size to see whether they are equal.
      * @param size - size to compare
      */
@@ -80,14 +139,23 @@ class Size {
     }
 
     /**
+     * 返回当前大小与给定数字相乘的结果，返回一个新的 Size 对象
+     * @english
      * Returns the result of multiplication of the current size by the given number.
      * @param ratio - ratio to multi
-     * @return result
+     * @returns result
      */
-    multi(ratio: number) {
+    multi(ratio: number): Size {
         return new Size(this['width'] * ratio, this['height'] * ratio);
     }
 
+    /**
+     * 返回当前大小与给定数字相乘的结果
+     * @english
+     * Returns the result of multiplication of the current size by the given number.
+     * @param ratio - ratio to multi
+     * @returns result
+     */
     _multi(ratio: number) {
         this['width'] *= ratio;
         this['height'] *= ratio;
@@ -101,25 +169,31 @@ class Size {
     }
 
     /**
-     * Converts the size object to a [Point]{Point}
-     * @return point
+     * 将当前 `Size` 对象转为一个点对象 {@link Point}
+     * @english
+     * Converts the size object to a {@link Point}
+     * @returns point
      */
-    toPoint() {
+    toPoint(): Point {
         return new Point(this['width'], this['height']);
     }
 
     /**
+     * 将 `Size` 对象转换为数组
+     * @english
      * Converts the size object to an array [width, height]
      */
-    toArray() {
+    toArray(): ArraySize {
         return [this['width'], this['height']];
     }
 
     /**
+     * 将 `Size` 实例对象转换为 包含 `width` 和 `height` 的 json 对象
+     * @english
      * Convert the size object to a json object {width : ., height : .}
-     * @return json
+     * @returns json
      */
-    toJSON() {
+    toJSON(): JsonSize {
         return {
             'width': this['width'],
             'height': this['height']

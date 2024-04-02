@@ -10,8 +10,8 @@ declare module "./Map" {
 
         panTo(coordinate: Coordinate, options?: MapAnimationOptionsType, step?: (frame) => void): this;
         _panTo(prjCoord: Coordinate, options?: MapAnimationOptionsType): this;
-        panBy(offset: Point, options?: MapAnimationOptionsType, step?: (frame) => void): this;
-        _panAnimation(target: Coordinate, t: number, cb?: (frame) => void): void;
+        panBy(offset: Point | Array<number>, options?: MapAnimationOptionsType, step?: (frame) => void): this;
+        _panAnimation(target: Coordinate, t?: number, cb?: (frame) => void): void;
 
     }
 }

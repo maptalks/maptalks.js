@@ -31,6 +31,7 @@ declare module "./Map" {
         _queryTerrainByProjCoord(coord: Coordinate): number;
         _hasAltitudeLayer(): boolean;
         _queryTerrainInfo(containerPoint: Point): { coordinate: Coordinate, altitude: number } | null;
+        _pointAtResToContainerPoint(point: Point, res?: number, altitude?: number, out?: Point): Point;
     }
 }
 

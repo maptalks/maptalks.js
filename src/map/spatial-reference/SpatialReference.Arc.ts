@@ -1,6 +1,6 @@
 import { isString, parseJSON } from '../../core/util';
 import Ajax from '../../core/Ajax';
-import { type Projection } from './SpatialReference';
+import { type SpatialReferenceType } from './SpatialReference';
 
 export type ArcgisConfig = {
     tileInfo: {
@@ -14,13 +14,13 @@ export type ArcgisConfig = {
             resolution: number
         }>
     }
-    fullExtent: Projection['fullExtent']
+    fullExtent: SpatialReferenceType['fullExtent']
 }
 
 /**
  * 解析Arcgis空间参考配置
- * @param arcConf 
- * @returns 
+ * @param arcConf
+ * @returns
  */
 function parse(arcConf: ArcgisConfig) {
     const tileInfo = arcConf['tileInfo'],
@@ -47,9 +47,9 @@ function parse(arcConf: ArcgisConfig) {
 /**
  * 加载Arcgis空间参考配置文件
  * @param url arcgis spatialreference json file url
- * @param cb 
- * @param options 
- * @returns 
+ * @param cb
+ * @param options
+ * @returns
  */
 const loadArcgis = (url: string, cb: (_, spatialRef?) => void, options: any = { 'jsonp': true }) => {
     if (isString(url) && url.substring(0, 1) !== '{') {

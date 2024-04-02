@@ -1,29 +1,23 @@
 import { extend } from '../../core/util';
-import Coordinate from '../Coordinate';
+import Coordinate, { CoordinateJson } from '../Coordinate';
 import Point from '../Point';
-import Common from './Common';
-/**
- * Identity measurer, a measurer for Cartesian coordinate system.
- *
- * @class
- * @category geo
- * @protected
- * @memberOf measurer
- * @name Identity
- * @mixes measurer.Common
- */
-export default extend<any>(/** @lends measurer.Identity */{
+import Common, { type CommonMeasurer } from './Common';
+
+const identity = {
     /**
      * the code of the measurer
      */
     'measure': 'IDENTITY',
+
     /**
+     * 计算两个坐标之间的距离
+     *
+     * @english
      * Measure the length between 2 coordinates.
-     * @param  {Coordinate} c1
-     * @param  {Coordinate} c2
-     * @return {Number}
+     * @param c1
+     * @param c2
      */
-    measureLenBetween: function (c1, c2) {
+    measureLenBetween: function (c1: Coordinate | CoordinateJson, c2: Coordinate | CoordinateJson): number {
         if (!c1 || !c2) {
             return 0;
         }
@@ -33,12 +27,15 @@ export default extend<any>(/** @lends measurer.Identity */{
             return 0;
         }
     },
+
     /**
+     * 测量给定闭合坐标的面积
+     *
+     * @english
      * Measure the area closed by the given coordinates.
-     * @param  {Coordinate[]} coordinates
-     * @return {number}
+     * @param coordinates
      */
-    measureArea: function (coordinates) {
+    measureArea: function (coordinates: (Coordinate | CoordinateJson)[]): number {
         if (!Array.isArray(coordinates)) {
             return 0;
         }
@@ -56,20 +53,21 @@ export default extend<any>(/** @lends measurer.Identity */{
         return Math.abs(area / 2);
     },
 
-    locate : function (c, xDist, yDist, out) {
+    locate : function (c: Coordinate | CoordinateJson, xDist: number, yDist: number, out?: Coordinate) {
         out = out || new Coordinate(0, 0);
         out.set(c.x, c.y);
         return this._locate(out, xDist, yDist);
     },
 
     /**
+     * 使用 x 轴距离和 y 轴距离从给定源坐标定位坐标
+     *
      * Locate a coordinate from the given source coordinate with a x-axis distance and a y-axis distance.
-     * @param  {Coordinate} c     - source coordinate
-     * @param  {Number} xDist     - x-axis distance
-     * @param  {Number} yDist     - y-axis distance
-     * @return {Coordinate}
+     * @param c     - source coordinate
+     * @param xDist     - x-axis distance
+     * @param yDist     - y-axis distance
      */
-    _locate: function (c, xDist, yDist) {
+    _locate: function (c: Coordinate, xDist: number, yDist: number): WithNull<Coordinate> {
         if (!c) {
             return null;
         }
@@ -87,21 +85,23 @@ export default extend<any>(/** @lends measurer.Identity */{
         return c;
     },
 
-    rotate : function (c, pivot, angle) {
+    rotate : function (c: Coordinate | CoordinateJson, pivot: Coordinate, angle: number) {
         c = new Coordinate(c.x, c.y);
-        return this._rotate(c, pivot, angle);
+        return this._rotate(c as Coordinate, pivot, angle);
     },
 
     /**
+     * 绕枢轴旋转给定角度的坐标
+     *
+     * @english
      * Rotate a coordinate of given angle around pivot
-     * @param {Coordinate} c  - source coordinate
-     * @param {Coordinate} pivot - pivot
-     * @param {Number} angle - angle in degree
-     * @return {Coordinate}
+     * @param c  - source coordinate
+     * @param pivot - pivot
+     * @param angle - angle in degree
      */
     _rotate : function () {
         const tmp = new Point(0, 0);
-        return function (c, pivot, angle) {
+        return function (c: Coordinate, pivot: Coordinate, angle: number): Coordinate {
             tmp.x = c.x - pivot.x;
             tmp.y = c.y - pivot.y;
             tmp._rotate(angle * Math.PI / 180);
@@ -110,4 +110,21 @@ export default extend<any>(/** @lends measurer.Identity */{
             return c;
         };
     }()
-}, Common);
+};
+
+const extended = extend<typeof identity, CommonMeasurer>(identity, Common);
+
+export type IdentityMeasurerType = typeof extended;
+
+/**
+ * Identity 的measurer，适用于笛卡尔坐标系
+ * @english
+ * Identity measurer, a measurer for Cartesian coordinate system.
+ *
+ * @category geo
+ * @protected
+ * @group measurer
+ * @module Identity
+ * {@inheritDoc measurer.Common}
+ */
+export default extended;

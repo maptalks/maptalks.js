@@ -1,34 +1,9 @@
 import { extend } from '../../core/util';
-import Common from './Projection';
+import Common, { type CommonProjectionType } from './Projection';
 import Coordinate from '../Coordinate';
-import { BaiduSphere } from '../measurer';
+import { BaiduSphere, BaiduSphereType } from '../measurer';
 
-/**
- * Projection used by [Baidu Map]{@link http://map.baidu.com}
- * @class
- * @category geo
- * @protected
- * @memberOf projection
- * @name BAIDU
- * @mixes projection.Common
- * @mixes measurer.BaiduSphere
- */
-export default extend({}, Common, /** @lends projection.BAIDU */ {
-    /**
-     * "BAIDU", Code of the projection
-     * @type {String}
-     * @constant
-     */
-    code: 'BAIDU',
-
-    project: function (p, out) {
-        return this.convertLL2MC(p, out);
-    },
-
-    unproject: function (p, out) {
-        return this.convertMC2LL(p, out);
-    }
-}, BaiduSphere, {
+const ProjectionMethods = {
     EARTHRADIUS: 6370996.81,
     MCBAND: [12890594.86, 8362377.87, 5591021, 3481989.83, 1678043.12, 0],
     LLBAND: [75, 60, 45, 30, 15, 0],
@@ -49,7 +24,7 @@ export default extend({}, Common, /** @lends projection.BAIDU */ {
         [-0.0003218135878613132, 111320.7020701615, 0.00369383431289, 823725.6402795718, 0.46104986909093, 2351.343141331292, 1.58060784298199, 8.77738589078284, 0.37238884252424, 7.45]
     ],
 
-    convertMC2LL: function (cB, out) {
+    convertMC2LL: function (cB: Coordinate, out?: Coordinate): Coordinate {
         let cE;
         for (let cD = 0, len = this.MCBAND.length; cD < len; cD++) {
             if (Math.abs(cB.y) >= this.MCBAND[cD]) {
@@ -60,7 +35,7 @@ export default extend({}, Common, /** @lends projection.BAIDU */ {
         const T = this.convertor(cB, cE, out);
         return T;
     },
-    convertLL2MC: function (T, out) {
+    convertLL2MC: function (T: Coordinate, out?: Coordinate): Coordinate {
         let cD, cC, len;
         T.x = this.getLoop(T.x, -180, 180);
         T.y = this.getRange(T.y, -74, 74);
@@ -82,16 +57,16 @@ export default extend({}, Common, /** @lends projection.BAIDU */ {
         const cE = this.convertor(T, cD, out);
         return cE;
     },
-    convertor: function (cC, cD, out) {
+    convertor: function (cC: Coordinate, cD: number, out?: Coordinate): Coordinate {
         if (!cC || !cD) {
             return null;
         }
         let T = cD[0] + cD[1] * Math.abs(cC.x);
         const cB = Math.abs(cC.y) / cD[9];
         let cE = cD[2] + cD[3] * cB + cD[4] * cB * cB +
-            cD[5] * cB * cB * cB + cD[6] * cB * cB * cB * cB +
-            cD[7] * cB * cB * cB * cB * cB +
-            cD[8] * cB * cB * cB * cB * cB * cB;
+          cD[5] * cB * cB * cB + cD[6] * cB * cB * cB * cB +
+          cD[7] * cB * cB * cB * cB * cB +
+          cD[8] * cB * cB * cB * cB * cB * cB;
         T *= (cC.x < 0 ? -1 : 1);
         cE *= (cC.y < 0 ? -1 : 1);
         if (out) {
@@ -101,13 +76,13 @@ export default extend({}, Common, /** @lends projection.BAIDU */ {
         }
         return new Coordinate(T, cE);
     },
-    toRadians: function (T) {
+    toRadians: function (T: number): number {
         return Math.PI * T / 180;
     },
-    toDegrees: function (T) {
+    toDegrees: function (T: number): number {
         return (180 * T) / Math.PI;
     },
-    getRange: function (cC, cB, T) {
+    getRange: function (cC: number, cB: number, T: number): number {
         if (cB != null) {
             cC = Math.max(cC, cB);
         }
@@ -116,7 +91,7 @@ export default extend({}, Common, /** @lends projection.BAIDU */ {
         }
         return cC;
     },
-    getLoop: function (cC, cB, T) {
+    getLoop: function (cC: number, cB: number, T: number): number {
         if (cC === Infinity) {
             return T;
         } else if (cC === -Infinity) {
@@ -130,4 +105,37 @@ export default extend({}, Common, /** @lends projection.BAIDU */ {
         }
         return cC;
     }
-});
+};
+
+const BAIDUProjection = {
+    /**
+     * "BAIDU", Code of the projection
+     * @constant
+     */
+    code: 'BAIDU',
+
+    project: function (p: Coordinate, out?: Coordinate): Coordinate {
+        return this.convertLL2MC(p, out);
+    },
+
+    unproject: function (p: Coordinate, out?: Coordinate): Coordinate {
+        return this.convertMC2LL(p, out);
+    }
+};
+
+export type BAIDUProjectionType = CommonProjectionType & typeof BAIDUProjection & BaiduSphereType & typeof ProjectionMethods;
+
+/**
+ * 百度地图所使用的投影 [Baidu Map]{@link http://map.baidu.com}
+ *
+ * @english
+ * Projection used by [Baidu Map]{@link http://map.baidu.com}
+ *
+ * @category geo
+ * @protected
+ * @group projection
+ * @name BAIDU
+ * {@inheritDoc projection.Common}
+ * {@inheritDoc BaiduSphere}
+ */
+export default extend<BAIDUProjectionType, CommonProjectionType, typeof BAIDUProjection, BaiduSphereType, typeof ProjectionMethods>({} as BAIDUProjectionType, Common, BAIDUProjection, BaiduSphere, ProjectionMethods);

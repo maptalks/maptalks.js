@@ -56,6 +56,7 @@ import './geometry/ext/Geometry.Drag';
 import './geometry/ext/Geometry.Edit';
 import './geometry/ext/Geometry.Events';
 import './geometry/ext/Geometry.InfoWindow';
+import './geometry/ext/Geometry.JSON';
 
 /**
  * @namespace renderer
