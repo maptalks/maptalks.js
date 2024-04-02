@@ -32,6 +32,7 @@ import * as projections from '../geo/projection';
 import OverlayLayer, { addGeometryFitViewOptions } from '../layer/OverlayLayer'
 import GeometryCollection from './GeometryCollection'
 import type { Map } from '../map';
+import GeoJSON from './GeoJSON';
 
 type ProjectionCommon = typeof projections.Common
 const TEMP_POINT0 = new Point(0, 0);
@@ -165,6 +166,46 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
     }
 
+    static fromJSON(json: { [key: string]: any } | Array<{ [key: string]: any }>): Geometry | Array<Geometry> {
+        if (Array.isArray(json)) {
+            let result = [];
+            for (let i = 0, len = json.length; i < len; i++) {
+                const c = Geometry.fromJSON(json[i]);
+                if (Array.isArray(json)) {
+                    result = result.concat(c);
+                } else {
+                    result.push(c);
+                }
+            }
+            return result;
+        }
+
+        if (json && !json['feature']) {
+            return GeoJSON.toGeometry(json);
+        }
+        let geometry;
+        if (json['subType']) {
+            //@ts-expect-error 等待Geometry typing
+            geometry = Geometry.getJSONClass(json['subType']).fromJSON(json);
+            if (!isNil(json['feature']['id'])) {
+                geometry.setId(json['feature']['id']);
+            }
+        } else {
+            //feature可能是GeometryCollection，里面可能包含Circle等
+            geometry = GeoJSON.toGeometry(json['feature']);
+            if (json['options']) {
+                geometry.config(json['options']);
+            }
+        }
+        if (json['symbol']) {
+            geometry.setSymbol(json['symbol']);
+        }
+        if (json['infoWindow']) {
+            geometry.setInfoWindow(json['infoWindow']);
+        }
+        return geometry;
+    }
+
     /**
      * 获取几何图形第一个坐标点
      * @english
@@ -224,7 +265,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @return {Geometry} this
      * @fires Geometry#add
      */
-    addTo(layer: OverlayLayer, fitview?: boolean | addGeometryFitViewOptions): Geometry {
+    addTo(layer: OverlayLayer, fitview?: boolean | addGeometryFitViewOptions): this {
         layer.addGeometry(this, fitview);
         return this;
     }
@@ -273,7 +314,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @returns {Geometry} this
      * @fires Geometry#idchange
      */
-    setId(id: string): Geometry {
+    setId(id: string): this {
         const oldId = this.getId();
         this._id = id;
         /**
@@ -318,7 +359,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @returns {Geometry} this
      * @fires Geometry#propertieschange
      */
-    setProperties(properties: { [key: string]: any }): Geometry {
+    setProperties(properties: { [key: string]: any }): this {
         const old = this.properties;
         this.properties = isObject(properties) ? extend({}, properties) : properties;
         //such as altitude update
@@ -379,7 +420,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @return {Geometry} this
      * @fires Geometry#symbolchange
      */
-    setSymbol(symbol: any): Geometry {
+    setSymbol(symbol: any): this {
         this._symbolUpdated = symbol;
         this._symbol = this._prepareSymbol(symbol);
         this.onSymbolChanged();
@@ -424,7 +465,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      *     markerWidth : 40
      * });
      */
-    updateSymbol(props: any): Geometry {
+    updateSymbol(props: any): this {
         if (!props) {
             return this;
         }
@@ -664,7 +705,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @return {Geometry} this
      * @fires Geometry#show
      */
-    show(): Geometry {
+    show(): this {
         this.options['visible'] = true;
         if (this.getMap()) {
             const painter = this._getPainter();
@@ -692,7 +733,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @return {Geometry} this
      * @fires Geometry#hide
      */
-    hide(): Geometry {
+    hide(): this {
         this.options['visible'] = false;
         if (this.getMap()) {
             this.onHide();
@@ -746,6 +787,13 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
     }
 
+    /**
+     * symbol是否可见
+     * @english
+     * Whether the geometry symbol is visible
+     *
+     * @returns {Boolean}
+     */
     symbolIsVisible(): boolean {
         //function-type
         let symbols = this._getCompiledSymbol();
@@ -788,7 +836,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @return {Geometry} this
      * @fires Geometry#zindexchange
      */
-    setZIndex(zIndex: number): Geometry {
+    setZIndex(zIndex: number): this {
         const old = this.options['zIndex'];
         this.options['zIndex'] = zIndex;
         /**
@@ -822,7 +870,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @param {Number} zIndex - new zIndex
      * @return {Geometry} this
      */
-    setZIndexSilently(zIndex: number): Geometry {
+    setZIndexSilently(zIndex: number): this {
         this.options['zIndex'] = zIndex;
         return this;
     }
@@ -834,7 +882,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @return {Geometry} this
      * @fires Geometry#zindexchange
      */
-    bringToFront(): Geometry {
+    bringToFront(): this {
         const layer = this.getLayer();
         if (!layer || !layer.getGeoMaxZIndex) {
             return this;
@@ -851,7 +899,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @return {Geometry} this
      * @fires Geometry#zindexchange
      */
-    bringToBack(): Geometry {
+    bringToBack(): this {
         const layer = this.getLayer();
         if (!layer || !layer.getGeoMinZIndex) {
             return this;
@@ -916,7 +964,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @param {*} [context=null]          - callback context
      * @return {Geometry} this
      */
-    flash(interval: number, count: number, cb: () => void, context: any): Geometry {
+    flash(interval: number, count: number, cb: () => void, context: any): this {
         return flash.call(this, interval, count, cb, context);
     }
 
@@ -928,8 +976,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      */
     copy(): Geometry {
         const json = this.toJSON();
-        // @ts-expect-error todo Geometry
-        const ret = Geometry.fromJSON(json);
+        const ret = Geometry.fromJSON(json) as Geometry;
         //restore visibility
         ret.options['visible'] = true;
         return ret;
@@ -1113,7 +1160,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @param {Coordinate} [pivot=null]  - optional, will be the geometry's center by default
      * @returns {Geometry} this
      */
-    rotate(angle: number, pivot?: Coordinate): Geometry {
+    rotate(angle: number, pivot?: Coordinate): this {
         if (!isNumber(angle)) {
             console.error(`angle:${angle} is not number`);
             return this;
@@ -1295,7 +1342,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @private
      * @param {Object} symbol - external symbol
      */
-    _setExternSymbol(symbol: any): Geometry {
+    _setExternSymbol(symbol: any): this {
         this._eventSymbolProperties = symbol;
         if (!this._symbol) {
             delete this._textDesc;
@@ -1733,7 +1780,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return true;
     }
 
-    setAltitude(alt: number): Geometry {
+    setAltitude(alt: number): this {
         if (!isNumber(alt)) {
             return this;
         }

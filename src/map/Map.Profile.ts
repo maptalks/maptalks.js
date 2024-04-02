@@ -1,14 +1,14 @@
 /** Profile **/
-import {
-    // extend,
-    isNil,
-    // isObject,
-    // isArrayHasData
-} from '../core/util';
+// import {
+//     // extend,
+//     isNil,
+//     // isObject,
+//     // isArrayHasData
+// } from '../core/util';
 // import Layer from '../layer/Layer';
 // import Map, { MapOptionsType } from './Map';
-import Geometry from '../geometry/Geometry';
-import GeoJSON from '../geometry/GeoJSON';
+// import Geometry from '../geometry/Geometry';
+// import GeoJSON from '../geometry/GeoJSON';
 
 
 /**
@@ -36,47 +36,46 @@ import GeoJSON from '../geometry/GeoJSON';
     };
     const marker = Geometry.fromJSON(profile);
  */
-//@ts-expect-error 等待Geometry typing
-Geometry.fromJSON = function (json) {
-    if (Array.isArray(json)) {
-        let result = [];
-        for (let i = 0, len = json.length; i < len; i++) {
-            //@ts-expect-error 等待Geometry typing
-            const c = Geometry.fromJSON(json[i]);
-            if (Array.isArray(json)) {
-                result = result.concat(c);
-            } else {
-                result.push(c);
-            }
-        }
-        return result;
-    }
+// Geometry.fromJSON = function (json) {
+//     if (Array.isArray(json)) {
+//         let result = [];
+//         for (let i = 0, len = json.length; i < len; i++) {
+//             //@ts-expect-error 等待Geometry typing
+//             const c = Geometry.fromJSON(json[i]);
+//             if (Array.isArray(json)) {
+//                 result = result.concat(c);
+//             } else {
+//                 result.push(c);
+//             }
+//         }
+//         return result;
+//     }
 
-    if (json && !json['feature']) {
-        return GeoJSON.toGeometry(json);
-    }
-    let geometry;
-    if (json['subType']) {
-        //@ts-expect-error 等待Geometry typing
-        geometry = Geometry.getJSONClass(json['subType']).fromJSON(json);
-        if (!isNil(json['feature']['id'])) {
-            geometry.setId(json['feature']['id']);
-        }
-    } else {
-        //feature可能是GeometryCollection，里面可能包含Circle等
-        geometry = GeoJSON.toGeometry(json['feature']);
-        if (json['options']) {
-            geometry.config(json['options']);
-        }
-    }
-    if (json['symbol']) {
-        geometry.setSymbol(json['symbol']);
-    }
-    if (json['infoWindow']) {
-        geometry.setInfoWindow(json['infoWindow']);
-    }
-    return geometry;
-};
+//     if (json && !json['feature']) {
+//         return GeoJSON.toGeometry(json);
+//     }
+//     let geometry;
+//     if (json['subType']) {
+//         //@ts-expect-error 等待Geometry typing
+//         geometry = Geometry.getJSONClass(json['subType']).fromJSON(json);
+//         if (!isNil(json['feature']['id'])) {
+//             geometry.setId(json['feature']['id']);
+//         }
+//     } else {
+//         //feature可能是GeometryCollection，里面可能包含Circle等
+//         geometry = GeoJSON.toGeometry(json['feature']);
+//         if (json['options']) {
+//             geometry.config(json['options']);
+//         }
+//     }
+//     if (json['symbol']) {
+//         geometry.setSymbol(json['symbol']);
+//     }
+//     if (json['infoWindow']) {
+//         geometry.setInfoWindow(json['infoWindow']);
+//     }
+//     return geometry;
+// };
 
 // /**
 //  * Reproduce a Layer from layer's JSON.
