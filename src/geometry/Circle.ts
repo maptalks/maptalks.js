@@ -46,7 +46,7 @@ class Circle extends CenterMixin(Polygon) {
      * @param {Number} radius           - radius of the circle, in meter
      * @param {Object} [options=null]   - construct options defined in [Circle]{@link Circle#options}
      */
-    constructor(coordinates: Coordinate, radius: number, options: any) {
+    constructor(coordinates: Coordinate | Array<Coordinate>, radius: number, options?: any) {
         //@ts-expect-error todo
         super(null, options);
         if (coordinates) {
