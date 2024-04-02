@@ -3,19 +3,22 @@ import TileLayerCanvasRenderer from './TileLayerCanvasRenderer';
 import type { Tile, RenderContext} from './TileLayerCanvasRenderer';
 import ImageGLRenderable from '../ImageGLRenderable';
 import Point from '../../../geo/Point';
+import { SizeLike } from '../../../geo/Size';
 
 const TILE_POINT = new Point(0, 0);
 
 const MESH_TO_TEST = { properties: {}};
 
 /**
+ * 基于 HTML5 WebGL 的 TileLayers 渲染器
+ *
  * @english
  * Renderer class based on HTML5 WebGL for TileLayers
  * @class
  * @protected
- * @memberOf renderer
+ * @group renderer
  * @extends {renderer.TileLayerCanvasRenderer}
- * @param {TileLayer} layer - TileLayer to render
+ * @param layer - TileLayer to render
  */
 class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
 
@@ -135,10 +138,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         this.createGLContext();
     }
 
-    resizeCanvas(canvasSize: {
-        width: number;
-        height: number;
-    }) {
+    resizeCanvas(canvasSize: SizeLike) {
         if (!this.canvas) {
             return;
         }

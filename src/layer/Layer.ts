@@ -11,7 +11,7 @@ import type { Map } from '../map';
 
 /**
  * 配置项
- * 
+ *
  * @english
  * @property options=null                           - base options of layer.
  * @property options.attribution=null               - the attribution of this layer, you can specify company or other information of this layer.
@@ -56,7 +56,7 @@ const options: LayerOptions = {
 /**
  * layers的基础类，定义了所有layers公共方法。
  * 抽象类，不做实例化打算
- * 
+ *
  * @english
  * @classdesc
  * Base class for all the layers, defines common methods that all the layer classes share. <br>
@@ -104,7 +104,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     /**
      * 加载tile layer,不能被子类重写
-     * 
+     *
      * @english
      * load the tile layer, can't be overrided by sub-classes
      */
@@ -128,7 +128,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     /**
      * 获取layer Id
-     * 
+     *
      * @english
      * Get the layer id
      * @returns id
@@ -139,7 +139,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     /**
      * 为layer新设一个 Id
-     * 
+     *
      * @english
      * Set a new id to the layer
      * @param id - new layer id
@@ -154,7 +154,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         this._id = id;
         /**
          * idchange 事件
-         * 
+         *
          * @english
          * idchange event.
          *
@@ -176,7 +176,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     /**
      * 将图层添加至 map
-     * 
+     *
      * @english
      * Adds itself to a map.
      * @param map - map added to
@@ -189,7 +189,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     /**
      * 为layer 设置zIndex
-     * 
+     *
      * @engilsh
      * Set a z-index to the layer
      * @param zIndex - layer's z-index
@@ -210,7 +210,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         }
         /**
          * setzindex 事件
-         * 
+         *
          * @english
          * setzindex event.
          *
@@ -230,7 +230,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     /**
      * 获取layer 的 zIndex
-     * 
+     *
      * @english
      * Get the layer's z-index
      * @return
@@ -240,8 +240,8 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     /**
-     * 获取 layer 的 minZoom 
-     * 
+     * 获取 layer 的 minZoom
+     *
      * @english
      * Get Layer's minZoom to display
      * @return
@@ -254,7 +254,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     /**
      * 获取layer 的 maxZoom
-     * 
+     *
      * @english
      * Get Layer's maxZoom to display
      * @return
@@ -267,7 +267,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     /**
      * 获取 layer 的 opacity
-     * 
+     *
      * @english
      * Get layer's opacity
      * @returns {Number}
@@ -278,7 +278,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     /**
      * 设置 layer 的 opacity
-     * 
+     *
      * @english
      * Set opacity to the layer
      * @param opacity - layer's opacity
@@ -288,8 +288,8 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         this.config('opacity', op);
         /**
         * setopacity 事件
-        * 
-        * @english 
+        *
+        * @english
         * setopacity event.
         *
         * @event Layer#setopacity
@@ -304,7 +304,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     /**
      * layer 是否为 HTML5 Canvas 渲染
-     * 
+     *
      * @english
      * If the layer is rendered by HTML5 Canvas.
      * @return
@@ -317,7 +317,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     /**
      * 获取图层所在 map
-     * 
+     *
      * @english
      * Get the map that the layer added to
      * @returns {Map}
@@ -330,8 +330,8 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     /**
-     * 获取 layer 所在map 的 projection 
-     * 
+     * 获取 layer 所在map 的 projection
+     *
      * @english
      * Get projection of layer's map
      * @returns
@@ -343,7 +343,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     /**
      * 将图层置顶
-     * 
+     *
      * @english
      * Brings the layer to the top of all the layers
      * @returns this
@@ -364,7 +364,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     /**
      * 将图层置底
-     * 
+     *
      * @english
      * Brings the layer under the bottom of all the layers
      * @returns {Layer} this
@@ -385,7 +385,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     /**
      * 显示图层
-     * 
+     *
      * @english
      * Show the layer
      * @returns this
@@ -423,7 +423,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     /**
      * 隐藏图层
-     * 
+     *
      * @english
      * Hide the layer
      * @returns this
@@ -447,7 +447,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             } else {
                 /**
                  * hide事件
-                 * 
+                 *
                  * @english
                  * hide event.
                  *
@@ -465,7 +465,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     /**
      * layer 的当前 visible 状态
-     * 
+     *
      * @english
      * Whether the layer is visible now.
      * @return
@@ -491,7 +491,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     /**
      * 移除图层
-     * 
+     *
      * @english
      * Remove itself from the map added to.
      * @returns this
@@ -511,7 +511,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     /**
      * 获取 mask geometry
-     * 
+     *
      * @english
      * Get the mask geometry of the layer
      * @return {Geometry}
@@ -522,7 +522,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     /**
      * 设置mask geometry, 只显示掩码的区域
-     * 
+     *
      * @english
      * Set a mask geometry on the layer, only the area in the mask will be displayed.
      * @param {Geometry} mask - mask geometry, can only be a Marker with vector symbol, a Polygon or a MultiPolygon
@@ -558,7 +558,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     /**
      * 移除mask
-     * 
+     *
      * @engilsh
      * Remove the mask
      * @returns {Layer} this
@@ -578,7 +578,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     /**
      * 准备层的加载，是一个由子类重写的方法。
-     * 
+     *
      * @english
      * Prepare Layer's loading, this is a method intended to be overrided by subclasses.
      * @return true to continue loading, false to cease.
@@ -593,7 +593,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     /**
      * 是否加载layer
-     * 
+     *
      * @english
      * Whether the layer is loaded
      * @return
@@ -604,7 +604,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     /**
      * 获取collision index
-     * 
+     *
      * @english
      * Get layer's collision index
      * @returns {CollisionIndex}
@@ -626,7 +626,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     /**
      * 清除 layer 的 collision index。
      * 如果 collisionScope !== 'layer' 将忽略
-     * 
+     *
      * @english
      * Clear layer's collision index.
      * Will ignore if collisionScope is not layer
@@ -708,7 +708,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
         /**
          * renderercreate 事件, 当 renderer 创建完成后触发
-         * 
+         *
          * @english
          * renderercreate event, fired when renderer is created.
          *

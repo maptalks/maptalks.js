@@ -2,15 +2,10 @@ import { forEachCoord, sign, wrap } from '../../core/util';
 import Coordinate from '../Coordinate';
 import Extent from '../Extent';
 
-/**
- * Common Methods of Projections.
- * @mixin
- * @protected
- * @memberOf projection
- * @name Common
- */
-export default /** @lends projection.Common */ {
-    is(code) {
+const CommonProjection = {
+    code: '',
+
+    is(code: string) {
         if (this.code === code) {
             return true;
         }
@@ -24,27 +19,39 @@ export default /** @lends projection.Common */ {
         }
         return false;
     },
+
     /**
+     * 将地理坐标投影到投影坐标（二维坐标）
+     * @english
      * Project a geographical coordinate to a projected coordinate (2d coordinate)
-     * @param  {Coordinate} p - coordinate to project
-     * @return {Coordinate}
+     * @param p - coordinate to project
      * @function projection.Common.project
      */
-    project() { },
+    project(p: Coordinate): Coordinate {
+        return p;
+    },
+
     /**
+     * 将投影坐标转到地理坐标（二维坐标）
+     *
+     * @english
      * Unproject a projected coordinate to a geographical coordinate (2d coordinate)
-     * @param  {Coordinate} p - coordinate to project
-     * @return {Coordinate}
+     * @param p - coordinate to project
      * @function projection.Common.unproject
      */
-    unproject() { },
+    unproject(p: Coordinate): Coordinate {
+        return p;
+    },
+
     /**
+     * 批量将地理坐标投影到投影坐标
+     *
+     * @english
      * Project a group of geographical coordinates to projected coordinates.
-     * @param  {Coordinate[]|Coordinate[][]|Coordinate[][][]} coordinates - coordinates to project
-     * @return {Coordinate[]|Coordinate[][]|Coordinate[][][]}
+     * @param coordinates - coordinates to project
      * @function projection.Common.projectCoords
      */
-    projectCoords(coordinates, antiMeridian) {
+    projectCoords(coordinates: Coordinate[] | Coordinate[][] | Coordinate[][][], antiMeridian?: boolean): Coordinate[] | Coordinate[][] | Coordinate[][][] {
         if (!coordinates) {
             return [];
         }
@@ -63,8 +70,8 @@ export default /** @lends projection.Common */ {
             const antiMeridianEnable = antiMeridian !== false;
             const circum = this.getCircum();
             const extent = this.getSphereExtent(),
-                sx = extent.sx,
-                sy = extent.sy;
+              sx = extent.sx,
+              sy = extent.sy;
             let wrapX, wrapY;
             let pre = coordinates[0], current, dx, dy, p;
             const prj = [this.project(pre)];
@@ -99,12 +106,14 @@ export default /** @lends projection.Common */ {
     },
 
     /**
+     * 批量将投影坐标转到地理坐标
+     *
+     * @english
      * Unproject a group of projected coordinates to geographical coordinates.
-     * @param  {Coordinate[]|Coordinate[][]|Coordinate[][][]} projCoords - projected coordinates to unproject
-     * @return {Coordinate[]|Coordinate[][]|Coordinate[][][]}
+     * @param projCoords - projected coordinates to unproject
      * @function projection.Common.unprojectCoords
      */
-    unprojectCoords(projCoords) {
+    unprojectCoords(projCoords: Coordinate[] | Coordinate[][] | Coordinate[][][]): Coordinate[] | Coordinate[][] | Coordinate[][][] {
         if (!projCoords) {
             return [];
         }
@@ -115,19 +124,24 @@ export default /** @lends projection.Common */ {
     },
 
     /**
+     * 投影是否为球面
+     *
+     * @english
      * Whether the projection is spherical
-     * @return {Boolean}
      */
-    isSphere() {
+    isSphere(): boolean {
         return !!this.sphere;
     },
 
     /**
+     * 判断传入的投影坐标是否超出椭球体范围
+     *
+     * @english
      * If the projected coord out of the sphere
-     * @param  {Coordinate}  pcoord projected coord
+     * @param pcoord projected coord
      * @return {Boolean}
      */
-    isOutSphere(pcoord) {
+    isOutSphere(pcoord: Coordinate): boolean {
         if (!this.isSphere()) {
             return false;
         }
@@ -136,11 +150,14 @@ export default /** @lends projection.Common */ {
     },
 
     /**
+     * 限制投影坐标在球体中
+     *
+     * @english
      * Wrap the projected coord in the sphere
-     * @param  {Coordinate} pcoord projected coord
-     * @return {Coordinate} wrapped projected coord
+     * @param pcoord projected coord
+     * @returns wrapped projected coord
      */
-    wrapCoord(pcoord) {
+    wrapCoord(pcoord: Coordinate): Coordinate {
         if (!this.isSphere()) {
             return pcoord;
         }
@@ -153,7 +170,7 @@ export default /** @lends projection.Common */ {
         return wrapped;
     },
 
-    getCircum() {
+    getCircum(): Record<string, number> {
         if (!this.circum && this.isSphere()) {
             const extent = this.getSphereExtent();
             this.circum = {
@@ -164,14 +181,26 @@ export default /** @lends projection.Common */ {
         return this.circum;
     },
 
-    getSphereExtent() {
+    getSphereExtent(): Extent {
         if (!this.extent && this.isSphere()) {
             const max = this.project(new Coordinate(180, 90)),
-                min = this.project(new Coordinate(-180, -90));
+              min = this.project(new Coordinate(-180, -90));
             this.extent = new Extent(min, max, this);
             this.extent.sx = max.x > min.x ? 1 : -1;
             this.extent.sy = max.y > min.y ? 1 : -1;
         }
         return this.extent;
     }
-} as any;
+};
+
+export type CommonProjectionType = typeof CommonProjection;
+
+/**
+ * 投影公共方法
+ * @english
+ * Common Methods of Projections.
+ * @protected
+ * @group projection
+ * @namespace Common
+ */
+export default CommonProjection;

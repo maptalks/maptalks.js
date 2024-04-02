@@ -1,8 +1,8 @@
 import { isNil, extend } from '../../core/util';
-import Common from './Projection';
+import Common, { type CommonProjectionType } from './Projection';
 import Coordinate from '../Coordinate';
-import { WGS84Sphere } from '../measurer';
-import etmerc from './etmerc.js';
+import { WGS84Sphere, type WGS84SphereType } from '../measurer';
+import etmerc from './etmerc';
 
 /* eslint-disable no-loss-of-precision */
 // from proj_api.h
@@ -16,22 +16,23 @@ const SRS_WGS84_ESQUARED = 0.0066943799901413165;
 
 
 const aliases = ['Traverse_Mercator'];
-/**
- * Traverse Mercator Projection
- *
- * @class
- * @category geo
- * @protected
- * @memberOf projection
- * @name EPSG9807
- * @mixes projection.Common
- * @mixes measurer.WGS84Sphere
- */
-export default extend<any>({}, Common, {
+
+export interface EPSG9807ProjectionParams {
+    falseEasting: number;
+    falseNorthing: number;
+    scaleFactor: number;
+    centralMeridian: number;
+    latitudeOfOrigin: number;
+    startLongtitude: number;
+    startLatitude: number;
+}
+
+const EPSG9807Projection = {
     code: 'EPSG:9807',
     aliases,
-    create(params) {
-        const P: any = {
+    centralMeridian: 0,
+    create(params: Partial<EPSG9807ProjectionParams>) {
+        const P: Record<string, any> = {
             a: SRS_WGS84_SEMIMAJOR,
             es: SRS_WGS84_ESQUARED,
             x0: isNil(params.falseEasting) ? 500000 : params.falseEasting,
@@ -55,7 +56,7 @@ export default extend<any>({}, Common, {
             originY = P.a * xy.y + P.y0;
         }
 
-        return extend({}, Common, {
+        const methods = {
             /**
              * "EPSG:9807", Code of the projection
              * @type {String}
@@ -64,7 +65,7 @@ export default extend<any>({}, Common, {
             code: 'EPSG:9807',
             aliases,
             centralMeridian: params.centralMeridian,
-            project: function (p, out) {
+            project: function (p: Coordinate, out?: Coordinate): Coordinate {
                 lp.lam = p.x * DEG_TO_RAD - P.lam0;
                 lp.phi = p.y * DEG_TO_RAD;
                 P.fwd(lp, xy);
@@ -77,7 +78,7 @@ export default extend<any>({}, Common, {
                 }
                 return new Coordinate(x, y);
             },
-            unproject: function (p, out) {
+            unproject: function (p: Coordinate, out?: Coordinate): Coordinate {
                 xy.x = (p.x - P.x0 + originX) / P.a;
                 xy.y = (p.y - P.y0 + originY) / P.a;
                 P.inv(xy, lp);
@@ -90,6 +91,25 @@ export default extend<any>({}, Common, {
                 }
                 return new Coordinate(x, y);
             }
-        }, WGS84Sphere);
+        };
+
+        return extend<CommonProjectionType & typeof methods & WGS84SphereType, CommonProjectionType, typeof methods, WGS84SphereType>({} as any, Common, methods, WGS84Sphere);
     }
-});
+};
+
+export type EPSG9807ProjectionType = CommonProjectionType & typeof EPSG9807Projection;
+
+/**
+ * 横轴墨卡托投影
+ *
+ * @english
+ * Traverse Mercator Projection
+ *
+ * @category geo
+ * @protected
+ * @group projection
+ * @name EPSG9807
+ * {@inheritDoc projection.Common}
+ * {@inheritDoc measurer.WGS84Sphere}
+ */
+export default extend<EPSG9807ProjectionType, CommonProjectionType, typeof EPSG9807Projection>({} as EPSG9807ProjectionType, Common, EPSG9807Projection);
