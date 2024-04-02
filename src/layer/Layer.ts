@@ -80,9 +80,10 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     _collisionIndex: CollisionIndex
     _optionsHook?(conf?: any): void
     _silentConfig: boolean | undefined | any
+    options: LayerOptions;
 
 
-    constructor(id: string | number, options: LayerOptions) {
+    constructor(id: string, options?: LayerOptions) {
         let canvas;
         if (options) {
             canvas = options.canvas;
@@ -836,17 +837,17 @@ export type LayerOptions = {
     minZoom?: number,
     maxZoom?: number,
     visible?: boolean,
-    opacity?: number | string,
+    opacity?: number,
     zIndex?: number
     globalCompositeOperation?: string,
-    renderer?: string,
+    renderer?: 'canvas' | 'gl' | 'dom',
     debugOutline?: string,
     cssFilter?: string,
     forceRenderOnMoving?: boolean,
     forceRenderOnZooming?: boolean,
     forceRenderOnRotating?: boolean,
     collision?: boolean,
-    collisionScope?: string,
+    collisionScope?: 'layer' | 'map',
     hitDetect?: boolean,
     canvas?: HTMLCanvasElement,
     mask?: any,
