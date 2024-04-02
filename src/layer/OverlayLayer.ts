@@ -3,7 +3,7 @@ import { isNil, UID, isObject, extend, isFunction, parseStyleRootPath } from '..
 import Extent from '../geo/Extent';
 import { Geometry } from '../geometry';
 import { createFilter, getFilterFeature, compileStyle } from '@maptalks/feature-filter';
-import Layer from './Layer';
+import Layer, { LayerOptions } from './Layer';
 import GeoJSON from '../geometry/GeoJSON';
 
 function isGeometry(geo) {
@@ -48,9 +48,10 @@ class OverlayLayer extends Layer {
     _toSort: boolean
     _cookedStyles: any
     _clearing: boolean
+    options: OverlayLayerOptions;
 
-    constructor(id: string | number, geometries: any, options: OverlayLayerOptions) {
-        if (geometries && (!isGeometry(geometries) && !Array.isArray(geometries) && GEOJSON_TYPES.indexOf(geometries.type) < 0)) {
+    constructor(id: string, geometries: Array<Geometry> | OverlayLayerOptions, options?: OverlayLayerOptions) {
+        if (geometries && (!isGeometry(geometries) && !Array.isArray(geometries) && GEOJSON_TYPES.indexOf((geometries as any).type) < 0)) {
             options = geometries;
             geometries = null;
         }
@@ -65,6 +66,10 @@ class OverlayLayer extends Layer {
         if (style) {
             this.setStyle(style);
         }
+    }
+
+    getAltitude() {
+        return 0;
     }
 
     // isGeometryListening(types) {
@@ -843,10 +848,12 @@ export default OverlayLayer;
 export type OverlayLayerOptions = {
     drawImmediate?: boolean,
     geometryEvents?: boolean,
-    geometryEventTolerance?: number
-}
+    geometryEventTolerance?: number,
+    style?: any;
+} & LayerOptions;
+
 export type addGeometryFitViewOptions = {
     easing?: string,
     duration?: number,
-    step?: (any) => void
+    step?: (frame) => void
 }

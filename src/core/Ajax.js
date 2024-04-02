@@ -1,4 +1,6 @@
-import { IS_NODE, isString, isFunction, parseJSON, emptyImageUrl, UID } from './util';
+import { parseJSON, emptyImageUrl, UID } from './util/util';
+import { isString, isFunction } from './util/common';
+import { IS_NODE } from './util/env';
 
 /**
  * @classdesc
@@ -166,7 +168,7 @@ const Ajax = {
                                 data: client.response,
                                 cacheControl: client.getResponseHeader('Cache-Control'),
                                 expires: client.getResponseHeader('Expires'),
-                                contentType : client.getResponseHeader('Content-Type')
+                                contentType: client.getResponseHeader('Content-Type')
                             });
                         }
                     } else {
@@ -186,7 +188,7 @@ const Ajax = {
             client = new XMLHttpRequest();
         } catch (e) {
             try { client = new ActiveXObject('Msxml2.XMLHTTP'); } catch (e) {
-                try { client = new ActiveXObject('Microsoft.XMLHTTP'); } catch (e) {}
+                try { client = new ActiveXObject('Microsoft.XMLHTTP'); } catch (e) { }
             }
         }
         client.onreadystatechange = Ajax._wrapCallback(client, cb);

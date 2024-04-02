@@ -1,7 +1,8 @@
 import {
-    extend, getAbsoluteURL, isNumber, isObject,
-    isString, isURL, parseSVG
-} from './util';
+    getAbsoluteURL,
+    isURL
+} from './util/util';
+import { isObject, extend, isString, isNumber } from './util/common';
 import { createEl } from './util/dom';
 import Browser from './Browser';
 import Ajax from './Ajax';
@@ -405,3 +406,75 @@ export function formatResourceUrl(path: string) {
     return getAbsoluteURL(path);
 }
 
+
+
+const parser = new DOMParser();
+
+function getAttr(attributes: NamedNodeMap, key: string) {
+    if (!attributes) {
+        return null;
+    }
+    return attributes[key] && attributes[key].value;
+}
+
+export function parseSVG(str: string) {
+    const xmlDoc = parser.parseFromString(str, 'text/xml');
+    const root = xmlDoc.querySelector('svg');
+    if (!root) {
+        return null;
+    }
+    //parse all node,not only path node
+    const paths = root.childNodes;
+    const data = [];
+    const rootAttribute = root.attributes;
+    const rootFill = getAttr(rootAttribute, 'fill');
+    const rootFillOpacity = getAttr(rootAttribute, 'fill-opacity');
+    const rootStroke = getAttr(rootAttribute, 'stroke');
+    const rootStrokeOpacity = getAttr(rootAttribute, 'stroke-opacity');
+    const rootStrokeWidth = getAttr(rootAttribute, 'stroke-width');
+    for (let i = 0, len = paths.length; i < len; i++) {
+        const dom = paths[i];
+        const attributes = (dom as any).attributes;
+        if (!attributes) {
+            continue;
+        }
+        let d;
+        const tagName = (dom as any).tagName || '';
+        const isPath = tagName.toLowerCase() === 'path';
+        //非path节点直接拿dom节点 作为path参数
+        if (!isPath) {
+            d = dom;
+        } else {
+            d = getAttr(attributes, 'd');
+        }
+        if (!d) {
+            continue;
+        }
+        const fill = getAttr(attributes, 'fill') || rootFill;
+        const stroke = getAttr(attributes, 'stroke') || rootStroke;
+        const pathData: any = {
+            path: d
+        };
+        if (fill) {
+            pathData.fill = fill;
+            pathData['fill-opacity'] = getAttr(attributes, 'fill-opacity') || rootFillOpacity || 1;
+        }
+        if (stroke) {
+            pathData.stroke = stroke;
+            pathData['stroke-opacity'] = getAttr(attributes, 'stroke-opacity') || rootStrokeOpacity || 1;
+            pathData['stroke-width'] = getAttr(attributes, 'stroke-width') || rootStrokeWidth || 1;
+        }
+        data.push(pathData);
+        if (!isPath) {
+            for (const p in pathData) {
+                if (p === 'path') {
+                    continue;
+                }
+                if (pathData.hasOwnProperty(p)) {
+                    (dom as any).setAttribute(p, pathData[p]);
+                }
+            }
+        }
+    }
+    return data;
+}

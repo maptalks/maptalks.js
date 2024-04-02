@@ -103,7 +103,7 @@ class GeometryCollection extends Geometry {
      * @param  {*} [context=undefined]   - callback's context
      * @return {GeometryCollection} this
      */
-    forEach(fn: any, context?: any): GeometryCollection {
+    forEach(fn: any, context?: any): this {
         const geometries = this.getGeometries();
         for (let i = 0, l = geometries.length; i < l; i++) {
             if (!geometries[i]) {
@@ -155,7 +155,7 @@ class GeometryCollection extends Geometry {
      * @param  {Coordinate} offset - translate offset
      * @return {GeometryCollection} this
      */
-    translate(offset?: Coordinate): GeometryCollection {
+    translate(offset: Coordinate): this {
         if (!offset) {
             return this;
         }
@@ -207,7 +207,7 @@ class GeometryCollection extends Geometry {
      * @return {GeometryCollection} this
      * @fires GeometryCollection#show
      */
-    show(): GeometryCollection {
+    show(): this {
         this.options['visible'] = true;
         this.forEach(function (geometry) {
             geometry.show();
@@ -222,7 +222,7 @@ class GeometryCollection extends Geometry {
      * @return {GeometryCollection} this
      * @fires GeometryCollection#hide
      */
-    hide(): GeometryCollection {
+    hide(): this {
         this.options['visible'] = false;
         this.forEach(function (geometry) {
             geometry.hide();
@@ -257,7 +257,7 @@ class GeometryCollection extends Geometry {
         return s;
     }
 
-    setSymbol(s?: any): GeometryCollection {
+    setSymbol(s?: any): this {
         if (s && s['children']) {
             this._symbol = null;
             this.forEach((g, i) => {
@@ -276,7 +276,7 @@ class GeometryCollection extends Geometry {
         return this;
     }
 
-    _setExternSymbol(symbol: any): GeometryCollection {
+    _setExternSymbol(symbol: any): this {
         symbol = this._prepareSymbol(symbol);
         this._externSymbol = symbol;
         this.forEach(function (geometry) {
@@ -561,7 +561,7 @@ class GeometryCollection extends Geometry {
 
     //----------Overrides editor methods in Geometry-----------------
 
-    startEdit(opts?: any): GeometryCollection {
+    startEdit(opts?: any): this {
         if (this.isEmpty()) {
             return this;
         }
@@ -590,7 +590,7 @@ class GeometryCollection extends Geometry {
         return this;
     }
 
-    endEdit(): GeometryCollection {
+    endEdit(): this {
         if (this.isEmpty()) {
             return this;
         }
