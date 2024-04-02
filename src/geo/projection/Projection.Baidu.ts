@@ -1,4 +1,4 @@
-import { extend } from '../../core/util';
+import { extend } from '../../core/util/common';
 import Common, { type CommonProjectionType } from './Projection';
 import Coordinate from '../Coordinate';
 import { BaiduSphere, BaiduSphereType } from '../measurer';

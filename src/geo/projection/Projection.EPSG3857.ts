@@ -1,4 +1,5 @@
-import { extend, wrap, sign } from '../../core/util';
+import { extend } from '../../core/util/common';
+import { wrap, sign } from '../../core/util/util';
 import Common, { type CommonProjectionType } from './Projection';
 import Coordinate from '../Coordinate';
 import { WGS84Sphere, type WGS84SphereType } from '../measurer';
