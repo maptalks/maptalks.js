@@ -4,14 +4,16 @@ import Coordinate from '../geo/Coordinate';
 import Extent from '../geo/Extent';
 import CenterMixin from './CenterMixin';
 import Polygon from './Polygon';
-
+type CircleOptionsType = {
+    numberOfShellPoints?: number;
+}
 /**
  * @property {Object} options
  * @property {Number} [options.numberOfShellPoints=60]   - number of shell points when converting the circle to a polygon.
  * @memberOf Circle
  * @instance
  */
-const options = {
+const options: CircleOptionsType = {
     'numberOfShellPoints': 60
 };
 
@@ -32,7 +34,7 @@ const options = {
  */
 class Circle extends CenterMixin(Polygon) {
 
-    static fromJSON(json) {
+    static fromJSON(json: any): Circle {
         const feature = json['feature'];
         const circle = new Circle(json['coordinates'], json['radius'], json['options']);
         circle.setProperties(feature['properties']);
@@ -44,7 +46,8 @@ class Circle extends CenterMixin(Polygon) {
      * @param {Number} radius           - radius of the circle, in meter
      * @param {Object} [options=null]   - construct options defined in [Circle]{@link Circle#options}
      */
-    constructor(coordinates, radius, options) {
+    constructor(coordinates: Coordinate | Array<Coordinate>, radius: number, options?: any) {
+        //@ts-expect-error todo
         super(null, options);
         if (coordinates) {
             this.setCoordinates(coordinates);
@@ -53,30 +56,36 @@ class Circle extends CenterMixin(Polygon) {
     }
 
     /**
+     * 获取圆形的半径
+     * @english
      * Get radius of the circle
      * @return {Number}
      */
-    getRadius() {
+    getRadius(): number {
         return this._radius;
     }
 
     /**
+     * 给圆形设置新的半径
+     * @english
      * Set a new radius to the circle
      * @param {Number} radius - new radius
      * @return {Circle} this
      * @fires Circle#shapechange
      */
-    setRadius(radius) {
+    setRadius(radius: number): Circle {
         this._radius = radius;
         this.onShapeChanged();
         return this;
     }
 
     /**
+     * 获取作为多边形的圆的外壳，外壳点数由[options.numberOfShellPoints决定
+     * @english
      * Gets the shell of the circle as a polygon, number of the shell points is decided by [options.numberOfShellPoints]{@link Circle#options}
      * @return {Coordinate[]} - shell coordinates
      */
-    getShell() {
+    getShell(): Coordinate[] {
         const measurer = this._getMeasurer(),
             center = this.getCoordinates(),
             numberOfPoints = this.options['numberOfShellPoints'],
@@ -96,18 +105,20 @@ class Circle extends CenterMixin(Polygon) {
     }
 
     /**
+     * 圆没有任何孔，总是返回null
+     * @english
      * Circle won't have any holes, always returns null
      * @return {Object[]} an empty array
      */
-    getHoles() {
+    getHoles(): any {
         return [];
     }
 
-    animateShow() {
+    animateShow(): any {
         return this.show();
     }
 
-    _containsPoint(point, tolerance) {
+    _containsPoint(point: any, tolerance: any): any {
         const map = this.getMap();
         if (map.getPitch()) {
             return super._containsPoint(point, tolerance);
@@ -119,7 +130,7 @@ class Circle extends CenterMixin(Polygon) {
         return withInEllipse(point, center, se, t);
     }
 
-    _computePrjExtent(projection) {
+    _computePrjExtent(projection: any): Extent {
         const minmax = this._getMinMax(projection);
         if (!minmax) {
             return null;
@@ -134,7 +145,7 @@ class Circle extends CenterMixin(Polygon) {
         return new Extent(pcenter.add(leftx, topy), pcenter.add(rightx, bottomy));
     }
 
-    _computeExtent(measurer) {
+    _computeExtent(measurer: any): Extent {
         const minmax = this._getMinMax(measurer);
         if (!minmax) {
             return null;
@@ -142,7 +153,7 @@ class Circle extends CenterMixin(Polygon) {
         return new Extent(minmax[0].x, minmax[2].y, minmax[1].x, minmax[3].y, this._getProjection());
     }
 
-    _getMinMax(measurer) {
+    _getMinMax(measurer: any): any {
         if (!measurer || !this._coordinates || isNil(this._radius)) {
             return null;
         }
@@ -154,21 +165,22 @@ class Circle extends CenterMixin(Polygon) {
         return [p1, p2, p3, p4];
     }
 
-    _computeGeodesicLength() {
+    _computeGeodesicLength(): number {
         if (isNil(this._radius)) {
             return 0;
         }
         return Math.PI * 2 * this._radius;
     }
 
-    _computeGeodesicArea() {
+    _computeGeodesicArea(): number {
         if (isNil(this._radius)) {
             return 0;
         }
         return Math.PI * Math.pow(this._radius, 2);
     }
 
-    _exportGeoJSONGeometry() {
+    _exportGeoJSONGeometry(): any {
+        //@ts-expect-error todo
         const coordinates = Coordinate.toNumberArrays([this.getShell()]);
         return {
             'type': 'Polygon',
@@ -176,7 +188,7 @@ class Circle extends CenterMixin(Polygon) {
         };
     }
 
-    _toJSON(options) {
+    _toJSON(options: any): any {
         const center = this.getCenter();
         const opts = extend({}, options);
         opts.geometry = false;
@@ -194,8 +206,9 @@ class Circle extends CenterMixin(Polygon) {
 
 }
 
+//@ts-expect-error todo
 Circle.mergeOptions(options);
-
+//@ts-expect-error todo
 Circle.registerJSONType('Circle');
 
 export default Circle;
