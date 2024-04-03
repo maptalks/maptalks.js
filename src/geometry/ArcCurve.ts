@@ -38,7 +38,7 @@ const options: ArcCurveOptionsType = {
 //@ts-expect-error todo
 class ArcCurve extends Curve {
 
-    _paintArrow?(a, b, c): void;
+    _paintArrow?(a: CanvasRenderingContext2D, b: any, c: number): void;
 
 
 
@@ -50,7 +50,7 @@ class ArcCurve extends Curve {
     }
 
     // paint method on canvas
-    _paintOn(ctx, points, lineOpacity) {
+    _paintOn(ctx: CanvasRenderingContext2D, points: any, lineOpacity: number): void {
         ctx.beginPath();
         this._arc(ctx, points, lineOpacity);
         Canvas._stroke(ctx, lineOpacity);

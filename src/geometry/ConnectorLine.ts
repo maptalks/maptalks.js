@@ -4,12 +4,18 @@ import Geometry from './Geometry';
 import ArcCurve from './ArcCurve';
 
 /**
+ * 连接线的方法
+ * @english
  * Mixin of connector line methods.
  * @mixin Connectable
  * @private
  */
 const Connectable = Base =>
     class extends Base {
+
+        constructor(a?: any, b?: any) {
+            super(a, b)
+        }
 
         static _hasConnectors(geometry) {
             return (!isNil(geometry.__connectors) && geometry.__connectors.length > 0);
@@ -20,6 +26,8 @@ const Connectable = Base =>
         }
 
         /**
+         * 获取连接线的源
+         * @english
          * Gets the source of the connector line.
          * @return {Geometry|control.Control|UIComponent}
          * @function Connectable.getConnectSource
@@ -29,12 +37,14 @@ const Connectable = Base =>
         }
 
         /**
+         * 设置连接线的源
+         * @english
          * Sets the source to the connector line.
          * @param {Geometry|control.Control|UIComponent} src
          * @return {ConnectorLine} this
          * @function Connectable.setConnectSource
          */
-        setConnectSource(src) {
+        setConnectSource(src: any): ConnectorLine {
             const target = this._connTarget;
             this.onRemove();
             this._connSource = src;
@@ -44,6 +54,8 @@ const Connectable = Base =>
         }
 
         /**
+         * 获取连接线的目标
+         * @english
          * Gets the target of the connector line.
          * @return {Geometry|control.Control|UIComponent}
          * @function Connectable.getConnectTarget
@@ -53,12 +65,14 @@ const Connectable = Base =>
         }
 
         /**
+         * 设置连接线目标
+         * @english
          * Sets the target to the connector line.
          * @param {Geometry|control.Control|UIComponent} target
          * @return {ConnectorLine} this
          * @function Connectable.setConnectTarget
          */
-        setConnectTarget(target) {
+        setConnectTarget(target: any): ConnectorLine {
             const src = this._connSource;
             this.onRemove();
             this._connSource = src;
@@ -68,7 +82,7 @@ const Connectable = Base =>
             return this;
         }
 
-        _updateCoordinates() {
+        _updateCoordinates(): void {
             let map = this.getMap();
             if (!map && this._connSource) {
                 map = this._connSource.getMap();
@@ -86,7 +100,7 @@ const Connectable = Base =>
             const targetPoints = this._connTarget._getConnectPoints();
             let minDist = 0;
             const oldCoordinates = this.getCoordinates();
-            let c1, c2;
+            let c1: number, c2: number;
             for (let i = 0, len = srcPoints.length; i < len; i++) {
                 const p1 = srcPoints[i];
                 for (let j = 0, length = targetPoints.length; j < length; j++) {
@@ -107,12 +121,12 @@ const Connectable = Base =>
             }
         }
 
-        onAdd() {
+        onAdd(): void {
             this._registerEvents();
             this._updateCoordinates();
         }
 
-        onRemove() {
+        onRemove(): void {
             if (this._connSource) {
                 if (this._connSource.__connectors) {
                     removeFromArray(this, this._connSource.__connectors);
@@ -141,7 +155,7 @@ const Connectable = Base =>
             }
         }
 
-        _showConnect() {
+        _showConnect(): void {
             if (!this._connSource || !this._connTarget) {
                 return;
             }
@@ -151,7 +165,7 @@ const Connectable = Base =>
             }
         }
 
-        _registerEvents() {
+        _registerEvents(): void {
             if (!this._connSource || !this._connTarget) {
                 return;
             }
@@ -211,6 +225,8 @@ const options = {
 };
 
 /**
+ * 直线连接线几何图形可以将几何图形或ui组件相互连接。
+ * @english
  * A straight connector line geometry can connect geometries or ui components with each other. <br>
  *
  * @category geometry
@@ -235,7 +251,7 @@ class ConnectorLine extends Connectable(LineString) {
      * @param {Geometry|control.Control|UIComponent} target  - target to connect
      * @param {Object} [options=null]  - construct options defined in [ConnectorLine]{@link ConnectorLine#options}
      */
-    constructor(src, target, options) {
+    constructor(src: any, target: any, options: any) {
         super(null, options);
         if (arguments.length === 1) {
             options = src;
@@ -246,12 +262,14 @@ class ConnectorLine extends Connectable(LineString) {
         this._connTarget = target;
     }
 }
-
+//@ts-expect-error todo
 ConnectorLine.mergeOptions(options);
-
+//@ts-expect-error todo
 ConnectorLine.registerJSONType('ConnectorLine');
 
 /**
+ * 弧形曲线连接线几何图形可以将几何图形或ui组件相互连接
+ * @english
  * An arc curve connector line geometry can connect geometries or ui components with each other. <br>
  *
  * @category geometry
@@ -277,7 +295,7 @@ class ArcConnectorLine extends Connectable(ArcCurve) {
      * @param {Geometry|control.Control|UIComponent} target  - target to connect
      * @param {Object} [options=null]  - construct options defined in [ConnectorLine]{@link ConnectorLine#options}
      */
-    constructor(src, target, options) {
+    constructor(src: any, target: any, options: any) {
         super(null, options);
         if (arguments.length === 1) {
             options = src;
@@ -288,9 +306,9 @@ class ArcConnectorLine extends Connectable(ArcCurve) {
         this._connTarget = target;
     }
 }
-
+//@ts-expect-error todo
 ArcConnectorLine.mergeOptions(options);
-
+//@ts-expect-error todo
 ArcConnectorLine.registerJSONType('ArcConnectorLine');
 
 export { ConnectorLine, ArcConnectorLine };

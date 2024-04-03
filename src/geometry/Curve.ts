@@ -24,7 +24,7 @@ const options: CurveOptionsType = {
  */
 class Curve extends LineString {
 
-    _getArrowShape?(a, b, c, d, e): any;
+    _getArrowShape?(arrows: any[], segments: [], lineWidth: number, arrowStyle: any, tolerance: any): any;
 
 
     _arc(ctx: CanvasRenderingContext2D, points: any, lineOpacity: number): void {

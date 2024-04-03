@@ -28,7 +28,7 @@ class CubicBezierCurve extends Curve {
 
     _paintArrow?(a: CanvasRenderingContext2D, b: any, c: number): void
 
-    static fromJSON(json: any) {
+    static fromJSON(json: any): CubicBezierCurve {
         const feature = json['feature'];
         const curve = new CubicBezierCurve(feature['geometry']['coordinates'], json['options']);
         curve.setProperties(feature['properties']);
@@ -51,7 +51,7 @@ class CubicBezierCurve extends Curve {
         this._paintArrow(ctx, points, lineOpacity);
     }
 
-    _getArrowPoints(arrows: any[], segments: [], lineWidth: number, arrowStyle: any, tolerance: any) {
+    _getArrowPoints(arrows: any[], segments: [], lineWidth: number, arrowStyle: any, tolerance: any): any {
         return this._getCurveArrowPoints(arrows, segments, lineWidth, arrowStyle, tolerance, 3);
     }
 }

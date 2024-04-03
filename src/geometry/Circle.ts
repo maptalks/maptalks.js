@@ -130,7 +130,7 @@ class Circle extends CenterMixin(Polygon) {
         return withInEllipse(point, center, se, t);
     }
 
-    _computePrjExtent(projection): Extent {
+    _computePrjExtent(projection: any): Extent {
         const minmax = this._getMinMax(projection);
         if (!minmax) {
             return null;
@@ -153,7 +153,7 @@ class Circle extends CenterMixin(Polygon) {
         return new Extent(minmax[0].x, minmax[2].y, minmax[1].x, minmax[3].y, this._getProjection());
     }
 
-    _getMinMax(measurer): any {
+    _getMinMax(measurer: any): any {
         if (!measurer || !this._coordinates || isNil(this._radius)) {
             return null;
         }
