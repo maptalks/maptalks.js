@@ -1,3 +1,5 @@
+import { MixinConstructor } from '../core/Mixin';
+
 import Coordinate from '../geo/Coordinate';
 
 /**
@@ -6,9 +8,16 @@ import Coordinate from '../geo/Coordinate';
  * Common methods for geometry classes that base on a center, e.g. Marker, Circle, Ellipse , etc
  * @mixin CenterMixin
  */
-export default function (Base) {
+export default function <T extends MixinConstructor>(Base: T) {
     return class extends Base {
-
+        public _coordinates: any
+        public _pcenter: any
+        public _dirtyCoords: boolean
+        getMap?(): any
+        _getProjection?(): any
+        onPositionChanged?(): void
+        _verifyProjection?(): void
+        _clearCache?(): void
         /**
          * 获取几何图形的中心点
          * @english
@@ -29,7 +38,7 @@ export default function (Base) {
          * @fires Geometry#positionchange
          * @function CenterMixin.setCoordinates
          */
-        setCoordinates(coordinates): any {
+        setCoordinates(coordinates: any): any {
             const center = (coordinates instanceof Coordinate) ? coordinates : new Coordinate(coordinates);
             this._coordinates = center;
             if (!this.getMap()) {
@@ -85,6 +94,7 @@ export default function (Base) {
 
         _clearProjection(): void {
             this._pcenter = null;
+            // @ts-expect-error todo
             super._clearProjection();
         }
 
