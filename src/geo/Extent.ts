@@ -1,4 +1,4 @@
-import { isNil, isNumber } from '../core/util';
+import { isNil, isNumber } from '../core/util/common';
 import Coordinate from './Coordinate';
 import Point from './Point';
 import Size from './Size';

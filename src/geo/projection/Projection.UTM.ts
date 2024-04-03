@@ -1,4 +1,4 @@
-import { extend } from '../../core/util';
+import { extend } from '../../core/util/common';
 import PROJ9807, { type EPSG9807ProjectionType } from './Projection.EPSG9807';
 
 export interface UTMProjectionParams {

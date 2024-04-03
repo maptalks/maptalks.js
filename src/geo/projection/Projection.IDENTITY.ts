@@ -1,4 +1,4 @@
-import { extend } from '../../core/util';
+import { extend } from '../../core/util/common';
 import Coordinate from '../Coordinate';
 import Common, { type CommonProjectionType } from './Projection';
 import { Identity, type IdentityMeasurerType } from '../measurer';

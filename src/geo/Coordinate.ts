@@ -1,4 +1,5 @@
-import {isNumber, forEachCoord, isNil} from '../core/util';
+import { isNumber, isNil } from '../core/util/common';
+import { forEachCoord } from '../core/util/util';
 import Position from './Position';
 
 export type CoordinateJson = {

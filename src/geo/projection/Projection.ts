@@ -1,4 +1,4 @@
-import { forEachCoord, sign, wrap } from '../../core/util';
+import { forEachCoord, sign, wrap } from '../../core/util/util';
 import Coordinate from '../Coordinate';
 import Extent from '../Extent';
 

@@ -11,13 +11,15 @@ import LineString from '../../geometry/LineString';
 import Polygon from '../../geometry/Polygon';
 import { BBOX_TEMP, getDefaultBBOX, pointsBBOX, resetBBOX } from '../../core/util/bbox';
 import Extent from '../../geo/Extent';
+import Painter from './Painter';
 
 const TEMP_WITHIN = {
     within: false,
     center: [0, 0]
 };
+
 // bbox in pixel
-function isWithinPixel(painter) {
+function isWithinPixel(painter: Painter) {
     if (!painter || !painter._containerBbox) {
         TEMP_WITHIN.within = false;
     } else {
@@ -96,6 +98,7 @@ const el = {
     _getPaintParams() {
         const map = this.getMap();
         if (this._paintAsPath()) {
+            // @ts-expect-error 待完善
             return Polygon.prototype._getPaintParams.call(this, true);
         }
         const pcenter = this._getPrjCoordinates();
@@ -104,11 +107,11 @@ const el = {
         return [pt, ...size];
     },
 
-    _paintOn: function () {
+    _paintOn: function (...args: any[]) {
         if (this._paintAsPath()) {
-            return Canvas.polygon.apply(Canvas, arguments);
+            return Canvas.polygon(...args);
         } else {
-            return Canvas.ellipse.apply(Canvas, arguments);
+            return Canvas.ellipse(...args);
         }
     },
 
@@ -122,10 +125,12 @@ const el = {
     }
 };
 
+// @ts-expect-error todo 等待 Ellipse 改造
 Ellipse.include(el);
 
+// @ts-expect-error todo 等待 Circle 改造
 Circle.include(el);
-//----------------------------------------------------
+
 Rectangle.include({
     _getPaintParams() {
         const map = this.getMap();
@@ -138,12 +143,14 @@ Rectangle.include({
     _computeRotatedPrjExtent,
     getRotatedShell
 });
-//----------------------------------------------------
+
+// @ts-expect-error todo 等待 Sector 改造
 Sector.include(el, {
     _redrawWhenPitch: () => true,
 
     _getPaintParams() {
         if (this._paintAsPath()) {
+            // @ts-expect-error 待完善
             return Polygon.prototype._getPaintParams.call(this, true);
         }
         const map = this.getMap();
@@ -155,18 +162,17 @@ Sector.include(el, {
         ];
     },
 
-    _paintOn: function () {
+    _paintOn: function (...args: any[]) {
         if (this._paintAsPath()) {
-            return Canvas.polygon.apply(Canvas, arguments);
+            return Canvas.polygon(...args);
         } else {
             const r = this.getMap().getBearing();
-            const args = arguments;
             if (r) {
                 args[3] = args[3].slice(0);
                 args[3][0] += r;
                 args[3][1] += r;
             }
-            return Canvas.sector.apply(Canvas, args);
+            return Canvas.sector(...args);
         }
     }
 
@@ -175,7 +181,6 @@ Sector.include(el, {
 Path.include({
     _paintAsPath: () => true
 });
-
 
 LineString.include({
 
