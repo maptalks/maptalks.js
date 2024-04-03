@@ -5,14 +5,20 @@ import Browser from '../../core/Browser';
 import Point from '../../geo/Point';
 import Canvas2D from '../../core/Canvas';
 import MapRenderer from './MapRenderer';
-import Map from '../../map/Map';
+import Map, { type PanelDom } from '../../map/Map';
 import CollisionIndex from '../../core/CollisionIndex';
 import GlobalConfig from '../../GlobalConfig';
+import type EditHandle from '../edit/EditHandle';
+import type EditOutline from '../edit/EditOutline';
+import type { Layer } from '../../layer';
+import type Size from '../../geo/Size';
 
 const tempCollisionIndex = new CollisionIndex();
 
 /**
- * @classdesc
+ * 基于 Canvas2D 的 map 渲染器
+ *
+ * @english
  * Renderer class based on HTML5 Canvas for maps.
  * @class
  * @protected
@@ -20,13 +26,43 @@ const tempCollisionIndex = new CollisionIndex();
  * @memberOf renderer
  */
 class MapCanvasRenderer extends MapRenderer {
+    _containerIsCanvas: boolean;
+    _loopTime: number;
+    _resizeTime: number;
+    _resizeCount: number;
+    _frameCycleRenderCount: number;
+    _resizeEventList: ResizeObserverEntry[];
+
+    _needClear: boolean;
+    _canvasUpdated: boolean;
+    _isViewChanged: WithUndef<boolean>;
+    _spatialRefChanged: WithUndef<boolean>;
+    _resizeObserver: ResizeObserver;
+    _resizeInterval: number;
+    _checkSizeInterval: number;
+    _hitDetectFrame: number;
+    _animationFrame: number;
+    _mapview: MapView;
+    _zoomMatrix: number[];
+    _eventParam: any;
+    _canvasIds: string[];
+    _updatedIds: string[];
+    _frameTimestamp: number;
+    _checkPositionTime: number;
+    _tops: (EditHandle | EditOutline)[];
+
+    context: CanvasRenderingContext2D;
+    canvas: HTMLCanvasElement;
+    topLayer: HTMLCanvasElement;
+    topCtx: CanvasRenderingContext2D;
+
     /**
-     * @param {Map} map - map for the renderer
+     * @param map - map for the renderer
      */
-    constructor(map) {
+    constructor(map: Map) {
         super(map);
         //container is a <canvas> element
-        this._containerIsCanvas = !!map._containerDOM.getContext;
+        this._containerIsCanvas = !!(map._containerDOM as HTMLCanvasElement).getContext;
         this._registerEvents();
         this._loopTime = 0;
         this._resizeEventList = [];
@@ -40,9 +76,9 @@ class MapCanvasRenderer extends MapRenderer {
 
     /**
      * render layers in current frame
-     * @return {Boolean} return false to cease frame loop
+     * @returns return false to cease frame loop
      */
-    renderFrame(framestamp) {
+    renderFrame(framestamp: number): boolean {
         const map = this.map;
         if (!map || !map.options['renderable']) {
             return false;
@@ -102,13 +138,13 @@ class MapCanvasRenderer extends MapRenderer {
         }
     }
 
-    drawLayers(layers, framestamp) {
+    drawLayers(layers: Layer[], framestamp: number) {
         const map = this.map,
             isInteracting = map.isInteracting(),
             // all the visible canvas layers' ids.
-            canvasIds = [],
+            canvasIds: string[] = [],
             // all the updated canvas layers's ids.
-            updatedIds = [],
+            updatedIds: string[] = [],
             fps = map.options['fpsOnInteracting'] || 0,
             timeLimit = fps === 0 ? 0 : 1000 / fps,
             // time of layer drawing
@@ -205,10 +241,9 @@ class MapCanvasRenderer extends MapRenderer {
 
     /**
      * check if need to call layer's draw/drawInteracting
-     * @param  {Layer} layer
-     * @return {Boolean}
+     * @param layer
      */
-    _checkLayerRedraw(layer) {
+    _checkLayerRedraw(layer: Layer): boolean {
         if (this.isSpatialReferenceChanged()) {
             return true;
         }
@@ -227,13 +262,14 @@ class MapCanvasRenderer extends MapRenderer {
 
     /**
      * Draw canvas rendered layer when map is interacting
-     * @param  {Layer} layer
-     * @param  {Number} t     current consumed time of layer drawing
-     * @param  {Number} timeLimit time limit for layer drawing
-     * @return {Number}       time to draw this layer
+     * @param layer
+     * @param t     current consumed time of layer drawing
+     * @param timeLimit time limit for layer drawing
+     * @param framestamp
+     * @returns time to draw this layer
      * @private
      */
-    _drawCanvasLayerOnInteracting(layer, t, timeLimit, framestamp) {
+    _drawCanvasLayerOnInteracting(layer: Layer, t: number, timeLimit: number, framestamp: number): number {
         const map = this.map,
             renderer = layer._getRenderer(),
             drawTime = renderer.getDrawTime(),
@@ -318,7 +354,7 @@ class MapCanvasRenderer extends MapRenderer {
     /**
      * Renders the layers
      */
-    drawLayerCanvas(layers) {
+    drawLayerCanvas(layers: Layer[]) {
         const map = this.map;
         if (!map) {
             return false;
@@ -410,7 +446,7 @@ class MapCanvasRenderer extends MapRenderer {
         }
     }
 
-    updateMapSize(size) {
+    updateMapSize(size: Size) {
         if (!size || this._containerIsCanvas) {
             return;
         }
@@ -435,7 +471,7 @@ class MapCanvasRenderer extends MapRenderer {
         return null;
     }
 
-    toDataURL(mimeType, quality) {
+    toDataURL(mimeType: string, quality?: number) {
         if (!this.canvas) {
             return null;
         }
@@ -465,7 +501,7 @@ class MapCanvasRenderer extends MapRenderer {
         this._cancelFrameLoop();
     }
 
-    hitDetect(point) {
+    hitDetect(point: Point) {
         const map = this.map;
         if (!map || !map.options['hitDetect'] || map.isInteracting()) {
             return;
@@ -509,7 +545,7 @@ class MapCanvasRenderer extends MapRenderer {
         map._trySetCursor(cursor);
     }
 
-    _getLayerImage(layer) {
+    _getLayerImage(layer: Layer) {
         const renderer = layer._getRenderer();
         if (renderer.getCanvasImage) {
             return renderer.getCanvasImage();
@@ -523,8 +559,8 @@ class MapCanvasRenderer extends MapRenderer {
     initContainer() {
         const panels = this.map._panels;
 
-        function createContainer(name, className, cssText, enableSelect) {
-            const c = createEl('div', className);
+        function createContainer(name: string, className: string, cssText: string, enableSelect?: boolean): PanelDom {
+            const c = createEl('div', className) as PanelDom;
             if (cssText) {
                 c.style.cssText = cssText;
             }
@@ -584,7 +620,6 @@ class MapCanvasRenderer extends MapRenderer {
 
     /**
      * Is current map's state changed?
-     * @return {Boolean}
      */
     isViewChanged() {
         if (this._isViewChanged !== undefined) {
@@ -610,7 +645,7 @@ class MapCanvasRenderer extends MapRenderer {
         return this._spatialRefChanged;
     }
 
-    _getMapView() {
+    _getMapView(): MapView {
         const map = this.map;
         const center = map._getPrjCenter();
         return {
@@ -636,7 +671,7 @@ class MapCanvasRenderer extends MapRenderer {
     /**
     * Main frame loop
     */
-    _frameLoop(framestamp) {
+    _frameLoop(framestamp: number) {
         if (!this.map) {
             this._cancelFrameLoop();
             return;
@@ -652,7 +687,7 @@ class MapCanvasRenderer extends MapRenderer {
             console.log('skip frame ing,frameCycleRenderCount:', this._frameCycleRenderCount);
         }
         // Keep registering ourselves for the next animation frame
-        this._animationFrame = requestAnimFrame((framestamp) => { this._frameLoop(framestamp); });
+        this._animationFrame = requestAnimFrame((framestamp: number) => { this._frameLoop(framestamp); });
     }
 
     _cancelFrameLoop() {
@@ -661,7 +696,7 @@ class MapCanvasRenderer extends MapRenderer {
         }
     }
 
-    _drawLayerCanvasImage(layer, layerImage, targetWidth, targetHeight) {
+    _drawLayerCanvasImage(layer: Layer, layerImage: any, targetWidth?: number, targetHeight?: number) {
         const ctx = this.context;
         const point = layerImage['point'].round();
         const dpr = this.map.getDevicePixelRatio();
@@ -704,7 +739,7 @@ class MapCanvasRenderer extends MapRenderer {
         const clipped = renderer.clipCanvas(this.context);
         if (matrix) {
             ctx.save();
-            ctx.setTransform.apply(ctx, matrix);
+            ctx.setTransform(...matrix);
         }
 
         /*let outlineColor = layer.options['debugOutline'];
@@ -849,19 +884,19 @@ class MapCanvasRenderer extends MapRenderer {
     }
 
     createCanvas() {
-        this.topLayer = createEl('canvas');
+        this.topLayer = createEl('canvas') as HTMLCanvasElement;
         this.topCtx = this.topLayer.getContext('2d');
         if (this._containerIsCanvas) {
-            this.canvas = this.map._containerDOM;
+            this.canvas = this.map._containerDOM as HTMLCanvasElement;
         } else {
-            this.canvas = createEl('canvas');
+            this.canvas = createEl('canvas') as HTMLCanvasElement;
             this._updateCanvasSize();
             this.map._panels.canvasContainer.appendChild(this.canvas);
         }
         this.context = this.canvas.getContext('2d');
     }
 
-    _updateDomPosition(framestamp) {
+    _updateDomPosition(framestamp: number) {
         if (this._checkPositionTime === undefined) {
             this._checkPositionTime = -Infinity;
         }
@@ -874,7 +909,7 @@ class MapCanvasRenderer extends MapRenderer {
         return this;
     }
 
-    _handleResizeEventList(time) {
+    _handleResizeEventList(time: number) {
         if (!this._resizeEventList) {
             return this;
         }
@@ -888,7 +923,7 @@ class MapCanvasRenderer extends MapRenderer {
         const contentRect = this._resizeEventList[len - 1].contentRect;
         this.map._containerDomContentRect = contentRect;
         this._resizeEventList = [];
-        this._checkSize(contentRect);
+        this._checkSize();
         this._resizeCount = this._resizeCount || 0;
         //force render all layers,这两句代码不能颠倒，因为要先重置所有图层的size，才能正确的渲染所有图层
         this.renderFrame((this._frameTimestamp || 0) + (++this._resizeCount) / 100);
@@ -903,7 +938,7 @@ class MapCanvasRenderer extends MapRenderer {
         this.map.checkSize();
     }
 
-    _setCheckSizeInterval(interval) {
+    _setCheckSizeInterval(interval: number) {
         // ResizeObserver priority of use
         // https://developer.mozilla.org/zh-CN/docs/Web/API/ResizeObserver
         if (Browser.resizeObserver) {
@@ -932,7 +967,7 @@ class MapCanvasRenderer extends MapRenderer {
                 } else {
                     this._checkSize();
                 }
-            }, this._checkSizeInterval);
+            }, this._checkSizeInterval) as unknown as number;
         }
     }
 
@@ -946,18 +981,18 @@ class MapCanvasRenderer extends MapRenderer {
             map.on('_mousemove', this._onMapMouseMove, this);
         }
 
-        map.on('_dragrotatestart _dragrotating _dragrotateend _movestart _moving _moveend _zoomstart', (param) => {
+        map.on('_dragrotatestart _dragrotating _dragrotateend _movestart _moving _moveend _zoomstart', (param: any) => {
             this._eventParam = param;
         });
 
-        map.on('_zooming', (param) => {
+        map.on('_zooming', (param: any) => {
             if (!map.getPitch()) {
                 this._zoomMatrix = param['matrix']['container'];
             }
             this._eventParam = param;
         });
 
-        map.on('_zoomend', (param) => {
+        map.on('_zoomend', (param: any) => {
             this._eventParam = param;
             delete this._zoomMatrix;
         });
@@ -978,7 +1013,7 @@ class MapCanvasRenderer extends MapRenderer {
         }
     }
 
-    _onMapMouseMove(param) {
+    _onMapMouseMove(param: any) {
         const map = this.map;
         if (map.isInteracting() || !map.options['hitDetect']) {
             return;
@@ -997,14 +1032,14 @@ class MapCanvasRenderer extends MapRenderer {
 
     //----------- top elements methods -------------
     // edit handles or edit outlines
-    addTopElement(e) {
+    addTopElement(e: EditHandle | EditOutline) {
         if (!this._tops) {
             this._tops = [];
         }
         this._tops.push(e);
     }
 
-    removeTopElement(e) {
+    removeTopElement(e: EditHandle | EditOutline) {
         if (!this._tops) {
             return;
         }
@@ -1066,11 +1101,21 @@ class MapCanvasRenderer extends MapRenderer {
 
 }
 
-Map.registerRenderer('canvas', MapCanvasRenderer);
+Map.registerRenderer<any>('canvas', MapCanvasRenderer);
 
 Map.mergeOptions({
     'fog': false,
     'fogColor': [233, 233, 233]
 });
+
+export type MapView = {
+    x: number;
+    y: number;
+    zoom: number;
+    pitch: number;
+    bearing: number;
+    width: number;
+    height: number;
+}
 
 export default MapCanvasRenderer;

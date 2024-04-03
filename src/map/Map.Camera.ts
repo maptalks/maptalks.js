@@ -10,6 +10,8 @@ import Browser from '../core/Browser';
 
 declare module "./Map" {
     interface Map {
+        cameraPosition: Point;
+        cameraLookAt: number[];
         getFov(): number;
         setFov(fov: number): this;
         getBearing(): number;
@@ -32,6 +34,8 @@ declare module "./Map" {
         _hasAltitudeLayer(): boolean;
         _queryTerrainInfo(containerPoint: Point): { coordinate: Coordinate, altitude: number } | null;
         _pointAtResToContainerPoint(point: Point, res?: number, altitude?: number, out?: Point): Point;
+        _pointToContainerPoint(point: Point, zoom?: number, out?: Point): Point;
+        _pointsAtResToContainerPoints(point: Point[], res?: number, altitude?: number[], out?: Point[]): Point[];
     }
 }
 

@@ -183,9 +183,9 @@ const options: MapOptionsType = {
  * });
  */
 export class Map extends Handlerable(Eventable(Renderable(Class))) {
-    VERSION: number;
+    VERSION: string;
     _loaded: boolean;
-    _panels: { [key: string]: HTMLDivElement };
+    _panels: Record<string, PanelDom>;
     _baseLayer: Layer;
     _layers: Array<Layer>;
     _zoomLevel: number;
@@ -222,7 +222,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     cameraCenterDistance: number;
     renderer: any;
     options: MapOptionsType;
-    static VERSION: number;
+    static VERSION: string;
     JSON_VERSION: '1.0';
 
 
@@ -2521,7 +2521,7 @@ export type MapOptionsType = {
     scaleControl?: boolean;
     overviewControl?: boolean;
     fog?: boolean;
-    fogColor?: string;
+    fogColor?: any; // fixme 确认类型
     devicePixelRatio?: number;
     heightFactor?: number;
     cameraInfiniteFar?: boolean;
@@ -2629,3 +2629,5 @@ export type MapIdentifyOptionsType = {
 }
 
 export type MapContainerType = string | HTMLDivElement | HTMLCanvasElement | { [key: string]: any };
+
+export type PanelDom = (HTMLDivElement | HTMLElement) & { layerDOM: HTMLElement; uiDOM: HTMLElement; }

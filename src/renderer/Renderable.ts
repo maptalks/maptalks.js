@@ -15,7 +15,7 @@ export default function <T extends MixinConstructor>(Base: T) {
          * @param  name  - renderer's register key
          * @param  clazz - renderer's class{@link Class}).
          */
-        static registerRenderer(name: string, clazz: Class) {
+        static registerRenderer<T extends Class>(name: string, clazz: T) {
             const proto = this.prototype as any;
             const parentProto = Object.getPrototypeOf(proto) as any;
             if (!proto._rendererClasses || proto._rendererClasses === parentProto._rendererClasses) {

@@ -82,6 +82,7 @@ export const CSSFILTER = testProp(
 /**
  * Create a html element.
  * @param tagName
+ * @param className
  * @returns
  * @memberOf DomUtil
  */
@@ -143,7 +144,7 @@ export function removeDomNode(node?: HTMLElement) {
  * @param  context      - function context
  * @memberOf DomUtil
  */
-export function addDomEvent(obj: HTMLElement, typeArr: string, handler: Function, context?: Object) {
+export function addDomEvent(obj: HTMLElement | Document, typeArr: string, handler: Function, context?: Object) {
     if (!obj || !obj.addEventListener || !typeArr || !handler) {
         return this;
     }
@@ -187,7 +188,7 @@ export function addDomEvent(obj: HTMLElement, typeArr: string, handler: Function
  * @param  handler        - listening function
  * @memberOf DomUtil
  */
-export function removeDomEvent(obj: HTMLElement, typeArr: string, handler: Function) {
+export function removeDomEvent(obj: HTMLElement | Document, typeArr: string, handler: Function) {
     function doRemove(type, callback?) {
         //mouse wheel in firefox
         if (type === 'mousewheel' && Browser.gecko) {
@@ -232,7 +233,7 @@ export function removeDomEvent(obj: HTMLElement, typeArr: string, handler: Funct
  * @return {Number} - the handler's index in the listener chain, returns -1 if not.
  * @memberOf DomUtil
  */
-export function listensDomEvent(obj: HTMLElement, type: string, handler: Function) {
+export function listensDomEvent(obj: HTMLElement | Document, type: string, handler: Function) {
     if (!obj || !obj['Z__' + type] || !handler) {
         return -1;
     }

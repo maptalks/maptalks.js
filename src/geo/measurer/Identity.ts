@@ -1,4 +1,4 @@
-import { extend } from '../../core/util';
+import { extend } from '../../core/util/common';
 import Coordinate, { CoordinateJson } from '../Coordinate';
 import Point from '../Point';
 import Common, { type CommonMeasurer } from './Common';

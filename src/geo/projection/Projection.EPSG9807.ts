@@ -1,4 +1,4 @@
-import { isNil, extend } from '../../core/util';
+import { isNil, extend } from '../../core/util/common';
 import Common, { type CommonProjectionType } from './Projection';
 import Coordinate from '../Coordinate';
 import { WGS84Sphere, type WGS84SphereType } from '../measurer';
