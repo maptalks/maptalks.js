@@ -886,7 +886,7 @@ class CanvasRenderer extends Class {
 
     }
 
-    _cacheResource(url: string[], img: ImageType) {
+    _cacheResource(url: [string, number | string, string | number], img: ImageType) {
         if (!this.layer || !this.resources) {
             return;
         }
@@ -921,7 +921,7 @@ export class ResourceCache {
         this._errors = {};
     }
 
-    addResource(url: string[], img) {
+    addResource(url: [string, number | string, number | string], img) {
         this.resources[url[0]] = {
             image: img,
             width: +url[1],

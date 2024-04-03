@@ -1,6 +1,7 @@
-import {extend, toDegree, toRadian, wrap} from '../../core/util';
-import Coordinate, {CoordinateJson} from '../Coordinate';
-import Common, {type CommonMeasurer} from './Common';
+import { extend, toDegree, toRadian } from '../../core/util/common';
+import { wrap } from '../../core/util/util';
+import Coordinate, { type CoordinateJson } from '../Coordinate';
+import Common, { type CommonMeasurer } from './Common';
 
 type CoordsLike = Coordinate | CoordinateJson;
 

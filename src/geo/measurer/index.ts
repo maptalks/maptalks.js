@@ -1,6 +1,6 @@
 /** @namespace measurer */
 
-import { hasOwn } from '../../core/util';
+import { hasOwn } from '../../core/util/common';
 import Identity, { type IdentityMeasurerType } from './Identity';
 import { WGS84Sphere, BaiduSphere, type WGS84SphereType, type BaiduSphereType } from './Sphere';
 

@@ -1,6 +1,11 @@
 import { offsetDom } from '../../core/util/dom';
 import Class from '../../core/Class';
 import Point from '../../geo/Point';
+
+import type Map from '../../map/Map';
+
+type handlerQueueFn = () => void
+
 /**
  * @classdesc
  * Base class for all the map renderers.
@@ -10,9 +15,20 @@ import Point from '../../geo/Point';
  * @memberOf renderer
  * @extends {Class}
  */
-class MapRenderer extends Class {
+abstract class MapRenderer extends Class {
+    map: Map;
 
-    constructor(map) {
+    _handlerQueue: handlerQueueFn[];
+    _frontCount: WithUndef<number>;
+    _backCount: WithUndef<number>;
+    _uiCount: WithUndef<number>;
+
+    _thisDocVisibilitychange: () => void;
+    _thisDocDragStart: () => void;
+    _thisDocDragEnd: () => void;
+    _thisDocDPRChange: () => void;
+
+    constructor(map: Map) {
         super();
         this.map = map;
         this._handlerQueue = [];
@@ -22,7 +38,10 @@ class MapRenderer extends Class {
         this._thisDocDPRChange = this._onDocDPRChange.bind(this);
     }
 
-    callInNextFrame(fn) {
+    abstract _frameLoop(f?: number): void;
+    abstract setToRedraw(): void;
+
+    callInNextFrame(fn: handlerQueueFn) {
         this._handlerQueue.push(fn);
     }
 
@@ -36,10 +55,10 @@ class MapRenderer extends Class {
 
     /**
      * Move map platform with offset
-     * @param  {Point} offset
-     * @return {this}
+     * @param offset
+     * @param force
      */
-    offsetPlatform(offset, force) {
+    offsetPlatform(offset: Point, force?: boolean) {
         if (!this.map._panels.front) {
             return this;
         }

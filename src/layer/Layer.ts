@@ -74,6 +74,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     _renderer: any | undefined
     _id: string
     _zIndex: number
+    _drawTime: number
     map: Map
     _mask: any
     _loaded: boolean

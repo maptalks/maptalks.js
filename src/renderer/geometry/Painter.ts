@@ -7,7 +7,11 @@ import PointExtent from '../../geo/PointExtent';
 import Canvas from '../../core/Canvas';
 import * as Symbolizers from './symbolizers';
 import { interpolate } from '../../core/util/util';
-import { getDefaultBBOX, resetBBOX, setBBOX, validateBBOX } from '../../core/util/bbox';
+import { Bbox, getDefaultBBOX, resetBBOX, setBBOX, validateBBOX } from '../../core/util/bbox';
+import Map from '../../map/Map'
+import {DebugSymbolizer} from './symbolizers';
+import Extent from '../../geo/Extent';
+import { ResourceCache } from '../layer/CanvasRenderer';
 
 //registered symbolizers
 //the latter will paint at the last
@@ -21,7 +25,7 @@ const registerSymbolizers = [
 ];
 
 
-let testCanvas;
+let testCanvas: HTMLCanvasElement;
 
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_PAINT_EXTENT = new PointExtent();
@@ -46,11 +50,37 @@ const TEMP_BBOX = {
  * @private
  */
 class Painter extends Class {
+    _drawTime: number;
+    _hasPoint: boolean;
+    _debugSymbolizer: DebugSymbolizer;
+    _renderPoints: Record<string, Point[][]>;
+    _hitPoint: WithUndef<Point>;
+    _sprite: any;
+    _paintParams: any;
+    _cachedParams: any;
+    _unsimpledParams: any;
+    _spriting: boolean;
+    _extent2D: Extent & { _zoom: number };
+    _fixedExtent: PointExtent;
+    _altAtGL: any;
+    _propAlt: number | number[];
+    _projCode: string;
+    _pitched: boolean;
+    _rotated: boolean;
+    _painted: boolean;
+    _containerBbox: typeof TEMP_BBOX;
+
+    bbox: Bbox;
+    geometry: any;
+    symbolizers: any[];
+    containerOffset: Point;
+    minAltitude: number;
+    maxAltitude: number;
 
     /**
-     *  @param {Geometry} geometry - geometry to paint
+     *  @param geometry - geometry to paint
      */
-    constructor(geometry) {
+    constructor(geometry: any) {
         super();
         this.geometry = geometry;
         this.symbolizers = this._createSymbolizers();
@@ -59,7 +89,7 @@ class Painter extends Class {
         this._drawTime = 0;
     }
 
-    _setDrawTime(time) {
+    _setDrawTime(time: number) {
         this._drawTime = time;
         return this;
     }
@@ -84,7 +114,7 @@ class Painter extends Class {
         return null;
     }
 
-    getMap() {
+    getMap(): Map {
         return this.geometry.getMap();
     }
 
@@ -108,7 +138,7 @@ class Painter extends Class {
             for (let i = regSymbolizers.length - 1; i >= 0; i--) {
                 if (regSymbolizers[i].test(symbol, this.geometry)) {
                     const symbolizer = new regSymbolizers[i](symbol, this.geometry, this);
-                    symbolizer._index = ii;
+                    (symbolizer as any)._index = ii;
                     symbolizers.push(symbolizer);
                     if (symbolizer instanceof Symbolizers.PointSymbolizer) {
                         this._hasPoint = true;
@@ -133,9 +163,9 @@ class Painter extends Class {
 
     /**
      * for point symbolizers
-     * @return {Point[]} points to render
+     * @return points to render
      */
-    getRenderPoints(placement) {
+    getRenderPoints(placement: string): Point[][] {
         this._verifyProjection();
         if (!this._renderPoints) {
             this._renderPoints = {};
@@ -151,7 +181,7 @@ class Painter extends Class {
 
     /**
      * for strokeAndFillSymbolizer
-     * @return {Object[]} resources to render vector
+     * @return resources to render vector
      */
     getPaintParams(dx, dy, ignoreAltitude, disableClip, ptkey = '_pt') {
         const renderer = this.getLayer()._getRenderer();
@@ -246,7 +276,7 @@ class Painter extends Class {
         const map = this.getMap(),
             geometry = this.geometry,
             containerOffset = this.containerOffset;
-        let glRes, containerExtent;
+        let glRes: number, containerExtent: Extent;
         if (mapStateCache) {
             glRes = mapStateCache.glRes;
             containerExtent = mapStateCache.containerExtent;
@@ -392,7 +422,7 @@ class Painter extends Class {
         return cPoints;
     }
 
-    _clip(points, altitude) {
+    _clip(points: Point[], altitude?: number) {
         // linestring polygon clip
         if (isNumber(altitude) && altitude !== 0) {
             return {
@@ -573,7 +603,7 @@ class Painter extends Class {
         return this;
     }
 
-    paint(extent, context, offset) {
+    paint(extent?: Extent, context?: any, offset?: Point) {
         if (!this.symbolizers) {
             return;
         }
@@ -606,13 +636,13 @@ class Painter extends Class {
             if (ctx.shadowBlur || this.symbolizers[i].symbol['shadowBlur']) {
                 this._prepareShadow(ctx, this.symbolizers[i].symbol);
             }
-            this.symbolizers[i].symbolize.apply(this.symbolizers[i], contexts);
+            this.symbolizers[i].symbolize(...contexts);
         }
         this._afterPaint();
         this._painted = true;
         // reduce function call
         if (this.geometry.options['debug'] || layer.options['debug']) {
-            this._debugSymbolizer.symbolize.apply(this._debugSymbolizer, contexts);
+            this._debugSymbolizer.symbolize(...contexts);
         }
     }
 
@@ -644,7 +674,7 @@ class Painter extends Class {
                     ]
                 };
                 this._prepareShadow(ctx, this.symbolizers[i].symbol);
-                this.symbolizers[i].symbolize.apply(this.symbolizers[i], contexts);
+                this.symbolizers[i].symbolize(...contexts);
             }
             if (bak) {
                 this._renderPoints = bak;
@@ -694,7 +724,7 @@ class Painter extends Class {
         return !!this._hitPoint;
     }
 
-    _prepareShadow(ctx, symbol) {
+    _prepareShadow(ctx: CanvasRenderingContext2D, symbol: Record<string, any>) {
         if (symbol['shadowBlur']) {
             //Ignore shadows when hit detection
             ctx.shadowBlur = (this.isHitTesting() ? 0 : symbol['shadowBlur']);
@@ -709,7 +739,7 @@ class Painter extends Class {
         }
     }
 
-    _eachSymbolizer(fn, context) {
+    _eachSymbolizer(fn, context?: any) {
         if (!this.symbolizers) {
             return;
         }
@@ -721,7 +751,7 @@ class Painter extends Class {
         }
     }
 
-    get2DExtent(resources, out) {
+    get2DExtent(resources: ResourceCache, out?: Extent) {
         this._verifyProjection();
         const map = this.getMap();
         resources = resources || this.getLayer()._getRenderer().resources;
@@ -811,7 +841,7 @@ class Painter extends Class {
         return this._fixedExtent;
     }
 
-    setZIndex(change) {
+    setZIndex(change: number) {
         this._eachSymbolizer(function (symbolizer) {
             symbolizer.setZIndex(change);
         });
@@ -957,7 +987,7 @@ class Painter extends Class {
         if (this._projCode && this._projCode !== projection.code) {
             this.removeCache();
         }
-        this._projCode = projection.code;
+        this._projCode = (projection as any).code;
     }
 
     _beforePaint() {

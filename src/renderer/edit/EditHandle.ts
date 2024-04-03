@@ -1,19 +1,43 @@
 import Eventable from '../../core/Eventable';
 import Class from '../../core/Class';
-import Point from '../../geo/Point';
+import Point, { type PointJson } from '../../geo/Point';
 import { ResourceCache } from '../layer/CanvasRenderer';
 import { drawVectorMarker } from '../../core/util/draw';
 import { isNil } from '../../core/util/';
-import { getSymbolHash } from '../../core/util/style';
+import { getSymbolHash } from '../../core/util';
 import { getEventContainerPoint } from '../../core/util/dom';
 import DragHandler from '../../handler/Drag';
-import { bufferBBOX, getDefaultBBOX } from '../../core/util/bbox';
+import { Bbox, bufferBBOX, getDefaultBBOX } from '../../core/util/bbox';
+import type Map from '../../map/Map';
+import type GeometryEditor from '../../geometry/editor/GeometryEditor';
 
 const resources = new ResourceCache();
 let prevX, prevY;
 
-export default class EditHandle extends Eventable(Class) {
-    constructor(target, map, options) {
+type EventParams = any;
+
+export interface EditHandleOptions {
+    symbol: Record<string, any>;
+    events: string[];
+    cursor: string;
+    zIndex?: number;
+}
+
+export default class EditHandle extends Eventable<any>(Class) {
+    target: GeometryEditor;
+    map: Map;
+    w: number;
+    h: number;
+    opacity: number;
+    events: string[];
+
+    url: string;
+    bbox: Bbox;
+    _point: Point;
+    _img: any;
+    _dragger: DragHandler;
+
+    constructor(target: GeometryEditor, map: Map, options: EditHandleOptions) {
         super(options);
         this.target = target;
         target.once('remove', this.delete, this);
@@ -65,7 +89,7 @@ export default class EditHandle extends Eventable(Class) {
         this._img = img;
     }
 
-    setContainerPoint(cp) {
+    setContainerPoint(cp: Point) {
         this._point = cp;
         this._point._sub(this.w / 2, this.h / 2);
     }
@@ -74,7 +98,7 @@ export default class EditHandle extends Eventable(Class) {
         return this._point.add(this.w / 2, this.h / 2);
     }
 
-    offset(p) {
+    offset(p: Point | PointJson) {
         // dragging
         this._point._add(p);
     }
@@ -114,7 +138,7 @@ export default class EditHandle extends Eventable(Class) {
         delete this.map;
     }
 
-    hitTest(p) {
+    hitTest(p: Point | PointJson): boolean {
         const symbol = this.options['symbol'];
         const dx = symbol['markerDx'] || 0;
         const dy = symbol['markerDy'] || 0;
@@ -125,17 +149,17 @@ export default class EditHandle extends Eventable(Class) {
         return p.x >= x && p.x <= x + w && p.y >= y && p.y <= y + h;
     }
 
-    addTo(map) {
+    addTo(map: Map) {
         this.map = map;
         const renderer = map.getRenderer();
         renderer.addTopElement(this);
     }
 
-    onEvent(e) {
+    onEvent(e: EventParams) {
         this.fire(e.type, e);
     }
 
-    mousedown(e) {
+    mousedown(e: EventParams) {
         const map = e.target;
         const cursor = this.options['cursor'];
         if (cursor) {
@@ -144,7 +168,7 @@ export default class EditHandle extends Eventable(Class) {
         this.onDragstart(e);
     }
 
-    onDragstart(e) {
+    onDragstart(e: EventParams) {
         const { containerPoint, target: map } = e;
         const dom = map._panels.mapWrapper || map._containerDOM;
 
@@ -152,6 +176,7 @@ export default class EditHandle extends Eventable(Class) {
         dragHandler.on('dragging', this.onDragging, this)
             .on('mouseup', this.onDragend, this)
             .enable();
+        // @ts-expect-error todo 等待 DragHandler 完成改造
         dragHandler.type = 'handle';
         dragHandler.onMouseDown(e['domEvent']);
         prevX = containerPoint.x;
@@ -161,7 +186,7 @@ export default class EditHandle extends Eventable(Class) {
         });
     }
 
-    onDragging(e) {
+    onDragging(e: EventParams) {
         if (!this._dragger) {
             return;
         }
@@ -182,7 +207,7 @@ export default class EditHandle extends Eventable(Class) {
         });
     }
 
-    onDragend(e) {
+    onDragend(e: EventParams) {
         if (!this._dragger) {
             return;
         }
@@ -201,12 +226,12 @@ export default class EditHandle extends Eventable(Class) {
         });
     }
 
-    needCollision() {
+    needCollision(): boolean {
         const { target } = this;
         return target && target.options && target.options.collision;
     }
 
-    getRenderBBOX(dpr) {
+    getRenderBBOX(dpr?: number) {
         const { target, map } = this;
         if (!target || !target.options || !map) {
             return null;
@@ -234,7 +259,7 @@ export default class EditHandle extends Eventable(Class) {
         return this.bbox;
     }
 
-    setZIndex(zIndex) {
+    setZIndex(zIndex: number) {
         this.options.zIndex = zIndex;
     }
 }
