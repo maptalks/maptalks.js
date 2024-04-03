@@ -233,10 +233,8 @@ Map.include(/** @lends Map.prototype */ {
 
     _removeDomEvents() {
         const dom = this._panels.mapWrapper || this._containerDOM;
-        //@ts-expect-error 可能写错了
-        removeDomEvent(dom, events, this._handleDOMEvent, this);
-        //@ts-expect-error 可能写错了
-        removeDomEvent(dom, DRAGEVENTS, dragEventHanlder, this);
+        removeDomEvent(dom, events, this._handleDOMEvent);
+        removeDomEvent(dom, DRAGEVENTS, dragEventHanlder);
     },
 
     _handleDOMEvent(e: MapEventDomType) {
