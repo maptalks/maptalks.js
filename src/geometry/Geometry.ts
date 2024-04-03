@@ -125,7 +125,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     startEdit?(T?: any): any
     getGeometries?(): Geometry[];
     getCoordinates?(): Coordinate;
-    setCoordinates?(coordinate: PositionLike): Geometry;
+    setCoordinates?(coordinate: PositionLike | Coordinate[]): Geometry;
     _computeCenter?(T: any): Coordinate;
     _computeExtent?(T: any): Extent;
     onRemove?(): void;

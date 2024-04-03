@@ -44,7 +44,7 @@ export default function (Base) {
         }
 
         //Gets view point of the geometry's center
-        _getCenter2DPoint(res: any): any {
+        _getCenter2DPoint(res?: any): any {
             const map = this.getMap();
             if (!map) {
                 return null;
