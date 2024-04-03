@@ -1,3 +1,4 @@
+import { AnyAaaaRecord } from 'dns';
 import { extend, hasOwn } from '../core/util';
 import { splitTextToRow, escapeSpecialChars } from '../core/util/strings';
 import Marker from './Marker';
@@ -6,7 +7,7 @@ const defaultSymbol = {
     'textFaceName': 'monospace',
     'textSize': 12,
     'textLineSpacing': 8,
-    'textWrapCharacter' : '\n',
+    'textWrapCharacter': '\n',
     'textHorizontalAlignment': 'middle', //left middle right
     'textVerticalAlignment': 'middle' //top middle bottom
 };
@@ -31,19 +32,23 @@ const defaultBoxSymbol = {
 class TextMarker extends Marker {
 
     /**
+     * 获取标签的文本内容
+     * @english
      * Get text content of the label
      * @returns {String}
      */
-    getContent() {
+    getContent(): string {
         return this._content;
     }
 
     /**
+     * 给标签设置文本内容
+     * @english
      * Set a new text content to the label
      * @return {Label} this
      * @fires Label#contentchange
      */
-    setContent(content) {
+    setContent(content: any): TextMarker {
         const old = this._content;
         this._content = escapeSpecialChars(content);
         this._refresh();
@@ -63,17 +68,17 @@ class TextMarker extends Marker {
         return this;
     }
 
-    onAdd() {
+    onAdd(): void {
         this._refresh();
     }
 
-    toJSON() {
+    toJSON(): any {
         const json = super.toJSON();
         delete json['symbol'];
         return json;
     }
 
-    setSymbol(symbol) {
+    setSymbol(symbol: any): TextMarker {
         if (this._refreshing || !symbol) {
             return super.setSymbol(symbol);
         }
@@ -95,7 +100,7 @@ class TextMarker extends Marker {
         return this;
     }
 
-    _parseSymbol(symbol) {
+    _parseSymbol(symbol: any): any {
         const t = {};
         const b = {};
         for (const p in symbol) {
@@ -110,23 +115,23 @@ class TextMarker extends Marker {
         return [t, b];
     }
 
-    _getTextSize(symbol) {
+    _getTextSize(symbol: any): any {
         return splitTextToRow(this._content, symbol)['size'];
     }
 
-    _getInternalSymbol() {
+    _getInternalSymbol(): AnyAaaaRecord {
         return this._symbol;
     }
 
-    _getDefaultTextSymbol() {
+    _getDefaultTextSymbol(): any {
         return extend({}, defaultSymbol);
     }
 
-    _getDefaultBoxSymbol() {
+    _getDefaultBoxSymbol(): any {
         return extend({}, defaultBoxSymbol);
     }
 
-    _getDefaultPadding() {
+    _getDefaultPadding(): [number, number] {
         return [12, 8];
     }
 }

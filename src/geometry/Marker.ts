@@ -56,7 +56,8 @@ class Marker extends CenterMixin(Geometry) {
      * @param {Coordinate} coordinates      - coordinates of the marker
      * @param {Object} [options=null]       - construct options defined in [Marker]{@link Marker#options}
      */
-    constructor(coordinates, options) {
+    constructor(coordinates: any, options?: any) {
+        // @ts-expect-error todo
         super(options);
         this.type = 'Point';
         //for subclass,Quickly determine whether a Geometry is a point
@@ -66,7 +67,7 @@ class Marker extends CenterMixin(Geometry) {
         }
     }
 
-    getOutline() {
+    getOutline(): any {
         const coord = this.getCoordinates();
         const extent = this.getContainerExtent();
         const anchor = this.getMap().coordToContainerPoint(coord);
@@ -84,12 +85,12 @@ class Marker extends CenterMixin(Geometry) {
         });
     }
 
-    setSymbol(...args) {
+    setSymbol(...args): any {
         delete this._fixedExtent;
         return super.setSymbol.call(this, ...args);
     }
 
-    _getSizeSymbol(symbol) {
+    _getSizeSymbol(symbol: any): any {
         const s = {};
         let dynamic = false;
         let dynamicSize = false;
@@ -126,18 +127,18 @@ class Marker extends CenterMixin(Geometry) {
         return sizeSymbol;
     }
 
-    _setExternSymbol(symbol) {
+    _setExternSymbol(symbol: any) {
         if (!this._symbol) {
             delete this._fixedExtent;
         }
         return super._setExternSymbol(symbol);
     }
 
-    _isDynamicSize() {
+    _isDynamicSize(): boolean {
         return this._sizeSymbol && this._sizeSymbol._dynamic;
     }
 
-    _getFixedExtent() {
+    _getFixedExtent(): any {
         if (this._fixedExtent && !this._isDynamicSize()) {
             return this._fixedExtent;
         }
@@ -164,7 +165,7 @@ class Marker extends CenterMixin(Geometry) {
         return this._fixedExtent;
     }
 
-    _isVectorMarker() {
+    _isVectorMarker(): boolean {
         const symbol = this._getInternalSymbol();
         if (Array.isArray(symbol)) {
             return false;
@@ -173,11 +174,13 @@ class Marker extends CenterMixin(Geometry) {
     }
 
     /**
+     * 可以编辑，只能编辑带有矢量符号、矢量路径符号或图像符号的标记。
+     * @english
      * Can be edited, only marker with a vector symbol, vector path symbol or a image symbol can be edited.
      * @return {Boolean}
      * @private
      */
-    _canEdit() {
+    _canEdit(): boolean {
         const symbol = this._getInternalSymbol();
         if (Array.isArray(symbol)) {
             return false;
@@ -185,7 +188,7 @@ class Marker extends CenterMixin(Geometry) {
         return isVectorSymbol(symbol) || isPathSymbol(symbol) || isImageSymbol(symbol);
     }
 
-    _containsPoint(point, t) {
+    _containsPoint(point: any, t?: any): boolean {
         let extent = this.getContainerExtent();
         if (t) {
             extent = extent.expand(t);
@@ -201,37 +204,37 @@ class Marker extends CenterMixin(Geometry) {
         }
     }
 
-    _computeExtent() {
+    _computeExtent(): any {
         return computeExtent.call(this, 'getCenter');
     }
 
-    _computePrjExtent() {
+    _computePrjExtent(): any {
         return computeExtent.call(this, '_getPrjCoordinates');
     }
 
-    _computeGeodesicLength() {
+    _computeGeodesicLength(): number {
         return 0;
     }
 
-    _computeGeodesicArea() {
+    _computeGeodesicArea(): number {
         return 0;
     }
 
-    _getSprite(resources, canvasClass) {
+    _getSprite(resources: any, canvasClass: any) {
         if (this._getPainter()) {
             return this._getPainter().getSprite(resources, canvasClass);
         }
         return new Painter(this).getSprite(resources, canvasClass);
     }
 }
-
+//@ts-expect-error todo
 Marker.mergeOptions(options);
-
+//@ts-expect-error todo
 Marker.registerJSONType('Marker');
 
 export default Marker;
 
-function computeExtent(fn) {
+function computeExtent(fn: any): null | Extent {
     const coordinates = this[fn]();
     if (!coordinates) {
         return null;

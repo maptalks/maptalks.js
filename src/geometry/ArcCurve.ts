@@ -35,7 +35,6 @@ const options: ArcCurveOptionsType = {
  *     }
  * ).addTo(layer);
  */
-//@ts-expect-error todo
 class ArcCurve extends Curve {
 
     _paintArrow?(a: CanvasRenderingContext2D, b: any, c: number): void;
