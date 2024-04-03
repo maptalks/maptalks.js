@@ -183,7 +183,7 @@ const options: MapOptionsType = {
  * });
  */
 export class Map extends Handlerable(Eventable(Renderable(Class))) {
-    VERSION: number;
+    VERSION: string;
     _loaded: boolean;
     _panels: { [key: string]: HTMLDivElement };
     _baseLayer: Layer;
@@ -222,7 +222,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     cameraCenterDistance: number;
     renderer: any;
     options: MapOptionsType;
-    static VERSION: number;
+    static VERSION: string;
     JSON_VERSION: '1.0';
 
 

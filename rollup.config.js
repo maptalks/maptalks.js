@@ -41,7 +41,7 @@ const external = ['rbush', 'frustum-intersects', 'simplify-js'];
 
 const builds = [
     {
-        input: 'src/index.js',
+        input: 'src/index.ts',
         plugins: rollupPlugins,
         output: [
             {
@@ -69,7 +69,7 @@ const builds = [
     // },
     //for browser esm
     {
-        input: 'src/index.js',
+        input: 'src/index.ts',
         plugins: rollupPlugins,
         output: [
             {
