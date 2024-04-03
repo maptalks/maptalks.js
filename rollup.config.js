@@ -54,19 +54,19 @@ const builds = [
             }
         ]
     },
-    {
-        input: 'src/index.js',
-        plugins: rollupPlugins,
-        external,
-        output: [
-            {
-                'sourcemap': true,
-                'format': 'es',
-                banner,
-                'file': pkg.module
-            }
-        ]
-    },
+    // {
+    //     input: 'src/index.js',
+    //     plugins: rollupPlugins,
+    //     external,
+    //     output: [
+    //         {
+    //             'sourcemap': true,
+    //             'format': 'es',
+    //             banner,
+    //             'file': pkg.module
+    //         }
+    //     ]
+    // },
     //for browser esm
     {
         input: 'src/index.js',
