@@ -52,7 +52,7 @@ class Path extends Geometry {
     public _tempPrjCoord: Point
     public _simplified: boolean
     public _prjCoords: any
-    public hasHoles: any
+    hasHoles?(): boolean;
     getHoles?(): any;
     _getPrjHoles?(): any;
 
@@ -82,8 +82,7 @@ class Path extends Geometry {
             options = {};
             cb = options;
         }
-        const coordinates = this.getCoordinates();
-        // @ts-expect-error todo
+        const coordinates: any = this.getCoordinates();
         if (coordinates.length === 0) {
             return this;
         }
@@ -127,7 +126,6 @@ class Path extends Geometry {
                     player.finish();
                     if (cb) {
                         const coordinates = this.getCoordinates();
-                        // @ts-expect-error todo
                         cb(frame, coordinates[coordinates.length - 1]);
                     }
                 }

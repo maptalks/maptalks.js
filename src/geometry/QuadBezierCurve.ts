@@ -22,15 +22,16 @@ import Canvas from '../core/Canvas';
  * ).addTo(layer);
  */
 class QuadBezierCurve extends Curve {
+    _paintArrow?(ctx: CanvasRenderingContext2D, points: any, lineOpacity?: number): any
 
-    static fromJSON(json) {
+    static fromJSON(json: any): QuadBezierCurve {
         const feature = json['feature'];
         const curve = new QuadBezierCurve(feature['geometry']['coordinates'], json['options']);
         curve.setProperties(feature['properties']);
         return curve;
     }
 
-    _toJSON(options) {
+    _toJSON(options: any): any {
         return {
             'feature': this.toGeoJSON(options),
             'subType': 'QuadBezierCurve'
@@ -38,15 +39,16 @@ class QuadBezierCurve extends Curve {
     }
 
     // paint method on canvas
-    _paintOn(ctx, points, lineOpacity) {
+    _paintOn(ctx: CanvasRenderingContext2D, points: any, lineOpacity: number) {
         ctx.beginPath();
         ctx.moveTo(points[0].x, points[0].y);
+        // @ts-expect-error todo
         this._quadraticCurve(ctx, points, lineOpacity);
         Canvas._stroke(ctx, lineOpacity);
         this._paintArrow(ctx, points, lineOpacity);
     }
 
-    _getArrowPoints(arrows, segments, lineWidth, arrowStyle, tolerance) {
+    _getArrowPoints(arrows: any[], segments: [], lineWidth: number, arrowStyle: any, tolerance: any) {
         return this._getCurveArrowPoints(arrows, segments, lineWidth, arrowStyle, tolerance, 2);
     }
 }

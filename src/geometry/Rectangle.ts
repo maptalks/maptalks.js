@@ -15,6 +15,11 @@ import Polygon from './Polygon';
  */
 class Rectangle extends Polygon {
 
+    public _width: number
+    public _height: number
+    public _pnw: any
+    getRotatedShell?(): any
+    _computeRotatedPrjExtent?(): any
     static fromJSON(json) {
         const feature = json['feature'];
         const rect = new Rectangle(json['coordinates'], json['width'], json['height'], json['options']);
@@ -28,7 +33,7 @@ class Rectangle extends Polygon {
      * @param {Number} height                    - height of the rectangle, in meter
      * @param {Object} [options=null]            - options defined in [Rectangle]{@link Rectangle#options}
      */
-    constructor(coordinates, width, height, opts) {
+    constructor(coordinates?: any, width?: number, height?: number, opts?: any) {
         super(null, opts);
         if (coordinates) {
             this.setCoordinates(coordinates);
@@ -41,7 +46,7 @@ class Rectangle extends Polygon {
      * Get coordinates of rectangle's northwest
      * @return {Coordinate}
      */
-    getCoordinates() {
+    getCoordinates(): any {
         return this._coordinates;
     }
 
@@ -51,7 +56,7 @@ class Rectangle extends Polygon {
      * @return {Rectangle} this
      * @fires Rectangle#positionchange
      */
-    setCoordinates(nw) {
+    setCoordinates(nw: any): any {
         this._coordinates = (nw instanceof Coordinate) ? nw : new Coordinate(nw);
         if (!this._coordinates || !this.getMap()) {
             this.onPositionChanged();
@@ -179,7 +184,7 @@ class Rectangle extends Polygon {
             // return shell;
             return this._rotatePrjCoordinates(shell);
         }
-        const sphereExtent = projection.getSphereExtent(),
+        const sphereExtent: any = projection.getSphereExtent(),
             sx = sphereExtent.sx,
             sy = sphereExtent.sy;
         const circum = this._getProjection().getCircum();
@@ -213,7 +218,7 @@ class Rectangle extends Polygon {
         super._clearProjection();
     }
 
-    _computeCenter(measurer) {
+    _computeCenter(measurer?: any): Coordinate {
         return measurer.locate(this._coordinates, this._width / 2, -this._height / 2);
     }
 
@@ -229,7 +234,7 @@ class Rectangle extends Polygon {
         return extent.contains(p);
     }
 
-    _computePrjExtent(projection) {
+    _computePrjExtent(projection?: any): any {
         if (this.isRotated()) {
             return this._computeRotatedPrjExtent();
         }
@@ -244,7 +249,7 @@ class Rectangle extends Polygon {
         return new Extent(prjs[0], prjs[1]);
     }
 
-    _computeExtent(measurer) {
+    _computeExtent(measurer?: any): Extent {
         const se = this._getSouthEast(measurer);
         if (!se) {
             return null;

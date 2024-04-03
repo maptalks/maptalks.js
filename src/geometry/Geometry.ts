@@ -111,7 +111,6 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     public _externSymbol: any
     public _parent: Geometry | GeometryCollection
     public _silence: boolean
-    public getShell: any
     public _animPlayer: any
     public _projCode: any
     public _painter: CollectionPainter | Painter
@@ -122,9 +121,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     public _infoWinOptions: any
     public _minAlt: number
     public _maxAlt: number
+    getShell?(): any
     startEdit?(T?: any): any
     getGeometries?(): Geometry[];
-    getCoordinates?(): Coordinate;
+    getCoordinates?(): [] | Coordinate[][];
     setCoordinates?(coordinate: PositionLike | Coordinate[]): Geometry;
     _computeCenter?(T: any): Coordinate;
     _computeExtent?(T: any): Extent;
@@ -184,7 +184,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             }
             return geometries[0].getFirstCoordinate();
         }
-        let coordinates = this.getCoordinates();
+        let coordinates: any = this.getCoordinates();
         if (!Array.isArray(coordinates)) {
             return coordinates;
         }
@@ -209,7 +209,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             }
             return geometries[geometries.length - 1].getLastCoordinate();
         }
-        let coordinates = this.getCoordinates();
+        let coordinates: any = this.getCoordinates();
         if (!Array.isArray(coordinates)) {
             return coordinates;
         }
@@ -899,7 +899,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (offset.x === 0 && offset.y === 0) {
             return this;
         }
-        const coordinates = this.getCoordinates();
+        const coordinates: any = this.getCoordinates();
         this._silence = true;
         if (coordinates) {
             if (Array.isArray(coordinates)) {
@@ -1141,7 +1141,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         this._angle = angle;
         this._pivot = pivot;
         const measurer = this._getMeasurer();
-        const coordinates = this.getCoordinates();
+        const coordinates: any = this.getCoordinates();
         if (!Array.isArray(coordinates)) {
             //exclude Rectangle ,Ellipse,Sector by shell judge
             if ((pivot.x !== coordinates.x || pivot.y !== coordinates.y) && !this.getShell) {
@@ -1658,7 +1658,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     _exportGeoJSONGeometry(): any {
-        const points = this.getCoordinates();
+        const points: any = this.getCoordinates();
         const coordinates = Coordinate.toNumberArrays(points);
         return {
             'type': this.getType(),
@@ -1761,7 +1761,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
                 properties[altitudeProperty] = alt;
             }
         }
-        const coordinates = this.getCoordinates ? this.getCoordinates() : null;
+        const coordinates: any = this.getCoordinates ? this.getCoordinates() : null;
         if (!coordinates) {
             return this;
         }
@@ -1858,7 +1858,7 @@ function getAltitudeProperty(layer: OverlayLayer): string {
 }
 
 function getGeometryCoordinatesAlts(geometry: Geometry, layerAlt: number, enableAltitude: boolean): number | number[] | null {
-    const coordinates = geometry.getCoordinates ? geometry.getCoordinates() : null;
+    const coordinates: any = geometry.getCoordinates ? geometry.getCoordinates() : null;
     if (coordinates) {
         const tempAlts = [];
         coordinatesHasAlt(coordinates, tempAlts);

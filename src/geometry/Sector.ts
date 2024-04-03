@@ -152,6 +152,7 @@ class Sector extends Circle {
         if (this.isRotated()) {
             return this._computeRotatedPrjExtent();
         }
+        // eslint-disable-next-line prefer-rest-params
         return Circle.prototype._computePrjExtent.apply(this, arguments);
     }
 
@@ -219,8 +220,9 @@ class Sector extends Circle {
 
 }
 
+//@ts-expect-error todo
 Sector.mergeOptions(options);
-
+//@ts-expect-error todo
 Sector.registerJSONType('Sector');
 
 export default Sector;

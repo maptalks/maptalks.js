@@ -1,5 +1,6 @@
 import MultiGeometry from './MultiGeometry';
 import Coordinate from '../geo/Coordinate';
+import Extent from '../geo/Extent';
 
 /**
  * @classdesc
@@ -10,6 +11,8 @@ import Coordinate from '../geo/Coordinate';
 class MultiPath extends MultiGeometry {
 
     /**
+     * 获取（MultiLineString或MultiPolygon）与给定范围的交点的中心
+     * @english
      * Get center of (MultiLineString or MultiPolygon)'s intersection with give extent
      * @example
      *  const extent = map.getExtent();
@@ -17,10 +20,11 @@ class MultiPath extends MultiGeometry {
      * @param {Extent} extent
      * @return {Coordinate} center, null if line doesn't intersect with extent
      */
-    getCenterInExtent(extent) {
+    getCenterInExtent(extent: Extent): null | Coordinate {
         const children = this.getGeometries();
         let [sumx, sumy, counter] = [0, 0, 0];
         children.forEach(l => {
+            // @ts-expect-error todo
             const c = l.getCenterInExtent(extent);
             if (c) {
                 sumx += c.x * c.count;

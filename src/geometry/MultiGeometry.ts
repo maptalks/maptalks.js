@@ -2,12 +2,15 @@ import GeometryCollection from './GeometryCollection';
 import Coordinate from '../geo/Coordinate';
 
 /**
+ * MultiPoint、MultiLineString和MultiPolygon的父类
+ * @english
  * The parent class for MultiPoint, MultiLineString and MultiPolygon
  * @category geometry
  * @abstract
  * @extends {GeometryCollection}
  */
 class MultiGeometry extends GeometryCollection {
+    public GeometryType: any
 
     /**
      * @param  {Class} geoType      Type of the geometry
@@ -15,7 +18,7 @@ class MultiGeometry extends GeometryCollection {
      * @param  {Geometry[]} data    data
      * @param  {Object} [options=null] configuration options
      */
-    constructor(geoType, type, data, options) {
+    constructor(geoType, type: string, data: any, options: any) {
         super(null, options);
         this.GeometryType = geoType;
         this.type = type;
@@ -23,10 +26,12 @@ class MultiGeometry extends GeometryCollection {
     }
 
     /**
+     * 获取集合中得坐标
+     * @english
      * Get coordinates of the collection
      * @return {Coordinate[]|Coordinate[][]|Coordinate[][][]} coordinates
      */
-    getCoordinates() {
+    getCoordinates(): any {
         const coordinates = [];
         const geometries = this.getGeometries();
         for (let i = 0, l = geometries.length; i < l; i++) {
@@ -37,12 +42,14 @@ class MultiGeometry extends GeometryCollection {
     }
 
     /**
+     * 设置集合得坐标
+     * @english
      * Set new coordinates to the collection
      * @param {Coordinate[]|Coordinate[][]|Coordinate[][][]} coordinates
      * @returns {Geometry} this
      * @fires maptalk.Geometry#shapechange
      */
-    setCoordinates(coordinates) {
+    setCoordinates(coordinates: any): any {
         coordinates = coordinates || [];
         const geometries = [];
         for (let i = 0, l = coordinates.length; i < l; i++) {
@@ -53,7 +60,7 @@ class MultiGeometry extends GeometryCollection {
         return this;
     }
 
-    _initData(data) {
+    _initData(data: any): void {
         data = data || [];
         if (data.length) {
             if (data[0] instanceof this.GeometryType) {
@@ -64,12 +71,12 @@ class MultiGeometry extends GeometryCollection {
         }
     }
 
-    _checkGeo(geo) {
+    _checkGeo(geo: any): boolean {
         return (geo instanceof this.GeometryType);
     }
 
     //override _exportGeoJSONGeometry in GeometryCollection
-    _exportGeoJSONGeometry() {
+    _exportGeoJSONGeometry(): any {
         const points = this.getCoordinates();
         const coordinates = Coordinate.toNumberArrays(points);
         return {
@@ -78,7 +85,7 @@ class MultiGeometry extends GeometryCollection {
         };
     }
 
-    _toJSON(options) {
+    _toJSON(options: any): any {
         return {
             'feature': this.toGeoJSON(options)
         };

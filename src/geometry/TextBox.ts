@@ -1,5 +1,6 @@
 import { extend, isNil } from '../core/util';
 import { escapeSpecialChars } from '../core/util/strings';
+import Coordinate from '../geo/Coordinate';
 import TextMarker from './TextMarker';
 import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 
@@ -15,13 +16,13 @@ import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
  * @instance
  */
 const options = {
-    'textStyle' :  {
-        'wrap' : true,
-        'padding' : [12, 8],
-        'verticalAlignment' : 'middle',
-        'horizontalAlignment' : 'middle'
+    'textStyle': {
+        'wrap': true,
+        'padding': [12, 8],
+        'verticalAlignment': 'middle',
+        'horizontalAlignment': 'middle'
     },
-    'boxSymbol' : null
+    'boxSymbol': null
 };
 
 /**
@@ -68,7 +69,7 @@ class TextBox extends TextMarker {
      * @param {Number} height                  - height in pixel
      * @param {Object} [options=null]          - construct options defined in [TextBox]{@link TextBox#options}
      */
-    constructor(content, coordinates, width, height, options = {}) {
+    constructor(content: string, coordinates: Coordinate, width: number, height: number, options: any = {}) {
         super(coordinates, options);
         this._content = escapeSpecialChars(content);
         this._width = isNil(width) ? 100 : width;
@@ -83,57 +84,69 @@ class TextBox extends TextMarker {
     }
 
     /**
+     * 获取文本框得宽度
+     * @english
      * Get textbox's width
      * @return {Number}
      */
-    getWidth() {
+    getWidth(): number {
         return this._width;
     }
 
     /**
+     * 设置文本框得宽度
+     * @english
      * Set new width to textbox
      * @param {Number} width
      * returns {TextBox} this
      */
-    setWidth(width) {
+    setWidth(width: number): TextBox {
         this._width = width;
         this._refresh();
         return this;
     }
 
     /**
+     * 获取文本框高度
+     * @english
      * Get textbox's height
      * @return {Number}
      */
-    getHeight() {
+    getHeight(): number {
         return this._height;
     }
 
     /**
+     * 设置文本框高度
+     * @english
      * Set new height to textbox
      * @param {Number} height
      * returns {TextBox} this
      */
-    setHeight(height) {
+    setHeight(height: number): TextBox {
         this._height = height;
         this._refresh();
         return this;
     }
 
     /**
+     * 获取文本框边框样式
+     * @english
      * Get textbox's boxSymbol
      * @return {Object} boxsymbol
      */
-    getBoxSymbol() {
+    getBoxSymbol(): any {
         return extend({}, this.options.boxSymbol);
     }
 
     /**
+     * 设置文本框边框样式
+     * @english
      * Set a new box symbol to textbox
      * @param {Object} symbol
      * returns {TextBox} this
      */
-    setBoxSymbol(symbol) {
+    setBoxSymbol(symbol: any): TextBox {
         this.options.boxSymbol = symbol ? extend({}, symbol) : symbol;
         if (this.getSymbol()) {
             this._refresh();
@@ -142,10 +155,12 @@ class TextBox extends TextMarker {
     }
 
     /**
+     * 获取文本框文本样式
+     * @english
      * Get textbox's text style
      * @return {Object}
      */
-    getTextStyle() {
+    getTextStyle(): any {
         if (!this.options.textStyle) {
             return null;
         }
@@ -153,11 +168,13 @@ class TextBox extends TextMarker {
     }
 
     /**
+     * 设置文本框文本样式
+     * @english
      * Set a new text style to the textbox
      * @param {Object} style new text style
      * returns {TextBox} this
      */
-    setTextStyle(style) {
+    setTextStyle(style: any): TextBox {
         this.options.textStyle = style ? extend({}, style) : style;
         if (this.getSymbol()) {
             this._refresh();
@@ -165,7 +182,7 @@ class TextBox extends TextMarker {
         return this;
     }
 
-    static fromJSON(json) {
+    static fromJSON(json: any): TextBox {
         const feature = json['feature'];
         const textBox = new TextBox(json['content'], feature['geometry']['coordinates'], json['width'], json['height'], json['options']);
         textBox.setProperties(feature['properties']);
@@ -176,17 +193,17 @@ class TextBox extends TextMarker {
         return textBox;
     }
 
-    _toJSON(options) {
+    _toJSON(options: any): any {
         return {
             'feature': this.toGeoJSON(options),
-            'width' : this.getWidth(),
-            'height' : this.getHeight(),
+            'width': this.getWidth(),
+            'height': this.getHeight(),
             'subType': 'TextBox',
             'content': this._content
         };
     }
 
-    _refresh() {
+    _refresh(): void {
         const textStyle = this.getTextStyle() || {},
             padding = textStyle['padding'] || [12, 8];
         let maxWidth, maxHeight;
@@ -216,13 +233,13 @@ class TextBox extends TextMarker {
             textStyle.symbol || this._getDefaultTextSymbol(),
             this.options.boxSymbol || this._getDefaultBoxSymbol(),
             {
-                'textName' : this._content,
-                'markerWidth' : this._width,
-                'markerHeight' : this._height,
-                'textHorizontalAlignment' : 'middle',
-                'textVerticalAlignment' : 'middle',
-                'textMaxWidth' : maxWidth,
-                'textMaxHeight' : maxHeight
+                'textName': this._content,
+                'markerWidth': this._width,
+                'markerHeight': this._height,
+                'textHorizontalAlignment': 'middle',
+                'textVerticalAlignment': 'middle',
+                'textMaxWidth': maxWidth,
+                'textMaxHeight': maxHeight
             });
 
         if (textStyle['wrap'] && !symbol['textWrapWidth']) {
@@ -290,7 +307,7 @@ class TextBox extends TextMarker {
         delete this._refreshing;
     }
 
-    startEdit(opts) {
+    startEdit(opts: any): void {
         const symbol = this._getCompiledSymbol();
         if (isFunctionDefinition(this._width)) {
             const markerWidth = symbol['markerWidth'];
@@ -305,7 +322,7 @@ class TextBox extends TextMarker {
         super.startEdit(opts);
     }
 
-    endEdit() {
+    endEdit(): void {
         const map = this.getMap();
         const zoom = map && map.getZoom();
         if (this._oldWidth) {
@@ -336,8 +353,9 @@ class TextBox extends TextMarker {
     }
 }
 
+//@ts-expect-error todo
 TextBox.mergeOptions(options);
-
+//@ts-expect-error todo
 TextBox.registerJSONType('TextBox');
 
 export default TextBox;

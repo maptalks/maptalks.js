@@ -21,16 +21,18 @@ class MultiPoint extends MultiGeometry {
      * @param {Number[][]|Coordinate[]|Marker[]} data - construct data, coordinates or an array of markers
      * @param {Object} [options=null] - options defined in [nMultiPoint]{@link MultiPoint#options}
      */
-    constructor(data, opts) {
+    constructor(data: any, opts: any) {
         super(Marker, 'MultiPoint', data, opts);
     }
 
     /**
+     * 找到给定坐标的最近点
+     * @english
      * Find the closet point to the give coordinate
      * @param {Coordinate} coordinate coordinate
      * @returns {Coordinate} coordinate
      */
-    findClosest(coordinate) {
+    findClosest(coordinate: any): any {
         if (!coordinate) {
             return null;
         }
@@ -52,7 +54,7 @@ MultiPoint.registerJSONType('MultiPoint');
 
 export default MultiPoint;
 
-function distanceTo(p0, p1) {
+function distanceTo(p0: any, p1: any): number {
     const x = p1.x - p0.x,
         y = p1.y - p0.y;
     return Math.sqrt(x * x + y * y);
