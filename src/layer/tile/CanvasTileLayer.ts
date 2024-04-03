@@ -23,9 +23,9 @@ class CanvasTileLayer extends TileLayer {
 
     /**
      * The interface method to draw on canvsa tile
-     * @param  {HTMLCanvasElement} canvas  canvas to draw on
-     * @param  {Object} options current options
-     * @param  {Object} options current options
+     * @param canvas  canvas to draw on
+     * @param options current options
+     * @param options current options
      */
     drawTile(/*canvas, options*/) {
 
