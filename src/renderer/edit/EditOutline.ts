@@ -1,13 +1,25 @@
-export default class EditOutline {
+import type Map from '../../map/Map';
+import type GeometryEditor from '../../geometry/editor/GeometryEditor';
+import type { Point } from '../../geo';
 
-    constructor(target, map) {
+export default class EditOutline {
+    points: any;
+    xmin: number;
+    xmax: number;
+    ymin: number;
+    ymax: number;
+
+    map: Map;
+    target: GeometryEditor;
+
+    constructor(target: GeometryEditor, map: Map) {
         this.target = target;
         target.once('remove', this.delete, this);
         this.map = map;
         this.addTo(map);
     }
 
-    setPoints(points) {
+    setPoints(points: Point[]) {
         this.points = points;
         const allX = points.map(p => p.x);
         const allY = points.map(p => p.y);
@@ -21,7 +33,7 @@ export default class EditOutline {
         return false;
     }
 
-    render(ctx) {
+    render(ctx: CanvasRenderingContext2D) {
         const map = this.map;
         if (this.xmax <= 0 || this.xmin >= map.width ||
             this.ymax <= 0 || this.ymin >= map.height) {
@@ -30,7 +42,7 @@ export default class EditOutline {
         const dpr = map.getDevicePixelRatio();
         // make line thiner
         const padding = 0.5;
-        function c(v) {
+        function c(v: number) {
             return Math.round(v) * dpr + padding;
         }
         ctx.lineWidth = 1;
@@ -46,7 +58,7 @@ export default class EditOutline {
         ctx.stroke();
     }
 
-    addTo(map) {
+    addTo(map: Map) {
         this.map = map;
         const renderer = map.getRenderer();
         renderer.addTopElement(this);
