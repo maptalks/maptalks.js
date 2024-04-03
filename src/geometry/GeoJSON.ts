@@ -98,8 +98,8 @@ class GeoJSONFetchActor extends Actor {
         super(WORKER_KEY);
     }
 
-    _sendMsg(options, featuresList, cb) {
-        this.send(options, [], (error, data) => {
+    _sendMsg(options: any, featuresList: any, cb: any) {
+        this.send(options, [], (error?: any, data?: any) => {
             if (error) {
                 cb(error);
             } else {
@@ -108,14 +108,14 @@ class GeoJSONFetchActor extends Actor {
         }, options.workerId);
     }
 
-    _fetchGeoJSON(url, options, featuresList = [], cb) {
+    _fetchGeoJSON(url: any, options: any, featuresList: [] = [], cb: any): void {
         const opts = extend({}, options);
         opts.type = 'fetchdata';
         opts.url = url;
         this._sendMsg(opts, featuresList, cb);
     }
 
-    _pageFeatures(options, features, featuresList, cb) {
+    _pageFeatures(options: any, features: any, featuresList: any, cb: any): void {
         featuresList.push(features);
         if (features.length === 0) {
             cb(null, featuresList);
@@ -129,7 +129,7 @@ class GeoJSONFetchActor extends Actor {
 
 registerWorkerAdapter(WORKER_KEY, function () { return WORKER_CODE; });
 
-let fetchActor;
+let fetchActor: GeoJSONFetchActor;
 
 /**
  * GeoJSON utilities
@@ -140,6 +140,8 @@ let fetchActor;
 const GeoJSON = {
 
     /**
+     * 将一个或多个GeoJSON对象转换为几何体
+     * @english
      * Convert one or more GeoJSON objects to geometry
      * @param  {String|Object|Object[]} geoJSON - GeoJSON objects or GeoJSON string
      * @param  {Function} [foreachFn=undefined] - callback function for each geometry
@@ -182,7 +184,7 @@ const GeoJSON = {
      *  // A geometry array.
      *  const geometries = GeoJSON.toGeometry(collection, geometry => { geometry.config('draggable', true); });
      */
-    toGeometry: function (geoJSON, foreachFn) {
+    toGeometry: function (geoJSON: any, foreachFn?: any): any {
         if (isString(geoJSON)) {
             geoJSON = parseJSON(geoJSON);
         }
@@ -204,6 +206,8 @@ const GeoJSON = {
 
     },
     /**
+     * async将一个或多个GeoJSON对象转换为几何体
+     * @english
     * async Convert one or more GeoJSON objects to geometry
     * @param  {String|Object|Object[]} geoJSON - GeoJSON objects or GeoJSON string
     * @param  {Function} [foreachFn=undefined] - callback function for each geometry
@@ -214,7 +218,7 @@ const GeoJSON = {
     *    console.log(geos);
     * })
     * */
-    toGeometryAsync(geoJSON, foreachFn, countPerTime = 2000) {
+    toGeometryAsync(geoJSON: any, foreachFn: any, countPerTime: number = 2000): any {
         if (isString(geoJSON)) {
             geoJSON = parseJSON(geoJSON);
         }
@@ -254,12 +258,14 @@ const GeoJSON = {
     },
 
     /**
+     * 转换单个GeoJSON对象
+     * @english
      * Convert single GeoJSON object
      * @param  {Object} geoJSONObj - a GeoJSON object
      * @return {Geometry}
      * @private
      */
-    _convert: function (json, foreachFn) {
+    _convert: function (json: any, foreachFn?: any): any {
         if (!json || isNil(json['type'])) {
             return null;
         }
@@ -305,6 +311,7 @@ const GeoJSON = {
                 //circle ellipse etc...
                 //规范上geojson里是没有Circle等图形的，但是Circle json等的反序列化有用到该方法
                 if (geometries[i].subType) {
+                    // @ts-expect-error todo
                     mGeos.push(Geometry.getJSONClass(geometries[i].subType).fromJSON(geometries[i]));
                 } else {
                     mGeos.push(GeoJSON._convert(geometries[i]));
@@ -319,13 +326,14 @@ const GeoJSON = {
         return null;
     },
 
-    _isGeoJSON(json) {
+    _isGeoJSON(json: any): boolean {
         if (!json) {
             return false;
         }
         json = json || {};
         //is flat geometries,[geometry,geometry,...]
         if (Array.isArray(json) && json.length) {
+            // @ts-expect-error todo
             return GeoJSON.isGeoJSON(json[0]);
         }
         const type = json.type;
@@ -361,6 +369,8 @@ const GeoJSON = {
 
     },
     /**
+     * 正在请求一个大容量的geojson文件。解决主线程阻塞问题
+     * @english
     * Requesting a large volume geojson file.Solve the problem of main thread blocking
     * @param  {String} url - GeoJSON file path
     * @param  {Number} [countPerTime=2000] - Number of graphics converted per time
@@ -370,13 +380,13 @@ const GeoJSON = {
     *    console.log(geojson);
     * })
     * */
-    fetch(url, countPerTime = 2000) {
+    fetch(url: any, countPerTime: number = 2000): any {
         return new Promise((resolve, reject) => {
             if (!url || !isString(url)) {
                 reject('url is error,It should be string');
                 return;
             }
-            const options = extend({ pageSize: 2000 }, { pageSize: countPerTime });
+            const options: any = extend({ pageSize: 2000 }, { pageSize: countPerTime });
             url = getAbsoluteURL(url);
             if (!fetchActor) {
                 fetchActor = new GeoJSONFetchActor();

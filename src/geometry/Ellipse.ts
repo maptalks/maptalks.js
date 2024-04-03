@@ -16,6 +16,8 @@ const options = {
 };
 
 /**
+ * 表示椭圆几何体
+ * @english
  * Represents a Ellipse Geometry. <br>
  * @category geometry
  * @extends Polygon
@@ -40,7 +42,8 @@ class Ellipse extends CenterMixin(Polygon) {
      * @param {Number} height - height of the ellipse, in meter
      * @param {Object}  [options=null] - construct options defined in [Ellipse]{@link Ellipse#options}
      */
-    constructor(coordinates, width, height, options) {
+    constructor(coordinates: any, width: number, height: number, options?: any) {
+        // @ts-expect-error todo
         super(null, options);
         if (coordinates) {
             this.setCoordinates(coordinates);
@@ -50,56 +53,65 @@ class Ellipse extends CenterMixin(Polygon) {
     }
 
     /**
+     * 获取椭圆的宽度
+     * @english
      * Get ellipse's width
      * @return {Number}
      */
-    getWidth() {
+    getWidth(): number {
         return this.width;
     }
 
     /**
+     * 设置椭圆的宽度
      * Set new width to ellipse
      * @param {Number} width - new width
      * @fires Ellipse#shapechange
      * @return {Ellipse} this
      */
-    setWidth(width) {
+    setWidth(width: number): Ellipse {
         this.width = width;
         this.onShapeChanged();
         return this;
     }
 
     /**
+     * 获取椭圆高度
+     * @english
      * Get ellipse's height
      * @return {Number}
      */
-    getHeight() {
+    getHeight(): number {
         return this.height;
     }
 
     /**
+     * 设置椭圆高度
+     * @english
      * Set new height to ellipse
      * @param {Number} height - new height
      * @fires Ellipse#shapechange
      * @return {Ellipse} this
      */
-    setHeight(height) {
+    setHeight(height: number): Ellipse {
         this.height = height;
         this.onShapeChanged();
         return this;
     }
     /**
+     * 获取作为多边形的椭圆的外壳，外壳点数由决定
+     * @english
      * Gets the shell of the ellipse as a polygon, number of the shell points is decided by [options.numberOfShellPoints]{@link Circle#options}
      * @return {Coordinate[]} - shell coordinates
      */
-    getShell() {
+    getShell(): any {
         if (this.isRotated()) {
             return this.getRotatedShell();
         }
         return this._getShell();
     }
 
-    _getShell() {
+    _getShell(): any {
         const measurer = this._getMeasurer(),
             center = this.getCoordinates(),
             numberOfPoints = this.options['numberOfShellPoints'] - 1,
@@ -129,24 +141,26 @@ class Ellipse extends CenterMixin(Polygon) {
         return shell;
     }
 
-    _getPrjShell() {
+    _getPrjShell(): any {
         const shell = super._getPrjShell();
         return this._rotatePrjCoordinates(shell);
     }
 
     /**
+     * 椭圆没有任何孔，总是返回null
+     * @english
      * Ellipse won't have any holes, always returns null
      * @return {Object[]} an empty array
      */
-    getHoles() {
+    getHoles(): [] {
         return [];
     }
 
-    animateShow() {
+    animateShow(): any {
         return this.show();
     }
 
-    _containsPoint(point, tolerance) {
+    _containsPoint(point: any, tolerance: any): boolean {
         const map = this.getMap();
         if (map.isTransforming()) {
             return super._containsPoint(point, tolerance);
@@ -159,18 +173,20 @@ class Ellipse extends CenterMixin(Polygon) {
         return withInEllipse(point, p0, p1, t);
     }
 
-    _computePrjExtent() {
+    _computePrjExtent(): any {
         if (this.isRotated()) {
             return this._computeRotatedPrjExtent();
         }
+        // eslint-disable-next-line prefer-rest-params
         return Circle.prototype._computePrjExtent.apply(this, arguments);
     }
 
-    _computeExtent() {
+    _computeExtent(): any {
+        // eslint-disable-next-line prefer-rest-params
         return Circle.prototype._computeExtent.apply(this, arguments);
     }
 
-    _getMinMax(measurer) {
+    _getMinMax(measurer: any): any {
         if (!measurer || !this._coordinates || isNil(this.width) || isNil(this.height)) {
             return null;
         }
@@ -183,7 +199,7 @@ class Ellipse extends CenterMixin(Polygon) {
         return [p1, p2, p3, p4];
     }
 
-    _computeGeodesicLength() {
+    _computeGeodesicLength(): number {
         if (isNil(this.width) || isNil(this.height)) {
             return 0;
         }
@@ -193,14 +209,14 @@ class Ellipse extends CenterMixin(Polygon) {
         return 2 * Math.PI * longer / 2 - 4 * Math.abs(this.width - this.height);
     }
 
-    _computeGeodesicArea() {
+    _computeGeodesicArea(): number {
         if (isNil(this.width) || isNil(this.height)) {
             return 0;
         }
         return Math.PI * this.width * this.height / 4;
     }
 
-    _exportGeoJSONGeometry() {
+    _exportGeoJSONGeometry(): any {
         const coordinates = Coordinate.toNumberArrays([this.getShell()]);
         return {
             'type': 'Polygon',
@@ -208,7 +224,7 @@ class Ellipse extends CenterMixin(Polygon) {
         };
     }
 
-    _toJSON(options) {
+    _toJSON(options: any): any {
         const opts = extend({}, options);
         const center = this.getCenter();
         opts.geometry = false;
@@ -226,9 +242,9 @@ class Ellipse extends CenterMixin(Polygon) {
     }
 
 }
-
+// @ts-expect-error todo
 Ellipse.mergeOptions(options);
-
+// @ts-expect-error todo
 Ellipse.registerJSONType('Ellipse');
 
 export default Ellipse;

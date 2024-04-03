@@ -33,6 +33,8 @@ const options = {
 };
 
 /**
+ * 一个抽象类Path，包含Path几何类的常用方法，例如LineString、Polygon
+ * @english
  * An abstract class Path containing common methods for Path geometry classes, e.g. LineString, Polygon
  * @abstract
  * @category geometry
@@ -40,7 +42,23 @@ const options = {
  */
 class Path extends Geometry {
 
+    public _showPlayer: any
+    public _animIdx: number
+    public _animLenSoFar: number
+    public _animTailRatio: number
+    public _prjAniShowCenter: Coordinate
+    public _aniShowCenter: Coordinate
+    public _tempCoord: Coordinate
+    public _tempPrjCoord: Point
+    public _simplified: boolean
+    public _prjCoords: any
+    public hasHoles: any
+    getHoles?(): any;
+    _getPrjHoles?(): any;
+
     /**
+     * 动画展示线条
+     * @english
      * Show the linestring with animation
      * @param  {Object} [options=null] animation options
      * @param  {Number} [options.duration=1000] duration
@@ -56,7 +74,7 @@ class Path extends Geometry {
      *  });
      * @return {LineString}         this
      */
-    animateShow(options = {}, cb) {
+    animateShow(options: any = {}, cb: any): any {
         if (this._showPlayer) {
             this._showPlayer.finish();
         }
@@ -65,6 +83,7 @@ class Path extends Geometry {
             cb = options;
         }
         const coordinates = this.getCoordinates();
+        // @ts-expect-error todo
         if (coordinates.length === 0) {
             return this;
         }
@@ -84,17 +103,20 @@ class Path extends Geometry {
         this.setCoordinates([]);
         let length = 0;
         if (prjAnimCoords.length) {
+            // @ts-expect-error todo
             prjAnimCoords[0]._distance = 0;
         }
         for (let i = 1; i < prjAnimCoords.length; i++) {
+            // @ts-expect-error todo
             const distance = prjAnimCoords[i].distanceTo(prjAnimCoords[i - 1]);
             // cache distance calc
+            // @ts-expect-error todo
             prjAnimCoords[i]._distance = distance;
             length += distance;
         }
         this._tempCoord = new Coordinate(0, 0);
         this._tempPrjCoord = new Point(0, 0);
-        const player = this._showPlayer = Animation.animate({
+        const player: any = this._showPlayer = Animation.animate({
             't': duration
         }, {
             'duration': duration,
@@ -105,6 +127,7 @@ class Path extends Geometry {
                     player.finish();
                     if (cb) {
                         const coordinates = this.getCoordinates();
+                        // @ts-expect-error todo
                         cb(frame, coordinates[coordinates.length - 1]);
                     }
                 }
@@ -130,7 +153,7 @@ class Path extends Geometry {
         return player;
     }
 
-    _drawAnimShowFrame(t, duration, length, coordinates, prjCoords) {
+    _drawAnimShowFrame(t: number, duration: number, length: number, coordinates: Coordinate[], prjCoords: any): any {
         if (t === 0) {
             return coordinates[0];
         }
@@ -138,7 +161,7 @@ class Path extends Geometry {
         // const map = this.getMap();
         const targetLength = t / duration * length;
         let segLen = 0;
-        let i, l;
+        let i: number, l: number;
         for (i = this._animIdx + 1, l = prjCoords.length; i < l; i++) {
             // segLen = prjCoords[i].distanceTo(prjCoords[i + 1]);
             segLen = prjCoords[i]._distance;
@@ -201,7 +224,7 @@ class Path extends Geometry {
         return targetCoord;
     }
 
-    _getCenterInExtent(extent, coordinates, clipFn) {
+    _getCenterInExtent(extent: Extent, coordinates: Coordinate[], clipFn: any): any {
         const meExtent = this.getExtent();
         if (!extent.intersects(meExtent)) {
             return null;
@@ -231,11 +254,14 @@ class Path extends Geometry {
             }
         });
         const c = new Coordinate(sumx, sumy)._multi(1 / counter);
+        // @ts-expect-error todo
         c.count = counter;
         return c;
     }
 
     /**
+     * 将投影坐标转换为视点
+     * @english
      * Transform projected coordinates to view points
      * @param  {Coordinate[]} prjCoords           - projected coordinates
      * @param  {Boolean} disableSimplify          - whether to disable simplify\
@@ -243,7 +269,7 @@ class Path extends Geometry {
      * @returns {Point[]}
      * @private
      */
-    _getPath2DPoints(prjCoords, disableSimplify, res) {
+    _getPath2DPoints(prjCoords: any, disableSimplify: boolean, res?: any): any {
         if (!isArrayHasData(prjCoords)) {
             return [];
         }
@@ -281,18 +307,18 @@ class Path extends Geometry {
         // return forEachCoord(prjCoords, c => map._prjToPoint(c, zoom));
     }
 
-    _shouldSimplify() {
+    _shouldSimplify(): any {
         const layer = this.getLayer();
         const hasAltitude = layer.options['enableAltitude'];
         return layer && layer.options['enableSimplify'] && !hasAltitude && this.options['enableSimplify'] && !this._showPlayer/* && !this.options['smoothness'] */;
     }
 
-    _setPrjCoordinates(prjPoints) {
+    _setPrjCoordinates(prjPoints: any): void {
         this._prjCoords = prjPoints;
         this.onShapeChanged();
     }
 
-    _getPrjCoordinates() {
+    _getPrjCoordinates(): any {
         this._verifyProjection();
         if (!this._prjCoords && this._getProjection()) {
             this._prjCoords = this._projectCoords(this._coordinates);
@@ -301,7 +327,7 @@ class Path extends Geometry {
     }
 
     //update cached variables if geometry is updated.
-    _updateCache() {
+    _updateCache(): void {
         this._clearCache();
         const projection = this._getProjection();
         if (!projection) {
@@ -312,12 +338,12 @@ class Path extends Geometry {
         }
     }
 
-    _clearProjection() {
+    _clearProjection(): void {
         this._prjCoords = null;
         super._clearProjection();
     }
 
-    _projectCoords(points) {
+    _projectCoords(points: any): any {
         const projection = this._getProjection();
         if (projection) {
             return projection.projectCoords(points, this.options['antiMeridian']);
@@ -325,7 +351,7 @@ class Path extends Geometry {
         return [];
     }
 
-    _unprojectCoords(prjPoints) {
+    _unprojectCoords(prjPoints: any): any {
         const projection = this._getProjection();
         if (projection) {
             return projection.unprojectCoords(prjPoints);
@@ -333,7 +359,7 @@ class Path extends Geometry {
         return [];
     }
 
-    _computeCenter() {
+    _computeCenter(): null | Coordinate {
         const ring = this._coordinates;
         if (!isArrayHasData(ring)) {
             return null;
@@ -341,6 +367,7 @@ class Path extends Geometry {
         let sumx = 0,
             sumy = 0,
             counter = 0;
+        // @ts-expect-error todo
         const size = ring.length;
         for (let i = 0; i < size; i++) {
             if (ring[i]) {
@@ -354,27 +381,27 @@ class Path extends Geometry {
         return new Coordinate(sumx / counter, sumy / counter);
     }
 
-    _computeExtent() {
+    _computeExtent(): Extent {
         const shell = this._coordinates;
         if (!isArrayHasData(shell)) {
             return null;
         }
         const rings = [shell];
         if (this.hasHoles && this.hasHoles()) {
-            rings.push.apply(rings, this.getHoles());
+            rings.push.call(rings, ...this.getHoles());
         }
         return this._coords2Extent(rings, this._getProjection());
     }
 
-    _computePrjExtent() {
+    _computePrjExtent(): Extent {
         const coords = [this._getPrjCoordinates()];
         if (this.hasHoles && this.hasHoles()) {
-            coords.push.apply(coords, this._getPrjHoles());
+            coords.push.call(coords, ...this._getPrjHoles());
         }
         return this._coords2Extent(coords);
     }
 
-    _get2DLength() {
+    _get2DLength(): number {
         const vertexes = this._getPath2DPoints(this._getPrjCoordinates(), true);
         let len = 0;
         for (let i = 1, l = vertexes.length; i < l; i++) {
@@ -383,7 +410,7 @@ class Path extends Geometry {
         return len;
     }
 
-    _hitTestTolerance() {
+    _hitTestTolerance(): number {
         const symbol = this._getInternalSymbol();
         let w;
         if (Array.isArray(symbol)) {
@@ -401,7 +428,7 @@ class Path extends Geometry {
         return super._hitTestTolerance() + (isNumber(w) ? w / 2 : 1.5);
     }
 
-    _coords2Extent(coords, proj) {
+    _coords2Extent(coords: any, proj?: any): Extent {
         // linestring,  polygon
         if (!coords || coords.length === 0 || (Array.isArray(coords[0]) && coords[0].length === 0)) {
             return null;
