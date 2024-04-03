@@ -1,6 +1,9 @@
 import Class from '../../core/Class';
 import PointExtent from '../../geo/PointExtent';
-import { getDefaultBBOX, resetBBOX, setBBOX, validateBBOX } from '../../core/util/bbox';
+import { Bbox, getDefaultBBOX, resetBBOX, setBBOX, validateBBOX } from '../../core/util/bbox';
+import Painter from './Painter';
+import Extent from '../../geo/Extent';
+import { ResourceCache } from '../layer/CanvasRenderer';
 
 const TEMP_EXTENT = new PointExtent();
 
@@ -11,10 +14,16 @@ const TEMP_EXTENT = new PointExtent();
  * @private
  */
 export default class CollectionPainter extends Class {
+    _drawTime: number;
+
+    bbox: Bbox;
+    geometry: any;
+    isMask: boolean;
     /**
-     * @param {GeometryCollection} geometry - geometry to paint
+     * @param geometry - geometry to paint
+     * @param isMask
      */
-    constructor(geometry, isMask) {
+    constructor(geometry: any, isMask?: boolean) {
         super();
         this.geometry = geometry;
         this.isMask = isMask;
@@ -22,21 +31,21 @@ export default class CollectionPainter extends Class {
         this._drawTime = 0;
     }
 
-    _setDrawTime(time) {
+    _setDrawTime(time: number) {
         this._drawTime = time;
-        this._eachPainter((painter) => {
+        this._eachPainter((painter: Painter) => {
             painter._setDrawTime(time);
         });
         return this;
     }
 
-    getRenderBBOX() {
+    getRenderBBOX(): Bbox {
         const layer = this.getLayer();
         if (layer && layer._drawTime !== this._drawTime) {
             return null;
         }
         resetBBOX(this.bbox);
-        this._eachPainter((painter) => {
+        this._eachPainter((painter: Painter) => {
             const bbox = painter.getRenderBBOX();
             if (!validateBBOX(bbox)) {
                 return;
@@ -49,10 +58,9 @@ export default class CollectionPainter extends Class {
         return null;
     }
 
-
-    _eachPainter(fn) {
+    _eachPainter(fn: (p: Painter) => void) {
         const geometries = this.geometry.getGeometries();
-        let painter;
+        let painter: Painter;
         for (let i = 0, len = geometries.length; i < len; i++) {
             painter = this.isMask ? geometries[i]._getMaskPainter() : geometries[i]._getPainter();
             if (!painter) {
@@ -70,17 +78,16 @@ export default class CollectionPainter extends Class {
         return this.geometry && this.geometry.getLayer();
     }
 
-
-    paint(extent) {
+    paint(extent: Extent) {
         if (!this.geometry) {
             return;
         }
-        this._eachPainter(painter => {
+        this._eachPainter((painter: Painter) => {
             painter.paint(extent);
         });
     }
 
-    get2DExtent(resources, out) {
+    get2DExtent(resources: ResourceCache, out?: Extent) {
         if (out) {
             out.set(null, null, null, null);
         }
@@ -98,50 +105,44 @@ export default class CollectionPainter extends Class {
     }
 
     remove() {
-        const args = arguments;
-        this._eachPainter(painter => {
-            painter.remove.apply(painter, args);
+        this._eachPainter((painter: Painter) => {
+            painter.remove();
         });
     }
 
-    setZIndex() {
-        const args = arguments;
+    setZIndex(index: number) {
         this._eachPainter(painter => {
-            painter.setZIndex.apply(painter, args);
+            painter.setZIndex(index);
         });
     }
 
     show() {
-        const args = arguments;
         this._eachPainter(painter => {
-            painter.show.apply(painter, args);
+            painter.show();
         });
     }
 
     hide() {
-        const args = arguments;
         this._eachPainter(painter => {
-            painter.hide.apply(painter, args);
+            painter.hide();
         });
     }
 
     repaint() {
-        const args = arguments;
         this._eachPainter(painter => {
-            painter.repaint.apply(painter, args);
+            painter.repaint();
         });
     }
 
     refreshSymbol() {
-        const args = arguments;
         this._eachPainter(painter => {
-            painter.refreshSymbol.apply(painter, args);
+            painter.refreshSymbol();
         });
     }
 
-    hasPoint() {
+    hasPoint(): boolean {
         let result = false;
-        this._eachPainter(painter => {
+        this._eachPainter((painter: Painter) => {
             if (painter.hasPoint()) {
                 result = true;
                 return false;
@@ -151,10 +152,10 @@ export default class CollectionPainter extends Class {
         return result;
     }
 
-    getMinAltitude() {
+    getMinAltitude(): number {
         let first = true;
         let result = 0;
-        this._eachPainter(painter => {
+        this._eachPainter((painter: Painter) => {
             const alt = painter.getMinAltitude();
             if (first || alt < result) {
                 first = false;
@@ -164,9 +165,9 @@ export default class CollectionPainter extends Class {
         return result;
     }
 
-    getMaxAltitude() {
+    getMaxAltitude(): number {
         let result = 0;
-        this._eachPainter(painter => {
+        this._eachPainter((painter: Painter) => {
             const alt = painter.getMaxAltitude();
             if (alt > result) {
                 result = alt;
@@ -174,5 +175,4 @@ export default class CollectionPainter extends Class {
         });
         return result;
     }
-
 }

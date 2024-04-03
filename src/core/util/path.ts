@@ -2,7 +2,7 @@ import Point from '../../geo/Point';
 import Coordinate from '../../geo/Coordinate';
 
 
-export function clipLine(points, bounds, round, noCut) {
+export function clipLine(points, bounds, round?: boolean, noCut?: boolean) {
     const parts = [];
     let k = 0, segment;
     for (let j = 0, l = points.length; j < l - 1; j++) {
@@ -83,7 +83,7 @@ export function clipSegment(a, b, bounds, useLastCode, round, noCut) {
  * than polyline, so there's a seperate method for it.
  * @copyright Leaflet
  */
-export function clipPolygon(points, bounds, round) {
+export function clipPolygon(points, bounds, round?: boolean) {
     const edges = [1, 4, 2, 8];
     let clippedPoints,
         i, j, k,

@@ -23,7 +23,7 @@ export interface EditHandleOptions {
     zIndex?: number;
 }
 
-export default class EditHandle extends Eventable(Class) {
+export default class EditHandle extends Eventable<any>(Class) {
     target: GeometryEditor;
     map: Map;
     w: number;

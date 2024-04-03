@@ -4,6 +4,7 @@ import Map from './Map';
 
 declare module "./Map" {
     interface Map {
+        _glScale: number;
         coordinateToPoint(coordinate: Coordinate, zoom?: number, out?: Point): Point;
         coordinateToPointAtRes(coordinate: Coordinate, res?: number, out?: Point): Point;
         pointToCoordinate(point: Point, zoom?: number, out?: Coordinate): Coordinate;
@@ -19,7 +20,7 @@ declare module "./Map" {
         distanceToPixel(xDist: number, yDist: number, zoom?: number): Size;
         distanceToPoint(xDist: number, yDist: number, zoom?: number, paramCenter?: Coordinate): Point;
         distanceToPointAtRes(xDist: number, yDist: number, res?: number, paramCenter?: Coordinate, out?: Point): Point;
-        altitudeToPoint(altitude: number, res?: number, originCenter?: Coordinate): Point;
+        altitudeToPoint(altitude: number, res?: number, originCenter?: Coordinate): number;
         pointAtResToAltitude(point: Point, res?: number, originCenter?: Coordinate): number;
         pixelToDistance(width: number, height: number): number;
         pointToDistance(dx: number, dy: number, zoom?: number): number;

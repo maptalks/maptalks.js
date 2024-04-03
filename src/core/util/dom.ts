@@ -82,6 +82,7 @@ export const CSSFILTER = testProp(
 /**
  * Create a html element.
  * @param tagName
+ * @param className
  * @returns
  * @memberOf DomUtil
  */

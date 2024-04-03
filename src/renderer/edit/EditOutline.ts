@@ -1,6 +1,7 @@
 import type Map from '../../map/Map';
 import type GeometryEditor from '../../geometry/editor/GeometryEditor';
 import type { Point } from '../../geo';
+import type { Bbox } from '../../core/util/bbox';
 
 export default class EditOutline {
     points: any;
@@ -11,6 +12,7 @@ export default class EditOutline {
 
     map: Map;
     target: GeometryEditor;
+    options: any;
 
     constructor(target: GeometryEditor, map: Map) {
         this.target = target;
@@ -18,6 +20,9 @@ export default class EditOutline {
         this.map = map;
         this.addTo(map);
     }
+
+    needCollision?(): boolean;
+    getRenderBBOX?(dpr?: number): Bbox;
 
     setPoints(points: Point[]) {
         this.points = points;

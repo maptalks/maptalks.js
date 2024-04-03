@@ -69,7 +69,7 @@ const options = {
  */
 class GeometryEditor extends Eventable(Class) {
 
-    private _geometry: any
+    public _geometry: any
     private _originalSymbol: any
     private _shadowLayer: any
     private _shadow: any
@@ -448,7 +448,6 @@ class GeometryEditor extends Eventable(Class) {
         handle.on('dragend', onHandleDragEnd, this);
         //拖动移图
         if (opts.onRefresh) {
-            // @ts-expect-error todo 待补充EditHandle类型
             handle.refresh = opts.onRefresh;
         }
         return handle;
@@ -1060,7 +1059,6 @@ class GeometryEditor extends Eventable(Class) {
                 }
             });
             handle[propertyOfVertexIndex] = index;
-            // @ts-expect-error todo 待补全EditHandle类型
             handle._ringIndex = ringIndex;
             handle.on(me.options['removeVertexOn'], removeVertex);
             handle.setZIndex(vertexZIndex);
