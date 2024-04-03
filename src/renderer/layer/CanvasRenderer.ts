@@ -630,7 +630,11 @@ class CanvasRenderer extends Class {
         if (dpr !== 1) {
             context.restore();
         }
-        context.clip();
+        try {
+            context.clip('evenodd');
+        } catch (error) {
+            console.error(error);
+        }
         this.middleWest = old;
         return true;
     }

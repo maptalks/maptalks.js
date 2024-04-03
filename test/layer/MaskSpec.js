@@ -249,4 +249,45 @@ describe('Spec of Masks', function () {
         })
     });
 
+    it('#2273 tilelayer mask has hole', function (done) {
+        const tileLayer = new maptalks.TileLayer('tilelayer', {
+            renderer: 'canvas',
+            urlTemplate: '/resources/tile-green-256.png'
+        })
+        map.addLayer(tileLayer);
+
+        let demo = {
+            "type": "FeatureCollection",
+            "name": "test",
+            "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+            "features": [
+                { "type": "Feature", "properties": { "id": 1 }, "geometry": { "type": "MultiPolygon", "coordinates": [[[[110.288408835905386, 20.006217558007396], [110.288408835905386, 20.063115233900167], [110.38256474247541, 20.063115233900167], [110.38256474247541, 20.006217558007396], [110.288408835905386, 20.006217558007396]], [[110.310883235714812, 20.021777562576435], [110.366004658405302, 20.021777562576435], [110.366004658405302, 20.052448489493553], [110.310883235714812, 20.052448489493553], [110.310883235714812, 20.021777562576435]]]] } }
+            ]
+        }
+        const polygons = maptalks.GeoJSON.toGeometry(demo);
+        tileLayer.setMask(polygons[0]);
+        map.config({ centerCross: false });
+        map.setView({
+            "center": [110.33658492, 20.02547155], "zoom": 11.578662417547983, "pitch": 0, "bearing": 0
+        });
+
+        const getMapImageData = (x, y) => {
+            const ctx = map.getRenderer().context;
+            const { width, height } = map.getSize();
+            const data = ctx.getImageData(Math.round(width / 2 + x), Math.round(height / 2 + y), 1, 1).data;
+            return data;
+        }
+
+        setTimeout(() => {
+            const { width } = map.getSize();
+            const data = getMapImageData(-width / 2 + 2, 2);
+            expect(data[3]).to.equal(255);
+
+            const data1 = getMapImageData(0, -10);
+
+            expect(data1[3]).to.be.equal(0)
+            done();
+        }, 500);
+    });
+
 });
