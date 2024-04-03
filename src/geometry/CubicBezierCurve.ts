@@ -23,7 +23,6 @@ import Canvas from '../core/Canvas';
  *     }
  * ).addTo(layer);
  */
-//@ts-expect-error todo
 class CubicBezierCurve extends Curve {
 
     _paintArrow?(a: CanvasRenderingContext2D, b: any, c: number): void

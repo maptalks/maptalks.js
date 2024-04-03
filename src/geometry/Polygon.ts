@@ -2,6 +2,7 @@ import { isArrayHasData } from '../core/util';
 import Coordinate from '../geo/Coordinate';
 import { clipPolygon } from '../core/util/path';
 import Path from './Path';
+import Extent from '../geo/Extent';
 
 const JSON_TYPE = 'Polygon';
 
@@ -26,11 +27,15 @@ const JSON_TYPE = 'Polygon';
  */
 class Polygon extends Path {
 
+    public _holes: any
+    public _prjHoles: any
+    public _prjShell: any
+    _getShell?(): any
     /**
      * @param {Number[][]|Number[][][]|Coordinate[]|Coordinate[][]} coordinates - coordinates, shell coordinates or all the rings.
      * @param {Object} [options=null] - construct options defined in [Polygon]{@link Polygon#options}
      */
-    constructor(coordinates, options) {
+    constructor(coordinates: any, options?: any) {
         super(options);
         this.type = 'Polygon';
         if (coordinates) {
@@ -39,7 +44,7 @@ class Polygon extends Path {
     }
 
 
-    getOutline() {
+    getOutline(): null | Polygon {
         const painter = this._getPainter();
         if (!painter) {
             return null;
@@ -54,20 +59,22 @@ class Polygon extends Path {
     }
 
     /**
+     * 设置多边形坐标
+     * @english
      * Set coordinates to the polygon
      *
      * @param {Number[][]|Number[][][]|Coordinate[]|Coordinate[][]} coordinates - new coordinates
      * @return {Polygon} this
      * @fires Polygon#shapechange
      */
-    setCoordinates(coordinates) {
+    setCoordinates(coordinates: any): Polygon {
         if (!coordinates) {
             this._coordinates = null;
             this._holes = null;
             this._projectRings();
             return this;
         }
-        const rings = Coordinate.toCoordinates(coordinates);
+        const rings: any = Coordinate.toCoordinates(coordinates);
         const len = rings.length;
         if (!Array.isArray(rings[0])) {
             this._coordinates = this._trimRing(rings);
@@ -92,11 +99,13 @@ class Polygon extends Path {
     }
 
     /**
+     * 获取多边形坐标
+     * @english
      * Gets polygons's coordinates
      *
      * @returns {Coordinate[][]}
      */
-    getCoordinates() {
+    getCoordinates(): [] | Coordinate[][] {
         if (!this._coordinates) {
             return [];
         }
@@ -109,6 +118,8 @@ class Polygon extends Path {
     }
 
     /**
+     * 获取具有给定范围的线串的交点的中心
+     * @english
      * Get center of linestring's intersection with give extent
      * @example
      *  const extent = map.getExtent();
@@ -116,38 +127,44 @@ class Polygon extends Path {
      * @param {Extent} extent
      * @return {Coordinate} center, null if line doesn't intersect with extent
      */
-    getCenterInExtent(extent) {
+    getCenterInExtent(extent: Extent): Coordinate {
         return this._getCenterInExtent(extent, this.getShell(), clipPolygon);
     }
 
     /**
+     * 获取多边形的外壳坐标
+     * @english
      * Gets shell's coordinates of the polygon
      *
      * @returns {Coordinate[]}
      */
-    getShell() {
+    getShell(): any {
         return this._coordinates || [];
     }
 
 
     /**
+     * 获取多边形的洞的坐标（如果有）。
+     * @english
      * Gets holes' coordinates of the polygon if it has.
      * @returns {Coordinate[][]}
      */
-    getHoles() {
+    getHoles(): any {
         return this._holes || [];
     }
 
     /**
+     * 判断多边形是否带有洞
+     * @english
      * Whether the polygon has any holes inside.
      *
      * @returns {Boolean}
      */
-    hasHoles() {
+    hasHoles(): boolean {
         return this.getHoles().length > 0;
     }
 
-    _projectRings() {
+    _projectRings(): void {
         if (!this.getMap()) {
             this.onShapeChanged();
             return;
@@ -157,12 +174,12 @@ class Polygon extends Path {
         this.onShapeChanged();
     }
 
-    _setPrjCoordinates(prjCoords) {
+    _setPrjCoordinates(prjCoords: any): void {
         this._prjCoords = prjCoords;
         this.onShapeChanged();
     }
 
-    _cleanRing(ring) {
+    _cleanRing(ring: any) {
         for (let i = ring.length - 1; i >= 0; i--) {
             if (!ring[i]) {
                 ring.splice(i, 1);
@@ -171,12 +188,14 @@ class Polygon extends Path {
     }
 
     /**
+     * 检查环是否有效
+     * @english
      * Check if ring is valid
      * @param  {*} ring ring to check
      * @return {Boolean} is ring a closed one
      * @private
      */
-    _checkRing(ring) {
+    _checkRing(ring: any): boolean {
         this._cleanRing(ring);
         if (!ring || !isArrayHasData(ring)) {
             return false;
@@ -190,10 +209,12 @@ class Polygon extends Path {
     }
 
     /**
+     * 如果第一个坐标与最后一个坐标相等，则删除最后一个座标。
+     * @english
      * If the first coordinate is equal with the last one, then remove the last coordinates.
      * @private
      */
-    _trimRing(ring) {
+    _trimRing(ring: any): any {
         const isClose = this._checkRing(ring);
         if (isArrayHasData(ring) && isClose) {
             ring.splice(ring.length - 1, 1);
@@ -202,10 +223,12 @@ class Polygon extends Path {
     }
 
     /**
+     * 如果第一个坐标与最后一个不同，则复制第一个坐标并添加到环中。
+     * @english
      * If the first coordinate is different with the last one, then copy the first coordinates and add to the ring.
      * @private
      */
-    _copyAndCloseRing(ring) {
+    _copyAndCloseRing(ring: any): any {
         ring = ring.slice(0);
         const isClose = this._checkRing(ring);
         if (isArrayHasData(ring) && !isClose) {
@@ -216,7 +239,7 @@ class Polygon extends Path {
         }
     }
 
-    _getPrjShell() {
+    _getPrjShell(): any {
         if (this.getJSONType() === JSON_TYPE) {
             return this._getPrjCoordinates();
         }
@@ -228,7 +251,7 @@ class Polygon extends Path {
         return this._prjShell;
     }
 
-    _getPrjHoles() {
+    _getPrjHoles(): any {
         const projection = this._getProjection();
         this._verifyProjection();
         if (projection && !this._prjHoles) {
@@ -237,7 +260,7 @@ class Polygon extends Path {
         return this._prjHoles;
     }
 
-    _computeGeodesicLength(measurer) {
+    _computeGeodesicLength(measurer: any): number {
         const rings = this.getCoordinates();
         if (!isArrayHasData(rings)) {
             return 0;
@@ -249,7 +272,7 @@ class Polygon extends Path {
         return result;
     }
 
-    _computeGeodesicArea(measurer) {
+    _computeGeodesicArea(measurer: any): number {
         const rings = this.getCoordinates();
         if (!isArrayHasData(rings)) {
             return 0;
@@ -263,19 +286,19 @@ class Polygon extends Path {
         return result;
     }
 
-    _updateCache() {
+    _updateCache(): void {
         super._updateCache();
         if (this._prjHoles) {
             this._holes = this._unprojectCoords(this._getPrjHoles());
         }
     }
 
-    _clearCache() {
+    _clearCache(): any {
         delete this._prjShell;
         return super._clearCache();
     }
 
-    _clearProjection() {
+    _clearProjection(): void {
         if (this._prjHoles) {
             this._prjHoles = null;
         }

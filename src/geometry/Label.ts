@@ -16,7 +16,7 @@ import TextMarker from './TextMarker';
  * @instance
  */
 const options = {
-    'boxStyle' : null, /*{
+    'boxStyle': null, /*{
         'padding' : [12, 8],
         'verticalAlignment' : 'middle',
         'horizontalAlignment' : 'middle',
@@ -24,7 +24,7 @@ const options = {
         'minHeight' : 0,
         'symbol' : null
     }*/
-    textSymbol : null
+    textSymbol: null
 };
 
 /**
@@ -71,7 +71,7 @@ class Label extends TextMarker {
      * @param {Coordinate} coordinates         - coordinates
      * @param {Object} [options=null]          - construct options defined in [Label]{@link Label#options}
      */
-    constructor(content, coordinates, options = {}) {
+    constructor(content: string, coordinates: any, options: any = {}) {
         super(coordinates, options);
         if (options.textSymbol) {
             this.setTextSymbol(options.textSymbol);
@@ -84,10 +84,12 @@ class Label extends TextMarker {
     }
 
     /**
+     * 获取标注的边框样式
+     * @english
      * Get label's box style
      * @return {Object}
      */
-    getBoxStyle() {
+    getBoxStyle(): any {
         if (!this.options.boxStyle) {
             return null;
         }
@@ -95,17 +97,20 @@ class Label extends TextMarker {
     }
 
     /**
+     * 设置标注的边框样式
+     * @english
      * Set a new box style to the label
      * @param {Object}
      * @returns {Label} this
      */
-    setBoxStyle(style) {
+    setBoxStyle(style: any): Label {
         this.options.boxStyle = style ? extend({}, style) : style;
         this._refresh();
         return this;
     }
 
     /**
+     * 获取标注的文本样式
      * Get label's text symbol
      * @return {Object}
      */
@@ -114,11 +119,13 @@ class Label extends TextMarker {
     }
 
     /**
+     * 给标注设置新的文本样式
+     * @english
      * Set a new text symbol to the label
      * @param {Object} symbol
      * @returns {Label} this
      */
-    setTextSymbol(symbol) {
+    setTextSymbol(symbol: any): Label {
         this.options.textSymbol = symbol ? extend({}, symbol) : symbol;
         this._refresh();
         return this;
@@ -135,11 +142,11 @@ class Label extends TextMarker {
         return label;
     }
 
-    _canEdit() {
+    _canEdit(): boolean {
         return false;
     }
 
-    _toJSON(options) {
+    _toJSON(options: any): any {
         return {
             'feature': this.toGeoJSON(options),
             'subType': 'Label',
@@ -147,11 +154,11 @@ class Label extends TextMarker {
         };
     }
 
-    _refresh() {
+    _refresh(): void {
         const symbol = extend({},
             this.getTextSymbol(),
             {
-                'textName' : this._content
+                'textName': this._content
             });
 
         const boxStyle = this.getBoxStyle();
@@ -195,7 +202,7 @@ class Label extends TextMarker {
         delete this._refreshing;
     }
 
-    _getBoxSize(symbol) {
+    _getBoxSize(symbol: any): any {
         if (!symbol['markerType']) {
             symbol['markerType'] = 'square';
         }
@@ -219,9 +226,9 @@ class Label extends TextMarker {
     }
 
 }
-
+//@ts-expect-error todo
 Label.mergeOptions(options);
-
+//@ts-expect-error todo
 Label.registerJSONType('Label');
 
 export default Label;
