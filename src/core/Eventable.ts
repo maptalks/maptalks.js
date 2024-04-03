@@ -49,14 +49,14 @@ export default function <T extends MixinConstructor>(Base: T) {
          * @example
          * foo.on('mousedown mousemove mouseup', onMouseEvent, foo);
          */
-        on(eventsOn: string | EventRecords, handlerFn: any, context?: any): this {
+        on(eventsOn: string | EventRecords, handler: HandlerFn, context?: any): this {
             if (!eventsOn) {
                 return this;
             }
             if (!isString(eventsOn)) {
-                return this._switch('on', eventsOn as EventRecords, handlerFn);
+                return this._switch('on', eventsOn as EventRecords, handler);
             }
-            if (!handlerFn) {
+            if (!handler) {
                 return this;
             }
             if (!this._eventMap) {
@@ -71,15 +71,15 @@ export default function <T extends MixinConstructor>(Base: T) {
                 /* eslint-enable @typescript-eslint/no-this-alias */
             }
             //检测handler是否被监听过
-            const handler = handlerFn as any;
-            const isAdd = isNumber(handler._id);
-            handler._id = UID();
+            // const handler = handlerFn as any;
+            const isAdd = isNumber((handler as any)._id);
+            (handler as any)._id = UID();
             let handlerChain: HandlerContext[];
             for (let ii = 0, ll = eventTypes.length; ii < ll; ii++) {
                 evtType = eventTypes[ii];
                 const wrapKey = generateWrapKey(evtType);
                 if (handler[wrapKey]) {
-                    handler[wrapKey]._id = handler._id;
+                    handler[wrapKey]._id = (handler as any)._id;
                 }
                 handlerChain = this._eventMap[evtType];
                 if (!handlerChain) {
@@ -139,7 +139,7 @@ export default function <T extends MixinConstructor>(Base: T) {
          * @example
          * foo.once('mousedown mousemove mouseup', onMouseEvent, foo);
          */
-        once(eventTypes: string | EventRecords, handler: any, context?: any) {
+        once(eventTypes: string | EventRecords, handler: HandlerFn, context?: any) {
             if (!isString(eventTypes)) {
                 eventTypes = eventTypes as EventRecords;
                 const once = {};
@@ -171,7 +171,7 @@ export default function <T extends MixinConstructor>(Base: T) {
          * @example
          * foo.off('mousedown mousemove mouseup', onMouseEvent, foo);
          */
-        off(eventsOff: string | EventRecords, handler: any, context?: any) {
+        off(eventsOff: string | EventRecords, handler: HandlerFn, context?: any) {
             if (!this._eventMap || !eventsOff) {
                 return this;
             }

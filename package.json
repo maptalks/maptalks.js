@@ -35,12 +35,13 @@
     "tdd": "karma start build/karma.config.js --no-single-run",
     "version": "npm run build && npm run doc && git add -A docs/api"
   },
+  "types": "dist/index.d.ts",
   "unpkg": "dist/maptalks.js",
   "jsdelivr": "dist/maptalks.js",
-  "module": "dist/maptalks.es-bundler.js",
+  "module": "dist/index.js",
   "module_browser": "dist/maptalks.es.js",
   "main": "dist/maptalks.js",
-  "jsnext:main": "dist/maptalks.es-bundler.js",
+  "jsnext:main": "dist/index.js",
   "style": "dist/maptalks.css",
   "dependencies": {
     "@maptalks/feature-filter": "^1.3.0",

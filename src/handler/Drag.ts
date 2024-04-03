@@ -25,7 +25,20 @@ const END_EVENTS = {
  */
 class DragHandler extends Handler {
 
-    constructor(dom, options = {}) {
+    options: DragOptionsType;
+    _onMouseDown: (e: any) => any;
+    moved: boolean;
+    startPos: Point;
+    interupted: boolean;
+
+    addHooks(): void {
+        // throw new Error('Method not implemented.');
+    }
+    removeHooks(): void {
+        // throw new Error('Method not implemented.');
+    }
+
+    constructor(dom: HTMLElement, options: DragOptionsType = {}) {
         super(null);
         this.dom = dom;
         this.options = options;
@@ -54,54 +67,57 @@ class DragHandler extends Handler {
         return this;
     }
 
-    onMouseDown(event) {
-        if (!this.options['rightclick'] && event.button === 2) {
+    onMouseDown(event: DragEventType) {
+        if (!this.options['rightclick'] && (event as MouseEvent).button === 2) {
             //ignore right mouse down
             return;
         }
-        if (event.touches && event.touches.length > 1) {
+        const toucheEvent = event as TouchEvent;
+        if (toucheEvent.touches && toucheEvent.touches.length > 1) {
             return;
         }
         if (this.options['cancelOn'] && this.options['cancelOn'](event) === true) {
             return;
         }
         const dom = this.dom;
-        if (dom.setCapture) {
-            dom.setCapture();
+        if ((dom as any).setCapture) {
+            (dom as any).setCapture();
         } else if (window.captureEvents) {
-            window.captureEvents(window['Event'].MOUSEMOVE | window['Event'].MOUSEUP);
+            window.captureEvents();
+            // window.captureEvents((window['Event'].MOUSEMOVE | window['Event'].MOUSEUP));
         }
         dom['ondragstart'] = function () {
             return false;
         };
         delete this.moved;
-        const actual = event.touches ? event.touches[0] : event;
-        this.startPos = new Point(actual.clientX, actual.clientY);
-        off(document, MOVE_EVENTS[event.type], this.onMouseMove, this);
-        off(document, END_EVENTS[event.type], this.onMouseUp, this);
+        const actual = toucheEvent.touches ? toucheEvent.touches[0] : event;
+        this.startPos = new Point((actual as MouseEvent).clientX, (actual as MouseEvent).clientY);
+        off(document, MOVE_EVENTS[event.type], this.onMouseMove);
+        off(document, END_EVENTS[event.type], this.onMouseUp);
         on(document, MOVE_EVENTS[event.type], this.onMouseMove, this);
         on(document, END_EVENTS[event.type], this.onMouseUp, this);
         if (!this.options['ignoreMouseleave']) {
-            off(this.dom, 'mouseleave', this.onMouseUp, this);
+            off(this.dom, 'mouseleave', this.onMouseUp);
             on(this.dom, 'mouseleave', this.onMouseUp, this);
         }
         this.fire('mousedown', {
             'domEvent': event,
-            'mousePos': new Point(actual.clientX, actual.clientY)
+            'mousePos': new Point((actual as MouseEvent).clientX, (actual as MouseEvent).clientY)
         });
     }
 
-    onMouseMove(event) {
-        if (event.touches && event.touches.length > 1) {
+    onMouseMove(event: DragEventType) {
+        const toucheEvent = event as TouchEvent;
+        if (toucheEvent.touches && toucheEvent.touches.length > 1) {
             if (this.moved) {
                 this.interupted = true;
                 this.onMouseUp(event);
             }
             return;
         }
-        const actual = event.touches ? event.touches[0] : event;
+        const actual = toucheEvent.touches ? toucheEvent.touches[0] : event;
 
-        const newPos = new Point(actual.clientX, actual.clientY),
+        const newPos = new Point((actual as MouseEvent).clientX, (actual as MouseEvent).clientY),
             offset = newPos.sub(this.startPos);
         if (!offset.x && !offset.y) {
             return;
@@ -115,19 +131,20 @@ class DragHandler extends Handler {
         } else {
             this.fire('dragging', {
                 'domEvent': event,
-                'mousePos': new Point(actual.clientX, actual.clientY)
+                'mousePos': new Point((actual as MouseEvent).clientX, (actual as MouseEvent).clientY)
             });
         }
     }
 
-    onMouseUp(event) {
-        const actual = event.changedTouches ? event.changedTouches[0] : event;
+    onMouseUp(event: DragEventType) {
+        const toucheEvent = event as TouchEvent;
+        const actual = toucheEvent.changedTouches ? toucheEvent.changedTouches[0] : event;
         this._offEvents();
-        const param = {
+        const param: { [key: string]: any } = {
             'domEvent': event
         };
-        if (isNumber(actual.clientX)) {
-            param['mousePos'] = new Point(parseInt(actual.clientX, 0), parseInt(actual.clientY, 0));
+        if (isNumber((actual as MouseEvent).clientX)) {
+            param['mousePos'] = new Point(parseInt((actual as MouseEvent).clientX + '', 0), parseInt((actual as MouseEvent).clientY + '', 0));
         }
         if (this.moved/* && this.moving*/) {
             param.interupted = this.interupted;
@@ -141,21 +158,30 @@ class DragHandler extends Handler {
 
     _offEvents() {
         const dom = this.dom;
-        off(dom, 'mouseleave', this.onMouseUp, this);
+        off(dom, 'mouseleave', this.onMouseUp);
         if ((typeof document === 'undefined') || (typeof window === 'undefined')) {
             return;
         }
         for (const i in MOVE_EVENTS) {
-            off(document, MOVE_EVENTS[i], this.onMouseMove, this);
-            off(document, END_EVENTS[i], this.onMouseUp, this);
+            off(document, MOVE_EVENTS[i], this.onMouseMove);
+            off(document, END_EVENTS[i], this.onMouseUp);
         }
 
         if (dom['releaseCapture']) {
             dom['releaseCapture']();
         } else if (window.captureEvents) {
-            window.captureEvents(window['Event'].MOUSEMOVE | window['Event'].MOUSEUP);
+            window.captureEvents();
+            // window.captureEvents(window['Event'].MOUSEMOVE | window['Event'].MOUSEUP);
         }
     }
 }
 
 export default DragHandler;
+
+type DragOptionsType = {
+    rightclick?: boolean;
+    cancelOn?: (e: DragEventType) => boolean;
+    ignoreMouseleave?: boolean;
+}
+
+type DragEventType = MouseEvent | TouchEvent;
