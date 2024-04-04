@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { isFunction } from './util/common';
 import { IS_NODE } from './util/env';
 

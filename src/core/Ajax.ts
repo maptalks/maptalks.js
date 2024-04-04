@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { parseJSON, emptyImageUrl, UID } from './util/util';
 import { isString, isFunction } from './util/common';
 import { IS_NODE } from './util/env';
@@ -7,6 +8,8 @@ export type AjaxGetOption = {
     responseType: any
     credentials: any
 }
+
+export type Callback = (...params: any[]) => any
 
 /**
  * @classdesc
@@ -23,7 +26,7 @@ const Ajax = {
      * @param url - resource url
      * @param callback  - callback function when completed
      */
-    jsonp: function (url: string, callback: Function) {
+    jsonp: function (url: string, callback: Callback) {
         // INIT
         const name = '_maptalks_jsonp_' + UID();
         if (url.match(/\?/)) url += '&callback=' + name;
@@ -67,15 +70,15 @@ const Ajax = {
      *     }
      * );
      */
-    get: function (url: string, options?: any, cb?: any) {
+    get: (url: string, options?: any, cb?: any) => {
         if (isFunction(options)) {
             const t = cb;
             cb = options;
             options = t;
         }
-        // @ts-expect-error
+        // @ts-ignore
         if (IS_NODE && Ajax.get.node) {
-            // @ts-expect-error
+            // @ts-ignore
             return Ajax.get.node(url, cb, options);
         }
         const client = Ajax._getClient(cb);
@@ -118,7 +121,7 @@ const Ajax = {
      *   }
      * );
      */
-    post: function (url: string, options?: any, cb?: Function) {
+    post: (url: string, options?: any, cb?: Callback) => {
         let postData;
         if (!isString(url)) {
             //for compatible
@@ -137,10 +140,10 @@ const Ajax = {
             options = options || {};
             postData = options.postData;
         }
-        // @ts-expect-error
+        // @ts-ignore
         if (IS_NODE && Ajax.post.node) {
             options.url = url;
-            // @ts-expect-error
+            // @ts-ignore
             return Ajax.post.node(options, postData, cb);
         }
         const client = Ajax._getClient(cb);
@@ -165,7 +168,7 @@ const Ajax = {
         return client;
     },
 
-    _wrapCallback: function (client, cb: Function) {
+    _wrapCallback: function (client, cb: Callback) {
         return function () {
             if (client.readyState === 4) {
                 if (client.status === 200) {
@@ -191,7 +194,7 @@ const Ajax = {
         };
     },
 
-    _getClient: function (cb: Function) {
+    _getClient: function (cb: Callback) {
         /*eslint-disable no-empty, no-undef*/
         let client;
         try {
@@ -221,7 +224,7 @@ const Ajax = {
      *     }
      * );
      */
-    getArrayBuffer(url: string, options: any, cb: Function) {
+    getArrayBuffer(url: string, options: any, cb: Callback) {
         if (isFunction(options)) {
             const t = cb;
             cb = options;
@@ -258,7 +261,7 @@ const Ajax = {
         });
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    getJSON: (url: string, options?: any, cb?: Function): any => { }
+    getJSON: (url: string, options?: any, cb?: Callback): any => { }
 };
 
 /**
@@ -281,7 +284,7 @@ const Ajax = {
  * );
  * @static
  */
-Ajax.getJSON = function (url: string, options?: any, cb?: Function) {
+Ajax.getJSON = function (url: string, options?: any, cb?: Callback) {
     if (isFunction(options)) {
         const t = cb;
         cb = options;

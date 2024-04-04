@@ -704,6 +704,8 @@ class Painter extends Class {
         Canvas.setHitTesting(true);
         testCanvas.width = testCanvas.height = 2 * tolerance;
         const ctx = Canvas.getCanvas2DContext(testCanvas);
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         ctx.isHitTesting = true;
         try {
             this.paint(null, ctx, this._hitPoint);

@@ -16,6 +16,9 @@ const CenterPointRenderer = {
 /**
  * 获取symbolizer所需的数据
  */
+// todo: 等待Marker完善类型
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 Marker.include(CenterPointRenderer);
 
 // @ts-expect-error todo 等待 Ellipse 改造
