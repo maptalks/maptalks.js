@@ -4,7 +4,7 @@ import InfoWindow from '../../ui/InfoWindow';
 
 Geometry.include(/** @lends Geometry.prototype */ {
     /**
-     * 给要素设置信息窗口
+     * 给几何体设置信息窗口
      * @english
      * Set an InfoWindow to the geometry
      * @param {Object} options - construct [options]{@link ui.InfoWindow#options} for the InfoWindow
@@ -98,7 +98,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
     },
 
     /**
-     * 给要素绑定信息窗口
+     * 给几何体绑定信息窗口
      * @english
      * Bing InfoWindow to Geometry
      * @returns {Geometry} this
@@ -108,7 +108,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
         if (!options) {
             return this;
         }
-        // @ts-ignore
+        // @ts-expect-error todo 需要等InfoWindow ts改造
         this._infoWindow = new InfoWindow(options);
         this._infoWindow.addTo(this);
 
@@ -116,7 +116,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
     },
 
     /**
-     * 解绑要素窗口
+     * 解绑几何体窗口
      * @english
      * Unbind InfoWindow
      * @returns {Geometry} this

@@ -45,7 +45,7 @@ export function getSymbolStamp(symbol: Object, prefix: string) {
  * @return symbol's stamp
  * @memberOf Util
  */
-export function getSymbolHash(symbol: Object | Object[], prefix: string) {
+export function getSymbolHash(symbol: Object | Object[], prefix?: string) {
     if (!symbol) {
         return 1;
     }

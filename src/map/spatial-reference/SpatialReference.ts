@@ -2,16 +2,17 @@ import { extend, isNil, hasOwn, sign, isString } from '../../core/util';
 import Coordinate from '../../geo/Coordinate';
 import Extent from '../../geo/Extent';
 import * as projections from '../../geo/projection';
+import type { ProjectionType } from '../../geo/projection';
 import Transformation from '../../geo/transformation/Transformation';
-import { Measurer } from '../../geo/measurer';
+import { Measurer, DEFAULT } from '../../geo/measurer';
 import loadWMTS from './SpatialReference.WMTS'
 import loadArcgis from './SpatialReference.Arc'
 const MAX_ZOOM = 23;
 
-export type Projection = {
-    projection: string
-    resolutions: number[]
-    fullExtent: {
+export type SpatialReferenceType = {
+    projection: string | ProjectionType;
+    resolutions?: number[]
+    fullExtent?: {
         top: number
         left: number
         bottom: number
@@ -19,9 +20,7 @@ export type Projection = {
     }
 }
 
-type ProjectionCommon = typeof projections.Common
-
-const DefaultSpatialReference: Record<string, Projection> = {
+const DefaultSpatialReference: Record<string, SpatialReferenceType> = {
     'EPSG:3857': {
         'projection': 'EPSG:3857',
         'resolutions': (function () {
@@ -136,25 +135,25 @@ DefaultSpatialReference['PRESET-4490-512'] = DefaultSpatialReference['PRESET-VT-
 
 /**
  * 空间参考类
- * 
- * @english 
+ *
+ * @english
  * SpatialReference Class
  */
 export default class SpatialReference {
-    options: ProjectionCommon
-    _projection: ProjectionCommon
+    options: SpatialReferenceType
+    _projection: ProjectionType
     isEPSG: boolean
     _resolutions: number[]
     _pyramid: boolean
-    _fullExtent: Projection['fullExtent']
+    _fullExtent: SpatialReferenceType['fullExtent']
     _transformation: Transformation
-    json: Projection
-    constructor(options?: ProjectionCommon) {
+    json: SpatialReferenceType
+    constructor(options: SpatialReferenceType = ({} as SpatialReferenceType)) {
         this.options = options;
         this._initSpatialRef();
     }
 
-    static registerPreset(name: string, value: Projection) {
+    static registerPreset(name: string, value: SpatialReferenceType) {
         name = name && name.toUpperCase();
         if (DefaultSpatialReference[name]) {
             console.warn(`Spatial reference ${name} already registered.`);
@@ -176,42 +175,45 @@ export default class SpatialReference {
     }
 
     static loadWMTS(url: string, cb: (_, spatialRef?) => void, options: any) {
-        loadWMTS(url,cb,options)
+        loadWMTS(url, cb, options)
         return this
     }
 
 
     /**
      * 获取投影类实例对象
-     * 
-     * @english 
+     *
+     * @english
      * get Projection Class instance
-     * @param projection 
-     * @returns 
+     * @param projection
+     * @returns
      */
-    static getProjectionInstance(projection: any) {
+    static getProjectionInstance(projection?: string | ProjectionType) {
         // TODO: 等待补充Projection类的类型定义,Projection类目前为mixin模式
+        let proj;
         if (!projection) {
             return null;
         }
         if (isString(projection)) {
-            projection = {
+            proj = {
                 code: projection
             };
+        } else {
+            proj = projection;
         }
         // a custom one
-        if (projection.project) {
-            if (!projection.locate) {
-                projection = extend({}, projection);
-                if (projection.measure === 'identity') {
-                    extend(projection, Measurer.getInstance('IDENTITY'));
+        if (proj.project) {
+            if (!proj.locate) {
+                proj = extend({}, proj);
+                if (proj.measure === 'identity') {
+                    extend(proj, Measurer.getInstance('IDENTITY'));
                 } else {
-                    extend(projection, Measurer.getInstance('EPSG:4326'));
+                    extend(proj, Measurer.getInstance('EPSG:4326'));
                 }
             }
-            return projection;
+            return proj;
         }
-        const prjName = (projection.code + '').toLowerCase();
+        const prjName = (proj.code + '').toLowerCase();
         for (const p in projections) {
             if (hasOwn(projections, p)) {
                 const names = projections[p].aliases || [];
@@ -240,7 +242,7 @@ export default class SpatialReference {
         return null;
     }
 
-    static equals(sp1: Projection, sp2: Projection) {
+    static equals(sp1: SpatialReferenceType, sp2: SpatialReferenceType): boolean {
         if (isString(sp1) || isString(sp2)) {
             return sp1 === sp2;
         }
@@ -278,9 +280,9 @@ export default class SpatialReference {
     }
 
     _initSpatialRef() {
-        let projection = this.options['projection'];
-        if (projection) {
-            projection = SpatialReference.getProjectionInstance(projection);
+        let projection: ProjectionType;
+        if (this.options['projection']) {
+            projection = SpatialReference.getProjectionInstance(this.options['projection']);
         } else {
             projection = projections.DEFAULT;
         }
@@ -288,8 +290,8 @@ export default class SpatialReference {
             throw new Error('must provide a valid projection in map\'s spatial reference.');
         }
         projection = extend({}, projections.Common, projection);
-        if (!projection.measureLength) {
-            extend(projection, Measurer.DEFAULT);
+        if (!(projection as any).measureLength) {
+            extend(projection, DEFAULT);
         }
         this._projection = projection;
         let defaultSpatialRef,
@@ -333,7 +335,7 @@ export default class SpatialReference {
         if (!isNil(fullExtent['left'])) {
             // TODO: 等待Extent和Coordinate补充类型
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error 
+            // @ts-expect-error
             this._fullExtent = new Extent(
                 new Coordinate(fullExtent['left'], fullExtent['top']),
                 new Coordinate(fullExtent['right'], fullExtent['bottom'])
@@ -356,7 +358,7 @@ export default class SpatialReference {
         //set left, right, top, bottom value
         extend(this._fullExtent, fullExtent);
 
-        this._projection.fullExtent = fullExtent;
+        (this._projection as any).fullExtent = fullExtent;
 
         const a = fullExtent['right'] >= fullExtent['left'] ? 1 : -1,
             b = fullExtent['top'] >= fullExtent['bottom'] ? -1 : 1;

@@ -207,7 +207,6 @@ export function calVectorMarkerSize(out: [number, number], symbol: any) {
 }
 
 // TODO: 等待PointExtent补充类型
-// @ts-expect-error
 const ROTATE_EXTENT = new PointExtent();
 function rotateExtent(fixedExtent: PointExtent, angle: number) {
     const { xmin, ymin, xmax, ymax } = fixedExtent;
@@ -261,10 +260,10 @@ export function getTextMarkerFixedExtent(out: PointExtent, symbol: any, textDesc
     extent.ymax += textHaloRadius;
     return extent;
 }
-// @ts-expect-error
+
 const FIXED_EXTENT = new PointExtent();
 export function getMarkerFixedExtent(out: PointExtent, symbol: any, resources: ResourceCache, textDesc: any) {
-    // @ts-expect-error
+
     const extent = out || new PointExtent();
     if (Array.isArray(symbol)) {
         const symbols = symbol;

@@ -16,6 +16,7 @@ import { default as TileLayer } from '../../../layer/tile/TileLayer';
 import WMSTileLayer from '../../../layer/tile/WMSTileLayer';
 import CanvasRenderer from '../CanvasRenderer';
 import Point from '../../../geo/Point';
+import Extent from '../../../geo/Extent';
 import LRUCache from '../../../core/util/LRUCache';
 import Canvas from '../../../core/Canvas';
 import Actor from '../../../core/worker/Actor';
@@ -33,7 +34,7 @@ class TileWorkerConnection extends Actor {
         super(imageFetchWorkerKey);
     }
 
-    checkUrl(url: any) {
+    checkUrl(url: string) {
         if (!url || !isString(url)) {
             return url;
         }
@@ -54,11 +55,13 @@ class TileWorkerConnection extends Actor {
 }
 
 /**
- * @classdesc
+ * 基于 `HTML5 Canvas2D` 的渲染器类，用于瓦片图层
+ *
+ * @english
  * Renderer class based on HTML5 Canvas2D for TileLayers
  * @class
  * @protected
- * @memberOf renderer
+ * @group renderer
  * @extends {renderer.CanvasRenderer}
  */
 class TileLayerCanvasRenderer extends CanvasRenderer {
@@ -520,7 +523,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         delete this.drawingParentTiles;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onDrawTileStart(context: RenderContext, parentContext: RenderContext) { }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onDrawTileEnd(context: RenderContext, parentContext: RenderContext) { }
 
     _drawTile(info, image, parentContext) {
@@ -803,6 +808,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onTileError(tileImage: Tile['image'], tileInfo: Tile['info'], error?: any) {
         if (!this.layer) {
             return;
@@ -844,6 +850,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.layer.fire('tileerror', { tile: tileInfo });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     drawTile(tileInfo: Tile['info'], tileImage: Tile['image'], parentContext?: RenderContext) {
         if (!tileImage || !this.getMap()) {
             return;
@@ -1376,7 +1383,7 @@ export interface Tile {
         children: [];
         error: number;
         offset: [number, number];
-        extent2d: any;
+        extent2d: Extent;
         res: number;
         url: string;
         parent: any;
@@ -1396,8 +1403,6 @@ export type RenderContext = any;
 export type TilesInViewType = {
     [key: string]: Tile;
 }
-
-type Extent = any;
 
 export interface TileGrid {
     extent:  Extent;

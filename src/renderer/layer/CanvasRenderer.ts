@@ -1,15 +1,16 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
-import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn, getImageBitMap, calCanvasSize } from '../../core/util';
+import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn, getImageBitMap, calCanvasSize, isImageBitMap } from '../../core/util';
 import Class from '../../core/Class';
 import Browser from '../../core/Browser';
 import Canvas2D from '../../core/Canvas';
 import Actor from '../../core/worker/Actor';
 import Point from '../../geo/Point';
+import Extent from '../../geo/Extent';
+import { SizeLike } from '../../geo/Size';
 import { imageFetchWorkerKey } from '../../core/worker/CoreWorkers';
 import { registerWorkerAdapter } from '../../core/worker/Worker';
-import { formatResouceUrl } from '../../core/ResouceProxy';
-
+import { formatResourceUrl } from '../../core/ResourceProxy';
 
 const EMPTY_ARRAY = [];
 class ResourceWorkerConnection extends Actor {
@@ -25,10 +26,6 @@ class ResourceWorkerConnection extends Actor {
     }
 }
 
-interface SizeType {
-    width: number;
-    height: number;
-}
 export type CanvasRenderingCanvas = HTMLCanvasElement & { _parentTileTimestamp: number };
 export type ImageType = HTMLImageElement | ImageBitmap | HTMLCanvasElement;
 
@@ -47,25 +44,23 @@ class CanvasRenderer extends Class {
     public context: CanvasRenderingContext2D;
     public canvas: CanvasRenderingCanvas;
     public gl: WebGL2RenderingContext | WebGLRenderingContext;
-    // TODO: 等待补充 Point 类型定义
-    public middleWest: any;
-    // TODO: 等待补充Extent2D类型定义
-    public canvasExtent2D: any;
-    private _extent2D: any;
-    private _maskExtent: any;
+    public middleWest: Point;
+    public canvasExtent2D: Extent;
+    _extent2D: Extent;
+    _maskExtent: Extent;
 
-    private _painted: boolean;
-    private _drawTime: number;
-    private _frameTime: number;
-    private _resWorkerConn: ResourceWorkerConnection;
+    _painted: boolean;
+    _drawTime: number;
+    _frameTime: number;
+    _resWorkerConn: ResourceWorkerConnection;
 
-    private _toRedraw: boolean;
-    private _loadingResource: boolean;
-    private _renderComplete: boolean;
-    private _canvasUpdated: boolean;
+    _toRedraw: boolean;
+    _loadingResource: boolean;
+    _renderComplete: boolean;
+    _canvasUpdated: boolean;
 
-    private _renderZoom: number;
-    private _errorThrown: boolean;
+    _renderZoom: number;
+    _errorThrown: boolean;
 
     drawOnInteracting?(...args: any[]): void;
     checkResources?(): any[];
@@ -194,7 +189,6 @@ class CanvasRenderer extends Class {
 
     /**
      * Ask whether the layer renderer needs to redraw
-     * @return {Boolean}
      */
     needToRedraw(): boolean {
         const map = this.getMap();
@@ -208,7 +202,7 @@ class CanvasRenderer extends Class {
     /**
      * A callback for overriding when drawOnInteracting is skipped due to low fps
      */
-    onSkipDrawOnInteracting(): void {}
+    onSkipDrawOnInteracting(): void { }
 
     isLoadingResource(): boolean {
         return this._loadingResource;
@@ -278,7 +272,6 @@ class CanvasRenderer extends Class {
 
     /**
      * Get map
-     * @return {Map}
      */
     getMap(): any {
         if (!this.layer) {
@@ -289,7 +282,6 @@ class CanvasRenderer extends Class {
 
     /**
      * Get renderer's Canvas image object
-     * @return {HTMLCanvasElement}
      */
     getCanvasImage(): any {
         const map = this.getMap();
@@ -323,7 +315,6 @@ class CanvasRenderer extends Class {
     /**
      * A method to help improve performance.
      * If you are sure that layer's canvas is blank, returns true to save unnecessary layer works of maps.
-     * @return {Boolean}
      */
     isBlank(): boolean {
         return !this._painted;
@@ -353,10 +344,9 @@ class CanvasRenderer extends Class {
 
     /**
      * Detect if there is anything painted on the given point
-     * @param  {Point} point containerPoint
-     * @return {Boolean}
+     * @param point containerPoint
      */
-    hitDetect(point): boolean {
+    hitDetect(point: Point): boolean {
         if (!this.context || (this.layer.isEmpty && this.layer.isEmpty()) || this.isBlank() || this._errorThrown || (this.layer.isVisible && !this.layer.isVisible())) {
             return false;
         }
@@ -498,9 +488,9 @@ class CanvasRenderer extends Class {
 
     /**
      * Resize the canvas
-     * @param  {Size} canvasSize the size resizing to
+     * @param canvasSize the size resizing to
      */
-    resizeCanvas(canvasSize?: SizeType): void {
+    resizeCanvas(canvasSize?: SizeLike): void {
         const canvas = this.canvas;
         if (!canvas) {
             return;
@@ -640,7 +630,11 @@ class CanvasRenderer extends Class {
         if (dpr !== 1) {
             context.restore();
         }
-        context.clip();
+        try {
+            context.clip('evenodd');
+        } catch (error) {
+            console.error(error);
+        }
         this.middleWest = old;
         return true;
     }
@@ -826,7 +820,19 @@ class CanvasRenderer extends Class {
                 resolve(url);
                 return;
             }
-            const imageURL = formatResouceUrl(url[0]);
+            const imageURL = formatResourceUrl(url[0]);
+
+            if (isImageBitMap(imageURL)) {
+                createImageBitmap(imageURL).then(newbitmap => {
+                    //新的数据为layer提供服务
+                    this._cacheResource(url, newbitmap);
+                    resolve(url);
+                }).catch(err => {
+                    console.error(err);
+                    resolve(url);
+                });
+                return;
+            }
             const fetchInWorker = !isSVG(url[0]) && this._resWorkerConn && (layer.options['renderer'] !== 'canvas' || layer.options['decodeImageInWorker']);
             if (fetchInWorker) {
                 // const uri = getAbsoluteURL(url[0]);
@@ -880,7 +886,7 @@ class CanvasRenderer extends Class {
 
     }
 
-    _cacheResource(url: string[], img: ImageType) {
+    _cacheResource(url: [string, number | string, string | number], img: ImageType) {
         if (!this.layer || !this.resources) {
             return;
         }
@@ -915,7 +921,7 @@ export class ResourceCache {
         this._errors = {};
     }
 
-    addResource(url: string[], img) {
+    addResource(url: [string, number | string, number | string], img) {
         this.resources[url[0]] = {
             image: img,
             width: +url[1],

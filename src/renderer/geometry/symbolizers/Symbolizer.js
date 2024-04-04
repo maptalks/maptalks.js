@@ -41,6 +41,21 @@ class Symbolizer {
         return false;
     }
 
+    isVisible() {
+        if (!this.style) {
+            return true;
+        }
+        const visible = this.style.visible;
+        if (visible === false || visible === 0) {
+            return false;
+        }
+        const opacity = this.style.opacity;
+        if (opacity <= 0) {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Test if the property is a property related with coloring
      * @param {String} prop - property name to test

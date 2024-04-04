@@ -3,10 +3,9 @@ import { RESOURCE_PROPERTIES, RESOURCE_SIZE_PROPERTIES } from '../Constants';
 import { IS_NODE } from './env';
 import { extend, isNil, isNumber, isString } from './common';
 import { extractCssUrl, btoa } from './util';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
 import { isFunctionDefinition, getFunctionTypeResources } from '../mapbox';
-
+import Browser from '../Browser';
+import { ResourceProxy } from '../ResourceProxy';
 
 /**
  * Translate symbol properties to SVG properties
@@ -73,8 +72,13 @@ export function getMarkerPathBase64(symbol: any, width?: number, height?: number
             }
         }
     }
-
-    const pathes = Array.isArray(symbol['markerPath']) ? symbol['markerPath'] : [symbol['markerPath']];
+    let pathes;
+    const markerPath = symbol.markerPath;
+    if (isString(markerPath) && markerPath[0] === '$') {
+        pathes = ResourceProxy.getResource(markerPath.substring(1, Infinity)) || [];
+    } else {
+        pathes = Array.isArray(symbol['markerPath']) ? symbol['markerPath'] : [symbol['markerPath']];
+    }
     let path;
     const pathesToRender = [];
     for (let i = 0; i < pathes.length; i++) {
@@ -106,6 +110,11 @@ export function getMarkerPathBase64(symbol: any, width?: number, height?: number
     svg.push('><defs></defs>');
 
     for (let i = 0; i < pathesToRender.length; i++) {
+        //非path节点的直接 out dom html,such: circle rect,polygon,polyline etc
+        if (pathesToRender[i].d instanceof Element) {
+            svg.push(pathesToRender[i].d.outerHTML);
+            continue;
+        }
         let strPath = '<path ';
         for (const p in pathesToRender[i]) {
             if (pathesToRender[i].hasOwnProperty(p)) {
@@ -225,3 +234,10 @@ function _convertUrl(res: any) {
     }
     return res;
 }
+
+
+
+export function isImageBitMap(img) {
+    return img && Browser.decodeImageInWorker && img instanceof ImageBitmap;
+}
+

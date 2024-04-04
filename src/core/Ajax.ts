@@ -1,4 +1,6 @@
-import { IS_NODE, isString, isFunction, parseJSON, emptyImageUrl, UID } from './util';
+import { parseJSON, emptyImageUrl, UID } from './util/util';
+import { isString, isFunction } from './util/common';
+import { IS_NODE } from './util/env';
 
 export type AjaxGetOption = {
     headers: any
