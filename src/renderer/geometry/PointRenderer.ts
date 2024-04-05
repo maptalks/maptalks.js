@@ -16,6 +16,7 @@ const CenterPointRenderer = {
 /**
  * 获取symbolizer所需的数据
  */
+//@ts-expect-error 等待 Marker 改造
 Marker.include(CenterPointRenderer);
 
 // @ts-expect-error todo 等待 Ellipse 改造

@@ -383,7 +383,7 @@ Geometry.mergeOptions({
     'dragOnAxis': null,
     'dragOnScreenAxis': false
 });
-// @ts-expect-error todo待补充addInitHook参数类型
+
 Geometry.addInitHook('addHandler', 'draggable', GeometryDragHandler);
 
 Geometry.include(/** @lends Geometry.prototype */ {

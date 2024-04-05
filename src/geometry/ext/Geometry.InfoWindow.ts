@@ -1,6 +1,23 @@
 import { extend } from '../../core/util';
 import Geometry from '../Geometry';
-import InfoWindow from '../../ui/InfoWindow';
+import InfoWindow, { InfoWindowOptionsType } from '../../ui/InfoWindow';
+import type Coordinate from '../../geo/Coordinate';
+
+
+declare module "../Geometry" {
+
+    interface Geometry {
+        _infoWindow: InfoWindow;
+        setInfoWindow(options: InfoWindowOptionsType): this;
+        getInfoWindow(): InfoWindow;
+        openInfoWindow(coordinate?: Coordinate): this;
+        closeInfoWindow(): this;
+        removeInfoWindow(): this;
+        _bindInfoWindow(): this;
+        _unbindInfoWindow(): this;
+    }
+}
+
 
 Geometry.include(/** @lends Geometry.prototype */ {
     /**
@@ -15,7 +32,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      *     content  : '<div style="color:#f00">This is content of the InfoWindow</div>'
      * });
      */
-    setInfoWindow(options: InfoWindow): Geometry {
+    setInfoWindow(options: InfoWindowOptionsType) {
         this.removeInfoWindow();
         if (options instanceof InfoWindow) {
             this._infoWindow = options;
@@ -53,7 +70,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * @param  {Coordinate} [coordinate=null] - coordinate to open the InfoWindow
      * @return {Geometry} this
      */
-    openInfoWindow(coordinate: any): Geometry {
+    openInfoWindow(coordinate?: Coordinate) {
         if (!this.getMap()) {
             return this;
         }
@@ -77,7 +94,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * Close the InfoWindow
      * @return {Geometry} this
      */
-    closeInfoWindow(): Geometry {
+    closeInfoWindow() {
         if (this._infoWindow) {
             this._infoWindow.hide();
         }
@@ -90,7 +107,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * Remove the InfoWindow
      * @return {Geometry} this
      */
-    removeInfoWindow(): Geometry {
+    removeInfoWindow() {
         this._unbindInfoWindow();
         delete this._infoWinOptions;
         delete this._infoWindow;
@@ -103,12 +120,11 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * Bing InfoWindow to Geometry
      * @returns {Geometry} this
      */
-    _bindInfoWindow(): Geometry {
+    _bindInfoWindow() {
         const options = this._infoWinOptions;
         if (!options) {
             return this;
         }
-        // @ts-expect-error todo 需要等InfoWindow ts改造
         this._infoWindow = new InfoWindow(options);
         this._infoWindow.addTo(this);
 
@@ -121,7 +137,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * Unbind InfoWindow
      * @returns {Geometry} this
      */
-    _unbindInfoWindow(): Geometry {
+    _unbindInfoWindow() {
         if (this._infoWindow) {
             this.closeInfoWindow();
             this._infoWindow.remove();

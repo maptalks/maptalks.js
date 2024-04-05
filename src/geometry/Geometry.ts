@@ -89,7 +89,7 @@ const options: GeometryOptionsType = {
  * @mixes JSONAble
  * @mixes ui.Menuable
  */
-class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
+export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     options: GeometryOptionsType;
     public type: string;
     public _layer: OverlayLayer;
@@ -131,15 +131,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     onRemove?(): void;
     endEdit?(): void;
     isEditing?(): boolean;
-    _unbindMenu?(): void;
-    _unbindInfoWindow?(): void;
     _computeGeodesicLength?(T: any): number;
     _computeGeodesicArea?(T: any): number;
     getRotateOffsetAngle?(): number;
-    _bindInfoWindow?(): void;
-    _bindMenu?(): void;
-    closeMenu?(): void;
-    closeInfoWindow?(): void;
     _computePrjExtent?(T: null | ProjectionCommon): Extent;
 
 
