@@ -1,9 +1,16 @@
-import { isArrayHasData, isNumber } from '../../../core/util';
-import { loadGeoSymbol, isFunctionDefinition, interpolated } from '../../../core/mapbox';
-import Symbolizer from './Symbolizer';
-import Canvas from '../../../core/Canvas';
+import { isArrayHasData, isNumber } from "../../../core/util";
+import {
+    loadGeoSymbol,
+    isFunctionDefinition,
+    interpolated,
+} from "../../../core/mapbox";
+import Symbolizer from "./Symbolizer";
+import Canvas from "../../../core/Canvas";
 
 /**
+ *所有基于 HTML5 Canvas2D 的symbolizer类
+ *
+ * @english
  * @classdesc
  * Base symbolizer class for all the symbolizers base on HTML5 Canvas2D
  * @abstract
@@ -13,18 +20,20 @@ import Canvas from '../../../core/Canvas';
  * @name CanvasSymbolizer
  * @extends {Symbolizer}
  */
-class CanvasSymbolizer extends Symbolizer {
-    _prepareContext(ctx) {
-        if (isFunctionDefinition(this.symbol['opacity'])) {
+abstract class CanvasSymbolizer extends Symbolizer {
+    public symbol: any;
+    public _opacityFn: any;
+    _prepareContext(ctx: any): void {
+        if (isFunctionDefinition(this.symbol["opacity"])) {
             if (!this._opacityFn) {
-                this._opacityFn = interpolated(this.symbol['opacity']);
+                this._opacityFn = interpolated(this.symbol["opacity"]);
             }
         } else {
             delete this._opacityFn;
         }
-        if (isNumber(this.symbol['opacity'])) {
-            if (ctx.globalAlpha !== this.symbol['opacity']) {
-                ctx.globalAlpha = this.symbol['opacity'];
+        if (isNumber(this.symbol["opacity"])) {
+            if (ctx.globalAlpha !== this.symbol["opacity"]) {
+                ctx.globalAlpha = this.symbol["opacity"];
             }
         } else if (this._opacityFn) {
             const map = this.getMap();
@@ -34,23 +43,23 @@ class CanvasSymbolizer extends Symbolizer {
         }
     }
 
-    prepareCanvas(ctx, style, resources) {
-        if (ctx.setLineDash && isArrayHasData(style['lineDasharray'])) {
-            ctx.setLineDash(style['lineDasharray']);
+    prepareCanvas(ctx: any, style: any, resources: any): void {
+        if (ctx.setLineDash && isArrayHasData(style["lineDasharray"])) {
+            ctx.setLineDash(style["lineDasharray"]);
         }
         const isHitTesting = this.getPainter().isHitTesting();
         Canvas.prepareCanvas(ctx, style, resources, isHitTesting);
     }
 
-    remove() { }
+    remove() {}
 
-    setZIndex() { }
+    setZIndex() {}
 
-    show() { }
+    show() {}
 
-    hide() { }
+    hide() {}
 
-    _defineStyle(style) {
+    _defineStyle(style: any) {
         return loadGeoSymbol(style, this.geometry);
     }
 }

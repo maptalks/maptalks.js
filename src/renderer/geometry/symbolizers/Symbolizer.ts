@@ -1,8 +1,18 @@
-import { COLOR_PROPERTIES } from '../../../core/Constants';
-import { isString } from '../../../core/util';
-import { bufferBBOX, getDefaultBBOX, setBBOX } from '../../../core/util/bbox';
+import { COLOR_PROPERTIES } from "../../../core/Constants";
+import { isString } from "../../../core/util";
+import {
+    Bbox,
+    bufferBBOX,
+    getDefaultBBOX,
+    setBBOX,
+} from "../../../core/util/bbox";
+import Painter from "../Painter";
 
 /**
+ * symbolilzers的基础类,所有的symbolilzers都继承于此
+ * 抽象类,不可实例化
+ *
+ * @english
  * @classdesc
  * Base class for all the symbolilzers
  * @class
@@ -10,38 +20,50 @@ import { bufferBBOX, getDefaultBBOX, setBBOX } from '../../../core/util/bbox';
  * @abstract
  * @private
  */
-class Symbolizer {
+abstract class Symbolizer {
+    public bbox: Bbox;
+    public geometry: any;
+    public painter: Painter;
     constructor() {
         this.bbox = getDefaultBBOX();
     }
 
-    _setBBOX(ctx, x1, y1, x2, y2) {
+    _setBBOX(
+        ctx: any,
+        x1?: number | Bbox,
+        y1?: number,
+        x2?: number,
+        y2?: number
+    ): Symbolizer {
         if (!ctx.isHitTesting) {
             setBBOX(this.bbox, x1, y1, x2, y2);
         }
         return this;
     }
 
-    _bufferBBOX(ctx, bufferSize = 0) {
+    _bufferBBOX(ctx: any, bufferSize: number = 0): Symbolizer {
         if (!ctx.isHitTesting) {
             bufferBBOX(this.bbox, bufferSize);
         }
         return this;
     }
 
-    getMap() {
+    getMap(): any {
         return this.geometry.getMap();
     }
 
-    getPainter() {
+    getPainter(): Painter {
         return this.painter;
     }
 
-    isDynamicSize() {
+    isDynamicSize(): boolean {
         return false;
     }
 
     /**
+     * 测试该属性是否是与着色相关的属性
+     *
+     * @english
      * Test if the property is a property related with coloring
      * @param {String} prop - property name to test
      * @static
@@ -49,7 +71,7 @@ class Symbolizer {
      * @return {Boolean}
      * @memberof symbolizer.Symbolizer
      */
-    static testColor(prop) {
+    static testColor(prop: string): boolean {
         if (!prop || !isString(prop)) {
             return false;
         }
