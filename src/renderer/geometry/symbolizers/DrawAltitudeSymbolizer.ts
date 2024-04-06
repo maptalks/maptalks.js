@@ -61,6 +61,7 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
             const paintParams = this._getPaintParams(
                 style["lineDx"],
                 style["lineDy"],
+                // @ts-expect-error todo fix 只需要两个参数
                 false,
                 true
             );
@@ -103,17 +104,12 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
         return "point";
     }
 
-    _getPaintParams(
-        dx: any,
-        dy: any,
-        placeholder1?: any,
-        placeholder2?: any
-    ): any[] {
+    _getPaintParams(dx: any, dy: any): any[] {
         return this.getPainter().getPaintParams(
             dx || 0,
             dy || 0,
-            placeholder1 ?? null,
-            placeholder2 ?? true,
+            null,
+            true,
             "_altpt"
         );
     }

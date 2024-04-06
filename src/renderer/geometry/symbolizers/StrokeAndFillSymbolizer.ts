@@ -163,11 +163,10 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
     }
 
     _getPaintParams(): any {
+        // @ts-expect-error todo fix must has four params
         return this.getPainter().getPaintParams(
             this.style["lineDx"],
-            this.style["lineDy"],
-            null,
-            null
+            this.style["lineDy"]
         );
     }
 
