@@ -73,7 +73,6 @@ abstract class PointSymbolizer extends CanvasSymbolizer {
      *
      * @english
      * Get container points to draw on Canvas
-     * @return {Point[]}
      */
     _getRenderContainerPoints(ignoreAltitude?: boolean): Point[] {
         const painter = this.getPainter();

@@ -81,10 +81,9 @@ abstract class Symbolizer {
      *
      * @english
      * Test if the property is a property related with coloring
-     * @param {String} prop - property name to test
+     * @param  prop - property name to test
      * @static
      * @function
-     * @return {Boolean}
      * @memberof symbolizer.Symbolizer
      */
     static testColor(prop: string): boolean {
