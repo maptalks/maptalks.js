@@ -69,7 +69,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         }
     }
 
-    _drawMarkers(ctx: CanvasRenderingContext2D, cookedPoints: string | any[], resources: ResourceCache) {
+    _drawMarkers(ctx: CanvasRenderingContext2D, cookedPoints: any[], resources: ResourceCache) {
         for (let i = cookedPoints.length - 1; i >= 0; i--) {
             let point = cookedPoints[i];
             const size = calVectorMarkerSize(MARKER_SIZE, this.style);
@@ -96,7 +96,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         }
     }
 
-    _drawMarkersWithCache(ctx: CanvasRenderingContext2D, cookedPoints: string | any[], resources: ResourceCache) {
+    _drawMarkersWithCache(ctx: CanvasRenderingContext2D, cookedPoints: any[], resources: ResourceCache) {
         const stamp = this._stampSymbol();
         let image = resources.getImage(stamp);
         if (!image) {
@@ -128,7 +128,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         }
     }
 
-    _createMarkerImage(ctx: CanvasRenderingContext2D, resources: ResourceCache) {
+    _createMarkerImage(ctx: CanvasRenderingContext2D, resources: ResourceCache): any {
         const canvasClass = ctx.canvas.constructor,
             size = calVectorMarkerSize(MARKER_SIZE, this.style),
             canvas = Canvas.createCanvas(size[0], size[1], canvasClass),

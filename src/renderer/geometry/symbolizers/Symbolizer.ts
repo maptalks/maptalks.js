@@ -34,7 +34,7 @@ abstract class Symbolizer {
         return this;
     }
 
-    _bufferBBOX(ctx: CanvasRenderingContext2D, bufferSize: number = 0): Symbolizer {
+    _bufferBBOX(ctx: CanvasRenderingContext2D, bufferSize: number): Symbolizer {
         //@ts-expect-error todo 类型“CanvasRenderingContext2D”上不存在属性“isHitTesting”
         if (!ctx.isHitTesting) {
             bufferBBOX(this.bbox, bufferSize);

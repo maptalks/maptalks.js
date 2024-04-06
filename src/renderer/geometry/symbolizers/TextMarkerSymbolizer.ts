@@ -35,7 +35,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         this.strokeAndFill = this._defineStyle(this.translateLineAndFill(this.style));
     }
 
-    symbolize(ctx: CanvasRenderingContext2D, resources: ResourceCache) {
+    symbolize(ctx: CanvasRenderingContext2D, resources: ResourceCache): void {
         if (!this.isVisible()) {
             return;
         }
@@ -85,7 +85,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         }
     }
 
-    getPlacement() {
+    getPlacement(): any {
         return this.symbol['textPlacement'];
     }
 

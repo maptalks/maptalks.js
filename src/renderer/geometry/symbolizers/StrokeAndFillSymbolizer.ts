@@ -145,7 +145,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         return new PointExtent(-t, -t, t, t);
     }
 
-    _getPaintParams(): any {
+    _getPaintParams(): any[] {
         // @ts-expect-error todo fix must has four params
         return this.getPainter().getPaintParams(this.style['lineDx'], this.style['lineDy']);
     }
@@ -180,7 +180,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         return result;
     }
 
-    _createGradient(ctx: CanvasRenderingContext2D, points: any[], lineColor: any) {
+    _createGradient(ctx: CanvasRenderingContext2D, points: any[], lineColor: any): void {
         if (!Array.isArray(points) || !points.length) {
             return;
         }

@@ -60,7 +60,7 @@ abstract class PointSymbolizer extends CanvasSymbolizer {
         return fixedExtent.convertTo((p: Point) => p._rotate(angle));
     }
 
-    _getRenderPoints(): any {
+    _getRenderPoints(): Point[][] {
         const painter = this.getPainter();
         const placement = painter.isSpriting() ? 'center' : this.getPlacement();
         return this.getPainter().getRenderPoints(placement);
