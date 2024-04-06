@@ -1,7 +1,9 @@
 import { isString, isFunction } from '../core/util';
 import { on, createEl, addClass, setStyle, preventDefault } from '../core/util/dom';
 import Point from '../geo/Point';
-import UIComponent from './UIComponent';
+import type { Geometry } from '../geometry';
+import type { Map } from '../map';
+import UIComponent, { UIComponentOptionsType } from './UIComponent';
 
 /**
  * @property {Object} options
@@ -13,7 +15,7 @@ import UIComponent from './UIComponent';
  * @memberOf ui.Menu
  * @instance
  */
-const defaultOptions = {
+const defaultOptions: MenuOptionsType = {
     'containerClass': 'maptalks-menu',
     'animation': null,
     'animationDelay': 10,
@@ -33,6 +35,8 @@ const defaultOptions = {
  * @memberOf ui
  */
 class Menu extends UIComponent {
+    options: MenuOptionsType;
+
 
     /**
      * Menu items is set to options.items or by setItems method. <br>
@@ -44,7 +48,7 @@ class Menu extends UIComponent {
      * If options.custom is set to true, the menu is considered as a customized one. Then items is the customized html codes or HTMLElement. <br>
      * @param {Object} options - options defined in [ui.Menu]{@link ui.Menu#options}
      */
-    constructor(options) {
+    constructor(options: MenuOptionsType) {
         super(options);
     }
 
@@ -53,13 +57,13 @@ class Menu extends UIComponent {
         return 'Menu';
     }
 
-    addTo(owner) {
+    addTo(owner: Geometry | Map) {
         if (owner._menu && owner._menu !== this) {
             owner.removeMenu();
         }
         owner._menu = this;
         this._owner = owner;
-        return UIComponent.prototype.addTo.apply(this, arguments);
+        return UIComponent.prototype.addTo.apply(this, [owner]);
     }
 
     /**
@@ -75,7 +79,7 @@ class Menu extends UIComponent {
      *     {'item': 'About', 'click': function() {alert('About Clicked!')}}
      * ]);
      */
-    setItems(items) {
+    setItems(items: Array<MenuItem>) {
         this.options['items'] = items;
         return this;
     }
@@ -93,14 +97,14 @@ class Menu extends UIComponent {
      * @protected
      * @return {HTMLElement} menu's DOM
      */
-    buildOn() {
+    buildOn(): HTMLElement {
         if (this.options['custom']) {
             if (isString(this.options['items'])) {
                 const container = createEl('div');
                 container.innerHTML = this.options['items'];
                 return container;
             } else {
-                return this.options['items'];
+                return this.options['items'] as any;
             }
         } else {
             const dom = createEl('div');
@@ -213,3 +217,19 @@ class Menu extends UIComponent {
 Menu.mergeOptions(defaultOptions);
 
 export default Menu;
+
+export type MenuItem = {
+    name?: string;
+    click?: () => void;
+}
+
+export type MenuOptionsType = {
+    containerClass?: string;
+    animationDelay?: number;
+    animationOnHide?: boolean;
+    autoPan?: boolean;
+    width?: number;
+    maxHeight?: number;
+    custom?: boolean;
+    items?: Array<MenuItem>;
+} & UIComponentOptionsType;

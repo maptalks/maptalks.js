@@ -4,7 +4,9 @@ import Coordinate from '../geo/Coordinate';
 import Point from '../geo/Point';
 import Size from '../geo/Size';
 import { Geometry, Marker, MultiPoint, LineString, MultiLineString } from '../geometry';
-import UIComponent from './UIComponent';
+import type { Map } from '../map';
+import { MapEventDataType } from '../map/Map.DomEvents';
+import UIComponent, { UIComponentOptionsType } from './UIComponent';
 const PROPERTY_PATTERN = /\{ *([\w_]+) *\}/g;
 
 /**
@@ -21,7 +23,7 @@ const PROPERTY_PATTERN = /\{ *([\w_]+) *\}/g;
  * @memberOf ui.InfoWindow
  * @instance
  */
-const options = {
+const options: InfoWindowOptionsType = {
     'containerClass': 'maptalks-msgBox',
     'autoPan': true,
     'autoCloseOn': null,
@@ -46,6 +48,9 @@ const EMPTY_SIZE = new Size(0, 0);
  */
 class InfoWindow extends UIComponent {
 
+    options: InfoWindowOptionsType;
+    _onCloseBtnClick: () => void;
+
     // TODO: obtain class in super
     _getClassName() {
         return 'InfoWindow';
@@ -57,7 +62,7 @@ class InfoWindow extends UIComponent {
      * @returns {UIComponent} this
      * @fires UIComponent#add
      */
-    addTo(owner) {
+    addTo(owner: Geometry | Map) {
         if (owner instanceof Geometry) {
             if (owner.getInfoWindow() && owner.getInfoWindow() !== this) {
                 owner.removeInfoWindow();
@@ -73,7 +78,7 @@ class InfoWindow extends UIComponent {
      * return {InfoWindow} this
      * @fires InfoWindow#contentchange
      */
-    setContent(content) {
+    setContent(content: string | HTMLElement) {
         const old = this.options['content'];
         this.options['content'] = content;
         /**
@@ -100,7 +105,7 @@ class InfoWindow extends UIComponent {
      * Get content of  the infowindow.
      * @return {String|HTMLElement} - content of the infowindow
      */
-    getContent() {
+    getContent(): string | HTMLElement {
         return this.options['content'];
     }
 
@@ -110,7 +115,7 @@ class InfoWindow extends UIComponent {
      * return {InfoWindow} this
      * @fires InfoWindow#titlechange
      */
-    setTitle(title) {
+    setTitle(title: string) {
         const old = title;
         this.options['title'] = title;
         /**
@@ -141,7 +146,7 @@ class InfoWindow extends UIComponent {
         return this.options['title'];
     }
 
-    buildOn() {
+    buildOn(): HTMLElement {
         const isFunc = isFunction(this.options['content']);
         const isStr = isString(this.options['content']);
         if (this.options['custom']) {
@@ -151,15 +156,15 @@ class InfoWindow extends UIComponent {
             if (isStr || isFunc) {
                 const dom = createEl('div');
                 if (isStr) {
-                    dom.innerHTML = this.options['content'];
+                    dom.innerHTML = this.options['content'] as string;
                     this._replaceTemplate(dom);
                 } else {
                     //dymatic render dom content
-                    this.options['content'].bind(this)(dom);
+                    (this.options['content'] as any).bind(this)(dom);
                 }
                 newDom = dom;
             } else {
-                this._replaceTemplate(this.options['content']);
+                this._replaceTemplate(this.options['content'] as HTMLElement);
                 newDom = this.options['content'];
             }
             this._bindDomEvents(newDom, 'on');
@@ -184,17 +189,17 @@ class InfoWindow extends UIComponent {
         const msgContent = dom.querySelector('.maptalks-msgContent');
         if (isStr || isFunc) {
             if (isStr) {
-                msgContent.innerHTML = this.options['content'];
+                msgContent.innerHTML = this.options['content'] as string;
             } else {
                 //dymatic render dom content
-                this.options['content'].bind(this)(msgContent);
+                (this.options['content'] as any).bind(this)(msgContent);
             }
         } else {
-            msgContent.appendChild(this.options['content']);
+            msgContent.appendChild(this.options['content'] as HTMLElement);
         }
         this._onCloseBtnClick = this.hide.bind(this);
         const closeBtn = dom.querySelector('.maptalks-close');
-        addDomEvent(closeBtn, 'click touchend', this._onCloseBtnClick);
+        addDomEvent(closeBtn as HTMLElement, 'click touchend', this._onCloseBtnClick);
         //reslove content
         if (!isFunc) {
             this._replaceTemplate(msgContent);
@@ -203,9 +208,10 @@ class InfoWindow extends UIComponent {
         return dom;
     }
 
-    _replaceTemplate(dom) {
-        if (this.options['enableTemplate'] && this._owner && this._owner.getProperties && dom && dom.innerHTML) {
-            const properties = this._owner.getProperties() || {};
+    _replaceTemplate(dom: Element) {
+        const geo = this._owner as Geometry;
+        if (this.options['enableTemplate'] && geo && geo.getProperties && dom && dom.innerHTML) {
+            const properties = geo.getProperties() || {};
             if (isObject(properties)) {
                 const html = dom.innerHTML;
                 dom.innerHTML = html.replace(PROPERTY_PATTERN, function (str, key) {
@@ -261,7 +267,7 @@ class InfoWindow extends UIComponent {
         return o;
     }
 
-    show(coordinate) {
+    show(coordinate: Coordinate) {
         if (!this.getMap()) {
             return this;
         }
@@ -299,16 +305,16 @@ class InfoWindow extends UIComponent {
         if (this._onCloseBtnClick) {
             const dom = this.getDOM();
             const closeBtn = dom.childNodes[2];
-            removeDomEvent(closeBtn, 'click touchend', this._onCloseBtnClick);
+            removeDomEvent(closeBtn as HTMLElement, 'click touchend', this._onCloseBtnClick);
             delete this._onCloseBtnClick;
         }
     }
 
-    _onAutoOpen(e) {
+    _onAutoOpen(e: MapEventDataType) {
         const owner = this.getOwner();
         setTimeout(() => {
             if (owner instanceof Marker || owner instanceof UIComponent) {
-                this.show(owner.getCoordinates());
+                this.show((owner as Marker).getCoordinates());
             } else if (owner instanceof MultiPoint) {
                 this.show(owner.findClosest(e.coordinate));
             } else if ((owner instanceof LineString) || (owner instanceof MultiLineString)) {
@@ -322,12 +328,12 @@ class InfoWindow extends UIComponent {
         }, 1);
     }
 
-    _rectifyMouseCoordinte(owner, mouseCoordinate) {
+    _rectifyMouseCoordinte(owner: Geometry | Map, mouseCoordinate: Coordinate): Coordinate {
         if (owner instanceof LineString) {
             return this._rectifyLineStringMouseCoordinate(owner, mouseCoordinate).coordinate;
         } else if (owner instanceof MultiLineString) {
             return owner.getGeometries().map(lineString => {
-                return this._rectifyLineStringMouseCoordinate(lineString, mouseCoordinate);
+                return this._rectifyLineStringMouseCoordinate(lineString as LineString, mouseCoordinate);
             }).sort((a, b) => {
                 return a.dis - b.dis;
             })[0].coordinate;
@@ -336,7 +342,7 @@ class InfoWindow extends UIComponent {
         return mouseCoordinate;
     }
 
-    _rectifyLineStringMouseCoordinate(lineString, mouseCoordinate) {
+    _rectifyLineStringMouseCoordinate(lineString: LineString, mouseCoordinate:Coordinate) {
         const map = this.getMap();
         const coordinates = lineString.getCoordinates() || [];
         const glRes = map.getGLRes();
@@ -447,3 +453,17 @@ class InfoWindow extends UIComponent {
 InfoWindow.mergeOptions(options);
 
 export default InfoWindow;
+
+export type InfoWindowOptionsType = {
+    containerClass?: string;
+    autoPan?: boolean;
+    autoCloseOn?: string;
+    autoOpenOn?: string;
+    width?: string;
+    minHeight?: number;
+    custom?: boolean;
+    title?: string;
+    content?: string | HTMLElement;
+    enableTemplate?: boolean;
+
+} & UIComponentOptionsType;
