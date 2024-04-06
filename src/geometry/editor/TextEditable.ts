@@ -105,7 +105,6 @@ const TextEditable = {
             'dx': offset.dx,
             'dy': offset.dy
         })
-            // @ts-expect-error todo待补全UIMarker
             .addTo(map);
         this._setCursorToLast(this._textEditor);
     },
@@ -176,7 +175,6 @@ const TextEditable = {
     }
 };
 
-//@ts-expect-error todo
 TextMarker.include(TextEditable);
 
 export default TextEditable;

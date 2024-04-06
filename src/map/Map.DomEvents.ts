@@ -16,7 +16,7 @@ declare module "./Map" {
         _removeDomEvents(): void;
         _ignoreEvent(domEvent: MapEventDomType): boolean;
         _isEventOutMap(domEvent: MapEventDomType): boolean;
-        _parseEvent(e: EventTarget, type: string): MapEventDataType;
+        _parseEvent(e: MapEventDomType, type?: string): MapEventDataType;
         _parseEventFromCoord(coord: Coordinate): MapEventDataType;
         _fireDOMEvent(target: any, e: MapEventDomType, type: string);
         _getEventParams(e: MapEventDomType): MapEventDataType;

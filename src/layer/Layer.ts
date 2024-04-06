@@ -8,6 +8,7 @@ import CollisionIndex from '../core/CollisionIndex';
 import Geometry from '../geometry/Geometry';
 import Browser from '../core/Browser';
 import type { Map } from '../map';
+import type { Marker, MultiPolygon, Polygon } from '../geometry';
 
 /**
  * 配置项
@@ -76,7 +77,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     _zIndex: number
     _drawTime: number
     map: Map
-    _mask: any
+    _mask: Polygon | MultiPolygon | Marker;
     _loaded: boolean
     _collisionIndex: CollisionIndex
     _optionsHook?(conf?: any): void
@@ -530,8 +531,8 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @param {Geometry} mask - mask geometry, can only be a Marker with vector symbol, a Polygon or a MultiPolygon
      * @returns {Layer} this
      */
-    setMask(mask: any): this {
-        if (!((mask.type === 'Point' && mask._isVectorMarker()) || mask.type === 'Polygon' || mask.type === 'MultiPolygon')) {
+    setMask(mask: Polygon | MultiPolygon | Marker): this {
+        if (!((mask.type === 'Point' && (mask as Marker)._isVectorMarker()) || mask.type === 'Polygon' || mask.type === 'MultiPolygon')) {
             throw new Error('Mask for a layer must be a marker with vector marker symbol or a Polygon(MultiPolygon).');
         }
         mask._bindLayer(this);
@@ -645,7 +646,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         return this._getRenderer();
     }
 
-    onConfig(conf) {
+    onConfig(conf: { [key: string]: any }) {
         const needUpdate = conf && Object.keys && Object.keys(conf).length > 0;
         if (needUpdate && isNil(conf['animation'])) {
             // options change Hook,subLayers Can realize its own logic,such as tileSize/tileSystem etc change
