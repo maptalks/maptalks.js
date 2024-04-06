@@ -1,25 +1,22 @@
-import {
-    isNil
-} from '../../../core/util';
+import { isNil } from '../../../core/util';
 import Point from '../../../geo/Point';
 import Canvas from '../../../core/Canvas';
 import { getVectorMarkerPoints } from '../../../core/util/draw';
 import PointSymbolizer from './PointSymbolizer';
 
 export default class DebugSymbolizer extends PointSymbolizer {
-
-    getPlacement() {
+    getPlacement(): string {
         return 'point';
     }
 
-    getDxDy() {
+    getDxDy(): Point {
         return new Point(0, 0);
     }
 
-    symbolize(ctx) {
+    symbolize(ctx: CanvasRenderingContext2D): void {
         const geometry = this.geometry,
             layer = geometry.getLayer();
-        if (!geometry.options['debug'] && (layer && !layer.options['debug'])) {
+        if (!geometry.options['debug'] && layer && !layer.options['debug']) {
             return;
         }
         const map = this.getMap();
@@ -54,5 +51,4 @@ export default class DebugSymbolizer extends PointSymbolizer {
             Canvas.path(ctx, c.slice(2, 4), op);
         }
     }
-
 }

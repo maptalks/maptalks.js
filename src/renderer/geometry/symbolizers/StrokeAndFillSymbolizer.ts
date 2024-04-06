@@ -1,19 +1,25 @@
+import { ResourceCache } from '../..';
 import { getValueOrDefault } from '../../../core/util';
 import { isGradient as checkGradient } from '../../../core/util/style';
 import Coordinate from '../../../geo/Coordinate';
 import PointExtent from '../../../geo/PointExtent';
+import { Geometry } from '../../../geometry';
+import Painter from '../Painter';
 import CanvasSymbolizer from './CanvasSymbolizer';
 
 const TEMP_COORD0 = new Coordinate(0, 0);
 const TEMP_COORD1 = new Coordinate(0, 0);
 
 export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
-
-    static test(symbol, geometry) {
+    public _extMin: Coordinate;
+    public _extMax: Coordinate;
+    public _pxExtent: PointExtent;
+    static test(symbol: any, geometry: Geometry): boolean {
         if (!symbol) {
             return false;
         }
-        if (geometry && (geometry.isPoint)) {
+        // @ts-expect-error todo fix geometry 可能没有isPoint属性
+        if (geometry && geometry.isPoint) {
             return false;
         }
         for (const p in symbol) {
@@ -25,18 +31,19 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         return false;
     }
 
-    constructor(symbol, geometry, painter) {
+    constructor(symbol: any, geometry: Geometry, painter: Painter) {
         super();
         this.symbol = symbol;
         this.geometry = geometry;
         this.painter = painter;
+        // @ts-expect-error todo fix geometry 可能没有isPoint属性
         if (geometry.isPoint) {
             return;
         }
         this.style = this._defineStyle(this.translate());
     }
 
-    symbolize(ctx, resources) {
+    symbolize(ctx: CanvasRenderingContext2D, resources: ResourceCache) {
         if (!this.isVisible()) {
             return;
         }
@@ -50,7 +57,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         }
         this._prepareContext(ctx);
         const isGradient = checkGradient(style['lineColor']),
-            isPath = (this.geometry.getJSONType() === 'Polygon') || (this.geometry.type === 'LineString');
+            isPath = this.geometry.getJSONType() === 'Polygon' || this.geometry.type === 'LineString';
         if (isGradient && (style['lineColor']['places'] || !isPath)) {
             style['lineGradientExtent'] = this.geometry.getContainerExtent()._expand(style['lineWidth']);
         }
@@ -73,10 +80,11 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
                 }
                 const params = [ctx, points[i]];
                 if (paintParams.length > 1) {
-                    params.push.apply(params, paintParams.slice(1));
+                    params.push(...paintParams.slice(1));
                 }
                 params.push(style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']);
-                const bbox = this.geometry._paintOn.apply(this.geometry, params);
+                // @ts-expect-error todo 属性“_paintOn”在类型“Geometry”上不存在
+                const bbox = this.geometry._paintOn(...params);
                 this._setBBOX(ctx, bbox);
                 this._bufferBBOX(ctx, tolerance);
             }
@@ -86,9 +94,10 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
                 this._createGradient(ctx, points, style['lineColor']);
             }
             const params = [ctx];
-            params.push.apply(params, paintParams);
+            params.push(...paintParams);
             params.push(style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']);
-            const bbox = this.geometry._paintOn.apply(this.geometry, params);
+            // @ts-expect-error todo 属性“_paintOn”在类型“Geometry”上不存在
+            const bbox = this.geometry._paintOn(...params);
             this._setBBOX(ctx, bbox);
             this._bufferBBOX(ctx, tolerance);
         }
@@ -98,7 +107,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         }
     }
 
-    get2DExtent() {
+    get2DExtent(): PointExtent {
         const map = this.getMap();
         const extent = this.geometry._getPrjExtent();
         if (!extent) {
@@ -114,7 +123,9 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         this._extMin.y = extent['ymin'];
         this._extMax.x = extent['xmax'];
         this._extMax.y = extent['ymax'];
+        // @ts-expect-error todo fix coordinate not to point
         const min = map._prjToPoint(this._extMin, undefined, TEMP_COORD0),
+            // @ts-expect-error todo fix coordinate not to point
             max = map._prjToPoint(this._extMax, undefined, TEMP_COORD1);
         if (!this._pxExtent) {
             this._pxExtent = new PointExtent(min, max);
@@ -129,65 +140,65 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         return this._pxExtent;
     }
 
-    getFixedExtent() {
+    getFixedExtent(): PointExtent {
         const t = this.style['lineWidth'] / 2;
         return new PointExtent(-t, -t, t, t);
     }
 
-    _getPaintParams() {
+    _getPaintParams(): any[] {
+        // @ts-expect-error todo fix must has four params
         return this.getPainter().getPaintParams(this.style['lineDx'], this.style['lineDy']);
     }
 
-    translate() {
+    translate(): any {
         const s = this.symbol;
         const result = {
-            'lineColor': getValueOrDefault(s['lineColor'], '#000'),
-            'lineWidth': getValueOrDefault(s['lineWidth'], 2),
-            'lineOpacity': getValueOrDefault(s['lineOpacity'], 1),
-            'lineDasharray': getValueOrDefault(s['lineDasharray'], []),
-            'lineCap': getValueOrDefault(s['lineCap'], 'butt'), //“butt”, “square”, “round”
-            'lineJoin': getValueOrDefault(s['lineJoin'], 'miter'), //“bevel”, “round”, “miter”
-            'linePatternFile': getValueOrDefault(s['linePatternFile'], null),
-            'lineDx': getValueOrDefault(s['lineDx'], 0),
-            'lineDy': getValueOrDefault(s['lineDy'], 0),
-            'polygonFill': getValueOrDefault(s['polygonFill'], null),
-            'polygonOpacity': getValueOrDefault(s['polygonOpacity'], 1),
-            'polygonPatternFile': getValueOrDefault(s['polygonPatternFile'], null),
-            'polygonPatternDx': getValueOrDefault(s['polygonPatternDx'], 0),
-            'polygonPatternDy': getValueOrDefault(s['polygonPatternDy'], 0),
-            'linePatternDx': getValueOrDefault(s['linePatternDx'], 0),
-            'linePatternDy': getValueOrDefault(s['linePatternDy'], 0)
+            lineColor: getValueOrDefault(s['lineColor'], '#000'),
+            lineWidth: getValueOrDefault(s['lineWidth'], 2),
+            lineOpacity: getValueOrDefault(s['lineOpacity'], 1),
+            lineDasharray: getValueOrDefault(s['lineDasharray'], []),
+            lineCap: getValueOrDefault(s['lineCap'], 'butt'), //“butt”, “square”, “round”
+            lineJoin: getValueOrDefault(s['lineJoin'], 'miter'), //“bevel”, “round”, “miter”
+            linePatternFile: getValueOrDefault(s['linePatternFile'], null),
+            lineDx: getValueOrDefault(s['lineDx'], 0),
+            lineDy: getValueOrDefault(s['lineDy'], 0),
+            polygonFill: getValueOrDefault(s['polygonFill'], null),
+            polygonOpacity: getValueOrDefault(s['polygonOpacity'], 1),
+            polygonPatternFile: getValueOrDefault(s['polygonPatternFile'], null),
+            polygonPatternDx: getValueOrDefault(s['polygonPatternDx'], 0),
+            polygonPatternDy: getValueOrDefault(s['polygonPatternDy'], 0),
+            linePatternDx: getValueOrDefault(s['linePatternDx'], 0),
+            linePatternDy: getValueOrDefault(s['linePatternDy'], 0),
         };
         if (result['lineWidth'] === 0) {
             result['lineOpacity'] = 0;
         }
         // fill of arrow
-        if ((this.geometry.type === 'LineString') && !result['polygonFill']) {
+        if (this.geometry.type === 'LineString' && !result['polygonFill']) {
             result['polygonFill'] = result['lineColor'];
         }
         return result;
     }
 
-    _createGradient(ctx, points, lineColor) {
+    _createGradient(ctx: CanvasRenderingContext2D, points: any[], lineColor: any): void {
         if (!Array.isArray(points) || !points.length) {
             return;
         }
         const [p1, p2] = getGradientPoints(points);
-        if (!p1 || (!p2)) {
+        if (!p1 || !p2) {
             console.error('unable create canvas LinearGradient,error data:', points);
             return;
         }
         const grad = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
-        lineColor['colorStops'].forEach(function (stop) {
-            grad.addColorStop.apply(grad, stop);
+        lineColor['colorStops'].forEach(function (stop: [number, string]) {
+            grad.addColorStop(...stop);
         });
         ctx.strokeStyle = grad;
     }
-
 }
 
-function getGradientPoints(points) {
-    let pts;
+function getGradientPoints(points: any[]): any[] {
+    let pts: string | any[];
     let isLine = true;
     //polygon rings
     if (Array.isArray(points[0])) {
@@ -201,7 +212,8 @@ function getGradientPoints(points) {
         return [pts[0], pts[len - 1]];
     }
     const p1 = pts[0];
-    let distance = 0, p2;
+    let distance = 0,
+        p2: any;
     for (let i = 1; i < len; i++) {
         const p = pts[i];
         const dis = p1.distanceTo(p);

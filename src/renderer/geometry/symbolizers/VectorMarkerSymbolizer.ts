@@ -9,18 +9,27 @@ import PointExtent from '../../../geo/PointExtent';
 import Canvas from '../../../core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
 import { getDefaultVAlign, getDefaultHAlign, DEFAULT_MARKER_SYMBOLS } from '../../../core/util/marker';
+import { Geometry } from '../../../geometry';
+import Painter from '../Painter';
+import { Extent } from '../../../geo';
+import { ResourceCache } from '../../layer/CanvasRenderer';
 
-const MARKER_SIZE = [];
+const MARKER_SIZE: [number, number] = [0, 0];
 const TEMP_EXTENT = new PointExtent();
 const DEFAULT_ANCHOR = new Point(0, 0);
 
 export default class VectorMarkerSymbolizer extends PointSymbolizer {
+    public _dynamic: any;
+    public strokeAndFill: any;
+    public padding: number;
+    public _stamp: any;
+    public _fixedExtent: PointExtent;
 
-    static test(symbol) {
+    static test(symbol: any): boolean {
         return isVectorSymbol(symbol);
     }
 
-    constructor(symbol, geometry, painter) {
+    constructor(symbol: any, geometry: Geometry, painter: Painter) {
         super(symbol, geometry, painter);
         const style = this.translate();
         this._dynamic = hasFunctionDefinition(style);
@@ -35,7 +44,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         this.padding = 0;
     }
 
-    symbolize(ctx, resources) {
+    symbolize(ctx: CanvasRenderingContext2D, resources: ResourceCache) {
         if (!this.isVisible()) {
             return;
         }
@@ -49,7 +58,8 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             return;
         }
         this._prepareContext(ctx);
-        if (this.getPainter().isSpriting() ||
+        if (
+            this.getPainter().isSpriting() ||
             this.geometry.getLayer().getMask() === this.geometry ||
             this._dynamic ||
             this.geometry.getLayer().options['cacheVectorOnCanvas'] === false) {
@@ -57,16 +67,15 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         } else {
             this._drawMarkersWithCache(ctx, cookedPoints, resources);
         }
-
     }
 
-    _drawMarkers(ctx, cookedPoints, resources) {
+    _drawMarkers(ctx: CanvasRenderingContext2D, cookedPoints: any[], resources: ResourceCache) {
         for (let i = cookedPoints.length - 1; i >= 0; i--) {
             let point = cookedPoints[i];
             const size = calVectorMarkerSize(MARKER_SIZE, this.style);
             const [width, height] = size;
             // const origin = this._rotate(ctx, point, this._getRotationAt(i));
-            let extent;
+            let extent: PointExtent;
             const origin = this.getRotation() ? this._rotate(ctx, point, this._getRotationAt(i)) : null;
             if (origin) {
                 const pixel = point.sub(origin);
@@ -87,7 +96,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         }
     }
 
-    _drawMarkersWithCache(ctx, cookedPoints, resources) {
+    _drawMarkersWithCache(ctx: CanvasRenderingContext2D, cookedPoints: any[], resources: ResourceCache) {
         const stamp = this._stampSymbol();
         let image = resources.getImage(stamp);
         if (!image) {
@@ -99,7 +108,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             let point = cookedPoints[i];
             // const origin = this._rotate(ctx, point, this._getRotationAt(i));
             const origin = this.getRotation() ? this._rotate(ctx, point, this._getRotationAt(i)) : null;
-            let extent;
+            let extent: PointExtent;
             if (origin) {
                 //坐标对应的像素点
                 const pixel = point.sub(origin);
@@ -119,7 +128,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         }
     }
 
-    _createMarkerImage(ctx, resources) {
+    _createMarkerImage(ctx: CanvasRenderingContext2D, resources: ResourceCache): any {
         const canvasClass = ctx.canvas.constructor,
             size = calVectorMarkerSize(MARKER_SIZE, this.style),
             canvas = Canvas.createCanvas(size[0], size[1], canvasClass),
@@ -129,7 +138,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         return canvas;
     }
 
-    _stampSymbol() {
+    _stampSymbol(): any {
         if (!this._stamp) {
             this._stamp = hashCode([
                 this.style['markerType'],
@@ -144,13 +153,13 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
                 this.style['markerWidth'],
                 this.style['markerHeight'],
                 this.style['markerHorizontalAlignment'],
-                this.style['markerVerticalAlignment']
+                this.style['markerVerticalAlignment'],
             ].join('_'));
         }
         return this._stamp;
     }
 
-    _getCacheImageAnchor(w, h) {
+    _getCacheImageAnchor(w: number, h: number): Point {
         const shadow = 2 * (this.symbol['shadowBlur'] || 0),
             margin = shadow + this.padding;
         const markerType = this.style['markerType'];
@@ -163,7 +172,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         }
     }
 
-    _getGraidentExtent(points) {
+    _getGraidentExtent(points: PointExtent | Extent): PointExtent {
         const e = new PointExtent(),
             dxdy = this.getDxDy(),
             m = this.getFixedExtent();
@@ -181,11 +190,11 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         return e;
     }
 
-    _drawVectorMarker(ctx, point, resources) {
+    _drawVectorMarker(ctx: CanvasRenderingContext2D, point: Point, resources: ResourceCache) {
         drawVectorMarker(ctx, point, this.style, resources);
     }
 
-    getFixedExtent() {
+    getFixedExtent(): PointExtent {
         const isDynamic = this.isDynamicSize();
         const w = this.style.markerWidth;
         const h = this.style.markerHeight;
@@ -193,29 +202,29 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         return getVectorMarkerFixedExtent(this._fixedExtent, this.style, isDynamic ? [128, 128 * (w === 0 ? 1 : h / w)] : null);
     }
 
-    translate() {
+    translate(): any {
         const s = this.symbol;
         const result = {
-            'markerType': getValueOrDefault(s['markerType'], 'ellipse'), //<----- ellipse | cross | x | triangle | diamond | square | bar | pin等,默认ellipse
-            'markerFill': getValueOrDefault(s['markerFill'], '#00f'), //blue as cartoCSS
-            'markerFillOpacity': getValueOrDefault(s['markerFillOpacity'], 1),
-            'markerFillPatternFile': getValueOrDefault(s['markerFillPatternFile'], null),
-            'markerLineColor': getValueOrDefault(s['markerLineColor'], '#000'), //black
-            'markerLineWidth': getValueOrDefault(s['markerLineWidth'], DEFAULT_MARKER_SYMBOLS.markerLineWidth),
-            'markerLineOpacity': getValueOrDefault(s['markerLineOpacity'], 1),
-            'markerLineDasharray': getValueOrDefault(s['markerLineDasharray'], []),
-            'markerLinePatternFile': getValueOrDefault(s['markerLinePatternFile'], null),
+            markerType: getValueOrDefault(s['markerType'], 'ellipse'), //<----- ellipse | cross | x | triangle | diamond | square | bar | pin等,默认ellipse
+            markerFill: getValueOrDefault(s['markerFill'], '#00f'), //blue as cartoCSS
+            markerFillOpacity: getValueOrDefault(s['markerFillOpacity'], 1),
+            markerFillPatternFile: getValueOrDefault(s['markerFillPatternFile'], null),
+            markerLineColor: getValueOrDefault(s['markerLineColor'], '#000'), //black
+            markerLineWidth: getValueOrDefault(s['markerLineWidth'], DEFAULT_MARKER_SYMBOLS.markerLineWidth),
+            markerLineOpacity: getValueOrDefault(s['markerLineOpacity'], 1),
+            markerLineDasharray: getValueOrDefault(s['markerLineDasharray'], []),
+            markerLinePatternFile: getValueOrDefault(s['markerLinePatternFile'], null),
 
-            'markerDx': getValueOrDefault(s['markerDx'], 0),
-            'markerDy': getValueOrDefault(s['markerDy'], 0),
+            markerDx: getValueOrDefault(s['markerDx'], 0),
+            markerDy: getValueOrDefault(s['markerDy'], 0),
 
-            'markerWidth': getValueOrDefault(s['markerWidth'], DEFAULT_MARKER_SYMBOLS.markerWidth),
-            'markerHeight': getValueOrDefault(s['markerHeight'], DEFAULT_MARKER_SYMBOLS.markerHeight),
+            markerWidth: getValueOrDefault(s['markerWidth'], DEFAULT_MARKER_SYMBOLS.markerWidth),
+            markerHeight: getValueOrDefault(s['markerHeight'], DEFAULT_MARKER_SYMBOLS.markerHeight),
 
-            'markerRotation': getValueOrDefault(s['markerRotation'], 0),
-            'shadowBlur': getValueOrDefault(s['shadowBlur'], 0),
-            'shadowOffsetX': getValueOrDefault(s['shadowOffsetX'], 0),
-            'shadowOffsetY': getValueOrDefault(s['shadowOffsetY'], 0),
+            markerRotation: getValueOrDefault(s['markerRotation'], 0),
+            shadowBlur: getValueOrDefault(s['shadowBlur'], 0),
+            shadowOffsetX: getValueOrDefault(s['shadowOffsetX'], 0),
+            shadowOffsetY: getValueOrDefault(s['shadowOffsetY'], 0),
         };
         const markerType = result['markerType'];
         const ha = getDefaultHAlign(markerType);
@@ -236,5 +245,3 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         return result;
     }
 }
-
-
