@@ -2,6 +2,10 @@ import Coordinate from '../Coordinate';
 import Point from '../Point';
 
 /**
+ * 投影坐标和基础二维点系统之间的转换。
+ * 内部使用的核心类，用于将地图（通常是地理）坐标映射到 2d 点
+ *
+ * @english
  * Transformation between projected coordinates and base 2d point system.
  * A core class used internally for mapping map's (usually geographical) coordinates to 2d points.<br>
  *
@@ -28,13 +32,18 @@ class Transformation {
     }
 
     /**
+     * 将投影坐标变换为二维点，
+     * 变换/非变换方法中的参数scale用于在地图的不同缩放级别上缩放结果2d点。
+     *
+     * @english
      * Transform a projected coordinate to a 2d point. <br>
      * Parameter scale in transform/untransform method is used to scale the result 2d points on map's different zoom levels.
-     * @param  {Number[]|Coordinate} coordinates - projected coordinate to transform
-     * @param  {Number} scale                              - transform scale
-     * @return {Point} 2d point.
+     * @param coordinates - projected coordinate to transform
+     * @param scale - transform scale
+     * @param out - tmp point
+     * @returns 2d point.
      */
-    transform(coordinates, scale, out) {
+    transform(coordinates: Coordinate, scale: number, out?: Point): Point {
         const x = this.matrix[0] * (coordinates.x - this.matrix[2]) / scale;
         const y = -this.matrix[1] * (coordinates.y - this.matrix[3]) / scale;
         if (out) {
@@ -46,12 +55,17 @@ class Transformation {
     }
 
     /**
+     * 将 2d 点变换为投影坐标。
+     *
+     * @english
+     *
      * Transform a 2d point to a projected coordinate.
-     * @param  {Point} point   - 2d point
-     * @param  {Number} scale           - transform scale
-     * @return {Coordinate}  projected coordinate.
+     * @param point - 2d point
+     * @param scale - transform scale
+     * @param out tmp coordinates
+     * @returns projected coordinate.
      */
-    untransform(point, scale, out) {
+    untransform(point: Point, scale: number, out?: Coordinate): Coordinate {
         const x = point.x * scale / this.matrix[0] + this.matrix[2];
         const y = point.y * scale / -this.matrix[1] + this.matrix[3];
         if (out) {

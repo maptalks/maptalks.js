@@ -1,9 +1,10 @@
-import { isNil, isNumber } from '../core/util';
+import { isNil, isNumber } from '../core/util/common';
 import Coordinate from './Coordinate';
 import Point from './Point';
 import Size from './Size';
+import type PointExtent from './PointExtent';
 
-//temparary variables
+// temparary variables
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_COORD0 = new Coordinate(0, 0);
 const TEMP_COORD1 = new Coordinate(0, 0);
@@ -19,38 +20,69 @@ let TEMP_EXTENT;
 /* eslint-enable prefer-const */
 const TEMP_COMBINE = [];
 
-/**
- * Represent a bounding box on the map, a rectangular geographical area with minimum and maximum coordinates. <br>
- * There are serveral ways to create a extent:
- * @category basic types
- * @example
- * //with 4 numbers: xmin, ymin, xmax and ymax
- * var extent = new Extent(100, 10, 120, 20);
- * @example
- * //with 2 coordinates
- * var extent = new Extent(new Coordinate(100, 10), new Coordinate(120, 20));
- * @example
- * //with a json object containing xmin, ymin, xmax and ymax
- * var extent = new Extent({xmin : 100, ymin: 10, xmax: 120, ymax:20});
- * @example
- * var extent1 = new Extent(100, 10, 120, 20);
- * //with another extent
- * var extent2 = new Extent(extent1);
- */
-class Extent {
-    _clazz: any;
-    _dirty: boolean;
+export type Projection = any;
 
-    projection: any;
+export type Position = Point | Coordinate;
+
+export type ArrayExtent = [number, number, number, number];
+export type JsonExtent = {
     xmin: number;
     xmax: number;
     ymin: number;
     ymax: number;
+};
+
+export type ExtentLike = Extent | JsonExtent | ArrayExtent;
+
+export interface Constructable<T> {
+    new(p1?: WithNull<ExtentLike>, p?: Projection) : T;
+    new(p1: Position, p2: Position, p?: Projection) : T;
+    new(p1: number, p2: number, p3: number, p4: number, p?: Projection) : T;
+}
+
+/**
+ * 表示地图上的边界框，即具有最小和最大坐标的矩形地理区域。 <br>
+ * 有多种方法可以创建范围：
+ *
+ * @english
+ *
+ * Represent a bounding box on the map, a rectangular geographical area with minimum and maximum coordinates. <br>
+ * There are serveral ways to create a extent:
+ * @category basic types
+ * @example
+ *
+ * ```ts
+ * //with 4 numbers: xmin, ymin, xmax and ymax
+ * var extent = new Extent(100, 10, 120, 20);
+ *
+ * //with 2 coordinates
+ * var extent = new Extent(new Coordinate(100, 10), new Coordinate(120, 20));
+ *
+ * //with a json object containing xmin, ymin, xmax and ymax
+ * var extent = new Extent({xmin : 100, ymin: 10, xmax: 120, ymax:20});
+ *
+ * var extent1 = new Extent(100, 10, 120, 20);
+ * //with another extent
+ * var extent2 = new Extent(extent1);
+ * ```
+ */
+class Extent {
+    _clazz: typeof Coordinate | typeof Point;
+    _dirty: boolean;
+
+    projection: any;
+    xmin: WithNull<number>;
+    xmax: WithNull<number>;
+    ymin: WithNull<number>;
+    ymax: WithNull<number>;
     pxmin: number;
     pxmax: number;
     pymin: number;
     pymax: number;
 
+    constructor(p1?: WithNull<ExtentLike>, p?: Projection);
+    constructor(p1: Position, p2: Position, p?: Projection);
+    constructor(p1: number, p2: number, p3: number, p4: number, p?: Projection)
     constructor(...args: any[]) {
         this._clazz = Coordinate;
         const l = args.length; // todo 最后一个参数是投影
@@ -62,21 +94,24 @@ class Extent {
         this._initialize(args[0], args[1], args[2], args[3]);
     }
 
-    _initialize(p1, p2, p3, p4) {
+    _initialize(p1: WithNull<ExtentLike>): void;
+    _initialize(p1: Position, p2: Position): void;
+    _initialize(p1: number, p2: number, p3: number, p4: number): void;
+    _initialize(p1: ExtentLike | Position | number, p2?: Position | number, p3?: number, p4?: number) {
         /**
-         * @property {Number} xmin - minimum x
+         * @property xmin - minimum x
          */
         this.xmin = null;
         /**
-         * @property {Number} xmax - maximum x
+         * @property xmax - maximum x
          */
         this.xmax = null;
         /**
-         * @property {Number} ymin - minimum y
+         * @property ymin - minimum y
          */
         this.ymin = null;
         /**
-         * @property {Number} ymax - maximum y
+         * @property ymax - maximum y
          */
         this.ymax = null;
         if (isNil(p1)) {
@@ -110,27 +145,30 @@ class Extent {
                     Math.max(p1[1], p1[3])
                 );
             }
-        } else if (isNumber(p1.x) &&
-            isNumber(p2.x) &&
-            isNumber(p1.y) &&
-            isNumber(p2.y)) {
+        } else if (
+            isNumber((p1 as Position).x) &&
+            isNumber((p2 as Position).x) &&
+            isNumber((p1 as Position).y) &&
+            isNumber((p2 as Position).y)) {
             //Constructor 2: two coordinates
+            const tp1 = p1 as Position;
+            const tp2 = p2 as Position;
             if (projection) {
-                this.set(p1.x, p1.y, p2.x, p2.y);
+                this.set(tp1.x, tp1.y, tp2.x, tp2.y);
             } else {
-                if (p1.x > p2.x) {
-                    this['xmin'] = p2.x;
-                    this['xmax'] = p1.x;
+                if (tp1.x > tp2.x) {
+                    this['xmin'] = tp2.x;
+                    this['xmax'] = tp1.x;
                 } else {
-                    this['xmin'] = p1.x;
-                    this['xmax'] = p2.x;
+                    this['xmin'] = tp1.x;
+                    this['xmax'] = tp2.x;
                 }
-                if (p1.y > p2.y) {
-                    this['ymin'] = p2.y;
-                    this['ymax'] = p1.y;
+                if (tp1.y > tp2.y) {
+                    this['ymin'] = tp2.y;
+                    this['ymax'] = tp1.y;
                 } else {
-                    this['ymin'] = p1.y;
-                    this['ymax'] = p2.y;
+                    this['ymin'] = tp1.y;
+                    this['ymax'] = tp2.y;
                 }
             }
             //constructor 3: another extent or a object containing xmin, ymin, xmax and ymax
@@ -142,7 +180,20 @@ class Extent {
         }
     }
 
-    _add(p) {
+    /**
+     * 与坐标或点相加, 会改变原数据
+     *
+     * @english
+     *
+     * Add the extent with a coordinate or a point.
+     * @returns a new extent
+     * @param p
+     */
+    _add(p: Extent): this;
+    _add(p: PointExtent): this;
+    _add(p: Position): this;
+    _add(p: number[]): this;
+    _add(p: any) {
         this._dirty = true;
         if (!isNil(p.x)) {
             this['xmin'] += p.x;
@@ -164,16 +215,33 @@ class Extent {
     }
 
     /**
+     * 与坐标或点相加, 返回一个新的 extent
+     *
+     * @english
+     *
      * Add the extent with a coordinate or a point.
-     * @returns {Extent} a new extent
-     * @param args
+     * @returns a new extent
+     * @param p
      */
-    add(...args: any[]) {
-        const e = new (this.constructor as any)(this['xmin'], this['ymin'], this['xmax'], this['ymax'], this.projection);
-        return e._add.call(e, ...args);
+    add(p: Extent): this;
+    add(p: PointExtent): this;
+    add(p: Position): this;
+    add(p: number[]): this;
+    add(p: any) {
+        const e = new (this.constructor as Constructable<Extent | PointExtent>)(this['xmin'], this['ymin'], this['xmax'], this['ymax'], this.projection);
+        return e._add(p);
     }
 
-    _scale(s) {
+    /**
+     * 缩放当前 extent
+     *
+     * @english
+     *
+     * scale extent
+     *
+     * @param s
+     */
+    _scale(s: number) {
         this._dirty = true;
         this['xmin'] *= s;
         this['ymin'] *= s;
@@ -182,7 +250,18 @@ class Extent {
         return this;
     }
 
-    _sub(p) {
+    /**
+     * 当前范围减去 coordinate、point 或者 extent（改变原数据）
+     *
+     * @english
+     *
+     * Substract the extent with a coordinate or a point.
+     * @param p
+     */
+    _sub(p: [number, number]): this;
+    _sub(p: Position): this;
+    _sub(p: Extent | PointExtent): this;
+    _sub(p: any) {
         this._dirty = true;
         if (!isNil(p.x)) {
             this['xmin'] -= p.x;
@@ -203,39 +282,78 @@ class Extent {
         return this;
     }
 
+    /**
+     * _sub 的别名
+     *
+     * @english
+     *
+     * Alias for _sub
+     * @param p
+     */
+    _substract(p: [number, number]): this;
+    _substract(p: Position): this;
+    _substract(p: Extent | PointExtent): this;
     _substract(p: any) {
         return this._sub(p);
     }
 
     /**
+     * 当前范围减去 coordinate 或者 point
+     *
+     * @english
+     *
      * Substract the extent with a coordinate or a point.
      * @returns a new extent
-     * @param args
+     * @param p
      */
-    sub(...args: any[]) {
-        const e = new (this.constructor as any)(this['xmin'], this['ymin'], this['xmax'], this['ymax'], this.projection);
-        return e._sub.call(e, ...args);
+    sub(p: [number, number]): this;
+    sub(p: Position): this;
+    sub(p: Extent | PointExtent): this;
+    sub(p: any) {
+        const e = new (this.constructor as Constructable<Extent | PointExtent>)(this['xmin'], this['ymin'], this['xmax'], this['ymax'], this.projection);
+        return e._sub(p);
     }
 
     /**
+     * sub 的别名
+     *
+     * @english
+     *
      * Alias for sub
      * @returns a new extent
-     * @param args
+     * @param p
      */
-    substract(...args: any[]) {
-        return this.sub.call(this, ...args);
+    substract(p: [number, number]): this;
+    substract(p: Position): this;
+    substract(p: Extent | PointExtent): this;
+    substract(p: any) {
+        return this.sub(p);
     }
-
 
     /**
+     * 对 Extent 边界值进行四舍五入，返回一个新的 Extent
+     *
+     * @english
+     *
      * Round the extent
-     * @return {Extent} rounded extent
+     * @returns rounded extent
      */
     round() {
-        return new (this.constructor as any)(Math.round(this['xmin']), Math.round(this['ymin']),
-            Math.round(this['xmax']), Math.round(this['ymax']), this.projection);
+        return new (this.constructor as Constructable<Extent | PointExtent>)(
+            Math.round(this['xmin']), Math.round(this['ymin']),
+            Math.round(this['xmax']), Math.round(this['ymax']),
+            this.projection
+        );
     }
 
+    /**
+     * 对当前 Extent 边界值进行四舍五入
+     *
+     * @english
+     *
+     * Round the extent
+     * @returns rounded extent
+     */
     _round() {
         this._dirty = true;
         this['xmin'] = Math.round(this['xmin']);
@@ -246,11 +364,15 @@ class Extent {
     }
 
     /**
+     * 获取 Extent 的最小点
+     *
+     * @english
      * Get the minimum point
-     * @params {Coorindate} [out=undefined] - optional point to receive result
-     * @return {Coordinate}
+     * @params [out=undefined] - optional point to receive result
      */
-    getMin(out) {
+    getMin(out?: Point): Point;
+    getMin(out?: Coordinate): Coordinate;
+    getMin(out?: Position): Position {
         if (out) {
             out.set(this['xmin'], this['ymin']);
             return out;
@@ -259,11 +381,15 @@ class Extent {
     }
 
     /**
+     * 获取 Extent 的最大点
+     *
+     * @english
      * Get the maximum point
-     * @params {Coorindate} [out=undefined] - optional point to receive result
-     * @return {Coordinate}
+     * @params [out=undefined] - optional point to receive result
      */
-    getMax(out) {
+    getMax(out?: Point): Point;
+    getMax(out?: Coordinate): Coordinate;
+    getMax(out?: Position) {
         if (out) {
             out.set(this['xmax'], this['ymax']);
             return out;
@@ -272,11 +398,13 @@ class Extent {
     }
 
     /**
+     * 获取 Extent 的中心点
+     *
+     * @english
      * Get center of the extent.
-     * @params {Coorindate} [out=undefined] - optional point to receive result
-     * @return {Coordinate}
+     * @params [out=undefined] - optional point to receive result
      */
-    getCenter(out?: Coordinate) {
+    getCenter(out?: Position) {
         const x = (this['xmin'] + this['xmax']) / 2;
         const y = (this['ymin'] + this['ymax']) / 2;
         if (out) {
@@ -287,11 +415,13 @@ class Extent {
     }
 
     /**
+     * 检查 Extent 是否有效
+     *
+     * @english
      * Whether the extent is valid
      * @protected
-     * @return {Boolean}
      */
-    isValid() {
+    isValid(): boolean {
         return !isNil(this['xmin']) &&
             !isNil(this['ymin']) &&
             !isNil(this['xmax']) &&
@@ -299,11 +429,14 @@ class Extent {
     }
 
     /**
+     * 与另一个 extent 进行比较它们是否相等
+     *
+     * @english
+     *
      * Compare with another extent to see whether they are equal.
-     * @param  {Extent}  ext2 - extent to compare
-     * @return {Boolean}
+     * @param ext2 - extent to compare
      */
-    equals(ext2) {
+    equals(ext2: Extent | PointExtent): boolean {
         return (this['xmin'] === ext2['xmin'] &&
             this['xmax'] === ext2['xmax'] &&
             this['ymin'] === ext2['ymin'] &&
@@ -311,44 +444,49 @@ class Extent {
     }
 
     /**
+     * 是否与另一个范围相交
+     * @english
+     *
      * Whether it intersects with another extent
-     * @param  {Extent}  ext2 - another extent
-     * @return {Boolean}
+     * @param ext2 - another extent
      */
-    intersects(ext2) {
+    intersects(ext2: Extent | PointExtent): boolean {
         this._project(this);
         this._project(ext2);
         const rxmin = Math.max(this['pxmin'], ext2['pxmin']);
         const rymin = Math.max(this['pymin'], ext2['pymin']);
         const rxmax = Math.min(this['pxmax'], ext2['pxmax']);
         const rymax = Math.min(this['pymax'], ext2['pymax']);
-        const intersects = !((rxmin > rxmax) || (rymin > rymax));
-        return intersects;
+        return !((rxmin > rxmax) || (rymin > rymax));
     }
 
     /**
+     * 判断当前 extent 是否在其他 extent 范围内
+     * @english
+     *
      * Whether the extent is within another extent
-     * @param  {Extent}  ext2 - another extent
-     * @returns {Boolean}
+     * @param extent - another extent
      */
-    within(extent) {
+    within(extent: Extent | PointExtent): boolean {
         this._project(this);
         this._project(extent);
         return this.pxmin >= extent.pxmin && this.pxmax <= extent.pxmax && this.pymin >= extent.pymin && this.pymax <= extent.pymax;
     }
 
     /**
+     * 该范围是否包含输入点
+     * @english
      * Whether the extent contains the input point.
-     * @param  {Coordinate|Number[]} coordinate - input point
-     * @returns {Boolean}
+     * @param c - input point
      */
-    contains(c) {
+    contains(c: any): boolean {
         if (!c) {
             return false;
         }
         this._project(this);
         const proj = this.projection;
         if (proj) {
+            // fixme: 此处逻辑似乎有问题
             if (c.x !== undefined) {
                 const coord = TEMP_COORD0;
                 if (Array.isArray(c)) {
@@ -370,30 +508,48 @@ class Extent {
     }
 
     /**
+     * 获取Extent的宽度
+     *
+     * @english
      * Get the width of the Extent
-     * @return {Number}
      */
-    getWidth() {
+    getWidth(): number {
         return Math.abs(this['xmax'] - this['xmin']);
     }
 
     /**
+     * 获取Extent的高度
+     *
+     * @english
      * Get the height of the Extent
-     * @return {Number}
      */
-    getHeight() {
+    getHeight(): number {
         return Math.abs(this['ymax'] - this['ymin']);
     }
 
     /**
+     * 获取Extent的大小 - 高度和宽度构造的 Size 对象
+     *
+     * @english
      * Get size of the Extent
-     * @return {Size}
      */
     getSize() {
         return new Size(this.getWidth(), this.getHeight());
     }
 
-    set(xmin, ymin, xmax, ymax) {
+    /**
+     * 设置 extent 的边界值
+     *
+     * @english
+     *
+     * set extent value
+     *
+     * @param xmin
+     * @param ymin
+     * @param xmax
+     * @param ymax
+     */
+    set(xmin: WithNull<number>, ymin: WithNull<number>, xmax: WithNull<number>, ymax: WithNull<number>) {
         this.xmin = xmin;
         this.ymin = ymin;
         this.xmax = xmax;
@@ -402,16 +558,16 @@ class Extent {
         return this;
     }
 
-    __combine(extent) {
-        if (extent.x !== undefined) {
-            TEMP_EXTENT.xmin = TEMP_EXTENT.xmax = extent.x;
-            TEMP_EXTENT.ymin = TEMP_EXTENT.ymax = extent.y;
+    __combine(extent: Position | Extent | PointExtent): number[] {
+        if ((extent as Position).x !== undefined) {
+            TEMP_EXTENT.xmin = TEMP_EXTENT.xmax = (extent as Position).x;
+            TEMP_EXTENT.ymin = TEMP_EXTENT.ymax = (extent as Position).y;
             extent = TEMP_EXTENT;
         }
-        this._project(extent);
+        this._project(extent as (Extent | PointExtent));
         this._project(this);
         const inited = isNumber(this.pxmin);
-        let xmin, ymin, xmax, ymax;
+        let xmin: number, ymin: number, xmax: number, ymax: number;
         if (!inited) {
             xmin = extent['pxmin'];
             ymin = extent['pymin'];
@@ -441,8 +597,16 @@ class Extent {
         return TEMP_COMBINE;
     }
 
-    _combine(extent) {
-        if (!extent || extent.isValid && !extent.isValid()) {
+    /**
+     * 与其他 extent 合并
+     * @english
+     * Combine it with another extent to a larger extent.
+     * @param extent - extent/coordinate/point to combine into
+     * @returns extent combined
+     */
+    _combine(extent: Position | Extent | PointExtent) {
+        // 传入的对象如果判断是非法的直接返回，不继续计算
+        if (!extent || (extent as Extent).isValid && !(extent as Extent).isValid()) {
             return this;
         }
         const ext = this.__combine(extent);
@@ -452,24 +616,31 @@ class Extent {
     }
 
     /**
+     * 与其他 extent 合并到一个更大的 extent，返回一个新 extent
+     * @english
      * Combine it with another extent to a larger extent.
-     * @param  {Extent|Coordinate|Point} extent - extent/coordinate/point to combine into
-     * @returns {Extent} extent combined
+     * @param extent - extent/coordinate/point to combine into
+     * @returns extent combined
      */
-    combine(extent) {
-        if (!extent || extent.isValid && !extent.isValid()) {
+    combine(extent: Position | Extent | PointExtent) {
+        // 传入的对象如果判断是非法的直接返回，不继续计算
+        if (!extent || (extent as Extent).isValid && !(extent as Extent).isValid()) {
             return this;
         }
         const ext = this.__combine(extent);
-        return new (this.constructor as any)(ext[0], ext[1], ext[2], ext[3], this.projection);
+        return new (this.constructor as Constructable<Extent | PointExtent>)(ext[0], ext[1], ext[2], ext[3], this.projection);
     }
 
     /**
+     * 获取当前 extent 与另一个 extent 的交集范围
+     *
+     * @english
+     *
      * Gets the intersection extent of this and another extent.
-     * @param  {Extent} extent - another extent
-     * @return {Extent} intersection extent
+     * @param extent - another extent
+     * @returns intersection extent
      */
-    intersection(extent) {
+    intersection(extent: Extent | PointExtent) {
         if (!this.intersects(extent)) {
             return null;
         }
@@ -484,27 +655,36 @@ class Extent {
             min = proj.unproject(min, min);
             max = proj.unproject(max, max);
         }
-        return new (this.constructor as any)(min, max, proj);
+        return new (this.constructor as Constructable<Extent | PointExtent>)(min, max, proj);
     }
 
     /**
+     * 扩大 extent，返回一个新 Extent
+     * @english
+     *
      * Expand the extent by distance
-     * @param  {Size|Number} distance  - distance to expand
-     * @returns {Extent} a new extent expanded from
+     * @param distance  - distance to expand
+     * @returns a new extent expanded from
      */
-    expand(distance) {
-        let w, h;
+    expand(distance: number | Size) {
+        let w: number, h: number;
         if (!isNumber(distance)) {
             w = distance['width'] || distance['x'] || distance[0] || 0;
             h = distance['height'] || distance['y'] || distance[1] || 0;
         } else {
             w = h = distance;
         }
-        return new (this.constructor as any)(this['xmin'] - w, this['ymin'] - h, this['xmax'] + w, this['ymax'] + h, this.projection);
+        return new (this.constructor as Constructable<Extent | PointExtent>)(this['xmin'] - w, this['ymin'] - h, this['xmax'] + w, this['ymax'] + h, this.projection);
     }
 
-    _expand(distance) {
-        let w, h;
+    /**
+     * 扩大 extent
+     * @english
+     * Expand the extent by distance
+     * @param distance  - distance to expand
+     */
+    _expand(distance: number | Size) {
+        let w: number, h: number;
         if (!isNumber(distance)) {
             w = distance['width'] || distance['x'] || distance[0] || 0;
             h = distance['height'] || distance['y'] || distance[1] || 0;
@@ -520,13 +700,19 @@ class Extent {
     }
 
     /**
+     * 获取 extent 的 JSON 对象。
+     *
+     * @english
      * Get extent's JSON object.
-     * @return {Object} jsonObject
+     * @returns jsonObject
      * @example
+     *
+     * ```ts
      * // {xmin : 100, ymin: 10, xmax: 120, ymax:20}
      * var json = extent.toJSON();
+     * ```
      */
-    toJSON() {
+    toJSON(): JsonExtent {
         return {
             'xmin': this['xmin'],
             'ymin': this['ymin'],
@@ -536,10 +722,12 @@ class Extent {
     }
 
     /**
+     * 获取extent矩形区域的坐标数组，包含5个坐标，第一个坐标与最后一个坐标相等。
+     * @english
      * Get a coordinate array of extent's rectangle area, containing 5 coordinates in which the first equals with the last.
-     * @return {Coordinate[]} coordinates array
+     * @returns coordinates array
      */
-    toArray(out) {
+    toArray(out?: Position[]) {
         const xmin = this['xmin'],
             ymin = this['ymin'],
             xmax = this['xmax'],
@@ -569,32 +757,49 @@ class Extent {
         }
     }
 
-    toString() {
+    /**
+     * 获取 extent 的 xmin、ymin、xmax、ymax 组成的字符串
+     *
+     * @english
+     *
+     * Get the string consisting of xmin, ymin, xmax, and ymax of extent
+     */
+    toString(): string {
         return `${this.xmin},${this.ymin},${this.xmax},${this.ymax}`;
     }
 
     /**
+     * 复制 extent
+     *
+     * @english
+     *
      * Get a copy of the extent.
-     * @return {Extent} copy
+     * @returns copy
      */
     copy() {
-        return new (this.constructor as any)(this['xmin'], this['ymin'], this['xmax'], this['ymax'], this.projection);
+        return new (this.constructor as Constructable<Extent | PointExtent>)(this['xmin'], this['ymin'], this['xmax'], this['ymax'], this.projection);
     }
 
     /**
+     * 转换到新的 extent
+     *
+     * @english
+     *
      * Convert to a new extent
-     * @param  {Function} fn convert function on each point
-     * @return {Extent}
+     * @param fn convert function on each point
+     * @param out temp out
      */
-    convertTo(fn, out) {
+    convertTo(fn: (p: Point) => Point, out?: Extent | PointExtent): Extent | PointExtent;
+    convertTo(fn: (p: Coordinate) => Coordinate, out?: Extent | PointExtent): Extent | PointExtent;
+    convertTo(fn: (p: any) => any, out?: Extent | PointExtent): Extent | PointExtent {
         if (!this.isValid()) {
             return null;
         }
-        const e = out || new (this.constructor as any)();
+        const e = out || new (this.constructor as Constructable<Extent | PointExtent>)();
         if (out) {
             e.set(null, null, null, null);
         }
-        let coord;
+        let coord: Position;
         if (this._clazz === Coordinate) {
             coord = TEMP_COORD5;
         } else if (this._clazz === Point) {
@@ -612,7 +817,15 @@ class Extent {
         return e;
     }
 
-    _project(ext) {
+    /**
+     * 计算给定 Extent 的投影范围
+     *
+     * @english
+     *
+     * Calculate the projected range of the given Extent
+     * @param ext extent
+     */
+    _project(ext: Extent | PointExtent) {
         if (!ext || !ext.isValid()) {
             if (ext) {
                 ext.pxmin = ext.pxmax = ext.pymin = ext.pymax = null;

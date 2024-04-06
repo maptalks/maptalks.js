@@ -1,10 +1,16 @@
-import { toRadian, toDegree, extend, wrap } from '../../core/util';
-import Coordinate from '../Coordinate';
-import Common from './Common';
+import { extend, toDegree, toRadian } from '../../core/util/common';
+import { wrap } from '../../core/util/util';
+import Coordinate, { type CoordinateJson } from '../Coordinate';
+import Common, { type CommonMeasurer } from './Common';
+
+type CoordsLike = Coordinate | CoordinateJson;
 
 /**
+ * 具有 Sphere 通用测量方法的辅助类。
+ *
+ * @english
  * A helper class with common measure methods for Sphere.
- * @memberOf measurer
+ * @group measurer
  * @private
  */
 class Sphere {
@@ -17,7 +23,15 @@ class Sphere {
         this.radius = radius;
     }
 
-    measureLenBetween(c1, c2): number {
+    /**
+     * 计算两个坐标之间的距离
+     *
+     * @english
+     * Measure the length between 2 coordinates.
+     * @param c1
+     * @param c2
+     */
+    measureLenBetween(c1: CoordsLike, c2: CoordsLike): number {
         if (!c1 || !c2) {
             return 0;
         }
@@ -30,33 +44,48 @@ class Sphere {
         return b;
     }
 
-    measureArea(coordinates) {
+    /**
+     * 测量给定闭合坐标的面积
+     *
+     * @english
+     * Measure the area closed by the given coordinates.
+     * @param coordinates
+     */
+    measureArea(coordinates: CoordsLike[]) {
         const a = toRadian(this.radius);
-        let b = 0,
-            c = coordinates,
-            d = c.length;
+        let b = 0;
+        const c = coordinates;
+        const d = c.length;
         if (d < 3) {
             return 0;
         }
-        let i;
+        let i: number;
         for (i = 0; i < d - 1; i++) {
             const e = c[i],
                 f = c[i + 1];
             b += e.x * a * Math.cos(toRadian(e.y)) * f.y * a - f.x * a * Math.cos(toRadian(f.y)) * e.y * a;
         }
-        d = c[i];
-        c = c[0];
-        b += d.x * a * Math.cos(toRadian(d.y)) * c.y * a - c.x * a * Math.cos(toRadian(c.y)) * d.y * a;
+        const e = c[i];
+        const f = c[0];
+        b += e.x * a * Math.cos(toRadian(e.y)) * f.y * a - f.x * a * Math.cos(toRadian(f.y)) * e.y * a;
         return 0.5 * Math.abs(b);
     }
 
-    locate(c, xDist, yDist, out) {
+    locate(c: CoordsLike, xDist: number, yDist: number, out?: Coordinate) {
         out = out || new Coordinate(0, 0);
         out.set(c.x, c.y);
         return this._locate(out, xDist, yDist);
     }
 
-    _locate(c, xDist, yDist) {
+    /**
+     * 使用 x 轴距离和 y 轴距离从给定源坐标定位坐标
+     *
+     * Locate a coordinate from the given source coordinate with a x-axis distance and a y-axis distance.
+     * @param c     - source coordinate
+     * @param xDist     - x-axis distance
+     * @param yDist     - y-axis distance
+     */
+    _locate(c: Coordinate, xDist: number, yDist: number): WithNull<Coordinate> {
         if (!c) {
             return null;
         }
@@ -69,7 +98,7 @@ class Sphere {
         if (!xDist && !yDist) {
             return c;
         }
-        let x, y;
+        let x: number, y: number;
         let ry = toRadian(c.y);
         if (yDist !== 0) {
             const dy = Math.abs(yDist);
@@ -94,19 +123,20 @@ class Sphere {
         return c;
     }
 
-    rotate(c, pivot, angle) {
-        c = new Coordinate(c);
-        return this._rotate(c, pivot, angle);
+    rotate(c: CoordsLike, pivot: Coordinate, angle: number) {
+        const coordinate = new Coordinate(c);
+        return this._rotate(coordinate, pivot, angle);
     }
 
     /**
+     * 绕枢轴旋转给定角度的坐标
+     * @english
      * Rotate a coordinate of given angle around pivot
-     * @param {Coordinate} c  - source coordinate
-     * @param {Coordinate} pivot - pivot
-     * @param {Number} angle - angle in degree
-     * @return {Coordinate}
+     * @param c  - source coordinate
+     * @param pivot - pivot
+     * @param angle - angle in degree
      */
-    _rotate(c, pivot, angle) {
+    _rotate(c: Coordinate, pivot: Coordinate, angle: number) {
         const initialAngle = rhumbBearing(pivot, c);
         const finalAngle = initialAngle - angle;
         const distance = this.measureLenBetween(pivot, c);
@@ -117,17 +147,15 @@ class Sphere {
 }
 
 // from turf.js
-function rhumbBearing(start, end, options: any = {}) {
-    let bear360;
+function rhumbBearing(start: CoordsLike, end: CoordsLike, options: Record<string, any> = {}) {
+    let bear360: number;
     if (options.final) bear360 = calculateRhumbBearing(end, start);
     else bear360 = calculateRhumbBearing(start, end);
 
-    const bear180 = (bear360 > 180) ? -(360 - bear360) : bear360;
-
-    return bear180;
+    return (bear360 > 180) ? -(360 - bear360) : bear360;
 }
 
-function calculateRhumbBearing(from, to) {
+function calculateRhumbBearing(from: CoordsLike, to: CoordsLike) {
     // φ => phi
     // Δλ => deltaLambda
     // Δψ => deltaPsi
@@ -146,7 +174,7 @@ function calculateRhumbBearing(from, to) {
     return (toDegree(theta) + 360) % 360;
 }
 
-function calculateRhumbDestination(origin, distance, bearing, radius) {
+function calculateRhumbDestination(origin: Coordinate, distance: number, bearing: number, radius: number) {
     // φ => phi
     // λ => lambda
     // ψ => psi
@@ -175,120 +203,152 @@ function calculateRhumbDestination(origin, distance, bearing, radius) {
     return origin; // normalise to −180..+180°
 }
 
-/**
- * WGS84 Sphere measurer.
- * @class
- * @category geo
- * @protected
- * @memberOf measurer
- * @name WGS84Sphere
- * @mixes measurer.Common
- */
-export const WGS84Sphere = extend<any>(/** @lends measurer.WGS84Sphere */{
+const wgs84 = {
     'measure': 'EPSG:4326',
     sphere: new Sphere(6378137),
+
     /**
+     * 计算两个坐标之间的距离
+     *
+     * @english
      * Measure the length between 2 coordinates.
-     * @param  {Coordinate} c1
-     * @param  {Coordinate} c2
-     * @return {Number}
+     * @param c1
+     * @param c2
      */
-    measureLenBetween(c1, c2) {
+    measureLenBetween(c1: CoordsLike, c2: CoordsLike): number {
         return this.sphere.measureLenBetween(c1, c2);
     },
+
     /**
+     * 计算给定闭合坐标的面积
+     *
+     * @english
      * Measure the area closed by the given coordinates.
-     * @return {number}
+     * @param coordinates
      */
-    measureArea(...args: Coordinate[]) {
-        return this.sphere.measureArea.call(this.sphere, ...args);
+    measureArea(coordinates: Coordinate[]): number {
+        return this.sphere.measureArea.call(this.sphere, coordinates);
     },
 
-    _locate(...args: any[]) {
-        return this.sphere._locate.call(this.sphere, ...args);
+    _locate(c: CoordsLike, xDist: number, yDist: number) {
+        return this.sphere._locate.call(this.sphere, c, xDist, yDist);
     },
 
     /**
+     * 使用 x 轴距离和 y 轴距离从给定源坐标定位坐标。
+     * @english
      * Locate a coordinate from the given source coordinate with a x-axis distance and a y-axis distance.
-     * @param c     - source coordinate
-     * @param xDist              - x-axis distance
-     * @param yDist              - y-axis distance
-     * @return {Coordinate}
+     * @param c - source coordinate
+     * @param xDist - x-axis distance
+     * @param yDist - y-axis distance
+     * @param out - out
      */
-    locate(...args: any[]) {
-        return this.sphere.locate.call(this.sphere, ...args);
+    locate(c: CoordsLike, xDist: number, yDist: number, out?: Coordinate) {
+        return this.sphere.locate.call(this.sphere, c, xDist, yDist, out);
     },
 
-    _rotate(...args: any[]) {
-        return this.sphere._rotate.call(this.sphere, ...args);
+    _rotate(c: Coordinate, pivot: Coordinate, angle: number) {
+        return this.sphere._rotate.call(this.sphere, c, pivot, angle);
     },
 
     /**
+     * 绕枢轴旋转给定角度的坐标
+     * @english
      * Rotate a coordinate of given angle around pivot
      * @param c  - source coordinate
      * @param pivot - pivot
      * @param angle - angle in degree
      */
-    rotate(...args: any[]) {
-        return this.sphere.rotate.call(this.sphere, ...args);
+    rotate(c: CoordsLike, pivot: Coordinate, angle: number) {
+        return this.sphere.rotate.call(this.sphere, c, pivot, angle);
     }
-}, Common);
+}
 
 /**
- * Baidu sphere measurer
- * @class
+ * WGS84 椭球球体
+ * @english
+ * WGS84 Sphere measurer.
  * @category geo
  * @protected
- * @memberOf measurer
- * @name BaiduSphere
- * @mixes measurer.Common
+ * @group measurer
+ * @module WGS84Sphere
+ * {@inheritDoc measurer.Common}
  */
-export const BaiduSphere = extend<any>(/** @lends measurer.BaiduSphere */{
+export const WGS84Sphere = extend<typeof wgs84, CommonMeasurer>(wgs84, Common);
+
+const baidu = {
     'measure': 'BAIDU',
     sphere: new Sphere(6370996.81),
+
     /**
+     * 计算两个坐标之间的距离
+     *
+     * @english
      * Measure the length between 2 coordinates.
-     * @param  {Coordinate} c1
-     * @param  {Coordinate} c2
+     * @param c1
+     * @param c2
      */
-    measureLenBetween(...args: Coordinate[]): number {
-        return this.sphere.measureLenBetween.call(this.sphere, ...args);
+    measureLenBetween(c1: CoordsLike, c2: CoordsLike): number {
+        return this.sphere.measureLenBetween.call(this.sphere, c1, c2);
     },
+
     /**
+     * 计算给定闭合坐标的面积
+     *
+     * @english
      * Measure the area closed by the given coordinates.
-     * @param  {Coordinate[]} coordinates
-     * @return {number}
+     * @param coordinates
      */
-    measureArea(...args: any[]) {
-        return this.sphere.measureArea.call(this.sphere, ...args);
+    measureArea(coordinates: CoordsLike[]): number {
+        return this.sphere.measureArea.call(this.sphere, coordinates);
     },
 
-    _locate(...args: any[]) {
-        return this.sphere._locate.call(this.sphere, ...args);
+    _locate(c: Coordinate, xDist: number, yDist: number) {
+        return this.sphere._locate.call(this.sphere, c, xDist, yDist);
     },
 
     /**
+     * 使用 x 轴距离和 y 轴距离从给定源坐标定位坐标。
+     * @english
      * Locate a coordinate from the given source coordinate with a x-axis distance and a y-axis distance.
-     * @param  {Coordinate} c     - source coordinate
-     * @param  {Number} xDist              - x-axis distance
-     * @param  {Number} yDist              - y-axis distance
-     * @param  {Point} [out=null]          - optional object to receive result
-     * @return {Coordinate}
+     * @param c - source coordinate
+     * @param xDist - x-axis distance
+     * @param yDist - y-axis distance
+     * @param out - out
      */
-    locate(...args: any[]) {
-        return this.sphere.locate.call(this.sphere, ...args);
+    locate(c: CoordsLike, xDist: number, yDist: number, out?: Coordinate) {
+        return this.sphere.locate.call(this.sphere, c, xDist, yDist, out);
     },
 
-    _rotate(...args: any[]) {
-        return this.sphere._rotate.call(this.sphere, ...args);
+    _rotate(c: Coordinate, pivot: Coordinate, angle: number) {
+        return this.sphere._rotate.call(this.sphere, c, pivot, angle);
     },
 
     /**
+     * 绕枢轴旋转给定角度的坐标
+     * @english
      * Rotate a coordinate of given angle around pivot
-     * @return {Coordinate}
-     * @param args
+     * @param c  - source coordinate
+     * @param pivot - pivot
+     * @param angle - angle in degree
      */
-    rotate(...args: any[]) {
-        return this.sphere.rotate.call(this.sphere, ...args);
+    rotate(c: CoordsLike, pivot: Coordinate, angle: number) {
+        return this.sphere.rotate.call(this.sphere, c, pivot, angle);
     }
-}, Common);
+};
+
+/**
+ * 百度地图所使用的椭球体
+ *
+ * @english
+ * Baidu sphere measurer
+ * @category geo
+ * @protected
+ * @group measurer
+ * @module BaiduSphere
+ * {@inheritDoc measurer.Common}
+ */
+export const BaiduSphere = extend<typeof baidu, CommonMeasurer>(baidu, Common);
+
+export type BaiduSphereType = typeof BaiduSphere;
+export type WGS84SphereType = typeof WGS84Sphere;

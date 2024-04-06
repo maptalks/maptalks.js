@@ -100,11 +100,8 @@ class GeometryDragHandler extends Handler {
         const resources = this._dragStageLayer._getRenderer().resources;
 
         const shadowConnectors = [];
-        // @ts-expect-error todo 补充ConnectorLine类型
         if (ConnectorLine._hasConnectors(target)) {
-            // @ts-expect-error todo 补充ConnectorLine类型
             const connectors = ConnectorLine._getConnectors(target);
-
             for (let i = 0, l = connectors.length; i < l; i++) {
                 const targetConn = connectors[i];
                 const connOptions = targetConn.config(),

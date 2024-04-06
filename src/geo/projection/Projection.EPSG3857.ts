@@ -1,25 +1,14 @@
-import { extend, wrap, sign } from '../../core/util';
-import Common from './Projection';
+import { extend } from '../../core/util/common';
+import { wrap, sign } from '../../core/util/util';
+import Common, { type CommonProjectionType } from './Projection';
 import Coordinate from '../Coordinate';
-import { WGS84Sphere } from '../measurer';
+import { WGS84Sphere, type WGS84SphereType } from '../measurer';
 
 const delta = 1E-7;
 
-/**
- * Well-known projection used by Google maps or Open Street Maps, aka Mercator Projection.<br>
- * It is map's default projection.
- * @class
- * @category geo
- * @protected
- * @memberOf projection
- * @name EPSG3857
- * @mixes projection.Common
- * @mixes measurer.WGS84Sphere
- */
-export default extend({}, Common, /** @lends projection.EPSG3857 */ {
+const EPSG3857Projection = {
     /**
      * "EPSG:3857", Code of the projection
-     * @type {String}
      * @constant
      */
     code: 'EPSG:3857',
@@ -27,12 +16,12 @@ export default extend({}, Common, /** @lends projection.EPSG3857 */ {
     metersPerDegree: 6378137 * Math.PI / 180,
     maxLatitude: 85.0511287798,
 
-    project: function (lnglat, out) {
+    project: function (lnglat: Coordinate, out?: Coordinate) {
         const rad = this.rad,
-            metersPerDegree = this.metersPerDegree,
-            max = this.maxLatitude;
+          metersPerDegree = this.metersPerDegree,
+          max = this.maxLatitude;
         const lng = lnglat.x,
-            lat = Math.max(Math.min(max, lnglat.y), -max);
+          lat = Math.max(Math.min(max, lnglat.y), -max);
         let c;
         if (lat === 0) {
             c = 0;
@@ -49,7 +38,7 @@ export default extend({}, Common, /** @lends projection.EPSG3857 */ {
         return new Coordinate(x, y);
     },
 
-    unproject: function (pLnglat, out) {
+    unproject: function (pLnglat: Coordinate, out?: Coordinate) {
         const rad = this.rad;
         const metersPerDegree = this.metersPerDegree;
         let x = pLnglat.x / metersPerDegree;
@@ -76,4 +65,23 @@ export default extend({}, Common, /** @lends projection.EPSG3857 */ {
         }
         return new Coordinate(rx, ry);
     }
-}, WGS84Sphere);
+};
+
+export type EPSG3857ProjectionType = CommonProjectionType & typeof EPSG3857Projection & WGS84SphereType;
+
+/**
+ * Google 地图或 OSM 地图使用的常规投影，又名墨卡托投影。<br>
+ * 这是地图的默认投影。
+ *
+ * @english
+ * Well-known projection used by Google maps or Open Street Maps, aka Mercator Projection.<br>
+ * It is map's default projection.
+ *
+ * @category geo
+ * @protected
+ * @group projection
+ * @name EPSG3857
+ * {@inheritDoc projection.Common}
+ * {@inheritDoc measurer.WGS84Sphere}
+ */
+export default extend<EPSG3857ProjectionType, CommonProjectionType, typeof EPSG3857Projection, WGS84SphereType>({} as EPSG3857ProjectionType, Common, EPSG3857Projection , WGS84Sphere);

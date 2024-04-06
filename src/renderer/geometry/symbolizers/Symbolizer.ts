@@ -60,6 +60,21 @@ abstract class Symbolizer {
         return false;
     }
 
+    isVisible() {
+        if (!this.style) {
+            return true;
+        }
+        const visible = this.style.visible;
+        if (visible === false || visible === 0) {
+            return false;
+        }
+        const opacity = this.style.opacity;
+        if (opacity <= 0) {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * 测试该属性是否是与着色相关的属性
      *
