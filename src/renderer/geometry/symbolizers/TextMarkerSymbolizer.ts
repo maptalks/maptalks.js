@@ -1,27 +1,30 @@
 import { DEFAULT_TEXT_SIZE } from '../../../core/Constants';
-import {
-    isNumber,
-    isArrayHasData,
-    getValueOrDefault,
-    getAlignPoint
-} from '../../../core/util';
+import { isNumber, isArrayHasData, getValueOrDefault, getAlignPoint, } from '../../../core/util';
 import Point from '../../../geo/Point';
 import PointExtent from '../../../geo/PointExtent';
 import { hasFunctionDefinition } from '../../../core/mapbox';
-import { isTextSymbol, getTextMarkerFixedExtent, getMarkerRotationExtent } from '../../../core/util/marker';
+import { isTextSymbol, getTextMarkerFixedExtent, getMarkerRotationExtent, } from '../../../core/util/marker';
 import Canvas from '../../../core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
 import { replaceVariable, describeText } from '../../../core/util/strings';
+import { Geometry } from '../../../geometry';
+import Painter from '../Painter';
+import { ResourceCache } from '../..';
 
 const TEMP_EXTENT = new PointExtent();
 
 export default class TextMarkerSymbolizer extends PointSymbolizer {
+    public _dynamic: any;
+    public strokeAndFill: any;
+    public _textDesc: any;
+    public _fixedExtent: PointExtent;
+    public _index: number;
 
-    static test(symbol) {
+    static test(symbol: any): boolean {
         return isTextSymbol(symbol);
     }
 
-    constructor(symbol, geometry, painter) {
+    constructor(symbol: any, geometry: Geometry, painter: Painter) {
         super(symbol, geometry, painter);
         const style = this.translate();
         this._dynamic = hasFunctionDefinition(style);
@@ -32,7 +35,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         this.strokeAndFill = this._defineStyle(this.translateLineAndFill(this.style));
     }
 
-    symbolize(ctx, resources) {
+    symbolize(ctx: CanvasRenderingContext2D, resources: ResourceCache): void {
         if (!this.isVisible()) {
             return;
         }
@@ -60,7 +63,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
             let p = cookedPoints[i];
             // const origin = this._rotate(ctx, p, this._getRotationAt(i));
             const origin = this.getRotation() ? this._rotate(ctx, p, this._getRotationAt(i)) : null;
-            let extent;
+            let extent: PointExtent;
             if (origin) {
                 //坐标对应的像素点
                 const pixel = p.sub(origin);
@@ -82,25 +85,25 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         }
     }
 
-    getPlacement() {
+    getPlacement(): any {
         return this.symbol['textPlacement'];
     }
 
-    getRotation() {
+    getRotation(): number {
         const r = this.style['textRotation'];
         if (!isNumber(r)) {
             return null;
         }
         //to radian
-        return -r * Math.PI / 180;
+        return (-r * Math.PI) / 180;
     }
 
-    getDxDy() {
+    getDxDy(): Point {
         const s = this.style;
         return new Point(s['textDx'], s['textDy']);
     }
 
-    getFixedExtent() {
+    getFixedExtent(): PointExtent {
         let textDesc = this.geometry.getTextDesc();
         if (Array.isArray(textDesc)) {
             textDesc = textDesc[this._index];
@@ -112,37 +115,37 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         return getTextMarkerFixedExtent(this._fixedExtent, this.style, textDesc);
     }
 
-    translate() {
+    translate(): any {
         const s = this.symbol;
         const result = {
-            'textName': s['textName'],
-            'textFaceName': getValueOrDefault(s['textFaceName'], 'monospace'),
-            'textWeight': getValueOrDefault(s['textWeight'], 'normal'), //'bold', 'bolder'
-            'textStyle': getValueOrDefault(s['textStyle'], 'normal'), //'italic', 'oblique'
-            'textSize': getValueOrDefault(s['textSize'], DEFAULT_TEXT_SIZE),
-            'textFont': getValueOrDefault(s['textFont'], null),
-            'textFill': getValueOrDefault(s['textFill'], '#000'),
-            'textOpacity': getValueOrDefault(s['textOpacity'], 1),
+            textName: s['textName'],
+            textFaceName: getValueOrDefault(s['textFaceName'], 'monospace'),
+            textWeight: getValueOrDefault(s['textWeight'], 'normal'), //'bold', 'bolder'
+            textStyle: getValueOrDefault(s['textStyle'], 'normal'), //'italic', 'oblique'
+            textSize: getValueOrDefault(s['textSize'], DEFAULT_TEXT_SIZE),
+            textFont: getValueOrDefault(s['textFont'], null),
+            textFill: getValueOrDefault(s['textFill'], '#000'),
+            textOpacity: getValueOrDefault(s['textOpacity'], 1),
 
-            'textHaloFill': getValueOrDefault(s['textHaloFill'], '#ffffff'),
-            'textHaloRadius': getValueOrDefault(s['textHaloRadius'], 0),
-            'textHaloOpacity': getValueOrDefault(s['textHaloOpacity'], 1),
+            textHaloFill: getValueOrDefault(s['textHaloFill'], '#ffffff'),
+            textHaloRadius: getValueOrDefault(s['textHaloRadius'], 0),
+            textHaloOpacity: getValueOrDefault(s['textHaloOpacity'], 1),
 
-            'textWrapWidth': getValueOrDefault(s['textWrapWidth'], null),
-            'textWrapCharacter': getValueOrDefault(s['textWrapCharacter'], '\n'),
-            'textLineSpacing': getValueOrDefault(s['textLineSpacing'], 0),
+            textWrapWidth: getValueOrDefault(s['textWrapWidth'], null),
+            textWrapCharacter: getValueOrDefault(s['textWrapCharacter'], '\n'),
+            textLineSpacing: getValueOrDefault(s['textLineSpacing'], 0),
 
-            'textDx': getValueOrDefault(s['textDx'], 0),
-            'textDy': getValueOrDefault(s['textDy'], 0),
+            textDx: getValueOrDefault(s['textDx'], 0),
+            textDy: getValueOrDefault(s['textDy'], 0),
 
-            'textHorizontalAlignment': getValueOrDefault(s['textHorizontalAlignment'], 'middle'), //left | middle | right | auto
-            'textVerticalAlignment': getValueOrDefault(s['textVerticalAlignment'], 'middle'), // top | middle | bottom | auto
-            'textAlign': getValueOrDefault(s['textAlign'], 'center'), //left | right | center | auto
+            textHorizontalAlignment: getValueOrDefault(s['textHorizontalAlignment'], 'middle'), //left | middle | right | auto
+            textVerticalAlignment: getValueOrDefault(s['textVerticalAlignment'], 'middle'), // top | middle | bottom | auto
+            textAlign: getValueOrDefault(s['textAlign'], 'center'), //left | right | center | auto
 
-            'textRotation': getValueOrDefault(s['textRotation'], 0),
+            textRotation: getValueOrDefault(s['textRotation'], 0),
 
-            'textMaxWidth': getValueOrDefault(s['textMaxWidth'], 0),
-            'textMaxHeight': getValueOrDefault(s['textMaxHeight'], 0)
+            textMaxWidth: getValueOrDefault(s['textMaxWidth'], 0),
+            textMaxHeight: getValueOrDefault(s['textMaxHeight'], 0),
         };
 
         if (result['textMaxWidth'] > 0 && (!result['textWrapWidth'] || result['textWrapWidth'] > result['textMaxWidth'])) {
@@ -154,16 +157,16 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         return result;
     }
 
-    translateLineAndFill(s) {
+    translateLineAndFill(s: any): any {
         return {
-            'lineColor': s['textHaloRadius'] ? s['textHaloFill'] : s['textFill'],
-            'lineWidth': s['textHaloRadius'],
-            'lineOpacity': s['textOpacity'],
-            'lineDasharray': null,
-            'lineCap': 'butt',
-            'lineJoin': 'round',
-            'polygonFill': s['textFill'],
-            'polygonOpacity': s['textOpacity']
+            lineColor: s['textHaloRadius'] ? s['textHaloFill'] : s['textFill'],
+            lineWidth: s['textHaloRadius'],
+            lineOpacity: s['textOpacity'],
+            lineDasharray: null,
+            lineCap: 'butt',
+            lineJoin: 'round',
+            polygonFill: s['textFill'],
+            polygonOpacity: s['textOpacity'],
         };
     }
 }

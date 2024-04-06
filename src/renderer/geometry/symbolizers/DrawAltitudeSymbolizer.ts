@@ -3,30 +3,34 @@ import Point from '../../../geo/Point';
 import PointSymbolizer from './PointSymbolizer';
 import StrokeAndFillSymbolizer from './StrokeAndFillSymbolizer';
 import Canvas from '../../../core/Canvas';
+import { Geometry } from '../../../geometry';
+import Painter from '../Painter';
+import { PointExtent } from '../../../geo';
 
 const defaultSymbol = {
     lineWidth: 1,
     polygonFill: '#fff',
-    polygonOpacity: 0.5
+    polygonOpacity: 0.5,
 };
 
 export default class DrawAltitudeSymbolizer extends PointSymbolizer {
-    static test(symbol, geometry) {
+    public dxdy: any;
+    static test(symbol: any, geometry: Geometry) {
         const layer = geometry.getLayer();
         if (!layer) {
             return false;
         }
         const type = geometry.getJSONType();
         // shoule be a point or linestring
-        return (type === 'Marker' || type === 'LineString');
+        return type === 'Marker' || type === 'LineString';
     }
 
-    constructor(symbol, geometry, painter) {
+    constructor(symbol: any, geometry: Geometry, painter: Painter) {
         super(symbol, geometry, painter);
         this.style = geometry.getLayer().options['drawAltitude'];
         if (!this.style || !isObject(this.style)) {
             this.style = {
-                'lineWidth': 2
+                lineWidth: 2,
             };
         }
         if (!this.style['lineWidth']) {
@@ -34,12 +38,12 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
             this.style['lineWidth'] = 0;
         }
         this.dxdy = this._defineStyle({
-            'dx': symbol['textDx'] || symbol['markerDx'],
-            'dy': symbol['textDy'] || symbol['markerDy']
+            dx: symbol['textDx'] || symbol['markerDx'],
+            dy: symbol['textDy'] || symbol['markerDy'],
         });
     }
 
-    symbolize(ctx) {
+    symbolize(ctx: CanvasRenderingContext2D): void {
         const layer = this.geometry.getLayer();
         if (!layer.options['drawAltitude']) {
             return;
@@ -54,6 +58,7 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
         const style = this._getStyle();
         this._prepareContext(ctx);
         if (this.geometry.type === 'LineString') {
+            // @ts-expect-error todo fix 只需要两个参数
             const paintParams = this._getPaintParams(style['lineDx'], style['lineDy'], false, true);
             if (!paintParams) {
                 return;
@@ -71,12 +76,12 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
         }
     }
 
-    getDxDy() {
+    getDxDy(): Point {
         const s = this.dxdy;
         return new Point(s['dx'] || 0, s['dy'] || 0);
     }
 
-    get2DExtent() {
+    get2DExtent(): PointExtent {
         if (this.geometry.type === 'LineString') {
             return StrokeAndFillSymbolizer.prototype.get2DExtent.apply(this);
         } else {
@@ -84,21 +89,21 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
         }
     }
 
-    getPlacement() {
+    getPlacement(): string {
         return 'point';
     }
 
-    _getPaintParams(dx, dy) {
+    _getPaintParams(dx: any, dy: any): any[] {
         return this.getPainter().getPaintParams(dx || 0, dy || 0, null, true, '_altpt');
     }
 
-    _drawMarkerAltitude(ctx, point, groundPoint) {
+    _drawMarkerAltitude(ctx: CanvasRenderingContext2D, point: Point, groundPoint: Point): void {
         const style = this._getStyle();
         this.prepareCanvas(ctx, style);
         Canvas.path(ctx, [point, groundPoint], style['lineOpacity'], null, style['lineDasharray']);
     }
 
-    _drawLineAltitude(ctx, points, groundPoints) {
+    _drawLineAltitude(ctx: CanvasRenderingContext2D, points: any[], groundPoints: any[]): void {
         const style = this._getStyle();
         const isSplitted = points.length > 0 && Array.isArray(points[0]);
 
@@ -115,15 +120,15 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
         }
     }
 
-    _drawLine(ctx, points, groundPoints) {
+    _drawLine(ctx: CanvasRenderingContext2D, points: any[], groundPoints: any[]): void {
         const style = this._getStyle();
         this.prepareCanvas(ctx, style);
         for (let i = 0, l = points.length - 1; i < l; i++) {
-            Canvas.polygon(ctx, [points[i], points[i + 1], groundPoints[i + 1], groundPoints[i]], style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']);
+            Canvas.polygon(ctx, [points[i], points[i + 1], groundPoints[i + 1], groundPoints[i],], style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']);
         }
     }
 
-    _getStyle() {
+    _getStyle(): any {
         // read drawAltitude from layer every time
         let style = this.geometry.getLayer().options['drawAltitude'];
         if (!isObject(style)) {

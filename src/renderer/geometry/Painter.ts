@@ -642,6 +642,7 @@ class Painter extends Class {
         this._painted = true;
         // reduce function call
         if (this.geometry.options['debug'] || layer.options['debug']) {
+            //@ts-expect-error todo only need ctx
             this._debugSymbolizer.symbolize(...contexts);
         }
     }
