@@ -30,7 +30,7 @@ export type HandlerFnResultType = {
     [propName: string]: any;
 }
 
-export type HandlerFn = (result: HandlerFnResultType) => void | boolean;
+export type HandlerFn = (result?: HandlerFnResultType) => void | boolean;
 
 export default function <T extends MixinConstructor>(Base: T) {
     return class EventableMixin extends Base {

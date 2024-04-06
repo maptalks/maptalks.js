@@ -1,6 +1,7 @@
 import { isFunction } from '../core/util';
 import { createEl } from '../core/util/dom';
-import UIComponent from './UIComponent';
+import type { Geometry } from '../geometry';
+import UIComponent, { UIComponentOptionsType } from './UIComponent';
 
 const HIDEDOMEVENTS = 'remove hide shapechange positionchange dragend animatestart';
 
@@ -14,7 +15,7 @@ const HIDEDOMEVENTS = 'remove hide shapechange positionchange dragend animatesta
  * @memberOf ui.ToolTip
  * @instance
  */
-const options = {
+const options: ToolTipOptionsType = {
     'width': 0,
     'height': 0,
     'animation': 'fade',
@@ -29,6 +30,12 @@ const options = {
  * @memberOf ui
  */
 class ToolTip extends UIComponent {
+
+    options: ToolTipOptionsType;
+    _content: string;
+    _timeout: NodeJS.Timeout;
+    _owner: Geometry;
+
     // TODO:obtain class in super
     _getClassName() {
         return 'ToolTip';
@@ -38,7 +45,7 @@ class ToolTip extends UIComponent {
      * @param {String} content         - content of tooltip
      * @param {Object} [options=null]  - options defined in [ToolTip]{@link ToolTip#options}
      */
-    constructor(content, options = {}) {
+    constructor(content: string, options: ToolTipOptionsType = {}) {
         super(options);
         this._content = content;
     }
@@ -49,7 +56,7 @@ class ToolTip extends UIComponent {
      * @returns {UIComponent} this
      * @fires UIComponent#add
      */
-    addTo(owner) {
+    addTo(owner: Geometry) {
         if (ToolTip.isSupport(owner)) {
             owner.on('mousemove', this.onMouseMove, this);
             owner.on('mouseout', this.onMouseOut, this);
@@ -64,7 +71,7 @@ class ToolTip extends UIComponent {
      * set ToolTip's content's css class name.
      * @param {String} css class name - set for ToolTip's content.
      */
-    setStyle(cssName) {
+    setStyle(cssName: string) {
         this.options.containerClass = cssName;
         return this;
     }
@@ -139,14 +146,14 @@ class ToolTip extends UIComponent {
     onRemove() {
         clearTimeout(this._timeout);
         if (this._owner) {
-            this._owner.off('mouseover', this.onMouseOver, this);
+            this._owner.off('mousemove', this.onMouseMove, this);
             this._owner.off('mouseout', this.onMouseOut, this);
             this._owner.off(HIDEDOMEVENTS, this.hideDom, this);
         }
     }
 
     hideDom() {
-        return this.hide();
+        this.hide();
     }
 
     onEvent() {
@@ -168,3 +175,12 @@ class ToolTip extends UIComponent {
 ToolTip.mergeOptions(options);
 
 export default ToolTip;
+
+export type ToolTipOptionsType = {
+    width?: number;
+    height?: number;
+    animation?: string;
+    containerClass?: string;
+    cssName?: string;
+    showTimeout?: number;
+} & UIComponentOptionsType;

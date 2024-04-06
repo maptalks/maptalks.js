@@ -73,7 +73,7 @@ const options: UIComponentOptionsType = {
  * @memberOf ui
  * @extends Class
  */
-abstract class UIComponent extends Eventable(Class) {
+class UIComponent extends Eventable(Class) {
 
     options: UIComponentOptionsType;
     _owner: Map | Geometry;
@@ -129,7 +129,9 @@ abstract class UIComponent extends Eventable(Class) {
         return {};
     }
 
-    abstract buildOn(map?: Map): HTMLElement;
+    buildOn(): HTMLElement {
+        return null;
+    }
 
     /**
      * Adds the UI Component to a geometry or a map
@@ -137,7 +139,7 @@ abstract class UIComponent extends Eventable(Class) {
      * @returns {ui.UIComponent} this
      * @fires ui.UIComponent#add
      */
-    addTo(owner) {
+    addTo(owner: Geometry | Map) {
         this._owner = owner;
         // first time
         this._switchEvents('on');
@@ -971,7 +973,7 @@ UIComponent.mergeOptions(options);
 
 export default UIComponent;
 
-type UIComponentOptionsType = {
+export type UIComponentOptionsType = {
     eventsPropagation?: boolean;
     eventsToStop?: string;
     dx?: number;
