@@ -1,11 +1,11 @@
-import { computeDegree } from "../../../core/util";
-import PointExtent from "../../../geo/PointExtent";
-import Point from "../../../geo/Point";
-import CanvasSymbolizer from "./CanvasSymbolizer";
-import { isFunctionDefinition } from "../../../core/mapbox";
-import { getMarkerRotation } from "../../../core/util/marker";
-import Painter from "../Painter";
-import { Geometry } from "../../../geometry";
+import { computeDegree } from '../../../core/util';
+import PointExtent from '../../../geo/PointExtent';
+import Point from '../../../geo/Point';
+import CanvasSymbolizer from './CanvasSymbolizer';
+import { isFunctionDefinition } from '../../../core/mapbox';
+import { getMarkerRotation } from '../../../core/util/marker';
+import Painter from '../Painter';
+import { Geometry } from '../../../geometry';
 
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_POINT1 = new Point(0, 0);
@@ -51,20 +51,18 @@ abstract class PointSymbolizer extends CanvasSymbolizer {
 
     isDynamicSize(): boolean {
         const symbol = this.symbol;
-        return (
-            isFunctionDefinition(symbol["markerWidth"]) ||
-            isFunctionDefinition(symbol["markerHeight"]) ||
-            isFunctionDefinition(symbol["textSize"])
-        );
+        return isFunctionDefinition(symbol['markerWidth']) || isFunctionDefinition(symbol['markerHeight']) ||
+            isFunctionDefinition(symbol['textSize']);
+
     }
 
     _rotateExtent(fixedExtent: PointExtent, angle: number): PointExtent {
-        return fixedExtent.convertTo((p: any) => p._rotate(angle));
+        return fixedExtent.convertTo((p: Point) => p._rotate(angle));
     }
 
     _getRenderPoints(): any {
         const painter = this.getPainter();
-        const placement = painter.isSpriting() ? "center" : this.getPlacement();
+        const placement = painter.isSpriting() ? 'center' : this.getPlacement();
         return this.getPainter().getRenderPoints(placement);
     }
 
@@ -91,22 +89,14 @@ abstract class PointSymbolizer extends CanvasSymbolizer {
             // const p = geometry._cPoint;
             const containerOffset = painter.containerOffset;
             p._sub(containerOffset);
-            const dx = dxdy.x,
-                dy = dxdy.y;
+            const dx = dxdy.x, dy = dxdy.y;
             if (dx || dy) {
                 p._add(dx || 0, dy || 0);
             }
             cpoints = [p];
         } else {
             const points = this._getRenderPoints()[0];
-            cpoints = this.painter._pointContainerPoints(
-                points,
-                dxdy.x,
-                dxdy.y,
-                ignoreAltitude,
-                true,
-                this.getPlacement()
-            );
+            cpoints = this.painter._pointContainerPoints(points, dxdy.x, dxdy.y, ignoreAltitude, true, this.getPlacement());
         }
         if (!cpoints || !Array.isArray(cpoints[0])) {
             return cpoints;
@@ -121,7 +111,7 @@ abstract class PointSymbolizer extends CanvasSymbolizer {
     }
 
     getPlacement(): any {
-        return this.symbol["markerPlacement"];
+        return this.symbol['markerPlacement'];
     }
 
     getRotation(): number {
@@ -130,8 +120,8 @@ abstract class PointSymbolizer extends CanvasSymbolizer {
 
     getDxDy(): Point {
         const s = this.style;
-        const dx = s["markerDx"],
-            dy = s["markerDy"];
+        const dx = s['markerDx'],
+            dy = s['markerDy'];
         return new Point(dx, dy);
     }
 
@@ -150,18 +140,8 @@ abstract class PointSymbolizer extends CanvasSymbolizer {
             p1 = rotations[i][1];
         if (map.isTransforming()) {
             const glRes = map.getGLRes();
-            p0 = map._pointAtResToContainerPoint(
-                rotations[i][0],
-                glRes,
-                0,
-                TEMP_POINT0
-            );
-            p1 = map._pointAtResToContainerPoint(
-                rotations[i][1],
-                glRes,
-                0,
-                TEMP_POINT1
-            );
+            p0 = map._pointAtResToContainerPoint(rotations[i][0], glRes, 0, TEMP_POINT0);
+            p1 = map._pointAtResToContainerPoint(rotations[i][1], glRes, 0, TEMP_POINT1);
             return r + computeDegree(p0.x, p0.y, p1.x, p1.y);
         } else {
             //point的y轴方向与containerPoint是相反的，所以角度取负值
@@ -169,11 +149,7 @@ abstract class PointSymbolizer extends CanvasSymbolizer {
         }
     }
 
-    _rotate(
-        ctx: CanvasRenderingContext2D,
-        origin: Point,
-        rotation: number
-    ): Point | null {
+    _rotate(ctx: CanvasRenderingContext2D, origin: Point, rotation: number): Point | null {
         if (rotation) {
             const dxdy = this.getDxDy();
             const p = origin.sub(dxdy);

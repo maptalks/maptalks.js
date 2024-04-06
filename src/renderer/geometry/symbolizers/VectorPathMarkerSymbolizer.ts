@@ -1,9 +1,9 @@
-import { isNil, extend } from "../../../core/util";
-import Browser from "../../../core/Browser";
-import { getMarkerPathBase64 } from "../../../core/util/resource";
-import ImageMarkerSymbolizer from "./ImageMarkerSymbolizer";
-import { isPathSymbol } from "../../../core/util/marker";
-import { ResourceCache } from "../../layer/CanvasRenderer";
+import { isNil, extend } from '../../../core/util';
+import Browser from '../../../core/Browser';
+import { getMarkerPathBase64 } from '../../../core/util/resource';
+import ImageMarkerSymbolizer from './ImageMarkerSymbolizer';
+import { isPathSymbol } from '../../../core/util/marker';
+import { ResourceCache } from '../../layer/CanvasRenderer';
 // import { ResourceProxy } from '../../../core/ResourceProxy';
 
 export default class VectorPathMarkerSymbolizer extends ImageMarkerSymbolizer {
@@ -15,11 +15,11 @@ export default class VectorPathMarkerSymbolizer extends ImageMarkerSymbolizer {
     constructor(symbol: any, geometry: any, painter: any) {
         //IE must have a valid width and height to draw a svg image
         //otherwise, error will be thrown
-        if (isNil(symbol["markerWidth"])) {
-            symbol["markerWidth"] = 80;
+        if (isNil(symbol['markerWidth'])) {
+            symbol['markerWidth'] = 80;
         }
-        if (isNil(symbol["markerHeight"])) {
-            symbol["markerHeight"] = 80;
+        if (isNil(symbol['markerHeight'])) {
+            symbol['markerHeight'] = 80;
         }
         super(symbol, geometry, painter);
         symbol = extend({}, symbol, this.translate());
@@ -27,20 +27,9 @@ export default class VectorPathMarkerSymbolizer extends ImageMarkerSymbolizer {
         if (Browser.gecko) {
             // Firefox requires valid width and height attributes in SVG's root element.
             this._url = [
-                getMarkerPathBase64(
-                    style,
-                    style["markerWidth"],
-                    style["markerHeight"]
-                ),
-                style["markerWidth"],
-                style["markerHeight"],
-            ];
+                getMarkerPathBase64(style, style['markerWidth'], style['markerHeight']), style['markerWidth'], style['markerHeight']];
         } else {
-            this._url = [
-                getMarkerPathBase64(style),
-                style["markerWidth"],
-                style["markerHeight"],
-            ];
+            this._url = [getMarkerPathBase64(style), style['markerWidth'], style['markerHeight']];
         }
     }
 
@@ -55,14 +44,13 @@ export default class VectorPathMarkerSymbolizer extends ImageMarkerSymbolizer {
         const painter = this.painter;
         const image = new Image();
         image.onload = () => {
-            const renderer =
-                painter.getLayer() && painter.getLayer().getRenderer();
+            const renderer = painter.getLayer() && painter.getLayer().getRenderer();
             if (renderer) {
                 renderer.setToRedraw();
             }
         };
         image.onerror = (err) => {
-            if (err && typeof console !== "undefined") {
+            if (err && typeof console !== 'undefined') {
                 console.warn(err);
             }
             resources.markErrorResource(this._url);

@@ -1,11 +1,8 @@
 import { COLOR_PROPERTIES } from "../../../core/Constants";
 import { isString } from "../../../core/util";
-import {
-    Bbox,
-    bufferBBOX,
-    getDefaultBBOX,
-    setBBOX,
-} from "../../../core/util/bbox";
+import { Bbox, bufferBBOX, getDefaultBBOX, setBBOX, } from "../../../core/util/bbox";
+import { Geometry } from "../../../geometry";
+import { Map } from "../../../map";
 import Painter from "../Painter";
 
 /**
@@ -22,34 +19,30 @@ import Painter from "../Painter";
  */
 abstract class Symbolizer {
     public bbox: Bbox;
-    public geometry: any;
+    public geometry: Geometry;
     public painter: Painter;
     public style: any;
     constructor() {
         this.bbox = getDefaultBBOX();
     }
 
-    _setBBOX(
-        ctx: any,
-        x1?: number | Bbox,
-        y1?: number,
-        x2?: number,
-        y2?: number
-    ): Symbolizer {
+    _setBBOX(ctx: CanvasRenderingContext2D, x1?: number | Bbox, y1?: number, x2?: number, y2?: number): Symbolizer {
+        //@ts-expect-error todo 类型“CanvasRenderingContext2D”上不存在属性“isHitTesting”
         if (!ctx.isHitTesting) {
             setBBOX(this.bbox, x1, y1, x2, y2);
         }
         return this;
     }
 
-    _bufferBBOX(ctx: any, bufferSize: number = 0): Symbolizer {
+    _bufferBBOX(ctx: CanvasRenderingContext2D, bufferSize: number = 0): Symbolizer {
+        //@ts-expect-error todo 类型“CanvasRenderingContext2D”上不存在属性“isHitTesting”
         if (!ctx.isHitTesting) {
             bufferBBOX(this.bbox, bufferSize);
         }
         return this;
     }
 
-    getMap(): any {
+    getMap(): Map {
         return this.geometry.getMap();
     }
 
