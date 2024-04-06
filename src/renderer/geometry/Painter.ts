@@ -753,7 +753,7 @@ class Painter extends Class {
         }
     }
 
-    get2DExtent(resources: ResourceCache, out?: Extent) {
+    get2DExtent(resources?: ResourceCache, out?: Extent) {
         this._verifyProjection();
         const map = this.getMap();
         resources = resources || this.getLayer()._getRenderer().resources;

@@ -217,7 +217,7 @@ class Class {
      * @param fn - a hook function or name of the hook function
      * @param args - arguments for the init hook function
      */
-    static addInitHook(fn: Function, ...args: any[]) {
+    static addInitHook(fn: Function | string, ...args) {
         const init: Function = typeof fn === 'function' ? fn : function () {
             this[fn].call(this, ...args);
         };

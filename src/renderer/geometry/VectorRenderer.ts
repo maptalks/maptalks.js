@@ -128,10 +128,8 @@ const el = {
     }
 };
 
-// @ts-expect-error todo 等待 Ellipse 改造
 Ellipse.include(el);
 
-// @ts-expect-error todo 等待 Circle 改造
 Circle.include(el);
 
 Rectangle.include({
@@ -147,7 +145,6 @@ Rectangle.include({
     getRotatedShell
 });
 
-// @ts-expect-error todo 等待 Sector 改造
 Sector.include(el, {
     _redrawWhenPitch: () => true,
 

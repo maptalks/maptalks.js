@@ -28,6 +28,10 @@ const options = {
  * });
  */
 class Ellipse extends CenterMixin(Polygon) {
+    public width: number
+    public height: number
+    getRotatedShell?(): any
+    _computeRotatedPrjExtent?(): any
 
     static fromJSON(json) {
         const feature = json['feature'];
@@ -43,7 +47,6 @@ class Ellipse extends CenterMixin(Polygon) {
      * @param {Object}  [options=null] - construct options defined in [Ellipse]{@link Ellipse#options}
      */
     constructor(coordinates: any, width: number, height: number, options?: any) {
-        // @ts-expect-error todo
         super(null, options);
         if (coordinates) {
             this.setCoordinates(coordinates);
@@ -242,9 +245,7 @@ class Ellipse extends CenterMixin(Polygon) {
     }
 
 }
-// @ts-expect-error todo
 Ellipse.mergeOptions(options);
-// @ts-expect-error todo
 Ellipse.registerJSONType('Ellipse');
 
 export default Ellipse;

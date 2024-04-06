@@ -62,6 +62,12 @@ const options = {
     });
  */
 class TextBox extends TextMarker {
+
+    public _width: number
+    public _height: number
+    public options: any
+    public _oldWidth: any
+    public _oldHeight: any
     /**
      * @param {String} content                 - TextBox's text content
      * @param {Coordinate} coordinates         - coordinates
@@ -146,7 +152,7 @@ class TextBox extends TextMarker {
      * @param {Object} symbol
      * returns {TextBox} this
      */
-    setBoxSymbol(symbol: any): TextBox {
+    setBoxSymbol(symbol?: any): TextBox {
         this.options.boxSymbol = symbol ? extend({}, symbol) : symbol;
         if (this.getSymbol()) {
             this._refresh();
@@ -174,7 +180,7 @@ class TextBox extends TextMarker {
      * @param {Object} style new text style
      * returns {TextBox} this
      */
-    setTextStyle(style: any): TextBox {
+    setTextStyle(style?: any): TextBox {
         this.options.textStyle = style ? extend({}, style) : style;
         if (this.getSymbol()) {
             this._refresh();
@@ -353,9 +359,7 @@ class TextBox extends TextMarker {
     }
 }
 
-//@ts-expect-error todo
 TextBox.mergeOptions(options);
-//@ts-expect-error todo
 TextBox.registerJSONType('TextBox');
 
 export default TextBox;

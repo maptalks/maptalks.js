@@ -51,13 +51,12 @@ const options = {
  * });
  */
 class Marker extends CenterMixin(Geometry) {
-
+    public isPoint: boolean
     /**
      * @param {Coordinate} coordinates      - coordinates of the marker
      * @param {Object} [options=null]       - construct options defined in [Marker]{@link Marker#options}
      */
     constructor(coordinates: any, options?: any) {
-        // @ts-expect-error todo
         super(options);
         this.type = 'Point';
         //for subclass,Quickly determine whether a Geometry is a point
@@ -227,9 +226,7 @@ class Marker extends CenterMixin(Geometry) {
         return new Painter(this).getSprite(resources, canvasClass);
     }
 }
-//@ts-expect-error todo
 Marker.mergeOptions(options);
-//@ts-expect-error todo
 Marker.registerJSONType('Marker');
 
 export default Marker;

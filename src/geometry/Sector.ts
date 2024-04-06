@@ -22,6 +22,10 @@ const options = {
  * });
  */
 class Sector extends Circle {
+    public startAngle: number
+    public endAngle: number
+    getRotatedShell?(): any
+    _computeRotatedPrjExtent?(): any
 
     static fromJSON(json) {
         const feature = json['feature'];
@@ -220,9 +224,7 @@ class Sector extends Circle {
 
 }
 
-//@ts-expect-error todo
 Sector.mergeOptions(options);
-//@ts-expect-error todo
 Sector.registerJSONType('Sector');
 
 export default Sector;

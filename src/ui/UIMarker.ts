@@ -6,7 +6,8 @@ import Handlerable from '../handler/Handlerable';
 import DragHandler from '../handler/Drag';
 import Coordinate from '../geo/Coordinate';
 import Point from '../geo/Point';
-import UIComponent from './UIComponent';
+import UIComponent, { UIComponentOptionsType } from './UIComponent';
+import type { Map } from '../map';
 
 /**
  * @property {Object} options - construct options
@@ -22,7 +23,7 @@ import UIComponent from './UIComponent';
  * @memberOf ui.UIMarker
  * @instance
  */
-const options = {
+const options: UIMarkerOptionsType = {
     'containerClass': null,
     'eventsPropagation': true,
     'draggable': false,
@@ -211,6 +212,12 @@ const domEvents =
  *  }).addTo(map);
  */
 class UIMarker extends Handlerable(UIComponent) {
+    _markerCoord: Coordinate;
+    options: UIMarkerOptionsType;
+    _owner: Map;
+    _mousedownEvent: MouseEvent;
+    _mouseupEvent: MouseEvent;
+    _touchstartTime: number;
 
     /**
      * As it's renderered by HTMLElement such as a DIV, it: <br>
@@ -219,9 +226,9 @@ class UIMarker extends Handlerable(UIComponent) {
      * @param  {Coordinate} coordinate - UIMarker's coordinates
      * @param {Object} options - options defined in [UIMarker]{@link UIMarker#options}
      */
-    constructor(coordinate, options) {
+    constructor(coordinate: Coordinate | Array<number>, options: UIMarkerOptionsType) {
         super(options);
-        this._markerCoord = new Coordinate(coordinate);
+        this._markerCoord = new Coordinate(coordinate as Coordinate);
     }
 
     // TODO: obtain class in super
@@ -235,7 +242,7 @@ class UIMarker extends Handlerable(UIComponent) {
      * @returns {UIMarker} this
      * @fires UIMarker#positionchange
      */
-    setCoordinates(coordinates) {
+    setCoordinates(coordinates: Coordinate) {
         this._markerCoord = coordinates;
         /**
          * positionchange event.
@@ -268,15 +275,15 @@ class UIMarker extends Handlerable(UIComponent) {
     }
 
     // for infowindow
-    getAltitude() {
+    getAltitude(): number {
         const coordinates = this.getCoordinates() || {};
-        if (isNumber(coordinates.z)) {
-            return coordinates.z;
+        if (isNumber((coordinates as Coordinate).z)) {
+            return (coordinates as Coordinate).z;
         }
         return this.options.altitude || 0;
     }
 
-    setAltitude(alt) {
+    setAltitude(alt: number) {
         if (isNumber(alt) && this._markerCoord) {
             this._markerCoord.z = alt;
             if (this._updatePosition) {
@@ -293,7 +300,7 @@ class UIMarker extends Handlerable(UIComponent) {
      * @returns {UIMarker} this
      * @fires UIMarker#contentchange
      */
-    setContent(content) {
+    setContent(content: string | HTMLElement) {
         const old = this.options['content'];
         this.options['content'] = content;
         /**
@@ -320,13 +327,14 @@ class UIMarker extends Handlerable(UIComponent) {
      * Gets the content of the UIMarker
      * @return {String|HTMLElement} content
      */
-    getContent() {
+    getContent(): string | HTMLElement {
         return this.options['content'];
     }
 
     onAdd() {
         if (this._owner && !this._owner.isMap) {
-            throw new Error('UIMarker Can only be added to the map, but owner is:', this._owner.getJSONType && this._owner.getJSONType());
+            const owner = this._owner as any;
+            throw new Error('UIMarker Can only be added to the map, but owner is:' + owner.getJSONType && owner.getJSONType());
         }
         this.show();
         return this;
@@ -338,7 +346,7 @@ class UIMarker extends Handlerable(UIComponent) {
      * @fires UIMarker#showstart
      * @fires UIMarker#showend
      */
-    show() {
+    show(): this {
         return super.show(this._markerCoord);
     }
 
@@ -351,7 +359,7 @@ class UIMarker extends Handlerable(UIComponent) {
      * @param {*} [context=null]          - callback context
      * @return {UIMarker} this
      */
-    flash(interval, count, cb, context) {
+    flash(interval: number, count: number, cb?: (arg: any) => void, context?: any) {
         return flash.call(this, interval, count, cb, context);
     }
 
@@ -361,7 +369,7 @@ class UIMarker extends Handlerable(UIComponent) {
      * @param {Map} map - map to be built on
      * @return {HTMLElement} UIMarker's HTMLElement
      */
-    buildOn() {
+    buildOn(): HTMLElement {
         const oldDom = this.getDOM();
         this._bindDomEvents(oldDom, 'off');
         let dom;
@@ -427,18 +435,18 @@ class UIMarker extends Handlerable(UIComponent) {
      * Whether the uimarker is being dragged.
      * @returns {Boolean}
      */
-    isDragging() {
+    isDragging(): boolean {
         if (this['draggable']) {
             return this['draggable'].isDragging();
         }
         return false;
     }
 
-    _registerDOMEvents(dom) {
+    _registerDOMEvents(dom: HTMLElement) {
         on(dom, domEvents, this._onDomEvents, this);
     }
 
-    _onDomEvents(e) {
+    _onDomEvents(e: MouseEvent) {
         const event = this.getMap()._parseEvent(e, e.type);
         const type = e.type;
         if (type === 'mousedown') {
@@ -463,8 +471,8 @@ class UIMarker extends Handlerable(UIComponent) {
         }
     }
 
-    _removeDOMEvents(dom) {
-        off(dom, domEvents, this._onDomEvents, this);
+    _removeDOMEvents(dom: HTMLElement) {
+        off(dom, domEvents, this._onDomEvents);
     }
 
     _mouseClickPositionIsChange() {
@@ -564,8 +572,13 @@ UIMarker.mergeOptions(options);
 const EVENTS = Browser.touch ? 'touchstart mousedown' : 'mousedown';
 
 class UIMarkerDragHandler extends Handler {
+    _lastCoord: Coordinate;
+    _lastPoint: Point;
+    _dragHandler: DragHandler;
+    _isDragging: boolean;
+    target: UIMarker;
 
-    constructor(target) {
+    constructor(target: UIMarker) {
         super(target);
     }
 
@@ -638,7 +651,8 @@ class UIMarkerDragHandler extends Handler {
             map = target.getMap(),
             eventParam = map._parseEvent(param['domEvent']),
             domEvent = eventParam['domEvent'];
-        if (domEvent.touches && domEvent.touches.length > 1) {
+        const touchEvent = domEvent as TouchEvent;
+        if (touchEvent.touches && touchEvent.touches.length > 1) {
             return;
         }
         if (!this._isDragging) {
@@ -720,3 +734,17 @@ class UIMarkerDragHandler extends Handler {
 UIMarker.addInitHook('addHandler', 'draggable', UIMarkerDragHandler);
 
 export default UIMarker;
+
+export type UIMarkerOptionsType = {
+    containerClass?: string;
+    eventsPropagation?: boolean;
+    draggable?: boolean;
+    single?: boolean;
+    content?: string | HTMLElement;
+    altitude?: number;
+    minZoom?: number;
+    maxZoom?: number;
+    horizontalAlignment?: 'middle' | 'left' | 'right';
+    verticalAlignment?: 'middle' | 'top' | 'bottom';
+
+} & UIComponentOptionsType;

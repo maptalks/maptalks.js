@@ -1,6 +1,37 @@
 import Map from '../map/Map';
 import Geometry from '../geometry/Geometry';
-import Menu from './Menu';
+import Menu, { MenuItem, MenuOptionsType } from './Menu';
+import { Coordinate } from '../geo';
+
+interface MenuAbles {
+    _menuOptions: MenuOptionsType;
+    _menu: Menu;
+    setMenu(options: MenuOptionsType): this;
+    getMenu(): Menu;
+    openMenu(coordinate?: Coordinate): this;
+    setMenuItems(items: Array<MenuItem>): this;
+    getMenuItems(): Array<MenuItem>;
+    closeMenu(): this;
+    removeMenu(): this;
+    _bindMenu(): this;
+    _unbindMenu(): this;
+    _defaultOpenMenu(param: any): boolean;
+}
+
+
+declare module "../geometry/Geometry" {
+
+    interface Geometry extends MenuAbles {
+
+    }
+}
+
+declare module "../map/Map" {
+
+    interface Map extends MenuAbles {
+
+    }
+}
 
 /**
  * Mixin of the context menu methods.
@@ -25,7 +56,7 @@ const Menuable = {
      * });
      * @function ui.Menuable.setMenu
      */
-    setMenu(options) {
+    setMenu(options: MenuOptionsType) {
         this._menuOptions = options;
 
         if (this._menu) {
@@ -41,7 +72,7 @@ const Menuable = {
     * @return {*} ui.Menu
     * @function ui.Menuable.getMenu
     */
-    getMenu() {
+    getMenu(): Menu {
         return this._menu;
     },
 
@@ -51,7 +82,7 @@ const Menuable = {
      * @return {*} this
      * @function ui.Menuable.openMenu
      */
-    openMenu(coordinate) {
+    openMenu(coordinate?: Coordinate) {
         const map = (this instanceof Map) ? this : this.getMap();
         if (!coordinate) {
             coordinate = this.getCenter();
@@ -93,7 +124,7 @@ const Menuable = {
      * @return {*} this
      * @function ui.Menuable.setMenuItems
      */
-    setMenuItems(items) {
+    setMenuItems(items: Array<MenuItem>) {
         if (!this._menuOptions) {
             this._menuOptions = {};
         }
@@ -110,7 +141,7 @@ const Menuable = {
      * @return {Object[]}
      * @function ui.Menuable.getMenuItems
      */
-    getMenuItems() {
+    getMenuItems(): Array<MenuItem> {
         if (this._menu) {
             return this._menu.getItems();
         } else if (this._menuOptions) {
