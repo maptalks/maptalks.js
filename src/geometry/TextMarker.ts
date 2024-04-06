@@ -30,7 +30,15 @@ const defaultBoxSymbol = {
  * @extends Marker
  */
 class TextMarker extends Marker {
-
+    public _content: string
+    public _refreshing: boolean
+    _refresh?(): void
+    getTextStyle?(): any
+    setTextStyle?(tyle?: any): any
+    setTextSymbol?(style?: any): any
+    setBoxStyle?(style?: any): any
+    getBoxStyle?(): any
+    setBoxSymbol?(style?: any): any
     /**
      * 获取标签的文本内容
      * @english

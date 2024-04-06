@@ -66,6 +66,8 @@ const options = {
  */
 class Label extends TextMarker {
 
+    public options: any
+
     /**
      * @param {String} content                 - Label's text content
      * @param {Coordinate} coordinates         - coordinates
@@ -226,9 +228,7 @@ class Label extends TextMarker {
     }
 
 }
-//@ts-expect-error todo
 Label.mergeOptions(options);
-//@ts-expect-error todo
 Label.registerJSONType('Label');
 
 export default Label;

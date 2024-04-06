@@ -17,14 +17,8 @@ const CenterPointRenderer = {
  * 获取symbolizer所需的数据
  */
 Marker.include(CenterPointRenderer);
-
-// @ts-expect-error todo 等待 Ellipse 改造
 Ellipse.include(CenterPointRenderer);
-
-// @ts-expect-error todo 等待 Circle 改造
 Circle.include(CenterPointRenderer);
-
-// @ts-expect-error todo 等待 Sector 改造
 Sector.include(CenterPointRenderer);
 //----------------------------------------------------
 Rectangle.include({

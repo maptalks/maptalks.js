@@ -176,7 +176,6 @@ const TextEditable = {
     }
 };
 
-//@ts-expect-error todo
 TextMarker.include(TextEditable);
 
 export default TextEditable;

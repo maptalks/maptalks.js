@@ -33,6 +33,7 @@ const options: CircleOptionsType = {
  * @mixes CenterMixin
  */
 class Circle extends CenterMixin(Polygon) {
+    public _radius: number
 
     static fromJSON(json: any): Circle {
         const feature = json['feature'];
@@ -47,7 +48,6 @@ class Circle extends CenterMixin(Polygon) {
      * @param {Object} [options=null]   - construct options defined in [Circle]{@link Circle#options}
      */
     constructor(coordinates: Coordinate | Array<Coordinate>, radius: number, options?: any) {
-        //@ts-expect-error todo
         super(null, options);
         if (coordinates) {
             this.setCoordinates(coordinates);
@@ -129,7 +129,7 @@ class Circle extends CenterMixin(Polygon) {
             se = center.add(size.width / 2, size.height / 2);
         return withInEllipse(point, center, se, t);
     }
-
+    //@ts-expect-error todo 
     _computePrjExtent(projection: any): Extent {
         const minmax = this._getMinMax(projection);
         if (!minmax) {
@@ -145,6 +145,7 @@ class Circle extends CenterMixin(Polygon) {
         return new Extent(pcenter.add(leftx, topy), pcenter.add(rightx, bottomy));
     }
 
+    //@ts-expect-error todo 
     _computeExtent(measurer: any): Extent {
         const minmax = this._getMinMax(measurer);
         if (!minmax) {
@@ -206,9 +207,7 @@ class Circle extends CenterMixin(Polygon) {
 
 }
 
-//@ts-expect-error todo
 Circle.mergeOptions(options);
-//@ts-expect-error todo
 Circle.registerJSONType('Circle');
 
 export default Circle;
