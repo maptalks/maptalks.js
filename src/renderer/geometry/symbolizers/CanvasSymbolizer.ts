@@ -6,6 +6,7 @@ import {
 } from "../../../core/mapbox";
 import Symbolizer from "./Symbolizer";
 import Canvas from "../../../core/Canvas";
+import { ResourceCache } from "../../layer/CanvasRenderer";
 
 /**
  *所有基于 HTML5 Canvas2D 的symbolizer类
@@ -23,7 +24,7 @@ import Canvas from "../../../core/Canvas";
 abstract class CanvasSymbolizer extends Symbolizer {
     public symbol: any;
     public _opacityFn: any;
-    _prepareContext(ctx: any): void {
+    _prepareContext(ctx: CanvasRenderingContext2D): void {
         if (isFunctionDefinition(this.symbol["opacity"])) {
             if (!this._opacityFn) {
                 this._opacityFn = interpolated(this.symbol["opacity"]);
@@ -43,7 +44,11 @@ abstract class CanvasSymbolizer extends Symbolizer {
         }
     }
 
-    prepareCanvas(ctx: any, style: any, resources: any): void {
+    prepareCanvas(
+        ctx: CanvasRenderingContext2D,
+        style: any,
+        resources?: ResourceCache
+    ): void {
         if (ctx.setLineDash && isArrayHasData(style["lineDasharray"])) {
             ctx.setLineDash(style["lineDasharray"]);
         }
@@ -51,15 +56,15 @@ abstract class CanvasSymbolizer extends Symbolizer {
         Canvas.prepareCanvas(ctx, style, resources, isHitTesting);
     }
 
-    remove() {}
+    remove(): void {}
 
-    setZIndex() {}
+    setZIndex(): void {}
 
-    show() {}
+    show(): void {}
 
-    hide() {}
+    hide(): void {}
 
-    _defineStyle(style: any) {
+    _defineStyle(style: any): any {
         if (this.symbol) {
             style.visible = this.symbol.visible;
             style.opacity = this.symbol.opacity;

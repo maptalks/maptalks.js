@@ -24,6 +24,7 @@ abstract class Symbolizer {
     public bbox: Bbox;
     public geometry: any;
     public painter: Painter;
+    public style: any;
     constructor() {
         this.bbox = getDefaultBBOX();
     }
@@ -60,7 +61,7 @@ abstract class Symbolizer {
         return false;
     }
 
-    isVisible() {
+    isVisible(): boolean {
         if (!this.style) {
             return true;
         }

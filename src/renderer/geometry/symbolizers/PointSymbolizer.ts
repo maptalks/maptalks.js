@@ -5,6 +5,7 @@ import CanvasSymbolizer from "./CanvasSymbolizer";
 import { isFunctionDefinition } from "../../../core/mapbox";
 import { getMarkerRotation } from "../../../core/util/marker";
 import Painter from "../Painter";
+import { Geometry } from "../../../geometry";
 
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_POINT1 = new Point(0, 0);
@@ -24,8 +25,11 @@ const TEMP_POINT3 = new Point(0, 0);
  * @extends {symbolizer.CanvasSymbolizer}
  */
 abstract class PointSymbolizer extends CanvasSymbolizer {
-    style: any;
-    constructor(symbol: any, geometry: any, painter: Painter) {
+    public style: any;
+    public symbol: any;
+    public geometry: Geometry;
+    public painter: Painter;
+    constructor(symbol: any, geometry: Geometry, painter: Painter) {
         super();
         this.symbol = symbol;
         this.geometry = geometry;
@@ -71,12 +75,12 @@ abstract class PointSymbolizer extends CanvasSymbolizer {
      * Get container points to draw on Canvas
      * @return {Point[]}
      */
-    _getRenderContainerPoints(ignoreAltitude: boolean): Point[] {
+    _getRenderContainerPoints(ignoreAltitude?: boolean): Point[] {
         const painter = this.getPainter();
         if (painter.isSpriting()) {
             return this._getRenderPoints()[0];
         }
-        const geometry = this.geometry;
+        const geometry = this.geometry as any;
         const dxdy = this.getDxDy();
         let cpoints: any[];
         if (geometry._cPoint && !ignoreAltitude) {
@@ -166,7 +170,11 @@ abstract class PointSymbolizer extends CanvasSymbolizer {
         }
     }
 
-    _rotate(ctx: any, origin: Point, rotation: number): Point | null {
+    _rotate(
+        ctx: CanvasRenderingContext2D,
+        origin: Point,
+        rotation: number
+    ): Point | null {
         if (rotation) {
             const dxdy = this.getDxDy();
             const p = origin.sub(dxdy);
