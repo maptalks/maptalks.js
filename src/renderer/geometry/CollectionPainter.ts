@@ -1,6 +1,6 @@
 import Class from '../../core/Class';
 import PointExtent from '../../geo/PointExtent';
-import { Bbox, getDefaultBBOX, resetBBOX, setBBOX, validateBBOX } from '../../core/util/bbox';
+import { BBOX, getDefaultBBOX, resetBBOX, setBBOX, validateBBOX } from '../../core/util/bbox';
 import Painter from './Painter';
 import Extent from '../../geo/Extent';
 import { ResourceCache } from '../layer/CanvasRenderer';
@@ -16,7 +16,7 @@ const TEMP_EXTENT = new PointExtent();
 export default class CollectionPainter extends Class {
     _drawTime: number;
 
-    bbox: Bbox;
+    bbox: BBOX;
     geometry: any;
     isMask: boolean;
     /**
@@ -39,7 +39,7 @@ export default class CollectionPainter extends Class {
         return this;
     }
 
-    getRenderBBOX(): Bbox {
+    getRenderBBOX(): BBOX {
         const layer = this.getLayer();
         if (layer && layer._drawTime !== this._drawTime) {
             return null;

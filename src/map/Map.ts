@@ -27,6 +27,7 @@ import Renderable from '../renderer/Renderable';
 import SpatialReference, { type SpatialReferenceType } from './spatial-reference/SpatialReference';
 import { computeDomPosition, MOUSEMOVE_THROTTLE_TIME } from '../core/util/dom';
 import EPSG9807, { type EPSG9807ProjectionType } from '../geo/projection/Projection.EPSG9807.js';
+import { AnimationOptionsType, EasingType } from '../core/Animation';
 
 const TEMP_COORD = new Coordinate(0, 0);
 const TEMP_POINT = new Point(0, 0);
@@ -2610,7 +2611,7 @@ export type MapFitType = {
     isFraction?: boolean;
     animation?: boolean;
     duration?: number;
-    easing?: string;
+    easing?: EasingType
 } & MapPaddingType;
 
 export type MapDataURLType = {
@@ -2620,11 +2621,7 @@ export type MapDataURLType = {
     save?: boolean;
 }
 
-export type MapAnimationOptionsType = {
-    duration?: number;
-    easing?: string;
-    repeat?: boolean;
-}
+export type MapAnimationOptionsType = AnimationOptionsType;
 
 export type MapIdentifyOptionsType = {
     tolerance?: number;

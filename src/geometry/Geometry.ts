@@ -111,7 +111,6 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     public _externSymbol: any
     public _parent: Geometry | GeometryCollection
     public _silence: boolean
-    public _animPlayer: any
     public _projCode: any
     public _painter: CollectionPainter | Painter
     public _maskPainter: CollectionPainter | Painter
@@ -122,15 +121,12 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     public _minAlt: number
     public _maxAlt: number
     getShell?(): any
-    startEdit?(T?: any): any
     getGeometries?(): Geometry[];
     getCoordinates?(): [] | Coordinate[][];
     setCoordinates?(coordinate: PositionLike | Coordinate[]): Geometry;
     _computeCenter?(T: any): Coordinate;
     _computeExtent?(T: any): Extent;
     onRemove?(): void;
-    endEdit?(): void;
-    isEditing?(): boolean;
     _computeGeodesicLength?(T: any): number;
     _computeGeodesicArea?(T: any): number;
     getRotateOffsetAngle?(): number;
@@ -1836,6 +1832,7 @@ export type GeometryOptionsType = {
     draggable?: boolean;
     dragShadow?: boolean;
     dragOnAxis?: string;
+    dragOnScreenAxis?: boolean;
     zIndex?: number;
     symbol?: any;
     properties?: { [key: string]: any };

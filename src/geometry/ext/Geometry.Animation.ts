@@ -1,8 +1,21 @@
 import { isFunction } from '../../core/util';
 import { extendSymbol } from '../../core/util/style';
-import { Animation, Player } from '../../core/Animation';
+import { Animation, AnimationOptionsType, Frame, Player } from '../../core/Animation';
 import Coordinate from '../../geo/Coordinate';
 import Geometry from '../Geometry';
+
+type AnimationStyles = { [key: string]: any };
+
+declare module "../Geometry" {
+
+    interface Geometry {
+        _animPlayer: Player;
+        animate(styles: AnimationStyles, options?: AnimationOptionsType | ((frame: Frame) => void), step?: (frame: Frame) => void): Player;
+    }
+}
+
+
+
 
 Geometry.include(/** @lends Geometry.prototype */ {
     /**
@@ -32,7 +45,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * });
      * player.pause();
      */
-    animate(styles: any, options: any, step: any): Player {
+    animate(styles: AnimationStyles, options?: AnimationOptionsType | ((frame: Frame) => void), step?: (frame: Frame) => void): Player {
         if (this._animPlayer) {
             this._animPlayer.finish();
         }
@@ -113,7 +126,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * @return {Object} styles
      * @private
      */
-    _prepareAnimationStyles(styles: object): object {
+    _prepareAnimationStyles(styles: AnimationStyles): object {
 
         const symbol = this._getInternalSymbol();
         const stylesToAnimate = {};

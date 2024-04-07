@@ -2,6 +2,15 @@ import { isNumber } from '../../core/util';
 import { preventDefault, stopPropagation } from '../../core/util/dom';
 import Geometry from '../Geometry';
 
+
+declare module "../Geometry" {
+
+    interface Geometry {
+        _onEvent(event: MouseEvent | TouchEvent, type?: string): void;
+    }
+}
+
+
 Geometry.include(/** @lends Geometry.prototype */ {
     /**
      * 所有事件的事件处理程序
@@ -10,7 +19,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * @param  {Event} event - dom event
      * @private
      */
-    _onEvent(event: Event, type: string): void {
+    _onEvent(event: MouseEvent | TouchEvent, type: string): void {
         const map = this.getMap();
         if (!map) {
             return;
