@@ -305,13 +305,21 @@ Map.mergeOptions({
     'control': true
 });
 
+
+declare module "./../map/Map" {
+    interface Map {
+        addControl(control: Control): this;
+        removeControl(control: Control): this;
+    }
+}
+
 Map.include(/** @lends Map.prototype */ {
     /**
      * Add a control on the map.
      * @param {control.Control} control - contorl to add
      * @return {Map} this
      */
-    addControl: function (control) {
+    addControl: function (control: Control) {
         // if map container is a canvas, can't add control on it.
         if (this._containerDOM.getContext) {
             return this;
@@ -325,7 +333,7 @@ Map.include(/** @lends Map.prototype */ {
      * @param {control.Control} control - control to remove
      * @return {Map} this
      */
-    removeControl: function (control) {
+    removeControl: function (control: Control) {
         if (!control || control.getMap() !== this) {
             return this;
         }

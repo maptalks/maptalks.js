@@ -1,10 +1,11 @@
 import { extend, isFunction } from '../core/util';
 import { on, off, createEl, computeDomPosition } from '../core/util/dom';
+import { Point } from '../geo';
 import Polygon from '../geometry/Polygon';
 import Layer from '../layer/Layer';
 import VectorLayer from '../layer/VectorLayer';
-import Map from '../map/Map';
-import Control from './Control';
+import Map, { MapCreateOptionsType, MapOptionsType } from '../map/Map';
+import Control, { ControlOptionsType } from './Control';
 
 /**
  * @property {Object} options - options
@@ -19,7 +20,7 @@ import Control from './Control';
  * @memberOf control.Overview
  * @instance
  */
-const options = {
+const options: OverviewOptionsType = {
     'level': 4,
     'position': {
         'right': 1,
@@ -50,6 +51,10 @@ const options = {
  * }).addTo(map);
  */
 class Overview extends Control {
+    mapContainer: HTMLDivElement;
+    button: HTMLDivElement;
+    _overview: Map;
+    _perspective: Polygon;
 
     /**
      * method to build DOM of the control
@@ -63,11 +68,11 @@ class Overview extends Control {
         }
         const container = createEl('div');
 
-        const mapContainer = this.mapContainer = createEl('div');
+        const mapContainer = this.mapContainer = createEl('div') as HTMLDivElement;
         mapContainer.style.width = size[0] + 'px';
         mapContainer.style.height = size[1] + 'px';
         mapContainer.className = this.options['containerClass'];
-        const button = this.button = createEl('div');
+        const button = this.button = createEl('div') as HTMLDivElement;
         button.className = this.options['buttonClass'];
         container.appendChild(mapContainer);
         container.appendChild(button);
@@ -95,7 +100,7 @@ class Overview extends Control {
             delete this._overview;
             delete this._perspective;
         }
-        off(this.button, 'click', this._onButtonClick, this);
+        off(this.button, 'click', this._onButtonClick);
     }
 
     /**
@@ -155,7 +160,7 @@ class Overview extends Control {
     _createOverview() {
         const map = this.getMap(),
             dom = this.mapContainer;
-        const options = map.config();
+        const options = map.config() as MapCreateOptionsType;
         extend(options, {
             'center': map.getCenter(),
             'zoom': this._getOverviewZoom(),
@@ -216,11 +221,11 @@ class Overview extends Control {
         const projection = map.getProjection();
         return map.getContainerExtent().toArray().map(c => {
             if (projection) {
-                const prjCoord = map._containerPointToPrj(c);
+                const prjCoord = map._containerPointToPrj(c as Point);
                 map._fixPrjOnWorldWide(prjCoord);
                 return projection.unproject(prjCoord);
             }
-            return map.containerPointToCoordinate(c);
+            return map.containerPointToCoordinate(c as Point);
         });
     }
 
@@ -254,7 +259,7 @@ class Overview extends Control {
             this._overview.setBaseLayer(null);
             return;
         }
-        const layers = baseLayer.layers;
+        const layers = (baseLayer as any).layers;
         let showIndex = 0;
         if (layers) {
             for (let i = 0, l = layers.length; i < l; i++) {
@@ -305,3 +310,16 @@ Map.addOnLoadHook(function () {
 });
 
 export default Overview;
+export type OverviewOptionsType = {
+    level?: number;
+    size?: Array<number>;
+    maximize?: boolean;
+    symbol?: {
+        'lineWidth': number,
+        'lineColor': string,
+        'polygonFill': string,
+        'polygonOpacity': number
+    };
+    containerClass?: string;
+    buttonClass?: string;
+} & ControlOptionsType;

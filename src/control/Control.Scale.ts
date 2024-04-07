@@ -1,6 +1,6 @@
 import { createEl, createElOn } from '../core/util/dom';
 import Map from '../map/Map';
-import Control from './Control';
+import Control, { ControlOptionsType } from './Control';
 
 /**
  * @property {Object} [options=null] - options
@@ -12,7 +12,7 @@ import Control from './Control';
  * @instance
  * @memberOf control.Scale
  */
-const options = {
+const options: ScaleOptionsType = {
     'position': 'bottom-left',
     'maxWidth': 100,
     'metric': true,
@@ -38,15 +38,19 @@ const options = {
 const EVENTS_TO_LISTEN = 'zoomend moving moveend';
 
 class Scale extends Control {
+    _scaleContainer: HTMLDivElement;
+    _mScale: HTMLDivElement;
+    _iScale: HTMLDivElement;
+    options: ScaleOptionsType;
 
     /**
      * method to build DOM of the control
      * @param  {Map} map map to build on
      * @return {HTMLDOMElement}
      */
-    buildOn(map) {
+    buildOn(map: Map) {
         this._map = map;
-        this._scaleContainer = createEl('div', this.options['containerClass']);
+        this._scaleContainer = createEl('div', this.options['containerClass']) as HTMLDivElement;
         this._addScales();
         map.on(EVENTS_TO_LISTEN, this._update, this);
         if (this._map._loaded) {
@@ -64,10 +68,10 @@ class Scale extends Control {
             'color: #000000;font-size: 11px;text-align:center;white-space: nowrap;overflow: hidden' +
             ';-moz-box-sizing: content-box;box-sizing: content-box;background: #fff; background: rgba(255, 255, 255, 0);';
         if (this.options['metric']) {
-            this._mScale = createElOn('div', this.options['containerClass'] ? null : css, this._scaleContainer);
+            this._mScale = createElOn('div', this.options['containerClass'] ? null : css, this._scaleContainer) as HTMLDivElement;
         }
         if (this.options['imperial']) {
-            this._iScale = createElOn('div', this.options['containerClass'] ? null : css, this._scaleContainer);
+            this._iScale = createElOn('div', this.options['containerClass'] ? null : css, this._scaleContainer) as HTMLDivElement;;
         }
     }
 
@@ -77,7 +81,7 @@ class Scale extends Control {
         this._updateScales(maxMeters);
     }
 
-    _updateScales(maxMeters) {
+    _updateScales(maxMeters: number) {
         if (this.options['metric'] && maxMeters) {
             this._updateMetric(maxMeters);
         }
@@ -86,14 +90,14 @@ class Scale extends Control {
         }
     }
 
-    _updateMetric(maxMeters) {
+    _updateMetric(maxMeters: number) {
         const meters = this._getRoundNum(maxMeters),
             label = meters < 1000 ? meters + ' m' : (meters / 1000) + ' km';
 
         this._updateScale(this._mScale, label, meters / maxMeters);
     }
 
-    _updateImperial(maxMeters) {
+    _updateImperial(maxMeters: number) {
         const maxFeet = maxMeters * 3.2808399;
         let maxMiles, miles, feet;
 
@@ -108,12 +112,12 @@ class Scale extends Control {
         }
     }
 
-    _updateScale(scale, text, ratio) {
+    _updateScale(scale: HTMLDivElement, text: string, ratio: number) {
         scale['style']['width'] = Math.round(this.options['maxWidth'] * ratio) + 'px';
         scale['innerHTML'] = text;
     }
 
-    _getRoundNum(num) {
+    _getRoundNum(num: number) {
         const pow10 = Math.pow(10, (Math.floor(num) + '').length - 1);
         let d = num / pow10;
 
@@ -140,3 +144,9 @@ Map.addOnLoadHook(function () {
 });
 
 export default Scale;
+export type ScaleOptionsType = {
+    maxWidth?: number;
+    metric?: boolean;
+    imperial?: boolean;
+    containerClass?: string;
+} & ControlOptionsType;

@@ -1,5 +1,5 @@
 import { createEl, setStyle, on } from '../core/util/dom';
-import Control from './Control';
+import Control, { ControlOptionsType } from './Control';
 import Map from '../map/Map';
 
 /**
@@ -21,13 +21,15 @@ const options = {
 };
 
 class Compass extends Control {
+    _compass: HTMLDivElement;
+    _bearing: number;
     /**
      * method to build DOM of the control
      * @param  {Map} map map to build on
      * @return {HTMLDOMElement}
      */
-    buildOn(map) {
-        const compass = this._getCompass();
+    buildOn(map: Map) {
+        const compass = this._getCompass() as HTMLDivElement;
         this._compass = compass;
 
         this._registerDomEvents();
@@ -51,7 +53,8 @@ class Compass extends Control {
     }
 
     _rotateCompass() {
-        let bearing = this.getMap().getBearing().toFixed(1);
+        const b = this.getMap().getBearing().toFixed(1);;
+        let bearing = parseFloat(b);
         if (bearing <= 180) bearing *= -1;
         if (bearing !== this._bearing) {
             this._bearing = bearing;
@@ -88,3 +91,7 @@ Map.addOnLoadHook(function () {
 });
 
 export default Compass;
+
+export type CompassOptionsType = {
+
+} & ControlOptionsType;
