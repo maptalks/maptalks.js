@@ -535,8 +535,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         if (!((mask.type === 'Point' && (mask as Marker)._isVectorMarker()) || mask.type === 'Polygon' || mask.type === 'MultiPolygon')) {
             throw new Error('Mask for a layer must be a marker with vector marker symbol or a Polygon(MultiPolygon).');
         }
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
+        //@ts-expect-error Argument of type 'this' is not assignable to parameter of type 'OverlayLayer'.
         mask._bindLayer(this);
         if (mask.type === 'Point') {
             mask.updateSymbol({

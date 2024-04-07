@@ -1,9 +1,13 @@
 import { isArrayHasData, isNumber } from '../../../core/util';
-import { loadGeoSymbol, isFunctionDefinition, interpolated } from '../../../core/mapbox';
+import { loadGeoSymbol, isFunctionDefinition, interpolated, } from '../../../core/mapbox';
 import Symbolizer from './Symbolizer';
 import Canvas from '../../../core/Canvas';
+import { ResourceCache } from '../../layer/CanvasRenderer';
 
 /**
+ *所有基于 HTML5 Canvas2D 的symbolizer类
+ *
+ * @english
  * @classdesc
  * Base symbolizer class for all the symbolizers base on HTML5 Canvas2D
  * @abstract
@@ -13,8 +17,10 @@ import Canvas from '../../../core/Canvas';
  * @name CanvasSymbolizer
  * @extends {Symbolizer}
  */
-class CanvasSymbolizer extends Symbolizer {
-    _prepareContext(ctx) {
+abstract class CanvasSymbolizer extends Symbolizer {
+    public symbol: any;
+    public _opacityFn: any;
+    _prepareContext(ctx: CanvasRenderingContext2D): void {
         if (isFunctionDefinition(this.symbol['opacity'])) {
             if (!this._opacityFn) {
                 this._opacityFn = interpolated(this.symbol['opacity']);
@@ -34,7 +40,7 @@ class CanvasSymbolizer extends Symbolizer {
         }
     }
 
-    prepareCanvas(ctx, style, resources) {
+    prepareCanvas(ctx: CanvasRenderingContext2D, style: any, resources?: ResourceCache): void {
         if (ctx.setLineDash && isArrayHasData(style['lineDasharray'])) {
             ctx.setLineDash(style['lineDasharray']);
         }
@@ -42,15 +48,15 @@ class CanvasSymbolizer extends Symbolizer {
         Canvas.prepareCanvas(ctx, style, resources, isHitTesting);
     }
 
-    remove() { }
+    remove(): void { }
 
-    setZIndex() { }
+    setZIndex(): void { }
 
-    show() { }
+    show(): void { }
 
-    hide() { }
+    hide(): void { }
 
-    _defineStyle(style) {
+    _defineStyle(style: any): any {
         if (this.symbol) {
             style.visible = this.symbol.visible;
             style.opacity = this.symbol.opacity;
