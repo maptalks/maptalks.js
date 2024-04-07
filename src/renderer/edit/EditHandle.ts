@@ -7,7 +7,7 @@ import { isNil } from '../../core/util/';
 import { getSymbolHash } from '../../core/util';
 import { getEventContainerPoint } from '../../core/util/dom';
 import DragHandler from '../../handler/Drag';
-import { Bbox, bufferBBOX, getDefaultBBOX } from '../../core/util/bbox';
+import { BBOX, bufferBBOX, getDefaultBBOX } from '../../core/util/bbox';
 import type Map from '../../map/Map';
 import type GeometryEditor from '../../geometry/editor/GeometryEditor';
 
@@ -32,7 +32,7 @@ export default class EditHandle extends Eventable<any>(Class) {
     events: string[];
 
     url: string;
-    bbox: Bbox;
+    bbox: BBOX;
     _point: Point;
     _img: any;
     _dragger: DragHandler;

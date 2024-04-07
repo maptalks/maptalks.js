@@ -7,7 +7,7 @@ import PointExtent from '../../geo/PointExtent';
 import Canvas from '../../core/Canvas';
 import * as Symbolizers from './symbolizers';
 import { interpolate } from '../../core/util/util';
-import { Bbox, getDefaultBBOX, resetBBOX, setBBOX, validateBBOX } from '../../core/util/bbox';
+import { BBOX, getDefaultBBOX, resetBBOX, setBBOX, validateBBOX } from '../../core/util/bbox';
 import Map from '../../map/Map'
 import { DebugSymbolizer } from './symbolizers';
 import Extent from '../../geo/Extent';
@@ -71,7 +71,7 @@ class Painter extends Class {
     _painted: boolean;
     _containerBbox: typeof TEMP_BBOX;
 
-    bbox: Bbox;
+    bbox: BBOX;
     geometry: any;
     symbolizers: any[];
     containerOffset: Point;

@@ -1,6 +1,5 @@
 import {
     isNil,
-    extend,
     isNumber,
     isString,
     requestAnimFrame,
@@ -116,13 +115,18 @@ class Frame {
  * @memberof animation
  */
 class Player {
-    _animation: any
-    options: any
-    _onFrame: any
-    playState: any
-    ready: any
-    finished: any
-    target: any
+    _animation: Callback
+    options: AnimationOptionsPrivateType
+    _onFrame: (frame: Frame) => void;
+    playState: string
+    ready: boolean
+    finished: boolean
+    target: any;
+    duration: number;
+    _framer: (cb: Callback) => void;
+    currentTime: number;
+    startTime: number;
+    _playStartTime: number;
 
     /**
      * Create an animation player
@@ -138,6 +142,152 @@ class Player {
         this.ready = true;
         this.finished = false;
         this.target = target;
+    }
+
+    _prepare() {
+        const options = this.options;
+        let duration = options['speed'] || options['duration'];
+        if (isString(duration)) {
+            duration = Animation.speed[duration];
+            if (!duration) {
+                duration = +duration;
+            }
+        }
+        if (!duration) {
+            duration = Animation.speed['normal'];
+        }
+        this.duration = duration;
+        this._framer = options['framer'] || Animation._requestAnimFrame.bind(Animation);
+    }
+
+    /**
+     * Start or resume the animation
+     * @return {Player} this
+     */
+    play() {
+        if (this.playState !== 'idle' && this.playState !== 'paused' || this.target && this.target[KEY]) {
+            return this;
+        }
+        if (this.target) {
+            this.target[KEY] = 1;
+        }
+        if (this.playState === 'idle') {
+            this.currentTime = 0;
+            this._prepare();
+        }
+        const t = now();
+        if (!this.startTime) {
+            const options = this.options;
+            this.startTime = options['startTime'] ? options['startTime'] : t;
+        }
+        this._playStartTime = Math.max(t, this.startTime);
+        if (this.playState === 'paused') {
+            this._playStartTime -= this.currentTime;
+        }
+        this.playState = 'running';
+        this._run();
+        return this;
+    }
+
+    /**
+     * Pause the animation
+     * @return {Player} this
+     */
+    pause() {
+        if (this.playState === 'paused') {
+            return this;
+        }
+        this.playState = 'paused';
+        this._run();
+        //this.duration = this.duration - this.currentTime;
+        return this;
+    }
+
+    /**
+     * Cancel the animation play and ready to play again
+     * @return {Player} this
+     */
+    cancel() {
+        if (this.playState === 'idle') {
+            return this;
+        }
+        this.playState = 'idle';
+        this.finished = false;
+        this._run();
+        return this;
+    }
+
+    /**
+     * Finish the animation play, and can't be played any more.
+     * @return {Player} this
+     */
+    finish() {
+        if (this.playState === 'finished') {
+            return this;
+        }
+        this.playState = 'finished';
+        this.finished = true;
+        this._run();
+        return this;
+    }
+
+    reverse() {
+    }
+
+    _run() {
+        const onFrame = this._onFrame;
+        const t = now();
+        let elapsed = t - this._playStartTime;
+        if (this.options['repeat'] && elapsed >= this.duration) {
+            this._playStartTime = t;
+            elapsed = 0;
+        }
+        if (this.playState !== 'running') {
+            if (this.target) {
+                delete this.target[KEY];
+            }
+            if (onFrame) {
+                if (this.playState === 'finished') {
+                    elapsed = this.duration;
+                } else if (this.playState === 'idle') {
+                    elapsed = 0;
+                }
+                const frame = this._animation(elapsed, this.duration);
+                frame.state.playState = this.playState;
+                onFrame(frame);
+            }
+            return;
+        }
+        //elapsed, duration
+        const frame = this._animation(elapsed, this.duration);
+        this.playState = frame.state['playState'];
+        if (this.playState !== 'running' && this.target) {
+            delete this.target[KEY];
+        }
+        if (this.playState === 'idle') {
+            if (this.startTime > t) {
+                setTimeout(this._run.bind(this), this.startTime - t);
+            }
+        } else if (this.playState === 'running') {
+            this._framer(() => {
+                if (this.playState !== 'running') {
+                    // this._run();
+                    return;
+                }
+                this.currentTime = elapsed;
+                if (onFrame) {
+                    onFrame(frame);
+                }
+                this._run();
+            });
+        } else if (this.playState === 'finished') {
+            this.finished = true;
+            //finished
+            if (onFrame) {
+                onFrame(frame);
+            }
+        }
+
     }
 }
 
@@ -416,152 +566,20 @@ const Animation = {
 
 Animation._frameFn = Animation._run.bind(Animation);
 
-extend<any, any>(Player.prototype, /** @lends animation.Player.prototype */{
-    _prepare() {
-        const options = this.options;
-        let duration = options['speed'] || options['duration'];
-        if (isString(duration)) {
-            duration = Animation.speed[duration];
-            if (!duration) {
-                duration = +duration;
-            }
-        }
-        if (!duration) {
-            duration = Animation.speed['normal'];
-        }
-        this.duration = duration;
-        this._framer = options['framer'] || Animation._requestAnimFrame.bind(Animation);
-    },
-
-    /**
-     * Start or resume the animation
-     * @return {Player} this
-     */
-    play() {
-        if (this.playState !== 'idle' && this.playState !== 'paused' || this.target && this.target[KEY]) {
-            return this;
-        }
-        if (this.target) {
-            this.target[KEY] = 1;
-        }
-        if (this.playState === 'idle') {
-            this.currentTime = 0;
-            this._prepare();
-        }
-        const t = now();
-        if (!this.startTime) {
-            const options = this.options;
-            this.startTime = options['startTime'] ? options['startTime'] : t;
-        }
-        this._playStartTime = Math.max(t, this.startTime);
-        if (this.playState === 'paused') {
-            this._playStartTime -= this.currentTime;
-        }
-        this.playState = 'running';
-        this._run();
-        return this;
-    },
-
-    /**
-     * Pause the animation
-     * @return {Player} this
-     */
-    pause() {
-        if (this.playState === 'paused') {
-            return this;
-        }
-        this.playState = 'paused';
-        this._run();
-        //this.duration = this.duration - this.currentTime;
-        return this;
-    },
-
-    /**
-     * Cancel the animation play and ready to play again
-     * @return {Player} this
-     */
-    cancel() {
-        if (this.playState === 'idle') {
-            return this;
-        }
-        this.playState = 'idle';
-        this.finished = false;
-        this._run();
-        return this;
-    },
-
-    /**
-     * Finish the animation play, and can't be played any more.
-     * @return {Player} this
-     */
-    finish() {
-        if (this.playState === 'finished') {
-            return this;
-        }
-        this.playState = 'finished';
-        this.finished = true;
-        this._run();
-        return this;
-    },
-
-    reverse() {
-    },
-
-    _run() {
-        const onFrame = this._onFrame;
-        const t = now();
-        let elapsed = t - this._playStartTime;
-        if (this.options['repeat'] && elapsed >= this.duration) {
-            this._playStartTime = t;
-            elapsed = 0;
-        }
-        if (this.playState !== 'running') {
-            if (this.target) {
-                delete this.target[KEY];
-            }
-            if (onFrame) {
-                if (this.playState === 'finished') {
-                    elapsed = this.duration;
-                } else if (this.playState === 'idle') {
-                    elapsed = 0;
-                }
-                const frame = this._animation(elapsed, this.duration);
-                frame.state.playState = this.playState;
-                onFrame(frame);
-            }
-            return;
-        }
-        //elapsed, duration
-        const frame = this._animation(elapsed, this.duration);
-        this.playState = frame.state['playState'];
-        if (this.playState !== 'running' && this.target) {
-            delete this.target[KEY];
-        }
-        if (this.playState === 'idle') {
-            if (this.startTime > t) {
-                setTimeout(this._run.bind(this), this.startTime - t);
-            }
-        } else if (this.playState === 'running') {
-            this._framer(() => {
-                if (this.playState !== 'running') {
-                    // this._run();
-                    return;
-                }
-                this.currentTime = elapsed;
-                if (onFrame) {
-                    onFrame(frame);
-                }
-                this._run();
-            });
-        } else if (this.playState === 'finished') {
-            this.finished = true;
-            //finished
-            if (onFrame) {
-                onFrame(frame);
-            }
-        }
-
-    }
-});
 const animate = Animation.animate;
 export { Animation, Easing, Player, Frame, animate };
+
+export type EasingType = 'outExpo' | 'outQuint' | 'in' | 'out' | 'inAndOut' | 'linear' | 'upAndDown';
+
+export type AnimationOptionsType = {
+    duration?: number;
+    easing?: EasingType;
+    repeat?: boolean;
+}
+
+type AnimationOptionsPrivateType = {
+    speed?: number;
+    framer?: () => void;
+    startTime?: number;
+
+} & AnimationOptionsType;
