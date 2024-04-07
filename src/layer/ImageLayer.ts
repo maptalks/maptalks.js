@@ -23,7 +23,7 @@ export type ImageLayerOptions = {
 
 /**
  * 配置参数
- * 
+ *
  * @english
  * @property options                     - ImageLayer's options
  * @property options.crossOrigin=null    - image's corssOrigin
@@ -46,7 +46,7 @@ const TEMP_POINT = new Point(0, 0);
 
 /**
  * images layer,可指定图像地理位置及透明的
- * 
+ *
  * @english
  * @classdesc
  * A layer used to display images, you can specify each image's geographic extent and opacity
@@ -63,7 +63,7 @@ const TEMP_POINT = new Point(0, 0);
     }])
  */
 class ImageLayer extends Layer {
-    _images: Array<any>|any 
+    _images: Array<any>|any
     _imageData: any
 
     constructor(id: string, images?: Array<any> | any, options?: ImageLayerOptions & LayerOptions) {
@@ -81,7 +81,7 @@ class ImageLayer extends Layer {
 
     /**
      * 设置图像并重新绘制
-     * 
+     *
      * @english
      * Set images and redraw
      * @param images - new images
@@ -95,7 +95,7 @@ class ImageLayer extends Layer {
 
     /**
      * 获取图像
-     * 
+     *
      * @english
      * Get images
      * @return
@@ -134,7 +134,7 @@ ImageLayer.mergeOptions(options);
 
 const EMPTY_ARRAY = [];
 
-export class ImageLayerCanvasRenderer extends CanvasRenderer {    
+export class ImageLayerCanvasRenderer extends CanvasRenderer {
     _imageLoaded: boolean
 
     isDrawable() {
@@ -199,7 +199,7 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
         this._drawImages(timestamp, context);
         this.completeRender();
     }
-    
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _drawImages(timestamp?:number, context?:any) {
         const imgData = this.layer._imageData;
@@ -334,11 +334,8 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
         super.onRemove();
     }
 }
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore registerRenderer(name:string, clazz: Class) TypeError ImageLayerCanvasRenderer 不满足Class类型
+
 ImageLayer.registerRenderer('canvas', ImageLayerCanvasRenderer);
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore registerRenderer(name:string, clazz: Class) TypeError ImageLayerGLRenderer 不满足Class类型
 ImageLayer.registerRenderer('gl', ImageLayerGLRenderer);
 
 export default ImageLayer;

@@ -11,9 +11,10 @@
       "allowSyntheticDefaultImports": true,
       //dependencies lib version
       "lib": [
-          "es5",
-          "es2015",
-          "dom"
+        "es5",
+        "es2015",
+        "dom",
+        "scripthost"
       ],
       "outDir": "./dist/",
       "rootDir": "./src",

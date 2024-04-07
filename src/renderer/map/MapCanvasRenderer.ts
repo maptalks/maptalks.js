@@ -12,6 +12,7 @@ import type EditHandle from '../edit/EditHandle';
 import type EditOutline from '../edit/EditOutline';
 import type { Layer } from '../../layer';
 import type Size from '../../geo/Size';
+import type { WithUndef } from '../../types/typings';
 
 const tempCollisionIndex = new CollisionIndex();
 
@@ -1101,7 +1102,7 @@ class MapCanvasRenderer extends MapRenderer {
 
 }
 
-Map.registerRenderer<any>('canvas', MapCanvasRenderer);
+Map.registerRenderer<typeof MapCanvasRenderer>('canvas', MapCanvasRenderer);
 
 Map.mergeOptions({
     'fog': false,

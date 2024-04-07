@@ -19,7 +19,7 @@ const options = {
  * 提供了一些渲染粒子的接口方法。
  * 你可以直接使用它，但不能以这种方式用JSON序列化/反序列化一个 particelayer
  * 更建议使用子类来扩展它
- * 
+ *
  * @english
  * @classdesc
  * A layer to draw particles. <br>
@@ -43,12 +43,12 @@ class ParticleLayer extends CanvasLayer {
 
     /**
      * 获取t时刻的例子位置
-     * 
+     *
      * @english
      * Interface method to get particles's position at time t.
      * @param t - current time in milliseconds
      */
-    
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     getParticles(t?:number) {
     }
@@ -102,11 +102,9 @@ class ParticleLayer extends CanvasLayer {
 }
 
 ParticleLayer.mergeOptions(options);
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore registerRenderer(name:string, clazz: Class) TypeError CanvasLayerRenderer 不满足Class类型
 ParticleLayer.registerRenderer('canvas', class extends CanvasLayerRenderer {
     _shouldClear: boolean
-    
+
     draw() {
         if (!this.canvas || !this.layer.options['animation'] || this._shouldClear) {
             this.prepareCanvas();

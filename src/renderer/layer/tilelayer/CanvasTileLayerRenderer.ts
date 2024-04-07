@@ -44,10 +44,8 @@ class GLRenderer extends TileLayerGLRenderer {
     }
 }
 
-// @ts-expect-error todo 等待 CanvasTileLayer 改造完成
-CanvasTileLayer.registerRenderer('canvas', CanvasRenderer);
-// @ts-expect-error todo 等待 CanvasTileLayer 改造完成
-CanvasTileLayer.registerRenderer('gl', GLRenderer);
+CanvasTileLayer.registerRenderer<typeof CanvasRenderer>('canvas', CanvasRenderer);
+CanvasTileLayer.registerRenderer<typeof GLRenderer>('gl', GLRenderer);
 
 export {
     CanvasRenderer as CanvasTileLayerCanvasRenderer,

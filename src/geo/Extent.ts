@@ -3,6 +3,7 @@ import Coordinate from './Coordinate';
 import Point from './Point';
 import Size from './Size';
 import type PointExtent from './PointExtent';
+import type { WithNull } from '../types/typings';
 
 // temparary variables
 const TEMP_POINT0 = new Point(0, 0);
