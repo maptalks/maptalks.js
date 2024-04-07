@@ -13,16 +13,13 @@ import { radianToCartesian3, cartesian3ToDegree } from '../common/Transform';
 import { distanceToCamera } from '../common/intersects_oriented_box.js';
 import TileBoundingRegion from './renderer/TileBoundingRegion';
 
-const options = {
+const options: Geo3DTilesLayerOptions = {
+    'services': [],
     // 'maximumScreenSpaceError' : 8,
     'maxGPUMemory' : maptalks.Browser.mobile ? 32 : 1536,
     'retireInterval' : 2000,
     'loadingLimitOnInteracting' : 5,
     'loadingLimit' : 10,
-    'renderer' : 'gl',
-    'forceRenderOnZooming' : true,
-    'forceRenderOnRotating' : true,
-    'forceRenderOnMoving' : true,
     'debug' : false,
     'meshLimitPerFrame': 1,
     'i3sNodepageLimitPerFrame': 1,
@@ -36,7 +33,12 @@ const options = {
     // 'heightOffsets' : null,
     // 'polygonOffsets' : null,
     'antialias': false,
-    'optionalExtensions' : [
+    'offset': [0, 0],
+    'renderer': 'gl',
+    'forceRenderOnZooming': true,
+    'forceRenderOnRotating': true,
+    'forceRenderOnMoving': true,
+    'optionalExtensions': [
         'ANGLE_instanced_arrays',
         'OES_element_index_uint',
         'OES_standard_derivatives',
@@ -50,8 +52,7 @@ const options = {
         'WEBGL_compressed_texture_pvrtc',
         'WEBGL_compressed_texture_s3tc',
         'WEBGL_compressed_texture_s3tc_srgb'
-    ],
-    'offset': [0, 0]
+    ]
 };
 
 const TEMP_VEC3_0 = [];
@@ -109,25 +110,48 @@ const BOX_POS = [
  */
 export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
     /**
+     * 用layer的JSON对象反序列一个Geo3DTilesLayer对象
+     * @english
      * Reproduce a Geo3DTilesLayer from layer's profile JSON.
-     * @param  {Object} layerJSON - layer's profile JSON
-     * @return {Geo3DTilesLayer}
-     * @static
-     * @private
-     * @function
+     * @param  layerJSON - layer's profile JSON
      */
-    static fromJSON(layerJSON) {
+    static fromJSON(layerJSON: object): Geo3DTilesLayer | null {
         if (!layerJSON || layerJSON['type'] !== 'Geo3DTilesLayer') {
             return null;
         }
         return new Geo3DTilesLayer(layerJSON['id'], layerJSON['options']);
     }
 
-    constructor(id, options) {
+    options: Geo3DTilesLayerOptions
+    private _nodeBoxes: (TileSphereBox | TileOrientedBox | TileRegionBox)[]
+    private _rootMap: Record<string, number>
+    private _roots: (RootTileNode | null)[]
+    private _cameraLocation: number[]
+    private _cameraCartesian3: number[]
+    private _fovDenominator: number
+    private _highlighted: HighlightItem[][] | null
+    private _showOnlys: ShowOnlyItem[][] | null
+
+    getRenderer() {
+        return super.getRenderer();
+    }
+
+    getMap() {
+        return super.getMap();
+    }
+
+    getId(): string {
+        return super.getId();
+    }
+
+    fire(...args) {
+        return super.fire(...args);
+    }
+
+    constructor(id: string, options: Geo3DTilesLayerOptions) {
         super(id, options);
         this._initRoots();
         //tileset.json requests
-        this._requests = {};
         this._nodeBoxes = [];
     }
 
@@ -146,24 +170,25 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         this.fire('rootready', { roots : this._roots.slice(0) });
     }
 
-    showService(idx) {
-        this.updateService(idx, { visible: 1 });
+    showService(idx: number): this {
+        this.updateService(idx, { visible: true });
         return this;
     }
 
-    hideService(idx) {
-        this.updateService(idx, { visible: 0 });
+    hideService(idx: number): this {
+        this.updateService(idx, { visible: false });
         return this;
     }
 
-    setToRedraw() {
+    setToRedraw(): this {
         const renderer = this.getRenderer();
         if (renderer) {
             renderer.setToRedraw();
         }
+        return this;
     }
 
-    addService(info) {
+    addService(info: Geo3DTilesService): this {
         this.options.services = this.options.services || [];
         this.options.services.push(info);
         this._initRoots();
@@ -174,7 +199,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return this;
     }
 
-    updateService(idx, info) {
+    updateService(idx: number, info: Geo3DTilesServiceOptions): this {
         if (!info) {
             return this;
         }
@@ -189,12 +214,13 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         }
         const url = services[idx].url;
         const rootIdx = this._rootMap[url];
-        if (this._roots && this._roots[rootIdx]) {
+        const rootNode = this._roots && this._roots[rootIdx];
+        if (rootNode) {
             if (!isNil(info.visible)) {
-                this._roots[rootIdx].visible = info.visible;
+                rootNode.visible = info.visible;
             }
             if (extentChanged) {
-                this._roots[rootIdx].version++;
+                rootNode.version++;
             }
         }
         const renderer = this.getRenderer();
@@ -204,7 +230,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return this;
     }
 
-    removeService(idx) {
+    removeService(idx: number): this {
         const services = this.options.services;
         if (services && services[idx]) {
             const url = services[idx].url;
@@ -223,13 +249,13 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return this;
     }
 
-    getTileUrl(url, baseUrl, rootNode) {
+    getTileUrl(url: string, rootNode: RootTileNode): string {
         const subdomains = rootNode && rootNode.service && rootNode.service.subdomains;
         if (subdomains && rootNode.domainKey) {
             const len = subdomains.length;
             if (len) {
                 const urlArr = [...url];
-                const index = urlArr.reduce((a, char) => a + char.charCodeAt(), 0);
+                const index = urlArr.reduce((a, char) => a + char.charCodeAt(0), 0);
                 const domain = index % len;
                 // {s} is encoded in getAbsoluteUrl
                 return url.replace(rootNode.domainKey, subdomains[domain]);
@@ -238,24 +264,26 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return url;
     }
 
-    getExtent(index) {
+    getExtent(index: number): maptalks.Extent | null {
         if (!index && index !== 0) {
             const extent = new maptalks.Extent();
             for (let i = 0; i < this._roots.length; i++) {
-                if (this._roots[i].boundingVolume) {
-                    const nodeExtent = this.boundingVolumeToExtent(this._roots[i]);
+                const rootNode = this._roots[i];
+                if (rootNode && rootNode.boundingVolume) {
+                    const nodeExtent = this.boundingVolumeToExtent(rootNode);
                     extent['_combine'](nodeExtent);
                 }
             }
             return extent;
         }
-        if (!this._roots[index] || !this._roots[index].boundingVolume) {
+        const rootNode = this._roots[index];
+        if (!rootNode || !rootNode.boundingVolume) {
             return null;
         }
-        return this.boundingVolumeToExtent(this._roots[index]);
+        return this.boundingVolumeToExtent(rootNode);
     }
 
-    boundingVolumeToExtent(node) {
+    boundingVolumeToExtent(node: RootTileNode): maptalks.Extent | null {
         const matrix = node.boundingVolume._centerTransformed ? IDENTITY_MATRIX : node.matrix;
         const map = this.getMap();
         const isIdentity = map.getProjection().code.toLowerCase() === 'identity';
@@ -296,15 +324,15 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return null;
     }
 
-    getRootTiles() {
+    getRootTiles(): RootTileNode[] {
         return this._roots;
     }
 
-    getTiles() {
+    getTiles(): QueriedTiles {
         const renderer = this.getRenderer();
         if (!renderer.ready) {
             this._setToRedraw();
-            return  { tiles: EMPTY_ARRAY };
+            return { tiles: EMPTY_ARRAY };
         }
         const map = this.getMap();
         const cameraPosition = map.cameraPosition;
@@ -319,10 +347,10 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         const projectionView = map.projViewMatrix;
 
         const root = {
-            children : [],
+            children: [],
             level : -1
         };
-        let currentParent = root;
+        let currentParent: CandinateNode = root;
         const tiles = [];
         for (let i = 0; i < this._roots.length; i++) {
             const root = this._roots[i];
@@ -330,7 +358,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
                 continue;
             }
             // let firstContentLevel = Infinity;
-            const queue = [root];
+            const queue: TileNode[] = [root];
             const maxExtent = this._getRootMaxExtent(i);
             while (queue.length > 0) {
                 const node = queue.pop();
@@ -355,12 +383,12 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
                 //     }
                 //     console.log(ancestors.join());
                 // }
-                if (visible < 1 && (visible < 0 || !this.options['alwaysShowTopTiles'] || !isTopTile(node))) {
-                    let parent = currentParent;
+                if (visible !== TileVisibility.VISIBLE && (visible === TileVisibility.OUT_OF_FRUSTUM || !this.options['alwaysShowTopTiles'] || !isTopTile(node))) {
+                    let parent: CandinateNode = currentParent;
                     while (parent && !parent.content) {
                         parent = parent.parent;
                     }
-                    if (visible === 0 && parent && parent.content) {
+                    if (visible === TileVisibility.SCREEN_ERROR_TOO_SMALL && parent && parent.content) {
                         // node._contentParent = parent;
                         this._addCandidateNode(tiles, parent);
                         // tiles[parent.node.id] = parent;
@@ -453,26 +481,26 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return { root, tiles };
     }
 
-    _addCandidateNode(tiles, candidate) {
-        const { viewerRequestVolume } = candidate.node;
-        if (!viewerRequestVolume || inViewerRequestVolume(this._cameraLocation, this._cameraCartesian3, viewerRequestVolume)) {
+    _addCandidateNode(tiles: CandinateNode[], candidate: CandinateNode) {
+        const { viewerRequestVolume, matrix } = candidate.node;
+        if (!viewerRequestVolume || inViewerRequestVolume(this._cameraLocation, this._cameraCartesian3, viewerRequestVolume, matrix)) {
             tiles.push(candidate);
         }
     }
 
-    _createCandidate(node, parent) {
+    _createCandidate(node: TileNode, parent: CandinateNode): CandinateNode {
         return {
-            id : node.id, // for debug
+            id: node.id, // for debug
             node,
-            children : [],
-            level : node._level,
+            children: [],
+            level: node._level,
             // cameraDistance : node._cameraDistance, // for debug
-            parent : parent,
-            content : node.content && node.content.url
+            parent,
+            content: node.content && node.content.url
         };
     }
 
-    _initNode(node) {
+    _initNode(node: TileNode) {
         const layerId = this.getId();
         node.id = layerId + ':' + maptalks.Util.GUID();
         node.matrix = node.transform || mat4.identity([]);
@@ -493,12 +521,12 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         }
     }
 
-    _getNodeService(rootIdx) {
+    _getNodeService(rootIdx: number): Geo3DTilesService {
         return this._roots[rootIdx].service;
     }
 
     // // boundingVolume上应用heightOffset，解决设置heightOffset后，visible计算不正确的问题
-    _offsetBoundingVolume(node) {
+    _offsetBoundingVolume(node: TileNode) {
         const boundingVolume = node.boundingVolume;
         if (!boundingVolume || boundingVolume._centerTransformed && !this._offsetChanged(node)) {
             return;
@@ -557,7 +585,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         boundingVolume._centerTransformed =  true;
     }
 
-    _offsetChanged(node) {
+    _offsetChanged(node: TileNode): boolean {
         const boundingVolume = node.boundingVolume;
         const service = this._getNodeService(node._rootIdx);
         const heightOffset = service.heightOffset || 0;
@@ -565,12 +593,12 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return boundingVolume.coordOffset[0] !== coordOffset[0] || boundingVolume.coordOffset[1] !== coordOffset[1] || boundingVolume.heightOffset !== heightOffset;
     }
 
-    _isEmpty(node) {
+    _isEmpty(node: TileNode): boolean {
         return node.geometricError === undefined || !node.boundingVolume;/*  &&
         node.children && node.children.length > 0 */
     }
 
-    _updateParentDistance(node) {
+    _updateParentDistance(node: TileNode) {
         let parent = node.parent;
         while (parent && parent._empty) {
             if (parent._cameraDistance <= node._cameraDistance) {
@@ -581,7 +609,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         }
     }
 
-    onTileLoad(tile, node) {
+    onTileLoad(tile: TileNode, node: TileNode) {
         if (tile.children && (!node.children || !node.children.length)) {
             node.children = tile.children;
             const url = node.content.url;
@@ -593,30 +621,30 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         }
     }
 
-    onTilesetLoad(tileset, parent, url) {
+    onTilesetLoad(tileset: any, parent: TileNode, url: string) {
         if (!tileset) {
             console.warn('invalid tileset at : ' + url);
             return;
         }
-        const service = this._getNodeService(parent._rootIdx);
-        const axisUp = (tileset.asset && tileset.asset.gltfUpAxis || parent && parent._upAxis || service.upAxis || 'Y').toUpperCase();
+        // const service = this._getNodeService(parent._rootIdx);
+        const axisUp = (tileset.asset && tileset.asset.gltfUpAxis || parent && parent._upAxis || 'Y').toUpperCase();
         tileset.root.baseUrl = url.substring(0, url.lastIndexOf('/') + 1);
         const isRealspace = url.indexOf("realspace/") > -1;
-        if (parent._level === 0 && (tileset.asset && tileset.asset.s3mType && isRealspace || service.isSuperMapiServer)) {
+        if (parent._level === 0 && (tileset.asset && tileset.asset.s3mType && isRealspace/*  || service.isSuperMapiServer */)) {
             tileset.root.baseUrl += 'data/path/';
         }
         const isI3S = tileset.asset.i3s;
-        const isS3M = !!tileset.asset.s3mType;
+        // const isS3M = !!tileset.asset.s3mType;
         tileset.root._upAxis = axisUp;
         if (parent) {
             // delete parent._contentNode;
             // parent.tileset = tileset;
             // tileset.root.parent = parent;
-            const rootIdx = parent._rootIdx;
-            const rootNode = this._roots[rootIdx];
-            if (isS3M && !rootNode.isS3M) {
-                rootNode.isS3M = isS3M;
-            }
+            // const rootIdx = parent._rootIdx;
+            // const rootNode = this._roots[rootIdx];
+            // if (isS3M && !rootNode.isS3M) {
+            //     rootNode.isS3M = isS3M;
+            // }
             const boundingVolume = parent.boundingVolume;
             extend(parent, tileset.root);
             parent.refine = parent.refine && parent.refine.toLowerCase() || 'replace';
@@ -635,7 +663,6 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             // delete parent._topBottom;
             // delete this._nodeBoxes[parent.id];
 
-            parent._content = parent.content;
             delete parent.content;
             if (tileset.root.content) {
                 parent.content = tileset.root.content;
@@ -651,18 +678,18 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
                 parent.content.url = parent.baseUrl + url;
             }
             if (tileset.root && !parent.parent) {
-                this._updateRootCenter(parent);
+                this._updateRootCenter(parent as RootTileNode);
             }
         }
         this._setToRedraw();
         this.fire('loadtileset', { tileset, index: parent && parent._rootIdx, url });
     }
 
-    _isVisible(node, maxExtent, projectionView) {
+    _isVisible(node: TileNode, maxExtent: maptalks.Extent, projectionView: number[]): TileVisibility {
         node._cameraDistance = Infinity;
         if (node._level === 0 || node._empty) {
-            this._updateRootCenter(node);
-            return 1;
+            this._updateRootCenter(node as RootTileNode);
+            return TileVisibility.VISIBLE;
         }
         this._offsetBoundingVolume(node);
         //reset node status
@@ -671,10 +698,10 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             // if (node.id !== 135) {
             //     return -1;
             // }
-            return -1;
+            return TileVisibility.OUT_OF_FRUSTUM;
         }
         if (node.geometricError === 0) {
-            return 1;
+            return TileVisibility.VISIBLE;
         }
         let maximumScreenSpaceError = this._getNodeService(node._rootIdx)['maximumScreenSpaceError'];
         if (maximumScreenSpaceError === undefined || maximumScreenSpaceError === null) {
@@ -684,10 +711,10 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         if (error === 0.0 && node.parent) {
             error = (node.parent._error || 0) * 0.5;
         }
-        return error >= maximumScreenSpaceError ? 1 : 0;
+        return error >= maximumScreenSpaceError ? TileVisibility.VISIBLE : TileVisibility.SCREEN_ERROR_TOO_SMALL;
     }
 
-    _coordToPoint(coord, out) {
+    _coordToPoint(coord: maptalks.Coordinate, out?: maptalks.Point): maptalks.Point {
         if (!out) {
             out = new maptalks.Point(0, 0);
         }
@@ -699,7 +726,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         }
     }
 
-    _isTileInFrustum(node, maxExtent, projectionView) {
+    _isTileInFrustum(node: TileNode, maxExtent: maptalks.Extent, projectionView: number[]): boolean {
         const id = node.id;
         let nodeBox = this._nodeBoxes[id];
         const { boundingVolume } = node;
@@ -715,10 +742,6 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             } else if (sphere) {
                 //[xcenter, ycenter, radius]
                 nodeBox = this._nodeBoxes[id] = this._createSphere(node);
-                const nodeCenter = sphere;
-                const center = cartesian3ToDegree(TEMP_VEC3_0, nodeCenter);
-                const coord = new maptalks.Coordinate(center);
-                nodeBox.center = coord;
             }
             nodeBox.version = rootNode.version;
             if (node._boxMesh) {
@@ -762,12 +785,12 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         if (nodeBox.obbox) {
             return intersectsOrientedBox(projectionView, nodeBox.obbox);
         } else if (sphere) {
-            return intersectsSphere(projectionView, nodeBox);
+            return intersectsSphere(projectionView, nodeBox.sphereBox);
         }
         return false;
     }
 
-    _createRegionBox(node) {
+    _createRegionBox(node: TileNode): TileRegionBox {
         const map = this.getMap();
         const glRes = map.getGLRes();
         const region = node.boundingVolume.region;
@@ -778,7 +801,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         pointWS.z = map.altitudeToPoint(ws.z, glRes);
         const pointEN = map.coordToPointAtRes(en, glRes);
         pointEN.z = map.altitudeToPoint(en.z, glRes);
-        const boxPosition = [
+        const boxPosition: number[] = [
             pointEN.x, pointWS.y, pointEN.z,
             pointEN.x, pointEN.y, pointEN.z,
             pointWS.x, pointEN.y, pointEN.z,
@@ -811,18 +834,18 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             }
         }
 
-        const center = map.pointAtResToCoord(new maptalks.Point(boxCenter), glRes);
-        center.z = (ws.z + en.z) / 2;
+        const boxCoord = map.pointAtResToCoord(new maptalks.Point(boxCenter), glRes);
+        boxCoord.z = (ws.z + en.z) / 2;
 
         const obbox = this._generateOBBox(boxPosition, boxCenter);
         for (let i = 0; i < boxPosition.length; i++) {
             boxPosition[i] -= boxCenter[i % 3];
         }
 
-        return { obbox, boxPosition, boxCenter, center };
+        return { obbox, boxPosition, boxCenter, boxCoord };
     }
 
-    _createBBox(node) {
+    _createBBox(node: TileNode): TileOrientedBox {
         const renderer = this.getRenderer();
         const map = this.getMap();
         const isIdentity = map.getProjection().code.toLowerCase() === 'identity';
@@ -865,10 +888,10 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         for (let i = 0; i < boxPosition.length; i++) {
             boxPosition[i] -= boxCenter[i % 3];
         }
-        return { obbox, boxPosition, boxCenter, center: boxCoord };
+        return { obbox, boxPosition, boxCenter, boxCoord };
     }
 
-    _createSphere(node) {
+    _createSphere(node: TileNode): TileSphereBox {
         const map = this.getMap();
         const renderer = this.getRenderer();
         const isIdentity = map.getProjection().code.toLowerCase() === 'identity';
@@ -887,10 +910,10 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         const sphereCenter = this._coordToPoint(coord, TEMP_POINT).toArray();
         sphereCenter[2] = map.altitudeToPoint(coord.z, map.getGLRes());
         const scale = this._getBoxScale(coord);
-        return [sphereCenter, sphere[3] * scale[2]];
+        return { boxCenter: sphereCenter, boxCoord: coord, sphereBox: [sphereCenter, sphere[3] * scale[2]] };
     }
 
-    _generateOBBox(boxPosition, obbCenter) {
+    _generateOBBox(boxPosition: number[], obbCenter: number[]): number[] {
         // let transformedVertices;
         // let transformedCenter;
 
@@ -933,7 +956,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         ];
     }
 
-    _calBoxCenter(node) {
+    _calBoxCenter(node: TileNode): TileBoxCenter {
         const map = this.getMap();
         const renderer = this.getRenderer();
         const isIdentity = map.getProjection().code.toLowerCase() === 'identity';
@@ -951,7 +974,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return { boxCenter, boxCoord: box_center_coord };
     }
 
-    _getServiceTransform(out, node) {
+    _getServiceTransform(out: number[], node: TileNode): number[] {
         const rootNode = this._getRootNode(node._rootIdx);
         const service = this._getNodeService(node._rootIdx);
         const rootCenter = rootNode._bboxCenter;
@@ -968,7 +991,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return mat4.multiply(out, originMat4Reverse, out);
     }
 
-    _updateRootCenter(rootNode) {
+    _updateRootCenter(rootNode: RootTileNode) {
         const service = this._getNodeService(rootNode._rootIdx);
         if (!rootNode.boundingVolume || this._equalsOffsets(rootNode, service)) {
             return;
@@ -979,13 +1002,11 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
 
         let pointCenter = null;
         if (box) {
-            const center = this._updateRootBBoxCenter(rootNode);
-            pointCenter = center.boxCenter;
+            pointCenter = this._updateRootBBoxCenter(rootNode).boxCenter;
         } else if (region) {
-            const center = this._updateRootRegionCenter(rootNode);
-            pointCenter = center.boxCenter;
+            pointCenter = this._updateRootRegionCenter(rootNode).boxCenter;
         } else if (sphere) {
-            pointCenter = this._createSphere(rootNode)[0];
+            pointCenter = this._createSphere(rootNode).boxCenter;
         }
         const heightOffset = service.heightOffset || 0;
         const coordOffset = service.coordOffset || [0, 0];
@@ -994,7 +1015,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         rootNode._bboxCenter = pointCenter;
     }
 
-    _equalsOffsets(rootNode, service) {
+    _equalsOffsets(rootNode: RootTileNode, service: Geo3DTilesService): boolean {
         if (!rootNode._originCoordOffset) {
             return false;
         }
@@ -1002,30 +1023,24 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return rootNode._originCoordOffset[0] === coordOffset[0] && rootNode._originCoordOffset[1] === coordOffset[1] && rootNode._originHeightOffset === (service.heightOffset || 0);
     }
 
-    _updateRootRegionCenter(rootNode) {
-        if (!rootNode.boundingVolume) {
-            return null;
-        }
+    _updateRootRegionCenter(rootNode: RootTileNode): TileRegionBox {
         this._offsetBoundingVolume(rootNode);
         return this._createRegionBox(rootNode);
     }
 
-    _updateRootBBoxCenter(rootNode) {
-        if (!rootNode.boundingVolume) {
-            return null;
-        }
+    _updateRootBBoxCenter(rootNode: RootTileNode): TileBoxCenter {
         this._offsetBoundingVolume(rootNode);
         return this._calBoxCenter(rootNode);
     }
 
-    _createHalfAxes(box, transform) {
+    _createHalfAxes(box: number[], transform: number[]): number[] {
         let halfAxes = box.slice(3, 12);
         const rotationScale = mat3.fromMat4(TEMP_MAT3_0, transform);
         halfAxes = mat3.multiply(halfAxes, rotationScale, halfAxes);
         return halfAxes;
     }
 
-    _getBoxScale(center) {
+    _getBoxScale(center: maptalks.Coordinate): number[] {
         const map = this.getMap();
         const scalePoint = map.distanceToPointAtRes(100, 100, map.getGLRes(), center);
         let heightScale;
@@ -1038,13 +1053,13 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return TEMP_SCALE;
     }
 
-    _offsetCenter(center) {
+    _offsetCenter(center: maptalks.Coordinate | number[]): maptalks.Coordinate {
         if (Array.isArray(center)) {
             center = new maptalks.Coordinate(center);
         }
         let offset = this.options['offset'];
         if (isFunction(offset)) {
-            offset = offset.call(this, Array.isArray(center) ? new maptalks.Coordinate(center) : center);
+            offset = (offset as OffsetFunction).call(this, Array.isArray(center) ? new maptalks.Coordinate(center) : center);
         }
         if (offset[0] || offset[1]) {
             const map = this.getMap();
@@ -1056,11 +1071,11 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return center;
     }
 
-    _getRootNode(i) {
+    _getRootNode(i: number): RootTileNode {
         return this._roots[i];
     }
 
-    _getRootMaxExtent(i) {
+    _getRootMaxExtent(i: number): maptalks.Extent | null {
         const extent = this._getNodeService(i).maxExtent;
         if (!extent) {
             return null;
@@ -1078,7 +1093,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
      * from Cesium
      * 与cesium不同的是，我们用boundingVolume顶面的四个顶点中的最小值作为distanceToCamera
      */
-    _getScreenSpaceError(node) {
+    _getScreenSpaceError(node: TileNode): number {
         const fovDenominator = this._fovDenominator;
         const geometricError = node.geometricError;
         if (geometricError === 0) {
@@ -1113,19 +1128,19 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         }
     }
 
-    _getNodeBox(id) {
+    _getNodeBox(id: string): TileRegionBox | TileSphereBox | TileOrientedBox {
         return this._nodeBoxes[id];
     }
 
     /**
      * Identify the data on the given container point
-     * @param  {maptalks.Point} point   - point to identify
-     * @param  {Object} [options=null]  - options
-     * @param  {Object} [options.tolerance=0] - identify tolerance in pixel
-     * @param  {Object} [options.count=null]  - result count
-     * @return {Object[]} data identified
+     * @param point   - point to identify
+     * @param [options=null]  - options
+     * @param [options.tolerance=0] - identify tolerance in pixel
+     * @param [options.count=null]  - result count
+     * @return data identified
      */
-    identify(coordinate, options = {}) {
+    identify(coordinate: number[] | maptalks.Coordinate, options: IdentifyOptions = {}) {
         const map = this.getMap();
         const renderer = this.getRenderer();
         if (!map || !renderer) {
@@ -1142,10 +1157,10 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
      * @param  {Object} [options.tolerance=0] - identify tolerance in pixel
      * @return {Object[]} data identified
      */
-    identifyAtPoint(point, options = {}) {
+    identifyAtPoint(point: maptalks.Point, options: IdentifyOptions = {}) {
         const results = [];
         if (!options['excludeMasks']) {
-            const identifyMasks = this.identifyMask(point, options);
+            const identifyMasks = (this as any).identifyMask(point, options);
             if (identifyMasks && identifyMasks.length) {
                 pushIn(results, identifyMasks);
             }
@@ -1161,7 +1176,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return results;
     }
 
-    getCurrentBatchIDs() {
+    getCurrentBatchIDs(): number[] {
         const map = this.getMap();
         const renderer = this.getRenderer();
         if (!map || !renderer) {
@@ -1170,8 +1185,11 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return renderer._getCurrentBatchIDs();
     }
 
-    highlight(highlights) {
+    highlight(highlights: HighlightItem | HighlightItem[]): this {
         const renderer = this.getRenderer();
+        if (!Array.isArray(highlights)) {
+            highlights = [highlights];
+        }
         if (!renderer) {
             if (!this._highlighted) {
                 this._highlighted = [];
@@ -1193,16 +1211,16 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         delete this._highlighted;
     }
 
-    cancelHighlight(service, ids) {
+    cancelHighlight(serviceIndex: number, ids: number[]): this {
         const renderer = this.getRenderer();
         if (!renderer) {
             return this;
         }
-        renderer.cancelHighlight(service, ids);
+        renderer.cancelHighlight(serviceIndex, ids);
         return this;
     }
 
-    cancelAllHighlight() {
+    cancelAllHighlight(): this {
         const renderer = this.getRenderer();
         if (!renderer) {
             return this;
@@ -1211,7 +1229,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return this;
     }
 
-    showOnly(items) {
+    showOnly(items: ShowOnlyItem[]): this {
         const renderer = this.getRenderer();
         if (!renderer) {
             if (!this._showOnlys) {
@@ -1234,16 +1252,16 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         delete this._showOnlys;
     }
 
-    cancelShowOnly(service) {
+    cancelShowOnly(serviceIndex: number): this {
         const renderer = this.getRenderer();
         if (!renderer) {
             return this;
         }
-        renderer.cancelShowOnly(service);
+        renderer.cancelShowOnly(serviceIndex);
         return this;
     }
 
-    setServiceOpacity(idx, opacity) {
+    setServiceOpacity(idx: number, opacity: number): this {
         const service = this.options.services[idx];
         if (service) {
             service.opacity = opacity;
@@ -1256,10 +1274,10 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return this;
     }
 
-    setServiceDebugBoundingVolume(idx, visible) {
+    setServiceDebug(idx: number, debug: boolean): this {
         const service = this.options.services[idx];
         if (service) {
-            service.debug = visible;
+            service.debug = debug;
         }
         const renderer = this.getRenderer();
         if (!renderer) {
@@ -1269,7 +1287,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return this;
     }
 
-    _getCameraLonLat(cameraPosition) {
+    _getCameraLonLat(cameraPosition: number[]): maptalks.Coordinate {
         const map = this.getMap();
         const res = map.getGLRes();
 
@@ -1290,26 +1308,28 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
      * Export the Geo3DTilesLayer's profile json. <br>
      * Layer's profile is a snapshot of the layer in JSON format. <br>
      * It can be used to reproduce the instance by [fromJSON]{@link Layer#fromJSON} method
-     * @return {Object} layer's profile JSON
      */
-    toJSON() {
+    toJSON(): object {
         const profile = {
-            'type': this.getJSONType(),
+            'type': (this as any).getJSONType(),
             'id': this.getId(),
-            'options': this.config()
+            'options': (this as any).config()
         };
         return profile;
     }
 }
 
-Geo3DTilesLayer.mergeOptions(options);
+(Geo3DTilesLayer as maptalks.Layer).mergeOptions(options);
 
-Geo3DTilesLayer.registerRenderer('gl', Geo3DTilesRenderer);
+(Geo3DTilesLayer as maptalks.Layer).registerRenderer('gl', Geo3DTilesRenderer);
 
-Geo3DTilesLayer.registerJSONType('Geo3DTilesLayer');
+(Geo3DTilesLayer as maptalks.Layer).registerJSONType('Geo3DTilesLayer');
 
-function computeSphereDistanceToCamera(boundingVolume, cameraCartesian3) {
-    const center = boundingVolume.sphere;
+function computeSphereDistanceToCamera(boundingVolume: BoundingVolume, cameraCartesian3: number[], matrix?: number[]): number {
+    let center = boundingVolume.sphere;
+    if (matrix) {
+        center = vec3.transformMat4([], center, matrix);
+    }
     const distance = vec3.dist(center, cameraCartesian3);
     const radius = boundingVolume.sphere[3];
     if (distance < radius) {
@@ -1319,9 +1339,12 @@ function computeSphereDistanceToCamera(boundingVolume, cameraCartesian3) {
     }
 }
 
-function computeBoxDistanceToCamera(boundingVolume, cameraCartesian3) {
+function computeBoxDistanceToCamera(boundingVolume: BoundingVolume, cameraCartesian3: number[], matrix?: number[]): number {
     const box = boundingVolume.box;
-    const boxCenter = vec3.set(TEMP_VEC3_0, box[0], box[1], box[2]);
+    let boxCenter = vec3.set(TEMP_VEC3_0, box[0], box[1], box[2]);
+    if (matrix) {
+        boxCenter = vec3.transformMat4([], boxCenter, matrix);
+    }
     const halfAxes = mat3.set(TEMP_MAT3_0, box[3], box[4], box[5], box[6], box[7], box[8], box[9], box[10], box[11]);
     return distanceToCamera(boxCenter, halfAxes, cameraCartesian3);
 }
@@ -1332,20 +1355,21 @@ function computeBoxDistanceToCamera(boundingVolume, cameraCartesian3) {
  * @param {Number[3]} cameraCartesian3 camera's cartesian3 position
  * @return {Number}
  */
-function computeRegionDistanceToCamera(node, cameraCartesian3, cameraLocation) {
+function computeRegionDistanceToCamera(node: TileNode, cameraCartesian3: number[], cameraLocation: number[]) {
     if (!node._tileRegion) {
         node._tileRegion = new TileBoundingRegion(node.boundingVolume.region);
     }
     return node._tileRegion.distanceToCamera(cameraCartesian3, cameraLocation);
 }
 
-function createRootTile(url, idx, service) {
+function createRootTile(url: string, idx: number, service: Geo3DTilesService): RootTileNode {
     url = getAbsoluteURL(url);
     const domainKey = url.indexOf('{s}') >= 0 ? '{s}' : url.indexOf('%7Bs%7D') >= 0 ? '%7Bs%7D' : null;
     const root = {
         version: 0,
+        _empty: true,
         service,
-        visible: isNil(service.visible) ? 1: service.visible,
+        visible: isNil(service.visible) ? true: service.visible,
         baseUrl: url.substring(0, url.lastIndexOf('/')) + '/',
         content: {
             url
@@ -1359,7 +1383,7 @@ function createRootTile(url, idx, service) {
     return root;
 }
 
-function inViewerRequestVolume(cameraLocation, cameraCartesian3, volume) {
+function inViewerRequestVolume(cameraLocation: number[], cameraCartesian3: number[], volume: BoundingVolume, matrix: number[]): boolean {
     if (volume.region) {
         const region = volume.region;
         if (cameraLocation[0] >= region[0] && cameraLocation[0] <= region[2] && // x >= xmin && x <= xmax
@@ -1368,18 +1392,18 @@ function inViewerRequestVolume(cameraLocation, cameraCartesian3, volume) {
             return true;
         }
     } else if (volume.sphere) {
-        return computeSphereDistanceToCamera(volume, cameraCartesian3);
+        return computeSphereDistanceToCamera(volume, cameraCartesian3, matrix) <= 0;
     } else if (volume.box) {
-        return computeBoxDistanceToCamera(volume, cameraCartesian3) === 0;
+        return computeBoxDistanceToCamera(volume, cameraCartesian3, matrix) === 0;
     }
     return false;
 }
 
-function isI3SNode(node) {
+function isI3SNode(node: TileNode): boolean {
     return node.content && node.content.uri && node.content.uri.indexOf('i3s:') >= 0;
 }
 
-function convertRegionToBox(region) {
+function convertRegionToBox(region: number[]) {
     const west = region[0], south = region[1], east = region[2], north = region[3], minHeight = region[4], maxHeight = region[5];
     const ws = radianToCartesian3([], west, south, minHeight);
     const en = radianToCartesian3([], east, north, maxHeight);
@@ -1387,7 +1411,7 @@ function convertRegionToBox(region) {
     const en_coord = cartesian3ToDegree(en, en);
     return { ws: ws_coord, en: en_coord };
 }
-function fromRotationTranslation(out, rotation, translation) {
+function fromRotationTranslation(out: number[], rotation: number[], translation: number[]): number[] {
     return fillColumnMajorMatrix4(
         out,
         rotation[0],
@@ -1409,24 +1433,24 @@ function fromRotationTranslation(out, rotation, translation) {
     );
 }
 
-function fillColumnMajorMatrix4(out,
-    column0Row0,
-    column1Row0,
-    column2Row0,
-    column3Row0,
-    column0Row1,
-    column1Row1,
-    column2Row1,
-    column3Row1,
-    column0Row2,
-    column1Row2,
-    column2Row2,
-    column3Row2,
-    column0Row3,
-    column1Row3,
-    column2Row3,
-    column3Row3
-) {
+function fillColumnMajorMatrix4(out: number[],
+    column0Row0: number,
+    column1Row0: number,
+    column2Row0: number,
+    column3Row0: number,
+    column0Row1: number,
+    column1Row1: number,
+    column2Row1: number,
+    column3Row1: number,
+    column0Row2: number,
+    column1Row2: number,
+    column2Row2: number,
+    column3Row2: number,
+    column0Row3: number,
+    column1Row3: number,
+    column2Row3: number,
+    column3Row3: number
+): number[] {
     out[0] = column0Row0 || 0.0;
     out[1] = column0Row1 || 0.0;
     out[2] = column0Row2 || 0.0;
@@ -1446,7 +1470,7 @@ function fillColumnMajorMatrix4(out,
     return out;
 }
 
-function getBoxPlaneCenter(out, box, v0, v1, v2, v3) {
+function getBoxPlaneCenter(out: number[], box: number[], v0: number, v1: number, v2: number, v3: number): number[] {
     v0 = vec3.set(TEMP_VEC3_0, box[v0 * 3], box[v0 * 3 + 1], box[v0 * 3 + 2]);
     v1 = vec3.set(TEMP_VEC3_1, box[v1 * 3], box[v1 * 3 + 1], box[v1 * 3 + 2]);
     v2 = vec3.set(TEMP_VEC3_2, box[v2 * 3], box[v2 * 3 + 1], box[v2 * 3 + 2]);
@@ -1459,12 +1483,12 @@ function getBoxPlaneCenter(out, box, v0, v1, v2, v3) {
     return out;
 }
 
-function isTopTile(node)  {
+function isTopTile(node: TileNode): boolean  {
     if (!node.content || node.hasParentContent) {
         return false;
     }
     let parent = node.parent;
-    if (parent.content || parent.hasParentContent) {
+    if (parent && (parent.content || parent.hasParentContent)) {
         if (!node.hasParentContent) {
             node.hasParentContent = true;
         }
@@ -1491,4 +1515,288 @@ function equals(a, b) {
         }
     }
     return a === b;
+}
+
+export type OffsetFunction = (center: maptalks.Coordinate) => number[];
+
+export type Geo3DTilesLayerOptions = {
+    'services': Geo3DTilesService[],
+    'maxGPUMemory'?: number,
+    'retireInterval'?: number,
+    'loadingLimitOnInteracting'?: number,
+    'loadingLimit'?: number,
+    'debug'?: boolean,
+    'meshLimitPerFrame'?: number,
+    'i3sNodepageLimitPerFrame'?: number,
+    'enableI3SCompressedGeometry'?: boolean,
+    'forceI3SCompressedGeometry'?: boolean,
+    'picking'?: boolean,
+    'pickingPoint'?: boolean,
+    'geometryEvents'?: boolean,
+    'alwaysShowTopTiles'?: boolean,
+    // 'ambientLight' : [0, 0, 0],
+    // 'heightOffsets' : null,
+    // 'polygonOffsets' : null,
+    'antialias'?: boolean,
+    'offset'?: number[] | OffsetFunction,
+    'renderer'?: 'gl',
+    'forceRenderOnZooming'?: true,
+    'forceRenderOnRotating'? : true,
+    'forceRenderOnMoving'?: true,
+    'optionalExtensions'?: [
+        'ANGLE_instanced_arrays',
+        'OES_element_index_uint',
+        'OES_standard_derivatives',
+        'OES_vertex_array_object',
+        'OES_texture_half_float', 'OES_texture_half_float_linear',
+        'OES_texture_float', 'OES_texture_float_linear',
+        'WEBGL_depth_texture', 'EXT_shader_texture_lod',
+        'WEBGL_compressed_texture_astc',
+        'WEBGL_compressed_texture_etc',
+        'WEBGL_compressed_texture_etc1',
+        'WEBGL_compressed_texture_pvrtc',
+        'WEBGL_compressed_texture_s3tc',
+        'WEBGL_compressed_texture_s3tc_srgb'
+    ]
+};
+
+export type Geo3DTilesService = {
+    /**
+     * 数据服务地址
+     * @english
+     * service url
+     */
+    url: string,
+    maxExtent?: maptalks.Extent
+} & Geo3DTilesServiceOptions;
+
+/**
+ * service的属性定义
+ * @english
+ * Service property definitions
+ */
+export type Geo3DTilesServiceOptions = {
+    /**
+     * 最大的屏幕空间误差，默认为8。当模型瓦片在屏幕上大小超过设定时会尝试请求下一级瓦片，数字越小请求的模型瓦片越精细
+     * @english
+     * maximum screen space error, default is 8
+     */
+    maximumScreenSpaceError? :number,
+    /**
+     * 是否开启 debug
+     * @english
+     * Enable debug
+     */
+    debug?: boolean,
+    /**
+     * 设置材质中的alphaTest，默认为0.1
+     * @english
+     * Set alphaTest in material, default is 0.1
+     */
+    alphaTest?: number,
+    /**
+     * 模型的缩放比例
+     * @english
+     * Model scaling
+     */
+    scale?: number,
+    /**
+     * 模型在xy平面上的偏移量，与地图的坐标系一致。
+     * @english
+     * The offset of the model on the xy plane, consistent with the coordinate system of the map.
+     */
+    coordOffset?: number[],
+    /**
+     * 模型在z轴上的偏移量，单位为米
+     * @english
+     * Offset of the model on the z-axis in meters
+     */
+    heightOffset?: number,
+    /**
+     * 模型在xyz轴上旋转角度，单位为度，取值范围-180到180
+     * @english
+     * Angle of rotation of the model on the xyz-axis in degrees, ranging from -180 to 180.
+     */
+    rotation?: number[],
+    /**
+     * 服务子域，用于替换url中的{s}
+     * @english
+     * Service subdomain to replace {s} in the url
+     */
+    subdomains?: string[],
+    /**
+     * 透明度，取值范围0-1
+     * @english
+     * opacity，ranging from 0 to 1
+     */
+    opacity?: number,
+    /**
+     * 是否可见
+     * @english
+     * Whether is visible
+     */
+    visible?: boolean,
+    /**
+     * fetch 请求的设置
+     * @english
+     * fetch options
+     */
+    fetchOptions?: any,
+    /**
+     * 点云数据的 pointSize，单位像素，支持zoom级别的 function-type
+     * @english
+     * pointSize of the point cloud data in pixels, supports function-type at zoom level.
+     */
+    pointSize?: number,
+    /**
+     * 点云数据的透明度，取值范围0-1，支持zoom级别的 function-type
+     * @english
+     * Transparency of the point cloud data, value range 0-1, supports zoom level function-type.
+     */
+    pointOpacity?: number,
+    /**
+     * 模型设置为unlit，渲染时忽略全局灯光设置，适用于倾斜摄影等模型中已经包含灯光信息的场景
+     * @english
+     * The model is set to unlit, and the global lighting settings are ignored when rendering, for scenes where lighting information is already included in the model, such as photometry modeling.
+     */
+    unlit?: boolean,
+    /**
+     *
+     */
+    polygonFill?: number[],
+    /**
+     * 环境光曝光参数
+     * @english
+     * environment exposure
+     */
+    environmentExposure?: number,
+    /**
+     * 模型是否双面绘制，默认为false
+     * @english
+     * Whether the model is rendered double-sided, default is false
+     */
+    doubleSided?: boolean,
+    /**
+     * 模型纹理尺寸最大值，默认为1024
+     * @english
+     * Maximum model texture size, default is 1024.
+     */
+    maxTextureSize?: number,
+    /**
+     * 材质 uniform 变量的预设值
+     * @english
+     * The preset value of the material uniforms
+     */
+    material?: any
+};
+
+export type TileNode = {
+    id?: string,
+    _empty: boolean,
+    _rootIdx: number,
+    _level: number,
+    _error?: number,
+    transform?: number[],
+    matrix: number[],
+    refine: string,
+    boundingVolume?: BoundingVolume,
+    viewerRequestVolume?: BoundingVolume,
+    geometricError?: number,
+    children?: TileNode[],
+    _upAxis?: string,
+    visible?: boolean,
+    parent?: TileNode,
+    baseUrl?: string,
+    content?: {
+        url?: string,
+        uri?: string
+    },
+    _cameraDistance?: number,
+    maxExtent?: maptalks.Extent,
+    //ts-expect-error 等待reshader.Mesh ts化
+    _boxMesh?: any,
+    _tileRegion?: TileBoundingRegion,
+    hasParentContent?: boolean
+};
+
+export type RootTileNode = {
+    version: number,
+    service: Geo3DTilesService,
+    domainKey?: string | null,
+    _bboxCenter?: number[],
+    _originCoordOffset?: number[],
+    _originHeightOffset?: number
+} & TileNode;
+
+export type BoundingVolume = {
+    _centerTransformed?: boolean;
+    box?: number[],
+    region?: number[],
+    sphere?: number[],
+    coordOffset?: number[],
+    heightOffset?: number,
+    originalVolume?: number[]
+};
+
+export type CandinateNode = {
+    id?: string, // for debug
+    node?: TileNode,
+    children: CandinateNode[],
+    level: number,
+    // cameraDistance : node._cameraDistance, // for debug
+    parent?: CandinateNode,
+    content?: string
+};
+
+export type HighlightItem = {
+    color?: number[],
+    filter?: (object) => boolean,
+    bloom?: boolean,
+    id?: number,
+    opacity: number
+};
+
+export type ShowOnlyItem = {
+    id: number,
+    service?: number
+};
+
+export type IdentifyOptions = {
+    /**
+     * 像素冗余，默认为0
+     * @english
+     * tolerance in pixel, default is 0
+     */
+    tolerance?: number
+};
+
+type TileBoxCenter = {
+    boxCoord: maptalks.Coordinate,
+    boxCenter: number[],
+    node?: TileNode
+};
+
+type TileOrientedBox = {
+    obbox: number[],
+    boxPosition: number[]
+} & TileBoxCenter;
+
+type TileRegionBox = {
+    obbox: number[],
+    boxPosition: number[]
+} & TileBoxCenter;
+
+type TileSphereBox = {
+    sphereBox: [number[], number]
+} & TileBoxCenter;
+
+export type QueriedTiles = {
+    tiles: CandinateNode[],
+    root?: CandinateNode
+};
+
+export enum TileVisibility {
+    OUT_OF_FRUSTUM,
+    SCREEN_ERROR_TOO_SMALL,
+    VISIBLE
 }

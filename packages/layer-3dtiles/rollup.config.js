@@ -3,6 +3,7 @@ const commonjs = require('@rollup/plugin-commonjs');
 const terser = require('@rollup/plugin-terser');
 const replace = require('@rollup/plugin-replace');
 const pkg = require('./package.json');
+const typescript = require('@rollup/plugin-typescript');
 
 const production = process.env.BUILD === 'production';
 const outputFile = pkg.main;
@@ -152,7 +153,8 @@ module.exports = [
                 // https://github.com/mapbox/mapbox-gl-js/pull/6956
                 ignoreGlobal: true
             }),
-            glsl()
+            glsl(),
+            typescript({ tsconfig: './tsconfig.json', sourceMap: true, inlineSources: true } )
         ].concat(plugins),
         external: ['maptalks', '@maptalks/gl'],
         output: {
@@ -196,7 +198,8 @@ if (production) {
                     // https://github.com/mapbox/mapbox-gl-js/pull/6956
                     ignoreGlobal: true
                 }),
-                glsl()
+                glsl(),
+                typescript({ tsconfig: './tsconfig.json'} )
             ].concat(plugins),
             output: {
                 globals: {

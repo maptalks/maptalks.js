@@ -955,18 +955,18 @@ export default class MeshPainter {
     }
 
     _createBoxMesh(node) {
-        const nodeBox = this._layer._nodeBoxes[node.id];
+        const nodeBox = this._layer._getNodeBox(node.id);
         if (!nodeBox || node._boxMesh) {
             return;
         }
         let vertices, indices, translate, scale;
-        if (!nodeBox.length) { //region、box
+        if (nodeBox.obbox) { //region、box
             vertices = nodeBox.boxPosition;
             indices = BOX_INDEX;
             translate = nodeBox.boxCenter;
             scale = BOX_SCALE;
-        } else if (nodeBox.length === 2) { //sphere
-            const sphereCenter = nodeBox[0], radius = nodeBox[1];
+        } else if (nodeBox.sphereBox) { //sphere
+            const sphereCenter = nodeBox.sphereBox[0], radius = nodeBox.sphereBox[1];
             vertices = SPHERE_POS.vertices;
             indices = SPHERE_POS.indices;
             translate = sphereCenter;
@@ -1076,7 +1076,7 @@ export default class MeshPainter {
         const translation = getTranslation(TEMP_TRANSLATION, projectedTransform);
         let offset = this._layer.options['offset'];
         if (isFunction(offset)) {
-            const center = this._layer._getNodeBox(node.id).center;
+            const center = this._layer._getNodeBox(node.id).boxCoord;
             offset = offset.call(this._layer, center);
         }
         vec3.set(TEMP_OFFSET, offset[0], offset[1], 0);

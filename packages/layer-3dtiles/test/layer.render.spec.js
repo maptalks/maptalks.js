@@ -1137,7 +1137,7 @@ describe('render specs', () => {
                 for (let i = 0; i < 25; i++) {
                     expected.push(i);
                 }
-                assert.deepEqual(id.array, expected);
+                assert.deepEqual(Array.from(id.array), expected);
             };
             runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 1 }, assertion);
         });

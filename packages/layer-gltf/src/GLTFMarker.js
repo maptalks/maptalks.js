@@ -853,6 +853,7 @@ export default class GLTFMarker extends Marker {
         const shader = this.getShader();
         const markerUniforms = this.getUniforms() || {};
         const materialInfo = geometryResource.materialInfo || {};
+        materialInfo.alphaTest = 0.1;
         const renderer = this.getLayer().getRenderer();
         if (shader === 'phong') {
             if (materialInfo.name === 'pbrSpecularGlossiness') {
