@@ -1820,7 +1820,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         return xmax < viewportPadding || xmin >= screenRightBoundary || ymax < viewportPadding || ymin > screenBottomBoundary;
     }
 
-    getRenderer(): any {
+    getRenderer() {
         return this._getRenderer();
     }
 

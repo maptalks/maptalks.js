@@ -9,9 +9,10 @@ import * as Symbolizers from './symbolizers';
 import { interpolate } from '../../core/util/util';
 import { Bbox, getDefaultBBOX, resetBBOX, setBBOX, validateBBOX } from '../../core/util/bbox';
 import Map from '../../map/Map'
-import {DebugSymbolizer} from './symbolizers';
+import { DebugSymbolizer } from './symbolizers';
 import Extent from '../../geo/Extent';
 import { ResourceCache } from '../layer/CanvasRenderer';
+import type { WithUndef } from '../../types/typings';
 
 //registered symbolizers
 //the latter will paint at the last
@@ -183,7 +184,7 @@ class Painter extends Class {
      * for strokeAndFillSymbolizer
      * @return resources to render vector
      */
-    getPaintParams(dx, dy, ignoreAltitude, disableClip, ptkey = '_pt') {
+    getPaintParams(dx: number, dy: number, ignoreAltitude: boolean, disableClip: boolean, ptkey = '_pt') {
         const renderer = this.getLayer()._getRenderer();
         const mapStateCache = renderer.mapStateCache;
         let resolution, pitch, bearing, glScale, containerExtent;

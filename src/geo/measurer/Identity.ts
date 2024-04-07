@@ -2,6 +2,7 @@ import { extend } from '../../core/util/common';
 import Coordinate, { CoordinateJson } from '../Coordinate';
 import Point from '../Point';
 import Common, { type CommonMeasurer } from './Common';
+import type { WithNull } from '../../types/typings';
 
 const identity = {
     /**
@@ -53,6 +54,15 @@ const identity = {
         return Math.abs(area / 2);
     },
 
+    /**
+     * 使用 x 轴距离和 y 轴距离从给定源坐标定位坐标
+     * @english
+     * Locate a coordinate from the given source coordinate with a x-axis distance and a y-axis distance.
+     * @param c
+     * @param xDist
+     * @param yDist
+     * @param out
+     */
     locate : function (c: Coordinate | CoordinateJson, xDist: number, yDist: number, out?: Coordinate) {
         out = out || new Coordinate(0, 0);
         out.set(c.x, c.y);
@@ -60,12 +70,13 @@ const identity = {
     },
 
     /**
-     * 使用 x 轴距离和 y 轴距离从给定源坐标定位坐标
-     *
+     * 使用 x 轴距离和 y 轴距离从给定源坐标定位坐标（这是一个私有方法）
+     * @english
      * Locate a coordinate from the given source coordinate with a x-axis distance and a y-axis distance.
      * @param c     - source coordinate
      * @param xDist     - x-axis distance
      * @param yDist     - y-axis distance
+     * @private
      */
     _locate: function (c: Coordinate, xDist: number, yDist: number): WithNull<Coordinate> {
         if (!c) {
@@ -85,7 +96,16 @@ const identity = {
         return c;
     },
 
-    rotate : function (c: Coordinate | CoordinateJson, pivot: Coordinate, angle: number) {
+    /**
+     * 绕枢轴旋转给定角度的坐标
+     *
+     * @english
+     * Rotate a coordinate of given angle around pivot
+     * @param c  - source coordinate
+     * @param pivot - pivot
+     * @param angle - angle in degree
+     */
+    rotate: function (c: Coordinate | CoordinateJson, pivot: Coordinate, angle: number) {
         c = new Coordinate(c.x, c.y);
         return this._rotate(c as Coordinate, pivot, angle);
     },
@@ -98,8 +118,9 @@ const identity = {
      * @param c  - source coordinate
      * @param pivot - pivot
      * @param angle - angle in degree
+     * @private
      */
-    _rotate : function () {
+    _rotate: function () {
         const tmp = new Point(0, 0);
         return function (c: Coordinate, pivot: Coordinate, angle: number): Coordinate {
             tmp.x = c.x - pivot.x;

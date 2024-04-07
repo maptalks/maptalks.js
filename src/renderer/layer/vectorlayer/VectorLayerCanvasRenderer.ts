@@ -9,6 +9,7 @@ import CollisionIndex from '../../../core/CollisionIndex';
 import Canvas from '../../../core/Canvas';
 import type { Painter } from '../../geometry';
 import { Point } from '../../../geo';
+import type { WithUndef } from '../../../types/typings';
 
 const TEMP_EXTENT = new PointExtent();
 const TEMP_VEC3: Vector3 = [] as unknown as Vector3;
@@ -728,10 +729,8 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 }
 
-// @ts-expect-error todo 等待 VectorLayer 改造完成
-VectorLayer.registerRenderer('canvas', VectorLayerRenderer);
+VectorLayer.registerRenderer<typeof VectorLayerRenderer>('canvas', VectorLayerRenderer);
 
-// todo 等待 Extent 改造完成
 type GeoType = any;
 
 interface MapStateCacheType {

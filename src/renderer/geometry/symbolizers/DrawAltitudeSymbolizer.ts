@@ -58,8 +58,7 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
         const style = this._getStyle();
         this._prepareContext(ctx);
         if (this.geometry.type === 'LineString') {
-            // @ts-expect-error todo fix 只需要两个参数
-            const paintParams = this._getPaintParams(style['lineDx'], style['lineDy'], false, true);
+            const paintParams = this._getPaintParams(style['lineDx'], style['lineDy']);
             if (!paintParams) {
                 return;
             }

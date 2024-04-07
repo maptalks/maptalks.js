@@ -1,6 +1,7 @@
 import { offsetDom } from '../../core/util/dom';
 import Class from '../../core/Class';
 import Point from '../../geo/Point';
+import type { WithUndef } from '../../types/typings';
 
 import type Map from '../../map/Map';
 

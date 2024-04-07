@@ -21,6 +21,7 @@ import Canvas from '../../../core/Canvas';
 import Actor from '../../../core/worker/Actor';
 import { imageFetchWorkerKey } from '../../../core/worker/CoreWorkers';
 import { TileImageBuffer, TileImageTexture } from '../ImageGLRenderable';
+import type { WithUndef } from '../../../types/typings';
 
 const TILE_POINT = new Point(0, 0);
 const TEMP_POINT = new Point(0, 0);
@@ -1322,8 +1323,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 }
 
-// @ts-expect-error todo 等待 TileLayer 改造完成
-TileLayer.registerRenderer('canvas', TileLayerCanvasRenderer);
+TileLayer.registerRenderer<typeof TileLayerCanvasRenderer>('canvas', TileLayerCanvasRenderer);
 
 function falseFn(): boolean { return false; }
 
