@@ -1,7 +1,7 @@
 import { isInteger } from '../core/util';
 import { createEl, on, preventDefault } from '../core/util/dom';
 import Map from '../map/Map';
-import Control from './Control';
+import Control, { ControlOptionsType } from './Control';
 // import DragHandler from '../handler/Drag';
 
 /**
@@ -11,11 +11,11 @@ import Control from './Control';
  * @memberOf control.Zoom
  * @instance
  */
-const options = {
+const options: ZoomOptionsType = {
     'position': 'top-left',
     // 'slider': true,
     'zoomLevel': true,
-    'seamless' : false
+    'seamless': false
 };
 
 // const UNIT = 10;
@@ -34,12 +34,15 @@ const options = {
  * }).addTo(map);
  */
 class Zoom extends Control {
+    _levelDOM: HTMLSpanElement;
+    _zoomInButton: HTMLLinkElement;
+    _zoomOutButton: HTMLLinkElement;
     /**
      * method to build DOM of the control
      * @param  {Map} map map to build on
      * @return {HTMLDOMElement}
      */
-    buildOn(map) {
+    buildOn(map: Map) {
         const options = this.options;
 
         const dom = createEl('div', 'maptalks-zoom');
@@ -54,7 +57,7 @@ class Zoom extends Control {
 
         const zoomDOM = createEl('div', 'maptalks-zoom-slider');
 
-        const zoomInButton = createEl('a', 'maptalks-zoom-zoomin');
+        const zoomInButton = createEl('a', 'maptalks-zoom-zoomin') as HTMLLinkElement;
         zoomInButton.href = 'javascript:;';
         zoomDOM.appendChild(zoomInButton);
         this._zoomInButton = zoomInButton;
@@ -74,7 +77,7 @@ class Zoom extends Control {
         //     this._sliderDot = dot;
         // }
 
-        const zoomOutButton = createEl('a', 'maptalks-zoom-zoomout');
+        const zoomOutButton = createEl('a', 'maptalks-zoom-zoomout') as HTMLLinkElement;
         zoomOutButton.href = 'javascript:;';
         zoomDOM.appendChild(zoomOutButton);
         this._zoomOutButton = zoomOutButton;
@@ -126,7 +129,7 @@ class Zoom extends Control {
             if (!isInteger(zoom)) {
                 zoom = Math.floor(zoom * 10) / 10;
             }
-            this._levelDOM.innerHTML = zoom;
+            this._levelDOM.innerHTML = zoom + '';
         }
     }
 
@@ -223,3 +226,8 @@ Map.addOnLoadHook(function () {
 });
 
 export default Zoom;
+
+export type ZoomOptionsType = {
+    zoomLevel?: boolean;
+    seamless?: boolean;
+} & ControlOptionsType;

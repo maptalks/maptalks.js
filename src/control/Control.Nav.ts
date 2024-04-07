@@ -1,8 +1,8 @@
 import Map from '../map/Map';
-import Control from './Control';
+import Control, { ControlOptionsType, PositionType } from './Control';
 
 
-const options = {
+const options: NavOptionsType = {
     'position': 'top-left'
 };
 
@@ -27,3 +27,7 @@ Map.addOnLoadHook(function () {
         this.addControl(this.navControl);
     }
 });
+
+export type NavOptionsType = {
+    position: string | PositionType;
+} & ControlOptionsType;
