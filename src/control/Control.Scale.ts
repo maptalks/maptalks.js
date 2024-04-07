@@ -71,7 +71,7 @@ class Scale extends Control {
             this._mScale = createElOn('div', this.options['containerClass'] ? null : css, this._scaleContainer) as HTMLDivElement;
         }
         if (this.options['imperial']) {
-            this._iScale = createElOn('div', this.options['containerClass'] ? null : css, this._scaleContainer) as HTMLDivElement;;
+            this._iScale = createElOn('div', this.options['containerClass'] ? null : css, this._scaleContainer) as HTMLDivElement;
         }
     }
 

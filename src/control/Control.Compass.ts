@@ -1,5 +1,5 @@
 import { createEl, setStyle, on } from '../core/util/dom';
-import Control, { ControlOptionsType } from './Control';
+import Control, { ControlOptionsType, PositionType } from './Control';
 import Map from '../map/Map';
 
 /**
@@ -53,7 +53,7 @@ class Compass extends Control {
     }
 
     _rotateCompass() {
-        const b = this.getMap().getBearing().toFixed(1);;
+        const b = this.getMap().getBearing().toFixed(1);
         let bearing = parseFloat(b);
         if (bearing <= 180) bearing *= -1;
         if (bearing !== this._bearing) {
@@ -93,5 +93,5 @@ Map.addOnLoadHook(function () {
 export default Compass;
 
 export type CompassOptionsType = {
-
+    position: string | PositionType;
 } & ControlOptionsType;
