@@ -1,13 +1,40 @@
 import Geometry from '../Geometry';
 import GeometryEditor from '../editor/GeometryEditor';
-interface EditOptions {
-    symbol: null,
-    fixAspectRatio: false,
-    centerHandleSymbol: null,
-    vertexHandleSymbol: null,
-    newVertexHandleSymbol: null,
-    removeVertexOn: any,
+export type GeometryEditSymbolType = {
+    'markerType': string,
+    'markerFill': string,
+    'markerLineColor': string,
+    'markerLineWidth': number,
+    'markerWidth': number,
+    'markerHeight': number,
+    'opacity': number
 }
+
+export type GeometryEditOptionsType = {
+    symbol?: { [key: string]: any },
+    fixAspectRatio?: boolean,
+    centerHandleSymbol?: GeometryEditSymbolType,
+    vertexHandleSymbol?: GeometryEditSymbolType,
+    newVertexHandleSymbol?: GeometryEditSymbolType,
+    removeVertexOn?: string;
+    collision?: boolean;
+    collisionBufferSize?: number;
+    vertexZIndex?: number;
+    newVertexZIndex?: number;
+}
+
+declare module "../Geometry" {
+
+    interface Geometry {
+        startEdit(opts?: GeometryEditOptionsType): this;
+        endEdit(): this;
+        redoEdit(): this;
+        undoEdit(): this;
+        cancelEdit(): this;
+        isEditing(): boolean;
+    }
+}
+
 
 Geometry.include(/** @lends Geometry.prototype */ {
     /**
@@ -23,7 +50,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * @param {Object} [options.removeVertexOn=contextmenu] - event to remove a vertex from line or polygon, contextmenu by default
      * @return {Geometry} this
      */
-    startEdit(opts: EditOptions): Geometry {
+    startEdit(opts?: GeometryEditOptionsType) {
         const map = this.getMap();
         if (!map || !this.options['editable']) {
             return this;
@@ -54,7 +81,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * End editing.
      * @return {Geometry} this
      */
-    endEdit(): Geometry {
+    endEdit() {
         if (this._editor) {
             this._editor.stop();
             delete this._editor;
@@ -83,7 +110,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * Redo the edit
      * @return {Geometry} this
      */
-    redoEdit(): Geometry {
+    redoEdit() {
         if (!this.isEditing()) {
             return this;
         }
@@ -108,7 +135,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * Undo the edit
      * @return {Geometry} this
      */
-    undoEdit(): Geometry {
+    undoEdit() {
         if (!this.isEditing()) {
             return this;
         }
@@ -133,7 +160,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * cancel the edit
      * @return {Geometry} this
      */
-    cancelEdit(): Geometry {
+    cancelEdit() {
         if (!this.isEditing()) {
             return this;
         }

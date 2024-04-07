@@ -313,7 +313,7 @@ class TextBox extends TextMarker {
         delete this._refreshing;
     }
 
-    startEdit(opts: any): void {
+    startEdit(opts: any): this {
         const symbol = this._getCompiledSymbol();
         if (isFunctionDefinition(this._width)) {
             const markerWidth = symbol['markerWidth'];
@@ -325,10 +325,10 @@ class TextBox extends TextMarker {
             this._oldHeight = this._height;
             this.setHeight(markerHeight);
         }
-        super.startEdit(opts);
+        return super.startEdit(opts);
     }
 
-    endEdit(): void {
+    endEdit(): this {
         const map = this.getMap();
         const zoom = map && map.getZoom();
         if (this._oldWidth) {
@@ -355,7 +355,7 @@ class TextBox extends TextMarker {
             this.setHeight(this._oldHeight);
             delete this._oldHeight;
         }
-        super.endEdit();
+        return super.endEdit();
     }
 }
 

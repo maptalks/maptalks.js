@@ -1,7 +1,7 @@
 import type Map from '../../map/Map';
 import type GeometryEditor from '../../geometry/editor/GeometryEditor';
 import type { Point } from '../../geo';
-import type { Bbox } from '../../core/util/bbox';
+import type { BBOX } from '../../core/util/bbox';
 
 export interface EditOutlineOptions {
     zIndex?: number;
@@ -27,7 +27,7 @@ export default class EditOutline {
     }
 
     needCollision?(): boolean;
-    getRenderBBOX?(dpr?: number): Bbox;
+    getRenderBBOX?(dpr?: number): BBOX;
 
     setPoints(points: Point[]) {
         this.points = points;
