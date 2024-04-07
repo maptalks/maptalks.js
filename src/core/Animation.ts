@@ -9,6 +9,8 @@ import {
 import Point from '../geo/Point';
 import Coordinate from '../geo/Coordinate';
 
+export type Callback = (...params: any[]) => any
+
 const KEY = '__anim_player';
 
 /**
@@ -20,11 +22,11 @@ const KEY = '__anim_player';
  * @protected
  */
 const Easing = {
-    outExpo(x) {
+    outExpo(x: number) {
         return x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
     },
 
-    outQuint(x) {
+    outQuint(x: number) {
         return 1 - Math.pow(1 - x, 5);
     },
 
@@ -33,7 +35,7 @@ const Easing = {
      * @param {number} t Input between 0 and 1.
      * @return {number} Output between 0 and 1.
      */
-    in(t) {
+    in(t: number) {
         return Math.pow(t, 2);
     },
 
@@ -42,7 +44,7 @@ const Easing = {
      * @param {number} t Input between 0 and 1.
      * @return {number} Output between 0 and 1.
      */
-    out(t) {
+    out(t: number) {
         return 1 - Easing.in(1 - t);
     },
 
@@ -51,7 +53,7 @@ const Easing = {
      * @param {number} t Input between 0 and 1.
      * @return {number} Output between 0 and 1.
      */
-    inAndOut(t) {
+    inAndOut(t: number) {
         return 3 * t * t - 2 * t * t * t;
     },
 
@@ -60,7 +62,7 @@ const Easing = {
      * @param {number} t Input between 0 and 1.
      * @return {number} Output between 0 and 1.
      */
-    linear(t) {
+    linear(t: number) {
         return t;
     },
 
@@ -71,7 +73,7 @@ const Easing = {
      * @param {number} t Input between 0 and 1.
      * @return {number} Output between 0 and 1.
      */
-    upAndDown(t) {
+    upAndDown(t: number) {
         if (t < 0.5) {
             return Easing.inAndOut(2 * t);
         } else {
@@ -87,6 +89,8 @@ const Easing = {
  * @protected
  */
 class Frame {
+    state: any
+    styles: any
     /**
      * Create an animation frame.
      * @param {Object} state  - animation state
@@ -112,6 +116,13 @@ class Frame {
  * @memberof animation
  */
 class Player {
+    _animation: any
+    options: any
+    _onFrame: any
+    playState: any
+    ready: any
+    finished: any
+    target: any
 
     /**
      * Create an animation player
@@ -119,7 +130,7 @@ class Player {
      * @param {Object} options     - animation options
      * @param {Function} onFrame  - callback function for animation steps
      */
-    constructor(animation, options, onFrame, target) {
+    constructor(animation: Callback, options: object, onFrame: Callback, target: object) {
         this._animation = animation;
         this.options = options;
         this._onFrame = onFrame;
@@ -208,7 +219,7 @@ const Animation = {
             } else if (Array.isArray(v1) && isNumber(v1[0]) || v1 instanceof Coordinate || v1 instanceof Point) {
                 // is a coordinate (array or a coordinate) or a point
                 if (Array.isArray(v1)) {
-                    v1 = new Coordinate(v1);
+                    v1 = new Coordinate(v1 as any);
                     v2 = new Coordinate(v2);
                 } else {
                     clazz = v1.constructor;
@@ -271,7 +282,7 @@ const Animation = {
      * @param  {Object} [options.easing=null]  - animation easing
      * @return {Function} framing function helps to generate animation frames.
      */
-    framing(styles, options) {
+    framing(styles: any[], options?) {
         if (!options) {
             options = {};
         }
@@ -286,7 +297,7 @@ const Animation = {
             dStyles = styles[1];
             destStyles = styles[2];
         }
-        const deltaStyles = function (delta, _startStyles, _dStyles) {
+        const deltaStyles = function (delta: number, _startStyles?: any[], _dStyles?: any[]) {
             if (!_startStyles || !_dStyles) {
                 return null;
             }
@@ -324,7 +335,7 @@ const Animation = {
             }
             return result;
         };
-        return function (elapsed, duration) {
+        return function (elapsed: number, duration: number) {
             let state, d;
             if (elapsed < 0) {
                 state = {
@@ -355,7 +366,7 @@ const Animation = {
 
     },
 
-    _requestAnimFrame(fn) {
+    _requestAnimFrame(fn: Callback) {
         if (!this._frameQueue) {
             this._frameQueue = [];
         }
@@ -391,19 +402,21 @@ const Animation = {
      * @param  {Function} step  - callback function for animation steps
      * @return {Player} player
      */
-    animate(styles, options, step, target) {
+    animate(styles, options, step: Callback, target) {
         if (!options) {
             options = {};
         }
         const animation = Animation.framing(styles, options);
         const player = new Player(animation, options, step, target);
         return player;
-    }
+    },
+
+    _frameFn: () => { }
 };
 
 Animation._frameFn = Animation._run.bind(Animation);
 
-extend(Player.prototype, /** @lends animation.Player.prototype */{
+extend<any, any>(Player.prototype, /** @lends animation.Player.prototype */{
     _prepare() {
         const options = this.options;
         let duration = options['speed'] || options['duration'];

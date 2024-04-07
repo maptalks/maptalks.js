@@ -768,7 +768,6 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         if (!painter) {
             return null;
         }
-        //@ts-expect-error Expected 1-2 arguments, but got 0.
         return painter.get2DExtent();
     }
 

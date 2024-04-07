@@ -1,6 +1,15 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { parseJSON, emptyImageUrl, UID } from './util/util';
 import { isString, isFunction } from './util/common';
 import { IS_NODE } from './util/env';
+
+export type AjaxGetOption = {
+    headers: any
+    responseType: any
+    credentials: any
+}
+
+export type Callback = (...params: any[]) => any
 
 /**
  * @classdesc
@@ -14,10 +23,10 @@ const Ajax = {
     /**
      * Get JSON data by jsonp
      * from https://gist.github.com/gf3/132080/110d1b68d7328d7bfe7e36617f7df85679a08968
-     * @param  {String}   url - resource url
-     * @param  {Function} cb  - callback function when completed
+     * @param url - resource url
+     * @param callback  - callback function when completed
      */
-    jsonp: function (url, callback) {
+    jsonp: function (url: string, callback: Callback) {
         // INIT
         const name = '_maptalks_jsonp_' + UID();
         if (url.match(/\?/)) url += '&callback=' + name;
@@ -61,13 +70,15 @@ const Ajax = {
      *     }
      * );
      */
-    get: function (url, options, cb) {
+    get: (url: string, options?: any, cb?: any) => {
         if (isFunction(options)) {
             const t = cb;
             cb = options;
             options = t;
         }
+        // @ts-ignore
         if (IS_NODE && Ajax.get.node) {
+            // @ts-ignore
             return Ajax.get.node(url, cb, options);
         }
         const client = Ajax._getClient(cb);
@@ -110,7 +121,7 @@ const Ajax = {
      *   }
      * );
      */
-    post: function (url, options, cb) {
+    post: (url: string, options?: any, cb?: Callback) => {
         let postData;
         if (!isString(url)) {
             //for compatible
@@ -129,8 +140,10 @@ const Ajax = {
             options = options || {};
             postData = options.postData;
         }
+        // @ts-ignore
         if (IS_NODE && Ajax.post.node) {
             options.url = url;
+            // @ts-ignore
             return Ajax.post.node(options, postData, cb);
         }
         const client = Ajax._getClient(cb);
@@ -155,7 +168,7 @@ const Ajax = {
         return client;
     },
 
-    _wrapCallback: function (client, cb) {
+    _wrapCallback: function (client, cb: Callback) {
         return function () {
             if (client.readyState === 4) {
                 if (client.status === 200) {
@@ -181,7 +194,7 @@ const Ajax = {
         };
     },
 
-    _getClient: function (cb) {
+    _getClient: function (cb: Callback) {
         /*eslint-disable no-empty, no-undef*/
         let client;
         try {
@@ -211,7 +224,7 @@ const Ajax = {
      *     }
      * );
      */
-    getArrayBuffer(url, options, cb) {
+    getArrayBuffer(url: string, options: any, cb: Callback) {
         if (isFunction(options)) {
             const t = cb;
             cb = options;
@@ -225,7 +238,7 @@ const Ajax = {
     },
 
     // from mapbox-gl-js
-    getImage(img, url, options) {
+    getImage(img: any, url: string, options: any) {
         return Ajax.getArrayBuffer(url, options, (err, imgData) => {
             if (err) {
                 if (img.onerror) {
@@ -246,7 +259,9 @@ const Ajax = {
                 img.src = imgData.data.byteLength ? URL.createObjectURL(blob) : emptyImageUrl;
             }
         });
-    }
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    getJSON: (url: string, options?: any, cb?: Callback): any => { }
 };
 
 /**
@@ -269,7 +284,7 @@ const Ajax = {
  * );
  * @static
  */
-Ajax.getJSON = function (url, options, cb) {
+Ajax.getJSON = function (url: string, options?: any, cb?: Callback) {
     if (isFunction(options)) {
         const t = cb;
         cb = options;

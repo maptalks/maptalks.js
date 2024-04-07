@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { pushIn, isNumber } from '../../core/util';
 import Point from '../../geo/Point';
 import Canvas from '../../core/Canvas';
@@ -109,8 +110,10 @@ const el = {
 
     _paintOn: function (...args: any[]) {
         if (this._paintAsPath()) {
+            // @ts-expect-error
             return Canvas.polygon(...args);
         } else {
+            // @ts-expect-error
             return Canvas.ellipse(...args);
         }
     },
@@ -161,6 +164,7 @@ Sector.include(el, {
 
     _paintOn: function (...args: any[]) {
         if (this._paintAsPath()) {
+            // @ts-expect-error
             return Canvas.polygon(...args);
         } else {
             const r = this.getMap().getBearing();
@@ -169,6 +173,7 @@ Sector.include(el, {
                 args[3][0] += r;
                 args[3][1] += r;
             }
+            // @ts-expect-error
             return Canvas.sector(...args);
         }
     }
