@@ -386,6 +386,15 @@ Geometry.mergeOptions({
 
 Geometry.addInitHook('addHandler', 'draggable', GeometryDragHandler);
 
+
+declare module "../Geometry" {
+
+    interface Geometry {
+        isDragging(): boolean;
+    }
+}
+
+
 Geometry.include(/** @lends Geometry.prototype */ {
     /**
      * 是否正在拖到几何体

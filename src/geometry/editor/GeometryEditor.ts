@@ -10,18 +10,10 @@ import EditHandle from '../../renderer/edit/EditHandle';
 import EditOutline from '../../renderer/edit/EditOutline';
 import { loadFunctionTypes } from '../../core/mapbox';
 import * as Symbolizers from '../../renderer/geometry/symbolizers';
+import { GeometryEditOptionsType, GeometryEditSymbolType } from '../ext/Geometry.Edit';
 
 const EDIT_STAGE_LAYER_PREFIX = INTERNAL_LAYER_PREFIX + '_edit_stage_';
 
-type geometrySymbol = {
-    'markerType': string,
-    'markerFill': string,
-    'markerLineColor': string,
-    'markerLineWidth': number,
-    'markerWidth': number,
-    'markerHeight': number,
-    'opacity': number
-}
 type GeometryEvents = {
     'symbolchange': any,
     // prevent _exeAndReset when dragging geometry in gl layers
@@ -30,7 +22,7 @@ type GeometryEvents = {
     'positionchange shapechange': any,
 }
 
-function createHandleSymbol(markerType: string, opacity: number): geometrySymbol {
+function createHandleSymbol(markerType: string, opacity: number): GeometryEditSymbolType {
     return {
         'markerType': markerType,
         'markerFill': '#fff',
@@ -42,7 +34,7 @@ function createHandleSymbol(markerType: string, opacity: number): geometrySymbol
     };
 }
 
-const options = {
+const options: GeometryEditOptionsType = {
     //fix outline's aspect ratio when resizing
     'fixAspectRatio': false,
     // geometry's symbol when editing
@@ -69,7 +61,7 @@ const options = {
  */
 class GeometryEditor extends Eventable(Class) {
 
-    public _geometry: any
+    public _geometry: any;
     private _originalSymbol: any
     private _shadowLayer: any
     private _shadow: any
@@ -79,14 +71,15 @@ class GeometryEditor extends Eventable(Class) {
     private _editOutline: any
     private _refreshHooks: Array<any>
     private _updating: boolean
-    public editing: any
+    public editing: boolean;
+    options: GeometryEditOptionsType;
 
     /**
      * @param {Geometry} geometry geometry to edit
      * @param {Object} [opts=null] options
      * @param {Object} [opts.symbol=null] symbol of being edited.
      */
-    constructor(geometry, opts) {
+    constructor(geometry, opts: GeometryEditOptionsType) {
         super(opts);
         this._geometry = geometry;
         if (!this._geometry) {
@@ -375,7 +368,7 @@ class GeometryEditor extends Eventable(Class) {
             ];
         });
         const removeVertexOn = this.options['removeVertexOn'];
-        const handle = new EditHandle(this, map, { symbol, cursor: opts['cursor'], events: removeVertexOn });
+        const handle = new EditHandle(this, map, { symbol, cursor: opts['cursor'], events: removeVertexOn as any });
         handle.setContainerPoint(containerPoint);
         return handle;
     }
