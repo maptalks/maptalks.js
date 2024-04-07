@@ -1,5 +1,5 @@
 import { createEl } from '../core/util/dom';
-import Control from './Control';
+import Control, { ControlOptionsType } from './Control';
 import Map from '../map/Map';
 
 /**
@@ -9,7 +9,7 @@ import Map from '../map/Map';
  * @memberOf control.Attribution
  * @instance
  */
-const options = {
+const options: AttributionOptionsType = {
     'position': {
         'bottom': 0,
         'left': 0
@@ -46,9 +46,10 @@ const layerEvents = 'addlayer removelayer setbaselayer baselayerremove';
  * }));
  */
 class Attribution extends Control {
+    _attributionContainer: HTMLDivElement;
 
     buildOn() {
-        this._attributionContainer = createEl('div');
+        this._attributionContainer = createEl('div') as HTMLDivElement;
         this._attributionContainer.className = 'maptalks-attribution';
         this._update();
         return this._attributionContainer;
@@ -69,7 +70,7 @@ class Attribution extends Control {
         }
 
         const attributions = map
-            ._getLayers(layer => layer.options['attribution'])
+            ._getLayers(layer => !!layer.options['attribution'])
             .reverse()
             .map(layer => layer.options['attribution']);
         const content = this.options['content'] + (attributions.length > 0 ? ' - ' + attributions.join(', ') : '');
@@ -92,3 +93,7 @@ Map.addOnLoadHook(function () {
 });
 
 export default Attribution;
+
+export type AttributionOptionsType = {
+    content?: string;
+} & ControlOptionsType;

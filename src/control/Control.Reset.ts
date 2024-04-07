@@ -1,6 +1,6 @@
 import { createEl, on } from '../core/util/dom';
-import Control from './Control';
-import Map from '../map/Map';
+import Control, { ControlOptionsType } from './Control';
+import Map, { MapViewType } from '../map/Map';
 
 /**
  * @property {Object}   options - options
@@ -13,7 +13,7 @@ import Map from '../map/Map';
  * }).addTo(map);
  */
 
-const options = {
+const options: ResetOptionsType = {
     position: {
         'top': 156,
         'left': 20
@@ -22,6 +22,9 @@ const options = {
 };
 
 class Reset extends Control {
+    _reset: HTMLDivElement;
+    _view: MapViewType;
+    options: ResetOptionsType;
     /**
      * method to build DOM of the control
      * @param  {Map} map map to build on
@@ -40,13 +43,13 @@ class Reset extends Control {
         this._view = !this.options.view ? this.getMap().getView() : this.options.view;
     }
 
-    setView(view) {
+    setView(view: MapViewType) {
         this._view = view;
     }
 
     _getReset() {
         const reset = createEl('div', 'maptalks-reset');
-        return reset;
+        return reset as HTMLDivElement;
     }
 
     _registerDomEvents() {
@@ -77,3 +80,6 @@ Map.addOnLoadHook(function () {
 });
 
 export default Reset;
+export type ResetOptionsType = {
+    view?: MapViewType;
+} & ControlOptionsType;

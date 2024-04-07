@@ -1,7 +1,8 @@
 import { extend, isNil, isString } from '../core/util';
 import { createEl } from '../core/util/dom';
+import { Point } from '../geo';
 import DragHandler from '../handler/Drag';
-import Control from './Control';
+import Control, { ControlOptionsType, PositionType } from './Control';
 
 /**
  * @property {Object} options - options
@@ -13,7 +14,7 @@ import Control from './Control';
  * @memberOf control.Panel
  * @instance
  */
-const options = {
+const options: PanelOptionsType = {
     'position': 'top-right',
     'draggable': true,
     'custom': false,
@@ -39,13 +40,17 @@ const options = {
  * }).addTo(map);
  */
 class Panel extends Control {
+    draggable: DragHandler;
+    options: PanelOptionsType;
+    _startPos: Point;
+    _startPosition: PositionType;
 
     /**
      * method to build DOM of the control
      * @param  {Map} map map to build on
      * @return {HTMLDOMElement}
      */
-    buildOn() {
+    buildOn(): HTMLDivElement {
         let dom;
         if (this.options['custom']) {
             if (isString(this.options['content'])) {
@@ -57,7 +62,7 @@ class Panel extends Control {
         } else {
             dom = createEl('div', 'maptalks-panel');
             if (this.options['closeButton']) {
-                const closeButton = createEl('a', 'maptalks-close');
+                const closeButton = createEl('a', 'maptalks-close') as HTMLLinkElement;
                 closeButton.innerText = '×';
                 closeButton.href = 'javascript:;';
                 closeButton.onclick = function () {
@@ -67,13 +72,17 @@ class Panel extends Control {
             }
 
             const panelContent = createEl('div', 'maptalks-panel-content');
-            panelContent.innerHTML = this.options['content'];
+            if (isString(this.options['content'])) {
+                panelContent.innerHTML = this.options['content'];
+            } else {
+                panelContent.appendChild(this.options.content);
+            }
             dom.appendChild(panelContent);
         }
 
         this.draggable = new DragHandler(dom, {
             'cancelOn': this._cancelOn.bind(this),
-            'ignoreMouseleave' : true
+            'ignoreMouseleave': true
         });
 
         this.draggable.on('dragstart', this._onDragStart, this)
@@ -105,7 +114,7 @@ class Panel extends Control {
      * return {control.Panel} this
      * @fires Panel#contentchange
      */
-    setContent(content) {
+    setContent(content: string | HTMLElement) {
         const old = this.options['content'];
         this.options['content'] = content;
         /**
@@ -171,16 +180,16 @@ class Panel extends Control {
         const startPosition = this._startPosition;
         const position = this.getPosition();
         if (!isNil(position['top'])) {
-            position['top'] = parseInt(startPosition['top']) + offset.y;
+            position['top'] = parseInt(startPosition['top'] as string) + offset.y;
         }
         if (!isNil(position['bottom'])) {
-            position['bottom'] = parseInt(startPosition['bottom']) - offset.y;
+            position['bottom'] = parseInt(startPosition['bottom'] as string) - offset.y;
         }
         if (!isNil(position['left'])) {
-            position['left'] = parseInt(startPosition['left']) + offset.x;
+            position['left'] = parseInt(startPosition['left'] as string) + offset.x;
         }
         if (!isNil(position['right'])) {
-            position['right'] = parseInt(startPosition['right']) - offset.x;
+            position['right'] = parseInt(startPosition['right'] as string) - offset.x;
         }
         this.setPosition(position);
         /**
@@ -218,8 +227,8 @@ class Panel extends Control {
         const map = this.getMap();
         const containerPoint = this.getContainerPoint();
         const dom = this.getDOM(),
-            width = parseInt(dom.clientWidth),
-            height = parseInt(dom.clientHeight);
+            width = parseInt(dom.clientWidth + ''),
+            height = parseInt(dom.clientHeight + '');
         const anchors = [
             //top center
             map.containerPointToCoordinate(
@@ -247,3 +256,9 @@ class Panel extends Control {
 Panel.mergeOptions(options);
 
 export default Panel;
+export type PanelOptionsType = {
+    draggable?: boolean;
+    custom?: boolean;
+    content?: string | HTMLElement;
+    closeButton?: boolean;
+} & ControlOptionsType;
