@@ -899,8 +899,8 @@ class CanvasRenderer extends Class {
             if (isNil(h)) {
                 h = img.height || this.layer.options['defaultIconSize'][1];
             }
-            const canvas = Canvas2D.createCanvas(w, h);
-            Canvas2D.image(canvas.getContext('2d'), img, 0, 0, w, h);
+            const canvas = Canvas2D.createCanvas(w as number, h as number);
+            Canvas2D.image(canvas.getContext('2d'), img, 0, 0, w as number, h as number);
             img = canvas;
         }
         this.resources.addResource(url, img);

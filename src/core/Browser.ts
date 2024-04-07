@@ -1,16 +1,18 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { isFunction } from './util/common';
 import { IS_NODE } from './util/env';
 
-let Browser = {};
+let Browser: any = {};
 // const maps = {};
 
 function getDevicePixelRatio() {
+    // @ts-ignore
     return (window.devicePixelRatio || (window.screen.deviceXDPI / window.screen.logicalXDPI));
 }
 
 if (!IS_NODE) {
     const ua = navigator.userAgent.toLowerCase(),
-        doc = document.documentElement || { style: {}},
+        doc = document.documentElement || { style: {} },
 
         ie = 'ActiveXObject' in window,
 
@@ -23,6 +25,7 @@ if (!IS_NODE) {
 
         mobile = typeof orientation !== 'undefined' || ua.indexOf('mobile') !== -1,
         msPointer = !window.PointerEvent && window.MSPointerEvent,
+        // @ts-ignore
         pointer = (window.PointerEvent && navigator.pointerEnabled) || msPointer,
 
         ie3d = ie && ('transition' in doc.style),
@@ -39,7 +42,7 @@ if (!IS_NODE) {
         requestIdleCallback = typeof window !== 'undefined' && isFunction(window.requestIdleCallback);
 
 
-    let chromeVersion = 0;
+    let chromeVersion: any = 0;
     if (chrome) {
         chromeVersion = ua.match(/chrome\/([\d.]+)/)[1];
     }
@@ -116,9 +119,11 @@ if (!IS_NODE) {
 
         retina: devicePixelRatio > 1,
         devicePixelRatio,
-
+        // @ts-ignore
         language: navigator.browserLanguage ? navigator.browserLanguage : navigator.language,
+        // @ts-ignore
         ie9: (ie && document.documentMode === 9),
+        // @ts-ignore
         ie10: (ie && document.documentMode === 10),
 
         webgl: webgl,

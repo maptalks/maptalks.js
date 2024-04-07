@@ -237,7 +237,7 @@ class Class {
      * Mixin the specified objects into the class as prototype properties or methods.
      * @param sources - objects to mixin
      */
-    static include(...sources) {
+    static include(...sources: any[]) {
         for (let i = 0; i < sources.length; i++) {
             extend(this.prototype, sources[i]);
         }

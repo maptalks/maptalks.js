@@ -1,7 +1,4 @@
-import {
-    getAbsoluteURL,
-    isURL
-} from './util/util';
+import { getAbsoluteURL, isURL } from './util/util';
 import { isObject, extend, isString, isNumber } from './util/common';
 import { createEl } from './util/dom';
 import Browser from './Browser';
@@ -107,7 +104,7 @@ function loadSprite(options: SpriteOptionsType = { imgUrl: '', jsonUrl: '' }) {
             return;
         }
 
-        function getCtx(canvas, width, height) {
+        function getCtx(canvas: HTMLCanvasElement, width: number, height: number) {
             canvas.width = width;
             canvas.height = height;
             const ctx = canvas.getContext('2d');
@@ -115,7 +112,7 @@ function loadSprite(options: SpriteOptionsType = { imgUrl: '', jsonUrl: '' }) {
             return ctx;
         }
 
-        function parseSprite(json = {}, image) {
+        function parseSprite(json = {}, image: CanvasImageSource) {
             const canvas = createCanvas();
             if (!canvas) {
                 reject(new Error('can not create canvas'));
@@ -136,7 +133,7 @@ function loadSprite(options: SpriteOptionsType = { imgUrl: '', jsonUrl: '' }) {
                 const { x, y, width, height } = spriteItem;
                 let resource;
                 if (offscreenCanvas) {
-                    const ctx = getCtx(offscreenCanvas, width, height);
+                    const ctx = getCtx(offscreenCanvas as any, width, height);
                     ctx.drawImage(image, x, y, width, height, 0, 0, width, height);
                     resource = offscreenCanvas.transferToImageBitmap();
                 } else {
@@ -299,7 +296,7 @@ export const ResourceProxy = {
         // }
     } as ProxyConfig,
 
-    fromJSON(json) {
+    fromJSON(json: string | object) {
         try {
             if (isString(json)) {
                 json = JSON.parse(json);
