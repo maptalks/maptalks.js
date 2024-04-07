@@ -2,6 +2,9 @@ import Coordinate from '../Coordinate'
 
 const common = {
     /**
+     * 测量两点之间的距离
+     *
+     * @english
      * Measure length between coordinate c1 and coordinate c2
      * @param c1 coordinate
      * @param c2 coordinate

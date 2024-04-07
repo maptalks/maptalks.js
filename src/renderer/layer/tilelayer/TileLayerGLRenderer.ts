@@ -192,8 +192,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
     }
 }
 
-// @ts-expect-error todo 等待 TileLayer 改造完成
-TileLayer.registerRenderer('gl', TileLayerGLRenderer);
+TileLayer.registerRenderer<typeof TileLayerGLRenderer>('gl', TileLayerGLRenderer);
 
 export default TileLayerGLRenderer;
 

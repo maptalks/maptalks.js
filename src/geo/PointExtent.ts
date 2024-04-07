@@ -1,5 +1,6 @@
 import Extent, { ExtentLike, Position, Projection } from './Extent';
 import Point from './Point';
+import type { WithNull } from '../types/typings';
 
 /**
  * 表示二维表面上的边界框，即具有最小点和最大点的矩形区域。 <br>

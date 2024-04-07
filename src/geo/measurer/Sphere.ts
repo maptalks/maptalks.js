@@ -2,6 +2,7 @@ import { extend, toDegree, toRadian } from '../../core/util/common';
 import { wrap } from '../../core/util/util';
 import Coordinate, { type CoordinateJson } from '../Coordinate';
 import Common, { type CommonMeasurer } from './Common';
+import type { WithNull } from '../../types/typings';
 
 type CoordsLike = Coordinate | CoordinateJson;
 
@@ -71,6 +72,15 @@ class Sphere {
         return 0.5 * Math.abs(b);
     }
 
+    /**
+     * 使用 x 轴距离和 y 轴距离从给定源坐标定位坐标
+     * @english
+     * Locate a coordinate from the given source coordinate with a x-axis distance and a y-axis distance.
+     * @param c
+     * @param xDist
+     * @param yDist
+     * @param out
+     */
     locate(c: CoordsLike, xDist: number, yDist: number, out?: Coordinate) {
         out = out || new Coordinate(0, 0);
         out.set(c.x, c.y);
@@ -79,11 +89,12 @@ class Sphere {
 
     /**
      * 使用 x 轴距离和 y 轴距离从给定源坐标定位坐标
-     *
+     * @english
      * Locate a coordinate from the given source coordinate with a x-axis distance and a y-axis distance.
      * @param c     - source coordinate
      * @param xDist     - x-axis distance
      * @param yDist     - y-axis distance
+     * @private
      */
     _locate(c: Coordinate, xDist: number, yDist: number): WithNull<Coordinate> {
         if (!c) {
@@ -123,6 +134,14 @@ class Sphere {
         return c;
     }
 
+    /**
+     * 绕枢轴旋转给定角度的坐标
+     * @english
+     * Rotate a coordinate of given angle around pivot
+     * @param c  - source coordinate
+     * @param pivot - pivot
+     * @param angle - angle in degree
+     */
     rotate(c: CoordsLike, pivot: Coordinate, angle: number) {
         const coordinate = new Coordinate(c);
         return this._rotate(coordinate, pivot, angle);
@@ -135,6 +154,7 @@ class Sphere {
      * @param c  - source coordinate
      * @param pivot - pivot
      * @param angle - angle in degree
+     * @private
      */
     _rotate(c: Coordinate, pivot: Coordinate, angle: number) {
         const initialAngle = rhumbBearing(pivot, c);

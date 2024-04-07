@@ -3,6 +3,10 @@ import type GeometryEditor from '../../geometry/editor/GeometryEditor';
 import type { Point } from '../../geo';
 import type { Bbox } from '../../core/util/bbox';
 
+export interface EditOutlineOptions {
+    zIndex?: number;
+}
+
 export default class EditOutline {
     points: any;
     xmin: number;
@@ -12,12 +16,13 @@ export default class EditOutline {
 
     map: Map;
     target: GeometryEditor;
-    options: any;
+    options: EditOutlineOptions;
 
-    constructor(target: GeometryEditor, map: Map) {
+    constructor(target: GeometryEditor, map: Map, options?: EditOutlineOptions) {
         this.target = target;
         target.once('remove', this.delete, this);
         this.map = map;
+        this.options = options;
         this.addTo(map);
     }
 

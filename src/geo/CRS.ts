@@ -1,3 +1,5 @@
+import type { WithNull } from '../types/typings';
+
 /**
  * 表示由 [GeoJSON](http://geojson.org/geojson-spec.html#coordinate-reference-system-objects)定义的 CRS
  * @english

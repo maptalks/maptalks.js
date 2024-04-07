@@ -3,6 +3,7 @@ import type Point from './Point';
 import type { PointArray, PointJson } from './Point';
 import type Coordinate from './Coordinate';
 import type { CoordinateArray, CoordinateJson } from './Coordinate';
+import type { WithUndef } from '../types/typings';
 
 type NumberAble = number | string
 
