@@ -229,7 +229,7 @@ class TileConfig {
         return new Coordinate(x, y);
     }
 
-    getTilePointNW(tileX: number, tileY: number, res: number, out: any): Point {
+    getTilePointNW(tileX: number, tileY: number, res: number, out?: any): Point {
         // res = res / this._glRes;
         const scale = this._glRes / res;
         const tileSystem = this.tileSystem;
