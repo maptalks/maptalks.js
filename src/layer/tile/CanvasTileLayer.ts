@@ -13,7 +13,7 @@ import TileLayer from './TileLayer';
  */
 class CanvasTileLayer extends TileLayer {
 
-    constructor(id: string | number, options: any) {
+    constructor(id: string, options: any) {
         super(id, options);
         if (!this.options.hasOwnProperty('forceRenderOnMoving')) {
             // force not to forceRenderOnMoving

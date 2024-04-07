@@ -73,7 +73,7 @@ class GroupTileLayer extends TileLayer {
      * @param [options=null]          - construct options
      * @param [options.*=null]             - options defined in [TileLayer]{@link TileLayer#options}
      */
-    constructor(id: string | number, layers: TileLayer[], options: any) {
+    constructor(id: string, layers: TileLayer[], options: any) {
         super(id, options);
         this.layers = layers || [];
         this._checkChildren();
@@ -284,7 +284,7 @@ class GroupTileLayer extends TileLayer {
         return this;
     }
 
-    _onLayerShowHide(e: { type: string; target?: any }): GroupTileLayer {
+    _onLayerShowHide(e: { type: string; target?: any }): any {
         const { type, target } = e || {};
         //listen tilelayer.remove() method fix #1629
         if (type === 'remove' && target) {

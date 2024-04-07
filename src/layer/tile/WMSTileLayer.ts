@@ -58,8 +58,7 @@ class WMSTileLayer extends TileLayer {
     wmsParams: WMSTileLayerOptions;
     private _wmsVersion: number;
 
-    constructor(id: string | number, options: any) {
-        // @ts-ignore
+    constructor(id: string, options: WMSTileLayerOptions) {
         super(id);
         if (!wmsExcludeParams) {
             wmsExcludeParams = extend({}, this.options);
@@ -95,6 +94,7 @@ class WMSTileLayer extends TileLayer {
         const r = options.detectRetina ? dpr : 1;
         this.wmsParams.width *= r;
         this.wmsParams.height *= r;
+        // @ts-ignore
         const crs = this.options.crs || this.getMap().getProjection().code;
         const projectionKey = this._wmsVersion >= 1.3 ? 'crs' : 'srs';
         this.wmsParams[projectionKey] = crs;
@@ -115,7 +115,9 @@ class WMSTileLayer extends TileLayer {
         const url = super.getTileUrl(x, y, z);
 
         return url +
+            // @ts-ignore
             getParamString(this.wmsParams, url, this.options.uppercase) +
+            // @ts-ignore
             (this.options.uppercase ? '&BBOX=' : '&bbox=') + bbox;
     }
 
@@ -167,7 +169,8 @@ export function getParamString(obj, existingUrl, uppercase) {
     return ((!existingUrl || existingUrl.indexOf('?') === -1) ? '?' : '&') + params.join('&');
 }
 
-type WMSTileLayerOptions = {
+export type WMSTileLayerOptions = {
+    zIndex?: number;
     height?: number;
     width?: number;
     service?: string;

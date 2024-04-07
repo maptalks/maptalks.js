@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { isString } from '../../../core/util';
 import Coordinate from '../../../geo/Coordinate';
 import Point from '../../../geo/Point';
@@ -206,6 +207,7 @@ class TileConfig {
             nwIndex.y -= 1;
             seIndex.y -= 1;
         }
+        // @ts-ignore
         this._tileFullIndex[res] = new Extent(nwIndex, seIndex);
         return this._tileFullIndex[res];
     }

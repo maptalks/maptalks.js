@@ -189,14 +189,13 @@ const ARR3 = [];
     })
  */
 class TileLayer extends Layer {
-    private _tileSize: Size;
+    protected _tileSize: Size;
     private _coordCache: any;
     private _disablePyramid: any;
     private _hasOwnSR: any;
     private _tileFullExtent: any;
     private _rootNodes: any;
     private _visitedTiles: TileHashset;
-    tileInfoCache: any;
     private _zScale: any;
     private _sr: any;
     private _srMinZoom: number;
@@ -204,6 +203,7 @@ class TileLayer extends Layer {
     private _defaultTileConfig: TileConfig;
     private _tileConfig: TileConfig;
     private _polygonOffset: number;
+    tileInfoCache: any;
 
     /**
      * Reproduce a TileLayer from layer's profile JSON.
@@ -816,11 +816,14 @@ class TileLayer extends Layer {
             'z': z,
             's': domain
         };
+        // @ts-ignore
         if (this.options.token) {
             // @ts-ignore
             data.token = this.options.token;
         }
+        // @ts-ignore
         if (this.options.customTags) {
+            // @ts-ignore
             extend(data, this.options.customTags);
         }
         return urlTemplate.replace(URL_PATTERN, function (str: string, key: string | number) {
@@ -947,7 +950,7 @@ class TileLayer extends Layer {
 
     _getTiles(
         tileZoom: number,
-        containerExtent: PointExtent,
+        containerExtent: any,
         cascadeLevel: number,
         parentRenderer: any,
         ignoreMinZoom?: boolean
@@ -967,7 +970,7 @@ class TileLayer extends Layer {
             frustumMatrix = cascadeLevel === 0 ? map.cascadeFrustumMatrix0 : cascadeLevel === 1 ? map.cascadeFrustumMatrix1 : map.projViewMatrix;
         }
         const zoom = z + this.options['zoomOffset'];
-        const offset = this._getTileOffset(z),
+        const offset: any = this._getTileOffset(z),
             hasOffset = offset[0] || offset[1];
         const emptyGrid = {
             'zoom': z,
