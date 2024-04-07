@@ -1,7 +1,8 @@
 import { isArrayHasData } from '../core/util';
 import { stringLength } from '../core/util/strings';
 import { on, createEl, addClass, stopPropagation, measureDom, isHTML } from '../core/util/dom';
-import Control from './Control';
+import Control, { ControlOptionsType } from './Control';
+import type { Map } from './../map/Map';
 
 /**
  * @property {Object}   options - options
@@ -12,14 +13,13 @@ import Control from './Control';
  * @memberOf control.Toolbar
  * @instance
  */
-const options = {
+const options: ToolbarOptionsType = {
     'height': 28,
     'vertical': false,
     'position': 'top-right',
-    'reverseMenu' : false,
-    'items': {
-        //default buttons
-    }
+    'reverseMenu': false,
+    'items': []
+    //default buttons
 };
 
 /**
@@ -53,7 +53,7 @@ class Toolbar extends Control {
      * @param  {Map} map map to build on
      * @return {HTMLDOMElement}
      */
-    buildOn(map) {
+    buildOn(map: Map) {
         this._map = map;
         const dom = createEl('div');
         const ul = createEl('ul', 'maptalks-toolbar-hx');
@@ -103,7 +103,7 @@ class Toolbar extends Control {
                 if (isArrayHasData(item['children'])) {
                     const dropMenu = this._createDropMenu(i);
                     li.appendChild(dropMenu);
-                    li._menu = dropMenu;
+                    (li as any)._menu = dropMenu;
                     on(li, 'mouseover', function () {
                         this._menu.style.display = '';
                     });
@@ -117,7 +117,7 @@ class Toolbar extends Control {
         return dom;
     }
 
-    _createDropMenu(index) {
+    _createDropMenu(index: number) {
         const me = this;
 
         function onButtonClick(fn, index, childIndex) {
@@ -134,13 +134,13 @@ class Toolbar extends Control {
         const menuDom = createEl('div', 'maptalks-dropMenu'),
             items = this._getItems(),
             len = items.length,
-            menuUL = createEl('ul'),
+            menuUL = createEl('ul') as HTMLUListElement,
             children = items[index]['children'];
         if (index === len - 1 && children) {
             menuDom.style.cssText = 'right: 0px;';
             menuUL.style.cssText = 'right: 0px;position: absolute;';
             if (this.options['reverseMenu']) {
-                menuUL.style.bottom = 0;
+                menuUL.style.bottom = 0 + '';
             }
         }
         menuDom.appendChild(createEl('em', 'maptalks-ico'));
@@ -158,7 +158,7 @@ class Toolbar extends Control {
             li.innerHTML = '<a href="javascript:;">' + child['item'] + '</a>';
             li.style.cursor = 'pointer';
             li.style.width = (liWidth + 24) + 'px'; // 20 for text-intent
-            on(li.childNodes[0], 'click', (onButtonClick)(child['click'], index, i));
+            on(li.childNodes[0] as HTMLElement, 'click', (onButtonClick)(child['click'], index, i));
             menuUL.appendChild(li);
         }
         if (this.options['vertical']) {
@@ -186,3 +186,15 @@ class Toolbar extends Control {
 Toolbar.mergeOptions(options);
 
 export default Toolbar;
+
+export type ToolBarItem = {
+    item: string;
+    click: () => void;
+}
+
+export type ToolbarOptionsType = {
+    height?: number;
+    vertical?: boolean;
+    reverseMenu?: boolean;
+    items: Array<ToolBarItem>;
+} & ControlOptionsType;

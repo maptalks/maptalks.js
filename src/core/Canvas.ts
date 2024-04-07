@@ -14,6 +14,15 @@ import Browser from './Browser';
 import Point from '../geo/Point';
 import { getFont, getAlignPoint } from './util/strings';
 import { BBOX_TEMP, resetBBOX, setBBOX } from './util/bbox';
+import Extent from '../geo/Extent';
+import Size from '../geo/Size';
+
+export type Ctx = CanvasRenderingContext2D
+// export type Ctx = CanvasRenderingContext2D & {
+//     canvas: HTMLCanvasElement & {
+//         _drawn: boolean
+//     }
+// }
 
 const DEFAULT_STROKE_COLOR = '#000';
 const DEFAULT_FILL_COLOR = 'rgba(255,255,255,0)';
@@ -28,14 +37,14 @@ const textOffsetY = 1;
 const TEXT_BASELINE = 'top';
 
 const Canvas = {
-    getCanvas2DContext(canvas) {
+    getCanvas2DContext(canvas: HTMLCanvasElement) {
         return canvas.getContext('2d', { willReadFrequently: true });
     },
-    setHitTesting(testing) {
+    setHitTesting(testing: boolean) {
         hitTesting = testing;
     },
 
-    createCanvas(width, height, canvasClass) {
+    createCanvas(width: number, height: number, canvasClass?) {
         let canvas;
         if (!IS_NODE) {
             canvas = createEl('canvas');
@@ -48,7 +57,7 @@ const Canvas = {
         return canvas;
     },
 
-    prepareCanvasFont(ctx, style) {
+    prepareCanvasFont(ctx: Ctx, style) {
         if (ctx.textBaseline !== TEXT_BASELINE) {
             ctx.textBaseline = TEXT_BASELINE;
         }
@@ -73,7 +82,7 @@ const Canvas = {
      * @param {Object} resources
      * @param {Boolean} testing  - paint for testing, ignore stroke and fill patterns
      */
-    prepareCanvas(ctx, style, resources, testing) {
+    prepareCanvas(ctx: Ctx, style, resources, testing: boolean) {
         if (!style) {
             return;
         }
@@ -158,7 +167,7 @@ const Canvas = {
         }
     },
 
-    _createGradient(ctx, g, extent) {
+    _createGradient(ctx: Ctx, g, extent: Extent) {
         let gradient = null,
             places = g['places'];
         const min = extent.getMin(),
@@ -177,6 +186,7 @@ const Canvas = {
                     min.x + places[2] * width, min.y + places[3] * height
                 ];
             }
+            // eslint-disable-next-line prefer-spread
             gradient = ctx.createLinearGradient.apply(ctx, places);
         } else if (g['type'] === 'radial') {
             if (!places) {
@@ -191,15 +201,17 @@ const Canvas = {
                     min.x + places[3] * width, min.y + places[4] * height, width * places[5]
                 ];
             }
+            // eslint-disable-next-line prefer-spread
             gradient = ctx.createRadialGradient.apply(ctx, places);
         }
         g['colorStops'].forEach(stop => {
+            // eslint-disable-next-line prefer-spread
             gradient.addColorStop.apply(gradient, stop);
         });
         return gradient;
     },
 
-    _setStrokePattern(ctx, strokePattern, strokeWidth, linePatternOffset, resources) {
+    _setStrokePattern(ctx: Ctx, strokePattern: string, strokeWidth: number, linePatternOffset: number, resources) {
         const imgUrl = extractImageUrl(strokePattern);
         let imageTexture;
         if (IS_NODE) {
@@ -231,15 +243,19 @@ const Canvas = {
         }
     },
 
-    clearRect(ctx, x1, y1, x2, y2) {
+    clearRect(ctx: Ctx, x1: number, y1: number, x2: number, y2: number) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         ctx.canvas._drawn = false;
         ctx.clearRect(x1, y1, x2, y2);
     },
 
-    fillCanvas(ctx, fillOpacity, x, y) {
+    fillCanvas(ctx: Ctx, fillOpacity: number, x?: number, y?: number) {
         if (hitTesting) {
             fillOpacity = 1;
         }
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         ctx.canvas._drawn = true;
         if (fillOpacity === 0) {
             return;
@@ -278,7 +294,7 @@ const Canvas = {
 
     // support #RRGGBB/#RGB now.
     // if color was like [red, orange...]/rgb(a)/hsl(a), op will not combined to result
-    getRgba(color, op) {
+    getRgba(color: any, op: number) {
         if (isNil(op)) {
             op = 1;
         }
@@ -301,11 +317,13 @@ const Canvas = {
         return 'rgba(' + r + ',' + g + ',' + b + ',' + op + ')';
     },
 
-    normalizeColorToRGBA(fill, opacity = 1) {
+    normalizeColorToRGBA(fill: number[], opacity = 1) {
         return `rgba(${fill[0] * 255},${fill[1] * 255},${fill[2] * 255},${(fill.length === 4 ? fill[3] : 1) * opacity})`;
     },
 
-    image(ctx, img, x, y, width, height) {
+    image(ctx: Ctx, img: CanvasImageSource, x: number, y: number, width?: number, height?: number) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         ctx.canvas._drawn = true;
         try {
             if (isNumber(width) && isNumber(height)) {
@@ -321,11 +339,11 @@ const Canvas = {
         }
     },
 
-    text(ctx, text, pt, style, textDesc) {
+    text(ctx: Ctx, text, pt, style, textDesc) {
         return Canvas._textOnMultiRow(ctx, textDesc['rows'], style, pt, textDesc['size'], textDesc['rawSize']);
     },
 
-    _textOnMultiRow(ctx, texts, style, point, splitTextSize, textSize) {
+    _textOnMultiRow(ctx: Ctx, texts: any[], style, point, splitTextSize: Size, textSize: Size) {
         const ptAlign = getAlignPoint(splitTextSize, style['textHorizontalAlignment'], style['textVerticalAlignment']),
             lineHeight = textSize['height'] + style['textLineSpacing'],
             basePoint = point.add(0, ptAlign.y),
@@ -350,7 +368,7 @@ const Canvas = {
         return BBOX_TEMP;
     },
 
-    _textOnLine(ctx, text, pt, textHaloRadius, textHaloFill, textHaloAlpha) {
+    _textOnLine(ctx: Ctx, text, pt, textHaloRadius: number, textHaloFill, textHaloAlpha: number) {
         if (hitTesting) {
             textHaloAlpha = 1;
         }
@@ -401,7 +419,7 @@ const Canvas = {
         }
     },
 
-    fillText(ctx, text, pt, rgba) {
+    fillText(ctx, text, pt, rgba?) {
         ctx.canvas._drawn = true;
         if (rgba) {
             ctx.fillStyle = rgba;
@@ -409,7 +427,7 @@ const Canvas = {
         ctx.fillText(text, pt.x, pt.y + textOffsetY);
     },
 
-    _stroke(ctx, strokeOpacity, x, y) {
+    _stroke(ctx, strokeOpacity, x?, y?) {
         if (hitTesting) {
             strokeOpacity = 1;
         }
@@ -447,7 +465,7 @@ const Canvas = {
         }
     },
 
-    _path(ctx, points, lineDashArray, lineOpacity, ignoreStrokePattern) {
+    _path(ctx, points, lineDashArray?, lineOpacity?, ignoreStrokePattern?) {
         if (!isArrayHasData(points)) {
             return;
         }
@@ -485,12 +503,13 @@ const Canvas = {
                     break;
                 }
                 nextPoint = points[i + 1];
-                drawDashLine(ctx, point, nextPoint, lineDashArray, isPatternLine);
+                // drawDashLine(ctx, point, nextPoint, lineDashArray, isPatternLine);
+                drawDashLine(ctx, point, nextPoint, lineDashArray);
             }
         }
     },
 
-    path(ctx, points, lineOpacity, fillOpacity, lineDashArray) {
+    path(ctx, points, lineOpacity, fillOpacity?, lineDashArray?) {
         if (!isArrayHasData(points)) {
             return;
         }
@@ -520,7 +539,7 @@ const Canvas = {
         });
     },
 
-    polygon(ctx, points, lineOpacity, fillOpacity, lineDashArray, smoothness) {
+    polygon(ctx, points, lineOpacity, fillOpacity, lineDashArray?, smoothness?) {
         // if MultiPolygon clip
         if (ctx.isMultiClip) {
             Canvas._multiClip(ctx, points);
@@ -624,7 +643,7 @@ const Canvas = {
         }
     },
 
-    _ring(ctx, ring, lineDashArray, lineOpacity, ignorePattern) {
+    _ring(ctx, ring, lineDashArray, lineOpacity, ignorePattern?) {
         const isPattern = Canvas._isPattern(ctx.strokeStyle);
         if (!ignorePattern && isPattern && !ring[0].equals(ring[ring.length - 1])) {
             ring = ring.concat([ring[0]]);
@@ -637,7 +656,7 @@ const Canvas = {
         }
     },
 
-    paintSmoothLine(ctx, points, lineOpacity, smoothValue, close, tailIdx, tailRatio) {
+    paintSmoothLine(ctx, points, lineOpacity, smoothValue, close, tailIdx?, tailRatio?) {
         if (!points) {
             return;
         }
@@ -763,6 +782,8 @@ const Canvas = {
                 ctx.bezierCurveTo(ctrlPoints[0], ctrlPoints[1], ctrlPoints[2], ctrlPoints[3], ctrlPoints[4], ctrlPoints[5]);
                 points.splice(l - 1, count - (l - 1) - 1);
                 const lastPoint = new Point(ctrlPoints[4], ctrlPoints[5]);
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
                 lastPoint.prevCtrlPoint = new Point(ctrlPoints[2], ctrlPoints[3]);
                 points.push(lastPoint);
                 count = points.length;
@@ -790,7 +811,7 @@ const Canvas = {
      * @param  {Point} p2      point 2
      * @param  {Number} degree arc degree between p1 and p2
      */
-    _arcBetween(ctx, p1, p2, degree) {
+    _arcBetween(ctx: CanvasRenderingContext2D, p1, p2, degree) {
         const a = degree,
             dist = p1.distanceTo(p2),
             //radius of circle
@@ -820,28 +841,30 @@ const Canvas = {
         return [cx, cy];
     },
 
-    _lineTo(ctx, p) {
+    _lineTo(ctx: CanvasRenderingContext2D, p) {
         ctx.lineTo(p.x, p.y);
     },
 
-    bezierCurveAndFill(ctx, points, lineOpacity, fillOpacity) {
+    bezierCurveAndFill(ctx: CanvasRenderingContext2D, points, lineOpacity, fillOpacity) {
         ctx.beginPath();
         const start = points[0];
         ctx.moveTo(start.x, start.y);
         const args = [ctx];
+        // eslint-disable-next-line prefer-spread
         args.push.apply(args, points.splice(1));
+        // eslint-disable-next-line prefer-spread
         Canvas._bezierCurveTo.apply(Canvas, args);
         Canvas.fillCanvas(ctx, fillOpacity);
         Canvas._stroke(ctx, lineOpacity);
     },
 
-    _bezierCurveTo(ctx, p1, p2, p3) {
+    _bezierCurveTo(ctx: CanvasRenderingContext2D, p1, p2, p3) {
         ctx.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
     },
 
 
     //各种图形的绘制方法
-    ellipse(ctx, pt, width, heightTop, heightBottom, lineOpacity, fillOpacity) {
+    ellipse(ctx: CanvasRenderingContext2D, pt, width, heightTop, heightBottom, lineOpacity, fillOpacity) {
         function bezierEllipse(x, y, a, b, b1) {
             const k = 0.5522848,
                 ox = a * k,
@@ -873,7 +896,7 @@ const Canvas = {
         Canvas._stroke(ctx, lineOpacity, pt.x - width, pt.y - heightTop);
     },
 
-    rectangle(ctx, pt, size, lineOpacity, fillOpacity) {
+    rectangle(ctx: CanvasRenderingContext2D, pt, size, lineOpacity, fillOpacity) {
         // pt = pt._round();
         const { x, y } = pt;
         ctx.beginPath();
@@ -882,12 +905,12 @@ const Canvas = {
         Canvas._stroke(ctx, lineOpacity, x, y);
     },
 
-    sector(ctx, pt, size, angles, lineOpacity, fillOpacity) {
+    sector(ctx: CanvasRenderingContext2D, pt, size, angles, lineOpacity, fillOpacity) {
         const rad = RADIAN;
         const startAngle = angles[0],
             endAngle = angles[1];
 
-        function sector(ctx, x, y, radius, startAngle, endAngle) {
+        function sector(ctx: CanvasRenderingContext2D, x, y, radius, startAngle, endAngle) {
             const sDeg = rad * -endAngle;
             const eDeg = rad * -startAngle;
             ctx.beginPath();
@@ -900,11 +923,13 @@ const Canvas = {
         sector(ctx, pt.x, pt.y, size, startAngle, endAngle);
     },
 
-    _isPattern(style) {
+    _isPattern(style: any) {
         return !isString(style) && !('addColorStop' in style);
     },
 
-    drawCross(ctx, x, y, lineWidth, color) {
+    drawCross(ctx: CanvasRenderingContext2D, x: number, y: number, lineWidth: number, color: string | CanvasGradient | CanvasPattern) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         ctx.canvas._drawn = true;
         ctx.strokeStyle = color;
         ctx.lineWidth = lineWidth;
@@ -916,8 +941,8 @@ const Canvas = {
         ctx.stroke();
     },
 
-    copy(canvas, c) {
-        const target = c || createEl('canvas');
+    copy(canvas: HTMLCanvasElement, c?: HTMLCanvasElement): HTMLCanvasElement {
+        const target: any = c || createEl('canvas');
         target.width = canvas.width;
         target.height = canvas.height;
         target.getContext('2d').drawImage(canvas, 0, 0);
@@ -925,7 +950,7 @@ const Canvas = {
     },
 
     // pixel render
-    pixelRect(ctx, point, lineOpacity, fillOpacity) {
+    pixelRect(ctx: CanvasRenderingContext2D, point: number[], lineOpacity: number, fillOpacity: number) {
         const lineWidth = ctx.lineWidth;
         const alpha = ctx.globalAlpha;
         let isStroke = false;
@@ -941,6 +966,8 @@ const Canvas = {
         } else {
             return;
         }
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         ctx.canvas._drawn = true;
         if (isStroke) {
             ctx.strokeRect(point[0], point[1], 1, 1);
@@ -957,7 +984,7 @@ export default Canvas;
 
 
 /* istanbul ignore next */
-function drawDashLine(ctx, startPoint, endPoint, dashArray) {
+function drawDashLine(ctx: CanvasRenderingContext2D, startPoint: any, endPoint: any, dashArray: any[]) {
     //https://davidowens.wordpress.com/2010/09/07/html-5-canvas-and-dashed-lines/
     //
     // Our growth rate for our line can be one of the following:
@@ -970,16 +997,16 @@ function drawDashLine(ctx, startPoint, endPoint, dashArray) {
         toX = endPoint.x,
         toY = endPoint.y;
     const pattern = dashArray;
-    const lt = function (a, b) {
+    const lt = function (a: number, b: number) {
         return a <= b;
     };
-    const gt = function (a, b) {
+    const gt = function (a: number, b: number) {
         return a >= b;
     };
-    const capmin = function (a, b) {
+    const capmin = function (a: number, b: number) {
         return Math.min(a, b);
     };
-    const capmax = function (a, b) {
+    const capmax = function (a: number, b: number) {
         return Math.max(a, b);
     };
 
@@ -1027,14 +1054,14 @@ function drawDashLine(ctx, startPoint, endPoint, dashArray) {
 
 const prefix = 'data:image/';
 
-function extractImageUrl(url) {
+function extractImageUrl(url: string) {
     if (url.substring(0, prefix.length) === prefix) {
         return url;
     }
     return extractCssUrl(url);
 }
 
-function copyProperties(ctx, savedCtx) {
+function copyProperties(ctx: CanvasRenderingContext2D, savedCtx) {
     ctx.filter = savedCtx.filter;
     ctx.fillStyle = savedCtx.fillStyle;
     ctx.globalAlpha = savedCtx.globalAlpha;
@@ -1049,7 +1076,7 @@ function copyProperties(ctx, savedCtx) {
     ctx.strokeStyle = savedCtx.strokeStyle;
 }
 
-function setLineDash(ctx, lineDashArray) {
+function setLineDash(ctx: CanvasRenderingContext2D, lineDashArray: number[]) {
     if (!lineDashArray || !ctx.setLineDash || !Array.isArray(lineDashArray)) {
         return;
     }

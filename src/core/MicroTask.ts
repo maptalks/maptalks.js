@@ -4,6 +4,8 @@ import { getGlobalWorkerPool } from './worker/WorkerPool';
 import Browser from './Browser';
 import GlobalConfig from '../GlobalConfig';
 
+export type Callback = (...params: any[]) => any
+
 let tasks = [];
 const loopHooks = [];
 
@@ -20,9 +22,9 @@ const loopHooks = [];
  * runTaskAsync({count:4,run}).then(result=>{})
  * runTaskAsync(run).then(result=>{})
  */
-export function runTaskAsync(task) {
+export function runTaskAsync(task:any) {
     startTasks();
-    const promise = new Promise((resolve, reject) => {
+    const promise = new Promise<any>((resolve, reject) => {
         if (!task) {
             reject(new Error('task is null'));
             return;

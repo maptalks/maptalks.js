@@ -1,6 +1,7 @@
 import { on, off, createEl, removeDomNode, addClass, hasClass, setClass } from '../core/util/dom';
+import type { Layer } from '../layer';
 import Map from '../map/Map';
-import Control from './Control';
+import Control, { ControlOptionsType } from './Control';
 
 /**
  * @property {Object} options - options
@@ -13,7 +14,7 @@ import Control from './Control';
  * @memberOf control.LayerSwitcher
  * @instance
  */
-const options = {
+const options: LayerSwitcherOptionsType = {
     'position': 'top-right',
     'baseTitle': 'Base Layers',
     'overlayTitle': 'Layers',
@@ -33,14 +34,17 @@ const options = {
  * }).addTo(map);
 */
 class LayerSwitcher extends Control {
+    container: HTMLDivElement;
+    panel: HTMLDivElement;
+    button: HTMLButtonElement;
     /**
      * method to build DOM of the control
      * @return {HTMLDOMElement}
      */
     buildOn() {
-        const container = this.container = createEl('div', this.options['containerClass']),
-            panel = this.panel = createEl('div', 'panel'),
-            button = this.button = createEl('button');
+        const container = this.container = createEl('div', this.options['containerClass']) as HTMLDivElement,
+            panel = this.panel = createEl('div', 'panel') as HTMLDivElement,
+            button = this.button = createEl('button') as HTMLButtonElement;
         container.appendChild(button);
         container.appendChild(panel);
         return container;
@@ -49,14 +53,14 @@ class LayerSwitcher extends Control {
     onAdd() {
         on(this.button, 'mouseover', this._show, this);
         on(this.panel, 'mouseleave', this._hide, this);
-        on(this.getMap(), 'click', this._hide, this);
+        // on(this.getMap(), 'click', this._hide, this);
     }
 
     onRemove() {
         if (this.panel) {
-            off(this.button, 'mouseover', this._show, this);
-            off(this.panel, 'mouseleave', this._hide, this);
-            off(this.getMap(), 'click', this._hide, this);
+            off(this.button, 'mouseover', this._show);
+            off(this.panel, 'mouseleave', this._hide);
+            // off(this.getMap(), 'click', this._hide);
             removeDomNode(this.panel);
             removeDomNode(this.button);
             delete this.panel;
@@ -85,12 +89,12 @@ class LayerSwitcher extends Control {
         this._renderLayers(this.getMap(), ul);
     }
 
-    _renderLayers(map, elm) {
+    _renderLayers(map: Map, elm: HTMLElement) {
         const base = map.getBaseLayer(),
             layers = map.getLayers(),
             len = layers.length;
         if (base) {
-            const baseLayers = base.layers || [base],
+            const baseLayers = (base as any).layers || [base],
                 li = createEl('li', 'group'),
                 ul = createEl('ul'),
                 label = createEl('label');
@@ -110,7 +114,7 @@ class LayerSwitcher extends Control {
             const li = createEl('li', 'group'),
                 ul = createEl('ul'),
                 label = createEl('label'),
-                input = createEl('input');
+                input = createEl('input') as HTMLInputElement;
             //checkbox for select/cancel all overlaylayers
             input.type = 'checkbox';
             input.checked = true;
@@ -162,8 +166,9 @@ class LayerSwitcher extends Control {
                 const layer = layers[i];
                 if (this._isExcluded(layer)) {
                     //such as :groupgllayer
-                    if (layer.getLayers) {
-                        const groupLi = createEl('li', 'group'), groupUl = createEl('ul'), groupLabel = createEl('label'), groupInput = createEl('input');
+                    if ((layer as any).getLayers) {
+                        const groupLi = createEl('li', 'group'), groupUl = createEl('ul'),
+                            groupLabel = createEl('label'), groupInput = createEl('input') as HTMLInputElement;
                         groupLabel.innerHTML = layer.getId();
                         groupInput.type = 'checkbox';
                         groupInput.checked = layer.isVisible();
@@ -171,9 +176,9 @@ class LayerSwitcher extends Control {
                         groupLi.appendChild(groupInput);
                         groupLi.appendChild(groupLabel);
                         groupLi.appendChild(groupUl);
-                        groupLi._layer = layer;
+                        (groupLi as any)._layer = layer;
                         ul.appendChild(groupLi);
-                        const groupLayers = layer.getLayers() || [];
+                        const groupLayers = (layer as any).getLayers() || [];
                         groupLayers.forEach(layer => {
                             groupUl.appendChild(this._renderLayer(layer, false, groupInput.checked));
                         });
@@ -192,13 +197,13 @@ class LayerSwitcher extends Control {
         }
     }
 
-    _isExcluded(layer) {
+    _isExcluded(layer: Layer) {
         const id = layer.getId(),
             excludeLayers = this.options['excludeLayers'];
         return !(excludeLayers.length && excludeLayers.indexOf(id) >= 0);
     }
 
-    _renderLayer(layer, isBase, parentChecked = true) {
+    _renderLayer(layer, isBase?: boolean, parentChecked = true) {
         const li = createEl('li', 'layer'),
             label = createEl('label'),
             input = createEl('input'),
@@ -208,26 +213,27 @@ class LayerSwitcher extends Control {
         const enabled = layer.isVisible();
         layer.options['visible'] = visible;
         li.className = 'layer';
+        const radioInput = input as HTMLInputElement;
         if (isBase) {
-            input.type = 'radio';
-            input.name = 'base';
+            radioInput.type = 'radio';
+            radioInput.name = 'base';
         } else {
-            input.type = 'checkbox';
+            radioInput.type = 'checkbox';
         }
 
-        input.checked = visible && enabled;
+        radioInput.checked = visible && enabled;
         //父节点没有选中，那么子节点一定不选中
         if (!parentChecked) {
-            input.checked = false;
+            radioInput.checked = false;
         }
         if (!enabled) {
-            input.setAttribute('disabled', 'disabled');
+            radioInput.setAttribute('disabled', 'disabled');
         }
 
-        input.onchange = e => {
-            if (e.target.type === 'radio') {
+        radioInput.onchange = e => {
+            if ((e.target as any).type === 'radio') {
                 const baseLayer = map.getBaseLayer(),
-                    baseLayers = baseLayer.layers;
+                    baseLayers = (baseLayer as any).layers;
                 if (baseLayers) {
                     for (let i = 0, len = baseLayers.length; i < len; i++) {
                         const _baseLayer = baseLayers[i];
@@ -238,14 +244,14 @@ class LayerSwitcher extends Control {
                 }
                 map._fireEvent('setbaselayer');
             } else {
-                layer[e.target.checked ? 'show' : 'hide']();
+                layer[(e.target as any).checked ? 'show' : 'hide']();
             }
             this.fire('layerchange', { target: layer });
         };
         li.appendChild(input);
         label.innerHTML = layer.getId();
         li.appendChild(label);
-        li._layer = layer;
+        (li as any)._layer = layer;
         return li;
     }
 }
@@ -264,3 +270,10 @@ Map.addOnLoadHook(function () {
 });
 
 export default LayerSwitcher;
+
+export type LayerSwitcherOptionsType = {
+    baseTitle?: string;
+    overlayTitle?: string;
+    containerClass?: string;
+    excludeLayers?: Array<string>;
+} & ControlOptionsType;

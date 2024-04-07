@@ -240,7 +240,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {*} options.* - any other option defined in [Map.options]{@link Map#options}      [description]
      */
     constructor(container: MapContainerType,
-        options: MapOptionsType & { center: Array<number> | Coordinate, zoom: number }) {
+        options: MapCreateOptionsType) {
         if (!options) {
             throw new Error('Invalid options when creating map.');
         }
@@ -2579,8 +2579,17 @@ export type MapOptionsType = {
         'markerHeight': number;
     };
     onlyVisibleGeometryEvents?: boolean;
+    compassControl?: boolean;
+    layerSwitcherControl?: boolean;
+    navControl?: boolean;
+    resetControl?: boolean;
 
 }
+
+export type MapCreateOptionsType = {
+    center: Array<number> | Coordinate;
+    zoom: number
+} & MapOptionsType;
 
 export type MapPaddingType = {
     paddingLeft: number;

@@ -87,7 +87,7 @@ export default class CollectionPainter extends Class {
         });
     }
 
-    get2DExtent(resources: ResourceCache, out?: Extent) {
+    get2DExtent(resources?: ResourceCache, out?: Extent) {
         if (out) {
             out.set(null, null, null, null);
         }
