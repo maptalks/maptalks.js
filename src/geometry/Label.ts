@@ -1,7 +1,9 @@
 import { extend } from '../core/util';
 import { getAlignPoint, escapeSpecialChars } from '../core/util/strings';
+import Coordinate from '../geo/Coordinate';
 import Size from '../geo/Size';
-import TextMarker from './TextMarker';
+import { TextSymbol, VectorMarkerSymbol } from '../symbol';
+import TextMarker, { TextMarkerOptionsType } from './TextMarker';
 
 /**
  * @property {Object} [options=null]                   - textbox's options, also including options of [Marker]{@link Marker#options}
@@ -15,7 +17,7 @@ import TextMarker from './TextMarker';
  * @memberOf Label
  * @instance
  */
-const options = {
+const options: LabelOptionsType = {
     'boxStyle': null, /*{
         'padding' : [12, 8],
         'verticalAlignment' : 'middle',
@@ -73,7 +75,7 @@ class Label extends TextMarker {
      * @param {Coordinate} coordinates         - coordinates
      * @param {Object} [options=null]          - construct options defined in [Label]{@link Label#options}
      */
-    constructor(content: string, coordinates: any, options: any = {}) {
+    constructor(content: string, coordinates: Coordinate | Array<number>, options: LabelOptionsType = {}) {
         super(coordinates, options);
         if (options.textSymbol) {
             this.setTextSymbol(options.textSymbol);
@@ -91,7 +93,7 @@ class Label extends TextMarker {
      * Get label's box style
      * @return {Object}
      */
-    getBoxStyle(): any {
+    getBoxStyle(): BoxStyle {
         if (!this.options.boxStyle) {
             return null;
         }
@@ -105,7 +107,7 @@ class Label extends TextMarker {
      * @param {Object}
      * @returns {Label} this
      */
-    setBoxStyle(style: any): Label {
+    setBoxStyle(style: BoxStyle) {
         this.options.boxStyle = style ? extend({}, style) : style;
         this._refresh();
         return this;
@@ -116,7 +118,7 @@ class Label extends TextMarker {
      * Get label's text symbol
      * @return {Object}
      */
-    getTextSymbol() {
+    getTextSymbol(): TextSymbol {
         return extend({}, this._getDefaultTextSymbol(), this.options.textSymbol);
     }
 
@@ -127,13 +129,13 @@ class Label extends TextMarker {
      * @param {Object} symbol
      * @returns {Label} this
      */
-    setTextSymbol(symbol: any): Label {
+    setTextSymbol(symbol: TextSymbol) {
         this.options.textSymbol = symbol ? extend({}, symbol) : symbol;
         this._refresh();
         return this;
     }
 
-    static fromJSON(json) {
+    static fromJSON(json: { [key: string]: any }): Label {
         const feature = json['feature'];
         const label = new Label(json['content'], feature['geometry']['coordinates'], json['options']);
         label.setProperties(feature['properties']);
@@ -148,7 +150,7 @@ class Label extends TextMarker {
         return false;
     }
 
-    _toJSON(options: any): any {
+    _toJSON(options: any) {
         return {
             'feature': this.toGeoJSON(options),
             'subType': 'Label',
@@ -177,7 +179,7 @@ class Label extends TextMarker {
             const dx = symbol['textDx'] || 0,
                 dy = symbol['textDy'] || 0,
                 textAlignPoint = getAlignPoint(textSize, symbol['textHorizontalAlignment'], symbol['textVerticalAlignment'])
-                    ._add(dx, dy);
+                    ._add(dx as number, dy as number);
 
             const hAlign = boxStyle['horizontalAlignment'] || 'middle';
             symbol['markerDx'] = textAlignPoint.x;
@@ -232,3 +234,16 @@ Label.mergeOptions(options);
 Label.registerJSONType('Label');
 
 export default Label;
+
+type BoxStyle = {
+    padding?: [number, number];
+    verticalAlignment?: 'top' | 'middle' | 'bottom';
+    horizontalAlignment?: 'left' | 'middle' | 'right';
+    minWidth?: number;
+    minHeight?: number;
+    symbol?: VectorMarkerSymbol;
+}
+export type LabelOptionsType = {
+    textSymbol?: TextSymbol;
+    boxStyle?: BoxStyle;
+} & TextMarkerOptionsType;

@@ -23,7 +23,7 @@ import { modeActionType } from './DrawTool'
  * @returns Coordinate | Coordinate[]
  */
 
-function queryTerrainCoordinates(projection:any, prjCoords:any, mapEvent:any):Coordinate|Array<Coordinate> {
+function queryTerrainCoordinates(projection: any, prjCoords: any, mapEvent: any): Coordinate | Array<Coordinate> {
     const isArray = Array.isArray(prjCoords);
     if (!isArray) {
         prjCoords = [prjCoords];
@@ -51,11 +51,11 @@ function queryTerrainCoordinates(projection:any, prjCoords:any, mapEvent:any):Co
     return isArray ? coordinates : coordinates[0];
 }
 
-const circleHooks:modeActionType = {
+const circleHooks: modeActionType = {
     'create': function (projection, prjCoord, mapEvent) {
         // const center = projection.unproject(prjCoord[0]);
         const center = queryTerrainCoordinates(projection, prjCoord[0], mapEvent);
-        const circle:Circle = new Circle(center, 0);
+        const circle: Circle = new Circle(center, 0);
         // circle._setPrjCoordinates(prjCoord[0]);
         return circle;
     },
@@ -81,7 +81,7 @@ DrawTool.registerMode('freeHandCircle', extend({
     'action': ['mousedown touchstart', 'mousemove touchmove', 'mouseup touchend']
 }, circleHooks));
 
-const ellipseHooks:modeActionType = {
+const ellipseHooks: modeActionType = {
     'create': function (projection, prjCoord, mapEvent) {
         // const center = projection.unproject(prjCoord[0]);
         const center = queryTerrainCoordinates(projection, prjCoord[0], mapEvent);
@@ -94,7 +94,7 @@ const ellipseHooks:modeActionType = {
         const center = geometry.getCenter();
         const prjCoord = Array.isArray(prjPath) ? prjPath[prjPath.length - 1] : prjPath;
         // const nextCoord = projection.unproject(prjCoord);
-        const nextCoord:any = queryTerrainCoordinates(projection, prjCoord, mapEvent);
+        const nextCoord: any = queryTerrainCoordinates(projection, prjCoord, mapEvent);
         const rx = map.computeLength(center, new Coordinate({
             x: nextCoord.x,
             y: center.y
@@ -120,9 +120,9 @@ DrawTool.registerMode('freeHandEllipse', extend({
     'action': ['mousedown touchstart', 'mousemove touchmove', 'mouseup touchend']
 }, ellipseHooks));
 
-const rectangleHooks:modeActionType = {
+const rectangleHooks: modeActionType = {
     'create': function (projection, prjCoords) {
-        const rect:any = new Polygon([]);
+        const rect: any = new Polygon([]);
         rect._firstClick = prjCoords[0];
         return rect;
     },
@@ -162,7 +162,7 @@ DrawTool.registerMode('point', {
     'create': function (projection, prjCoord, mapEvent) {
         // const center = projection.unproject(prjCoord[0]);
         const center = queryTerrainCoordinates(projection, prjCoord[0], mapEvent);
-        const marker = new Marker(center);
+        const marker = new Marker(center as Coordinate);
         // marker._setPrjCoordinates(prjCoord[0]);
         return marker;
     },
@@ -183,10 +183,10 @@ DrawTool.registerMode('point', {
     }
 });
 
-const polygonHooks:modeActionType = {
+const polygonHooks: modeActionType = {
     'create': function (projection, prjPath, mapEvent) {
         // const path = prjPath.map(c => projection.unproject(c));
-        const path:any = queryTerrainCoordinates(projection, prjPath, mapEvent);
+        const path: any = queryTerrainCoordinates(projection, prjPath, mapEvent);
         const line = new LineString(path);
         // line._setPrjCoordinates(prjPath);
         line.setCoordinates(path);
@@ -204,7 +204,7 @@ const polygonHooks:modeActionType = {
         }
         geometry._drawPrjs = prjCoords;
         // const coordinates = prjCoords.map(c => projection.unproject(c));
-        const coordinates:any = queryTerrainCoordinates(projection, prjCoords, mapEvent);
+        const coordinates: any = queryTerrainCoordinates(projection, prjCoords, mapEvent);
 
         // geometry._setPrjCoordinates(prjCoords);
         geometry.setCoordinates(coordinates);
@@ -247,10 +247,10 @@ DrawTool.registerMode('freeHandPolygon', extend({
     'action': ['mousedown touchstart', 'mousemove touchmove', 'mouseup touchend']
 }, polygonHooks));
 
-const lineStringHooks:modeActionType = {
+const lineStringHooks: modeActionType = {
     'create': function (projection, prjPath, mapEvent) {
         // const path = prjPath.map(c => projection.unproject(c));
-        const path:any = queryTerrainCoordinates(projection, prjPath, mapEvent);
+        const path: any = queryTerrainCoordinates(projection, prjPath, mapEvent);
         const line = new LineString(path);
         // line._setPrjCoordinates(prjPath);
         line.setCoordinates(path);
@@ -333,7 +333,7 @@ DrawTool.registerMode('boxZoom', {
     'create': function (projection, prjCoord) {
         prjCoord = prjCoord[0];
         const center = projection.unproject(prjCoord);
-        const marker:any = new Marker(center);
+        const marker: any = new Marker(center);
         marker._firstClick = prjCoord;
         return marker;
     },

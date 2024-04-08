@@ -1,6 +1,9 @@
 import { MixinConstructor } from '../core/Mixin';
 
 import Coordinate from '../geo/Coordinate';
+import Point from '../geo/Point';
+import { CommonProjectionType } from '../geo/projection';
+import type { Map } from '../map';
 
 /**
  * 基于几何图形的通用方法
@@ -13,8 +16,8 @@ export default function <T extends MixinConstructor>(Base: T) {
         public _coordinates: any
         public _pcenter: any
         public _dirtyCoords: boolean
-        getMap?(): any
-        _getProjection?(): any
+        getMap?(): Map
+        _getProjection?(): CommonProjectionType
         onPositionChanged?(): void
         _verifyProjection?(): void
         _clearCache?(): void
@@ -38,8 +41,8 @@ export default function <T extends MixinConstructor>(Base: T) {
          * @fires Geometry#positionchange
          * @function CenterMixin.setCoordinates
          */
-        setCoordinates(coordinates: any): any {
-            const center = (coordinates instanceof Coordinate) ? coordinates : new Coordinate(coordinates);
+        setCoordinates(coordinates: Coordinate | Array<number>) {
+            const center = (coordinates instanceof Coordinate) ? coordinates : new Coordinate(coordinates as [number, number, number]);
             this._coordinates = center;
             if (!this.getMap()) {
                 //When not on a layer or when creating a new one, temporarily save the coordinates,
@@ -53,7 +56,7 @@ export default function <T extends MixinConstructor>(Base: T) {
         }
 
         //Gets view point of the geometry's center
-        _getCenter2DPoint(res?: any): any {
+        _getCenter2DPoint(res?: number): Point {
             const map = this.getMap();
             if (!map) {
                 return null;
@@ -66,7 +69,7 @@ export default function <T extends MixinConstructor>(Base: T) {
             return map._prjToPointAtRes(pcenter, res);
         }
 
-        _getPrjCoordinates(): any {
+        _getPrjCoordinates(): Coordinate {
             const projection = this._getProjection();
             this._verifyProjection();
             if (!this._pcenter && projection) {
