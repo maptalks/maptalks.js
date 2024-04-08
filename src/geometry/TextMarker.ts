@@ -5,7 +5,6 @@ import { TextSymbol, VectorMarkerSymbol } from '../symbol';
 import Marker, { MarkerOptionsType } from './Marker';
 
 const defaultSymbol: TextSymbol = {
-    'textName': '',
     'textFaceName': 'monospace',
     'textSize': 12,
     'textLineSpacing': 8,
