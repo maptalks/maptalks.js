@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { pushIn } from '../../core/util';
 import Layer from '../Layer';
 import TileLayer from './TileLayer';
@@ -11,7 +12,7 @@ const options = {
 const DEFAULT_TILESIZE = new Size(256, 256);
 const EVENTS = 'show hide remove setzindex forcereloadstart';
 
-function checkLayers(tileLayers) {
+function checkLayers(tileLayers: any[] | any): any[] {
     if (!Array.isArray(tileLayers)) {
         tileLayers = [tileLayers];
     }
@@ -46,29 +47,33 @@ function checkLayers(tileLayers) {
   ])
  */
 class GroupTileLayer extends TileLayer {
+    layers: TileLayer[];
+    layerMap: any;
+    private _groupChildren: any[];
     /**
      * Reproduce a GroupTileLayer from layer's profile JSON.
-     * @param  {Object} layerJSON - layer's profile JSON
-     * @return {GroupTileLayer}
+     * @param layerJSON - layer's profile JSON
+     * @return
      * @static
      * @private
      * @function
      */
-    static fromJSON(layerJSON) {
+    static fromJSON(layerJSON: { [x: string]: any; }): GroupTileLayer {
         if (!layerJSON || layerJSON['type'] !== 'GroupTileLayer') {
             return null;
         }
+        // @ts-ignore
         const layers = layerJSON['layers'].map(json => Layer.fromJSON(json));
         return new GroupTileLayer(layerJSON['id'], layers, layerJSON['options']);
     }
 
     /**
-     * @param {String|Number} id    - layer's id
-     * @param {TileLayer[]} layers  - TileLayers to add
-     * @param {Object}  [options=null]          - construct options
-     * @param {*}  [options.*=null]             - options defined in [TileLayer]{@link TileLayer#options}
+     * @param id    - layer's id
+     * @param layers  - TileLayers to add
+     * @param [options=null]          - construct options
+     * @param [options.*=null]             - options defined in [TileLayer]{@link TileLayer#options}
      */
-    constructor(id, layers, options) {
+    constructor(id: string, layers: TileLayer[], options: any) {
         super(id, options);
         this.layers = layers || [];
         this._checkChildren();
@@ -78,17 +83,16 @@ class GroupTileLayer extends TileLayer {
 
     /**
      * Get children TileLayer
-     * @returns {TileLayer[]}
      */
-    getLayers() {
+    getLayers(): TileLayer[] {
         return this.layers;
     }
 
     /**
      * add tilelayers
-     * @param {TileLayer[]} tileLayers
+     * @param tileLayers
      */
-    addLayer(tileLayers = []) {
+    addLayer(tileLayers: TileLayer[] = []) {
         tileLayers = checkLayers(tileLayers);
         const len = this.layers.length;
         tileLayers.forEach(tileLayer => {
@@ -110,9 +114,9 @@ class GroupTileLayer extends TileLayer {
 
     /**
      * remove tilelayers
-     * @param {TileLayer[]} tileLayers
+     * @param tileLayers
      */
-    removeLayer(tileLayers = []) {
+    removeLayer(tileLayers: TileLayer[] = []) {
         tileLayers = checkLayers(tileLayers);
         const len = this.layers.length;
         tileLayers.forEach(tileLayer => {
@@ -156,9 +160,9 @@ class GroupTileLayer extends TileLayer {
      * Export the GroupTileLayer's profile json. <br>
      * Layer's profile is a snapshot of the layer in JSON format. <br>
      * It can be used to reproduce the instance by [fromJSON]{@link Layer#fromJSON} method
-     * @return {Object} layer's profile JSON
+     * @return layer's profile JSON
      */
-    toJSON() {
+    toJSON(): any {
         const profile = {
             'type': this.getJSONType(),
             'id': this.getId(),
@@ -168,7 +172,7 @@ class GroupTileLayer extends TileLayer {
         return profile;
     }
 
-    getTileSize(id) {
+    getTileSize(id: number | string) {
         const layer = this.getLayer(id);
         if (!layer) {
             return DEFAULT_TILESIZE;
@@ -178,10 +182,10 @@ class GroupTileLayer extends TileLayer {
 
     /**
      * Get tiles at zoom (or current zoom)
-     * @param {Number} z
-     * @returns {Object} tiles
+     * @param z
+     * @returns tiles
      */
-    getTiles(z, parentLayer) {
+    getTiles(z: number, parentLayer: any): any {
         const layers = this.layers;
         const tiles = [];
         let count = 0;
@@ -220,11 +224,11 @@ class GroupTileLayer extends TileLayer {
         super.onRemove();
     }
 
-    getLayer(id) {
+    getLayer(id: string | number) {
         return this.getChildLayer(id);
     }
 
-    getChildLayer(id) {
+    getChildLayer(id: string | number) {
         const layer = this.layerMap[id];
         if (layer) {
             return layer;
@@ -238,7 +242,7 @@ class GroupTileLayer extends TileLayer {
         return null;
     }
 
-    _removeChildTileCache(layer) {
+    _removeChildTileCache(layer: any): GroupTileLayer {
         if (!layer) {
             return this;
         }
@@ -246,7 +250,7 @@ class GroupTileLayer extends TileLayer {
         if (!renderer) {
             return this;
         }
-        let cache;
+        let cache: any;
         const id = layer.getId();
         const validateCache = () => {
             return cache && cache.info && cache.info.layer === id;
@@ -254,7 +258,7 @@ class GroupTileLayer extends TileLayer {
         //clear LRU
         if (renderer.tileCache) {
             const keys = renderer.tileCache.keys();
-            keys.forEach(key => {
+            keys.forEach((key: any) => {
                 cache = renderer.tileCache.get(key);
                 if (validateCache()) {
                     renderer.tileCache.remove(key);
@@ -280,7 +284,7 @@ class GroupTileLayer extends TileLayer {
         return this;
     }
 
-    _onLayerShowHide(e) {
+    _onLayerShowHide(e: { type: string; target?: any }): any {
         const { type, target } = e || {};
         //listen tilelayer.remove() method fix #1629
         if (type === 'remove' && target) {
@@ -298,7 +302,7 @@ class GroupTileLayer extends TileLayer {
     }
 
     // render all layers
-    _renderLayers() {
+    _renderLayers(): GroupTileLayer {
         const renderer = this.getRenderer();
         if (renderer) {
             renderer.setToRedraw();
@@ -313,6 +317,7 @@ class GroupTileLayer extends TileLayer {
         this.layerMap = {};
         this.layers.forEach(layer => {
             this.layerMap[layer.getId()] = layer;
+            // @ts-ignore
             if (layer.getChildLayer) {
                 this._groupChildren.push(layer);
             }
@@ -326,7 +331,7 @@ class GroupTileLayer extends TileLayer {
         return this;
     }
 
-    isVisible() {
+    isVisible(): boolean {
         if (!super.isVisible()) {
             return false;
         }

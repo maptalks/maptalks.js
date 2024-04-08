@@ -11,15 +11,24 @@ import { extend } from '../../../core/util';
  */
 class TileSystem {
 
+    scale: {
+        x: number;
+        y: number;
+    }
+    origin: {
+        x: number;
+        y: number;
+    }
+
     /**
      * Similar with [transformation]{@link Transformation}, it contains 4 numbers: sx, sy, ox, oy.<br>
      * @see {@link http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification}
-     * @param  {Number} sx the order of X-axis tile index, 1 means right is larger and -1 means the reverse, left is larger;
-     * @param  {Number} sy the order of Y-axis tile index, 1 means bottom is larger and -1 means the reverse, top is larger;
-     * @param  {Number} ox x of the origin point of the world's projected coordinate system
-     * @param  {Number} oy y of the origin point of the world's projected coordinate system
+     * @param sx the order of X-axis tile index, 1 means right is larger and -1 means the reverse, left is larger;
+     * @param sy the order of Y-axis tile index, 1 means bottom is larger and -1 means the reverse, top is larger;
+     * @param ox x of the origin point of the world's projected coordinate system
+     * @param oy y of the origin point of the world's projected coordinate system
      */
-    constructor(sx, sy, ox, oy) {
+    constructor(sx: number | number[], sy?: number, ox?: number, oy?: number) {
         if (Array.isArray(sx)) {
             this.scale = {
                 x: sx[0],
@@ -43,10 +52,10 @@ class TileSystem {
 
     /**
      * Get the default tile system's code for the projection.
-     * @param  {Object} projection      - a projection object
-     * @return {String} tile system code
+     * @param projection      - a projection object
+     * @return tile system code
      */
-    static getDefault(projection) {
+    static getDefault(projection: any): string | number[] {
         const code = projection['code'].toLowerCase();
         if (code === 'baidu') {
             return 'baidu';
@@ -69,6 +78,8 @@ extend(TileSystem, /** @lends TileSystem */ {
      * @constant
      * @static
      */
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     'web-mercator': new TileSystem([1, -1, -semiCircum, semiCircum]),
 
     /**
