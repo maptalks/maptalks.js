@@ -1,22 +1,23 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import Browser from '../../core/Browser';
 import { extend } from '../../core/util';
 import TileLayer from './TileLayer';
 
 /**
- * @property {Object}              options                     - TileLayer's options
- * @property {String}              [options.service=WMS]       - WMS Service
- * @property {String}              options.layers              - Comma-separated list of WMS layers to show.
- * @property {String}              [options.styles='']         - Comma-separated list of WMS styles.
- * @property {String}              [options.format=image/jpeg] - WMS image format (use `'image/png'` for layers with transparency).
- * @property {String}              [options.transparent=false] - Version of the WMS service to use
- * @property {String}              [options.version=1.1.1]     - size of the tile image
- * @property {String}              [options.crs=null]          - Coordinate Reference System to use for the WMS requests, defaults to map CRS. Don't change this if you're not sure what it means.
- * @property {Boolean}             [options.uppercase=false]   - If `true`, WMS request parameter keys will be uppercase.
- * @property {Boolean}             [options.detectRetina=false]   - If `true` and user is on a retina display, it will request four tiles of half the specified size and a bigger zoom level in place of one to utilize the high resolution.
+ * @property options                     - TileLayer's options
+ * @property [options.service=WMS]       - WMS Service
+ * @property options.layers              - Comma-separated list of WMS layers to show.
+ * @property [options.styles='']         - Comma-separated list of WMS styles.
+ * @property [options.format=image/jpeg] - WMS image format (use `'image/png'` for layers with transparency).
+ * @property [options.transparent=false] - Version of the WMS service to use
+ * @property [options.version=1.1.1]     - size of the tile image
+ * @property [options.crs=null]          - Coordinate Reference System to use for the WMS requests, defaults to map CRS. Don't change this if you're not sure what it means.
+ * @property [options.uppercase=false]   - If `true`, WMS request parameter keys will be uppercase.
+ * @property [options.detectRetina=false]   - If `true` and user is on a retina display, it will request four tiles of half the specified size and a bigger zoom level in place of one to utilize the high resolution.
  * @memberOf WMSTileLayer
  * @instance
  */
-const options = {
+const options: WMSTileLayerOptions = {
     crs: null,
     uppercase: false,
     detectRetina: false
@@ -31,7 +32,7 @@ const defaultWmsParams = {
     transparent: false,
     version: '1.1.1'
 };
-let wmsExcludeParams;
+let wmsExcludeParams: WMSTileLayerOptions;
 
 /**
  * @classdesc
@@ -39,8 +40,8 @@ let wmsExcludeParams;
  * Implemented based on Leaflet's TileLayer.WMS.
  * @category layer
  * @extends TileLayer
- * @param {String|Number} id - tile layer's id
- * @param {Object} [options=null] - options defined in [WMSTileLayer]{@link TileLayer#options}
+ * @param id - tile layer's id
+ * @param - options defined in [WMSTileLayer]{@link TileLayer#options}
  * @example
  * var layer = new maptalks.WMSTileLayer('wms', {
  *     'urlTemplate' : 'https://demo.boundlessgeo.com/geoserver/ows',
@@ -54,13 +55,15 @@ let wmsExcludeParams;
  * });
  */
 class WMSTileLayer extends TileLayer {
+    wmsParams: WMSTileLayerOptions;
+    private _wmsVersion: number;
 
-    constructor(id, options) {
+    constructor(id: string, options: WMSTileLayerOptions) {
         super(id);
         if (!wmsExcludeParams) {
             wmsExcludeParams = extend({}, this.options);
         }
-        this.wmsParams = extend({}, defaultWmsParams);
+        this.wmsParams = extend({} as WMSTileLayerOptions, defaultWmsParams);
         this.setOptions(options);
         this.setZIndex(options.zIndex);
         if (!Browser.proxy) {
@@ -91,13 +94,14 @@ class WMSTileLayer extends TileLayer {
         const r = options.detectRetina ? dpr : 1;
         this.wmsParams.width *= r;
         this.wmsParams.height *= r;
+        // @ts-ignore
         const crs = this.options.crs || this.getMap().getProjection().code;
         const projectionKey = this._wmsVersion >= 1.3 ? 'crs' : 'srs';
         this.wmsParams[projectionKey] = crs;
         super.onAdd();
     }
 
-    getTileUrl(x, y, z) {
+    getTileUrl(x: number, y: number, z: number): string {
         const res = this.getSpatialReference().getResolution(z),
             tileConfig = this._getTileConfig(),
             tileExtent = tileConfig.getTilePrjExtent(x, y, res);
@@ -111,16 +115,18 @@ class WMSTileLayer extends TileLayer {
         const url = super.getTileUrl(x, y, z);
 
         return url +
+            // @ts-ignore
             getParamString(this.wmsParams, url, this.options.uppercase) +
+            // @ts-ignore
             (this.options.uppercase ? '&BBOX=' : '&bbox=') + bbox;
     }
 
     /**
      * Export the WMSTileLayer's json. <br>
      * It can be used to reproduce the instance by [fromJSON]{@link Layer#fromJSON} method
-     * @return {Object} layer's JSON
+     * @return layer's JSON
      */
-    toJSON() {
+    toJSON(): any {
         return {
             'type': 'WMSTileLayer',
             'id': this.getId(),
@@ -130,13 +136,13 @@ class WMSTileLayer extends TileLayer {
 
     /**
      * Reproduce a WMSTileLayer from layer's JSON.
-     * @param  {Object} layerJSON - layer's JSON
-     * @return {WMSTileLayer}
+     * @param layerJSON - layer's JSON
+     * @return a WMSTileLayer instance
      * @static
      * @private
      * @function
      */
-    static fromJSON(layerJSON) {
+    static fromJSON(layerJSON: { [x: string]: any; }): WMSTileLayer {
         if (!layerJSON || layerJSON['type'] !== 'WMSTileLayer') {
             return null;
         }
@@ -161,4 +167,19 @@ export function getParamString(obj, existingUrl, uppercase) {
         params.push(encodeURIComponent(uppercase ? i.toUpperCase() : i) + '=' + encodeURIComponent(obj[i]));
     }
     return ((!existingUrl || existingUrl.indexOf('?') === -1) ? '?' : '&') + params.join('&');
+}
+
+export type WMSTileLayerOptions = {
+    zIndex?: number;
+    height?: number;
+    width?: number;
+    service?: string;
+    layers?: string;
+    styles?: string;
+    format?: string;
+    transparent?: boolean;
+    version?: string;
+    crs?: string | any;
+    uppercase?: boolean;
+    detectRetina?: boolean;
 }

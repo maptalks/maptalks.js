@@ -5,15 +5,15 @@ import TileLayer from './TileLayer';
  * @ignore
  * @category layer
  * @extends TileLayer
- * @param {String|Number} id - tile layer's id
- * @param {Object} [options=null] - options defined in [CanvasTileLayer]{@link TileLayer#options}
+ * @param id - tile layer's id
+ * @param - options defined in [CanvasTileLayer]{@link TileLayer#options}
  * @example
  * var layer = new CanvasTileLayer("tile");
  * layer.drawTile = ()
  */
 class CanvasTileLayer extends TileLayer {
 
-    constructor(id, options) {
+    constructor(id: string, options: any) {
         super(id, options);
         if (!this.options.hasOwnProperty('forceRenderOnMoving')) {
             // force not to forceRenderOnMoving
@@ -23,9 +23,9 @@ class CanvasTileLayer extends TileLayer {
 
     /**
      * The interface method to draw on canvsa tile
-     * @param  {HTMLCanvasElement} canvas  canvas to draw on
-     * @param  {Object} options current options
-     * @param  {Object} options current options
+     * @param canvas  canvas to draw on
+     * @param options current options
+     * @param options current options
      */
     drawTile(/*canvas, options*/) {
 
@@ -34,9 +34,9 @@ class CanvasTileLayer extends TileLayer {
     /**
      * Export the CanvasTileLayer's json. <br>
      * It can be used to reproduce the instance by [fromJSON]{@link Layer#fromJSON} method
-     * @return {Object} layer's JSON
+     * @return layer's JSON
      */
-    toJSON() {
+    toJSON(): any {
         return {
             'type': 'CanvasTileLayer',
             'id': this.getId(),
@@ -46,13 +46,12 @@ class CanvasTileLayer extends TileLayer {
 
     /**
      * Reproduce a CanvasTileLayer from layer's JSON.
-     * @param  {Object} layerJSON - layer's JSON
-     * @return {CanvasTileLayer}
+     * @param layerJSON - layer's JSON
      * @static
      * @private
      * @function
      */
-    static fromJSON(layerJSON) {
+    static fromJSON(layerJSON: { [x: string]: any; }): CanvasTileLayer {
         if (!layerJSON || layerJSON['type'] !== 'CanvasTileLayer') {
             return null;
         }
