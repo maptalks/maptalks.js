@@ -1,8 +1,10 @@
 import { extend, isNil } from '../core/util';
 import { escapeSpecialChars } from '../core/util/strings';
 import Coordinate from '../geo/Coordinate';
-import TextMarker from './TextMarker';
+import TextMarker, { TextMarkerOptionsType } from './TextMarker';
 import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
+import { TextSymbol, VectorMarkerSymbol } from '../symbol';
+import { GeometryEditOptionsType } from './ext/Geometry.Edit';
 
 /**
  * @property {Object} [options=null]                   - textbox's options, also including options of [Marker]{@link Marker#options}
@@ -15,7 +17,7 @@ import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
  * @memberOf TextBox
  * @instance
  */
-const options = {
+const options: TextBoxOptionsType = {
     'textStyle': {
         'wrap': true,
         'padding': [12, 8],
@@ -63,9 +65,9 @@ const options = {
  */
 class TextBox extends TextMarker {
 
+    options: TextBoxOptionsType;
     public _width: number
     public _height: number
-    public options: any
     public _oldWidth: any
     public _oldHeight: any
     /**
@@ -75,7 +77,7 @@ class TextBox extends TextMarker {
      * @param {Number} height                  - height in pixel
      * @param {Object} [options=null]          - construct options defined in [TextBox]{@link TextBox#options}
      */
-    constructor(content: string, coordinates: Coordinate, width: number, height: number, options: any = {}) {
+    constructor(content: string, coordinates: Coordinate | Array<number>, width: number, height: number, options: TextBoxOptionsType = {}) {
         super(coordinates, options);
         this._content = escapeSpecialChars(content);
         this._width = isNil(width) ? 100 : width;
@@ -106,7 +108,7 @@ class TextBox extends TextMarker {
      * @param {Number} width
      * returns {TextBox} this
      */
-    setWidth(width: number): TextBox {
+    setWidth(width: number) {
         this._width = width;
         this._refresh();
         return this;
@@ -129,7 +131,7 @@ class TextBox extends TextMarker {
      * @param {Number} height
      * returns {TextBox} this
      */
-    setHeight(height: number): TextBox {
+    setHeight(height: number) {
         this._height = height;
         this._refresh();
         return this;
@@ -141,7 +143,7 @@ class TextBox extends TextMarker {
      * Get textbox's boxSymbol
      * @return {Object} boxsymbol
      */
-    getBoxSymbol(): any {
+    getBoxSymbol(): VectorMarkerSymbol {
         return extend({}, this.options.boxSymbol);
     }
 
@@ -152,7 +154,7 @@ class TextBox extends TextMarker {
      * @param {Object} symbol
      * returns {TextBox} this
      */
-    setBoxSymbol(symbol?: any): TextBox {
+    setBoxSymbol(symbol: VectorMarkerSymbol) {
         this.options.boxSymbol = symbol ? extend({}, symbol) : symbol;
         if (this.getSymbol()) {
             this._refresh();
@@ -166,7 +168,7 @@ class TextBox extends TextMarker {
      * Get textbox's text style
      * @return {Object}
      */
-    getTextStyle(): any {
+    getTextStyle(): TextStyle | null {
         if (!this.options.textStyle) {
             return null;
         }
@@ -180,7 +182,7 @@ class TextBox extends TextMarker {
      * @param {Object} style new text style
      * returns {TextBox} this
      */
-    setTextStyle(style?: any): TextBox {
+    setTextStyle(style: TextStyle) {
         this.options.textStyle = style ? extend({}, style) : style;
         if (this.getSymbol()) {
             this._refresh();
@@ -188,7 +190,7 @@ class TextBox extends TextMarker {
         return this;
     }
 
-    static fromJSON(json: any): TextBox {
+    static fromJSON(json: { [key: string]: any }): TextBox {
         const feature = json['feature'];
         const textBox = new TextBox(json['content'], feature['geometry']['coordinates'], json['width'], json['height'], json['options']);
         textBox.setProperties(feature['properties']);
@@ -199,7 +201,7 @@ class TextBox extends TextMarker {
         return textBox;
     }
 
-    _toJSON(options: any): any {
+    _toJSON(options: any) {
         return {
             'feature': this.toGeoJSON(options),
             'width': this.getWidth(),
@@ -313,7 +315,7 @@ class TextBox extends TextMarker {
         delete this._refreshing;
     }
 
-    startEdit(opts: any): this {
+    startEdit(opts: GeometryEditOptionsType): this {
         const symbol = this._getCompiledSymbol();
         if (isFunctionDefinition(this._width)) {
             const markerWidth = symbol['markerWidth'];
@@ -363,3 +365,15 @@ TextBox.mergeOptions(options);
 TextBox.registerJSONType('TextBox');
 
 export default TextBox;
+
+type TextStyle = {
+    wrap?: boolean;
+    padding?: [number, number];
+    verticalAlignment?: 'top' | 'middle' | 'bottom';
+    horizontalAlignment?: 'left' | 'middle' | 'right';
+    symbol?: TextSymbol;
+}
+export type TextBoxOptionsType = {
+    boxSymbol?: VectorMarkerSymbol;
+    textStyle?: TextStyle
+} & TextMarkerOptionsType;
