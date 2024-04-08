@@ -1,11 +1,14 @@
 import Extent from '../geo/Extent';
 import PointExtent from '../geo/PointExtent';
 import CenterMixin from './CenterMixin';
-import Geometry from './Geometry';
+import Geometry, { GeometryOptionsType } from './Geometry';
 import Painter from '../renderer/geometry/Painter';
 import { getMarkerFixedExtent, isVectorSymbol, isImageSymbol, isPathSymbol, DYNAMIC_SYMBOL_PROPS as propsToCheck, SIZE_SYMBOL_PROPS as sizeProps } from '../core/util/marker';
 import { isFunctionDefinition, loadGeoSymbol } from '../core/mapbox';
 import { isNil } from '../core/util';
+import { FileMarkerSymbol, PathMarkerSymbol, TextSymbol, VectorMarkerSymbol } from '../symbol';
+import Coordinate from '../geo/Coordinate';
+import Point from '../geo/Point';
 
 const TEMP_EXTENT = new PointExtent();
 
@@ -15,7 +18,7 @@ const TEMP_EXTENT = new PointExtent();
  * @memberOf Marker
  * @instance
  */
-const options = {
+const options: MarkerOptionsType = {
     'symbol': {
         'markerType': 'path',
         'markerPath': [{
@@ -26,7 +29,7 @@ const options = {
         'markerPathHeight': 23,
         'markerWidth': 24,
         'markerHeight': 34
-    },
+    } as PathMarkerSymbol,
     'hitTestForEvent': false,
     'collision': true
 };
@@ -56,7 +59,7 @@ export class Marker extends CenterMixin(Geometry) {
      * @param {Coordinate} coordinates      - coordinates of the marker
      * @param {Object} [options=null]       - construct options defined in [Marker]{@link Marker#options}
      */
-    constructor(coordinates: any, options?: any) {
+    constructor(coordinates: Coordinate | Array<number>, options?: MarkerOptionsType) {
         super(options);
         this.type = 'Point';
         //for subclass,Quickly determine whether a Geometry is a point
@@ -66,7 +69,7 @@ export class Marker extends CenterMixin(Geometry) {
         }
     }
 
-    getOutline(): any {
+    getOutline(): Marker {
         const coord = this.getCoordinates();
         const extent = this.getContainerExtent();
         const anchor = this.getMap().coordToContainerPoint(coord);
@@ -80,13 +83,13 @@ export class Marker extends CenterMixin(Geometry) {
                 'markerFill': 'rgba(0, 0, 0, 0)',
                 'markerDx': extent.xmin - (anchor.x - extent.getWidth() / 2),
                 'markerDy': extent.ymin - (anchor.y - extent.getHeight() / 2)
-            }
+            } as VectorMarkerSymbol
         });
     }
 
-    setSymbol(...args): any {
+    setSymbol(symbol: MarekrSymbol): this {
         delete this._fixedExtent;
-        return super.setSymbol.call(this, ...args);
+        return super.setSymbol.call(this, symbol);
     }
 
     _getSizeSymbol(symbol: any): any {
@@ -137,7 +140,7 @@ export class Marker extends CenterMixin(Geometry) {
         return this._sizeSymbol && this._sizeSymbol._dynamic;
     }
 
-    _getFixedExtent(): any {
+    _getFixedExtent(): PointExtent {
         if (this._fixedExtent && !this._isDynamicSize()) {
             return this._fixedExtent;
         }
@@ -187,7 +190,7 @@ export class Marker extends CenterMixin(Geometry) {
         return isVectorSymbol(symbol) || isPathSymbol(symbol) || isImageSymbol(symbol);
     }
 
-    _containsPoint(point: any, t?: any): boolean {
+    _containsPoint(point: Point, t?: number): boolean {
         let extent = this.getContainerExtent();
         if (t) {
             extent = extent.expand(t);
@@ -203,11 +206,11 @@ export class Marker extends CenterMixin(Geometry) {
         }
     }
 
-    _computeExtent(): any {
+    _computeExtent(): Extent {
         return computeExtent.call(this, 'getCenter');
     }
 
-    _computePrjExtent(): any {
+    _computePrjExtent(): Extent {
         return computeExtent.call(this, '_getPrjCoordinates');
     }
 
@@ -238,3 +241,11 @@ function computeExtent(fn: any): null | Extent {
     }
     return new Extent(coordinates, coordinates, this._getProjection());
 }
+
+export type MarekrSymbol = FileMarkerSymbol | VectorMarkerSymbol | PathMarkerSymbol | TextSymbol;
+
+export type MarkerOptionsType = {
+    hitTestForEvent?: boolean;
+    collision?: boolean;
+    symbol?: MarekrSymbol | Array<MarekrSymbol>;
+} & GeometryOptionsType;

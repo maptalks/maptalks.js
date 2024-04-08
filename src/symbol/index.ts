@@ -94,7 +94,7 @@ export type PathMarkerSymbol = {
 } & MarkerCommonSymbol & SymbolCommon;
 
 export type TextSymbol = {
-    textName: string;
+    textName?: string;
     textPlacement?: 'point' | 'vertex' | 'line' | 'vertex-first' | 'vertex-last';
     textFaceName?: string;
     textFont?: string;
