@@ -180,7 +180,6 @@ export class Circle extends CenterMixin(Polygon) {
     }
 
     _exportGeoJSONGeometry(): any {
-        //@ts-expect-error todo
         const coordinates = Coordinate.toNumberArrays([this.getShell()]);
         return {
             'type': 'Polygon',

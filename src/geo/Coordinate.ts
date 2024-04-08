@@ -54,7 +54,8 @@ class Coordinate extends Position {
      */
     static toNumberArrays(coordinates: Coordinate);
     static toNumberArrays(coordinates: Coordinate[]);
-    static toNumberArrays(coordinates: Coordinate | Coordinate[]) {
+    static toNumberArrays(coordinates: Coordinate[][]);
+    static toNumberArrays(coordinates: Coordinate | Coordinate[] | Coordinate[][]) {
         if (!Array.isArray(coordinates)) {
             return coordinates.toArray();
         }

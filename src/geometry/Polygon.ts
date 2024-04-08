@@ -25,7 +25,7 @@ const JSON_TYPE = 'Polygon';
  *      ]
  *  ).addTo(layer);
  */
-class Polygon extends Path {
+export class Polygon extends Path {
 
     public _holes: any
     public _prjHoles: any
@@ -42,7 +42,6 @@ class Polygon extends Path {
             this.setCoordinates(coordinates);
         }
     }
-
 
     getOutline(): null | Polygon {
         const painter = this._getPainter();

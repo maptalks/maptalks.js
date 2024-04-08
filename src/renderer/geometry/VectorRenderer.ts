@@ -10,11 +10,12 @@ import Rectangle from '../../geometry/Rectangle';
 import Path from '../../geometry/Path';
 import LineString from '../../geometry/LineString';
 import Polygon from '../../geometry/Polygon';
-import { BBOX_TEMP, getDefaultBBOX, pointsBBOX, resetBBOX } from '../../core/util/bbox';
+import { BBOX, BBOX_TEMP, getDefaultBBOX, pointsBBOX, resetBBOX } from '../../core/util/bbox';
 import Extent from '../../geo/Extent';
 import Painter from './Painter';
 import type { ProjectionType } from '../../geo/projection';
 import Coordinate from '../../geo/Coordinate';
+import { WithNull } from '../../types/typings';
 
 const TEMP_WITHIN = {
     within: false,
@@ -106,10 +107,9 @@ const el = {
         return altitude > 0 || map.getPitch() || ((this instanceof Ellipse) && map.getBearing());
     },
 
-    _getPaintParams(): (Point | number)[] {
+    _getPaintParams(): any[] {
         const map = this.getMap();
         if (this._paintAsPath()) {
-            // @ts-expect-error 待完善
             return Polygon.prototype._getPaintParams.call(this, true);
         }
         const pcenter = this._getPrjCoordinates();
@@ -141,13 +141,13 @@ const el = {
 export type ElType = typeof el;
 
 declare module '../../geometry/Ellipse' {
-    interface Ellipse extends ElType {}
+    interface Ellipse extends Omit<ElType, '_paintOn' | '_getPaintParams'> {}
 }
 
 Ellipse.include(el);
 
 declare module '../../geometry/Circle' {
-    interface Circle extends ElType {}
+    interface Circle extends Omit<ElType, '_paintOn' | '_getPaintParams'> {}
 }
 
 Circle.include(el);
@@ -168,7 +168,7 @@ const rectangleInclude = {
 export type RectangleIncludeType = typeof rectangleInclude;
 
 declare module '../../geometry/Rectangle' {
-    interface Rectangle extends RectangleIncludeType {}
+    interface Rectangle extends Omit<RectangleIncludeType, '_paintOn' | '_getPaintParams'> {}
 }
 
 Rectangle.include(rectangleInclude);
@@ -178,7 +178,6 @@ const sectorInclude = {
 
     _getPaintParams(): [Point, number, [number, number]] {
         if (this._paintAsPath()) {
-            // @ts-expect-error 待完善
             return Polygon.prototype._getPaintParams.call(this, true);
         }
         const map = this.getMap();
@@ -209,10 +208,8 @@ const sectorInclude = {
     }
 };
 
-export type SectorIncludeType = ElType & typeof sectorInclude;
-
 declare module '../../geometry/Sector' {
-    interface Sector extends SectorIncludeType {}
+    interface Sector extends Omit<ElType, '_paintOn' | '_getPaintParams'> {}
 }
 
 Sector.include(el, sectorInclude);
@@ -417,10 +414,11 @@ const polygonInclude = {
     }
 };
 
-export type PolygonIncludeType = typeof polygonInclude;
-
 declare module '../../geometry/Polygon' {
-    interface Polygon extends PolygonIncludeType {}
+    interface Polygon {
+        _getPaintParams(disableSimplify?: boolean): any[];
+        _paintOn(ctx: CanvasRenderingContext2D, points: Point[], lineOpacity?: number, fillOpacity?: number, dasharray?: number[]): WithNull<BBOX>;
+    }
 }
 
 Polygon.include(polygonInclude);

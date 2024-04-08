@@ -290,7 +290,7 @@ export class Rectangle extends Polygon {
     }
 
     _exportGeoJSONGeometry() {
-        const coordinates = Coordinate.toNumberArrays(this.getShell());
+        const coordinates = Coordinate.toNumberArrays([this.getShell()]);
         return {
             'type': 'Polygon',
             'coordinates': coordinates

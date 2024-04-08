@@ -6,10 +6,11 @@ import Rectangle from '../../geometry/Rectangle';
 import LineString from '../../geometry/LineString';
 import Polygon from '../../geometry/Polygon';
 import Point from '../../geo/Point';
+import {WithNull} from "../../types/typings";
 
 // 有中心点的图形的共同方法
 const CenterPointRenderer = {
-    _getRenderPoints(): [[Point], null] {
+    _getRenderPoints(): [Point[], WithNull<Point[]>] {
         return [[this._getCenter2DPoint(this.getMap().getGLRes())], null];
     }
 };
@@ -25,32 +26,14 @@ declare module '../../geometry/Marker' {
  */
 Marker.include(CenterPointRenderer);
 
-declare module '../../geometry/Ellipse' {
-    interface Ellipse extends CenterPointRendererType {}
-}
-
 Ellipse.include(CenterPointRenderer);
-
-declare module '../../geometry/Circle' {
-    interface Circle extends CenterPointRendererType {}
-}
 
 Circle.include(CenterPointRenderer);
 
-declare module '../../geometry/Sector' {
-    interface Sector extends CenterPointRendererType {}
-}
-
 Sector.include(CenterPointRenderer);
 
-declare module '../../geometry/Rectangle' {
-    interface Rectangle {
-        _getRenderPoints(placement?: string): [Point[], null];
-    }
-}
-
 Rectangle.include({
-    _getRenderPoints(placement?: string): [Point[], null] {
+    _getRenderPoints(placement?: string): [Point[], WithNull<Point[]>] {
         const map = this.getMap();
         const glRes = map.getGLRes();
         if (placement === 'vertex') {
@@ -160,7 +143,7 @@ const PolyRenderer = {
 
 declare module '../../geometry/LineString' {
     interface LineString {
-        _getRenderPoints(placement?: string): [Point[], Point[]];
+        _getRenderPoints(placement?: string): [Point[], WithNull<Point[]>];
     }
 }
 
@@ -168,7 +151,7 @@ LineString.include(PolyRenderer);
 
 declare module '../../geometry/Polygon' {
     interface Polygon {
-        _getRenderPoints(placement?: string): [Point[], Point[]];
+        _getRenderPoints(placement?: string): [Point[], WithNull<Point[]>];
     }
 }
 
