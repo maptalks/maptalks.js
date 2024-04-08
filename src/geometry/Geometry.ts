@@ -132,7 +132,6 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     getRotateOffsetAngle?(): number;
     _computePrjExtent?(T: null | ProjectionType): Extent;
 
-
     constructor(options: GeometryOptionsType) {
         const opts = extend({}, options);
         const symbol = opts['symbol'];

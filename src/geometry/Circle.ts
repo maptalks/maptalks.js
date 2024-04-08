@@ -129,7 +129,7 @@ export class Circle extends CenterMixin(Polygon) {
             se = center.add(size.width / 2, size.height / 2);
         return withInEllipse(point, center, se, t);
     }
-    //@ts-expect-error todo
+
     _computePrjExtent(projection: any): Extent {
         const minmax = this._getMinMax(projection);
         if (!minmax) {
@@ -145,7 +145,6 @@ export class Circle extends CenterMixin(Polygon) {
         return new Extent(pcenter.add(leftx, topy), pcenter.add(rightx, bottomy));
     }
 
-    //@ts-expect-error todo
     _computeExtent(measurer: any): Extent {
         const minmax = this._getMinMax(measurer);
         if (!minmax) {

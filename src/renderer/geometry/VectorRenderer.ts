@@ -424,8 +424,3 @@ declare module '../../geometry/Polygon' {
 }
 
 Polygon.include(polygonInclude);
-
-const p = new Polygon([])
-
-p._paintOn()
-p._getPaintParams()

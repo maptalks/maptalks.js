@@ -14,12 +14,10 @@ import Polygon from './Polygon';
  * });
  */
 export class Rectangle extends Polygon {
-
     public _width: number
     public _height: number
     public _pnw: any
-    getRotatedShell?(): any
-    _computeRotatedPrjExtent?(): any
+
     static fromJSON(json) {
         const feature = json['feature'];
         const rect = new Rectangle(json['coordinates'], json['width'], json['height'], json['options']);
@@ -118,7 +116,7 @@ export class Rectangle extends Polygon {
         return this._getShell();
     }
 
-    _getShell() {
+    _getShell(): Coordinate[] {
         const measurer = this._getMeasurer();
         const nw = this._coordinates;
         const map = this.getMap();
@@ -146,7 +144,6 @@ export class Rectangle extends Polygon {
         p2.z = nw.z;
         points.push(nw);
         return points;
-
     }
 
     /**
@@ -293,7 +290,7 @@ export class Rectangle extends Polygon {
     }
 
     _exportGeoJSONGeometry() {
-        const coordinates = Coordinate.toNumberArrays([this.getShell()]);
+        const coordinates = Coordinate.toNumberArrays(this.getShell());
         return {
             'type': 'Polygon',
             'coordinates': coordinates

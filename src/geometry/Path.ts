@@ -379,7 +379,7 @@ export class Path extends Geometry {
         return new Coordinate(sumx / counter, sumy / counter);
     }
 
-    _computeExtent(): Extent {
+    _computeExtent(_?: any): Extent {
         const shell = this._coordinates;
         if (!isArrayHasData(shell)) {
             return null;
@@ -391,7 +391,7 @@ export class Path extends Geometry {
         return this._coords2Extent(rings, this._getProjection());
     }
 
-    _computePrjExtent(): Extent {
+    _computePrjExtent(_?: any): Extent {
         const coords = [this._getPrjCoordinates()];
         if (this.hasHoles && this.hasHoles()) {
             coords.push.call(coords, ...this._getPrjHoles());

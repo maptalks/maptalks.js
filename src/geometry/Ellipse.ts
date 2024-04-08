@@ -30,8 +30,6 @@ const options = {
 export class Ellipse extends CenterMixin(Polygon) {
     public width: number
     public height: number
-    getRotatedShell?(): any
-    _computeRotatedPrjExtent?(): any
 
     static fromJSON(json) {
         const feature = json['feature'];

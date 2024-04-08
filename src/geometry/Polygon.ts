@@ -25,7 +25,7 @@ const JSON_TYPE = 'Polygon';
  *      ]
  *  ).addTo(layer);
  */
-export class Polygon extends Path {
+class Polygon extends Path {
 
     public _holes: any
     public _prjHoles: any
