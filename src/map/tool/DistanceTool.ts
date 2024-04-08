@@ -8,6 +8,7 @@ import VectorLayer from '../../layer/VectorLayer';
 import Translator from '../../lang/translator';
 import DrawTool from './DrawTool';
 import Coordinate from '../../geo/Coordinate';
+import { VectorMarkerSymbol } from '../../symbol';
 
 export type DistanceToolOptions = {
     mode?: string,
@@ -341,7 +342,7 @@ class DistanceTool extends DrawTool {
             symbol['markerWidth'] /= 2;
             symbol['markerHeight'] /= 2;
             this._tailMarker = new Marker(param['coordinate'], {
-                'symbol': symbol
+                'symbol': symbol as VectorMarkerSymbol
             }).addTo(this._measureMarkerLayer);
             this._tailLabel = new Label(ms, param['coordinate'], this.options['labelOptions'])
                 .addTo(this._measureMarkerLayer);

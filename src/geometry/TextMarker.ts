@@ -1,9 +1,11 @@
 import { AnyAaaaRecord } from 'dns';
 import { extend, hasOwn } from '../core/util';
 import { splitTextToRow, escapeSpecialChars } from '../core/util/strings';
-import Marker from './Marker';
+import { TextSymbol, VectorMarkerSymbol } from '../symbol';
+import Marker, { MarkerOptionsType } from './Marker';
 
-const defaultSymbol = {
+const defaultSymbol: TextSymbol = {
+    'textName': '',
     'textFaceName': 'monospace',
     'textSize': 12,
     'textLineSpacing': 8,
@@ -12,7 +14,7 @@ const defaultSymbol = {
     'textVerticalAlignment': 'middle' //top middle bottom
 };
 
-const defaultBoxSymbol = {
+const defaultBoxSymbol: VectorMarkerSymbol = {
     'markerType': 'square',
     'markerLineColor': '#000',
     'markerLineWidth': 2,
@@ -56,7 +58,7 @@ class TextMarker extends Marker {
      * @return {Label} this
      * @fires Label#contentchange
      */
-    setContent(content: any): TextMarker {
+    setContent(content: string) {
         const old = this._content;
         this._content = escapeSpecialChars(content);
         this._refresh();
@@ -80,13 +82,13 @@ class TextMarker extends Marker {
         this._refresh();
     }
 
-    toJSON(): any {
+    toJSON(): { [key: string]: any } {
         const json = super.toJSON();
         delete json['symbol'];
         return json;
     }
 
-    setSymbol(symbol: any): TextMarker {
+    setSymbol(symbol: any) {
         if (this._refreshing || !symbol) {
             return super.setSymbol(symbol);
         }
@@ -131,11 +133,11 @@ class TextMarker extends Marker {
         return this._symbol;
     }
 
-    _getDefaultTextSymbol(): any {
+    _getDefaultTextSymbol(): TextSymbol {
         return extend({}, defaultSymbol);
     }
 
-    _getDefaultBoxSymbol(): any {
+    _getDefaultBoxSymbol(): VectorMarkerSymbol {
         return extend({}, defaultBoxSymbol);
     }
 
@@ -145,3 +147,5 @@ class TextMarker extends Marker {
 }
 
 export default TextMarker;
+
+export type TextMarkerOptionsType = MarkerOptionsType;

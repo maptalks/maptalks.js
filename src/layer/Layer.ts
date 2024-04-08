@@ -543,7 +543,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
                 'markerFillOpacity': 0
             });
         } else {
-            mask.setSymbol({
+            (mask as Polygon).setSymbol({
                 'lineColor': 'rgba(0, 0, 0, 0)',
                 'polygonOpacity': 0
             });
