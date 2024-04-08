@@ -176,8 +176,7 @@ export default class EditHandle extends Eventable<any>(Class) {
         dragHandler.on('dragging', this.onDragging, this)
             .on('mouseup', this.onDragend, this)
             .enable();
-        // @ts-expect-error todo 等待 DragHandler 完成改造
-        dragHandler.type = 'handle';
+
         dragHandler.onMouseDown(e['domEvent']);
         prevX = containerPoint.x;
         prevY = containerPoint.y;

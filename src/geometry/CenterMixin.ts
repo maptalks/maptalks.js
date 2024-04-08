@@ -1,6 +1,7 @@
 import { MixinConstructor } from '../core/Mixin';
 
 import Coordinate from '../geo/Coordinate';
+import Point from '../geo/Point';
 
 /**
  * 基于几何图形的通用方法
@@ -53,7 +54,7 @@ export default function <T extends MixinConstructor>(Base: T) {
         }
 
         //Gets view point of the geometry's center
-        _getCenter2DPoint(res?: any): any {
+        _getCenter2DPoint(res?: number): Point {
             const map = this.getMap();
             if (!map) {
                 return null;

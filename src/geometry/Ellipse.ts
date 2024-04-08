@@ -27,7 +27,7 @@ const options = {
  *     id : 'ellipse0'
  * });
  */
-class Ellipse extends CenterMixin(Polygon) {
+export class Ellipse extends CenterMixin(Polygon) {
     public width: number
     public height: number
     getRotatedShell?(): any

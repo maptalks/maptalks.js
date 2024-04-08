@@ -32,7 +32,7 @@ const options: CircleOptionsType = {
  * });
  * @mixes CenterMixin
  */
-class Circle extends CenterMixin(Polygon) {
+export class Circle extends CenterMixin(Polygon) {
     public _radius: number
 
     static fromJSON(json: any): Circle {
@@ -129,7 +129,7 @@ class Circle extends CenterMixin(Polygon) {
             se = center.add(size.width / 2, size.height / 2);
         return withInEllipse(point, center, se, t);
     }
-    //@ts-expect-error todo 
+    //@ts-expect-error todo
     _computePrjExtent(projection: any): Extent {
         const minmax = this._getMinMax(projection);
         if (!minmax) {
@@ -145,7 +145,7 @@ class Circle extends CenterMixin(Polygon) {
         return new Extent(pcenter.add(leftx, topy), pcenter.add(rightx, bottomy));
     }
 
-    //@ts-expect-error todo 
+    //@ts-expect-error todo
     _computeExtent(measurer: any): Extent {
         const minmax = this._getMinMax(measurer);
         if (!minmax) {

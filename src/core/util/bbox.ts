@@ -1,3 +1,5 @@
+import Coordinate from '../../geo/Coordinate';
+
 const minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
 
 export type BBOX = [number, number, number, number]
@@ -10,10 +12,10 @@ export const BBOX_TEMP = getDefaultBBOX();
 
 /**
  * 重置bbox
- * 
+ *
  * @english
  * reset bbox
- * @param bbox 
+ * @param bbox
  */
 export function resetBBOX(bbox: BBOX) {
     bbox[0] = minx;
@@ -24,14 +26,16 @@ export function resetBBOX(bbox: BBOX) {
 
 /**
  * cal points bbox:linestring,polygon etc
- * 
+ *
  * @english
  * cal points bbox:linestring,polygon etc
- * @param points 
- * @param out 
- * @returns 
+ * @param points
+ * @param out
+ * @returns
  */
-export function pointsBBOX(points: any, out: BBOX) {
+export function pointsBBOX(points: Coordinate, out: BBOX): void;
+export function pointsBBOX(points: Coordinate[], out: BBOX): void;
+export function pointsBBOX(points: any, out: any) {
     if (!points) {
         return;
     }

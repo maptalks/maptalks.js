@@ -13,7 +13,7 @@ import Polygon from './Polygon';
  *     id : 'rectangle0'
  * });
  */
-class Rectangle extends Polygon {
+export class Rectangle extends Polygon {
 
     public _width: number
     public _height: number

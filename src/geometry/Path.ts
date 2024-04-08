@@ -40,7 +40,7 @@ const options = {
  * @category geometry
  * @extends Geometry
  */
-class Path extends Geometry {
+export class Path extends Geometry {
 
     public _showPlayer: any
     public _animIdx: number

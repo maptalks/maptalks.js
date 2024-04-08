@@ -50,7 +50,7 @@ const options = {
  *     }
  * });
  */
-class Marker extends CenterMixin(Geometry) {
+export class Marker extends CenterMixin(Geometry) {
     public isPoint: boolean
     /**
      * @param {Coordinate} coordinates      - coordinates of the marker

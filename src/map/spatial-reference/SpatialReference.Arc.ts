@@ -53,7 +53,6 @@ function parse(arcConf: ArcgisConfig) {
  */
 const loadArcgis = (url: string, cb: (_, spatialRef?) => void, options: any = { 'jsonp': true }) => {
     if (isString(url) && url.substring(0, 1) !== '{') {
-        // TODO: 等待补充Ajax类型定义
         Ajax.getJSON(url, (err, json) => {
             if (err) {
                 cb(err);

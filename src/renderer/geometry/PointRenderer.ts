@@ -5,24 +5,52 @@ import Sector from '../../geometry/Sector';
 import Rectangle from '../../geometry/Rectangle';
 import LineString from '../../geometry/LineString';
 import Polygon from '../../geometry/Polygon';
+import Point from '../../geo/Point';
 
 // 有中心点的图形的共同方法
 const CenterPointRenderer = {
-    _getRenderPoints() {
+    _getRenderPoints(): [[Point], null] {
         return [[this._getCenter2DPoint(this.getMap().getGLRes())], null];
     }
 };
+
+export type CenterPointRendererType = typeof CenterPointRenderer;
+
+declare module '../../geometry/Marker' {
+    interface Marker extends CenterPointRendererType {}
+}
 
 /**
  * 获取symbolizer所需的数据
  */
 Marker.include(CenterPointRenderer);
+
+declare module '../../geometry/Ellipse' {
+    interface Ellipse extends CenterPointRendererType {}
+}
+
 Ellipse.include(CenterPointRenderer);
+
+declare module '../../geometry/Circle' {
+    interface Circle extends CenterPointRendererType {}
+}
+
 Circle.include(CenterPointRenderer);
+
+declare module '../../geometry/Sector' {
+    interface Sector extends CenterPointRendererType {}
+}
+
 Sector.include(CenterPointRenderer);
-//----------------------------------------------------
+
+declare module '../../geometry/Rectangle' {
+    interface Rectangle {
+        _getRenderPoints(placement?: string): [Point[], null];
+    }
+}
+
 Rectangle.include({
-    _getRenderPoints(placement) {
+    _getRenderPoints(placement?: string): [Point[], null] {
         const map = this.getMap();
         const glRes = map.getGLRes();
         if (placement === 'vertex') {
@@ -43,7 +71,7 @@ Rectangle.include({
 
 //----------------------------------------------------
 const PolyRenderer = {
-    _getRenderPoints(placement) {
+    _getRenderPoints(placement?: string) {
         const map = this.getMap();
         const glRes = map.getGLRes();
         let points, rotations = null;
@@ -130,6 +158,18 @@ const PolyRenderer = {
     }
 };
 
+declare module '../../geometry/LineString' {
+    interface LineString {
+        _getRenderPoints(placement?: string): [Point[], Point[]];
+    }
+}
+
 LineString.include(PolyRenderer);
+
+declare module '../../geometry/Polygon' {
+    interface Polygon {
+        _getRenderPoints(placement?: string): [Point[], Point[]];
+    }
+}
 
 Polygon.include(PolyRenderer);
