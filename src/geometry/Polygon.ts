@@ -66,7 +66,7 @@ export class Polygon extends Path {
      * @return {Polygon} this
      * @fires Polygon#shapechange
      */
-    setCoordinates(coordinates: any): Polygon {
+    setCoordinates(coordinates: any) {
         if (!coordinates) {
             this._coordinates = null;
             this._holes = null;
@@ -104,7 +104,7 @@ export class Polygon extends Path {
      *
      * @returns {Coordinate[][]}
      */
-    getCoordinates(): [] | Coordinate[][] {
+    getCoordinates(): Coordinate[][] {
         if (!this._coordinates) {
             return [];
         }

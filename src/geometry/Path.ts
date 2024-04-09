@@ -1,10 +1,12 @@
 import { isNumber, isArrayHasData, isFunction, getPointsResultPts } from '../core/util';
-import { Animation } from '../core/Animation';
+import { Animation, AnimationOptionsType, Frame, Player } from '../core/Animation';
 import Coordinate from '../geo/Coordinate';
 import Extent from '../geo/Extent';
-import Geometry from './Geometry';
+import Geometry, { GeometryOptionsType } from './Geometry';
 import simplify from 'simplify-js';
 import Point from '../geo/Point';
+import { CommonProjectionType } from '../geo/projection';
+import { FillSymbol, LineSymbol } from '../symbol';
 
 /**
  * @property {Object} options - configuration options
@@ -16,8 +18,8 @@ import Point from '../geo/Point';
  * @memberOf Path
  * @instance
  */
-const options = {
-    'smoothness': 0,
+const options: PathOptionsType = {
+    'smoothness': false,
     'enableClip': true,
     'enableSimplify': true,
     'simplifyTolerance': 2,
@@ -32,6 +34,10 @@ const options = {
     }
 };
 
+type animateShowCallback = (frame: Frame, currentCoord: Coordinate) => void;
+export type PathCoordinates = Array<Coordinate>;
+export type PathsCoordinates = Array<Array<Coordinate>>;
+
 /**
  * 一个抽象类Path，包含Path几何类的常用方法，例如LineString、Polygon
  * @english
@@ -42,7 +48,8 @@ const options = {
  */
 export class Path extends Geometry {
 
-    public _showPlayer: any
+    _coordinates: Coordinate[];
+    public _showPlayer: Player;
     public _animIdx: number
     public _animLenSoFar: number
     public _animTailRatio: number
@@ -51,10 +58,11 @@ export class Path extends Geometry {
     public _tempCoord: Coordinate
     public _tempPrjCoord: Point
     public _simplified: boolean
-    public _prjCoords: any
+    public _prjCoords: Array<Coordinate>
     hasHoles?(): boolean;
-    getHoles?(): any;
-    _getPrjHoles?(): any;
+    getHoles?(): Array<Array<Coordinate>>;
+    _getPrjHoles?(): Array<Array<Coordinate>>;
+
 
     /**
      * 动画展示线条
@@ -74,17 +82,17 @@ export class Path extends Geometry {
      *  });
      * @return {LineString}         this
      */
-    animateShow(options: any = {}, cb: any): any {
+    animateShow(options: (AnimationOptionsType | animateShowCallback) = {}, cb?: animateShowCallback): Player | undefined {
         if (this._showPlayer) {
             this._showPlayer.finish();
         }
         if (isFunction(options)) {
             options = {};
-            cb = options;
+            cb = options as animateShowCallback;
         }
         const coordinates: any = this.getCoordinates();
         if (coordinates.length === 0) {
-            return this;
+            return;
         }
         this._animIdx = 0;
         this._animLenSoFar = 0;
@@ -93,7 +101,7 @@ export class Path extends Geometry {
         const animCoords = isPolygon ? this.getShell().concat(this.getShell()[0]) : coordinates;
         const projection = this._getProjection();
 
-        const prjAnimCoords = projection.projectCoords(animCoords, this.options['antiMeridian']);
+        const prjAnimCoords = projection.projectCoords(animCoords, this.options['antiMeridian']) as Coordinate[];
 
         this._prjAniShowCenter = this._getPrjExtent().getCenter();
         this._aniShowCenter = projection.unproject(this._prjAniShowCenter);
@@ -106,7 +114,6 @@ export class Path extends Geometry {
             prjAnimCoords[0]._distance = 0;
         }
         for (let i = 1; i < prjAnimCoords.length; i++) {
-            // @ts-expect-error todo
             const distance = prjAnimCoords[i].distanceTo(prjAnimCoords[i - 1]);
             // cache distance calc
             // @ts-expect-error todo
@@ -115,7 +122,7 @@ export class Path extends Geometry {
         }
         this._tempCoord = new Coordinate(0, 0);
         this._tempPrjCoord = new Point(0, 0);
-        const player: any = this._showPlayer = Animation.animate({
+        const player = this._showPlayer = Animation.animate({
             't': duration
         }, {
             'duration': duration,
@@ -125,7 +132,7 @@ export class Path extends Geometry {
                 if (player.playState !== 'finished') {
                     player.finish();
                     if (cb) {
-                        const coordinates = this.getCoordinates();
+                        const coordinates = this.getCoordinates() as Coordinate[];
                         cb(frame, coordinates[coordinates.length - 1]);
                     }
                 }
@@ -151,7 +158,7 @@ export class Path extends Geometry {
         return player;
     }
 
-    _drawAnimShowFrame(t: number, duration: number, length: number, coordinates: Coordinate[], prjCoords: any): any {
+    _drawAnimShowFrame(t: number, duration: number, length: number, coordinates: Coordinate[], prjCoords: Array<Coordinate>): Coordinate {
         if (t === 0) {
             return coordinates[0];
         }
@@ -162,7 +169,7 @@ export class Path extends Geometry {
         let i: number, l: number;
         for (i = this._animIdx + 1, l = prjCoords.length; i < l; i++) {
             // segLen = prjCoords[i].distanceTo(prjCoords[i + 1]);
-            segLen = prjCoords[i]._distance;
+            segLen = (prjCoords[i] as any)._distance;
             if (this._animLenSoFar + segLen > targetLength) {
                 break;
             }
@@ -222,7 +229,7 @@ export class Path extends Geometry {
         return targetCoord;
     }
 
-    _getCenterInExtent(extent: Extent, coordinates: Coordinate[], clipFn: any): any {
+    _getCenterInExtent(extent: Extent, coordinates: Coordinate[], clipFn: any): Coordinate {
         const meExtent = this.getExtent();
         if (!extent.intersects(meExtent)) {
             return null;
@@ -267,7 +274,7 @@ export class Path extends Geometry {
      * @returns {Point[]}
      * @private
      */
-    _getPath2DPoints(prjCoords: any, disableSimplify: boolean, res?: any): any {
+    _getPath2DPoints(prjCoords: PathCoordinates | PathsCoordinates, disableSimplify: boolean, res?: number): Point | Array<Point> | Array<Array<Point>> {
         if (!isArrayHasData(prjCoords)) {
             return [];
         }
@@ -278,24 +285,24 @@ export class Path extends Geometry {
         delete this._simplified;
         if (isSimplify && !isMulti) {
             const count = prjCoords.length;
-            prjCoords = simplify(prjCoords, tolerance, false);
+            prjCoords = simplify(prjCoords as PathCoordinates, tolerance, false) as Coordinate[];
             this._simplified = prjCoords.length < count;
         }
         if (!res) {
             res = map._getResolution();
         }
         if (!Array.isArray(prjCoords)) {
-            return map._prjToPointAtRes(prjCoords, res);
+            return map._prjToPointAtRes(prjCoords as Coordinate, res);
         } else {
             let resultPoints = [];
             const glPointKey = '_glPt';
             if (!Array.isArray(prjCoords[0])) {
                 resultPoints = getPointsResultPts(prjCoords, glPointKey);
-                return map._prjsToPointsAtRes(prjCoords, res, resultPoints);
+                return map._prjsToPointsAtRes(prjCoords as Coordinate[], res, resultPoints);
             }
             const pts = [];
             for (let i = 0, len = prjCoords.length; i < len; i++) {
-                const prjCoord = prjCoords[i];
+                const prjCoord = prjCoords[i] as Coordinate[];
                 resultPoints = getPointsResultPts(prjCoord, glPointKey);
                 const pt = map._prjsToPointsAtRes(prjCoord, res, resultPoints);
                 pts.push(pt);
@@ -305,18 +312,18 @@ export class Path extends Geometry {
         // return forEachCoord(prjCoords, c => map._prjToPoint(c, zoom));
     }
 
-    _shouldSimplify(): any {
+    _shouldSimplify(): boolean {
         const layer = this.getLayer();
         const hasAltitude = layer.options['enableAltitude'];
         return layer && layer.options['enableSimplify'] && !hasAltitude && this.options['enableSimplify'] && !this._showPlayer/* && !this.options['smoothness'] */;
     }
 
-    _setPrjCoordinates(prjPoints: any): void {
+    _setPrjCoordinates(prjPoints: PathCoordinates): void {
         this._prjCoords = prjPoints;
         this.onShapeChanged();
     }
 
-    _getPrjCoordinates(): any {
+    _getPrjCoordinates(): PathCoordinates {
         this._verifyProjection();
         if (!this._prjCoords && this._getProjection()) {
             this._prjCoords = this._projectCoords(this._coordinates);
@@ -341,18 +348,18 @@ export class Path extends Geometry {
         super._clearProjection();
     }
 
-    _projectCoords(points: any): any {
+    _projectCoords(points: PathCoordinates): PathCoordinates {
         const projection = this._getProjection();
         if (projection) {
-            return projection.projectCoords(points, this.options['antiMeridian']);
+            return projection.projectCoords(points, this.options['antiMeridian']) as PathCoordinates;
         }
         return [];
     }
 
-    _unprojectCoords(prjPoints: any): any {
+    _unprojectCoords(prjPoints: PathCoordinates): PathCoordinates {
         const projection = this._getProjection();
         if (projection) {
-            return projection.unprojectCoords(prjPoints);
+            return projection.unprojectCoords(prjPoints) as PathCoordinates;
         }
         return [];
     }
@@ -365,7 +372,6 @@ export class Path extends Geometry {
         let sumx = 0,
             sumy = 0,
             counter = 0;
-        // @ts-expect-error todo
         const size = ring.length;
         for (let i = 0; i < size; i++) {
             if (ring[i]) {
@@ -400,7 +406,7 @@ export class Path extends Geometry {
     }
 
     _get2DLength(): number {
-        const vertexes = this._getPath2DPoints(this._getPrjCoordinates(), true);
+        const vertexes = this._getPath2DPoints(this._getPrjCoordinates(), true) as Point[];
         let len = 0;
         for (let i = 1, l = vertexes.length; i < l; i++) {
             len += vertexes[i].distanceTo(vertexes[i - 1]);
@@ -426,12 +432,12 @@ export class Path extends Geometry {
         return super._hitTestTolerance() + (isNumber(w) ? w / 2 : 1.5);
     }
 
-    _coords2Extent(coords: any, proj?: any): Extent {
+    _coords2Extent(coords: PathsCoordinates, proj?: CommonProjectionType): Extent {
         // linestring,  polygon
         if (!coords || coords.length === 0 || (Array.isArray(coords[0]) && coords[0].length === 0)) {
             return null;
         }
-        const result = new Extent(proj);
+        const result = new Extent(proj as any);
         for (let i = 0, l = coords.length; i < l; i++) {
             for (let j = 0, ll = coords[i].length; j < ll; j++) {
                 result._combine(coords[i][j]);
@@ -444,3 +450,11 @@ export class Path extends Geometry {
 Path.mergeOptions(options);
 
 export default Path;
+
+export type PathOptionsType = GeometryOptionsType & {
+    'smoothness'?: boolean;
+    'enableClip'?: boolean;
+    'enableSimplify'?: boolean;
+    'simplifyTolerance'?: number;
+    'symbol'?: FillSymbol | LineSymbol;
+};

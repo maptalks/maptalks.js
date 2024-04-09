@@ -1,4 +1,4 @@
-import Curve from './Curve';
+import Curve, { CurveOptionsType } from './Curve';
 import Canvas from '../core/Canvas';
 
 /**
@@ -55,3 +55,5 @@ class CubicBezierCurve extends Curve {
 CubicBezierCurve.registerJSONType('CubicBezierCurve');
 
 export default CubicBezierCurve;
+
+export type CubicBezierCurveOptionsType = CurveOptionsType;

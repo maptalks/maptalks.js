@@ -1,8 +1,6 @@
-import Curve from './Curve';
+import Curve, { CurveOptionsType } from './Curve';
 import Canvas from '../core/Canvas';
-type ArcCurveOptionsType = {
-    arcDegree?: number;
-}
+
 /**
  * @property {Object} options
  * @property {Number} [options.arcDegree=90]           - circle arc's degree.
@@ -64,3 +62,7 @@ ArcCurve.registerJSONType('ArcCurve');
 ArcCurve.mergeOptions(options);
 
 export default ArcCurve;
+
+export type ArcCurveOptionsType = CurveOptionsType & {
+    arcDegree?: number;
+};

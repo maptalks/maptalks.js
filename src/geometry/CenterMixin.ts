@@ -13,8 +13,8 @@ import type { Map } from '../map';
  */
 export default function <T extends MixinConstructor>(Base: T) {
     return class extends Base {
-        public _coordinates: any
-        public _pcenter: any
+        public _coordinates: Coordinate
+        public _pcenter: Coordinate
         public _dirtyCoords: boolean
         getMap?(): Map
         _getProjection?(): CommonProjectionType

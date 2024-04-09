@@ -1,10 +1,6 @@
-import LineString from './LineString';
+import LineString, { LineStringOptionsType } from './LineString';
 import Canvas2d from '../core/Canvas';
-type CurveOptionsType = {
-    enableSimplify?: boolean;
-    enableClip?: boolean;
 
-}
 const options: CurveOptionsType = {
     'enableSimplify': false,
     'enableClip': false
@@ -92,3 +88,8 @@ class Curve extends LineString {
 Curve.mergeOptions(options);
 
 export default Curve;
+
+export type CurveOptionsType = LineStringOptionsType & {
+    enableSimplify?: boolean;
+    enableClip?: boolean;
+};
