@@ -23,10 +23,6 @@ const options: CurveOptionsType = {
  * @property {Boolean} [options.enableClip=false] - whether to clip curve with map's current extent
  */
 class Curve extends LineString {
-
-    _getArrowShape?(arrows: any[], segments: [], lineWidth: number, arrowStyle: any, tolerance: any): any;
-
-
     _arc(ctx: CanvasRenderingContext2D, points: any, lineOpacity: number): void {
         const degree = this.options['arcDegree'] * Math.PI / 180;
         for (let i = 1, l = points.length; i < l; i++) {

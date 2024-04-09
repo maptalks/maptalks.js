@@ -21,11 +21,9 @@ const options = {
  *     id : 'sector0'
  * });
  */
-class Sector extends Circle {
+export class Sector extends Circle {
     public startAngle: number
     public endAngle: number
-    getRotatedShell?(): any
-    _computeRotatedPrjExtent?(): any
 
     static fromJSON(json) {
         const feature = json['feature'];

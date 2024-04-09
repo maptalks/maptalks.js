@@ -52,7 +52,10 @@ class Coordinate extends Position {
      * const numCoords = Coordinate.toNumberArrays([new Coordinate(100,0), new Coordinate(101,1)]);
      * ```
      */
-    static toNumberArrays(coordinates: Coordinate | Coordinate[]) {
+    static toNumberArrays(coordinates: Coordinate);
+    static toNumberArrays(coordinates: Coordinate[]);
+    static toNumberArrays(coordinates: Coordinate[][]);
+    static toNumberArrays(coordinates: Coordinate | Coordinate[] | Coordinate[][]) {
         if (!Array.isArray(coordinates)) {
             return coordinates.toArray();
         }
