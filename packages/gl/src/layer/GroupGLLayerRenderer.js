@@ -383,7 +383,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         if (this._weatherPainter && this._weatherPainter.isEnable()) {
             return true;
         }
-        const terrainLayer = this.layer._terrainLayer;
+        const terrainLayer = this.layer.getTerrainLayer();
         if (terrainLayer) {
             const renderer = terrainLayer.getRenderer();
             if (renderer && renderer.testIfNeedRedraw()) {
@@ -623,7 +623,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 fn(renderer, layer);
             }
         }
-        const terrainLayer = this.layer._terrainLayer;
+        const terrainLayer = this.layer.getTerrainLayer();
         if (terrainLayer) {
             const renderer = terrainLayer.getRenderer();
             if (renderer) {
@@ -1001,8 +1001,8 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const layers = this._getLayers().filter(layer => {
             return layer.isVisible();
         });
-        if (this.layer._terrainLayer) {
-            layers.push(this.layer._terrainLayer);
+        if (this.layer.getTerrainLayer()) {
+            layers.push(this.layer.getTerrainLayer());
         }
         return this._analysisPainter.paint(tex, layers);
     }

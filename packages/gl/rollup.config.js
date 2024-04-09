@@ -2,6 +2,7 @@ const { nodeResolve } = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
 const replace = require('@rollup/plugin-replace');
 const terser = require('@rollup/plugin-terser');
+const typescript = require('@rollup/plugin-typescript');
 const pkg = require('./package.json');
 
 function glsl() {
@@ -49,7 +50,10 @@ const configPlugins = [
         // jsnext : true,
         // main : true
     }),
-    commonjs()
+    commonjs(),
+    typescript({
+        include: ["**/*.ts", "**/*.d.ts"]
+    })
 ];
 
 const pluginsWorker = production ? [
@@ -120,6 +124,19 @@ module.exports = [
         }
     },
     {
+        input: 'src/transcoders.js',
+        plugins: plugins,
+        output: {
+            'sourcemap': false,
+            'format': 'es',
+            banner,
+            'file': 'dist/transcoders.js'
+        }
+    }
+];
+
+if (production) {
+    module.exports.push({
         input: 'src/index.js',
         plugins: configPlugins.concat(plugins),
         external : ['maptalks', '@maptalks/reshader.gl', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix'],
@@ -131,27 +148,29 @@ module.exports = [
             },
             'file': 'build/gl.es.js'
         }
-    },
-    {
-        input: production ? 'build/index.js' : 'src/index-dev.js',
-        plugins: configPlugins,
-        external : ['maptalks'],
-        output: {
-            'sourcemap': production ? false : 'inline',
-            'format': 'umd',
-            'name': 'maptalksgl',
-            'globals' : {
-                'maptalks' : 'maptalks'
-            },
-            banner,
-            outro,
-            'file': outputFile
+    });
+}
+module.exports.push({
+    input: production ? 'build/index.js' : 'src/index-dev.js',
+    plugins: configPlugins,
+    external : ['maptalks'],
+    output: {
+        'sourcemap': production ? false : 'inline',
+        'format': 'umd',
+        'name': 'maptalksgl',
+        'globals' : {
+            'maptalks' : 'maptalks'
         },
-        watch: {
-            include: ['src/**/*.js', 'src/**/*.glsl',  'src/**/*.vert',  'src/**/*.frag', '../reshader.gl/dist/*.es.js', 'build/worker.js']
-        }
+        banner,
+        outro,
+        'file': outputFile
     },
-    {
+    watch: {
+        include: ['src/**/*.js', 'src/**/*.glsl',  'src/**/*.vert',  'src/**/*.frag', '../reshader.gl/dist/*.es.js', 'build/worker.js']
+    }
+});
+if (production) {
+    module.exports.push({
         input: 'build/index.js',
         plugins: configPlugins,
         external : ['maptalks', '@maptalks/reshader.gl', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix'],
@@ -165,15 +184,5 @@ module.exports = [
             outro,
             'file': pkg.module
         }
-    },
-    {
-        input: 'src/transcoders.js',
-        plugins: plugins,
-        output: {
-            'sourcemap': false,
-            'format': 'es',
-            banner,
-            'file': 'dist/transcoders.js'
-        }
-    }
-];
+    });
+}

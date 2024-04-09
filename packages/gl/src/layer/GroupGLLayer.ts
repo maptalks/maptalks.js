@@ -4,13 +4,12 @@ import { vec3 } from 'gl-matrix';
 import { isNil, extend } from './util/util.js';
 import TerrainLayer from './terrain/TerrainLayer';
 import RayCaster from './raycaster/RayCaster.js';
+import Mask from './mask/Mask.js';
 
-const options = {
+const options: GroupGLLayerOptions = {
     renderer : 'gl',
     antialias : true,
-    extensions : [
-
-    ],
+    extensions : [],
     single: true,
     onlyWebGL1: false,
     optionalExtensions : [
@@ -58,7 +57,7 @@ export default class GroupGLLayer extends maptalks.Layer {
      * @private
      * @function
      */
-    static fromJSON(layerJSON) {
+    static fromJSON(layerJSON: object): GroupGLLayer {
         if (!layerJSON || layerJSON['type'] !== 'GroupGLLayer') {
             return null;
         }
@@ -66,13 +65,21 @@ export default class GroupGLLayer extends maptalks.Layer {
         return new GroupGLLayer(layerJSON['id'], layers, layerJSON['options']);
     }
 
+    options: GroupGLLayerOptions
+    private layers: maptalks.Layer[]
+    private _layerMap: Record<string, maptalks.Layer>
+    private _polygonOffset?: number
+    //TODO 需要等analysis类型定义
+    private _analysisTaskList: Analysis[]
+    private _terrainLayer: TerrainLayer
+    private _raycaster: RayCaster
+
     /**
-     * @param {String|Number} id    - layer's id
-     * @param {Layer[]} layers      - layers to add
-     * @param {Object}  [options=null]          - construct options
-     * @param {*}  [options.*=null]             - options
+     * @param id    - layer's id
+     * @param layers      - layers to add
+     * @param  [options=null]          - construct options
      */
-    constructor(id, layers, options) {
+    constructor(id: string, layers: maptalks.Layer[], options: GroupGLLayerOptions) {
         super(id, options);
         this.layers = layers && layers.slice() || [];
         this.layers.forEach(layer => {
@@ -95,53 +102,54 @@ export default class GroupGLLayer extends maptalks.Layer {
         this.layers.sort(sortLayersByZIndex);
     }
 
-    setSceneConfig(sceneConfig) {
+    setSceneConfig(sceneConfig: GroupGLLayerSceneConfig): this {
         this.options.sceneConfig = sceneConfig;
-        const renderer = this.getRenderer();
+        const renderer = (this as any).getRenderer();
         if (renderer) {
             renderer.updateSceneConfig();
         }
         return this;
     }
 
-    getSceneConfig() {
+    getSceneConfig(): GroupGLLayerSceneConfig {
         return JSON.parse(JSON.stringify(this._getSceneConfig()));
     }
 
-    _getSceneConfig() {
+    _getSceneConfig(): GroupGLLayerSceneConfig {
         return this.options.sceneConfig || {};
     }
 
-    getGroundConfig() {
+    getGroundConfig(): SceneGround {
         const sceneConfig = this._getSceneConfig();
         return sceneConfig.ground;
     }
 
-    getWeatherConfig() {
+    getWeatherConfig(): SceneWeather {
         const sceneConfig = this._getSceneConfig();
         return sceneConfig.weather;
     }
 
     /**
      * Add a new Layer.
-     * @param {Layer} layer - new layer
+     * @param layer - new layer
+     * @param index - index to insert
      * @returns {GroupGLLayer} this
      */
-    addLayer(layer, idx) {
+    addLayer(layer: maptalks.Layer, index: number): this {
         if (layer.getMap()) {
             throw new Error(`layer(${layer.getId()}) is already added on map`);
         }
         if (layer.options['renderer'] !== 'gl') {
             throw new Error(`layer(${layer.getId()})'s renderer is canvas, not supported to be added to GroupGLLayer`);
         }
-        if (idx === undefined) {
+        if (index === undefined) {
             this.layers.push(layer);
         } else {
-            this.layers.splice(idx, 0, layer);
+            this.layers.splice(index, 0, layer);
         }
         this._checkChildren();
         this.sortLayersByZIndex();
-        const renderer = this.getRenderer();
+        const renderer = (this as any).getRenderer();
         if (!renderer) {
             // not loaded yet
             return this;
@@ -152,7 +160,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         return this;
     }
 
-    removeLayer(layer) {
+    removeLayer(layer: maptalks.Layer): this {
         if (maptalks.Util.isString(layer)) {
             layer = this.getChildLayer(layer);
         }
@@ -168,7 +176,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         this._unbindChildListeners(layer);
         delete this._layerMap[layer.getId()];
         this.layers.splice(idx, 1);
-        const renderer = this.getRenderer();
+        const renderer = (this as any).getRenderer();
         if (!renderer) {
             // not loaded yet
             return this;
@@ -178,7 +186,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         return this;
     }
 
-    clearLayers() {
+    clearLayers(): this {
         const layers = this.getLayers();
         for (let i = 0; i < layers.length; i++) {
             if (layers[i]) {
@@ -206,7 +214,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         this._polygonOffset = offset;
     }
 
-    getPolygonOffsetCount() {
+    getPolygonOffsetCount(): number {
         return this._polygonOffset;
     }
 
@@ -214,21 +222,23 @@ export default class GroupGLLayer extends maptalks.Layer {
      * Get children TileLayer
      * @returns {TileLayer[]}
      */
-    getLayers() {
+    getLayers(): maptalks.Layer[] {
         return this.layers.slice();
     }
 
-    _getLayers() {
+    _getLayers(): maptalks.Layer[] {
         return this.layers;
     }
 
     /**
-     * Export the GroupTileLayer's profile json. <br>
+     * 导出GroupGLLayer的序列化JSON对象，可以用于反序列化为一个GroupGLLayer对象。
+     * @english
+     * Export the GroupGLLayer's profile json. <br>
      * Layer's profile is a snapshot of the layer in JSON format. <br>
      * It can be used to reproduce the instance by [fromJSON]{@link Layer#fromJSON} method
-     * @return {Object} layer's profile JSON
+     * @return layer's profile JSON
      */
-    toJSON() {
+    toJSON(): object {
         const layers = [];
         if (this.layers) {
             for (let i = 0; i < this.layers.length; i++) {
@@ -242,10 +252,10 @@ export default class GroupGLLayer extends maptalks.Layer {
             }
         }
         const profile = {
-            'type': this.getJSONType(),
-            'id': this.getId(),
+            'type': (this as any).getJSONType(),
+            'id': (this as any).getId(),
             'layers' : layers,
-            'options': this.config()
+            'options': (this as any).config()
         };
         return profile;
     }
@@ -260,10 +270,10 @@ export default class GroupGLLayer extends maptalks.Layer {
         super.onLoadEnd();
     }
 
-    _prepareLayer(layer) {
-        const map = this.getMap();
+    private _prepareLayer(layer: maptalks.Layer) {
+        const map = (this as any).getMap();
         this._layerMap[layer.getId()] = layer;
-        layer['_canvas'] = this.getRenderer().canvas;
+        layer['_canvas'] = (this as any).getRenderer().canvas;
         layer['_bindMap'](map);
         layer.once('renderercreate', this._onChildRendererCreate, this);
         // layer.on('setstyle updatesymbol', this._onChildLayerStyleChanged, this);
@@ -288,33 +298,33 @@ export default class GroupGLLayer extends maptalks.Layer {
         super.onRemove();
     }
 
-    getChildLayer(id) {
+    getChildLayer(id: string): maptalks.Layer | null {
         const layer = this._layerMap[id];
         return layer || null;
     }
 
-    getLayer(id) {
+    getLayer(id: string): maptalks.Layer | null {
         return this.getChildLayer(id);
     }
 
-    _bindChildListeners(layer) {
+    private _bindChildListeners(layer: maptalks.Layer) {
         layer.on('show hide', this._onLayerShowHide, this);
         layer.on('idchange', this._onLayerIDChange, this);
     }
 
-    _unbindChildListeners(layer) {
+    private _unbindChildListeners(layer: maptalks.Layer) {
         layer.off('show hide', this._onLayerShowHide, this);
         layer.off('idchange', this._onLayerIDChange, this);
     }
 
-    _onLayerShowHide() {
-        const renderer = this.getRenderer();
+    private _onLayerShowHide() {
+        const renderer = (this as any).getRenderer();
         if (renderer) {
             renderer.setToRedraw();
         }
     }
 
-    _onLayerIDChange(e) {
+    private _onLayerIDChange(e) {
         const newId = e.new;
         const oldId = e.old;
         const layer = this.getLayer(oldId);
@@ -322,12 +332,12 @@ export default class GroupGLLayer extends maptalks.Layer {
         this._layerMap[newId] = layer;
     }
 
-    _onChildRendererCreate(e) {
+    private _onChildRendererCreate(e) {
         e.renderer.clearCanvas = empty;
     }
 
     // _onChildLayerStyleChanged() {
-    //     const renderer = this.getRenderer();
+    //     const renderer = (this as any).getRenderer();
     //     if (renderer) {
     //         renderer.setTaaOutdated();
     //     }
@@ -346,28 +356,28 @@ export default class GroupGLLayer extends maptalks.Layer {
     //     return false;
     // }
 
-    _checkChildren() {
+    private _checkChildren() {
         const ids = {};
         this.layers.forEach(layer => {
             const layerId = layer.getId();
             if (ids[layerId]) {
-                throw new Error(`Duplicate child layer id (${layerId}) in the GroupGLLayer (${this.getId()})`);
+                throw new Error(`Duplicate child layer id (${layerId}) in the GroupGLLayer (${(this as any).getId()})`);
             } else {
                 ids[layerId] = 1;
             }
         });
     }
 
-    addAnalysis(analysis) {
+    addAnalysis(analysis: Analysis) {
         this._analysisTaskList = this._analysisTaskList || [];
         this._analysisTaskList.push(analysis);
-        const renderer = this.getRenderer();
+        const renderer = (this as any).getRenderer();
         if (renderer) {
             renderer.setToRedraw();
         }
     }
 
-    removeAnalysis(analysis) {
+    removeAnalysis(analysis: Analysis) {
         if (this._analysisTaskList) {
             const index = this._analysisTaskList.indexOf(analysis);
             if (index > -1) {
@@ -375,7 +385,7 @@ export default class GroupGLLayer extends maptalks.Layer {
                 analysis.remove();
             }
         }
-        const renderer = this.getRenderer();
+        const renderer = (this as any).getRenderer();
         if (renderer) {
             renderer.setToRedraw();
         }
@@ -388,23 +398,24 @@ export default class GroupGLLayer extends maptalks.Layer {
             });
             this._analysisTaskList = [];
         }
-        const renderer = this.getRenderer();
+        const renderer = (this as any).getRenderer();
         if (renderer) {
             renderer.setToRedraw();
         }
     }
 
     /**
+     * 查询给定坐标上的数据要素
+     *
+     * @english
      * Identify the geometries on the given coordinate
-     * @param  {maptalks.Coordinate} coordinate   - coordinate to identify
-     * @param  {Object} [options=null]  - options
-     * @param  {Object} [options.tolerance=0] - identify tolerance in pixel
-     * @param  {Object} [options.count=null]  - result count
-     * @return {Geometry[]} geometries identified
+     * @param  coordinate   - coordinate to identify
+     * @param  options      - options
+     * @return
      */
-    identify(coordinate, options = {}) {
-        const map = this.getMap();
-        const renderer = this.getRenderer();
+    identify(coordinate: maptalks.Coordinate, options: object): any[] {
+        const map = (this as any).getMap();
+        const renderer = (this as any).getRenderer();
         if (!map || !renderer) {
             return [];
         }
@@ -413,18 +424,17 @@ export default class GroupGLLayer extends maptalks.Layer {
     }
 
     /**
+     * 查询给定容器坐标（containerPoint）上的数据要素
+     * @english
      * Identify the data at the given point
-     * @param {Point} point - container point to identify
-     * @param {Object} options - the identify options
-     * @param {Number}   [opts.count=1]  - limit of the result count, no limit if 0
-     * @param {Number}   [opts.orderByCamera=false]  - sort by distance to camera, only support data has identified point
-     * @return {Array} result
+     * @param point - container point to identify
+     * @param options - the identify options
      **/
-    identifyAtPoint(point, options = {}) {
+    identifyAtPoint(point: maptalks.Point, options: any = {}): any[] {
         const isMapGeometryEvent = options.includeInternals;
         const childLayers = this.getLayers();
         const layers = (options && options.childLayers) || childLayers;
-        const map = this.getMap();
+        const map = (this as any).getMap();
         if (!map) {
             return [];
         }
@@ -480,17 +490,17 @@ export default class GroupGLLayer extends maptalks.Layer {
         return result;
     }
 
-    getTerrain() {
-        return this.options['terrain'];
+    getTerrain(): TerrainOptions | undefined | null {
+        return this.options.terrain;
     }
 
-    setTerrain(info) {
-        this.options['terrain'] = info;
-        if (!this.getRenderer()) {
+    setTerrain(info: TerrainOptions | null) {
+        this.options.terrain = info;
+        if (!(this as any).getRenderer()) {
             return this;
         }
         this._initTerrainLayer();
-        this.getMap().updateCenterAltitude();
+        (this as any).getMap().updateCenterAltitude();
         return this;
     }
 
@@ -498,7 +508,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         return this.setTerrain(null);
     }
 
-    updateTerrainMaterial(mat) {
+    updateTerrainMaterial(mat: object) {
         if (!this._terrainLayer || !mat) {
             return;
         }
@@ -511,7 +521,7 @@ export default class GroupGLLayer extends maptalks.Layer {
     }
 
     _initTerrainLayer() {
-        const renderer = this.getRenderer();
+        const renderer = (this as any).getRenderer();
         if (renderer) {
             renderer.setToRedraw();
         }
@@ -549,7 +559,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         return this;
     }
 
-    queryTerrain(coord, out) {
+    queryTerrain(coord: maptalks.Coordinate, out: TerrainResult): TerrainResult {
         if (!this._terrainLayer) {
             if (out) {
                 out[0] = null;
@@ -560,12 +570,13 @@ export default class GroupGLLayer extends maptalks.Layer {
         return this._terrainLayer.queryTerrain(coord, out);
     }
 
-    queryTerrainAtPoint(containerPoint, options = {}) {
+    // 结果需要与queryTerrain统一起来
+    queryTerrainAtPoint(containerPoint: maptalks.Point, options:any = {}): any {
         if (!this._terrainLayer) {
             return null;
         }
-        const glRes = this.map.getGLRes();
-        const map = this.map;
+        const map = (this as any).getMap();
+        const glRes = map.getGLRes();
         const w2 = map.width / 2 || 1,
             h2 = map.height / 2 || 1;
         const p = containerPoint;
@@ -583,23 +594,16 @@ export default class GroupGLLayer extends maptalks.Layer {
         to.z = coord1[2] / map.altitudeToPoint(1, glRes);
         if (!this._raycaster) {
             options['allowPointNotOnLine'] = true;
-            this.raycaster = new RayCaster(from, to, options);
+            this._raycaster = new RayCaster(from, to, options);
         } else {
-            this.raycaster.setFromPoint(from);
-            this.raycaster.setToPoint(to);
+            this._raycaster.setFromPoint(from);
+            this._raycaster.setToPoint(to);
         }
         const terrainRenderer = this._terrainLayer.getRenderer();
         const meshes = terrainRenderer.getAnalysisMeshes();
-        const results = this.raycaster.test(meshes, map);
+        const results = this._raycaster.test(meshes, map);
         const coordinates = [];
         const fromPoint = vec3.set(TEMP_VEC3, from.x, from.y, from.z);
-        // results数据结构 [{
-        //    mesh: Mesh,
-        //    coordinates: [{
-        //        coordinate: maptalks.Coordinate,
-        //        indices: Array
-        //    },...]
-        // },...]
         results.forEach(result => {
             result.coordinates.forEach(c => {
                 coordinates.push(c.coordinate)
@@ -611,7 +615,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         return coordinates[0];
     }
 
-    queryTerrainByProjCoord(projCoord, out) {
+    queryTerrainByProjCoord(projCoord: maptalks.Coordinate, out: TerrainResult): TerrainResult {
         if (!this._terrainLayer) {
             if (out) {
                 out[0] = null;
@@ -665,7 +669,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         this._terrainLayer.setSkinLayers(skinLayers);
     }
 
-    _resetSkinLayer(layer) {
+    _resetSkinLayer(layer: maptalks.Layer) {
         if (!isTerrainSkin(layer)) {
             return;
         }
@@ -695,7 +699,7 @@ export default class GroupGLLayer extends maptalks.Layer {
     }
 
     _onTerrainTileLoad() {
-        const renderer = this.getRenderer();
+        const renderer = (this as any).getRenderer();
         if (renderer) {
             renderer.setToRedraw();
         }
@@ -712,7 +716,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         }
     }
 
-    getTerrainLayer() {
+    getTerrainLayer(): TerrainLayer | undefined {
         return this._terrainLayer;
     }
 
@@ -726,7 +730,7 @@ export default class GroupGLLayer extends maptalks.Layer {
                 }
             }
         }
-        return super._bindMap(...args);
+        return super['_bindMap'](...args);
     }
 
     fire(...args) {
@@ -743,16 +747,16 @@ export default class GroupGLLayer extends maptalks.Layer {
     }
 }
 
-GroupGLLayer.mergeOptions(options);
+(GroupGLLayer as any).mergeOptions(options);
 
-GroupGLLayer.registerJSONType('GroupGLLayer');
+(GroupGLLayer as any).registerJSONType('GroupGLLayer');
 
-GroupGLLayer.registerRenderer('gl', Renderer);
-GroupGLLayer.registerRenderer('canvas', null);
+(GroupGLLayer as any).registerRenderer('gl', Renderer);
+(GroupGLLayer as any).registerRenderer('canvas', null);
 
 function empty() {}
 
-function sortLayersByZIndex(a, b) {
+function sortLayersByZIndex(a: maptalks.Layer, b: maptalks.Layer) {
     const c = a.getZIndex() - b.getZIndex();
     if (c === 0) {
         return a['__group_gl_order'] - b['__group_gl_order'];
@@ -760,7 +764,7 @@ function sortLayersByZIndex(a, b) {
     return c;
 }
 
-function isTerrainSkin(layer) {
+function isTerrainSkin(layer: maptalks.Layer) {
     if (!layer) {
         return false;
     }
@@ -771,7 +775,7 @@ function isTerrainSkin(layer) {
     return !!renderer.renderTerrainSkin;
 }
 
-function applyMatrix(out, v, e) {
+function applyMatrix(out: number[], v: number[], e: number) {
     const x = v[0],
         y = v[1],
         z = v[2];
@@ -780,4 +784,157 @@ function applyMatrix(out, v, e) {
     out[1] = (e[1] * x + e[5] * y + e[9] * z + e[13]) * w;
     out[2] = (e[2] * x + e[6] * y + e[10] * z + e[14]) * w;
     return out;
+}
+
+export type TerrainOptions = {
+    type: 'mapbox' | 'tianditu' | 'cesium' | 'cesium-ion',
+    urlTemplate: string,
+    spatialReference?: string,
+    shader?: 'lit' | 'default',
+    subdomains?: string[],
+    tileSystem?: number[],
+    tileSize?: number,
+    zoomOffset?: number,
+    requireSkuToken?: boolean,
+    depthMask?: boolean,
+    depthFunc?: ComparisonOperatorType,
+    blendSrc?: BlendingFunction,
+    blendDst?: BlendingFunction,
+    material?: object,
+    masks?: Mask[]
+}
+
+export type TerrainResult = [number | null, 0 | 1]
+
+export type GroupGLLayerOptions = {
+    renderer?: 'gl',
+    antialias?: true,
+    extensions?: string[],
+    single?: boolean,
+    onlyWebGL1?: boolean,
+    optionalExtensions?: [
+        'ANGLE_instanced_arrays',
+        'OES_element_index_uint',
+        'OES_standard_derivatives',
+        'OES_vertex_array_object',
+        'OES_texture_half_float',
+        'OES_texture_half_float_linear',
+        'OES_texture_float',
+        'OES_texture_float_linear',
+        'WEBGL_depth_texture',
+        'EXT_shader_texture_lod',
+        'EXT_frag_depth',
+        'EXT_texture_filter_anisotropic',
+        // compressed textures
+        'WEBGL_compressed_texture_astc',
+        'WEBGL_compressed_texture_etc',
+        'WEBGL_compressed_texture_etc1',
+        'WEBGL_compressed_texture_pvrtc',
+        'WEBGL_compressed_texture_s3tc',
+        'WEBGL_compressed_texture_s3tc_srgb'
+    ],
+    forceRenderOnZooming?: true,
+    forceRenderOnMoving?: true,
+    forceRenderOnRotating?: true,
+    viewMoveThreshold?: number,
+    geometryEvents?: boolean,
+    multiSamples?: number,
+    forceRedrawPerFrame?: boolean,
+    sceneConfig?: GroupGLLayerSceneConfig,
+    terrain?: TerrainOptions
+};
+
+export enum SkyboxMode {
+    AMBIENT,
+    REALISTIC
+}
+
+export type SceneEnvironment = {
+    enable: boolean,
+    mode?: SkyboxMode,
+    level?: 0 | 1 | 2 | 3,
+    brightness?: number
+}
+
+export type SceneGround = {
+    enable?: boolean,
+    renderPlugin: {
+        type: 'lit' | 'fill'
+    },
+    symbol: {
+        ssr?: true,                                    // 是否开启ssr，屏幕空间反射
+        material?: any,
+        polygonFill?: number[],
+        polygonOpacity?: number
+    }
+}
+
+export type SceneWeather = {
+    enable?: boolean,
+    fog?: {
+        enable?: boolean,
+        start?: number,
+        end?: number,
+        color?: number[]
+    },
+    rain?: {
+        enable?: boolean
+        density?: number,
+        windDirectionX?: number,
+        windDirectionY?: number,
+        rainTexture: string,
+    },
+    snow?: {
+        enable?: boolean
+    }
+}
+
+export type SceneShadow = {
+    enable?: boolean,
+    type?: 'esm',
+    quality?: 'low' | 'medium' | 'high',
+    opacity?: number,
+    color?: number[],
+    blurOffset?: number
+}
+
+export type ScenePostProcess = {
+    enable?: boolean,
+    antialias?: {
+        enable?: boolean
+    },
+    ssr?: {
+        enable?: boolean
+    },
+    ssao?: {
+        enable?: boolean,
+        bias?: number,
+        radius?: number,
+        intensity?: number
+    },
+    sharpen?: {
+        enable?: boolean,
+        factor?: number
+    },
+    bloom?: {
+        enable?: boolean,
+        factor?: number,
+        threshold?: number,
+        radius?: number
+    },
+    outline: {
+        enable?: boolean,
+        highlightFactor?: number,
+        outlineFactor?: number,
+        outlineWidth?: number,
+        outlineColor?: number[]
+    }
+}
+
+export type GroupGLLayerSceneConfig = {
+    environment?: SceneEnvironment,
+    shadow? : SceneShadow,
+    ground?: SceneGround,
+    weather?: SceneWeather,
+    postProcess?: ScenePostProcess
 }

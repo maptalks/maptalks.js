@@ -106,6 +106,7 @@ function decZlibBuffer(zBuffer) {
     if (zBuffer.length < 1000) {
         return null;
     }
+    //eslint-disable-next-line
     const inflate = new Zlib.Inflate(zBuffer);
 
     if (inflate) {
