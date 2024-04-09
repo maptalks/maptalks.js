@@ -14,13 +14,15 @@ import Polygon from './Polygon';
  * });
  */
 class Rectangle extends Polygon {
-
+    // @ts-expect-error 确实需要重写父类的属性
+    _coordinates: Coordinate;
     public _width: number
     public _height: number
     public _pnw: any
     getRotatedShell?(): any
     _computeRotatedPrjExtent?(): any
-    static fromJSON(json) {
+
+    static fromJSON(json): Rectangle {
         const feature = json['feature'];
         const rect = new Rectangle(json['coordinates'], json['width'], json['height'], json['options']);
         rect.setProperties(feature['properties']);
@@ -46,7 +48,8 @@ class Rectangle extends Polygon {
      * Get coordinates of rectangle's northwest
      * @return {Coordinate}
      */
-    getCoordinates(): any {
+    // @ts-expect-error 确实需要重写父类的属性
+    getCoordinates(): Coordinate {
         return this._coordinates;
     }
 
@@ -56,8 +59,8 @@ class Rectangle extends Polygon {
      * @return {Rectangle} this
      * @fires Rectangle#positionchange
      */
-    setCoordinates(nw: any): any {
-        this._coordinates = (nw instanceof Coordinate) ? nw : new Coordinate(nw);
+    setCoordinates(nw: Coordinate | Array<number>) {
+        this._coordinates = (nw instanceof Coordinate) ? nw : new Coordinate(nw as any);
         if (!this._coordinates || !this.getMap()) {
             this.onPositionChanged();
             return this;
@@ -156,7 +159,7 @@ class Rectangle extends Polygon {
     getHoles() {
         return [];
     }
-
+    // @ts-expect-error 确实需要重写父类的属性
     animateShow() {
         return this.show();
     }
