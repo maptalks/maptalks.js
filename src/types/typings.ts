@@ -11,4 +11,8 @@ declare global {
         opera: any
         DocumentTouch: any
     }
+
+    interface CanvasRenderingContext2D {
+        isHitTesting: boolean;
+    }
 }

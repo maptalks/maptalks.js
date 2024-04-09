@@ -36,11 +36,6 @@ const options: ArcCurveOptionsType = {
  * ).addTo(layer);
  */
 class ArcCurve extends Curve {
-
-    _paintArrow?(a: CanvasRenderingContext2D, b: any, c: number): void;
-
-
-
     _toJSON(options: any): any {
         return {
             'feature': this.toGeoJSON(options),

@@ -40,9 +40,6 @@ export function drawVectorMarker(ctx: CanvasRenderingContext2D, point, symbol, r
         }
     }
 
-    // TODO: 等待Canvas.js补充类型
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
     Canvas.prepareCanvas(ctx, strokeAndFill, resources);
 
     const width = style['markerWidth'],
@@ -92,8 +89,6 @@ export function drawVectorMarker(ctx: CanvasRenderingContext2D, point, symbol, r
 }
 
 function getGraidentExtent(point: Point, w: number, h: number) {
-    // TODO: 等待PointExtent.js补充类型
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     const e = new PointExtent();
     e._combine(point);
     e['xmin'] += -w / 2;

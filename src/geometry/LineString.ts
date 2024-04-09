@@ -36,7 +36,7 @@ const options: LineStringOption = {
  *     ]
  * ).addTo(layer);
  */
-class LineString extends Path {
+export class LineString extends Path {
 
     public _coordinates: any
     /**

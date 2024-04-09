@@ -206,7 +206,6 @@ export function calVectorMarkerSize(out: [number, number], symbol: any) {
     return out;
 }
 
-// TODO: 等待PointExtent补充类型
 const ROTATE_EXTENT = new PointExtent();
 function rotateExtent(fixedExtent: PointExtent, angle: number) {
     const { xmin, ymin, xmax, ymax } = fixedExtent;

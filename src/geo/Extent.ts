@@ -1,5 +1,5 @@
 import { isNil, isNumber } from '../core/util/common';
-import Coordinate from './Coordinate';
+import Coordinate, { CoordinateLike } from './Coordinate';
 import Point from './Point';
 import Size from './Size';
 import type PointExtent from './PointExtent';
@@ -80,13 +80,18 @@ class Extent {
     pxmax: number;
     pymin: number;
     pymax: number;
+    // SpatialReference 对 Extent 做了一个扩充
+    left?: number;
+    right?: number;
+    top?: number;
+    bottom?: number;
 
     constructor(p1?: WithNull<ExtentLike>, p?: Projection);
     constructor(p1: Position, p2: Position, p?: Projection);
     constructor(p1: number, p2: number, p3: number, p4: number, p?: Projection)
     constructor(...args: any[]) {
         this._clazz = Coordinate;
-        const l = args.length; // todo 最后一个参数是投影
+        const l = args.length; // tip 最后一个参数是投影
         const proj = l > 0 ? args[l - 1] : null;
         if (proj && proj.unproject) {
             this.projection = args[l - 1];
@@ -119,7 +124,7 @@ class Extent {
             return;
         }
         const projection = this.projection;
-        //Constructor 1: all numbers
+        // Constructor 1: all numbers
         if (isNumber(p1) &&
             isNumber(p2) &&
             isNumber(p3) &&
@@ -151,7 +156,7 @@ class Extent {
             isNumber((p2 as Position).x) &&
             isNumber((p1 as Position).y) &&
             isNumber((p2 as Position).y)) {
-            //Constructor 2: two coordinates
+            // Constructor 2: two coordinates
             const tp1 = p1 as Position;
             const tp2 = p2 as Position;
             if (projection) {
@@ -172,7 +177,7 @@ class Extent {
                     this['ymax'] = tp2.y;
                 }
             }
-            //constructor 3: another extent or a object containing xmin, ymin, xmax and ymax
+            // constructor 3: another extent or a object containing xmin, ymin, xmax and ymax
         } else if (isNumber(p1['xmin']) &&
             isNumber(p1['xmax']) &&
             isNumber(p1['ymin']) &&
@@ -480,6 +485,7 @@ class Extent {
      * Whether the extent contains the input point.
      * @param c - input point
      */
+    contains(c: CoordinateLike): boolean;
     contains(c: any): boolean {
         if (!c) {
             return false;
@@ -487,16 +493,14 @@ class Extent {
         this._project(this);
         const proj = this.projection;
         if (proj) {
-            // fixme: 此处逻辑似乎有问题
-            if (c.x !== undefined) {
-                const coord = TEMP_COORD0;
-                if (Array.isArray(c)) {
-                    coord.x = c[0];
-                    coord.y = c[1];
-                } else {
-                    coord.x = c.x;
-                    coord.y = c.y;
-                }
+            const coord = TEMP_COORD0;
+            if (Array.isArray(c)) {
+                coord.x = c[0];
+                coord.y = c[1];
+                c = proj.project(coord, coord);
+            } else if (c.x !== undefined) {
+                coord.x = c.x;
+                coord.y = c.y;
                 c = proj.project(coord, coord);
             } else if (c.xmin !== undefined) {
                 this._project(c);

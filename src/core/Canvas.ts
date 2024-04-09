@@ -82,7 +82,7 @@ const Canvas = {
      * @param {Object} resources
      * @param {Boolean} testing  - paint for testing, ignore stroke and fill patterns
      */
-    prepareCanvas(ctx: Ctx, style, resources, testing: boolean) {
+    prepareCanvas(ctx: Ctx, style, resources, testing?: boolean) {
         if (!style) {
             return;
         }
