@@ -1,6 +1,6 @@
 import { extend, isNil, hasOwn, sign, isString } from '../../core/util';
 import Coordinate from '../../geo/Coordinate';
-import Extent from '../../geo/Extent';
+import Extent, { JsonExtent } from '../../geo/Extent';
 import * as projections from '../../geo/projection';
 import type { ProjectionType } from '../../geo/projection';
 import Transformation from '../../geo/transformation/Transformation';
@@ -9,15 +9,17 @@ import loadWMTS from './SpatialReference.WMTS'
 import loadArcgis from './SpatialReference.Arc'
 const MAX_ZOOM = 23;
 
+export type FullExtent = {
+    top: number
+    left: number
+    bottom: number
+    right: number
+};
+
 export type SpatialReferenceType = {
     projection: string | ProjectionType;
     resolutions?: number[]
-    fullExtent?: {
-        top: number
-        left: number
-        bottom: number
-        right: number
-    }
+    fullExtent?: FullExtent | JsonExtent;
 }
 
 const DefaultSpatialReference: Record<string, SpatialReferenceType> = {
@@ -145,7 +147,7 @@ export default class SpatialReference {
     isEPSG: boolean
     _resolutions: number[]
     _pyramid: boolean
-    _fullExtent: SpatialReferenceType['fullExtent']
+    _fullExtent: Extent;
     _transformation: Transformation
     json: SpatialReferenceType
     constructor(options: SpatialReferenceType = ({} as SpatialReferenceType)) {
@@ -189,7 +191,6 @@ export default class SpatialReference {
      * @returns
      */
     static getProjectionInstance(projection?: string | ProjectionType) {
-        // TODO: 等待补充Projection类的类型定义,Projection类目前为mixin模式
         let proj;
         if (!projection) {
             return null;
@@ -254,7 +255,8 @@ export default class SpatialReference {
         if (sp1.projection !== sp2.projection) {
             return false;
         }
-        const f1 = sp1.fullExtent, f2 = sp2.fullExtent;
+        // 这里强制类型为 FullExtent，因为在创建时内部会主动赋值 top/left 等
+        const f1 = sp1.fullExtent as FullExtent, f2 = sp2.fullExtent as FullExtent;
         if (f1 && !f2 || !f1 && f2) {
             return false;
         }
@@ -333,18 +335,12 @@ export default class SpatialReference {
             }
         }
         if (!isNil(fullExtent['left'])) {
-            // TODO: 等待Extent和Coordinate补充类型
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error
             this._fullExtent = new Extent(
                 new Coordinate(fullExtent['left'], fullExtent['top']),
                 new Coordinate(fullExtent['right'], fullExtent['bottom'])
             );
         } else {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error
-            //xmin, ymin, xmax, ymax
-            this._fullExtent = new Extent(fullExtent);
+            this._fullExtent = new Extent(fullExtent as JsonExtent);
             fullExtent['left'] = fullExtent['xmin'];
             fullExtent['right'] = fullExtent['xmax'];
             fullExtent['top'] = fullExtent['ymax'];

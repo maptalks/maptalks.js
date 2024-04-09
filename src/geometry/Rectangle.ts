@@ -121,7 +121,7 @@ class Rectangle extends Polygon {
         return this._getShell();
     }
 
-    _getShell() {
+    _getShell(): Coordinate[] {
         const measurer = this._getMeasurer();
         const nw = this._coordinates;
         const map = this.getMap();
@@ -149,7 +149,6 @@ class Rectangle extends Polygon {
         p2.z = nw.z;
         points.push(nw);
         return points;
-
     }
 
     /**

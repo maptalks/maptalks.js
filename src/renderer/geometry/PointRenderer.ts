@@ -5,24 +5,35 @@ import Sector from '../../geometry/Sector';
 import Rectangle from '../../geometry/Rectangle';
 import LineString from '../../geometry/LineString';
 import Polygon from '../../geometry/Polygon';
+import Point from '../../geo/Point';
+import {WithNull} from "../../types/typings";
 
 // 有中心点的图形的共同方法
 const CenterPointRenderer = {
-    _getRenderPoints() {
+    _getRenderPoints(): [Point[], WithNull<Point[]>] {
         return [[this._getCenter2DPoint(this.getMap().getGLRes())], null];
     }
 };
+
+export type CenterPointRendererType = typeof CenterPointRenderer;
+
+declare module '../../geometry/Marker' {
+    interface Marker extends CenterPointRendererType {}
+}
 
 /**
  * 获取symbolizer所需的数据
  */
 Marker.include(CenterPointRenderer);
+
 Ellipse.include(CenterPointRenderer);
+
 Circle.include(CenterPointRenderer);
+
 Sector.include(CenterPointRenderer);
-//----------------------------------------------------
+
 Rectangle.include({
-    _getRenderPoints(placement) {
+    _getRenderPoints(placement?: string): [Point[], WithNull<Point[]>] {
         const map = this.getMap();
         const glRes = map.getGLRes();
         if (placement === 'vertex') {
@@ -43,7 +54,7 @@ Rectangle.include({
 
 //----------------------------------------------------
 const PolyRenderer = {
-    _getRenderPoints(placement) {
+    _getRenderPoints(placement?: string) {
         const map = this.getMap();
         const glRes = map.getGLRes();
         let points, rotations = null;
@@ -130,6 +141,18 @@ const PolyRenderer = {
     }
 };
 
+declare module '../../geometry/LineString' {
+    interface LineString {
+        _getRenderPoints(placement?: string): [Point[], WithNull<Point[]>];
+    }
+}
+
 LineString.include(PolyRenderer);
+
+declare module '../../geometry/Polygon' {
+    interface Polygon {
+        _getRenderPoints(placement?: string): [Point[], WithNull<Point[]>];
+    }
+}
 
 Polygon.include(PolyRenderer);

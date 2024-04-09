@@ -27,13 +27,13 @@ import SpatialReference from '../map/spatial-reference/SpatialReference';
 import { isFunctionDefinition } from '../core/mapbox';
 import { getDefaultBBOX, pointsBBOX } from '../core/util/bbox';
 import { SizeLike } from '../geo/Size';
-import * as projections from '../geo/projection';
+import type { ProjectionType } from '../geo/projection';
 import OverlayLayer, { addGeometryFitViewOptions } from '../layer/OverlayLayer'
 import GeometryCollection from './GeometryCollection'
 import type { Map } from '../map';
+import {WithNull} from '../types/typings';
 import { InfoWindowOptionsType } from '../ui/InfoWindow';
 
-type ProjectionCommon = typeof projections.Common
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_EXTENT = new PointExtent();
 const TEMP_PROPERTIES = {};
@@ -130,8 +130,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     _computeGeodesicLength?(T: any): number;
     _computeGeodesicArea?(T: any): number;
     getRotateOffsetAngle?(): number;
-    _computePrjExtent?(T: null | ProjectionCommon): Extent;
-
+    _computePrjExtent?(T: null | ProjectionType): Extent;
 
     constructor(options: GeometryOptionsType) {
         const opts = extend({}, options);
@@ -1371,7 +1370,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return SpatialReference.getProjectionInstance(this.options['defaultProjection']);
     }
 
-    _getProjection(): null | ProjectionCommon {
+    _getProjection(): WithNull<ProjectionType> {
         const map = this.getMap();
         if (map) {
             return map.getProjection();

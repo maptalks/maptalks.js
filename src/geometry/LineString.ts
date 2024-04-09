@@ -32,7 +32,7 @@ const options: LineStringOptionsType = {
  *     ]
  * ).addTo(layer);
  */
-class LineString extends Path {
+export class LineString extends Path {
 
     /**
      * @param {Coordinate[]|Number[][]} coordinates - coordinates of the line string

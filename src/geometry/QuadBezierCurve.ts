@@ -22,8 +22,6 @@ import Canvas from '../core/Canvas';
  * ).addTo(layer);
  */
 class QuadBezierCurve extends Curve {
-    _paintArrow?(ctx: CanvasRenderingContext2D, points: any, lineOpacity?: number): any
-
     static fromJSON(json: any): QuadBezierCurve {
         const feature = json['feature'];
         const curve = new QuadBezierCurve(feature['geometry']['coordinates'], json['options']);

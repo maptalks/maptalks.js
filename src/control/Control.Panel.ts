@@ -22,8 +22,6 @@ const options: PanelOptionsType = {
     'closeButton': true
 };
 
-
-
 /**
  * @classdesc
  * Class for panel controls.

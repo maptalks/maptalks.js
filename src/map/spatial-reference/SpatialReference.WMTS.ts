@@ -249,7 +249,6 @@ function parseTileMatrixSet(TileMatrixSet, options: any = {}) {
 
 export const loadWMTS = (url: string, cb: (_, layers?) => void, options = { 'jsonp': true }) => {
     if (isString(url)) {
-        // TODO: 等待补充Ajax类型定义
         Ajax.get(url, (err, xml) => {
             if (err) {
                 cb(err);
