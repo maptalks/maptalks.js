@@ -89,7 +89,7 @@ Curve.mergeOptions(options);
 
 export default Curve;
 
-export type CurveOptionsType = {
+export type CurveOptionsType = LineStringOptionsType & {
     enableSimplify?: boolean;
     enableClip?: boolean;
-} & LineStringOptionsType;
+};

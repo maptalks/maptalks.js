@@ -1,7 +1,12 @@
+import { MixinConstructor } from '../core/Mixin';
 import { isNil, isArrayHasData, removeFromArray } from '../core/util';
-import LineString from './LineString';
+import LineString, { LineStringOptionsType } from './LineString';
 import Geometry from './Geometry';
-import ArcCurve from './ArcCurve';
+import ArcCurve, { ArcCurveOptionsType } from './ArcCurve';
+import { type Map } from '../map';
+import Coordinate from '../geo/Coordinate';
+import { LineSymbol } from '../symbol';
+
 
 /**
  * 连接线的方法
@@ -10,11 +15,21 @@ import ArcCurve from './ArcCurve';
  * @mixin Connectable
  * @private
  */
-const Connectable = Base =>
-    class extends Base {
+const Connectable = function <T extends MixinConstructor>(Base: T) {
+    return class extends Base {
 
-        constructor(a?: any, b?: any) {
-            super(a, b)
+        options: ConnectableOptionsType;
+        _connSource: Geometry;
+        _connTarget: Geometry;
+        getMap?(): Map;
+        getCoordinates?(): Coordinate[];
+        setCoordinates?(coordinates: Coordinate[]): this;
+        hide?();
+        show?();
+        remove?();
+
+        constructor(...args) {
+            super(...args);
         }
 
         static _hasConnectors(geometry) {
@@ -44,7 +59,7 @@ const Connectable = Base =>
          * @return {ConnectorLine} this
          * @function Connectable.setConnectSource
          */
-        setConnectSource(src: any): ConnectorLine {
+        setConnectSource(src: Geometry) {
             const target = this._connTarget;
             this.onRemove();
             this._connSource = src;
@@ -72,7 +87,7 @@ const Connectable = Base =>
          * @return {ConnectorLine} this
          * @function Connectable.setConnectTarget
          */
-        setConnectTarget(target: any): ConnectorLine {
+        setConnectTarget(target: Geometry) {
             const src = this._connSource;
             this.onRemove();
             this._connSource = src;
@@ -82,7 +97,7 @@ const Connectable = Base =>
             return this;
         }
 
-        _updateCoordinates(): void {
+        _updateCoordinates() {
             let map = this.getMap();
             if (!map && this._connSource) {
                 map = this._connSource.getMap();
@@ -100,7 +115,7 @@ const Connectable = Base =>
             const targetPoints = this._connTarget._getConnectPoints();
             let minDist = 0;
             const oldCoordinates = this.getCoordinates();
-            let c1: number, c2: number;
+            let c1: Coordinate, c2: Coordinate;
             for (let i = 0, len = srcPoints.length; i < len; i++) {
                 const p1 = srcPoints[i];
                 for (let j = 0, length = targetPoints.length; j < length; j++) {
@@ -129,7 +144,7 @@ const Connectable = Base =>
         onRemove(): void {
             if (this._connSource) {
                 if (this._connSource.__connectors) {
-                    removeFromArray(this, this._connSource.__connectors);
+                    removeFromArray(this, this._connSource.__connectors as Array<any>);
                 }
                 this._connSource.off('dragging positionchange', this._updateCoordinates, this)
                     .off('remove', this.onRemove, this);
@@ -139,7 +154,7 @@ const Connectable = Base =>
                 delete this._connSource;
             }
             if (this._connTarget) {
-                removeFromArray(this, this._connTarget.__connectors);
+                removeFromArray(this, this._connTarget.__connectors as Array<any>);
                 this._connTarget.off('dragging positionchange', this._updateCoordinates, this)
                     .off('remove', this.onRemove, this);
                 this._connTarget.off('show', this._showConnect, this).off('hide', this.hide, this);
@@ -175,8 +190,8 @@ const Connectable = Base =>
             if (!this._connTarget.__connectors) {
                 this._connTarget.__connectors = [];
             }
-            this._connSource.__connectors.push(this);
-            this._connTarget.__connectors.push(this);
+            this._connSource.__connectors.push(this as any);
+            this._connTarget.__connectors.push(this as any);
             this._connSource.on('dragging positionchange', this._updateCoordinates, this)
                 .on('remove', this.remove, this);
             this._connTarget.on('dragging positionchange', this._updateCoordinates, this)
@@ -207,6 +222,7 @@ const Connectable = Base =>
             }
         }
     };
+}
 
 /**
  * @property {Object} options - ConnectorLine's options
@@ -220,7 +236,7 @@ const Connectable = Base =>
  * @memberOf ArcConnectorLine
  * @instance
  */
-const options = {
+const options: ConnectableOptionsType = {
     showOn: 'always'
 };
 
@@ -251,7 +267,7 @@ class ConnectorLine extends Connectable(LineString) {
      * @param {Geometry|control.Control|UIComponent} target  - target to connect
      * @param {Object} [options=null]  - construct options defined in [ConnectorLine]{@link ConnectorLine#options}
      */
-    constructor(src: any, target: any, options: any) {
+    constructor(src: Geometry, target: Geometry, options?: ConnectorLineOptionsType) {
         super(null, options);
         if (arguments.length === 1) {
             options = src;
@@ -262,9 +278,7 @@ class ConnectorLine extends Connectable(LineString) {
         this._connTarget = target;
     }
 }
-//@ts-expect-error todo
 ConnectorLine.mergeOptions(options);
-//@ts-expect-error todo
 ConnectorLine.registerJSONType('ConnectorLine');
 
 /**
@@ -295,7 +309,7 @@ class ArcConnectorLine extends Connectable(ArcCurve) {
      * @param {Geometry|control.Control|UIComponent} target  - target to connect
      * @param {Object} [options=null]  - construct options defined in [ConnectorLine]{@link ConnectorLine#options}
      */
-    constructor(src: any, target: any, options: any) {
+    constructor(src: Geometry, target: Geometry, options?: ArcConnectorLineOptionsType) {
         super(null, options);
         if (arguments.length === 1) {
             options = src;
@@ -306,9 +320,13 @@ class ArcConnectorLine extends Connectable(ArcCurve) {
         this._connTarget = target;
     }
 }
-//@ts-expect-error todo
 ArcConnectorLine.mergeOptions(options);
-//@ts-expect-error todo
 ArcConnectorLine.registerJSONType('ArcConnectorLine');
 
 export { ConnectorLine, ArcConnectorLine };
+
+export type ConnectableOptionsType = {
+    showOn?: 'always' | 'moving' | 'click' | 'mouseover';
+}
+export type ConnectorLineOptionsType = LineStringOptionsType & ConnectableOptionsType;
+export type ArcConnectorLineOptionsType = ArcCurveOptionsType & ConnectableOptionsType;

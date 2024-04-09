@@ -31,7 +31,7 @@ import type { ProjectionType } from '../geo/projection';
 import OverlayLayer, { addGeometryFitViewOptions } from '../layer/OverlayLayer'
 import GeometryCollection from './GeometryCollection'
 import type { Map } from '../map';
-import {WithNull} from '../types/typings';
+import { WithNull } from '../types/typings';
 import { InfoWindowOptionsType } from '../ui/InfoWindow';
 
 const TEMP_POINT0 = new Point(0, 0);
@@ -119,7 +119,8 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     public _coordinates: any;
     public _infoWinOptions: InfoWindowOptionsType;
     public _minAlt: number
-    public _maxAlt: number
+    public _maxAlt: number;
+    __connectors: Array<Geometry>;
     getShell?(): Array<Coordinate>;
     getGeometries?(): Geometry[];
     getCoordinates?(): Coordinate | Array<Coordinate> | Array<Array<Coordinate>> | Array<Array<Array<Coordinate>>>

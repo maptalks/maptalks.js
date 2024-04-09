@@ -3,6 +3,7 @@ import { clipLine } from '../core/util/path';
 import Path, { PathOptionsType } from './Path';
 import Polygon from './Polygon';
 import Extent from '../geo/Extent';
+import { AnySymbol, LineSymbol } from '../symbol';
 
 /**
  * @property {Object} [options=null]
@@ -113,7 +114,8 @@ LineString.registerJSONType('LineString');
 export default LineString;
 
 export type LineStringCoordinatesType = Array<Coordinate> | Array<Array<number>>;
-export type LineStringOptionsType = {
+export type LineStringOptionsType = PathOptionsType & {
     arrowStyle?: 'classic' | [number, number];
     arrowPlacement?: 'vertex-first' | 'vertex-last' | 'vertex-firstlast' | 'point';
-} & PathOptionsType;
+    symbol?: LineSymbol | Array<AnySymbol>;
+};

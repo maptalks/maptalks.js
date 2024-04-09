@@ -63,6 +63,6 @@ ArcCurve.mergeOptions(options);
 
 export default ArcCurve;
 
-export type ArcCurveOptionsType = {
+export type ArcCurveOptionsType = CurveOptionsType & {
     arcDegree?: number;
-} & CurveOptionsType;
+};

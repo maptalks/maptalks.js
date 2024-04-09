@@ -243,7 +243,7 @@ type BoxStyle = {
     minHeight?: number;
     symbol?: VectorMarkerSymbol;
 }
-export type LabelOptionsType = {
+export type LabelOptionsType = TextMarkerOptionsType & {
     textSymbol?: TextSymbol;
     boxStyle?: BoxStyle;
-} & TextMarkerOptionsType;
+};

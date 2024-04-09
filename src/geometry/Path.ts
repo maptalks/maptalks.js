@@ -6,7 +6,7 @@ import Geometry, { GeometryOptionsType } from './Geometry';
 import simplify from 'simplify-js';
 import Point from '../geo/Point';
 import { CommonProjectionType } from '../geo/projection';
-import { FillSymbol } from '../symbol';
+import { FillSymbol, LineSymbol } from '../symbol';
 
 /**
  * @property {Object} options - configuration options
@@ -451,10 +451,10 @@ Path.mergeOptions(options);
 
 export default Path;
 
-export type PathOptionsType = {
+export type PathOptionsType = GeometryOptionsType & {
     'smoothness'?: boolean;
     'enableClip'?: boolean;
     'enableSimplify'?: boolean;
     'simplifyTolerance'?: number;
-    'symbol'?: FillSymbol;
-} & GeometryOptionsType;
+    'symbol'?: FillSymbol | LineSymbol;
+};

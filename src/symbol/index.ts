@@ -134,3 +134,7 @@ export type FillSymbol = {
     polygonOpacity?: SymbolNumberType;
     polygonPatternFile?: string;
 } & LineSymbol;
+
+export type AnyMarkerSymbol = FileMarkerSymbol | VectorMarkerSymbol | PathMarkerSymbol | TextSymbol;
+
+export type AnySymbol = FillSymbol | LineSymbol | TextSymbol | FileMarkerSymbol | VectorMarkerSymbol | PathMarkerSymbol;
