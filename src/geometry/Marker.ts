@@ -6,7 +6,7 @@ import Painter from '../renderer/geometry/Painter';
 import { getMarkerFixedExtent, isVectorSymbol, isImageSymbol, isPathSymbol, DYNAMIC_SYMBOL_PROPS as propsToCheck, SIZE_SYMBOL_PROPS as sizeProps } from '../core/util/marker';
 import { isFunctionDefinition, loadGeoSymbol } from '../core/mapbox';
 import { isNil } from '../core/util';
-import { FileMarkerSymbol, PathMarkerSymbol, TextSymbol, VectorMarkerSymbol } from '../symbol';
+import { AnyMarkerSymbol, PathMarkerSymbol, VectorMarkerSymbol } from '../symbol';
 import Coordinate from '../geo/Coordinate';
 import Point from '../geo/Point';
 
@@ -87,7 +87,7 @@ export class Marker extends CenterMixin(Geometry) {
         });
     }
 
-    setSymbol(symbol: MarekrSymbol): this {
+    setSymbol(symbol: AnyMarkerSymbol): this {
         delete this._fixedExtent;
         return super.setSymbol.call(this, symbol);
     }
@@ -242,10 +242,9 @@ function computeExtent(fn: any): null | Extent {
     return new Extent(coordinates, coordinates, this._getProjection());
 }
 
-export type MarekrSymbol = FileMarkerSymbol | VectorMarkerSymbol | PathMarkerSymbol | TextSymbol;
 
-export type MarkerOptionsType = {
+export type MarkerOptionsType = GeometryOptionsType & {
     hitTestForEvent?: boolean;
     collision?: boolean;
-    symbol?: MarekrSymbol | Array<MarekrSymbol>;
-} & GeometryOptionsType;
+    symbol?: AnyMarkerSymbol | Array<AnyMarkerSymbol>;
+}

@@ -1,13 +1,10 @@
 import Coordinate from '../geo/Coordinate';
 import { clipLine } from '../core/util/path';
-import Path from './Path';
+import Path, { PathOptionsType } from './Path';
 import Polygon from './Polygon';
 import Extent from '../geo/Extent';
+import { AnySymbol, LineSymbol } from '../symbol';
 
-export type LineStringOption = {
-    arrowStyle?: string | number[]
-    arrowPlacement?: string
-}
 /**
  * @property {Object} [options=null]
  * @property {String|Number[]} [options.arrowStyle=null]        - style of arrow, can be a pre-defined value or an array [arrow-width, arrow-height] (value in the array is times of linewidth), possible predefined values: classic ([3, 4])
@@ -15,7 +12,7 @@ export type LineStringOption = {
  * @memberOf LineString
  * @instance
  */
-const options: LineStringOption = {
+const options: LineStringOptionsType = {
     'arrowStyle': null,
     'arrowPlacement': 'vertex-last' //vertex-first, vertex-last, vertex-firstlast, point
 };
@@ -38,12 +35,11 @@ const options: LineStringOption = {
  */
 export class LineString extends Path {
 
-    public _coordinates: any
     /**
      * @param {Coordinate[]|Number[][]} coordinates - coordinates of the line string
      * @param {Object} [options=null] - construct options defined in [LineString]{@link LineString#options}
      */
-    constructor(coordinates?: any, options?: any) {
+    constructor(coordinates: LineStringCoordinatesType, options?: LineStringOptionsType) {
         super(options);
         this.type = 'LineString';
         if (coordinates) {
@@ -63,13 +59,13 @@ export class LineString extends Path {
      * @fires LineString#shapechange
      * @return {LineString} this
      */
-    setCoordinates(coordinates: any): LineString {
+    setCoordinates(coordinates: Array<Coordinate> | Array<Array<number>>) {
         if (!coordinates) {
             this._coordinates = null;
             this._setPrjCoordinates(null);
             return this;
         }
-        this._coordinates = Coordinate.toCoordinates(coordinates);
+        this._coordinates = Coordinate.toCoordinates(coordinates as Coordinate[]) as Coordinate[];
         if (this.getMap()) {
             this._setPrjCoordinates(this._projectCoords(this._coordinates));
         } else {
@@ -84,7 +80,7 @@ export class LineString extends Path {
      * Get coordinates of the line string
      * @return {Coordinate[]|Number[][]} coordinates
      */
-    getCoordinates(): any {
+    getCoordinates() {
         return this._coordinates || [];
     }
 
@@ -116,3 +112,10 @@ LineString.mergeOptions(options);
 LineString.registerJSONType('LineString');
 
 export default LineString;
+
+export type LineStringCoordinatesType = Array<Coordinate> | Array<Array<number>>;
+export type LineStringOptionsType = PathOptionsType & {
+    arrowStyle?: 'classic' | [number, number];
+    arrowPlacement?: 'vertex-first' | 'vertex-last' | 'vertex-firstlast' | 'point';
+    symbol?: LineSymbol | Array<AnySymbol>;
+};

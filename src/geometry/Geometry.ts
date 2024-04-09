@@ -18,7 +18,6 @@ import { convertResourceUrl, getExternalResources } from '../core/util/resource'
 import { replaceVariable, describeText } from '../core/util/strings';
 import { isTextSymbol } from '../core/util/marker';
 import Coordinate from '../geo/Coordinate';
-import { PositionLike } from '../geo/Position';
 import Point from '../geo/Point';
 import Extent from '../geo/Extent';
 import PointExtent from '../geo/PointExtent';
@@ -32,7 +31,8 @@ import type { ProjectionType } from '../geo/projection';
 import OverlayLayer, { addGeometryFitViewOptions } from '../layer/OverlayLayer'
 import GeometryCollection from './GeometryCollection'
 import type { Map } from '../map';
-import {WithNull} from '../types/typings';
+import { WithNull } from '../types/typings';
+import { InfoWindowOptionsType } from '../ui/InfoWindow';
 
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_EXTENT = new PointExtent();
@@ -96,7 +96,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     public _angle: number
     public _pivot: Coordinate
     public _id: string
-    public properties: any
+    public properties: Record<string, any>;
     public _symbol: any
     public _symbolUpdated: any
     public _compiledSymbol: any
@@ -107,23 +107,24 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     public _internalId: number
     public _extent: Extent
     public _fixedExtent: PointExtent
-    public _extent2d: any
+    public _extent2d: PointExtent
     public _externSymbol: any
     public _parent: Geometry | GeometryCollection
     public _silence: boolean
-    public _projCode: any
+    public _projCode: string
     public _painter: CollectionPainter | Painter
     public _maskPainter: CollectionPainter | Painter
     public _dirtyCoords: any
     public _pcenter: Coordinate
-    public _coordinates: Coordinate
-    public _infoWinOptions: any
+    public _coordinates: any;
+    public _infoWinOptions: InfoWindowOptionsType;
     public _minAlt: number
-    public _maxAlt: number
-    getShell?(): any
+    public _maxAlt: number;
+    __connectors: Array<Geometry>;
+    getShell?(): Array<Coordinate>;
     getGeometries?(): Geometry[];
-    getCoordinates?(): [] | Coordinate[][];
-    setCoordinates?(coordinate: PositionLike | Coordinate[]): Geometry;
+    getCoordinates?(): Coordinate | Array<Coordinate> | Array<Array<Coordinate>> | Array<Array<Array<Coordinate>>>
+    setCoordinates?(coordinate: any): this;
     _computeCenter?(T: any): Coordinate;
     _computeExtent?(T: any): Extent;
     onRemove?(): void;
@@ -597,7 +598,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         map._prjToPointAtRes(min, glRes, min);
         map._prjToPointAtRes(max, glRes, max);
         this._extent2d = new PointExtent(min, max);
-        this._extent2d.z = map.getZoom();
+        (this._extent2d as any).z = map.getZoom();
         return this._extent2d;
     }
 

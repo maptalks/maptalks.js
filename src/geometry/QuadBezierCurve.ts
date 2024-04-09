@@ -1,4 +1,4 @@
-import Curve from './Curve';
+import Curve, { CurveOptionsType } from './Curve';
 import Canvas from '../core/Canvas';
 
 /**
@@ -54,3 +54,4 @@ class QuadBezierCurve extends Curve {
 QuadBezierCurve.registerJSONType('QuadBezierCurve');
 
 export default QuadBezierCurve;
+export type QuadBezierCurveOptionsType = CurveOptionsType;

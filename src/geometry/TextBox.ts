@@ -373,7 +373,7 @@ type TextStyle = {
     horizontalAlignment?: 'left' | 'middle' | 'right';
     symbol?: TextSymbol;
 }
-export type TextBoxOptionsType = {
+export type TextBoxOptionsType = TextMarkerOptionsType & {
     boxSymbol?: VectorMarkerSymbol;
     textStyle?: TextStyle
-} & TextMarkerOptionsType;
+}
