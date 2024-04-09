@@ -5,7 +5,6 @@ import Geometry from './Geometry';
 import ArcCurve, { ArcCurveOptionsType } from './ArcCurve';
 import { type Map } from '../map';
 import Coordinate from '../geo/Coordinate';
-import { LineSymbol } from '../symbol';
 
 
 /**
