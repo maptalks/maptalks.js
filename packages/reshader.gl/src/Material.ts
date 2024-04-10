@@ -1,10 +1,25 @@
-import Eventable from './common/Eventable.js';
-import { isNil, extend1, hasOwn, getTexMemorySize } from './common/Util.js';
-import AbstractTexture from './AbstractTexture.js';
-import { KEY_DISPOSED } from './common/Constants.js';
+import Eventable from './common/Eventable';
+import { isNil, extend1, hasOwn, getTexMemorySize } from './common/Util';
+import AbstractTexture from './AbstractTexture';
+import { KEY_DISPOSED } from './common/Constants';
+import { MaterialUniforms, MaterialUniformValue, ShaderDefines } from './types/typings';
+import { Regl, Texture } from '@maptalks/regl';
+import Geometry from './Geometry';
 
 class Material {
-    constructor(uniforms = {}, defaultUniforms) {
+    uniforms: MaterialUniforms
+    refCount: number
+    private _version: number
+    private _uniformVer?: number
+    private _uniformKeys?: string
+    private _reglUniforms: MaterialUniforms
+    private _bindedOnTextureComplete: () => void
+    private _doubleSided: boolean
+    private _loadingCount?: number
+    private _dirtyProps?: string[]
+    private _disposed?: boolean
+
+    constructor(uniforms: MaterialUniforms = {}, defaultUniforms: MaterialUniforms) {
         this._version = 0;
         this.uniforms = extend1({}, defaultUniforms || {}, uniforms);
         for (const p in uniforms) {
@@ -22,19 +37,19 @@ class Material {
         this._checkTextures();
     }
 
-    set version(v) {
+    set version(v: number) {
         throw new Error('Material.version is read only.');
     }
 
-    get version() {
+    get version(): number {
         return this._version;
     }
 
-    set doubleSided(value) {
+    set doubleSided(value: boolean) {
         this._doubleSided = value;
     }
 
-    get doubleSided() {
+    get doubleSided(): boolean {
         return this._doubleSided;
     }
 
@@ -42,12 +57,12 @@ class Material {
         return this._loadingCount <= 0;
     }
 
-    set(k, v) {
+    set(k: string, v: MaterialUniformValue): this {
         const dirty = isNil(this.uniforms[k]) && !isNil(v) ||
             !isNil(this.uniforms[k]) && isNil(v);
 
         if (this.uniforms[k] && this.isTexture(k)) {
-            this.uniforms[k].dispose();
+            (this.uniforms[k] as AbstractTexture).dispose();
         }
         if (!isNil(v)) {
             this.uniforms[k] = v;
@@ -73,7 +88,7 @@ class Material {
         return this;
     }
 
-    _getDirtyProps() {
+    _getDirtyProps(): string[] {
         return this._dirtyProps;
     }
 
@@ -81,7 +96,7 @@ class Material {
         this._dirtyProps = null;
     }
 
-    get(k) {
+    get(k: string): MaterialUniformValue {
         return this.uniforms[k];
     }
 
@@ -93,7 +108,8 @@ class Material {
      * Get shader defines
      * @return {Object}
      */
-    appendDefines(defines/*, geometry*/) {
+    //eslint-disable-next-line
+    appendDefines(defines: ShaderDefines, geometry: Geometry) {
         const uniforms = this.uniforms;
         if (!uniforms) {
             return defines;
@@ -110,23 +126,23 @@ class Material {
         return defines;
     }
 
-    hasSkinAnimation() {
-        return this.uniforms && this.uniforms['jointTexture'] && this.uniforms['skinAnimation'];
+    hasSkinAnimation(): boolean {
+        return !!(this.uniforms && this.uniforms['jointTexture'] && this.uniforms['skinAnimation']);
     }
 
-    getUniforms(regl) {
+    getUniforms(regl: Regl) {
         if (this._reglUniforms && !this.isDirty()) {
             return this._reglUniforms;
         }
         const uniforms = this.uniforms;
-        const realUniforms = {};
+        const realUniforms: MaterialUniforms = {};
         for (const p in uniforms) {
             if (this.isTexture(p)) {
                 Object.defineProperty(realUniforms, p, {
                     enumerable: true,
                     configurable: true,
                     get: function () {
-                        return uniforms[p].getREGLTexture(regl);
+                        return (uniforms[p] as AbstractTexture).getREGLTexture(regl);
                     }
                 });
             } else {
@@ -149,7 +165,7 @@ class Material {
         return realUniforms;
     }
 
-    isTexture(k) {
+    isTexture(k: string) {
         const v = this.uniforms[k];
         if (v instanceof AbstractTexture) {
             return true;
@@ -161,11 +177,11 @@ class Material {
         for (const p in this.uniforms) {
             const u = this.uniforms[p];
             if (u) {
-                if (u.dispose) {
-                    u.dispose();
-                } else if (u.destroy && !u[KEY_DISPOSED]) {
+                if ((u as any).dispose) {
+                    (u as AbstractTexture).dispose();
+                } else if ((u as any).destroy && !u[KEY_DISPOSED]) {
                     //a normal regl texture
-                    u.destroy();
+                    (u as Texture).destroy();
                     u[KEY_DISPOSED] = true;
                 }
             }
@@ -183,7 +199,7 @@ class Material {
         this._loadingCount = 0;
         for (const p in this.uniforms) {
             if (this.isTexture(p)) {
-                const texture = this.uniforms[p];
+                const texture = this.uniforms[p] as AbstractTexture;
                 if (!texture.isReady()) {
                     this._loadingCount++;
                     texture.on('complete', this._bindedOnTextureComplete);
@@ -197,7 +213,7 @@ class Material {
         this._incrVersion();
         if (this._loadingCount <= 0) {
             if (!this._disposed) {
-                this.fire('complete');
+                (this as any).fire('complete');
             }
         }
     }
@@ -207,7 +223,7 @@ class Material {
     }
 
     _genUniformKeys() {
-        const keys = [];
+        const keys: string[] = [];
         for (const p in this.uniforms) {
             if (hasOwn(this.uniforms, p) && !isNil(this.uniforms[p])) {
                 keys.push(p);
@@ -225,8 +241,8 @@ class Material {
         let size = 0;
         for (const p in uniforms) {
             if (this.isTexture(p)) {
-                size += uniforms[p].getMemorySize();
-            } else if (this.uniforms[p].destroy) {
+                size += (uniforms[p] as AbstractTexture).getMemorySize();
+            } else if ((this.uniforms[p] as any).destroy) {
                 size += getTexMemorySize(this.uniforms[p]);
             }
         }

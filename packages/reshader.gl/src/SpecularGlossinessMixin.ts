@@ -1,6 +1,8 @@
-import { extend } from './common/Util.js';
+import Geometry from './Geometry';
+import { extend } from './common/Util';
+import { MaterialUniforms, MixinConstructor, ShaderDefines } from './types/typings';
 
-const DEFAULT_UNIFORMS = {
+const DEFAULT_UNIFORMS: MaterialUniforms = {
     //KHR_materials_pbrSpecularGlossiness
     'diffuseFactor': [1, 1, 1, 1],
     'specularFactor': [1, 1, 1],
@@ -12,20 +14,22 @@ const DEFAULT_UNIFORMS = {
     'occlusionTexture': null,
 };
 
-const SpecularGlossinessable = Base =>
-    class extends Base {
-        constructor(uniforms) {
+export default function <T extends MixinConstructor>(Base: T) {
+    return class SpecularGlossinessMixin extends Base {
+        constructor(...args:any[]) {
+            let uniforms = args[0];
             uniforms = extend({}, DEFAULT_UNIFORMS, uniforms || {});
-            super(uniforms);
+            super(uniforms, args);
         }
 
-        appendDefines(defines, geometry) {
+        appendDefines(defines: ShaderDefines, geometry: Geometry) {
+            //@ts-expect-error 该方法只会由Material的子类调用，所以 super 一定是 Material
             super.appendDefines(defines, geometry);
             defines['SHADING_MODEL_SPECULAR_GLOSSINESS'] = 1;
             if (!geometry.data[geometry.desc.uv0Attribute]) {
                 return defines;
             }
-            const uniforms = this.uniforms;
+            const uniforms = (this as any).uniforms;
             if (uniforms['diffuseTexture']) {
                 defines['HAS_DIFFUSE_MAP'] = 1;
             }
@@ -39,5 +43,4 @@ const SpecularGlossinessable = Base =>
             return defines;
         }
     };
-
-export default SpecularGlossinessable;
+}

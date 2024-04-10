@@ -1,6 +1,9 @@
-import Material from './Material.js';
+import Geometry from './Geometry.js';
+import Material from './Material';
+import { MaterialUniforms, ShaderDefines } from './types/typings';
+import StandardMaterial from './pbr/StandardMaterial';
 
-const DEFAULT_UNIFORMS = {
+const DEFAULT_UNIFORMS: MaterialUniforms = {
     'baseColorFactor': [1, 1, 1, 1],
     'materialShininess' : 32.0,
     'environmentExposure' : 1,
@@ -20,11 +23,11 @@ const DEFAULT_UNIFORMS = {
 };
 
 class PhongMaterial extends Material {
-    constructor(uniforms) {
+    constructor(uniforms: MaterialUniforms) {
         super(uniforms, DEFAULT_UNIFORMS);
     }
 
-    static convertFrom(standardMaterial) {
+    static convertFrom(standardMaterial: StandardMaterial) {
         const matUniforms = {};
         for (const u in DEFAULT_UNIFORMS) {
             matUniforms[u] = standardMaterial.get(u);
@@ -32,7 +35,7 @@ class PhongMaterial extends Material {
         return new PhongMaterial(matUniforms);
     }
 
-    appendDefines(defines, geometry) {
+    appendDefines(defines: ShaderDefines, geometry: Geometry) {
         super.appendDefines(defines, geometry);
         const uniforms = this.uniforms;
         if (uniforms['extrusionOpacity']) {

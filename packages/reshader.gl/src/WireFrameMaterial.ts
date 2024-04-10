@@ -1,6 +1,7 @@
-import Material from './Material.js';
+import Material from './Material';
+import { MaterialUniforms } from './types/typings';
 
-const DEFAULT_UNIFORMS = {
+const DEFAULT_UNIFORMS: MaterialUniforms = {
     'time': 0,
     'seeThrough': true,
     'thickness': 0.03,
@@ -22,7 +23,7 @@ const DEFAULT_UNIFORMS = {
 };
 
 class WireFrameMaterial extends Material {
-    constructor(uniforms) {
+    constructor(uniforms: MaterialUniforms) {
         super(uniforms, DEFAULT_UNIFORMS);
     }
 }

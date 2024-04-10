@@ -3,6 +3,7 @@ import Eventable from './common/Eventable';
 import { KEY_DISPOSED } from './common/Constants.js';
 import ResourceLoader from './ResourceLoader';
 import { NumberArray } from './types/typings';
+import { Regl, Texture2D, Texture2DOptions, TextureCube, TextureCubeOptions } from '@maptalks/regl';
 
 export const REF_COUNT_KEY = '_reshader_refCount';
 
@@ -17,7 +18,7 @@ class AbstractTexture extends Eventable(Base) {
     promise?: Promise<any>
     _loading?: boolean
     resLoader: ResourceLoader
-    _texture: any
+    _texture: Texture2D | TextureCube
     private dirty?: boolean
 
     constructor(config, resLoader) {
@@ -104,11 +105,11 @@ class AbstractTexture extends Eventable(Base) {
     }
 
     //eslint-disable-next-line
-    createREGLTexture(regl: any): any {
+    createREGLTexture(regl: Regl): null | Texture2D | TextureCube {
         return null;
     }
 
-    getREGLTexture(regl: any) {
+    getREGLTexture(regl: Regl) {
         if (!this._texture) {
             this._texture = this.createREGLTexture(regl);
             if (!this.config.persistent) {
@@ -122,7 +123,7 @@ class AbstractTexture extends Eventable(Base) {
 
                 }
                 if (this.config.faces) {
-                    this.config.faces = [];
+                    this.config.faces = null;
                 }
                 if (this.config.image) {
                     this.config.image.array = [];
@@ -155,7 +156,7 @@ class AbstractTexture extends Eventable(Base) {
 
     _updateREGL() {
         if (this._texture && !this._texture[KEY_DISPOSED]) {
-            this._texture(this.config);
+            this._texture(this.config as any);
         }
         this.dirty = false;
     }
@@ -204,21 +205,9 @@ type ImageObject = {
     height: number,
 }
 
-export type TextureConfig ={
-    type?: string,
-    data?: NumberArray | ImageBitmap | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement,
-    image?: ImageObject,
-    faces?: NumberArray[],
-    mipmap?: NumberArray[]
+export type TextureConfig = {
     url?: string,
+    image?: ImageObject,
     promise?: Promise<any>,
-    width?: number,
-    height?: number,
-    format?: string,
-    wrap?: string,
-    wrapS?: string,
-    wrapT?: string,
-    min?: string,
-    mag?: string,
     persistent?: boolean
-};
+} & Texture2DOptions & TextureCubeOptions;

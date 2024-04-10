@@ -4,7 +4,6 @@ export { default as EdgeGeometry } from './EdgeGeometry';
 export { default as Material } from './Material';
 export { default as WireFrameMaterial } from './WireFrameMaterial';
 export { default as PhongMaterial } from './PhongMaterial';
-export { default as ToonMaterial } from './ToonMaterial';
 export { default as StandardLiteMaterial } from './StandardLiteMaterial';
 export { default as PhongSpecularGlossinessMaterial } from './PhongSpecularGlossinessMaterial';
 export { default as Mesh } from './Mesh';

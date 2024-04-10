@@ -1,6 +1,5 @@
-import PhongMaterial from './PhongMaterial.js';
-import SpecularGlossinessMixin from './SpecularGlossinessMixin.js';
-
+import PhongMaterial from './PhongMaterial';
+import SpecularGlossinessMixin from './SpecularGlossinessMixin';
 
 class PhongSpecularGlossinessMaterial extends SpecularGlossinessMixin(PhongMaterial) {
 }

@@ -1,6 +1,8 @@
-import Material from './Material.js';
+import Geometry from './Geometry';
+import Material from './Material';
+import { MaterialUniforms, ShaderDefines } from './types/typings';
 
-const DEFAULT_UNIFORMS = {
+const DEFAULT_UNIFORMS: MaterialUniforms = {
     'baseColorFactor': [1, 1, 1, 1],
     'uvScale': [1, 1],
     'uvOffset': [0, 0],
@@ -16,11 +18,11 @@ const DEFAULT_UNIFORMS = {
 };
 
 class StandardLiteMaterial extends Material {
-    constructor(uniforms) {
+    constructor(uniforms: MaterialUniforms) {
         super(uniforms, DEFAULT_UNIFORMS);
     }
 
-    appendDefines(defines, geometry) {
+    appendDefines(defines: ShaderDefines, geometry: Geometry) {
         super.appendDefines(defines, geometry);
         const uniforms = this.uniforms;
         if (uniforms['extrusionOpacity']) {

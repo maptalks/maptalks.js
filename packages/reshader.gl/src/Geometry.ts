@@ -4,7 +4,8 @@ import { isNumber, extend, isArray, isSupportVAO, hasOwn, getBufferSize, isInStr
 import BoundingBox from './BoundingBox';
 import { KEY_DISPOSED } from './common/Constants';
 import * as gltf from '@maptalks/gltf-loader';
-import { ActiveAttributes, AttributeData, GeometryDesc, NumberArray, PrimitiveType, REGLBufferLike } from './types/typings';
+import { ActiveAttributes, AttributeData, GeometryDesc, NumberArray, PrimitiveType } from './types/typings';
+import REGL, { Regl } from '@maptalks/regl';
 
 const EMPTY_VAO_BUFFER = [];
 
@@ -301,7 +302,7 @@ export default class Geometry {
         return false;
     }
 
-    generateBuffers(regl: any) {
+    generateBuffers(regl: Regl) {
         //generate regl buffers beforehand to avoid repeated bufferData
         //提前处理addBuffer插入的arraybuffer
         const allocatedBuffers = this._buffers;
@@ -418,7 +419,7 @@ export default class Geometry {
      * @param {String} key - 属性
      * @param {ArrayBuffer|REGLBuffer} data - 数据
      */
-    addBuffer(key: string, data: ArrayBuffer | REGLBufferLike): this {
+    addBuffer(key: string, data: ArrayBuffer | REGL.Buffer): this {
         this._buffers[key] = {
             data
         };
@@ -427,7 +428,7 @@ export default class Geometry {
         return this;
     }
 
-    updateBuffer(key: string, data: ArrayBuffer | REGLBufferLike): this {
+    updateBuffer(key: string, data: ArrayBuffer | REGL.Buffer): this {
         if (!this._buffers[key]) {
             throw new Error(`invalid buffer ${key} in geometry`);
         }
