@@ -1,16 +1,27 @@
 import { isFunction, hasOwn, getTextureByteWidth, getTextureChannels, isArray, isPowerOfTwo, resizeToPowerOfTwo } from './common/Util.js';
-import Eventable from './common/Eventable.js';
+import Eventable from './common/Eventable';
 import { KEY_DISPOSED } from './common/Constants.js';
+import ResourceLoader from './ResourceLoader';
+import { NumberArray } from './types/typings';
 
 export const REF_COUNT_KEY = '_reshader_refCount';
+
+class Base {}
 /**
  * Abstract Texture
  * Common methods for Texture2D and TextureCube
  * @abstract
  */
-class AbstractTexture {
+class AbstractTexture extends Eventable(Base) {
+    config: TextureConfig
+    promise?: Promise<any>
+    _loading?: boolean
+    resLoader: ResourceLoader
+    _texture: any
+    private dirty?: boolean
 
     constructor(config, resLoader) {
+        super();
         //TODO add video support
         if (isFunction(config)) {
             //an out-of-box regl texture
@@ -58,11 +69,11 @@ class AbstractTexture {
                     if (!Array.isArray(data)) {
                         data = [data];
                     }
-                    self.fire('complete', { target: this, resources: data });
+                    (self as any).fire('complete', { target: this, resources: data });
                     return data;
                 }).catch(err => {
                     console.error('error when loading texture image.', err);
-                    self.fire('error', { target: this, error: err });
+                    (self as any).fire('error', { target: this, error: err });
                 });
             } else if (config.data && this._needPowerOf2()) {
                 if ((config.data instanceof Image)) {
@@ -75,21 +86,29 @@ class AbstractTexture {
 
     }
 
+    //eslint-disable-next-line
+    onLoad(data: any) {}
+
     isReady() {
         return !this._loading;
     }
 
-    set(k, v) {
+    set(k: string, v: any) {
         this.config[k] = v;
         this.dirty = true;
         return this;
     }
 
-    get(k) {
+    get(k: string): any {
         return this.config[k];
     }
 
-    getREGLTexture(regl) {
+    //eslint-disable-next-line
+    createREGLTexture(regl: any): any {
+        return null;
+    }
+
+    getREGLTexture(regl: any) {
         if (!this._texture) {
             this._texture = this.createREGLTexture(regl);
             if (!this.config.persistent) {
@@ -176,5 +195,30 @@ class AbstractTexture {
     }
 }
 
-export default Eventable(AbstractTexture);
+export default AbstractTexture;
 
+
+type ImageObject = {
+    array: NumberArray,
+    width: number,
+    height: number,
+}
+
+export type TextureConfig ={
+    type?: string,
+    data?: NumberArray | ImageBitmap | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement,
+    image?: ImageObject,
+    faces?: NumberArray[],
+    mipmap?: NumberArray[]
+    url?: string,
+    promise?: Promise<any>,
+    width?: number,
+    height?: number,
+    format?: string,
+    wrap?: string,
+    wrapS?: string,
+    wrapT?: string,
+    min?: string,
+    mag?: string,
+    persistent?: boolean
+};

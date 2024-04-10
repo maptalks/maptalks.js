@@ -1,18 +1,22 @@
 import { vec3, mat4 } from 'gl-matrix';
 
-const TEMP_MATRIX = [];
-const IDENTITY_MATRIX = mat4.identity([]);
+const TEMP_MATRIX: mat4 = mat4.identity([] as any);
+const IDENTITY_MATRIX: mat4 = mat4.identity([] as any);
 
-const TEMP_BBOX = { min: [], max: [] };
+class BoundingBox{
+    min: vec3
+    max: vec3
+    vertex?: vec3[]
+    center: vec3
+    private _dirty?: boolean
 
-class BoundingBox {
-    constructor(min, max) {
+    constructor(min?: vec3, max?: vec3) {
         this.min = min || [Infinity, Infinity, Infinity];
         this.max = max || [-Infinity, -Infinity, -Infinity];
         this.updateVertex();
     }
 
-    static copy(out, bbox) {
+    static copy(out: BoundingBox, bbox: BoundingBox) {
         vec3.copy(out.min, bbox.min);
         vec3.copy(out.max, bbox.max);
         for (let i = 0; i < bbox.vertex.length; i++) {
@@ -21,37 +25,40 @@ class BoundingBox {
         return out;
     }
 
-    combine(bbox) {
+    combine(bbox: number[] | BoundingBox) {
         if (!bbox) {
             return this;
         }
+        let min, max;
         if (Array.isArray(bbox)) {
-            vec3.copy(TEMP_BBOX.min, bbox[0]);
-            vec3.copy(TEMP_BBOX.max, bbox[1]);
-            bbox = TEMP_BBOX;
+            min = bbox[0];
+            max = bbox[1];
+        } else {
+            min = bbox.min;
+            max = bbox.max;
         }
-        if (bbox.min[0] < this.min[0]) {
-            this.min[0] = bbox.min[0];
+        if (min[0] < this.min[0]) {
+            this.min[0] = min[0];
             this._dirty = true;
         }
-        if (bbox.min[1] < this.min[1]) {
-            this.min[1] = bbox.min[1];
+        if (min[1] < this.min[1]) {
+            this.min[1] = min[1];
             this._dirty = true;
         }
-        if (bbox.min[2] < this.min[2]) {
-            this.min[2] = bbox.min[2];
+        if (min[2] < this.min[2]) {
+            this.min[2] = min[2];
             this._dirty = true;
         }
-        if (bbox.max[0] > this.max[0]) {
-            this.max[0] = bbox.max[0];
+        if (max[0] > this.max[0]) {
+            this.max[0] = max[0];
             this._dirty = true;
         }
-        if (bbox.max[1] > this.max[1]) {
-            this.max[1] = bbox.max[1];
+        if (max[1] > this.max[1]) {
+            this.max[1] = max[1];
             this._dirty = true;
         }
-        if (bbox.max[2] > this.max[2]) {
-            this.max[2] = bbox.max[2];
+        if (max[2] > this.max[2]) {
+            this.max[2] = max[2];
             this._dirty = true;
         }
         return this;
@@ -68,7 +75,7 @@ class BoundingBox {
      */
     getCenter() {
         if (!this.center) {
-            this.center = [];
+            this.center = [0, 0, 0];
             this._dirty = true;
         }
         if (this._dirty) {
@@ -80,11 +87,12 @@ class BoundingBox {
     }
 
     /**
+     * 判断BBox是否包含给定的坐标
+     * @english
      * If contain point entirely
-     * @param  {Number[]} point
-     * @return {Boolean}
+     * @param  point
      */
-    containPoint(p) {
+    containPoint(p: number): boolean {
         const min = this.min;
         const max = this.max;
 
@@ -93,21 +101,22 @@ class BoundingBox {
     }
 
     /**
+     * BBox的值是否是Infinite
+     * @english
      * If bounding box is finite
-     * @return {Boolean}
      */
-    isFinite() {
+    isFinite(): boolean {
         const min = this.min;
         const max = this.max;
         return isFinite(min[0]) && isFinite(min[1]) && isFinite(min[2]) &&
             isFinite(max[0]) && isFinite(max[1]) && isFinite(max[2]);
     }
 
-    updateVertex() {
+    updateVertex(): vec3[] {
         if (!this.vertex) {
             this.vertex = [];
             for (let i = 0; i < 8; i++) {
-                this.vertex.push([]);
+                this.vertex.push([0, 0, 0]);
             }
         }
         this.vertex[0][0] = this.min[0];
@@ -144,14 +153,14 @@ class BoundingBox {
         return this.vertex;
     }
 
-    copy(out) {
+    copy(out: BoundingBox): BoundingBox {
         if (out) {
             return BoundingBox.copy(out, this);
         }
-        return new BoundingBox(this.min.slice(), this.max.slice());
+        return new BoundingBox(this.min.slice() as vec3, this.max.slice() as vec3);
     }
 
-    equals(box) {
+    equals(box: BoundingBox): boolean {
         if (!vec3.equals(this.min, box.min) || !vec3.equals(this.max, box.max)) {
             return false;
         }

@@ -3,6 +3,7 @@ const commonjs = require('@rollup/plugin-commonjs');
 const terser = require('@rollup/plugin-terser');
 const pkg = require('./package.json');
 const glslMinify = require('@maptalks/rollup-plugin-glsl-minify');
+const typescript = require('@rollup/plugin-typescript');
 
 const production = process.env.BUILD === 'production';
 
@@ -39,6 +40,7 @@ const plugins = [
         // main : true
     }),
     commonjs(),
+    typescript()
 ];
 
 if (production) {

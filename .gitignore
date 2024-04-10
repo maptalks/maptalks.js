@@ -5,3 +5,4 @@ yarn.lock
 dist
 web.config
 debug
+*.tsbuildinfo

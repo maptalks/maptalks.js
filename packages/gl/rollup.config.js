@@ -51,9 +51,7 @@ const configPlugins = [
         // main : true
     }),
     commonjs(),
-    typescript({
-        include: ["**/*.ts", "**/*.d.ts"]
-    })
+    typescript()
 ];
 
 const pluginsWorker = production ? [

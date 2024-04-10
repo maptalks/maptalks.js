@@ -1,22 +1,24 @@
 import Geometry from './Geometry.js';
 import { getPrimitive } from './common/REGLHelper';
-import {vec3 } from 'gl-matrix';
+import { vec3 } from 'gl-matrix';
+import { AttributeData, GeometryDesc } from './types/typings';
 
 const thresholdAngle = 0.8;
-const VEC3_1 = [], VEC3_2 = [], NORMAL = [], VERTEX_A = [], VERTEX_B = [], VERTEX_C = [];
+const VEC3_1: vec3 = [0, 0, 0], VEC3_2: vec3 = [0, 0, 0], NORMAL: vec3 = [0, 0, 0], VERTEX_A = [], VERTEX_B = [], VERTEX_C = [];
 const vertKeys = ['a', 'b', 'c'];
 export default class EdgeGeometry extends Geometry {
-    constructor(data, elements, count, desc) {
+
+    constructor(data: AttributeData, elements, count: number, desc?: GeometryDesc) {
         super(data, elements, count, {
             primitive : getPrimitive(1),
             positionAttribute: desc.positionAttribute
         });
     }
 
-    _getPosAttritute() {
+    _getPosAttritute(): number[] {
         const pos = this.data[this.desc.positionAttribute];
-        if (!pos) {
-            return null;
+        if (!pos.length) {
+            return [];
         }
         const precisionPoints = 4;
         const precision = Math.pow(10, precisionPoints);
@@ -25,10 +27,10 @@ export default class EdgeGeometry extends Geometry {
         const positionAttr = pos.length ? pos : pos.array;
         const indexCount =  !indexAttr.length ? indexAttr : (indexAttr ? indexAttr.length : positionAttr.length / 3);
         const indexArr = [0, 0, 0];
-        const hashes = new Array(3);
+        const hashes: string[] = new Array(3);
 
-        const edgeData = {};
-        const vertices = [];
+        const edgeData: Record<string, EdgeItem> = {};
+        const vertices: number[] = [];
         const triangle = new Triangle();
         for (let i = 0; i < indexCount; i += 3) {
             if (indexAttr.length) {
@@ -40,9 +42,9 @@ export default class EdgeGeometry extends Geometry {
                 indexArr[1] = i + 1;
                 indexArr[2] = i + 2;
             }
-            triangle.a = this._getPos(VERTEX_A, positionAttr, indexArr[0]);
-            triangle.b = this._getPos(VERTEX_B, positionAttr, indexArr[1]);
-            triangle.c = this._getPos(VERTEX_C, positionAttr, indexArr[2]);
+            triangle.a = setPositionValue(VERTEX_A, positionAttr, indexArr[0]);
+            triangle.b = setPositionValue(VERTEX_B, positionAttr, indexArr[1]);
+            triangle.c = setPositionValue(VERTEX_C, positionAttr, indexArr[2]);
             const normal = triangle.getNormal();
             const a = triangle.a, b = triangle.b, c = triangle.c;
             hashes[0] = `${Math.round(a[0] * precision) },${Math.round(a[1] * precision)},${Math.round(a[2] * precision)}`;
@@ -67,11 +69,8 @@ export default class EdgeGeometry extends Geometry {
         return vertices;
     }
 
-    _getPos(out, positionAttr, index) {
-        return vec3.set(out, positionAttr[index * 3], positionAttr[index * 3 + 1], positionAttr[index * 3 + 2]);
-    }
-
-    _calEdgeData(index, indexArr, triangle, edgeData, hashes, thresholdDot, normal, vertices) {
+    _calEdgeData(index: number, indexArr: number[], triangle: Triangle, edgeData: Record<string, EdgeItem>, hashes: string[],
+        thresholdDot: number, normal: vec3, vertices: number[]) {
         const next = (index + 1) % 3;
         const vecHash0 = hashes[index];
         const vecHash1 = hashes[next];
@@ -92,12 +91,12 @@ export default class EdgeGeometry extends Geometry {
             edgeData[hash] = {
                 index0: indexArr[index],
                 index1: indexArr[next],
-                normal: vec3.copy([], normal),
+                normal: vec3.copy([0, 0, 0], normal),
             };
         }
     }
 
-    _createElements(vertices) {
+    _createElements(vertices: number[]): number[] {
         const elements = [];
         const len = vertices.length / 3;
         for (let i = 0; i < len; i++) {
@@ -108,7 +107,10 @@ export default class EdgeGeometry extends Geometry {
 }
 
 class Triangle {
-    constructor(a = [0, 0, 0], b = [0, 0, 0], c = [0, 0, 0]) {
+    a: vec3
+    b: vec3
+    c: vec3
+    constructor(a: vec3 = [0, 0, 0], b: vec3 = [0, 0, 0], c: vec3 = [0, 0, 0]) {
         this.a = a;
         this.b = b;
         this.c = c;
@@ -121,4 +123,14 @@ class Triangle {
         const len = vec3.length(NORMAL);
         return vec3.set(NORMAL, NORMAL[0] / len, NORMAL[1] / len, NORMAL[2] / len); //normalizd
     }
+}
+
+type EdgeItem = {
+    index0: number,
+    index1: number,
+    normal: vec3
+}
+
+function setPositionValue(out, positionAttr, index) {
+    return vec3.set(out, positionAttr[index * 3], positionAttr[index * 3 + 1], positionAttr[index * 3 + 2])
 }

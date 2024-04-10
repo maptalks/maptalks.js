@@ -4,6 +4,7 @@ import { isNumber, extend, isArray, isSupportVAO, hasOwn, getBufferSize, isInStr
 import BoundingBox from './BoundingBox';
 import { KEY_DISPOSED } from './common/Constants';
 import * as gltf from '@maptalks/gltf-loader';
+import { ActiveAttributes, AttributeData, GeometryDesc, NumberArray, PrimitiveType, REGLBufferLike } from './types/typings';
 
 const EMPTY_VAO_BUFFER = [];
 
@@ -27,7 +28,7 @@ const REGL_TYPE_WIDTH = {
     5126: 4
 };
 
-const DEFAULT_DESC = {
+const DEFAULT_DESC: GeometryDesc = {
     'positionSize': 3,
     'primitive': 'triangles',
     //name of position attribute
@@ -49,7 +50,27 @@ function GUID() {
 const REF_COUNT_KEY = '_reshader_refCount';
 
 export default class Geometry {
-    constructor(data, elements, count, desc) {
+    data: Record<string, AttributeData>
+    elements: any
+    desc: GeometryDesc
+    count: number
+    properties: any
+    indices: NumberArray
+    boundingBox: BoundingBox
+    private _version: number
+    private _buffers: Record<string, any>
+    private _vao: Record<string, any>
+    private _reglData: Record<string, AttributeData>
+    private _vertexCount?: number
+    private _activeAttributes: ActiveAttributes
+    private _color0Size?: number
+    private _posDirty?: boolean
+    private count1?: number
+    private offset?: number
+    private _tempPosArray?: NumberArray
+    private _disposed?: boolean
+
+    constructor(data: AttributeData, elements, count: number, desc?: GeometryDesc) {
         this._version = 0;
         this.data = data;
 
@@ -80,7 +101,7 @@ export default class Geometry {
         this.updateBoundingBox();
     }
 
-    set version(v) {
+    set version(v: number) {
         throw new Error('Geometry.version is read only.');
     }
 
@@ -96,7 +117,7 @@ export default class Geometry {
         return this.data[this.desc.positionAttribute];
     }
 
-    _prepareData(toUpdateRefCount) {
+    _prepareData(toUpdateRefCount: boolean) {
         if (!this.data) {
             return;
         }
@@ -146,11 +167,11 @@ export default class Geometry {
 
         const elements = this.elements;
         if (elements && elements.array) {
-            this.elements = this.elements.array;
+            this.elements = elements.array;
         }
     }
 
-    getAttrData(activeAttributes) {
+    getAttrData(activeAttributes: ActiveAttributes) {
         const key = activeAttributes.key;
         const updated = !this._reglData || !this._reglData[key];
         if (!this._reglData) {
@@ -187,7 +208,7 @@ export default class Geometry {
         return this._reglData[key];
     }
 
-    getREGLData(regl, activeAttributes, disableVAO) {
+    getREGLData(regl: any, activeAttributes: ActiveAttributes, disableVAO: boolean): AttributeData {
         this.getAttrData(activeAttributes);
         const updated = !this._reglData || !this._reglData[activeAttributes.key];
         //support vao
@@ -236,7 +257,7 @@ export default class Geometry {
                 const vaoData = {
                     attributes: buffers,
                     primitive: this.getPrimitive()
-                };
+                } as any;
                 if (this.elements && !isNumber(this.elements)) {
                     if (this.elements.destroy) {
                         vaoData.elements = this.elements;
@@ -265,7 +286,7 @@ export default class Geometry {
         return this._reglData[activeAttributes.key];
     }
 
-    _isAttrChanged(activeAttributes) {
+    _isAttrChanged(activeAttributes: ActiveAttributes): boolean {
         if (activeAttributes === this._activeAttributes) {
             return false;
         }
@@ -280,7 +301,7 @@ export default class Geometry {
         return false;
     }
 
-    generateBuffers(regl) {
+    generateBuffers(regl: any) {
         //generate regl buffers beforehand to avoid repeated bufferData
         //提前处理addBuffer插入的arraybuffer
         const allocatedBuffers = this._buffers;
@@ -336,15 +357,16 @@ export default class Geometry {
             const info = {
                 primitive: this.getPrimitive(),
                 data: this.elements
-            };
+            } as any;
             const type = this.getElementsType(this.elements);
             if (type) {
                 info.type = type;
             }
             if (!this.desc.static && !this.elements.destroy) {
-                this.indices = new Uint16Array(this.elements.length);
-                for (let i = 0; i < this.elements.length; i++) {
-                    this.indices[i] = this.elements[i];
+                const elements = this.elements;
+                this.indices = new Uint16Array(elements.length);
+                for (let i = 0; i < elements.length; i++) {
+                    this.indices[i] = elements[i];
                 }
             }
             this.elements = this.elements.destroy ? this.elements : regl.elements(info);
@@ -357,7 +379,7 @@ export default class Geometry {
         }
     }
 
-    getVertexCount() {
+    getVertexCount(): number {
         const { positionAttribute, positionSize, color0Attribute } = this.desc;
         let data = this.data[positionAttribute];
         if (data.data) {
@@ -387,7 +409,7 @@ export default class Geometry {
         return this._vertexCount;
     }
 
-    getColor0Size() {
+    getColor0Size(): number {
         return this._color0Size || 0;
     }
 
@@ -396,7 +418,7 @@ export default class Geometry {
      * @param {String} key - 属性
      * @param {ArrayBuffer|REGLBuffer} data - 数据
      */
-    addBuffer(key, data) {
+    addBuffer(key: string, data: ArrayBuffer | REGLBufferLike): this {
         this._buffers[key] = {
             data
         };
@@ -405,7 +427,7 @@ export default class Geometry {
         return this;
     }
 
-    updateBuffer(key, data) {
+    updateBuffer(key: string, data: ArrayBuffer | REGLBufferLike): this {
         if (!this._buffers[key]) {
             throw new Error(`invalid buffer ${key} in geometry`);
         }
@@ -420,7 +442,7 @@ export default class Geometry {
         return this;
     }
 
-    deleteData(name) {
+    deleteData(name: string): this {
         const buf = this.data[name];
         if (!buf) {
             return this;
@@ -431,7 +453,7 @@ export default class Geometry {
         }
         delete this.data[name];
         delete this._reglData;
-        this._markVAODirty();
+        this._markVAODirty(false);
         return this;
     }
 
@@ -441,7 +463,7 @@ export default class Geometry {
      * @param {Number[] | Object} data - data to update
      * @returns this
      */
-    updateData(name, data) {
+    updateData(name: string, data: AttributeData): this {
         const buf = this.data[name];
         if (!buf) {
             return this;
@@ -468,7 +490,7 @@ export default class Geometry {
         return this;
     }
 
-    updateSubData(name, data, offset) {
+    updateSubData(name: string, data: AttributeData, offset: number): this {
         const buf = this.data[name];
         if (!buf) {
             return this;
@@ -502,7 +524,7 @@ export default class Geometry {
         return this;
     }
 
-    getPrimitive() {
+    getPrimitive(): PrimitiveType {
         return this.desc.primitive;
     }
 
@@ -510,7 +532,7 @@ export default class Geometry {
         return this.elements;
     }
 
-    setElements(elements, count) {
+    setElements(elements: any, count: number) {
         if (!elements) {
             throw new Error('elements data is invalid');
         }
@@ -519,8 +541,8 @@ export default class Geometry {
         this.count = count === undefined ? getElementLength(elements) : count;
         if (elements && elements.destroy) {
             this.elements = elements;
-        } else if (e.destroy) {
-            this.elements = e(elements);
+        } else if ((e as any).destroy) {
+            this.elements = (e as any)(elements);
         } else {
             this.elements = elements;
         }
@@ -543,7 +565,7 @@ export default class Geometry {
         return this;
     }
 
-    _markVAODirty(forceDelete) {
+    _markVAODirty(forceDelete: boolean) {
         if (this._vao) {
             for (const key in this._vao) {
                 if (forceDelete) {
@@ -558,7 +580,7 @@ export default class Geometry {
         }
     }
 
-    setDrawCount(count) {
+    setDrawCount(count: number) {
         this._incrVersion();
         this.count1 = count;
         return this;
@@ -568,7 +590,7 @@ export default class Geometry {
         return this.count1 >= 0 ? this.count1 : this.count;
     }
 
-    setDrawOffset(offset) {
+    setDrawOffset(offset: number) {
         this._incrVersion();
         this.offset = offset;
         return this;
@@ -609,7 +631,6 @@ export default class Geometry {
         this.data = {};
         this._buffers = {};
         delete this._reglData;
-        delete this._attributes;
         this.count = 0;
         this.elements = [];
         delete this._tempPosArray;
@@ -630,7 +651,7 @@ export default class Geometry {
         }
         const posAttr = this.desc.positionAttribute;
         let posArr = this.data[posAttr];
-        let posMin, posMax;
+        let posMin: [number, number, number], posMax: [number, number, number];
         if (!isArray(posArr)) {
             // form of object: { usage : 'static', data : [...] }
             if (posArr.data) {
@@ -671,7 +692,7 @@ export default class Geometry {
         }
     }
 
-    _updateSubBoundingBox(data) {
+    _updateSubBoundingBox(data: NumberArray) {
         const bbox = this.boundingBox;
 
         const min = bbox.min;
@@ -701,7 +722,7 @@ export default class Geometry {
     // 1. 数组或者类型数组
     // 2. Object形式（regl的buffer定义）
 
-    _getAttributeData(name) {
+    _getAttributeData(name: string) {
         const data = this.data[name] && this.data[name].array ? this.data[name].array : this.data[name];
         const bufKey = data.buffer;
         if (!isInterleaved(data)) {
@@ -745,7 +766,7 @@ export default class Geometry {
             this.elements
         );
         const aTangent = this.data[name] = new Float32Array(tangents.length);
-        const t = [], n = [], q = [];
+        const t: vec4 = [0, 0, 0, 0], n: vec3 = [0, 0, 0], q: vec4 = [0, 0, 0, 0];
         for (let i = 0; i < tangents.length; i += 4) {
             const ni = i / 4 * 3;
             vec3.set(n, normals[ni], normals[ni + 1], normals[ni + 2]);
@@ -864,7 +885,7 @@ export default class Geometry {
         this._vao = {};
     }
 
-    _forEachBuffer(fn) {
+    _forEachBuffer(fn: (buffer: any) => void) {
         if (this.elements && this.elements.destroy)  {
             fn(this.elements);
         }
@@ -885,7 +906,7 @@ export default class Geometry {
         }
     }
 
-    getElementsType(elements) {
+    getElementsType(elements: NumberArray) {
         if (elements instanceof Uint8Array) {
             return 'uint8';
         } else if (elements instanceof Uint16Array) {
@@ -919,7 +940,7 @@ function getElementLength(elements) {
     throw new Error('invalid elements length');
 }
 
-function getTypeCtor(arr, byteWidth) {
+function getTypeCtor(arr: NumberArray, byteWidth: number) {
     if (arr instanceof Uint8Array || arr instanceof Uint16Array || arr instanceof Uint32Array || arr instanceof Uint8ClampedArray) {
         return byteWidth === 1 ? Uint8Array : byteWidth === 2 ? Uint16Array : Uint32Array;
     }

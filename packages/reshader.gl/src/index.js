@@ -1,79 +1,78 @@
-export { default as AbstractTexture } from './AbstractTexture.js';
-export { default as DeferredRenderer } from './DeferredRenderer.js';
-export { default as Geometry } from './Geometry.js';
-export { default as EdgeGeometry } from './EdgeGeometry.js';
-export { default as Material } from './Material.js';
-export { default as WireFrameMaterial } from './WireFrameMaterial.js';
-export { default as PhongMaterial } from './PhongMaterial.js';
-export { default as ToonMaterial } from './ToonMaterial.js';
-export { default as StandardLiteMaterial } from './StandardLiteMaterial.js';
-export { default as PhongSpecularGlossinessMaterial } from './PhongSpecularGlossinessMaterial.js';
-export { default as Mesh } from './Mesh.js';
-export { default as InstancedMesh } from './InstancedMesh.js';
-export { default as BoundingBox } from './BoundingBox.js';
-export { default as Renderer } from './Renderer.js';
-export { default as ResourceLoader } from './ResourceLoader.js';
-export { default as Scene } from './Scene.js';
-export { default as Texture2D } from './Texture2D.js';
-export { default as TextureCube } from './TextureCube.js';
+export { default as AbstractTexture } from './AbstractTexture';
+export { default as Geometry } from './Geometry';
+export { default as EdgeGeometry } from './EdgeGeometry';
+export { default as Material } from './Material';
+export { default as WireFrameMaterial } from './WireFrameMaterial';
+export { default as PhongMaterial } from './PhongMaterial';
+export { default as ToonMaterial } from './ToonMaterial';
+export { default as StandardLiteMaterial } from './StandardLiteMaterial';
+export { default as PhongSpecularGlossinessMaterial } from './PhongSpecularGlossinessMaterial';
+export { default as Mesh } from './Mesh';
+export { default as InstancedMesh } from './InstancedMesh';
+export { default as BoundingBox } from './BoundingBox';
+export { default as Renderer } from './Renderer';
+export { default as ResourceLoader } from './ResourceLoader';
+export { default as Scene } from './Scene';
+export { default as Texture2D } from './Texture2D';
+export { default as TextureCube } from './TextureCube';
 
-export { default as Plane } from './Plane.js';
+export { default as Plane } from './Plane';
 
-import * as Util from './common/Util.js';
+import * as Util from './common/Util';
 export { Util };
-import parseHDR from './common/HDR.js';
+import parseHDR from './common/HDR';
 const HDR = { parseHDR };
 export { HDR };
 
-export { default as ShaderLib } from './shaderlib/ShaderLib.js';
+export { default as ShaderLib } from './shaderlib/ShaderLib';
 
-export { default as Shader } from './shader/Shader.js';
-export { default as MeshShader } from './shader/MeshShader.js';
-export { default as WireframeShader } from './shader/WireframeShader.js';
-export { default as PhongShader } from './shader/PhongShader.js';
-export { default as PointLineShader } from './shader/PointLineShader.js';
-export { default as ToonShader } from './shader/ToonShader.js';
-export { default as FxaaShader } from './shader/FxaaShader.js';
-export { default as BoxBlurShader } from './shader/BoxBlurShader.js';
-export { default as SsaoPass } from './ssao/SsaoPass.js';
-export { default as PostProcessShader } from './shader/PostProcessShader.js';
-export { default as TaaPass } from './shader/TaaPass.js';
-export { default as Jitter } from './shader/Jitter.js';
-export { default as BloomPass } from './shader/BloomPass.js';
-export { default as SsrPass } from './shader/SsrPass.js';
-export { default as QuadShader } from './shader/QuadShader.js';
+export { default as Shader } from './shader/Shader';
+export { default as MeshShader } from './shader/MeshShader';
+export { default as WireframeShader } from './shader/WireframeShader';
+export { default as PhongShader } from './shader/PhongShader';
+export { default as PointLineShader } from './shader/PointLineShader';
+export { default as ToonShader } from './shader/ToonShader';
+export { default as FxaaShader } from './shader/FxaaShader';
+export { default as BoxBlurShader } from './shader/BoxBlurShader';
+export { default as SsaoPass } from './ssao/SsaoPass';
+export { default as PostProcessShader } from './shader/PostProcessShader';
+export { default as TaaPass } from './shader/TaaPass';
+export { default as Jitter } from './shader/Jitter';
+export { default as BloomPass } from './shader/BloomPass';
+export { default as SsrPass } from './shader/SsrPass';
+export { default as QuadShader } from './shader/QuadShader';
 export { default as HeatmapShader } from './shader/HeatmapShader';
 export { default as SkyboxShader } from './skybox/SkyboxShader';
 export { default as HeatmapDisplayShader } from './shader/HeatmapDisplayShader';
-export { default as WaterShader } from './water/WaterShader.js';
-export { default as CopyShader } from './shader/CopyShader.js';
-export { default as EdgeShader } from './shader/EdgeShader.js';
-export { default as StandardLiteShader } from './shader/StandardLiteShader.js';
+export { default as WaterShader } from './water/WaterShader';
+export { default as CopyShader } from './shader/CopyShader';
+export { default as EdgeShader } from './shader/EdgeShader';
+export { default as StandardLiteShader } from './shader/StandardLiteShader';
 
-export { default as FogPass } from './weather/fog/FogPass.js';
-export { default as FogShader } from './weather/fog/FogShader.js';
-export { default as RainRipplesPass } from './weather/rain/RainRipplesPass.js';
-export { default as ExtentPass } from './shader/ExtentPass.js';
+export { default as FogPass } from './weather/fog/FogPass';
+export { default as FogShader } from './weather/fog/FogShader';
+export { default as RainRipplesPass } from './weather/rain/RainRipplesPass';
+export { default as ExtentPass } from './shader/ExtentPass';
 
-import * as GLTFHelper  from './GLTFHelper.js';
+import * as GLTFHelper  from './GLTFHelper';
 export { GLTFHelper };
-export { default as GLTFManager } from './gltf/GLTFManager.js';
+export { default as GLTFManager } from './gltf/GLTFManager';
 
-import * as REGLHelper  from './common/REGLHelper.js';
+import * as REGLHelper  from './common/REGLHelper';
 export { REGLHelper };
 
-/*import * as SkyboxHelper from './skybox/SkyboxHelper.js';
+/*import * as SkyboxHelper from './skybox/SkyboxHelper';
 export { SkyboxHelper };*/
 
-import * as PBRHelper from './pbr/PBRHelper.js';
-// import LitMaterial from './pbr/LitMaterial.js';
+import * as PBRHelper from './pbr/PBRHelper';
+// import LitMaterial from './pbr/LitMaterial';
 // import LitShader from './pbr/LitShader';
-// import ClothMaterial from './pbr/ClothMaterial.js';
+// import ClothMaterial from './pbr/ClothMaterial';
 // import ClothShader from './pbr/ClothShader';
-// import SubsurfaceMaterial from './pbr/SubsurfaceMaterial.js';
+// import SubsurfaceMaterial from './pbr/SubsurfaceMaterial';
 // import SubsurfaceShader from './pbr/SubsurfaceShader';
-import StandardMaterial from './pbr/StandardMaterial.js';
-import StandardSpecularGlossinessMaterial from './pbr/StandardSpecularGlossinessMaterial.js';
+import StandardMaterial from './pbr/StandardMaterial';
+import StandardSpecularGlossinessMaterial from './pbr/StandardSpecularGlossinessMaterial';
 import StandardShader from './pbr/StandardShader';
 import StandardDepthShader from './pbr/StandardDepthShader';
 import * as PBRUtils from './pbr/PBRUtils';
@@ -95,9 +94,9 @@ const pbr = {
 
 export { pbr };
 
-export { default as ShadowPass } from './shadow/ShadowPass.js';
-export { default as ShadowMapShader } from './shadow/ShadowMapShader.js';
-export { default as ShadowDisplayShader } from './shadow/ShadowDisplayShader.js';
+export { default as ShadowPass } from './shadow/ShadowPass';
+export { default as ShadowMapShader } from './shadow/ShadowMapShader';
+export { default as ShadowDisplayShader } from './shadow/ShadowDisplayShader';
 
 export { default as FBORayPicking } from './picking/FBORayPicking';
 

@@ -1,8 +1,25 @@
-import Eventable from './common/Eventable.js';
+import Eventable from './common/Eventable';
 import Ajax from './common/Ajax.js';
+import { UrlModifierFunction } from './types/typings';
 
-class ResourceLoader {
-    constructor(DEFAULT_TEXTURE, urlModifier) {
+type CachedResource = {
+    image: any,
+    count: number
+}
+
+type PromiseResource = {
+    url: string,
+    data: any
+}
+
+class InnerResourceLoader {
+    defaultTexture?: Uint8Array
+    defaultCubeTexture: number[]
+    urlModifier?: UrlModifierFunction
+    private resources: Record<string, CachedResource>
+    private _count?: number
+
+    constructor(DEFAULT_TEXTURE: Uint8Array, urlModifier?: UrlModifierFunction) {
         this.defaultTexture = DEFAULT_TEXTURE;
         this.defaultCubeTexture = new Array(6);
         this.urlModifier = urlModifier;
@@ -11,11 +28,11 @@ class ResourceLoader {
         this.resources = {};
     }
 
-    setURLModifier(urlModifier) {
+    setURLModifier(urlModifier: UrlModifierFunction) {
         this.urlModifier = urlModifier;
     }
 
-    get(url) {
+    get(url: string | string[]) {
         if (Array.isArray(url)) {
             return this._loadImages(url);
         } else {
@@ -23,9 +40,9 @@ class ResourceLoader {
         }
     }
 
-    getArrayBuffer(url) {
+    getArrayBuffer(url: string | string[]): Promise<PromiseResource | PromiseResource[]> {
         if (Array.isArray(url)) {
-            const promises = url.map(u => this.getArrayBuffer(u));
+            const promises = url.map(u => this.getArrayBuffer(u) as Promise<PromiseResource>);
             return Promise.all(promises);
         } else {
             return new Promise((resolve, reject) => {
@@ -44,7 +61,7 @@ class ResourceLoader {
         }
     }
 
-    disposeRes(url) {
+    disposeRes(url: string | string[]): this {
         if (Array.isArray(url)) {
             url.forEach(u => this._disposeOne(u));
         } else {
@@ -53,11 +70,11 @@ class ResourceLoader {
         return this;
     }
 
-    isLoading() {
+    isLoading(): boolean {
         return this._count && this._count > 0;
     }
 
-    getDefaultTexture(url) {
+    getDefaultTexture(url: string | string[]): Uint8Array | number[] {
         if (!Array.isArray(url)) {
             return this.defaultTexture;
         } else {
@@ -65,7 +82,7 @@ class ResourceLoader {
         }
     }
 
-    _disposeOne(url) {
+    _disposeOne(url: string) {
         const resources = this.resources;
         if (!resources[url]) {
             return;
@@ -76,12 +93,12 @@ class ResourceLoader {
         }
     }
 
-    _loadImage(url) {
+    _loadImage(url: string):Promise<PromiseResource> {
         const resources = this.resources;
         if (resources[url]) {
             return Promise.resolve({ url, data: resources[url].image });
         }
-        const promise = new Promise((resolve, reject) => {
+        const promise = new Promise<PromiseResource>((resolve, reject) => {
             const img = new Image();
             img.crossOrigin = 'anonymous';
             img.onload = function () {
@@ -107,8 +124,8 @@ class ResourceLoader {
         return promise;
     }
 
-    _loadImages(urls) {
-        const promises = urls.map(url => this._loadImage(url, true));
+    _loadImages(urls): Promise<PromiseResource[]> {
+        const promises = urls.map(url => this._loadImage(url));
         const promise = Promise.all(promises);
         return promise;
     }
@@ -122,4 +139,6 @@ class ResourceLoader {
     }
 }
 
-export default Eventable(ResourceLoader);
+class ResourceLoader extends Eventable(InnerResourceLoader) {}
+
+export default ResourceLoader;

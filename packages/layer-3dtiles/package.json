@@ -40,7 +40,7 @@
     "@maptalks/gltf-loader": "^0.97.2",
     "@maptalks/tbn-packer": "^1.4.5",
     "frustum-intersects": "^0.2.4",
-    "gl-matrix": "^2.6.1",
+    "gl-matrix": "^3.4.0",
     "pako": "^2.0.4",
     "parse-dds": "^1.2.1"
   },
