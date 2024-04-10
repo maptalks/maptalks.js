@@ -1,9 +1,9 @@
 import Geometry from './Geometry.js';
 import Material from './Material';
-import { MaterialUniforms, ShaderDefines } from './types/typings';
+import { ShaderUniforms, ShaderDefines } from './types/typings';
 import StandardMaterial from './pbr/StandardMaterial';
 
-const DEFAULT_UNIFORMS: MaterialUniforms = {
+const DEFAULT_UNIFORMS: ShaderUniforms = {
     'baseColorFactor': [1, 1, 1, 1],
     'materialShininess' : 32.0,
     'environmentExposure' : 1,
@@ -23,7 +23,7 @@ const DEFAULT_UNIFORMS: MaterialUniforms = {
 };
 
 class PhongMaterial extends Material {
-    constructor(uniforms: MaterialUniforms) {
+    constructor(uniforms: ShaderUniforms) {
         super(uniforms, DEFAULT_UNIFORMS);
     }
 

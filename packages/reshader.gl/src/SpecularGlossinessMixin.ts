@@ -1,8 +1,8 @@
 import Geometry from './Geometry';
 import { extend } from './common/Util';
-import { MaterialUniforms, MixinConstructor, ShaderDefines } from './types/typings';
+import { ShaderUniforms, MixinConstructor, ShaderDefines } from './types/typings';
 
-const DEFAULT_UNIFORMS: MaterialUniforms = {
+const DEFAULT_UNIFORMS: ShaderUniforms = {
     //KHR_materials_pbrSpecularGlossiness
     'diffuseFactor': [1, 1, 1, 1],
     'specularFactor': [1, 1, 1],

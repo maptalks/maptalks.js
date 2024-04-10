@@ -1,9 +1,9 @@
-import { MaterialUniforms, ShaderDefines } from 'src/types/typings';
+import { ShaderUniforms, ShaderDefines } from 'src/types/typings';
 import Material from '../Material';
 import { extend } from '../common/Util';
 import Geometry from 'src/Geometry';
 
-const DEFAULT_UNIFORMS: MaterialUniforms = {
+const DEFAULT_UNIFORMS: ShaderUniforms = {
     'uvScale': [1, 1],
     'uvOffset': [0, 0],
     'uvRotation': 0,
@@ -65,8 +65,8 @@ const DEFAULT_UNIFORMS: MaterialUniforms = {
 };
 
 class StandardMaterial extends Material {
-    constructor(uniforms: MaterialUniforms) {
-        const defaultUniforms: MaterialUniforms = extend({}, DEFAULT_UNIFORMS);
+    constructor(uniforms: ShaderUniforms) {
+        const defaultUniforms: ShaderUniforms = extend({}, DEFAULT_UNIFORMS);
         if (uniforms['metallicRoughnessTexture'] || uniforms['metallicRoughnessTexture']) {
             defaultUniforms['roughnessFactor'] = 1;
             defaultUniforms['metallicFactor'] = 1;

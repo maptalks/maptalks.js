@@ -1,9 +1,17 @@
 import { extend, isSupportVAO, getBufferSize, hasOwn } from './common/Util.js';
 import Mesh from './Mesh.js';
 import { KEY_DISPOSED } from './common/Constants';
+import REGL, { BufferOptions, Regl } from '@maptalks/regl';
+import { ActiveAttributes, AttributeBufferData, InstancedAttribute, MeshOptions, NumberArray } from './types/typings';
+import Material from './Material';
+import Geometry from './Geometry';
 
 export default class InstancedMesh extends Mesh {
-    constructor(instancedData, instanceCount, geometry, material, config = {}) {
+    private _instanceCount: number
+    instancedData: InstancedAttribute
+    private _vao: Record<string, any>
+
+    constructor(instancedData: InstancedAttribute, instanceCount: number, geometry: Geometry, material?: Material, config: MeshOptions = {}) {
         super(geometry, material, config);
         this._instanceCount = instanceCount;
         this.instancedData = instancedData || {};
@@ -43,7 +51,7 @@ export default class InstancedMesh extends Mesh {
         }
     }
 
-    _getREGLAttrData(regl, activeAttributes) {
+    _getREGLAttrData(regl: Regl, activeAttributes: ActiveAttributes) {
         // 只需要获得 geometry的 attr 数据，不需要elements
         const geoBuffers = this.geometry.getAttrData(activeAttributes);
         if (isSupportVAO(regl)) {
@@ -94,14 +102,14 @@ export default class InstancedMesh extends Mesh {
         return defines;
     }
 
-    getCommandKey(regl) {
+    getCommandKey(regl: Regl) {
         return 'i_' + super.getCommandKey(regl);
     }
 
     //因为 updateBoundingBox 需要， 不再自动生成buffer，而是把原有的buffer销毁
     //调用 updateInstancedData 后，需要调用 updateBoundingBox 更新bbox, 再调用 generateInstancedBuffers 来重新生成 buffer
-    updateInstancedData(name, data) {
-        const buf = this.instancedData[name];
+    updateInstancedData(name: string, data) {
+        const buf = this.instancedData[name] as AttributeBufferData;
         if (!buf) {
             return this;
         }
@@ -129,29 +137,30 @@ export default class InstancedMesh extends Mesh {
         return this;
     }
 
-    generateInstancedBuffers(regl) {
+    generateInstancedBuffers(regl: Regl) {
         const data = this.instancedData;
-        const buffers = {};
+        const buffers: Record<string, AttributeBufferData> = {};
         for (const key in data) {
             if (!data[key]) {
                 continue;
             }
-            if (data[key].buffer !== undefined && data[key].buffer.destroy) {
-                buffers[key] = data[key];
+            const attrBuf = (data[key] as AttributeBufferData);
+            if (attrBuf.buffer !== undefined && attrBuf.buffer.destroy) {
+                buffers[key] = attrBuf;
                 if (buffers[key].divisor) {
                     buffers[key].divisor = 1;
                 }
-            } else if (data[key].destroy) {
+            } else if ((data[key] as REGL.Buffer).destroy) {
                 buffers[key] = {
-                    buffer : data[key],
+                    buffer : data[key] as REGL.Buffer,
                     divisor: 1
                 };
             } else {
                 buffers[key] = {
-                    buffer : regl.buffer({
+                    buffer: regl.buffer({
                         data: data[key],
-                        dimension: data[key].length / this._instanceCount
-                    }),
+                        dimension: (data[key] as NumberArray).length / this._instanceCount
+                    } as BufferOptions),
                     divisor: 1
                 };
             }
@@ -160,7 +169,7 @@ export default class InstancedMesh extends Mesh {
         return this;
     }
 
-    getREGLProps(regl, activeAttributes) {
+    getREGLProps(regl: Regl, activeAttributes: ActiveAttributes) {
         const props = super.getREGLProps(regl, activeAttributes);
         if (!isSupportVAO(regl)) {
             extend(props, this.instancedData);
@@ -170,13 +179,17 @@ export default class InstancedMesh extends Mesh {
         return props;
     }
 
-    disposeInstanceData() {
+    disposeInstancedData() {
         const buffers = this.instancedData;
         if (buffers) {
             for (const p in buffers) {
-                if (buffers[p] && buffers[p].destroy && !buffers[p][KEY_DISPOSED]) {
-                    buffers[p][KEY_DISPOSED] = 1;
-                    buffers[p].destroy();
+                if (!buffers[p]) {
+                    continue;
+                }
+                const buffer = (buffers[p] as REGL.Buffer).destroy ? buffers[p] as REGL.Buffer : (buffers[p] as AttributeBufferData).buffer;
+                if (buffer.destroy && !buffer[KEY_DISPOSED]) {
+                    buffer[KEY_DISPOSED] = 1;
+                    buffer.destroy();
                 }
             }
         }
@@ -229,23 +242,23 @@ export default class InstancedMesh extends Mesh {
     // }
     /* eslint-enable camelcase */
 
-    _getBytesPerElement(dtype) {
-        switch (dtype) {
-        case 0x1400:
-            return 1;
-        case 0x1401:
-            return 1;
-        case 0x1402:
-            return 2;
-        case 0x1403:
-            return 2;
-        case 0x1404:
-            return 4;
-        case 0x1405:
-            return 4;
-        case 0x1406:
-            return 4;
-        }
-        throw new Error('unsupported data type: ' + dtype);
-    }
+    // _getBytesPerElement(dtype: number) {
+    //     switch (dtype) {
+    //     case 0x1400:
+    //         return 1;
+    //     case 0x1401:
+    //         return 1;
+    //     case 0x1402:
+    //         return 2;
+    //     case 0x1403:
+    //         return 2;
+    //     case 0x1404:
+    //         return 4;
+    //     case 0x1405:
+    //         return 4;
+    //     case 0x1406:
+    //         return 4;
+    //     }
+    //     throw new Error('unsupported data type: ' + dtype);
+    // }
 }

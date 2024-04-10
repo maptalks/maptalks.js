@@ -1,8 +1,8 @@
 import Geometry from './Geometry';
 import Material from './Material';
-import { MaterialUniforms, ShaderDefines } from './types/typings';
+import { ShaderUniforms, ShaderDefines } from './types/typings';
 
-const DEFAULT_UNIFORMS: MaterialUniforms = {
+const DEFAULT_UNIFORMS: ShaderUniforms = {
     'baseColorFactor': [1, 1, 1, 1],
     'uvScale': [1, 1],
     'uvOffset': [0, 0],
@@ -18,7 +18,7 @@ const DEFAULT_UNIFORMS: MaterialUniforms = {
 };
 
 class StandardLiteMaterial extends Material {
-    constructor(uniforms: MaterialUniforms) {
+    constructor(uniforms: ShaderUniforms) {
         super(uniforms, DEFAULT_UNIFORMS);
     }
 

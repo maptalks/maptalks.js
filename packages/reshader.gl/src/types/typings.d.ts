@@ -1,4 +1,5 @@
-import { Texture } from "@maptalks/regl";
+import REGL, { Texture } from "@maptalks/regl";
+import { mat4 } from "gl-matrix";
 import AbstractTexture from "src/AbstractTexture";
 
 export type UrlModifierFunction = (url: string) => string
@@ -13,30 +14,9 @@ export type NumberArray = TypedArray | number[]
 
 export type AttributeData = NumberArray | any;
 
-// TODO regl中有定义
-type PrimitiveType =
-/** gl.POINTS */
-"points" |
-/** gl.LINES */
-"lines" |
-/** gl.LINE_STRIP */
-"line strip" |
-/** gl.LINE_LOOP */
-"line loop" |
-/** gl.TRIANGLES */
-"triangles" |
-/** gl.TRIANGLE_STRIP */
-"triangle strip" |
-/** gl.TRIANGLE_FAN */
-"triangle fan";
-
-export type REGLBufferLike = {
-    destroy: () => void
-}
-
 export type GeometryDesc = {
     'positionSize'?: number,
-    'primitive'?: PrimitiveType,
+    'primitive'?: REGL.PrimitiveType,
     //name of position attribute
     'positionAttribute'?: string,
     'normalAttribute'?: string,
@@ -57,12 +37,29 @@ export type GeometryElements = { array: NumberArray }
 type AttributeKey = { key: string }
 export type ActiveAttributes = { name: string, type: number }[] & AttributeKey
 
-export type MaterialUniformValue = number | boolean | NumberArray | null | AbstractTexture | Texture
+export type ShaderUniformValue = number | boolean | NumberArray | null | AbstractTexture | Texture
 
-export type MaterialUniforms = {
-    [_: string]: MaterialUniformValue
+export type ShaderUniforms = {
+    meshConfig?: MeshOptions
+} & {
+    [_: string]: ShaderUniformValue
 }
 
 export type ShaderDefines = {
     [_: string]: number | string
 }
+
+export type MeshOptions = {
+    transparent?: boolean
+    bloom?: boolean
+    ssr?: boolean
+    castShadow?: boolean
+    picking?: boolean
+    disableVAO?: boolean
+}
+
+export type MatrixFunction = () => mat4
+
+export type AttributeBufferData = { buffer?: REGL.Buffer, data?: NumberArray, divisor?: number }
+
+type InstancedAttribute = Record<string, NumberArray | REGL.Buffer | AttributeBufferData>;

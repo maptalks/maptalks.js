@@ -3,6 +3,7 @@ import { packTangentFrame, buildTangents, buildNormals } from '@maptalks/tbn-pac
 import { isNumber, extend, isArray, isSupportVAO, hasOwn, getBufferSize, isInStride, isInterleaved } from './common/Util';
 import BoundingBox from './BoundingBox';
 import { KEY_DISPOSED } from './common/Constants';
+//@ts-expect-error ts不知为啥无法识别导入的gltf-loader库
 import * as gltf from '@maptalks/gltf-loader';
 import { ActiveAttributes, AttributeData, GeometryDesc, NumberArray, PrimitiveType } from './types/typings';
 import REGL, { Regl } from '@maptalks/regl';

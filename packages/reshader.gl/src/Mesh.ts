@@ -1,16 +1,55 @@
 import { extend, isNil, isNumber, isFunction, isSupportVAO, hasOwn } from './common/Util.js';
 import { mat4, vec3 } from 'gl-matrix';
 import BoundingBox from './BoundingBox.js';
+import Geometry from './Geometry';
+import Material from './Material';
+import { ActiveAttributes, MatrixFunction, MeshOptions, ShaderDefines, ShaderUniformValue, ShaderUniforms } from './types/typings';
+import { Regl } from '@maptalks/regl';
 
-const tempMat4 = [];
+const tempMat4: mat4 = new Array(16) as mat4;
 
 let uuid = 0;
+
+
 /**
  * Config:
  *  transparent, castShadow
  */
 class Mesh {
-    constructor(geometry, material, config = {}) {
+    private _version: number
+    private _geometry: Geometry
+    private _material: Material
+    private _localTransform: mat4 | MatrixFunction
+    private _positionMatrix: mat4 | MatrixFunction
+    private _currentTransform?: mat4
+    private _prevTMat?: mat4
+    private _prevPMat?: mat4
+    private _dirtyUniforms: boolean
+    private _dirtyGeometry: boolean
+    private _options?: MeshOptions
+    private _materialVer?: number
+    private _dirtyProps?: string[]
+    private _defines?: ShaderDefines
+    private _bakDefines?: ShaderDefines
+    private _commandKey?: string
+    private _materialKeys?: string
+    private _realUniforms?: ShaderUniforms
+    private _bbox?: BoundingBox
+    private _geoBox?: BoundingBox
+    private _bboxArr?: [vec3, vec3]
+
+    transparent: boolean
+    bloom: boolean
+    ssr: boolean
+    castShadow: boolean
+    picking: boolean
+    disableVAO: boolean
+    properties: any
+    uniforms: ShaderUniforms
+    dirtyDefines?: boolean
+    parent?: Mesh
+
+    constructor(geometry: Geometry, material?: Material, config: MeshOptions = {}) {
         this._version = 0;
         this._geometry = geometry;
         this._material = material;
@@ -22,8 +61,8 @@ class Mesh {
         this.picking = !!config.picking;
         this.disableVAO = !!config.disableVAO;
         this.uniforms = {};
-        this._localTransform = mat4.identity(new Array(16));
-        this._positionMatrix = mat4.identity(new Array(16));
+        this._localTransform = mat4.identity(new Array(16) as mat4);
+        this._positionMatrix = mat4.identity(new Array(16) as mat4);
         this.properties = {};
         this._dirtyUniforms = true;
         this._dirtyGeometry = true;
@@ -35,7 +74,7 @@ class Mesh {
         }
     }
 
-    set material(v) {
+    set material(v: Material) {
         if (this._material !== v) {
             this.setMaterial(v);
         }
@@ -45,7 +84,7 @@ class Mesh {
         return this._material;
     }
 
-    set version(v) {
+    set version(v: number) {
         throw new Error('Mesh.version is read only.');
     }
 
@@ -57,7 +96,7 @@ class Mesh {
         return this._geometry;
     }
 
-    set geometry(geo) {
+    set geometry(geo: Geometry) {
         if (this._geometry !== geo) {
             this._incrVersion();
             this._dirtyGeometry = true;
@@ -67,7 +106,7 @@ class Mesh {
 
     set localTransform(m) {
         if (!this._prevTMat) {
-            this._prevTMat = [];
+            this._prevTMat = new Array(16) as mat4;
         }
         if (Array.isArray(m) && !mat4.exactEquals(this._prevTMat, m)) {
             this._incrVersion();
@@ -77,12 +116,12 @@ class Mesh {
     }
 
     get localTransform() {
-        return this._localTransform;
+        return isFunction(this._localTransform) ? (this._localTransform as MatrixFunction)() : this._localTransform as mat4;
     }
 
     set positionMatrix(m) {
         if (!this._prevPMat) {
-            this._prevPMat = [];
+            this._prevPMat = new Array(16) as mat4;
         }
         if (Array.isArray(m) && !mat4.exactEquals(this._prevPMat, m)) {
             this._incrVersion();
@@ -92,30 +131,30 @@ class Mesh {
     }
 
     get positionMatrix() {
-        return this._positionMatrix;
+        return isFunction(this._positionMatrix) ? (this._positionMatrix as MatrixFunction)() : this._positionMatrix as mat4;
     }
 
     get config() {
-        if (!this._cfg) {
-            this._cfg = {};
+        if (!this._options) {
+            this._options = {};
         }
-        this._cfg['transparent'] = this.transparent;
-        this._cfg['castShadow'] = this.castShadow;
-        this._cfg['bloom'] = this.bloom;
-        this._cfg['ssr'] = this.ssr;
-        this._cfg['picking'] = this.picking;
-        return this._cfg;
+        this._options['transparent'] = this.transparent;
+        this._options['castShadow'] = this.castShadow;
+        this._options['bloom'] = this.bloom;
+        this._options['ssr'] = this.ssr;
+        this._options['picking'] = this.picking;
+        return this._options;
     }
 
-    get defines() {
+    get defines(): ShaderDefines {
         return this._getDefines();
     }
 
-    set defines(v) {
+    set defines(v: ShaderDefines) {
         this.setDefines(v);
     }
 
-    setMaterial(material) {
+    setMaterial(material: Material) {
         this._material = material;
         this._dirtyUniforms = true;
         delete this._materialVer;
@@ -123,21 +162,21 @@ class Mesh {
         return this;
     }
 
-    setParent(parent) {
+    setParent(parent: Mesh) {
         this.parent = parent;
         return this;
     }
 
-    setLocalTransform(transform) {
+    setLocalTransform(transform: mat4) {
         this.localTransform = transform;
         return this;
     }
 
-    setPositionMatrix(matrix) {
+    setPositionMatrix(matrix: mat4) {
         this.positionMatrix = matrix;
     }
 
-    setUniform(k, v) {
+    setUniform(k: string, v: ShaderUniformValue) {
         if (this.uniforms[k] === undefined) {
             this._dirtyUniforms = true;
         } else {
@@ -148,11 +187,11 @@ class Mesh {
         return this;
     }
 
-    getUniform(k) {
+    getUniform(k: string): ShaderUniformValue {
         return this.uniforms[k];
     }
 
-    getDefines() {
+    getDefines(): ShaderDefines {
         const defines = {};
         extend(defines, this._getDefines());
         if (this._material && this._geometry) {
@@ -161,7 +200,7 @@ class Mesh {
         return defines;
     }
 
-    _getDefines() {
+    _getDefines(): ShaderDefines {
         if (!this._defines) {
             this._defines = {};
         }
@@ -181,7 +220,7 @@ class Mesh {
         return this._defines;
     }
 
-    setDefines(defines) {
+    setDefines(defines: ShaderDefines) {
         const bak = this._bakDefines;
         this._defines = defines;
         this.dirtyDefines = this.dirtyDefines || !!bak !== !!defines || !equalDefine(bak, defines);
@@ -191,16 +230,17 @@ class Mesh {
         return this;
     }
 
-    hasSkinAnimation() {
+    hasSkinAnimation(): boolean {
         return this._material && this._material.hasSkinAnimation();
     }
 
-    _getDefinesKey() {
+    _getDefinesKey(): string {
         this.dirtyDefines = false;
         return this._createDefinesKey(this.getDefines());
     }
 
-    getCommandKey() {
+    //eslint-disable-next-line
+    getCommandKey(regl: Regl): string {
         if (!this._commandKey || this.dirtyDefines || (this._material && this._materialKeys !== this._material.getUniformKeys())) {
             //TODO geometry的data变动也可能会改变commandKey，但鉴于geometry一般不会发生变化，暂时不管
             let dKey = this._getDefinesKey();
@@ -231,11 +271,11 @@ class Mesh {
     //     return uniforms;
     // }
 
-    getUniforms(regl) {
+    getUniforms(regl: Regl): ShaderUniforms {
         if (this._dirtyUniforms || this._dirtyGeometry || this._material && this._materialVer !== this._material.version) {
             this._realUniforms = {
             };
-            this._getUniformsForDraco();
+            this._prepareUniformsForDraco();
             const uniforms = this.uniforms;
             for (const p in this.uniforms) {
                 if (hasOwn(this.uniforms, p)) {
@@ -295,12 +335,12 @@ class Mesh {
 
             this._dirtyProps = null;
         }
-        this._realUniforms['modelMatrix'] = isFunction(this._localTransform) ? this._localTransform() : this._localTransform;
-        this._realUniforms['positionMatrix'] = isFunction(this._positionMatrix) ? this._positionMatrix() : this._positionMatrix;
+        this._realUniforms['modelMatrix'] = this.localTransform;
+        this._realUniforms['positionMatrix'] = this.positionMatrix;
         return this._realUniforms;
     }
 
-    _getUniformsForDraco() {
+    private _prepareUniformsForDraco() {
         const geometry = this._geometry;
         const position = geometry.data[geometry.desc.positionAttribute],
             texcoord = geometry.data[geometry.desc.uv0Attribute],
@@ -336,7 +376,7 @@ class Mesh {
         return this._geometry.getREGLData(regl, activeAttributes, this.disableVAO);
     }
 
-    getREGLProps(regl, activeAttributes) {
+    getREGLProps(regl: Regl, activeAttributes: ActiveAttributes) {
         const props = this.getUniforms(regl);
         extend(props, this._getREGLAttrData(regl, activeAttributes));
         if (!isSupportVAO(regl) || this.disableVAO) {
@@ -354,7 +394,7 @@ class Mesh {
     dispose() {
         delete this._geometry;
         delete this._material;
-        this.uniforms = {};
+        this.uniforms = null;
         return this;
     }
 
@@ -366,7 +406,7 @@ class Mesh {
         if (!this._bbox) {
             this.updateBoundingBox();
         }
-        mat4.multiply(tempMat4, this._localTransform, this._positionMatrix);
+        mat4.multiply(tempMat4, this.localTransform, this.positionMatrix);
         //如果Mesh的localTransform * positionMatrix发生了变化，或者geometry的boundingBox发生变化，则需要更新bbox
         if (!mat4.exactEquals(tempMat4, this._currentTransform) || !this._geometry.boundingBox.equals(this._geoBox)) {
             this.updateBoundingBox();
@@ -380,7 +420,7 @@ class Mesh {
             this._bbox = new BoundingBox();
         }
         if (!this._bboxArr) {
-            this._bboxArr = [[], []];
+            this._bboxArr = [[0, 0, 0], [0, 0, 0]];
         }
         if (!this._geoBox) {
             this._geoBox = new BoundingBox();
@@ -388,11 +428,11 @@ class Mesh {
         BoundingBox.copy(this._bbox, box);
         this._bbox.updateVertex();
         if (this.constructor.name === 'InstancedMesh') {
-            this._bbox.transform(this._localTransform, this._positionMatrix);
-            this._currentTransform = mat4.multiply(this._currentTransform || [], this._positionMatrix, this._localTransform);
+            this._bbox.transform(this.localTransform, this.positionMatrix);
+            this._currentTransform = mat4.multiply(this._currentTransform || new Array(16) as mat4, this.positionMatrix, this.localTransform);
         } else {
-            this._bbox.transform(this._positionMatrix, this._localTransform);
-            this._currentTransform = mat4.multiply(this._currentTransform || [], this._localTransform, this._positionMatrix);
+            this._bbox.transform(this.positionMatrix, this.localTransform);
+            this._currentTransform = mat4.multiply(this._currentTransform || new Array(16) as mat4, this.localTransform, this.positionMatrix);
         }
         BoundingBox.copy(this._geoBox, box);
         vec3.copy(this._bboxArr[0], this._bbox.min);
@@ -415,18 +455,15 @@ class Mesh {
     getMemorySize() {
         return (this.geometry && this.geometry.getMemorySize() || 0) + (this.material && this.material.getMemorySize() || 0);
     }
-}
 
-Mesh.prototype.getWorldTransform = function () {
-    const worldTransform = [];
-    return function () {
+    getWorldTransform() {
         const parent = this.parent;
         if (parent) {
-            return mat4.multiply(worldTransform, parent.getWorldTransform(), this._localTransform);
+            return mat4.multiply(new Array(16) as mat4, parent.getWorldTransform(), this.localTransform);
         }
-        return this._localTransform;
-    };
-}();
+        return this.localTransform;
+    }
+}
 
 export default Mesh;
 

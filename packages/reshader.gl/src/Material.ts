@@ -2,24 +2,27 @@ import Eventable from './common/Eventable';
 import { isNil, extend1, hasOwn, getTexMemorySize } from './common/Util';
 import AbstractTexture from './AbstractTexture';
 import { KEY_DISPOSED } from './common/Constants';
-import { MaterialUniforms, MaterialUniformValue, ShaderDefines } from './types/typings';
+import { ShaderUniforms, ShaderUniformValue, ShaderDefines } from './types/typings';
 import { Regl, Texture } from '@maptalks/regl';
 import Geometry from './Geometry';
 
-class Material {
-    uniforms: MaterialUniforms
+class Base {}
+
+class Material extends Eventable(Base) {
+    uniforms: ShaderUniforms
     refCount: number
     private _version: number
     private _uniformVer?: number
     private _uniformKeys?: string
-    private _reglUniforms: MaterialUniforms
+    private _reglUniforms: ShaderUniforms
     private _bindedOnTextureComplete: () => void
     private _doubleSided: boolean
     private _loadingCount?: number
     private _dirtyProps?: string[]
     private _disposed?: boolean
 
-    constructor(uniforms: MaterialUniforms = {}, defaultUniforms: MaterialUniforms) {
+    constructor(uniforms: ShaderUniforms = {}, defaultUniforms: ShaderUniforms) {
+        super()
         this._version = 0;
         this.uniforms = extend1({}, defaultUniforms || {}, uniforms);
         for (const p in uniforms) {
@@ -57,7 +60,7 @@ class Material {
         return this._loadingCount <= 0;
     }
 
-    set(k: string, v: MaterialUniformValue): this {
+    set(k: string, v: ShaderUniformValue): this {
         const dirty = isNil(this.uniforms[k]) && !isNil(v) ||
             !isNil(this.uniforms[k]) && isNil(v);
 
@@ -96,7 +99,7 @@ class Material {
         this._dirtyProps = null;
     }
 
-    get(k: string): MaterialUniformValue {
+    get(k: string): ShaderUniformValue {
         return this.uniforms[k];
     }
 
@@ -135,7 +138,7 @@ class Material {
             return this._reglUniforms;
         }
         const uniforms = this.uniforms;
-        const realUniforms: MaterialUniforms = {};
+        const realUniforms: ShaderUniforms = {};
         for (const p in uniforms) {
             if (this.isTexture(p)) {
                 Object.defineProperty(realUniforms, p, {
@@ -250,4 +253,4 @@ class Material {
     }
 }
 
-export default Eventable(Material);
+export default Material;

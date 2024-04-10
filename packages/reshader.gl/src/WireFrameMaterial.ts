@@ -1,7 +1,7 @@
 import Material from './Material';
-import { MaterialUniforms } from './types/typings';
+import { ShaderUniforms } from './types/typings';
 
-const DEFAULT_UNIFORMS: MaterialUniforms = {
+const DEFAULT_UNIFORMS: ShaderUniforms = {
     'time': 0,
     'seeThrough': true,
     'thickness': 0.03,
@@ -23,7 +23,7 @@ const DEFAULT_UNIFORMS: MaterialUniforms = {
 };
 
 class WireFrameMaterial extends Material {
-    constructor(uniforms: MaterialUniforms) {
+    constructor(uniforms: ShaderUniforms) {
         super(uniforms, DEFAULT_UNIFORMS);
     }
 }
