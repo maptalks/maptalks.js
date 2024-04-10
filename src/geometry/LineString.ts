@@ -1,6 +1,6 @@
 import Coordinate from '../geo/Coordinate';
 import { clipLine } from '../core/util/path';
-import Path, { PathOptionsType } from './Path';
+import Path, { PathCoordinates, PathOptionsType } from './Path';
 import Polygon from './Polygon';
 import Extent from '../geo/Extent';
 import { AnySymbol, LineSymbol } from '../symbol';
@@ -67,7 +67,7 @@ export class LineString extends Path {
         }
         this._coordinates = Coordinate.toCoordinates(coordinates as Coordinate[]) as Coordinate[];
         if (this.getMap()) {
-            this._setPrjCoordinates(this._projectCoords(this._coordinates));
+            this._setPrjCoordinates(this._projectCoords(this._coordinates) as PathCoordinates);
         } else {
             this.onShapeChanged();
         }

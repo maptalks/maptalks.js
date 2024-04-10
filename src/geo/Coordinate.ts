@@ -55,7 +55,8 @@ class Coordinate extends Position {
     static toNumberArrays(coordinates: Coordinate);
     static toNumberArrays(coordinates: Coordinate[]);
     static toNumberArrays(coordinates: Coordinate[][]);
-    static toNumberArrays(coordinates: Coordinate | Coordinate[] | Coordinate[][]) {
+    static toNumberArrays(coordinates: Coordinate[][][]);
+    static toNumberArrays(coordinates: Coordinate | Coordinate[] | Coordinate[][] | Coordinate[][][]) {
         if (!Array.isArray(coordinates)) {
             return coordinates.toArray();
         }
@@ -77,7 +78,7 @@ class Coordinate extends Position {
      * const coordinates = Coordinate.toCoordinates([[100,0], [101,1]]);
      * ```
      */
-    static toCoordinates(coordinates: CoordinateArray | CoordinateArray[] | Coordinate | Coordinate[]) {
+    static toCoordinates(coordinates: CoordinateArray | CoordinateArray[] | CoordinateArray[][] | Coordinate | Coordinate[] | Coordinate[][]): Coordinate | Coordinate[] | Coordinate[][] {
         if (isNumber(coordinates[0]) && isNumber(coordinates[1])) {
             return new Coordinate(coordinates as CoordinateArray);
         }

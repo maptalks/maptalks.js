@@ -4,10 +4,11 @@ import { getExternalResources } from '../core/util/resource';
 import Coordinate from '../geo/Coordinate';
 import PointExtent from '../geo/PointExtent';
 import Extent from '../geo/Extent';
-import Geometry from './Geometry';
+import Geometry, { GeometryOptionsType } from './Geometry';
 import GlobalConfig from '../GlobalConfig';
 import * as projections from '../geo/projection';
 import Point from '../geo/Point';
+import { GeometryEditOptionsType } from './ext/Geometry.Edit';
 
 type ProjectionCommon = typeof projections.Common
 
@@ -38,7 +39,7 @@ class GeometryCollection extends Geometry {
      * @param {Geometry[]} geometries - GeometryCollection's geometries
      * @param {Object} [options=null] - options defined in [nGeometryCollection]{@link GeometryCollection#options}
      */
-    constructor(geometries?: Geometry[], opts?: any) {
+    constructor(geometries?: Geometry[], opts?: GeometryOptionsType) {
         super(opts);
         this.type = 'GeometryCollection';
         this.setGeometries(geometries);
@@ -60,7 +61,7 @@ class GeometryCollection extends Geometry {
      * @return {GeometryCollection} this
      * @fires GeometryCollection#shapechange
      */
-    setGeometries(_geometries: Geometry[]): GeometryCollection {
+    setGeometries(_geometries: Geometry[]) {
         const geometries = this._checkGeometries(_geometries || []);
         const symbol = this._getSymbol();
         const options = this.config();
@@ -103,7 +104,7 @@ class GeometryCollection extends Geometry {
      * @param  {*} [context=undefined]   - callback's context
      * @return {GeometryCollection} this
      */
-    forEach(fn: any, context?: any): this {
+    forEach(fn: (geo: Geometry, index: number) => void, context?: any): this {
         const geometries = this.getGeometries();
         for (let i = 0, l = geometries.length; i < l; i++) {
             if (!geometries[i]) {
@@ -130,7 +131,7 @@ class GeometryCollection extends Geometry {
      * @example
      * var filtered = collection.filter(geometry => geometry.getProperties().foo === 'bar');
      */
-    filter(fn?: any, context?: any): GeometryCollection {
+    filter(fn?: (geo: Geometry) => boolean, context?: any) {
         if (!fn) {
             return new GeometryCollection();
         }
@@ -192,7 +193,7 @@ class GeometryCollection extends Geometry {
      * @fires GeometryCollection#remove
      * @fires GeometryCollection#removeend
      */
-    remove(): any {
+    remove() {
         this.forEach(function (geometry: Geometry) {
             geometry._unbind();
         });
@@ -337,7 +338,7 @@ class GeometryCollection extends Geometry {
         return filterGeometries;
     }
 
-    _checkGeo(geo: any): boolean {
+    _checkGeo(geo: Geometry): boolean {
         return (geo instanceof Geometry);
     }
 
@@ -388,7 +389,7 @@ class GeometryCollection extends Geometry {
         return new Coordinate(sumX / counter, sumY / counter);
     }
 
-    _containsPoint(point: Point, t: any): boolean {
+    _containsPoint(point: Point, t?: number): boolean {
         if (this.isEmpty()) {
             return false;
         }
@@ -414,11 +415,11 @@ class GeometryCollection extends Geometry {
         return hitTolerance;
     }
 
-    _computeExtent(projection: null | ProjectionCommon): any {
+    _computeExtent(projection: null | ProjectionCommon): Extent {
         return computeExtent.call(this, projection, '_computeExtent');
     }
 
-    _computePrjExtent(projection: null | ProjectionCommon): any {
+    _computePrjExtent(projection: null | ProjectionCommon): Extent {
         return computeExtent.call(this, projection, '_computePrjExtent');
     }
 
@@ -453,7 +454,7 @@ class GeometryCollection extends Geometry {
     }
 
     //for toGeoJSON
-    _exportGeoJSONGeometry(): any {
+    _exportGeoJSONGeometry() {
         const children = [];
         if (!this.isEmpty()) {
             const geometries = this.getGeometries();
@@ -470,7 +471,7 @@ class GeometryCollection extends Geometry {
         };
     }
     //for toJSON
-    _toJSON(options?: any): any {
+    _toJSON(options?: any) {
         //fix call from feature-filter package
         options = extend({}, options);
         //Geometry了用的是toGeoJSON(),如果里面包含特殊图形(Circle等),就不能简单的用toGeoJSON代替了，否则反序列化回来就不是原来的图形了
@@ -561,7 +562,7 @@ class GeometryCollection extends Geometry {
 
     //----------Overrides editor methods in Geometry-----------------
 
-    startEdit(opts?: any): this {
+    startEdit(opts?: GeometryEditOptionsType): this {
         if (this.isEmpty()) {
             return this;
         }

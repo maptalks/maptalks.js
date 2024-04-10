@@ -132,6 +132,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     _computeGeodesicArea?(T: any): number;
     getRotateOffsetAngle?(): number;
     _computePrjExtent?(T: null | ProjectionType): Extent;
+    _updateCache?(): void;
 
     constructor(options: GeometryOptionsType) {
         const opts = extend({}, options);
@@ -1150,7 +1151,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return this;
     }
 
-    _rotatePrjCoordinates(coordinates: Coordinate): any {
+    _rotatePrjCoordinates(coordinates: Coordinate | Array<Coordinate>): Coordinate | Coordinate[] {
         if (!coordinates || this._angle === 0 || !this._pivot) {
             return coordinates;
         }
@@ -1161,7 +1162,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         let offsetAngle = 0;
         const isArray = Array.isArray(coordinates);
         const coord = isArray ? coordinates : [coordinates];
-        const rotatePrjCoordinates = [];
+        const rotatePrjCoordinates: Coordinate[] = [];
         let cx, cy;
         //sector is special
         if (this.getRotateOffsetAngle) {
