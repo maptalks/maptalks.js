@@ -52,7 +52,6 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     _onlyHasPoint: WithUndef<boolean>;
     _displayExtent: Extent;
     _drawnRes: number;
-    mapStateCache: MapStateCacheType;
 
     renderEnd: boolean;
     pageGeos: Geometries[];
@@ -732,17 +731,5 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 VectorLayer.registerRenderer<typeof VectorLayerRenderer>('canvas', VectorLayerRenderer);
 
 type GeoType = any;
-
-interface MapStateCacheType {
-    resolution: number;
-    pitch: number;
-    bearing: number;
-    glScale: number;
-    glRes: number;
-    _2DExtent: Extent;
-    glExtent: Extent;
-    containerExtent: Extent;
-    offset: number;
-}
 
 export default VectorLayerRenderer;

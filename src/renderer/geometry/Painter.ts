@@ -616,7 +616,7 @@ class Painter extends Class {
         if (!renderer || !renderer.context && !context) {
             return;
         }
-        const mapStateCache = renderer.mapStateCache || {};
+        const mapStateCache = renderer.mapStateCache || { offset: undefined };
         //reduce geos to paint when drawOnInteracting
         if (!this.geometry._isCheck) {
             if (extent && !extent.intersects(this.get2DExtent(renderer.resources, TEMP_PAINT_EXTENT))) {

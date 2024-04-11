@@ -2,6 +2,19 @@ import { isArrayHasData, pushIn } from '../../../core/util';
 import { type Geometry } from '../../../geometry';
 import CanvasRenderer from '../CanvasRenderer';
 import { Geometries } from '../../../geometry';
+import Extent from '../../../geo/Extent';
+
+interface MapStateCacheType {
+    resolution: number;
+    pitch: number;
+    bearing: number;
+    glScale: number;
+    glRes: number;
+    _2DExtent: Extent;
+    glExtent: Extent;
+    containerExtent: Extent;
+    offset: number;
+}
 
 /**
  * OverlayLayer 的父呈现器类，供 OverlayLayer 的子类继承。
@@ -19,6 +32,7 @@ class OverlayLayerRenderer extends CanvasRenderer {
     _resourceChecked: boolean;
     clearImageData?(): void;
     _lastGeosToDraw: Geometry[];
+    mapStateCache: MapStateCacheType;
 
     /**
      * @english
