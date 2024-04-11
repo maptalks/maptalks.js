@@ -2,6 +2,8 @@ import Class from "../core/Class";
 import { MixinConstructor } from "../core/Mixin";
 
 /**
+ * 一切可渲染的公共方法，例如：`Map`、'Layers'
+ * @english
  * Common methods for classes can be rendered, e.g. Map, Layers
  * @mixin Renderable
  * @protected
@@ -9,7 +11,7 @@ import { MixinConstructor } from "../core/Mixin";
 export default function <T extends MixinConstructor>(Base: T) {
     return class extends Base {
         /**
-         * 用给定的 name 注册一个renderer类
+         * 用给定的 name 注册一个 `renderer` 类
          * @english
          * Register a renderer class with the given name.
          * @param  name  - renderer's register key
@@ -26,7 +28,7 @@ export default function <T extends MixinConstructor>(Base: T) {
         }
 
         /**
-         * 返回用name注册的rendere 类
+         * 返回用name注册的 `renderer` 类
          * @english
          * Get the registered renderer class by the given name
          * @param  name  - renderer's register key

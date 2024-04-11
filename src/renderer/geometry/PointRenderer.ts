@@ -142,6 +142,7 @@ const PolyRenderer = {
 };
 
 declare module '../../geometry/LineString' {
+    // @ts-expect-error 确实需要重写父类的属性
     interface LineString {
         _getRenderPoints(placement?: string): [Point[], WithNull<Point[]>];
     }

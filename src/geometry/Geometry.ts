@@ -112,7 +112,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     public _parent: Geometry | GeometryCollection
     public _silence: boolean
     public _projCode: string
-    public _painter: CollectionPainter | Painter
+    public _painter: Painter
     public _maskPainter: CollectionPainter | Painter
     public _dirtyCoords: any
     public _pcenter: Coordinate
@@ -120,6 +120,18 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     public _infoWinOptions: InfoWindowOptionsType;
     public _minAlt: number
     public _maxAlt: number;
+    // 在 VectorLayerCanvasRenderer 附加的信息
+    public _isCheck?: boolean;
+    public _cPoint?: any;
+    public _inCurrentView?: boolean;
+    // 在 Marker 中附加的信息，Marker 和其子类都具有此属性
+    public isPoint?: boolean;
+    //
+    public _paintAsPath?: () => any;
+    public _getPaintParams?: (disableSimplify?: boolean) => any[];
+    public _simplified?: boolean;
+    // 本身应该存于 Path 类，但是由于渲染层需要大量的特殊熟悉判断，定义在这里回减少很多麻烦
+    public getHoles?(): Array<Array<Coordinate>>;
     __connectors: Array<Geometry>;
     getShell?(): Array<Coordinate>;
     getGeometries?(): Geometry[];
@@ -1437,7 +1449,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         delete this._painter;
     }
 
-    _paint(extent: Extent): void {
+    _paint(extent?: Extent): void {
         if (!this.symbolIsVisible()) {
             return;
         }

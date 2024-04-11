@@ -1099,7 +1099,6 @@ class MapCanvasRenderer extends MapRenderer {
         }
         this.map.fire('drawtopsend');
     }
-
 }
 
 Map.registerRenderer<typeof MapCanvasRenderer>('canvas', MapCanvasRenderer);

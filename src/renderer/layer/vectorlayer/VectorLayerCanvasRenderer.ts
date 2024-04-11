@@ -7,8 +7,9 @@ import PointExtent from '../../../geo/PointExtent';
 import * as vec3 from '../../../core/util/vec3';
 import CollisionIndex from '../../../core/CollisionIndex';
 import Canvas from '../../../core/Canvas';
-import type { Painter } from '../../geometry';
+import type { Painter, CollectionPainter } from '../../geometry';
 import { Point } from '../../../geo';
+import { Geometries } from '../../../geometry';
 import type { WithUndef } from '../../../types/typings';
 
 const TEMP_EXTENT = new PointExtent();
@@ -45,8 +46,8 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     _lastRenderTime: number;
     _lastCollisionTime: number;
     _imageData: ImageData;
-    _geosToDraw: GeoType[];
-    _lastGeosToDraw: any[];
+    _geosToDraw: Geometries[];
+    _lastGeosToDraw: Geometries[];
     _hasPoint: boolean;
     _onlyHasPoint: WithUndef<boolean>;
     _displayExtent: Extent;
@@ -54,10 +55,10 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     mapStateCache: MapStateCacheType;
 
     renderEnd: boolean;
-    pageGeos: GeoType[];
+    pageGeos: Geometries[];
     page: number;
     maxTolerance: number;
-    geoPainterList: Painter[];
+    geoPainterList: (Painter | CollectionPainter)[];
     snapshotCanvas: HTMLCanvasElement;
 
     setToRedraw(): this {
@@ -243,7 +244,6 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         }
     }
 
-
     /**
      * Show and render
      * @override
@@ -316,7 +316,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return this;
     }
 
-    checkGeo(geo: GeoType) {
+    checkGeo(geo: Geometries) {
         //点的话已经在批量处理里判断过了
         if (geo.isPoint && this._onlyHasPoint !== undefined) {
             if (geo._inCurrentView) {
@@ -472,7 +472,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             const geo = geos[i];
             // const type = geo.getType();
             if (geo.isPoint) {
-                let painter = geo._painter;
+                let painter = geo._painter as Painter;
                 if (!painter) {
                     painter = geo._getPainter();
                 }
@@ -538,7 +538,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return pts;
     }
 
-    _sortByDistanceToCamera(cameraPosition) {
+    _sortByDistanceToCamera(cameraPosition: Vector3) {
         if (!this.layer.options['sortByDistanceToCamera']) {
             return;
         }
@@ -588,14 +588,14 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return progressiveRender;
     }
 
-    getGeosForIdentify(): GeoType[] {
+    getGeosForIdentify(): Geometries[] {
         if (!this.isProgressiveRender()) {
             return this._geosToDraw || [];
         }
         return this.pageGeos || [];
     }
 
-    getGeoPainterList(): Painter[] {
+    getGeoPainterList(): (Painter | CollectionPainter)[] {
         if (!this.isProgressiveRender()) {
             const list = [];
             const geos = this._geosToDraw || [];
@@ -635,7 +635,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     }
 
-    _getCurrentNeedRenderGeos(): GeoType[] {
+    _getCurrentNeedRenderGeos(): Geometries[] {
         const geos = this.layer._geoList || [];
         if (!this.isProgressiveRender()) {
             return geos;

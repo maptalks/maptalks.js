@@ -8,9 +8,9 @@ import type Map from '../../map/Map';
 type handlerQueueFn = () => void
 
 /**
- * @classdesc
+ * 所有地图渲染器的基类。
+ * @english
  * Base class for all the map renderers.
- * @class
  * @abstract
  * @protected
  * @memberOf renderer

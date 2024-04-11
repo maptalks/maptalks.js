@@ -419,7 +419,6 @@ const polygonInclude = {
 
 declare module '../../geometry/Polygon' {
     interface Polygon {
-        _getPaintParams(disableSimplify?: boolean): any[];
         _paintOn(ctx: CanvasRenderingContext2D, points: Point[], lineOpacity?: number, fillOpacity?: number, dasharray?: number[]): WithNull<BBOX>;
     }
 }

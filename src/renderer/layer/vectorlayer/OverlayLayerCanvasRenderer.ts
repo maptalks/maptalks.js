@@ -1,5 +1,6 @@
 import { isArrayHasData, pushIn } from '../../../core/util';
 import CanvasRenderer from '../CanvasRenderer';
+import { Geometries } from '../../../geometry';
 
 /**
  * OverlayLayer 的父呈现器类，供 OverlayLayer 的子类继承。
@@ -13,7 +14,7 @@ import CanvasRenderer from '../CanvasRenderer';
  * @extends renderer.CanvasRenderer
  */
 class OverlayLayerRenderer extends CanvasRenderer {
-    _geosToCheck: any[];
+    _geosToCheck: Geometries[];
     _resourceChecked: boolean;
 
     /**
@@ -63,7 +64,7 @@ class OverlayLayerRenderer extends CanvasRenderer {
         return super.render.apply(this, args);
     }
 
-    _addGeoToCheckRes(res: any | any[]) {
+    _addGeoToCheckRes(res: Geometries | Geometries[]) {
         if (!res) {
             return;
         }
@@ -76,7 +77,7 @@ class OverlayLayerRenderer extends CanvasRenderer {
         pushIn<any>(this._geosToCheck, res);
     }
 
-    onGeometryAdd(geometries: any | any[]) {
+    onGeometryAdd(geometries: Geometries | Geometries[]) {
         this._addGeoToCheckRes(geometries);
         redraw(this);
     }
@@ -85,7 +86,7 @@ class OverlayLayerRenderer extends CanvasRenderer {
         redraw(this);
     }
 
-    onGeometrySymbolChange(e: { target: any; }) {
+    onGeometrySymbolChange(e: { target: Geometries; }) {
         this._addGeoToCheckRes(e.target);
         redraw(this);
     }
@@ -110,8 +111,7 @@ class OverlayLayerRenderer extends CanvasRenderer {
         redraw(this);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    onGeometryPropertiesChange(params: any) {
+    onGeometryPropertiesChange(_: any) {
         redraw(this);
     }
 }

@@ -8,11 +8,10 @@ const options = {
     'maxCacheSize': 1024
 };
 
-
 const DEFAULT_TILESIZE = new Size(256, 256);
 const EVENTS = 'show hide remove setzindex forcereloadstart';
 
-function checkLayers(tileLayers: any[] | any): any[] {
+function checkLayers(tileLayers: TileLayer[] | TileLayer): TileLayer[] {
     if (!Array.isArray(tileLayers)) {
         tileLayers = [tileLayers];
     }

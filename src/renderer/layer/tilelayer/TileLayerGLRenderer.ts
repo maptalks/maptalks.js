@@ -175,7 +175,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
             return true;
         }
         const map = this.getMap();
-        return map && (map.getPitch() || map.getBearing()) || this.layer && !!this.layer.options['fragmentShader'];
+        return <boolean>(map && (map.getPitch() || map.getBearing()) || this.layer && !!this.layer.options['fragmentShader']);
     }
 
     deleteTile(tile: Tile) {
