@@ -724,7 +724,7 @@ const GLTFMixin = Base =>
 
                     delete this._skinMap[meshes[i].uuid];
                 }
-                meshes[i].disposeInstanceData();
+                meshes[i].disposeInstancedData();
                 meshes[i].dispose();
             }
         }

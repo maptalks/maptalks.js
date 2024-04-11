@@ -388,7 +388,7 @@ const GLTFMixin = Base =>
             this.scene.removeMesh(meshes);
             //geometry应该一直保留，在painter.delete中才删除
             for (let i = 0; i < meshes.length; i++) {
-                meshes[i].disposeInstanceData();
+                meshes[i].disposeInstancedData();
                 meshes[i].dispose();
             }
         }
