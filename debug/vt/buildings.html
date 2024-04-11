@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>pbr-buildings</title>
+
+  <link rel="stylesheet" href="/maptalks/dist/maptalks.css" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="screen.css" />
+  <!-- 需要用 maptalks worker 分支下的版本 -->
+  <script src="/maptalks/dist/maptalks.js"></script>
+  <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks@next/dist/maptalks.min.js"></script> -->
+  <script src="/maptalksgl/dist/maptalksgl.js"></script>
+  <script src="buildings.js"></script>
+  <script src="../../packages/vt/dist/maptalks.vt.js"></script>
+  <!-- <script src="../../packages/vt.basic/dist/maptalks.vt.basic.js"></script> -->
+  <script src="js/dat.gui.min.js"></script>
+</head>
+
+<body>
+
+  <div id="main">
+    <div id="map2" style="width:100%;height:1000px;background-color:#fff;"></div>
+    <!-- <canvas id="shadow" width=512 height=512 style="float:left;border:1px red solid"></canvas>
+    <canvas id="shadow2" width=512 height=512 style="float:left;border:1px red solid"></canvas> -->
+
+  </div>
+
+  <script>
+    var osm = new maptalks.TileLayer('base', {
+      maxAvailableZoom : 20,
+      urlTemplate: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+      subdomains: ['a','b','c','d'],
+      attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
+    });
+    var accessToken = 'pk.eyJ1IjoiemhlbmZ1IiwiYSI6ImNqamY2OXF0azA1M3kzdnF0enRoZm83aXQifQ.WpJebxPjCnmszaxHDRBrtw';
+    var mapboxURL = 'https://api.mapbox.com/v4/mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf?access_token=' + accessToken
+    var map = new maptalks.Map('map2', {
+      center: [13.416935229170008, 52.529564137540376],
+      zoom: 11,
+      // pitch : 45,
+      fog: false,
+      centerCross: true,
+      // maxPitch: 60,
+      // baseLayer: new maptalks.MapboxVectorTileLayer('vt', {
+      //   urlTemplate: mapboxURL,
+      //   background: [0.925,0.878,0.792,1],
+      //   style: 'mbtiles.json',
+      //   // debug: true
+      // }),
+      "center":[13.414627196474385,52.52909578112681],"zoom":16.309955844160633,"pitch":52.20000000000007,"bearing":0,
+      "center":[13.418531244478004,52.533396361654326],"zoom":18.582413946875466,"pitch":52.20000000000007,"bearing":0,
+      "center":[13.412189760922047,52.52716426491233],"zoom":19.136793519083586,"pitch":44.80000000000011,"bearing":116,
+
+      //调试taa
+      "center":[13.412178379303782,52.52716258972154],"zoom":19.136793519083586,"pitch":74.40000000000002,"bearing":-19.600000000000136,
+
+      //调试ground的ssr
+      "center":[13.411315572018452,52.52714542761575],"zoom":19.136793519083586,"pitch":30.400000000000034,"bearing":134,
+
+      "center":[13.411526530727542,52.527111139790435],"zoom":19.136793519083586,"pitch":71.20000000000005,"bearing":129.19999999999936,
+
+      "center":[13.411526530727542,52.527111139790435],"zoom":19.136793519083586,"pitch":80,"bearing":-80.80000000000064,
+
+      "center":[13.409510610737243,52.53283290153101],"zoom":19.136793519083586,"pitch":0,"bearing":121.99999999999828,
+      //纽约
+      // "center":[-74.00621804388925,40.70693481549321],"zoom":17.45624930433703,"pitch":0,"bearing":-15.59999999999991,
+
+      // "center":[13.420845330196812,52.53554217055179],"zoom":19,"pitch":33.00000000000021,"bearing":145.20000000000005,
+
+      // //阴影有裂缝
+      // "center":[13.414905354183702,52.52913153292073],"zoom":20,"pitch":33.00000000000021,"bearing":145.20000000000005,
+
+      "center":[13.409510610737243,52.53283290153101],"zoom":19.136793519083586,"pitch":77.20000000000007,"bearing":-47.20000000000175,
+
+      "center":[13.409510610737243,52.53283290153101],"zoom":19.136793519083586,"pitch":77.60000000000008,"bearing":26.599999999998204,
+      pitch: 0
+
+      // bearing : -42,
+      // baseLayer: osm
+    });
+
+    map.on('hdrerror', e => { console.log('hdr error'); });
+
+    var mapPostProcessConfig = {
+      enable: false,
+      filmicGrain: {
+        enable: true,
+        factor: 0.15
+      },
+      vignette: {
+        enable: true
+      },
+      colorLUT: {
+        enable: true,
+        // lut: './lookup_miss_etikate.png'
+        lut: './lookup.png'
+      }
+    };
+    // map.setPostProcessConfig(mapPostProcessConfig);
+
+    var id = 0;
+    var data = buildings.reduce(function (v, b) {
+      for (var i = 0, l = b.features.length; i < l; i++) {
+        b.features[i].id = id++;
+        v.features.push(b.features[i]);
+      }
+      return v;
+    }, {
+      "type" : "FeatureCollection",
+      "features" : []
+    })
+
+    // console.log(data.features.length);
+
+    var lights = {
+      ambient: {
+        resource: {
+          url: './resources/venice_sunset_2k.hdr',
+          // sh: [[0.31809728408416826,0.31401226619030004,0.3134470104662589],[0.008704758145334807,0.011318408263042232,0.013078388966477488],[-0.0022599058076237222,0.002440201090172905,0.008080601204569696],[-0.006376439243529652,-0.008455040017515722,-0.010142167789138118],[-0.0010644849511110555,0.00010224644653697268,0.00048268834013221514],[-0.0021339277623529307,-0.0012152300796112823,-0.001073690833185554],[-0.0035723423448581156,-0.0030887617072984245,-0.003414213495055618],[-0.014779247139674757,-0.016330747724572967,-0.021623674274630286],[-0.010174472132809637,-0.009184355154793666,-0.006837585033142022]]
+          //echarts-gl上的例子
+          // url: './resources/pisa.hdr',
+          // sh: [
+          //   [0.8216, 0.6652, 0.5816],
+          //   [0.0265, -0.0286, -0.0697],
+          //   [-0.0170, -0.0221, 0.0129],
+          //   [-0.0024, 0.0028, 0.0057],
+          //   [-0.0017, 0.0098, 0.0140],
+          //   [-0.0026, -0.0008, 0.0014],
+          //   [0.0197, -0.0080, -0.0268],
+          //   [0.0269, 0.0155, 0.0024],
+          //   [0.0294, 0.0102, -0.0056]
+          // ]
+          // exposure: 1.5
+        },
+        // color: [0.05, 0.05, 0.05],
+        exposure: 2.5,
+        orientation: 0
+      },
+      directional: {
+        color : [0.1, 0.1, 0.1],
+        direction : [1, 0, -1],
+        // intensity: 80000
+      }
+    };
+
+    const ambientResource = lights.ambient.resource;
+    map.setLights(lights);
+
+    function updateLight() {
+      map.setLights({
+        ambient: {
+        resource: {
+          ////echarts-gl上的例子
+          url: './resources/pisa.hdr',
+          // sh: [
+          //   [0.8216, 0.6652, 0.5816],
+          //   [0.0265, -0.0286, -0.0697],
+          //   [-0.0170, -0.0221, 0.0129],
+          //   [-0.0024, 0.0028, 0.0057],
+          //   [-0.0017, 0.0098, 0.0140],
+          //   [-0.0026, -0.0008, 0.0014],
+          //   [0.0197, -0.0080, -0.0268],
+          //   [0.0269, 0.0155, 0.0024],
+          //   [0.0294, 0.0102, -0.0056]
+          // ]
+        },
+        // color: [0.05, 0.05, 0.05],
+        exposure: 1.5
+      },
+      directional: {
+        color : [0.3, 0.3, 0.3],
+        direction : [1, 0, -1],
+        // intensity: 80000
+      }
+      });
+    }
+
+    var renderPlugin = {
+        type : 'lit',
+        dataConfig : {
+          type : '3d-extrusion',
+          altitudeProperty : 'height',
+          minHeightProperty: 'min_height',
+          altitudeScale : 1,
+          defaultAltitude : 20,
+          top: true,
+          topThickness: 2,
+          side: false
+          // normal : true,
+          // uv : true,
+          // uvScale : [1, 1],
+          // tangent: true
+          // shadowVolume : true,
+          // shadowDir : [-1, -1, 0]
+        },
+        sceneConfig : {
+          // animation: 'easeOutBounce',
+          // animationDuration:3000
+
+        }
+      };
+      var renderPlugin2 = {
+        type : 'lit',
+        dataConfig : {
+          type : '3d-extrusion',
+          altitudeProperty : 'height',
+          altitudeScale : 1,
+          defaultAltitude : 20,
+          top: false,
+          topThickness: 2,
+          side: true
+          // normal : true,
+          // uv : true,
+          // uvScale : [1, 1],
+          // tangent: true
+        },
+        sceneConfig : {
+          // animation : 'easeOutBounce',
+        }
+      };
+      // #E9E7EC
+    var litMaterial = {
+      // 'baseColor': [233, 231, 236],
+      // 'baseColorFactor': [233 / 255, 231 / 255, 236 / 255, 1],
+      // 'metallicFactor' : 0,
+      // 'roughnessFactor' : 0.7,
+      // 'reflectance': 0.5,
+      // 'clearCoat': 0,
+      // // 'clearCoatNormalTexture': CLEAR_COAT_NORMAL_TEXTURE,
+      // 'clearCoatRoughness': 0.5,
+      // 'clearCoatIorChange': false,
+      // 'normalTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg',
+      // 'metallicRoughnessTexture': ROUGHNESS_METALLIC_TEXTURE,
+      // 'uBaseColorTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/not-power-of-2.jpg',
+      // 'anisotropy': 0,
+      // 'uvScale': [1, 1],  //纹理坐标的缩放比例
+      // 'uvScaleFactor': 1,
+      // 'uvOffset': [0, 0],      //纹理坐标的偏移量
+      // 'uBaseColorTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg',
+      // 'baseColorTexture': './resources/UV_Grid_Sm.jpg',
+      'baseColorFactor': [1, 1, 1, 1],
+      'roughnessFactor': 0.,
+      'metalnessFactor': 1,
+      'outputSRGB': 0,
+      'hsv': [0, 0, 0],
+      'contrast': 1.5
+    };
+
+    var style =  {
+      style: [
+        {
+          filter : true,
+          renderPlugin,
+          symbol: {
+            bloom: false,
+            // ssr: true,
+            material: litMaterial,
+            polygonOpacity: 1,
+            polygonFill: {
+              property : 'levels',
+              default: '#fff',
+              type: 'categorical',
+              stops : [
+                [6, '#f00'],
+                [5, '#313695'],
+                [3, '#4575b4'],
+                [1, '#74add1']
+                // [5, '#6358F1'],
+                // [3, '#00f'],
+                // [1, '#0f0']
+              ]
+            }
+          }
+        },
+        {
+          filter : true,
+          renderPlugin: renderPlugin2,
+          symbol: {
+            // ssr: true,
+            material: litMaterial,
+            polygonOpacity: 1,
+            polygonFill: '#fff'
+          }
+        },
+        // {
+        //   filter: true,
+        //   renderPlugin: {
+        //     type : 'text',
+        //     dataConfig : {
+        //       type : 'point',
+        //       altitudeProperty : 'height',
+        //       altitudeScale : 1,
+        //       defaultAltitude : 0,
+        //     }
+        //   },
+        //   symbol: {
+        //       textFaceName : 'Arial',
+        //       textWeight : 'medium',
+        //       textName : '{height}',
+        //       textSize : 30,
+        //       textFill : '#000',
+        //       textHaloRadius : 1,
+        //       textHaloFill : '#fff',
+        //       textHaloBlur : 0.1,
+        //       textPitchAlignment : 'map',
+        //       // textRotationAlignment : 'map',
+        //       textPerspectiveRatio : 1,
+        //       // textPlacement : 'line'
+        //   }
+        // }
+      ],
+      featureStyle: [
+        {
+          id: [514],
+          style: [
+            {
+              renderPlugin: {
+                type : 'lit',
+                dataConfig : {
+                  type : '3d-extrusion',
+                  altitudeProperty : 'height',
+                  minHeightProperty: 'min_height',
+                  altitudeScale : 1,
+                  defaultAltitude : 30,
+                  top: true,
+                  topThickness: 2,
+                  side: true
+                }
+              },
+              symbol: {
+                material: litMaterial,
+                polygonOpacity: 1,
+                polygonFill: '#ff0'
+              }
+            }
+          ]
+        },
+        {
+          id: 1310,
+          // renderPlugin: renderPlugin,
+          // symbol: {
+          //   material: litMaterial,
+          //   polygonOpacity: 1,
+          //   polygonFill: '#f00'
+          // }
+        },
+        // {
+        //   id: 34,
+        //   symbol: {
+        //     visible: false
+        //   }
+        // },
+        // {
+        //   id: 40,
+        //   symbol: {
+        //     visible: false
+        //   }
+        // },
+        // {
+        //   id: 41,
+        //   symbol: {
+        //     visible: false
+        //   }
+        // },
+        // {
+        //   id: 442,
+        //   symbol: {
+        //     visible: false
+        //   }
+        // }
+      ]
+    };
+    //'#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026'
+    // test tile clipping mask
+    var layer = new maptalks.GeoJSONVectorTileLayer('polygon1', {
+      debug: true,
+      topOmbbUV: true,
+      // debug: true,
+      // canvas: debugCanvas,
+      data: data,
+      // debugCollision: true,
+      hitDetect : false,
+      antialias: false,
+      pickingPoint: true,
+      cascadeTiles: true,
+      // debugTile: {
+      //   x: 140835,
+      //   y: 85955,
+      //   z: 19
+      // }
+    });
+    layer.setStyle(style);
+
+    var extent = map.getExtent();
+    var floorData = {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          geometry: {
+            type: "Polygon",
+            coordinates: [
+              extent.toArray().map(c => [c.x, c.y])
+            ]
+          }
+        }
+      ]
+    };
+
+    // var layer1 = new maptalks.GeoJSONVectorTileLayer('floor', {
+    //   // canvas: debugCanvas,
+    //   data: floorData
+    // });
+    // // style.style[0].symbol.ssr = true;
+    // style.style[0].renderPlugin.dataConfig.defaultAltitude = 0;
+    // layer1.setStyle([style.style[0]]);
+
+    // style.style[0].filter = [
+    //   "==",
+    //   "$layer",
+    //   "building"
+    // ];
+
+    // var layer = new maptalks.MapboxVectorTileLayer('buildings', {
+    //   urlTemplate: mapboxURL,
+    //   style,
+    //   cascadeTiles: true
+    // })
+
+    // map.on('click', function (e) {
+    //   alert(JSON.stringify(layer.identify(e.coordinate)));
+    // });
+    var sceneConfig = {
+      environment: {
+        enable: true,
+        mode: 1,
+        level: 0
+      },
+      shadow : {
+        type : 'esm',
+        // type : 'stencil',
+        enable : true,
+        quality : 'high',
+        opacity : 1,
+        color : [0, 0, 0],
+        blurOffset : 1,
+        lightDirection : lights.directional.direction
+        // debug : ['shadow', 'shadow2']
+      },
+      ground: {
+        enable: true,
+        renderPlugin: {
+          type: 'lit'
+        },
+        symbol: {
+          ssr: true,
+          material: litMaterial,
+          polygonFill: [1, 1, 1, 1],
+          polygonOpacity: 1
+        }
+      },
+      postProcess: {
+        enable: true,
+        antialias: {
+          enable: true,
+          taa: true
+        },
+        ssr: {
+          enable: true
+        },
+        ssao: {
+          enable: true,
+          bias: 0.03,
+          radius: 0.08,
+          intensity: 1.5
+        },
+        sharpen: {
+          enable: false,
+          factor: 0.2
+        },
+        bloom: {
+          enable: true,
+        },
+        outline: {
+          enable: true
+        }
+      }
+    };
+    // layer1.addTo(map);
+    // map.addLayer(layer);
+    var groupLayer = new maptalks.GroupGLLayer('group', [layer/*, layer1*/], { jitterRatio: 0.2, antialias: true, sceneConfig }).addTo(map);
+
+    function updateCubeLight() {
+      lights.ambient.resource.url = './resources/venice_sunset_2k.hdr';
+      map.setLights(lights);
+    }
+
+    function highlight() {
+      layer.outlineBatch(0);
+    }
+
+    map.on('click', e => {
+      var result = layer.identify(e.coordinate);
+      if (result.length) {
+        console.log(result[0]);
+        layer.outline(result[0].plugin, [result[0].featureId]);
+      }
+    });
+
+    function cancelHighlight() {
+      layer.cancelOutline();
+    }
+
+    function turnOnTaa() {
+      sceneConfig.postProcess.taa = true;
+      groupLayer.setSceneConfig(sceneConfig);
+    }
+
+    function addLayer() {
+      groupLayer.addTo(map);
+    }
+
+    function update() {
+      litMaterial.uAlbedoPBR = [1, 0, 0, 1];
+      layer.updateSymbol(0, style.style[0].symbol);
+    }
+
+    function updatePolygonFill() {
+      layer.updateSymbol(0, { polygonFill: '#fff' });
+    }
+
+    function updatePolygonOpacity() {
+      layer.updateSymbol(0, { polygonOpacity: 1 });
+    }
+
+    function updateTexture() {
+      litMaterial.baseColorTexture = 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg';
+      layer.updateSymbol(0, style.style[0].symbol);
+    }
+
+    function hide() {
+      layer.updateSymbol(0, { visible: false });
+      layer.updateSymbol(1, { visible: false });
+    }
+
+    var bearing = 0;
+    var paused = false;
+    function changeView() {
+      map.setBearing(bearing++);
+      if (!paused) {
+        requestAnimationFrame(changeView);
+      }
+    }
+
+    // changeView();
+
+    map.on('mousemove', e => {
+      // console.log(JSON.stringify(layer.identify(e.coordinate)));
+
+    });
+
+    initGUI();
+
+    function updateAmbientLight() {
+      if (lights.ambient.resource) {
+        lights.ambient.resource = null;
+        map.setLights(lights);
+      } else {
+        lights.ambient.resource = ambientResource;
+        map.setLights(lights);
+      }
+
+    }
+
+    function initGUI() {
+      var gui = new dat.GUI( { width: 250 } );
+      var dirConfig = lights.directional.direction;
+      var direction = {
+        x: dirConfig[0],
+        y: dirConfig[1],
+        z: dirConfig[2],
+      };
+      var folder = gui.addFolder('direction');
+      folder.open();
+      var xCtrl = folder.add(direction, 'x', -1, 1, 0.1);
+      var yCtrl = folder.add(direction, 'y', -1, 1, 0.1);
+      var zCtrl = folder.add(direction, 'z', -1, 1, 0.1);
+
+      xCtrl.onChange(function () {
+        dirConfig[0] = direction.x;
+        map.setLights(lights);
+        groupLayer.setSceneConfig(sceneConfig);
+      });
+      yCtrl.onChange(function () {
+        dirConfig[1] = direction.y;
+        map.setLights(lights);
+        groupLayer.setSceneConfig(sceneConfig);
+      });
+      zCtrl.onChange(function () {
+        dirConfig[2] = direction.z;
+        map.setLights(lights);
+        groupLayer.setSceneConfig(sceneConfig);
+      });
+
+
+      var ambient = {
+        r: lights.ambient.orientation || 0,
+        mode: lights.ambient.mode || 1,
+        level: lights.ambient.level || 0,
+        brightness: lights.ambient.brightness || 0
+      };
+      var folder = gui.addFolder('ambient');
+      folder.open();
+      var rCtrl = folder.add(ambient, 'r', 0, 360, 0.1);
+      rCtrl.onChange(function () {
+        lights.ambient.orientation = ambient.r;
+        map.setLights(lights);
+        groupLayer.setSceneConfig(sceneConfig);
+      });
+      var mCtrl = folder.add(ambient, 'mode', 0, 1, 1);
+      mCtrl.onChange(function () {
+        sceneConfig.environment.mode = ambient.mode;
+        groupLayer.setSceneConfig(sceneConfig);
+      });
+      var lCtrl = folder.add(ambient, 'level', 0, 3, 1);
+      lCtrl.onChange(function () {
+        sceneConfig.environment.level = ambient.level;
+
+        groupLayer.setSceneConfig(sceneConfig);
+      });
+      var brightnessCtrl = folder.add(ambient, 'brightness', -1, 1, 0.001);
+      brightnessCtrl.onChange(function () {
+        sceneConfig.environment.brightness = ambient.brightness;
+
+        groupLayer.setSceneConfig(sceneConfig);
+      });
+
+
+      var ssaoConfig = sceneConfig.postProcess.ssao;
+      var ssao = gui.addFolder('ssao');
+      ssao.open();
+      var biasCtrl = ssao.add(ssaoConfig, 'bias', 0.001, 0.2, 0.0001);
+      var radiusCtrl = ssao.add(ssaoConfig, 'radius', 0.01, 0.2, 0.001);
+      var intensityCtrl = ssao.add(ssaoConfig, 'intensity', 0.01, 2, 0.01);
+      function onChange() {
+        groupLayer.setSceneConfig(sceneConfig);
+      }
+      biasCtrl.onChange(onChange);
+      radiusCtrl.onChange(onChange);
+      intensityCtrl.onChange(onChange);
+
+      var sharpConfig = sceneConfig.postProcess.sharpen;
+      var sharp = gui.addFolder('sharpen');
+      sharp.open();
+      var sharpCtrl = sharp.add(sharpConfig, 'factor', 0, 1, 0.1);
+      sharpCtrl.onChange(onChange);
+
+      var scaleConfig = renderPlugin.dataConfig;
+      var scale = gui.addFolder('altitudeScale');
+      scale.open();
+      var scaleCtrl = scale.add(scaleConfig, 'altitudeScale', 0.1, 5, 0.1);
+      var altCtrl = scale.add(scaleConfig, 'defaultAltitude', 1, 50, 1);
+      scaleCtrl.onChange(() => {
+        renderPlugin2.dataConfig.altitudeScale = scaleConfig.altitudeScale;
+        layer.updateDataConfig(0, { altitudeScale: scaleConfig.altitudeScale });
+        layer.updateDataConfig(1, { altitudeScale: scaleConfig.altitudeScale });
+      });
+      altCtrl.onChange(() => {
+        renderPlugin2.dataConfig.defaultAltitude = scaleConfig.defaultAltitude;
+        layer.updateDataConfig(0, { defaultAltitude: scaleConfig.defaultAltitude });
+        layer.updateDataConfig(1, { defaultAltitude: scaleConfig.defaultAltitude });
+      });
+
+      var hsvValue = { 色相: litMaterial.hsv[0], 饱和度: litMaterial.hsv[1], 亮度: litMaterial.hsv[2], 对比度: litMaterial.contrast };
+      var hsvOnChange = function () {
+        layer.updateSymbol(0, {
+          material: {
+            "hsv": [hsvValue['色相'], hsvValue['饱和度'], hsvValue['亮度']]
+          }
+        });
+        layer.updateSymbol(1, {
+          material: {
+            "hsv": [hsvValue['色相'], hsvValue['饱和度'], hsvValue['亮度']]
+          }
+        });
+      };
+      var hsv = gui.addFolder('色相/饱和度');
+      hsv.open();
+      var hCtrl = hsv.add(hsvValue, '色相', -1, 1, 0.1);
+      var sCtrl = hsv.add(hsvValue, '饱和度', -1, 1, 0.1);
+      var vCtrl = hsv.add(hsvValue, '亮度', -1, 1, 0.1);
+      var cCtrl = hsv.add(hsvValue, '对比度', 0.5, 5, 0.01);
+      hCtrl.onChange(hsvOnChange);
+      sCtrl.onChange(hsvOnChange);
+      vCtrl.onChange(hsvOnChange);
+      cCtrl.onChange(function () {
+        layer.updateSymbol(0, {
+          material: {
+            "contrast": hsvValue['对比度']
+          }
+        });
+        layer.updateSymbol(1, {
+          material: {
+            "contrast": hsvValue['对比度']
+          }
+        });
+      });
+
+      var hdrHsvValue = { 环境光色相: 0, 环境光饱和度: 0, 环境光亮度: 0 };
+      var hdrHsvOnChange = function () {
+        lights.ambient["hsv"] = [hdrHsvValue['环境光色相'], hdrHsvValue['环境光饱和度'], hdrHsvValue['环境光亮度']];
+        map.setLights(lights);
+      };
+      var hdrHsv = gui.addFolder('环境光色相/饱和度');
+      hdrHsv.open();
+      var hdrHCtrl = hdrHsv.add(hdrHsvValue, '环境光色相', -1, 1, 0.1);
+      var hdrSCtrl = hdrHsv.add(hdrHsvValue, '环境光饱和度', -1, 1, 0.1);
+      var hdrVCtrl = hdrHsv.add(hdrHsvValue, '环境光亮度', -1, 1, 0.1);
+      hdrHCtrl.onChange(hdrHsvOnChange);
+      hdrSCtrl.onChange(hdrHsvOnChange);
+      hdrVCtrl.onChange(hdrHsvOnChange);
+    }
+
+    function updateMaterial(key, value) {
+      var material = {};
+      material[key] = value;
+      if (key === 'baseColor') {
+        material['baseColorFactor'] = [material.baseColor[0] / 255, material.baseColor[1] / 255, material.baseColor[2] / 255, 1];
+      } else if (key === 'subsurface') {
+        material['subsurfaceColor'] = [material.subsurface[0] / 255, material.subsurface[1] / 255, material.subsurface[2] / 255];
+      }
+      layer.updateSymbol(0, {
+        material
+      });
+    }
+
+  </script>
+</body>
+
+</html>

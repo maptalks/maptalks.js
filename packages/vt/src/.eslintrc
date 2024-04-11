@@ -1,0 +1,19 @@
+{
+  "root": true,
+  "env": {
+    "es6": true,
+    "browser": true,
+    "node": true
+  },
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "sourceType": "module"
+  },
+  "globals": {
+    "importScripts" : true
+  },
+  "rules": {
+    "object-curly-spacing": [2, "always"],
+    "key-spacing": 2
+  }
+}

@@ -1,0 +1,14 @@
+dist
+node_modules
+npm-debug.log
+yarn-*.log
+coverage
+flow-coverage
+.DS_Store
+src-old
+test-old
+debug
+vt.clay.js
+web.config
+build/layer.js
+build/worker.js

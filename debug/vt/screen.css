@@ -1,0 +1,21 @@
+#main {
+	/* display: flex; */
+}
+
+#map {
+	width: 1000px;
+	height: 800px;
+	border: 1px solid #aaa;
+}
+
+#layer {
+	width: 400px;
+	height: 300px;
+	border: 1px solid #cac;
+}
+
+#debug {
+	width: 400px;
+	height: 300px;
+	border: 1px solid #deb;
+}

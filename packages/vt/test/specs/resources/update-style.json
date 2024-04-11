@@ -1,0 +1,20 @@
+{
+    "style": [{
+        "name": "lineStyle",
+        "filter": {
+            "title": "所有数据",
+            "value": ["==", "type", 1]
+        },
+        "renderPlugin": {
+            "type": "line",
+            "dataConfig": {
+                "type": "line"
+            }
+        },
+        "symbol": {
+            "lineColor": "#f00",
+            "lineWidth": 8,
+            "lineOpacity": 1
+        }
+    }]
+}
