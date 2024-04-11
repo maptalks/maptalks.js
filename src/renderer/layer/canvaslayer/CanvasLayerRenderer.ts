@@ -5,6 +5,7 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
     public buffer: HTMLCanvasElement;
     _drawContext: any[];
     _predrawed: boolean;
+    _shouldClear: boolean;
 
     getPrepareParams() {
         return [];

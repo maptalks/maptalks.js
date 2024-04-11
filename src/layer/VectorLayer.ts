@@ -2,14 +2,15 @@ import Browser from '../core/Browser';
 import { isNil, isNumber } from '../core/util';
 import Extent from '../geo/Extent';
 import Geometry from '../geometry/Geometry';
-import OverlayLayer from './OverlayLayer';
+import OverlayLayer, { LayerIdentifyOptionsType, OverlayLayerOptionsType } from './OverlayLayer';
 import Painter from '../renderer/geometry/Painter';
 import CollectionPainter from '../renderer/geometry/CollectionPainter';
 import Coordinate from '../geo/Coordinate';
 import Point from '../geo/Point';
 import { LineString, Curve } from '../geometry';
 import PointExtent from '../geo/PointExtent';
-import { LayerOptions } from './Layer'
+import { VectorLayerCanvasRenderer } from '../renderer';
+import { LayerJSONType } from './Layer';
 
 type VectorLayerToJSONOptions = {
     geometries: any,
@@ -46,7 +47,7 @@ const TEMP_EXTENT = new PointExtent();
  * @memberOf VectorLayer
  * @instance
  */
-const options:VectorLayerOptions = {
+const options: VectorLayerOptionsType = {
     'debug': false,
     'enableSimplify': true,
     'defaultIconSize': [20, 20],
@@ -80,6 +81,7 @@ const options:VectorLayerOptions = {
  */
 class VectorLayer extends OverlayLayer {
 
+    options: VectorLayerOptionsType;
     /**
      * @param id                    - layer's id
      * @param geometries=null       - geometries to add
@@ -87,11 +89,11 @@ class VectorLayer extends OverlayLayer {
      * @param options.style=null    - vectorlayer's style
      * @param options.*=null        - options defined in [VectorLayer]{@link VectorLayer#options}
      */
-    constructor(id:string, geometries?:any, options?:VectorLayerOptions&LayerOptions) {
+    constructor(id: string, geometries: VectorLayerOptionsType | Array<Geometry>, options?: VectorLayerOptionsType) {
         super(id, geometries, options);
     }
 
-    onConfig(conf) {
+    onConfig(conf: Record<string, any>) {
         super.onConfig(conf);
         if (conf['enableAltitude'] || conf['drawAltitude'] || conf['altitudeProperty']) {
             const renderer = this.getRenderer();
@@ -112,7 +114,8 @@ class VectorLayer extends OverlayLayer {
      * @param  {Object} [options.count=null]  - result count
      * @return {Geometry[]} geometries identified
      */
-    identify(coordinate:any, options = {}):Geometry[] {
+    identify(coordinate: Coordinate, options?: LayerIdentifyOptionsType): Geometry[] {
+        options = options || {};
         const renderer = this.getRenderer();
         if (!(coordinate instanceof Coordinate)) {
             coordinate = new Coordinate(coordinate);
@@ -136,7 +139,8 @@ class VectorLayer extends OverlayLayer {
      * @param  {Object} [options.count=null]  - result count
      * @return {Geometry[]} geometries identified
      */
-    identifyAtPoint(point, options = {}) {
+    identifyAtPoint(point: Point, options?: LayerIdentifyOptionsType) {
+        options = options || {};
         const renderer = this.getRenderer();
         if (!(point instanceof Point)) {
             point = new Point(point);
@@ -148,12 +152,12 @@ class VectorLayer extends OverlayLayer {
         return this._hitGeos(this._geoList, point, options);
     }
 
-    _hitGeos(geometries, cp, options:any) {
+    _hitGeos(geometries: Array<Geometry>, cp: Point, options: LayerIdentifyOptionsType) {
         if (!geometries || !geometries.length) {
             return [];
         }
         const filter = options['filter'],
-            hits = [];
+            hits: Geometry[] = [];
         const tolerance = options['tolerance'];
         const map = this.getMap();
         const renderer = this.getRenderer();
@@ -174,7 +178,7 @@ class VectorLayer extends OverlayLayer {
             }
 
             const r = map.getDevicePixelRatio();
-            imageData.r = r;
+            (imageData as any).r = r;
             let hit = false;
             const cpx = cp.x - hitTolerance;
             const cpy = cp.y - hitTolerance;
@@ -258,8 +262,8 @@ class VectorLayer extends OverlayLayer {
      * @param  {Extent} [options.clipExtent=null] - if set, only the geometries intersectes with the extent will be exported.
      * @return layer's JSON
      */
-    
-     toJSON(options:VectorLayerToJSONOptions):any {
+
+    toJSON(options?: VectorLayerToJSONOptions): LayerJSONType {
         if (!options) {
             options = {
                 'clipExtent': null,
@@ -296,6 +300,10 @@ class VectorLayer extends OverlayLayer {
         return profile;
     }
 
+    getRenderer(): VectorLayerCanvasRenderer {
+        return super.getRenderer() as VectorLayerCanvasRenderer;
+    }
+
     /**
      * 通过 json 生成 VectorLayer
      * 
@@ -307,7 +315,7 @@ class VectorLayer extends OverlayLayer {
      * @private
      * @function
      */
-    static fromJSON(json) {
+    static fromJSON(json: Record<string, any>): VectorLayer {
         if (!json || json['type'] !== 'VectorLayer') {
             return null;
         }
@@ -341,14 +349,14 @@ VectorLayer.registerJSONType('VectorLayer');
 
 export default VectorLayer;
 
-export type VectorLayerOptions = {
+export type VectorLayerOptionsType = OverlayLayerOptionsType & {
     debug?: boolean,
     enableSimplify?: boolean,
     cursor?: string,
     geometryEvents?: boolean
     defaultIconSize?: [number, number],
     cacheVectorOnCanvas?: boolean,
-    cacheSvgOnCanvas?: any,
+    cacheSvgOnCanvas?: boolean,
     enableAltitude?: boolean,
     altitudeProperty?: string,
     drawAltitude?: boolean,
@@ -359,7 +367,7 @@ export type VectorLayerOptions = {
     collision?: boolean,
     collisionBufferSize?: number,
     collisionDelay?: number,
-    collisionScope?: string,
+    collisionScope?: 'layer' | 'map',
     progressiveRender?: boolean,
     progressiveRenderCount?: number,
     progressiveRenderDebug?: boolean

@@ -5,6 +5,8 @@ import Point from '../../../geo/Point';
 import Extent from '../../../geo/Extent';
 import Transformation from '../../../geo/transformation/Transformation';
 import TileSystem from './TileSystem';
+import { type Map } from '../../../map';
+import { type Size } from '../../../geo';
 
 /**
  * Tile config for tile layers, an utilities class for tile layers to render tiles
@@ -13,23 +15,23 @@ import TileSystem from './TileSystem';
  * @private
  */
 class TileConfig {
-    map: any;
-    tileSize: any;
+    map: Map;
+    tileSize: Size;
     fullExtent: Extent;
     private _xScale: number;
     private _yScale: number;
-    private _pointOrigin: any;
-    private _glRes: any;
+    private _pointOrigin: Point;
+    private _glRes: number;
     tileSystem: TileSystem;
     transformation: Transformation;
-    private _tileFullIndex: any;
+    private _tileFullIndex: Record<string, Extent>;
 
     /**
      * @param tileSystem  - tileSystem
      * @param fullExtent      - fullExtent of the tile layer
      * @param tileSize          - tile size
      */
-    constructor(map: any, tileSystem: TileSystem, fullExtent: Extent, tileSize: any) {
+    constructor(map: Map, tileSystem: TileSystem, fullExtent: Extent, tileSize: Size) {
         this.map = map;
         this.tileSize = tileSize;
         this.fullExtent = fullExtent;
@@ -174,13 +176,13 @@ class TileConfig {
             'x': x,
             'y': y,
             // real tile index
-            'idx' : idx,
-            'idy' : idy,
+            'idx': idx,
+            'idy': idy,
             out
         };
     }
 
-    _getTileFullIndex(res: any) {
+    _getTileFullIndex(res: number) {
         if (!this._tileFullIndex) {
             this._tileFullIndex = {};
         }
@@ -189,11 +191,7 @@ class TileConfig {
         }
         const ext = this.fullExtent;
         const transformation = this.transformation;
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         const nwIndex = this._getTileNum(transformation.transform(new Coordinate(ext['left'], ext['top']), 1), res);
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         const seIndex = this._getTileNum(transformation.transform(new Coordinate(ext['right'], ext['bottom']), 1), res);
 
         const tileSystem = this.tileSystem;
@@ -207,8 +205,7 @@ class TileConfig {
             nwIndex.y -= 1;
             seIndex.y -= 1;
         }
-        // @ts-ignore
-        this._tileFullIndex[res] = new Extent(nwIndex, seIndex);
+        this._tileFullIndex[res] = new Extent(nwIndex as Coordinate, seIndex as Coordinate, null);
         return this._tileFullIndex[res];
     }
 
@@ -219,7 +216,7 @@ class TileConfig {
      * @param res
      * @return
      */
-    getTilePrjNW(tileX: number, tileY: number, res: number, out?:any): Coordinate {
+    getTilePrjNW(tileX: number, tileY: number, res: number, out?: any): Coordinate {
         const tileSystem = this.tileSystem;
         const tileSize = this['tileSize'];
         const y = tileSystem['origin']['y'] + this._yScale * tileSystem['scale']['y'] * (tileY + (tileSystem['scale']['y'] === 1 ? 1 : 0)) * res * tileSize['height'];

@@ -61,6 +61,7 @@ class CanvasRenderer extends Class {
 
     _renderZoom: number;
     _errorThrown: boolean;
+    __zoomTransformMatrix: number[];
 
     drawOnInteracting?(...args: any[]): void;
     checkResources?(): any[];
@@ -86,7 +87,7 @@ class CanvasRenderer extends Class {
      * Render the layer.
      * Call checkResources
      */
-    render(framestamp: number): void {
+    render(framestamp?: number): void {
         this.prepareRender();
         if (!this.getMap() || !this.layer.isVisible()) {
             return;
@@ -338,7 +339,7 @@ class CanvasRenderer extends Class {
     /**
      * Set z-index of layer
      */
-    setZIndex(/*z*/): void {
+    setZIndex(_z?: number): void {
         this.setToRedraw();
     }
 

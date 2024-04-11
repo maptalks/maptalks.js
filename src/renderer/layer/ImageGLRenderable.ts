@@ -13,7 +13,7 @@ const TEMP_INT16ARRAY = new Int16Array(8);
 export type TileRenderingCanvas = { gl?: TileRenderingContext, texture?: TileImageTexture } & HTMLCanvasElement;
 export type TileRenderingContext = { program: TileRenderingProgram, wrap: () => TileRenderingContext } & (WebGLRenderingContext | WebGL2RenderingContext);
 export type TileRenderingProgram = { fragmentShader: string, vertexShader: string } & WebGLProgram;
-export type TileImageType = { glBuffer?: TileImageBuffer, texture?: TileImageTexture } & (HTMLImageElement | HTMLCanvasElement);
+export type TileImageType = { glBuffer?: TileImageBuffer, texture?: TileImageTexture } & (HTMLImageElement | HTMLCanvasElement | ImageBitmap);
 export type TileImageBuffer = { width?: number, height?: number, type?: string } & WebGLBuffer;
 export type TileImageTexture = WebGLTexture;
 export type VertexAttrib = [name: string, stride: number, type?: string];

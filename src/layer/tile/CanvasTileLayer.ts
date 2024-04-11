@@ -1,4 +1,5 @@
-import TileLayer from './TileLayer';
+import { LayerJSONType } from '../Layer';
+import TileLayer, { TileLayerOptionsType } from './TileLayer';
 
 /**
  * @classdesc
@@ -13,7 +14,7 @@ import TileLayer from './TileLayer';
  */
 class CanvasTileLayer extends TileLayer {
 
-    constructor(id: string, options: any) {
+    constructor(id: string, options: CanvasTileLayerOptionsType) {
         super(id, options);
         if (!this.options.hasOwnProperty('forceRenderOnMoving')) {
             // force not to forceRenderOnMoving
@@ -36,7 +37,7 @@ class CanvasTileLayer extends TileLayer {
      * It can be used to reproduce the instance by [fromJSON]{@link Layer#fromJSON} method
      * @return layer's JSON
      */
-    toJSON(): any {
+    toJSON(): LayerJSONType {
         return {
             'type': 'CanvasTileLayer',
             'id': this.getId(),
@@ -62,3 +63,5 @@ class CanvasTileLayer extends TileLayer {
 CanvasTileLayer.registerJSONType('CanvasTileLayer');
 
 export default CanvasTileLayer;
+
+export type CanvasTileLayerOptionsType = TileLayerOptionsType;

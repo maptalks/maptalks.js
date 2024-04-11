@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import Browser from '../../core/Browser';
 import { extend } from '../../core/util';
-import TileLayer from './TileLayer';
+import { LayerJSONType } from '../Layer';
+import TileLayer, { TileLayerOptionsType } from './TileLayer';
 
 /**
  * @property options                     - TileLayer's options
@@ -17,7 +18,8 @@ import TileLayer from './TileLayer';
  * @memberOf WMSTileLayer
  * @instance
  */
-const options: WMSTileLayerOptions = {
+const options: WMSTileLayerOptionsType = {
+    urlTemplate: '',
     crs: null,
     uppercase: false,
     detectRetina: false
@@ -32,7 +34,7 @@ const defaultWmsParams = {
     transparent: false,
     version: '1.1.1'
 };
-let wmsExcludeParams: WMSTileLayerOptions;
+let wmsExcludeParams: WMSTileLayerOptionsType;
 
 /**
  * @classdesc
@@ -55,15 +57,16 @@ let wmsExcludeParams: WMSTileLayerOptions;
  * });
  */
 class WMSTileLayer extends TileLayer {
-    wmsParams: WMSTileLayerOptions;
+    wmsParams: WMSTileLayerOptionsType;
+    options: WMSTileLayerOptionsType;
     private _wmsVersion: number;
 
-    constructor(id: string, options: WMSTileLayerOptions) {
+    constructor(id: string, options: WMSTileLayerOptionsType) {
         super(id);
         if (!wmsExcludeParams) {
             wmsExcludeParams = extend({}, this.options);
         }
-        this.wmsParams = extend({} as WMSTileLayerOptions, defaultWmsParams);
+        this.wmsParams = extend({} as WMSTileLayerOptionsType, defaultWmsParams);
         this.setOptions(options);
         this.setZIndex(options.zIndex);
         if (!Browser.proxy) {
@@ -126,7 +129,7 @@ class WMSTileLayer extends TileLayer {
      * It can be used to reproduce the instance by [fromJSON]{@link Layer#fromJSON} method
      * @return layer's JSON
      */
-    toJSON(): any {
+    toJSON(): LayerJSONType {
         return {
             'type': 'WMSTileLayer',
             'id': this.getId(),
@@ -161,7 +164,7 @@ export default WMSTileLayer;
 // translates to `'?a=foo&b=bar'`. If `existingUrl` is set, the parameters will
 // be appended at the end. If `uppercase` is `true`, the parameter names will
 // be uppercased (e.g. `'?A=foo&B=bar'`)
-export function getParamString(obj, existingUrl, uppercase) {
+export function getParamString(obj: Record<string, string>, existingUrl: string, uppercase: boolean) {
     const params = [];
     for (const i in obj) {
         params.push(encodeURIComponent(uppercase ? i.toUpperCase() : i) + '=' + encodeURIComponent(obj[i]));
@@ -169,17 +172,16 @@ export function getParamString(obj, existingUrl, uppercase) {
     return ((!existingUrl || existingUrl.indexOf('?') === -1) ? '?' : '&') + params.join('&');
 }
 
-export type WMSTileLayerOptions = {
-    zIndex?: number;
-    height?: number;
-    width?: number;
+export type WMSTileLayerOptionsType = TileLayerOptionsType & {
     service?: string;
     layers?: string;
     styles?: string;
     format?: string;
     transparent?: boolean;
     version?: string;
-    crs?: string | any;
+    crs?: string;
     uppercase?: boolean;
     detectRetina?: boolean;
+    width?: number;
+    height?: number;
 }
