@@ -2,12 +2,14 @@ import parseRGBE from './common/HDR.js';
 import { isArray } from './common/Util.js';
 import { default as Texture, REF_COUNT_KEY } from './AbstractTexture.js';
 import { getUniqueTexture } from './common/REGLHelper.js';
+import REGL, { Regl } from '@maptalks/regl';
 
 /**
  * config properties:
  * https://github.com/regl-project/regl/blob/gh-pages/API.md#textures
  */
 class Texture2D extends Texture {
+    rgbmRange?: number
 
     onLoad({ data }) {
         const config = this.config;
@@ -32,7 +34,7 @@ class Texture2D extends Texture {
         this._updateREGL();
     }
 
-    createREGLTexture(regl) {
+    createREGLTexture(regl: Regl): REGL.Texture2D {
         if (isArray(this.config.data) || isArray(this.config.mipmap)) {
             const tex = getUniqueTexture(regl, this.config);
             if (!tex[REF_COUNT_KEY]) {

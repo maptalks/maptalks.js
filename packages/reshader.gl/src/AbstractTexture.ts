@@ -2,8 +2,8 @@ import { isFunction, hasOwn, getTextureByteWidth, getTextureChannels, isArray, i
 import Eventable from './common/Eventable';
 import { KEY_DISPOSED } from './common/Constants.js';
 import ResourceLoader from './ResourceLoader';
-import { NumberArray } from './types/typings';
-import { Regl, Texture2D, Texture2DOptions, TextureCube, TextureCubeOptions } from '@maptalks/regl';
+import { Regl, Texture2D } from '@maptalks/regl';
+import { TextureConfig } from './types/typings';
 
 export const REF_COUNT_KEY = '_reshader_refCount';
 
@@ -18,7 +18,7 @@ class AbstractTexture extends Eventable(Base) {
     promise?: Promise<any>
     _loading?: boolean
     resLoader: ResourceLoader
-    _texture: Texture2D | TextureCube
+    _texture: Texture2D
     private dirty?: boolean
 
     constructor(config, resLoader) {
@@ -105,7 +105,7 @@ class AbstractTexture extends Eventable(Base) {
     }
 
     //eslint-disable-next-line
-    createREGLTexture(regl: Regl): null | Texture2D | TextureCube {
+    createREGLTexture(regl: Regl): null | Texture2D {
         return null;
     }
 
@@ -122,9 +122,9 @@ class AbstractTexture extends Eventable(Base) {
                     }
 
                 }
-                if (this.config.faces) {
-                    this.config.faces = null;
-                }
+                // if (this.config.faces) {
+                //     this.config.faces = null;
+                // }
                 if (this.config.image) {
                     this.config.image.array = [];
                 }
@@ -146,12 +146,12 @@ class AbstractTexture extends Eventable(Base) {
         const { width, height, type, format } = this.config;
         const byteWidth = getTextureByteWidth(type || 'uint8');
         const channels = getTextureChannels(format || 'rgba');
-        if (this.config.faces) {
-            // texture cube
-            return width * height * byteWidth * channels * 6;
-        } else {
-            return width * height * byteWidth * channels;
-        }
+        // if (this.config.faces) {
+        //     // texture cube
+        //     return width * height * byteWidth * channels * 6;
+        // } else {
+        return width * height * byteWidth * channels;
+        // }
     }
 
     _updateREGL() {
@@ -197,17 +197,3 @@ class AbstractTexture extends Eventable(Base) {
 }
 
 export default AbstractTexture;
-
-
-type ImageObject = {
-    array: NumberArray,
-    width: number,
-    height: number,
-}
-
-export type TextureConfig = {
-    url?: string,
-    image?: ImageObject,
-    promise?: Promise<any>,
-    persistent?: boolean
-} & Texture2DOptions & TextureCubeOptions;

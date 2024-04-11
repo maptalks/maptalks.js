@@ -1,4 +1,4 @@
-import REGL, { Texture } from "@maptalks/regl";
+import REGL, { Texture, Texture2DOptions, TextureImageData } from "@maptalks/regl";
 import { mat4 } from "gl-matrix";
 import AbstractTexture from "src/AbstractTexture";
 
@@ -63,3 +63,24 @@ export type MatrixFunction = () => mat4
 export type AttributeBufferData = { buffer?: REGL.Buffer, data?: NumberArray, divisor?: number }
 
 type InstancedAttribute = Record<string, NumberArray | REGL.Buffer | AttributeBufferData>;
+
+
+type ImageObject = {
+    array: TextureImageData,
+    width: number,
+    height: number,
+}
+
+export type TextureConfig = {
+    url?: string,
+    image?: ImageObject,
+    hdr?: boolean,
+    /**
+     * hdr 纹理的最大 RGBMRange，默认为9
+     * @english
+     * max RGBMRange for hdr texture, default is 9
+     */
+    maxRange?: number,
+    promise?: Promise<any>,
+    persistent?: boolean
+} & Texture2DOptions;

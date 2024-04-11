@@ -1,13 +1,13 @@
 import Texture from './AbstractTexture';
 
 class TextureCube extends Texture {
-    onLoad(images) {
+    onLoad(/* images */) {
         const config = this.config;
         if (!config) {
             return;
         }
-        const faces = this._createFaces(images);
-        config.faces = faces.map(face => face.data);
+        // const faces = this._createFaces(images);
+        // config.faces = faces.map(face => face.data);
         this._updateREGL();
     }
 
