@@ -2,8 +2,10 @@ import { extend, isNil } from '../core/util';
 import { withInEllipse } from '../core/util/path';
 import Coordinate from '../geo/Coordinate';
 import CenterMixin from './CenterMixin';
-import Polygon from './Polygon';
+import Polygon, { PolygonOptionsType, RingCoordinates, RingsCoordinates } from './Polygon';
 import Circle from './Circle';
+import Point from '../geo/Point';
+import Extent from '../geo/Extent';
 
 /**
  * @property {Object} [options=null]
@@ -11,7 +13,7 @@ import Circle from './Circle';
  * @memberOf Ellipse
  * @instance
  */
-const options = {
+const options: EllipseOptionsType = {
     'numberOfShellPoints': 81
 };
 
@@ -31,7 +33,7 @@ export class Ellipse extends CenterMixin(Polygon) {
     public width: number
     public height: number
 
-    static fromJSON(json) {
+    static fromJSON(json: Record<string, any>): Ellipse {
         const feature = json['feature'];
         const ellipse = new Ellipse(json['coordinates'], json['width'], json['height'], json['options']);
         ellipse.setProperties(feature['properties']);
@@ -44,7 +46,7 @@ export class Ellipse extends CenterMixin(Polygon) {
      * @param {Number} height - height of the ellipse, in meter
      * @param {Object}  [options=null] - construct options defined in [Ellipse]{@link Ellipse#options}
      */
-    constructor(coordinates: any, width: number, height: number, options?: any) {
+    constructor(coordinates: Coordinate | Array<number>, width: number, height: number, options?: EllipseOptionsType) {
         super(null, options);
         if (coordinates) {
             this.setCoordinates(coordinates);
@@ -70,7 +72,7 @@ export class Ellipse extends CenterMixin(Polygon) {
      * @fires Ellipse#shapechange
      * @return {Ellipse} this
      */
-    setWidth(width: number): Ellipse {
+    setWidth(width: number) {
         this.width = width;
         this.onShapeChanged();
         return this;
@@ -94,7 +96,7 @@ export class Ellipse extends CenterMixin(Polygon) {
      * @fires Ellipse#shapechange
      * @return {Ellipse} this
      */
-    setHeight(height: number): Ellipse {
+    setHeight(height: number) {
         this.height = height;
         this.onShapeChanged();
         return this;
@@ -105,14 +107,14 @@ export class Ellipse extends CenterMixin(Polygon) {
      * Gets the shell of the ellipse as a polygon, number of the shell points is decided by [options.numberOfShellPoints]{@link Circle#options}
      * @return {Coordinate[]} - shell coordinates
      */
-    getShell(): any {
+    getShell(): RingCoordinates {
         if (this.isRotated()) {
             return this.getRotatedShell();
         }
         return this._getShell();
     }
 
-    _getShell(): any {
+    _getShell(): RingCoordinates {
         const measurer = this._getMeasurer(),
             center = this.getCoordinates(),
             numberOfPoints = this.options['numberOfShellPoints'] - 1,
@@ -142,9 +144,9 @@ export class Ellipse extends CenterMixin(Polygon) {
         return shell;
     }
 
-    _getPrjShell(): any {
+    _getPrjShell(): RingCoordinates {
         const shell = super._getPrjShell();
-        return this._rotatePrjCoordinates(shell);
+        return this._rotatePrjCoordinates(shell) as RingCoordinates;
     }
 
     /**
@@ -153,7 +155,7 @@ export class Ellipse extends CenterMixin(Polygon) {
      * Ellipse won't have any holes, always returns null
      * @return {Object[]} an empty array
      */
-    getHoles(): [] {
+    getHoles(): RingsCoordinates {
         return [];
     }
 
@@ -161,7 +163,7 @@ export class Ellipse extends CenterMixin(Polygon) {
         return this.show();
     }
 
-    _containsPoint(point: any, tolerance: any): boolean {
+    _containsPoint(point: Point, tolerance?: number): boolean {
         const map = this.getMap();
         if (map.isTransforming()) {
             return super._containsPoint(point, tolerance);
@@ -174,7 +176,7 @@ export class Ellipse extends CenterMixin(Polygon) {
         return withInEllipse(point, p0, p1, t);
     }
 
-    _computePrjExtent(): any {
+    _computePrjExtent(): Extent {
         if (this.isRotated()) {
             return this._computeRotatedPrjExtent();
         }
@@ -187,7 +189,7 @@ export class Ellipse extends CenterMixin(Polygon) {
         return Circle.prototype._computeExtent.apply(this, arguments);
     }
 
-    _getMinMax(measurer: any): any {
+    _getMinMax(measurer: any): [Coordinate, Coordinate, Coordinate, Coordinate] {
         if (!measurer || !this._coordinates || isNil(this.width) || isNil(this.height)) {
             return null;
         }
@@ -217,7 +219,7 @@ export class Ellipse extends CenterMixin(Polygon) {
         return Math.PI * this.width * this.height / 4;
     }
 
-    _exportGeoJSONGeometry(): any {
+    _exportGeoJSONGeometry() {
         const coordinates = Coordinate.toNumberArrays([this.getShell()]);
         return {
             'type': 'Polygon',
@@ -225,7 +227,7 @@ export class Ellipse extends CenterMixin(Polygon) {
         };
     }
 
-    _toJSON(options: any): any {
+    _toJSON(options: any) {
         const opts = extend({}, options);
         const center = this.getCenter();
         opts.geometry = false;
@@ -247,3 +249,7 @@ Ellipse.mergeOptions(options);
 Ellipse.registerJSONType('Ellipse');
 
 export default Ellipse;
+
+export type EllipseOptionsType = PolygonOptionsType & {
+    numberOfShellPoints?: number;
+}

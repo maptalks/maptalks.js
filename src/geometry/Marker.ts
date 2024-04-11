@@ -59,7 +59,7 @@ export class Marker extends CenterMixin(Geometry) {
      * @param {Coordinate} coordinates      - coordinates of the marker
      * @param {Object} [options=null]       - construct options defined in [Marker]{@link Marker#options}
      */
-    constructor(coordinates: Coordinate | Array<number>, options?: MarkerOptionsType) {
+    constructor(coordinates: MarkerCoordinatesType, options?: MarkerOptionsType) {
         super(options);
         this.type = 'Point';
         //for subclass,Quickly determine whether a Geometry is a point
@@ -242,6 +242,7 @@ function computeExtent(fn: any): null | Extent {
     return new Extent(coordinates, coordinates, this._getProjection());
 }
 
+export type MarkerCoordinatesType = Coordinate | Array<number>;
 
 export type MarkerOptionsType = GeometryOptionsType & {
     hitTestForEvent?: boolean;

@@ -1,5 +1,10 @@
 import GeometryCollection from './GeometryCollection';
 import Coordinate from '../geo/Coordinate';
+import { GeometryOptionsType, type Geometry } from './Geometry';
+import { MultiPathsCoordinates, PathCoordinates, PathsCoordinates } from './Path';
+import { MarkerCoordinatesType } from './Marker';
+import { LineStringCoordinatesType } from './LineString';
+import { PolygonCoordinatesType } from './Polygon';
 
 /**
  * MultiPoint、MultiLineString和MultiPolygon的父类
@@ -9,8 +14,17 @@ import Coordinate from '../geo/Coordinate';
  * @abstract
  * @extends {GeometryCollection}
  */
+type MultiGeometryCoordinates = PathCoordinates | PathsCoordinates | MultiPathsCoordinates;
+type SingleGeometryCreateCoordinates = MarkerCoordinatesType | LineStringCoordinatesType | PolygonCoordinatesType;
+
+export type MultiGeometryCreateCoordinates = Array<SingleGeometryCreateCoordinates>;
+type MultiGeometryData = Array<SingleGeometryCreateCoordinates | Geometry>;
+
+type GeometryClass<T> = (new (coordinates: SingleGeometryCreateCoordinates, options: Record<string, any>) => T);
+
+
 class MultiGeometry extends GeometryCollection {
-    public GeometryType: any
+    public GeometryType: GeometryClass<Geometry>;
 
     /**
      * @param  {Class} geoType      Type of the geometry
@@ -18,7 +32,7 @@ class MultiGeometry extends GeometryCollection {
      * @param  {Geometry[]} data    data
      * @param  {Object} [options=null] configuration options
      */
-    constructor(geoType, type: string, data: any, options: any) {
+    constructor(geoType: GeometryClass<Geometry>, type: string, data: MultiGeometryData, options?: GeometryOptionsType) {
         super(null, options);
         this.GeometryType = geoType;
         this.type = type;
@@ -31,7 +45,7 @@ class MultiGeometry extends GeometryCollection {
      * Get coordinates of the collection
      * @return {Coordinate[]|Coordinate[][]|Coordinate[][][]} coordinates
      */
-    getCoordinates(): any {
+    getCoordinates(): MultiGeometryCoordinates {
         const coordinates = [];
         const geometries = this.getGeometries();
         for (let i = 0, l = geometries.length; i < l; i++) {
@@ -49,7 +63,7 @@ class MultiGeometry extends GeometryCollection {
      * @returns {Geometry} this
      * @fires maptalk.Geometry#shapechange
      */
-    setCoordinates(coordinates: any): any {
+    setCoordinates(coordinates: MultiGeometryCreateCoordinates) {
         coordinates = coordinates || [];
         const geometries = [];
         for (let i = 0, l = coordinates.length; i < l; i++) {
@@ -60,32 +74,33 @@ class MultiGeometry extends GeometryCollection {
         return this;
     }
 
-    _initData(data: any): void {
+    _initData(data: MultiGeometryData): void {
         data = data || [];
         if (data.length) {
             if (data[0] instanceof this.GeometryType) {
-                this.setGeometries(data);
+                this.setGeometries(data as Geometry[]);
             } else {
-                this.setCoordinates(data);
+                this.setCoordinates(data as MultiGeometryCoordinates);
             }
         }
     }
 
-    _checkGeo(geo: any): boolean {
+    _checkGeo(geo: Geometry): boolean {
         return (geo instanceof this.GeometryType);
     }
 
     //override _exportGeoJSONGeometry in GeometryCollection
-    _exportGeoJSONGeometry(): any {
+    // @ts-expect-error 确实需要重写父类的属性
+    _exportGeoJSONGeometry() {
         const points = this.getCoordinates();
-        const coordinates = Coordinate.toNumberArrays(points);
+        const coordinates = Coordinate.toNumberArrays(points as MultiPathsCoordinates);
         return {
             'type': this.getType(),
             'coordinates': coordinates
         };
     }
 
-    _toJSON(options: any): any {
+    _toJSON(options: any) {
         return {
             'feature': this.toGeoJSON(options)
         };
