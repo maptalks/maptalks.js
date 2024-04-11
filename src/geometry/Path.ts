@@ -36,7 +36,8 @@ const options: PathOptionsType = {
 
 type animateShowCallback = (frame: Frame, currentCoord: Coordinate) => void;
 export type PathCoordinates = Array<Coordinate>;
-export type PathsCoordinates = Array<Array<Coordinate>>;
+export type PathsCoordinates = Array<PathCoordinates>;
+export type MultiPathsCoordinates = Array<PathsCoordinates>;
 
 /**
  * 一个抽象类Path，包含Path几何类的常用方法，例如LineString、Polygon
@@ -326,7 +327,7 @@ export class Path extends Geometry {
     _getPrjCoordinates(): PathCoordinates {
         this._verifyProjection();
         if (!this._prjCoords && this._getProjection()) {
-            this._prjCoords = this._projectCoords(this._coordinates);
+            this._prjCoords = this._projectCoords(this._coordinates) as PathCoordinates;
         }
         return this._prjCoords;
     }
@@ -339,7 +340,7 @@ export class Path extends Geometry {
             return;
         }
         if (this._prjCoords) {
-            this._coordinates = this._unprojectCoords(this._getPrjCoordinates());
+            this._coordinates = this._unprojectCoords(this._getPrjCoordinates()) as PathCoordinates;
         }
     }
 
@@ -348,7 +349,7 @@ export class Path extends Geometry {
         super._clearProjection();
     }
 
-    _projectCoords(points: PathCoordinates): PathCoordinates {
+    _projectCoords(points: PathCoordinates | PathsCoordinates): PathCoordinates | PathsCoordinates {
         const projection = this._getProjection();
         if (projection) {
             return projection.projectCoords(points, this.options['antiMeridian']) as PathCoordinates;
@@ -356,7 +357,7 @@ export class Path extends Geometry {
         return [];
     }
 
-    _unprojectCoords(prjPoints: PathCoordinates): PathCoordinates {
+    _unprojectCoords(prjPoints: PathCoordinates | PathsCoordinates): PathCoordinates | PathsCoordinates {
         const projection = this._getProjection();
         if (projection) {
             return projection.unprojectCoords(prjPoints) as PathCoordinates;

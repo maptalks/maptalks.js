@@ -1,5 +1,7 @@
-import MultiGeometry from './MultiGeometry';
-import Marker from './Marker';
+import MultiGeometry, { MultiGeometryCreateCoordinates } from './MultiGeometry';
+import Marker, { MarkerCoordinatesType, MarkerOptionsType } from './Marker';
+import Coordinate from '../geo/Coordinate';
+import Position from '../geo/Position';
 
 /**
  * @classdesc
@@ -21,8 +23,8 @@ class MultiPoint extends MultiGeometry {
      * @param {Number[][]|Coordinate[]|Marker[]} data - construct data, coordinates or an array of markers
      * @param {Object} [options=null] - options defined in [nMultiPoint]{@link MultiPoint#options}
      */
-    constructor(data: any, opts: any) {
-        super(Marker, 'MultiPoint', data, opts);
+    constructor(data: Array<MarkerCoordinatesType>, opts?: MarkerOptionsType) {
+        super(Marker, 'MultiPoint', data as MultiGeometryCreateCoordinates, opts);
     }
 
     /**
@@ -32,7 +34,7 @@ class MultiPoint extends MultiGeometry {
      * @param {Coordinate} coordinate coordinate
      * @returns {Coordinate} coordinate
      */
-    findClosest(coordinate: any): any {
+    findClosest(coordinate: Coordinate): Coordinate {
         if (!coordinate) {
             return null;
         }
@@ -54,7 +56,7 @@ MultiPoint.registerJSONType('MultiPoint');
 
 export default MultiPoint;
 
-function distanceTo(p0: any, p1: any): number {
+function distanceTo(p0: Position, p1: Position): number {
     const x = p1.x - p0.x,
         y = p1.y - p0.y;
     return Math.sqrt(x * x + y * y);

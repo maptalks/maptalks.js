@@ -1,5 +1,5 @@
 import MultiPath from './MultiPath';
-import Polygon from './Polygon';
+import Polygon, { PolygonCoordinatesType, PolygonOptionsType } from './Polygon';
 
 /**
  * @classdesc
@@ -48,7 +48,7 @@ class MultiPolygon extends MultiPath {
      * @param {Number[][][][]|Coordinate[][][]|Polygon[]} data - construct data, coordinates or an array of polygons
      * @param {Object} [options=null]           - options defined in [MultiPolygon]{@link MultiPolygon#options}
      */
-    constructor(data: any, opts: any) {
+    constructor(data: Array<PolygonCoordinatesType>, opts?: PolygonOptionsType) {
         super(Polygon, 'MultiPolygon', data, opts);
     }
 }

@@ -1,7 +1,9 @@
 import { extend, isNil } from '../core/util';
 import Coordinate from '../geo/Coordinate';
 import Extent from '../geo/Extent';
-import Polygon from './Polygon';
+import Point from '../geo/Point';
+import { CommonProjectionType } from '../geo/projection';
+import Polygon, { PolygonOptionsType, RingCoordinates, RingsCoordinates } from './Polygon';
 
 /**
  * @classdesc
@@ -13,14 +15,12 @@ import Polygon from './Polygon';
  *     id : 'rectangle0'
  * });
  */
-class Rectangle extends Polygon {
+export class Rectangle extends Polygon {
     // @ts-expect-error 确实需要重写父类的属性
     _coordinates: Coordinate;
     public _width: number
     public _height: number
     public _pnw: any
-    getRotatedShell?(): any
-    _computeRotatedPrjExtent?(): any
 
     static fromJSON(json): Rectangle {
         const feature = json['feature'];
@@ -35,7 +35,7 @@ class Rectangle extends Polygon {
      * @param {Number} height                    - height of the rectangle, in meter
      * @param {Object} [options=null]            - options defined in [Rectangle]{@link Rectangle#options}
      */
-    constructor(coordinates?: any, width?: number, height?: number, opts?: any) {
+    constructor(coordinates: Coordinate | Array<number>, width: number, height: number, opts?: RectangleOptionsType) {
         super(null, opts);
         if (coordinates) {
             this.setCoordinates(coordinates);
@@ -59,6 +59,7 @@ class Rectangle extends Polygon {
      * @return {Rectangle} this
      * @fires Rectangle#positionchange
      */
+    // @ts-expect-error 确实需要重写父类的属性
     setCoordinates(nw: Coordinate | Array<number>) {
         this._coordinates = (nw instanceof Coordinate) ? nw : new Coordinate(nw as any);
         if (!this._coordinates || !this.getMap()) {
@@ -84,7 +85,7 @@ class Rectangle extends Polygon {
      * @fires Rectangle#shapechange
      * @return {Rectangle} this
      */
-    setWidth(width) {
+    setWidth(width: number) {
         this._width = width;
         this.onShapeChanged();
         return this;
@@ -104,7 +105,7 @@ class Rectangle extends Polygon {
      * @fires Rectangle#shapechange
      * @return {Rectangle} this
      */
-    setHeight(height) {
+    setHeight(height: number) {
         this._height = height;
         this.onShapeChanged();
         return this;
@@ -121,7 +122,7 @@ class Rectangle extends Polygon {
         return this._getShell();
     }
 
-    _getShell(): Coordinate[] {
+    _getShell(): RingCoordinates {
         const measurer = this._getMeasurer();
         const nw = this._coordinates;
         const map = this.getMap();
@@ -155,7 +156,7 @@ class Rectangle extends Polygon {
      * Rectangle won't have any holes, always returns null
      * @return {Object[]} an empty array
      */
-    getHoles() {
+    getHoles(): RingsCoordinates {
         return [];
     }
     // @ts-expect-error 确实需要重写父类的属性
@@ -163,7 +164,8 @@ class Rectangle extends Polygon {
         return this.show();
     }
 
-    _getPrjCoordinates() {
+    // @ts-expect-error 确实需要重写父类的属性
+    _getPrjCoordinates(): Coordinate {
         const projection = this._getProjection();
         this._verifyProjection();
         if (!this._pnw && projection) {
@@ -179,12 +181,12 @@ class Rectangle extends Polygon {
         this.onPositionChanged();
     }
 
-    _getPrjShell() {
+    _getPrjShell(): RingCoordinates {
         const shell = super._getPrjShell();
         const projection = this._getProjection();
         if (!projection.isSphere()) {
             // return shell;
-            return this._rotatePrjCoordinates(shell);
+            return this._rotatePrjCoordinates(shell) as RingCoordinates;
         }
         const sphereExtent: any = projection.getSphereExtent(),
             sx = sphereExtent.sx,
@@ -202,7 +204,7 @@ class Rectangle extends Polygon {
             }
             shell[i]._add(dx, dy);
         }
-        return this._rotatePrjCoordinates(shell);
+        return this._rotatePrjCoordinates(shell) as RingCoordinates;
         // return shell;
     }
 
@@ -224,7 +226,7 @@ class Rectangle extends Polygon {
         return measurer.locate(this._coordinates, this._width / 2, -this._height / 2);
     }
 
-    _containsPoint(point, tolerance) {
+    _containsPoint(point: Point, tolerance?: number) {
         const map = this.getMap();
         if (map.isTransforming()) {
             return super._containsPoint(point, tolerance);
@@ -236,7 +238,7 @@ class Rectangle extends Polygon {
         return extent.contains(p);
     }
 
-    _computePrjExtent(projection?: any): any {
+    _computePrjExtent(projection: CommonProjectionType): Extent {
         if (this.isRotated()) {
             return this._computeRotatedPrjExtent();
         }
@@ -248,7 +250,7 @@ class Rectangle extends Polygon {
             new Coordinate(this._coordinates.x, se.y),
             new Coordinate(se.x, this._coordinates.y)
         ], this.options['antiMeridian']);
-        return new Extent(prjs[0], prjs[1]);
+        return new Extent(prjs[0] as Coordinate, prjs[1] as Coordinate);
     }
 
     _computeExtent(measurer?: any): Extent {
@@ -259,7 +261,7 @@ class Rectangle extends Polygon {
         return new Extent(this._coordinates, se, this._getProjection());
     }
 
-    _getSouthEast(measurer) {
+    _getSouthEast(measurer): Coordinate {
         if (!measurer || !this._coordinates || isNil(this._width) || isNil(this._height)) {
             return null;
         }
@@ -324,3 +326,5 @@ class Rectangle extends Polygon {
 Rectangle.registerJSONType('Rectangle');
 
 export default Rectangle;
+
+export type RectangleOptionsType = PolygonOptionsType;

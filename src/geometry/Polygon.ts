@@ -1,8 +1,10 @@
 import { isArrayHasData } from '../core/util';
 import Coordinate from '../geo/Coordinate';
 import { clipPolygon } from '../core/util/path';
-import Path from './Path';
+import Path, { PathCoordinates, PathOptionsType, PathsCoordinates } from './Path';
 import Extent from '../geo/Extent';
+import { AnySymbol, FillSymbol } from '../symbol';
+import { LineStringCoordinatesType } from './LineString';
 
 const JSON_TYPE = 'Polygon';
 
@@ -25,17 +27,23 @@ const JSON_TYPE = 'Polygon';
  *      ]
  *  ).addTo(layer);
  */
+
+export type PolygonCoordinatesType = Array<Array<Coordinate>> | Array<Array<number>>;
+export type RingCoordinates = PathCoordinates;
+export type RingsCoordinates = PathsCoordinates;
+
+
 export class Polygon extends Path {
 
-    public _holes: any
-    public _prjHoles: any
-    public _prjShell: any
-    _getShell?(): any
+    public _holes: RingsCoordinates;
+    public _prjHoles: RingsCoordinates;
+    public _prjShell: RingCoordinates;
+    _getShell?(): RingCoordinates;
     /**
      * @param {Number[][]|Number[][][]|Coordinate[]|Coordinate[][]} coordinates - coordinates, shell coordinates or all the rings.
      * @param {Object} [options=null] - construct options defined in [Polygon]{@link Polygon#options}
      */
-    constructor(coordinates: any, options?: any) {
+    constructor(coordinates: PolygonCoordinatesType | LineStringCoordinatesType, options?: PolygonOptionsType) {
         super(options);
         this.type = 'Polygon';
         if (coordinates) {
@@ -49,7 +57,7 @@ export class Polygon extends Path {
             return null;
         }
         const extent = this.getExtent();
-        return new Polygon(extent.toArray(), {
+        return new Polygon(extent.toArray() as unknown as PolygonCoordinatesType, {
             symbol: {
                 'lineWidth': 1,
                 'lineColor': '6b707b'
@@ -66,14 +74,14 @@ export class Polygon extends Path {
      * @return {Polygon} this
      * @fires Polygon#shapechange
      */
-    setCoordinates(coordinates: any) {
+    setCoordinates(coordinates: PolygonCoordinatesType | LineStringCoordinatesType) {
         if (!coordinates) {
             this._coordinates = null;
             this._holes = null;
             this._projectRings();
             return this;
         }
-        const rings: any = Coordinate.toCoordinates(coordinates);
+        const rings: any = Coordinate.toCoordinates(coordinates as unknown as Coordinate[][]);
         const len = rings.length;
         if (!Array.isArray(rings[0])) {
             this._coordinates = this._trimRing(rings);
@@ -104,7 +112,7 @@ export class Polygon extends Path {
      *
      * @returns {Coordinate[][]}
      */
-    getCoordinates(): Coordinate[][] {
+    getCoordinates(): RingsCoordinates {
         if (!this._coordinates) {
             return [];
         }
@@ -137,7 +145,7 @@ export class Polygon extends Path {
      *
      * @returns {Coordinate[]}
      */
-    getShell(): any {
+    getShell(): RingCoordinates {
         return this._coordinates || [];
     }
 
@@ -148,7 +156,7 @@ export class Polygon extends Path {
      * Gets holes' coordinates of the polygon if it has.
      * @returns {Coordinate[][]}
      */
-    getHoles(): any {
+    getHoles(): RingsCoordinates {
         return this._holes || [];
     }
 
@@ -168,17 +176,17 @@ export class Polygon extends Path {
             this.onShapeChanged();
             return;
         }
-        this._prjCoords = this._projectCoords(this._coordinates);
-        this._prjHoles = this._projectCoords(this._holes);
+        this._prjCoords = this._projectCoords(this._coordinates) as RingCoordinates;
+        this._prjHoles = this._projectCoords(this._holes) as RingsCoordinates;
         this.onShapeChanged();
     }
 
-    _setPrjCoordinates(prjCoords: any): void {
+    _setPrjCoordinates(prjCoords: RingCoordinates): void {
         this._prjCoords = prjCoords;
         this.onShapeChanged();
     }
 
-    _cleanRing(ring: any) {
+    _cleanRing(ring: RingCoordinates) {
         for (let i = ring.length - 1; i >= 0; i--) {
             if (!ring[i]) {
                 ring.splice(i, 1);
@@ -194,7 +202,7 @@ export class Polygon extends Path {
      * @return {Boolean} is ring a closed one
      * @private
      */
-    _checkRing(ring: any): boolean {
+    _checkRing(ring: RingCoordinates): boolean {
         this._cleanRing(ring);
         if (!ring || !isArrayHasData(ring)) {
             return false;
@@ -213,7 +221,7 @@ export class Polygon extends Path {
      * If the first coordinate is equal with the last one, then remove the last coordinates.
      * @private
      */
-    _trimRing(ring: any): any {
+    _trimRing(ring: RingCoordinates): RingCoordinates {
         const isClose = this._checkRing(ring);
         if (isArrayHasData(ring) && isClose) {
             ring.splice(ring.length - 1, 1);
@@ -227,7 +235,7 @@ export class Polygon extends Path {
      * If the first coordinate is different with the last one, then copy the first coordinates and add to the ring.
      * @private
      */
-    _copyAndCloseRing(ring: any): any {
+    _copyAndCloseRing(ring: RingCoordinates): RingCoordinates {
         ring = ring.slice(0);
         const isClose = this._checkRing(ring);
         if (isArrayHasData(ring) && !isClose) {
@@ -238,23 +246,23 @@ export class Polygon extends Path {
         }
     }
 
-    _getPrjShell(): any {
+    _getPrjShell(): RingCoordinates {
         if (this.getJSONType() === JSON_TYPE) {
             return this._getPrjCoordinates();
         }
         //r.g. for Rectangle
         this._verifyProjection();
         if (this._getProjection() && !this._prjShell) {
-            this._prjShell = this._projectCoords(this._getShell ? this._getShell() : this.getShell());
+            this._prjShell = this._projectCoords(this._getShell ? this._getShell() : this.getShell()) as RingCoordinates;
         }
         return this._prjShell;
     }
 
-    _getPrjHoles(): any {
+    _getPrjHoles(): RingsCoordinates {
         const projection = this._getProjection();
         this._verifyProjection();
         if (projection && !this._prjHoles) {
-            this._prjHoles = this._projectCoords(this.getHoles());
+            this._prjHoles = this._projectCoords(this.getHoles()) as RingsCoordinates;
         }
         return this._prjHoles;
     }
@@ -288,7 +296,7 @@ export class Polygon extends Path {
     _updateCache(): void {
         super._updateCache();
         if (this._prjHoles) {
-            this._holes = this._unprojectCoords(this._getPrjHoles());
+            this._holes = this._unprojectCoords(this._getPrjHoles()) as RingsCoordinates;
         }
     }
 
@@ -311,3 +319,7 @@ export class Polygon extends Path {
 Polygon.registerJSONType(JSON_TYPE);
 
 export default Polygon;
+
+export type PolygonOptionsType = PathOptionsType & {
+    'symbol'?: FillSymbol | Array<AnySymbol>;
+}

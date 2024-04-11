@@ -1,5 +1,9 @@
 import { extend, isNil } from '../core/util';
-import Circle from './Circle';
+import Coordinate from '../geo/Coordinate';
+import Extent from '../geo/Extent';
+import Point from '../geo/Point';
+import Circle, { CircleOptionsType } from './Circle';
+import { RingCoordinates } from './Polygon';
 
 /**
  * @property {Object} options -
@@ -25,7 +29,7 @@ export class Sector extends Circle {
     public startAngle: number
     public endAngle: number
 
-    static fromJSON(json) {
+    static fromJSON(json: Record<string, any>): Sector {
         const feature = json['feature'];
         const sector = new Sector(json['coordinates'], json['radius'], json['startAngle'], json['endAngle'], json['options']);
         sector.setProperties(feature['properties']);
@@ -39,7 +43,7 @@ export class Sector extends Circle {
      * @param {Number} endAngle         - end angle of the sector, in degree
      * @param {Object} [options=null]   - construct options defined in [Sector]{@link Sector#options}
      */
-    constructor(coordinates, radius, startAngle, endAngle, opts) {
+    constructor(coordinates: Coordinate | Array<number>, radius: number, startAngle: number, endAngle: number, opts?: SectorOptionsType) {
         super(coordinates, radius, opts);
         this.startAngle = startAngle;
         this.endAngle = endAngle;
@@ -59,7 +63,7 @@ export class Sector extends Circle {
      * @return {Sector} this
      * @fires Sector#shapechange
      */
-    setStartAngle(startAngle) {
+    setStartAngle(startAngle: number) {
         this.startAngle = startAngle;
         this.onShapeChanged();
         return this;
@@ -79,14 +83,14 @@ export class Sector extends Circle {
      * @return {Sector} this
      * @fires Sector#shapechange
      */
-    setEndAngle(endAngle) {
+    setEndAngle(endAngle: number) {
         this.endAngle = endAngle;
         this.onShapeChanged();
         return this;
     }
 
     // The corrected angle is used for calculation and rendering
-    _correctAngles() {
+    _correctAngles(): [number, number] {
         let startAngle = this.getStartAngle(), endAngle = this.getEndAngle();
         if (endAngle < startAngle) {
             console.error('The ending angle should be greater than the starting angle ', startAngle, endAngle);
@@ -110,14 +114,14 @@ export class Sector extends Circle {
      * Gets the shell of the sector as a polygon, number of the shell points is decided by [options.numberOfShellPoints]{@link Sector#options}
      * @return {Coordinate[]} - shell coordinates
      */
-    getShell() {
+    getShell(): RingCoordinates {
         if (this.isRotated()) {
             return this.getRotatedShell();
         }
         return this._getShell();
     }
 
-    _getShell() {
+    _getShell(): RingCoordinates {
 
         const [startAngle, endAngle] = this._correctAngles();
 
@@ -145,12 +149,12 @@ export class Sector extends Circle {
         return 90;
     }
 
-    _getPrjShell() {
+    _getPrjShell(): RingCoordinates {
         const shell = super._getPrjShell();
-        return this._rotatePrjCoordinates(shell);
+        return this._rotatePrjCoordinates(shell) as RingCoordinates;
     }
 
-    _computePrjExtent() {
+    _computePrjExtent(): Extent {
         if (this.isRotated()) {
             return this._computeRotatedPrjExtent();
         }
@@ -158,7 +162,7 @@ export class Sector extends Circle {
         return Circle.prototype._computePrjExtent.apply(this, arguments);
     }
 
-    _containsPoint(point, tolerance) {
+    _containsPoint(point: Point, tolerance?: number) {
         const map = this.getMap();
         if (map.isTransforming()) {
             return super._containsPoint(point, tolerance);
@@ -226,3 +230,7 @@ Sector.mergeOptions(options);
 Sector.registerJSONType('Sector');
 
 export default Sector;
+
+export type SectorOptionsType = CircleOptionsType & {
+    numberOfShellPoints?: number;
+}

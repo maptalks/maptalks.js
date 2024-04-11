@@ -55,7 +55,7 @@ const circleHooks: modeActionType = {
     'create': function (projection, prjCoord, mapEvent) {
         // const center = projection.unproject(prjCoord[0]);
         const center = queryTerrainCoordinates(projection, prjCoord[0], mapEvent);
-        const circle: Circle = new Circle(center, 0);
+        const circle: Circle = new Circle(center as Coordinate, 0);
         // circle._setPrjCoordinates(prjCoord[0]);
         return circle;
     },
@@ -85,7 +85,7 @@ const ellipseHooks: modeActionType = {
     'create': function (projection, prjCoord, mapEvent) {
         // const center = projection.unproject(prjCoord[0]);
         const center = queryTerrainCoordinates(projection, prjCoord[0], mapEvent);
-        const ellipse = new Ellipse(center, 0, 0);
+        const ellipse = new Ellipse(center as Coordinate, 0, 0);
         // ellipse._setPrjCoordinates(prjCoord[0]);
         return ellipse;
     },

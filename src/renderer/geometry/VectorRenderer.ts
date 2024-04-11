@@ -59,7 +59,7 @@ const geometryInclude = {
 export type GeometryIncludeType = typeof geometryInclude;
 
 declare module '../../geometry/Geometry' {
-    interface Geometry extends GeometryIncludeType {}
+    interface Geometry extends GeometryIncludeType { }
 }
 
 Geometry.include(geometryInclude);
@@ -86,7 +86,7 @@ function getRotatedShell() {
         return c;
     });
 }
-
+//for Ellipse,Circle,
 const el = {
     _redrawWhenPitch: (): boolean => true,
 
@@ -141,13 +141,13 @@ const el = {
 export type ElType = typeof el;
 
 declare module '../../geometry/Ellipse' {
-    interface Ellipse extends Omit<ElType, '_paintOn' | '_getPaintParams'> {}
+    interface Ellipse extends Omit<ElType, '_paintOn' | '_getPaintParams'> { }
 }
 
 Ellipse.include(el);
 
 declare module '../../geometry/Circle' {
-    interface Circle extends Omit<ElType, '_paintOn' | '_getPaintParams'> {}
+    interface Circle extends Omit<ElType, '_paintOn' | '_getPaintParams'> { }
 }
 
 Circle.include(el);
@@ -168,7 +168,8 @@ const rectangleInclude = {
 export type RectangleIncludeType = typeof rectangleInclude;
 
 declare module '../../geometry/Rectangle' {
-    interface Rectangle extends Omit<RectangleIncludeType, '_paintOn' | '_getPaintParams'> {}
+    // @ts-expect-error 确实需要重写父类的属性
+    interface Rectangle extends Omit<RectangleIncludeType, '_paintOn' | '_getPaintParams'> { }
 }
 
 Rectangle.include(rectangleInclude);
@@ -208,8 +209,10 @@ const sectorInclude = {
     }
 };
 
+export type SectorIncludeType = typeof sectorInclude;
+
 declare module '../../geometry/Sector' {
-    interface Sector extends Omit<ElType, '_paintOn' | '_getPaintParams'> {}
+    interface Sector extends Omit<SectorIncludeType, '_paintOn' | '_getPaintParams'> { }
 }
 
 Sector.include(el, sectorInclude);
@@ -355,7 +358,7 @@ const lineStringInclude = {
 export type LineStringIncludeType = typeof lineStringInclude;
 
 declare module '../../geometry/LineString' {
-    interface LineString extends LineStringIncludeType {}
+    interface LineString extends LineStringIncludeType { }
 }
 
 LineString.include(lineStringInclude);

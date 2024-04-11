@@ -1,5 +1,5 @@
 import MultiPath from './MultiPath';
-import LineString from './LineString';
+import LineString, { LineStringCoordinatesType, LineStringOptionsType } from './LineString';
 
 /**
  * @classdesc
@@ -38,7 +38,7 @@ class MultiLineString extends MultiPath {
      * @param {Number[][][]|Coordinate[][]|LineString[]} data - construct data, coordinates or an array of linestrings
      * @param {Object} [options=null]           - options defined in [MultiLineString]{@link MultiLineString#options}
      */
-    constructor(data: any, options: any) {
+    constructor(data: Array<LineStringCoordinatesType>, options?: LineStringOptionsType) {
         super(LineString, 'MultiLineString', data, options);
     }
 }
