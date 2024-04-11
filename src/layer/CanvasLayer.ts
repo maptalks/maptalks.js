@@ -1,11 +1,6 @@
 import CanvasLayerRenderer from '../renderer/layer/canvaslayer/CanvasLayerRenderer';
-import Layer from './Layer';
+import Layer, { LayerOptionsType } from './Layer';
 
-export type CanvasLayerOptions = {
-    doubleBuffer?: boolean,
-    animation?: boolean,
-    fps?: number|string
-}
 /**
  * @property options                       - configuration options
  * @property options.doubleBuffer=false    - layer is rendered with doubleBuffer
@@ -15,9 +10,9 @@ export type CanvasLayerOptions = {
  * @instance
  */
 
-const options:CanvasLayerOptions = {
-    'doubleBuffer'  : false,
-    'animation'     : false
+const options: CanvasLayerOptionsType = {
+    'doubleBuffer': false,
+    'animation': false
 };
 
 /**
@@ -63,7 +58,7 @@ class CanvasLayer extends Layer {
      * @param  {CanvasRenderingContext2D } context - CanvasRenderingContext2D of the layer canvas.
      * @return {Object[]} objects that will be passed to function draw(context, ..) as parameters.
      */
-    prepareToDraw() {}
+    prepareToDraw() { }
 
     /**
      * 绘制something的接口函数
@@ -74,7 +69,7 @@ class CanvasLayer extends Layer {
      * @param  {*} params.. - parameters returned by function prepareToDraw(context).
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    draw(...params) {}
+    draw(...params) { }
 
     /**
      * map交互绘制接口
@@ -99,7 +94,7 @@ class CanvasLayer extends Layer {
      * Redraw the layer
      * @return this
      */
-    redraw():CanvasLayer {
+    redraw() {
         if (this._getRenderer()) {
             this._getRenderer().setToRedraw();
         }
@@ -113,7 +108,7 @@ class CanvasLayer extends Layer {
      * Start animation
      * @return this
      */
-    play():CanvasLayer {
+    play() {
         this.config('animation', true);
         return this;
     }
@@ -125,7 +120,7 @@ class CanvasLayer extends Layer {
      * Pause the animation
      * @return this
      */
-    pause():CanvasLayer {
+    pause() {
         this.config('animation', false);
         return this;
     }
@@ -137,7 +132,7 @@ class CanvasLayer extends Layer {
      * If the animation is playing
      * @return
      */
-    isPlaying():boolean {
+    isPlaying(): boolean {
         return this.options['animation'];
     }
 
@@ -148,7 +143,7 @@ class CanvasLayer extends Layer {
      * Clear layer's canvas
      * @return this
      */
-    clearCanvas():CanvasLayer {
+    clearCanvas() {
         if (this._getRenderer()) {
             this._getRenderer().clearCanvas();
         }
@@ -162,9 +157,10 @@ class CanvasLayer extends Layer {
      * Ask the map to redraw the layer canvas without firing any event.
      * @return this
      */
-    requestMapToRender():CanvasLayer {
-        if (this._getRenderer()) {
-            this._getRenderer().requestMapToRender();
+    requestMapToRender() {
+        const renderer = this._getRenderer() as any;
+        if (renderer && renderer.requestMapToRender) {
+            renderer.requestMapToRender();
         }
         return this;
     }
@@ -176,7 +172,7 @@ class CanvasLayer extends Layer {
      * Ask the map to redraw the layer canvas and fire layerload event
      * @return this
      */
-    completeRender():CanvasLayer {
+    completeRender() {
         if (this._getRenderer()) {
             this._getRenderer().completeRender();
         }
@@ -190,7 +186,7 @@ class CanvasLayer extends Layer {
      * Callback function when layer's canvas is created. <br>
      * Override it to do anything needed.
      */
-    onCanvasCreate():CanvasLayer {
+    onCanvasCreate() {
         return this;
     }
 
@@ -201,7 +197,7 @@ class CanvasLayer extends Layer {
      * The event callback for map's zoomstart event.
      * @param  {Object} param - event parameter
      */
-    onZoomStart() {}
+    onZoomStart() { }
 
     /**
      * map zooming事件回调
@@ -210,7 +206,7 @@ class CanvasLayer extends Layer {
      * The event callback for map's zooming event.
      * @param  {Object} param - event parameter
      */
-    onZooming() {}
+    onZooming() { }
 
     /**
      * map zoomend事件回调
@@ -219,7 +215,7 @@ class CanvasLayer extends Layer {
      * The event callback for map's zoomend event.
      * @param  {Object} param - event parameter
      */
-    onZoomEnd() {}
+    onZoomEnd() { }
 
     /**
      * map movestart事件回调
@@ -228,7 +224,7 @@ class CanvasLayer extends Layer {
      * The event callback for map's movestart event.
      * @param  {Object} param - event parameter
      */
-    onMoveStart() {}
+    onMoveStart() { }
 
     /**
      * map moving事件回调
@@ -237,7 +233,7 @@ class CanvasLayer extends Layer {
      * The event callback for map's moving event.
      * @param  {Object} param - event parameter
      */
-    onMoving() {}
+    onMoving() { }
 
     /**
      * map moveend事件回调
@@ -246,7 +242,7 @@ class CanvasLayer extends Layer {
      * The event callback for map's moveend event.
      * @param  {Object} param - event parameter
      */
-    onMoveEnd() {}
+    onMoveEnd() { }
 
     /**
      * map resize事件回调
@@ -255,7 +251,7 @@ class CanvasLayer extends Layer {
      * The event callback for map's resize event.
      * @param  {Object} param - event parameter
      */
-    onResize() {}
+    onResize() { }
 
     /**
      * double buffer的回调函数
@@ -267,9 +263,13 @@ class CanvasLayer extends Layer {
      * @param  {CanvasRenderingContext2D} bufferContext CanvasRenderingContext2D of double buffer of the layer canvas.
      * @param  {CanvasRenderingContext2D} context CanvasRenderingContext2D of the layer canvas.
      */
-    doubleBuffer(bufferContext:CanvasRenderingContext2D/*, context?:CanvasRenderingContext2D*/):CanvasLayer {
+    doubleBuffer(bufferContext: CanvasRenderingContext2D/*, context?:CanvasRenderingContext2D*/): CanvasLayer {
         bufferContext.clearRect(0, 0, bufferContext.canvas.width, bufferContext.canvas.height);
         return this;
+    }
+
+    _getRenderer() {
+        return super._getRenderer() as CanvasLayerRenderer;
     }
 }
 
@@ -277,3 +277,9 @@ CanvasLayer.mergeOptions(options);
 CanvasLayer.registerRenderer('canvas', CanvasLayerRenderer);
 
 export default CanvasLayer;
+
+export type CanvasLayerOptionsType = LayerOptionsType & {
+    doubleBuffer?: boolean,
+    animation?: boolean,
+    fps?: number | string
+}

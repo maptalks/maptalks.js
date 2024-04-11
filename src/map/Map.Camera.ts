@@ -10,6 +10,7 @@ import Browser from '../core/Browser';
 
 declare module "./Map" {
     interface Map {
+        projViewMatrix: mat4.Matrix4;
         cameraPosition: Point;
         cameraLookAt: number[];
         getFov(): number;

@@ -6,20 +6,9 @@ import ImageGLRenderable from '../renderer/layer/ImageGLRenderable';
 import CanvasRenderer from '../renderer/layer/CanvasRenderer';
 import { ResourceCache } from '../renderer/layer/CanvasRenderer';
 import Extent from '../geo/Extent';
-import Layer from './Layer';
-import {LayerOptions} from './Layer'
+import Layer, { LayerOptionsType } from './Layer';
+import { PointExtent } from '../geo';
 
-enum depthFuncEnum {
-    'never', '<', '=', '<=',' >', '!=', '>=', 'always'
-}
-
-export type ImageLayerOptions = {
-    crossOrigin?: string,
-    renderer?: 'canvas'|'gl'|'dom',
-    alphaTest?: number,
-    depthMask?: boolean,
-    depthFunc?: keyof typeof depthFuncEnum
-}
 
 /**
  * 配置参数
@@ -34,10 +23,10 @@ export type ImageLayerOptions = {
  * @memberOf ImageLayer
  * @instance
  */
-const options:ImageLayerOptions = {
+const options: ImageLayerOptionsType = {
     renderer: Browser.webgl ? 'gl' : 'canvas',
     crossOrigin: null,
-    alphaTest: 0,
+    alphaTest: false,
     depthMask: true,
     depthFunc: '<='
 };
@@ -63,16 +52,16 @@ const TEMP_POINT = new Point(0, 0);
     }])
  */
 class ImageLayer extends Layer {
-    _images: Array<any>|any
-    _imageData: any
+    _images: Array<ImageItem>;
+    _imageData: Array<ImageDataItem>;
 
-    constructor(id: string, images?: Array<any> | any, options?: ImageLayerOptions & LayerOptions) {
-        if (images && !Array.isArray(images) && !images.url) {
+    constructor(id: string, images?: ImageLayerOptionsType | Array<ImageItem>, options?: ImageLayerOptionsType) {
+        if (images && !Array.isArray(images) && !(images as ImageItem).url) {
             options = images;
             images = null;
         }
         super(id, options);
-        this._images = images;
+        this._images = images as Array<ImageItem>;
     }
 
     onAdd() {
@@ -87,7 +76,7 @@ class ImageLayer extends Layer {
      * @param images - new images
      * @return this
      */
-    setImages(images:Array<any>):ImageLayer {
+    setImages(images: Array<ImageItem>) {
         this._images = images;
         this._prepareImages(images);
         return this;
@@ -100,11 +89,11 @@ class ImageLayer extends Layer {
      * Get images
      * @return
      */
-    getImages():Array<any> {
+    getImages(): Array<ImageItem> {
         return this._images;
     }
 
-    _prepareImages(images:Array<any>) {
+    _prepareImages(images: Array<ImageItem>) {
         images = images || [];
         if (!Array.isArray(images)) {
             images = [images];
@@ -127,6 +116,10 @@ class ImageLayer extends Layer {
         if (renderer) {
             renderer.refreshImages();
         }
+    }
+
+    getRenderer() {
+        return super.getRenderer() as ImageLayerCanvasRenderer;
     }
 }
 
@@ -176,9 +169,10 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
         return urls;
     }
 
-    retireImage(image) {
-        if (image.close) {
-            image.close();
+    retireImage(image: ImageType) {
+        const img = image as ImageBitmap;
+        if (img.close) {
+            img.close();
         }
 
     }
@@ -188,7 +182,7 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
         this.setToRedraw();
     }
 
-    draw(timestamp?:number, context?:any) {
+    draw(timestamp?: number, context?: any) {
         if (!this.isDrawable()) {
             return;
         }
@@ -201,7 +195,7 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _drawImages(timestamp?:number, context?:any) {
+    _drawImages(timestamp?: number, context?: any) {
         const imgData = this.layer._imageData;
         const map = this.getMap();
         const mapExtent = map._get2DExtentAtRes(map.getGLRes());
@@ -219,7 +213,7 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
         }
     }
 
-    _drawImage(image:any, extent:any, opacity: number) {
+    _drawImage(image: ImageType, extent: PointExtent, opacity: number) {
         let globalAlpha = 0;
         const ctx = this.context;
         if (opacity < 1) {
@@ -250,13 +244,13 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    drawOnInteracting(event?:any, timestamp?:number, context?:any) {
+    drawOnInteracting(event?: any, timestamp?: number, context?: any) {
         this.draw();
     }
 }
 
 export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRenderer) {
-    drawOnInteracting(event:any, timestamp:number, context:any) {
+    drawOnInteracting(event: any, timestamp: number, context: any) {
         this.draw(timestamp, context);
     }
 
@@ -274,7 +268,7 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
         }
     }
 
-    _drawImages(timestamp?:number, parentContext?:any) {
+    _drawImages(timestamp?: number, parentContext?: any) {
         const gl = this.gl;
         if (parentContext && parentContext.renderTarget) {
             const fbo = parentContext.renderTarget.fbo;
@@ -298,7 +292,7 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
         return true;
     }
 
-    _drawImage(image:any, extent:any, opacity:any) {
+    _drawImage(image: ImageType, extent: PointExtent, opacity: number) {
         this.drawGLImage(image, extent.xmin, extent.ymax, extent.getWidth(), extent.getHeight(), 1, opacity);
     }
 
@@ -322,9 +316,10 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
         this.clearGLCanvas();
     }
 
-    retireImage(image) {
-        if (image.close) {
-            image.close();
+    retireImage(image: ImageType) {
+        const img = image as ImageBitmap;
+        if (img.close) {
+            img.close();
         }
         this.disposeImage(image);
     }
@@ -339,3 +334,26 @@ ImageLayer.registerRenderer('canvas', ImageLayerCanvasRenderer);
 ImageLayer.registerRenderer('gl', ImageLayerGLRenderer);
 
 export default ImageLayer;
+
+export type ImageItem = {
+    url: string,
+    extent: Extent | [number, number, number, number],
+    opacity?: number
+}
+
+export type ImageDataItem = ImageItem & {
+    extent2d: PointExtent;
+}
+
+export type ImageType = HTMLImageElement | ImageBitmap;
+
+enum depthFuncEnum {
+    'never', '<', '=', '<=', ' >', '!=', '>=', 'always'
+}
+export type ImageLayerOptionsType = LayerOptionsType & {
+    crossOrigin?: string,
+    renderer?: 'canvas' | 'gl' | 'dom',
+    alphaTest?: boolean,
+    depthMask?: boolean,
+    depthFunc?: keyof typeof depthFuncEnum
+}

@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { pushIn } from '../../core/util';
-import Layer from '../Layer';
-import TileLayer from './TileLayer';
+import Layer, { LayerJSONType } from '../Layer';
+import TileLayer, { TileLayerOptionsType, TilesType } from './TileLayer';
 import Size from '../../geo/Size';
 
-const options = {
+const options: GroupTileLayerOptionsType = {
+    urlTemplate: '',
     'maxCacheSize': 1024
 };
 
@@ -12,7 +13,7 @@ const options = {
 const DEFAULT_TILESIZE = new Size(256, 256);
 const EVENTS = 'show hide remove setzindex forcereloadstart';
 
-function checkLayers(tileLayers: any[] | any): any[] {
+function checkLayers(tileLayers: TileLayer[]) {
     if (!Array.isArray(tileLayers)) {
         tileLayers = [tileLayers];
     }
@@ -48,7 +49,7 @@ function checkLayers(tileLayers: any[] | any): any[] {
  */
 class GroupTileLayer extends TileLayer {
     layers: TileLayer[];
-    layerMap: any;
+    layerMap: Record<string, TileLayer>;
     private _groupChildren: any[];
     /**
      * Reproduce a GroupTileLayer from layer's profile JSON.
@@ -62,7 +63,6 @@ class GroupTileLayer extends TileLayer {
         if (!layerJSON || layerJSON['type'] !== 'GroupTileLayer') {
             return null;
         }
-        // @ts-ignore
         const layers = layerJSON['layers'].map(json => Layer.fromJSON(json));
         return new GroupTileLayer(layerJSON['id'], layers, layerJSON['options']);
     }
@@ -73,7 +73,7 @@ class GroupTileLayer extends TileLayer {
      * @param [options=null]          - construct options
      * @param [options.*=null]             - options defined in [TileLayer]{@link TileLayer#options}
      */
-    constructor(id: string, layers: TileLayer[], options: any) {
+    constructor(id: string, layers: TileLayer[], options?: GroupTileLayerOptionsType) {
         super(id, options);
         this.layers = layers || [];
         this._checkChildren();
@@ -162,7 +162,7 @@ class GroupTileLayer extends TileLayer {
      * It can be used to reproduce the instance by [fromJSON]{@link Layer#fromJSON} method
      * @return layer's profile JSON
      */
-    toJSON(): any {
+    toJSON(): LayerJSONType {
         const profile = {
             'type': this.getJSONType(),
             'id': this.getId(),
@@ -185,7 +185,7 @@ class GroupTileLayer extends TileLayer {
      * @param z
      * @returns tiles
      */
-    getTiles(z: number, parentLayer: any): any {
+    getTiles(z: number, parentLayer: any): TilesType {
         const layers = this.layers;
         const tiles = [];
         let count = 0;
@@ -228,7 +228,7 @@ class GroupTileLayer extends TileLayer {
         return this.getChildLayer(id);
     }
 
-    getChildLayer(id: string | number) {
+    getChildLayer(id: string | number): TileLayer {
         const layer = this.layerMap[id];
         if (layer) {
             return layer;
@@ -242,7 +242,7 @@ class GroupTileLayer extends TileLayer {
         return null;
     }
 
-    _removeChildTileCache(layer: any): GroupTileLayer {
+    _removeChildTileCache(layer: TileLayer) {
         if (!layer) {
             return this;
         }
@@ -284,7 +284,7 @@ class GroupTileLayer extends TileLayer {
         return this;
     }
 
-    _onLayerShowHide(e: { type: string; target?: any }): any {
+    _onLayerShowHide(e: { type: string; target: any }) {
         const { type, target } = e || {};
         //listen tilelayer.remove() method fix #1629
         if (type === 'remove' && target) {
@@ -298,11 +298,10 @@ class GroupTileLayer extends TileLayer {
             this._removeChildTileCache(target);
         }
         this._renderLayers();
-        return this;
     }
 
     // render all layers
-    _renderLayers(): GroupTileLayer {
+    _renderLayers() {
         const renderer = this.getRenderer();
         if (renderer) {
             renderer.setToRedraw();
@@ -367,3 +366,7 @@ GroupTileLayer.registerJSONType('GroupTileLayer');
 GroupTileLayer.mergeOptions(options);
 
 export default GroupTileLayer;
+
+export type GroupTileLayerOptionsType = TileLayerOptionsType & {
+    maxCacheSize?: number;
+}

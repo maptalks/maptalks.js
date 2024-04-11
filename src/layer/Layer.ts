@@ -9,6 +9,7 @@ import Geometry from '../geometry/Geometry';
 import Browser from '../core/Browser';
 import type { Map } from '../map';
 import type { Marker, MultiPolygon, Polygon } from '../geometry';
+import { CommonProjectionType } from '../geo/projection';
 
 /**
  * 配置项
@@ -33,7 +34,7 @@ import type { Marker, MultiPolygon, Polygon } from '../geometry';
  * @memberOf Layer
  * @instance
  */
-const options: LayerOptions = {
+const options: LayerOptionsType = {
     'attribution': null,
     'minZoom': null,
     'maxZoom': null,
@@ -72,7 +73,7 @@ const options: LayerOptions = {
  */
 class Layer extends JSONAble(Eventable(Renderable(Class))) {
     _canvas: HTMLCanvasElement;
-    _renderer: any | undefined
+    _renderer: CanvasRenderer;
     _id: string
     _zIndex: number
     _drawTime: number
@@ -82,10 +83,10 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     _collisionIndex: CollisionIndex
     _optionsHook?(conf?: any): void
     _silentConfig: boolean | undefined | any
-    options: LayerOptions;
+    options: LayerOptionsType;
 
 
-    constructor(id: string, options?: LayerOptions) {
+    constructor(id: string, options?: LayerOptionsType) {
         let canvas;
         if (options) {
             canvas = options.canvas;
@@ -149,7 +150,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @return this
      * @fires Layer#idchange
      */
-    setId(id: string | number): this {
+    setId(id: string): this {
         const old = this._id;
         if (!isNil(id)) {
             id = id + '';
@@ -339,7 +340,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * Get projection of layer's map
      * @returns
      */
-    getProjection(): any {
+    getProjection(): CommonProjectionType {
         const map = this.getMap();
         return map ? map.getProjection() : null;
     }
@@ -672,7 +673,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     onRemove() { }
 
-    _bindMap(map, zIndex?: number) {
+    _bindMap(map: Map, zIndex?: number) {
         if (!map) {
             return;
         }
@@ -771,8 +772,12 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         return painter.get2DExtent();
     }
 
-    toJSON(options?: any) {
-        return options;
+    toJSON(options?: any): LayerJSONType {
+        return {
+            type: 'Layer',
+            id: this.getId(),
+            options: options || this.config()
+        }
     }
 
     /**
@@ -835,7 +840,7 @@ Layer.prototype.fire = function (eventType: string, param) {
 
 export default Layer;
 
-export type LayerOptions = {
+export type LayerOptionsType = {
     attribution?: string,
     minZoom?: number,
     maxZoom?: number,
@@ -857,4 +862,12 @@ export type LayerOptions = {
     drawImmediate?: boolean,
     geometryEvents?: boolean,
     geometryEventTolerance?: number,
+}
+
+export type LayerJSONType = {
+    id: string;
+    type: string;
+    options: Record<string, any>;
+    geometries?: Array<any>;
+    layers?: Array<any>;
 }

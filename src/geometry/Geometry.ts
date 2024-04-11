@@ -1,6 +1,6 @@
 import { GEOMETRY_COLLECTION_TYPES, NUMERICAL_PROPERTIES } from '../core/Constants';
 import Class from '../core/Class';
-import Eventable from '../core/Eventable';
+import Eventable, { BaseEventParamsType, HandlerFnResultType } from '../core/Eventable';
 import JSONAble from '../core/JSONAble';
 import Handlerable from '../handler/Handlerable';
 import {
@@ -133,6 +133,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     getRotateOffsetAngle?(): number;
     _computePrjExtent?(T: null | ProjectionType): Extent;
     _updateCache?(): void;
+    onAdd?(): void;
 
     constructor(options: GeometryOptionsType) {
         const opts = extend({}, options);
@@ -1611,7 +1612,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return this._parent;
     }
 
-    _fireEvent(eventName: string, param?: { [key: string]: any }) {
+    _fireEvent(eventName: string, param?: BaseEventParamsType) {
         if (this._silence) {
             return;
         }
@@ -1621,7 +1622,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             }
             param['type'] = eventName;
             param['target'] = this;
-            this.getLayer()._onGeometryEvent(param);
+            this.getLayer()._onGeometryEvent(param as HandlerFnResultType);
         }
         this.fire(eventName, param);
     }
