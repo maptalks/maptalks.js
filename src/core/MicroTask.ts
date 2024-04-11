@@ -4,9 +4,18 @@ import { getGlobalWorkerPool } from './worker/WorkerPool';
 import Browser from './Browser';
 import GlobalConfig from '../GlobalConfig';
 
-export type Callback = (...params: any[]) => any
+type runFunction = () => any;
 
-let tasks = [];
+type TaskCreateItem = runFunction | { count?: number, run: runFunction }
+
+type TaskItem = {
+    count: number;
+    run: runFunction;
+    resolve: (...args) => void;
+    results: Array<any>;
+}
+
+let tasks: TaskItem[] = [];
 const loopHooks = [];
 
 /**
@@ -22,7 +31,7 @@ const loopHooks = [];
  * runTaskAsync({count:4,run}).then(result=>{})
  * runTaskAsync(run).then(result=>{})
  */
-export function runTaskAsync(task:any) {
+export function runTaskAsync(task: TaskCreateItem) {
     startTasks();
     const promise = new Promise<any>((resolve, reject) => {
         if (!task) {
@@ -44,9 +53,10 @@ export function runTaskAsync(task:any) {
             reject(new Error('task.count is not number'));
             return;
         }
-        task.results = [];
-        tasks.push(task);
-        task.resolve = resolve;
+        const taskItem = task as TaskItem;
+        taskItem.results = [];
+        tasks.push(taskItem);
+        taskItem.resolve = resolve;
     });
     return promise;
 }
