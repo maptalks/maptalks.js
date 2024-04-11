@@ -47,7 +47,7 @@
     "karma-chrome-launcher": "^3.1.1",
     "karma-mocha": "^2.0.1",
     "karma-mocha-reporter": "^2.2.5",
-    "maptalks": "^1.0.0-rc.28",
+    "maptalks": "^1.0.0-rc.31",
     "mocha": "^10.3.0",
     "pixelmatch": "^4.0.2",
     "rollup": "^4.13.0",

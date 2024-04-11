@@ -17,6 +17,6 @@
     "author": "fuzhenn",
     "license": "UNLICENSED",
     "devDependencies": {
-        "eslint": "^8.46.0"
+        "eslint": "^8.57.0"
     }
 }
