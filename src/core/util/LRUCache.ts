@@ -10,7 +10,7 @@ const nullOnRemove = () => { };
  *
  * @public
  */
-class ArrayLRUCache {
+export class ArrayLRUCache {
     max: number
     onRemove: Function
     data: any

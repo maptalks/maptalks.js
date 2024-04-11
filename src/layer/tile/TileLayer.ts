@@ -9,20 +9,24 @@ import {
     toRadian,
     isString,
     extend,
-    Vector3
+    Vector3,
+    Matrix4
 } from '../../core/util';
-import LRUCache from '../../core/util/LRUCache';
+import LRUCache, { ArrayLRUCache } from '../../core/util/LRUCache';
 import Browser from '../../core/Browser';
 import Size from '../../geo/Size';
 import Point from '../../geo/Point';
 import PointExtent from '../../geo/PointExtent';
 import TileConfig from './tileinfo/TileConfig';
 import TileSystem from './tileinfo/TileSystem';
-import Layer from '../Layer';
-import SpatialReference from '../../map/spatial-reference/SpatialReference';
+import Layer, { LayerJSONType, LayerOptionsType } from '../Layer';
+import SpatialReference, { SpatialReferenceType } from '../../map/spatial-reference/SpatialReference';
 import { intersectsBox } from 'frustum-intersects';
 import * as vec3 from '../../core/util/vec3';
 import { formatResourceUrl } from '../../core/ResourceProxy';
+import { Coordinate, Extent } from '../../geo';
+import { type TileLayerCanvasRenderer } from '../../renderer';
+import { type Map } from '../../map';
 
 const DEFAULT_MAXERROR = 1;
 const TEMP_POINT = new Point(0, 0);
@@ -95,7 +99,7 @@ class TileHashset {
  * @memberOf TileLayer
  * @instance
  */
-const options: TileLayerOptions = {
+const options: TileLayerOptionsType = {
 
     'urlTemplate': null,
     'subdomains': null,
@@ -173,7 +177,7 @@ const TEMP_POINT6 = new Point(0, 0);
 const TILE_BOX = [[0, 0, 0], [0, 0, 0]];
 const TILE_MIN = [0, 0, 0];
 const TILE_MAX = [0, 0, 0];
-const ARR3 = [];
+const ARR3: Vector3 = [0, 0, 0];
 
 /**
  * @classdesc
@@ -189,21 +193,26 @@ const ARR3 = [];
     })
  */
 class TileLayer extends Layer {
-    protected _tileSize: Size;
-    private _coordCache: any;
-    private _disablePyramid: any;
-    private _hasOwnSR: any;
-    private _tileFullExtent: any;
-    private _rootNodes: any;
-    private _visitedTiles: TileHashset;
-    private _zScale: any;
-    private _sr: any;
-    private _srMinZoom: number;
-    private _srMaxZoom: number;
-    private _defaultTileConfig: TileConfig;
-    private _tileConfig: TileConfig;
-    private _polygonOffset: number;
-    tileInfoCache: any;
+    tileInfoCache: ArrayLRUCache;
+    _tileSize: Size;
+    _coordCache: Record<string, Point>;
+    _disablePyramid: boolean;
+    _hasOwnSR: boolean;
+    _tileFullExtent: PointExtent;
+    _rootNodes: any;
+    _visitedTiles: TileHashset;
+    _zScale: number;
+    _sr: SpatialReference;
+    _srMinZoom: number;
+    _srMaxZoom: number;
+    _defaultTileConfig: TileConfig;
+    _tileConfig: TileConfig;
+    _polygonOffset: number;
+    _renderer: TileLayerCanvasRenderer;
+
+    constructor(id: string, options?: TileLayerOptionsType) {
+        super(id, options);
+    }
 
     /**
      * Reproduce a TileLayer from layer's profile JSON.
@@ -213,7 +222,7 @@ class TileLayer extends Layer {
      * @protected
      * @function
      */
-    static fromJSON(layerJSON: any): TileLayer {
+    static fromJSON(layerJSON: Record<string, any>): TileLayer {
         if (!layerJSON || layerJSON['type'] !== 'TileLayer') {
             return null;
         }
@@ -223,10 +232,10 @@ class TileLayer extends Layer {
     /**
      * force Reload tilelayer.
      * Note that this method will clear all cached tiles and reload them. It shouldn't be called frequently for performance reason.
-
+    
      * @return this
      */
-    forceReload(): TileLayer {
+    forceReload() {
         this.fire('forcereloadstart');
         this.clear();
         this.load();
@@ -240,7 +249,7 @@ class TileLayer extends Layer {
      * @return
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    getTileSize(id?: any): Size {
+    getTileSize(id?: string): Size {
         if (this._tileSize) {
             return this._tileSize;
         }
@@ -252,7 +261,7 @@ class TileLayer extends Layer {
         return this._tileSize;
     }
 
-    getTiles(z: number, parentLayer: any) {
+    getTiles(z: number, parentLayer: Layer) {
         this._coordCache = {};
         if (this._isPyramidMode()) {
             return this._getPyramidTiles(z, parentLayer);
@@ -266,7 +275,7 @@ class TileLayer extends Layer {
         return !this._disablePyramid && !this._hasOwnSR && this.options['pyramidMode'] && sr && sr.isPyramid();
     }
 
-    _getTileFullExtent() {
+    _getTileFullExtent(): Extent {
         if (this._tileFullExtent) {
             return this._tileFullExtent;
         }
@@ -274,13 +283,12 @@ class TileLayer extends Layer {
         const fullExtent = sr.getFullExtent();
         const res = sr.getResolution(0);
         const map = this.getMap();
-        // @ts-ignore
         this._tileFullExtent = fullExtent.convertTo(c => map._prjToPointAtRes(c, res, TEMP_POINT));
         return this._tileFullExtent;
     }
 
 
-    _getRootNodes(offset0: any[]) {
+    _getRootNodes(offset0: TileOffsetType): TileRootType {
         const map = this.getMap();
         if (this._rootNodes) {
             const { tiles, mapWidth, mapHeight } = this._rootNodes;
@@ -349,10 +357,10 @@ class TileLayer extends Layer {
         idy: number,
         res: number,
         error: number,
-        parentId?: null,
+        parentId?: string,
         extent2d?: PointExtent,
         tileId?: string
-    ) {
+    ): TileNodeType {
         const map = this.getMap();
         const zoomOffset = this.options['zoomOffset'];
         if (!extent2d) {
@@ -401,7 +409,7 @@ class TileLayer extends Layer {
     }
 
 
-    _getPyramidTiles(z: number, layer: any) {
+    _getPyramidTiles(z: number, layer: Layer): TilesType {
         const map = this.getMap();
         if (isNaN(+z)) {
             z = this._getTileZoom(map.getZoom());
@@ -486,10 +494,10 @@ class TileLayer extends Layer {
                 }
             ],
             count: tiles.length
-        };
+        } as TilesType;
     }
 
-    isParentTile(z: number, maxZoom: number, tile: any) {
+    isParentTile(z: number, maxZoom: number, tile: TileNodeType) {
         const stackMinZoom = Math.max(this.getMinZoom(), z - this.options['tileStackStartDepth']);
         const stackMaxZoom = Math.min(maxZoom, stackMinZoom + this.options['tileStackDepth']);
         return tile.z >= stackMinZoom && tile.z < stackMaxZoom;
@@ -497,13 +505,13 @@ class TileLayer extends Layer {
     }
 
     _splitNode(
-        node: any,
-        projectionView: any,
-        queue: any[],
-        tiles: any[],
+        node: TileNodeType,
+        projectionView: Matrix4,
+        queue: TileNodeType[],
+        tiles: TileNodeType[],
         gridExtent: PointExtent,
         maxZoom: number,
-        offset: any[],
+        offset: TileOffsetType,
         parentRenderer: any,
         glRes: number
     ) {
@@ -572,7 +580,7 @@ class TileLayer extends Layer {
 
     }
 
-    _createChildNode(node: any, dx: number, dy: number, offset?: any[], tileId?: string) {
+    _createChildNode(node: TileNodeType, dx: number, dy: number, offset?: TileOffsetType, tileId?: string) {
         // const zoomOffset = this.options['zoomOffset'];
         const { x, y, idx, idy, extent2d } = node;
         const z = node.z + 1;
@@ -606,7 +614,7 @@ class TileLayer extends Layer {
         return childNode;
     }
 
-    _isTileVisible(node: any, projectionView: any, glScale: number, maxZoom: number, offset: any[]) {
+    _isTileVisible(node: TileNodeType, projectionView: Matrix4, glScale: number, maxZoom: number, offset: TileOffsetType) {
         if (node.z === 0) {
             return 1;
         }
@@ -659,7 +667,7 @@ class TileLayer extends Layer {
     //     return [w, h];
     // }
 
-    _isTileInFrustum(node: any, projectionView: any, glScale: number, offset: any[]) {
+    _isTileInFrustum(node: TileNodeType, projectionView: Matrix4, glScale: number, offset: TileOffsetType): boolean {
         if (!this._zScale) {
             const map = this.getMap();
             const glRes = map.getGLRes();
@@ -683,7 +691,7 @@ class TileLayer extends Layer {
      * from Cesium
      * 与cesium不同的是，我们用boundingVolume顶面的四个顶点中的最小值作为distanceToCamera
      */
-    _getScreenSpaceError(node: any, glScale: number, maxZoom: number, offset: any[]) {
+    _getScreenSpaceError(node: TileNodeType, glScale: number, maxZoom: number, offset: TileOffsetType) {
         // const fovDenominator = this._fovDenominator;
         const geometricError = node.error;
         const map = this.getMap();
@@ -715,7 +723,7 @@ class TileLayer extends Layer {
      * @param z - zoom
      * @return tile descriptors
      */
-    _getCascadeTiles(z: number, parentLayer: any): any {
+    _getCascadeTiles(z: number, parentLayer: Layer): TilesType {
         const map = this.getMap();
         const pitch = map.getPitch();
         const parentRenderer = parentLayer && parentLayer.getRenderer();
@@ -783,7 +791,7 @@ class TileLayer extends Layer {
         // console.log(currentTiles && currentTiles.tiles.length, cascadeTiles1 && cascadeTiles1.tiles.length, cascadeTiles2 && cascadeTiles2.tiles.length);
         return {
             tileGrids, count
-        };
+        } as TilesType;
     }
 
     /**
@@ -843,7 +851,7 @@ class TileLayer extends Layer {
      * Clear the layer
      * @return this
      */
-    clear(): TileLayer {
+    clear() {
         if (this._renderer) {
             this._renderer.clear();
         }
@@ -868,7 +876,7 @@ class TileLayer extends Layer {
      * It can be used to reproduce the instance by [fromJSON]{@link Layer#fromJSON} method
      * @return layer's profile JSON
      */
-    toJSON(): any {
+    toJSON(): LayerJSONType {
         const profile = {
             'type': this.getJSONType(),
             'id': this.getId(),
@@ -950,11 +958,11 @@ class TileLayer extends Layer {
 
     _getTiles(
         tileZoom: number,
-        containerExtent: any,
+        containerExtent: PointExtent,
         cascadeLevel: number,
         parentRenderer: any,
         ignoreMinZoom?: boolean
-    ) {
+    ): TileGridType {
         // rendWhenReady = false;
         const map = this.getMap();
         let z = tileZoom;
@@ -972,7 +980,7 @@ class TileLayer extends Layer {
         const zoom = z + this.options['zoomOffset'];
         const offset: any = this._getTileOffset(z),
             hasOffset = offset[0] || offset[1];
-        const emptyGrid = {
+        const emptyGrid: TileGridType = {
             'zoom': z,
             'extent': null,
             'offset': offset,
@@ -1026,7 +1034,7 @@ class TileLayer extends Layer {
             containerExtent = intersection.convertTo(c => map._pointToContainerPoint(c, undefined, 0, TEMP_POINT));
         }
         //Get description of center tile including left and top offset
-        const prjCenter = map._containerPointToPrj(containerExtent.getCenter(), TEMP_POINT0);
+        const prjCenter = map._containerPointToPrj(containerExtent.getCenter() as Point, TEMP_POINT0);
         const centerPoint = map._prjToPoint(prjCenter, z, TEMP_POINT1);
         let c;
         if (hasOffset) {
@@ -1127,7 +1135,7 @@ class TileLayer extends Layer {
                         this._visitedTiles.add(tileId);
                     }
                     if (canSplitTile && cascadeLevel === 0) {
-                        this._splitTiles(frustumMatrix, tiles, renderer, idx, z + 1, tileRes, tileExtent, dx, dy, tileOffsets);
+                        this._splitTiles(frustumMatrix, tiles, renderer, idx as unknown as TileNodeType, z + 1, tileRes, tileExtent, dx, dy, tileOffsets);
                         extent._combine(tileExtent);
                     } else {
                         if (!tileInfo) {
@@ -1155,7 +1163,7 @@ class TileLayer extends Layer {
 
         if (tiles.length) {
             //sort tiles according to tile's distance to center
-            const center = map._containerPointToPoint(containerExtent.getCenter(), z, TEMP_POINT)._add(offset);
+            const center = map._containerPointToPoint(containerExtent.getCenter() as Point, z, TEMP_POINT)._add(offset);
             const point0 = new Point(0, 0);
             const point1 = new Point(0, 0);
             tiles.sort(function (a, b) {
@@ -1169,7 +1177,7 @@ class TileLayer extends Layer {
             'zoom': tileZoom,
             'extent': extent,
             'tiles': tiles
-        };
+        } as TileGridType;
     }
 
     _convertToExtent2d(containerExtent: PointExtent) {
@@ -1189,16 +1197,16 @@ class TileLayer extends Layer {
     }
 
     _splitTiles(
-        frustumMatrix: any,
-        tiles: any[],
+        frustumMatrix: Matrix4,
+        tiles: TileNodeType[],
         renderer: any,
-        tileIdx: any,
+        tileIdx: TileNodeType,
         z: number,
         res: number,
-        tileExtent: any,
+        tileExtent: PointExtent,
         dx?: number,
         dy?: number,
-        tileOffsets?: any
+        tileOffsets?: Record<string, TileOffsetType>
     ) {
         // const hasOffset = offset[0] || offset[1];
         const yOrder = this._getTileConfig().tileSystem.scale.y;
@@ -1223,7 +1231,7 @@ class TileLayer extends Layer {
     }
 
     _checkAndAddTile(
-        frustumMatrix: any,
+        frustumMatrix: Matrix4,
         renderer: any,
         idx: number,
         idy: number,
@@ -1237,7 +1245,7 @@ class TileLayer extends Layer {
         h: number,
         corner: Point,
         glScale: number,
-        tileOffsets: any
+        tileOffsets: Record<string, TileOffsetType>
     ) {
         const tileId = this._getTileId(idx + i, idy + j, z);
         if (this._visitedTiles && this._visitedTiles.has(tileId)) {
@@ -1254,18 +1262,19 @@ class TileLayer extends Layer {
             return null;
         }
         const childRes = res / 2;
-        let tileInfo = renderer && renderer.isTileCachedOrLoading(tileId);
-        if (!tileInfo) {
+        const tileCache: TileCacheType = renderer && renderer.isTileCachedOrLoading(tileId);
+        let tileInfo: TileNodeType;
+        if (!tileCache) {
             //reserve point caculated by tileConfig
             //so add offset because we have p._sub(offset) and p._add(dx, dy) if hasOffset
             tileInfo = this.createTileNode(x + i, y + j, z, idx + i, idx + y, childRes, 0, null, childExtent, tileId);
         } else {
-            tileInfo = tileInfo.info;
+            tileInfo = tileCache.info;
         }
         return tileInfo;
     }
 
-    _getTileOffset(...params: number[]): number[] {
+    _getTileOffset(...params: number[]): TileOffsetType {
         // offset result can't be cached, as it varies with map's center.
         let offset = this.options['offset'];
         if (isFunction(offset)) {
@@ -1277,17 +1286,17 @@ class TileLayer extends Layer {
         return offset || [0, 0];
     }
 
-    getTileId(x: number, y: number, zoom: number, id: number): string | number {
+    getTileId(x: number, y: number, zoom: number, id: string): string {
         return this._getTileId(x, y, zoom, id);
     }
 
-    _getTileId(x: number, y: number, zoom: number, id?: number): string {
+    _getTileId(x: number, y: number, zoom: number, id?: string): string {
         //id is to mark GroupTileLayer's child layers
         return `${id || this.getId()}_${x}_${y}_${zoom}`;
     }
 
 
-    _project(pcoord: any, out: Point) {
+    _project(pcoord: Coordinate, out: Point) {
         if (this._hasOwnSR) {
             const map = this.getMap();
             const mapProjection = map.getProjection();
@@ -1298,7 +1307,7 @@ class TileLayer extends Layer {
         }
     }
 
-    _unproject(pcoord: any, out: Point) {
+    _unproject(pcoord: Coordinate, out: Point) {
         if (this._hasOwnSR) {
             const map = this.getMap();
             const sr = this.getSpatialReference();
@@ -1348,7 +1357,7 @@ class TileLayer extends Layer {
         return this._tileConfig || this._defaultTileConfig;
     }
 
-    _bindMap(map: any) {
+    _bindMap(map: Map) {
         const baseLayer = map.getBaseLayer();
         if (baseLayer === this) {
             if (!baseLayer.options.hasOwnProperty('forceRenderOnMoving')) {
@@ -1362,22 +1371,18 @@ class TileLayer extends Layer {
         return super._bindMap.apply(this, arguments);
     }
 
-    _isTileInExtent(frustumMatrix: any, tileExtent: any, offset: number[], glScale: number) {
+    _isTileInExtent(frustumMatrix: Matrix4, tileExtent: PointExtent, offset: TileOffsetType, glScale: number) {
         const map = this.getMap();
 
-        let matrix;
-        // @ts-ignore
+        let matrix: Matrix4;
         if (frustumMatrix !== map.projViewMatrix) {
             const tileCenter = tileExtent.getCenter(TEMP_POINT6)._sub(offset[0], offset[1])._multi(glScale);
             vec3.set((ARR3 as Vector3), tileCenter.x, tileCenter.y, 0);
-            // @ts-ignore
             const ndc = vec3.transformMat4(ARR3, ARR3, map.projViewMatrix);
             //地图中心下方的瓦片与 map.projViewMatrix 比较
             //地图中心上方的瓦片与 map.cascadeFrustumMatrix 比较
-            // @ts-ignore
             matrix = ndc[1] < 0 ? map.projViewMatrix : frustumMatrix;
         } else {
-            // @ts-ignore
             matrix = map.projViewMatrix;
         }
 
@@ -1388,13 +1393,12 @@ class TileLayer extends Layer {
         return intersectsBox(matrix, TILE_BOX);
     }
 
-    _isSplittedTileInExtent(frustumMatrix: any, tileExtent: PointExtent, offset: number[], glScale: number) {
+    _isSplittedTileInExtent(frustumMatrix: any, tileExtent: PointExtent, offset: TileOffsetType, glScale: number): boolean {
         const map = this.getMap();
         TILE_BOX[0][0] = (tileExtent.xmin - offset[0]) * glScale;
         TILE_BOX[0][1] = (tileExtent.ymin - offset[1]) * glScale;
         TILE_BOX[1][0] = (tileExtent.xmax - offset[0]) * glScale;
         TILE_BOX[1][1] = (tileExtent.ymax - offset[1]) * glScale;
-        // @ts-ignore
         return intersectsBox(map.projViewMatrix, TILE_BOX);
     }
 
@@ -1441,9 +1445,13 @@ class TileLayer extends Layer {
      * @param offset polygon offset
      * @return
      */
-    setPolygonOffset(offset: number): TileLayer {
+    setPolygonOffset(offset: number) {
         this._polygonOffset = offset;
         return this;
+    }
+
+    getRenderer() {
+        return super.getRenderer() as TileLayerCanvasRenderer;
     }
 }
 
@@ -1477,37 +1485,84 @@ function sortingTiles(t0: { z: number; }, t1: { z: number; }): number {
     return t0.z - t1.z;
 }
 
-type TileLayerOptions = {
-    urlTemplate: string | (() => string);
-    subdomains?: number[] | string[];
-    spatialReference?: SpatialReference;
+export type TileOffsetType = [number, number];
+
+export type TileNodeType = {
+    x: number;
+    y: number;
+    z: number;
+    url: string;
+    res: number;
+    parent: string;
+    offset: TileOffsetType;
+    layer: string;
+    idy: number;
+    idx: number;
+    id: string;
+    extent2d: PointExtent;
+    error: number;
+    children: Array<string>;
+    minAltitude?: number;
+    maxAltitude?: number;
+}
+
+export type TileGridType = {
+    count?: number;
+    extent: PointExtent;
+    offset: TileOffsetType;
+    parents?: Array<TileNodeType>;
+    tiles: Array<TileNodeType>;
+    zoom: number;
+}
+
+export type TilesType = {
+    tileGrids: Array<TileGridType>;
+    count: number;
+}
+
+export type TileCacheType = {
+    info: TileNodeType
+}
+
+export type TileRootType = {
+    status: 0 | 1;
+    error?: string;
+    tiles?: Array<TileNodeType>;
+    mapWidth?: number;
+    mapHeight?: number;
+}
+
+export type TileLayerOptionsType = LayerOptionsType & {
+    urlTemplate: string | ((...args) => string);
+    subdomains?: string[];
+    spatialReference?: SpatialReferenceType;
     tileSize?: number[];
-    offset?: number[] | (() => number[]);
-    tileSystem?: number[];
+    offset?: number[] | ((...args) => number[]);
+    tileSystem?: [number, number, number, number];
     maxAvailableZoom?: number;
     repeatWorld?: boolean;
     background?: boolean;
-    placeholder?: boolean | (() => boolean);
+    placeholder?: boolean | ((...args) => boolean);
     fragmentShader?: string;
     crossOrigin?: string;
     fadeAnimation?: boolean;
     fadeDuration?: number;
     debug?: boolean;
-    renderer?: string;
+    renderer?: 'gl' | 'canvas';
     maxCacheSize?: number;
     cascadeTiles?: boolean;
     zoomOffset?: number;
     tileRetryCount?: number;
     errorUrl?: string;
-    customTags?: any;
+    customTags?: Record<string, any>;
     decodeImageInWorker?: boolean;
     token?: string;
-    fetchOptions?: any;
+    fetchOptions?: Record<string, any>;
     awareOfTerrain?: boolean;
     bufferPixel?: number;
     depthMask?: boolean;
     loadingLimitOnInteracting?: number;
-    loadingLimit? : number;
+    loadingLimit?: number;
     clipByPitch?: boolean;
     pyramidMode?: number;
     tileLimitPerFrame?: number;

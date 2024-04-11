@@ -1,5 +1,5 @@
 import { now } from '../core/util';
-import CanvasLayer from './CanvasLayer';
+import CanvasLayer, { CanvasLayerOptionsType } from './CanvasLayer';
 import CanvasLayerRenderer from '../renderer/layer/canvaslayer/CanvasLayerRenderer';
 import Point from '../geo/Point';
 
@@ -10,7 +10,7 @@ const TEMP_POINT = new Point(0, 0);
  * @memberOf ParticleLayer
  * @instance
  */
-const options = {
+const options: ParticleLayerOptionsType = {
     'animation': true
 };
 
@@ -40,6 +40,7 @@ const options = {
  * @param {Object} [options=null] - options defined in [options]{@link ParticleLayer#options}
  */
 class ParticleLayer extends CanvasLayer {
+    options: ParticleLayerOptionsType;
 
     /**
      * 获取t时刻的例子位置
@@ -50,11 +51,11 @@ class ParticleLayer extends CanvasLayer {
      */
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    getParticles(t?:number) {
+    getParticles(t?: number) {
     }
 
-    draw(context: any, view: any) {
-        const points:any = this.getParticles(now());
+    draw(context: CanvasRenderingContext2D, view: any) {
+        const points: any = this.getParticles(now());
         if (!points || points.length === 0) {
             const renderer = this._getRenderer();
             if (renderer) {
@@ -91,7 +92,7 @@ class ParticleLayer extends CanvasLayer {
         this._fillCanvas(context);
     }
 
-    _fillCanvas(context) {
+    _fillCanvas(context: CanvasRenderingContext2D) {
         const g = context.globalCompositeOperation;
         context.globalCompositeOperation = 'destination-out';
         const trail = this.options['trail'] || 30;
@@ -103,7 +104,8 @@ class ParticleLayer extends CanvasLayer {
 
 ParticleLayer.mergeOptions(options);
 ParticleLayer.registerRenderer('canvas', class extends CanvasLayerRenderer {
-    _shouldClear: boolean
+    _shouldClear: boolean;
+    layer: ParticleLayer;
 
     draw() {
         if (!this.canvas || !this.layer.options['animation'] || this._shouldClear) {
@@ -125,3 +127,7 @@ ParticleLayer.registerRenderer('canvas', class extends CanvasLayerRenderer {
 });
 
 export default ParticleLayer;
+
+export type ParticleLayerOptionsType = CanvasLayerOptionsType & {
+    animation?: boolean;
+}

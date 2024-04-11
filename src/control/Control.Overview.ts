@@ -1,6 +1,7 @@
 import { extend, isFunction } from '../core/util';
 import { on, off, createEl, computeDomPosition } from '../core/util/dom';
 import { Point } from '../geo';
+import { type Geometry } from '../geometry';
 import Polygon from '../geometry/Polygon';
 import Layer from '../layer/Layer';
 import VectorLayer from '../layer/VectorLayer';
@@ -183,7 +184,7 @@ class Overview extends Control {
             'symbol': this.options['symbol']
         })
             .on('dragend', this._onDragEnd, this);
-        new VectorLayer('perspective_layer', this._perspective).addTo(this._overview);
+        new VectorLayer('perspective_layer', this._perspective as unknown as Array<Geometry>).addTo(this._overview);
         this.fire('load');
     }
 
