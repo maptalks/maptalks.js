@@ -307,6 +307,7 @@ class MapCanvasRenderer extends MapRenderer {
             renderer.clearCanvas();
         }
         if (renderer.drawOnInteracting && !inTime) {
+            // @ts-expect-error 我也不知道怎么办，不敢乱动，可能插件里需要？
             renderer.onSkipDrawOnInteracting(this._eventParam, framestamp);
         }
         return 0;
@@ -737,10 +738,10 @@ class MapCanvasRenderer extends MapRenderer {
         }
         const renderer = layer.getRenderer();
         const matrix = renderer.__zoomTransformMatrix;
-        const clipped = renderer.clipCanvas(this.context);
+        const clipped = renderer.clipCanvas(this.context as any);
         if (matrix) {
             ctx.save();
-            ctx.setTransform(...matrix);
+            ctx.setTransform(...(matrix as any));
         }
 
         /*let outlineColor = layer.options['debugOutline'];

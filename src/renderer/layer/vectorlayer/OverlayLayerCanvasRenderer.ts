@@ -1,4 +1,5 @@
 import { isArrayHasData, pushIn } from '../../../core/util';
+import { type Geometry } from '../../../geometry';
 import CanvasRenderer from '../CanvasRenderer';
 import { Geometries } from '../../../geometry';
 
@@ -16,6 +17,8 @@ import { Geometries } from '../../../geometry';
 class OverlayLayerRenderer extends CanvasRenderer {
     _geosToCheck: Geometries[];
     _resourceChecked: boolean;
+    clearImageData?(): void;
+    _lastGeosToDraw: Geometry[];
 
     /**
      * @english
@@ -81,8 +84,8 @@ class OverlayLayerRenderer extends CanvasRenderer {
         this._addGeoToCheckRes(geometries);
         redraw(this);
     }
-
-    onGeometryRemove() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    onGeometryRemove(params: any) {
         redraw(this);
     }
 
@@ -90,24 +93,24 @@ class OverlayLayerRenderer extends CanvasRenderer {
         this._addGeoToCheckRes(e.target);
         redraw(this);
     }
-
-    onGeometryShapeChange() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    onGeometryShapeChange(params: any) {
         redraw(this);
     }
-
-    onGeometryPositionChange() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    onGeometryPositionChange(params: any) {
         redraw(this);
     }
-
-    onGeometryZIndexChange() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    onGeometryZIndexChange(params: any) {
         redraw(this);
     }
-
-    onGeometryShow() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    onGeometryShow(params: any) {
         redraw(this);
     }
-
-    onGeometryHide() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    onGeometryHide(params: any) {
         redraw(this);
     }
 

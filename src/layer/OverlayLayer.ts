@@ -3,8 +3,10 @@ import { isNil, UID, isObject, extend, isFunction, parseStyleRootPath } from '..
 import Extent from '../geo/Extent';
 import { Geometry } from '../geometry';
 import { createFilter, getFilterFeature, compileStyle } from '@maptalks/feature-filter';
-import Layer, { LayerOptions } from './Layer';
+import Layer, { LayerOptionsType } from './Layer';
 import GeoJSON from '../geometry/GeoJSON';
+import { type OverlayLayerCanvasRenderer } from '../renderer';
+import { HandlerFnResultType } from '../core/Eventable';
 
 function isGeometry(geo) {
     return geo && (geo instanceof Geometry);
@@ -19,7 +21,7 @@ function isGeometry(geo) {
  * @memberOf OverlayLayer
  * @instance
  */
-const options: OverlayLayerOptions = {
+const options: OverlayLayerOptionsType = {
     'drawImmediate': false,
     'geometryEvents': true,
     'geometryEventTolerance': 1
@@ -43,14 +45,15 @@ const TMP_EVENTS_ARR = [];
 class OverlayLayer extends Layer {
     _maxZIndex: number
     _minZIndex: number
-    _geoMap: any
-    _geoList: Array<any>
+    _geoMap: Record<string, Geometry>;
+    _geoList: Array<Geometry>
     _toSort: boolean
     _cookedStyles: any
     _clearing: boolean
-    options: OverlayLayerOptions;
+    options: OverlayLayerOptionsType;
+    _renderer: OverlayLayerCanvasRenderer;
 
-    constructor(id: string, geometries: Array<Geometry> | OverlayLayerOptions, options?: OverlayLayerOptions) {
+    constructor(id: string, geometries: OverlayLayerOptionsType | Array<Geometry>, options?: OverlayLayerOptionsType) {
         if (geometries && (!isGeometry(geometries) && !Array.isArray(geometries) && GEOJSON_TYPES.indexOf((geometries as any).type) < 0)) {
             options = geometries;
             geometries = null;
@@ -60,7 +63,7 @@ class OverlayLayer extends Layer {
         this._minZIndex = 0;
         this._initCache();
         if (geometries) {
-            this.addGeometry(geometries);
+            this.addGeometry(geometries as Array<Geometry>);
         }
         const style = this.options['style'];
         if (style) {
@@ -123,7 +126,7 @@ class OverlayLayer extends Layer {
      * @param context=undefined  - context of the filter function, value to use as this when executing filter.
      * @return
      */
-    getGeometries(filter?: (any) => void, context?: any): any | Array<Geometry> {
+    getGeometries(filter?: (geo: Geometry) => boolean, context?: any): Array<Geometry> {
         if (!filter) {
             return this._geoList.slice(0);
         }
@@ -211,7 +214,7 @@ class OverlayLayer extends Layer {
      * @param context=undefined   - callback's context, value to use as this when executing callback.
      * @return this
      */
-    forEach(fn: (any, number) => void, context?: undefined | any): OverlayLayer {
+    forEach(fn: (geo: Geometry, index: number) => void, context?: any) {
         const copyOnWrite = this._geoList.slice(0);
         for (let i = 0, l = copyOnWrite.length; i < l; i++) {
             if (!context) {
@@ -232,7 +235,7 @@ class OverlayLayer extends Layer {
      * @param context=undefined  - Function's context, value to use as this when executing function.
      * @return  A GeometryCollection with all the geometries that pass the test
      */
-    filter(fn: (any) => void, context: undefined | any): any {
+    filter(fn: (geo: Geometry) => boolean, context?: any): Array<Geometry> {
         const selected = [];
         const isFn = isFunction(fn);
         const filter = isFn ? fn : createFilter(fn);
@@ -269,11 +272,11 @@ class OverlayLayer extends Layer {
      * @param fitView.step=null                                     - step function during animation, animation frame as the parameter
      * @return this
      */
-    addGeometry(geometries: any | Array<any>, fitView?: boolean | addGeometryFitViewOptions): OverlayLayer {
+    addGeometry(geometries: Geometry | Array<Geometry>, fitView?: boolean | addGeometryFitViewOptions) {
         if (!geometries) {
             return this;
         }
-        if (geometries.type === 'FeatureCollection') {
+        if ((geometries as Geometry).type === 'FeatureCollection') {
             return this.addGeometry(GeoJSON.toGeometry(geometries), fitView);
         } else if (!Array.isArray(geometries)) {
             const count = arguments.length;
@@ -283,7 +286,7 @@ class OverlayLayer extends Layer {
             geometries = Array.prototype.slice.call(arguments, 0, count - 1);
             fitView = last;
             if (last && isObject(last) && (('type' in last) || isGeometry(last))) {
-                geometries.push(last);
+                (geometries as Array<Geometry>).push(last as Geometry);
                 fitView = false;
             }
             return this.addGeometry(geometries, fitView);
@@ -394,7 +397,7 @@ class OverlayLayer extends Layer {
     }
 
 
-    _add(geo, extent, i) {
+    _add(geo: Geometry, extent?: Extent, i?: number) {
         if (!this._toSort) {
             this._toSort = geo.getZIndex() !== 0;
         }
@@ -445,13 +448,13 @@ class OverlayLayer extends Layer {
      * @param  geometries - geometry ids or geometries to remove
      * @returns this
      */
-    removeGeometry(geometries: string | string[] | Geometry | Geometry[] | any): OverlayLayer {
+    removeGeometry(geometries: Geometry | Geometry[]) {
         if (!Array.isArray(geometries)) {
             return this.removeGeometry([geometries]);
         }
         for (let i = geometries.length - 1; i >= 0; i--) {
             if (!(geometries[i] instanceof Geometry)) {
-                geometries[i] = this.getGeometryById(geometries[i]);
+                geometries[i] = this.getGeometryById(geometries[i] as unknown as string);
             }
             if (!geometries[i] || this !== geometries[i].getLayer()) continue;
             geometries[i].remove();
@@ -483,7 +486,7 @@ class OverlayLayer extends Layer {
      * Clear all geometries in this layer
      * @returns this
      */
-    clear(): OverlayLayer {
+    clear() {
         this._clearing = true;
         this.forEach(geo => {
             geo.remove();
@@ -523,7 +526,7 @@ class OverlayLayer extends Layer {
      * @param geometry - the geometry instance to remove
      * @protected
      */
-    onRemoveGeometry(geometry: any | Geometry) {
+    onRemoveGeometry(geometry: Geometry) {
         if (!geometry || this._clearing) { return; }
         //考察geometry是否属于该图层
         if (this !== geometry.getLayer()) {
@@ -582,7 +585,7 @@ class OverlayLayer extends Layer {
         }
       ]);
      */
-    setStyle(style: any | any[]): OverlayLayer {
+    setStyle(style: any | any[]) {
         this.options.style = style;
         style = parseStyleRootPath(style);
         this._cookedStyles = compileStyle(style);
@@ -608,7 +611,7 @@ class OverlayLayer extends Layer {
         return this;
     }
 
-    _styleGeometry(geometry: any): boolean {
+    _styleGeometry(geometry: Geometry): boolean {
         if (!this._cookedStyles) {
             return false;
         }
@@ -630,7 +633,7 @@ class OverlayLayer extends Layer {
      * @returns this
      * @fires VectorLayer#removestyle
      */
-    removeStyle(): OverlayLayer {
+    removeStyle() {
         if (!this.options.style) {
             return this;
         }
@@ -653,14 +656,14 @@ class OverlayLayer extends Layer {
         return this;
     }
 
-    onAddGeometry(geo) {
+    onAddGeometry(geo: Geometry) {
         const style = this.getStyle();
         if (style) {
             this._styleGeometry(geo);
         }
     }
 
-    hide() {
+    hide(): this {
         for (let i = 0, l = this._geoList.length; i < l; i++) {
             this._geoList[i].onHide();
         }
@@ -674,7 +677,7 @@ class OverlayLayer extends Layer {
         }
     }
 
-    _updateZIndex(...zIndex) {
+    _updateZIndex(...zIndex: number[]) {
         this._maxZIndex = Math.max(this._maxZIndex, Math.max(...zIndex));
         this._minZIndex = Math.min(this._minZIndex, Math.min(...zIndex));
     }
@@ -700,7 +703,7 @@ class OverlayLayer extends Layer {
     }
 
     //binarySearch
-    _findInList(geo) {
+    _findInList(geo: Geometry): number {
         const len = this._geoList.length;
         if (len === 0) {
             return -1;
@@ -722,7 +725,7 @@ class OverlayLayer extends Layer {
         return -1;
     }
 
-    _onGeometryEvent(param) {
+    _onGeometryEvent(param?: HandlerFnResultType) {
         if (!param || !param['target']) {
             return;
         }
@@ -746,7 +749,7 @@ class OverlayLayer extends Layer {
         }
     }
 
-    _onGeometryIdChange(param) {
+    _onGeometryIdChange(param: HandlerFnResultType) {
         if (param['new'] === param['old']) {
             if (this._geoMap[param['old']] && this._geoMap[param['old']] === param['target']) {
                 return;
@@ -764,7 +767,7 @@ class OverlayLayer extends Layer {
 
     }
 
-    _onGeometryZIndexChange(param) {
+    _onGeometryZIndexChange(param: HandlerFnResultType) {
         if (param['old'] !== param['new']) {
             this._updateZIndex(param['new']);
             this._toSort = true;
@@ -774,43 +777,43 @@ class OverlayLayer extends Layer {
         }
     }
 
-    _onGeometryPositionChange(param) {
+    _onGeometryPositionChange(param: HandlerFnResultType) {
         if (this._getRenderer()) {
             this._getRenderer().onGeometryPositionChange(param);
         }
     }
 
-    _onGeometryShapeChange(param) {
+    _onGeometryShapeChange(param: HandlerFnResultType) {
         if (this._getRenderer()) {
             this._getRenderer().onGeometryShapeChange(param);
         }
     }
 
-    _onGeometrySymbolChange(param) {
+    _onGeometrySymbolChange(param: HandlerFnResultType) {
         if (this._getRenderer()) {
             this._getRenderer().onGeometrySymbolChange(param);
         }
     }
 
-    _onGeometryShow(param) {
+    _onGeometryShow(param: HandlerFnResultType) {
         if (this._getRenderer()) {
             this._getRenderer().onGeometryShow(param);
         }
     }
 
-    _onGeometryHide(param) {
+    _onGeometryHide(param: HandlerFnResultType) {
         if (this._getRenderer()) {
             this._getRenderer().onGeometryHide(param);
         }
     }
 
-    _onGeometryPropertiesChange(param) {
+    _onGeometryPropertiesChange(param: HandlerFnResultType) {
         if (this._getRenderer()) {
             this._getRenderer().onGeometryPropertiesChange(param);
         }
     }
 
-    _hasGeoListeners(eventTypes) {
+    _hasGeoListeners(eventTypes: string | Array<string>): boolean {
         if (!eventTypes) {
             return false;
         }
@@ -839,21 +842,31 @@ class OverlayLayer extends Layer {
         }
         return false;
     }
+
+    //override for typing
+    _getRenderer(): OverlayLayerCanvasRenderer {
+        return super._getRenderer() as OverlayLayerCanvasRenderer;
+    }
 }
 
 OverlayLayer.mergeOptions(options);
 
 export default OverlayLayer;
 
-export type OverlayLayerOptions = {
+export type OverlayLayerOptionsType = LayerOptionsType & {
     drawImmediate?: boolean,
     geometryEvents?: boolean,
     geometryEventTolerance?: number,
     style?: any;
-} & LayerOptions;
+}
 
 export type addGeometryFitViewOptions = {
     easing?: string,
     duration?: number,
     step?: (frame) => void
+}
+
+export type LayerIdentifyOptionsType = {
+    onlyVisible?: boolean;
+    tolerance?: number;
 }

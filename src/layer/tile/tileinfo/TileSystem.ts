@@ -79,7 +79,6 @@ extend(TileSystem, /** @lends TileSystem */ {
      * @static
      */
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     'web-mercator': new TileSystem([1, -1, -semiCircum, semiCircum]),
 
     /**
