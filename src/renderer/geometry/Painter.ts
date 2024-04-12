@@ -13,6 +13,7 @@ import { DebugSymbolizer } from './symbolizers';
 import Extent from '../../geo/Extent';
 import { ResourceCache } from '../layer/CanvasRenderer';
 import type { WithUndef } from '../../types/typings';
+import { Geometries } from '../../geometry'
 
 //registered symbolizers
 //the latter will paint at the last
@@ -34,7 +35,9 @@ const TEMP_FIXED_EXTENT = new PointExtent();
 const TEMP_CLIP_EXTENT0 = new PointExtent();
 const TEMP_CLIP_EXTENT1 = new PointExtent();
 const TEMP_CLIP_EXTENT2 = new PointExtent();
-const PROJECTION = {};
+const PROJECTION = {
+    code: undefined
+};
 // const TEMP_CONTAINER_EXTENT = new PointExtent();
 
 const TEMP_BBOX = {
@@ -72,7 +75,7 @@ class Painter extends Class {
     _containerBbox: typeof TEMP_BBOX;
 
     bbox: BBOX;
-    geometry: any;
+    geometry: Geometries;
     symbolizers: any[];
     containerOffset: Point;
     minAltitude: number;
@@ -81,7 +84,7 @@ class Painter extends Class {
     /**
      *  @param geometry - geometry to paint
      */
-    constructor(geometry: any) {
+    constructor(geometry: Geometries) {
         super();
         this.geometry = geometry;
         this.symbolizers = this._createSymbolizers();
@@ -175,7 +178,7 @@ class Painter extends Class {
             placement = 'center';
         }
         if (!this._renderPoints[placement]) {
-            this._renderPoints[placement] = this.geometry._getRenderPoints(placement);
+            this._renderPoints[placement] = (this.geometry as any)._getRenderPoints(placement);
         }
         return this._renderPoints[placement];
     }
@@ -613,7 +616,7 @@ class Painter extends Class {
         if (!renderer || !renderer.context && !context) {
             return;
         }
-        const mapStateCache = renderer.mapStateCache || {};
+        const mapStateCache = renderer.mapStateCache || { offset: undefined };
         //reduce geos to paint when drawOnInteracting
         if (!this.geometry._isCheck) {
             if (extent && !extent.intersects(this.get2DExtent(renderer.resources, TEMP_PAINT_EXTENT))) {
@@ -960,10 +963,11 @@ class Painter extends Class {
         if (Array.isArray(altitude)) {
             this.minAltitude = Number.MAX_VALUE;
             this.maxAltitude = Number.MIN_VALUE;
-            return altitude.map(alt => {
-                const isArray = Array.isArray(alt);
+            return altitude.map(l => {
+                let alt: number[];
+                const isArray = Array.isArray(l);
                 if (!isArray) {
-                    alt = [alt];
+                    alt = [l];
                 }
                 const result = alt.map(al => {
                     const a = al;

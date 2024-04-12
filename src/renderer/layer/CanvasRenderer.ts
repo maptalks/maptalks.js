@@ -11,6 +11,7 @@ import { SizeLike } from '../../geo/Size';
 import { imageFetchWorkerKey } from '../../core/worker/CoreWorkers';
 import { registerWorkerAdapter } from '../../core/worker/Worker';
 import { formatResourceUrl } from '../../core/ResourceProxy';
+import { TileRenderingCanvas, TileRenderingContext, ImageType } from '../types';
 
 const EMPTY_ARRAY = [];
 class ResourceWorkerConnection extends Actor {
@@ -26,10 +27,8 @@ class ResourceWorkerConnection extends Actor {
     }
 }
 
-export type CanvasRenderingCanvas = HTMLCanvasElement & { _parentTileTimestamp: number };
-export type ImageType = HTMLImageElement | ImageBitmap | HTMLCanvasElement;
-
 /**
+ * 在 HTMLCanvasElement 上渲染图层的基类
  * @english
  * Base Class to render layer on HTMLCanvasElement
  * @abstract
@@ -42,8 +41,8 @@ class CanvasRenderer extends Class {
     public resources: ResourceCache;
 
     public context: CanvasRenderingContext2D;
-    public canvas: CanvasRenderingCanvas;
-    public gl: WebGL2RenderingContext | WebGLRenderingContext;
+    public canvas: TileRenderingCanvas;
+    public gl: TileRenderingContext;
     public middleWest: Point;
     public canvasExtent2D: Extent;
     _extent2D: Extent;
@@ -910,7 +909,7 @@ class CanvasRenderer extends Class {
 
 export default CanvasRenderer;
 
-type ResourceUrl = string | string[]
+export type ResourceUrl = string | string[]
 
 export class ResourceCache {
     resources: any;
@@ -1069,4 +1068,5 @@ function registerWorkerSource() {
     }
     registerWorkerAdapter(imageFetchWorkerKey, function () { return workerSource; });
 }
+
 registerWorkerSource();

@@ -4,6 +4,7 @@ import { BBOX, getDefaultBBOX, resetBBOX, setBBOX, validateBBOX } from '../../co
 import Painter from './Painter';
 import Extent from '../../geo/Extent';
 import { ResourceCache } from '../layer/CanvasRenderer';
+import { Geometries } from '../../geometry'
 
 const TEMP_EXTENT = new PointExtent();
 
@@ -17,13 +18,13 @@ export default class CollectionPainter extends Class {
     _drawTime: number;
 
     bbox: BBOX;
-    geometry: any;
+    geometry: Geometries;
     isMask: boolean;
     /**
      * @param geometry - geometry to paint
      * @param isMask
      */
-    constructor(geometry: any, isMask?: boolean) {
+    constructor(geometry: Geometries, isMask?: boolean) {
         super();
         this.geometry = geometry;
         this.isMask = isMask;

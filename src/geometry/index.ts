@@ -20,6 +20,44 @@ import TextBox from './TextBox';
 import Label from './Label';
 import { ConnectorLine, ArcConnectorLine } from './ConnectorLine';
 
+export type Geometries =
+    | ArcCurve
+    | Circle
+    | ConnectorLine
+    | ArcConnectorLine
+    | CubicBezierCurve
+    | Curve
+    | Ellipse
+    | Geometry
+    | GeometryCollection
+    | Label
+    | LineString
+    | Marker
+    | MultiLineString
+    | MultiPoint
+    | MultiPolygon
+    | Polygon
+    | QuadBezierCurve
+    | Rectangle
+    | Sector
+    | TextBox
+    | TextMarker
+
+export type PathLikeGeometries =
+    | Curve
+    | ArcCurve
+    | CubicBezierCurve
+    | QuadBezierCurve
+    | LineString
+    | MultiLineString
+    | ConnectorLine
+    | Rectangle
+    | Polygon
+    | MultiPolygon
+    | Circle
+    | Sector
+    | Ellipse
+
 export {
     ArcCurve,
     Circle,

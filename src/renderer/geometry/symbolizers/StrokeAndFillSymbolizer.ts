@@ -18,7 +18,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         if (!symbol) {
             return false;
         }
-        // @ts-expect-error todo fix geometry 可能没有isPoint属性
+
         if (geometry && geometry.isPoint) {
             return false;
         }
@@ -36,7 +36,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         this.symbol = symbol;
         this.geometry = geometry;
         this.painter = painter;
-        // @ts-expect-error todo fix geometry 可能没有isPoint属性
+
         if (geometry.isPoint) {
             return;
         }

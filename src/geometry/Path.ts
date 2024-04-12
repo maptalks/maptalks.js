@@ -61,9 +61,7 @@ export class Path extends Geometry {
     public _simplified: boolean
     public _prjCoords: Array<Coordinate>
     hasHoles?(): boolean;
-    getHoles?(): Array<Array<Coordinate>>;
     _getPrjHoles?(): Array<Array<Coordinate>>;
-
 
     /**
      * 动画展示线条

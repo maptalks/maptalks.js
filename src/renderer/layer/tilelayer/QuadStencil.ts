@@ -1,5 +1,5 @@
 import { createProgram, enableVertexAttrib } from '../../../core/util/gl';
-import { TileRenderingContext, TileRenderingProgram, VertexAttrib } from '../ImageGLRenderable';
+import { TileRenderingContext, TileRenderingProgram, VertexAttrib } from '../../types';
 
 const quadVertices = typeof Int8Array !== 'undefined' ? new Int8Array([
     // positions
