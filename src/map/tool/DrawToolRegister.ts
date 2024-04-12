@@ -213,7 +213,8 @@ const polygonHooks: modeActionType = {
             let polygon = layer.getGeometryById('polygon');
             if (!polygon && prjCoords.length >= 3) {
                 polygon = new Polygon([coordinates], {
-                    'id': 'polygon'
+                    'id': 'polygon',
+                    'zIndex': -1
                 });
                 if (symbol) {
                     const pSymbol = extendSymbol(symbol, {
@@ -231,7 +232,8 @@ const polygonHooks: modeActionType = {
     },
     'generate': function (geometry) {
         const polygon = new Polygon(geometry.getCoordinates(), {
-            'symbol': geometry.getSymbol()
+            'symbol': geometry.getSymbol(),
+            'properties': geometry.getProperties()
         });
         // polygon._setPrjCoordinates(geometry._getPrjCoordinates());
         polygon._projCode = geometry._projCode;
