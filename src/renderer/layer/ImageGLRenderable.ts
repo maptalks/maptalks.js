@@ -1,22 +1,17 @@
-import { IS_NODE, isInteger, isNil, isNumber, type Vector3 } from '../../core/util';
+import { IS_NODE, isInteger, isNil, isNumber, type Vector3, Matrix4InOut } from '../../core/util';
 import { createGLContext, createProgram, enableVertexAttrib } from '../../core/util/gl';
 import * as mat4 from '../../core/util/mat4';
 import Canvas from '../../core/Canvas';
 import Point from '../../geo/Point';
+import type { Map } from '../../map'
 import { MixinConstructor } from '../../core/Mixin';
+import { VertexAttrib, TileImageBuffer, TileImageTexture, TileImageType, TileRenderingProgram, TileRenderingCanvas, TileRenderingContext } from '../types';
+import { WithNull } from '../../types/typings';
 
 // used to debug tiles
 const DEFAULT_BASE_COLOR = [1, 1, 1, 1];
 const TEMP_FLOAT32ARRAY = new Float32Array(8);
 const TEMP_INT16ARRAY = new Int16Array(8);
-
-export type TileRenderingCanvas = { gl?: TileRenderingContext, texture?: TileImageTexture } & HTMLCanvasElement;
-export type TileRenderingContext = { program: TileRenderingProgram, wrap: () => TileRenderingContext } & (WebGLRenderingContext | WebGL2RenderingContext);
-export type TileRenderingProgram = { fragmentShader: string, vertexShader: string } & WebGLProgram;
-export type TileImageType = { glBuffer?: TileImageBuffer, texture?: TileImageTexture } & (HTMLImageElement | HTMLCanvasElement | ImageBitmap);
-export type TileImageBuffer = { width?: number, height?: number, type?: string } & WebGLBuffer;
-export type TileImageTexture = WebGLTexture;
-export type VertexAttrib = [name: string, stride: number, type?: string];
 
 const shaders = {
     'vertexShader': `
@@ -88,9 +83,11 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
         _imageBuffers?: TileImageBuffer[];
         _buffers?: TileImageBuffer[];
         _textures?: TileImageTexture[];
-
+        getMap?(): Map;
 
         /**
+         * 绘制图片数据
+         *
          * @english
          * Draw an image at x, y at map's gl zoom
          * @param image
@@ -141,7 +138,7 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
             const uMatrix = mat4.identity(arr16);
             mat4.translate(uMatrix, uMatrix, v3);
             mat4.scale(uMatrix, uMatrix, [scale, scale, 1]);
-            mat4.multiply(uMatrix, (this as any).getMap().projViewMatrix, uMatrix);
+            mat4.multiply(uMatrix, this.getMap().projViewMatrix, uMatrix);
             gl.uniformMatrix4fv(this.program['u_matrix'], false, uMatrix);
             gl.uniform1f(this.program['u_opacity'], opacity);
             gl.uniform1f(this.program['u_debug_line'], 0);
@@ -175,7 +172,16 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
             }
         }
 
-        drawDebug(uMatrix: number[], x: number, y: number, w: number, h: number, debugInfo: string) {
+        /**
+         * 绘制 debug 信息，包括边线和行列号
+         * @param uMatrix
+         * @param x
+         * @param y
+         * @param w
+         * @param h
+         * @param debugInfo
+         */
+        drawDebug(uMatrix: Matrix4InOut, x: number, y: number, w: number, h: number, debugInfo: string) {
             const gl = this.gl;
             gl.disable(gl.DEPTH_TEST);
             gl.bindBuffer(gl.ARRAY_BUFFER, this._debugBuffer);
@@ -228,6 +234,14 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
             gl.enable(gl.DEPTH_TEST);
         }
 
+        /**
+         * 构建瓦片顶点数据
+         * @param x
+         * @param y
+         * @param w
+         * @param h
+         * @param buffer
+         */
         bufferTileData(x: number, y: number, w: number, h: number, buffer?: TileImageBuffer) {
             const x1 = x;
             const x2 = x + w;
@@ -255,6 +269,8 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
         }
 
         /**
+         * 对于需要两个 canvas 来绘制的图层我们需要重新创建一个 canvas
+         * @english
          * Create another GL canvas to draw gl images
          * For layer renderer that needs 2 seperate canvases for 2d and gl
          */
@@ -263,6 +279,8 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
         }
 
         /**
+         * 创建 webgl 实例，优先使用 canvas2
+         * @english
          * Get webgl context(this.gl). It prefers canvas2, and will change to this.canvas if canvas2 is not created
          */
         createGLContext() {
@@ -371,7 +389,7 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
         /**
          * Get a texture from cache or create one if cache is empty
          */
-        getTexture(): TileImageTexture | null {
+        getTexture(): WithNull<TileImageTexture> {
             if (!this._textures) {
                 this._textures = [];
             }
@@ -413,7 +431,7 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
         /**
          * Get a texture from cache or create one if cache is empty
          */
-        getImageBuffer(): TileImageBuffer | null {
+        getImageBuffer(): WithNull<TileImageBuffer> {
             if (!this._imageBuffers) {
                 this._imageBuffers = [];
             }
@@ -423,7 +441,7 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
 
         /**
          * Save a texture to the cache
-         * @param {WebGLTexture} texture
+         * @param buffer
          */
         saveImageBuffer(buffer: TileImageBuffer): void {
             if (!this._imageBuffers) {
@@ -510,12 +528,9 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
 
         /**
          * Enable vertex attributes
-         * @param {Array} attributes [[name, stride, type], [name, stride, type]...]
+         * @params attributes
          * @example
-         * rendererr.enableVertexAttrib([
-         *  ['a_position', 3, 'FLOAT'],
-         *  ['a_normal', 3, 'FLOAT']
-         * ]);
+         * rendererr.enableVertexAttrib(['a_position', 3, 'FLOAT']);
          */
         enableVertexAttrib(attributes: VertexAttrib): void {
             enableVertexAttrib(this.gl, this.gl.program, attributes);
@@ -555,9 +570,10 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
         }
 
         /**
+         * 启用纹理采样器
          * Enable a sampler, and set texture
          * @param sampler
-         * @param texture id
+         * @param texIdx id
          */
         enableSampler(sampler: string, texIdx?: number): WebGLUniformLocation {
             const gl = this.gl;

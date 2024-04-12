@@ -21,7 +21,7 @@ import LRUCache from '../../../core/util/LRUCache';
 import Canvas from '../../../core/Canvas';
 import Actor from '../../../core/worker/Actor';
 import { imageFetchWorkerKey } from '../../../core/worker/CoreWorkers';
-import { TileImageBuffer, TileImageTexture } from '../ImageGLRenderable';
+import { TileImageBuffer, TileImageTexture } from '../../types';
 import type { WithUndef } from '../../../types/typings';
 
 const TILE_POINT = new Point(0, 0);

@@ -3,16 +3,16 @@ import Point from '../geo/Point';
 import Coordinate from '../geo/Coordinate';
 import * as mat4 from '../core/util/mat4';
 import { subtract, add, scale, normalize, dot, set, distance, angle } from '../core/util/vec3';
-import { clamp, interpolate, isNumber, isNil, wrap, toDegree, toRadian } from '../core/util';
+import { clamp, interpolate, isNumber, isNil, wrap, toDegree, toRadian, type Matrix4 } from '../core/util';
 import { applyMatrix, matrixToQuaternion, quaternionToMatrix, lookAt, setPosition } from '../core/util/math';
 import Browser from '../core/Browser';
 
 
 declare module "./Map" {
     interface Map {
-        projViewMatrix: mat4.Matrix4;
         cameraPosition: Point;
         cameraLookAt: number[];
+        projViewMatrix: Matrix4;
         getFov(): number;
         setFov(fov: number): this;
         getBearing(): number;
