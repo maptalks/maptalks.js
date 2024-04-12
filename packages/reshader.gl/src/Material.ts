@@ -1,5 +1,5 @@
 import Eventable from './common/Eventable';
-import { isNil, extend1, hasOwn, getTexMemorySize } from './common/Util';
+import { isNil, extendWithoutNil, hasOwn, getTexMemorySize } from './common/Util';
 import AbstractTexture from './AbstractTexture';
 import { KEY_DISPOSED } from './common/Constants';
 import { ShaderUniforms, ShaderUniformValue, ShaderDefines } from './types/typings';
@@ -24,7 +24,7 @@ class Material extends Eventable(Base) {
     constructor(uniforms: ShaderUniforms = {}, defaultUniforms: ShaderUniforms) {
         super()
         this._version = 0;
-        this.uniforms = extend1({}, defaultUniforms || {}, uniforms);
+        this.uniforms = extendWithoutNil({}, defaultUniforms || {}, uniforms);
         for (const p in uniforms) {
             const getter = Object.getOwnPropertyDescriptor(uniforms, p).get;
             if (getter) {
@@ -111,7 +111,6 @@ class Material extends Eventable(Base) {
      * Get shader defines
      * @return {Object}
      */
-    //eslint-disable-next-line
     appendDefines(defines: ShaderDefines, geometry: Geometry) {
         const uniforms = this.uniforms;
         if (!uniforms) {

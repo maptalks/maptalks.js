@@ -5,7 +5,7 @@ const toChar = String.fromCharCode;
 
 const MINELEN = 8;
 const MAXELEN = 0x7fff;
-function rgbe2float(rgbe, buffer, offset, exposure) {
+function rgbe2float(rgbe: number[], buffer: number[], offset: number, exposure: number) {
     if (rgbe[3] > 0) {
         const f = Math.pow(2.0, rgbe[3] - 128 - 8 + exposure);
         buffer[offset + 0] = rgbe[0] * f;
@@ -20,7 +20,7 @@ function rgbe2float(rgbe, buffer, offset, exposure) {
     return buffer;
 }
 
-function encodeRGBM(buffer, offset, range) {
+function encodeRGBM(buffer: number[], offset: number, range: number) {
     const r = buffer[offset] / range;
     const g = buffer[offset + 1] / range;
     const b = buffer[offset + 2] / range;
@@ -33,7 +33,7 @@ function encodeRGBM(buffer, offset, range) {
     buffer[offset + 3] = Math.min(255, a * 255);
 }
 
-function uint82string(array, offset, size) {
+function uint82string(array: Uint8Array, offset: number, size: number) {
     let str = '';
     for (let i = offset; i < size; i++) {
         str += toChar(array[i]);
@@ -41,7 +41,7 @@ function uint82string(array, offset, size) {
     return str;
 }
 
-function copyrgbe(s, t) {
+function copyrgbe(s: number[], t: number[]) {
     t[0] = s[0];
     t[1] = s[1];
     t[2] = s[2];
@@ -49,7 +49,7 @@ function copyrgbe(s, t) {
 }
 
 // TODO : check
-function oldReadColors(scan, buffer, offset, xmax) {
+function oldReadColors(scan: number[][], buffer, offset, xmax) {
     let rshift = 0, x = 0, len = xmax;
     while (len > 0) {
         scan[x][0] = buffer[offset++];
@@ -73,7 +73,8 @@ function oldReadColors(scan, buffer, offset, xmax) {
     return offset;
 }
 
-function readColors(scan, buffer, offset, xmax) {
+function readColors(scan: number[][], buffer: Uint8Array, offset: number, xmax: number) {
+    //@ts-expect-error 原始逻辑如此，忽略ts里的报错
     if ((xmax < MINELEN) | (xmax > MAXELEN)) {
         return oldReadColors(scan, buffer, offset, xmax);
     }
@@ -111,7 +112,7 @@ function readColors(scan, buffer, offset, xmax) {
 // http://www.graphics.cornell.edu/~bjw/rgbe.html
 // Blender source
 // http://radsite.lbl.gov/radiance/refer/Notes/picture_format.html
-function parseRGBE(arrayBuffer, exposure = 0, maxRange = 9) {
+function parseRGBE(arrayBuffer: ArrayBufferLike, exposure = 0, maxRange = 9) {
     const data = new Uint8Array(arrayBuffer);
     const size = data.length;
     if (uint82string(data, 0, 2) !== '#?') {
@@ -155,7 +156,7 @@ function parseRGBE(arrayBuffer, exposure = 0, maxRange = 9) {
         }
     }
     let range = 0;
-    const pixels = new Array(width * height * 4);
+    const pixels: number[] = new Array(width * height * 4);
     let offset2 = 0;
     for (let y = 0; y < height; y++) {
         offset = readColors(scanline, data, offset, width);
