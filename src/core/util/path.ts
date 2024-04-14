@@ -1,5 +1,6 @@
 import Point from '../../geo/Point';
 import Coordinate from '../../geo/Coordinate';
+import { isNumber } from './common';
 
 
 export function clipLine(points, bounds, round?: boolean, noCut?: boolean) {
@@ -266,3 +267,36 @@ export function withInEllipse(point: Point, center: Point, southeast: Point, tol
     */
     return (point.distanceTo(f1) + point.distanceTo(f2)) <= (d + 2 * tolerance);
 }
+
+
+export function getMinMaxAltitude(altitude: number | number[] | number[][]): [number, number] {
+    if (!altitude) {
+        return [0, 0];
+    }
+    let min = Infinity, max = -Infinity;
+    //number
+    if (isNumber(altitude)) {
+        min = max = altitude;
+        return [min, max];
+    }
+
+    const pathMinMax = (alts: number[]) => {
+        for (let i = 0, len = alts.length; i < len; i++) {
+            const alt = alts[i];
+            min = Math.min(min, alt);
+            max = Math.max(max, alt);
+        }
+    }
+    //number []
+    if (!Array.isArray(altitude[0])) {
+        pathMinMax(altitude as number[]);
+        return [min, max];
+    }
+    //number [][]
+    for (let i = 0, len = altitude.length; i < len; i++) {
+        const alts = altitude[i];
+        pathMinMax(alts as number[]);
+    }
+    return [min, max];
+}
+
