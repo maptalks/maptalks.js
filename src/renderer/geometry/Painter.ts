@@ -1,5 +1,5 @@
 import { isNumber, sign, pushIn, isDashLine, getPointsResultPts } from '../../core/util';
-import { clipPolygon, clipLine } from '../../core/util/path';
+import { clipPolygon, clipLine, getMinMaxAltitude } from '../../core/util/path';
 import Class from '../../core/Class';
 import Size from '../../geo/Size';
 import Point from '../../geo/Point';
@@ -67,7 +67,7 @@ class Painter extends Class {
     _extent2D: Extent & { _zoom: number };
     _fixedExtent: PointExtent;
     _altAtGL: any;
-    _propAlt: number | number[];
+    _propAlt: number | number[] | number[][];
     _projCode: string;
     _pitched: boolean;
     _rotated: boolean;
@@ -952,39 +952,17 @@ class Painter extends Class {
         }
         const altitude = this.geometry._getAltitude();
         this._propAlt = altitude;
+        const [min, max] = getMinMaxAltitude(altitude);
+        this.minAltitude = min;
+        this.maxAltitude = max;
         if (!altitude) {
-            this.minAltitude = this.maxAltitude = 0;
             return 0;
         }
         const center = this.geometry.getCenter();
         if (!center) {
             return 0;
         }
-        if (Array.isArray(altitude)) {
-            this.minAltitude = Number.MAX_VALUE;
-            this.maxAltitude = Number.MIN_VALUE;
-            return altitude.map(l => {
-                let alt: number[];
-                const isArray = Array.isArray(l);
-                if (!isArray) {
-                    alt = [l];
-                }
-                const result = alt.map(al => {
-                    const a = al;
-                    if (a < this.minAltitude) {
-                        this.minAltitude = a;
-                    }
-                    if (a > this.maxAltitude) {
-                        this.maxAltitude = a;
-                    }
-                    return a;
-                });
-                return isArray ? result : result[0];
-            });
-        } else {
-            this.minAltitude = this.maxAltitude = altitude;
-            return this.minAltitude;
-        }
+        return altitude;
     }
 
     _verifyProjection() {
