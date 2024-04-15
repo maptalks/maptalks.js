@@ -33,6 +33,7 @@ import GeometryCollection from './GeometryCollection'
 import type { Map } from '../map';
 import { WithNull } from '../types/typings';
 import { InfoWindowOptionsType } from '../ui/InfoWindow';
+import { getMinMaxAltitude } from '../core/util/path';
 
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_EXTENT = new PointExtent();
@@ -1691,7 +1692,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     //------------- altitude + layer.altitude -------------
     //this is for vectorlayer
     //内部方法 for render,返回的值受layer和layer.options.enableAltitude,layer.options.altitude影响
-    _getAltitude(): number | number[] {
+    _getAltitude(): number | number[] | number[][] {
         const layer = this.getLayer();
         if (!layer) {
             return 0;
@@ -1724,7 +1725,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     //this for user
-    getAltitude(): number | number[] | null {
+    getAltitude(): number | number[] | number[][] {
         const layer = this.getLayer();
         const altitudeProperty = getAltitudeProperty(layer);
         const properties = this.properties || TEMP_PROPERTIES;
@@ -1740,11 +1741,8 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     hasAltitude(): boolean {
-        const altitude = this._getAltitude();
-        if (!altitude) {
-            return false;
-        }
-        return true;
+        this._genMinMaxAlt();
+        return !!this._minAlt || !!this._maxAlt;
     }
 
     setAltitude(alt: number): this {
@@ -1785,41 +1783,21 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     _genMinMaxAlt(): void {
-        const altitude = this._getAltitude();
-        if (Array.isArray(altitude)) {
-            this._minAlt = Number.MAX_VALUE;
-            this._maxAlt = Number.MIN_VALUE;
-            altitude.forEach(alt => {
-                const a = alt;
-                if (a < this._minAlt) {
-                    this._minAlt = a;
-                }
-                if (a > this._maxAlt) {
-                    this._maxAlt = a;
-                }
-            });
-        } else {
-            this._minAlt = this._maxAlt = altitude;
+        if (this._minAlt === undefined || this._maxAlt === undefined) {
+            const altitude = this._getAltitude();
+            const [min, max] = getMinMaxAltitude(altitude);
+            this._minAlt = min;
+            this._maxAlt = max;
         }
     }
 
     getMinAltitude(): number {
-        if (this._minAlt === undefined) {
-            this._genMinMaxAlt();
-        }
-        if (!this._minAlt) {
-            return 0;
-        }
+        this._genMinMaxAlt();
         return this._minAlt;
     }
 
     getMaxAltitude(): number {
-        if (this._maxAlt === undefined) {
-            this._genMinMaxAlt();
-        }
-        if (!this._maxAlt) {
-            return 0;
-        }
+        this._genMinMaxAlt();
         return this._maxAlt;
     }
 
@@ -1862,7 +1840,7 @@ function getAltitudeProperty(layer: OverlayLayer): string {
     return altitudeProperty;
 }
 
-function getGeometryCoordinatesAlts(geometry: Geometry, layerAlt: number, enableAltitude: boolean): number | number[] | null {
+function getGeometryCoordinatesAlts(geometry: Geometry, layerAlt: number, enableAltitude: boolean): number | number[] | number[][] {
     const coordinates: any = geometry.getCoordinates ? geometry.getCoordinates() : null;
     if (coordinates) {
         const tempAlts = [];
