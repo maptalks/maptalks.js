@@ -318,7 +318,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     checkGeo(geo: Geometries) {
         //点的话已经在批量处理里判断过了
         if (geo.isPoint && this._onlyHasPoint !== undefined) {
-            if (geo._inCurrentView) {
+            if (geo._inCurrentView || geo.hasAltitude()) {
                 this._hasPoint = true;
                 geo._isCheck = true;
                 this._geosToDraw.push(geo);
@@ -334,7 +334,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
         const painter = geo._getPainter();
         let inCurrentView = true;
-        if (geo._inCurrentView) {
+        if (geo._inCurrentView || geo.hasAltitude()) {
             inCurrentView = true;
         } else if (geo._inCurrentView === false) {
             inCurrentView = false;
