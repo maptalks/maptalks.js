@@ -357,7 +357,7 @@ describe('Geometry.Altitude', function () {
                 coordiantes: coordiantes3
             }
         ];
-
+        map.addLayer(layer);
         let idx = 0;
         function test() {
             if (idx === data.length) {
@@ -395,4 +395,5 @@ describe('Geometry.Altitude', function () {
         test();
 
     });
+  
 });
