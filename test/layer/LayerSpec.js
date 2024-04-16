@@ -422,7 +422,7 @@ describe('Layer.Spec', function () {
             layer.addGeometry(rect, true);
 
             container = ctx.container;
-            eventContainer = innermap.getPanels().canvasContainer;
+            eventContainer = innerMap.getPanels().canvasContainer;
         });
 
         afterEach(function () {
