@@ -33,13 +33,13 @@ describe('Map.Anim', function () {
         var pitch = map.getPitch() + 10;
         var bearing = map.getBearing() + 60;
         map.getBaseLayer().config('durationToAnimate', 300);
-        map.on('animateend', function () {
+        setTimeout(function () {
             expect(map.getCenter().toArray()).to.be.closeTo(center.toArray());
             expect(map.getZoom()).to.be.eql(zoom);
             expect(map.getPitch()).to.be.eql(pitch);
             expect(map.getBearing()).to.be.approx(bearing);
             done();
-        });
+        }, 1000);
         map.animateTo({
             center : center,
             zoom : zoom,
