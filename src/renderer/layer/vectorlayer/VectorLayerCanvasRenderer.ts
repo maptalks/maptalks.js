@@ -427,8 +427,8 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         const glScale = map.getGLScale();
         const glRes = map.getGLRes();
         const containerExtent = map.getContainerExtent();
-        const _2DExtent = map._get2DExtent();
-        const glExtent = map._get2DExtentAtRes(glRes);
+        const _2DExtent = map.get2DExtent();
+        const glExtent = map.get2DExtentAtRes(glRes);
         this.mapStateCache = {
             resolution,
             pitch,

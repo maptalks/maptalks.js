@@ -102,7 +102,7 @@ Map.include(/** @lends Map.prototype */{
         const res = this.getResolution(nextZoom),
             fromRes = this.getResolution(this._startZoomVal),
             scale = fromRes / res / startScale,
-            startPoint = this._prjToContainerPoint(this._startZoomCoord, this._startZoomVal);
+            startPoint = this.prjToContainerPoint(this._startZoomCoord, this._startZoomVal);
         const offset = this.getViewPoint();
         if (!this.isRotating() && !startPoint.equals(origin) && scale !== 1) {
             const pitch = this.getPitch();
