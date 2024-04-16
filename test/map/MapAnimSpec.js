@@ -32,14 +32,13 @@ describe('Map.Anim', function () {
         var zoom = map.getZoom() - 1;
         var pitch = map.getPitch() + 10;
         var bearing = map.getBearing() + 60;
-        map.getBaseLayer().config('durationToAnimate', 300);
-        setTimeout(function () {
+        map.on('animateend', function () {
             expect(map.getCenter().toArray()).to.be.closeTo(center.toArray());
             expect(map.getZoom()).to.be.eql(zoom);
             expect(map.getPitch()).to.be.eql(pitch);
             expect(map.getBearing()).to.be.approx(bearing);
             done();
-        }, 1000);
+        });
         map.animateTo({
             center : center,
             zoom : zoom,
@@ -55,7 +54,6 @@ describe('Map.Anim', function () {
         var zoom = map.getZoom() - 1;
         var pitch = map.getPitch() + 10;
         var bearing = map.getBearing() + 60;
-        map.getBaseLayer().config('durationToAnimate', 300);
         map.on('animateend', function () {
             expect(map.getCenter().toArray()).to.be.closeTo(center.toArray());
             expect(map.getZoom()).to.be.eql(zoom);
@@ -76,7 +74,6 @@ describe('Map.Anim', function () {
     it('rotate', function (done) {
         var pitch = map.getPitch() + 10;
         var bearing = map.getBearing() + 60;
-        map.getBaseLayer().config('durationToAnimate', 300);
         map.on('animateend', function () {
             expect(map.getPitch()).to.be.eql(pitch);
             expect(map.getBearing()).to.be.approx(bearing);
@@ -92,7 +89,6 @@ describe('Map.Anim', function () {
 
     it('zoomOut', function (done) {
         var zoom = map.getZoom() - 5;
-        map.getBaseLayer().config('durationToAnimate', 300);
         map.on('animateend', function () {
             expect(map.getZoom()).to.be.eql(zoom);
             done();
@@ -108,7 +104,6 @@ describe('Map.Anim', function () {
         map.config('zoomable', false);
         var cur = map.getZoom();
         var zoom = map.getZoom() - 5;
-        map.getBaseLayer().config('durationToAnimate', 300);
         map.on('animateend', function () {
             expect(map.getZoom()).to.be.eql(cur);
             done();
