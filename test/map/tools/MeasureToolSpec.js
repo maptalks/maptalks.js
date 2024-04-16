@@ -95,7 +95,7 @@ describe('DistanceTool and AreaTool', function () {
         map = setups.map;
         map.config('zoomAnimation', false);
         map.setZoom(5);
-        eventContainer = map._panels.canvasContainer;
+        eventContainer = map.getPanels().canvasContainer;
     });
 
     afterEach(function () {

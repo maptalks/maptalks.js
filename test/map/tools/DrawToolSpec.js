@@ -81,7 +81,7 @@ describe('DrawTool', function () {
                 'clientY':point.y - i
             });
         }
-      
+
     }
 
     function dragDrawByTouch() {
@@ -154,7 +154,7 @@ describe('DrawTool', function () {
         var setups = COMMON_CREATE_MAP(center);
         container = setups.container;
         map = setups.map;
-        eventContainer = map._panels.canvasContainer;
+        eventContainer = map.getPanels().canvasContainer;
 
     });
 

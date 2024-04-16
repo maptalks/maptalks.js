@@ -13,7 +13,7 @@ describe('Geometry.Ellipse', function () {
         });
         container = setups.container;
         map = setups.map;
-        canvasContainer = map._panels.canvasContainer;
+        canvasContainer = map.getPanels().canvasContainer;
         layer = new maptalks.VectorLayer('v').addTo(map);
     });
 

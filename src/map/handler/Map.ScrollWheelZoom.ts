@@ -58,7 +58,7 @@ class MapScrollWheelZoomHandler extends Handler {
         if (map._ignoreEvent(evt) || map._isEventOutMap(evt) || !map.options['zoomable']) {
             return false;
         }
-        const container = map._containerDOM;
+        const container = map.getContainer();
         const origin = map._checkZoomOrigin(getEventContainerPoint(evt, container));
         if (map.options['seamlessZoom']) {
             if (!this._zooming) {

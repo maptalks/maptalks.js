@@ -34,7 +34,7 @@ describe('Map.BoxZoom', function () {
         container = setups.container;
         map = setups.map;
         map.config('zoomAnimationDuration', 50);
-        eventContainer = map._panels.canvasContainer;
+        eventContainer = map.getPanels().canvasContainer;
     });
 
     afterEach(function () {

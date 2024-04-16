@@ -65,7 +65,7 @@ abstract class Control extends Eventable(Class) {
             return this;
         }
         this._map = map;
-        const controlContainer = map._panels.control;
+        const controlContainer = map.getPanels().control;
         this.__ctrlContainer = createEl('div');
         setStyle(this.__ctrlContainer, 'position:absolute;overflow:visible;');
         // on(this.__ctrlContainer, 'mousedown mousemove click dblclick contextmenu', stopPropagation)

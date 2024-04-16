@@ -41,8 +41,8 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * 获取事件类型
      * @english
      * Get the eventType of domEvent
-     * @param {any} domEvent 
-     * @returns 
+     * @param {any} domEvent
+     * @returns
      */
     _getEventTypeToFire(domEvent: any): string {
         // let eventType = domEvent.type;
@@ -70,7 +70,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
     //     };
     //     const actual = e.touches && e.touches.length > 0 ? e.touches[0] : e.changedTouches && e.changedTouches.length > 0 ? e.changedTouches[0] : e;
     //     if (actual) {
-    //         const containerPoint = getEventContainerPoint(actual, map._containerDOM);
+    //         const containerPoint = getEventContainerPoint(actual, map.getContainer());
     //         eventParam['coordinate'] = map.containerPointToCoordinate(containerPoint);
     //         eventParam['containerPoint'] = containerPoint;
     //         eventParam['viewPoint'] = map.containerPointToViewPoint(containerPoint);

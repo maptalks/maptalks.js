@@ -8,7 +8,7 @@ describe('Map.Touch', function () {
         var setups = COMMON_CREATE_MAP(center, new maptalks.VectorLayer('id'));
         container = setups.container;
         map = setups.map;
-        eventContainer = map._panels.canvasContainer;
+        eventContainer = map.getPanels().canvasContainer;
         var domPosition = GET_PAGE_POSITION(container);
         centerPoint = map.coordinateToContainerPoint(center).add(domPosition);
     });

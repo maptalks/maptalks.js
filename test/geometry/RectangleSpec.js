@@ -15,7 +15,7 @@ describe('Geometry.Rectangle', function () {
         map = setups.map;
         layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
-        canvasContainer = map._panels.allLayers;
+        canvasContainer = map.getPanels().allLayers;
     });
 
     afterEach(function () {

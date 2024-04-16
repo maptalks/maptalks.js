@@ -164,7 +164,7 @@ class GeometryDragHandler extends Handler {
         if (domEvent.touches && domEvent.touches.length > 1 || domEvent.button === 2) {
             return;
         }
-        this.container = map._panels.mapWrapper || map._containerDOM;
+        this.container = map.getPanels().mapWrapper || map.getContainer();
         this.target.on('click', this._endDrag, this);
         this._lastCoord = this._correctCoord(param['coordinate']);
         this._lastPoint = param['containerPoint'];

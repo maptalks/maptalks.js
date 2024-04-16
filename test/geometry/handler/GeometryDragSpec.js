@@ -60,7 +60,7 @@ describe('Geometry.Drag', function () {
         map.config('centerCross', true);
         var layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true, 'enableAltitude' : true });
         map.addLayer(layer);
-        eventContainer = map._panels.canvasContainer;
+        eventContainer = map.getPanels().canvasContainer;
     });
 
     afterEach(function () {

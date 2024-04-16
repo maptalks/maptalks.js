@@ -186,43 +186,42 @@ const options: MapOptionsType = {
 export class Map extends Handlerable(Eventable(Renderable(Class))) {
     VERSION: string;
     private _loaded: boolean;
-    _panels: Record<string, PanelDom>;
+    private _panels: Record<string, PanelDom>;
     private _baseLayer: Layer;
-    _layers: Array<Layer>;
-    _zoomLevel: number;
+    private _layers: Array<Layer>;
+    private _zoomLevel: number;
     private _center: Coordinate;
     private _centerZ: number;
     private _mapViewPoint: Point;
     isMap: boolean;
-    _containerDOM: HTMLDivElement | HTMLCanvasElement;
+    private _containerDOM: HTMLDivElement | HTMLCanvasElement;
     private _spatialReference: SpatialReference;
     private _originLng: number;
     private _altitudeOriginDirty: boolean;
     private _glScale: number;
-    _cursor: string;
-    _prjCenter: Coordinate;
-    centerAltitude: number;
+    private _cursor: string;
+    private _prjCenter: Coordinate;
+    private centerAltitude: number;
     width: number;
     height: number;
-    _prjMaxExtent: PointExtent;
-    _glRes: number;
-    _zooming: boolean;
-    _layerCache: { [key: string]: Layer };
-    _mapViewCoord: Coordinate;
-    _eventSilence: boolean;
-    _moving: boolean;
-    _originCenter: Coordinate;
-    _suppressRecenter: boolean;
-    _dragRotating: boolean;
+    private _prjMaxExtent: PointExtent;
+    private _glRes: number;
+    private _zooming: boolean;
+    private _layerCache: { [key: string]: Layer };
+    private _mapViewCoord: Coordinate;
+    private _eventSilence: boolean;
+    private _moving: boolean;
+    private _originCenter: Coordinate;
+    private _suppressRecenter: boolean;
+    private _dragRotating: boolean;
     CanvasClass: any;
-    _priorityCursor: string;
-    _initTime: number;
-    _renderer: any;
-    _containerDomContentRect: DOMRect;
-    _mapRes: number;
-    _onLoadHooks: Array<(...args) => void>;
-    cameraCenterDistance: number;
-    renderer: any;
+    private _priorityCursor: string;
+    private _initTime: number;
+    private _renderer: any;
+    private _containerDomContentRect: DOMRect;
+    private _mapRes: number;
+    private _onLoadHooks: Array<(...args) => void>;
+    private cameraCenterDistance: number;
     options: MapOptionsType;
     static VERSION: string;
     JSON_VERSION: '1.0';
@@ -1662,7 +1661,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
         delete this._panels;
         delete this._containerDOM;
-        delete this.renderer;
+        delete this._renderer;
         this._fireEvent('removeend');
         this._clearAllListeners();
         return this;
@@ -2075,6 +2074,10 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (renderer) {
             renderer.resetContainer();
         }
+    }
+
+    setContainerDomRect(domRect: DOMRect) {
+        this._containerDomContentRect = domRect;
     }
 
     _getContainerDomSize(): Size | null {

@@ -191,13 +191,13 @@ class MapGeometryEventsHandler extends Handler {
 
     addHooks() {
         const map = this.target;
-        const dom = map._panels.allLayers || map._containerDOM;
+        const dom = map.getPanels().allLayers || map.getContainer();
         on(dom, EVENTS, this._identifyGeometryEvents, this);
     }
 
     removeHooks() {
         const map = this.target;
-        const dom = map._panels.allLayers || map._containerDOM;
+        const dom = map.getPanels().allLayers || map.getContainer();
         off(dom, EVENTS, this._identifyGeometryEvents);
     }
 
@@ -237,7 +237,7 @@ class MapGeometryEventsHandler extends Handler {
         if (!actual) {
             return;
         }
-        const containerPoint = getEventContainerPoint(actual, map._containerDOM);
+        const containerPoint = getEventContainerPoint(actual, map.getContainer());
         if (eventType === 'touchstart') {
             if (map.options['preventTouch']) {
                 preventDefault(domEvent);
