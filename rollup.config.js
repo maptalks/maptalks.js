@@ -74,7 +74,7 @@ const builds = [
                 'name': 'maptalks',
                 banner,
                 outro,
-                'file': pkg.min
+                'file': pkg.minify
             }
         ]
     },
