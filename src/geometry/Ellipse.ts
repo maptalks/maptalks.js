@@ -7,6 +7,26 @@ import Circle from './Circle';
 import Point from '../geo/Point';
 import Extent from '../geo/Extent';
 
+// https://zh.numberempire.com/graphingcalculator.php?functions=1%2Fx%5E2&xmin=-10&xmax=10&ymin=-1.0&ymax=1.0&var=x
+function angleT(numberOfShellPoints: number) {
+    //利用1/(x*x)方程,让角度的变化变成非线性
+    let fs: number[] = [0];
+    const half = numberOfShellPoints / 2;
+    // [0,180] 变化曲线
+    for (let i = 1; i <= numberOfShellPoints; i++) {
+        const idx = (i - half);
+        let f = idx * idx;
+        f = 1 / f * 100;
+        f = Math.min(1, f);
+        fs.push(f);
+    }
+    // [180,360] 变化曲线
+    for (let i = 0, len = fs.length; i < len; i++) {
+        fs.push(fs[i]);
+    }
+    return fs;
+}
+
 /**
  * @property {Object} [options=null]
  * @property {Number} [options.numberOfShellPoints=60]   - number of shell points when exporting the ellipse's shell coordinates as a polygon.
@@ -32,6 +52,7 @@ const options: EllipseOptionsType = {
 export class Ellipse extends CenterMixin(Polygon) {
     public width: number
     public height: number
+    options: EllipseOptionsType;
 
     static fromJSON(json: Record<string, any>): Ellipse {
         const feature = json['feature'];
@@ -124,9 +145,38 @@ export class Ellipse extends CenterMixin(Polygon) {
         const s = Math.pow(width / 2, 2) * Math.pow(height / 2, 2),
             sx = Math.pow(width / 2, 2),
             sy = Math.pow(height / 2, 2);
+
+        const angles = [];
+        if (Math.max(width / height, height / width) > 2) {
+            const fs = angleT(numberOfPoints);
+            let sum = 0;
+            for (let i = 0, len = fs.length; i < len; i++) {
+                sum += fs[i];
+            }
+            const dt = 360 * 2 / sum;
+            let offsetAngle = 0;
+            //Y > X
+            if (height > width) {
+                offsetAngle = 90;
+            }
+            let angle = 0;
+            for (let i = 0, len = fs.length - 2; i < len; i += 2) {
+                angle += dt * fs[i];
+                angles.push(angle + offsetAngle);
+            }
+        } else {
+            for (let i = 0; i < numberOfPoints; i++) {
+                const angle = 360 * i / numberOfPoints;
+                angles.push(angle);
+            }
+        }
+        if (this.options.debug) {
+            console.log(angles);
+        }
         let deg, rad, dx, dy;
-        for (let i = 0; i < numberOfPoints; i++) {
-            deg = 360 * i / numberOfPoints;
+
+        for (let i = 0; i < angles.length; i++) {
+            deg = angles[i];
             rad = deg * Math.PI / 180;
             dx = Math.sqrt(s / (sx * Math.pow(Math.tan(rad), 2) + sy));
             dy = Math.sqrt(s / (sy * Math.pow(1 / Math.tan(rad), 2) + sx));
@@ -252,4 +302,5 @@ export default Ellipse;
 
 export type EllipseOptionsType = PolygonOptionsType & {
     numberOfShellPoints?: number;
+    debug?: boolean;
 }
