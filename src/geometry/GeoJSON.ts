@@ -132,10 +132,10 @@ registerWorkerAdapter(WORKER_KEY, function () { return WORKER_CODE; });
 let fetchActor: GeoJSONFetchActor;
 
 /**
+ * GeoJSON工具类
+ * @english
  * GeoJSON utilities
- * @class
  * @category geometry
- * @name GeoJSON
  */
 const GeoJSON = {
 

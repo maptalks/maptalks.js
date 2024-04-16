@@ -131,7 +131,7 @@ class MapCanvasRenderer extends MapRenderer {
         if (map.isZooming()) {
             return;
         }
-        const offset = map._getViewPointFrameOffset();
+        const offset = map.getViewPointFrameOffset();
         if (offset) {
             map.offsetPlatform(offset);
         } else if (this.domChanged()) {

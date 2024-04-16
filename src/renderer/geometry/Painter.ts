@@ -463,8 +463,8 @@ class Painter extends Class {
             glExtent = mapStateCache.glExtent;
             pitch = mapStateCache.pitch;
         } else {
-            _2DExtent = map._get2DExtent();
-            glExtent = map._get2DExtentAtRes(map.getGLRes());
+            _2DExtent = map.get2DExtent();
+            glExtent = map.get2DExtentAtRes(map.getGLRes());
             pitch = map.getPitch();
         }
         let extent2D = _2DExtent._expand(lineWidth);
@@ -488,7 +488,7 @@ class Painter extends Class {
                 inView: true
             };
         }
-        const glExtent2D = glExtent._expand(lineWidth * map._glScale);
+        const glExtent2D = glExtent._expand(lineWidth * map.getGLScale());
 
         TEMP_CLIP_EXTENT0.xmin = glExtent2D.xmin;
         TEMP_CLIP_EXTENT0.xmax = glExtent2D.xmax;

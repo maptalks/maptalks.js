@@ -77,8 +77,8 @@ describe('Map.Spec', function () {
             console.log(JSON.stringify(sp));
         });
 
-        it('_get2DExtent', function () {
-            var extent = map._get2DExtent(),
+        it('get2DExtent', function () {
+            var extent = map.get2DExtent(),
                 size = map.getSize();
 
             expect(extent).to.not.be(null);

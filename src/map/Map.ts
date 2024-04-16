@@ -185,19 +185,20 @@ const options: MapOptionsType = {
  */
 export class Map extends Handlerable(Eventable(Renderable(Class))) {
     VERSION: string;
-    _loaded: boolean;
+    private _loaded: boolean;
     _panels: Record<string, PanelDom>;
-    _baseLayer: Layer;
+    private _baseLayer: Layer;
     _layers: Array<Layer>;
     _zoomLevel: number;
-    _center: Coordinate;
-    _centerZ: number;
-    _mapViewPoint: Point;
+    private _center: Coordinate;
+    private _centerZ: number;
+    private _mapViewPoint: Point;
     isMap: boolean;
     _containerDOM: HTMLDivElement | HTMLCanvasElement;
-    _spatialReference: SpatialReference;
-    _originLng: number;
-    _altitudeOriginDirty: boolean;
+    private _spatialReference: SpatialReference;
+    private _originLng: number;
+    private _altitudeOriginDirty: boolean;
+    private _glScale: number;
     _cursor: string;
     _prjCenter: Coordinate;
     centerAltitude: number;
@@ -628,7 +629,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Extent}
      */
     getExtent() {
-        return this._pointToExtent(this._get2DExtent());
+        return this.pointToExtent(this.get2DExtent());
     }
 
     /**
@@ -637,7 +638,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Extent}
      */
     getProjExtent() {
-        const extent2D = this._get2DExtent();
+        const extent2D = this.get2DExtent();
         return new Extent(
             this._pointToPrj(extent2D.getMin()),
             this._pointToPrj(extent2D.getMax())
@@ -2203,7 +2204,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Point} map view point
      */
     getViewPoint(): Point {
-        const offset = this._getViewPointFrameOffset();
+        const offset = this.getViewPointFrameOffset();
         let panelOffset = this.offsetPlatform();
         if (offset) {
             panelOffset = (panelOffset as any).add(offset);

@@ -623,7 +623,7 @@ class UIComponent extends Eventable(Class) {
         const offset = (this as any).getOffset();
         const containerPoint = containerPoint0.add(offset);
 
-        const prjCoord = map._viewPointToPrj(point);
+        const prjCoord = map.viewPointToPrj(point);
         const domWidth = parseInt(dom.clientWidth + '');
         const domHeight = parseInt(dom.clientHeight + '');
         const margin = 50;

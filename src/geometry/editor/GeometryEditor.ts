@@ -308,7 +308,7 @@ class GeometryEditor extends Eventable(Class) {
             const map = this.getMap();
             const extent = geometry._getPrjExtent();
             points = extent.toArray(points);
-            points.forEach(c => map._prjToContainerPoint(c, null, c));
+            points.forEach(c => map.prjToContainerPoint(c, null, c));
             this._editOutline.setPoints(points);
         }
 
@@ -518,7 +518,7 @@ class GeometryEditor extends Eventable(Class) {
                     }
                 }
                 const anchor = anchors[i],
-                    point = isMarker ? anchor : map._prjToContainerPoint(anchor);
+                    point = isMarker ? anchor : map.prjToContainerPoint(anchor);
                 if (resizeHandles.length < (anchors.length - blackList.length)) {
                     const handle = this.createHandle(point, {
                         'symbol': handleSymbol,
