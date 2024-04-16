@@ -1623,8 +1623,12 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Return map's main panel
      * @returns {HTMLElement}
      */
-    getMainPanel(): HTMLDivElement {
-        return this._getRenderer().getMainPanel();
+    getMainPanel(): HTMLDivElement | null {
+        const renderer = this._getRenderer();
+        if (!renderer) {
+            return null;
+        }
+        return renderer.getMainPanel();
     }
 
     /**
