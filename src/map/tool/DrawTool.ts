@@ -31,7 +31,7 @@ export type modeActionType = {
 
 /**
  * 配置项
- * 
+ *
  * @english
  * @property {Object} [options=null] - construct options
  * @property {String} [options.mode=null]   - mode of the draw tool
@@ -65,7 +65,7 @@ const registeredMode = {};
 
 /**
  * 图形绘制工具类
- * 
+ *
  * @english
  * A map tool to help draw geometries.
  * @category maptool
@@ -93,10 +93,10 @@ class DrawTool extends MapTool {
     _mapDraggable?: boolean;
     _clickCoords?: Array<any>;
     _layers?: Array<any>;
-    
+
     /**
      * 为DrawTool注册一个新mode
-     * 
+     *
      * @english
      * Register a new mode for DrawTool
      * @param name                  mode name
@@ -123,7 +123,7 @@ class DrawTool extends MapTool {
 
     /**
      * 根据name获取mode actions
-     * 
+     *
      * @english
      * Get mode actions by mode name
      * @param name      DrawTool mode name
@@ -135,7 +135,7 @@ class DrawTool extends MapTool {
 
     /**
      * 实例化DrawTool工具
-     * 
+     *
      * @english
      * In default, DrawTool supports the following modes: <br>
      * [Point, LineString, Polygon, Circle, Ellipse, Rectangle, ArcCurve, QuadBezierCurve, CubicBezierCurve] <br>
@@ -168,7 +168,7 @@ class DrawTool extends MapTool {
 
     /**
      * 获取当前mode
-     * 
+     *
      * @english
      * Get current mode of draw tool
      * @return mode
@@ -182,7 +182,7 @@ class DrawTool extends MapTool {
 
     /**
      * 设置mode
-     * 
+     *
      * @english
      * Set mode of the draw tool
      * @param mode - mode of the draw tool
@@ -208,7 +208,7 @@ class DrawTool extends MapTool {
 
     /**
      * 获取DrawTool的symbol属性
-     * 
+     *
      * @english
      * Get symbol of the draw tool
      * @return symbol
@@ -224,7 +224,7 @@ class DrawTool extends MapTool {
 
     /**
      * 设置DrawTool的symbol属性
-     * 
+     *
      * @english
      * Set draw tool's symbol
      * @param symbol - symbol set
@@ -243,7 +243,7 @@ class DrawTool extends MapTool {
 
     /**
      * 获取当前绘制图形
-     * 
+     *
      * @english
      * Get geometry is currently drawing
      * @return geometry currently drawing
@@ -295,7 +295,7 @@ class DrawTool extends MapTool {
 
     /**
      * 撤消绘图，仅适用于点击/删除模式
-     * 
+     *
      * @english
      * Undo drawing, only applicable for click/dblclick mode
      * @return this
@@ -313,7 +313,7 @@ class DrawTool extends MapTool {
 
     /**
      * 重做绘图，只适用于click/dblclick模式
-     * 
+     *
      * @english
      * Redo drawing, only applicable for click/dblclick mode
      * @return this
@@ -331,7 +331,7 @@ class DrawTool extends MapTool {
 
     /**
      * 检查历史记录
-     * 
+     *
      * @english
      * check should recor history
      * @param actions
@@ -417,7 +417,7 @@ class DrawTool extends MapTool {
 
     /**
      * 鼠标按下开始绘画
-     * 
+     *
      * @english
      * mouse down start draw
      * @param event
@@ -429,7 +429,7 @@ class DrawTool extends MapTool {
 
     /**
      * 监听 mouse up 事件
-     * 
+     *
      * @english
      * handle mouse up event
      * @param event
@@ -441,7 +441,7 @@ class DrawTool extends MapTool {
 
     /**
      * 监听mouse first click点击事件
-     * 
+     *
      * @english
      * handle mouse first click handle
      * @param event
@@ -488,7 +488,7 @@ class DrawTool extends MapTool {
             }
             /**
              * drawvertex事件
-             * 
+             *
              * @english
              * drawvertex event.
              *
@@ -517,7 +517,7 @@ class DrawTool extends MapTool {
 
     /**
      * 第一次事件创建相关geometry
-     * 
+     *
      * @param event
      * @private
      */
@@ -530,7 +530,7 @@ class DrawTool extends MapTool {
         if (!this._geometry) {
             /**
             * drawprepare事件。在drawstart之前。
-            * 
+            *
             * @english
             * drawprepare event.Note that it occurs before drawstart
             *
@@ -555,7 +555,7 @@ class DrawTool extends MapTool {
             this._addGeometryToStage(this._geometry);
             /**
              * drawstart事件
-             * 
+             *
              * @english
              * drawstart event.
              *
@@ -589,7 +589,7 @@ class DrawTool extends MapTool {
 
     /**
      * 监听鼠标移动
-     * 
+     *
      * @english
      * handle mouse move event
      * @param event
@@ -636,7 +636,7 @@ class DrawTool extends MapTool {
         }
         /**
          * mousemove事件
-         * 
+         *
          * @english
          * mousemove event.
          *
@@ -655,7 +655,7 @@ class DrawTool extends MapTool {
 
     /**
      * 监听double click事件
-     * 
+     *
      * @english
      * handle mouse double click event
      * @param event
@@ -703,7 +703,7 @@ class DrawTool extends MapTool {
 
     /**
      * 结束当前绘制
-     * 
+     *
      * @english
      * End current draw
      * @param [param=null] params of drawend event
@@ -754,7 +754,7 @@ class DrawTool extends MapTool {
 
     /**
      * 获取鼠标事件 ontainer point 信息
-     * 
+     *
      * @english
      * Get container point of the mouse event
      * @param event -  mouse event
@@ -787,10 +787,10 @@ class DrawTool extends MapTool {
         const lastContainerPoints = [];
         if (this.options.edgeAutoComplete) {
             const lastCoord = this._clickCoords[(this._historyPointer || 1) - 1];
-            lastContainerPoints.push(map._prjToContainerPoint(lastCoord));
+            lastContainerPoints.push(map.prjToContainerPoint(lastCoord));
             const beforeLastCoord = this._clickCoords[(this._historyPointer || 1) - 2];
             if (beforeLastCoord) {
-                lastContainerPoints.push(map._prjToContainerPoint(beforeLastCoord));
+                lastContainerPoints.push(map.prjToContainerPoint(beforeLastCoord));
             }
         }
         const snapResult = snapTo(containerPoint, lastContainerPoints);
@@ -868,7 +868,7 @@ class DrawTool extends MapTool {
     }
 
     /**
-    * 设置Layer的zIndex 
+    * 设置Layer的zIndex
     * @english
     * set draw inner layers zIndex
     * @param  {Number} zIndex -  draw layer zIndex

@@ -422,7 +422,7 @@ class CanvasRenderer extends Class {
         delete this._renderComplete;
         const map = this.getMap();
         this._renderZoom = map.getZoom();
-        this.canvasExtent2D = this._extent2D = map._get2DExtent();
+        this.canvasExtent2D = this._extent2D = map.get2DExtent();
         //change from northWest to middleWest, because northwest's point <=> containerPoint changes when pitch >= 72
         this.middleWest = map._containerPointToPoint(new Point(0, map.height / 2));
     }

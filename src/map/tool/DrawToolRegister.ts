@@ -40,7 +40,7 @@ function queryTerrainCoordinates(projection: any, prjCoords: any, mapEvent: any)
     coordinates = prjCoords.map(c => {
         //prj to container point
         if (enableAltitude) {
-            const point = map._prjToContainerPoint(c);
+            const point = map.prjToContainerPoint(c);
             const terrain = map._queryTerrainInfo(point);
             if (terrain && terrain.coordinate) {
                 return terrain.coordinate;
@@ -129,7 +129,7 @@ const rectangleHooks: modeActionType = {
     'update': function (projection, prjCoords, geometry, mapEvent) {
         const map = geometry.getMap();
         const containerPoint = mapEvent['containerPoint'];
-        const firstClick = map._prjToContainerPoint(geometry._firstClick);
+        const firstClick = map.prjToContainerPoint(geometry._firstClick);
         const ring = [
             [firstClick.x, firstClick.y],
             [containerPoint.x, firstClick.y],
@@ -341,7 +341,7 @@ DrawTool.registerMode('boxZoom', {
     },
     'update': function (projection, prjCoord, geometry, param) {
         const map = geometry.getMap();
-        const p1 = map._prjToContainerPoint(geometry._firstClick),
+        const p1 = map.prjToContainerPoint(geometry._firstClick),
             p2 = param['containerPoint'];
         prjCoord = map._containerPointToPrj(new Coordinate(Math.min(p1.x, p2.x), Math.min(p1.y, p2.y)));
         const center = projection.unproject(prjCoord);

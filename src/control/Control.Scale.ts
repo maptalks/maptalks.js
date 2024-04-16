@@ -53,7 +53,7 @@ class Scale extends Control {
         this._scaleContainer = createEl('div', this.options['containerClass']) as HTMLDivElement;
         this._addScales();
         map.on(EVENTS_TO_LISTEN, this._update, this);
-        if (this._map._loaded) {
+        if (this._map.isLoaded()) {
             this._update();
         }
         return this._scaleContainer;

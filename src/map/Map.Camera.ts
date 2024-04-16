@@ -476,7 +476,7 @@ Map.include(/** @lends Map.prototype */{
         const pitch = this.getPitch(), bearing = this.getBearing();
         const scale = targetRes / this._getResolution();
         if (pitch === 0 && bearing === 0 && !altitudesHasData(altitudes)) {
-            const { xmin, ymin, xmax, ymax } = this._get2DExtent();
+            const { xmin, ymin, xmax, ymax } = this.get2DExtent();
             if (xmax > xmin && ymax > ymin) {
 
                 const { width, height } = this.getSize();
@@ -663,8 +663,8 @@ Map.include(/** @lends Map.prototype */{
             //缓存常用的值
             this._mapRes = this._getResolution();
             this._mapGlRes = this.getGLRes();
-            this._mapExtent2D = this._get2DExtent();
-            this._mapGlExtent2D = this._get2DExtentAtRes(this._mapGlRes);
+            this._mapExtent2D = this.get2DExtent();
+            this._mapGlExtent2D = this.get2DExtentAtRes(this._mapGlRes);
         };
     }(),
 

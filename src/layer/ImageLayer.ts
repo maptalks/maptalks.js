@@ -198,7 +198,7 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
     _drawImages(timestamp?: number, context?: any) {
         const imgData = this.layer._imageData;
         const map = this.getMap();
-        const mapExtent = map._get2DExtentAtRes(map.getGLRes());
+        const mapExtent = map.get2DExtentAtRes(map.getGLRes());
         if (imgData && imgData.length) {
             for (let i = 0; i < imgData.length; i++) {
                 const extent = imgData[i].extent2d;
