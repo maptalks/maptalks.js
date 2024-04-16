@@ -2,7 +2,8 @@ const commonjs = require('@rollup/plugin-commonjs'),
     resolve = require('@rollup/plugin-node-resolve'),
     babel = require('@rollup/plugin-babel'),
     json = require('@rollup/plugin-json'),
-    typescript = require('@rollup/plugin-typescript');
+    typescript = require('@rollup/plugin-typescript'),
+    terser = require('@rollup/plugin-terser');
 const pkg = require('./package.json');
 
 const testing = process.env.BUILD === 'test';
@@ -31,13 +32,22 @@ const rollupPlugins = [
         main: true
     }),
     commonjs(),
-    typescript(),
+    typescript()
+];
+
+const compilePlugins = [
     babel({
         plugins,
         babelHelpers: 'bundled'
     })
 ];
-const external = ['rbush', 'frustum-intersects', 'simplify-js'];
+
+if (!isDebug) {
+    rollupPlugins.push(terser(), ...compilePlugins)
+} else {
+    rollupPlugins.push(...compilePlugins);
+}
+// const external = ['rbush', 'frustum-intersects', 'simplify-js'];
 
 const builds = [
     {
@@ -54,19 +64,6 @@ const builds = [
             }
         ]
     },
-    // {
-    //     input: 'src/index.js',
-    //     plugins: rollupPlugins,
-    //     external,
-    //     output: [
-    //         {
-    //             'sourcemap': true,
-    //             'format': 'es',
-    //             banner,
-    //             'file': pkg.module
-    //         }
-    //     ]
-    // },
     //for browser esm
     {
         input: 'src/index.ts',
@@ -79,10 +76,7 @@ const builds = [
                 'file': pkg.module_browser
             }
         ]
-    }];
+    }
+];
 
-if (isDebug) {
-    module.exports = [builds[0]];
-} else {
-    module.exports = builds;
-}
+module.exports = builds;

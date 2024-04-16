@@ -22,10 +22,9 @@
   "homepage": "https://maptalks.org",
   "scripts": {
     "tsc": "npx tsc",
-    "build": "npm run lint && npm run tsc && npm run build-styles && npm run build-dev",
-    "build-dev": "rollup -c",
+    "build": "npm run lint && npm run tsc && npm run build-styles && rollup -c",
     "build-test": "rollup -c --environment BUILD:test",
-    "build-styles": "",
+    "build-styles": "cp -rf assets dist || xcopy assets dist /e /y",
     "dev": "rollup --environment BUILD:dev -c -w",
     "lint": "npx eslint src/**/*.ts test/**/*.js",
     "pretest": "npm run lint && npm run build-test",
@@ -51,14 +50,15 @@
     "simplify-js": "^1.2.1"
   },
   "devDependencies": {
-    "@types/offscreencanvas": "^2019.7.3",
     "@babel/preset-env": "^7.24.1",
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",
     "@types/node": "^20.11.30",
+    "@types/offscreencanvas": "^2019.7.3",
     "eslint": "^8.57.0",
     "eslint-plugin-mocha": "^10.4.1",
     "expect-maptalks": "^0.4.1",
@@ -77,6 +77,7 @@
     "rollup": "^4.13.0",
     "sinon": "^3.2.1",
     "tslib": "^2.6.2",
+    "typedoc": "^0.25.13",
     "typescript": "^5.4.2",
     "typescript-eslint": "^7.3.1"
   },
