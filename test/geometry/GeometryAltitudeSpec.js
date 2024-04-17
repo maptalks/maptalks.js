@@ -357,7 +357,7 @@ describe('Geometry.Altitude', function () {
                 coordiantes: coordiantes3
             }
         ];
-        map.addLayer(layer);
+        // map.addLayer(layer);
         let idx = 0;
         function test() {
             if (idx === data.length) {
@@ -367,10 +367,10 @@ describe('Geometry.Altitude', function () {
                 const { geometry, coordiantes } = data[idx];
                 layer.clear();
                 layer.addGeometry(geometry);
-                function expectTest(){
+                function expectTest() {
                     expect(geometry._minAlt).to.be.equal(undefined);
                     expect(geometry._maxAlt).to.be.equal(undefined);
-                     //cache alt
+                    //cache alt
                     geometry.getContainerExtent();
                 }
 
@@ -395,5 +395,64 @@ describe('Geometry.Altitude', function () {
         test();
 
     });
-  
+    it('#2297 ts refactory bug ,Painter _getGeometryAltitude is undefined ', function (done) {
+        const center = map.getCenter();
+        const c1 = center.toArray();
+        const c2 = center.add(0.001, 0);
+        const c3 = center.add(0.001, 0.001);
+        const coordiantes1 = c1;
+        const coordiantes2 = [c1, c2];
+        const coordiantes3 = [[c1, c2, c3]];
+        const point = new maptalks.Marker(coordiantes1);
+        const line = new maptalks.LineString(coordiantes2);
+        const polygon = new maptalks.Polygon(coordiantes3);
+        map.addLayer(layer);
+        const geos = [point, line, polygon];
+        layer.addGeometry(geos);
+        setTimeout(() => {
+            geos.forEach(geo => {
+                geo.setAltitude(10);
+            });
+
+            setTimeout(() => {
+                done()
+            }, 100);
+        }, 100);
+    });
+
+    // https://github.com/maptalks/issues/issues/658
+    it('#1407 ignore view filter when geometry  has altitude', function (done) {
+        map.addLayer(layer);
+        map.setView({
+            "center": [118.846825, 32.046534], "zoom": 14, "pitch": 56, "bearing": 0
+        });
+        setTimeout(() => {
+            var center = map.getCenter();
+            var ellipse = new maptalks.Ellipse(center.add(0.003, -0.005), 1000, 600, {
+                symbol: {
+                    lineColor: '#34495e',
+                    lineWidth: 2,
+                    polygonFill: 'rgb(216,115,149)',
+                    polygonOpacity: 0.4
+                },
+                properties: {
+                    altitude: 400
+                }
+            });
+            ellipse.addTo(layer);
+            setTimeout(() => {
+                expect(layer).to.be.painted(0, 0);
+                map.setView({
+                    "center": [118.82812574, 32.07077732], "zoom": 14, "pitch": 56, "bearing": 0
+                });
+                setTimeout(() => {
+                    const size = map.getSize();
+                    const { width, height } = size;
+                    expect(layer).to.be.painted(width / 2 - 1, height / 2 - 1);
+                    done();
+                }, 100);
+            }, 100);
+        }, 100);
+    });
+
 });
