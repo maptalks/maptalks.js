@@ -35,18 +35,18 @@ const rollupPlugins = [
     typescript()
 ];
 
-const compilePlugins = [
-    babel({
-        plugins,
-        babelHelpers: 'bundled'
-    })
-];
+// const compilePlugins = [
+//     babel({
+//         plugins,
+//         babelHelpers: 'bundled'
+//     })
+// ];
 
-if (!isDebug) {
-    rollupPlugins.push(terser(), ...compilePlugins)
-} else {
-    rollupPlugins.push(...compilePlugins);
-}
+// if (!isDebug) {
+//     rollupPlugins.push(terser(), ...compilePlugins)
+// } else {
+//     rollupPlugins.push(...compilePlugins);
+// }
 // const external = ['rbush', 'frustum-intersects', 'simplify-js'];
 
 const builds = [
@@ -61,6 +61,20 @@ const builds = [
                 banner,
                 outro,
                 'file': pkg.main
+            }
+        ]
+    },
+    {
+        input: 'src/index.ts',
+        plugins: rollupPlugins.concat([terser()]),
+        output: [
+            {
+                'sourcemap': false,
+                'format': 'umd',
+                'name': 'maptalks',
+                banner,
+                outro,
+                'file': pkg.minify
             }
         ]
     },
@@ -79,4 +93,8 @@ const builds = [
     }
 ];
 
-module.exports = builds;
+if (isDebug) {
+    module.exports = [builds[0]];
+} else {
+    module.exports = builds;
+}
