@@ -40,6 +40,7 @@
   "module": "dist/index.js",
   "module_browser": "dist/maptalks.es.js",
   "main": "dist/maptalks.js",
+  "minify":"dist/maptalks.min.js",
   "jsnext:main": "dist/index.js",
   "style": "dist/maptalks.css",
   "dependencies": {
