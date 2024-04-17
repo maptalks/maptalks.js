@@ -1,4 +1,4 @@
-import { extend, isNil } from '../core/util';
+import { extend, isNil, pushIn } from '../core/util';
 import { withInEllipse } from '../core/util/path';
 import Coordinate from '../geo/Coordinate';
 import CenterMixin from './CenterMixin';
@@ -7,25 +7,29 @@ import Circle from './Circle';
 import Point from '../geo/Point';
 import Extent from '../geo/Extent';
 
-// https://zh.numberempire.com/graphingcalculator.php?functions=1%2Fx%5E2&xmin=-10&xmax=10&ymin=-1.0&ymax=1.0&var=x
+// https://zh.numberempire.com/graphingcalculator.php?functions=x%5E4&xmin=0&xmax=1&ymin=-1.0&ymax=1.0&var=x
+function quarticIn(k: number) {
+    return k * k * k * k;
+}
+
 function angleT(numberOfShellPoints: number) {
-    //利用1/(x*x)方程,让角度的变化变成非线性
+    //利用曲线方程,让角度的变化变成非线性
     const fs: number[] = [0];
-    const half = numberOfShellPoints / 2;
-    // [0,180] 变化曲线
-    let sum = 0;
-    for (let i = 1; i <= numberOfShellPoints; i++) {
-        const idx = (i - half);
-        let f = idx * idx;
-        f = 1 / f * 100;
-        f = Math.min(1, f);
-        fs.push(f);
-        sum += f;
+    // [0,90] 变化曲线
+    const ts1: number[] = [];
+    for (let i = 0; i < numberOfShellPoints; i++) {
+        ts1.push(quarticIn(i / numberOfShellPoints));
     }
-    // [180,360] 变化曲线
-    for (let i = 0, len = fs.length; i < len; i++) {
-        fs.push(fs[i]);
-        sum += fs[i];
+    // [90,180] 变化曲线
+    const ts2 = ts1.map(t => {
+        return t;
+    }).reverse();
+    const ts: number[] = [];
+    pushIn(ts, ts1, ts2, ts1, ts2);
+    let sum = 0;
+    for (let i = 0, len = ts.length; i < len; i += 4) {
+        fs.push(ts[i]);
+        sum += ts[i];
     }
     return {
         fs,
@@ -155,14 +159,14 @@ export class Ellipse extends CenterMixin(Polygon) {
         const angles = [];
         if (Math.max(width / height, height / width) > 2) {
             const { fs, sum } = angleT(numberOfPoints);
-            const dt = 360 * 2 / sum;
+            const dt = 360 / sum;
             let offsetAngle = 0;
             //Y > X
             if (height > width) {
                 offsetAngle = 90;
             }
             let angle = 0;
-            for (let i = 0, len = fs.length - 2; i < len; i += 2) {
+            for (let i = 0, len = fs.length; i < len; i++) {
                 angle += dt * fs[i];
                 angles.push(angle + offsetAngle);
             }
