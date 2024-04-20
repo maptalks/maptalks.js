@@ -28,7 +28,7 @@ describe('Geometry.Edit', function () {
         map = setups.map;
         map.config('panAnimation', false);
         map.config('onlyVisibleGeometryEvents', false);
-        eventContainer = map._panels.canvasContainer;
+        eventContainer = map.getPanels().canvasContainer;
         layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
     });

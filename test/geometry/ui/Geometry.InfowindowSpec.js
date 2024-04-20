@@ -17,7 +17,7 @@ describe('Geometry.InfoWindow', function () {
             center: center
         };
         map = new maptalks.Map(container, option);
-        eventContainer = map._panels.front;
+        eventContainer = map.getPanels().front;
         layer = new maptalks.VectorLayer('vector').addTo(map);
     });
 
@@ -498,7 +498,7 @@ describe('Geometry.InfoWindow', function () {
             infoWindow.addTo(geo).show();
             infoWindow2.addTo(geo2).show();
 
-            expect(map._panels['ui'].children.length).to.be.eql(1);
+            expect(map.getPanels()['ui'].children.length).to.be.eql(1);
         });
 
         it('disable single mode', function () {
@@ -521,7 +521,7 @@ describe('Geometry.InfoWindow', function () {
             infoWindow.addTo(geo).show();
             infoWindow2.addTo(geo2).show();
 
-            expect(map._panels['ui'].children.length).to.be.eql(2);
+            expect(map.getPanels()['ui'].children.length).to.be.eql(2);
         });
 
         it('isVisible', function (done) {

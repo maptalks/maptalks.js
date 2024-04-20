@@ -12,7 +12,7 @@ describe('Map.Drag', function () {
         var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
 
-        happen.mousedown(map._panels.front, {
+        happen.mousedown(map.getPanels().front, {
             'clientX':point.x,
             'clientY':point.y
         });
@@ -92,7 +92,7 @@ describe('Map.Drag', function () {
         var center = map.getCenter();
         var point = map.coordinateToContainerPoint(center).add(domPosition);
 
-        happen.mousedown(map._panels.front, {
+        happen.mousedown(map.getPanels().front, {
             'clientX':point.x,
             'clientY':point.y,
             'button' : 2
@@ -152,7 +152,7 @@ describe('Map.Drag', function () {
             expect(e.domEvent.touches.length).to.be.eql(1);
         });
 
-        happen.once(map._panels.mapWrapper, {
+        happen.once(map.getPanels().mapWrapper, {
             'type' : 'touchstart',
             'touches' : [
                 {
@@ -162,7 +162,7 @@ describe('Map.Drag', function () {
             ]
         });
         for (var i = 0; i < 10; i++) {
-            happen.once(map._panels.mapWrapper, {
+            happen.once(map.getPanels().mapWrapper, {
                 'type' : 'touchmove',
                 'touches' : [
                     {
@@ -172,7 +172,7 @@ describe('Map.Drag', function () {
                 ]
             })
         }
-        happen.once(map._panels.mapWrapper, {
+        happen.once(map.getPanels().mapWrapper, {
             'type' : 'touchend',
             'changedTouches' : [
                 {

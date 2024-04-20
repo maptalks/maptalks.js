@@ -60,13 +60,13 @@ abstract class MapRenderer extends Class {
      * @param force
      */
     offsetPlatform(offset: Point, force?: boolean) {
-        if (!this.map._panels.front) {
+        if (!this.map.getPanels().front) {
             return this;
         }
         if (!force && offset.x === 0 && offset.y === 0) {
             return this;
         }
-        const panels = this.map._panels;
+        const panels = this.map.getPanels();
         const hasFront = this._frontCount = panels.back.layerDOM.childElementCount;
         const hasBack = this._backCount = panels.front.layerDOM.childElementCount;
         const hasUI = this._uiCount = panels.front.uiDOM.childElementCount;
@@ -88,7 +88,7 @@ abstract class MapRenderer extends Class {
     }
 
     domChanged() {
-        const panels = this.map._panels;
+        const panels = this.map.getPanels();
         if (!panels.front) {
             return false;
         }
@@ -112,10 +112,10 @@ abstract class MapRenderer extends Class {
             return;
         }
         this.map._resetMapViewPoint();
-        if (this.map._panels.front) {
+        if (this.map.getPanels().front) {
             const pos = new Point(0, 0);
-            offsetDom(this.map._panels.back, pos);
-            offsetDom(this.map._panels.front, pos);
+            offsetDom(this.map.getPanels().back, pos);
+            offsetDom(this.map.getPanels().front, pos);
         }
     }
 

@@ -29,7 +29,7 @@ class MapDragHandler extends Handler {
         if (!map) {
             return;
         }
-        const dom = map._panels.mapWrapper || map._containerDOM;
+        const dom = map.getPanels().mapWrapper || map.getContainer();
         this._dragHandler = new DragHandler(dom, {
             'cancelOn': this._cancelOn.bind(this),
             'rightclick': true

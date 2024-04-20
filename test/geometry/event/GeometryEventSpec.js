@@ -13,7 +13,7 @@ describe('Geometry.Events', function () {
         container = setups.container;
         map = setups.map;
         map.config('onlyVisibleGeometryEvents', false);
-        eventContainer = map._panels.canvasContainer;
+        eventContainer = map.getPanels().canvasContainer;
         layer = new maptalks.VectorLayer('vector');
         map.addLayer(layer);
     });

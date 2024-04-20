@@ -235,7 +235,7 @@ class Overview extends Control {
             return;
         }
         // refresh map's dom position
-        computeDomPosition(this._overview._containerDOM);
+        computeDomPosition(this._overview.getContainer());
         const coords = this._getPerspectiveCoords();
         this._perspective.setCoordinates(coords);
         this._overview.setCenterAndZoom(this.getMap().getCenter(), this._getOverviewZoom());

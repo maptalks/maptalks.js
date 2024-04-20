@@ -49,7 +49,7 @@ describe('#UIMarkerDrag', function () {
         container = setups.container;
         map = setups.map;
         context.map = map;
-        eventContainer = map._panels.canvasContainer;
+        eventContainer = map.getPanels().canvasContainer;
     });
 
     afterEach(function () {

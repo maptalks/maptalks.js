@@ -16,7 +16,7 @@ describe('Map.Event', function () {
             center: center
         };
         map = new maptalks.Map(container, option);
-        eventContainer = map._panels.canvasContainer;
+        eventContainer = map.getPanels().canvasContainer;
     });
 
     afterEach(function () {

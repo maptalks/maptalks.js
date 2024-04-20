@@ -4,7 +4,7 @@ describe('MapSetCenter.Spec', function () {
     var map;
     var baseLayer;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
-    
+
     beforeEach(function () {
         container = document.createElement('div');
         container.style.width = '400px';
@@ -19,14 +19,14 @@ describe('MapSetCenter.Spec', function () {
         map.config('zoomAnimationDuration', 20);
         map._getRenderer()._setCheckSizeInterval(20);
         baseLayer = new maptalks.VectorLayer('base_', new maptalks.Marker(center));
-        eventContainer = map._panels.front;
+        eventContainer = map.getPanels().front;
     });
 
     afterEach(function () {
         map.remove();
         REMOVE_CONTAINER(container);
     });
-    
+
     describe('#setCenterWidthPadding', function () {
         it('set center with paddingLeft', function () {
             map.setCenter(center, { paddingLeft: 100 });
@@ -51,7 +51,7 @@ describe('MapSetCenter.Spec', function () {
             var tPoint = map.coordinateToViewPoint(center);
             expect(Math.round(tPoint.x - pPoint.x)).to.equal((100 - 180) / 2);
         });
-        
+
         it('set center with paddingTop', function () {
             map.setCenter(center, { paddingTop: 100 });
             var pCenter = map.getCenter();

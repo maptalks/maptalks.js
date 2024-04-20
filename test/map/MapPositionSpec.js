@@ -22,8 +22,8 @@ describe('Map.Position', function () {
             center: center
         };
         map = new maptalks.Map(container, option);
-        eventContainer = map._panels.canvasContainer;
-        // eventContainer = map._containerDOM;
+        eventContainer = map.getPanels().canvasContainer;
+        // eventContainer = map.getContainer();
     });
 
     afterEach(function () {
@@ -36,10 +36,10 @@ describe('Map.Position', function () {
 
     it('page not scroll map position', function (done) {
         map.on('mousedown click', function (e) {
-            expect(map._containerDOM.__position).to.be.eql(position);
+            expect(map.getContainer().__position).to.be.eql(position);
             expect(e.containerPoint).to.closeTo(expectPoint);
         });
-        map._containerDOM.__position = position;
+        map.getContainer().__position = position;
         setTimeout(function () {
             happen.mousedown(eventContainer, {
                 'clientX': point.x,
@@ -51,10 +51,10 @@ describe('Map.Position', function () {
 
     it('page scroll map position', function (done) {
         map.on('mousedown click', function (e) {
-            expect(map._containerDOM.__position).to.be.eql([position[0], position[1] - offetY, position[2], position[3]]);
+            expect(map.getContainer().__position).to.be.eql([position[0], position[1] - offetY, position[2], position[3]]);
             expect(e.containerPoint).to.closeTo(expectPoint);
         });
-        map._containerDOM.__position = position;
+        map.getContainer().__position = position;
         window.scrollTo(0, offetY);
         var offsetPoint = point.copy().sub(0, offetY);
         setTimeout(function () {

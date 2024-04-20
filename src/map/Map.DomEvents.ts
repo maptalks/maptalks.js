@@ -446,7 +446,7 @@ Map.include(/** @lends Map.prototype */ {
         };
         const actual = e.touches && e.touches.length > 0 ? e.touches[0] : e.changedTouches && e.changedTouches.length > 0 ? e.changedTouches[0] : e;
         if (actual) {
-            const containerPoint = getEventContainerPoint(actual, map._containerDOM);
+            const containerPoint = getEventContainerPoint(actual, map.getContainer());
             eventParam['coordinate'] = map.containerPointToCoordinate(containerPoint);
             eventParam['containerPoint'] = containerPoint;
             eventParam['viewPoint'] = map.containerPointToViewPoint(containerPoint);

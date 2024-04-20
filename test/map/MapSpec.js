@@ -20,7 +20,7 @@ describe('Map.Spec', function () {
         map.config('zoomAnimationDuration', 20);
         map._getRenderer()._setCheckSizeInterval(20);
         baseLayer = new maptalks.VectorLayer('base_', new maptalks.Marker(center));
-        eventContainer = map._panels.front;
+        eventContainer = map.getPanels().front;
     });
 
     afterEach(function () {

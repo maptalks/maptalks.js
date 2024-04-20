@@ -170,7 +170,7 @@ export default class EditHandle extends Eventable<any>(Class) {
 
     onDragstart(e: EventParams) {
         const { containerPoint, target: map } = e;
-        const dom = map._panels.mapWrapper || map._containerDOM;
+        const dom = map.getPanels().mapWrapper || map.getContainer();
 
         const dragHandler = this._dragger = new DragHandler(dom);
         dragHandler.on('dragging', this.onDragging, this)
@@ -190,7 +190,7 @@ export default class EditHandle extends Eventable<any>(Class) {
             return;
         }
         const activeMap = this.map;
-        const containerPoint = getEventContainerPoint(e.domEvent, activeMap._containerDOM);
+        const containerPoint = getEventContainerPoint(e.domEvent, activeMap.getContainer());
         const offset = {
             x: containerPoint.x - prevX,
             y: containerPoint.y - prevY,
@@ -212,7 +212,7 @@ export default class EditHandle extends Eventable<any>(Class) {
         }
         const map = this.map;
         map.resetCursor();
-        const containerPoint = getEventContainerPoint(e.domEvent, map._containerDOM);
+        const containerPoint = getEventContainerPoint(e.domEvent, map.getContainer());
         const offset = {
             x: containerPoint.x - prevX,
             y: containerPoint.y - prevY,

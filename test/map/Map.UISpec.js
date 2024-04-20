@@ -31,7 +31,8 @@ describe('#Map', function () {
             var options = {
                 title: 'title',
                 content: 'content',
-                animation : null
+                animation : null,
+                autoPan: false
             };
             var win = new maptalks.ui.InfoWindow(options);
             win.addTo(map);
