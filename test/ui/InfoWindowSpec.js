@@ -11,7 +11,7 @@ describe('UI.InfoWindow', function () {
         map = setups.map;
         layer = new maptalks.VectorLayer('v').addTo(map);
         layer.config('drawImmediate', true);
-        canvasContainer = map._panels.canvasContainer;
+        canvasContainer = map.getPanels().canvasContainer;
     });
 
     afterEach(function () {

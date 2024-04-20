@@ -63,7 +63,7 @@ class MapCanvasRenderer extends MapRenderer {
     constructor(map: Map) {
         super(map);
         //container is a <canvas> element
-        this._containerIsCanvas = !!(map._containerDOM as HTMLCanvasElement).getContext;
+        this._containerIsCanvas = !!(map.getContainer() as HTMLCanvasElement).getContext;
         this._registerEvents();
         this._loopTime = 0;
         this._resizeEventList = [];
@@ -454,7 +454,7 @@ class MapCanvasRenderer extends MapRenderer {
         }
         const width = size['width'] + 'px',
             height = size['height'] + 'px';
-        const panels = this.map._panels;
+        const panels = this.map.getPanels();
         panels.mapWrapper.style.width = width;
         panels.mapWrapper.style.height = height;
         this._updateCanvasSize();
@@ -465,10 +465,10 @@ class MapCanvasRenderer extends MapRenderer {
             return null;
         }
         if (this._containerIsCanvas) {
-            return this.map._containerDOM;
+            return this.map.getContainer();
         }
-        if (this.map._panels) {
-            return this.map._panels.mapWrapper;
+        if (this.map.getPanels()) {
+            return this.map.getPanels().mapWrapper;
         }
         return null;
     }
@@ -559,7 +559,7 @@ class MapCanvasRenderer extends MapRenderer {
      * initialize container DOM of panels
      */
     initContainer() {
-        const panels = this.map._panels;
+        const panels = this.map.getPanels();
 
         function createContainer(name: string, className: string, cssText: string, enableSelect?: boolean): PanelDom {
             const c = createEl('div', className) as PanelDom;
@@ -572,7 +572,7 @@ class MapCanvasRenderer extends MapRenderer {
             }
             return c;
         }
-        const containerDOM = this.map._containerDOM;
+        const containerDOM = this.map.getContainer();
 
         if (this._containerIsCanvas) {
             //container is a <canvas> element.
@@ -889,11 +889,11 @@ class MapCanvasRenderer extends MapRenderer {
         this.topLayer = createEl('canvas') as HTMLCanvasElement;
         this.topCtx = this.topLayer.getContext('2d');
         if (this._containerIsCanvas) {
-            this.canvas = this.map._containerDOM as HTMLCanvasElement;
+            this.canvas = this.map.getContainer() as HTMLCanvasElement;
         } else {
             this.canvas = createEl('canvas') as HTMLCanvasElement;
             this._updateCanvasSize();
-            this.map._panels.canvasContainer.appendChild(this.canvas);
+            this.map.getPanels().canvasContainer.appendChild(this.canvas);
         }
         this.context = this.canvas.getContext('2d');
     }
@@ -905,7 +905,7 @@ class MapCanvasRenderer extends MapRenderer {
         const dTime = Math.abs(framestamp - this._checkPositionTime);
         if (dTime >= 500) {
             // refresh map's dom position
-            computeDomPosition(this.map._containerDOM);
+            computeDomPosition(this.map.getContainer());
             this._checkPositionTime = Math.min(framestamp, this._checkPositionTime);
         }
         return this;
@@ -923,7 +923,7 @@ class MapCanvasRenderer extends MapRenderer {
             return this;
         }
         const contentRect = this._resizeEventList[len - 1].contentRect;
-        this.map._containerDomContentRect = contentRect;
+        this.map.setContainerDomRect(contentRect);
         this._resizeEventList = [];
         this._checkSize();
         this._resizeCount = this._resizeCount || 0;
@@ -957,7 +957,7 @@ class MapCanvasRenderer extends MapRenderer {
                         this._resizeEventList.push(entries[0]);
                     }
                 });
-                this._resizeObserver.observe(this.map._containerDOM);
+                this._resizeObserver.observe(this.map.getContainer());
             }
         } else {
             clearInterval(this._resizeInterval);

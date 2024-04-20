@@ -738,7 +738,7 @@ class UIComponent extends Eventable(Class) {
     }
 
     _getUIContainer() {
-        return this.getMap()._panels['ui'];
+        return this.getMap().getPanels()['ui'];
     }
 
     _getClassName() {

@@ -15,7 +15,7 @@ describe('Geometry.Polygon', function () {
         map = setups.map;
         layer = new maptalks.VectorLayer('id');
         map.addLayer(layer);
-        canvasContainer = map._panels.canvasContainer;
+        canvasContainer = map.getPanels().canvasContainer;
         eventContainer = canvasContainer;
     });
 

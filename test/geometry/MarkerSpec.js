@@ -14,7 +14,7 @@ describe('Geometry.Marker', function () {
         container = setups.container;
         map = setups.map;
         map.config('centerCross', true);
-        canvasContainer = map._panels.front;
+        canvasContainer = map.getPanels().front;
         layer = new maptalks.VectorLayer('v').addTo(map);
     });
 

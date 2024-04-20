@@ -23,7 +23,15 @@ const karmaConfig = {
         }, {
             pattern: 'test/resources/*',
             included: false
-        }
+        },
+        {
+            pattern: 'src/**/*.ts',
+            included: false
+        },
+        {
+            pattern: 'dist/*.map',
+            included: false
+        },
     ],
     proxies: {
         '/images/': '/base/assets/images/',

@@ -758,7 +758,8 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         if (!this.map) {
             return [];
         }
-        return this.map._layers;
+        const beginIndex = +!!this.map.getBaseLayer();
+        return this.map.getLayers().slice(beginIndex);
     }
 
     _getMask2DExtent() {
