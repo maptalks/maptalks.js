@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
+      //dependencies lib version
+      "lib": [
+        "es2015",
+        "dom"
+      ],
+      "outDir": "./dist",
+      "rootDir": "./",
+      "baseUrl": "./",
+  },
+  "include": [
+    "*.ts"
+  ],
+  "exclude": []
+}

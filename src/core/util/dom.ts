@@ -5,7 +5,6 @@
  * Learned a lot from Leaflet.DomUtil
  * @class
  * @category core
- * @name DomUtil
  */
 
 import Browser from '../Browser';
@@ -26,7 +25,6 @@ const first = <T>(props: T[]) => {
  * it returns false. Useful for vendor-prefixed styles like `transform`.
  * @param  {String[]} props
  * @return {Boolean}
- * @memberOf DomUtil
  * @private
  */
 const testProp = IS_NODE ? first : <T extends string | number | symbol>(props: T[]) => {
@@ -46,7 +44,6 @@ const testProp = IS_NODE ? first : <T extends string | number | symbol>(props: T
 /**
  * Vendor-prefixed fransform style name (e.g. `'webkitTransform'` for WebKit).
  * @property {String} TRANSFORM
- * @memberOf DomUtil
  */
 export const TRANSFORM = testProp(
     ['transform', 'WebkitTransform', 'OTransform', 'MozTransform', 'msTransform']
@@ -55,7 +52,6 @@ export const TRANSFORM = testProp(
 /**
  * Vendor-prefixed tfransform-origin name (e.g. `'webkitTransformOrigin'` for WebKit).
  * @property {String} TRANSFORMORIGIN
- * @memberOf DomUtil
  */
 export const TRANSFORMORIGIN = testProp(
     ['transformOrigin', 'WebkitTransformOrigin', 'OTransformOrigin', 'MozTransformOrigin', 'msTransformOrigin']
@@ -64,7 +60,6 @@ export const TRANSFORMORIGIN = testProp(
 /**
  * Vendor-prefixed transition name (e.g. `'WebkitTransition'` for WebKit).
  * @property {String} TRANSITION
- * @memberOf DomUtil
  */
 export const TRANSITION = testProp(
     ['transition', 'WebkitTransition', 'OTransition', 'MozTransition', 'msTransition']
@@ -73,7 +68,6 @@ export const TRANSITION = testProp(
 /**
  * Vendor-prefixed filter name (e.g. `'WebkitFilter'` for WebKit).
  * @property {String} FILTER
- * @memberOf DomUtil
  */
 export const CSSFILTER = testProp(
     ['filter', 'WebkitFilter', 'OFilter', 'MozFilter', 'msFilter']
@@ -84,7 +78,6 @@ export const CSSFILTER = testProp(
  * @param tagName
  * @param className
  * @returns
- * @memberOf DomUtil
  */
 export function createEl(tagName: string, className?: string) {
     const el = document.createElement(tagName);
@@ -100,7 +93,6 @@ export function createEl(tagName: string, className?: string) {
  * @param style - css styles
  * @param container
  * @return
- * @memberOf DomUtil
  */
 export function createElOn(tagName: string, style: string, container: HTMLElement) {
     const el = createEl(tagName);
@@ -116,7 +108,6 @@ export function createElOn(tagName: string, style: string, container: HTMLElemen
 /**
  * Removes a html element.
  * @param node
- * @memberOf DomUtil
  */
 /* istanbul ignore next */
 export function removeDomNode(node?: HTMLElement) {
@@ -142,7 +133,6 @@ export function removeDomNode(node?: HTMLElement) {
  * @param  typeArr      - event types, seperated by space
  * @param  handler    - listener function
  * @param  context      - function context
- * @memberOf DomUtil
  */
 export function addDomEvent(obj: HTMLElement | Document, typeArr: string, handler: Function, context?: Object) {
     if (!obj || !obj.addEventListener || !typeArr || !handler) {
@@ -186,7 +176,6 @@ export function addDomEvent(obj: HTMLElement | Document, typeArr: string, handle
  * @param  obj         - dom element
  * @param  typeArr          - event types, separated by space
  * @param  handler        - listening function
- * @memberOf DomUtil
  */
 export function removeDomEvent(obj: HTMLElement | Document, typeArr: string, handler: Function) {
     function doRemove(type, callback?) {
@@ -231,7 +220,6 @@ export function removeDomEvent(obj: HTMLElement | Document, typeArr: string, han
  * @param  typeArr      - event
  * @param  handler    - the listening function
  * @return {Number} - the handler's index in the listener chain, returns -1 if not.
- * @memberOf DomUtil
  */
 export function listensDomEvent(obj: HTMLElement | Document, type: string, handler: Function) {
     if (!obj || !obj['Z__' + type] || !handler) {
@@ -250,7 +238,6 @@ export function listensDomEvent(obj: HTMLElement | Document, type: string, handl
  * Prevent default behavior of the browser. <br/>
  * preventDefault Cancels the event if it is cancelable, without stopping further propagation of the event.
  * @param {Event} event - browser event
- * @memberOf DomUtil
  */
 export function preventDefault(event: Event) {
     if (event.preventDefault) {
@@ -264,7 +251,6 @@ export function preventDefault(event: Event) {
 /**
  * Stop browser event propagation
  * @param   e - browser event.
- * @memberOf DomUtil
  */
 export function stopPropagation(e: Event) {
     // @ts-expect-error
@@ -293,7 +279,6 @@ export function preventSelection(dom) {
  * @param  dom - HTMLElement
  * @param  offset - position to set.
  * @return  dom element's current position if offset is null.
- * @memberOf DomUtil
  */
 export function offsetDom(dom: HTMLElement, offset?: Point) {
     if (!dom) {
@@ -313,7 +298,6 @@ export function offsetDom(dom: HTMLElement, offset?: Point) {
  * Compute dom's position
  * @param  dom
  * @return
- * @memberOf DomUtil
  */
 export function computeDomPosition(dom: HTMLElement): number[] {
     const style = window.getComputedStyle(dom);
@@ -337,7 +321,6 @@ export function computeDomPosition(dom: HTMLElement): number[] {
  * Get event's position from the top-left corner of the dom container
  * @param ev    event
  * @return
- * @memberOf DomUtil
  */
 export function getEventContainerPoint(ev: MouseEvent, dom: HTMLElement) {
     if (!ev) {
@@ -365,7 +348,6 @@ function endsWith(str: string, suffix: string) {
  * set css style to the dom element
  * @param dom dom element
  * @param strCss css text
- * @memberOf DomUtil
  */
 export function setStyle(dom: HTMLElement, strCss: string) {
     let cssText = dom.style.cssText;
@@ -380,7 +362,6 @@ export function setStyle(dom: HTMLElement, strCss: string) {
  * Whether the dom has the given css class.
  * @param el HTML Element
  * @param name css class
- * @memberOf DomUtil
  */
 export function hasClass(el: HTMLElement, name: string) {
     if (el.classList !== undefined) {
@@ -394,7 +375,6 @@ export function hasClass(el: HTMLElement, name: string) {
  * add css class to dom element
  * @param el HTML Element
  * @param name css class
- * @memberOf DomUtil
  */
 export function addClass(el: HTMLElement, name: string) {
     if (el.classList !== undefined && !hasClass(el, name)) {
@@ -413,7 +393,6 @@ export function addClass(el: HTMLElement, name: string) {
  * Set dom's css class
  * @param el HTML Element
  * @param name css class
- * @memberOf DomUtil
  */
 export function setClass(el: HTMLElement, name: string) {
     // @ts-expect-error
@@ -430,7 +409,6 @@ export function setClass(el: HTMLElement, name: string) {
  * Get dom's css class
  * @param name css class
  * @retrun class字符串
- * @memberOf DomUtil
  */
 export function getClass(el: HTMLElement): string {
     // @ts-expect-error
@@ -458,7 +436,6 @@ export function setOpacity(el: HTMLElement, value: string) {
  * Resets the 3D CSS transform of `el` so it is translated by `offset` pixels
  * @param el
  * @param offset
- * @memberOf DomUtil
  */
 export function setTransform(el: HTMLElement, offset: Point) {
     const pos = offset || new Point(0, 0);
@@ -517,7 +494,6 @@ export function getDomRuler(tag: any) {
  * @static
  * @function
  * @return {DomUtil}
- * @memberOf DomUtil
  */
 export const on = addDomEvent;
 
@@ -529,7 +505,6 @@ export const on = addDomEvent;
  * @static
  * @function
  * @return {DomUtil}
- * @memberOf DomUtil
  */
 export const off = removeDomEvent;
 
