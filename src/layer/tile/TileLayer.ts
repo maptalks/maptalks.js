@@ -180,14 +180,10 @@ const TILE_MAX = [0, 0, 0];
 const ARR3: Vector3 = [0, 0, 0];
 
 /**
- * @classdesc
- * A layer used to display tiled map services, such as [google maps]{@link http://maps.google.com}, [open street maps]{@link http://www.osm.org}
+ * A layer used to display tiled map services, such as [google maps](http://maps.google.com), [open street maps](http://www.osm.org)
  * @category layer
- * @extends Layer
- * @param {String|Number} id - tile layer's id
- * @param {Object} [options=null] - options defined in [TileLayer]{@link TileLayer#options}
  * @example
- * new TileLayer("tile",{
+ *  new TileLayer("tile",{
         urlTemplate : 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
         subdomains:['a','b','c']
     })
@@ -210,6 +206,11 @@ class TileLayer extends Layer {
     _polygonOffset: number;
     _renderer: TileLayerCanvasRenderer;
 
+    /**
+     *
+     * @param id - tile layer's id
+     * @param options - options defined in TileLayerOptionsType
+     */
     constructor(id: string, options?: TileLayerOptionsType) {
         super(id, options);
     }
@@ -232,7 +233,7 @@ class TileLayer extends Layer {
     /**
      * force Reload tilelayer.
      * Note that this method will clear all cached tiles and reload them. It shouldn't be called frequently for performance reason.
-    
+
      * @return this
      */
     forceReload() {
@@ -667,7 +668,7 @@ class TileLayer extends Layer {
     //     return [w, h];
     // }
 
-    _isTileInFrustum(node: TileNodeType, projectionView: Matrix4, glScale: number, offset: TileOffsetType): boolean {
+    private _isTileInFrustum(node: TileNodeType, projectionView: Matrix4, glScale: number, offset: TileOffsetType): boolean {
         if (!this._zScale) {
             const map = this.getMap();
             const glRes = map.getGLRes();
@@ -691,7 +692,7 @@ class TileLayer extends Layer {
      * from Cesium
      * 与cesium不同的是，我们用boundingVolume顶面的四个顶点中的最小值作为distanceToCamera
      */
-    _getScreenSpaceError(node: TileNodeType, glScale: number, maxZoom: number, offset: TileOffsetType) {
+    private _getScreenSpaceError(node: TileNodeType, glScale: number, maxZoom: number, offset: TileOffsetType) {
         // const fovDenominator = this._fovDenominator;
         const geometricError = node.error;
         const map = this.getMap();
@@ -723,7 +724,7 @@ class TileLayer extends Layer {
      * @param z - zoom
      * @return tile descriptors
      */
-    _getCascadeTiles(z: number, parentLayer: Layer): TilesType {
+    private _getCascadeTiles(z: number, parentLayer: Layer): TilesType {
         const map = this.getMap();
         const pitch = map.getPitch();
         const parentRenderer = parentLayer && parentLayer.getRenderer();

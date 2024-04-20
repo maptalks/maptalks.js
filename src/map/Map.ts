@@ -162,8 +162,8 @@ const options: MapOptionsType = {
 
 /**
  * The central class of the library, to create a map on a container.
+ *
  * @category map
- * @extends Class
  *
  * @mixes Eventable
  * @mixes Handlerable
