@@ -2,7 +2,7 @@ import Geometry from './Geometry.js';
 import { getPosArrayType } from './common/Util';
 
 class Plane extends Geometry {
-    constructor(z) {
+    constructor(z?: number) {
         z = z || 0;
         const arrType = getPosArrayType(z);
         super(

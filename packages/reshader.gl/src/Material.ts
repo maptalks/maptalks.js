@@ -245,7 +245,7 @@ class Material extends Eventable(Base) {
             if (this.isTexture(p)) {
                 size += (uniforms[p] as AbstractTexture).getMemorySize();
             } else if ((this.uniforms[p] as any).destroy) {
-                size += getTexMemorySize(this.uniforms[p]);
+                size += getTexMemorySize(this.uniforms[p] as Texture);
             }
         }
         return size;

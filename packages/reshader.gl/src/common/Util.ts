@@ -1,7 +1,7 @@
 //@ts-expect-error ts无法识别gltf-loader的声明，待解决
 import * as gltf from '@maptalks/gltf-loader';
 import REGL, { Regl } from '@maptalks/regl';
-import { AttributeBufferData, NumberArray, TypedArray } from 'src/types/typings';
+import { AttributeBufferData, AttributeType, NumberArray, TypedArray } from 'src/types/typings';
 
 /**
  * 对象是否是字符串
@@ -250,7 +250,7 @@ export function hasOwn(obj, prop: string) {
  * Get buffer's size in bytes
  * @param buffer
  */
-export function getBufferSize(buffer: AttributeBufferData | NumberArray): number {
+export function getBufferSize(buffer: AttributeBufferData | AttributeType): number {
     if ((buffer as AttributeBufferData).data) {
         buffer = (buffer as AttributeBufferData);
         if ((buffer.data as TypedArray).BYTES_PER_ELEMENT) {

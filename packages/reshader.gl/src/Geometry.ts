@@ -5,7 +5,7 @@ import BoundingBox from './BoundingBox';
 import { KEY_DISPOSED } from './common/Constants';
 //@ts-expect-error ts不知为啥无法识别导入的gltf-loader库
 import * as gltf from '@maptalks/gltf-loader';
-import { ActiveAttributes, AttributeData, GeometryDesc, NumberArray, PrimitiveType } from './types/typings';
+import { ActiveAttributes, AttributeData, GeometryDesc, NumberArray } from './types/typings';
 import REGL, { Regl } from '@maptalks/regl';
 
 const EMPTY_VAO_BUFFER = [];
@@ -72,7 +72,7 @@ export default class Geometry {
     private _tempPosArray?: NumberArray
     private _disposed?: boolean
 
-    constructor(data: AttributeData, elements, count: number, desc?: GeometryDesc) {
+    constructor(data: AttributeData, elements, count?: number, desc?: GeometryDesc) {
         this._version = 0;
         this.data = data;
 
@@ -526,7 +526,7 @@ export default class Geometry {
         return this;
     }
 
-    getPrimitive(): PrimitiveType {
+    getPrimitive(): REGL.PrimitiveType {
         return this.desc.primitive;
     }
 

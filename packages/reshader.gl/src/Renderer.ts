@@ -1,13 +1,18 @@
+import REGL, { Regl, Uniforms } from "@maptalks/regl";
+import Scene from "./Scene";
+
 const EMPTY_UNIFORMS = {};
 /**
  * A basic renderer to render meshes in fashion of forward rendering
  */
 class Renderer {
-    constructor(regl) {
+    regl: Regl
+
+    constructor(regl: Regl) {
         this.regl = regl;
     }
 
-    render(shader, uniforms, scene, framebuffer) {
+    render(shader, uniforms: Uniforms, scene: Scene, framebuffer: REGL.Framebuffer) {
         //rendering of large number of lights can be accelarated by clip-space quadtree
         //https://stackoverflow.com/questions/30594511/webgl-fragment-shader-for-multiple-light-sources
 
@@ -24,7 +29,7 @@ class Renderer {
         return count;
     }
 
-    clear(options) {
+    clear(options: REGL.ClearOptions) {
         this.regl.clear(options);
     }
 }

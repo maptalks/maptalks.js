@@ -1,9 +1,18 @@
 import { vec3 } from 'gl-matrix';
+import Mesh from './Mesh';
 
-const P0 = [], P1 = [];
+const P0: vec3 = [0, 0, 0], P1: vec3 = [0, 0, 0];
 let uid = 0;
 
 class Scene {
+    private _cameraPosition?: vec3
+    private _id: number
+    private _compareBinded: (a: Mesh, b: Mesh) => number
+    private sortedMeshes: { opaques?: Mesh[], transparents?: Mesh[] }
+    sortFunction?: (a: Mesh, b: Mesh) => number
+    private meshes?: Mesh[]
+    private _dirty: boolean
+
     constructor(meshes) {
         this._id = uid++;
         this.sortedMeshes = {};
@@ -12,7 +21,7 @@ class Scene {
         this.dirty();
     }
 
-    setMeshes(meshes) {
+    setMeshes(meshes?: Mesh | Mesh[]) {
         this.clear();
         if (!meshes || (Array.isArray(meshes) && !meshes.length) || meshes === this.meshes) {
             return this;
@@ -20,7 +29,7 @@ class Scene {
         meshes = Array.isArray(meshes) ? meshes : [meshes];
         this.meshes = [];
         for (let i = 0; i < meshes.length; i++) {
-            const mesh = meshes[i];
+            const mesh = meshes[i] as any;
             if (!mesh) {
                 continue;
             }
@@ -32,23 +41,23 @@ class Scene {
         return this;
     }
 
-    addMesh(mesh) {
+    addMesh(mesh: Mesh | Mesh[]) {
         if (!mesh || (Array.isArray(mesh) && !mesh.length)) {
             return this;
         }
         if (Array.isArray(mesh)) {
             mesh.forEach(m => {
-                m._scenes = m._scenes || {};
-                if (!m._scenes[this._id]) {
-                    m._scenes[this._id] = 1;
+                const scenes = (m as any)._scenes = (m as any)._scenes || {};
+                if (!scenes[this._id]) {
+                    scenes[this._id] = 1;
                     this.meshes.push(m);
                     this.dirty();
                 }
             });
         } else {
-            mesh._scenes = mesh._scenes || {};
-            if (!mesh._scenes[this._id]) {
-                mesh._scenes[this._id] = 1;
+            const scenes = (mesh as any)._scenes = (mesh as any)._scenes || {};
+            if (!scenes[this._id]) {
+                scenes[this._id] = 1;
                 this.meshes.push(mesh);
                 this.dirty();
             }
@@ -56,15 +65,16 @@ class Scene {
         return this;
     }
 
-    removeMesh(mesh) {
+    removeMesh(mesh?: Mesh | Mesh[]) {
         if (!mesh || (Array.isArray(mesh) && !mesh.length)) { return this; }
         if (Array.isArray(mesh)) {
             let hit = false;
             for (let i = 0; i < mesh.length; i++) {
-                if (mesh[i]._scenes && mesh[i]._scenes[this._id]) {
+                const scenes = (mesh[i] as any)._scenes;
+                if (scenes && scenes[this._id]) {
                     hit = true;
                     this.dirty();
-                    delete mesh[i]._scenes[this._id];
+                    delete scenes[this._id];
                 }
             }
             if (hit) {
@@ -73,14 +83,15 @@ class Scene {
                 });
             }
         } else {
-            if (!mesh._scenes || !mesh._scenes[this._id]) {
+            const scenes = (mesh as any)._scenes;
+            if (!scenes || !scenes[this._id]) {
                 return this;
             }
             const idx = this.meshes.indexOf(mesh);
             if (idx >= 0) {
                 this.meshes.splice(idx, 1);
             }
-            delete mesh._scenes[this._id];
+            delete scenes[this._id];
             this.dirty();
         }
         return this;
@@ -93,7 +104,7 @@ class Scene {
     clear() {
         if (this.meshes) {
             for (let i = 0; i < this.meshes.length; i++) {
-                delete this.meshes[i]._scenes[this._id];
+                delete (this.meshes[i] as any)._scenes[this._id];
             }
         }
         this.meshes = [];
@@ -107,7 +118,7 @@ class Scene {
         return this;
     }
 
-    sortMeshes(cameraPosition) {
+    sortMeshes(cameraPosition?: vec3) {
         const meshes = this.meshes;
         if (this.sortFunction) {
             meshes.sort(this.sortFunction);
@@ -143,14 +154,14 @@ class Scene {
         this._dirty = false;
     }
 
-    getSortedMeshes() {
+    getSortedMeshes(): { opaques?: Mesh[], transparents?: Mesh[] } {
         if (this._dirty) {
             this.sortMeshes();
         }
-        return this.sortedMeshes || [];
+        return this.sortedMeshes || {};
     }
 
-    _compare(a, b) {
+    _compare(a: Mesh, b: Mesh) {
         vec3.transformMat4(P0, a.geometry.boundingBox.getCenter(), a.localTransform);
         vec3.transformMat4(P1, b.geometry.boundingBox.getCenter(), b.localTransform);
         return vec3.dist(P1, this._cameraPosition) - vec3.dist(P0, this._cameraPosition);

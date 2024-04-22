@@ -40,7 +40,8 @@ export type ActiveAttributes = { name: string, type: number }[] & AttributeKey
 export type ShaderUniformValue = number | boolean | NumberArray | null | AbstractTexture | Texture
 
 export type ShaderUniforms = {
-    meshConfig?: MeshOptions
+    meshConfig?: MeshOptions,
+    primitive?: REGL.PrimitiveType
 } & {
     [_: string]: ShaderUniformValue
 }
@@ -62,7 +63,9 @@ export type MatrixFunction = () => mat4
 
 export type AttributeBufferData = { buffer?: REGL.Buffer, data?: NumberArray, divisor?: number }
 
-type InstancedAttribute = Record<string, NumberArray | REGL.Buffer | AttributeBufferData>;
+type AttributeType = NumberArray | REGL.Buffer | AttributeBufferData;
+
+type InstancedAttribute = Record<string, AttributeType>;
 
 
 type ImageObject = {

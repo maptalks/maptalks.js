@@ -14,13 +14,6 @@ const DEFAULT_UNIFORMS: ShaderUniforms = {
     'emissiveFactor': [0, 0, 0],
 
     'baseColorIntensity': 1, //1
-    'anisotropyDirection': 0, //0
-    'anisotropyFactor': 0, //1
-    // 'clearCoatF0': 0.04, //0.04
-    'clearCoatFactor': 0, //1
-    'clearCoatIor': 1.4, //1.4
-    'clearCoatRoughnessFactor': 0.04, //0.04
-    'clearCoatThickness': 5, //5
     'emitColorFactor': 1, //1
     'occlusionFactor': 1,
     'roughnessFactor': 0.4,
@@ -48,8 +41,6 @@ const DEFAULT_UNIFORMS: ShaderUniforms = {
 
     'uvOrigin': [0, 0],
     'noiseTexture': null,
-
-    'clearCoatTint': [0.0060, 0.0060, 0.0060], //0.0060, 0.0060, 0.0060
 
     'specularAAVariance': 20,
     'specularAAThreshold': 20,
