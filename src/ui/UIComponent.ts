@@ -936,6 +936,10 @@ class UIComponent extends Eventable(Class) {
         const events = this._getDomEvents() || {};
         const bindEvent = to === 'on' ? on : off;
         for (const eventName in events) {
+            if (to === 'on') {
+                //remove old  handler
+                off(dom, eventName, events[eventName]);
+            }
             bindEvent(dom, eventName, events[eventName], this);
         }
     }
