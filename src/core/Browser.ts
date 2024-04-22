@@ -2,6 +2,7 @@
 import { isFunction } from './util/common';
 import { IS_NODE } from './util/env';
 type BrowserType = {
+    IS_NODE: boolean;
     isTest: boolean;
     ie: boolean;
     ielt9: boolean;
@@ -130,6 +131,7 @@ if (!IS_NODE) {
     }
 
     Browser = {
+        IS_NODE,
         isTest: false,
         ie: ie,
         ielt9: ie && !document.addEventListener,
