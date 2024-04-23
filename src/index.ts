@@ -3,7 +3,7 @@ export { default as GlobalConfig } from './GlobalConfig';
 export * from './core/ResourceProxy';
 export * from './core/Constants';
 export { default as Browser } from './core/Browser';
-import * as Util from './core/util';
+import * as Util from './core/util/index';
 import * as DomUtil from './core/util/dom';
 import * as StringUtil from './core/util/strings';
 import * as MapboxUtil from './core/mapbox';
@@ -27,26 +27,26 @@ export { default as Handler } from './handler/Handler';
 export { default as DragHandler } from './handler/Drag';
 
 // geo classes
-export * from './geo';
+export * from './geo/index';
 
-import { Map } from './map';
+import { Map } from './map/index';
 Map.VERSION = version;
 export { Map };
 
-export { MapTool, DrawTool, AreaTool, DistanceTool } from './map/tool';
+export { MapTool, DrawTool, AreaTool, DistanceTool } from './map/tool/index';
 export { default as SpatialReference } from './map/spatial-reference/SpatialReference';
 // import './map/spatial-reference/SpatialReference.Arc';
 // import './map/spatial-reference/SpatialReference.WMTS';
 
 /** @namespace ui */
-import * as ui from './ui';
+import * as ui from './ui/index';
 /** @namespace control */
-import * as control from './control';
+import * as control from './control/index';
 export { ui, control };
 
-export * from './layer';
+export * from './layer/index';
 
-export * from './geometry';
+export * from './geometry/index';
 
 import './geometry/editor/GeometryEditor';
 import './geometry/editor/TextEditable';
@@ -62,11 +62,11 @@ import './geometry/ext/Geometry.JSON';
  * @namespace renderer
  */
 // import layer renderers
-import * as renderer from './renderer';
+import * as renderer from './renderer/index';
 export { renderer };
 // import geometry renderers
 import './renderer/geometry';
-import * as symbolizer from './renderer/geometry/symbolizers';
+import * as symbolizer from './renderer/geometry/symbolizers/index';
 /** @namespace animation */
 import * as animation from './core/Animation';
 export { symbolizer, animation };
