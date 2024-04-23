@@ -1,8 +1,52 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { isFunction } from './util/common';
 import { IS_NODE } from './util/env';
+type BrowserType = {
+    IS_NODE: boolean;
+    isTest: boolean;
+    ie: boolean;
+    ielt9: boolean;
+    edge: boolean;
+    webkit: boolean;
+    gecko: boolean;
+    android: boolean;
+    android23: boolean;
+    chrome: boolean;
+    chromeVersion: string;
+    safari: boolean;
+    phantomjs: boolean;
+    ie3d: boolean;
+    webkit3d: boolean;
+    opera12: boolean;
+    gecko3d: boolean;
+    any3d: boolean;
+    iosWeixin: boolean;
+    mobile: boolean;
+    mobileWebkit: boolean;
+    mobileWebkit3d: boolean;
+    mobileOpera: boolean;
+    mobileGecko: boolean;
+    touch: boolean;
+    msPointer: boolean;
+    pointer: boolean;
+    retina: boolean;
+    devicePixelRatio: number;
+    language: string;
+    ie9: boolean;
+    ie10: boolean;
+    webgl: boolean;
+    imageBitMap: boolean;
+    resizeObserver: boolean;
+    btoa: boolean;
+    decodeImageInWorker: boolean;
+    monitorDPRChange: boolean;
+    supportsPassive: boolean;
+    proxy: boolean;
+    requestIdleCallback: boolean;
+    checkDevicePixelRatio: () => boolean;
+}
 
-let Browser: any = {};
+let Browser: BrowserType = {} as unknown as BrowserType;
 // const maps = {};
 
 function getDevicePixelRatio() {
@@ -87,6 +131,7 @@ if (!IS_NODE) {
     }
 
     Browser = {
+        IS_NODE,
         isTest: false,
         ie: ie,
         ielt9: ie && !document.addEventListener,
