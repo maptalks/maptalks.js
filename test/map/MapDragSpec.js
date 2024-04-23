@@ -188,7 +188,7 @@ describe('Map.Drag', function () {
         expect(map.isMoving()).not.to.be.ok();
     });
 
-    it.only('synchronize with mouse when dragging map', (done) => {
+    it('synchronize with mouse when dragging map', (done) => {
         map.setPitch(45);
         //vlayer用于模拟鼠标的位置和高度
         const vlayer = new maptalks.VectorLayer('v').addTo(map);
