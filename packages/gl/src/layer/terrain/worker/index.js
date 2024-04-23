@@ -1,6 +1,6 @@
 import { Ajax } from '@maptalks/gltf-loader';
 import "./zlib.min";
-import { vec2, vec3 } from 'gl-matrix';
+import { vec2, vec3 } from '@maptalks/reshader.gl';
 import { createMartiniData } from '../util/martini';
 // 保存当前的workerId，用于告知主线程结果回传给哪个worker
 let workerId;

@@ -43,8 +43,8 @@
     "rollup": "^4.13.0"
   },
   "dependencies": {
-    "@maptalks/gl": "^0.97.4",
-    "@maptalks/gltf-loader": "^0.97.2"
+    "@maptalks/gl": "workspace:@maptalks/gl@*",
+    "@maptalks/gltf-loader": "workspace:@maptalks/gltf-loader@*"
   },
   "gitHead": "9eeea4807723d460fa7e09969c6556d53f6bed84"
 }

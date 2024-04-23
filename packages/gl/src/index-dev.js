@@ -6,7 +6,7 @@ export {
     mat2, mat2d, mat3, mat4,
     quat, quat2,
     vec2, vec3, vec4,
-} from 'gl-matrix';
+} from '@maptalks/reshader.gl';
 export { createREGL, reshader };
 
 export * from './index.js';

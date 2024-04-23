@@ -1,4 +1,4 @@
-import { mat4, mat3 } from 'gl-matrix';
+import { mat4, mat3 } from '@maptalks/gl';
 import { reshader } from '@maptalks/gl';
 import frag from './glsl/cutShader.frag';
 import vert from './glsl/cutShader.vert';

@@ -2,6 +2,7 @@ import Geometry from './Geometry.js';
 import { getPrimitive } from './common/REGLHelper';
 import { vec3 } from 'gl-matrix';
 import { AttributeData, GeometryDesc } from './types/typings';
+import { PrimitiveType } from '@maptalks/regl';
 
 const thresholdAngle = 0.8;
 const VEC3_1: vec3 = [0, 0, 0], VEC3_2: vec3 = [0, 0, 0], NORMAL: vec3 = [0, 0, 0], VERTEX_A = [], VERTEX_B = [], VERTEX_C = [];
@@ -10,7 +11,7 @@ export default class EdgeGeometry extends Geometry {
 
     constructor(data: AttributeData, elements, count: number, desc?: GeometryDesc) {
         super(data, elements, count, {
-            primitive : getPrimitive(1),
+            primitive : getPrimitive(1) as PrimitiveType,
             positionAttribute: desc.positionAttribute
         });
     }

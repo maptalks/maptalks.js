@@ -1,17 +1,17 @@
 import * as reshader from '@maptalks/reshader.gl';
-import { vec2 } from 'gl-matrix';
+import { vec2 } from '@maptalks/reshader.gl';
 
 const RESOLUTION = [];
 const bloomFilter = m => !!m.bloom;
 const ssrFilter = m => !!m.ssr;
 
 export default class PostProcess {
-    constructor(regl, layer, jitter) {
+    constructor(regl, layer) {
         this._regl = regl;
         this._layer = layer;
         this._renderer = new reshader.Renderer(regl);
         this._fxaaShader = new reshader.FxaaShader();
-        this._taaPass = new reshader.TaaPass(this._renderer, jitter);
+        // this._taaPass = new reshader.TaaPass(this._renderer, jitter);
         this._copyShader = new reshader.CopyShader();
         this._ssrPass = new reshader.SsrPass(this._regl);
     }
@@ -173,24 +173,24 @@ export default class PostProcess {
         return context;
     }
 
-    taa(curTex, depthTex, {
-        projMatrix, needClear
-    }) {
-        const pass = this._taaPass;
-        const outputTex = pass.render(
-            curTex, depthTex,
-            projMatrix, needClear
-        );
-        const redraw = pass.needToRedraw();
-        return {
-            outputTex,
-            redraw
-        };
-    }
+    // taa(curTex, depthTex, {
+    //     projMatrix, needClear
+    // }) {
+    //     const pass = this._taaPass;
+    //     const outputTex = pass.render(
+    //         curTex, depthTex,
+    //         projMatrix, needClear
+    //     );
+    //     const redraw = pass.needToRedraw();
+    //     return {
+    //         outputTex,
+    //         redraw
+    //     };
+    // }
 
-    isTaaNeedRedraw() {
-        return this._taaPass.needToRedraw();
-    }
+    // isTaaNeedRedraw() {
+    //     return this._taaPass.needToRedraw();
+    // }
 
     ssao(sourceTex, depthTex, uniforms) {
         if (!this._ssaoPass) {
@@ -293,10 +293,10 @@ export default class PostProcess {
             this._bloomFBO.destroy();
             delete this._bloomFBO;
         }
-        if (this._taaPass) {
-            this._taaPass.dispose();
-            delete this._taaPass;
-        }
+        // if (this._taaPass) {
+        //     this._taaPass.dispose();
+        //     delete this._taaPass;
+        // }
         if (this._ssaoPass) {
             this._ssaoPass.dispose();
             delete this._ssaoPass;

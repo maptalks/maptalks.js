@@ -1,8 +1,7 @@
 import { fillPosArray, isClippedEdge } from './Common';
 import { buildFaceUV, buildSideUV } from './UV';
 import { isNumber, pushIn } from '../../common/Util';
-import { PackUtil, ArrayPool } from '@maptalks/vector-packer';
-import earcut from 'earcut';
+import { PackUtil, ArrayPool, earcut } from '@maptalks/vector-packer';
 import { KEY_IDX, PROP_OMBB } from '../../common/Constant';
 
 export function buildExtrudeFaces(

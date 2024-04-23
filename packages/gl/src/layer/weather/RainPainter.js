@@ -1,5 +1,5 @@
 import * as reshader from '@maptalks/reshader.gl';
-import { mat4, quat, vec3 } from 'gl-matrix';
+import { mat4, quat, vec3 } from '@maptalks/reshader.gl';
 import rainVert from './glsl/rain.vert';
 import rainFrag from './glsl/rain.frag';
 const modelViewMatrix = [];

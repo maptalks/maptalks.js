@@ -6,3 +6,4 @@ dist
 web.config
 debug
 *.tsbuildinfo
+*.map

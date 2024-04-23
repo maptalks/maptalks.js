@@ -23,8 +23,8 @@
     "prepare": "npm run lint && npm run build"
   },
   "devDependencies": {
-    "@maptalks/gl": "^0.97.4",
-    "@maptalks/gltf-layer": "^0.97.4",
+    "@maptalks/gl": "workspace:@maptalks/gl@*",
+    "@maptalks/gltf-layer": "workspace:@maptalks/gltf-layer@*",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-replace": "^5.0.5",
@@ -45,8 +45,7 @@
     "@turf/along": "^6.5.0",
     "@turf/buffer": "^6.5.0",
     "@turf/distance": "^6.5.0",
-    "@turf/helpers": "^6.5.0",
-    "earcut": "^2.2.4"
+    "@turf/helpers": "^6.5.0"
   },
   "gitHead": "9eeea4807723d460fa7e09969c6556d53f6bed84"
 }

@@ -1,5 +1,5 @@
 import  { extend, hasOwn } from '../util/util';
-import { vec3, mat4 } from 'gl-matrix';
+import { vec3, mat4 } from '@maptalks/reshader.gl';
 import * as reshader from '@maptalks/reshader.gl';
 import { EMPTY_TERRAIN_GEO } from './TerrainTileUtil.js';
 

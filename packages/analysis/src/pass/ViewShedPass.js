@@ -1,4 +1,4 @@
-import { mat4, quat, vec3 } from 'gl-matrix';
+import { mat4, quat, vec3 } from '@maptalks/gl';
 import { reshader } from '@maptalks/gl';
 import vert from './glsl/viewshed.vert';
 import frag from './glsl/viewshed.frag';

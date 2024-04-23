@@ -1,4 +1,4 @@
-import { mat4, vec3, quat } from 'gl-matrix';
+import { mat4, vec3, quat } from '@maptalks/reshader.gl';
 import * as reshader from '@maptalks/reshader.gl';
 import snowVert from './glsl/snow.vert';
 import snowFrag from './glsl/snow.frag';

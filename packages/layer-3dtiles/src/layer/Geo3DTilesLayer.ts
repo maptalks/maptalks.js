@@ -55,7 +55,7 @@ const options: Geo3DTilesLayerOptions = {
     ]
 };
 
-const TEMP_VEC3_0 = [];
+const TEMP_VEC3_0 = [0, 0, 0];
 const TEMP_VEC3_1 = [];
 const TEMP_VEC3_2 = [];
 const TEMP_VEC3_3 = [];

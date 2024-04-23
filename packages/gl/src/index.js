@@ -24,6 +24,9 @@ export { MaskLayerMixin, MaskRendererMixin };
 export { ClipInsideMask, ClipOutsideMask, FlatInsideMask, FlatOutsideMask, ElevateMask, ColorMask, VideoMask, BoxInsideClipMask, BoxOutsideClipMask };
 export { RayCaster };
 
+import { earcut } from '@maptalks/reshader.gl';
+export { earcut };
+
 if (typeof window !== 'undefined') {
     // append GroupGLLayer on maptalks manually
     if (window.maptalks) {

@@ -1,5 +1,5 @@
 import { Point } from 'maptalks';
-import { vec2 } from 'gl-matrix';
+import { vec2 } from '@maptalks/reshader.gl';
 import ClipMask from './ClipMask';
 
 const LEFT_POINT = new Point(0, 0), RIGHT_POINT = new Point(0, 0), CENTER_POINT = new Point(0, 0), TEMP_POINT = new Point(0, 0);

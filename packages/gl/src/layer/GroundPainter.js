@@ -1,4 +1,4 @@
-import { vec2, mat4 } from 'gl-matrix';
+import { vec2, mat4 } from '@maptalks/reshader.gl';
 import * as reshader from '@maptalks/reshader.gl';
 import fillVert from './glsl/fill.vert';
 import fillFrag from './glsl/fill.frag';

@@ -1,5 +1,4 @@
-import { mat4 } from 'gl-matrix';
-import { reshader } from '@maptalks/gl';
+import { reshader, mat4 } from '@maptalks/gl';
 import depthVert from './glsl/depth.vert';
 import depthFrag from './glsl/depth.frag';
 

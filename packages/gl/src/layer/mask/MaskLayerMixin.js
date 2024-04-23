@@ -1,5 +1,5 @@
 import { Coordinate, Extent } from "maptalks";
-import { mat4 } from 'gl-matrix';
+import { mat4 } from '@maptalks/reshader.gl';
 import Mask from "./Mask";
 import { extend } from "../util/util";
 

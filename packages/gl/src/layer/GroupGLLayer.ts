@@ -1,6 +1,6 @@
 import * as maptalks from 'maptalks';
 import Renderer from './GroupGLLayerRenderer.js';
-import { vec3 } from 'gl-matrix';
+import { mat4, vec3, vec4 } from '@maptalks/reshader.gl';
 import { isNil, extend } from './util/util.js';
 import TerrainLayer from './terrain/TerrainLayer';
 import RayCaster from './raycaster/RayCaster.js';
@@ -45,8 +45,8 @@ const options: GroupGLLayerOptions = {
 //
 const emptyMethod = () => {};
 const EMPTY_COORD0 = new maptalks.Coordinate(0, 0), EMPTY_COORD1 = new maptalks.Coordinate(0, 0);
-const TEMP_VEC3 = [];
-const cp = [0, 0, 0], coord0 = [0, 0, 0, 1], coord1 = [0, 0, 0, 1];
+const TEMP_VEC3: vec3 = [0, 0, 0];
+const cp: vec3 = [0, 0, 0], coord0: vec4 = [0, 0, 0, 1], coord1: vec4 = [0, 0, 0, 1];
 
 export default class GroupGLLayer extends maptalks.Layer {
     /**
@@ -581,11 +581,11 @@ export default class GroupGLLayer extends maptalks.Layer {
             h2 = map.height / 2 || 1;
         const p = containerPoint;
         vec3.set(cp, (p.x - w2) / w2, (h2 - p.y) / h2, 0);
-        vec3.set(coord0, cp[0], cp[1], 0);
-        vec3.set(coord1, cp[0], cp[1], 0.5);
+        vec3.set(coord0 as vec3, cp[0], cp[1], 0);
+        vec3.set(coord1 as vec3, cp[0], cp[1], 0.5);
         coord0[3] = coord1[3] = 1;
-        applyMatrix(coord0, coord0, map.projViewMatrixInverse);
-        applyMatrix(coord1, coord1, map.projViewMatrixInverse);
+        applyMatrix(coord0 as vec3, coord0 as vec3, map.projViewMatrixInverse);
+        applyMatrix(coord1 as vec3, coord1 as vec3, map.projViewMatrixInverse);
         const point0 = new maptalks.Point(coord0.slice(0, 3));
         const point1 = new maptalks.Point(coord1.slice(0, 3));
         const from = map.pointAtResToCoordinate(point0, glRes, EMPTY_COORD0);
@@ -775,7 +775,7 @@ function isTerrainSkin(layer: maptalks.Layer) {
     return !!renderer.renderTerrainSkin;
 }
 
-function applyMatrix(out: number[], v: number[], e: number) {
+function applyMatrix(out: vec3, v: vec3, e: mat4) {
     const x = v[0],
         y = v[1],
         z = v[2];

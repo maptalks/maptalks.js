@@ -28,7 +28,7 @@
     "prepare": "npm run build"
   },
   "devDependencies": {
-    "@maptalks/gltf-layer": "^0.97.4",
+    "@maptalks/gltf-layer": "workspace:@maptalks/gltf-layer@*",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-replace": "^5.0.5",

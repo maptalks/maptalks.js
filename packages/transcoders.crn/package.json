@@ -23,7 +23,7 @@
   "author": "fuzhen",
   "license": "ISC",
   "devDependencies": {
-    "@maptalks/gl": "^0.97.4",
+    "@maptalks/gl": "workspace:@maptalks/gl@*",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-replace": "^5.0.5",

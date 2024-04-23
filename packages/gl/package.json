@@ -28,10 +28,10 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@maptalks/fusiongl": "^0.6.13",
-    "@maptalks/gltf-loader": "^0.97.2",
+    "@maptalks/gltf-loader": "workspace:@maptalks/gltf-loader@*",
     "@maptalks/martini": "^0.4.0",
     "@maptalks/regl": "^3.3.5",
-    "@maptalks/reshader.gl": "^0.97.4",
+    "@maptalks/reshader.gl": "workspace:@maptalks/reshader.gl@*",
     "color": "^3.0.0",
     "gl-matrix": "^3.4.0"
   },

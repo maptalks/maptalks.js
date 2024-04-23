@@ -44,6 +44,7 @@ const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}
 const outro = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg.version}');`;
 const configPlugins = [
     glsl(),
+    typescript(),
     nodeResolve({
         // mainFields: ''
         // module : true,
@@ -51,7 +52,7 @@ const configPlugins = [
         // main : true
     }),
     commonjs(),
-    typescript()
+
 ];
 
 const pluginsWorker = production ? [
@@ -139,7 +140,7 @@ if (production) {
         plugins: configPlugins.concat(plugins),
         external : ['maptalks', '@maptalks/reshader.gl', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix'],
         output: {
-            'sourcemap': production ? false : 'inline',
+            'sourcemap': true,
             'format': 'es',
             'globals' : {
                 'maptalks' : 'maptalks'
@@ -153,7 +154,7 @@ module.exports.push({
     plugins: configPlugins,
     external : ['maptalks'],
     output: {
-        'sourcemap': production ? false : 'inline',
+        'sourcemap': true,
         'format': 'umd',
         'name': 'maptalksgl',
         'globals' : {
@@ -173,7 +174,7 @@ if (production) {
         plugins: configPlugins,
         external : ['maptalks', '@maptalks/reshader.gl', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix'],
         output: {
-            'sourcemap': production ? false : 'inline',
+            'sourcemap': true,
             'format': 'es',
             'globals' : {
                 'maptalks' : 'maptalks'

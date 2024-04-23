@@ -1,5 +1,5 @@
 const supportAssign = typeof Object.assign === 'function';
-import { vec3, mat4 } from 'gl-matrix';
+import { vec3, mat4 } from '@maptalks/reshader.gl';
 import Color from 'color';
 import { Coordinate } from 'maptalks';
 

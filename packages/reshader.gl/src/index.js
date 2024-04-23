@@ -35,7 +35,7 @@ export { default as BoxBlurShader } from './shader/BoxBlurShader';
 export { default as SsaoPass } from './ssao/SsaoPass';
 export { default as PostProcessShader } from './shader/PostProcessShader';
 // export { default as TaaPass } from './shader/TaaPass';
-// export { default as Jitter } from './shader/Jitter';
+export { default as Jitter } from './shader/Jitter';
 export { default as BloomPass } from './shader/BloomPass';
 export { default as SsrPass } from './shader/SsrPass';
 export { default as QuadShader } from './shader/QuadShader';
@@ -104,3 +104,10 @@ export { Constants };
 export { default as KHRTechniquesWebglManager } from './extensions/KHRTechniquesWebglManager';
 
 export { default as earcut } from 'earcut';
+
+export {
+    glMatrix,
+    mat2, mat2d, mat3, mat4,
+    quat, quat2,
+    vec2, vec3, vec4
+} from 'gl-matrix';

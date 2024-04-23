@@ -28,10 +28,10 @@
     "prepare": "npm run lint && npm run build"
   },
   "devDependencies": {
-    "@maptalks/gl": "^0.97.4",
-    "@maptalks/transcoders.draco": "^0.97.4",
-    "@maptalks/transform-control": "^0.97.4",
-    "@maptalks/vt": "^0.92.0",
+    "@maptalks/gl": "workspace:@maptalks/gl@*",
+    "@maptalks/transcoders.draco": "workspace:@maptalks/transcoders.draco@*",
+    "@maptalks/transform-control": "workspace:@maptalks/transform-control@*",
+    "@maptalks/vt": "workspace:@maptalks/vt@*",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
@@ -54,7 +54,7 @@
   "dependencies": {
     "@maptalks/feature-filter": "^1.3.0",
     "@maptalks/function-type": "^1.3.1",
-    "@maptalks/gltf-loader": "^0.97.2",
+    "@maptalks/gltf-loader": "workspace:@maptalks/gltf-loader@*",
     "frustum-intersects": "^0.2.4"
   },
   "gitHead": "9eeea4807723d460fa7e09969c6556d53f6bed84"

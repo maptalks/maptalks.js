@@ -1,8 +1,7 @@
-import { reshader, mat4, quat } from '@maptalks/gl';
+import { reshader, mat4, quat, earcut } from '@maptalks/gl';
 import { Class, Eventable, Handlerable, Polygon } from 'maptalks';
 import ExtentPass from './pass/ExtentPass';
 import { coordinateToWorld } from './common/Util';
-import earcut from 'earcut';
 
 export default class Analysis extends Eventable(Handlerable(Class)) {
 

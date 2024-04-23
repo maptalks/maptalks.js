@@ -1,4 +1,4 @@
-import { vec2, vec3, vec4, mat4 } from 'gl-matrix';
+import { vec2, vec3, vec4, mat4 } from '@maptalks/reshader.gl';
 import { Coordinate, Point, Util } from 'maptalks';
 
 const CUBE_POSITIONS = [1, 1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1,

@@ -1,5 +1,5 @@
 import { extend, isNil, normalizeColor255, pushIn } from './util.js';
-import { vec4, mat4 } from 'gl-matrix';
+import { vec4, mat4 } from '@maptalks/reshader.gl';
 import * as reshader from '@maptalks/reshader.gl';
 
 const COLOR = [];
