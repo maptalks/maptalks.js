@@ -5,6 +5,7 @@ const commonjs = require('@rollup/plugin-commonjs'),
     typescript = require('@rollup/plugin-typescript'),
     terser = require('@rollup/plugin-terser');
 const pkg = require('./package.json');
+const { dts } = require("rollup-plugin-dts");
 
 const testing = process.env.BUILD === 'test';
 const dev = process.env.BUILD === 'dev';
@@ -65,6 +66,19 @@ const builds = [
         ]
     },
     {
+        input: 'dist/index.d.ts',
+        plugins: [dts()],
+        output: [
+            {
+                'sourcemap': true,
+                'format': 'es',
+                'name': 'maptalks',
+                banner,
+                'file': pkg['d.ts']
+            }
+        ]
+    },
+    {
         input: 'src/index.ts',
         plugins: rollupPlugins.concat([terser()]),
         output: [
@@ -94,7 +108,7 @@ const builds = [
 ];
 
 if (isDebug) {
-    module.exports = [builds[0]];
+    module.exports = builds.slice(0, 2);
 } else {
     module.exports = builds;
 }

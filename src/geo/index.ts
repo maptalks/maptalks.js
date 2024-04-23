@@ -6,7 +6,7 @@ export { default as PointExtent } from './PointExtent';
 export { default as Size } from './Size';
 export { default as Transformation } from './transformation/Transformation';
 
-import * as projection from './projection';
-import * as measurer from './measurer';
+import * as projection from './projection/index';
+import * as measurer from './measurer/index';
 
 export { projection, measurer };
