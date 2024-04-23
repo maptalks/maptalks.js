@@ -1,4 +1,3 @@
-import { AnyAaaaRecord } from 'dns';
 import { extend, hasOwn } from '../core/util';
 import { splitTextToRow, escapeSpecialChars } from '../core/util/strings';
 import { TextSymbol, VectorMarkerSymbol } from '../symbol';
@@ -128,7 +127,7 @@ class TextMarker extends Marker {
         return splitTextToRow(this._content, symbol)['size'];
     }
 
-    _getInternalSymbol(): AnyAaaaRecord {
+    _getInternalSymbol(): any {
         return this._symbol;
     }
 
