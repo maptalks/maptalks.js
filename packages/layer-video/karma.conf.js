@@ -10,7 +10,7 @@ module.exports = function (config) {
             }
         },
         files: [
-            '../../node_modules/maptalks/dist/maptalks.js',
+            './node_modules/maptalks/dist/maptalks.js',
             '../gl/dist/maptalksgl.js',
             pkg.main,
             'test/**/*.js',
@@ -25,6 +25,7 @@ module.exports = function (config) {
         preprocessors: {
         },
         browsers: ['Chrome'],
-        reporters: ['mocha']
+        reporters: ['mocha'],
+        plugins: ['karma-mocha', 'karma-happen', 'karma-expect', 'karma-mocha-reporter', 'karma-chrome-launcher']
     });
 };

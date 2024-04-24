@@ -25,6 +25,6 @@ module.exports = function (config) {
         },
         browsers: ['Chrome'],
         reporters: ['mocha'],
-        plugins: ['karma-mocha', 'karma-mocha', 'karma-expect', 'karma-mocha-reporter', 'karma-chrome-launcher']
+        plugins: ['karma-mocha', 'karma-expect', 'karma-mocha-reporter', 'karma-chrome-launcher']
     });
 };

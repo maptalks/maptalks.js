@@ -9,7 +9,7 @@ module.exports = function (config) {
             }
         },
         files: [
-            '../../node_modules/maptalks/dist/maptalks.min.js',
+            './node_modules/maptalks/dist/maptalks.js',
             '../gl/dist/maptalksgl.js',
             '../layer-3dtiles/dist/maptalks.3dtiles.js',
             '../transcoders.draco/dist/transcoders.draco.js',
@@ -24,6 +24,7 @@ module.exports = function (config) {
             '/models/': '/base/test/models/'
         },
         browsers: ['Chrome'],
-        reporters: ['mocha']
+        reporters: ['mocha'],
+        plugins: ['karma-mocha', 'karma-expect', 'karma-mocha-reporter', 'karma-chrome-launcher']
     });
 };
