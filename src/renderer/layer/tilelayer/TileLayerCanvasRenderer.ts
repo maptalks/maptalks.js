@@ -770,7 +770,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.avgMaxAltitude = sumMax / count;
     }
 
-
+    // Parameters tileImage and tileInfo are required in VectorTileLayerRenderer
     checkTileInQueue(tileImage: Tile['image'], tileInfo: Tile['info']): boolean {
         return true;
     }
