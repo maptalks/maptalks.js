@@ -4,7 +4,7 @@ import VectorTileLayerRenderer from '../renderer/VectorTileLayerRenderer';
 import { extend, isNil, isString, isObject, hasOwn } from '../../common/Util';
 import { compress, uncompress } from './Compress';
 import Ajax from '../../worker/util/Ajax';
-import Color from 'color';
+import { Color } from '@maptalks/vector-packer';
 import { PackUtil } from '@maptalks/vector-packer';
 
 const TMP_POINT = new maptalks.Point(0, 0);
