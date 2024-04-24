@@ -30,7 +30,7 @@
     "karma-expect": "^1.1.3",
     "karma-mocha": "^2.0.1",
     "karma-mocha-reporter": "^2.2.5",
-    "maptalks": "^1.0.0-rc.31",
+    "maptalks": "^1.0.0-rc.33",
     "mocha": "^10.3.0",
     "rollup": "^4.13.0"
   },
