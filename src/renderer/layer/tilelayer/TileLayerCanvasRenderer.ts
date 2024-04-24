@@ -745,7 +745,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 continue;
             }
             this._tileQueueIds.delete(tileInfo.id);
-            if (!this.checkTileInQueue()) {
+            if (!this.checkTileInQueue(tileData, tileInfo)) {
                 continue;
             }
             this.consumeTile(tileData, tileInfo);
@@ -770,7 +770,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.avgMaxAltitude = sumMax / count;
     }
 
-    checkTileInQueue(): boolean {
+
+    checkTileInQueue(tileImage: Tile['image'], tileInfo: Tile['info']): boolean {
         return true;
     }
 
