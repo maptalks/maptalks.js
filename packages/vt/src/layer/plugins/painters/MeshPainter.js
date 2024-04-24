@@ -6,7 +6,7 @@ import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type
 import { setUniformFromSymbol, createColorSetter, isNumber, toUint8ColorInGlobalVar, pointAtResToMeter } from '../Util';
 import { prepareFnTypeData } from './util/fn_type_util';
 import { interpolated } from '@maptalks/function-type';
-import Color from 'color';
+import { Color } from '@maptalks/vector-packer';
 import { DEFAULT_TEX_WIDTH } from '@maptalks/vector-packer';
 
 const SCALE = [1, 1, 1];

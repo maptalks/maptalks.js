@@ -8,7 +8,7 @@ import { isNumber, isNil, setUniformFromSymbol, createColorSetter, toUint8ColorI
 import { prepareFnTypeData } from './util/fn_type_util';
 import { createAtlasTexture } from './util/atlas_util';
 import { isFunctionDefinition, piecewiseConstant, interpolated } from '@maptalks/function-type';
-import Color from 'color';
+import { Color } from '@maptalks/vector-packer';
 import { isObjectEmpty } from './util/is_obj_empty';
 import { INVALID_TEX_COORD } from '@maptalks/vector-packer';
 

@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import Color from 'color';
+import { Color } from '@maptalks/vector-packer';
 import BasicPainter from './BasicPainter';
 import { reshader } from '@maptalks/gl';
 import { vec2, mat4 } from '@maptalks/gl';
@@ -61,7 +61,7 @@ class LinePainter extends BasicPainter {
                 return true;
             }
         }
-        return false; 
+        return false;
     }
 
     needToRedraw() {

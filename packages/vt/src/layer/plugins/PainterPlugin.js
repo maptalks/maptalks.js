@@ -1,7 +1,7 @@
 import easing from 'animation-easings';
 import { createFilter } from '@maptalks/feature-filter';
 import VectorTilePlugin from '@maptalks/vt-plugin';
-import Color from 'color';
+import { Color } from '@maptalks/vector-packer';
 
 const DEFAULT_ANIMATION_DURATION = 800;
 
