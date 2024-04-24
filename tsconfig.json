@@ -1,26 +1,33 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
-      "moduleResolution": "node",
-      "alwaysStrict": true,
-      "declaration": true,
-      "allowJs": true,
-      "module": "es2015",
-      "target": "ES5",
-      "sourceMap": true,
-      "resolveJsonModule": true,
-      "allowSyntheticDefaultImports": true,
-      //dependencies lib version
-      "lib": [
-        "es5",
-        "es2015",
-        "dom",
-        "scripthost"
-      ],
-      "outDir": "./dist/",
-      "rootDir": "./src",
-      "baseUrl": "./",
-      //custom types
-      "paths": {}
+    "outDir": "dist",
+    "rootDir": "./src",
+    "strict": false,
+    "alwaysStrict": true,
+    "allowJs": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "declaration": true,
+    "declarationMap": true,
+    "importHelpers": false,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "removeComments": false,
+    "moduleResolution": "node",
+    "module": "esnext",
+    "target": "es5",
+    "jsx": "preserve",
+    "lib": [
+      "es2015",
+      "esnext",
+      "dom",
+      "webworker",
+      "scripthost"
+    ],
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true
   },
   "include": [
       "./src/**/*.ts",

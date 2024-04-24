@@ -1,4 +1,5 @@
-import { IS_NODE, isInteger, isNil, isNumber, type Vector3, Matrix4InOut } from '../../core/util';
+import { IS_NODE, isInteger, isNil, isNumber } from '../../core/util';
+import type { Vector3, Matrix4InOut } from '../../core/util/mat4'
 import { createGLContext, createProgram, enableVertexAttrib } from '../../core/util/gl';
 import * as mat4 from '../../core/util/mat4';
 import Canvas from '../../core/Canvas';
