@@ -23,7 +23,7 @@
   "scripts": {
     "docs:build": "npx tsc --project docs/typedoc-plugins && npx typedoc",
     "docs:english": "npx tsc --project docs/typedoc-plugins && npx typedoc --lang english",
-    "tsc": "npx tsc",
+    "tsc": "tsc --noEmit && tsc --project tsconfig.json",
     "build": "npm run lint && npm run tsc && npm run build-styles && rollup -c",
     "build-test": "rollup -c --environment BUILD:test",
     "build-styles": "cp -rf assets dist || xcopy assets dist /e /y",
