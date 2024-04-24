@@ -96,6 +96,9 @@ importers:
         specifier: ^3.0.0
         version: 3.2.1
     devDependencies:
+      '@maptalks/vt':
+        specifier: workspace:@maptalks/vt@*
+        version: link:../vt
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
         version: 25.0.7(rollup@4.16.2)
