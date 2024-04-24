@@ -16,6 +16,8 @@
     "isolatedModules": true,
     "removeComments": false,
     "moduleResolution": "node",
+    // ask tsc not to mess up with for ... of
+    "downlevelIteration": true,
     "module": "esnext",
     "target": "es5",
     "jsx": "preserve",
