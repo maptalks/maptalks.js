@@ -167,9 +167,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 this.loadTileQueue(currentTiles.tileQueue);
             }
         }
-        const { tiles, childTiles, parentTiles, placeholders, loading, loadingCount } = currentTiles;
+        const { tiles, childTiles, parentTiles, placeholders, loading, loadingCount, missedTiles, incompleteTiles } = currentTiles;
 
-        this._drawTiles(tiles, parentTiles, childTiles, placeholders, context);
+        this._drawTiles(tiles, parentTiles, childTiles, placeholders, context, missedTiles, incompleteTiles);
         if (!loadingCount) {
             if (!loading) {
                 //redraw to remove parent tiles if any left in last paint
@@ -266,7 +266,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                                 this.setToRedraw();
                             }
 
-                            if (this.isTileComplete()) {
+                            if (this.isTileComplete(cached)) {
                                 tiles.push(cached);
                             } else {
                                 tileLoading = true;
@@ -435,7 +435,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return this._getTileFadingOpacity(tileImage) < 1;
     }
 
-    _drawTiles(tiles, parentTiles, childTiles, placeholders, parentContext) {
+    _drawTiles(tiles, parentTiles, childTiles, placeholders, parentContext, missedTiles, incompleteTiles) {
         if (parentTiles.length) {
             //closer the latter (to draw on top)
             // parentTiles.sort((t1, t2) => Math.abs(t2.info.z - this._tileZoom) - Math.abs(t1.info.z - this._tileZoom));
@@ -1168,7 +1168,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return !!tile.image;
     }
 
-    isTileComplete() {
+    isTileComplete(tile: Tile) {
         return true;
     }
 

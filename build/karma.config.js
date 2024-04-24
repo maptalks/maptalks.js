@@ -41,7 +41,8 @@ const karmaConfig = {
     },
     browsers: ['Chrome'],
     reporters: ['mocha'],
-    singleRun: true
+    singleRun: true,
+    plugins: ['karma-mocha', 'karma-mocha-reporter', 'karma-expect', 'karma-expect-maptalks', 'karma-sinon', 'karma-happen', 'karma-chrome-launcher']
 };
 
 module.exports = function (config) {
