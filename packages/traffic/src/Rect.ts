@@ -1,91 +1,115 @@
-import { extend } from './Util.js';
-import Point from './Point.js';
-import Segment from './Segment.js';
+import Point from "./Point";
+import Segment from "./Segment";
 
 export default class Rect {
-    constructor(x, y, width, height) {
-        this.x = x || 0;
-        this.y = y || 0;
-        this.width = width || 0;
-        this.height = height || 0;
+  x = 0;
+  y = 0;
+  width = 0;
+  height = 0;
+
+  constructor(x?: number, y?: number, width?: number, height?: number) {
+    this.x = x || 0;
+    this.y = y || 0;
+    this.width = width || 0;
+    this.height = height || 0;
+  }
+
+  static copy(rect: Rect) {
+    return new Rect(rect.x, rect.y, rect.width, rect.height);
+  }
+
+  toJSON() {
+    return Object.assign({}, this);
+  }
+
+  area() {
+    return this.width * this.height;
+  }
+
+  left(left?: number) {
+    if (left !== undefined) {
+      this.x = left;
     }
 
-    copy(rect) {
-        return new Rect(rect.x, rect.y, rect.width, rect.height);
+    return this.x;
+  }
+
+  right(right?: number) {
+    if (right !== undefined) {
+      this.x = right - this.width;
     }
 
-    toJSON() {
-        return extend({}, this);
+    return this.x + this.width;
+  }
+
+  top(top?: number) {
+    if (top !== undefined) {
+      this.y = top;
     }
 
-    area() {
-        return this.width * this.height;
+    return this.y;
+  }
+
+  bottom(bottom?: number) {
+    if (bottom !== undefined) {
+      this.y = bottom - this.height;
     }
 
-    left(left) {
-        if (left != null) {
-            this.x = left;
-        }
-        return this.x;
+    return this.y + this.height;
+  }
+
+  center(center?: { x: number; y: number }) {
+    if (center !== undefined) {
+      this.x = center.x - this.width / 2;
+      this.y = center.y - this.height / 2;
     }
 
-    right(right) {
-        if (right != null) {
-            this.x = right - this.width;
-        }
-        return this.x + this.width;
-    }
+    return new Point(this.x + this.width / 2, this.y + this.height / 2);
+  }
 
-    top(top) {
-        if (top != null) {
-            this.y = top;
-        }
-        return this.y;
-    }
+  containsPoint(point: Point) {
+    let ref: number, ref1: number;
+    return (
+      this.left() <= (ref = point.x) &&
+      ref <= this.right() &&
+      this.top() <= (ref1 = point.y) &&
+      ref1 <= this.bottom()
+    );
+  }
 
-    bottom(bottom) {
-        if (bottom != null) {
-            this.y = bottom - this.height;
-        }
-        return this.y + this.height;
-    }
+  containsRect(rect: Rect) {
+    return (
+      this.left() <= rect.left() &&
+      rect.right() <= this.right() &&
+      this.top() <= rect.top() &&
+      rect.bottom() <= this.bottom()
+    );
+  }
 
-    center(center) {
-        if (center != null) {
-            this.x = center.x - this.width / 2;
-            this.y = center.y - this.height / 2;
-        }
-        return new Point(this.x + this.width / 2, this.y + this.heigh / 2);
-    }
+  getVertices() {
+    return [
+      new Point(this.left(), this.top()),
+      new Point(this.right(), this.top()),
+      new Point(this.right(), this.bottom()),
+      new Point(this.left(), this.bottom()),
+    ];
+  }
 
-    containsPoint(point) {
-        let ref, ref1;
-        return (this.left() <= (ref = point.x) && ref <= this.right()) && (this.top() <= (ref1 = point.y) && ref1 <= this.bottom());
-    }
+  getSide(i: number) {
+    const vertices = this.getVertices();
+    return new Segment(vertices[i], vertices[(i + 1) % 4]);
+  }
 
-    containsRect(rect) {
-        return this.left() <= rect.left() && rect.right() <= this.right() && this.top() <= rect.top() && rect.bottom() <= this.bottom();
-    }
+  getSectorId(point: Point) {
+    const offset = point.subtract(this.center());
+    if (offset.y <= 0 && Math.abs(offset.x) <= Math.abs(offset.y)) return 0;
+    if (offset.x >= 0 && Math.abs(offset.x) >= Math.abs(offset.y)) return 1;
+    if (offset.y >= 0 && Math.abs(offset.x) <= Math.abs(offset.y)) return 2;
+    if (offset.x <= 0 && Math.abs(offset.x) >= Math.abs(offset.y)) return 3;
+    throw new Error("algorithm error");
+  }
 
-    getVertices() {
-        return [new Point(this.left(), this.top()), new Point(this.right(), this.top()), new Point(this.right(), this.bottom()), new Point(this.left(), this.bottom())];
-    }
-
-    getSide(i) {
-        const vertices = this.getVertices();
-        return new Segment(vertices[i], vertices[(i + 1) % 4]);
-    }
-
-    getSectorId(point) {
-        const offset = point.subtract(this.center());
-        if (offset.y <= 0 && Math.abs(offset.x) <= Math.abs(offset.y)) return 0;
-        if (offset.x >= 0 && Math.abs(offset.x) >= Math.abs(offset.y)) return 1;
-        if (offset.y >= 0 && Math.abs(offset.x) <= Math.abs(offset.y)) return 2;
-        if (offset.x <= 0 && Math.abs(offset.x) >= Math.abs(offset.y)) return 3;
-        throw new Error('algorithm error');
-    }
-
-    getSector(point) {
-        return this.getSide(this.getSectorId(point));
-    }
+  getSector(point: Point) {
+    return this.getSide(this.getSectorId(point));
+  }
 }

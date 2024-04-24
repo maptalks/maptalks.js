@@ -1,34 +1,37 @@
 export default class Point {
-    constructor(x, y) {
-        this.x = x || 0;
-        this.y = y || 0;
-    }
+  x = 0;
+  y = 0;
 
-    get length() {
-        return Math.sqrt(this.x * this.x + this.y * this.y);
-    }
+  constructor(x?: number, y?: number) {
+    if (x) this.x = x;
+    if (y) this.y = y;
+  }
 
-    get direction() {
-        return Math.atan2(this.y, this.x);
-    }
+  get length() {
+    return Math.sqrt(this.x * this.x + this.y * this.y);
+  }
 
-    get normalized() {
-        return new Point(this.x / this.length, this.y / this.length);
-    }
+  get direction() {
+    return Math.atan2(this.y, this.x);
+  }
 
-    add(point) {
-        return new Point(this.x + point.x, this.y + point.y);
-    }
+  get normalized() {
+    return new Point(this.x / this.length, this.y / this.length);
+  }
 
-    subtract(point) {
-        return new Point(this.x - point.x, this.y - point.y);
-    }
+  add(point: Point) {
+    return new Point(this.x + point.x, this.y + point.y);
+  }
 
-    mult(ratio) {
-        return new Point(this.x * ratio, this.y * ratio);
-    }
+  subtract(point: Point) {
+    return new Point(this.x - point.x, this.y - point.y);
+  }
 
-    divide(ratio) {
-        return new Point(this.x / ratio, this.y / ratio);
-    }
+  mult(ratio: number) {
+    return new Point(this.x * ratio, this.y * ratio);
+  }
+
+  divide(ratio: number) {
+    return new Point(this.x / ratio, this.y / ratio);
+  }
 }

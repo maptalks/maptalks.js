@@ -1,100 +1,111 @@
-import { extend } from './Util.js';
-import Segment from './Segment.js';
+import type LanePosition from "./LanePosition";
+import type Road from "./Road";
+import Segment from "./Segment";
 
 export default class Lane {
-    constructor(sourceSegment, targetSegment, road) {
-        this.sourceSegment = sourceSegment;
-        this.targetSegment = targetSegment;
-        this.road = road;
-        this.leftAdjacent = null;
-        this.rightAdjacent = null;
-        this.leftmostAdjacent = null;
-        this.rightmostAdjacent = null;
-        this.carsPositions = {};
-        this.update();
-    }
+  length: number;
+  sourceSegment: Segment;
+  targetSegment: Segment;
+  road: Road;
+  leftAdjacent: Lane;
+  rightAdjacent: Lane;
+  leftmostAdjacent: Lane | null = null;
+  rightmostAdjacent: Lane | null = null;
+  middleLine: Segment;
+  private direction: number;
+  private carsPositions: Record<string, LanePosition> = {};
 
-    get sourceSideId() {
-        return this.road.sourceSideId;
-    }
+  constructor(sourceSegment: Segment, targetSegment: Segment, road: Road) {
+    this.sourceSegment = sourceSegment;
+    this.targetSegment = targetSegment;
+    this.road = road;
+    this.update();
+  }
 
-    get targetSideId() {
-        return this.road.targetSideId;
-    }
+  get sourceSideId() {
+    return this.road.sourceSideId;
+  }
 
-    get isRightmost() {
-        return this === this.rightmostAdjacent;
-    }
+  get targetSideId() {
+    return this.road.targetSideId;
+  }
 
-    get isLeftmost() {
-        return this === this.leftmostAdjacent;
-    }
+  get isRightmost() {
+    return this === this.rightmostAdjacent;
+  }
 
-    get leftBorder() {
-        return new Segment(this.sourceSegment.source, this.targetSegment.target);
-    }
+  get isLeftmost() {
+    return this === this.leftmostAdjacent;
+  }
 
-    get rightBorder() {
-        return new Segment(this.sourceSegment.target, this.targetSegment.source);
-    }
+  get leftBorder() {
+    return new Segment(this.sourceSegment.source, this.targetSegment.target);
+  }
 
-    toJSON() {
-        const obj = extend({}, this);
-        delete obj.carsPositions;
-        return obj;
-    }
+  get rightBorder() {
+    return new Segment(this.sourceSegment.target, this.targetSegment.source);
+  }
 
-    update() {
-        this.middleLine = new Segment(this.sourceSegment.center, this.targetSegment.center);
-        this.length = this.middleLine.length;
-        return this.direction = this.middleLine.direction;
-    }
+  toJSON() {
+    const obj: Lane = Object.assign({}, this);
+    delete obj.carsPositions;
+    return obj;
+  }
 
-    getTurnDirection(other) {
-        if (!other) {
-            return 1;
-        } else {
-            return this.road.getTurnDirection(other.road);
-        }
-    }
+  update() {
+    this.middleLine = new Segment(
+      this.sourceSegment.center,
+      this.targetSegment.center
+    );
+    this.length = this.middleLine.length;
+    return (this.direction = this.middleLine.direction);
+  }
 
-    getDirection() {
-        return this.direction;
+  getTurnDirection(other: Lane) {
+    if (!other) {
+      return 1;
+    } else {
+      return this.road.getTurnDirection(other.road);
     }
+  }
 
-    getPoint(a) {
-        return this.middleLine.getPoint(a);
-    }
+  getDirection() {
+    return this.direction;
+  }
 
-    addCarPosition(carPosition) {
-        if (carPosition.id in this.carsPositions) {
-            throw Error('car is already here');
-        }
-        return this.carsPositions[carPosition.id] = carPosition;
-    }
+  getPoint(a: number) {
+    return this.middleLine.getPoint(a);
+  }
 
-    removeCar(carPosition) {
-        if (!(carPosition.id in this.carsPositions)) {
-            throw Error('removing unknown car');
-        }
-        return delete this.carsPositions[carPosition.id];
+  addCarPosition(carPosition: LanePosition) {
+    if (carPosition.id in this.carsPositions) {
+      throw Error("car is already here");
     }
+    return (this.carsPositions[carPosition.id] = carPosition);
+  }
 
-    getNext(carPosition) {
-        if (carPosition.lane !== this) {
-            throw Error('car is on other lane');
-        }
-        let next = null;
-        let bestDistance = Infinity;
-        const ref = this.carsPositions;
-        for (const id in ref) {
-            const o = ref[id];
-            const distance = o.position - carPosition.position;
-            if (!o.free && (0 < distance && distance < bestDistance)) {
-                bestDistance = distance;
-                next = o;
-            }
-        }
-        return next;
+  removeCar(carPosition: LanePosition) {
+    if (!(carPosition.id in this.carsPositions)) {
+      throw Error("removing unknown car");
     }
+    return delete this.carsPositions[carPosition.id];
+  }
+
+  getNext(carPosition: LanePosition) {
+    if (carPosition.lane !== this) {
+      throw Error("car is on other lane");
+    }
+    let next: LanePosition | null = null;
+    let bestDistance = Infinity;
+    const ref = this.carsPositions;
+    for (const id in ref) {
+      const o = ref[id];
+      const distance = o.position - carPosition.position;
+      if (!o.free && 0 < distance && distance < bestDistance) {
+        bestDistance = distance;
+        next = o;
+      }
+    }
+    return next;
+  }
 }
