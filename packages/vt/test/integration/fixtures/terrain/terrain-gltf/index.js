@@ -17,7 +17,7 @@ const style = [
             },
             sceneConfig: {
                 gltfAnimation: {
-                    enable: true
+                    enable: false
                 }
             }
         },
@@ -32,7 +32,7 @@ const style = [
 ];
 
 module.exports = {
-    renderingCount: 4,
+    renderingCount: 6,
     style,
     data
 };
