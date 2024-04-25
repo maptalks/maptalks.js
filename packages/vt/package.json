@@ -48,6 +48,7 @@
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-replace": "^5.0.5",
     "@rollup/plugin-terser": "0.4.4",
+    "@rollup/plugin-typescript": "^11.1.6",
     "electron": "^29.0.0",
     "electron-mocha": "^12.3.0",
     "eslint": "^8.57.0",
