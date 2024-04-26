@@ -186,7 +186,7 @@ class SnowPainter {
     }
 
     isEnable() {
-        const config = this._getRainConfig();
+        const config = this._getSnowConfig();
         return config && config.enable;
     }
 
