@@ -3,6 +3,7 @@ import { extendSymbol } from '../../core/util/style';
 import { Animation, AnimationOptionsType, Frame, Player } from '../../core/Animation';
 import Coordinate from '../../geo/Coordinate';
 import Geometry from '../Geometry';
+import { GEOMETRY_NOT_FIND_PROJECTION } from '../../core/Error';
 
 type AnimationStyles = { [key: string]: any };
 
@@ -58,6 +59,10 @@ Geometry.include(/** @lends Geometry.prototype */ {
         const map = this.getMap(),
             projection = this._getProjection(),
             stylesToAnimate = this._prepareAnimationStyles(styles);
+        if (!projection) {
+            console.error(GEOMETRY_NOT_FIND_PROJECTION);
+            return;
+        }
         let preTranslate;
 
         const isFocusing = options['focus'];
