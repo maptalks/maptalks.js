@@ -59,10 +59,6 @@ Geometry.include(/** @lends Geometry.prototype */ {
         const map = this.getMap(),
             projection = this._getProjection(),
             stylesToAnimate = this._prepareAnimationStyles(styles);
-        if (!projection) {
-            console.error(GEOMETRY_NOT_FIND_PROJECTION);
-            return;
-        }
         let preTranslate;
 
         const isFocusing = options['focus'];
@@ -75,6 +71,11 @@ Geometry.include(/** @lends Geometry.prototype */ {
                 renderer.callInNextFrame(fn);
             };
             options['framer'] = framer;
+        }
+
+        if (!projection && isFocusing) {
+            console.error(GEOMETRY_NOT_FIND_PROJECTION);
+            return;
         }
 
         const player: any = Animation.animate(stylesToAnimate, options, frame => {
