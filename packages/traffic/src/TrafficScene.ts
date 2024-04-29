@@ -44,15 +44,36 @@ export default class TrafficScene {
     this.set();
   }
 
+  /**
+   * 开始运行交通轨迹。
+   *
+   * @english
+   * Start running traffic trajectory.
+   * @return void
+   */
   run() {
     this._state = "running";
     this._update();
   }
 
+  /**
+   * 停止运行交通轨迹。
+   *
+   * @english
+   * Stop running traffic trajectory.
+   * @return void
+   */
   stop() {
     this._state = "stop";
   }
 
+  /**
+   * 移除当前轨迹图层。
+   *
+   * @english
+   * Remove the traffic trajectory layer.
+   * @return void
+   */
   remove() {
     if (this._rafId) {
       cancelAnimationFrame(this._rafId);
@@ -61,6 +82,14 @@ export default class TrafficScene {
     delete (this as any).map;
   }
 
+  /**
+   * 设置模型的样式。
+   *
+   * @english
+   * Set symbols of gltf models.
+   * @param symbols - symbols of gltf markers
+   * @return void
+   */
   setSymbols(symbols: object[]) {
     this._symbols = symbols;
     for (let i = 0; i < this._symbols.length; i++) {
@@ -144,6 +173,16 @@ export default class TrafficScene {
     }
   }
 
+  /**
+   * 显示隐藏车辆模型。
+   *
+   * @english
+   * Show or hide car model.
+   * @param car - car model
+   * @param type - action type show or hide
+   * @param id - car model id
+   * @return void
+   */
   showHideCar(car: Car, type?: string, id?: string) {
     const targetStyles = {
       symbol: {
@@ -207,6 +246,13 @@ export default class TrafficScene {
     }
   }
 
+  /**
+   * 获取瞬时速度。
+   *
+   * @english
+   * Get instant speed.
+   * @return instant speed
+   */
   get instantSpeed() {
     const speeds = Object.values(this.cars.all()).map((car: Car) => {
       return car.speed;
@@ -229,11 +275,26 @@ export default class TrafficScene {
     return null;
   }
 
-  addTo(groupgllayer) {
+  /**
+   * 图层添加到 GroupGlLayer。
+   *
+   * @english
+   * Add the layer to groupGlLayer.
+   * @param symbols - symbols of gltf markers
+   * @return void
+   */
+  addTo(groupgllayer: any) {
     this._groupgllayer = groupgllayer;
     this._carlayer.addTo(groupgllayer);
   }
 
+  /**
+   * 整体设置图层上的数据信息。
+   *
+   * @english
+   * Overall setting of data information on layers.
+   * @return cars number
+   */
   set(obj?: any) {
     if (obj == null) {
       obj = {};
@@ -244,16 +305,38 @@ export default class TrafficScene {
     return (this.carsNumber = 0);
   }
 
+  /**
+   * 保存当前图层数据信息到localStorage。
+   *
+   * @english
+   * Save this layer data info to localStorage.
+   * @return data string
+   */
   save() {
     const data = Object.assign({}, this);
     delete data.cars;
     return (window.localStorage.world = JSON.stringify(data));
   }
 
-  setCarNumber(num) {
+  /**
+   * 设置车辆模型数量。
+   *
+   * @english
+   * Set the number of car models.
+   * @param num - number of cars
+   * @return void
+   */
+  setCarNumber(num: number) {
     this.carsNumber = num;
   }
 
+  /**
+   * 获取车辆模型数量。
+   *
+   * @english
+   * Get the number of car models.
+   * @return cars number
+   */
   getCarNumber() {
     return this.carsNumber;
   }
@@ -284,6 +367,15 @@ export default class TrafficScene {
     return results;
   }
 
+  /**
+   * 设置交叉路段。
+   *
+   * @english
+   * Set a intersect segment.
+   * @param segment - segment data
+   * @param line - line data
+   * @return intersect data info
+   */
   intersectSegment(segment, line) {
     for (let i = 0; i < line.length - 1; i++) {
       const lineSegment = [line[i], line[i + 1]];
@@ -330,6 +422,14 @@ export default class TrafficScene {
     }
   }
 
+  /**
+   * 生成交通数据。
+   *
+   * @english
+   * Generate traffic data.
+   * @param lines - line data to generate traffic
+   * @return void
+   */
   generateTraffic(lines) {
     if (!this.map) {
       return;
@@ -458,6 +558,16 @@ export default class TrafficScene {
     }
   }
 
+  /**
+   * 比较当前点数据和前一个点数据。
+   *
+   * @english
+   * Compare current point and pre point.
+   * @param point - point data
+   * @param index - data index
+   * @param intersectPoints - intersect points data
+   * @return void
+   */
   comparePrePoint(point, index, intersectPoints) {
     const preInfo = this.getPre(point);
     if (preInfo) {
@@ -482,6 +592,14 @@ export default class TrafficScene {
     }
   }
 
+  /**
+   * 获取前一个数据。
+   *
+   * @english
+   * Get pre data.
+   * @param point - point data
+   * @return pre data
+   */
   getPre(point) {
     for (const lineIndex in point.inLines) {
       if (point.inLines[lineIndex].pre !== null) {
@@ -491,6 +609,13 @@ export default class TrafficScene {
     return null;
   }
 
+  /**
+   * 刷新车辆。
+   *
+   * @english
+   * Refresh cars added in layer.
+   * @return car
+   */
   clear() {
     return this.set({});
   }
@@ -515,6 +640,13 @@ export default class TrafficScene {
     return results;
   }
 
+  /**
+   * 刷新车辆。
+   *
+   * @english
+   * Refresh cars added in layer.
+   * @return car
+   */
   refreshCars() {
     if (this.cars.length < this.carsNumber) {
       this.addRandomCar();
@@ -525,6 +657,14 @@ export default class TrafficScene {
     return null;
   }
 
+  /**
+   * 添加道路。
+   *
+   * @english
+   * Add a road.
+   * @param road - road data
+   * @return road
+   */
   addRoad(road: Road) {
     this.roads.put(road);
     road.source.roads.push(road);
@@ -532,35 +672,97 @@ export default class TrafficScene {
     return road.update();
   }
 
+  /**
+   * 根据id获取道路数据。
+   *
+   * @english
+   * Get a road info by id.
+   * @param id - road id
+   * @return road
+   */
   getRoad(id: string) {
     return this.roads.get(id);
   }
 
+  /**
+   * 添加车辆模型。
+   *
+   * @english
+   * Add a car model.
+   * @param car - car model
+   * @return car
+   */
   addCar(car: Car) {
     return this.cars.put(car);
   }
 
+  /**
+   * 根据id获取车辆信息。
+   *
+   * @english
+   * Get a car info by id.
+   * @param id - model id
+   * @return car
+   */
   getCar(id: string) {
     return this.cars.get(id);
   }
 
+  /**
+   * 移除车辆模型。
+   *
+   * @english
+   * Remove a car.
+   * @param car - car model
+   * @return car
+   */
   removeCar(car: Car) {
     this.toRemove.push(car.id);
     return this.cars.pop(car);
   }
 
+  /**
+   * 清空临时移除项目。
+   *
+   * @english
+   * Empty temporary removal items.
+   * @return void
+   */
   clearTmpRemove() {
     this.toRemove = [];
   }
 
+  /**
+   * 添加交叉路口。
+   *
+   * @english
+   * Add a intersection.
+   * @param intersection - intersection data
+   * @return intersection
+   */
   addIntersection(intersection: Intersection) {
     return this.intersections.put(intersection);
   }
 
+  /**
+   * 根据id获取交叉路口信息。
+   *
+   * @english
+   * Get a intersection info by id.
+   * @param id - intersection id
+   * @return intersection
+   */
   getIntersection(id: string) {
     return this.intersections.get(id);
   }
 
+  /**
+   * 添加一个随机车辆模型。
+   *
+   * @english
+   * Add a random car model.
+   * @return car
+   */
   addRandomCar() {
     let lane: Lane;
     const road = sample(this.roads.all());
@@ -573,6 +775,13 @@ export default class TrafficScene {
     return null;
   }
 
+  /**
+   * 移除一个随机车辆模型。
+   *
+   * @english
+   * Remove a random car model.
+   * @return car
+   */
   removeRandomCar() {
     const car = sample(this.cars.all());
     if (car != null) {

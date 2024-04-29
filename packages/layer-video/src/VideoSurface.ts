@@ -35,14 +35,37 @@ export default class VideoSurface extends Eventable(Handlerable(Class)) {
     this._createVideo();
   }
 
+  /**
+   * 设置 VideoSurface 坐标
+   *
+   * @english
+   * Set coordinates of VideoSurface
+   * @param coordinates - coordinates
+   * @return void
+   */
   setCoordinates(coordinates: Coordinate[]) {
     this._coordinates = coordinates;
   }
 
+  /**
+   * 获取 VideoSurface 坐标
+   *
+   * @english
+   * Get coordinates of VideoSurface
+   * @return coordinates
+   */
   getCoordinates() {
     return this._coordinates;
   }
 
+  /**
+   * 设置视频地址
+   *
+   * @english
+   * Set video url
+   * @param url - url of video
+   * @return void
+   */
   setVideo(url: string) {
     this._videoState = "stop";
     this.options.url = url;
@@ -50,6 +73,14 @@ export default class VideoSurface extends Eventable(Handlerable(Class)) {
     this._createVideo();
   }
 
+  /**
+   * 设置HTML元素id
+   *
+   * @english
+   * Set HTML element id
+   * @param url - id of HTML element
+   * @return void
+   */
   setElementId(elementId: string) {
     this._videoState = "stop";
     this.options.elementId = elementId;
@@ -90,11 +121,18 @@ export default class VideoSurface extends Eventable(Handlerable(Class)) {
     this.video = video;
   }
 
+  /**
+   * 获取当前video
+   *
+   * @english
+   * Get the video
+   * @return video
+   */
   getVideo() {
     return this.video;
   }
 
-  _setVideoId(videoId) {
+  _setVideoId(videoId: number) {
     this._videoId = videoId;
   }
 
@@ -102,7 +140,15 @@ export default class VideoSurface extends Eventable(Handlerable(Class)) {
     return this._videoId;
   }
 
-  addTo(layer) {
+  /**
+   * 添加到图层
+   *
+   * @english
+   * Add this surface to a video layer
+   * @param layer - video layer
+   * @return this
+   */
+  addTo(layer: any) {
     if (this._layer) {
       throw new Error(
         "VideoSurface cannot be added to two or more layers at the same time."
@@ -112,44 +158,100 @@ export default class VideoSurface extends Eventable(Handlerable(Class)) {
     return this;
   }
 
+  /**
+   * 显示视频
+   *
+   * @english
+   * Show the video surface
+   * @return this
+   */
   show() {
     this.options.visible = true;
     return this;
   }
 
+  /**
+   * 隐藏视频
+   *
+   * @english
+   * Add the video surface
+   * @return this
+   */
   hide() {
     this.options.visible = false;
     return this;
   }
 
+  /**
+   * 当前视频是否可见
+   *
+   * @english
+   * Is the current video visible
+   * @return visible
+   */
   isVisible() {
     return this.options.visible;
   }
 
+  /**
+   * 播放视频
+   *
+   * @english
+   * Play the video
+   * @return void
+   */
   play() {
     if (this.video) {
       this.video.play();
     }
   }
 
+  /**
+   * 暂停视频
+   *
+   * @english
+   * Pause the video
+   * @return void
+   */
   pause() {
     if (this.video) {
       this.video.pause();
     }
   }
 
-  setAudio(audio) {
+  setAudio(audio: any) {
     this.video.muted = audio;
   }
 
-  setOpacity(opacity) {
+  /**
+   * 设置视频透明度
+   *
+   * @english
+   * Set the opacity of video
+   * @return void
+   */
+  setOpacity(opacity: number) {
     this.options.opacity = opacity;
   }
 
+  /**
+   * 获取视频透明度
+   *
+   * @english
+   * Get the opacity of video
+   * @return opacity
+   */
   getOpacity() {
     return this.options.opacity;
   }
 
+  /**
+   * 删除视频
+   *
+   * @english
+   * Delete current video and end edit
+   * @return void
+   */
   remove() {
     delete this.video;
     const layer = this.getLayer();
@@ -159,6 +261,13 @@ export default class VideoSurface extends Eventable(Handlerable(Class)) {
     this.endEdit();
   }
 
+  /**
+   * 获取所属图层
+   *
+   * @english
+   * Get the layer of this surface
+   * @return layer
+   */
   getLayer() {
     return this._layer;
   }
@@ -167,6 +276,13 @@ export default class VideoSurface extends Eventable(Handlerable(Class)) {
     return this._videoState === "playing";
   }
 
+  /**
+   * 编辑视频
+   *
+   * @english
+   * Edit the video
+   * @return void
+   */
   startEdit() {
     const layer = this.getLayer();
     if (!layer) {
@@ -218,6 +334,13 @@ export default class VideoSurface extends Eventable(Handlerable(Class)) {
     );
   }
 
+  /**
+   * 退出编辑
+   *
+   * @english
+   * End edit
+   * @return void
+   */
   endEdit() {
     if (this._editHelpLayer) {
       this._editHelpPolygon.endEdit();

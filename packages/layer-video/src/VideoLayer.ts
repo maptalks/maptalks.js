@@ -54,6 +54,14 @@ export default class VideoLayer extends Layer {
     }
   }
 
+  /**
+   * 添加surfaces
+   *
+   * @english
+   * Add video surfaces
+   * @param videoSurfaces - one or more surfaces
+   * @return void
+   */
   addSurfaces(videoSurfaces: VideoSurface | VideoSurface[]) {
     if (!videoSurfaces) {
       return;
@@ -82,6 +90,14 @@ export default class VideoLayer extends Layer {
     }
   }
 
+  /**
+   * 设置该图层是否显示在最上层
+   *
+   * @english
+   * Set whether the layer is displayed on the top layer
+   * @param always - always on the top
+   * @return void
+   */
   showTopAlways(always: boolean) {
     this.options.showTopAlways = always;
     const renderer = this.getRenderer();
@@ -90,6 +106,13 @@ export default class VideoLayer extends Layer {
     }
   }
 
+  /**
+   * 获取surfaces
+   *
+   * @english
+   * Get video surfaces
+   * @return surfaces
+   */
   setDoubleSide(doubleSide: boolean) {
     this.options.doubleSide = doubleSide;
     const renderer = this.getRenderer();
@@ -98,6 +121,13 @@ export default class VideoLayer extends Layer {
     }
   }
 
+  /**
+   * 获取surfaces
+   *
+   * @english
+   * Get video surfaces
+   * @return surfaces
+   */
   getVideoSurfaces() {
     const surfaceList = [];
     for (const s in this._videoSurfaceMap) {
@@ -106,6 +136,14 @@ export default class VideoLayer extends Layer {
     return surfaceList;
   }
 
+  /**
+   * 删除surfaces
+   *
+   * @english
+   * Delete video surfaces
+   * @param videoSurfaces - one or more surfaces
+   * @return void
+   */
   removeVideoSurfaces(videoSurfaces: VideoSurface | VideoSurface[]) {
     if (Array.isArray(videoSurfaces)) {
       videoSurfaces.forEach((videoSurface) => {
@@ -121,11 +159,25 @@ export default class VideoLayer extends Layer {
     }
   }
 
+  /**
+   * 移除当前图层
+   *
+   * @english
+   * Remove this layer
+   * @return void
+   */
   remove(): any {
     this.clear();
     super.remove();
   }
 
+  /**
+   * 清空已经添加的surfaces
+   *
+   * @english
+   * Clear video surfaces
+   * @return void
+   */
   clear() {
     const surfaces = this.getVideoSurfaces();
     for (let i = 0; i < surfaces.length; i++) {

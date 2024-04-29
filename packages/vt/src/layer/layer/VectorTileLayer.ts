@@ -10,12 +10,11 @@ import type {
   VtStyle,
   VtSymbol,
 } from "../../types";
+import { Color, PackUtil } from "@maptalks/vector-packer";
 import { compress, uncompress } from "./Compress";
 import { extend, hasOwn, isNil, isObject, isString } from "../../common/Util";
 
 import Ajax from "../../worker/util/Ajax";
-import { Color } from "@maptalks/vector-packer";
-import { PackUtil } from "@maptalks/vector-packer";
 import type { PositionArray } from "maptalks/dist/geo/Position";
 import type { TileLayerOptionsType } from "maptalks/dist/layer/tile/TileLayer";
 import VectorTileLayerRenderer from "../renderer/VectorTileLayerRenderer";
@@ -136,6 +135,14 @@ class VectorTileLayer extends maptalks.TileLayer {
     this.setStyle(style);
   }
 
+  /**
+   * 设置url处理函数。
+   *
+   * @english
+   * Set URL processing function.
+   * @param modifier - URL processing function
+   * @return this
+   */
   setURLModifier(modifier: Function) {
     this._urlModifier = modifier;
     const renderer = this.getRenderer();
@@ -145,6 +152,13 @@ class VectorTileLayer extends maptalks.TileLayer {
     return this;
   }
 
+  /**
+   * 获取url处理函数。
+   *
+   * @english
+   * Get URL processing function.
+   * @return url modifier
+   */
   getURLModifier() {
     return this._urlModifier;
   }
@@ -162,6 +176,15 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
   }
 
+  /**
+   * 设置数据状态。
+   *
+   * @english
+   * Set state of feature.
+   * @param source - layer source
+   * @param state - feature state
+   * @return this
+   */
   setFeatureState(source: { id: string; layer: string }, state: unknown) {
     if (isNil(source.id)) {
       throw new Error("missing id in first parameter of setFeatureState.");
@@ -179,6 +202,15 @@ class VectorTileLayer extends maptalks.TileLayer {
     return this;
   }
 
+  /**
+   * 删除数据状态。
+   *
+   * @english
+   * Remove state of feature.
+   * @param source - layer source
+   * @param key - object key
+   * @return this
+   */
   removeFeatureState(
     source: { id: string; layer: string },
     key: string | number | object
@@ -212,6 +244,14 @@ class VectorTileLayer extends maptalks.TileLayer {
     return this;
   }
 
+  /**
+   * 获取数据状态。
+   *
+   * @english
+   * Get state of feature.
+   * @param source - layer source
+   * @return feature state
+   */
   getFeatureState(source: any) {
     if (isNil(source.id)) {
       throw new Error("missing id in first parameter of getFeatureState.");
@@ -237,7 +277,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     return this._featureStamp;
   }
 
-  _isFeatureStateDirty(timestamp) {
+  _isFeatureStateDirty(timestamp: number) {
     return this._featureStamp && this._featureStamp !== timestamp;
   }
 
@@ -279,6 +319,14 @@ class VectorTileLayer extends maptalks.TileLayer {
 
   onWorkerReady() {}
 
+  /**
+   * 更新图层配置。
+   *
+   * @english
+   * Update layer config.
+   * @param conf - layer config
+   * @return void
+   */
   onConfig(conf: object) {
     const renderer = this.getRenderer();
     if (renderer) {
@@ -286,6 +334,13 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
   }
 
+  /**
+   * 获取worker参数。
+   *
+   * @english
+   * Get worker options.
+   * @return worker options
+   */
   getWorkerOptions(): Record<string, any> {
     return {
       debug: (this.options as any)["debug"],
@@ -307,6 +362,14 @@ class VectorTileLayer extends maptalks.TileLayer {
     };
   }
 
+  /**
+   * 设置图层样式。
+   *
+   * @english
+   * Set the style of layer.
+   * @param style - vt style object
+   * @return this
+   */
   setStyle(style: any) {
     if (style && (isString(style) || style.url)) {
       const url = style;
@@ -463,8 +526,11 @@ class VectorTileLayer extends maptalks.TileLayer {
   }
 
   /**
-   * 获取图层的polygonOffsetCount
-   * 用于GroupGLLayer全局管理polygonOffset
+   * 获取图层的polygonOffsetCount，用于GroupGLLayer全局管理polygonOffset。
+   *
+   * @english
+   * Get the polygonOffsetCount of layer,used for GroupGLLayer global management of polygonOffset.
+   * @return polygonOffsetCount
    */
   getPolygonOffsetCount() {
     const renderer = this.getRenderer();
@@ -475,73 +541,137 @@ class VectorTileLayer extends maptalks.TileLayer {
   }
 
   /**
-   * 获取图层的polygonOffset
-   * 用于GroupGLLayer全局管理polygonOffset
+   * 获取图层的polygonOffset，用于GroupGLLayer全局管理polygonOffset
+   *
+   * @english
+   * Get the polygonOffset of layer,used for GroupGLLayer global management of polygonOffset
+   * @return polygonOffset
    */
   getPolygonOffset() {
     return this._polygonOffset || 0;
   }
 
+  /**
+   * 设置图层的polygonOffset
+   *
+   * @english
+   * Set the polygonOffset of layer
+   * @return this
+   */
   setPolygonOffset(offset: number, total?: number) {
     this._polygonOffset = offset;
     this._totalPolygonOffset = total;
     return this;
   }
 
+  /**
+   * 获取图层的polygonOffset总数。
+   *
+   * @english
+   * Get the total polygonOffset of layer
+   * @return total polygonOffset
+   */
   getTotalPolygonOffset() {
     return this._totalPolygonOffset;
   }
 
+  /**
+   * 获取已经渲染的features。
+   *
+   * @english
+   * Get rendered features of layer
+   * @return rendered features
+   */
   getRenderedFeatures() {
-    const renderer = this.getRenderer();
+    const renderer: any = this.getRenderer();
     if (!renderer) {
       return [];
     }
-    return (renderer as any).getRenderedFeatures();
+    return renderer.getRenderedFeatures();
   }
 
+  /**
+   * 高亮整个图层
+   *
+   * @english
+   * Outline the layer
+   * @return this
+   */
   outlineAll() {
-    const renderer = this.getRenderer();
+    const renderer: any = this.getRenderer();
     if (!renderer) {
       return this;
     }
-    (renderer as any).outlineAll();
+    renderer.outlineAll();
     return this;
   }
 
+  /**
+   * 高亮数据
+   *
+   * @english
+   * Outline features
+   * @param idx            - style index
+   * @param featureIds     - feature ids
+   * @return this
+   */
   outline(idx: number, featureIds: number[]) {
-    const renderer = this.getRenderer();
+    const renderer: any = this.getRenderer();
     if (!renderer) {
       return this;
     }
-    (renderer as any).outline(idx, featureIds);
+    renderer.outline(idx, featureIds);
     return this;
   }
 
+  /**
+   * 高亮数据
+   *
+   * @english
+   * Outline features
+   * @param idx  - style index
+   * @return this
+   */
   outlineBatch(idx: number) {
-    const renderer = this.getRenderer();
+    const renderer: any = this.getRenderer();
     if (!renderer) {
       return this;
     }
-    (renderer as any).outlineBatch(idx);
+    renderer.outlineBatch(idx);
     return this;
   }
 
+  /**
+   * 高亮数据
+   *
+   * @english
+   * Outline features
+   * @param featureIds     - feature ids
+   * @return this
+   */
   outlineFeatures(featureIds: number[]) {
-    const renderer = this.getRenderer();
+    const renderer: any = this.getRenderer();
     if (!renderer) {
       return this;
     }
-    (renderer as any).outlineFeatures(featureIds);
+    renderer.outlineFeatures(featureIds);
     return this;
   }
+
+  /**
+   * 取消高亮
+   *
+   * @english
+   * Cancel outline
+   * @return this
+   */
 
   cancelOutline() {
-    const renderer = this.getRenderer();
+    const renderer: any = this.getRenderer();
     if (!renderer) {
       return this;
     }
-    (renderer as any).cancelOutline();
+    renderer.cancelOutline();
     return this;
   }
 
@@ -591,11 +721,11 @@ class VectorTileLayer extends maptalks.TileLayer {
   }
 
   cancelHighlight(ids: number) {
-    const renderer = this.getRenderer();
+    const renderer: any = this.getRenderer();
     if (!renderer) {
       return this;
     }
-    (renderer as any).cancelHighlight(ids);
+    renderer.cancelHighlight(ids);
     return this;
   }
 
@@ -613,6 +743,15 @@ class VectorTileLayer extends maptalks.TileLayer {
     maptalks.Util.convertStylePath(this._featureStyle, this._replacer);
   }
 
+  /**
+   * 更新 SceneConfig
+   *
+   * @english
+   * Update sceneConfig
+   * @param idx - style name or index
+   * @param sceneConfig   - properties of sceneConfig
+   * @return this
+   */
   updateSceneConfig(idx: string | number, sceneConfig: VtSceneConfig) {
     if (isString(idx)) {
       idx = this._getStyleIndex(idx as string);
@@ -620,6 +759,16 @@ class VectorTileLayer extends maptalks.TileLayer {
     return this._updateSceneConfig(0, idx as number, sceneConfig);
   }
 
+  /**
+   * 更新 feature 的 SceneConfig
+   *
+   * @english
+   * Update feature sceneConfig
+   * @param idx - feature index
+   * @param styleIdx - style index
+   * @param sceneConfig   - properties of sceneConfig
+   * @return this
+   */
   updateFeatureSceneConfig(
     idx: number,
     styleIdx: number,
@@ -698,6 +847,15 @@ class VectorTileLayer extends maptalks.TileLayer {
     return this;
   }
 
+  /**
+   * 更新 dataConfig
+   *
+   * @english
+   * Update dataConfig
+   * @param idx - style name or index
+   * @param dataConfig   - properties of dataConfig
+   * @return this
+   */
   updateDataConfig(idx: number | string, dataConfig: VtDataConfig) {
     if (isString(idx)) {
       idx = this._getStyleIndex(idx as string);
@@ -705,6 +863,16 @@ class VectorTileLayer extends maptalks.TileLayer {
     return this._updateDataConfig(0, idx as number, dataConfig);
   }
 
+  /**
+   * 更新 feature 的 dataConfig
+   *
+   * @english
+   * Update feature dataConfig
+   * @param idx - feature index
+   * @param styleIdx - style index
+   * @param dataConfig   - properties of dataConfig
+   * @return this
+   */
   updateFeatureDataConfig(
     idx: number,
     styleIdx: number,
@@ -772,6 +940,15 @@ class VectorTileLayer extends maptalks.TileLayer {
     return this;
   }
 
+  /**
+   * 更新 symbol
+   *
+   * @english
+   * Update symbol
+   * @param idx - style name or index
+   * @param symbol   - properties of symbol
+   * @return this
+   */
   updateSymbol(idx: number | string, symbol: VtSymbol) {
     if (isString(idx)) {
       idx = this._getStyleIndex(idx as string);
@@ -779,6 +956,15 @@ class VectorTileLayer extends maptalks.TileLayer {
     return this._updateSymbol(0, idx as number, symbol);
   }
 
+  /**
+   * 更新 feature symbol
+   *
+   * @english
+   * Update symbol
+   * @param idx - style name or index
+   * @param symbol   - properties of symbol
+   * @return this
+   */
   updateFeatureSymbol(idx: number, feaStyleIdx: number, symbol: VtSymbol) {
     return this._updateSymbol(1, idx, symbol, feaStyleIdx);
   }
@@ -927,6 +1113,13 @@ class VectorTileLayer extends maptalks.TileLayer {
     return !!this._isDefaultRender && (this.options as any)["defaultRendering"];
   }
 
+  /**
+   * 校验style是否合法
+   *
+   * @english
+   * Validate style
+   * @return void
+   */
   validateStyle() {
     this._isDefaultRender = false;
     let styles = this._vtStyle;
@@ -960,6 +1153,13 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
   }
 
+  /**
+   * 获取当前 style
+   *
+   * @english
+   * Get style
+   * @return style
+   */
   getStyle() {
     if (!(this.options as any).style) {
       return null;
@@ -1170,6 +1370,13 @@ class VectorTileLayer extends maptalks.TileLayer {
     throw new Error(error);
   }
 
+  /**
+   * 获取图层的背景设置
+   *
+   * @english
+   * Get Background config of the layer
+   * @return backgroundConfig
+   */
   getGroundConfig() {
     if (!this._backgroundConfig) {
       this._backgroundConfig = {
@@ -1214,12 +1421,15 @@ class VectorTileLayer extends maptalks.TileLayer {
   // }
 
   /**
+   * 识别给定坐标的数据
+   *
+   * @english
    * Identify the data on the given container point
-   * @param  {maptalks.Point} point   - point to identify
-   * @param  {Object} [options=null]  - options
-   * @param  {Object} [options.tolerance=0] - identify tolerance in pixel
-   * @param  {Object} [options.count=null]  - result count
-   * @return {Object[]} data identified
+   * @param coordinate - coordinate to identify
+   * @param options=null - options
+   * @param options.tolerance=0 - identify tolerance in pixel
+   * @param options.count=null - result count
+   * @return data identified
    */
   identify(
     coordinate: maptalks.Coordinate,
@@ -1235,12 +1445,15 @@ class VectorTileLayer extends maptalks.TileLayer {
   }
 
   /**
+   * 识别给定点的数据
+   *
+   * @english
    * Identify the data on the given container point
-   * @param  {maptalks.Point} point   - point to identify
-   * @param  {Object} [options=null]  - options
-   * @param  {Object} [options.tolerance=0] - identify tolerance in pixel
-   * @param  {Object} [options.count=null]  - result count
-   * @return {Object[]} data identified
+   * @param point - point to identify
+   * @param options=null - options
+   * @param options.tolerance=0 - identify tolerance in pixel
+   * @param options.count=null - result count
+   * @return data identified
    */
   identifyAtPoint(
     point: maptalks.Point,
@@ -1411,6 +1624,14 @@ class VectorTileLayer extends maptalks.TileLayer {
    * Will return all zoom's schema if z is undefined
    * @param {Number} [z=undefined] - tile's zoom, optional
    * @returns {Object} data schema
+   */
+  /**
+   * 返回矢量瓦片数据的重要信息，包括图层、属性和数据类型
+   *
+   * @english
+   * Return vector tile data's schema, including layers, properties, data types
+   * @param z=undefined - tile's zoom, optional
+   * @return data schema
    */
   getDataSchema(z: number): object {
     if (!this._schema) {
