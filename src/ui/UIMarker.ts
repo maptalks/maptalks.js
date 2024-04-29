@@ -446,9 +446,9 @@ class UIMarker extends Handlerable(UIComponent) {
         on(dom, domEvents, this._onDomEvents, this);
     }
 
-    _onDomEvents(e: MouseEvent) {
+    _onDomEvents(e: MouseEvent, type?: string) {
         const event = this.getMap()._parseEvent(e, e.type);
-        const type = e.type;
+        type = type || e.type;
         if (type === 'mousedown') {
             this._mousedownEvent = e;
         }
@@ -461,12 +461,12 @@ class UIMarker extends Handlerable(UIComponent) {
         if (type === 'touchstart') {
             this._touchstartTime = now();
         }
-        this.fire(e.type, event);
+        this.fire(type, event);
         // Mobile device simulation click event
         if (type === 'touchend' && Browser.touch) {
             const clickTimeThreshold = this.getMap().options.clickTimeThreshold || 280;
             if (now() - this._touchstartTime < clickTimeThreshold) {
-                this._onDomEvents(extend({}, e, { type: 'click' }));
+                this._onDomEvents(e, 'click');
             }
         }
     }
