@@ -138,7 +138,8 @@ class MapDragHandler extends Handler {
         }
         const map = this.target;
         const p = getEventContainerPoint(map._getActualEvent(param.domEvent), map.getContainer());
-        const point = map._prjToPoint(this._containerPointToPrj(p));
+        const movingPoint = map._containerPointToPoint(p, undefined, undefined, this.startPrjCoord.z);
+        const point = map._prjToPoint(map._pointToPrj(movingPoint));
         const offset = point._sub(map._prjToPoint(map._getPrjCenter()));
         map._setPrjCoordAtOffsetToCenter(this.startPrjCoord, offset);
         map.onMoving(param);
