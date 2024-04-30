@@ -77,9 +77,17 @@ function getTileMatrixSet(TileMatrixSets, TileMatrixSetLink) {
 }
 
 function parseWMTSXML(str, requestUrl, options) {
+    const serviceType = ["isArcgis", "isSuperMap", "isGeoServer"];
+    if (serviceType.every((key) => options[key] == null)) {
+        console.warn(
+            "Please specify the server type, such as isArcgis, isSuperMap, isGeoServer"
+        );
+    }
     //IE test success
     if (options.isArcgis == null) {
-        options.isArcgis = str.indexOf('arcgis') > -1;
+        options.isArcgis = ["arcgis", "geoscene"].some(
+            (key) => str.indexOf(key) > -1
+        );
     }
     if (options.isSuperMap == null) {
         options.isSuperMap = str.indexOf('supermap') > -1;
