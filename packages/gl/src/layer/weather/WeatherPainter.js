@@ -62,7 +62,7 @@ class WeatherPainter {
     }
 
     renderSnowMask(drawContext) {
-        if (!this.isEnableSnow()) {
+        if (!this.isEnableSnow() || !this._showSnowGround()) {
             return;
         }
         const map = this.getMap();
@@ -179,6 +179,11 @@ class WeatherPainter {
     isEnableSnow() {
         const weatherConfig = this._layer.getWeatherConfig();
         return weatherConfig && weatherConfig.enable && weatherConfig.snow && weatherConfig.snow.enable;
+    }
+
+    _showSnowGround() {
+        const weatherConfig = this._layer.getWeatherConfig();
+        return this.isEnableSnow() && weatherConfig.snow.showGround === false;
     }
 
     isPlaying() {

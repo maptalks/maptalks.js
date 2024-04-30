@@ -1648,7 +1648,7 @@ export default class GLTFMarker extends Marker {
         const cameraCoordinate = map.pointAtResToCoordinate(new Point(cameraPosition), glRes);
         const cameraHeight = cameraPosition[2] / map.altitudeToPoint(1, glRes);
         cameraCoordinate.z = cameraHeight + height;
-        map.setCameraPosition({
+        map.setCameraOrientation({
             position: [cameraCoordinate.x, cameraCoordinate.y, cameraCoordinate.z],
             pitch: map.getPitch(),
             bearing: map.getBearing()

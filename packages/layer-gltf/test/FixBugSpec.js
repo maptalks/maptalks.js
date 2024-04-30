@@ -1855,4 +1855,28 @@ describe('bug', () => {
         });
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
     });
+
+    it('zoomTo()', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFGeometry(center.add(0, 1),
+            { symbol: { url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
+            }});
+        gltflayer.addGeometry(marker);
+
+        function checkColor() {
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixel).to.be.eql([146, 146, 146, 255]);
+                done();
+            }, 100);
+        }
+        marker.on('load', () => {
+            marker.zoomTo();
+            checkColor();
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    })
 });
