@@ -78,8 +78,10 @@ function project3857(out, lnglat) {
 export function projMeter(c, pc, meter, projection) {
     if (projection === 'EPSG:3857') {
         return projMeter3857(c, pc, meter, projection);
-    } else if (projection === 'EPSG:4326' || projection === 'EPSG:4490' || projection === 'identity') {
+    } else if (projection === 'EPSG:4326' || projection === 'EPSG:4490') {
         return projMeter4326(c, pc, meter);
+    } else if (projection === 'identity') {
+        return meter;
     } else if (projection === 'baidu') {
         return projMeter4326(c, pc, meter, projection);
     } else {

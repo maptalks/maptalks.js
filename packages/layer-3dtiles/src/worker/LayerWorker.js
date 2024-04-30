@@ -913,13 +913,15 @@ export default class BaseLayerWorker {
     }
 
     _getProjCenter(center) {
-
-        if (vec3.len(center) === 0) {
+        const projection = this.options['projection'];
+        if (projection === 'identity') {
+            vec3.copy(TEMP_DEGREE, center);
+        } else if (vec3.len(center) === 0) {
             vec3.set(TEMP_DEGREE, 0, 0, -6378137);
         } else {
             cartesian3ToDegree(TEMP_DEGREE, center);
         }
-        const projection = this.options['projection'];
+
         project(TEMP_PROJ, TEMP_DEGREE, projection);
         // const height = center.length > 2 ? projMeter(TEMP_DEGREE, TEMP_PROJ, TEMP_DEGREE[2], projection) : 0;
         const height = TEMP_DEGREE[2];
