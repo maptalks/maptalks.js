@@ -80,7 +80,7 @@ function parseWMTSXML(str, requestUrl, options) {
     const serviceType = ["isArcgis", "isSuperMap", "isGeoServer"];
     if (serviceType.every((key) => options[key] == null)) {
         console.warn(
-            "Please specify the server type, such as isArcgis, isSuperMap, isGeoServer"
+            "Please specify the server type, such as isArcgis, isSuperMap, isGeoServer, Otherwise, the system will determine by itself"
         );
     }
     //IE test success
