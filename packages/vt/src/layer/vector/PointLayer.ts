@@ -7,7 +7,7 @@ import Vector3DLayerRenderer from "./Vector3DLayerRenderer";
 import { extend } from "../../common/Util";
 import { fromJSON } from "./util/from_json";
 
-const defaultOptions = {
+const defaultOptions: PointLayerOptions = {
   glyphSdfLimitPerFrame: 15,
   iconErrorUrl: null,
   workarounds: {
@@ -15,11 +15,17 @@ const defaultOptions = {
     "win-intel-gpu-crash": true,
   },
   collision: false,
-  collisionFrameLimit: 1,
+  collisionFrameLimit: 1
 };
 
 interface PointLayerOptions extends OverlayLayerOptionsType {
-  sceneConfig: typeof ICON_PAINTER_SCENECONFIG;
+  glyphSdfLimitPerFrame?: number,
+  iconErrorUrl?: string,
+  workarounds?: {
+    "win-intel-gpu-crash"?: boolean,
+  },
+  sceneConfig?: typeof ICON_PAINTER_SCENECONFIG,
+  collisionFrameLimit?: number
 }
 
 class PointLayer extends Vector3DLayer {
@@ -40,7 +46,7 @@ class PointLayer extends Vector3DLayer {
   constructor(...args: any) {
     //@ts-expect-error
     super(...args);
-    if (this.options.sceneConfig) {
+    if (!this.options.sceneConfig) {
       this.options.sceneConfig = extend({}, ICON_PAINTER_SCENECONFIG);
     }
   }

@@ -1,6 +1,5 @@
 import { pushIn, exportIndices } from '../../common/Util';
-import { vec3 } from 'gl-matrix';
-import { earcut } from '@maptalks/vector-packer';
+import { earcut, vec3 } from '@maptalks/vector-packer';
 
 
 /**

@@ -159,16 +159,16 @@ export const TEXT_SYMBOL = {
         default: null,
         property: '_symbol_textFaceName'
     },
-    textWeight: {
-        type: 'identity',
-        default: null,
-        property: '_symbol_textWeight'
-    },
-    textStyle: {
-        type: 'identity',
-        default: null,
-        property: '_symbol_textStyle'
-    },
+    // textWeight: {
+    //     type: 'identity',
+    //     default: null,
+    //     property: '_symbol_textWeight'
+    // },
+    // textStyle: {
+    //     type: 'identity',
+    //     default: null,
+    //     property: '_symbol_textStyle'
+    // },
     textWrapWidth: {
         type: 'identity',
         default: null,

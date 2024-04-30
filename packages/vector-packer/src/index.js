@@ -26,6 +26,9 @@ export { FilterUtil };
 import * as FuncTypeUtil from './style/FuncType.js';
 export { FuncTypeUtil };
 
+export { default as pbf } from 'pbf';
+export { vec2, vec3, vec4 } from 'gl-matrix';
+
 import earcut from 'earcut';
 export { earcut };
 
@@ -42,9 +45,7 @@ const SYMBOLS_NEED_REBUILD = {
     'markerSpacing': 1,
 
     'textName': 1,
-    'textStyle': 1,
     'textFaceName': 1,
-    'textWeight': 1,
     'textPlacement': 1,
     'textSpacing': 1,
 

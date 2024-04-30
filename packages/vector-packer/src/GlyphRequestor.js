@@ -7,13 +7,18 @@ let DEBUG_COUNTER = 0;
 let LIMIT_PER_FRAME = 15;
 
 export default class GlyphRequestor {
-    constructor(framer, limit = LIMIT_PER_FRAME, isCompactChars) {
+    constructor(framer, limit = LIMIT_PER_FRAME, isCompactChars, sdfURL) {
         this.entries = {};
         this._cachedFont = {};
         this._cache = new LRUCache(2048, function () {});
         this._framer = framer;
         this._limit = limit;
         this._isCompactChars = isCompactChars;
+        this._sdfURL = sdfURL;
+    }
+
+    _isValidSDFURL(url) {
+        return url && url.indexOf('{stack}') >= 0 && url.indexOf('{range}') > 0;
     }
 
     getGlyphs(glyphs, cb) {
@@ -21,6 +26,12 @@ export default class GlyphRequestor {
             cb(null, { glyphs: null });
             return;
         }
+
+        if (this._isValidSDFURL(this._sdfURL)) {
+            this._requestRemoteSDF(glyphs, cb);
+            return;
+        }
+
         const entries = this.entries;
         const options = glyphs.options;
         let isCharsCompact = true;
@@ -45,14 +56,13 @@ export default class GlyphRequestor {
                     if (step <= startStep) {
                         continue;
                     }
-                    const fonts = font.split(' ');
-                    const isCharCompact = isCharsCompact && fonts[0] === 'normal' && !charHasUprightVerticalOrientation(+charCode);
+                    const isCharCompact = isCharsCompact && !charHasUprightVerticalOrientation(+charCode);
                     const key = font + ':' + charCode + ':' + isCharCompact;
                     let sdf;
                     if (this._cache.has(key)) {
                         sdf = this._cache.get(key);
                     } else {
-                        sdf = this._tinySDF(entries[font], fonts, charCode, isCharCompact);
+                        sdf = this._tinySDF(entries[font], font, charCode, isCharCompact);
                         // count++;
                         this._cache.add(key, sdf);
                         drawCount++;
@@ -82,33 +92,75 @@ export default class GlyphRequestor {
 
     }
 
-    _tinySDF(entry, fonts, charCode, isCharsCompact) {
+    // 从远程服务请求sdf数据
+    _requestRemoteSDF(glyphs, cb) {
+        const promises = [];
+        for (const font in glyphs) {
+            for (const charCode of glyphs[font]) {
+                promises.push(this._requestGlyph(font, charCode));
+            }
+        }
+        Promise.all(promises).then(glyphData => {
+            cb(null, glyphData);
+        });
+    }
 
+    _requestGlyph(font, charCode) {
+        const url = this._sdfURL;
+        let entry = this.entries[font];
+        if (!entry) {
+            entry = this.entries[font] = {
+                glyphs: {},
+                requests: {},
+                ranges: {}
+            };
+        }
+        let glyph = entry.glyphs[charCode];
+        if (glyph) {
+            return Promise.resolve({font, charCode, glyph});
+        }
+
+        const range = Math.floor(charCode / 256);
+        if (range * 256 > 65535) {
+            return Promise.reject(new Error('glyphs > 65535 not supported'));
+        }
+        let requests = entry.requests[range];
+        if (!requests) {
+            // request
+        }
+        requests.push((err, result) => {
+            if (err) {
+                return (err);
+            } else if (result) {
+                fnCallback(null, {stack, id, glyph: result.glyphs[id] || null});
+            }
+        });
+    }
+
+    _tinySDF(entry, fonts, charCode, isCharsCompact) {
         // if (!isChar['CJK Unified Ideographs'](id) && !isChar['Hangul Syllables'](id)) { // eslint-disable-line new-cap
         //     return;
         // }
-        const textStyle = fonts[0],
-            textWeight = fonts[1],
-            textFaceName = fonts.slice(3).join(' ');
+        const textFaceName = fonts;
         const fontFamily = textFaceName;
         let tinySDF = entry.tinySDF;
-        let buffer = textStyle !== 'normal' ? 5 : 2;
+        const buffer = 2;
         //1. 中日韩字符中间适当多留一些间隔
         //2. 英文或其他拉丁文字，减小 advanceBuffer，让文字更紧凑
         //3. 但因为intel gpu崩溃问题，启用stencil且advancaBuffer < 0时，会有文字削边现象，所以设为 1
         const advanceBuffer = isCharsCompact ? -1 : 2;
         if (!tinySDF) {
             let fontWeight = '400';
-            if (/bolder/i.test(textWeight)) {
+            if (/bolder/i.test(fontFamily)) {
                 fontWeight = '1000';
-            } else if (/bold/i.test(textWeight)) {
+            } else if (/bold/i.test(fontFamily)) {
                 fontWeight = '900';
-            } else if (/medium/i.test(textWeight)) {
+            } else if (/medium/i.test(fontFamily)) {
                 fontWeight = '500';
-            } else if (/light/i.test(textWeight)) {
+            } else if (/light/i.test(fontFamily)) {
                 fontWeight = '200';
             }
-            tinySDF = entry.tinySDF = new TinySDF(24, buffer, 8, .25, fontFamily, fontWeight, textStyle);
+            tinySDF = entry.tinySDF = new TinySDF(24, buffer, 8, .25, fontFamily, fontWeight);
 
         }
         const chr = String.fromCodePoint(charCode);

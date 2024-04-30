@@ -32,8 +32,6 @@
     "@maptalks/vt-plugin": "workspace:@maptalks/vt-plugin@*",
     "animation-easings": "^0.1.0",
     "fast-deep-equal": "^2.0.1",
-    "gl-matrix": "^3.4.0",
-    "pbf": "^3.2.1",
     "point-in-polygon": "^1.1.0",
     "quickselect": "^1.0.0",
     "rbush": "^3.0.1",

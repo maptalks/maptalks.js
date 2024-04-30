@@ -12,8 +12,6 @@ const style = [
         symbol: {
             textName: '貔貅',
             textFaceName: 'Arial',
-            textWeight: 'bold',
-            textStyle: 'italic',
             textSize: 30,
             textFill: '#f00',
             textOpacity: 1

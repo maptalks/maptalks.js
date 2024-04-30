@@ -18,22 +18,6 @@ const style = [
                     [2, 'sans-serif']
                 ]
             },
-            textWeight: {
-                property: 'type',
-                type: 'categorical',
-                default: 'normal',
-                stops: [
-                    [2, 'bold']
-                ]
-            },
-            textStyle: {
-                property: 'type',
-                type: 'categorical',
-                default: 'normal',
-                stops: [
-                    [2, 'italic']
-                ]
-            },
             textName: '貔貅',
             textFill: {
                 property: 'type',

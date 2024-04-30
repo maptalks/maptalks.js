@@ -7,11 +7,9 @@ const DEFAULT_FONT = 'Open Sans Regular';
  * @return {String}       CSS Font String
  * @memberOf StringUtil
  */
-export function getSDFFont(textFaceName, textStyle, textWeight) {
+export function getSDFFont(textFaceName) {
     //textStyle textWeight textSize textFaceName
-    return [textStyle || 'normal', textWeight || 'normal',
-        '24px', //in GlyphRequestor.js, font size is fixed to 24
-        textFaceName || DEFAULT_FONT].join(' ');
+    return textFaceName || DEFAULT_FONT;
 
 }
 

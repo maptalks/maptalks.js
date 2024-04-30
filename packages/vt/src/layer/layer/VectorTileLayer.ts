@@ -25,17 +25,15 @@ const TMP_COORD = new maptalks.Coordinate(0, 0);
 const EMPTY_ALTITUDE = [null, 0];
 const ALTITUDE = [];
 
-interface VectorTileLayerOptions extends TileLayerOptionsType {
-  style: Record<string, unknown>;
-}
 
-const defaultOptions = {
+const defaultOptions: VectorTileLayerOptionsType = {
+  urlTemplate: null,
   renderer: "gl",
   altitudeProperty: "altitude",
   forceRenderOnZooming: true,
   forceRenderOnMoving: true,
   forceRenderOnRotating: true,
-  tileSize: 512,
+  tileSize: [512, 512],
   features: false,
   schema: false,
   cascadeTiles: true,
@@ -113,6 +111,7 @@ class VectorTileLayer extends maptalks.TileLayer {
   _highlighted: any[];
   _replacer?: Function;
   _urlModifier?: Function;
+  options: VectorTileLayerOptionsType;
 
   // create a layer instance from given json
   static loadFrom(url: string, fetchOptions: any) {
@@ -125,7 +124,7 @@ class VectorTileLayer extends maptalks.TileLayer {
       });
   }
 
-  constructor(id: string, options: VectorTileLayerOptions) {
+  constructor(id: string, options: VectorTileLayerOptionsType) {
     super(id, options);
     // if (options.spatialReference === undefined) {
     //     throw new Error(`options.spatialReference must be set for VectorTileLayer(${id}), possible values: null(using map's), preset-vt-3857, or a customized one.`);
@@ -282,36 +281,37 @@ class VectorTileLayer extends maptalks.TileLayer {
   }
 
   _prepareOptions() {
+    const options = this.options as any;
     const map = this.getMap();
     const projection = map.getProjection();
     const is4326 =
       projection.code === "EPSG:4326" || projection.code === "EPSG:4490";
     const is3857 = projection.code === "EPSG:3857";
-    if (!(this.options as any).spatialReference) {
+    if (!options.spatialReference) {
       const tileSize = this.getTileSize().width;
       if (tileSize === 512) {
         if (is3857) {
-          (this.options as any).spatialReference = "preset-vt-3857";
+          options.spatialReference = "preset-vt-3857";
         } else if (is4326) {
-          (this.options as any).spatialReference = "preset-vt-4326";
+          options.spatialReference = "preset-vt-4326";
         }
       }
     }
-    if (!(this.options as any).tileSystem) {
-      if ((this.options as any).tms) {
+    if (!options.tileSystem) {
+      if (options.tms) {
         if (is3857) {
-          (this.options as any).tileSystem = [
+          options.tileSystem = [
             1,
             1,
             -6378137 * Math.PI,
             -6378137 * Math.PI,
           ];
         } else if (is4326) {
-          (this.options as any).tileSystem = [1, 1, -180, -90];
+          options.tileSystem = [1, 1, -180, -90];
         }
       } else {
         if (is4326) {
-          (this.options as any).tileSystem = [1, -1, -180, 90];
+          options.tileSystem = [1, -1, -180, 90];
         }
       }
     }
@@ -1799,3 +1799,47 @@ maptalks.SpatialReference.registerPreset("preset-4326-512", preset4326);
 //     }
 // };
 // maptalks.SpatialReference.registerPreset('preset-vt-3857', preset3857);
+
+export type VectorTileLayerOptionsType = {
+  renderer?: "gl",
+  altitudeProperty?: string,
+  features?: boolean,
+  schema?: boolean,
+  collision?: boolean,
+  collisionBuffserSize?: number,
+  picking?: boolean,
+  pickingPoint?: boolean,
+  pickingGeometry?: boolean,
+  //每帧每个瓦片最多能绘制的sdf数量
+  glyphSdfLimitPerFrame?: number,
+  //zooming或zoom fading时，每个瓦片最多能绘制的box(icon或text)数量
+  // boxLimitOnZoomout: 7,
+  antialias?: boolean,
+  iconErrorUrl?: string,
+  collisionFrameLimit?: number,
+  //是否开启无style时的默认绘制功能
+  defaultRendering?: boolean,
+  //允许用户调整文字的gamma清晰度
+  textGamma?: number,
+  // altas中会在四周留一个像素的空隙，所以设为254，最大尺寸的icon也刚好存入256高宽的图片中
+  maxIconSize?: number,
+  workarounds?: {
+    //#94, text rendering crashes on windows with intel gpu
+    // 2022-12-06, 用当前版本测试crash.html，已经不再崩溃，关闭该workaround, http://localhost/bugs/issue-175/webgl_crash/crash2.html
+    "win-intel-gpu-crash"?: boolean,
+  },
+  styleScale?: number,
+  enableAltitude?: true,
+
+  debugTileData?: boolean,
+
+  altitudeQueryTimeLimitPerFrame?: number,
+  workerGlyph?: boolean,
+
+  // A property to use as a feature id (for feature state)
+  // https://docs.mapbox.com/style-spec/reference/sources/#vector-promoteId
+  featureIdProperty?: string,
+  currentTilesFirst?: false,
+
+  style?: any
+} & TileLayerOptionsType;

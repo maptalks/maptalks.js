@@ -97,7 +97,7 @@ export default class StyledPoint {
         }
         const { markerFileFn, markerTypeFn, markerPathFn, markerWidthFn, markerHeightFn, markerFillFn, markerFillPatternFileFn, markerFillOpacityFn, markerTextFitFn, markerTextFitPaddingFn,
             markerLineColorFn, markerLineWidthFn, markerLineOpacityFn, markerLineDasharrayFn, markerLinePatternFileFn, markerPathWidthFn, markerPathHeightFn, textNameFn,
-            textFaceNameFn, textStyleFn, textWeightFn } = this._fnTypes;
+            textFaceNameFn } = this._fnTypes;
         const { zoom } = this.options;
         const result = {};
         const symbol = this.symbol;
@@ -271,9 +271,9 @@ export default class StyledPoint {
             const textName = textNameFn ? textNameFn(this.options.zoom, properties) : symbol['textName'];
             if (textName || textName === 0) {
                 const textFaceName = textFaceNameFn ? textFaceNameFn(null, properties) : symbol['textFaceName'];
-                const textStyle = textStyleFn ? textStyleFn(null, properties) : symbol['textStyle'];
-                const textWeight = textWeightFn ? textWeightFn(null, properties) : symbol['textWeight'];
-                const font = getSDFFont(textFaceName, textStyle, textWeight);
+                // const textStyle = textStyleFn ? textStyleFn(null, properties) : symbol['textStyle'];
+                // const textWeight = textWeightFn ? textWeightFn(null, properties) : symbol['textWeight'];
+                const font = getSDFFont(textFaceName);
                 let text = resolveText(textName, properties);
                 //(改为在前端计算)在TextPainter中能通过feature.properties['$label']直接取得标签内容
                 // this.feature.properties['$label'] = text;

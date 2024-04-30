@@ -1,5 +1,5 @@
 import LayerWorker from './BaseLayerWorker';
-import Pbf from 'pbf';
+import { pbf as Pbf } from '@maptalks/vector-packer';
 import { VectorTile } from '@mapbox/vector-tile';
 import Ajax from '../util/Ajax';
 import { hasOwn, isString } from '../../common/Util';

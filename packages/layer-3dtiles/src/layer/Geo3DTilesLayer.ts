@@ -789,6 +789,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         // }
 
         if (nodeBox.obbox) {
+            // https://blog.csdn.net/u011760195/article/details/105351979
             return intersectsOrientedBox(projectionView, nodeBox.obbox);
         } else if (sphere) {
             return intersectsSphere(projectionView, nodeBox.sphereBox);
