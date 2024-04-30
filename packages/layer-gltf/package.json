@@ -25,7 +25,7 @@
     "preversion": "npm test",
     "version": "npm run build",
     "lint": "eslint src/**/*.js test/**/*.js",
-    "prepare": "npm run lint && npm run build"
+    "prepublishOnly": "npm run lint && npm run build"
   },
   "devDependencies": {
     "@maptalks/gl": "workspace:@maptalks/gl@*",

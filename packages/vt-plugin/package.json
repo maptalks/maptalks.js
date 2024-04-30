@@ -5,7 +5,7 @@
     "module": "index.js",
     "scripts": {
         "lint": "eslint *.js",
-        "prepare": "npm run lint"
+        "prepublishOnly": "npm run lint"
     },
     "files": [
         "index.js"
