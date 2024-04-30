@@ -42,7 +42,8 @@
     "frustum-intersects": "^0.2.4",
     "gl-matrix": "^3.4.0",
     "pako": "^2.0.4",
-    "parse-dds": "^1.2.1"
+    "parse-dds": "^1.2.1",
+    "color": "^3.0.0"
   },
   "devDependencies": {
     "@maptalks/gl": "workspace:@maptalks/gl@*",

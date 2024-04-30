@@ -35,7 +35,6 @@
     "color": "^3.0.0"
   },
   "devDependencies": {
-    "@maptalks/vt": "workspace:@maptalks/vt@*",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "0.4.4",

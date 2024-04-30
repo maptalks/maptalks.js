@@ -27,6 +27,8 @@ export { RayCaster };
 import { earcut } from '@maptalks/reshader.gl';
 export { earcut };
 
+export { default as color } from 'color';
+
 if (typeof window !== 'undefined') {
     // append GroupGLLayer on maptalks manually
     if (window.maptalks) {

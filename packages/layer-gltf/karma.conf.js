@@ -44,6 +44,9 @@ module.exports = function (config) {
         preprocessors: {
         },
         browsers: ['Chrome'],
+        flags: [
+            // '--disable-gpu'
+        ],
         reporters: ['mocha'],
         plugins: ['karma-mocha', 'karma-expect', 'karma-mocha-reporter', 'karma-chrome-launcher', 'karma-happen']
     });
