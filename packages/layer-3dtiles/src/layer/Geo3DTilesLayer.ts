@@ -335,12 +335,15 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             return { tiles: EMPTY_ARRAY };
         }
         const map = this.getMap();
+        // 准备相机参数，坐标是webgl坐标，例如用map.coordToPointAtRes(coord, glRes)得到的结果
         const cameraPosition = map.cameraPosition;
         const distance = map.pointAtResToDistance(cameraPosition[2], 0, map.getGLRes());
         const cameraCoord = this._getCameraLonLat(cameraPosition);
         this._cameraLocation = this._cameraLocation || [];
         vec3.set(this._cameraLocation, toRadian(cameraCoord.x), toRadian(cameraCoord.y), distance);
+        // 变量名带Cartesian3的，就是ecef坐标，目前cameraCatesian3只用来计算screenError
         this._cameraCartesian3 = radianToCartesian3(this._cameraCartesian3 || [], this._cameraLocation[0], this._cameraLocation[1], this._cameraLocation[2]);
+        // 用来计算screenError的一个变量
         this._fovDenominator = 2 * Math.tan(0.5 * toRadian(map.getFov()));
         // this._cameraProj = projection.project(cameraCoord).toArray();
 
@@ -351,6 +354,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             level : -1
         };
         let currentParent: CandinateNode = root;
+        // 遍历堆栈
         const tiles = [];
         for (let i = 0; i < this._roots.length; i++) {
             const root = this._roots[i];
@@ -691,6 +695,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             this._updateRootCenter(node as RootTileNode);
             return TileVisibility.VISIBLE;
         }
+        // 根据service上的coordOffset和heightOffset计算node实际的boundingVolume
         this._offsetBoundingVolume(node);
         //reset node status
         // node._error = Infinity;
@@ -1112,6 +1117,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         } else if (node.boundingVolume.box) {
             distanceToCamera = computeBoxDistanceToCamera(node.boundingVolume, this._cameraCartesian3);
         }
+        // distance和geometricError都是ecef坐标系里的值
         const distance = Math.max(Math.abs(distanceToCamera), 1E-7);
         const error = (geometricError * serviceScale * map.height) / (distance * fovDenominator);
 

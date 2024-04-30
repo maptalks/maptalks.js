@@ -112,12 +112,12 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             this.loadTiles(requests);
         }
         this._drawTiles(selectedTiles, leaves, parentContext);
-        this._retireTiles();
+        this._abortUnusedTiles();
         if (!requests.length) {
             this.completeRender();
         }
     }
-
+    // 遍历candidate瓦片，检查哪些可以获取到mesh，哪些需要去构造网络请求
     _selectTiles(root, tiles) {
         let requests = [];
         this._markTiles();
@@ -712,7 +712,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
     }
 
     clear() {
-        this._retireTiles(true);
+        this._abortUnusedTiles(true);
         this.tileCache.reset(this);
         this.tilesLoading = {};
         super.clear();
@@ -742,7 +742,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         return 0;
     }
 
-    _retireTiles(force) {
+    _abortUnusedTiles(force) {
         if (!this._preRetireTime) {
             this._preRetireTime = Date.now();
         }
