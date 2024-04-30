@@ -4,6 +4,7 @@
 
 import * as maptalks from 'maptalks';
 import { quat, vec2, vec3, mat3, mat4, MaskLayerMixin } from '@maptalks/gl';
+//https://github.com/fuzhenn/frustum-intersects
 import { intersectsSphere, intersectsOrientedBox } from 'frustum-intersects';
 import { isFunction, extend, isNil, toRadian, toDegree, getAbsoluteURL, isBase64, pushIn } from '../common/Util';
 import { isRelativeURL } from '../common/UrlUtil';
@@ -798,10 +799,13 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
     _createRegionBox(node: TileNode): TileRegionBox {
         const map = this.getMap();
         const glRes = map.getGLRes();
+        // ecef坐标
         const region = node.boundingVolume.region;
+        // 转换成经纬度
         let { ws, en } = convertRegionToBox(region);
         ws = new maptalks.Coordinate(ws);
         en = new maptalks.Coordinate(en);
+        // 再用经纬度转换成webgl坐标
         const pointWS = map.coordToPointAtRes(ws, glRes);
         pointWS.z = map.altitudeToPoint(ws.z, glRes);
         const pointEN = map.coordToPointAtRes(en, glRes);
@@ -816,6 +820,8 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             pointWS.x, pointEN.y, pointWS.z,
             pointWS.x, pointWS.y, pointWS.z,
         ];
+        // 计算渲染用的webgl坐标系下的瓦片中心点坐标
+        // 投影坐标 / resolution[nativeZoom / 2]
         const boxCenter = [(boxPosition[0] + boxPosition[18]) / 2, (boxPosition[1] + boxPosition[19]) / 2, (boxPosition[2] + boxPosition[20]) / 2];
         const rootNode = this._getRootNode(node._rootIdx);
         if (node === rootNode && !rootNode._bboxCenter) {
@@ -824,7 +830,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
 
         const serviceTransform = this._getServiceTransform([], node);
         const isIdentityMatrix = mat4.exactEquals(IDENTITY_MATRIX, serviceTransform);
-
+        // 如果service上定义了rotation，scale，则需要计算变形后的bbox端点坐标
         if (!isIdentityMatrix) {
             vec3.transformMat4(boxCenter, boxCenter, serviceTransform);
             const pos = TEMP_VEC3_0;
@@ -893,6 +899,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         for (let i = 0; i < boxPosition.length; i++) {
             boxPosition[i] -= boxCenter[i % 3];
         }
+        // boxPosition用来渲染debug，boxCenter是渲染瓦片时的中心点坐标
         return { obbox, boxPosition, boxCenter, boxCoord };
     }
 
@@ -917,7 +924,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         const scale = this._getBoxScale(coord);
         return { boxCenter: sphereCenter, boxCoord: coord, sphereBox: [sphereCenter, sphere[3] * scale[2]] };
     }
-
+    // 构造frustum-intersects需要的obbox参数
     _generateOBBox(boxPosition: number[], obbCenter: number[]): number[] {
         // let transformedVertices;
         // let transformedCenter;

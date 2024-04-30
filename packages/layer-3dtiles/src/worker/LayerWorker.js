@@ -953,7 +953,7 @@ export default class BaseLayerWorker {
             return n;
         });
     }
-
+    // 将模型顶点的ecef坐标转换为map的投影坐标
     _projVertices(vertices, matrices, rtcCenter, maptalksRTC, upAxis, transform, compressUniforms, needCreateNormal) {
         // 多个primitive可能共享同一个POSITION，此时只需要遍历一次
         // 例子: Batched/BatchedColors
