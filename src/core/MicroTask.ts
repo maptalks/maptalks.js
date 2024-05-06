@@ -104,8 +104,8 @@ function loop() {
 
 let loopFrameTime = now();
 function frameLoop(deadline) {
-    const { idleTimeRemaining, idleLog, idleTimeout, idleForceTimeThreshold } = GlobalConfig;
-    if (Browser.requestIdleCallback) {
+    const { idleTimeRemaining, idleLog, idleTimeout, idleForceTimeThreshold, idleEnable } = GlobalConfig;
+    if (Browser.requestIdleCallback && idleEnable) {
         if (deadline && deadline.timeRemaining) {
             const t = deadline.timeRemaining();
             if (t > idleTimeRemaining || deadline.didTimeout) {
@@ -142,8 +142,8 @@ export function startTasks() {
         return;
     }
     started = true;
-    const { idleTimeout } = GlobalConfig;
-    if (Browser.requestIdleCallback) {
+    const { idleTimeout, idleEnable } = GlobalConfig;
+    if (Browser.requestIdleCallback && idleEnable) {
         requestIdleCallback(frameLoop, { timeout: idleTimeout });
     } else {
         requestAnimFrame(frameLoop);

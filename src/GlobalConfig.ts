@@ -5,6 +5,8 @@
 const GlobalConfig = {
     //test env
     isTest: false,
+
+    idleEnable: true,
     //idle logging
     idleLog: false,
     //idle 时间阈值
