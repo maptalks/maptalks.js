@@ -1090,6 +1090,56 @@ describe('picking specs', () => {
         });
     });
 
+    context('gltf picking', () => {
+        it('should pick a gltf', done => {
+            const scale = Math.pow(2, 15);
+            const options = {
+                data: data.point,
+                style: [{
+                    renderPlugin: {
+                        type: 'gltf-lit',
+                        dataConfig: {
+                            type: 'native-point'
+                        }
+                    },
+                    symbol: {
+                        url: 'file://' + path.resolve(__dirname, './resources/gltf/Box.glb'),
+                        scaleX: scale,
+                        scaleY: scale,
+                        scaleZ: scale,
+                        polygonOpacity: 1,
+                        polygonFill: '#f00'
+                    }
+                }],
+                pickingGeometry: true,
+                pickingPoint: true
+            };
+            const coord = [0.5, 0.5];
+            const expected = [{
+                'data': {
+                    'feature': {
+                        'type': 'Feature',
+                        'geometry': {
+                            'type': 'Point',
+                            'coordinates': [0.5, 0.5]
+                        },
+                        'properties': {
+                            'type': 1,
+                            'height': 20000
+                        },
+                        'id': 0,
+                        'layer': 0
+                    },
+                },
+                'point': [702.48068, 702.48068, 279.81348],
+                'coordinate': [0.48235520138405263, 0.48234950372199137, 16384.24011942953],
+                'type': 'gltf-lit',
+                'plugin': 0
+            }];
+            runner(options, coord, expected, true, done);
+        });
+    });
+
     context('vector layer\'s picking', () => {
         it('should pick point in PointLayer', done => {
             const options = {
