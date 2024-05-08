@@ -230,7 +230,7 @@ describe('render specs', () => {
             runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 4, threshold: 0.4, zoomOffset: 0 }, assertion);
         }).timeout(10000);
 
-        it('i3s-eslpk-1.7', done => {
+        it('i3s-eslpk-1.7-draco', done => {
             // 必须要放到第一个来运行测试，否则会失败，原因未知
             const resPath = 'I3S/eslpk';
             const layer = new Geo3DTilesLayer('3d-tiles', {
@@ -1921,7 +1921,7 @@ describe('render specs', () => {
                 ]
             });
             const assertion = layer => {
-                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61140768, 40.04200494 ]);
+                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61140768, 40.04200494, 0 ]);
             };
             runner(done, layer, { path: `./integration/expected/offset/BatchedWithTransformBox/expected.png`, diffCount: 0, renderCount: 1 }, assertion);
         });
@@ -1938,7 +1938,7 @@ describe('render specs', () => {
                 ]
             });
             const assertion = layer => {
-                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61140766, 40.04200494 ]);
+                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61140766, 40.04200494, 0 ]);
             };
             runner(done, layer, { path: `./integration/expected/offset/BatchedWithTransformRegion/expected.png`, diffCount: 0, renderCount: 1 }, assertion);
         });
@@ -1955,7 +1955,7 @@ describe('render specs', () => {
                 ]
             });
             const assertion = layer => {
-                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61209434, 40.04253061 ]);
+                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61209434, 40.04253061, 0 ]);
             };
             runner(done, layer, { path: `./integration/expected/offset/BatchedWithTransformSphere/expected.png`, diffCount: 0, renderCount: 1 }, assertion);
         });

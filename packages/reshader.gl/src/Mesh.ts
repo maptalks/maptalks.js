@@ -187,6 +187,18 @@ class Mesh {
         return this;
     }
 
+    setFunctionUniform(k: string, fn: () => ShaderUniformValue): this {
+      Object.defineProperty(this.uniforms, k, {
+        enumerable: true,
+        get: fn
+      });
+      return this;
+    }
+
+    hasFunctionUniform(k: string): boolean {
+      return Object.prototype.hasOwnProperty.call(this.uniforms, k);
+    }
+
     getUniform(k: string): ShaderUniformValue {
         return this.uniforms[k];
     }

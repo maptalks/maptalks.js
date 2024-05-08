@@ -1147,20 +1147,23 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
     }
 
     /**
-     * Identify the data on the given container point
+     * Identify the data on the given coordinate
      * @param point   - point to identify
      * @param [options=null]  - options
      * @param [options.tolerance=0] - identify tolerance in pixel
      * @param [options.count=null]  - result count
      * @return data identified
      */
-    identify(coordinate: number[] | maptalks.Coordinate, options: IdentifyOptions = {}) {
+    identify(coordinate: [number, number] | maptalks.Coordinate, options: IdentifyOptions = {}) {
         const map = this.getMap();
         const renderer = this.getRenderer();
         if (!map || !renderer) {
             return [];
         }
-        const cp = map.coordToContainerPoint(new maptalks.Coordinate(coordinate));
+        if (Array.isArray(coordinate)) {
+          coordinate = new maptalks.Coordinate(coordinate);
+        }
+        const cp = map.coordToContainerPoint(coordinate);
         return this.identifyAtPoint(cp, options);
     }
 

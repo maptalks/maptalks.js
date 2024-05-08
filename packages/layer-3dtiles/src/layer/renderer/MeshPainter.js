@@ -539,55 +539,49 @@ export default class MeshPainter {
         mesh.properties.rtcCenter = rtcCenter;
         mesh.properties.projCenter = projCenter;
         mesh.setDefines(defines);
-        Object.defineProperty(mesh.uniforms, 'pointColor', {
-            enumerable: true,
-            get: function () {
-                if (data.featureTable['CONSTANT_RGBA']) {
-                    return data.featureTable['CONSTANT_RGBA'];
-                }
-                return service && service.pointColor || [1, 1, 1, 1];
+        mesh.setFunctionUniform('pointColor', function () {
+            if (data.featureTable['CONSTANT_RGBA']) {
+                return data.featureTable['CONSTANT_RGBA'];
             }
+            return service && service.pointColor || [1, 1, 1, 1];
         });
         const map = this.getMap();
         let pointSizeValue = null;
         let pointSizeFn = null;
-        Object.defineProperty(mesh.uniforms, 'pointSize', {
-            enumerable: true,
-            get: function () {
-                if (!service) {
-                    return 2;
-                }
-                if (isFunctionDefinition(service.pointSize)) {
-                    const key = JSON.stringify(service.pointSize);
-                    if (key !== pointSizeValue) {
-                        pointSizeFn = interpolated(service.pointSize);
-                        pointSizeValue = key;
-                    }
-                    const size = pointSizeFn(map.getZoom());
-                    return size;
-                }
-                return service.pointSize || 2;
+
+        mesh.setFunctionUniform('pointSize', function () {
+            if (!service) {
+                return 2;
             }
+            if (isFunctionDefinition(service.pointSize)) {
+                const key = JSON.stringify(service.pointSize);
+                if (key !== pointSizeValue) {
+                    pointSizeFn = interpolated(service.pointSize);
+                    pointSizeValue = key;
+                }
+                const size = pointSizeFn(map.getZoom());
+                return size;
+            }
+            return service.pointSize || 2;
         });
+
         let pointOpacityValue = null;
         let pointOpacityFn = null;
-        Object.defineProperty(mesh.uniforms, 'pointOpacity', {
-            enumerable: true,
-            get: function () {
-                if (!service) {
-                    return 1;
-                }
-                if (isFunctionDefinition(service.pointOpacity)) {
-                    const key = JSON.stringify(service.pointOpacity);
-                    if (key !== pointOpacityValue) {
-                        pointOpacityFn = interpolated(service.pointOpacity);
-                        pointOpacityValue = key;
-                    }
-                    const opacity = pointOpacityFn(map.getZoom());
-                    return opacity;
-                }
-                return service.pointOpacity || 1;
+
+        mesh.setFunctionUniform('pointOpacity', function () {
+            if (!service) {
+                return 1;
             }
+            if (isFunctionDefinition(service.pointOpacity)) {
+                const key = JSON.stringify(service.pointOpacity);
+                if (key !== pointOpacityValue) {
+                    pointOpacityFn = interpolated(service.pointOpacity);
+                    pointOpacityValue = key;
+                }
+                const opacity = pointOpacityFn(map.getZoom());
+                return opacity;
+            }
+            return service.pointOpacity || 1;
         });
         this._setCompressedInt16Uniforms(mesh, compressed_int16_params);
         this._updatePNTSLocalTransform(mesh);
@@ -847,6 +841,7 @@ export default class MeshPainter {
         let ready = true;
 
         iterateMesh(gltf, (gltfMesh, meshId, primId, gltf) => {
+            console.log(gltf);
             const gltfResource = this._processGLTF(gltfMesh, meshId, primId, gltf, node, false, shader, gltfWeakResources);
             const { geometry, material } = gltfResource;
             if (material && !material.isReady()) {
@@ -885,28 +880,19 @@ export default class MeshPainter {
                 // mesh.setUniform('prjCenter', projCenter);
             }
 
-            if (!Object.prototype.hasOwnProperty.call(mesh.uniforms, 'polygonOpacity')) {
-                Object.defineProperty(mesh.uniforms, 'polygonOpacity', {
-                    enumerable: true,
-                    get: function () {
-                        return isNumber(service.opacity) ? service.opacity : 1;
-                    }
+            if (!mesh.hasFunctionUniform('polygonOpacity')) {
+                mesh.setFunctionUniform('polygonOpacity', function () {
+                    return isNumber(service.opacity) ? service.opacity : 1;
                 });
             }
-            if (!Object.prototype.hasOwnProperty.call(mesh.uniforms, 'polygonFill')) {
-                Object.defineProperty(mesh.uniforms, 'polygonFill', {
-                    enumerable: true,
-                    get: function () {
-                        return normalizeColor([], service.polygonFill || DEFAULT_POLYGONFILL);
-                    }
+            if (!mesh.hasFunctionUniform('polygonFill')) {
+                mesh.setFunctionUniform('polygonFill',  function () {
+                    return normalizeColor([], service.polygonFill || DEFAULT_POLYGONFILL);
                 });
             }
-            if (!Object.prototype.hasOwnProperty.call(mesh.material.uniforms, 'hsv')) {
-                Object.defineProperty(mesh.material.uniforms, 'hsv', {
-                    enumerable: true,
-                    get: function () {
-                        return service.hsv || DEFAULT_HSV;
-                    }
+            if (!mesh.material.hasFunctionUniform('hsv')) {
+                mesh.material.setFunctionUniform('hsv', function () {
+                    return service.hsv || DEFAULT_HSV;
                 });
             }
 
@@ -1274,28 +1260,30 @@ export default class MeshPainter {
             }
         } else {
             geometry = this._createGeometry(gltfMesh, isI3DM, DEFAULT_SEMANTICS);
-            const ambientLight = service.ambientLight;
-            let environmentExposure = service.environmentExposure;
             const materialInfo = service.material;
-            const lights = this.getMap().getLightManager();
-            const mapAmbient = lights && lights.getAmbientLight();
-            if (ambientLight && (!mapAmbient || mapAmbient.color) && environmentExposure === undefined) {
-                const ambientValue = mapAmbient && mapAmbient.color ? mapAmbient.color[0] : 0.2;
-                // 老的ambientLight设置的兼容性代码
-                environmentExposure = ambientLight[0] / ambientValue;
-            }
-            material = this._createMaterial(gltfMesh.material, gltf, shader, materialInfo || DEFAULT_MATERIAL_INFO, environmentExposure || 1, gltfWeakResources, service);
+            material = this._createMaterial(gltfMesh.material, gltf, shader, materialInfo || DEFAULT_MATERIAL_INFO, gltfWeakResources, service);
         }
         if (material) {
-            Object.defineProperty(material.uniforms, 'alphaTest', {
-                enumerable: true,
-                get: function () {
-                    const alphaTest = service['alphaTest'];
-                    if (!isNil(alphaTest)) {
-                        return alphaTest;
-                    }
-                    return 0.1;
+            material.setFunctionUniform('alphaTest', function () {
+                const alphaTest = service['alphaTest'];
+                if (!isNil(alphaTest)) {
+                    return alphaTest;
                 }
+                return 0.1;
+            });
+
+            material.setFunctionUniform('environmentExposure', () => {
+                // maptalks/issues#661
+                const ambientLight = service.ambientLight;
+                let environmentExposure = service.environmentExposure;
+                const lights = this.getMap().getLightManager();
+                const mapAmbient = lights && lights.getAmbientLight();
+                if (ambientLight && (!mapAmbient || mapAmbient.color) && environmentExposure === undefined) {
+                    const ambientValue = mapAmbient && mapAmbient.color ? mapAmbient.color[0] : 0.2;
+                    // 老的ambientLight设置的兼容性代码
+                    environmentExposure = ambientLight[0] / ambientValue;
+                }
+                return environmentExposure || 1;
             });
         }
 
@@ -1688,7 +1676,7 @@ export default class MeshPainter {
         return uniforms;
     }
 
-    _createMaterial(materialIndex, gltf, shader, materialInfo, environmentExposure, gltfWeakResources, service) {
+    _createMaterial(materialIndex, gltf, shader, materialInfo, gltfWeakResources, service) {
         const material = gltf.materials && gltf.materials[materialIndex];
         if (!material || !material.baseColorTexture && !material.pbrMetallicRoughness) {
             return null;
@@ -1772,8 +1760,7 @@ export default class MeshPainter {
         if (material.s3mMaterial) {
             return new reshader.Material(matInfo);
         }
-        matInfo['environmentExposure'] = environmentExposure;
-        matInfo.alphaTest = 0.1;
+        // matInfo.alphaTest = 0.1;
         if (service.unlit || material.extensions && material.extensions['KHR_materials_unlit']) {
             matInfo.ambientColor = [1, 1, 1];
             matInfo['light0_diffuse'] = [0, 0, 0, 0];

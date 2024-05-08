@@ -91,6 +91,18 @@ class Material extends Eventable(Base) {
         return this;
     }
 
+    setFunctionUniform(k: string, fn: () => ShaderUniformValue): this {
+      Object.defineProperty(this.uniforms, k, {
+        enumerable: true,
+        get: fn
+      });
+      return this;
+    }
+
+    hasFunctionUniform(k: string): boolean {
+      return Object.prototype.hasOwnProperty.call(this.uniforms, k);
+    }
+
     _getDirtyProps(): string[] {
         return this._dirtyProps;
     }
@@ -244,7 +256,7 @@ class Material extends Eventable(Base) {
         for (const p in uniforms) {
             if (this.isTexture(p)) {
                 size += (uniforms[p] as AbstractTexture).getMemorySize();
-            } else if ((this.uniforms[p] as any).destroy) {
+            } else if (this.uniforms[p] && (this.uniforms[p] as any).destroy) {
                 size += getTexMemorySize(this.uniforms[p] as Texture);
             }
         }
