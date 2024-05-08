@@ -35,6 +35,7 @@ import vertex_color_vert from './glsl/vertex_color.vert';
 import vertex_color_frag from './glsl/vertex_color.frag';
 import excavate_vert from './glsl/excavate.vert';
 import excavate_frag from './glsl/excavate.frag';
+import srgb_frag from './glsl/srgb.frag';
 //webgl 2.0中的函数实现
 // import fl_common_math_glsl from '../pbr/glsl/common_math.glsl';
 // import fl_uniforms_glsl from '../pbr/glsl/uniforms.glsl';
@@ -146,7 +147,9 @@ const ShaderChunk = {
     vertex_color_frag,
 
     excavate_vert,
-    excavate_frag
+    excavate_frag,
+
+    srgb_frag
 };
 /* eslint-enable camelcase */
 
