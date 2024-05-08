@@ -241,7 +241,7 @@ class WaterPainter extends BasicPainter {
 
     _createShader(context) {
         const canvas = this.canvas;
-        const uEnvironmentTransform = [];
+        const environmentTransform = [];
         const uniforms = [
             {
                 name: 'projViewModelMatrix',
@@ -272,11 +272,11 @@ class WaterPainter extends BasicPainter {
                 }
             },
             {
-                name: 'uEnvironmentTransform',
+                name: 'environmentTransform',
                 type: 'function',
                 fn: (_, props) => {
                     const orientation = props['environmentOrientation'] || 0;
-                    return mat3.fromRotation(uEnvironmentTransform, Math.PI * orientation / 180);
+                    return mat3.fromRotation(environmentTransform, Math.PI * orientation / 180);
                 }
             }
         ];

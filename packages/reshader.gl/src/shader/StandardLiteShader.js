@@ -4,7 +4,7 @@ import vert from './glsl/StandardLite.vert';
 import MeshShader from '../shader/MeshShader.js';
 
 const TEMP_MAT4 = [];
-const uEnvironmentTransform = [];
+const environmentTransform = [];
 class StandardLiteShader extends MeshShader {
     constructor(config = {}) {
         const modelViewMatrix = [];
@@ -25,11 +25,11 @@ class StandardLiteShader extends MeshShader {
                 }
             },
             {
-                name: 'uEnvironmentTransform',
+                name: 'environmentTransform',
                 type: 'function',
                 fn: (_, props) => {
                     const orientation = props['environmentOrientation'] || 0;
-                    return mat3.fromRotation(uEnvironmentTransform, Math.PI * orientation / 180);
+                    return mat3.fromRotation(environmentTransform, Math.PI * orientation / 180);
                 }
             }
         ];

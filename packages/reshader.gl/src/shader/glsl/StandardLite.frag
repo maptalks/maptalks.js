@@ -203,7 +203,7 @@ vec3 GET_EMISSIVE() {
 #endif
 
 uniform vec4 themingColor;
-uniform mat3 uEnvironmentTransform;
+uniform mat3 environmentTransform;
 
 vec3 applyEnvShadow(vec3 colorWithoutShadow, vec3 worldNormal) {
     #if defined(HAS_SHADOWMAP)
@@ -230,7 +230,7 @@ vec3 applyEnvShadow(vec3 colorWithoutShadow, vec3 worldNormal) {
 
 #if defined(HAS_IBL_LIGHTING)
     vec3 computeDiffuseSPH(const in vec3 normal) {
-        vec3 n = uEnvironmentTransform * normal;
+        vec3 n = environmentTransform * normal;
         float x = n.x;
         float y = n.y;
         float z = n.z;
@@ -280,7 +280,7 @@ vec3 applyEnvShadow(vec3 colorWithoutShadow, vec3 worldNormal) {
     vec3 getPrefilteredEnvMapColor(const in vec3 normal, const in vec3 eyeVector, const in float roughness, const in vec3 frontNormal) {
         vec3 R = reflect(-eyeVector, normal);
         R = getSpecularDominantDir(normal, R, roughness);
-        vec3 prefilteredColor = prefilterEnvMapCube(roughness, uEnvironmentTransform * R);
+        vec3 prefilteredColor = prefilterEnvMapCube(roughness, environmentTransform * R);
         float factor = clamp(1.0 + dot(R, frontNormal), 0.0, 1.0);
         prefilteredColor *= factor * factor;
         return prefilteredColor;

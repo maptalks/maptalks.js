@@ -19,11 +19,11 @@ uniform float layerOpacity;
     uniform samplerCube prefilterMap;
     uniform sampler2D brdfLUT;
     uniform float rgbmRange;
-    uniform mat3 uEnvironmentTransform;
+    uniform mat3 environmentTransform;
     uniform vec3 diffuseSPH[9];
 
     vec3 computeDiffuseSPH(const in vec3 normal) {
-        vec3 n = uEnvironmentTransform * normal;
+        vec3 n = environmentTransform * normal;
 
         float x = n.x;
         float y = n.y;
@@ -416,7 +416,7 @@ vec3 getSkyGradientColor(in float cosTheta, in vec3 horizon, in vec3 zenit) {
 vec3 getSkyColor(in vec3 n, in vec3 v, in float upDotV, in float roughness) {
     #ifdef HAS_IBL_LIGHTING
         vec3 R = reflect(-v, n);
-        vec4 prefilteredColor = textureCube(prefilterMap, uEnvironmentTransform * R);
+        vec4 prefilteredColor = textureCube(prefilterMap, environmentTransform * R);
         float factor = clamp(1.0 + dot(R, n), 0.0, 1.0);
         prefilteredColor *= factor * factor;
         vec3 specular = decodeRGBM(prefilteredColor, rgbmRange);

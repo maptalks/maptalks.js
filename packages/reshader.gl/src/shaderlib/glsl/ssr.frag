@@ -19,7 +19,7 @@ uniform float uStaticFrameNumShadow3;
 uniform int uDrawOpaque;
 uniform int emitMultiplicative;
 uniform int outputLinear;
-uniform mat3 uEnvironmentTransform;
+uniform mat3 environmentTransform;
 uniform mat4 uPreviousProjection;
 uniform mat4 uPreviousViewInvView;
 uniform mat4 uProjectionMatrix;
@@ -407,7 +407,7 @@ const in vec3 normal, const in vec3 eyeVector, const in float NoL, const in vec4
     diffuseOut = colorAttenuate * diffuse;
 }
 vec3 computeDiffuseSPH(const in vec3 normal) {
-    vec3 n = uEnvironmentTransform * normal;
+    vec3 n = environmentTransform * normal;
     vec3 result = diffuseSPH[0] +
     diffuseSPH[1] * n.y +
     diffuseSPH[2] * n.z +
@@ -448,7 +448,7 @@ vec3 getSpecularDominantDir(const in vec3 N, const in vec3 R, const in float rea
 vec3 getPrefilteredEnvMapColor(const in vec3 normal, const in vec3 eyeVector, const in float roughness, const in vec3 frontNormal) {
     vec3 R = reflect(-eyeVector, normal);
     R = getSpecularDominantDir(normal, R, roughness);
-    vec3 prefilteredColor = prefilterEnvMapCube(roughness, uEnvironmentTransform * R);
+    vec3 prefilteredColor = prefilterEnvMapCube(roughness, environmentTransform * R);
     float factor = clamp(1.0 + dot(R, frontNormal), 0.0, 1.0);
     prefilteredColor *= factor * factor;
     return prefilteredColor;
