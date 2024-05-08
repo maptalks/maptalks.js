@@ -49,7 +49,7 @@
     "maptalks": "^1.0.0-rc.33",
     "mocha": "^10.3.0",
     "pixelmatch": "^4.0.2",
-    "rollup": "^4.13.0",
+    "rollup": "^4.17.2",
     "tslib": "^2.6.2",
     "typescript": "^5.4.2",
     "typescript-eslint": "^7.3.1"

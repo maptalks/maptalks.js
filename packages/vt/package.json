@@ -56,7 +56,7 @@
     "maptalks": "^1.0.0-rc.33",
     "mocha": "^10.3.0",
     "pixelmatch": "^4.0.2",
-    "rollup": "^4.13.0"
+    "rollup": "^4.17.2"
   },
   "gitHead": "36a6954658f5a3aff0fe84dd79964ee7f1317b06"
 }

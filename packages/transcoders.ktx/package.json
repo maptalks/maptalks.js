@@ -28,7 +28,7 @@
     "@rollup/plugin-terser": "0.4.4",
     "eslint": "^8.57.0",
     "eslint-plugin-mocha": "^10.4.1",
-    "rollup": "^4.13.0",
+    "rollup": "^4.17.2",
     "rollup-plugin-polyfill-node": "^0.13.0"
   },
   "gitHead": "9eeea4807723d460fa7e09969c6556d53f6bed84"

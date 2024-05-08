@@ -40,6 +40,6 @@
     "@rollup/plugin-terser": "0.4.4",
     "eslint": "^8.57.0",
     "eslint-plugin-mocha": "^10.4.1",
-    "rollup": "^4.13.0"
+    "rollup": "^4.17.2"
   }
 }
