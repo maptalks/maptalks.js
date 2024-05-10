@@ -4,7 +4,7 @@ import { Ajax } from '@maptalks/gltf-loader';
 import { createREGL, MaskRendererMixin } from '@maptalks/gl';
 import Geo3DTilesWorkerConnection from '../Geo3DTilesWorkerConnection';
 import LRUCache from './LRUCache';
-import MeshPainter from './MeshPainter';
+import TileMeshPainter from './TileMeshPainter';
 import { readBatchArray } from '../../common/TileHelper';
 import { extend, isBase64, base64URLToArrayBuffer, pushIn } from '../../common/Util.js';
 import { isRelativeURL, prepareFetchOptions } from '../../common/UrlUtil';
@@ -333,6 +333,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         const context = { tiles, leaves };
         this.onDrawTileStart(context);
         const count = this.painter.paint(tiles, leaves, boxMeshes, parentContext);
+        this.layer.fire('drawtiles', { count });
 
         this.onDrawTileEnd(context);
         if (count) {
@@ -655,7 +656,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             this.canvas.pickingFBO = this.canvas.pickingFBO || this.regl.framebuffer(this.canvas.width, this.canvas.height);
         }
         this.pickingFBO = this.canvas.pickingFBO || this.regl.framebuffer(this.canvas.width, this.canvas.height);
-        this.painter = new MeshPainter(this.regl, layer);
+        this.painter = new TileMeshPainter(this.regl, layer);
 
         this.layer._resumeHighlights();
         this.layer.fire('contextcreate', { regl: this.regl });

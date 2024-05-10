@@ -78,6 +78,28 @@ describe('3dtiles layer', () => {
         });
     });
 
+    it('3dtiles keeps map lights untouched, maptalks/issues#674', done => {
+        //example is from http://web3d.smartearth.cn/
+        map.setCenterAndZoom([-81.38110, 28.53711], 15);
+        map.setLights({
+            "directional":  {
+                "direction":  [ 20, 0,-20]
+            }
+        });
+        const layer = new Geo3DTilesLayer('3d-tiles', {
+            services : [
+                {
+                    url : `http://localhost:${PORT}/resources/tileset.json`
+                }
+            ]
+        });
+        layer.once('drawtiles', () => {
+            assert.deepEqual(map.getLights().directional.direction, [ 20, 0,-20]);
+            done();
+        })
+        layer.addTo(map);
+    });
+
     it.skip('root tile with maxExtent', done => {
         //example is from http://web3d.smartearth.cn/
         map.setCenterAndZoom([-81.38110, 28.53711], 15);

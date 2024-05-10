@@ -33,6 +33,8 @@ const IDENTITY_SCALE = [1, 1, 1];
 const IDENTITY_MATRIX = mat4.identity([]);
 const EMPTY_TRANSLATION = [0, 0, 0];
 const EMPTY_COORD_OFFSET = [0, 0];
+
+const LIGHT_DIR = [];
 // const P0 = [], P1 = [];
 
 const phongFilter = m => {
@@ -102,7 +104,7 @@ const BOX_INDEX = [
 const SPHERE_POS = generateSphere(100, 1);
 const BOX_ROTATE = [0, 0, 0, 1], BOX_SCALE = [1, 1, 1];
 
-export default class MeshPainter {
+export default class TileMeshPainter {
     constructor(regl, layer) {
         this._layer = layer;
         this._canvas = layer.getRenderer().canvas;
@@ -1645,7 +1647,7 @@ export default class MeshPainter {
         return {
             projViewMatrix : map.projViewMatrix,
             pointOpacity,
-            lightDir: vec3.normalize(lightDir, lightDir)
+            lightDir: vec3.normalize(LIGHT_DIR, lightDir)
         };
     }
 
