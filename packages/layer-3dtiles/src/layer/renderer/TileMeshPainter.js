@@ -841,7 +841,6 @@ export default class MeshPainter {
         let ready = true;
 
         iterateMesh(gltf, (gltfMesh, meshId, primId, gltf) => {
-            console.log(gltf);
             const gltfResource = this._processGLTF(gltfMesh, meshId, primId, gltf, node, false, shader, gltfWeakResources);
             const { geometry, material } = gltfResource;
             if (material && !material.isReady()) {
