@@ -71,6 +71,7 @@ export default function (Base) {
                 }
             }
             this.updateExtent('shapechange');
+            this.fire('removemask', { masks });
             return this;
         }
 
@@ -93,6 +94,7 @@ export default function (Base) {
                 }
             });
             this.updateExtent('shapechange');
+            this.fire('setmask', { masks });
             return this;
         }
 
