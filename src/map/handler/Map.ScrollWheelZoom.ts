@@ -95,6 +95,10 @@ class MapScrollWheelZoomHandler extends Handler {
         if (evt.shiftKey && value) value = value / 4;
 
         this._lastWheelEvent = evt;
+        //is undefined ,the _interval will delete it
+        if (isNil(this._delta)) {
+            this._delta = 0;
+        }
         this._delta -= value;
         if (!this._zooming && this._delta) {
             const map = this.target;
