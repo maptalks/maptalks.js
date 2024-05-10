@@ -14,7 +14,7 @@ function quarticIn(k: number) {
 
 function angleT(numberOfShellPoints: number) {
     //利用曲线方程,让角度的变化变成非线性
-    const fs: number[] = [0];
+    const fs: number[] = [];
     // [0,90] 变化曲线
     const ts1: number[] = [];
     for (let i = 0; i < numberOfShellPoints; i++) {
