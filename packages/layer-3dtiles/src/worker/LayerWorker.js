@@ -343,6 +343,7 @@ export default class BaseLayerWorker {
                             continue;
                         }
                         const { array, range } = compressed;
+                        attributes[attrName].componentType = 5124;
                         attributes[attrName].array = array;
                         primitive.compressed_int16_params[attrName] = range;
                     }
@@ -719,7 +720,7 @@ export default class BaseLayerWorker {
         }
         const textures = gltf.textures;
         for (let i = 0; i < textures.length; i++) {
-            const arr = textures[i].image && textures[i].image.array;
+            const arr = textures[i] && textures[i].image && textures[i].image.array;
             // arr有可能是ImageBitmap
             if (arr && arr.length) {
                 const r = arr[0];
