@@ -327,8 +327,8 @@ export default class GLTFLoader {
         return Promise.all(promises).then(loaded => {
             if (this.transferables) {
                 for (let i = 0; i < loaded.length; i++) {
-                    const array = loaded[i].image.array;
-                    if (loaded[i] && array) {
+                    const array = loaded[i] && loaded[i].image.array;
+                    if (array) {
                         let buffer;
                         if (array instanceof ImageBitmap) {
                             buffer = array;

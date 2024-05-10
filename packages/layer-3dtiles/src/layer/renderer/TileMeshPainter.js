@@ -1731,7 +1731,7 @@ export default class TileMeshPainter {
                 }
                 if (pbrMetallicRoughness.baseColorTexture && pbrMetallicRoughness.baseColorTexture.index !== undefined) {
                     const texInfo = gltf.textures[pbrMetallicRoughness.baseColorTexture.index];
-                    if (texInfo.image && texInfo.image.color) {
+                    if (texInfo && texInfo.image && texInfo.image.color) {
                         matInfo.baseColorFactor = matInfo.baseColorFactor ? vec4.multiply(matInfo.baseColorFactor, matInfo.baseColorFactor, texInfo.image.color) : texInfo.image.color;
                     } else {
                         const texture = this._getTexture(texInfo, gltfWeakResources);
@@ -1786,6 +1786,9 @@ export default class TileMeshPainter {
     }
 
     _getTexture(texInfo, gltfWeakResources) {
+        if (!texInfo) {
+            return null;
+        }
         // texInfo.image.color 表示图片被精简成了颜色
         const config = {
             type: texInfo.type ? getMaterialType(texInfo.type) : 'uint8',
