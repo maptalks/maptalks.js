@@ -561,16 +561,16 @@ Map.include(/** @lends Map.prototype */{
      * @private
      * @function
      */
-    _containerPointToPoint: function (p, zoom, out) {
+    _containerPointToPoint: function (p, zoom, out, height) {
         const res = this._getResolution(zoom);
-        return this._containerPointToPointAtRes(p, res, out);
+        return this._containerPointToPointAtRes(p, res, out, height);
     },
 
     _containerPointToPointAtRes: function () {
         const cp = [0, 0, 0],
             coord0 = [0, 0, 0, 1],
             coord1 = [0, 0, 0, 1];
-        return function (p, res, out) {
+        return function (p, res, out, height) {
             if (this.isTransforming()) {
                 const w2 = this.width / 2 || 1, h2 = this.height / 2 || 1;
                 set(cp as any, (p.x - w2) / w2, (h2 - p.y) / h2, 0);
@@ -588,7 +588,9 @@ Map.include(/** @lends Map.prototype */{
                 const z0 = coord0[2];
                 const z1 = coord1[2];
 
-                const t = z0 === z1 ? 0 : (0 - z0) / (z1 - z0);
+                //container plane maybe has height, although it is 0 in most cases.
+                const altitudePoint = !height ? 0 : this.altitudeToPoint(height, res) * this._glScale;
+                const t = z0 === z1 ? altitudePoint : (altitudePoint - z0) / (z1 - z0);
                 const x = interpolate(x0, x1, t);
                 const y = interpolate(y0, y1, t);
                 if (out) {

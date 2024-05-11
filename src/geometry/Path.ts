@@ -7,6 +7,7 @@ import simplify from 'simplify-js';
 import Point from '../geo/Point';
 import { CommonProjectionType } from '../geo/projection';
 import { FillSymbol, LineSymbol } from '../symbol';
+import { GEOMETRY_NOT_FIND_PROJECTION } from '../core/Error';
 
 /**
  * @property {Object} options - configuration options
@@ -99,6 +100,10 @@ export class Path extends Geometry {
         const isPolygon = !!this.getShell;
         const animCoords = isPolygon ? this.getShell().concat(this.getShell()[0]) : coordinates;
         const projection = this._getProjection();
+        if (!projection) {
+            console.error(GEOMETRY_NOT_FIND_PROJECTION);
+            return;
+        }
 
         const prjAnimCoords = projection.projectCoords(animCoords, this.options['antiMeridian']) as Coordinate[];
 

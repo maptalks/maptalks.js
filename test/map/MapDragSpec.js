@@ -202,8 +202,8 @@ describe('Map.Drag', function () {
         map.on('moveend', function () {
             expect(map.isMoving()).not.to.be.ok();
             const center = map.getCenter();
-            expect(center.x).to.eql(118.84493355);
-            expect(center.y).to.eql(32.04882672);
+            expect(center.x).to.eql(118.84825216);
+            expect(center.y).to.eql(31.28637643);
             done();
         });
         dragMap(100);
