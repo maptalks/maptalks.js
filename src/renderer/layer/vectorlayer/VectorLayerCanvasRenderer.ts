@@ -507,7 +507,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             }
             const { x, y } = pts[i];
             //Is the point in view
-            geo._inCurrentView = (x >= xmin && y >= ymin && x <= xmax && y <= ymax);
+            geo._inCurrentView = (x >= xmin && y >= ymin && x <= xmax && y <= ymax) || geo.hasAltitude();
             //不在视野内的，再用fixedExtent 精确判断下
             if (!geo._inCurrentView) {
                 const symbolkey = geo.getSymbolHash();
