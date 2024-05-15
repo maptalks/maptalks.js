@@ -507,7 +507,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             }
             const { x, y } = pts[i];
             //Is the point in view
-            geo._inCurrentView = (x >= xmin && y >= ymin && x <= xmax && y <= ymax);
+            geo._inCurrentView = (x >= xmin && y >= ymin && x <= xmax && y <= ymax) || geo.hasAltitude();
             //不在视野内的，再用fixedExtent 精确判断下
             if (!geo._inCurrentView) {
                 const symbolkey = geo.getSymbolHash();
@@ -639,9 +639,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (!this.isProgressiveRender()) {
             return geos;
         }
-        if (this.renderEnd) {
-            return [];
-        }
+        // if (this.renderEnd) {
+        //     return [];
+        // }
         const layer = this.layer;
         const { progressiveRenderCount } = layer.options;
         const pageSize = progressiveRenderCount;
@@ -703,7 +703,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (isDebug(this.layer)) {
             console.log('snapshot time:', (now() - time) + 'ms');
         }
-        this.page++;
+        if (!this.renderEnd) {
+            this.page++;
+        }
         return this;
     }
 
