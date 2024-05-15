@@ -570,7 +570,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             this._center = center;
             return this;
         }
-        this._centerZ = center.z || 0;
+        this._centerZ = center.z;
         this.onMoveStart();
         this._setPrjCenter(pcenter);
         this.onMoveEnd(this._parseEventFromCoord(this.getCenter()));

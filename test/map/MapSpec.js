@@ -924,6 +924,7 @@ describe('Map.Spec', function () {
         const center = map.getCenter();
         center.z = 100;
         map.setCenter(center);
+        expect(map._centerZ === undefined).to.be.ok();
         const viewMatrix = map.viewMatrix;
         expect(viewMatrix).to.be.eql([-1, 0, 0, -0, 0, 1, 0, 0, 0, 0, -1, 0, 173083.2338488889, -49314.063792176465, 0.0703125, 1]);
     });
