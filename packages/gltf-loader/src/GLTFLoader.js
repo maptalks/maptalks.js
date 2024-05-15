@@ -44,7 +44,7 @@ export default class GLTFLoader {
             if (extensionsRequired.indexOf('KHR_draco_mesh_compression') >= 0 && !this.options.decoders['draco']) {
                 throw new Error('KHR_draco_mesh_compression is required but @maptalks/transcoders.draco is not loaded');
             }
-            if (extensionsRequired.indexOf('KHR_texture_basisu') >= 0 && !this.options.decoders['ktx2']) {
+            if (extensionsRequired.indexOf('KHR_texture_basisu') >= 0 && !this.options.decoders['image/ktx2']) {
                 throw new Error('KHR_texture_basisu is required but @maptalks/transcoders.ktx2 is not loaded');
             }
         }
