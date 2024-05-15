@@ -1537,7 +1537,7 @@ export type TileLayerOptionsType = LayerOptionsType & {
     urlTemplate: string | ((...args) => string);
     subdomains?: string[];
     spatialReference?: SpatialReferenceType;
-    tileSize?: number[];
+    tileSize?: number[] | number;
     offset?: number[] | ((...args) => number[]);
     tileSystem?: [number, number, number, number];
     maxAvailableZoom?: number;

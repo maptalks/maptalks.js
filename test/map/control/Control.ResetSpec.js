@@ -37,7 +37,7 @@ describe('Control.Reset', function () {
             happen.click(control._reset);
 
             expect(map.getView()).to.eql({
-                center: [120, 20, 0],
+                center: [120, 20],
                 zoom: 8,
                 bearing: 10,
                 pitch: 30
@@ -51,7 +51,7 @@ describe('Control.Reset', function () {
             happen.click(control._reset);
 
             expect(map.getView()).to.eql({
-                center: [118, 32, 0],
+                center: [118, 32],
                 zoom: 5,
                 bearing: 0,
                 pitch: 0
