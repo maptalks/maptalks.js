@@ -639,9 +639,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (!this.isProgressiveRender()) {
             return geos;
         }
-        if (this.renderEnd) {
-            return [];
-        }
+        // if (this.renderEnd) {
+        //     return [];
+        // }
         const layer = this.layer;
         const { progressiveRenderCount } = layer.options;
         const pageSize = progressiveRenderCount;
@@ -703,7 +703,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (isDebug(this.layer)) {
             console.log('snapshot time:', (now() - time) + 'ms');
         }
-        this.page++;
+        if (!this.renderEnd) {
+            this.page++;
+        }
         return this;
     }
 
