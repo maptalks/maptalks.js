@@ -27,6 +27,9 @@ import { formatResourceUrl } from '../../core/ResourceProxy';
 import { Coordinate, Extent } from '../../geo';
 import { type TileLayerCanvasRenderer } from '../../renderer';
 import { type Map } from '../../map';
+import GeoJSONBBOX from '@maptalks/geojson-bbox';
+import { bboxIntersect } from '../../core/util/bbox';
+import lineclip from 'lineclip';
 
 const DEFAULT_MAXERROR = 1;
 const TEMP_POINT = new Point(0, 0);
@@ -96,6 +99,7 @@ class TileHashset {
  * @property             [options.awareOfTerrain=true]       - if the tile layer is aware of terrain.
  * @property             [options.bufferPixel=0.5]       - tile buffer size,the unit is pixel
  * @property             [options.depthMask=true]       - mask to decide whether to write depth buffer
+ * @property             [options.onlyLoadTilesInMask=false]       - only load tiles in mask
  * @memberOf TileLayer
  * @instance
  */
@@ -160,7 +164,8 @@ const options: TileLayerOptionsType = {
     'bufferPixel': 0.5,
     'mipmapTexture': true,
     'depthMask': true,
-    'currentTilesFirst': true
+    'currentTilesFirst': true,
+    'onlyLoadTilesInMask': false
 };
 
 const URL_PATTERN = /\{ *([\w_]+) *\}/g;
@@ -205,6 +210,7 @@ class TileLayer extends Layer {
     _tileConfig: TileConfig;
     _polygonOffset: number;
     _renderer: TileLayerCanvasRenderer;
+    options: TileLayerOptionsType;
 
     /**
      *
@@ -264,12 +270,36 @@ class TileLayer extends Layer {
 
     getTiles(z: number, parentLayer: Layer) {
         this._coordCache = {};
+        let result;
         if (this._isPyramidMode()) {
-            return this._getPyramidTiles(z, parentLayer);
+            result = this._getPyramidTiles(z, parentLayer);
         } else {
-            return this._getCascadeTiles(z, parentLayer);
+            result = this._getCascadeTiles(z, parentLayer);
         }
+        if (!this.options.onlyLoadTilesInMask) {
+            return result;
+        }
+        const tileGrids: Array<TileGridType> = result.tileGrids || [];
+        let count = 0;
+        //filter tiles by mask
+        tileGrids.forEach(tileGrid => {
+            const tiles = tileGrid.tiles || [];
+            tileGrid.tiles = tiles.filter(tile => {
+                return this._tileInMask(tile);
+            });
+            count += tileGrid.tiles.length;
+            const parentIds = tileGrid.tiles.map(tile => {
+                return tile.parent;
+            });
+            tileGrid.parents = tileGrid.parents.filter(parent => {
+                return parentIds.indexOf(parent.id) > -1;
+            });
+        });
+        result.count = count;
+        return result;
     }
+
+
 
     _isPyramidMode() {
         const sr = this.getSpatialReference();
@@ -1284,7 +1314,7 @@ class TileLayer extends Layer {
         if (isNumber(offset)) {
             offset = [offset, offset];
         }
-        return offset || [0, 0];
+        return (offset as [number, number]) || [0, 0];
     }
 
     getTileId(x: number, y: number, zoom: number, id: string): string {
@@ -1454,6 +1484,78 @@ class TileLayer extends Layer {
     getRenderer() {
         return super.getRenderer() as TileLayerCanvasRenderer;
     }
+
+    _getTileBBox(tile: TileNodeType): [number, number, number, number] | null {
+        const map = this.getMap();
+        if (!map) {
+            return;
+        }
+        const z = tile.z;
+        const x = tile.x;
+        const y = tile.y;
+        const res = tile.res || map._getResolution(z);
+        const tileConfig = this._getTileConfig();
+        if (!tileConfig) {
+            return;
+        }
+        const prjExtent = tileConfig.getTilePrjExtent(x, y, res);
+        if (!prjExtent) {
+            return;
+        }
+        const { xmin, ymin, xmax, ymax } = prjExtent;
+        const pmin = new Point(xmin, ymin),
+            pmax = new Point(xmax, ymax);
+        const projection = map.getProjection();
+        const min = projection.unproject(pmin),
+            max = projection.unproject(pmax);
+        return [min.x, min.y, max.x, max.y];
+
+    }
+
+    _tileInMask(tile: TileNodeType): boolean {
+        const mask = this.getMask();
+        if (!mask) {
+            return true;
+        }
+        const type = mask.type;
+        if (!type || type.indexOf('Polygon') === -1) {
+            return true;
+        }
+        if (!this._maskGeoJSON) {
+            return true;
+        }
+        //cal geojson bbox
+        if (!this._maskGeoJSON.bbox) {
+            this._maskGeoJSON.bbox = GeoJSONBBOX(this._maskGeoJSON);
+        }
+        const tileBBOX = this._getTileBBox(tile);
+        if (!tileBBOX) {
+            return true;
+        }
+        const maskBBOX = this._maskGeoJSON.bbox;
+        if (!bboxIntersect(maskBBOX, tileBBOX)) {
+            return false;
+        } else {
+            const geometry = this._maskGeoJSON.geometry;
+            if (!geometry) {
+                return true;
+            }
+            let { type, coordinates } = geometry;
+            if (type === 'Polygon') {
+                coordinates = [coordinates];
+            }
+            for (let i = 0, len = coordinates.length; i < len; i++) {
+                const rings = coordinates[i];
+                const outRing = rings[0];
+                const result = lineclip.polygon(outRing, tileBBOX);
+                if (result.length > 0) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+    }
 }
 
 TileLayer.registerJSONType('TileLayer');
@@ -1537,7 +1639,7 @@ export type TileLayerOptionsType = LayerOptionsType & {
     urlTemplate: string | ((...args) => string);
     subdomains?: string[];
     spatialReference?: SpatialReferenceType;
-    tileSize?: number[];
+    tileSize?: number | [number, number];
     offset?: number[] | ((...args) => number[]);
     tileSystem?: [number, number, number, number];
     maxAvailableZoom?: number;
@@ -1571,4 +1673,5 @@ export type TileLayerOptionsType = LayerOptionsType & {
     tileStackDepth?: number;
     mipmapTexture?: boolean;
     currentTilesFirst?: boolean;
+    onlyLoadTilesInMask?: boolean;
 };

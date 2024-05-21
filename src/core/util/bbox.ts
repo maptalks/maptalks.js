@@ -87,3 +87,19 @@ export function bufferBBOX(bbox: BBOX, bufferSize = 0) {
     bbox[2] += bufferSize;
     bbox[3] += bufferSize;
 }
+
+export function bboxIntersect(bbox1: BBOX, bbox2: BBOX) {
+    if (bbox1[2] < bbox2[0]) {
+        return false;
+    }
+    if (bbox1[1] > bbox2[3]) {
+        return false;
+    }
+    if (bbox1[0] > bbox2[2]) {
+        return false;
+    }
+    if (bbox1[3] < bbox2[1]) {
+        return false;
+    }
+    return true;
+}

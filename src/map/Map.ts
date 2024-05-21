@@ -157,6 +157,7 @@ const options: MapOptionsType = {
     'switchDragButton': false,
     'mousemoveThrottleTime': MOUSEMOVE_THROTTLE_TIME,
     'maxFPS': 0,
+    'cameraInfiniteFar': false,
     'debug': false
 };
 

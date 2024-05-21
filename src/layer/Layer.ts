@@ -31,6 +31,7 @@ import { CommonProjectionType } from '../geo/projection';
  * @property options.forceRenderOnZooming=false     - force to render layer when map is zooming
  * @property options.forceRenderOnRotating=false    - force to render layer when map is Rotating
  * @property options.collisionScope=layer           - layer's collision scope: layer or map
+ * @property options.maskClip=true           - clip layer by mask(Polygon/MultiPolygon)
  * @memberOf Layer
  * @instance
  */
@@ -52,7 +53,8 @@ const options: LayerOptionsType = {
     'collisionScope': 'layer',
     'hitDetect': (function () {
         return !Browser.mobile;
-    })()
+    })(),
+    'maskClip': true
 };
 
 /**
@@ -79,6 +81,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     _drawTime: number
     map: Map
     _mask: Polygon | MultiPolygon | Marker;
+    _maskGeoJSON: Record<string, any>;
     _loaded: boolean
     _collisionIndex: CollisionIndex
     _optionsHook?(conf?: any): void
@@ -550,6 +553,13 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             });
         }
         this._mask = mask;
+        if (mask && mask.toGeoJSON) {
+            try {
+                this._maskGeoJSON = mask.toGeoJSON();
+            } catch (error) {
+                console.error(error);
+            }
+        }
         this.options.mask = mask.toJSON();
         if (!this.getMap() || this.getMap().isZooming()) {
             return this;
@@ -570,6 +580,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      */
     removeMask(): this {
         delete this._mask;
+        delete this._maskGeoJSON;
         delete this.options.mask;
         if (!this.getMap() || this.getMap().isZooming()) {
             return this;
@@ -863,6 +874,7 @@ export type LayerOptionsType = {
     drawImmediate?: boolean,
     geometryEvents?: boolean,
     geometryEventTolerance?: number,
+    maskClip?: boolean;
 }
 
 export type LayerJSONType = {
