@@ -1549,6 +1549,17 @@ class TileLayer extends Layer {
                 const outRing = rings[0];
                 const result = lineclip.polygon(outRing, tileBBOX);
                 if (result.length > 0) {
+                    let minx = Infinity, maxx = -Infinity, miny = Infinity, maxy = -Infinity;
+                    for (let j = 0, len1 = result.length; j < len1; j++) {
+                        const [x, y] = result[j];
+                        minx = Math.min(x, minx);
+                        miny = Math.min(y, miny);
+                        maxx = Math.max(x, maxx);
+                        maxy = Math.max(y, maxy);
+                    }
+                    if (minx === maxx || miny === maxy) {
+                        return false;
+                    }
                     return true;
                 }
             }
