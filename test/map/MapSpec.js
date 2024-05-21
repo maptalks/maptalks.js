@@ -181,6 +181,7 @@ describe('Map.Spec', function () {
         it('center is changed after setCenter', function () {
             var nc = new maptalks.Coordinate(119, 32).copy();
             map.setCenter(nc);
+            expect(map._centerZ === undefined).to.be.ok();
 
             expect(map.getCenter()).to.closeTo(nc);
         });
@@ -555,7 +556,6 @@ describe('Map.Spec', function () {
             map._getRenderer()._checkSizeInterval = 10;
             // this.timeout(map._getRenderer()._checkSizeInterval * 3);
             var center = map.getCenter();
-            center.z = center.z || 0;
             map.once('resize', function (param) {
                 expect(param).to.be.ok();
                 //center remains
