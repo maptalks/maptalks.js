@@ -1557,10 +1557,9 @@ class TileLayer extends Layer {
                         maxx = Math.max(x, maxx);
                         maxy = Math.max(y, maxy);
                     }
-                    if (minx === maxx || miny === maxy) {
-                        return false;
+                    if (minx !== maxx && miny !== maxy) {
+                        return true;
                     }
-                    return true;
                 }
             }
             return false;
