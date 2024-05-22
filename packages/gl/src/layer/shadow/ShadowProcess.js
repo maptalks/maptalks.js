@@ -21,7 +21,6 @@ class ShadowProcess {
                 return  mat4.multiply(shadowLightProjViewModelMatrix, lightProjViews, model);
             }
         });
-        uniforms.push('shadow_shadowMap', 'shadow_opacity', 'esm_shadow_threshold', 'shadow_color', 'shadow_nearFar');
         return uniforms;
     }
 
@@ -41,12 +40,12 @@ class ShadowProcess {
 
     _init() {
         const shadowConfig = this.sceneConfig.shadow || {};
-        let shadowRes = 512;
+        let shadowRes = 2048;
         const quality = shadowConfig.quality;
-        if (quality === 'high') {
-            shadowRes = 2048;
-        } else if (quality === 'medium') {
+        if (quality === 'medium') {
             shadowRes = 1024;
+        } else if (quality === 'low') {
+            shadowRes = 512;
         }
         const defines = this.getDefines();
         this._shadowPass = new reshader.ShadowPass(this.renderer, { width: shadowRes, height: shadowRes, blurOffset: shadowConfig.blurOffset, defines });
@@ -67,7 +66,7 @@ class ShadowProcess {
     render(displayShadow, projMatrix, viewMatrix, color, opacity, lightDirection, scene, halton, framebuffer, forceRefresh) {
         this._transformGround();
         const map = this._layer.getMap();
-        const changed = forceRefresh || this._shadowChanged(map, scene, !!displayShadow);
+        const changed = forceRefresh || this._shadowChanged(map, scene, !!displayShadow) || true;
         let matrix, smap;
         if (changed) {
             this._tempMat0 = this._tempMat0 || [];
