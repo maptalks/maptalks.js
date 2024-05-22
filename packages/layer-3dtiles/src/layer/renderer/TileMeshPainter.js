@@ -126,7 +126,6 @@ export default class TileMeshPainter {
         // this._defaultMaterial = new reshader.PhongMaterial({
         //     'baseColorFactor' : [1, 1, 1, 1]
         // });
-        this._createShaders();
         this._khrTechniqueWebglManager = new reshader.KHRTechniquesWebglManager(this._regl, this._getExtraCommandProps(), this._resLoader);
         const map = this.getMap();
         this._heightScale = map.altitudeToPoint(100, map.getGLRes()) / 100;
@@ -274,6 +273,7 @@ export default class TileMeshPainter {
         // console.log(meshes.map(m => m.properties.id));
         let drawCount = 0;
         const khrExludeFilter = this._khrTechniqueWebglManager.getExcludeFilter();
+        this.setIncludeUniformValues(uniforms, parentContext);
         drawCount += this._callShader(this._phongShader, uniforms, [filter, phongFilter, khrExludeFilter], renderTarget, parentMeshes, meshes, i3dmMeshes);
         drawCount += this._callShader(this._standardShader, uniforms, [filter, StandardFilter, khrExludeFilter], renderTarget, parentMeshes, meshes, i3dmMeshes);
 
@@ -297,6 +297,20 @@ export default class TileMeshPainter {
         this._renderer.render(this._edgeShader, uniforms, this._boxScene, renderTarget && renderTarget.fbo);
 
         return drawCount;
+    }
+
+    prepareRender(context) {
+        this._prepareShaders(context);
+    }
+
+    _prepareShaders(context) {
+        if (context.states && context.states.includesChanged) {
+            this._standardShader.dispose();
+            delete this._standardShader;
+            this._phongShader.dispose();
+            delete this._phongShader;
+        }
+        this._createShaders(context);
     }
 
     // _updateBBoxMatrix(mesh) {
@@ -333,6 +347,14 @@ export default class TileMeshPainter {
         this._i3dmScene.setMeshes(i3dmMeshes);
         drawCount += this._renderer.render(shader, uniforms, this._i3dmScene, renderTarget && renderTarget.fbo);
         return drawCount;
+    }
+
+    getCurrentB3DMMeshes() {
+        return this._modelScene.getMeshes();
+    }
+
+    getCurrentI3DMMeshes() {
+        return this._i3dmScene.getMeshes();
     }
 
     _sort(a, b) {
@@ -1417,8 +1439,10 @@ export default class TileMeshPainter {
         return out;
     }
 
-    _createShaders() {
-
+    _createShaders(context) {
+        if (this._standardShader) {
+            return;
+        }
         const viewport = {
             x : 0,
             y : 0,
@@ -1429,7 +1453,6 @@ export default class TileMeshPainter {
                 return this._canvas ? this._canvas.height : 1;
             }
         };
-
         const modelNormalMatrix = [];
         const projViewModelMatrix = [];
         this._pntsShader = new reshader.MeshShader({
@@ -1469,13 +1492,20 @@ export default class TileMeshPainter {
             }
         });
 
+        const defines = {};
+        const uniformDeclares = [];
+        this.fillIncludes(defines, uniformDeclares, context);
         const extraCommandProps = this._getExtraCommandProps();
 
         this._phongShader = new reshader.PhongShader({
+            uniforms: uniformDeclares,
+            defines,
             extraCommandProps
         });
 
         this._standardShader = new reshader.pbr.StandardShader({
+            uniforms: uniformDeclares,
+            defines,
             extraCommandProps
             // uniforms : [
             //     'ambientLight',
@@ -1568,6 +1598,39 @@ export default class TileMeshPainter {
         // this._modelShader.filter = mesh => {
         //     return mesh.material.isReady();
         // };
+    }
+
+    fillIncludes(defines, uniformDeclares, context) {
+        delete this._includeKeys;
+        const includes = context && context.includes;
+        if (includes) {
+            let keys = '';
+            for (const p in includes) {
+                if (includes[p]) {
+                    keys += p;
+                    if (context[p].uniformDeclares) {
+                        uniformDeclares.push(...context[p].uniformDeclares);
+                    }
+                    if (context[p].defines) {
+                        extend(defines, context[p].defines);
+                    }
+                }
+            }
+            this._includeKeys = keys;
+        }
+    }
+
+    setIncludeUniformValues(uniforms, context) {
+        const includes = context && context.includes;
+        if (includes) {
+            for (const p in includes) {
+                if (includes[p]) {
+                    if (context[p].renderUniforms) {
+                        extend(uniforms, context[p].renderUniforms);
+                    }
+                }
+            }
+        }
     }
 
     _getExtraCommandProps() {
@@ -1766,7 +1829,9 @@ export default class TileMeshPainter {
             matInfo.ambientColor = [1, 1, 1];
             matInfo['light0_diffuse'] = [0, 0, 0, 0];
             matInfo['lightSpecular'] = [0, 0, 0];
-            return new reshader.PhongMaterial(matInfo);
+            const material = new reshader.PhongMaterial(matInfo);
+            material.unlit = service.unlit === undefined || !!service.unlit;
+            return material;
         }
 
         let meshMaterial = new reshader.pbr.StandardMaterial(matInfo);

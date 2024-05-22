@@ -182,6 +182,7 @@ void main() {
         float shadowCoeff = shadow_computeShadow();
         diffuse = shadow_blend(diffuse, shadowCoeff).rgb;
         specular = shadow_blend(specular, shadowCoeff).rgb;
+        ambient = shadow_blend(ambient, shadowCoeff).rgb;
     #endif
     vec3 result = ambient + diffuse + specular;
 
@@ -215,6 +216,7 @@ void main() {
     if (glFragColor.a < alphaTest) {
         discard;
     }
+    // glFragColor = vec4(shadowCoeff, shadowCoeff, shadowCoeff, 1.0);
     #ifdef HAS_HEATMAP
         glFragColor = heatmap_getColor(glFragColor);
     #endif

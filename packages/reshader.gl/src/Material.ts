@@ -11,6 +11,8 @@ class Base {}
 class Material extends Eventable(Base) {
     uniforms: ShaderUniforms
     refCount: number
+    // 如果unlit，则不产生阴影（但接受阴影）
+    unlit: boolean
     private _version: number
     private _uniformVer?: number
     private _uniformKeys?: string
@@ -33,6 +35,7 @@ class Material extends Eventable(Base) {
                 });
             }
         }
+        this.unlit = false;
         this._reglUniforms = {};
         this.refCount = 0;
         this._bindedOnTextureComplete = this._onTextureComplete.bind(this);

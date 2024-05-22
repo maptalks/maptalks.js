@@ -41,7 +41,8 @@ class Mesh {
     transparent: boolean
     bloom: boolean
     ssr: boolean
-    castShadow: boolean
+    private _castShadow: boolean
+    needUpdateShadow: boolean
     picking: boolean
     disableVAO: boolean
     properties: any
@@ -57,7 +58,8 @@ class Mesh {
         this.transparent = !!config.transparent;
         this.bloom = !!config.bloom;
         this.ssr = !!config.ssr;
-        this.castShadow = isNil(config.castShadow) || config.castShadow;
+        this._castShadow = isNil(config.castShadow) || config.castShadow;
+        this.needUpdateShadow = false;
         this.picking = !!config.picking;
         this.disableVAO = !!config.disableVAO;
         this.uniforms = {};
@@ -154,6 +156,14 @@ class Mesh {
         this.setDefines(v);
     }
 
+    get castShadow(): boolean {
+      return this._castShadow && (!this.material || !this.material.unlit);
+    }
+
+    set castShadow(v: boolean) {
+      this._castShadow = v;
+    }
+
     setMaterial(material: Material) {
         this._material = material;
         this._dirtyUniforms = true;
@@ -177,17 +187,13 @@ class Mesh {
     }
 
     setUniform(k: string, v: ShaderUniformValue) {
-        if (this.uniforms[k] === undefined) {
-            this._dirtyUniforms = true;
-        } else {
-            this._dirtyProps = this._dirtyProps || [];
-            this._dirtyProps.push(k);
-        }
+        this._updateUniformState(k);
         this.uniforms[k] = v;
         return this;
     }
 
     setFunctionUniform(k: string, fn: () => ShaderUniformValue): this {
+      this._updateUniformState(k);
       Object.defineProperty(this.uniforms, k, {
         enumerable: true,
         get: fn
@@ -197,6 +203,15 @@ class Mesh {
 
     hasFunctionUniform(k: string): boolean {
       return Object.prototype.hasOwnProperty.call(this.uniforms, k);
+    }
+
+    _updateUniformState(k: string) {
+      if (this.uniforms[k] === undefined) {
+        this._dirtyUniforms = true;
+      } else {
+        this._dirtyProps = this._dirtyProps || [];
+        this._dirtyProps.push(k);
+      }
     }
 
     getUniform(k: string): ShaderUniformValue {

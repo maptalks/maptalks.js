@@ -13,7 +13,6 @@ void main()
 
     #ifdef IS_LINE_EXTRUSION
         vec3 linePosition = getLineExtrudePosition(aPosition);
-        //linePixelScale = tileRatio * resolution / tileResolution
         vec4 localVertex = getPosition(linePosition);
     #else
         vec4 localVertex = getPosition(aPosition);
