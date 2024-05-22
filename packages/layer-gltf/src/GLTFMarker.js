@@ -1030,7 +1030,7 @@ export default class GLTFMarker extends Marker {
 
     isCastShadow() {
         const symbol = this['_getInternalSymbol']();
-        return symbol && symbol.shadow;
+        return symbol && (symbol.shadow || symbol.shadow === undefined);
     }
 
     outlineNodes(nodes) {
