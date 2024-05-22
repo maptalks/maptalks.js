@@ -557,6 +557,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             try {
                 this._maskGeoJSON = mask.toGeoJSON();
             } catch (error) {
+                delete this._maskGeoJSON;
                 console.error(error);
             }
         }
