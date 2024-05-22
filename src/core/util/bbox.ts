@@ -1,4 +1,6 @@
 import Coordinate from '../../geo/Coordinate';
+import GeoJSONBBOX from '@maptalks/geojson-bbox';
+import lineclip from 'lineclip';
 
 const minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
 
@@ -102,4 +104,49 @@ export function bboxIntersect(bbox1: BBOX, bbox2: BBOX) {
         return false;
     }
     return true;
+}
+
+/**
+ * bbox Intersect Mask
+ * apply on TileLayer,VectorTileLayer,Geo3DTileLayer Layers
+ * @param bbox 
+ * @param maskGeoJSON(Polygon/MultiPolygon GeoJSON)
+ * @returns 
+ */
+export function bboxInMask(bbox: BBOX, maskGeoJSON: Record<string, any>): boolean {
+    //cal geojson bbox
+    maskGeoJSON.bbox = maskGeoJSON.bbox || GeoJSONBBOX(maskGeoJSON);
+    const maskBBOX = maskGeoJSON.bbox;
+    if (!bboxIntersect(maskBBOX, bbox)) {
+        return false;
+    } else {
+        const geometry = maskGeoJSON.geometry;
+        if (!geometry) {
+            console.error('maskGeoJSON is error,not find geometry.', maskGeoJSON);
+            return false;
+        }
+        let { type, coordinates } = geometry;
+        if (type === 'Polygon') {
+            coordinates = [coordinates];
+        }
+        for (let i = 0, len = coordinates.length; i < len; i++) {
+            const rings = coordinates[i];
+            const outRing = rings[0];
+            const result = lineclip.polygon(outRing, bbox);
+            if (result.length > 0) {
+                let minx = Infinity, maxx = -Infinity, miny = Infinity, maxy = -Infinity;
+                for (let j = 0, len1 = result.length; j < len1; j++) {
+                    const [x, y] = result[j];
+                    minx = Math.min(x, minx);
+                    miny = Math.min(y, miny);
+                    maxx = Math.max(x, maxx);
+                    maxy = Math.max(y, maxy);
+                }
+                if (minx !== maxx && miny !== maxy) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

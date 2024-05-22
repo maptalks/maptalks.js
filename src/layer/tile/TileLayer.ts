@@ -27,9 +27,7 @@ import { formatResourceUrl } from '../../core/ResourceProxy';
 import { Coordinate, Extent } from '../../geo';
 import { type TileLayerCanvasRenderer } from '../../renderer';
 import { type Map } from '../../map';
-import GeoJSONBBOX from '@maptalks/geojson-bbox';
-import { bboxIntersect } from '../../core/util/bbox';
-import lineclip from 'lineclip';
+import { BBOX, bboxInMask } from '../../core/util/bbox';
 
 const DEFAULT_MAXERROR = 1;
 const TEMP_POINT = new Point(0, 0);
@@ -1485,7 +1483,7 @@ class TileLayer extends Layer {
         return super.getRenderer() as TileLayerCanvasRenderer;
     }
 
-    _getTileBBox(tile: TileNodeType): [number, number, number, number] | null {
+    _getTileBBox(tile: TileNodeType): BBOX | null {
         const map = this.getMap();
         if (!map) {
             return;
@@ -1517,54 +1515,26 @@ class TileLayer extends Layer {
         if (!mask) {
             return true;
         }
-        const type = mask.type;
-        if (!type || type.indexOf('Polygon') === -1) {
+        const maskType = mask.type;
+        if (!maskType || maskType.indexOf('Polygon') === -1) {
             return true;
         }
-        if (!this._maskGeoJSON) {
+        const maskGeoJSON = this._maskGeoJSON;
+        if (!maskGeoJSON || !maskGeoJSON.geometry) {
             return true;
         }
-        //cal geojson bbox
-        if (!this._maskGeoJSON.bbox) {
-            this._maskGeoJSON.bbox = GeoJSONBBOX(this._maskGeoJSON);
+        const { coordinates, type } = maskGeoJSON.geometry;
+        if (!coordinates || !type) {
+            return true;
+        }
+        if (type.indexOf('Polygon') === -1) {
+            return true;
         }
         const tileBBOX = this._getTileBBox(tile);
         if (!tileBBOX) {
             return true;
         }
-        const maskBBOX = this._maskGeoJSON.bbox;
-        if (!bboxIntersect(maskBBOX, tileBBOX)) {
-            return false;
-        } else {
-            const geometry = this._maskGeoJSON.geometry;
-            if (!geometry) {
-                return true;
-            }
-            let { type, coordinates } = geometry;
-            if (type === 'Polygon') {
-                coordinates = [coordinates];
-            }
-            for (let i = 0, len = coordinates.length; i < len; i++) {
-                const rings = coordinates[i];
-                const outRing = rings[0];
-                const result = lineclip.polygon(outRing, tileBBOX);
-                if (result.length > 0) {
-                    let minx = Infinity, maxx = -Infinity, miny = Infinity, maxy = -Infinity;
-                    for (let j = 0, len1 = result.length; j < len1; j++) {
-                        const [x, y] = result[j];
-                        minx = Math.min(x, minx);
-                        miny = Math.min(y, miny);
-                        maxx = Math.max(x, maxx);
-                        maxy = Math.max(y, maxy);
-                    }
-                    if (minx !== maxx && miny !== maxy) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
+        return bboxInMask(tileBBOX, this._maskGeoJSON);
     }
 }
 
