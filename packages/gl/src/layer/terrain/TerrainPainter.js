@@ -1,4 +1,5 @@
 import  { extend, hasOwn } from '../util/util';
+import * as ContextUtil from '../util/context';
 import { vec3, mat4 } from '@maptalks/reshader.gl';
 import * as reshader from '@maptalks/reshader.gl';
 import { EMPTY_TERRAIN_GEO } from './TerrainTileUtil.js';
@@ -34,9 +35,13 @@ class TerrainPainter {
         return this.layer.getMap();
     }
 
-    startFrame() {
+    startFrame(context) {
+        if (context && context.states && context.states.includesChanged) {
+            this.shader.dispose();
+            delete this.shader;
+        }
         if (!this.shader) {
-            this.initShader();
+            this.initShader(context);
         }
         this._leafScene.clear();
     }
@@ -152,6 +157,7 @@ class TerrainPainter {
 
         const fbo = this._getRenderFBO(context);
         this.shader.filter = context && context.sceneFilter;
+        ContextUtil.setIncludeUniformValues(uniforms, context);
         renderCount += this.renderer.render(this.shader, uniforms, this._leafScene, fbo);
         return renderCount;
     }
@@ -182,12 +188,15 @@ class TerrainPainter {
         }
     }
 
-    initShader() {
+    initShader(context) {
         const projViewModelMatrix = [], modelViewMatrix = [];
+        const defines = {};
+        const uniformDeclares = [];
+        ContextUtil.fillIncludes(defines, uniformDeclares, context);
         this.shader = new reshader.MeshShader({
             vert,
             frag,
-            uniforms: [
+            uniforms: uniformDeclares.concat([
                 {
                     name: 'modelViewMatrix',
                     type: 'function',
@@ -202,7 +211,8 @@ class TerrainPainter {
                         return mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                     }
                 }
-            ],
+            ]),
+            defines,
             extraCommandProps: this.getExtraCommandProps()
         });
     }

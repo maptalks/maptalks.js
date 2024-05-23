@@ -181,7 +181,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
 
     draw(timestamp, parentContext) {
         this._createPainter();
-        this._painter.startFrame();
+        this._painter.startFrame(parentContext);
         super.draw(timestamp, parentContext);
         this._endFrame(parentContext);
     }

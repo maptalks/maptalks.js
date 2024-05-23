@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { reshader, vec3, vec4, mat3, mat4, quat, HighlightUtil } from '@maptalks/gl';
+import { reshader, vec3, vec4, mat3, mat4, quat, HighlightUtil, ContextUtil } from '@maptalks/gl';
 import { iterateMesh, iterateBufferData, getItemAtBufferData, setInstanceData, } from '../../common/GLTFHelpers';
 import pntsVert from './glsl/pnts.vert';
 import pntsFrag from './glsl/pnts.frag';
@@ -273,7 +273,7 @@ export default class TileMeshPainter {
         // console.log(meshes.map(m => m.properties.id));
         let drawCount = 0;
         const khrExludeFilter = this._khrTechniqueWebglManager.getExcludeFilter();
-        this.setIncludeUniformValues(uniforms, parentContext);
+        ContextUtil.setIncludeUniformValues(uniforms, parentContext);
         drawCount += this._callShader(this._phongShader, uniforms, [filter, phongFilter, khrExludeFilter], renderTarget, parentMeshes, meshes, i3dmMeshes);
         drawCount += this._callShader(this._standardShader, uniforms, [filter, StandardFilter, khrExludeFilter], renderTarget, parentMeshes, meshes, i3dmMeshes);
 
@@ -304,7 +304,7 @@ export default class TileMeshPainter {
     }
 
     _prepareShaders(context) {
-        if (context.states && context.states.includesChanged) {
+        if (context && context.states && context.states.includesChanged) {
             this._standardShader.dispose();
             delete this._standardShader;
             this._phongShader.dispose();
@@ -1494,7 +1494,7 @@ export default class TileMeshPainter {
 
         const defines = {};
         const uniformDeclares = [];
-        this.fillIncludes(defines, uniformDeclares, context);
+        ContextUtil.fillIncludes(defines, uniformDeclares, context);
         const extraCommandProps = this._getExtraCommandProps();
 
         this._phongShader = new reshader.PhongShader({
@@ -1600,38 +1600,6 @@ export default class TileMeshPainter {
         // };
     }
 
-    fillIncludes(defines, uniformDeclares, context) {
-        delete this._includeKeys;
-        const includes = context && context.includes;
-        if (includes) {
-            let keys = '';
-            for (const p in includes) {
-                if (includes[p]) {
-                    keys += p;
-                    if (context[p].uniformDeclares) {
-                        uniformDeclares.push(...context[p].uniformDeclares);
-                    }
-                    if (context[p].defines) {
-                        extend(defines, context[p].defines);
-                    }
-                }
-            }
-            this._includeKeys = keys;
-        }
-    }
-
-    setIncludeUniformValues(uniforms, context) {
-        const includes = context && context.includes;
-        if (includes) {
-            for (const p in includes) {
-                if (includes[p]) {
-                    if (context[p].renderUniforms) {
-                        extend(uniforms, context[p].renderUniforms);
-                    }
-                }
-            }
-        }
-    }
 
     _getExtraCommandProps() {
         const viewport = {

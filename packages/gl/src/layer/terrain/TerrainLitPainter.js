@@ -1,6 +1,7 @@
 import * as reshader from '@maptalks/reshader.gl';
 import TerrainPainter from './TerrainPainter';
 import  { extend } from '../util/util';
+import * as ContextUtil from '../util/context';
 
 const { getIBLResOnCanvas, getPBRUniforms, loginIBLResOnCanvas, logoutIBLResOnCanvas } = reshader.pbr.PBRUtils;
 
@@ -160,8 +161,13 @@ class TerrainLitPainter extends TerrainPainter {
     }
 
 
-    initShader() {
+    initShader(context) {
+        const defines = {};
+        const uniformDeclares = [];
+        ContextUtil.fillIncludes(defines, uniformDeclares, context);
         this.shader = new reshader.pbr.StandardShader({
+            uniforms: uniformDeclares,
+            defines,
             extraCommandProps: this.getExtraCommandProps()
         });
     }

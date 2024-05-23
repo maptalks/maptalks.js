@@ -11,12 +11,20 @@ uniform mat4 positionMatrix;
 uniform float heightScale;
 varying vec2 vUv;
 #include <mask_vert>
+#if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
+    #include <vsm_shadow_vert>
+#endif
 void main() {
-    vec3 position = vec3(aPosition.xy, (aPosition.z + minAltitude) * heightScale);
+    vec4 position = vec4(aPosition.xy, (aPosition.z + minAltitude) * heightScale, 1.0);
+    position = positionMatrix * position;
     #ifdef HAS_MASK_EXTENT
-        gl_Position = projMatrix * getMaskPosition(positionMatrix * vec4(position, 1.0), modelMatrix);
+        gl_Position = projMatrix * getMaskPosition(position, modelMatrix);
     #else
-        gl_Position = projViewModelMatrix * positionMatrix * vec4(position, 1.0);
+        gl_Position = projViewModelMatrix * position;
     #endif
     vUv = aTexCoord;
+
+    #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
+        shadow_computeShadowPars(position);
+    #endif
 }

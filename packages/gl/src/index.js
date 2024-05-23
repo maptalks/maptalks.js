@@ -4,7 +4,8 @@ import './light/MapLights.js';
 import './map/MapPostProcess.js';
 
 import * as HighlightUtil from './layer/util/highlight.js';
-export { GroupGLLayer, GroundPainter, HighlightUtil };
+import * as ContextUtil from './layer/util/context.js';
+export { GroupGLLayer, GroundPainter, HighlightUtil, ContextUtil };
 
 export { default as HeatmapProcess } from './layer/HeatmapProcess';
 export { GLContext } from '@maptalks/fusiongl';

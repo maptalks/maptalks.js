@@ -991,6 +991,9 @@ void main() {
     #ifdef HAS_SKIN_MAP
         vec4 skinColor = getMaterialSkinColor();
         frag.rgb = frag.rgb * (1.0 - skinColor.a) + skinColor.rgb * skinColor.a;
+        #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
+            frag.rgb = shadow_blend(frag.rgb, shadowCoeff).rgb;
+        #endif
     #endif
 
     float alpha = getMaterialAlpha();
