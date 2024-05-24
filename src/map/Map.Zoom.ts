@@ -162,7 +162,7 @@ Map.include(/** @lends Map.prototype */{
     _zoomTo(nextZoom: number, origin?: Point) {
         this._zoomLevel = nextZoom;
         this._calcMatrices();
-        if (origin) {
+        if (origin && this._startZoomCoord) {
             const p = this._containerPointToPoint(origin);
             const offset = p._sub(this._prjToPoint(this._getPrjCenter()));
             this._setPrjCoordAtOffsetToCenter(this._startZoomCoord, offset);
