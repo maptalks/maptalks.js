@@ -115,8 +115,8 @@ Map.include(/** @lends Map.prototype */{
             }
             origin = origin.add(originOffset) as Point;
         }
-        let originX = origin && origin.x || this.width / 2;
-        let originY = origin && origin.y || this.height / 2;
+        const originX = origin && origin.x || this.width / 2;
+        const originY = origin && origin.y || this.height / 2;
         const matrix = {
             'view': [scale, 0, 0, scale, (originX - offset.x) * (1 - scale), (originY - offset.y) * (1 - scale)]
         };
