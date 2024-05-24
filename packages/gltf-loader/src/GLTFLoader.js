@@ -47,6 +47,9 @@ export default class GLTFLoader {
             if (extensionsRequired.indexOf('KHR_texture_basisu') >= 0 && !this.options.decoders['image/ktx2']) {
                 throw new Error('KHR_texture_basisu is required but @maptalks/transcoders.ktx2 is not loaded');
             }
+            if (extensionsRequired.indexOf('EXT_meshopt_compression') >= 0) {
+                throw new Error('EXT_meshopt_compression extension is not supported yet.');
+            }
         }
     }
 

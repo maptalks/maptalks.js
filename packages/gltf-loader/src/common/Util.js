@@ -152,19 +152,20 @@ export function getMatrix(out, node) {
 
 export function readInterleavedArray(out, arrayBuffer, count, size, stride, byteOffset, componentType) {
     const ctor = getTypedArrayCtor(componentType);
-    if ((stride === 0 || stride === size * ctor.BYTES_PER_ELEMENT) && byteOffset % ctor.BYTES_PER_ELEMENT === 0) {
+    const bytesPerElement = ctor.BYTES_PER_ELEMENT;
+    if ((stride === 0 || stride === size * bytesPerElement) && byteOffset % bytesPerElement === 0) {
         const src = new ctor(arrayBuffer, byteOffset, count * size);
         out.set(src);
         return out;
     }
     if (stride === 0) {
-        stride = size * ctor.BYTES_PER_ELEMENT;
+        stride = size * bytesPerElement;
     }
-    const tempUint8 = new Uint8Array(size * ctor.BYTES_PER_ELEMENT);
+    const tempUint8 = new Uint8Array(size * bytesPerElement);
     for (let i = 0; i < count; i++) {
         let tempTypeArray = null;
         const start = stride * i + byteOffset;
-        const uint8Arr = new Uint8Array(arrayBuffer, start, size * ctor.BYTES_PER_ELEMENT);
+        const uint8Arr = new Uint8Array(arrayBuffer, start, size * bytesPerElement);
         //typedArray拷贝
         tempUint8.set(uint8Arr);
         tempTypeArray = new ctor(tempUint8.buffer, 0, size);
