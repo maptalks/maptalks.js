@@ -76,7 +76,7 @@ Map.include(/** @lends Map.prototype */{
         delete this.cameraZenithDistance;
         this._zooming = true;
         this._startZoomVal = this.getZoom();
-        this._startZoomCoord = this._containerPointToPrj(origin);
+        this._startZoomCoord = origin && this._containerPointToPrj(origin);
         /**
           * zoomstart event
           * @event Map#zoomstart
@@ -102,9 +102,9 @@ Map.include(/** @lends Map.prototype */{
         const res = this.getResolution(nextZoom),
             fromRes = this.getResolution(this._startZoomVal),
             scale = fromRes / res / startScale,
-            startPoint = this.prjToContainerPoint(this._startZoomCoord, this._startZoomVal);
+            startPoint = this._startZoomCoord && this.prjToContainerPoint(this._startZoomCoord, this._startZoomVal);
         const offset = this.getViewPoint();
-        if (!this.isRotating() && !startPoint.equals(origin) && scale !== 1) {
+        if (!this.isRotating() && startPoint && !startPoint.equals(origin) && scale !== 1) {
             const pitch = this.getPitch();
             // coordinate at origin changed, usually by map.setCenter
             // add origin offset
@@ -115,14 +115,13 @@ Map.include(/** @lends Map.prototype */{
             }
             origin = origin.add(originOffset) as Point;
         }
+        const originX = origin && origin.x || this.width / 2;
+        const originY = origin && origin.y || this.height / 2;
         const matrix = {
-            'view': [scale, 0, 0, scale, (origin.x - offset.x) * (1 - scale), (origin.y - offset.y) * (1 - scale)]
+            'view': [scale, 0, 0, scale, (originX - offset.x) * (1 - scale), (originY - offset.y) * (1 - scale)]
         };
         const dpr = this.getDevicePixelRatio();
-        if (dpr !== 1) {
-            origin = origin.multi(dpr) as Point;
-        }
-        matrix['container'] = [scale, 0, 0, scale, origin.x * (1 - scale), origin.y * (1 - scale)];
+        matrix['container'] = [scale, 0, 0, scale, originX * dpr * (1 - scale), originY * dpr * (1 - scale)];
         /**
           * zooming event
           * @event Map#zooming
@@ -132,7 +131,7 @@ Map.include(/** @lends Map.prototype */{
           * @property {Number} from                    - zoom level zooming from
           * @property {Number} to                      - zoom level zooming to
           */
-        this._fireEvent('zooming', { 'from': this._startZoomVal, 'to': nextZoom, 'origin': origin, 'matrix': matrix });
+        this._fireEvent('zooming', { 'from': this._startZoomVal, 'to': nextZoom, 'origin': new Point(originX, originY), 'matrix': matrix });
         this._frameZoom = nextZoom;
     },
 
@@ -163,7 +162,7 @@ Map.include(/** @lends Map.prototype */{
     _zoomTo(nextZoom: number, origin?: Point) {
         this._zoomLevel = nextZoom;
         this._calcMatrices();
-        if (origin) {
+        if (origin && this._startZoomCoord) {
             const p = this._containerPointToPoint(origin);
             const offset = p._sub(this._prjToPoint(this._getPrjCenter()));
             this._setPrjCoordAtOffsetToCenter(this._startZoomCoord, offset);

@@ -103,7 +103,7 @@ Map.include(/** @lends Map.prototype */{
                 this._stopAnim(this._animPlayer);
             }
         }
-        const zoomOrigin = view['around'] || new Point(this.width / 2, this.height / 2);
+        const zoomOrigin = view['around'] || null;
         // let preView = this.getView();
         const renderer = this._getRenderer(),
             framer = function (fn) {

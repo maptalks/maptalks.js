@@ -2146,14 +2146,15 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!this.centerAltitude && point.x === this.width / 2 && point.y === this.height / 2) {
             return this;
         }
-        const t = this._containerPointToPoint(point)._sub(this._prjToPoint(this._getPrjCenter()));
-        const pcenter = this._pointToPrj(this._prjToPoint(coordinate).sub(t));
+        const p = this._containerPointToPoint(point);
+        const t = p._sub(this._prjToPoint(this._getPrjCenter()));
+        const pcenter = this._pointToPrj(this._prjToPoint(coordinate)._sub(t));
         this._setPrjCenter(pcenter);
         return this;
     }
 
     _setPrjCoordAtOffsetToCenter(prjCoord: Coordinate, offset: Point) {
-        const pcenter = this._pointToPrj(this._prjToPoint(prjCoord).sub(offset));
+        const pcenter = this._pointToPrj(this._prjToPoint(prjCoord)._sub(offset));
         this._setPrjCenter(pcenter);
         return this;
     }
