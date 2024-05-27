@@ -50,7 +50,7 @@ export default class GLTFLineString extends MultiGLTFMarker {
         }
         const dist = map.getProjection().measureLenBetween(from, to);
         const boxWidth = this._calBoxWidth(from, to);
-        const times = Math.floor(dist / boxWidth );
+        const times = Math.floor(dist / boxWidth);
         const rotationZ = this._getRotation(from, to);
         //取余缩放
         if (times >= 1) {
@@ -86,10 +86,13 @@ export default class GLTFLineString extends MultiGLTFMarker {
         return items;
     }
 
-    _calItemCenter(from ,to, t) {
+    _calItemCenter(from, to, t) {
         const x = lerp(from.x, to.x, t);
         const y = lerp(from.y, to.y, t);
-        return new Coordinate(x, y);
+        const z1 = from.z || 0;
+        const z2 = to.z || 0;
+        const z = lerp(z1, z2, t);
+        return new Coordinate(x, y, z);
     }
 
     _calBoxWidth(from, to) {
