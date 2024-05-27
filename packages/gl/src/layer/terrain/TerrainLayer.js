@@ -1,7 +1,7 @@
 import * as maptalks from 'maptalks';
 import TerrainLayerRenderer from './TerrainLayerRenderer';
 import { getTileIdsAtLevel, getSkinTileScale, getSkinTileRes, getCascadeTileIds } from './TerrainTileUtil';
-import  { extend } from '../util/util';
+import { extend } from '../util/util';
 import MaskLayerMixin from '../mask/MaskLayerMixin';
 
 const COORD0 = new maptalks.Coordinate(0, 0);
@@ -34,7 +34,8 @@ const options = {
     'tempTileCacheSize': 64,
     'tileStackStartDepth': 7,
     'tileStackDepth': 6,
-    'currentTilesFirst': false
+    'currentTilesFirst': false,
+    'exaggeration': 1
 };
 
 const EMPTY_TILE_GRIDS = {
@@ -202,7 +203,7 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
                 info.skinTileIds[layerId] = layerTiles;
             }
             const tileSkinTiles = info.skinTileIds[layerId];
-            for (let j = 0; j < tileSkinTiles.length; j++ ){
+            for (let j = 0; j < tileSkinTiles.length; j++) {
                 if (!allSkinTileIds.has(tileSkinTiles[j].id)) {
                     if (i < parentCount) {
                         parentSkinTiles.push(tileSkinTiles[j]);

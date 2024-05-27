@@ -6,7 +6,7 @@ import skinVert from './glsl/terrainSkin.vert';
 import skinFrag from './glsl/terrainSkin.frag';
 import { getCascadeTileIds, getSkinTileScale, getSkinTileRes, createEmtpyTerrainHeights, EMPTY_TERRAIN_GEO } from './TerrainTileUtil';
 import { createMartiniData } from './util/martini';
-import  { isNil, extend, pushIn } from '../util/util';
+import { isNil, extend, pushIn } from '../util/util';
 import TerrainPainter from './TerrainPainter';
 import TerrainLitPainter from './TerrainLitPainter';
 import MaskRendererMixin from '../mask/MaskRendererMixin';
@@ -24,6 +24,21 @@ const TERRAIN_CLEAR = {
     depth: 1,
     stencil: 0
 };
+
+function terrainExaggeration(terrainData, exaggeration = 1) {
+    if (isNil(exaggeration) || !terrainData || !terrainData.mesh || exaggeration === 1) {
+        return;
+    }
+    const positions = terrainData.mesh.positions;
+    if (!positions) {
+        return;
+    }
+    for (let i = 0, len = positions.length; i < len; i += 3) {
+        positions[i + 2] *= exaggeration;
+    }
+}
+
+
 
 class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayerCanvasRenderer) {
 
@@ -148,6 +163,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
 
     _createMesh(tileImage, tileInfo) {
         if (tileImage && tileImage.mesh) {
+            // console.log(tileImage,tileInfo);
             tileImage.terrainMesh = this._painter.createTerrainMesh(tileInfo, tileImage);
             tileInfo.minAltitude = tileImage.data.min;
             tileInfo.maxAltitude = tileImage.data.max;
@@ -383,7 +399,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
             tileImage.skinTileIds = [];
         }
 
-        const isAnimating  = renderer.isAnimating && renderer.isAnimating();
+        const isAnimating = renderer.isAnimating && renderer.isAnimating();
 
         const status = tileImage.skinStatus[skinIndex];
 
@@ -858,7 +874,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
             const terrainData = this._createTerrainFromParent(tile);
             if (terrainData.sourceZoom === -1) {
                 //改为请求maxAvailableZoom上的瓦片
-                const { requests, isFirst, x, y, idx, idy  } = this._getParentTileRequest(tile, true);
+                const { requests, isFirst, x, y, idx, idy } = this._getParentTileRequest(tile, true);
                 requests.add(tile);
                 if (!isFirst) {
                     return terrainData;
@@ -906,6 +922,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
                 return;
             }
             maptalks.Util.extend(terrainData, resource);
+            terrainExaggeration(terrainData, this.layer.options.exaggeration);
 
             // this.consumeTile(terrainData, tile);
             this.onTileLoad(terrainData, tile);
@@ -1071,7 +1088,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         super.abortTileLoading(tileImage, tileInfo);
     }
 
-    onTileError(data, tile)  {
+    onTileError(data, tile) {
         // TODO
         super.onTileError(data, tile);
     }
