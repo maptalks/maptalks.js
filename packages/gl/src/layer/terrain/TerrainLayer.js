@@ -35,7 +35,8 @@ const options = {
     'tileStackStartDepth': 7,
     'tileStackDepth': 6,
     'currentTilesFirst': false,
-    'exaggeration': 1
+    'exaggeration': 1,
+    'colors': []
 };
 
 const EMPTY_TILE_GRIDS = {

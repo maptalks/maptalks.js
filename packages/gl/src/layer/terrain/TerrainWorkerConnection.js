@@ -28,7 +28,8 @@ export default class TerrainWorkerConnection extends maptalks.worker.Actor {
                 type: options.type,
                 accessToken: options.accessToken,
                 cesiumIonTokenURL: options.cesiumIonTokenURL,
-                error: options.error
+                error: options.error,
+                colors: options.colors
             }
         };
         this.send(data, null, (err, data) => {
@@ -55,10 +56,10 @@ export default class TerrainWorkerConnection extends maptalks.worker.Actor {
     addLayer(layerId, options, cb) {
         const data = {
             actorId: this.actorId,
-            mapId : this.mapId,
+            mapId: this.mapId,
             layerId,
-            command : 'addLayer',
-            params : {
+            command: 'addLayer',
+            params: {
             }
         };
 
@@ -82,9 +83,9 @@ export default class TerrainWorkerConnection extends maptalks.worker.Actor {
 
     removeLayer(layerId, options, cb) {
         const data = {
-            mapId : this.mapId,
+            mapId: this.mapId,
             layerId,
-            command : 'removeLayer'
+            command: 'removeLayer'
         };
         this.broadcast(data, null, cb);
     }

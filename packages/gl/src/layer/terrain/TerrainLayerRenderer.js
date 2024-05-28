@@ -568,7 +568,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
             return;
         }
         if (!tileImage.skin) {
-            tileImage.skin = this._createTerrainTexture();
+            tileImage.skin = this._createTerrainTexture(terrainTileInfo, tileImage);
 
         } else {
             TERRAIN_CLEAR.framebuffer = tileImage.skin;
@@ -653,7 +653,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         canvas.width = tileSize;
         canvas.height = tileSize;
         const ctx = canvas.getContext('2d');
-        ctx.font = '40px monospace';
+        ctx.font = '20px monospace';
 
         const color = this.layer.options['debugOutline'];
         ctx.fillStyle = color;
@@ -676,20 +676,34 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         });
     }
 
-    _createTerrainTexture() {
+    _createTerrainTexture(tileInfo, tileImage) {
         const tileSize = this.layer.getTileSize().width;
         // 乘以2是为了瓦片（缩放时）被放大后保持清晰度
         const width = tileSize * 2;
         const height = tileSize * 2;
         const regl = this.regl;
-        const color = regl.texture({
-            min: 'linear',
-            mag: 'linear',
-            type: 'uint8',
-            width,
-            height,
-            flipY: true
-        });
+        const colorsTexture = tileInfo.colorsTexture;
+        let color;
+        if (colorsTexture && colorsTexture instanceof Uint8Array) {
+            color = regl.texture({
+                data: colorsTexture,
+                min: 'linear',
+                mag: 'linear',
+                type: 'uint8',
+                width,
+                height,
+                flipY: true
+            });
+        } else {
+            color = regl.texture({
+                min: 'linear',
+                mag: 'linear',
+                type: 'uint8',
+                width,
+                height,
+                flipY: true
+            });
+        }
         const fboInfo = {
             width,
             height,
@@ -899,7 +913,8 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
             type: layerOptions.type,
             accessToken: layerOptions.accessToken,
             cesiumIonTokenURL: layerOptions.cesiumIonTokenURL,
-            error: error
+            error: error,
+            colors: layerOptions.colors
         };
         this.workerConn.fetchTerrain(terrainUrl, options, (err, resource) => {
             if (this._parentRequests) {
@@ -925,6 +940,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
             terrainExaggeration(terrainData, this.layer.options.exaggeration);
 
             // this.consumeTile(terrainData, tile);
+            tile.colorsTexture = terrainData.colorsTexture;
             this.onTileLoad(terrainData, tile);
         });
         return terrainData;

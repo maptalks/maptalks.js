@@ -2,11 +2,14 @@ import { Ajax } from '@maptalks/gltf-loader';
 import "./zlib.min";
 import { vec2, vec3 } from '@maptalks/reshader.gl';
 import { createMartiniData } from '../util/martini';
+import { ColorIn } from 'colorin';
 // 保存当前的workerId，用于告知主线程结果回传给哪个worker
 let workerId;
 
 let BITMAP_CANVAS = null;
 let BITMAP_CTX = null;
+
+const colorInCache = {};
 
 const terrainRequests = {};
 
@@ -80,7 +83,7 @@ function createHeightMap(heightmap, terrainWidth/*, exag*/) {
     let max = -Infinity;
     for (let i = 0; i < endRow; i++) {
         const row = i >= height ? height - 1 : i;
-        for(let j = 0; j < endColum; j++) {
+        for (let j = 0; j < endColum; j++) {
             const colum = j >= width ? width - 1 : j;
             let heightSample = 0;
             const terrainOffset = row * (width * stride) + colum * stride;
@@ -115,7 +118,7 @@ function decZlibBuffer(zBuffer) {
     return null;
 }
 
-function transformBuffer(zlibData){
+function transformBuffer(zlibData) {
     const DataSize = 2;
     const dZlib = zlibData;
     const height_buffer = new ArrayBuffer(DataSize);
@@ -174,7 +177,7 @@ function generateTiandituTerrain(buffer, terrainWidth) {
 
 
 const textDecoder = new TextDecoder('utf-8');
-function uint8ArrayToString(fileData){
+function uint8ArrayToString(fileData) {
     return textDecoder.decode(fileData);
 }
 
@@ -199,7 +202,7 @@ function generateCesiumTerrain(buffer) {
     // Float64Array.BYTES_PER_ELEMENT * boundingSphereElements;
     const encodedVertexElements = 3;
     const encodedVertexLength =
-    Uint16Array.BYTES_PER_ELEMENT * encodedVertexElements;
+        Uint16Array.BYTES_PER_ELEMENT * encodedVertexElements;
     const triangleElements = 3;
     let bytesPerIndex = Uint16Array.BYTES_PER_ELEMENT;
 
@@ -284,7 +287,7 @@ function generateCesiumTerrain(buffer) {
         positions[i * 3 + 1] = (1 - v);
         positions[i * 3 + 2] = height;
     }
-    return { positions, radius, min: minimumHeight, max: maximumHeight, indices}
+    return { positions, radius, min: minimumHeight, max: maximumHeight, indices }
 }
 
 const P0P1 = [];
@@ -383,7 +386,7 @@ function cesiumTerrainToHeights(cesiumTerrain, terrainWidth) {
         if (triangle) {
             triangle.set(positions, indices[i], indices[i + 1], indices[i + 2], radius * 2);
         } else {
-            triangle = TRIANGLES[index] =  new Triangle(positions, indices[i], indices[i + 1], indices[i + 2], radius * 2);
+            triangle = TRIANGLES[index] = new Triangle(positions, indices[i], indices[i + 1], indices[i + 2], radius * 2);
         }
         index++;
         triangles.push(triangle);
@@ -480,7 +483,7 @@ function fetchTerrain(url, headers, type, terrainWidth, error, cb) {
         if (!res || res.message) {
             if (!res) {
                 // aborted by user
-                cb({ error: { canceled: true }});
+                cb({ error: { canceled: true } });
             } else {
                 cb({ empty: true, originalError: res });
             }
@@ -598,15 +601,93 @@ function mapboxBitMapToHeights(imageData, terrainWidth) {
 
 }
 
+function clearCanvas(ctx) {
+    const canvas = ctx.canvas;
+    const { width, height } = canvas;
+    ctx.clearRect(0, 0, width, height);
+}
+
+function colorTerrain(imgdata, colors) {
+    const key = JSON.stringify(colors);
+    if (!colorInCache[key]) {
+        colorInCache[key] = new ColorIn(colors);
+    }
+    const ci = colorInCache[key];
+    const data = imgdata.data;
+    for (let i = 0, len = data.length; i < len; i += 4) {
+        const R = data[i], G = data[i + 1], B = data[i + 2], A = data[i + 3];
+        let height = 0;
+        //地形解码
+        height = -10000 + ((R * 256 * 256 + G * 256 + B) * 0.1);
+        height = Math.max(height, 0);
+        const [r, g, b] = ci.getColor(height);
+
+        //根据不同的高度设置不同的颜色
+        data[i] = r;
+        data[i + 1] = g;
+        data[i + 2] = b;
+        data[i + 3] = 255;
+    }
+}
+
+function createColorsTexture(data, colors) {
+    if (!colors || !Array.isArray(colors) || colors.length < 2) {
+        return;
+    }
+    if (!data || !data.image) {
+        return null;
+    }
+    let { width, height } = data.image;
+    width *= 2;
+    height *= 2;
+    try {
+        if (!BITMAP_CANVAS) {
+            BITMAP_CANVAS = new OffscreenCanvas(1, 1);
+        }
+        if (!BITMAP_CANVAS) {
+            return;
+        }
+        const canvas = BITMAP_CANVAS;
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        clearCanvas(ctx);
+
+        ctx.drawImage(data.image, 0, 0, width, height);
+        // ctx.font = "bold 48px serif";
+        // ctx.textAlign = 'center';
+        // ctx.fillStyle = 'red';
+        // ctx.fillText('1234', width / 2, height / 2);
+        const imgdata = ctx.getImageData(0, 0, width, height);
+        colorTerrain(imgdata, colors);
+        return new Uint8Array(imgdata.data);
+
+        // https://github.com/regl-project/regl/issues/573
+        // ctx.putImageData(imgdata, 0, 0);
+        // const image = canvas.transferToImageBitmap();
+        // return image;
+    } catch (error) {
+        console.error(error);
+    }
+
+}
+
 export const onmessage = function (message, postResponse) {
     const data = message.data;
     if (data.command === 'addLayer' || data.command === 'removeLayer') {
         // 保存当前worker的workerId。
         workerId = message.workerId;
-        self.postMessage({type: '<response>', actorId: data.actorId, workerId, params: 'ok', callback: message.callback });
+        self.postMessage({ type: '<response>', actorId: data.actorId, workerId, params: 'ok', callback: message.callback });
     } else if (data.command === 'fetchTerrain') {
         //加载地形数据的逻辑
+        const colors = (data.params || {}).colors;
         loadTerrain(data.params, (data, transferables) => {
+            const texture = createColorsTexture(data, colors);
+            if (texture) {
+                data.colorsTexture = texture;
+                transferables = transferables || [];
+                transferables.push(texture.buffer);
+            }
             postResponse(data.error, data, transferables);
         });
     } else if (data.command === 'abortTerrain') {

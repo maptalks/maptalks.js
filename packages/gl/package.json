@@ -32,7 +32,8 @@
     "@maptalks/martini": "^0.4.0",
     "@maptalks/regl": "^3.3.5",
     "@maptalks/reshader.gl": "workspace:@maptalks/reshader.gl@*",
-    "color": "^3.0.0"
+    "color": "^3.0.0",
+    "colorin": "^0.6.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
