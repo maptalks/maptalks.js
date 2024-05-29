@@ -17,7 +17,8 @@ const wheelZoomRate = 1 / 450;
 const maxScalePerFrame = 2;
 
 class MapScrollWheelZoomHandler extends Handler {
-    _thisScrollZoom: number
+    private _thisScrollZoom: () => void
+    private _thisCheckIfEndZoom: () => void
     _wheelZoomRate: number
     _defaultZoomRate: number
     _delta: number
@@ -25,16 +26,17 @@ class MapScrollWheelZoomHandler extends Handler {
     _trackPadSuspect: number
     _ensureTrackpad: boolean
     _active: boolean
-    _timeout: NodeJS.Timeout
     _requesting: number
     _startZoom: number
     _origin: any
     _zoomOrigin: any
     _lastWheelEvent: any
+    private _scrollTime: number
 
     constructor(target) {
         super(target);
         this._thisScrollZoom = this._scrollZoom.bind(this);
+        this._thisCheckIfEndZoom = this._checkIfEndZoom.bind(this);
         this._wheelZoomRate = wheelZoomRate;
         this._defaultZoomRate = defaultZoomRate;
         this._delta = 0;
@@ -133,14 +135,23 @@ class MapScrollWheelZoomHandler extends Handler {
         const targetZoom = map.getZoomForScale(scale, zoom, true);
         this._delta = 0;
         map.onZooming(targetZoom, this._zoomOrigin);
-        if (this._timeout) {
-            clearTimeout(this._timeout);
+        this._scrollTime = performance.now();
+        map.getRenderer().callInNextFrame(this._thisCheckIfEndZoom);
+    }
+
+    _checkIfEndZoom() {
+        if (!this._zooming) {
+            return;
         }
-        this._timeout = setTimeout(() => {
+        const map = this.target;
+
+        const currentTime = performance.now();
+        if (currentTime - this._scrollTime > 210) {
             this._zooming = false;
-            delete this._timeout;
             map.onZoomEnd(map.getZoom(), this._zoomOrigin);
-        }, 210);
+        } else {
+            map.getRenderer().callInNextFrame(this._thisCheckIfEndZoom);
+        }
     }
 
     _interval(evt, origin) {
