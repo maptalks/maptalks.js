@@ -28,6 +28,7 @@ class Mesh {
     private _dirtyGeometry: boolean
     private _options?: MeshOptions
     private _materialVer?: number
+    private _materialPropVer?: number
     private _dirtyProps?: string[]
     private _defines?: ShaderDefines
     private _bakDefines?: ShaderDefines
@@ -37,6 +38,7 @@ class Mesh {
     private _bbox?: BoundingBox
     private _geoBox?: BoundingBox
     private _bboxArr?: [vec3, vec3]
+    private _uniformDescriptors?: Set<string>
 
     transparent: boolean
     bloom: boolean
@@ -300,6 +302,7 @@ class Mesh {
 
     getUniforms(regl: Regl): ShaderUniforms {
         if (this._dirtyUniforms || this._dirtyGeometry || this._material && this._materialVer !== this._material.version) {
+            this._uniformDescriptors = new Set<string>();
             this._realUniforms = {
             };
             this._prepareUniformsForDraco();
@@ -308,6 +311,7 @@ class Mesh {
                 if (hasOwn(this.uniforms, p)) {
                     const descriptor = Object.getOwnPropertyDescriptor(uniforms, p);
                     if (descriptor.get) {
+                        this._uniformDescriptors.add(p);
                         Object.defineProperty(this._realUniforms, p, {
                             enumerable: true,
                             configurable: true,
@@ -326,6 +330,7 @@ class Mesh {
                     if (hasOwn(materialUniforms, p) && !hasOwn(this._realUniforms, p)) {
                         const descriptor = Object.getOwnPropertyDescriptor(materialUniforms, p);
                         if (descriptor.get) {
+                            this._uniformDescriptors.add(p);
                             Object.defineProperty(this._realUniforms, p, {
                                 enumerable: true,
                                 configurable: true,
@@ -343,23 +348,27 @@ class Mesh {
             this._dirtyUniforms = false;
             this._dirtyGeometry = false;
             this._materialVer = this._material && this._material.version;
-            this._material && this._material._clearDirtyProps();
+            this._materialPropVer = this._material && this._material.propVersion;
             this._dirtyProps = null;
-        } else if (this._dirtyProps || this._material && this._material._getDirtyProps()) {
+        } else if (this._dirtyProps || this._material && this._material.propVersion !== this._materialPropVer) {
             if (this._dirtyProps) {
                 for (const p of this._dirtyProps) {
                     this._realUniforms[p] = this.uniforms[p];
                 }
             }
-            const matDirtyProps = this._material && this._material._getDirtyProps();
-            if (matDirtyProps) {
-                const materialUniforms = this._material.getUniforms(regl);
-                for (const p of matDirtyProps) {
-                    this._realUniforms[p] = materialUniforms[p];
-                }
-                this._material._clearDirtyProps();
-            }
+            if (this._material && this._material.propVersion !== this._materialPropVer) {
+              const materialUniforms = this._material.getUniforms(regl);
+              for (const p in materialUniforms) {
+                  if (hasOwn(materialUniforms, p) && !this._uniformDescriptors.has(p)) {
+                      const descriptor = Object.getOwnPropertyDescriptor(materialUniforms, p);
+                      if (!descriptor.get && this._realUniforms[p] !== materialUniforms[p]) {
+                        this._realUniforms[p] = materialUniforms[p];
+                      }
+                  }
+              }
 
+              this._materialPropVer = this._material.propVersion;
+            }
             this._dirtyProps = null;
         }
         this._realUniforms['modelMatrix'] = this.localTransform;
