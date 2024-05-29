@@ -70,8 +70,8 @@ const CommonProjection = {
             const antiMeridianEnable = antiMeridian !== false;
             const circum = this.getCircum();
             const extent = this.getSphereExtent(),
-              sx = extent.sx,
-              sy = extent.sy;
+                sx = extent.sx,
+                sy = extent.sy;
             let wrapX, wrapY;
             let pre = coordinates[0], current, dx, dy, p;
             const prj = [this.project(pre)];
@@ -81,13 +81,19 @@ const CommonProjection = {
                 dy = current.y - pre.y;
                 p = this.project(current);
                 if (Math.abs(dx) > 180 && antiMeridianEnable) {
-                    if (wrapX === undefined) {
-                        wrapX = current.x > pre.x;
+                    if (dx < 0) {
+                        current.x = 180 + 180 - Math.abs(current.x);
+                    } else {
+                        current.x = -180 - (180 - Math.abs(current.x));
                     }
-                    if (wrapX) {
-                        p._add(-circum.x * sign(dx) * sx, 0);
-                        current._add(-360 * sign(dx), 0);
-                    }
+                    p = this.project(current);
+                    // if (wrapX === undefined) {
+                    //     wrapX = current.x > pre.x;
+                    // }
+                    // if (wrapX) {
+                    //     // p._add(-circum.x * sign(dx) * sx, 0);
+                    //     // current._add(-360 * sign(dx), 0);
+                    // }
                 }
                 if (Math.abs(dy) > 90 && antiMeridianEnable) {
                     if (wrapY === undefined) {
@@ -184,7 +190,7 @@ const CommonProjection = {
     getSphereExtent(): Extent {
         if (!this.extent && this.isSphere()) {
             const max = this.project(new Coordinate(180, 90)),
-              min = this.project(new Coordinate(-180, -90));
+                min = this.project(new Coordinate(-180, -90));
             this.extent = new Extent(min, max, this);
             this.extent.sx = max.x > min.x ? 1 : -1;
             this.extent.sy = max.y > min.y ? 1 : -1;
