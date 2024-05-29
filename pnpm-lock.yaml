@@ -95,6 +95,9 @@ importers:
       color:
         specifier: ^3.0.0
         version: 3.2.1
+      colorin:
+        specifier: ^0.6.0
+        version: 0.6.0
     devDependencies:
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
@@ -1468,6 +1471,9 @@ packages:
 
   colorin@0.2.0:
     resolution: {integrity: sha512-sdsDdBwR1PF5fMABS1p7tyy0LRk4mAkw4BUI+zjXlmhQ9nQnjnHOOe9e099F4FxfJl0DHCbvgabR2w4/zTajyw==}
+
+  colorin@0.6.0:
+    resolution: {integrity: sha512-huI54MwKNMP6eypurqzxGf7rvTA3pNWdXZopQbN7v3TDxXYWyyGQ3CtQndNZ2Z0Gy6HDWqA7sRYxbjRDO2FZMA==}
 
   commander@2.20.3:
     resolution: {integrity: sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==}
@@ -3799,6 +3805,8 @@ snapshots:
       color-string: 1.9.1
 
   colorin@0.2.0: {}
+
+  colorin@0.6.0: {}
 
   commander@2.20.3: {}
 
