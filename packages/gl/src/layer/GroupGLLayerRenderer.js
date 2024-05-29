@@ -1,7 +1,7 @@
 import * as maptalks from 'maptalks';
 import { vec2, vec3, mat4 } from '@maptalks/reshader.gl';
 import { GLContext } from '@maptalks/fusiongl';
-import ShadowPass from './shadow/ShadowProcess';
+import ShadowProcess from './shadow/ShadowProcess';
 import * as reshader from '@maptalks/reshader.gl';
 import createREGL from '@maptalks/regl';
 import GroundPainter from './GroundPainter';
@@ -507,7 +507,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this._jitGetter = new reshader.Jitter(ratio);
         this._postProcessor = new PostProcess(this.regl, this.layer, this._jitGetter);
 
-        this._shadowPass = new ShadowPass(this.regl, sceneConfig, this.layer);
+        this._shadowProcess = new ShadowProcess(this.regl, this.layer);
     }
 
     _initGL() {
@@ -667,9 +667,9 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this._envPainter.dispose();
             delete this._envPainter;
         }
-        if (this._shadowPass) {
-            this._shadowPass.dispose();
-            delete this._shadowPass;
+        if (this._shadowProcess) {
+            this._shadowProcess.dispose();
+            delete this._shadowProcess;
         }
         if (this._postProcessor) {
             this._postProcessor.dispose();
@@ -1029,19 +1029,19 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
     _prepareShadowContext(context) {
         const sceneConfig =  this.layer._getSceneConfig();
         if (!sceneConfig || !sceneConfig.shadow || !sceneConfig.shadow.enable) {
-            if (this._shadowPass) {
-                this._shadowPass.dispose();
-                delete this._shadowPass;
+            if (this._shadowProcess) {
+                this._shadowProcess.dispose();
+                delete this._shadowProcess;
             }
             return null;
         }
-        if (!this._shadowPass) {
-            this._shadowPass = new ShadowPass(this.regl, this.layer._getSceneConfig() || {}, this.layer);
+        if (!this._shadowProcess) {
+            this._shadowProcess = new ShadowProcess(this.regl, this.layer._getSceneConfig() || {}, this.layer);
         }
         const shadow = {
             config: sceneConfig.shadow,
-            defines: this._shadowPass.getDefines(),
-            uniformDeclares: ShadowPass.getUniformDeclares()
+            defines: this._shadowProcess.getDefines(),
+            uniformDeclares: ShadowProcess.getUniformDeclares()
         };
         shadow.renderUniforms = this._renderShadow(context);
         return shadow;
@@ -1084,8 +1084,8 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const lightManager = map.getLightManager();
         const lightDirection = lightManager && lightManager.getDirectionalLight().direction || DEFAULT_LIGHT_DIRECTION;
         const displayShadow = !sceneConfig.ground || !sceneConfig.ground.enable;
-        const uniforms = this._shadowPass.render(displayShadow, map.projMatrix, map.viewMatrix, shadowConfig.color, shadowConfig.opacity, lightDirection, this._shadowScene, this._jitter, fbo, forceUpdate);
-        // if (this._shadowPass.isUpdated()) {
+        const uniforms = this._shadowProcess.render(displayShadow, map.projMatrix, map.viewMatrix, shadowConfig.color, shadowConfig.opacity, lightDirection, this._shadowScene, this._jitter, fbo, forceUpdate);
+        // if (this._shadowProcess.isUpdated()) {
         //     this.setRetireFrames();
         // }
         return uniforms;

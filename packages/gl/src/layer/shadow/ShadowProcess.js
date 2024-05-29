@@ -24,9 +24,8 @@ class ShadowProcess {
         return uniforms;
     }
 
-    constructor(regl, sceneConfig, layer) {
+    constructor(regl, layer) {
         this.renderer = new reshader.Renderer(regl);
-        this.sceneConfig = sceneConfig;
         this._esmShadowThreshold = 0.3;
         this._layer = layer;
         this._init();
@@ -39,7 +38,19 @@ class ShadowProcess {
     }
 
     _init() {
-        const shadowConfig = this.sceneConfig.shadow || {};
+        const sceneConfig =  this._layer._getSceneConfig() || {};
+        const shadowConfig = sceneConfig.shadow || {};
+        const shadowRes = this._getShadowRes();
+        const defines = this.getDefines();
+        this._shadowPass = new reshader.ShadowPass(this.renderer, { width: shadowRes, height: shadowRes, blurOffset: shadowConfig.blurOffset, defines });
+        this._shadowDisplayShader = new reshader.ShadowDisplayShader(defines);
+
+        this._createGround();
+    }
+
+    _getShadowRes() {
+        const sceneConfig =  this._layer._getSceneConfig() || {};
+        const shadowConfig = sceneConfig.shadow || {};
         let shadowRes = 2048;
         const quality = shadowConfig.quality;
         if (quality === 'medium') {
@@ -47,11 +58,7 @@ class ShadowProcess {
         } else if (quality === 'low') {
             shadowRes = 512;
         }
-        const defines = this.getDefines();
-        this._shadowPass = new reshader.ShadowPass(this.renderer, { width: shadowRes, height: shadowRes, blurOffset: shadowConfig.blurOffset, defines });
-        this._shadowDisplayShader = new reshader.ShadowDisplayShader(defines);
-
-        this._createGround();
+        return shadowRes;
     }
 
     getDefines() {
@@ -66,9 +73,13 @@ class ShadowProcess {
     render(displayShadow, projMatrix, viewMatrix, color, opacity, lightDirection, scene, halton, framebuffer, forceRefresh) {
         this._transformGround();
         const map = this._layer.getMap();
-        const changed = forceRefresh || this._shadowChanged(map, scene, !!displayShadow) || true;
+        const shadowRes = this._getShadowRes();
+        const changed = forceRefresh || shadowRes !== this._shadowPass.width || this._shadowChanged(map, scene, !!displayShadow);
         let matrix, smap;
         if (changed) {
+            if (shadowRes !== this._shadowPass.width) {
+                this._shadowPass.resize(shadowRes, shadowRes);
+            }
             this._tempMat0 = this._tempMat0 || [];
             this._tempMat1 = this._tempMat1 || [];
             const cameraProjViewMatrix = mat4.multiply(this._tempMat0, projMatrix, viewMatrix);

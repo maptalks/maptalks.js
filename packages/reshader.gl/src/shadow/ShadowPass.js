@@ -29,10 +29,12 @@ class ShadowPass {
             this.depthTex.resize(width, height);
             this.depthFBO.resize(width, height);
         }
+        this.width = width;
         if (this.blurFBO) {
             this.blurTex.resize(width, height);
             this.blurFBO.resize(width, height);
         }
+        this.height = height;
         return this;
     }
 
