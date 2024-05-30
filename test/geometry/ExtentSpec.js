@@ -51,30 +51,30 @@ describe('ExtentSpec', function () {
             var subed2 = extent.sub([1, 1]);
             var subed3 = extent.sub(new maptalks.Point(1, 1));
             var subed4 = extent.substract([1, 1]);
-            var subed5 = extent.sub({ xmin : 1, ymin : 2, xmax : 3, ymax : 4 });
+            var subed5 = extent.sub({ xmin: 1, ymin: 2, xmax: 3, ymax: 4 });
             expect(subed2.toJSON()).to.eql({
-                'xmin':0,
-                'ymin':1,
-                'xmax':2,
-                'ymax':3
+                'xmin': 0,
+                'ymin': 1,
+                'xmax': 2,
+                'ymax': 3
             });
             expect(subed3.toJSON()).to.eql({
-                'xmin':0,
-                'ymin':1,
-                'xmax':2,
-                'ymax':3
+                'xmin': 0,
+                'ymin': 1,
+                'xmax': 2,
+                'ymax': 3
             });
             expect(subed4.toJSON()).to.eql({
-                'xmin':0,
-                'ymin':1,
-                'xmax':2,
-                'ymax':3
+                'xmin': 0,
+                'ymin': 1,
+                'xmax': 2,
+                'ymax': 3
             });
             expect(subed5.toJSON()).to.eql({
-                'xmin':0,
-                'ymin':0,
-                'xmax':0,
-                'ymax':0
+                'xmin': 0,
+                'ymin': 0,
+                'xmax': 0,
+                'ymax': 0
             });
         });
 
@@ -82,24 +82,24 @@ describe('ExtentSpec', function () {
             var extent = new maptalks.Extent(1, 2, 3, 4);
             var subed2 = extent.add([1, 1]);
             var subed3 = extent.add(new maptalks.Point(1, 1));
-            var subed4 = extent.add({ xmin : 1, ymin : 2, xmax : 3, ymax : 4 });
+            var subed4 = extent.add({ xmin: 1, ymin: 2, xmax: 3, ymax: 4 });
             expect(subed2.toJSON()).to.eql({
-                'xmin':2,
-                'ymin':3,
-                'xmax':4,
-                'ymax':5
+                'xmin': 2,
+                'ymin': 3,
+                'xmax': 4,
+                'ymax': 5
             });
             expect(subed3.toJSON()).to.eql({
-                'xmin':2,
-                'ymin':3,
-                'xmax':4,
-                'ymax':5
+                'xmin': 2,
+                'ymin': 3,
+                'xmax': 4,
+                'ymax': 5
             });
             expect(subed4.toJSON()).to.eql({
-                'xmin':2,
-                'ymin':4,
-                'xmax':6,
-                'ymax':8
+                'xmin': 2,
+                'ymin': 4,
+                'xmax': 6,
+                'ymax': 8
             });
         });
 
@@ -107,18 +107,18 @@ describe('ExtentSpec', function () {
             var extent = new maptalks.Extent(1.1, 2.5, 3.3, 4.2);
             var rounded = extent.round();
             expect(rounded.toJSON()).to.eql({
-                'xmin':1,
-                'ymin':3,
-                'xmax':3,
-                'ymax':4
+                'xmin': 1,
+                'ymin': 3,
+                'xmax': 3,
+                'ymax': 4
             });
             expect(extent.xmin).to.be.eql(1.1);
             extent._round();
             expect(extent.toJSON()).to.eql({
-                'xmin':1,
-                'ymin':3,
-                'xmax':3,
-                'ymax':4
+                'xmin': 1,
+                'ymin': 3,
+                'xmax': 3,
+                'ymax': 4
             });
         });
 
@@ -126,10 +126,10 @@ describe('ExtentSpec', function () {
             var extent = new maptalks.Extent(1.1, 2.5, 3.3, 4.2);
             var copied = extent.copy();
             expect(copied.toJSON()).to.eql({
-                'xmin':1.1,
-                'ymin':2.5,
-                'xmax':3.3,
-                'ymax':4.2
+                'xmin': 1.1,
+                'ymin': 2.5,
+                'xmax': 3.3,
+                'ymax': 4.2
             });
         });
 
@@ -168,10 +168,10 @@ describe('ExtentSpec', function () {
             var ext1 = new maptalks.Extent(1, 2, 3, 4);
             var json = ext1.toJSON();
             expect(json).to.eql({
-                'xmin':1,
-                'ymin':2,
-                'xmax':3,
-                'ymax':4
+                'xmin': 1,
+                'ymin': 2,
+                'xmax': 3,
+                'ymax': 4
             });
         });
 
@@ -201,7 +201,7 @@ describe('ExtentSpec', function () {
         it('contains with projection', function () {
             var ext = new maptalks.Extent([-170, -80, 170, 80], maptalks.projection.EPSG3857);
 
-            expect(ext.contains(new maptalks.Coordinate([-0.113049,51.49856]))).to.be.ok();
+            expect(ext.contains(new maptalks.Coordinate([-0.113049, 51.49856]))).to.be.ok();
         });
     });
 
@@ -265,7 +265,7 @@ describe('ExtentSpec', function () {
         it('should contain', function () {
             var container = document.createElement('div');
             var map = new maptalks.Map(container, {
-                center: [104,31],
+                center: [104, 31],
                 zoom: 3
             });
             var center = map.getCenter(),
@@ -277,9 +277,16 @@ describe('ExtentSpec', function () {
         it('should intersect', function () {
             var proj = maptalks.projection.EPSG3857;
             var ext1 = new maptalks.Extent(170, 80, -170, -80, proj);
+            ext1.antiMeridian = true;
+            
+            //相当于 [170,80,190,-80],注意没有设置投影，所以 antiMeridian不生效
             var ext2 = new maptalks.Extent(-180, 85, -180, 85);
-            expect(ext1.intersects(ext2)).to.be.ok();
-            expect(ext1.intersects(new maptalks.Extent(150, 10, -160, 20))).to.not.be.ok();
+            ext2.antiMeridian = true;
+            expect(ext1.intersects(ext2)).not.to.be.ok();
+
+            const ext3 = new maptalks.Extent(150, 10, -160, 20);
+            ext3.antiMeridian = true;
+            expect(ext1.intersects(ext3)).not.to.be.ok();
 
         });
 
@@ -287,11 +294,17 @@ describe('ExtentSpec', function () {
             var proj = maptalks.projection.EPSG3857;
             var ext1 = new maptalks.Extent(-170, -50, 170, 80, proj);
             var ext2 = new maptalks.Extent(175, -40, -160, 80, proj);
+            ext1.antiMeridian = true;
+            ext2.antiMeridian = true;
             var combined = ext1.combine(ext2);
 
-            expect(combined.xmin).to.eql(175);
+            // expect(combined.xmin).to.eql(175);
+            // expect(combined.ymin).to.approx(-50);
+            // expect(combined.xmax).to.eql(170);
+
+            expect(combined.xmin).to.eql(-190);
             expect(combined.ymin).to.approx(-50);
-            expect(combined.xmax).to.eql(170);
+            expect(combined.xmax).to.eql(200);
             //FIXME
             // expect(combined.ymax).to.eql(-10);
         });

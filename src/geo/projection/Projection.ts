@@ -67,12 +67,16 @@ const CommonProjection = {
         if (Array.isArray(coordinates[0])) {
             return coordinates.map(coords => this.projectCoords(coords, antiMeridian));
         } else {
-            const antiMeridianEnable = antiMeridian !== false;
+            const antiMeridianEnable = antiMeridian;
             const circum = this.getCircum();
-            const extent = this.getSphereExtent(),
-                sx = extent.sx,
-                sy = extent.sy;
-            let wrapX, wrapY;
+            // const extent = this.getSphereExtent(),
+            //     sx = extent.sx,
+            //     sy = extent.sy;
+            // let wrapX, wrapY;
+
+            const extent = this.getSphereExtent();
+            const sy = extent.sy;
+            let wrapY;
             let pre = coordinates[0], current, dx, dy, p;
             const prj = [this.project(pre)];
             for (let i = 1, l = coordinates.length; i < l; i++) {
@@ -80,13 +84,18 @@ const CommonProjection = {
                 dx = current.x - pre.x;
                 dy = current.y - pre.y;
                 p = this.project(current);
+                let isAntiMeridian = false;
                 if (Math.abs(dx) > 180 && antiMeridianEnable) {
+                    //正轴无限扩展
+                    // [[170, 80], [-170, 80]]
                     if (dx < 0) {
                         current.x = 180 + 180 - Math.abs(current.x);
                     } else {
+                        //负轴无限扩展
+                        // [[-170, 80], [170, 80]]
                         current.x = -180 - (180 - Math.abs(current.x));
                     }
-                    p = this.project(current);
+                    isAntiMeridian = true;
                     // if (wrapX === undefined) {
                     //     wrapX = current.x > pre.x;
                     // }
@@ -103,6 +112,9 @@ const CommonProjection = {
                         p._add(0, -circum.y * sign(dy) * sy);
                         current._add(0, -180 * sign(dy));
                     }
+                }
+                if (isAntiMeridian) {
+                    p = this.project(current);
                 }
                 pre = current;
                 prj.push(p);
