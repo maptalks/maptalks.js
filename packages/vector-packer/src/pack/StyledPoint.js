@@ -75,7 +75,7 @@ export default class StyledPoint {
                 );
             }
         } else if (iconGlyph && iconGlyph.icon) {
-            if (!iconAtlas.positions[iconGlyph.icon.url]) {
+            if (!iconAtlas || !iconAtlas.positions[iconGlyph.icon.url]) {
                 //图片没有载入成功
                 return null;
             }
