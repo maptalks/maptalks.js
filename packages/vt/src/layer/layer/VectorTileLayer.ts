@@ -15,8 +15,7 @@ import { compress, uncompress } from "./Compress";
 import { extend, hasOwn, isNil, isObject, isString } from "../../common/Util";
 
 import Ajax from "../../worker/util/Ajax";
-import type { PositionArray } from "maptalks/dist/geo/Position";
-import type { TileLayerOptionsType } from "maptalks/dist/layer/tile/TileLayer";
+import type { PositionArray, TileLayerOptionsType } from "maptalks";
 import VectorTileLayerRenderer from "../renderer/VectorTileLayerRenderer";
 import { isFunctionDefinition } from "@maptalks/function-type";
 
@@ -78,7 +77,7 @@ const defaultOptions: VectorTileLayerOptionsType = {
   // A property to use as a feature id (for feature state)
   // https://docs.mapbox.com/style-spec/reference/sources/#vector-promoteId
   featureIdProperty: null,
-  currentTilesFirst: false,
+  currentTilesFirst: true,
 };
 
 /**
@@ -1839,7 +1838,7 @@ export type VectorTileLayerOptionsType = {
   // A property to use as a feature id (for feature state)
   // https://docs.mapbox.com/style-spec/reference/sources/#vector-promoteId
   featureIdProperty?: string,
-  currentTilesFirst?: false,
+  currentTilesFirst?: true,
 
   style?: any
 } & TileLayerOptionsType;
