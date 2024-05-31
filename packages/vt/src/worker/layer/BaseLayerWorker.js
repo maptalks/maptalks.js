@@ -19,7 +19,7 @@ export default class BaseLayerWorker {
         this._compileStyle(options.style);
         this.requests = {};
         this._cache = tileCache;
-        this._styleCounter = 0;
+        this._styleCounter = 1;
         this.loadings = tileLoading;
     }
 
@@ -124,7 +124,7 @@ export default class BaseLayerWorker {
                 cb(null, { canceled: true });
                 return;
             }
-            data.data.style = context.styleCounter;
+            data.data.styleCounter = context.styleCounter;
             if (props) {
                 extend(data.data, props);
             }
@@ -365,7 +365,10 @@ export default class BaseLayerWorker {
             promises.push(promise);
         }
 
-        return Promise.all(promises).then(([styleCount, ...tileDatas]) => {
+        return Promise.all(promises).then(([styleCounter, ...tileDatas]) => {
+            if (styleCounter !== this._styleCounter) {
+                return { canceled: true };
+            }
             function handleTileData(tileData, i) {
                 if (tileData.data.ref !== undefined) {
                     return;
@@ -378,9 +381,6 @@ export default class BaseLayerWorker {
                         buffers.push(tileData.buffers[i]);
                     }
                 }
-            }
-            if (styleCount !== this._styleCounter) {
-                return { canceled: true };
             }
             for (let i = 0; i < tileDatas.length; i++) {
                 if (!tileDatas[i]) {
@@ -492,6 +492,7 @@ export default class BaseLayerWorker {
             }
             return {
                 data: {
+                    styleCounter,
                     schema,
                     data,
                     featureData,
