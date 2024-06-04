@@ -19,7 +19,8 @@ export type DrawToolOptions = {
     doubleClickZoom?: boolean,
     ignoreMouseleave?: boolean,
     enableAltitude?: boolean,
-    blockMouseInteraction?: boolean
+    blockMouseInteraction?: boolean,
+    edgeAutoComplete?: boolean
 }
 
 export type modeActionType = {
