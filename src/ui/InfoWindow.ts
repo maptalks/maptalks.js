@@ -168,6 +168,7 @@ class InfoWindow extends UIComponent {
                 newDom = this.options['content'];
             }
             this._bindDomEvents(newDom, 'on');
+            this._appendCustomClass(newDom);
             return newDom;
         }
         this._bindDomEvents(this.getDOM(), 'off');
@@ -205,6 +206,7 @@ class InfoWindow extends UIComponent {
             this._replaceTemplate(msgContent);
         }
         this._bindDomEvents(dom, 'on');
+        this._appendCustomClass(dom);
         return dom;
     }
 
@@ -342,7 +344,7 @@ class InfoWindow extends UIComponent {
         return mouseCoordinate;
     }
 
-    _rectifyLineStringMouseCoordinate(lineString: LineString, mouseCoordinate:Coordinate) {
+    _rectifyLineStringMouseCoordinate(lineString: LineString, mouseCoordinate: Coordinate) {
         const map = this.getMap();
         const coordinates = lineString.getCoordinates() || [];
         const glRes = map.getGLRes();

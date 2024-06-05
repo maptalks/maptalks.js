@@ -102,6 +102,7 @@ class Menu extends UIComponent {
             if (isString(this.options['items'])) {
                 const container = createEl('div');
                 container.innerHTML = this.options['items'];
+                this._appendCustomClass(container);
                 return container;
             } else {
                 return this.options['items'] as any;
@@ -118,6 +119,7 @@ class Menu extends UIComponent {
             // dom.appendChild(arrow);
             dom.appendChild(menuItems);
             on(dom, 'contextmenu', preventDefault);
+            this._appendCustomClass(dom);
             return dom;
         }
     }

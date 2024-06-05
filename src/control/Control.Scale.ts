@@ -56,6 +56,7 @@ class Scale extends Control {
         if (this._map.isLoaded()) {
             this._update();
         }
+        this._appendCustomClass(this._scaleContainer);
         return this._scaleContainer;
     }
 
