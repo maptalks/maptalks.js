@@ -344,13 +344,13 @@ export default class TileMeshPainter {
             if (isLeaf && selectionDepth === 255) {
                 // 独立的叶子节点
                 if (uniforms.stencilEnable) {
+                    // 清除stencil，避免上一次分支绘制的stencil影响本次绘制
+                    this._clearStencil(fbo);
                     // sceneMeshes中是某个分支下的非独立叶子节点 + 父亲节点
                     // 这种情况一般出现在某个分支的子节点不满足要求（没有下载下来或者error不符合设定），需要将父亲节点与子节点一起绘制
                     // 绘制分支下的非独立节点需要开启stencil，先绘制叶子节点，再绘制父亲节点，保证父节点的绘制不会覆盖掉子节点
                     this._modelScene.setMeshes(sceneMeshes);
                     drawCount += this._renderer.render(shader, uniforms, this._modelScene, fbo);
-                    // 清除stencil，避免影响下一次分支非独立节点的绘制
-                    this._clearStencil(fbo);
                     sceneMeshes.length = 0;
                     uniforms.stencilEnable = false;
                 }
