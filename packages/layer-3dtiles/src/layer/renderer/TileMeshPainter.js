@@ -170,7 +170,6 @@ export default class TileMeshPainter {
         const pntsMeshes = [];
         const i3dmMeshes = [];
 
-        const levelMap = this._getLevelMap(tiles);
         for (let i = 0, l = tiles.length; i < l; i++) {
             const node = tiles[i].data.node;
             let mesh = this._getMesh(node);
@@ -237,7 +236,8 @@ export default class TileMeshPainter {
                 // mesh[ii].setUniform('id', node.id);
                 // mesh[ii].setUniform('polygonOffset', polygonOffset);
                 mesh[ii].properties.isLeaf = !!leafs[node.id];
-                mesh[ii].properties.level = levelMap.get(node._level);
+                // GroupGLLayer中，stencil默认值为0xFF，与GroupGLLayer保持一致
+                mesh[ii].properties.selectionDepth = 255 - tiles[i].selectionDepth;
                 mesh[ii].properties.polygonOffset = polygonOffset;
                 // if (!Object.prototype.hasOwnProperty.call(mesh[ii].uniforms, 'ambientColor')) {
                 //     Object.defineProperty(mesh[ii].uniforms, 'ambientColor', {
@@ -321,8 +321,6 @@ export default class TileMeshPainter {
     _callShader(shader, uniforms, filter, renderTarget, parentMeshes, meshes, i3dmMeshes) {
         shader.filter = filter.filter(fn => !!fn);
 
-
-        uniforms['debug'] = false;
         // this._modelScene.sortFunction = this._sort.bind(this);
         // this._modelScene.setMeshes(meshes);
 
@@ -334,12 +332,52 @@ export default class TileMeshPainter {
 
 
         // uniforms['stencilEnable'] = true;
-        uniforms['debug'] = false;
+        uniforms.stencilEnable = false;
         // uniforms['cullFace'] = 'back';
         // uniforms['colorMask'] = colorOn;
+        const fbo = renderTarget && renderTarget.fbo;
         let drawCount = 0;
-        this._modelScene.setMeshes(meshes);
-        drawCount += this._renderer.render(shader, uniforms, this._modelScene, renderTarget && renderTarget.fbo);
+
+        const sceneMeshes = [];
+        for (let i = 0; i < meshes.length; i++) {
+            const { isLeaf, selectionDepth } = meshes[i].properties;
+            if (isLeaf && selectionDepth === 255) {
+                // 独立的叶子节点
+                if (uniforms.stencilEnable) {
+                    // sceneMeshes中是某个分支下的非独立叶子节点 + 父亲节点
+                    // 这种情况一般出现在某个分支的子节点不满足要求（没有下载下来或者error不符合设定），需要将父亲节点与子节点一起绘制
+                    // 绘制分支下的非独立节点需要开启stencil，先绘制叶子节点，再绘制父亲节点，保证父节点的绘制不会覆盖掉子节点
+                    this._modelScene.setMeshes(sceneMeshes);
+                    drawCount += this._renderer.render(shader, uniforms, this._modelScene, fbo);
+                    // 清除stencil，避免影响下一次分支非独立节点的绘制
+                    this._clearStencil(fbo);
+                    sceneMeshes.length = 0;
+                    uniforms.stencilEnable = false;
+                }
+                sceneMeshes.push(meshes[i]);
+            } else {
+                // 某个分支下的非独立节点
+                if (!uniforms.stencilEnable) {
+                    // sceneMeshes中都是独立节点
+                    // 关闭stencil直接绘制
+                    this._modelScene.setMeshes(sceneMeshes);
+                    drawCount += this._renderer.render(shader, uniforms, this._modelScene, fbo);
+                    sceneMeshes.length = 0;
+                    uniforms.stencilEnable = true;
+                }
+                sceneMeshes.push(meshes[i]);
+            }
+            if (i === meshes.length - 1) {
+                this._modelScene.setMeshes(sceneMeshes);
+                drawCount += this._renderer.render(shader, uniforms, this._modelScene, fbo);
+            }
+        }
+        // pick功能需要把meshes设置到modelScene中，为了避免pick逻辑出错，这里暂时只允许选择叶子节点
+        //FIXME 因为父亲节点不在modelScene中，会出现父亲节点无法被选中的问题
+        this._modelScene.setMeshes(meshes.filter(m => m.properties.isLeaf));
+
+        // this._modelScene.setMeshes(meshes);
+        // drawCount += this._renderer.render(shader, uniforms, this._modelScene, renderTarget && renderTarget.fbo);
 
 
         // uniforms['stencilEnable'] = true;
@@ -347,6 +385,13 @@ export default class TileMeshPainter {
         this._i3dmScene.setMeshes(i3dmMeshes);
         drawCount += this._renderer.render(shader, uniforms, this._i3dmScene, renderTarget && renderTarget.fbo);
         return drawCount;
+    }
+
+    _clearStencil(fbo) {
+        this._regl.clear({
+            stencil: 0xFF,
+            framebuffer: fbo
+        });
     }
 
     getCurrentB3DMMeshes() {
@@ -1624,13 +1669,13 @@ export default class TileMeshPainter {
                 }*/
             },
             stencil: {
-                enable: true,
+                enable: (_, props) => {
+                    return props.stencilEnable;
+                },
                 func: {
-                    cmp: (_, props) => {
-                        return props.meshProperties.isLeaf ? 'always' : '>=';
-                    },
+                    cmp: '>=',
                     ref: (_, props) => {
-                        return props.meshProperties.level;
+                        return props.meshProperties.selectionDepth;
                     },
                     // mask: 0xff
                 },
@@ -2005,26 +2050,6 @@ export default class TileMeshPainter {
             point,
             coordinate
         };
-    }
-
-    _getLevelMap(tiles) {
-        let levels = new Set();
-        for (let i = 0, l = tiles.length; i < l; i++) {
-            const node = tiles[i].data.node;
-            const mesh = this._getMesh(node);
-            if (!mesh) {
-                continue;
-            }
-            levels.add(node._level);
-        }
-        levels = Array.from(levels);
-        levels.sort();
-        const levelMap = new Map();
-        const l = levels.length;
-        for (let i = 0; i < l; i++) {
-            levelMap.set(levels[i], i);
-        }
-        return levelMap;
     }
 
     highlight(highlights) {
