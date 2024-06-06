@@ -368,6 +368,9 @@ export default class TileMeshPainter {
                 sceneMeshes.push(meshes[i]);
             }
             if (i === meshes.length - 1) {
+                if (uniforms.stencilEnable) {
+                    this._clearStencil(fbo);
+                }
                 this._modelScene.setMeshes(sceneMeshes);
                 drawCount += this._renderer.render(shader, uniforms, this._modelScene, fbo);
             }
