@@ -276,7 +276,7 @@ export default class FBORayPicking {
             for (let i = 0; i < iterDists.length; i++) { //行
                 for (let j = 0; j < iterDists.length; j++) { //列
                     const ii = (iterDists[j] + tolerance[1]) * width + (iterDists[i] + tolerance[0]);
-                    if (meshIds[ii] != null && pickingIds[ii] != null) {
+                    if (meshIds[ii] != null) {
                         return {
                             meshId: meshIds[ii],
                             pickingId: pickingIds[ii],
@@ -373,7 +373,7 @@ export default class FBORayPicking {
             const { viewMatrix, projMatrix } = options;
             const depths = this._pickDepth(px, py, width, height, pixels, pickedMeshes, uniforms);
             for (let i = 0; i < depths.length; i++) {
-                if (depths[i] && meshIds[i] != null && pickingIds[i] != null) {
+                if (depths[i] && meshIds[i] != null) {
                     const point = this._getWorldPos(x, y, depths[i], viewMatrix, projMatrix);
                     const coord = this._convertPickPoint(point);
                     points.push(point);
