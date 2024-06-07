@@ -102,9 +102,9 @@ function loop() {
     });
 }
 
-let loopFrameTime = now();
-function frameLoop(deadline) {
-    const { idleTimeRemaining, idleLog, idleTimeout, idleForceTimeThreshold, idleEnable } = GlobalConfig;
+let idleCallTime = now();
+function idleFrameLoop(deadline) {
+    const { idleTimeRemaining, idleLog, idleTimeout, idleEnable } = GlobalConfig;
     if (Browser.requestIdleCallback && idleEnable) {
         if (deadline && deadline.timeRemaining) {
             const t = deadline.timeRemaining();
@@ -113,27 +113,33 @@ function frameLoop(deadline) {
                     console.error('idle timeout in', idleTimeout);
                 }
                 loop();
-                loopFrameTime = now();
+                idleCallTime = now();
             } else {
-                const time = now();
-                if (time - loopFrameTime > idleForceTimeThreshold) {
-                    loop();
-                    loopFrameTime = now();
-                }
                 if (t <= idleTimeRemaining && idleLog) {
                     console.warn('currrent page is busy,the timeRemaining is', t);
                 }
             }
         }
-        requestIdleCallback(frameLoop, { timeout: idleTimeout });
+        requestIdleCallback(idleFrameLoop, { timeout: idleTimeout });
+    }
+}
+
+function animFrameLoop() {
+    const { idleEnable } = GlobalConfig;
+    if (Browser.requestIdleCallback && idleEnable) {
+        const { idleForceTimeThreshold, idleLog } = GlobalConfig;
+        const time = now();
+        if (time - idleCallTime > idleForceTimeThreshold) {
+            loop();
+            idleCallTime = now();
+            if (idleLog) {
+                console.warn(`did not apply for availability, forced run idle`);
+            }
+        }
     } else {
         loop();
-        // Fallback to requestAnimFrame
-        requestAnimFrame(frameLoop);
-        if (idleLog) {
-            console.warn('current env not support requestIdleCallback. Fallback to requestAnimFrame');
-        }
     }
+    requestAnimFrame(animFrameLoop);
 }
 
 let started = false;
@@ -144,10 +150,10 @@ export function startTasks() {
     started = true;
     const { idleTimeout, idleEnable } = GlobalConfig;
     if (Browser.requestIdleCallback && idleEnable) {
-        requestIdleCallback(frameLoop, { timeout: idleTimeout });
-    } else {
-        requestAnimFrame(frameLoop);
+        requestIdleCallback(idleFrameLoop, { timeout: idleTimeout });
     }
+    //always run requestAnimFrame
+    requestAnimFrame(animFrameLoop);
 }
 
 export function pushLoopHook(func) {
