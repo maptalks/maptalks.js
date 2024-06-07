@@ -316,7 +316,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
   }
 
-  onWorkerReady() {}
+  onWorkerReady() { }
 
   /**
    * 更新图层配置。
@@ -1528,7 +1528,7 @@ class VectorTileLayer extends maptalks.TileLayer {
       if (geometry.length <= 1) {
         geoType = "Point";
         coordinates =
-          this._convertGeometryCoords(geometry, nw, extent, res)[0] || [];
+          this._convertGeometryCoords(geometry, nw, extent, res) || [];
       } else {
         geoType = "MultiPoint";
         coordinates = this._convertGeometryCoords(geometry, nw, extent, res);
@@ -1537,7 +1537,7 @@ class VectorTileLayer extends maptalks.TileLayer {
       if (geometry.length <= 1) {
         geoType = "LineString";
         coordinates =
-          this._convertGeometryCoords(geometry, nw, extent, res)[0] || [];
+          this._convertGeometryCoords(geometry, nw, extent, res) || [];
       } else {
         geoType = "MultiLineString";
         coordinates = this._convertGeometryCoords(geometry, nw, extent, res);
@@ -1582,18 +1582,40 @@ class VectorTileLayer extends maptalks.TileLayer {
     const tileSize = this.getTileSize().width;
     const tileScale = extent / tileSize;
     const map = this.getMap();
-    const coords: PositionArray<number>[] = [];
-    for (let i = 0; i < (geometry as maptalks.Geometry[]).length; i++) {
-      if (Array.isArray(geometry[i])) {
-        coords.push(this._convertGeometryCoords(geometry[i], nw, extent, res));
-      } else {
-        TMP_POINT.x = nw.x + geometry[i].x / tileScale;
-        TMP_POINT.y = nw.y - geometry[i].y / tileScale;
+
+    const singleCoordinate = (coordinates) => {
+      const coords: PositionArray<number>[] = [];
+      if (isObject(coordinates)) {
+        coordinates = [coordinates];
+      }
+      for (let i = 0, len = coordinates.length; i < len; i++) {
+        const c = coordinates[i];
+        TMP_POINT.x = nw.x + c.x / tileScale;
+        TMP_POINT.y = nw.y - c.y / tileScale;
         map.pointAtResToCoord(TMP_POINT, res, TMP_COORD);
         coords.push(TMP_COORD.toArray());
       }
+      if (coordinates.length === 1) {
+        return coords[0];
+      }
+      return coords;
     }
-    return coords;
+
+    if (isObject(geometry)) {
+      return singleCoordinate(geometry);
+    }
+
+    const len = geometry.length;
+    if (len === 1) {
+      const coordinates = singleCoordinate(geometry[0]);
+      return coordinates;
+    } else {
+      let coords: PositionArray<number>[] = [];
+      for (let i = 0; i < len; i++) {
+        coords.push(singleCoordinate(geometry[i]));
+      }
+      return coords;
+    }
   }
 
   /**
@@ -1666,7 +1688,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     // }
   }
 
-  static registerPlugin(Plugin: { type: string; [key: string]: unknown }) {
+  static registerPlugin(Plugin: { type: string;[key: string]: unknown }) {
     if (!(VectorTileLayer as any).plugins) {
       (VectorTileLayer as any).plugins = {};
     }
