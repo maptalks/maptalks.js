@@ -238,7 +238,7 @@ function createFnTypeFeatureIndex(features, aPickingId, property, stopValues, ha
     let start = 0;
     let current = aPickingId[0];
     for (let ii = 1, l = aPickingId.length; ii < l; ii++) {
-        if (aPickingId[ii] !== current || ii === l - 1) {
+        if (features[current] && (aPickingId[ii] !== current || ii === l - 1)) {
             if (hasFnTypeInProperty || isFnTypeFeature(features[current].feature, property, stopValues)) {
                 aIndex.push(start, ii === l - 1 ? l : ii);
             }
