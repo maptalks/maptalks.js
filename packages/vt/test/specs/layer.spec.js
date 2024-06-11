@@ -154,6 +154,28 @@ describe('layer related specs', () => {
         layer.addTo(map);
     });
 
+    it('getRenderedFeaturesAsync()', done => {
+        map = new maptalks.Map(container, DEFAULT_VIEW);
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: polygon,
+            features: true
+        });
+        let count = 0;
+        layer.on('canvasisdirty', () => {
+            count++;
+            if (count === 2) {
+                layer.getRenderedFeaturesAsync().then(rendredFeatures => {
+                    assert(rendredFeatures.length > 0);
+                    assert(rendredFeatures[0].current);
+                    const featureCount = rendredFeatures.reduce((count, currentValue) => count + currentValue.features.length, 0);
+                    assert(featureCount > 0);
+                    done();
+                })
+            }
+        });
+        layer.addTo(map);
+    });
+
     it('transient features', done => {
         map = new maptalks.Map(container, DEFAULT_VIEW);
         const layer = new GeoJSONVectorTileLayer('gvt', {

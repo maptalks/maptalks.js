@@ -12,7 +12,7 @@ import type {
 } from "../../types";
 import { Color, PackUtil } from "@maptalks/vector-packer";
 import { compress, uncompress } from "./Compress";
-import { extend, hasOwn, isNil, isObject, isString } from "../../common/Util";
+import { extend, hasOwn, isNil, isObject, isString, pushIn } from "../../common/Util";
 
 import Ajax from "../../worker/util/Ajax";
 import type { PositionArray, TileLayerOptionsType } from "maptalks";
@@ -574,6 +574,31 @@ class VectorTileLayer extends maptalks.TileLayer {
     return this._totalPolygonOffset;
   }
 
+  _convertFeatures(features) {
+    if (!features || !features.length) {
+      return;
+    }
+    const tileConfig = this["_getTileConfig"]();
+    let tempX, tempY, tempRes, tempNW;
+    for (let i = 0, len = features.length; i < len; i++) {
+      const { feature, tile } = features[i];
+      const geometry = feature.geometry;
+      if (!feature || !tile || !geometry) {
+        continue;
+      }
+      if (geometry.type) {
+        continue;
+      }
+      const { x, y, res, extent } = tile;
+      if (x !== tempX || y !== tempY || res !== tempRes) {
+        tempNW = tileConfig.getTilePointNW(x, y, res);
+      }
+      const type = feature.type;
+      const geo = this._convertGeometry(type, geometry, tempNW, extent, res);
+      feature.geometry = geo;
+    }
+  }
+
   /**
    * 获取已经渲染的features。
    *
@@ -586,7 +611,51 @@ class VectorTileLayer extends maptalks.TileLayer {
     if (!renderer) {
       return [];
     }
-    return renderer.getRenderedFeatures();
+    const data = renderer.getRenderedFeatures() || [];
+    for (let i = 0, len = data.length; i < len; i++) {
+      const item = data[i];
+      if (!item) {
+        continue;
+      }
+      const features = item.features || [];
+      this._convertFeatures(features);
+    }
+    return data;
+  }
+
+  getRenderedFeaturesAsync(options = {}) {
+    return new Promise((resolve, reject) => {
+      const renderer: any = this.getRenderer();
+      if (!renderer) {
+        resolve([]);
+        return;
+      }
+      if (!maptalks.MicroTask) {
+        resolve(this.getRenderedFeatures());
+      } else {
+        const data = renderer.getRenderedFeatures() || [];
+        const allFeatures = [];
+        data.forEach(item => {
+          const features = item.features || [];
+          if (features.length) {
+            pushIn(allFeatures, features);
+          }
+        });
+        options = Object.assign({}, { countPerTime: 10000 }, options);
+        const pageSize = options.countPerTime;
+        const count = Math.ceil(allFeatures.length / pageSize);
+        let page = 1;
+        const run = () => {
+          const startIndex = (page - 1) * pageSize, endIndex = (page) * pageSize;
+          const fs = allFeatures.slice(startIndex, endIndex);
+          this._convertFeatures(fs);
+          page++;
+        }
+        maptalks.MicroTask.runTaskAsync({ count, run }).then(() => {
+          resolve(data);
+        });
+      }
+    })
   }
 
   /**
@@ -1503,7 +1572,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         const type = pick.data.feature.type;
         pick.data.feature.type = "Feature";
         // pick.data.feature.type = getFeatureType(pick.data.feature);
-        pick.data.feature.geometry = this._convertGeoemtry(
+        pick.data.feature.geometry = this._convertGeometry(
           type,
           geometry,
           nw,
@@ -1516,13 +1585,17 @@ class VectorTileLayer extends maptalks.TileLayer {
     return picks;
   }
 
-  _convertGeoemtry(
+  _convertGeometry(
     type: number,
     geometry: maptalks.Geometry[],
     nw: maptalks.Point,
     extent: number,
     res: number
   ) {
+    //the geometry has convert
+    if (geometry.type && geometry.coordinates) {
+      return geometry;
+    }
     let geoType: string, coordinates: any;
     if (type === 1) {
       if (geometry.length <= 1) {
