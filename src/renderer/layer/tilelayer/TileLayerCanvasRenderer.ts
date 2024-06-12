@@ -537,8 +537,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     _drawTileAndCache(tile: Tile, parentContext) {
         if (this.isValidCachedTile(tile)) {
-            this._addTileToCache(tile.info, tile.image);
-            // this.tilesInView[tile.info.id] = tile;
+            this.tilesInView[tile.info.id] = tile;
         }
         this._drawTile(tile.info, tile.image, parentContext);
     }
@@ -1205,11 +1204,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     _addTileToCache(tileInfo: Tile['info'], tileImage: Tile['image']) {
         if (this.isValidCachedTile({ info: tileInfo, image: tileImage } as Tile)) {
-            this.tilesInView[tileInfo.id] = {
+            const cached = {
                 image: tileImage,
-                current: true,
                 info: tileInfo
             } as Tile;
+            this.tileCache.add(tileInfo.id, cached);
         }
     }
 
