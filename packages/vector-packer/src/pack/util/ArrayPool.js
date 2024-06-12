@@ -133,13 +133,14 @@ class ArrayPool {
         }
         if (type) {
             const key = type.name;
-            if (!this._typedArrays[key]) {
-                this._typedArrays[key] = { arrays: [], index: 0 };
+            let typedArrays = this._typedArrays[key];
+            if (!typedArrays) {
+                typedArrays = this._typedArrays[key] = { arrays: [], index: 0 };
             }
-            const index = this._typedArrays[key].index;
-            const array = this._typedArrays[key].arrays[index] || ArrayPool.getArray(type);
+            const index = typedArrays.index;
+            const array = typedArrays.arrays[index] = typedArrays.arrays[index] || ArrayPool.getArray(type);
             array.reset();
-            this._typedArrays[key].index++;
+            typedArrays.index++;
             return array;
         }
         const array = this._arrays[this._index] = this._arrays[this._index] || ArrayPool.getArray();

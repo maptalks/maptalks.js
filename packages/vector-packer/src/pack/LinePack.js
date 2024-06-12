@@ -232,7 +232,7 @@ export default class LinePack extends VectorPack {
         if (isPolygon) {
             //Polygon时，需要遍历elements，去掉(filter)瓦片范围外的edge
             //所以this.elements只会存放当前line的elements，方便filter处理
-            this.elements = [];
+            this.elements = this._arrayPool.get();
         }
         let join = symbol['lineJoin'] || 'miter', cap = symbol['lineCap'] || 'butt';
         if (lineJoinFn) {

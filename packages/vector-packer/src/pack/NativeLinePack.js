@@ -42,7 +42,7 @@ export default class NativeLinePack extends VectorPack {
             lines = feature.geometry;
         const elements = this.elements;
         if (isPolygon) {
-            this.elements = [];
+            this.elements = this._arrayPool.get();
         }
         const positionSize = this.needAltitudeAttribute() ? 2 : 3;
         for (let i = 0; i < lines.length; i++) {
@@ -52,7 +52,7 @@ export default class NativeLinePack extends VectorPack {
             if (isPolygon) {
                 //去掉polygon在瓦片范围外的边
                 this._filterPolygonEdges(elements);
-                this.elements = [];
+                this.elements = this._arrayPool.get();
             }
         }
         if (isPolygon) {
