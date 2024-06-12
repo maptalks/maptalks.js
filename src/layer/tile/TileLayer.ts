@@ -499,8 +499,14 @@ class TileLayer extends Layer {
     }
 
     isParentTile(z: number, maxZoom: number, tile: TileNodeType) {
-        const stackMinZoom = Math.max(this.getMinZoom(), z - this.options['tileStackStartDepth']);
-        const stackMaxZoom = Math.min(maxZoom, stackMinZoom + this.options['tileStackDepth']);
+        let tileStackStartDepth = this.options['tileStackStartDepth'];
+        let tileStackDepth = this.options['tileStackDepth'];
+        const map = this.getMap();
+        if (map && !map._hasAltitudeLayer()) {
+            tileStackDepth = tileStackStartDepth = 0;
+        }
+        const stackMinZoom = Math.max(this.getMinZoom(), z - tileStackStartDepth);
+        const stackMaxZoom = Math.min(maxZoom, stackMinZoom + tileStackDepth);
         return tile.z >= stackMinZoom && tile.z < stackMaxZoom;
 
     }
