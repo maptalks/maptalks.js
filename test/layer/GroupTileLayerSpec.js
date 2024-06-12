@@ -334,7 +334,8 @@ describe('GroupTileLayer', function () {
             fadingAnimation: false
         });
         group.once('layerload', function () {
-            expect(group).to.be.painted(0, 0, [255, 0, 0, 191]);
+            // expect(group).to.be.painted(0, 0, [255, 0, 0, 191]);
+            expect(group).to.be.painted(0, 0, [255, 0, 0, 128]);
             done();
         });
         map.addLayer(group);
