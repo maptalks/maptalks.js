@@ -550,6 +550,8 @@ export default class LinePack extends VectorPack {
             nextNormal = vertices[first].sub(currentVertex)._unit()._perp();
         }
 
+        this._ensureDataCapacity(join, len, 2 * Math.sqrt(2 - 2 * roundLimit));
+
         for (let i = first; i < len; i++) {
 
             nextVertex = i === len - 1 ?
@@ -641,7 +643,6 @@ export default class LinePack extends VectorPack {
                 }
             }
 
-            this._ensureDataCapacity(currentJoin, approxAngle);
 
             if (currentJoin === 'miter' && miterLength > miterLimit && !isTube) {
                 currentJoin = 'bevel';
@@ -789,7 +790,7 @@ export default class LinePack extends VectorPack {
         }
     }
 
-    _ensureDataCapacity(join, approxAngle) {
+    _ensureDataCapacity(join, vertexCount, approxAngle) {
         const n = join === 'fakeround' ? Math.round((approxAngle * 180 / Math.PI) / DEG_PER_TRIANGLE) - 1: 0;
         const format = this._dataFormat;
         for (let i = 0; i < format.length; i++) {
@@ -802,7 +803,7 @@ export default class LinePack extends VectorPack {
                 continue;
             }
             const length = array.getLength();
-            this.data[format[i].name] = ArrayPool.ensureCapacity(array, length + estimatedHalfVertexCount);
+            this.data[format[i].name] = ArrayPool.ensureCapacity(array, length + estimatedHalfVertexCount * vertexCount);
         }
     }
 
