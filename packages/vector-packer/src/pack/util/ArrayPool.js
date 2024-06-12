@@ -50,28 +50,30 @@ const ArrayItemMixin = function (Base) {
 
 const ArrayItem = ArrayItemMixin(Array);
 
-// const ArrayItemProxy = {
-//   get: function(target, property) {
-//     if (property === 'length') {
-//         return target.getLength();
-//     }
-//     return target[property];
-//   }
-// };
+const ArrayItemProxy = {
+  get: function(target, property) {
+    if (property === 'length') {
+        return target.getLength();
+    }
+    return target[property];
+  }
+};
 
 class MainThreadArrayItem extends Array {
     // 主线程中不能重用array，返回新的array对象，并实现setLength和trySetLength方法
 
     setLength(len) {
-        super.length = len;
+        this.length = len;
+        this.currentIndex = len;
     }
 
     trySetLength(len) {
-        super.length = len;
+        this.length = len;
+        this.currentIndex = len;
     }
 
     getLength() {
-        return super.length;
+        return this.length;
     }
 }
 
@@ -121,15 +123,43 @@ class ArrayPool {
         return array;
     }
 
+    // ProxyArray性能较差，但.length 等于 getLength()的结果，主要用于需要 .length 的场合，例如earcut之类第三方库的参数
+    static getProxyArray() {
+        const array = new ArrayItem();
+        const proxy = new Proxy(array, ArrayItemProxy);
+        // 通过Proxy代理array的push，性能非常慢，改为直接定义一个push并调用array上的pushIn方法
+        proxy.push = (...args) => {
+            array.pushIn(...args);
+        };
+        proxy._origin = array;
+        return proxy;
+    }
+
     constructor() {
         this._arrays = [];
         this._index = 0;
+        this._proxiedArrays = [];
+        this._proxiedIndex = 0;
         this._typedArrays = {};
+    }
+
+    getProxy() {
+        if (!inWorker) {
+            const array = new MainThreadArrayItem();
+            array.currentIndex = 0;
+            return array;
+        }
+        const array = this._proxiedArrays[this._proxiedIndex] = this._proxiedArrays[this._proxiedIndex] || ArrayPool.getProxyArray();
+        array.reset();
+        this._proxiedIndex++;
+        return array;
     }
 
     get(type) {
         if (!inWorker) {
-            return new MainThreadArrayItem();
+            const array = new MainThreadArrayItem();
+            array.currentIndex = 0;
+            return array;
         }
         if (type) {
             const key = type.name;
@@ -151,6 +181,7 @@ class ArrayPool {
 
     reset() {
         this._index = 0;
+        this._proxiedIndex = 0;
         for (const p in this._typedArrays) {
             this._typedArrays[p].index = 0;
         }

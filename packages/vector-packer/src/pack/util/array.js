@@ -58,6 +58,8 @@ export function createTypedArray(values, ctor) {
         return values.slice(0, length);
     }
     const arr = new ctor(length);
+    // _origin means values is a proxied ArrayItem
+    values = values._origin || values;
     for (let i = 0; i < length; i++) {
         arr[i] = values[i];
     }

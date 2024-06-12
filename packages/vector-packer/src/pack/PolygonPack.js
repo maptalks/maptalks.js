@@ -191,11 +191,11 @@ export default class PolygonPack extends VectorPack {
 
         const positionSize = this.needAltitudeAttribute() ? 2 : 3;
         const BOUNDS = [-1, -1, feature.extent + 1, feature.extent + 1];
-        const flattened = this._flattened = this._flattened || this._arrayPool.get();
-        const holeIndices = this._holeIndices = this._holeIndices || this._arrayPool.get();
+        const flattened = this._flattened = this._flattened || this._arrayPool.getProxy();
+        const holeIndices = this._holeIndices = this._holeIndices || this._arrayPool.getProxy();
         for (let i = 0; i < rings.length; i++) {
             const polygon = rings[i];
-            const triangleIndex = this.data.aPosition.length / positionSize;
+            const triangleIndex = this.data.aPosition.getLength() / positionSize;
             flattened.setLength(0);
             holeIndices.setLength(0);
 
@@ -211,6 +211,8 @@ export default class PolygonPack extends VectorPack {
                 if (ii !== 0) {
                     holeIndices.push(flattened.length / 3);
                 }
+
+                this.ensureDataCapacity(ring.length);
 
                 // const lineIndex = this.lineElements.length;
 
@@ -241,36 +243,64 @@ export default class PolygonPack extends VectorPack {
                 // }
                 // this.addLineElements(lineIndex + ring.length - 1, lineIndex);
                 // flattened.push(ring[0].x, ring[0].y, ring[0].z || 0);
-
+                const data = this.data;
                 for (let i = 0; i < ring.length; i++) {
                     const x = ring[i].x;
                     const y = ring[i].y;
                     const z = ring[i].z || 0;
                     this.fillPosition(this.data, x, y, z);
                     if (hasUV) {
-                        this.data.aTexInfo.push(uvStart[0], uvStart[1], uvSize[0], uvSize[1]);
+                        // this.data.aTexInfo.push(uvStart[0], uvStart[1], uvSize[0], uvSize[1]);
+                        let index = data.aTexInfo.currentIndex;
+                        data.aTexInfo[index++] = uvStart[0];
+                        data.aTexInfo[index++] = uvStart[1];
+                        data.aTexInfo[index++] = uvSize[0];
+                        data.aTexInfo[index++] = uvSize[1];
+                        data.aTexInfo.currentIndex = index;
                     }
                     if (dynFill !== undefined) {
-                        this.data.aColor.push(dynFill[0], dynFill[1], dynFill[2], dynFill[3]);
+                        // this.data.aColor.push(dynFill[0], dynFill[1], dynFill[2], dynFill[3]);
+                        let index = data.aColor.currentIndex;
+                        data.aColor[index++] = dynFill[0];
+                        data.aColor[index++] = dynFill[1];
+                        data.aColor[index++] = dynFill[2];
+                        data.aColor[index++] = dynFill[3];
+                        data.aColor.currentIndex = index;
                     }
                     if (dynOpacity !== undefined) {
-                        this.data.aOpacity.push(dynOpacity);
+                        // this.data.aOpacity.push(dynOpacity);
+                        let index = data.aOpacity.currentIndex;
+                        data.aOpacity[index++] = dynOpacity;
+                        data.aOpacity.currentIndex = index;
                     }
                     if (dynUVScale !== undefined) {
-                        this.data.aUVScale.push(dynUVScale[0], dynUVScale[1]);
+                        // this.data.aUVScale.push(dynUVScale[0], dynUVScale[1]);
+                        let index = data.aUVScale.currentIndex;
+                        data.aUVScale[index++] = dynUVScale[0];
+                        data.aUVScale[index++] = dynUVScale[1];
+                        data.aUVScale.currentIndex = index;
                     }
                     if (dynUVOffset !== undefined) {
-                        this.data.aUVOffset.push(dynUVOffset[0], dynUVOffset[1]);
+                        // this.data.aUVOffset.push(dynUVOffset[0], dynUVOffset[1]);
+                        let index = data.aUVOffset.currentIndex;
+                        data.aUVOffset[index++] = dynUVOffset[0];
+                        data.aUVOffset[index++] = dynUVOffset[1];
+                        data.aUVOffset.currentIndex = index;
                     }
                     if (polygonPatternUVFn) {
+                        let index = data.aTexCoord.currentIndex;
                         if (texCoords) {
                             const tx = isNil(texCoords[tIndex * 2]) ? texCoords[0] : texCoords[tIndex * 2];
                             const ty = isNil(texCoords[tIndex * 2] + 1) ? texCoords[1] : texCoords[tIndex * 2 + 1];
-                            this.data.aTexCoord.push(tx, ty);
+                            // this.data.aTexCoord.push(tx, ty);
+                            data.aTexCoord[index++] = tx;
+                            data.aTexCoord[index++] = ty;
                         } else {
-                            this.data.aTexCoord.push(INVALID_TEX_COORD, INVALID_TEX_COORD);
+                            // this.data.aTexCoord.push(INVALID_TEX_COORD, INVALID_TEX_COORD);
+                            data.aTexCoord[index++] = INVALID_TEX_COORD;
+                            data.aTexCoord[index++] = INVALID_TEX_COORD;
                         }
-
+                        data.aTexCoord.currentIndex = index;
                         tIndex++;
                     }
 
@@ -318,6 +348,11 @@ export default class PolygonPack extends VectorPack {
                     triangleIndex + indices[i + 2]);
             }
         }
+    }
+
+
+    ensureDataCapacity(vertexCount) {
+        super.ensureDataCapacity(1, vertexCount);
     }
 
     // addLineElements(...e) {

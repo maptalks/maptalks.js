@@ -655,6 +655,19 @@ export default class VectorPack {
         }
         return max;
     }
+
+    ensureDataCapacity(countPerVertex, vertexCount) {
+        const format = this._dataFormat;
+        for (let i = 0; i < format.length; i++) {
+            const array = this.data[format[i].name];
+            if (!array) {
+                continue;
+            }
+            const estimatedHalfVertexCount = format[i].width * countPerVertex;
+            const length = array.getLength();
+            this.data[format[i].name] = ArrayPool.ensureCapacity(array, length + estimatedHalfVertexCount * vertexCount);
+        }
+    }
 }
 
 function serializeAtlas(atlas) {
