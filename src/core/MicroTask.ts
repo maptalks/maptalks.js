@@ -104,7 +104,7 @@ function loop() {
 
 let idleCallTime = now();
 function idleFrameLoop(deadline) {
-    const { idleTimeRemaining, idleLog, idleTimeout, idleEnable } = GlobalConfig;
+    const { idleTimeRemaining, idleLog, idleTimeout } = GlobalConfig;
     if (deadline && deadline.timeRemaining) {
         const t = deadline.timeRemaining();
         if (t > idleTimeRemaining || deadline.didTimeout) {
