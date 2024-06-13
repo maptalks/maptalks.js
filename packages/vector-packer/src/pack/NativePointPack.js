@@ -67,6 +67,7 @@ export default class NativePointPack extends VectorPack {
                 feaColor = normalizeColor([], feaColor);
             }
         }
+        const data = this.data;
         const spacing = this.symbol['markerSpacing'] || DEFAULT_SPACING;
         const placement = this.symbol['markerPlacement'] || 'point';
         const hasRotation = this.symbol.markerRotationAlignment === 'line';
@@ -77,11 +78,26 @@ export default class NativePointPack extends VectorPack {
             this.fillPosition(this.data, point.x, point.y, point.z);
             if (hasRotation) {
                 // this.data.aXRotation.push(point.xRotation || 0);
-                this.data.aXYRotation.push(point.xyRotation || 0);
-                this.data.aZRotation.push(point.zRotation || 0);
+                // this.data.aXYRotation.push(point.xyRotation || 0);
+                // this.data.aZRotation.push(point.zRotation || 0);
+
+                let index = data.aXYRotation.currentIndex;
+                data.aXYRotation[index++] = point.xyRotation || 0;
+                data.aXYRotation.currentIndex = index;
+
+                index = data.aZRotation.currentIndex;
+                data.aZRotation[index++] = point.zRotation || 0;
+                data.aZRotation.currentIndex = index;
             }
             if (feaColor) {
-                this.data.aColor.push(...feaColor);
+                // this.data.aColor.push(...feaColor);
+
+                let index = data.aColor.currentIndex;
+                data.aColor[index++] = feaColor[0];
+                data.aColor[index++] = feaColor[1];
+                data.aColor[index++] = feaColor[2];
+                data.aColor[index++] = feaColor[3];
+                data.aColor.currentIndex = index;
             }
             const max = Math.max(Math.abs(point.x), Math.abs(point.y));
             if (max > this.maxPos) {
