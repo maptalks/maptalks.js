@@ -877,7 +877,7 @@ class UIComponent extends Eventable(Class) {
             }
             return 'translate3d(' + Math.fround(p.x) + 'px,' + Math.fround(p.y) + 'px, 0px)' + r;
         } else {
-            return 'translate(' + p.x + 'px,' + p.y + 'px)';
+            return 'translate(' + Math.fround(p.x) + 'px,' + Math.fround(p.y) + 'px)';
         }
     }
 
