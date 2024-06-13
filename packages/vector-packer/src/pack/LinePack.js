@@ -550,7 +550,7 @@ export default class LinePack extends VectorPack {
             nextNormal = vertices[first].sub(currentVertex)._unit()._perp();
         }
 
-        this.ensureDataCapacity(join, len, 360);
+        this.ensureDataCapacity(join, len, 360, 2);
 
         for (let i = first; i < len; i++) {
 
@@ -790,12 +790,12 @@ export default class LinePack extends VectorPack {
         }
     }
 
-    ensureDataCapacity(join, vertexCount, approxAngle) {
+    ensureDataCapacity(join, vertexCount, approxAngle, halfVertexCount) {
         const n = join === 'round' ? Math.round(approxAngle / DEG_PER_TRIANGLE) - 1: 0;
         // 6: max count of addCurrentVertex
         // n: fakeround's addCurrentVertex
         // 2: addCurrentVertex = 2 * addHalfVertex
-        super.ensureDataCapacity((6 + n) * 2, vertexCount)
+        super.ensureDataCapacity((6 + n) * halfVertexCount, vertexCount)
     }
 
     /**

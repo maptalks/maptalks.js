@@ -21,7 +21,7 @@ export default class RoundTubePack extends LinePack {
             ...this.getPositionFormat(),
             {
                 type: Int8Array,
-                size: 4,
+                width: 4,
                 name: 'aTubeNormal'
             },
             {
@@ -90,6 +90,12 @@ export default class RoundTubePack extends LinePack {
         return format;
     }
 
+    ensureDataCapacity(join, vertexCount, approxAngle, halfVertexCount) {
+        const segments = this.options.radialSegments / 2;
+        // 每个 addHalfVertex 里都会循环 segments 次
+        return super.ensureDataCapacity(join, vertexCount, approxAngle, halfVertexCount * segments);
+    }
+
     addHalfVertex(currentVertex, extrudeX, extrudeY, round, up, dir, segment, normalDistance) {
         const { x, y, z } = currentVertex;
         // scale down so that we can store longer distances while sacrificing precision.
@@ -128,7 +134,7 @@ export default class RoundTubePack extends LinePack {
     fillTubeElements(up) {
         const segments = this.options.radialSegments / 2;
         const positionSize = this.needAltitudeAttribute() ? 2 : 3;
-        const currentOffset = this.data.aPosition.length / positionSize;
+        const currentOffset = this.data.aPosition.getLength() / positionSize;
         for (let i = 0; i < segments; i++) {
             // d-------b
             // |       |
@@ -162,11 +168,32 @@ export default class RoundTubePack extends LinePack {
         for (let i = 0; i < segments; i++) {
             this.fillPosition(data, x, y, altitude);
             vec4.scale(radialOffsets[i], radialOffsets[i], EXTRUDE_SCALE);
-            data.aTubeNormal.push(...radialOffsets[i]);
-            data.aLinesofar.push(linesofar);
+            // data.aTubeNormal.push(...radialOffsets[i]);
+
+            let index = data.aTubeNormal.currentIndex;
+            for (let ii = 0; ii < radialOffsets[i].length; ii++) {
+                data.aTubeNormal[index++] = radialOffsets[i][ii];
+            }
+            data.aTubeNormal.currentIndex = index;
+
+            // data.aLinesofar.push(linesofar);
+            index = data.aLinesofar.currentIndex;
+            data.aLinesofar[index++] = linesofar;
+            data.aLinesofar.currentIndex = index;
+
             if (this.iconAtlas) {
-                data.aNormalDistance.push(EXTRUDE_SCALE * normalDistance);
-                data.aTexInfo.push(...this.feaTexInfo);
+                // data.aNormalDistance.push(EXTRUDE_SCALE * normalDistance);
+                index = data.aNormalDistance.currentIndex;
+                data.aNormalDistance[index++] = EXTRUDE_SCALE * normalDistance;
+                data.aNormalDistance.currentIndex = index;
+
+                // data.aTexInfo.push(...this.feaTexInfo);
+                index = data.aTexInfo.currentIndex;
+                data.aTexInfo[index++] = this.feaTexInfo[0];
+                data.aTexInfo[index++] = this.feaTexInfo[1];
+                data.aTexInfo[index++] = this.feaTexInfo[2];
+                data.aTexInfo[index++] = this.feaTexInfo[3];
+                data.aTexInfo.currentIndex = index;
             }
             if (lineWidthFn) {
                 const scale = getTubeSizeScale(this.options.metric);
@@ -175,19 +202,39 @@ export default class RoundTubePack extends LinePack {
                     size = 0;
                 }
                 // convert to centi-meter
-                data.aLineWidth.push(Math.round(size));
+                // data.aLineWidth.push(Math.round(size));
+                index = data.aLineWidth.currentIndex;
+                data.aLineWidth[index++] = Math.round(size);
+                data.aLineWidth.currentIndex = index;
             }
             if (lineColorFn) {
-                data.aColor.push(...this.feaColor);
+                // data.aColor.push(...this.feaColor);
+                index = data.aColor.currentIndex;
+                data.aColor[index++] = this.feaColor[0];
+                data.aColor[index++] = this.feaColor[1];
+                data.aColor[index++] = this.feaColor[2];
+                data.aColor[index++] = this.feaColor[3];
+                data.aColor.currentIndex = index;
             }
             if (lineOpacityFn) {
-                data.aOpacity.push(this.feaOpacity);
+                // data.aOpacity.push(this.feaOpacity);
+                index = data.aOpacity.currentIndex;
+                data.aOpacity[index++] = this.feaOpacity;
+                data.aOpacity.currentIndex = index;
             }
             if (linePatternAnimSpeedFn) {
-                data.aLinePatternAnimSpeed.push((this.feaPatternAnimSpeed || 0) * 127);
+                // data.aLinePatternAnimSpeed.push((this.feaPatternAnimSpeed || 0) * 127);
+
+                index = data.aLinePatternAnimSpeed.currentIndex;
+                data.aLinePatternAnimSpeed[index++] = (this.feaPatternAnimSpeed || 0) * 127;
+                data.aLinePatternAnimSpeed.currentIndex = index;
             }
             if (linePatternGapFn) {
-                data.aLinePatternGap.push((this.feaLinePatternGap || 0) * 10);
+                // data.aLinePatternGap.push((this.feaLinePatternGap || 0) * 10);
+
+                index = data.aLinePatternGap.currentIndex;
+                data.aLinePatternGap[index++] = (this.feaLinePatternGap || 0) * 10;
+                data.aLinePatternGap.currentIndex = index;
             }
         }
         this.maxPos = Math.max(this.maxPos, Math.abs(x) + 1, Math.abs(y) + 1);

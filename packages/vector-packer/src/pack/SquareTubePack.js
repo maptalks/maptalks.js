@@ -34,6 +34,11 @@ export default class SquareTubePack extends RoundTubePack {
 
         this.fillData(this.data, x, y, z || 0, radialOffsets, up, linesofar, normalDistance);
     }
+
+    ensureDataCapacity(join, vertexCount, approxAngle, halfVertexCount) {
+        // SquareTubePack中 每个 addHalfVertex 里都包含了两个 radialOffsets
+        return super.ensureDataCapacity(join, vertexCount, approxAngle, halfVertexCount * 2);
+    }
 }
 
 const SIZE = [];
