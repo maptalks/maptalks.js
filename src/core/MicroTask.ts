@@ -105,23 +105,21 @@ function loop() {
 let idleCallTime = now();
 function idleFrameLoop(deadline) {
     const { idleTimeRemaining, idleLog, idleTimeout, idleEnable } = GlobalConfig;
-    if (Browser.requestIdleCallback && idleEnable) {
-        if (deadline && deadline.timeRemaining) {
-            const t = deadline.timeRemaining();
-            if (t > idleTimeRemaining || deadline.didTimeout) {
-                if (deadline.didTimeout && idleLog) {
-                    console.error('idle timeout in', idleTimeout);
-                }
-                loop();
-                idleCallTime = now();
-            } else {
-                if (t <= idleTimeRemaining && idleLog) {
-                    console.warn('currrent page is busy,the timeRemaining is', t);
-                }
+    if (deadline && deadline.timeRemaining) {
+        const t = deadline.timeRemaining();
+        if (t > idleTimeRemaining || deadline.didTimeout) {
+            if (deadline.didTimeout && idleLog) {
+                console.error('idle timeout in', idleTimeout);
+            }
+            loop();
+            idleCallTime = now();
+        } else {
+            if (t <= idleTimeRemaining && idleLog) {
+                console.warn('currrent page is busy,the timeRemaining is', t);
             }
         }
-        requestIdleCallback(idleFrameLoop, { timeout: idleTimeout });
     }
+    requestIdleCallback(idleFrameLoop, { timeout: idleTimeout });
 }
 
 function animFrameLoop() {
