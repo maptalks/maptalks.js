@@ -109,6 +109,24 @@ class UIComponent extends Eventable(Class) {
         this.proxyOptions();
     }
 
+    _appendCustomClass(dom: HTMLElement) {
+        if (!dom) {
+            console.warn('dom is null:', dom);
+            return this;
+        }
+        if (this.options.cssName) {
+            let cssName = this.options.cssName;
+            if (!Array.isArray(cssName)) {
+                cssName = [cssName];
+            }
+            cssName.forEach(name => {
+                dom.classList.add(name);
+            });
+        }
+        return this;
+    }
+
+
     onAdd() {
 
     }
@@ -997,4 +1015,5 @@ export type UIComponentOptionsType = {
     collisionWeight?: number;
     collisionFadeIn?: boolean;
     zIndex?: number;
+    cssName?: string | Array<string>;
 }
