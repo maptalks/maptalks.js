@@ -467,6 +467,8 @@ class TileLayer extends Layer {
         const extent = new PointExtent();
         const tiles = [];
         const parents = [];
+        const hasTerrain = map && map._hasAltitudeLayer();
+
         while (queue.length > 0) {
             const node = queue.pop();
             if (node.z === maxZoom) {
@@ -478,7 +480,7 @@ class TileLayer extends Layer {
                 offsets[node.z + 1] = this._getTileOffset(node.z + 1);
             }
             this._splitNode(node, projectionView, queue, tiles, extent, maxZoom, offsets[node.z + 1], layer && layer.getRenderer(), glRes);
-            if (this.isParentTile(z, maxZoom, node)) {
+            if (this.isParentTile(z, maxZoom, node, hasTerrain)) {
                 parents.push(node);
             }
         }
@@ -498,11 +500,10 @@ class TileLayer extends Layer {
         } as TilesType;
     }
 
-    isParentTile(z: number, maxZoom: number, tile: TileNodeType) {
+    isParentTile(z: number, maxZoom: number, tile: TileNodeType, hasTerrain: boolean) {
         let tileStackStartDepth = this.options['tileStackStartDepth'];
         let tileStackDepth = this.options['tileStackDepth'];
-        const map = this.getMap();
-        if (map && !map._hasAltitudeLayer()) {
+        if (!hasTerrain) {
             tileStackDepth = tileStackStartDepth = 0;
         }
         const stackMinZoom = Math.max(this.getMinZoom(), z - tileStackStartDepth);
