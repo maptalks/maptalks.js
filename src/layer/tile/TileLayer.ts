@@ -1488,24 +1488,18 @@ class TileLayer extends Layer {
         if (!map) {
             return;
         }
-        const z = tile.z;
-        const x = tile.x;
-        const y = tile.y;
-        const res = tile.res || map._getResolution(z);
-        const tileConfig = this._getTileConfig();
-        if (!tileConfig) {
+
+        const extent2d = tile.extent2d;
+        if (!extent2d) {
             return;
         }
-        const prjExtent = tileConfig.getTilePrjExtent(x, y, res);
-        if (!prjExtent) {
-            return;
-        }
-        const { xmin, ymin, xmax, ymax } = prjExtent;
+        const res = tile.res;
+
+        const { xmin, ymin, xmax, ymax } = extent2d;
         const pmin = new Point(xmin, ymin),
             pmax = new Point(xmax, ymax);
-        const projection = map.getProjection();
-        const min = projection.unproject(pmin),
-            max = projection.unproject(pmax);
+        const min = map.pointAtResToCoordinate(pmin, res, TEMP_POINT0),
+            max = map.pointAtResToCoordinate(pmax, res, TEMP_POINT1);
         return [min.x, min.y, max.x, max.y];
 
     }
