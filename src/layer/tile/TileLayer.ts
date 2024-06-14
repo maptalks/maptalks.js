@@ -1524,6 +1524,13 @@ class TileLayer extends Layer {
         if (type.indexOf('Polygon') === -1) {
             return true;
         }
+        if (!maskGeoJSON.bbox) {
+            const extent = mask.getExtent();
+            if (!extent) {
+                return true;
+            }
+            maskGeoJSON.bbox = [extent.xmin, extent.ymin, extent.xmax, extent.ymax];
+        }
         const tileBBOX = this._getTileBBox(tile);
         if (!tileBBOX) {
             return true;

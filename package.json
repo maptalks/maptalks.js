@@ -49,7 +49,6 @@
   "dependencies": {
     "@maptalks/feature-filter": "^1.3.0",
     "@maptalks/function-type": "^1.3.1",
-    "@maptalks/geojson-bbox": "^1.0.5",
     "frustum-intersects": "^0.1.0",
     "lineclip": "^1.1.5",
     "rbush": "^2.0.2",

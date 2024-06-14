@@ -1,5 +1,4 @@
 import Coordinate from '../../geo/Coordinate';
-import GeoJSONBBOX from '@maptalks/geojson-bbox';
 import lineclip from 'lineclip';
 
 const minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
@@ -114,9 +113,12 @@ export function bboxIntersect(bbox1: BBOX, bbox2: BBOX) {
  * @returns 
  */
 export function bboxInMask(bbox: BBOX, maskGeoJSON: Record<string, any>): boolean {
-    //cal geojson bbox
-    maskGeoJSON.bbox = maskGeoJSON.bbox || GeoJSONBBOX(maskGeoJSON);
+    //geojson bbox
     const maskBBOX = maskGeoJSON.bbox;
+    if (!maskBBOX) {
+        console.error('maskGeoJSON bbox is null:', maskGeoJSON);
+        return false;
+    }
     if (!bboxIntersect(maskBBOX, bbox)) {
         return false;
     } else {
