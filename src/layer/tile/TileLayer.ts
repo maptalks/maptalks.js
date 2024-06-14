@@ -26,7 +26,6 @@ import * as vec3 from '../../core/util/vec3';
 import { formatResourceUrl } from '../../core/ResourceProxy';
 import { Coordinate, Extent } from '../../geo';
 import { type TileLayerCanvasRenderer } from '../../renderer';
-import { type Map } from '../../map';
 
 const DEFAULT_MAXERROR = 1;
 const TEMP_POINT = new Point(0, 0);
@@ -160,7 +159,9 @@ const options: TileLayerOptionsType = {
     'bufferPixel': 0.5,
     'mipmapTexture': true,
     'depthMask': true,
-    'currentTilesFirst': true
+    'currentTilesFirst': true,
+
+    'forceRenderOnMoving': true
 };
 
 const URL_PATTERN = /\{ *([\w_]+) *\}/g;
@@ -1358,15 +1359,7 @@ class TileLayer extends Layer {
         return this._tileConfig || this._defaultTileConfig;
     }
 
-    _bindMap(map: Map) {
-        const baseLayer = map.getBaseLayer();
-        if (baseLayer === this) {
-            if (!baseLayer.options.hasOwnProperty('forceRenderOnMoving')) {
-                this.config({
-                    'forceRenderOnMoving': true
-                });
-            }
-        }
+    _bindMap() {
         this._onSpatialReferenceChange();
         // eslint-disable-next-line prefer-rest-params
         return super._bindMap.apply(this, arguments);
