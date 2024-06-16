@@ -48,6 +48,7 @@ const options: ToolbarOptionsType = {
  * }).addTo(map);
  */
 class Toolbar extends Control {
+    options: ToolbarOptionsType;
     /**
      * method to build DOM of the control
      * @param  {Map} map map to build on
@@ -114,6 +115,7 @@ class Toolbar extends Control {
                 ul.appendChild(li);
             }
         }
+        this._appendCustomClass(dom);
         return dom;
     }
 

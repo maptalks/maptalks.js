@@ -43,6 +43,23 @@ abstract class Control extends Eventable(Class) {
         super(options);
     }
 
+    _appendCustomClass(dom: HTMLElement) {
+        if (!dom) {
+            console.warn('dom is null:', dom);
+            return this;
+        }
+        if (this.options.cssName) {
+            let cssName = this.options.cssName;
+            if (!Array.isArray(cssName)) {
+                cssName = [cssName];
+            }
+            cssName.forEach(name => {
+                dom.classList.add(name);
+            });
+        }
+        return this;
+    }
+
     onAdd() {
 
     }
@@ -298,7 +315,9 @@ export type PositionType = {
 export type ControlPositionType = string | PositionType;
 
 export type ControlOptionsType = {
-    position?: ControlPositionType
+    position?: ControlPositionType,
+    cssName?: string | Array<string>;
+
 }
 
 Map.mergeOptions({

@@ -391,6 +391,7 @@ class UIMarker extends Handlerable(UIComponent) {
         }
         this._registerDOMEvents(dom);
         this._bindDomEvents(dom, 'on');
+        this._appendCustomClass(dom);
         return dom;
     }
 
