@@ -127,7 +127,8 @@ export function bboxInMask(bbox: BBOX, maskGeoJSON: Record<string, any>): boolea
             console.error('maskGeoJSON is error,not find geometry.', maskGeoJSON);
             return false;
         }
-        let { type, coordinates } = geometry;
+        let { coordinates } = geometry;
+        const type = geometry.type;
         if (type === 'Polygon') {
             coordinates = [coordinates];
         }
