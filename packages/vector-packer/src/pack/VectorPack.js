@@ -138,7 +138,7 @@ export default class VectorPack {
         } else {
             return [
                 {
-                    type: Int16Array,
+                    type: Float32Array,
                     width: 3,
                     name: 'aPosition'
                 }
@@ -174,7 +174,6 @@ export default class VectorPack {
             // data.aAltitude.push(altitude);
         } else {
             packPosition(TEMP_PACK_POS, x, y, altitude);
-
             let index = data.aPosition.currentIndex;
             data.aPosition[index++] = TEMP_PACK_POS[0];
             data.aPosition[index++] = TEMP_PACK_POS[1];

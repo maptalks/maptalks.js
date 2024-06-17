@@ -408,7 +408,8 @@ export default class PointPack extends VectorPack {
         }
         const data = this.data;
         const positionSize = this.needAltitudeAttribute() ? 2 : 3;
-        let currentIdx = this.data.aPosition.length / positionSize;
+        // must use aPosition.getLength() instead of .length
+        let currentIdx = this.data.aPosition.getLength() / positionSize;
         // const minZoom = this.options.minZoom,
         //     maxZoom = this.options.maxZoom;
         const symbol = point.symbol;
@@ -633,8 +634,19 @@ export default class PointPack extends VectorPack {
 
     _fillPos(data, x, y, altitude, shapeX, shapeY, texX, texY) {
         this.fillPosition(data, x, y, altitude);
-        data.aShape.push(shapeX, shapeY);
-        data.aTexCoord.push(texX, texY);
+
+        let index = data.aShape.currentIndex;
+        data.aShape[index++] = shapeX;
+        data.aShape[index++] = shapeY;
+        data.aShape.currentIndex = index;
+
+        index = data.aTexCoord.currentIndex;
+        data.aTexCoord[index++] = texX;
+        data.aTexCoord[index++] = texY;
+        data.aTexCoord.currentIndex = index;
+
+        // data.aShape.push(shapeX, shapeY);
+        // data.aTexCoord.push(texX, texY);
     }
 
     /**
@@ -648,15 +660,39 @@ export default class PointPack extends VectorPack {
      * @param {Number} texy - flip quad's tex coord y
      */
     _fillData(data, alongLine, textCount, glyphOffset, anchor, vertical, axis, angleR) {
-        data.aCount.push(textCount);
+        // data.aCount.push(textCount);
+
+        let index = data.aCount.currentIndex;
+        data.aCount[index++] = textCount;
+        data.aCount.currentIndex = index;
+
         if (alongLine) {
-            data.aGlyphOffset.push(glyphOffset[0], glyphOffset[1]);
+            // data.aGlyphOffset.push(glyphOffset[0], glyphOffset[1]);
+            index = data.aGlyphOffset.currentIndex;
+            data.aGlyphOffset[index++] = glyphOffset[0];
+            data.aGlyphOffset[index++] = glyphOffset[1];
+            data.aGlyphOffset.currentIndex = index;
+
             if (this._is3DPitchText()) {
-                data.aPitchRotation.push(axis[0], axis[1], angleR);
+                // data.aPitchRotation.push(axis[0], axis[1], angleR);
+                index = data.aPitchRotation.currentIndex;
+                data.aPitchRotation[index++] = axis[0];
+                data.aPitchRotation[index++] = axis[1];
+                data.aPitchRotation[index++] = angleR;
+                data.aPitchRotation.currentIndex = index;
             }
             const startIndex = anchor.startIndex;
-            data.aSegment.push(anchor.segment + startIndex, startIndex, anchor.line.length);
-            data.aVertical.push(vertical);
+            // data.aSegment.push(anchor.segment + startIndex, startIndex, anchor.line.length);
+            index = data.aSegment.currentIndex;
+            data.aSegment[index++] = anchor.segment + startIndex;
+            data.aSegment[index++] = startIndex;
+            data.aSegment[index++] = anchor.line.length;
+            data.aSegment.currentIndex = index;
+
+            // data.aVertical.push(vertical);
+            let index = data.aVertical.currentIndex;
+            data.aVertical[index++] = vertical;
+            data.aVertical.currentIndex = index;
         }
     }
 
@@ -674,57 +710,111 @@ export default class PointPack extends VectorPack {
             markerAllowOverlapFn, markerIgnorePlacementFn,
             markerOpacityFn } = this._fnTypes;
         if (textFillFn) {
-            data.aTextFill.push(...textFill);
+            // data.aTextFill.push(...textFill);
+            let index = data.aTextFill.currentIndex;
+            data.aTextFill[index++] = textFill[0];
+            data.aTextFill[index++] = textFill[1];
+            data.aTextFill[index++] = textFill[2];
+            data.aTextFill[index++] = textFill[3];
+            data.aTextFill.currentIndex = index;
         }
         if (textSizeFn) {
-            data.aTextSize.push(textSize);
+            // data.aTextSize.push(textSize);
+            let index = data.aTextSize.currentIndex;
+            data.aTextSize[index++] = textSize;
+            data.aTextSize.currentIndex = index;
         }
         if (textHaloFillFn) {
-            data.aTextHaloFill.push(...textHaloFill);
+            // data.aTextHaloFill.push(...textHaloFill);
+            let index = data.aTextHaloFill.currentIndex;
+            data.aTextHaloFill[index++] = textHaloFill[0];
+            data.aTextHaloFill[index++] = textHaloFill[1];
+            data.aTextHaloFill[index++] = textHaloFill[2];
+            data.aTextHaloFill[index++] = textHaloFill[3];
+            data.aTextHaloFill.currentIndex = index;
         }
         if (textHaloRadiusFn) {
-            data.aTextHaloRadius.push(textHaloRadius);
+            // data.aTextHaloRadius.push(textHaloRadius);
+            let index = data.aTextHaloRadius.currentIndex;
+            data.aTextHaloRadius[index++] = textHaloRadius;
+            data.aTextHaloRadius.currentIndex = index;
         }
         if (textHaloOpacityFn) {
-            data.aTextHaloOpacity.push(textHaloOpacity);
+            // data.aTextHaloOpacity.push(textHaloOpacity);
+            let index = data.aTextHaloOpacity.currentIndex;
+            data.aTextHaloOpacity[index++] = textHaloOpacity;
+            data.aTextHaloOpacity.currentIndex = index;
         }
         if (textDxFn) {
-            data.aTextDx.push(textDx);
+            // data.aTextDx.push(textDx);
+            let index = data.aTextDx.currentIndex;
+            data.aTextDx[index++] = textDx;
+            data.aTextDx.currentIndex = index;
         }
         if (textDyFn) {
-            data.aTextDy.push(textDy);
+            // data.aTextDy.push(textDy);
+            let index = data.aTextDy.currentIndex;
+            data.aTextDy[index++] = textDy;
+            data.aTextDy.currentIndex = index;
         }
         if (markerWidthFn) {
-            data.aMarkerWidth.push(markerWidth);
+            // data.aMarkerWidth.push(markerWidth);
+            let index = data.aMarkerWidth.currentIndex;
+            data.aMarkerWidth[index++] = markerWidth;
+            data.aMarkerWidth.currentIndex = index;
         }
         if (markerHeightFn) {
-            data.aMarkerHeight.push(markerHeight);
+            // data.aMarkerHeight.push(markerHeight);
+            let index = data.aMarkerHeight.currentIndex;
+            data.aMarkerHeight[index++] = markerHeight;
+            data.aMarkerHeight.currentIndex = index;
         }
         if (markerDxFn) {
-            data.aMarkerDx.push(markerDx);
+            // data.aMarkerDx.push(markerDx);
+            let index = data.aMarkerDx.currentIndex;
+            data.aMarkerDx[index++] = markerDx;
+            data.aMarkerDx.currentIndex = index;
         }
         if (markerDyFn) {
-            data.aMarkerDy.push(markerDy);
+            // data.aMarkerDy.push(markerDy);
+            let index = data.aMarkerDy.currentIndex;
+            data.aMarkerDy[index++] = markerDy;
+            data.aMarkerDy.currentIndex = index;
         }
         const opacityFn = markerOpacityFn || textOpacityFn;
         if (opacityFn) {
-            data.aColorOpacity.push(opacity);
+            // data.aColorOpacity.push(opacity);
+            let index = data.aColorOpacity.currentIndex;
+            data.aColorOpacity[index++] = opacity;
+            data.aColorOpacity.currentIndex = index;
         }
         if (textPitchAlignmentFn || markerPitchAlignmentFn) {
-            data.aPitchAlign.push(pitchAlign);
+            // data.aPitchAlign.push(pitchAlign);
+            let index = data.aPitchAlign.currentIndex;
+            data.aPitchAlign[index++] = pitchAlign;
+            data.aPitchAlign.currentIndex = index;
         }
         if (markerRotationAlignmentFn ||  textRotationAlignmentFn) {
-             data.aRotationAlign.push(rotateAlign);
+            //  data.aRotationAlign.push(rotateAlign);
+            let index = data.aRotationAlign.currentIndex;
+            data.aRotationAlign[index++] = rotateAlign;
+            data.aRotationAlign.currentIndex = index;
         }
         if (markerRotationFn || textRotationFn) {
-            data.aRotation.push(rotation * 9362)
+            // data.aRotation.push(rotation * 9362)
+            let index = data.aRotation.currentIndex;
+            data.aRotation[index++] = rotation * 9362;
+            data.aRotation.currentIndex = index;
         }
         const allowOverlapFn = markerAllowOverlapFn || textAllowOverlapFn;
         const ignorePlacementFn = markerIgnorePlacementFn || textIgnorePlacementFn;
         if (allowOverlapFn || ignorePlacementFn) {
             const overlap = (allowOverlapFn ? 1 << 3 : 0) + allowOverlap * (1 << 2);
             const placement = (ignorePlacementFn ? 1 << 1 : 0) + ignorePlacement;
-            data.aOverlap.push(overlap + placement);
+            // data.aOverlap.push(overlap + placement);
+            let index = data.aOverlap.currentIndex;
+            data.aOverlap[index++] = overlap + placement;
+            data.aOverlap.currentIndex = index;
         }
         //update pack properties
         if (textHaloRadius > 0) {
