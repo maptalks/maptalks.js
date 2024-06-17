@@ -1779,6 +1779,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             }
         }
         this._clearAltitudeCache();
+        this.onPositionChanged();
         return this;
     }
 

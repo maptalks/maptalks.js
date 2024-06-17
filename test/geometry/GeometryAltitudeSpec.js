@@ -455,4 +455,20 @@ describe('Geometry.Altitude', function () {
         }, 100);
     });
 
+    it('#2354 fire positionchange event when altitude update', function (done) {
+        map.addLayer(layer);
+        const point = new maptalks.Marker(map.getCenter()).addTo(layer);
+
+        setTimeout(() => {
+            var spy = sinon.spy();
+            point.on('positionchange', spy);
+            point.setAltitude(100);
+            setTimeout(() => {
+                expect(spy.called).to.be.ok();
+                done();
+            }, 100);
+
+        }, 100);
+    });
+
 });
