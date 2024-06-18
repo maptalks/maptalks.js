@@ -206,7 +206,7 @@ describe('render specs', () => {
             layer.setServiceOpacity(0, 0.5);
             setTimeout(function() {
                 const pixel = pickPixel(map, 255, 497, 1, 1);
-                assert(pixelMatch([255, 255, 255, 63], pixel) === true);
+                assert(pixelMatch([255, 255, 255, 127], pixel) === true);
                 done();
             }, 200);
         });

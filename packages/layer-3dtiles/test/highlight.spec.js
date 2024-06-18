@@ -137,7 +137,7 @@ describe('highlight and showOnly specs', () => {
             id: 0,
             opacity: 0.5
         };
-        runner(done, layer, { renderCount: 1, highlights, expected: new Uint8ClampedArray([255, 255, 255, 63]) });
+        runner(done, layer, { renderCount: 1, highlights, expected: new Uint8ClampedArray([255, 255, 255, 127]) });
     });
 
     it('highlight visible', done => {

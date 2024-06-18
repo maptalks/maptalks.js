@@ -1527,7 +1527,7 @@ export default class TileMeshPainter {
                 blend: {
                     enable: true,
                     func: {
-                        src: 'src alpha',
+                        src: 'one',
                         dst: 'one minus src alpha'
                     },
                     equation: 'add'
@@ -1703,7 +1703,7 @@ export default class TileMeshPainter {
             blend: {
                 enable: true,
                 func: {
-                    src: 'src alpha',
+                    src: 1,
                     dst: 'one minus src alpha'
                 },
                 equation: 'add'
