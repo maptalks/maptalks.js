@@ -100,6 +100,7 @@ class VectorLayer extends OverlayLayer {
             for (let i = 0, len = geos.length; i < len; i++) {
                 const geo = geos[i];
                 if (geo) {
+                    geo._clearAltitudeCache();
                     geo.fire('positionchange');
                 }
             }
