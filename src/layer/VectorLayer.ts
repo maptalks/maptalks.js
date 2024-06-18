@@ -95,6 +95,15 @@ class VectorLayer extends OverlayLayer {
 
     onConfig(conf: Record<string, any>) {
         super.onConfig(conf);
+        if (!isNil(conf['enableAltitude'])) {
+            const geos = this.getGeometries() || [];
+            for (let i = 0, len = geos.length; i < len; i++) {
+                const geo = geos[i];
+                if (geo) {
+                    geo.fire('positionchange');
+                }
+            }
+        }
         if (conf['enableAltitude'] || conf['drawAltitude'] || conf['altitudeProperty']) {
             const renderer = this.getRenderer();
             if (renderer && renderer.setToRedraw) {

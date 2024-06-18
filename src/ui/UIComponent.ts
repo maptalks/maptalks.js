@@ -820,7 +820,15 @@ class UIComponent extends Eventable(Class) {
     onGeometryPositionChange(param) {
         if (this._owner && this.isVisible()) {
             this._showBySymbolChange = true;
-            this.show(param['target'].getCenter());
+            const target = param.target;
+            const center = target.getCenter();
+            if (target._getAltitude) {
+                const altitude = target._getAltitude();
+                if (isNumber(altitude)) {
+                    center.z = altitude;
+                }
+            }
+            this.show(center);
             delete this._showBySymbolChange;
         }
     }
