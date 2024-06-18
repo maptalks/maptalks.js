@@ -1,4 +1,4 @@
-import { extend, isFunction, isNumber } from '../core/util';
+import { extend, isFunction, isNil, isNumber } from '../core/util';
 import { trim } from '../core/util/strings';
 import {
     on,
@@ -572,6 +572,16 @@ class UIComponent extends Eventable(Class) {
             //altitude is array from linestring ,polygon etc when coordinates carry z value [[x,y,z],[x,y,z],....];
             if (!isNumber(altitude)) {
                 altitude = 0;
+            }
+        }
+        if (this._owner.getLayer) {
+            const layer = (this._owner as Geometry).getLayer();
+            //VectorLayer
+            if (layer && !isNil(layer.options['enableAltitude']) && !layer.options['enableAltitude']) {
+                altitude = (this._owner as Geometry)._getAltitude() as number || 0;
+                if (!isNumber(altitude)) {
+                    altitude = 0;
+                }
             }
         }
         const alt = this._meterToPoint(this._coordinate, altitude);
