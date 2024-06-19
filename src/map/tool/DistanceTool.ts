@@ -6,7 +6,7 @@ import Marker from '../../geometry/Marker';
 import Label from '../../geometry/Label';
 import VectorLayer from '../../layer/VectorLayer';
 import Translator from '../../lang/translator';
-import DrawTool from './DrawTool';
+import DrawTool, { DrawToolOptions } from './DrawTool';
 import Coordinate from '../../geo/Coordinate';
 import { VectorMarkerSymbol } from '../../symbol';
 
@@ -22,7 +22,7 @@ export type DistanceToolOptions = {
     formatLabelContent?: any,
     clearButtonSymbol?: any,
     zIndex?: number
-}
+} & DrawToolOptions;
 
 /**
  * 配置项说明
@@ -40,7 +40,7 @@ export type DistanceToolOptions = {
  * @memberOf DistanceTool
  * @instance
  */
-const options:DistanceToolOptions = {
+const options: DistanceToolOptions = {
     'formatLabelContent': null,
     'decimalPlaces': 2,
     'mode': 'LineString',
@@ -121,6 +121,7 @@ const options:DistanceToolOptions = {
  *
  */
 class DistanceTool extends DrawTool {
+    options: DistanceToolOptions;
     _measureLayers: Array<any>;
     translator: Translator;
     _tailMarker?: any;
@@ -146,7 +147,7 @@ class DistanceTool extends DrawTool {
         this.on('enable', this._afterEnable, this)
             .on('disable', this._afterDisable, this);
         this._measureLayers = [];
-        this.translator = new Translator(this.options['language']);
+        this.translator = new Translator(this.options['language'] as any);
     }
 
     /**
@@ -236,7 +237,7 @@ class DistanceTool extends DrawTool {
         return this;
     }
 
-    _formatLabelContent(params:any) {
+    _formatLabelContent(params: any) {
         const formatLabelContent = this.options.formatLabelContent;
         if (formatLabelContent && isFunction(formatLabelContent)) {
             return formatLabelContent.call(this, params) + '';
@@ -244,8 +245,8 @@ class DistanceTool extends DrawTool {
         return null;
     }
 
-    _measure(toMeasure:any) {
-        const map:any = this.getMap();
+    _measure(toMeasure: any) {
+        const map: any = this.getMap();
         let length;
         if (toMeasure instanceof Geometry) {
             length = map.computeGeometryLength(toMeasure);
@@ -297,8 +298,8 @@ class DistanceTool extends DrawTool {
             .off('drawend', this._msOnDrawEnd, this);
     }
 
-    _msOnDrawStart(param:any) {
-        const map:any = this.getMap();
+    _msOnDrawStart(param: any) {
+        const map: any = this.getMap();
         // const prjCoord = map._pointToPrj(param['point2d']);
         const uid = UID();
         const layerId = 'distancetool_' + uid;
@@ -335,7 +336,7 @@ class DistanceTool extends DrawTool {
         this._addVertexMarker(marker, startLabel);
     }
 
-    _msOnMouseMove(param:any) {
+    _msOnMouseMove(param: any) {
         const ms = this._measure(this._msGetCoordsToMeasure(param));
         if (!this._tailMarker) {
             const symbol = extendSymbol(this.options['vertexSymbol']);
@@ -357,11 +358,11 @@ class DistanceTool extends DrawTool {
         // this._tailLabel._setPrjCoordinates(lastCoord);
     }
 
-    _msGetCoordsToMeasure(param:any) {
+    _msGetCoordsToMeasure(param: any) {
         return param['geometry'].getCoordinates().concat([param['coordinate']]);
     }
 
-    _msOnDrawVertex(param:any) {
+    _msOnDrawVertex(param: any) {
         // const prjCoords = this._geometry._getPrjCoordinates();
         // const lastCoord = prjCoords[prjCoords.length - 1];
 
@@ -381,7 +382,7 @@ class DistanceTool extends DrawTool {
         this._lastVertex = vertexLabel;
     }
 
-    _addVertexMarker(marker:Marker, vertexLabel?:any) {
+    _addVertexMarker(marker: Marker, vertexLabel?: any) {
         if (!this._vertexes) {
             this._vertexes = [];
         }
@@ -395,7 +396,7 @@ class DistanceTool extends DrawTool {
         }
     }
 
-    _msOnDrawEnd(param:any) {
+    _msOnDrawEnd(param: any) {
         this._clearTailMarker();
         if (param['geometry'].getCoordinates().length < 2) {
             this._lastMeasure = 0;
@@ -416,7 +417,7 @@ class DistanceTool extends DrawTool {
         this._lastMeasure = geo.getLength();
     }
 
-    _addClearMarker(coordinates:Coordinate, prjCoord:any, dx:number|string) {
+    _addClearMarker(coordinates: Coordinate, prjCoord: any, dx: number | string) {
         let symbol = this.options['clearButtonSymbol'];
         let dxSymbol: any | Array<any> = {
             'markerDx': (symbol['markerDx'] || 0) + dx,
@@ -434,7 +435,7 @@ class DistanceTool extends DrawTool {
             });
         }
         symbol = extendSymbol(symbol, dxSymbol);
-        const endMarker:any = new Marker(coordinates, {
+        const endMarker: any = new Marker(coordinates, {
             'symbol': symbol
         });
         const measureLineLayer = this._measureLineLayer,

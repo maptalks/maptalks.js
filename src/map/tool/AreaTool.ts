@@ -1,6 +1,6 @@
 import Size from '../../geo/Size';
 import { Geometry, Marker, Label } from '../../geometry';
-import DistanceTool from './DistanceTool';
+import DistanceTool, { DistanceToolOptions } from './DistanceTool';
 import Translator from '../../lang/translator';
 
 
@@ -12,7 +12,7 @@ export type AreaToolOptions = {
     vertexSymbol?: any,
     labelOptions?: any,
     mode?: string
-}
+} & DistanceToolOptions;
 
 /**
  * options 配置项说明
@@ -67,7 +67,8 @@ const options: AreaToolOptions = {
  *    'language' : 'en-US'
  *  }).addTo(map);
  */
-class AreaTool extends DistanceTool {    
+class AreaTool extends DistanceTool {
+    options: AreaToolOptions;
     /**
      * 配置项
      * 
@@ -80,17 +81,17 @@ class AreaTool extends DistanceTool {
      * @param options.vertexSymbol=null   - symbol of the vertice
      * @param options.labelOptions=null   - construct options of the vertice labels.
      */
-    constructor(options:AreaToolOptions) {
+    constructor(options: AreaToolOptions) {
         super(options);
         // this.on('enable', this._afterEnable, this)
         //     .on('disable', this._afterDisable, this);
-        this.translator = new Translator(this.options['language']);
+        this.translator = new Translator(this.options['language'] as any);
         this._measureLayers = [];
     }
 
-    _measure(toMeasure:Geometry|Array<any>) {
-        const map:any = this.getMap();
-        let area:number;
+    _measure(toMeasure: Geometry | Array<any>) {
+        const map: any = this.getMap();
+        let area: number;
         if (toMeasure instanceof Geometry) {
             area = map.computeGeometryArea(toMeasure);
         } else if (Array.isArray(toMeasure)) {
@@ -108,7 +109,7 @@ class AreaTool extends DistanceTool {
             this.translator.translate('areatool.units.feet'),
             this.translator.translate('areatool.units.mile')];
 
-        let content:string = '';
+        let content: string = '';
         const decimals = this.options['decimalPlaces'];
         if (this.options['metric']) {
             content += area < 1E6 ? area.toFixed(decimals) + units[0] : (area / 1E6).toFixed(decimals) + units[1];
@@ -124,11 +125,11 @@ class AreaTool extends DistanceTool {
         return content;
     }
 
-    _msGetCoordsToMeasure(param:any) {
+    _msGetCoordsToMeasure(param: any) {
         return param['geometry'].getShell().concat([param['coordinate']]);
     }
 
-    _msOnDrawVertex(param:any) {
+    _msOnDrawVertex(param: any) {
         // const prjCoord = this.getMap()._pointToPrj(param['point2d']);
         const lastCoordinate = this._getLasttCoordinate() || param.coordinate;
         const vertexMarker = new Marker(lastCoordinate.copy(), {
@@ -140,10 +141,10 @@ class AreaTool extends DistanceTool {
         this._addVertexMarker(vertexMarker);
     }
 
-    _msOnDrawEnd(param:any) {
+    _msOnDrawEnd(param: any) {
         this._clearTailMarker();
         let prjCoord;
-        const map:any = this.getMap()
+        const map: any = this.getMap()
         if (param['point2d']) {
             prjCoord = map._pointToPrj(param['point2d']);
         } else {

@@ -18,15 +18,17 @@ export type DrawToolOptions = {
     zIndex?: number,
     doubleClickZoom?: boolean,
     ignoreMouseleave?: boolean,
-    enableAltitude?: boolean
+    enableAltitude?: boolean,
+    interactive?: boolean,
+    edgeAutoComplete?: boolean
 }
 
 export type modeActionType = {
-    action?: string|Array<string>,
+    action?: string | Array<string>,
     create?: any,
     update?: any,
     generate?: any,
-    clickLimit?: number|string
+    clickLimit?: number | string
 }
 
 /**
@@ -40,6 +42,8 @@ export type modeActionType = {
  * @property {Boolean} [options.autoPanAtEdge=false]  - Whether to make edge judgement or not.
  * @property {Boolean} [options.blockGeometryEvents=false]  - Whether Disable geometryEvents when drawing.
  * @property {Number} [options.zIndex=Number.MAX_VALUE]  - drawlayer zIndex.The default drawn layer will be at the top
+ * @property {Boolean} [options.enableAltitude=true]  - enable altitude
+ * @property {Boolean} [options.interactive=true] - whether the mouse can be interactived.
  * @memberOf DrawTool
  * @instance
  */
@@ -58,7 +62,8 @@ const options: DrawToolOptions = {
     'ignoreMouseleave': true,
     'blockGeometryEvents': false,
     'zIndex': Number.MAX_VALUE,
-    'enableAltitude': true
+    'enableAltitude': true,
+    'interactive': true
 };
 
 const registeredMode = {};
@@ -81,6 +86,7 @@ const registeredMode = {};
  * }).addTo(map);
  */
 class DrawTool extends MapTool {
+    options: DrawToolOptions;
     _vertexes: Array<any>;
     _historyPointer: any;
     _events: any;
@@ -117,7 +123,7 @@ class DrawTool extends MapTool {
        }
      });
      */
-    static registerMode(name: string, modeAction:modeActionType) {
+    static registerMode(name: string, modeAction: modeActionType) {
         registeredMode[name.toLowerCase()] = modeAction;
     }
 
@@ -129,7 +135,7 @@ class DrawTool extends MapTool {
      * @param name      DrawTool mode name
      * @return          mode actions
      */
-    static getRegisterMode(name: string):any {
+    static getRegisterMode(name: string): any {
         return registeredMode[name.toLowerCase()];
     }
 
@@ -173,7 +179,7 @@ class DrawTool extends MapTool {
      * Get current mode of draw tool
      * @return mode
      */
-    getMode():string {
+    getMode(): string {
         if (this.options['mode']) {
             return this.options['mode'].toLowerCase();
         }
@@ -189,7 +195,7 @@ class DrawTool extends MapTool {
      * @returns {DrawTool} this
      * @expose
      */
-    setMode(mode:string):DrawTool {
+    setMode(mode: string): DrawTool {
         if (this._geometry) {
             this._geometry.remove();
             delete this._geometry;
@@ -213,7 +219,7 @@ class DrawTool extends MapTool {
      * Get symbol of the draw tool
      * @return symbol
      */
-    getSymbol():any {
+    getSymbol(): any {
         const symbol = this.options['symbol'];
         if (symbol) {
             return extendSymbol(symbol);
@@ -230,7 +236,7 @@ class DrawTool extends MapTool {
      * @param symbol - symbol set
      * @returns {DrawTool} this
      */
-    setSymbol(symbol:any):DrawTool {
+    setSymbol(symbol: any): DrawTool {
         if (!symbol) {
             return this;
         }
@@ -248,7 +254,7 @@ class DrawTool extends MapTool {
      * Get geometry is currently drawing
      * @return geometry currently drawing
      */
-    getCurrentGeometry():Geometry {
+    getCurrentGeometry(): Geometry {
         return this._geometry;
     }
 
@@ -300,7 +306,7 @@ class DrawTool extends MapTool {
      * Undo drawing, only applicable for click/dblclick mode
      * @return this
      */
-    undo():DrawTool {
+    undo() {
         const registerMode = this._getRegisterMode();
         const action = registerMode.action;
         if (!this._shouldRecordHistory(action) || !this._historyPointer) {
@@ -318,7 +324,7 @@ class DrawTool extends MapTool {
      * Redo drawing, only applicable for click/dblclick mode
      * @return this
      */
-    redo():DrawTool {
+    redo() {
         const registerMode = this._getRegisterMode();
         const action = registerMode.action;
         if (!this._shouldRecordHistory(action) || isNil(this._historyPointer) || this._historyPointer === this._clickCoords.length) {
@@ -423,7 +429,7 @@ class DrawTool extends MapTool {
      * @param event
      * @private
      */
-    _mouseDownHandler(event:any) {
+    _mouseDownHandler(event: any) {
         this._createGeometry(event);
     }
 
@@ -435,7 +441,7 @@ class DrawTool extends MapTool {
      * @param event
      * @private
      */
-    _mouseUpHandler(event:any) {
+    _mouseUpHandler(event: any) {
         this.endDraw(event);
     }
 
@@ -447,9 +453,12 @@ class DrawTool extends MapTool {
      * @param event
      * @private
      */
-    _clickHandler(event:any) {
+    _clickHandler(event: any) {
+        if (!this.options.interactive) {
+            return this;
+        }
         event.enableAltitude = this.options.enableAltitude;
-        const map:any = this.getMap();
+        const map: any = this.getMap();
         const registerMode = this._getRegisterMode();
         // const coordinate = event['coordinate'];
         //dbclick will trigger two click
@@ -521,9 +530,9 @@ class DrawTool extends MapTool {
      * @param event
      * @private
      */
-    _createGeometry(event:any) {
+    _createGeometry(event: any) {
         const mode = this.getMode();
-        const map:any = this.getMap()
+        const map: any = this.getMap()
         const registerMode = this._getRegisterMode();
         const prjCoord = map._pointToPrj(event['point2d']);
         const symbol = this.getSymbol();
@@ -596,8 +605,11 @@ class DrawTool extends MapTool {
      * @private
      */
     _mouseMoveHandler(event) {
+        if (!this.options.interactive) {
+            return this;
+        }
         event.enableAltitude = this.options.enableAltitude;
-        const map:any = this.getMap();
+        const map: any = this.getMap();
         if (!map || map.isInteracting()) {
             return;
         }
@@ -662,6 +674,9 @@ class DrawTool extends MapTool {
      * @private
      */
     _doubleClickHandler(event) {
+        if (!this.options.interactive) {
+            return this;
+        }
         event.enableAltitude = this.options.enableAltitude;
         if (!this._geometry) {
             return;
@@ -709,7 +724,7 @@ class DrawTool extends MapTool {
      * @param [param=null] params of drawend event
      * @returns this
      */
-    endDraw(param:any):DrawTool {
+    endDraw(param: any): DrawTool {
         if (!this._geometry || this._ending) {
             return this;
         }
@@ -761,7 +776,7 @@ class DrawTool extends MapTool {
      * @return
      * @private
      */
-    _getMouseContainerPoint(event:Event):Point {
+    _getMouseContainerPoint(event: Event): Point {
         const action = this._getRegisterMode()['action'];
         if (action[0].indexOf('mousedown') >= 0 || action[0].indexOf('touchstart') >= 0) {
             //prevent map's event propogation
@@ -783,7 +798,7 @@ class DrawTool extends MapTool {
     }
 
     _getSnapResult(snapTo, containerPoint) {
-        const map:any = this.getMap();
+        const map: any = this.getMap();
         const lastContainerPoints = [];
         if (this.options.edgeAutoComplete) {
             const lastCoord = this._clickCoords[(this._historyPointer || 1) - 1];
@@ -807,7 +822,7 @@ class DrawTool extends MapTool {
 
     _getDrawLayer() {
         const drawLayerId = INTERNAL_LAYER_PREFIX + 'drawtool';
-        let drawToolLayer:any = this._map.getLayer(drawLayerId);
+        let drawToolLayer: any = this._map.getLayer(drawLayerId);
         if (!drawToolLayer) {
             drawToolLayer = new VectorLayer(drawLayerId, {
                 'enableSimplify': false,
@@ -874,7 +889,7 @@ class DrawTool extends MapTool {
     * @param  {Number} zIndex -  draw layer zIndex
     * @return this
     */
-    setLayerZIndex(zIndex):DrawTool {
+    setLayerZIndex(zIndex: number) {
         if (!isNumber(zIndex)) {
             return this;
         }
