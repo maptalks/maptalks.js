@@ -104,27 +104,23 @@ function loop() {
 
 let idleCallTime = now();
 function idleFrameLoop(deadline) {
-    const { idleTimeRemaining, idleLog, idleTimeout } = GlobalConfig;
+    const { idleTimeRemaining, idleLog } = GlobalConfig;
     if (deadline && deadline.timeRemaining) {
         const t = deadline.timeRemaining();
-        if (t > idleTimeRemaining || deadline.didTimeout) {
-            if (deadline.didTimeout && idleLog) {
-                console.error('idle timeout in', idleTimeout);
-            }
+        if (t >= idleTimeRemaining) {
             loop();
             idleCallTime = now();
         } else {
-            if (t <= idleTimeRemaining && idleLog) {
+            if (t < idleTimeRemaining && idleLog) {
                 console.warn('currrent page is busy,the timeRemaining is', t);
             }
         }
     }
-    requestIdleCallback(idleFrameLoop, { timeout: idleTimeout });
+    requestIdleCallback(idleFrameLoop);
 }
 
 function animFrameLoop() {
-    const { idleEnable } = GlobalConfig;
-    if (Browser.requestIdleCallback && idleEnable) {
+    if (Browser.requestIdleCallback) {
         const { idleForceTimeThreshold, idleLog } = GlobalConfig;
         const time = now();
         if (time - idleCallTime > idleForceTimeThreshold) {
@@ -146,9 +142,8 @@ export function startTasks() {
         return;
     }
     started = true;
-    const { idleTimeout, idleEnable } = GlobalConfig;
-    if (Browser.requestIdleCallback && idleEnable) {
-        requestIdleCallback(idleFrameLoop, { timeout: idleTimeout });
+    if (Browser.requestIdleCallback) {
+        requestIdleCallback(idleFrameLoop);
     }
     //always run requestAnimFrame
     requestAnimFrame(animFrameLoop);
