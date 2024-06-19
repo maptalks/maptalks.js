@@ -1,4 +1,4 @@
-import { extend, isFunction, isNil, isNumber } from '../core/util';
+import { extend, isFunction, isNumber } from '../core/util';
 import { trim } from '../core/util/strings';
 import {
     on,
