@@ -95,8 +95,7 @@ class TileHashset {
  * @property              [options.fetchOptions=object]       - fetch params,such as fetchOptions: { 'headers': { 'accept': '' } }, about accept value more info https://developer.mozilla.org/en-US/docs/Web/HTTP/Content_negotiation/List_of_default_Accept_values
  * @property             [options.awareOfTerrain=true]       - if the tile layer is aware of terrain.
  * @property             [options.bufferPixel=0.5]       - tile buffer size,the unit is pixel
- * @property             [options.depthMask=true]       - mask to decide whether to write depth buffer
- * @property             [options.onlyLoadTilesInMask=false]       - only load tiles in mask
+ * @property             [options.depthMask=true]       - mask to decide whether to write depth buffe
  * @memberOf TileLayer
  * @instance
  */
@@ -162,7 +161,6 @@ const options: TileLayerOptionsType = {
     'mipmapTexture': true,
     'depthMask': true,
     'currentTilesFirst': true,
-    'onlyLoadTilesInMask': false,
     'forceRenderOnMoving': true
 };
 
@@ -274,7 +272,7 @@ class TileLayer extends Layer {
         } else {
             result = this._getCascadeTiles(z, parentLayer);
         }
-        if (!this.options.onlyLoadTilesInMask) {
+        if (!this._maskGeoJSON) {
             return result;
         }
         const tileGrids: Array<TileGridType> = result.tileGrids || [];
@@ -1646,5 +1644,4 @@ export type TileLayerOptionsType = LayerOptionsType & {
     tileStackDepth?: number;
     mipmapTexture?: boolean;
     currentTilesFirst?: boolean;
-    onlyLoadTilesInMask?: boolean;
 };
