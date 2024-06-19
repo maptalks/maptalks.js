@@ -82,6 +82,7 @@ const options: VectorLayerOptionsType = {
 class VectorLayer extends OverlayLayer {
 
     options: VectorLayerOptionsType;
+    isVectorLayer: boolean;
     /**
      * @param id                    - layer's id
      * @param geometries=null       - geometries to add
@@ -91,6 +92,7 @@ class VectorLayer extends OverlayLayer {
      */
     constructor(id: string, geometries: VectorLayerOptionsType | Array<Geometry>, options?: VectorLayerOptionsType) {
         super(id, geometries, options);
+        this.isVectorLayer = true;
     }
 
     onConfig(conf: Record<string, any>) {

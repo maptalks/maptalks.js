@@ -577,7 +577,7 @@ class UIComponent extends Eventable(Class) {
         if (this._owner.getLayer) {
             const layer = (this._owner as Geometry).getLayer();
             //VectorLayer
-            if (layer && !isNil(layer.options['enableAltitude']) && !layer.options['enableAltitude']) {
+            if (layer && (layer as any).isVectorLayer) {
                 altitude = (this._owner as Geometry)._getAltitude() as number || 0;
                 if (!isNumber(altitude)) {
                     altitude = 0;
