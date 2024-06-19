@@ -82,6 +82,7 @@ const options: VectorLayerOptionsType = {
 class VectorLayer extends OverlayLayer {
 
     options: VectorLayerOptionsType;
+    isVectorLayer: boolean;
     /**
      * @param id                    - layer's id
      * @param geometries=null       - geometries to add
@@ -91,10 +92,21 @@ class VectorLayer extends OverlayLayer {
      */
     constructor(id: string, geometries: VectorLayerOptionsType | Array<Geometry>, options?: VectorLayerOptionsType) {
         super(id, geometries, options);
+        this.isVectorLayer = true;
     }
 
     onConfig(conf: Record<string, any>) {
         super.onConfig(conf);
+        if (!isNil(conf['enableAltitude'])) {
+            const geos = this.getGeometries() || [];
+            for (let i = 0, len = geos.length; i < len; i++) {
+                const geo = geos[i];
+                if (geo) {
+                    geo._clearAltitudeCache();
+                    geo.fire('positionchange');
+                }
+            }
+        }
         if (conf['enableAltitude'] || conf['drawAltitude'] || conf['altitudeProperty']) {
             const renderer = this.getRenderer();
             if (renderer && renderer.setToRedraw) {
