@@ -481,6 +481,8 @@ describe('Geometry.Altitude', function () {
             layer.config({ enableAltitude: false });
             setTimeout(() => {
                 expect(spy.called).to.be.ok();
+                expect(point._minAlt).to.be.equal(undefined);
+                expect(point._maxAlt).to.be.equal(undefined);
                 done();
             }, 100);
 
