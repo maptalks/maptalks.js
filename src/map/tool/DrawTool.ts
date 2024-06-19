@@ -19,7 +19,7 @@ export type DrawToolOptions = {
     doubleClickZoom?: boolean,
     ignoreMouseleave?: boolean,
     enableAltitude?: boolean,
-    blockMouseInteraction?: boolean,
+    interactive?: boolean,
     edgeAutoComplete?: boolean
 }
 
@@ -43,7 +43,7 @@ export type modeActionType = {
  * @property {Boolean} [options.blockGeometryEvents=false]  - Whether Disable geometryEvents when drawing.
  * @property {Number} [options.zIndex=Number.MAX_VALUE]  - drawlayer zIndex.The default drawn layer will be at the top
  * @property {Boolean} [options.enableAltitude=true]  - enable altitude
- * @property {Boolean} [options.blockMouseInteraction=false]  - block mouse Interaction
+ * @property {Boolean} [options.interactive=true] - whether the mouse can be interactived.
  * @memberOf DrawTool
  * @instance
  */
@@ -63,7 +63,7 @@ const options: DrawToolOptions = {
     'blockGeometryEvents': false,
     'zIndex': Number.MAX_VALUE,
     'enableAltitude': true,
-    'blockMouseInteraction': false
+    'interactive': true
 };
 
 const registeredMode = {};
@@ -454,7 +454,7 @@ class DrawTool extends MapTool {
      * @private
      */
     _clickHandler(event: any) {
-        if (this.options.blockMouseInteraction) {
+        if (!this.options.interactive) {
             return this;
         }
         event.enableAltitude = this.options.enableAltitude;
@@ -605,7 +605,7 @@ class DrawTool extends MapTool {
      * @private
      */
     _mouseMoveHandler(event) {
-        if (this.options.blockMouseInteraction) {
+        if (!this.options.interactive) {
             return this;
         }
         event.enableAltitude = this.options.enableAltitude;
@@ -674,7 +674,7 @@ class DrawTool extends MapTool {
      * @private
      */
     _doubleClickHandler(event) {
-        if (this.options.blockMouseInteraction) {
+        if (!this.options.interactive) {
             return this;
         }
         event.enableAltitude = this.options.enableAltitude;
