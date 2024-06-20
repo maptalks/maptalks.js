@@ -986,12 +986,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 stencil: 0xFF,
                 framebuffer: targetFBO
             });
-            if (plugin.painter && !plugin.painter.needClearStencil()) {
-                this._drawTileStencil(targetFBO, plugin.painter);
-            }
-
             const polygonOffsetIndex = this._pluginOffsets[idx] || 0;
             const context = this._getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp);
+            if (plugin.painter && plugin.painter.isEnableTileStencil(context)) {
+                this._drawTileStencil(targetFBO, plugin.painter);
+            }
             const status = plugin.endFrame(context);
             if (status && status.redraw) {
                 //let plugin to determine when to redraw
@@ -1093,7 +1092,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     _drawTileStencil(fbo, painter) {
-        const only2D = painter.isOnly2D();
+        const uniqueRef = painter.isUniqueStencilRefPerTile();
         const tileZoom = this.getCurrentTileZoom();
         let stencilRenderer = this._stencilRenderer;
         if (!stencilRenderer) {
@@ -1105,18 +1104,18 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         let ref = 1;
         childTiles = childTiles.sort(sortByLevel);
         for (let i = 0; i < childTiles.length; i++) {
-            this._addTileStencil(childTiles[i].info, only2D ? ref : this.getTileLevelValue(childTiles[i].info.z, tileZoom));
+            this._addTileStencil(childTiles[i].info, uniqueRef ? ref : this.getTileLevelValue(childTiles[i].info.z, tileZoom));
             ref++;
         }
         parentTiles = parentTiles.sort(sortByLevel);
         for (let i = 0; i < parentTiles.length; i++) {
-            this._addTileStencil(parentTiles[i].info, only2D ? ref : this.getTileLevelValue(parentTiles[i].info.z, tileZoom));
+            this._addTileStencil(parentTiles[i].info, uniqueRef ? ref : this.getTileLevelValue(parentTiles[i].info.z, tileZoom));
             ref++;
         }
         //默认情况下瓦片是按照level从小到大排列的，所以倒序排列，让level较小的tile最后画（优先级最高）
         const currentTiles = tiles.sort(sortByLevel);
         for (let i = currentTiles.length - 1; i >= 0; i--) {
-            this._addTileStencil(currentTiles[i].info, only2D ? ref : this.getTileLevelValue(currentTiles[i].info.z, tileZoom));
+            this._addTileStencil(currentTiles[i].info, uniqueRef ? ref : this.getTileLevelValue(currentTiles[i].info.z, tileZoom));
             ref++;
         }
 

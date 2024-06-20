@@ -57,6 +57,10 @@ const GLTFMixin = Base =>
             this._initGLTF();
         }
 
+        isUniqueStencilRefPerTile() {
+            return false;
+        }
+
         isAnimating() {
             const symbols = this.getSymbols();
             for (let i = 0; i < symbols.length; i++) {

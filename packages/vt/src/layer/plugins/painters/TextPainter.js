@@ -322,7 +322,7 @@ export default class TextPainter extends CollisionPainter {
                 uniforms.textPitchFilter = 2;
             }
         }
-        
+
         super.callRenderer(shader, uniforms, context);
     }
 
@@ -689,7 +689,7 @@ export default class TextPainter extends CollisionPainter {
             return false;
         }
         const onlyOne = lastChrIdx - firstChrIdx <= 3;
-        
+
         const flip = Math.floor(normal / 2);
         const vertical = normal % 2;
 
@@ -881,8 +881,13 @@ export default class TextPainter extends CollisionPainter {
         }
     }
 
-    needClearStencil() {
-        return true;
+    isUniqueStencilRefPerTile() {
+        return false;
+    }
+
+    isEnableTileStencil() {
+        const isIntel = this.layer.getRenderer().isEnableWorkAround('win-intel-gpu-crash');
+        return !isIntel;
     }
 
     init() {
@@ -925,6 +930,11 @@ export default class TextPainter extends CollisionPainter {
             commandProps = extend({}, extraCommandProps);
             commandProps.stencil = extend({}, extraCommandProps.stencil);
             commandProps.stencil.enable = true;
+            commandProps.stencil.func.cmp = '<';
+            commandProps.stencil.func.ref = (context, props) => {
+                //level * 2 以避免相邻level的halo和非halo产生相同的ref
+                return props.level * 2 + (props.isHalo || 0) + 1;
+            };
         }
         this._shaderAlongLine = new reshader.MeshShader({
             vert: vertAlongLine, frag,

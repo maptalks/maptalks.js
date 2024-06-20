@@ -113,6 +113,11 @@ class WaterPainter extends BasicPainter {
         }
     }
 
+    isEnableTileStencil() {
+        // water的绘制比较特殊，是通过先绘制water部分的stencil，再统一绘制water效果实现的，所以不能开启tile stencil
+        return false;
+    }
+
     init(context) {
         this.createIBLTextures();
         const regl = this.regl;
@@ -373,10 +378,6 @@ class WaterPainter extends BasicPainter {
             uniforms,
             extraCommandProps
         });
-    }
-
-    needClearStencil() {
-        return true;
     }
 
     getUniformValues(map) {

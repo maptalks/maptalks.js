@@ -28,6 +28,10 @@ class NativePointPainter extends BasicPainter {
         return this.layer.options.awareOfTerrain;
     }
 
+    isUniqueStencilRefPerTile() {
+        return false;
+    }
+
     createMesh(geo, transform) {
         const { geometry, symbolIndex, ref } = geo;
         const symbol = this.getSymbol(symbolIndex);

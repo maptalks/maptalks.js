@@ -53,8 +53,13 @@ class NativeLinePainter extends BasicPainter {
         return uniforms;
     }
 
+    isEnableTileStencil(context) {
+        const isRenderingTerrainSkin = !!(context && context.isRenderingTerrain && this.isTerrainSkin());
+        const isEnableStencil = !isRenderingTerrainSkin;
+        return isEnableStencil;
+    }
+
     init(context) {
-        const stencil = this.isOnly2D() && (!context || !context.isRenderingTerrain || !this.isTerrainSkin());
         const regl = this.regl;
 
         this.renderer = new reshader.Renderer(regl);
@@ -95,14 +100,16 @@ class NativeLinePainter extends BasicPainter {
             extraCommandProps: {
                 viewport,
                 stencil: {
-                    enable: true,
+                    enable: () => {
+                        return this.isEnableTileStencil(context);
+                    },
                     mask: 0xFF,
                     func: {
                         cmp: () => {
-                            return stencil ? '=' : '<=';
+                            return this.isOnly2D() ? '=' : '<=';
                         },
                         ref: (context, props) => {
-                            return stencil ? props.stencilRef : props.level;
+                            return props.stencilRef;
                         },
                         mask: 0xFF
                     },

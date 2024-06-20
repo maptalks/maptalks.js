@@ -20,8 +20,8 @@ class LinePainter extends BasicPainter {
         return ['lineBloom'];
     }
 
-    isOnly2D() {
-        // 让line的stencil用tile level而不是stencilRef来绘制
+    isUniqueStencilRefPerTile() {
+        //如果用unique ref，会导致邻居瓦片内的 linecap或linejoin 没有绘制，导致线在瓦片间出现空隙
         return false;
     }
 
@@ -500,9 +500,9 @@ class LinePainter extends BasicPainter {
 
     // LinePainter 需要在2d下打开stencil，否则会因为子级瓦片无法遮住父级瓦片的绘制，出现一些奇怪的现象
     // https://github.com/maptalks/issues/issues/677
-    isEnableStencil(context) {
+    isEnableTileStencil(context) {
         const isRenderingTerrainSkin = !!(context && context.isRenderingTerrain && this.isTerrainSkin());
-        const isEnableStencil = !!(!isRenderingTerrainSkin && super.isOnly2D());
+        const isEnableStencil = !isRenderingTerrainSkin;
         return isEnableStencil;
     }
 
@@ -527,7 +527,7 @@ class LinePainter extends BasicPainter {
             viewport,
             stencil: {
                 enable: () => {
-                    return this.isEnableStencil(context);
+                    return this.isEnableTileStencil(context);
                 },
                 mask: 0xff,
                 func: {

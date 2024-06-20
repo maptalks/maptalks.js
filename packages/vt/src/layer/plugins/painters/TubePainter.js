@@ -25,6 +25,10 @@ class TubePainter extends BasicPainter {
         return true;
     }
 
+    isUniqueStencilRefPerTile() {
+        return false;
+    }
+
     supportRenderMode(mode) {
         if (this.isAnimating()) {
             return mode === 'fxaa' || mode === 'fxaaAfterTaa';

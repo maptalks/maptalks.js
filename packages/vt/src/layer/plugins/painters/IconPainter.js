@@ -671,6 +671,10 @@ class IconPainter extends CollisionPainter {
         return !!(isMarker ? symbol['markerBloom'] : symbol['textBloom']);
     }
 
+    isUniqueStencilRefPerTile() {
+        return false;
+    }
+
     init() {
         const regl = this.regl;
         const canvas = this.canvas;
@@ -692,9 +696,25 @@ class IconPainter extends CollisionPainter {
                 return props.viewport ? props.viewport.height : (canvas ? canvas.height : 1);
             },
         };
-        
+
         const iconExtraCommandProps = {
             viewport,
+            stencil: {
+                stencil: {
+                    enable: true,
+                    func: {
+                        cmp: '<=',
+                        ref: (context, props) => {
+                            return props.stencilRef;
+                        }
+                    },
+                    op: {
+                        fail: 'keep',
+                        zfail: 'keep',
+                        zpass: 'replace'
+                    }
+                },
+            },
             blend: {
                 enable: true,
                 func: this.getBlendFunc(),

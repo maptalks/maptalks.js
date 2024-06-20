@@ -938,8 +938,12 @@ class Painter {
         return false;
     }
 
-    needClearStencil() {
-        return false;
+    isEnableTileStencil() {
+        return true;
+    }
+
+    isUniqueStencilRefPerTile() {
+        return this.isOnly2D();
     }
 
     supportRenderMode(mode) {
