@@ -392,7 +392,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const layer = this.layer;
         this.prepareCanvas();
         if (!this.ready || !layer.ready) {
-            this.completeRender();
             return;
         }
         let plugins = this._plugins[this._styleCounter];
@@ -403,7 +402,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
         const featurePlugins = this._getFeaturePlugins();
         if (!layer.isDefaultRender() && (!plugins.length && !featurePlugins.length)) {
-            this.completeRender();
             return;
         }
         if (layer.options['collision']) {
@@ -420,8 +418,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
 
         this._endFrame(timestamp);
-
-        this.completeRender();
         this._currentTimestamp = timestamp;
     }
 
