@@ -8,6 +8,8 @@ import Point from '../../geo/Point';
 import Geometry from '../../geometry/Geometry';
 import VectorLayer from '../../layer/VectorLayer';
 import MapTool from './MapTool';
+import { Coordinate } from '../../geo';
+import { MapEventDataType } from '../Map.DomEvents';
 
 export type DrawToolOptions = {
     mode?: string,
@@ -20,7 +22,8 @@ export type DrawToolOptions = {
     ignoreMouseleave?: boolean,
     enableAltitude?: boolean,
     interactive?: boolean,
-    edgeAutoComplete?: boolean
+    edgeAutoComplete?: boolean,
+    transformCoordinate?: (coordinate: Coordinate, e: MapEventDataType) => Coordinate | undefined
 }
 
 export type modeActionType = {
@@ -63,7 +66,8 @@ const options: DrawToolOptions = {
     'blockGeometryEvents': false,
     'zIndex': Number.MAX_VALUE,
     'enableAltitude': true,
-    'interactive': true
+    'interactive': true,
+    'transformCoordinate': null
 };
 
 const registeredMode = {};

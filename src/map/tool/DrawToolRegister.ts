@@ -2,7 +2,7 @@ import Ellipse from '../../geometry/Ellipse';
 import ArcCurve from '../../geometry/ArcCurve';
 import LineString from '../../geometry/LineString';
 import { extendSymbol } from '../../core/util/style';
-import { extend } from '../../core/util/';
+import { extend, isFunction } from '../../core/util/';
 import QuadBezierCurve from '../../geometry/QuadBezierCurve';
 import Coordinate from '../../geo/Coordinate';
 import Point from '../../geo/Point';
@@ -29,25 +29,37 @@ function queryTerrainCoordinates(projection: any, prjCoords: any, mapEvent: any)
         prjCoords = [prjCoords];
     }
     let coordinates;
-    if (!mapEvent || !mapEvent.target || !mapEvent.target._queryTerrainInfo) {
+    const drawTool = mapEvent.drawTool || {};
+    const transformCoordinate = (drawTool.options || {}).transformCoordinate;
+    if (transformCoordinate && isFunction(transformCoordinate)) {
         coordinates = prjCoords.map(c => {
             return projection.unproject(c);
         });
-        return isArray ? coordinates : coordinates[0];
-    }
-    const map = mapEvent.target;
-    const enableAltitude = mapEvent.enableAltitude;
-    coordinates = prjCoords.map(c => {
-        //prj to container point
-        if (enableAltitude) {
-            const point = map.prjToContainerPoint(c);
-            const terrain = map._queryTerrainInfo(point);
-            if (terrain && terrain.coordinate) {
-                return terrain.coordinate;
-            }
+        coordinates = coordinates.map((c: Coordinate) => {
+            const newCoordinata = transformCoordinate(c, mapEvent);
+            return newCoordinata || c;
+        });
+    } else {
+        if (!mapEvent || !mapEvent.target || !mapEvent.target._queryTerrainInfo) {
+            coordinates = prjCoords.map(c => {
+                return projection.unproject(c);
+            });
+            return isArray ? coordinates : coordinates[0];
         }
-        return projection.unproject(c);
-    });
+        const map = mapEvent.target;
+        const enableAltitude = mapEvent.enableAltitude;
+        coordinates = prjCoords.map(c => {
+            //prj to container point
+            if (enableAltitude) {
+                const point = map.prjToContainerPoint(c);
+                const terrain = map._queryTerrainInfo(point);
+                if (terrain && terrain.coordinate) {
+                    return terrain.coordinate;
+                }
+            }
+            return projection.unproject(c);
+        });
+    }
     return isArray ? coordinates : coordinates[0];
 }
 
