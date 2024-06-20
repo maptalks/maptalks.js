@@ -1,6 +1,5 @@
 import * as maptalks from 'maptalks';
 import { reshader, vec3, mat4, HighlightUtil } from '@maptalks/gl';
-import StencilHelper from './StencilHelper';
 import { SYMBOLS_NEED_REBUILD_IN_VT, StyleUtil, FuncTypeUtil } from '@maptalks/vector-packer';
 import { isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
 import { extend, copyJSON, isNil, hasOwn } from '../Util';
@@ -15,7 +14,7 @@ const { loginIBLResOnCanvas, logoutIBLResOnCanvas, getIBLResOnCanvas } = reshade
 
 const TEX_CACHE_KEY = '__gl_textures';
 
-const MAT = [];
+// const MAT = [];
 const V3 = [];
 const TILEPOINT = new maptalks.Point(0, 0);
 const ANCHOR_POINT = new maptalks.Point(0, 0);
@@ -47,7 +46,6 @@ class Painter {
         this.pluginIndex = pluginIndex;
         this.scene = new reshader.Scene();
         this.pickingFBO = layer.getRenderer().pickingFBO;
-        this._stencilHelper = new StencilHelper();
         this.level0Filter = level0Filter;
         this.levelNFilter = levelNFilter;
         this.loginTextureCache();
@@ -948,41 +946,41 @@ class Painter {
         return mode === 'taa' || mode === 'fxaa';
     }
 
-    _stencil(quadStencil) {
-        const meshes = this.scene.getMeshes();
-        if (!meshes.length) {
-            return;
-        }
-        const stencils = meshes.map(mesh => {
-            return {
-                transform: mesh.localTransform,
-                level: mesh.properties.level,
-                mesh
-            };
-        }).sort(this._compareStencil);
-        const projViewMatrix = this.getMap().projViewMatrix;
-        this._stencilHelper.start(quadStencil);
-        const painted = {};
-        for (let i = 0; i < stencils.length; i++) {
-            const mesh = stencils[i].mesh;
-            let id = painted[mesh.properties.tile.id];
-            if (id === undefined) {
-                mat4.multiply(MAT, projViewMatrix, stencils[i].transform);
-                id = this._stencilHelper.write(quadStencil, MAT);
-                painted[mesh.properties.tile.id] = id;
-            }
-            // stencil ref value
-            mesh.setUniform('ref', id);
-        }
-        this._stencilHelper.end(quadStencil);
-        //TODO 因为stencilHelper会改变 gl.ARRAY_BUFFER 和 vertexAttribPointer 的值，需要重刷regl状态
-        //记录 array_buffer 和 vertexAttribPointer 后， 能省略掉 _refresh
-        this.regl._refresh();
-    }
+    // _stencil(quadStencil) {
+    //     const meshes = this.scene.getMeshes();
+    //     if (!meshes.length) {
+    //         return;
+    //     }
+    //     const stencils = meshes.map(mesh => {
+    //         return {
+    //             transform: mesh.localTransform,
+    //             level: mesh.properties.level,
+    //             mesh
+    //         };
+    //     }).sort(this._compareStencil);
+    //     const projViewMatrix = this.getMap().projViewMatrix;
+    //     this._stencilHelper.start(quadStencil);
+    //     const painted = {};
+    //     for (let i = 0; i < stencils.length; i++) {
+    //         const mesh = stencils[i].mesh;
+    //         let id = painted[mesh.properties.tile.id];
+    //         if (id === undefined) {
+    //             mat4.multiply(MAT, projViewMatrix, stencils[i].transform);
+    //             id = this._stencilHelper.write(quadStencil, MAT);
+    //             painted[mesh.properties.tile.id] = id;
+    //         }
+    //         // stencil ref value
+    //         mesh.setUniform('ref', id);
+    //     }
+    //     this._stencilHelper.end(quadStencil);
+    //     //TODO 因为stencilHelper会改变 gl.ARRAY_BUFFER 和 vertexAttribPointer 的值，需要重刷regl状态
+    //     //记录 array_buffer 和 vertexAttribPointer 后， 能省略掉 _refresh
+    //     this.regl._refresh();
+    // }
 
-    _compareStencil(a, b) {
-        return b.level - a.level;
-    }
+    // _compareStencil(a, b) {
+    //     return b.level - a.level;
+    // }
 
     outline(fbo, featureIds) {
         const painted = {};

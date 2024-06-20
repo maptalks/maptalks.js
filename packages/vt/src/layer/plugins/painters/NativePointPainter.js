@@ -118,7 +118,7 @@ class NativePointPainter extends BasicPainter {
             }
         };
         const projViewModelMatrix = [];
-        // const stencil = this.layer.getRenderer().isEnableTileStencil && this.layer.getRenderer().isEnableTileStencil();
+        // const stencil = this.isOnly2D();
         const config = {
             vert,
             frag,

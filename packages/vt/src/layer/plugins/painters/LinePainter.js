@@ -20,6 +20,11 @@ class LinePainter extends BasicPainter {
         return ['lineBloom'];
     }
 
+    isOnly2D() {
+        // 让line的stencil用tile level而不是stencilRef来绘制
+        return false;
+    }
+
     prepareSymbol(symbol) {
         const lineColor = symbol.lineColor;
         if (Array.isArray(lineColor)) {
@@ -192,6 +197,8 @@ class LinePainter extends BasicPainter {
             mesh.forEach(m => {
                 this._prepareMesh(m);
             });
+        } else {
+            this._prepareMesh(mesh);
         }
         super.addMesh(...args);
     }
@@ -494,9 +501,8 @@ class LinePainter extends BasicPainter {
     // LinePainter 需要在2d下打开stencil，否则会因为子级瓦片无法遮住父级瓦片的绘制，出现一些奇怪的现象
     // https://github.com/maptalks/issues/issues/677
     isEnableStencil(context) {
-        const renderer = this.layer.getRenderer();
         const isRenderingTerrainSkin = !!(context && context.isRenderingTerrain && this.isTerrainSkin());
-        const isEnableStencil = !!(!isRenderingTerrainSkin && renderer.isEnableTileStencil && renderer.isEnableTileStencil());
+        const isEnableStencil = !!(!isRenderingTerrainSkin && super.isOnly2D());
         return isEnableStencil;
     }
 
@@ -523,9 +529,10 @@ class LinePainter extends BasicPainter {
                 enable: () => {
                     return this.isEnableStencil(context);
                 },
+                mask: 0xff,
                 func: {
                     cmp: () => {
-                        return '=';
+                        return '<=';
                     },
                     ref: (context, props) => {
                         return props.stencilRef;
@@ -534,9 +541,7 @@ class LinePainter extends BasicPainter {
                 op: {
                     fail: 'keep',
                     zfail: 'keep',
-                    zpass: () => {
-                        return 'zero';
-                    }
+                    zpass: 'replace'
                 }
             },
             depth: {

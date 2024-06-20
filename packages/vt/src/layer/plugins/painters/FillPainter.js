@@ -497,9 +497,8 @@ class FillPainter extends BasicPainter {
     }
 
     isEnableStencil(context) {
-        const renderer = this.layer.getRenderer();
         const isRenderingTerrainSkin = !!(context && context.isRenderingTerrain && this.isTerrainSkin());
-        const isEnableStencil = !!(!isRenderingTerrainSkin && renderer.isEnableTileStencil && renderer.isEnableTileStencil());
+        const isEnableStencil = !!(!isRenderingTerrainSkin && this.isOnly2D());
         // 只在VectorTileLayer上打开stencil maptalks/issues#566
         // 原有stencil打开后，前面的polygon绘制后，后面的polygon不再绘制，用以解决底图上，半透明polygon重叠时的z-fighting，但比较反直觉
         // GeoJSONVectorTileLayer不用于底图绘制，所以应该关闭该特性
@@ -525,7 +524,6 @@ class FillPainter extends BasicPainter {
         };
 
         this.renderer = new reshader.Renderer(regl);
-        const renderer = this.layer.getRenderer();
         const depthRange = this.sceneConfig.depthRange;
         const extraCommandProps = {
             viewport,
@@ -535,11 +533,11 @@ class FillPainter extends BasicPainter {
                 },
                 func: {
                     cmp: () => {
-                        const stencil = renderer.isEnableTileStencil && renderer.isEnableTileStencil();
+                        const stencil = this.isOnly2D();
                         return stencil ? '=' : '<=';
                     },
                     ref: (context, props) => {
-                        const stencil = renderer.isEnableTileStencil && renderer.isEnableTileStencil();
+                        const stencil = this.isOnly2D();
                         return stencil ? props.stencilRef : props.level;
                     }
                 },
@@ -547,7 +545,7 @@ class FillPainter extends BasicPainter {
                     fail: 'keep',
                     zfail: 'keep',
                     zpass: () => {
-                        const stencil = renderer.isEnableTileStencil && renderer.isEnableTileStencil();
+                        const stencil = this.isOnly2D();
                         return stencil ? 'zero' : 'replace';
                     }
                 }

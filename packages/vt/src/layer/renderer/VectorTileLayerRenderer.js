@@ -986,8 +986,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 stencil: 0xFF,
                 framebuffer: targetFBO
             });
-            if (this.isEnableTileStencil() && plugin.painter && !plugin.painter.needClearStencil()) {
-                this._drawTileStencil(targetFBO);
+            if (plugin.painter && !plugin.painter.needClearStencil()) {
+                this._drawTileStencil(targetFBO, plugin.painter);
             }
 
             const polygonOffsetIndex = this._pluginOffsets[idx] || 0;
@@ -1092,8 +1092,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         return meshes.filter(mesh => filter(mesh) || mesh.properties.hlBloomMesh && filter(mesh.properties.hlBloomMesh)).length > 0;
     }
 
-    _drawTileStencil(fbo) {
-        const only2D = this.isEnableTileStencil();
+    _drawTileStencil(fbo, painter) {
+        const only2D = painter.isOnly2D();
         const tileZoom = this.getCurrentTileZoom();
         let stencilRenderer = this._stencilRenderer;
         if (!stencilRenderer) {
