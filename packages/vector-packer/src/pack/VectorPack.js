@@ -465,6 +465,7 @@ export default class VectorPack {
         const format = this._dataFormat = this.getFormat(Array.isArray(vectors[0]) ? vectors[0][0].symbol : vectors[0].symbol);
         const positionSize = this.needAltitudeAttribute() ? 2 : 3;
 
+        // 创建format各属性需要的类型数组
         for (let i = 0; i < format.length; i++) {
             data[format[i].name] = arrayPool.get(format[i].type);
         }
@@ -573,8 +574,8 @@ export default class VectorPack {
         const ElementType = getIndexArrayType(this.maxIndex);
         elements = ArrayPool.createTypedArray(elements, ElementType);
 
-        // elements = new ElementType(elements);
         buffers.push(elements.buffer);
+        // 最终传递给主线程的数据结构
         const result = {
             data: arrays,
             isIdUnique,
@@ -662,9 +663,9 @@ export default class VectorPack {
             if (!array) {
                 continue;
             }
-            const estimatedHalfVertexCount = format[i].width * countPerVertex;
+            const estimatedItemCount = format[i].width * countPerVertex;
             const length = array.getLength();
-            this.data[format[i].name] = ArrayPool.ensureCapacity(array, length + estimatedHalfVertexCount * vertexCount);
+            this.data[format[i].name] = ArrayPool.ensureCapacity(array, length + estimatedItemCount * vertexCount);
         }
     }
 }

@@ -6,7 +6,6 @@ import clipLine from './util/clip_line';
 import { isFunctionDefinition } from '@maptalks/function-type';
 import Point from '@mapbox/point-geometry';
 import Point3 from './point3/Point3';
-import ArrayPool from './util/ArrayPool';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.

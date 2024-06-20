@@ -564,6 +564,10 @@ export default class PointPack extends VectorPack {
         if (opacityFn) {
             opacity = opacityFn(this.options['zoom'], properties) * 255;
         }
+
+        // 每个 quad 会调用4次 _fillPos, _fillData 和 _fillFnTypeData
+        this.ensureDataCapacity(4 * textCount, anchors.length);
+
         const extent = this.options.EXTENT;
         const textCount = quads.length;
         const { altitudeScale, altitudeProperty, defaultAltitude } = this.options;
@@ -690,7 +694,7 @@ export default class PointPack extends VectorPack {
             data.aSegment.currentIndex = index;
 
             // data.aVertical.push(vertical);
-            let index = data.aVertical.currentIndex;
+            index = data.aVertical.currentIndex;
             data.aVertical[index++] = vertical;
             data.aVertical.currentIndex = index;
         }
