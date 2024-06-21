@@ -29,7 +29,7 @@ function queryTerrainCoordinates(projection: any, prjCoords: any, mapEvent: any)
         prjCoords = [prjCoords];
     }
     let coordinates;
-    const drawTool = mapEvent.drawTool || {};
+    const drawTool = mapEvent && (mapEvent.drawTool || {});
     const transformCoordinate = (drawTool.options || {}).transformCoordinate;
     if (transformCoordinate && isFunction(transformCoordinate)) {
         coordinates = prjCoords.map(c => {
