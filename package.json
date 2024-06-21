@@ -50,6 +50,7 @@
     "@maptalks/feature-filter": "^1.3.0",
     "@maptalks/function-type": "^1.3.1",
     "frustum-intersects": "^0.1.0",
+    "lineclip": "^1.1.5",
     "rbush": "^2.0.2",
     "simplify-js": "^1.2.1"
   },
@@ -63,7 +64,6 @@
     "@rollup/plugin-typescript": "^11.1.6",
     "@types/node": "^20.11.30",
     "@types/offscreencanvas": "^2019.7.3",
-    "rollup-plugin-dts": "^6.1.0",
     "eslint": "^8.57.0",
     "eslint-plugin-mocha": "^10.4.1",
     "expect-maptalks": "^0.4.1",
@@ -80,6 +80,7 @@
     "karma-sinon": "^1.0.5",
     "mocha": "^10.3.0",
     "rollup": "^4.13.0",
+    "rollup-plugin-dts": "^6.1.0",
     "sinon": "^3.2.1",
     "tslib": "^2.6.2",
     "typedoc": "^0.25.13",

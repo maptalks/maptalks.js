@@ -571,7 +571,8 @@ class CanvasRenderer extends Class {
             return null;
         }
         const maskExtent2D = this._maskExtent = mask._getMaskPainter().get2DExtent();
-        if (!maskExtent2D.intersects(this._extent2D)) {
+        //fix vt _extent2D is null
+        if (maskExtent2D && this._extent2D && !maskExtent2D.intersects(this._extent2D)) {
             this.layer.fire('renderstart', {
                 'context': this.context,
                 'gl': this.gl
@@ -597,6 +598,9 @@ class CanvasRenderer extends Class {
     clipCanvas(context: CanvasRenderingContext2D & { isMultiClip: boolean, isClip: boolean }) {
         const mask = this.layer.getMask();
         if (!mask) {
+            return false;
+        }
+        if (!this.layer.options.maskClip) {
             return false;
         }
         const old = this.middleWest;
