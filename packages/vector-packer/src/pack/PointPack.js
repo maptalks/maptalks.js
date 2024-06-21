@@ -564,12 +564,12 @@ export default class PointPack extends VectorPack {
         if (opacityFn) {
             opacity = opacityFn(this.options['zoom'], properties) * 255;
         }
-
+        
+        const textCount = quads.length;
         // 每个 quad 会调用4次 _fillPos, _fillData 和 _fillFnTypeData
         this.ensureDataCapacity(4 * textCount, anchors.length);
 
-        const extent = this.options.EXTENT;
-        const textCount = quads.length;
+        const extent = this.options.EXTENT;        
         const { altitudeScale, altitudeProperty, defaultAltitude } = this.options;
         const { altitude: featureAltitude } = getFeaAltitudeAndHeight(point.feature, altitudeScale, altitudeProperty, defaultAltitude);
         for (let i = 0; i < anchors.length; i++) {
