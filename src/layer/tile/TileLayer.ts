@@ -26,6 +26,7 @@ import * as vec3 from '../../core/util/vec3';
 import { formatResourceUrl } from '../../core/ResourceProxy';
 import { Coordinate, Extent } from '../../geo';
 import { type TileLayerCanvasRenderer } from '../../renderer';
+import { BBOX, bboxInMask } from '../../core/util/bbox';
 
 const DEFAULT_MAXERROR = 1;
 const TEMP_POINT = new Point(0, 0);
@@ -94,7 +95,7 @@ class TileHashset {
  * @property              [options.fetchOptions=object]       - fetch params,such as fetchOptions: { 'headers': { 'accept': '' } }, about accept value more info https://developer.mozilla.org/en-US/docs/Web/HTTP/Content_negotiation/List_of_default_Accept_values
  * @property             [options.awareOfTerrain=true]       - if the tile layer is aware of terrain.
  * @property             [options.bufferPixel=0.5]       - tile buffer size,the unit is pixel
- * @property             [options.depthMask=true]       - mask to decide whether to write depth buffer
+ * @property             [options.depthMask=true]       - mask to decide whether to write depth buffe
  * @memberOf TileLayer
  * @instance
  */
@@ -160,7 +161,6 @@ const options: TileLayerOptionsType = {
     'mipmapTexture': true,
     'depthMask': true,
     'currentTilesFirst': true,
-
     'forceRenderOnMoving': true
 };
 
@@ -206,6 +206,7 @@ class TileLayer extends Layer {
     _tileConfig: TileConfig;
     _polygonOffset: number;
     _renderer: TileLayerCanvasRenderer;
+    options: TileLayerOptionsType;
 
     /**
      *
@@ -265,12 +266,36 @@ class TileLayer extends Layer {
 
     getTiles(z: number, parentLayer: Layer) {
         this._coordCache = {};
+        let result;
         if (this._isPyramidMode()) {
-            return this._getPyramidTiles(z, parentLayer);
+            result = this._getPyramidTiles(z, parentLayer);
         } else {
-            return this._getCascadeTiles(z, parentLayer);
+            result = this._getCascadeTiles(z, parentLayer);
         }
+        if (!this._maskGeoJSON) {
+            return result;
+        }
+        const tileGrids: Array<TileGridType> = result.tileGrids || [];
+        let count = 0;
+        //filter tiles by mask
+        tileGrids.forEach(tileGrid => {
+            const tiles = tileGrid.tiles || [];
+            tileGrid.tiles = tiles.filter(tile => {
+                return this._tileInMask(tile);
+            });
+            count += tileGrid.tiles.length;
+            const parentIds = tileGrid.tiles.map(tile => {
+                return tile.parent;
+            });
+            tileGrid.parents = tileGrid.parents.filter(parent => {
+                return parentIds.indexOf(parent.id) > -1;
+            });
+        });
+        result.count = count;
+        return result;
     }
+
+
 
     _isPyramidMode() {
         const sr = this.getSpatialReference();
@@ -1285,7 +1310,7 @@ class TileLayer extends Layer {
         if (isNumber(offset)) {
             offset = [offset, offset];
         }
-        return offset || [0, 0];
+        return (offset as [number, number]) || [0, 0];
     }
 
     getTileId(x: number, y: number, zoom: number, id: string): string {
@@ -1358,8 +1383,8 @@ class TileLayer extends Layer {
         }
         return this._tileConfig || this._defaultTileConfig;
     }
-
-    _bindMap() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _bindMap(args?: any) {
         this._onSpatialReferenceChange();
         // eslint-disable-next-line prefer-rest-params
         return super._bindMap.apply(this, arguments);
@@ -1447,6 +1472,61 @@ class TileLayer extends Layer {
     getRenderer() {
         return super.getRenderer() as TileLayerCanvasRenderer;
     }
+
+    _getTileBBox(tile: TileNodeType): BBOX | null {
+        const map = this.getMap();
+        if (!map) {
+            return;
+        }
+
+        const extent2d = tile.extent2d;
+        if (!extent2d) {
+            return;
+        }
+        const res = tile.res;
+
+        const { xmin, ymin, xmax, ymax } = extent2d;
+        const pmin = new Point(xmin, ymin),
+            pmax = new Point(xmax, ymax);
+        const min = map.pointAtResToCoordinate(pmin, res, TEMP_POINT0),
+            max = map.pointAtResToCoordinate(pmax, res, TEMP_POINT1);
+        return [min.x, min.y, max.x, max.y];
+
+    }
+
+    _tileInMask(tile: TileNodeType): boolean {
+        const mask = this.getMask();
+        if (!mask) {
+            return true;
+        }
+        const maskType = mask.type;
+        if (!maskType || maskType.indexOf('Polygon') === -1) {
+            return true;
+        }
+        const maskGeoJSON = this._maskGeoJSON;
+        if (!maskGeoJSON || !maskGeoJSON.geometry) {
+            return true;
+        }
+        const { coordinates, type } = maskGeoJSON.geometry;
+        if (!coordinates || !type) {
+            return true;
+        }
+        if (type.indexOf('Polygon') === -1) {
+            return true;
+        }
+        if (!maskGeoJSON.bbox) {
+            const extent = mask.getExtent();
+            if (!extent) {
+                return true;
+            }
+            maskGeoJSON.bbox = [extent.xmin, extent.ymin, extent.xmax, extent.ymax];
+        }
+        const tileBBOX = this._getTileBBox(tile);
+        if (!tileBBOX) {
+            return true;
+        }
+        return bboxInMask(tileBBOX, this._maskGeoJSON);
+    }
 }
 
 TileLayer.registerJSONType('TileLayer');
@@ -1530,7 +1610,7 @@ export type TileLayerOptionsType = LayerOptionsType & {
     urlTemplate: string | ((...args) => string);
     subdomains?: string[];
     spatialReference?: SpatialReferenceType;
-    tileSize?: number[] | number;
+    tileSize?: number | [number, number];
     offset?: number[] | ((...args) => number[]);
     tileSystem?: [number, number, number, number];
     maxAvailableZoom?: number;
