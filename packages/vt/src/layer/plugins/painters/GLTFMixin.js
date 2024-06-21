@@ -212,7 +212,7 @@ const GLTFMixin = Base =>
                     mesh.setPositionMatrix(() => {
                         const nodeMatrix = this._getMeshNodeMatrix(i, meshIndex, nodeIndex);
                         mat4.multiply(positionMatrix, Y_TO_Z, nodeMatrix);
-                        this._getSymbolTRSMatrix(trsMatrix);
+                        // this._getSymbolTRSMatrix(trsMatrix);
                         mat4.multiply(positionMatrix, trsMatrix, positionMatrix);
                         mat4.multiply(positionMatrix, meterToPointMat, positionMatrix);
                         const matrix = mat4.identity(TEMP_MATRIX)

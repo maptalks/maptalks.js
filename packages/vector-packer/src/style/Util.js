@@ -185,7 +185,6 @@ export function normalizeColor(out, color) {
         }
         const key = color;
         color = colorCache[key] = colorCache[key] || Color(color).unitArray();
-        
     }
     for (let i = 0; i < color.length; i++) {
         out[i] = color[i] * 255;
@@ -213,7 +212,16 @@ const SYMBOLS_SUPPORT_IDENTITY_FN_TYPE = {
     'polygonFill': 1,
     'polygonOpacity': 1,
     'polygonPatternFileWidth': 1,
-    'polygonPatternFileOrigin': 1
+    'polygonPatternFileOrigin': 1,
+    'rotationX': 1,
+    'rotationY': 1,
+    'rotationZ': 1,
+    'scaleX': 1,
+    'scaleY': 1,
+    'scaleZ': 1,
+    'translationX': 1,
+    'translationY': 1,
+    'translationZ': 1
 };
 
 // 遍历features，检查 symbolName 对应的属性中，是否有fn-type类型的值，而且和zoom相关
