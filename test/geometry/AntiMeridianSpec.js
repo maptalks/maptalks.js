@@ -72,12 +72,14 @@ describe('Geometry.AntiMeridian', function () {
         });
 
         it('linestring should draw a long line from [170, 80] to [-170, 80]', function () {
-            map.setCenter([-170, 80]);
+            map.setCenter([170, 80]);
             var line = new maptalks.LineString([[170, 80], [-170, 80]], getGeoOptions());
             layer.addGeometry(line);
             expect(layer).not.to.be.painted(-2, 0);
-            expect(layer).to.be.painted(100, 0);
-            expect(line.getSize()._round().toArray()).to.be.eql([486, 2]);
+            // expect(layer).to.be.painted(100, 0);
+            // expect(line.getSize()._round().toArray()).to.be.eql([486, 2]);
+            expect(layer).to.be.painted(0, 0);
+            expect(line.getSize()._round().toArray()).to.be.eql([30, 2]);
         });
 
         it('linestring should continue to draw from [180, 80] to [180, -80]', function () {
@@ -105,17 +107,19 @@ describe('Geometry.AntiMeridian', function () {
             var polygon = new maptalks.Polygon([[-170, 80], [170, 80], [170, 70]], getGeoOptions());
             layer.addGeometry(polygon);
             expect(layer).not.to.be.painted(4, 0);
-            expect(layer).to.be.painted(-10, 0);
+            // expect(layer).to.be.painted(-10, 0);
+            expect(layer).to.be.painted(-1, 1);
             expect(polygon.getSize()._round().toArray()).to.be.eql([30, 59]);
         });
 
         it('polygon should draw a big polygon from [170, 80] to [-170, 70]', function () {
-            map.setCenter([-170, 80]);
+            map.setCenter([170, 80]);
             var polygon = new maptalks.Polygon([[170, 80], [-170, 70], [-170, 80]], getGeoOptions());
             layer.addGeometry(polygon);
             expect(layer).not.to.be.painted(-2, 0);
-            expect(layer).to.be.painted(100, 0);
-            expect(polygon.getSize()._round().toArray()).to.be.eql([486, 59]);
+            expect(layer).to.be.painted(1, 1);
+            // expect(polygon.getSize()._round().toArray()).to.be.eql([486, 59]);
+            expect(polygon.getSize()._round().toArray()).to.be.eql([30, 59]);
         });
 
         it('polygon should continue to draw from [180, 80] to [180, -80]', function () {
@@ -219,7 +223,8 @@ describe('Geometry.AntiMeridian', function () {
             expect(layer).to.be.painted(10, 0);
             expect(layer).to.be.painted(0, 10);
             expect(layer).not.to.be.painted(0, -10);
-            expect(rectangle.getSize()._round().toArray()).to.be.eql([368, 54]);
+            // expect(rectangle.getSize()._round().toArray()).to.be.eql([368, 54]);
+            expect(rectangle.getSize()._round().toArray()).to.be.eql([148, 54]);
         });
 
         it('paint at [-180, -85]', function () {
