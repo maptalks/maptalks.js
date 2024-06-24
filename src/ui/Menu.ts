@@ -104,7 +104,7 @@ class Menu extends UIComponent {
                 const container = createEl('div');
                 container.innerHTML = this.options['items'];
                 this._appendCustomClass(container);
-                dom == container;
+                dom = container;
             } else {
                 dom = this.options['items'] as any;
             }
