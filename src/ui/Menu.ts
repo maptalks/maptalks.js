@@ -98,17 +98,18 @@ class Menu extends UIComponent {
      * @return {HTMLElement} menu's DOM
      */
     buildOn(): HTMLElement {
+        let dom: HTMLElement;
         if (this.options['custom']) {
             if (isString(this.options['items'])) {
                 const container = createEl('div');
                 container.innerHTML = this.options['items'];
                 this._appendCustomClass(container);
-                return container;
+                dom == container;
             } else {
-                return this.options['items'] as any;
+                dom = this.options['items'] as any;
             }
         } else {
-            const dom = createEl('div');
+            dom = createEl('div');
             if (this.options['containerClass']) {
                 addClass(dom, this.options['containerClass']);
             }
@@ -120,8 +121,12 @@ class Menu extends UIComponent {
             dom.appendChild(menuItems);
             on(dom, 'contextmenu', preventDefault);
             this._appendCustomClass(dom);
-            return dom;
         }
+        if (dom) {
+            this._bindDomEvents(dom, 'off');
+            this._bindDomEvents(dom, 'on');
+        }
+        return dom;
     }
 
     /**
