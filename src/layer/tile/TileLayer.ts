@@ -701,7 +701,14 @@ class TileLayer extends Layer {
             this._zScale = (map.altitudeToPoint(100, glRes) as any) / 100;
         }
         const renderer = this.getRenderer();
-        const { xmin, ymin, xmax, ymax } = node.extent2d;
+        let { xmin, ymin, xmax, ymax } = node.extent2d;
+        if (node.offset && !isFunction(this.options.offset)) {
+            const [x, y] = node.offset;
+            xmin += x;
+            xmax += x;
+            ymin += y;
+            ymax += y;
+        }
         TILE_BOX[0][0] = (xmin - offset[0]) * glScale;
         TILE_BOX[0][1] = (ymin - offset[1]) * glScale;
         const minAltitude = node.minAltitude || renderer && renderer.avgMinAltitude || 0;
