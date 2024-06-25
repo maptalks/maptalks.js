@@ -59,11 +59,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
         if (this._editor) {
             this.endEdit();
         }
-        let visible = this.options.visible;
-        if (isNil(visible)) {
-            visible = true;
-        }
-        this.options._visible = visible;
+        this._recordVisible();
 
         this._editor = new GeometryEditor(this, opts);
         this._editor.start();
@@ -92,7 +88,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
         if (this._editor) {
             this._editor.stop();
             delete this._editor;
-            delete this.options._visible;
+            this._recoveryVisible();
             /**
              * end edit event
              *
@@ -172,6 +168,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
         if (!this.isEditing()) {
             return this;
         }
+        this._recoveryVisible();
         this._editor.cancel();
         /**
          * cancel edit event

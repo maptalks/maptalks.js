@@ -1648,6 +1648,19 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         };
     }
 
+    _recordVisible() {
+        let visible = this.options.visible;
+        if (isNil(visible)) {
+            visible = true;
+        }
+        (this.options as any)._visible = visible;
+    }
+
+
+    _recoveryVisible() {
+        delete (this.options as any)._visible;
+    }
+
     _exportGraphicOptions(options: any): any {
         const json = {};
         if (isNil(options['options']) || options['options']) {
