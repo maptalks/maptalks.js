@@ -575,6 +575,7 @@ class GeometryCollection extends Geometry {
         }
         this._draggbleBeforeEdit = this.options['draggable'];
         this.config('draggable', false);
+        this._recordVisible();
         const geometries = this.getGeometries();
         for (let i = 0, l = geometries.length; i < l; i++) {
             geometries[i].startEdit(opts);
@@ -595,6 +596,7 @@ class GeometryCollection extends Geometry {
         if (this.isEmpty()) {
             return this;
         }
+        this._recoveryVisible();
         const geometries = this.getGeometries();
         for (let i = 0, l = geometries.length; i < l; i++) {
             geometries[i].endEdit();

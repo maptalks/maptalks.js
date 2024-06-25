@@ -20,6 +20,7 @@ const TextEditable = {
         if (!this.getMap()) {
             return this;
         }
+        this._recordVisible();
         this.hide();
         this.endEditText();
         this._prepareEditor();
@@ -56,6 +57,7 @@ const TextEditable = {
             delete this._editUIMarker;
             this._textEditor.onkeyup = null;
             delete this._textEditor;
+            this._recoveryVisible();
             this.show();
             /**
              * edittextend when ended editing text content

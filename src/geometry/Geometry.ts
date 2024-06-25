@@ -1095,6 +1095,8 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             options = {};
         }
         const json = this._toJSON(options);
+
+
         const other = this._exportGraphicOptions(options);
         extend(json, other);
         return json;
@@ -1646,10 +1648,27 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         };
     }
 
+    _recordVisible() {
+        let visible = this.options.visible;
+        if (isNil(visible)) {
+            visible = true;
+        }
+        (this.options as any)._visible = visible;
+    }
+
+
+    _recoveryVisible() {
+        delete (this.options as any)._visible;
+    }
+
     _exportGraphicOptions(options: any): any {
         const json = {};
         if (isNil(options['options']) || options['options']) {
             json['options'] = this.config();
+        }
+        if (json['options'] && this.isEditing && this.isEditing()) {
+            json['options'].visible = (this.options as any)._visible;
+            delete json['options']._visible;
         }
         if (isNil(options['symbol']) || options['symbol']) {
             json['symbol'] = this.getSymbol();

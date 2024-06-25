@@ -401,7 +401,7 @@ describe('Geometry.Edit', function () {
         map.setZoom(3);
         setTimeout(() => {
             polygon.startEdit({
-                collision:true
+                collision: true
             });
             setTimeout(() => {
                 expect(spy.called).to.be.ok();
@@ -409,6 +409,31 @@ describe('Geometry.Edit', function () {
                 done();
             }, 100);
         }, 200);
+    });
+
+
+    it('#1511 Geometry toJSON() visible when eidting', function (done) {
+        var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
+
+        let idx = 0;
+        const test = () => {
+            if (idx === geometries.length) {
+                done();
+            } else {
+                const geometry = geometries[idx];
+                layer.clear();
+                geometry.addTo(layer);
+                geometry.startEdit();
+                const json = geometry.toJSON();
+                expect(json.options.visible).to.be.ok();
+                geometry.endEdit();
+                idx++;
+                setTimeout(() => {
+                    test();
+                }, 100);
+            }
+        }
+        test();
     });
 
 
