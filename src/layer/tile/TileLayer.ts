@@ -702,7 +702,7 @@ class TileLayer extends Layer {
         }
         const renderer = this.getRenderer();
         let { xmin, ymin, xmax, ymax } = node.extent2d;
-        if (node.offset) {
+        if (node.offset && !isFunction(this.options.offset)) {
             const [x, y] = node.offset;
             xmin += x;
             xmax += x;
