@@ -304,24 +304,54 @@ const lineStringInclude = {
         const segments = isSplitted ? points : [points];
         const placement = this._getArrowPlacement();
         const arrows = [];
-        const map = this.getMap(),
-            first = map.coordToContainerPoint(this.getFirstCoordinate()),
-            last = map.coordToContainerPoint(this.getLastCoordinate());
+        // const map = this.getMap();
+        // first = map.coordToContainerPoint(this.getFirstCoordinate()),
+        //     last = map.coordToContainerPoint(this.getLastCoordinate());
+        let p1: Point, p2: Point;
+        const createArrow = () => {
+            if (p1 && p2) {
+                const arrow = this._getArrowShape(p1, p2, lineWidth, arrowStyle, tolerance);
+                if (arrow) {
+                    arrows.push(arrow);
+                }
+            }
+        }
         for (let i = segments.length - 1; i >= 0; i--) {
-            if (placement === 'vertex-first' || placement === 'vertex-firstlast' && segments[i][0].closeTo(first, 0.01)) {
-                const arrow = this._getArrowShape(segments[i][1], segments[i][0], lineWidth, arrowStyle, tolerance);
-                if (arrow) {
-                    arrows.push(arrow);
-                }
+            const len = segments[i].length;
+            const path = segments[i];
+            if (placement === 'vertex-first') {
+                p1 = path[1];
+                p2 = path[0];
+            } else if (placement === 'vertex-last') {
+                p1 = path[len - 2];
+                p2 = path[len - 1];
             }
-            if (placement === 'vertex-last' || placement === 'vertex-firstlast' && segments[i][segments[i].length - 1].closeTo(last, 0.01)) {
-                const arrow = this._getArrowShape(segments[i][segments[i].length - 2], segments[i][segments[i].length - 1], lineWidth, arrowStyle, tolerance);
-                if (arrow) {
-                    arrows.push(arrow);
-                }
-            } else if (placement === 'point') {
-                this._getArrowPoints(arrows, segments[i], lineWidth, arrowStyle, tolerance);
+            createArrow();
+            if (placement === 'vertex-firstlast') {
+                p1 = path[1];
+                p2 = path[0];
+                createArrow();
+                p1 = path[len - 2];
+                p2 = path[len - 1];
+                createArrow();
             }
+            if (placement === 'point') {
+                this._getArrowPoints(arrows, path, lineWidth, arrowStyle, tolerance);
+            }
+            // if (placement === 'vertex-first' || placement === 'vertex-firstlast' && segments[i][0].closeTo(first, 0.01)) {
+            //     const arrow = this._getArrowShape(segments[i][1], segments[i][0], lineWidth, arrowStyle, tolerance);
+            //     if (arrow) {
+            //         arrows.push(arrow);
+            //     }
+            // }
+            // if (placement === 'vertex-last' || placement === 'vertex-firstlast' && segments[i][segments[i].length - 1].closeTo(last, 0.01)) {
+            //     const arrow = this._getArrowShape(segments[i][segments[i].length - 2], segments[i][segments[i].length - 1], lineWidth, arrowStyle, tolerance);
+            //     if (arrow) {
+            //         arrows.push(arrow);
+            //     }
+            // } else if (placement === 'point') {
+            //     this._getArrowPoints(arrows, segments[i], lineWidth, arrowStyle, tolerance);
+            // }
         }
         return arrows;
     },
