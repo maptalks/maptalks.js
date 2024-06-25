@@ -1654,7 +1654,8 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             json['options'] = this.config();
         }
         if (json['options'] && this.isEditing && this.isEditing()) {
-            json['options'].visible = true;
+            json['options'].visible = (this.options as any)._visible;
+            delete json['options']._visible;
         }
         if (isNil(options['symbol']) || options['symbol']) {
             json['symbol'] = this.getSymbol();
