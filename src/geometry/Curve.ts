@@ -20,7 +20,11 @@ const options: CurveOptionsType = {
  */
 class Curve extends LineString {
     _arc(ctx: CanvasRenderingContext2D, points: any, lineOpacity: number): void {
-        const degree = this.options['arcDegree'] * Math.PI / 180;
+        let arcDegree = this.options['arcDegree'];
+        if (arcDegree === 0) {
+            arcDegree = 1;
+        }
+        const degree = arcDegree * Math.PI / 180;
         for (let i = 1, l = points.length; i < l; i++) {
             // const c = Canvas2d._arcBetween(ctx, points[i - 1], points[i], degree);
             // //add control points to caculate normal of arrow
