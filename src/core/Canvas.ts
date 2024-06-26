@@ -812,10 +812,10 @@ const Canvas = {
      * @param  {Number} degree arc degree between p1 and p2
      */
     _arcBetween(ctx: CanvasRenderingContext2D, p1, p2, degree) {
-        const a = degree,
+        const a = Math.abs(degree),
             dist = p1.distanceTo(p2),
             //radius of circle
-            r = dist / 2 / Math.sin(a / 2);
+            r = Math.abs(dist / 2 / Math.sin(a / 2));
         //angle between p1 and p2
         let p1p2 = Math.asin((p2.y - p1.y) / dist);
         if (p1.x > p2.x) {
@@ -826,15 +826,23 @@ const Canvas = {
             da = p1p2 - cp2;
 
         const dx = Math.cos(da) * r,
-            dy = Math.sin(da) * r,
-            cx = p1.x + dx,
+            dy = Math.sin(da) * r;
+        let cx = p1.x + dx,
             cy = p1.y + dy;
 
         let startAngle = Math.asin((p2.y - cy) / r);
         if (cx > p2.x) {
             startAngle = Math.PI - startAngle;
         }
-        const endAngle = startAngle + a;
+        let endAngle = startAngle + a;
+        if (degree < 0) {
+            startAngle += Math.PI;
+            endAngle += Math.PI;
+            const middleX = (p1.x + p2.x) / 2, middleY = (p1.y + p2.y) / 2;
+            const dx = cx - middleX, dy = cy - middleY;
+            cx = middleX - dx;
+            cy = middleY - dy;
+        }
 
         ctx.beginPath();
         ctx.arc(cx, cy, r, startAngle, endAngle);
