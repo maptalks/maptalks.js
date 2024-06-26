@@ -319,20 +319,22 @@ const lineStringInclude = {
         for (let i = segments.length - 1; i >= 0; i--) {
             const len = segments[i].length;
             const path = segments[i];
+            const first = path[0];
+            const last = path[len - 1];
             if (placement === 'vertex-first') {
-                p1 = path[1];
-                p2 = path[0];
+                p1 = first.nextPoint || path[1];
+                p2 = first;
             } else if (placement === 'vertex-last') {
-                p1 = path[len - 2];
-                p2 = path[len - 1];
+                p1 = last.prePoint || path[len - 2];
+                p2 = last;
             }
             createArrow();
             if (placement === 'vertex-firstlast') {
-                p1 = path[1];
-                p2 = path[0];
+                p1 = first.nextPoint || path[1];
+                p2 = first;
                 createArrow();
-                p1 = path[len - 2];
-                p2 = path[len - 1];
+                p1 = last.prePoint || path[len - 2];
+                p2 = last;
                 createArrow();
             }
             if (placement === 'point') {
@@ -358,7 +360,9 @@ const lineStringInclude = {
 
     _getArrowPoints(arrows: any[], segments: any[], lineWidth?: number, arrowStyle?: any, tolerance?: number) {
         for (let ii = 0, ll = segments.length - 1; ii < ll; ii++) {
-            const arrow = this._getArrowShape(segments[ii], segments[ii + 1], lineWidth, arrowStyle, tolerance);
+            const pre = segments[ii];
+            const next = segments[ii + 1];
+            const arrow = this._getArrowShape(next.prePoint || pre, next, lineWidth, arrowStyle, tolerance);
             if (arrow) {
                 arrows.push(arrow);
             }

@@ -838,6 +838,7 @@ const Canvas = {
         if (degree < 0) {
             startAngle += Math.PI;
             endAngle += Math.PI;
+            //translate center
             const middleX = (p1.x + p2.x) / 2, middleY = (p1.y + p2.y) / 2;
             const dx = cx - middleX, dy = cy - middleY;
             cx = middleX - dx;
@@ -846,6 +847,26 @@ const Canvas = {
 
         ctx.beginPath();
         ctx.arc(cx, cy, r, startAngle, endAngle);
+        //cal arrow achor
+        //不在使用控制点,而是在开始角度和结束角度附件取个点
+        const aAngle = (endAngle - startAngle) / 100;
+        const x1 = Math.cos(startAngle + aAngle) * r + cx;
+        const y1 = Math.sin(startAngle + aAngle) * r + cy;
+        const x2 = Math.cos(endAngle - aAngle) * r + cx;
+        const y2 = Math.sin(endAngle - aAngle) * r + cy;
+        p1.nextPoint = p1.nextPoint || new Point(0, 0);
+        p2.prePoint = p2.prePoint || new Point(0, 0);
+        if (degree < 0) {
+            p1.nextPoint.x = x1;
+            p1.nextPoint.y = y1;
+            p2.prePoint.x = x2;
+            p2.prePoint.y = y2;
+        } else {
+            p1.nextPoint.x = x2;
+            p1.nextPoint.y = y2;
+            p2.prePoint.x = x1;
+            p2.prePoint.y = y1;
+        }
         return [cx, cy];
     },
 
