@@ -1,5 +1,6 @@
 import LineString, { LineStringOptionsType } from './LineString';
 import Canvas2d from '../core/Canvas';
+import Point from '../geo/Point';
 
 const options: CurveOptionsType = {
     'enableSimplify': false,
@@ -19,14 +20,19 @@ const options: CurveOptionsType = {
  * @property {Boolean} [options.enableClip=false] - whether to clip curve with map's current extent
  */
 class Curve extends LineString {
-    _arc(ctx: CanvasRenderingContext2D, points: any, lineOpacity: number): void {
-        const degree = this.options['arcDegree'] * Math.PI / 180;
+    _arc(ctx: CanvasRenderingContext2D, points: Array<Point>, lineOpacity: number): void {
+        let arcDegree = this.options['arcDegree'];
+        if (arcDegree === 0) {
+            arcDegree = 1;
+        }
+        const degree = arcDegree * Math.PI / 180;
         for (let i = 1, l = points.length; i < l; i++) {
-            const c = Canvas2d._arcBetween(ctx, points[i - 1], points[i], degree);
-            //add control points to caculate normal of arrow
-            const ctrlPoint = [(points[i - 1].x + points[i].x) - c[0], (points[i - 1].y + points[i].y) - c[1]];
-            points[i - 1].nextCtrlPoint = ctrlPoint;
-            points[i].prevCtrlPoint = ctrlPoint;
+            // const c = Canvas2d._arcBetween(ctx, points[i - 1], points[i], degree);
+            // //add control points to caculate normal of arrow
+            // const ctrlPoint = [(points[i - 1].x + points[i].x) - c[0], (points[i - 1].y + points[i].y) - c[1]];
+            // points[i - 1].nextCtrlPoint = ctrlPoint;
+            // points[i].prevCtrlPoint = ctrlPoint;
+            Canvas2d._arcBetween(ctx, points[i - 1], points[i], degree);
             Canvas2d._stroke(ctx, lineOpacity);
         }
     }
