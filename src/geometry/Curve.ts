@@ -1,5 +1,6 @@
 import LineString, { LineStringOptionsType } from './LineString';
 import Canvas2d from '../core/Canvas';
+import Point from '../geo/Point';
 
 const options: CurveOptionsType = {
     'enableSimplify': false,
@@ -19,7 +20,7 @@ const options: CurveOptionsType = {
  * @property {Boolean} [options.enableClip=false] - whether to clip curve with map's current extent
  */
 class Curve extends LineString {
-    _arc(ctx: CanvasRenderingContext2D, points: any, lineOpacity: number): void {
+    _arc(ctx: CanvasRenderingContext2D, points: Array<Point>, lineOpacity: number): void {
         let arcDegree = this.options['arcDegree'];
         if (arcDegree === 0) {
             arcDegree = 1;

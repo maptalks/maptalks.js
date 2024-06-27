@@ -804,7 +804,7 @@ const Canvas = {
         }
         Canvas._stroke(ctx, lineOpacity);
     },
-    paintSmoothLine(ctx: CanvasRenderingContext2D, points: Array<any>, lineOpacity: number, smoothValue: boolean, close: boolean, tailIdx?: number, tailRatio?: number) {
+    paintSmoothLine(ctx: CanvasRenderingContext2D, points: Array<Point>, lineOpacity: number, smoothValue: boolean, close: boolean, tailIdx?: number, tailRatio?: number) {
         if (!points) {
             return;
         }
@@ -896,7 +896,7 @@ const Canvas = {
      * @param  {Point} p2      point 2
      * @param  {Number} degree arc degree between p1 and p2
      */
-    _arcBetween(ctx: CanvasRenderingContext2D, p1, p2, degree) {
+    _arcBetween(ctx: CanvasRenderingContext2D, p1: Point, p2: Point, degree: number) {
         const a = Math.abs(degree),
             dist = p1.distanceTo(p2),
             //radius of circle
@@ -939,6 +939,11 @@ const Canvas = {
         const y1 = Math.sin(startAngle + aAngle) * r + cy;
         const x2 = Math.cos(endAngle - aAngle) * r + cx;
         const y2 = Math.sin(endAngle - aAngle) * r + cy;
+        /**
+         * 
+         * p1-nextPoint-----------prePoint-p2
+         * 
+         */
         p1.nextPoint = p1.nextPoint || new Point(0, 0);
         p2.prePoint = p2.prePoint || new Point(0, 0);
         if (degree < 0) {

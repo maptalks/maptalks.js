@@ -295,13 +295,13 @@ const lineStringInclude = {
         return null;
     },
 
-    _getArrows(points: any, lineWidth: number, tolerance?: number) {
+    _getArrows(points: Array<Point> | Array<Array<Point>>, lineWidth: number, tolerance?: number) {
         const arrowStyle = this._getArrowStyle();
         if (!arrowStyle || points.length < 2) {
             return [];
         }
         const isSplitted = points.length > 0 && Array.isArray(points[0]);
-        const segments = isSplitted ? points : [points];
+        const segments: Array<Array<Point>> = (isSplitted ? points : [points]) as Array<Array<Point>>;
         const placement = this._getArrowPlacement();
         const arrows = [];
         // const map = this.getMap();
@@ -317,8 +317,8 @@ const lineStringInclude = {
             }
         }
         for (let i = segments.length - 1; i >= 0; i--) {
-            const len = segments[i].length;
             const path = segments[i];
+            const len = path.length;
             const first = path[0];
             const last = path[len - 1];
             if (placement === 'vertex-first') {
