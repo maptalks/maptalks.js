@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { getExternalResources, now, getPointsResultPts, type Vector3 } from '../../../core/util';
+import { getExternalResources, now, getPointsResultPts, type Vector3, isNil } from '../../../core/util';
 import VectorLayer from '../../../layer/VectorLayer';
 import OverlayLayerCanvasRenderer from './OverlayLayerCanvasRenderer';
 import Extent from '../../../geo/Extent';
@@ -334,7 +334,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
         const painter = geo._getPainter();
         let inCurrentView = true;
-        if (geo._inCurrentView || geo.hasAltitude()) {
+        if (geo._inCurrentView || !isNil(geo.options.arcDegree) || geo.hasAltitude()) {
             inCurrentView = true;
         } else if (geo._inCurrentView === false) {
             inCurrentView = false;
