@@ -66,13 +66,13 @@ export default function (features, dataConfig, extent, uvOrigin, textureSize, re
             projectionCode
         }, debugIndex, arrayPool);
     const buffers = [];
-    const vertexCount = faces.vertices.length / 3;
+    const vertexCount = faces.vertices.getLength() / 3;
     const ctor = PackUtil.getIndexArrayType(vertexCount);
     const indices = ArrayPool.createTypedArray(faces.indices, ctor);
     delete faces.indices;
     buffers.push(indices.buffer, faces.pickingIds.buffer);
 
-    const normalArr = tangent ? arrayPool.get() : new Float32Array(vertexCount * 3);
+    const normalArr = tangent ? arrayPool.getProxy() : new Float32Array(vertexCount * 3);
     if (normalArr.setLength) {
         normalArr.setLength(vertexCount * 3);
     }
@@ -80,7 +80,8 @@ export default function (features, dataConfig, extent, uvOrigin, textureSize, re
     let simpleNormal = true;
     const delta = 1E-6;
     //因为aPosition中的数据是在矢量瓦片坐标体系里的，y轴和webgl坐标体系相反，所以默认计算出来的normal是反的
-    for (let i = 0; i < normals.length; i++) {
+    const normalLen = normals.getLength ? normals.getLength() : normals.length;
+    for (let i = 0; i < normalLen; i++) {
         if (!isExtrudePolygonLayer) {
             normals[i] = -normals[i];
         }
@@ -117,7 +118,7 @@ export default function (features, dataConfig, extent, uvOrigin, textureSize, re
     }
     if (center) {
         const vertices = faces.vertices;
-        for (let i = 0; i < vertices.length; i += 3) {
+        for (let i = 0; i < vertices.getLength(); i += 3) {
             vertices[i] -= center[0];
             vertices[i + 1] -= center[1];
         }
@@ -145,6 +146,7 @@ export default function (features, dataConfig, extent, uvOrigin, textureSize, re
         },
         buffers
     };
+    // featureIds 在Extrusion中已经转换为了普通数组，不需要用 getLength() 返回数据条数
     if (faces.featureIds.length) {
         data.data.featureIds = faces.featureIds;
         buffers.push(data.data.featureIds.buffer);
@@ -165,10 +167,11 @@ export default function (features, dataConfig, extent, uvOrigin, textureSize, re
 }
 
 function createQuaternion(normals, tangents) {
-    const aTangent = new Float32Array(tangents.length);
+    const count = tangents.getLength();
+    const aTangent = new Float32Array(count);
     const t = [], n = [], q = [];
 
-    for (let i = 0; i < tangents.length; i += 4) {
+    for (let i = 0; i < count; i += 4) {
         const ni = i / 4 * 3;
         vec3.set(n, normals[ni] || 0, normals[ni + 1] || 0, normals[ni + 2] || 0);
         vec4.set(t, tangents[i] || 0, tangents[i + 1] || 0, tangents[i + 2] || 0, tangents[i + 3] || 0);
@@ -182,11 +185,12 @@ const ARR0 = [];
 function buildFnTypes(features, symbol, zoom, feaIndexes) {
     const dynamicAttributes = {};
     const fnTypes = {};
+    const count = feaIndexes.getLength();
     if (isFnTypeSymbol(symbol['polygonFill'])) {
         let colorFn = piecewiseConstant(symbol.polygonFill);
-        const aColor = new Uint8Array(feaIndexes.length * 4);
+        const aColor = new Uint8Array(count * 4);
         aColor.fill(255);
-        for (let i = 0; i < feaIndexes.length; i++) {
+        for (let i = 0; i < count; i++) {
             const feature = features[feaIndexes[i]];
             const properties = feature.properties || {};
             properties['$layer'] = feature.layer;
@@ -209,9 +213,9 @@ function buildFnTypes(features, symbol, zoom, feaIndexes) {
     }
     if (isFnTypeSymbol(symbol['polygonOpacity'])) {
         let opacityFn = interpolated(symbol.polygonOpacity);
-        const aOpacity = new Uint8Array(feaIndexes.length);
+        const aOpacity = new Uint8Array(count);
         aOpacity.fill(255);
-        for (let i = 0; i < feaIndexes.length; i++) {
+        for (let i = 0; i < count; i++) {
             const feature = features[feaIndexes[i]];
             const properties = feature.properties || {};
             properties['$layer'] = feature.layer;
@@ -237,6 +241,7 @@ function buildVertexColorTypes(verticeTypes, feaIndexes, features, symbol, zoom)
     const isTopFn = isFnTypeSymbol(symbol['topPolygonFill']);
     const isBottomFn = isFnTypeSymbol(symbol['bottomPolygonFill']);
     const colorNormalize = [255, 255, 255, 255];
+    const count = feaIndexes.getLength();
     if (isTopFn || isBottomFn) {
         let topFillFn = isTopFn && piecewiseConstant(symbol.topPolygonFill);
         let bottomFillFn = isBottomFn && piecewiseConstant(symbol.bottomPolygonFill);
@@ -244,7 +249,7 @@ function buildVertexColorTypes(verticeTypes, feaIndexes, features, symbol, zoom)
         let currentBottomFeatureId = null;
         let currentTopValue = null;
         let currentBottomValue = null;
-        for (let i = 0; i < feaIndexes.length; i++) {
+        for (let i = 0; i < count; i++) {
             if (verticeTypes[i] === 1 && !isTopFn || verticeTypes[i] === 0 && !isBottomFn) {
                 continue;
             }

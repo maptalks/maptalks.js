@@ -459,6 +459,9 @@ export default class VectorPack {
         const data = this.data = {};
         this._arrayPool = arrayPool;
         arrayPool.reset();
+        // !! 这里是危险区域，需要格外注意：
+        // 2024年06月，为了提升arrayPool中数组的性能，arrayPool.get方法范围的数组不再使用Proxy对array进行包装，导致array.length不再返回array中的数据条数，而是数组本身的大小。
+        // 所以使用该类数组时，需要使用 array.getLength() 才能返回正确的数据条数，而用 array.length 会返回错误的值
         let elements = this.elements = arrayPool.get();
         //uniforms: opacity, u_size_t
 

@@ -93,7 +93,7 @@ function buildFlatUV(start, offset, uvs, vertices, uvOrigin, centimeterToPoint, 
     }
 }
 
-export function buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, vertices, indices, texWidth, texHeight, tileRatio, verticalCentimeterToPoint, needReverseTriangle) {
+export function buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, vertices, indices, indiceStart, texWidth, texHeight, tileRatio, verticalCentimeterToPoint, needReverseTriangle) {
     let maxz = 0, minz = 0, h;
     let lensofar = 0;
     let seg = 0;
@@ -101,7 +101,8 @@ export function buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs,
     const segStart = 5;
     const segEnd = needReverseTriangle ? [1, 3, 4] : [2, 3, 4];
     //因为是逆时针，需要倒序遍历
-    for (let i = indices.length - 1; i >= 0; i--) {
+    const count = indices.getLength();
+    for (let i = count - 1; i >= indiceStart; i--) {
         const idx = indices[i];
         const ix = idx * 3, iy = idx * 3 + 1, iz = idx * 3 + 2;
         const x = vertices[ix], y = vertices[iy], z = vertices[iz];

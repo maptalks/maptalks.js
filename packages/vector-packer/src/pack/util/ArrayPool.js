@@ -45,6 +45,12 @@ const ArrayItemMixin = function (Base) {
             // this.fill(0);
             this.currentIndex = 0;
         }
+
+        slice(start, end) {
+            const result = super.slice(start, end);
+            result.currentIndex = end - start;
+            return result;
+        }
     };
 }
 

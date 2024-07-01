@@ -61,7 +61,7 @@ export function createTypedArray(values, ctor) {
     // _origin means values is a proxied ArrayItem
     values = values._origin || values;
     for (let i = 0; i < length; i++) {
-        arr[i] = values[i];
+        arr[i] = values[i] || 0;
     }
     return arr;
 }

@@ -1,6 +1,6 @@
 import { fillPosArray, isClippedEdge } from './Common';
 import { buildFaceUV, buildSideUV } from './UV';
-import { isNumber, pushIn } from '../../common/Util';
+import { isNumber } from '../../common/Util';
 import { PackUtil, ArrayPool, earcut } from '@maptalks/vector-packer';
 import { KEY_IDX, PROP_OMBB } from '../../common/Constant';
 
@@ -45,10 +45,16 @@ export function buildExtrudeFaces(
     // const size = countVertexes(features) * 2;
     //featIndexes : index of indices for each feature
     // const arrCtor = getIndexArrayType(features.length);
+
+    // !! 这里是危险区域，需要格外注意：
+    // 2024年06月，为了提升arrayPool中数组的性能，arrayPool.get方法范围的数组不再使用Proxy对array进行包装，导致array.length不再返回array中的数据条数，而是数组本身的大小。
+    // 所以使用该类数组时，需要使用 array.getLength() 才能返回正确的数据条数，而用 array.length 会返回错误的值
+
     const featIndexes = arrayPool.get();
     const pickingIds = arrayPool.get();
     const featIds = arrayPool.get();
-    const geoVertices = arrayPool.get();
+    // arrayPool.getProxy() 返回的数组会用Proxy包装，其 .length 和 .getLength() 返回的值是一致的，但读取性能比 arrayPool.get() 返回的数组慢很多，多用于传递给第三方库作为参数（例如这里的earcut）
+    const geoVertices = arrayPool.getProxy();
     const vertices = arrayPool.get();
     const indices = arrayPool.get();
     const verticeTypes = arrayPool.get();
@@ -66,8 +72,15 @@ export function buildExtrudeFaces(
                 return offset;
             }
             //TODO caculate earcut deviation
-            pushIn(vertices, geoVertices);
-            offset += geoVertices.length;
+            // pushIn(vertices, geoVertices);
+            let count = geoVertices.getLength();
+            let index = vertices.currentIndex;
+            for (let i = 0; i < count; i++) {
+                vertices[index++] = geoVertices[i];
+            }
+            vertices.currentIndex = index;
+
+            offset += geoVertices.getLength();
             //switch triangle's i + 1 and i + 2 to make it ccw winding
             if (needReverseTriangle) {
                 for (let i = 2, l = triangles.length; i < l; i += 3) {
@@ -86,7 +99,13 @@ export function buildExtrudeFaces(
             }
 
             //top face indices
-            pushIn(indices, triangles);
+            // pushIn(indices, triangles);
+            count = triangles.length;
+            index = indices.currentIndex;
+            for (let i = 0; i < count; i++) {
+                indices[index++] = triangles[i];
+            }
+            indices.currentIndex = index;
             if (generateUV) {
                 // debugger
                 buildFaceUV(topUVMode || 0, start, offset, uvs, vertices, uvOrigin, centimeterToPoint, tileRatio, uvSize[0], uvSize[1], ombb, res, glScale, projectionCode, center);
@@ -106,7 +125,7 @@ export function buildExtrudeFaces(
             typeStartOffset = offset;
             offset = buildSide(vertices, geoVertices, holes, indices, offset, uvs, topThickness, height, EXTENT, generateUV, sideUVMode || 0, sideVerticalUVMode || 0, textureYOrigin, uvSize, tileRatio, verticalCentimeterToPoint, needReverseTriangle);
             verticeTypes.setLength(offset / 3);
-            const count = geoVertices.length / 3;
+            const count = geoVertices.getLength() / 3;
             verticeTypes.fill(1, typeStartOffset / 3, typeStartOffset / 3 + count);
             verticeTypes.fill(0, typeStartOffset / 3 + count, typeStartOffset / 3 + 2 * count);
             verticeTypes.fill(1, typeStartOffset / 3 + 2 * count, typeStartOffset / 3 + 3 * count);
@@ -126,7 +145,7 @@ export function buildExtrudeFaces(
     }
     let maxFeaId = 0;
     let hasNegative = false;
-    const holes = arrayPool.get();
+    const holes = arrayPool.getProxy();
     for (; r < n; r++) {
         const feature = features[r];
         const feaId = feature.id;
@@ -147,7 +166,7 @@ export function buildExtrudeFaces(
         const { altitude, height } = PackUtil.getFeaAltitudeAndHeight(feature, altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty);
         maxAltitude = Math.max(Math.abs(altitude), maxAltitude);
 
-        const verticeCount = vertices.length;
+        const verticeCount = vertices.getLength();
 
         let exteriorIndex = 0;
         let start = offset;
@@ -191,27 +210,40 @@ export function buildExtrudeFaces(
                 ring.push(ring[0]);
             }
             if (isHole) {
-                holes.push(geoVertices.length / 3);
+                let index = holes.currentIndex;
+                holes[index++] = geoVertices.getLength() / 3;
+                holes.currentIndex = index;
             }
             //a seg or a ring in line or polygon
-            fillPosArray(geoVertices, geoVertices.length, ring, scale, altitude, false, positionType);
+            fillPosArray(geoVertices, geoVertices.getLength(), ring, scale, altitude, false, positionType);
 
             if (i === l - 1) {
                 offset = fillData(start, offset, holes, height * scale, ringOmbb, needReverseTriangle); //need to multiply with scale as altitude is
             }
         }
 
-        const count = vertices.length - verticeCount;
+        const count = vertices.getLength() - verticeCount;
         const keyName = (KEY_IDX + '').trim();
         for (let i = 0; i < count / 3; i++) {
-            pickingIds.push(feature[keyName] === undefined ? r : feature[keyName]);
-            featIndexes.push(r);
+            let index = pickingIds.currentIndex;
+            pickingIds[index++] = feature[keyName] === undefined ? r : feature[keyName];
+            pickingIds.currentIndex = index;
+
+            index = featIndexes.currentIndex;
+            featIndexes[index++] = r;
+            featIndexes.currentIndex = index;
+
+            // pickingIds.push(feature[keyName] === undefined ? r : feature[keyName]);
+            // featIndexes.push(r);
             if (isNumber(feaId)) {
-                featIds.push(feaId);
+                index = featIds.currentIndex;
+                featIds[index++] = feaId;
+                featIds.currentIndex = index;
+                // featIds.push(feaId);
             }
         }
     }
-    const pickingCtor = PackUtil.getUnsignedArrayType(pickingIds.length ? pickingIds[pickingIds.length - 1] : 0);
+    const pickingCtor = PackUtil.getUnsignedArrayType(pickingIds.getLength() ? pickingIds[pickingIds.getLength() - 1] : 0);
 
     const data = {
         maxAltitude,
@@ -221,7 +253,7 @@ export function buildExtrudeFaces(
         pickingIds: ArrayPool.createTypedArray(pickingIds, pickingCtor),   // vertex index of each feature
         featureIndexes: featIndexes
     };
-    if (featIds.length) {
+    if (featIds.getLength()) {
         const feaCtor = hasNegative ? PackUtil.getPosArrayType(maxFeaId) : PackUtil.getUnsignedArrayType(maxFeaId);
         data.featureIds = ArrayPool.createTypedArray(featIds, feaCtor);
     } else {
@@ -229,7 +261,7 @@ export function buildExtrudeFaces(
     }
     if (uvs) {
         //因为vertices中最后一位不在indices中引用，uvs为保持位数与vertices一致，需补充2位
-        uvs.setLength(vertices.length / 3 * 2);
+        uvs.setLength(vertices.getLength() / 3 * 2);
         //改成int16
         data.uvs = uvs;
     }
@@ -237,7 +269,7 @@ export function buildExtrudeFaces(
 }
 
 function buildSide(vertices, topVertices, holes, indices, offset, uvs, topThickness, height, EXTENT, generateUV, sideUVMode, sideVerticalUVMode, textureYOrigin, uvSize, tileRatio, verticalCentimeterToPoint, needReverseTriangle) {
-    const count = topVertices.length;
+    const count = topVertices.getLength();
     const startIdx = offset / 3;
     //拷贝两次top和bottom，是为了让侧面的三角形使用不同的端点，避免uv和normal值因为共端点产生错误
     //top vertexes
@@ -275,7 +307,8 @@ function buildSide(vertices, topVertices, holes, indices, offset, uvs, topThickn
     // vertices.trySetLength(offset);
     holes = holes || [];
     holes.push(count / 3);
-    for (let r = 0; r < holes.length; r++) {
+    const holeCount = holes.getLength();
+    for (let r = 0; r < holeCount; r++) {
         // #287, 遍历geometry中的每个ring，构造侧面三角形和uv坐标
         const ringStart = startIdx + (holes[r - 1] || 0);
         const ringEnd = startIdx + holes[r];
@@ -288,7 +321,7 @@ function buildSide(vertices, topVertices, holes, indices, offset, uvs, topThickn
 
 function buildRingSide(ringStart, ringEnd, vertices, vertexCount, EXTENT, indices,
     generateUV, sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, uvSize, tileRatio, verticalCentimeterToPoint, needReverseTriangle) {
-    const indiceStart = indices.length;
+    const indiceStart = indices.getLength();
     let current, next;
     for (let i = ringStart, l = ringEnd; i < l - 1; i++) {
         current = i;
@@ -303,18 +336,40 @@ function buildRingSide(ringStart, ringEnd, vertices, vertexCount, EXTENT, indice
         }
 
         if (!needReverseTriangle) {
+            let index = indices.currentIndex;
             //bottom[i], top[i], top[i + 1]
-            indices.push(current + vertexCount, current, next);
+            indices[index++] = current + vertexCount;
+            indices[index++] = current;
+            indices[index++] = next;
             //top[i + 1], bottom[i + 1],  bottom[i]
-            indices.push(next, next + vertexCount, current + vertexCount);
+            indices[index++] = next;
+            indices[index++] = next + vertexCount;
+            indices[index++] = current + vertexCount;
+
+            indices.currentIndex = index;
+            //bottom[i], top[i], top[i + 1]
+            // indices.push(current + vertexCount, current, next);
+            //top[i + 1], bottom[i + 1],  bottom[i]
+            // indices.push(next, next + vertexCount, current + vertexCount);
         } else {
-            indices.push(current + vertexCount, next, current);
-            indices.push(next + vertexCount, next, current + vertexCount);
+            let index = indices.currentIndex;
+            //bottom[i], top[i], top[i + 1]
+            indices[index++] = current + vertexCount;
+            indices[index++] = next;
+            indices[index++] = current;
+            //top[i + 1], bottom[i + 1],  bottom[i]
+            indices[index++] = next + vertexCount;
+            indices[index++] = next;
+            indices[index++] = current + vertexCount;
+
+            indices.currentIndex = index;
+            // indices.push(current + vertexCount, next, current);
+            // indices.push(next + vertexCount, next, current + vertexCount);
         }
 
     }
     if (generateUV) {
-        buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, vertices, indices.slice(indiceStart, indices.length), uvSize[0], uvSize[1], tileRatio, verticalCentimeterToPoint, needReverseTriangle); //convert uvSize[1] to meter
+        buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, vertices, indices, indiceStart, uvSize[0], uvSize[1], tileRatio, verticalCentimeterToPoint, needReverseTriangle); //convert uvSize[1] to meter
     }
 }
 
