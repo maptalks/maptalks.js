@@ -72,6 +72,9 @@ export default function (features, dataConfig, extent, uvOrigin, textureSize, re
     delete faces.indices;
     buffers.push(indices.buffer, faces.pickingIds.buffer);
 
+    const posArrayType = positionType || PackUtil.getPosArrayType(Math.max(512, faces.maxAltitude));
+    faces.vertices = ArrayPool.createTypedArray(faces.vertices, posArrayType);
+
     const normalArr = tangent ? arrayPool.getProxy() : new Float32Array(vertexCount * 3);
     if (normalArr.setLength) {
         normalArr.setLength(vertexCount * 3);
@@ -123,7 +126,7 @@ export default function (features, dataConfig, extent, uvOrigin, textureSize, re
             vertices[i + 1] -= center[1];
         }
     }
-    const posArrayType = positionType || PackUtil.getPosArrayType(Math.max(512, faces.maxAltitude));
+
 
     const fnTypes = buildFnTypes(features, symbol, zoom, faces.featureIndexes);
     const vertexColors = buildVertexColorTypes(faces.verticeTypes, faces.featureIndexes, features, symbol, zoom);
@@ -131,7 +134,7 @@ export default function (features, dataConfig, extent, uvOrigin, textureSize, re
         data: {
             data: {
                 aVertexColorType: vertexColors.length <= 252 ? ArrayPool.createTypedArray(faces.verticeTypes, Uint8Array) : ArrayPool.createTypedArray(faces.verticeTypes, Uint16Array),
-                aPosition: ArrayPool.createTypedArray(faces.vertices, posArrayType),
+                aPosition: faces.vertices,
                 aNormal: faces.normals,
                 aTexCoord0: faces.uvs,
                 aTangent: faces.tangents,
