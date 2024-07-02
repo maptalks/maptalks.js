@@ -129,7 +129,15 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
 
     _getStyle(): any {
         // read drawAltitude from layer every time
-        let style = this.geometry.getLayer().options['drawAltitude'];
+        const layer = this.geometry.getLayer();
+        let style = layer.options['drawAltitude'];
+        if (Array.isArray(style)) {
+            const geos = layer.getGeometries() || [];
+            const index = geos.indexOf(this.geometry);
+            if (index >= 0) {
+                style = style[index] || defaultSymbol;
+            }
+        }
         if (!isObject(style)) {
             style = defaultSymbol;
         }
