@@ -64,7 +64,7 @@ export default class LineExtrusionPack extends LinePack {
         if (this._hasALineHeight) {
             format.push(
                 {
-                    type: Array,
+                    type: Float32Array,
                     width: 1,
                     name: 'aLineHeight'
                 }
@@ -93,11 +93,11 @@ export default class LineExtrusionPack extends LinePack {
 
     _addLine(vertices, feature, join, cap, miterLimit, roundLimit) {
         const positionSize = 3;
-        const prevCount = this.data.aPosition.length / positionSize;
+        const prevCount = this.data.aPosition.getLength() / positionSize;
 
         super._addLine(vertices, feature, join, cap, miterLimit, roundLimit);
-        const currentCount = this.data.aPosition.length / positionSize;
-        const end0 = this.data.aPosition.length / positionSize - this.offset;
+        const currentCount = this.data.aPosition.getLength() / positionSize;
+        const end0 = this.data.aPosition.getLength() / positionSize - this.offset;
         const isPolygon = feature.type === 3; //POLYGON)
         // debugger
         const generateSide = this.options['side'] !== false;
@@ -111,33 +111,42 @@ export default class LineExtrusionPack extends LinePack {
             //在data末尾补充首尾两端的端点
 
             //line开始时顶点顺序: down0, down0-底, up0, up0-底
-            let count = (this.data.aPosition.length / positionSize);
+            let count = (this.data.aPosition.getLength() / positionSize);
             for (const p in this.data) {
                 const arr = this.data[p];
-                const width = arr.length / count;
+                const width = arr.getLength() / count;
+                let index = arr.currentIndex;
                 for (let i = 0; i < width; i++) {
-                    arr.push(arr[prevCount * width + width * 3 + i]);
+                    arr[index++] = arr[prevCount * width + width * 3 + i];
+                    // arr.push(arr[prevCount * width + width * 3 + i]);
                 }
+                arr.currentIndex = index;
             }
 
             //down0
-            count = (this.data.aPosition.length / positionSize);
+            count = (this.data.aPosition.getLength() / positionSize);
             for (const p in this.data) {
                 const arr = this.data[p];
-                const width = arr.length / count;
+                const width = arr.getLength() / count;
+                let index = arr.currentIndex;
                 for (let i = 0; i < width; i++) {
-                    arr.push(arr[prevCount * width + width * vertexLength + i]);
+                    // arr.push(arr[prevCount * width + width * vertexLength + i]);
+                    arr[index++] = arr[prevCount * width + width * vertexLength + i];
                 }
+                arr.currentIndex = index;
             }
 
             //down1
-            count = (this.data.aPosition.length / positionSize);
+            count = (this.data.aPosition.getLength() / positionSize);
             for (const p in this.data) {
                 const arr = this.data[p];
-                const width = arr.length / count;
+                const width = arr.getLength() / count;
+                let index = arr.currentIndex;
                 for (let i = 0; i < width; i++) {
-                    arr.push(arr[prevCount * width + width * (vertexLength + 3) + i]);
+                    // arr.push(arr[prevCount * width + width * (vertexLength + 3) + i]);
+                    arr[index++] = arr[prevCount * width + width * (vertexLength + 3) + i];
                 }
+                arr.currentIndex = index;
             }
 
 
@@ -146,38 +155,47 @@ export default class LineExtrusionPack extends LinePack {
             //up1, down0, dow1
             super.addElements(end0, end0 + 1, end0 + 2);
 
-            const end1 = this.data.aPosition.length / positionSize - this.offset;
+            const end1 = this.data.aPosition.getLength() / positionSize - this.offset;
 
             //line结束的顶点顺序: down1, down1底, up1, up1底
             //up1底
-            count = (this.data.aPosition.length / positionSize);
+            count = (this.data.aPosition.getLength() / positionSize);
             for (const p in this.data) {
                 const arr = this.data[p];
-                const width = arr.length / count;
+                const width = arr.getLength() / count;
+                let index = arr.currentIndex;
                 for (let i = 0; i < width; i++) {
-                    arr.push(arr[currentCount * width - width + i]);
+                    // arr.push(arr[currentCount * width - width + i]);
+                    arr[index++] = arr[currentCount * width - width + i];
                 }
+                arr.currentIndex = index;
             }
 
 
             //down1底
-            count = (this.data.aPosition.length / positionSize);
+            count = (this.data.aPosition.getLength() / positionSize);
             for (const p in this.data) {
                 const arr = this.data[p];
-                const width = arr.length / count;
+                const width = arr.getLength() / count;
+                let index = arr.currentIndex;
                 for (let i = 0; i < width; i++) {
-                    arr.push(arr[currentCount * width - vertexLength * width - width + i]);
+                    // arr.push(arr[currentCount * width - vertexLength * width - width + i]);
+                    arr[index++] = arr[currentCount * width - vertexLength * width - width + i];
                 }
+                arr.currentIndex = index;
             }
 
             //down1
-            count = (this.data.aPosition.length / positionSize);
+            count = (this.data.aPosition.getLength() / positionSize);
             for (const p in this.data) {
                 const arr = this.data[p];
-                const width = arr.length / count;
+                const width = arr.getLength() / count;
+                let index = arr.currentIndex;
                 for (let i = 0; i < width; i++) {
-                    arr.push(arr[currentCount * width - vertexLength * width - 3 * width + i]);
+                    // arr.push(arr[currentCount * width - vertexLength * width - 3 * width + i]);
+                    arr[index++] = arr[currentCount * width - vertexLength * width - 3 * width + i];
                 }
+                arr.currentIndex = index;
             }
 
             //up1底，(addLine中添加的没人用的up1), down1底
@@ -217,39 +235,112 @@ export default class LineExtrusionPack extends LinePack {
 
     _fillTop(data, x, y, extrudeX, extrudeY, round, up, linesofar, extrudedPointX, extrudedPointY, aExtrudeX, aExtrudeY) {
         const { lineColorFn, lineWidthFn } = this._fnTypes;
-        data.aPosition.push(x, y, ALTITUDE_SCALE);
-        data.aLinesofar.push(linesofar);
-        data.aUp.push(+up);
-        data.aExtrudedPosition.push(extrudedPointX, extrudedPointY, 1);
+        // data.aPosition.push(x, y, ALTITUDE_SCALE);
+        let index = data.aPosition.currentIndex;
+        data.aPosition[index++] = x;
+        data.aPosition[index++] = y;
+        data.aPosition[index++] = ALTITUDE_SCALE;
+        data.aPosition.currentIndex = index;
+
+        // data.aLinesofar.push(linesofar);
+        index = data.aLinesofar.currentIndex;
+        data.aLinesofar[index++] = linesofar;
+        data.aLinesofar.currentIndex = index;
+
+        // data.aUp.push(+up);
+        index = data.aUp.currentIndex;
+        data.aUp[index++] = +up;
+        data.aUp.currentIndex = index;
+
+        // data.aExtrudedPosition.push(extrudedPointX, extrudedPointY, 1);
+        index = data.aExtrudedPosition.currentIndex;
+        data.aExtrudedPosition[index++] = extrudedPointX;
+        data.aExtrudedPosition[index++] = extrudedPointY;
+        data.aExtrudedPosition[index++] = 1;
+        data.aExtrudedPosition.currentIndex = index;
+
+        // data.aExtrude.push(aExtrudeX, aExtrudeY);
+        index = data.aExtrude.currentIndex;
+        data.aExtrude[index++] = aExtrudeX;
+        data.aExtrude[index++] = aExtrudeY;
         data.aExtrude.push(aExtrudeX, aExtrudeY);
         if (lineColorFn) {
-            data.aColor.push(...this.feaColor);
+            // data.aColor.push(...this.feaColor);
+            index = data.aColor.currentIndex;
+            data.aColor[index++] = this.feaColor[0];
+            data.aColor[index++] = this.feaColor[1];
+            data.aColor[index++] = this.feaColor[2];
+            data.aColor[index++] = this.feaColor[3];
+            data.aColor.currentIndex = index;
         }
         if (lineWidthFn) {
             //乘以2是为了解决 #190
-            data.aLineWidth.push(Math.round(this.feaLineWidth * 2));
+            // data.aLineWidth.push(Math.round(this.feaLineWidth * 2));
+            index = data.aLineWidth.currentIndex;
+            data.aLineWidth[index++] = Math.round(this.feaLineWidth * 2);
+            data.aLineWidth.currentIndex = index;
         }
         if (this._hasALineHeight) {
-            data.aLineHeight.push(this.feaAltitude);
+            // data.aLineHeight.push(this.feaAltitude);
+            index = data.aLineHeight.currentIndex;
+            data.aLineHeight[index++] = this.feaAltitude;
+            data.aLineHeight.currentIndex = index;
         }
     }
 
     _fillBottom(data, x, y, extrudeX, extrudeY, round, up, linesofar, extrudedPointX, extrudedPointY, aExtrudeX, aExtrudeY) {
         const { lineColorFn, lineWidthFn } = this._fnTypes;
-        data.aPosition.push(x, y, this.feaMinHeight || 0);
-        data.aLinesofar.push(linesofar);
-        data.aUp.push(+up);
-        data.aExtrudedPosition.push(extrudedPointX, extrudedPointY, 1);
+        // data.aPosition.push(x, y, this.feaMinHeight || 0);
+        let index = data.aPosition.currentIndex;
+        data.aPosition[index++] = x;
+        data.aPosition[index++] = y;
+        data.aPosition[index++] = this.feaMinHeight || 0;
+        data.aPosition.currentIndex = index;
+
+        // data.aLinesofar.push(linesofar);
+        index = data.aLinesofar.currentIndex;
+        data.aLinesofar[index++] = linesofar;
+        data.aLinesofar.currentIndex = index;
+
+        // data.aUp.push(+up);
+        index = data.aUp.currentIndex;
+        data.aUp[index++] = +up;
+        data.aUp.currentIndex = index;
+
+        // data.aExtrudedPosition.push(extrudedPointX, extrudedPointY, 1);
+        index = data.aExtrudedPosition.currentIndex;
+        data.aExtrudedPosition[index++] = extrudedPointX;
+        data.aExtrudedPosition[index++] = extrudedPointY;
+        data.aExtrudedPosition[index++] = 1;
+        data.aExtrudedPosition.currentIndex = index;
+
+        // data.aExtrude.push(aExtrudeX, aExtrudeY);
+        index = data.aExtrude.currentIndex;
+        data.aExtrude[index++] = aExtrudeX;
+        data.aExtrude[index++] = aExtrudeY;
         data.aExtrude.push(aExtrudeX, aExtrudeY);
+
         if (lineColorFn) {
-            data.aColor.push(...this.feaColor);
+            // data.aColor.push(...this.feaColor);
+            index = data.aColor.currentIndex;
+            data.aColor[index++] = this.feaColor[0];
+            data.aColor[index++] = this.feaColor[1];
+            data.aColor[index++] = this.feaColor[2];
+            data.aColor[index++] = this.feaColor[3];
+            data.aColor.currentIndex = index;
         }
         if (lineWidthFn) {
             //乘以2是为了解决 #190
-            data.aLineWidth.push(Math.round(this.feaLineWidth * 2));
+            // data.aLineWidth.push(Math.round(this.feaLineWidth * 2));
+            index = data.aLineWidth.currentIndex;
+            data.aLineWidth[index++] = Math.round(this.feaLineWidth * 2);
+            data.aLineWidth.currentIndex = index;
         }
         if (this._hasALineHeight) {
-            data.aLineHeight.push(this.feaAltitude);
+            // data.aLineHeight.push(this.feaAltitude);
+            index = data.aLineHeight.currentIndex;
+            data.aLineHeight[index++] = this.feaAltitude;
+            data.aLineHeight.currentIndex = index;
         }
     }
 
