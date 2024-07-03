@@ -316,24 +316,33 @@ const lineStringInclude = {
                 }
             }
         }
+        //关于弧线或者平滑曲线的箭头节点分布
+        /**
+         * P0--arrowNextPoint----------arrowPrePoint--P1-------------arrowPrePoint--P2------------arrowPrePoint--P3.............arrowPrePoint--Pn
+         */
         for (let i = segments.length - 1; i >= 0; i--) {
             const path = segments[i];
             const len = path.length;
             const first = path[0];
             const last = path[len - 1];
+            //忽略closeTo判断，因为点可能有海拔，比如两个点可能是垂直关系
             if (placement === 'vertex-first') {
-                p1 = first.nextPoint || path[1];
+                //如果有箭头专用节点使用箭头专用节点,一般是弧线或者平滑曲线
+                //第一个节点有箭头专用后置节点
+                p1 = first.arrowNextPoint || path[1];
                 p2 = first;
             } else if (placement === 'vertex-last') {
-                p1 = last.prePoint || path[len - 2];
+                //如果有箭头专用节点使用箭头专用节点,一般是弧线或者平滑曲线
+                //其他节点有箭头专用的前置节点
+                p1 = last.arrowPrePoint || path[len - 2];
                 p2 = last;
             }
             createArrow();
             if (placement === 'vertex-firstlast') {
-                p1 = first.nextPoint || path[1];
+                p1 = first.arrowNextPoint || path[1];
                 p2 = first;
                 createArrow();
-                p1 = last.prePoint || path[len - 2];
+                p1 = last.arrowPrePoint || path[len - 2];
                 p2 = last;
                 createArrow();
             }
@@ -362,7 +371,8 @@ const lineStringInclude = {
         for (let ii = 0, ll = segments.length - 1; ii < ll; ii++) {
             const pre = segments[ii];
             const next = segments[ii + 1];
-            const arrow = this._getArrowShape(next.prePoint || pre, next, lineWidth, arrowStyle, tolerance);
+            //如果有箭头专用节点使用箭头专用节点
+            const arrow = this._getArrowShape(next.arrowPrePoint || pre, next, lineWidth, arrowStyle, tolerance);
             if (arrow) {
                 arrows.push(arrow);
             }

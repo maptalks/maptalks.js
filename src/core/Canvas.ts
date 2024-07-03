@@ -727,7 +727,7 @@ const Canvas = {
             ctx.closePath();
         }
     },
-
+    //备份老的方法
     paintSmoothLine_bak(ctx, points, lineOpacity, smoothValue, close, tailIdx?, tailRatio?) {
         if (!points) {
             return;
@@ -868,21 +868,26 @@ const Canvas = {
                 ctx.bezierCurveTo(ctrlPoints[0], ctrlPoints[1], ctrlPoints[2], ctrlPoints[3], x2, y2);
             }
             if (i === 0) {
-                point.nextPoint = point.nextPoint || new Point(0, 0);
+                //第一个点添加一个Point作为箭头方向使用
+                // p0--arrowNextPoint------------p1;
+                point.arrowNextPoint = point.arrowNextPoint || new Point(0, 0);
                 preX = ctrlPoints[2];
                 preY = ctrlPoints[3];
-                point.nextPoint.x = preX;
-                point.nextPoint.y = preY;
+                point.arrowNextPoint.x = preX;
+                point.arrowNextPoint.y = preY;
             } else {
-                point.prePoint = point.prePoint || new Point(0, 0);
-                point.prePoint.x = preX;
-                point.prePoint.y = preY;
+                //其他的点，添加一个前置节点作为箭头方向使用
+                // p0--------arrowPrePoint--p1;
+                point.arrowPrePoint = point.arrowPrePoint || new Point(0, 0);
+                point.arrowPrePoint.x = preX;
+                point.arrowPrePoint.y = preY;
                 preX = ctrlPoints[2];
                 preY = ctrlPoints[3];
                 if (i === l - 1 && points[i + 1]) {
-                    points[i + 1].prePoint = points[i + 1].prePoint || new Point(0, 0);
-                    points[i + 1].prePoint.x = ctrlPoints[0];
-                    points[i + 1].prePoint.y = ctrlPoints[1];
+                    //最后一个节点添加一个前置节点作为箭头方向使用
+                    points[i + 1].arrowPrePoint = points[i + 1].arrowPrePoint || new Point(0, 0);
+                    points[i + 1].arrowPrePoint.x = ctrlPoints[0];
+                    points[i + 1].arrowPrePoint.y = ctrlPoints[1];
                 }
             }
         }
@@ -897,6 +902,7 @@ const Canvas = {
      * @param  {Number} degree arc degree between p1 and p2
      */
     _arcBetween(ctx: CanvasRenderingContext2D, p1: Point, p2: Point, degree: number) {
+        //degree可能是负角度
         const a = Math.abs(degree),
             dist = p1.distanceTo(p2),
             //radius of circle
@@ -920,10 +926,12 @@ const Canvas = {
             startAngle = Math.PI - startAngle;
         }
         let endAngle = startAngle + a;
+        //负角度
         if (degree < 0) {
+            //旋转整个弧线PI
             startAngle += Math.PI;
             endAngle += Math.PI;
-            //translate center
+            //translate center 平移中线点,以p1,p2的中心点向相反方向取新的中心点
             const middleX = (p1.x + p2.x) / 2, middleY = (p1.y + p2.y) / 2;
             const dx = cx - middleX, dy = cy - middleY;
             cx = middleX - dx;
@@ -933,7 +941,7 @@ const Canvas = {
         ctx.beginPath();
         ctx.arc(cx, cy, r, startAngle, endAngle);
         //cal arrow achor
-        //不在使用控制点,而是在开始角度和结束角度附件取个点
+        //不在使用控制点,使用箭头专用ArrowPoint,在开始角度和结束角度附件取个点
         const aAngle = (endAngle - startAngle) / 100;
         const x1 = Math.cos(startAngle + aAngle) * r + cx;
         const y1 = Math.sin(startAngle + aAngle) * r + cy;
@@ -941,21 +949,21 @@ const Canvas = {
         const y2 = Math.sin(endAngle - aAngle) * r + cy;
         /**
          * 
-         * p1-nextPoint-----------prePoint-p2
+         * P1-arrowNextPoint------------------arrowNextPoint-P2
          * 
          */
-        p1.nextPoint = p1.nextPoint || new Point(0, 0);
-        p2.prePoint = p2.prePoint || new Point(0, 0);
+        p1.arrowNextPoint = p1.arrowNextPoint || new Point(0, 0);
+        p2.arrowPrePoint = p2.arrowPrePoint || new Point(0, 0);
         if (degree < 0) {
-            p1.nextPoint.x = x1;
-            p1.nextPoint.y = y1;
-            p2.prePoint.x = x2;
-            p2.prePoint.y = y2;
+            p1.arrowNextPoint.x = x1;
+            p1.arrowNextPoint.y = y1;
+            p2.arrowPrePoint.x = x2;
+            p2.arrowPrePoint.y = y2;
         } else {
-            p1.nextPoint.x = x2;
-            p1.nextPoint.y = y2;
-            p2.prePoint.x = x1;
-            p2.prePoint.y = y1;
+            p1.arrowNextPoint.x = x2;
+            p1.arrowNextPoint.y = y2;
+            p2.arrowPrePoint.x = x1;
+            p2.arrowPrePoint.y = y1;
         }
         return [cx, cy];
     },
