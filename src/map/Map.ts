@@ -1003,13 +1003,18 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!view || !isObject(view)) {
             return;
         }
-        if (!isNil(view.bearing) && isNumber(view.bearing)) {
+        if (isNumber(view.bearing)) {
             view.bearing = Math.max(-180, view.bearing);
             view.bearing = Math.min(180, view.bearing);
         }
-        if (!isNil(view.pitch) && isNumber(view.pitch)) {
+        if (isNumber(view.pitch)) {
             view.pitch = Math.max(0, view.pitch);
             view.pitch = Math.min(this.options.maxPitch, view.pitch);
+        }
+        const maxZoom = this.getMaxZoom();
+        if (isNumber(view.zoom)) {
+            view.zoom = Math.max(0, view.zoom);
+            view.zoom = Math.min(maxZoom, view.zoom);
         }
         return;
     }
