@@ -1104,18 +1104,21 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         let ref = 1;
         childTiles = childTiles.sort(sortByLevel);
         for (let i = 0; i < childTiles.length; i++) {
-            this._addTileStencil(childTiles[i].info, uniqueRef ? ref : this.getTileLevelValue(childTiles[i].info.z, tileZoom));
+            const stencilRef = uniqueRef ? ref : this.getTileLevelValue(childTiles[i].info, tileZoom);
+            this._addTileStencil(childTiles[i].info, stencilRef);
             ref++;
         }
         parentTiles = parentTiles.sort(sortByLevel);
         for (let i = 0; i < parentTiles.length; i++) {
-            this._addTileStencil(parentTiles[i].info, uniqueRef ? ref : this.getTileLevelValue(parentTiles[i].info.z, tileZoom));
+            const stencilRef = uniqueRef ? ref : this.getTileLevelValue(parentTiles[i].info, tileZoom);
+            this._addTileStencil(parentTiles[i].info, stencilRef);
             ref++;
         }
         //默认情况下瓦片是按照level从小到大排列的，所以倒序排列，让level较小的tile最后画（优先级最高）
         const currentTiles = tiles.sort(sortByLevel);
         for (let i = currentTiles.length - 1; i >= 0; i--) {
-            this._addTileStencil(currentTiles[i].info, uniqueRef ? ref : this.getTileLevelValue(currentTiles[i].info.z, tileZoom));
+            const stencilRef = uniqueRef ? ref : this.getTileLevelValue(currentTiles[i].info, tileZoom);
+            this._addTileStencil(currentTiles[i].info, stencilRef);
             ref++;
         }
 
