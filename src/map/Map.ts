@@ -999,6 +999,21 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         };
     }
 
+    _validateView(view: MapViewType) {
+        if (!view || !isObject(view)) {
+            return;
+        }
+        if (!isNil(view.bearing) && isNumber(view.bearing)) {
+            view.bearing = Math.max(-180, view.bearing);
+            view.bearing = Math.min(180, view.bearing);
+        }
+        if (!isNil(view.pitch) && isNumber(view.pitch)) {
+            view.pitch = Math.max(0, view.pitch);
+            view.pitch = Math.min(this.options.maxPitch, view.pitch);
+        }
+        return;
+    }
+
     /**
      * Set map's center/zoom/pitch/bearing at one time
      * @param {Object} view - a object containing center/zoom/pitch/bearing
@@ -1008,6 +1023,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!view) {
             return this;
         }
+        this._validateView(view);
         if (view['center']) {
             this.setCenter(view['center'] as Coordinate);
         }
@@ -1017,7 +1033,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (view['pitch'] !== null && !isNaN(+view['pitch'])) {
             this.setPitch(+view['pitch']);
         }
-        if (view['pitch'] !== null && !isNaN(+view['bearing'])) {
+        if (view['bearing'] !== null && !isNaN(+view['bearing'])) {
             this.setBearing(+view['bearing']);
         }
         return this;
