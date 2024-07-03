@@ -896,7 +896,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @fires Geometry#positionchange
      * @fires Geometry#shapechange
      */
-    translate(x: number | Coordinate, y?: number, coordinate?: Coordinate): this {
+    translate(x: number | Coordinate, y?: number): this {
         if (isNil(x)) {
             return this;
         }
@@ -912,8 +912,6 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
                     return coord.add(offset);
                 });
                 this.setCoordinates(translated);
-            } else if (coordinate) {
-                this.setCoordinates(coordinate);
             } else {
                 this.setCoordinates(coordinates.add(offset));
             }
