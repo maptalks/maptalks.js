@@ -127,6 +127,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     public _inCurrentView?: boolean;
     // 在 Marker 中附加的信息，Marker 和其子类都具有此属性
     public isPoint?: boolean;
+    private _savedVisible?: boolean;
     //
     public _paintAsPath?: () => any;
     public _getPaintParams?: (disableSimplify?: boolean) => any[];
@@ -1653,12 +1654,12 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (isNil(visible)) {
             visible = true;
         }
-        (this.options as any)._visible = visible;
+        this._savedVisible = visible;
     }
 
 
     _recoveryVisible() {
-        delete (this.options as any)._visible;
+        delete this._savedVisible;
     }
 
     _exportGraphicOptions(options: any): any {
@@ -1667,8 +1668,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             json['options'] = this.config();
         }
         if (json['options'] && this.isEditing && this.isEditing()) {
-            json['options'].visible = (this.options as any)._visible;
-            delete json['options']._visible;
+            json['options'].visible = this._savedVisible;
         }
         if (isNil(options['symbol']) || options['symbol']) {
             json['symbol'] = this.getSymbol();
