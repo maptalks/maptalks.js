@@ -427,7 +427,7 @@ class TileLayer extends Layer {
         const diagonalZ = Math.sqrt(cameraZ * cameraZ + heightZ * heightZ + widthZ * widthZ);
         // @ts-ignore
         const fov0 = map._getFovZ(0);
-        const error = fov0 * (diagonalZ / cameraZ);
+        const error = fov0 * (diagonalZ / cameraZ) * 1.5;
 
         const sr = this.getSpatialReference();
         const res = sr.getResolution(0);
@@ -493,7 +493,6 @@ class TileLayer extends Layer {
         const extent = new PointExtent();
         const tiles = [];
         const parents = [];
-        const pitched = map.getPitch() > 0;
         while (queue.length > 0) {
             const node = queue.pop();
             if (node.z === maxZoom) {
@@ -504,7 +503,7 @@ class TileLayer extends Layer {
             if (!offsets[node.z + 1]) {
                 offsets[node.z + 1] = this._getTileOffset(node.z + 1);
             }
-            this._splitNode(node, projectionView, queue, tiles, extent, maxZoom, offsets[node.z + 1], layer && layer.getRenderer(), glRes, pitched);
+            this._splitNode(node, projectionView, queue, tiles, extent, maxZoom, offsets[node.z + 1], layer && layer.getRenderer(), glRes);
             if (this.isParentTile(z, maxZoom, node)) {
                 parents.push(node);
             }
@@ -541,8 +540,7 @@ class TileLayer extends Layer {
         maxZoom: number,
         offset: TileOffsetType,
         parentRenderer: any,
-        glRes: number,
-        pitched: boolean
+        glRes: number
     ) {
         const z = node.z + 1;
         const sr = this.getSpatialReference();
@@ -595,10 +593,6 @@ class TileLayer extends Layer {
                 return;
             }
             children.push(childNode);
-        }
-        if (!pitched) {
-            queue.push(...children);
-            return;
         }
         if (z === maxZoom) {
             if (hasCurrentIn) {
