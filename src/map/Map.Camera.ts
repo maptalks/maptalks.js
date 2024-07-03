@@ -125,10 +125,12 @@ Map.include(/** @lends Map.prototype */{
      * @return {Map} this
      */
     setBearing(bearing) {
+        const view = { bearing };
+        this._validateView(view);
         if (this._mapAnimPlayer) {
             this._stopAnim(this._mapAnimPlayer);
         }
-        return this._setBearing(bearing);
+        return this._setBearing(view.bearing);
     },
 
     _setBearing(bearing) {
@@ -192,10 +194,12 @@ Map.include(/** @lends Map.prototype */{
      * @return {Map} this
      */
     setPitch(pitch) {
+        const view = { pitch };
+        this._validateView(view);
         if (this._mapAnimPlayer) {
             this._stopAnim(this._mapAnimPlayer);
         }
-        return this._setPitch(pitch);
+        return this._setPitch(view.pitch);
     },
 
     _setPitch(pitch) {
@@ -252,6 +256,9 @@ Map.include(/** @lends Map.prototype */{
         if (!Array.isArray(frameOptions) || !frameOptions.length) {
             return this;
         }
+        frameOptions.forEach(frameOption => {
+            this._validateView(frameOption);
+        });
         this.setView({
             center: frameOptions[0].center,
             zoom: frameOptions[0].zoom,
@@ -326,6 +333,7 @@ Map.include(/** @lends Map.prototype */{
     setCameraOrientation(params) {
         const { position } = params;
         let { pitch, bearing } = params;
+        this._validateView(params);
         pitch = pitch || 0;
         bearing = bearing || 0;
         const { zoom, cameraToGroundDistance } = this.getFitZoomForCamera(position, pitch);
