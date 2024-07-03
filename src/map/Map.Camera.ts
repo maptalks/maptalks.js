@@ -817,7 +817,8 @@ Map.include(/** @lends Map.prototype */{
             // up.rotateZ(target,radians);
             const d = dist || 1;
             // const up = this.cameraUp = set(this.cameraUp || [0, 0, 0], Math.sin(bearing) * d, Math.cos(bearing) * d, 0);
-            const up = this.cameraUp = this.getPitch() > 0 ? set(this.cameraUp || [0, 0, 0], 0, 0, 1) : set(this.cameraUp || [0, 0, 0], Math.sin(bearing) * d, Math.cos(bearing) * d, 0);
+            this.cameraUp = this.cameraUp || [0, 0, 0];
+            const up = this.cameraUp = set(this.cameraUp, Math.sin(bearing) * d, Math.cos(bearing) * d, Math.sin(pitch) * d);
             const m = this.cameraWorldMatrix = this.cameraWorldMatrix || createMat4();
             lookAt(m, this.cameraPosition, this.cameraLookAt, up);
 
