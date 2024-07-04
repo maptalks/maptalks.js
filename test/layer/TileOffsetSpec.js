@@ -51,4 +51,32 @@ describe('TileLayer with Offset Specs', function () {
         // console.log(tiles.tileGrids[0].tiles[0]);
 
     });
+    it('#1824 tiles with offset Array', function (done) {
+        createMap(16, 0, 0);
+        var tile = new maptalks.TileLayer('tile', {
+            offset: [100, 100],
+            renderer: 'canvas',
+            urlTemplate : '/resources/tile-green-256.png'
+        }).addTo(map);
+        
+        setTimeout(() => {
+            expect(tile).to.be.painted(0, 0);
+            done();
+        }, 500);
+
+    });
+    it('#1824 tiles with offset Number', function (done) {
+        createMap(16, 0, 0);
+        var tile = new maptalks.TileLayer('tile', {
+            offset: 100,
+            renderer: 'canvas',
+            urlTemplate : '/resources/tile-green-256.png'
+        }).addTo(map);
+        
+        setTimeout(() => {
+            expect(tile).to.be.painted(0, 0);
+            done();
+        }, 500);
+
+    });
 });

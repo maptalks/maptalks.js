@@ -295,6 +295,8 @@ class Painter extends Class {
         const clipBBoxBufferSize = renderer.layer.options['clipBBoxBufferSize'] || 3;
         const symbolizers = this.symbolizers;
 
+        const enableClip = geometry.options.enableClip;
+
         function pointsContainerPoints(viewPoints = [], alts = []) {
             let pts = getPointsResultPts(viewPoints, ptkey);
             pts = map._pointsAtResToContainerPoints(viewPoints, glRes, alts, pts);
@@ -314,7 +316,7 @@ class Painter extends Class {
                 maxx = Math.max(p.x, maxx);
                 maxy = Math.max(p.y, maxy);
             }
-            if (needClip && isDashLine(symbolizers)) {
+            if (enableClip && needClip && isDashLine(symbolizers)) {
                 TEMP_CLIP_EXTENT2.ymin = containerExtent.ymin;
                 if (TEMP_CLIP_EXTENT2.ymin < clipBBoxBufferSize) {
                     TEMP_CLIP_EXTENT2.ymin = containerExtent.ymin - clipBBoxBufferSize;
