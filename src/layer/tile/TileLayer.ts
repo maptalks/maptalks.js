@@ -427,7 +427,7 @@ class TileLayer extends Layer {
         const diagonalZ = Math.sqrt(cameraZ * cameraZ + heightZ * heightZ + widthZ * widthZ);
         // @ts-ignore
         const fov0 = map._getFovZ(0);
-        const error = fov0 * (diagonalZ / cameraZ) * 1.5;
+        const error = fov0 * (diagonalZ / cameraZ);
 
         const sr = this.getSpatialReference();
         const res = sr.getResolution(0);
@@ -742,6 +742,10 @@ class TileLayer extends Layer {
         }
         // const r = 1;
         const error = geometricError * r / distance;
+        const pitch = this.getMap().getPitch();
+        if (pitch <= 60) {
+            return error * 1.45;
+        }
         return error;
     }
 
