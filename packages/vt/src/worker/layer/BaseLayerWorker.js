@@ -528,7 +528,7 @@ export default class BaseLayerWorker {
             if (t) {
                 dataConfig.uv = 1;
                 if (t === 2) {
-                    dataConfig.tangent = 1;
+                    // dataConfig.tangent = 1;
                 }
             }
             const projectionCode = this.options.projectionCode;
@@ -590,7 +590,7 @@ export default class BaseLayerWorker {
             if (t) {
                 dataConfig.uv = 1;
                 if (t === 2) {
-                    dataConfig.tangent = 1;
+                    // dataConfig.tangent = 1;
                 }
             }
             options = extend(options, {
