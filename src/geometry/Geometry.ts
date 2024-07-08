@@ -171,7 +171,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
         //record rotate
         if (options && isNumber(options.rotateAngle)) {
-            this._dirtyRotate = false;
+            this._dirtyRotate = true;
         }
     }
 
@@ -1476,8 +1476,8 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             }
             if (this._dirtyRotate && isNumber(this.options.rotateAngle)) {
                 this.rotate(this.options.rotateAngle, this.options.rotatePivot as unknown as Coordinate);
-                this._dirtyRotate = false;
             }
+            this._dirtyRotate = false;
             this._painter.paint(extent);
         }
     }
