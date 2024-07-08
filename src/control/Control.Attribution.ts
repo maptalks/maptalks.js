@@ -46,11 +46,13 @@ const layerEvents = 'addlayer removelayer setbaselayer baselayerremove';
  * }));
  */
 class Attribution extends Control {
+    options: AttributionOptionsType;
     _attributionContainer: HTMLDivElement;
 
     buildOn() {
         this._attributionContainer = createEl('div') as HTMLDivElement;
         this._attributionContainer.className = 'maptalks-attribution';
+        this._appendCustomClass(this._attributionContainer);
         this._update();
         return this._attributionContainer;
     }

@@ -1700,7 +1700,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         const layerOpts = layer.options;
         const layerAltitude = layer.getAltitude ? layer.getAltitude() : 0;
         const enableAltitude = layerOpts['enableAltitude'];
-        if (!enableAltitude) {
+        if (!enableAltitude && (layer as any).isVectorLayer) {
             return layerAltitude;
         }
         const altitudeProperty = getAltitudeProperty(layer);
@@ -1779,6 +1779,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             }
         }
         this._clearAltitudeCache();
+        this.onPositionChanged();
         return this;
     }
 
@@ -1834,6 +1835,10 @@ export type GeometryOptionsType = {
 function getAltitudeProperty(layer: OverlayLayer): string {
     let altitudeProperty = 'altitude';
     if (layer) {
+        //only VectorLayer support properties.altitude
+        if (!(layer as any).isVectorLayer) {
+            return null;
+        }
         const layerOpts = layer.options;
         altitudeProperty = layerOpts['altitudeProperty'];
     }

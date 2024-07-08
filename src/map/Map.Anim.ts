@@ -60,6 +60,7 @@ Map.include(/** @lends Map.prototype */{
      */
     animateTo(view, options = {}, step) {
         view = extend({}, this.getView(), view);
+        this._validateView(view);
         // this._stopAnim(this._animPlayer);
         if (isFunction(options)) {
             step = options;
@@ -223,6 +224,7 @@ Map.include(/** @lends Map.prototype */{
         // Where applicable, local variable documentation begins with the associated variable or
         // function in van Wijk (2003).
         view = extend({}, this.getView(), view);
+        this._validateView(view);
 
         if (this._animPlayer) {
             if (this._isInternalAnimation) {

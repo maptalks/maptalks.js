@@ -332,6 +332,16 @@ export function getEventContainerPoint(ev: MouseEvent, dom: HTMLElement) {
     if (!domPos) {
         domPos = computeDomPosition(dom);
     }
+    //in mobile #1720
+    const toucheEvent = ev as unknown as TouchEvent;
+    //touchevent
+    if (toucheEvent.touches && toucheEvent.touches.length) {
+        ev = toucheEvent.touches[0] as unknown as MouseEvent;
+    }
+    //touchendevent
+    if (toucheEvent.changedTouches && toucheEvent.changedTouches.length) {
+        ev = toucheEvent.changedTouches[0] as unknown as MouseEvent;
+    }
     // div by scaleX, scaleY to fix #450
     return new Point(
         (ev.clientX - domPos[0] - dom.clientLeft) / domPos[2],

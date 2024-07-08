@@ -21,6 +21,7 @@ const options = {
 };
 
 class Compass extends Control {
+    options: CompassOptionsType;
     _compass: HTMLDivElement;
     _bearing: number;
     /**
@@ -30,6 +31,7 @@ class Compass extends Control {
      */
     buildOn(map: Map) {
         const compass = this._getCompass() as HTMLDivElement;
+        this._appendCustomClass(compass);
         this._compass = compass;
 
         this._registerDomEvents();

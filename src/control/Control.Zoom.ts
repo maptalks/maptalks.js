@@ -34,6 +34,7 @@ const options: ZoomOptionsType = {
  * }).addTo(map);
  */
 class Zoom extends Control {
+    options: ZoomOptionsType;
     _levelDOM: HTMLSpanElement;
     _zoomInButton: HTMLLinkElement;
     _zoomOutButton: HTMLLinkElement;
@@ -46,6 +47,7 @@ class Zoom extends Control {
         const options = this.options;
 
         const dom = createEl('div', 'maptalks-zoom');
+        this._appendCustomClass(dom);
 
         if (options['zoomLevel']) {
             const levelWrapper = createEl('span', 'maptalks-zoom-zoomlevel');

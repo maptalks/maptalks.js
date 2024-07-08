@@ -32,6 +32,7 @@ class Reset extends Control {
      */
     buildOn() {
         const reset = this._getReset();
+        this._appendCustomClass(reset);
         this._reset = reset;
 
         this._registerDomEvents();

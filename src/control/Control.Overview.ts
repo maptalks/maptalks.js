@@ -52,6 +52,7 @@ const options: OverviewOptionsType = {
  * }).addTo(map);
  */
 class Overview extends Control {
+    options: OverviewOptionsType;
     mapContainer: HTMLDivElement;
     button: HTMLDivElement;
     _overview: Map;
@@ -68,6 +69,7 @@ class Overview extends Control {
             size = [0, 0];
         }
         const container = createEl('div');
+        this._appendCustomClass(container);
 
         const mapContainer = this.mapContainer = createEl('div') as HTMLDivElement;
         mapContainer.style.width = size[0] + 'px';

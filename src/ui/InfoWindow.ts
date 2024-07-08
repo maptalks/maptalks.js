@@ -1,5 +1,5 @@
 import { isFunction, isNumber, isObject, isString } from '../core/util';
-import { createEl, addDomEvent, removeDomEvent } from '../core/util/dom';
+import { createEl, addDomEvent, removeDomEvent, stopPropagation, preventDefault } from '../core/util/dom';
 import Coordinate from '../geo/Coordinate';
 import Point from '../geo/Point';
 import Size from '../geo/Size';
@@ -49,7 +49,7 @@ const EMPTY_SIZE = new Size(0, 0);
 class InfoWindow extends UIComponent {
 
     options: InfoWindowOptionsType;
-    _onCloseBtnClick: () => void;
+    _onCloseBtnClick: (event: MouseEvent | TouchEvent) => void;
 
     // TODO: obtain class in super
     _getClassName() {
@@ -168,6 +168,7 @@ class InfoWindow extends UIComponent {
                 newDom = this.options['content'];
             }
             this._bindDomEvents(newDom, 'on');
+            this._appendCustomClass(newDom);
             return newDom;
         }
         this._bindDomEvents(this.getDOM(), 'off');
@@ -197,7 +198,13 @@ class InfoWindow extends UIComponent {
         } else {
             msgContent.appendChild(this.options['content'] as HTMLElement);
         }
-        this._onCloseBtnClick = this.hide.bind(this);
+        this._onCloseBtnClick = (event) => {
+            if (!this.options.eventsPropagation) {
+                preventDefault(event);
+                stopPropagation(event);
+            }
+            this.hide();
+        }
         const closeBtn = dom.querySelector('.maptalks-close');
         addDomEvent(closeBtn as HTMLElement, 'click touchend', this._onCloseBtnClick);
         //reslove content
@@ -205,6 +212,7 @@ class InfoWindow extends UIComponent {
             this._replaceTemplate(msgContent);
         }
         this._bindDomEvents(dom, 'on');
+        this._appendCustomClass(dom);
         return dom;
     }
 
@@ -342,7 +350,7 @@ class InfoWindow extends UIComponent {
         return mouseCoordinate;
     }
 
-    _rectifyLineStringMouseCoordinate(lineString: LineString, mouseCoordinate:Coordinate) {
+    _rectifyLineStringMouseCoordinate(lineString: LineString, mouseCoordinate: Coordinate) {
         const map = this.getMap();
         const coordinates = lineString.getCoordinates() || [];
         const glRes = map.getGLRes();

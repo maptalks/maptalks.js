@@ -109,6 +109,24 @@ class UIComponent extends Eventable(Class) {
         this.proxyOptions();
     }
 
+    _appendCustomClass(dom: HTMLElement) {
+        if (!dom) {
+            console.warn('dom is null:', dom);
+            return this;
+        }
+        if (this.options.cssName) {
+            let cssName = this.options.cssName;
+            if (!Array.isArray(cssName)) {
+                cssName = [cssName];
+            }
+            cssName.forEach(name => {
+                dom.classList.add(name);
+            });
+        }
+        return this;
+    }
+
+
     onAdd() {
 
     }
@@ -556,6 +574,16 @@ class UIComponent extends Eventable(Class) {
                 altitude = 0;
             }
         }
+        if (this._owner.getLayer) {
+            const layer = (this._owner as Geometry).getLayer();
+            //VectorLayer
+            if (layer && (layer as any).isVectorLayer) {
+                altitude = (this._owner as Geometry)._getAltitude() as number || 0;
+                if (!isNumber(altitude)) {
+                    altitude = 0;
+                }
+            }
+        }
         const alt = this._meterToPoint(this._coordinate, altitude);
         return this.getMap().coordToViewPoint(this._coordinate, undefined, alt)
             ._add(this.options['dx'], this.options['dy']);
@@ -802,7 +830,15 @@ class UIComponent extends Eventable(Class) {
     onGeometryPositionChange(param) {
         if (this._owner && this.isVisible()) {
             this._showBySymbolChange = true;
-            this.show(param['target'].getCenter());
+            const target = param.target;
+            const center = target.getCenter();
+            if (target._getAltitude) {
+                const altitude = target._getAltitude();
+                if (isNumber(altitude)) {
+                    center.z = altitude;
+                }
+            }
+            this.show(center);
             delete this._showBySymbolChange;
         }
     }
@@ -877,7 +913,7 @@ class UIComponent extends Eventable(Class) {
             }
             return 'translate3d(' + Math.fround(p.x) + 'px,' + Math.fround(p.y) + 'px, 0px)' + r;
         } else {
-            return 'translate(' + p.x + 'px,' + p.y + 'px)';
+            return 'translate(' + Math.fround(p.x) + 'px,' + Math.fround(p.y) + 'px)';
         }
     }
 
@@ -997,4 +1033,5 @@ export type UIComponentOptionsType = {
     collisionWeight?: number;
     collisionFadeIn?: boolean;
     zIndex?: number;
+    cssName?: string | Array<string>;
 }
