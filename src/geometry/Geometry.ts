@@ -115,7 +115,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     public _projCode: string
     public _painter: Painter
     public _maskPainter: CollectionPainter | Painter
-    public _dirtyCoords: any
+    public _dirtyCoords: boolean;
     public _pcenter: Coordinate
     public _coordinates: any;
     public _infoWinOptions: InfoWindowOptionsType;
@@ -131,6 +131,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     public _paintAsPath?: () => any;
     public _getPaintParams?: (disableSimplify?: boolean) => any[];
     public _simplified?: boolean;
+    private _dirtyRotate?: boolean;
     // 本身应该存于 Path 类，但是由于渲染层需要大量的特殊熟悉判断，定义在这里回减少很多麻烦
     public getHoles?(): Array<Array<Coordinate>>;
     __connectors: Array<Geometry>;
@@ -167,6 +168,10 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
         if (!isNil(id)) {
             this.setId(id);
+        }
+        //record rotate
+        if (options && isNumber(options.rotateAngle)) {
+            this._dirtyRotate = false;
         }
     }
 
@@ -1145,6 +1150,8 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
         this._angle = angle;
         this._pivot = pivot;
+        this.options.rotateAngle = angle;
+        this.options.rotatePivot = pivot.toArray();
         const measurer = this._getMeasurer();
         const coordinates: any = this.getCoordinates();
         if (!Array.isArray(coordinates)) {
@@ -1463,6 +1470,10 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
                     this._pcenter = projection.project(this._coordinates);
                     this._clearCache();
                 }
+            }
+            if (this._dirtyRotate && isNumber(this.options.rotateAngle)) {
+                this.rotate(this.options.rotateAngle, this.options.rotatePivot as unknown as Coordinate);
+                this._dirtyRotate = false;
             }
             this._painter.paint(extent);
         }
@@ -1829,6 +1840,8 @@ export type GeometryOptionsType = {
     zIndex?: number;
     symbol?: any;
     properties?: { [key: string]: any };
+    rotateAngle?: number;
+    rotatePivot?: Array<number>;
 
 }
 
