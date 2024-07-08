@@ -749,6 +749,10 @@ class TileLayer extends Layer {
         }
         // const r = 1;
         const error = geometricError * r / distance;
+        const pitch = this.getMap().getPitch();
+        if (pitch <= 60) {
+            return error * 1.45;
+        }
         return error;
     }
 
