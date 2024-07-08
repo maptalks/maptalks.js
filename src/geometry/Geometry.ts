@@ -1138,6 +1138,9 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             console.error(`angle:${angle} is not number`);
             return this;
         }
+        if (!this._painter) {
+            this._dirtyRotate = true;
+        }
         if (this.type === 'GeometryCollection') {
             const geometries = this.getGeometries();
             geometries.forEach(g => g.rotate(angle, pivot));
