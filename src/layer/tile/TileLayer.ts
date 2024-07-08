@@ -189,6 +189,7 @@ const ARR3: Vector3 = [0, 0, 0];
     })
  */
 class TileLayer extends Layer {
+    options: TileLayerOptionsType;
     tileInfoCache: ArrayLRUCache;
     _tileSize: Size;
     _coordCache: Record<string, Point>;
@@ -258,7 +259,7 @@ class TileLayer extends Layer {
         if (isNumber(size)) {
             size = [size, size];
         }
-        this._tileSize = new Size(size);
+        this._tileSize = new Size(size as any);
         return this._tileSize;
     }
 
@@ -467,7 +468,6 @@ class TileLayer extends Layer {
         const extent = new PointExtent();
         const tiles = [];
         const parents = [];
-        const hasTerrain = map && map._hasAltitudeLayer();
 
         while (queue.length > 0) {
             const node = queue.pop();
@@ -480,7 +480,7 @@ class TileLayer extends Layer {
                 offsets[node.z + 1] = this._getTileOffset(node.z + 1);
             }
             this._splitNode(node, projectionView, queue, tiles, extent, maxZoom, offsets[node.z + 1], layer && layer.getRenderer(), glRes);
-            if (this.isParentTile(z, maxZoom, node, hasTerrain)) {
+            if (this.isParentTile(z, maxZoom, node)) {
                 parents.push(node);
             }
         }
@@ -500,10 +500,10 @@ class TileLayer extends Layer {
         } as TilesType;
     }
 
-    isParentTile(z: number, maxZoom: number, tile: TileNodeType, hasTerrain: boolean) {
+    isParentTile(z: number, maxZoom: number, tile: TileNodeType) {
         let tileStackStartDepth = this.options['tileStackStartDepth'];
         let tileStackDepth = this.options['tileStackDepth'];
-        if (!hasTerrain) {
+        if (this.options.currentTilesFirst) {
             tileStackDepth = tileStackStartDepth = 0;
         }
         const stackMinZoom = Math.max(this.getMinZoom(), z - tileStackStartDepth);
@@ -1291,7 +1291,7 @@ class TileLayer extends Layer {
         if (isNumber(offset)) {
             offset = [offset, offset];
         }
-        return offset || [0, 0];
+        return (offset || [0, 0]) as TileOffsetType;
     }
 
     getTileId(x: number, y: number, zoom: number, id: string): string {
