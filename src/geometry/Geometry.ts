@@ -1153,8 +1153,6 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
         this._angle = angle;
         this._pivot = pivot;
-        this.options.rotateAngle = angle;
-        this.options.rotatePivot = pivot.toArray();
         const measurer = this._getMeasurer();
         const coordinates: any = this.getCoordinates();
         if (!Array.isArray(coordinates)) {
@@ -1166,6 +1164,8 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
                 //only redraw ,not to change coordinate
                 this.onPositionChanged();
             }
+            this.options.rotateAngle = angle;
+            this.options.rotatePivot = pivot.toArray();
             return this;
         }
         forEachCoord(coordinates, c => {
