@@ -1144,6 +1144,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         if (!this.layer.isVisible()) {
             return hits;
         }
+        const filter = options.filter;
         const painters = [this.painter, this._markerPainter, this._linePainter];
         painters.forEach(painter => {
             if (!painter) {
@@ -1153,7 +1154,8 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             if (picked && picked.data && picked.data.feature) {
                 const feature = picked.data.feature;
                 const geometry = this._geometries[feature[ID_PROP]];
-                if (options && options.includeInternals) {
+                if (options && options.includeInternals && (!filter || filter(geometry))) {
+                    // from Map.GeometryEvents
                     hits.push(geometry);
                 } else {
                     picked.geometry = geometry;

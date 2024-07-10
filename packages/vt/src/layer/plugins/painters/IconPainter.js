@@ -700,20 +700,18 @@ class IconPainter extends CollisionPainter {
         const iconExtraCommandProps = {
             viewport,
             stencil: {
-                stencil: {
-                    enable: true,
-                    func: {
-                        cmp: '<=',
-                        ref: (context, props) => {
-                            return props.stencilRef;
-                        }
-                    },
-                    op: {
-                        fail: 'keep',
-                        zfail: 'keep',
-                        zpass: 'replace'
+                enable: true,
+                func: {
+                    cmp: '<=',
+                    ref: (context, props) => {
+                        return props.stencilRef;
                     }
                 },
+                op: {
+                    fail: 'keep',
+                    zfail: 'keep',
+                    zpass: 'replace'
+                }
             },
             blend: {
                 enable: true,
