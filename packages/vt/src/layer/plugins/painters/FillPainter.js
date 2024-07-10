@@ -542,7 +542,11 @@ class FillPainter extends BasicPainter {
                 op: {
                     fail: 'keep',
                     zfail: 'keep',
-                    zpass: 'replace'
+                    zpass: () => {
+                        const stencil = this.isOnly2D();
+                        return stencil ? 'zero' : 'replace';
+                    }
+
                 }
             },
             depth: {
