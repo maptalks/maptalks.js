@@ -455,12 +455,9 @@ export default class GroupGLLayer extends maptalks.Layer {
                     continue;
                 }
             }
-            let picks = layer.identifyAtPoint(point, options);
+            const picks = layer.identifyAtPoint(point, options);
             if (!picks || !picks.length) {
                 continue;
-            }
-            if (options.filter) {
-                picks = picks.filter(g => options.filter(g));
             }
             if (!picks.length) {
                 continue;

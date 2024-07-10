@@ -1520,12 +1520,12 @@ class VectorTileLayer extends maptalks.TileLayer {
    * @param point - point to identify
    * @param options=null - options
    * @param options.tolerance=0 - identify tolerance in pixel
-   * @param options.count=null - result count
+   * @param options.count=0 - result count
    * @return data identified
    */
   identifyAtPoint(
     point: maptalks.Point,
-    options: { tolerance?: object; count?: object } = {}
+    options: { tolerance?: number; count?: number, filter?: (feature: any) => boolean } = {}
   ): object[] {
     const map = this.getMap();
     const renderer = this.getRenderer();
@@ -1533,7 +1533,7 @@ class VectorTileLayer extends maptalks.TileLayer {
       return [];
     }
     const dpr = map.getDevicePixelRatio();
-    const results = (renderer as any).pick(
+    let results = (renderer as any).pick(
       point.x * dpr,
       point.y * dpr,
       options
@@ -1543,7 +1543,10 @@ class VectorTileLayer extends maptalks.TileLayer {
       (this.options as any)["features"] !== "id"
     ) {
       // 将瓦片坐标转成经纬度坐标
-      return this._convertPickedFeature(results);
+      results = this._convertPickedFeature(results);
+    }
+    if (options && options.filter) {
+      return results.filter(g => options.filter(g));
     } else {
       return results;
     }

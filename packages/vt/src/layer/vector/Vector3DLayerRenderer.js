@@ -1144,7 +1144,6 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         if (!this.layer.isVisible()) {
             return hits;
         }
-        const filter = options.filter;
         const painters = [this.painter, this._markerPainter, this._linePainter];
         painters.forEach(painter => {
             if (!painter) {
@@ -1154,7 +1153,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             if (picked && picked.data && picked.data.feature) {
                 const feature = picked.data.feature;
                 const geometry = this._geometries[feature[ID_PROP]];
-                if (options && options.includeInternals && (!filter || filter(geometry))) {
+                if (options && options.includeInternals) {
                     // from Map.GeometryEvents
                     hits.push(geometry);
                 } else {
@@ -1162,7 +1161,6 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                     delete picked.plugin;
                     delete picked.data;
                     delete picked.point;
-                    hits.push(picked);
                 }
             }
         });

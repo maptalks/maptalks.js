@@ -1175,7 +1175,11 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         const dpr = map.getDevicePixelRatio();
         const picked = renderer.pick(point.x * dpr, point.y * dpr, options);
         pushIn(results, picked);
-        return results;
+        if (options && options.filter) {
+          return results.filter(g => options.filter(g));
+        } else {
+          return results;
+        }
     }
 
     getCurrentBatchIDs(): number[] {
@@ -1769,7 +1773,9 @@ export type IdentifyOptions = {
      * @english
      * tolerance in pixel, default is 0
      */
-    tolerance?: number
+    tolerance?: number,
+    count?: number,
+    filter?: (picked: any) => boolean
 };
 
 type TileBoxCenter = {

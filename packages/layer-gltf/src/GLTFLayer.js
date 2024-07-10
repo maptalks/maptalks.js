@@ -108,7 +108,11 @@ export default class GLTFLayer extends MaskLayerMixin(AbstractGLTFLayer) {
                 results.push(picked);
             }
         }
-        return results;
+        if (options && options.filter) {
+            return results.filter(g => options.filter(g));
+        } else {
+            return results;
+        }
     }
 
     _updateMarkerMap() {
