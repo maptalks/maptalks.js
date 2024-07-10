@@ -392,6 +392,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const layer = this.layer;
         this.prepareCanvas();
         if (!this.ready || !layer.ready) {
+            super.draw(timestamp);
             return;
         }
         let plugins = this._plugins[this._styleCounter];

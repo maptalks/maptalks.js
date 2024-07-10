@@ -393,6 +393,9 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         }
         const layers = this._getLayers();
         for (const layer of layers) {
+            if (!layer || !layer.isVisible()) {
+                continue;
+            }
             const renderer = layer.getRenderer();
             if (renderer && renderer.testIfNeedRedraw()) {
                 // 如果图层发生变化，保存的depthTexture可能发生变化，所以ssr需要多重绘一次，更新depthTexture
