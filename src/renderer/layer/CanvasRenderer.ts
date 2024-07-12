@@ -609,7 +609,7 @@ class CanvasRenderer extends Class {
         return maskExtent2D;
     }
 
-    clipCanvas(context: CanvasRenderingContext2D & { isMultiClip: boolean, isClip: boolean }) {
+    clipCanvas(context: CanvasRenderingContext2D) {
         const mask = this.layer.getMask();
         if (!mask) {
             return false;
