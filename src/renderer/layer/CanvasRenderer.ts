@@ -461,6 +461,10 @@ class CanvasRenderer extends Class {
     }
 
     _canvasContextScale(context: CanvasRenderingContext2D, dpr: number) {
+        if (!context) {
+            console.error('canvas context is null when scale context');
+            return this;
+        }
         context.scale(dpr, dpr);
         context.dpr = dpr;
         return this;
