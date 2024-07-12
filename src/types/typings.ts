@@ -14,5 +14,6 @@ declare global {
 
     interface CanvasRenderingContext2D {
         isHitTesting: boolean;
+        dpr: number;
     }
 }
