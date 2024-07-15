@@ -1,5 +1,5 @@
 import * as maptalks from "maptalks";
-import * as turf from "turf";
+import * as turf from "@turf/turf";
 
 import { GLTFLayer, MultiGLTFMarker } from "@maptalks/gltf-layer";
 

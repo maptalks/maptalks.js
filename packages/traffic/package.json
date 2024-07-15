@@ -34,6 +34,7 @@
     "@rollup/plugin-replace": "^5.0.5",
     "@rollup/plugin-terser": "0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",
+    "@turf/turf": "7.0.0",
     "eslint": "^8.57.0",
     "eslint-plugin-mocha": "^10.4.1",
     "expect.js": "^0.3.1",
@@ -44,8 +45,7 @@
     "karma-mocha-reporter": "^2.2.5",
     "maptalks": "^1.0.0-rc.33",
     "mocha": "^10.3.0",
-    "rollup": "^4.17.2",
-    "turf": "3.0.14"
+    "rollup": "^4.17.2"
   },
   "gitHead": "9eeea4807723d460fa7e09969c6556d53f6bed84"
 }
