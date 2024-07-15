@@ -126,6 +126,7 @@ export default class BaseLayerWorker {
                 i3sData.gltf.url = url;
                 const { transferables } = i3sData;
                 i3sData.magic = 'b3dm';
+                this._createGLTFMissedAttrs(i3sData.gltf);
                 if (service.compressGeometry) {
                     this._compressAttrFloat32ToInt16(i3sData.gltf);
                 }
@@ -210,6 +211,7 @@ export default class BaseLayerWorker {
                     return;
                 }
                 const { content, transferables } = this._processB3DM(tile, params);
+                this._createGLTFMissedAttrs(content.gltf);
                 if (service.compressGeometry) {
                     this._compressAttrFloat32ToInt16(content.gltf);
                 }
@@ -230,6 +232,7 @@ export default class BaseLayerWorker {
             const promise =  this._i3dmLoader.load(url, arraybuffer, 0, 0, { maxTextureSize: service.maxTextureSize || DEFAULT_MAX_TEXTURE_SIZE });
             promise.then(tile => {
                 const { content:i3dm, transferables } = this._loadI3DM(tile, transform, params.rootIdx);
+                this._createGLTFMissedAttrs(i3dm.gltf);
                 if (service.compressGeometry) {
                     this._compressAttrFloat32ToInt16(i3dm.gltf);
                 }
@@ -239,6 +242,7 @@ export default class BaseLayerWorker {
             const promise = new CMPTLoader(this._bindedRequestImage, GLTFLoader, this._supportedFormats, service.maxTextureSize || DEFAULT_MAX_TEXTURE_SIZE).load(url, arraybuffer, 0, 0, { maxTextureSize: service.maxTextureSize || DEFAULT_MAX_TEXTURE_SIZE });
             promise.then(tile => {
                 const { content: cmpt, transferables } = this._processCMPT(tile, params);
+                this._createCMPTMissedAttrs(cmpt);
                 if (service.compressGeometry) {
                     this._compressCMPTContent(cmpt);
                 }
@@ -262,6 +266,7 @@ export default class BaseLayerWorker {
             loader.load({ skipAttributeTransform: false }).then(gltf => {
                 gltf.url = url;
                 this._processGLTF(gltf, null, params);
+                this._createGLTFMissedAttrs(gltf);
                 if (service.compressGeometry) {
                     this._compressAttrFloat32ToInt16(gltf);
                 }
@@ -269,6 +274,16 @@ export default class BaseLayerWorker {
             });
         } else {
             cb(new Error('unsupported tile format: ' + magic));
+        }
+    }
+
+    _createCMPTMissedAttrs(cmpt) {
+        if (cmpt.content) {
+            cmpt.content.forEach(contentItem => {
+                this._createCMPTMissedAttrs(contentItem);
+            });
+        } else {
+            this._createGLTFMissedAttrs(cmpt.gltf);
         }
     }
 
@@ -338,7 +353,7 @@ export default class BaseLayerWorker {
         for (const primitiveIndex in meshes) {
             const primitives = meshes[primitiveIndex].primitives;
             primitives.forEach(primitive => {
-                this._createMissedAttrs(primitive, gltf);
+                // this._createMissedAttrs(primitive, gltf);
                 primitive.compressed_int16_params = {};
                 const attributes = primitive.attributes;
                 for (const attrName in attributes) {
@@ -360,6 +375,24 @@ export default class BaseLayerWorker {
                         primitive.compressed_int16_params[attrName] = range;
                     }
                 }
+            });
+        }
+    }
+
+    _createGLTFMissedAttrs(gltf) {
+        //采用KHR_techniques_webgl的模型是自定义shader，这里不做压缩处理
+        if (!gltf || !gltf.meshes || (gltf.extensionsUsed && gltf.extensionsUsed.indexOf('KHR_techniques_webgl') > -1)) {
+            return;
+        }
+        // 如果开启sharePosition，会造成tokyo.html爆内存，无法正常加载模型
+        if (gltf.asset && gltf.asset.sharePosition) {
+            return;
+        }
+        const meshes = gltf.meshes;
+        for (const primitiveIndex in meshes) {
+            const primitives = meshes[primitiveIndex].primitives;
+            primitives.forEach(primitive => {
+                this._createMissedAttrs(primitive, gltf);
             });
         }
     }

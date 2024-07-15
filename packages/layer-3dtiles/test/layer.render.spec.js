@@ -348,6 +348,7 @@ describe('render specs', () => {
             const layer = new Geo3DTilesLayer('3d-tiles', {
                 services : [
                     {
+                        maxTextureSize: 1024,
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
                         shader: 'pbr',
                         ambientLight: [1, 1, 1]
