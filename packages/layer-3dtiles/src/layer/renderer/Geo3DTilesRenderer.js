@@ -557,7 +557,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         const url = errorUrl || node.content.url;
 
         const info = err && err.message || err;
-        if (!REPORTED_ERRORS.has(info)) {
+        if ((!err || err.status !== 404 && err.status !== 204) && !REPORTED_ERRORS.has(info)) {
             console.warn('failed to load 3d tile: ' + url);
             console.warn(err);
             REPORTED_ERRORS.add(info);
