@@ -1164,8 +1164,10 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
                 //only redraw ,not to change coordinate
                 this.onPositionChanged();
             }
-            this.options.rotateAngle = angle;
-            this.options.rotatePivot = pivot.toArray();
+            if (this.getShell) {
+                this.options.rotateAngle = angle;
+                this.options.rotatePivot = pivot.toArray();
+            }
             return this;
         }
         forEachCoord(coordinates, c => {
