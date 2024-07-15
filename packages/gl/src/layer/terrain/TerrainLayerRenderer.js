@@ -676,7 +676,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         });
     }
 
-    _createTerrainTexture(tileInfo, tileImage) {
+    _createTerrainTexture(tileInfo/*, tileImage*/) {
         const tileSize = this.layer.getTileSize().width;
         // 乘以2是为了瓦片（缩放时）被放大后保持清晰度
         const width = tileSize * 2;
