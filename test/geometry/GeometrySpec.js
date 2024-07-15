@@ -76,7 +76,10 @@ describe('Geometry.main', function () {
     });
 
     it('#1625 toJSON has rotate info', function (done) {
-        var geometries = GEN_GEOMETRIES_OF_ALL_TYPES().slice(0, 7);
+        //rect ellipse etc
+        var geometries = GEN_GEOMETRIES_OF_ALL_TYPES().slice(0, 7).filter(g => {
+            return !!g.getShell;
+        });
         let idx = 0;
         const test = () => {
             if (idx === geometries.length) {
