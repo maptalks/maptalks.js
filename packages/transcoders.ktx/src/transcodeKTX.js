@@ -240,12 +240,18 @@ export function transcode(id, arrayBuffer, supportedTargetFormats) {
 
     ktx2File.close();
     ktx2File.delete();
-    return {
+
+    const result = {
         format: internalFormat,
         width: pixelWidth,
         height: pixelHeight,
         mipmap
     };
+    if (mipmap.length === 1) {
+        result.data = mipmap[0];
+        delete result.mipmap;
+    }
+    return result;
 }
 
 

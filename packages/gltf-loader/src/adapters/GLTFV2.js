@@ -1,3 +1,4 @@
+import { GL_LINEAR, GL_NEAREST, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST_MIPMAP_LINEAR } from '../common/Constants.js';
 import { defined, extend, btoa } from '../common/Util.js';
 import Accessor from '../core/Accessor.js';
 import GLTFAdapter from './GLTFAdapter';
@@ -95,10 +96,18 @@ export default class V2 extends GLTFAdapter {
             const sampler = defined(texture.sampler) ? this.gltf.samplers[texture.sampler] : undefined;
             if (sampler) {
                 out.sampler = sampler;
-                out.sampler.magFilter = sampler.magFilter || 9729;
-                out.sampler.minFilter = sampler.minFilter || 9729;
+                out.sampler.magFilter = sampler.magFilter || GL_LINEAR;
+                out.sampler.minFilter = sampler.minFilter || GL_LINEAR;
                 out.sampler.wrapS = sampler.wrapS || 10497;
                 out.sampler.wrapT = sampler.wrapT || 10497;
+            }
+            if (!out.mipmap && out.sampler.minFilter !== GL_LINEAR && out.sampler.minFilter !== GL_NEAREST) {
+                const minFilter = out.sampler.minFilter;
+                if (minFilter === GL_NEAREST_MIPMAP_NEAREST || minFilter === GL_NEAREST_MIPMAP_LINEAR) {
+                    out.sampler.minFilter = GL_NEAREST;
+                } else {
+                    out.sampler.minFilter = GL_LINEAR;
+                }
             }
             if (response.format) {
                 out.format = response.format;
