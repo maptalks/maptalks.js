@@ -560,7 +560,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             return;
         }
 
-        const  { features, center } = this._getFeaturesToRender(this._markerFeatures, this._textFeatures);
+        const { features, center } = this._getFeaturesToRender(this._markerFeatures, this._textFeatures);
 
         const markerFeatures = [];
         const textFeatures = [];
@@ -701,7 +701,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         });
     }
 
-    updateMesh() {}
+    updateMesh() { }
 
     _updateMarkerMesh(marker) {
         const symbols = marker['_getInternalSymbol']();
@@ -1247,7 +1247,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         let props = e.properties;
         if (Array.isArray(props)) {
             const allChangedProps = {};
-            for (let i = 0 ; i < props.length; i++) {
+            for (let i = 0; i < props.length; i++) {
                 if (props[i]) {
                     extend(allChangedProps, props[i]);
                 }
@@ -1363,7 +1363,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     _onShowHide(e) {
-        const geo = e.target;
+        const geo =  e.target['_getParent']() || e.target;
         const uid = geo[ID_PROP];
         const features = this.features[uid];
         if (features) {
