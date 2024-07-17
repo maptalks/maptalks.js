@@ -10,7 +10,7 @@ let postProcess;
 const CLEAR_COLOR = {
     color: [0, 0, 0, 0]
 };
-const DEFAULT_CONFIG = { enable: true };
+const DEFAULT_CONFIG = { enable: false };
 
 Map.include({
     setPostProcessConfig(config) {
