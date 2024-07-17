@@ -6,6 +6,7 @@ import clipLine from './util/clip_line';
 import { isFunctionDefinition } from '@maptalks/function-type';
 import Point from '@mapbox/point-geometry';
 import Point3 from './point3/Point3';
+import mergeLineFeatures from './util/merge_line_features';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -56,6 +57,10 @@ const TEMP_NORMAL_3 = new Point();
  * 3. 遍历 StyledLine, 生成
  */
 export default class LinePack extends VectorPack {
+
+    static mergeLineFeatures(features, symbolDef, fnTypes, zoom) {
+        return mergeLineFeatures(features, symbolDef, fnTypes, zoom);
+    }
 
     constructor(features, symbol, options) {
         super(features, symbol, options);
