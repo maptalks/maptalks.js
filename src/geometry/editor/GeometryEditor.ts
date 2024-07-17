@@ -989,7 +989,7 @@ class GeometryEditor extends Eventable(Class) {
             me._updating = false;
 
             /**
-             * changed geometry shape event, fired when edit control vertext  remove
+             * changed geometry shape event, fired when edit control vertex  remove
              *
              * @event Geometry#handledremove
              * @type {Object}
