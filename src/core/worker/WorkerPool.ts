@@ -120,10 +120,10 @@ export default class WorkerPool {
         return this.workers || [];
     }
 
-    broadcastIdleMessage() {
+    broadcastIdleMessage(messageRatio: number) {
         const workers = this.getWorkers();
         workers.forEach(worker => {
-            worker.postMessage({ messageType: 'idle', messageCount: GlobalConfig.taskCountPerWorkerMessage });
+            worker.postMessage({ messageType: 'idle', messageRatio });
         });
         return this;
     }
