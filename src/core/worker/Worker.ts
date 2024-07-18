@@ -51,7 +51,7 @@ const header = `
         func(workerExports,self);
         adapters[key]=workerExports;
         workerExports.initialize && workerExports.initialize(self);
-        
+
     }
     onmessage = function (msg) {
         msg = msg.data;
@@ -65,8 +65,8 @@ const header = `
         }
         // postMessage when main thread idle
         if(msg.messageType==='idle'){
-            var messageCount = msg.messageCount||5;
-            handleMessageQueue(messageCount);
+            var messageRatio = msg.messageRatio;
+            handleMessageQueue(messageRatio);
             return;
         }
         if (msg.messageType === 'batch') {
@@ -98,16 +98,17 @@ const header = `
     }
 
     var messageResultQueue = [];
-    
-    function handleMessageQueue(messageCount){
+
+    function handleMessageQueue(messageRatio){
        if(messageResultQueue.length===0){
           return;
        }
-       var queues = messageResultQueue.slice(0,messageCount);
+       var count = Math.ceil((messageRatio || 1) * messageResultQueue.length);
+       var queues = messageResultQueue.slice(0, count);
        queues.forEach(function(queue){
           post(queue.callback,queue.err,queue.data,queue.buffers);
        });
-       messageResultQueue=messageResultQueue.slice(messageCount,Infinity);
+       messageResultQueue=messageResultQueue.slice(count, Infinity);
     }
 
     function post(callback, err, data, buffers) {

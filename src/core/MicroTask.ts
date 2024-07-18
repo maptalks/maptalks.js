@@ -88,34 +88,20 @@ function executeMicroTasks() {
     }
 }
 
-let broadcastIdleMessage = true;
-function loop() {
-    if (broadcastIdleMessage) {
-        getGlobalWorkerPool().broadcastIdleMessage();
-    } else {
-        getGlobalWorkerPool().commit();
-    }
+function loop(isBusy?: boolean) {
+    const messageRatio = GlobalConfig.messagePostRatioPerWorker * (isBusy ? 0.5 : 1);
+    getGlobalWorkerPool().commit();
+    getGlobalWorkerPool().broadcastIdleMessage(messageRatio);
     executeMicroTasks();
-    broadcastIdleMessage = !broadcastIdleMessage;
     loopHooks.forEach(func => {
         func();
     });
 }
 
 let idleCallTime = now();
-function idleFrameLoop(deadline) {
-    const { idleTimeRemaining, idleLog } = GlobalConfig;
-    if (deadline && deadline.timeRemaining) {
-        const t = deadline.timeRemaining();
-        if (t >= idleTimeRemaining) {
-            loop();
-            idleCallTime = now();
-        } else {
-            if (t < idleTimeRemaining && idleLog) {
-                console.warn('currrent page is busy,the timeRemaining is', t);
-            }
-        }
-    }
+function idleFrameLoop() {
+    loop();
+    idleCallTime = now();
     requestIdleCallback(idleFrameLoop);
 }
 
@@ -124,7 +110,7 @@ function animFrameLoop() {
         const { idleForceTimeThreshold, idleLog } = GlobalConfig;
         const time = now();
         if (time - idleCallTime > idleForceTimeThreshold) {
-            loop();
+            loop(true);
             idleCallTime = now();
             if (idleLog) {
                 console.warn(`did not apply for availability, forced run idle`);
