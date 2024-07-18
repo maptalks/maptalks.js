@@ -658,8 +658,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             const onLoad = (bitmap) => {
                 this.onTileLoad(bitmap, tile);
             };
+            const onError = (error, image) => {
+                this.onTileError(image, tile, error);
+            };
             // @ts-expect-error todo
-            this.loadTileBitmap(tile['url'], tile, onLoad);
+            this.loadTileBitmap(tile['url'], tile, onLoad, onError);
         } else if (this._tileImageWorkerConn && this.loadTileImage === this.constructor.prototype.loadTileImage) {
             this._fetchImage(tileImage, tile);
         } else {
