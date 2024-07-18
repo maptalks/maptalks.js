@@ -251,9 +251,10 @@ class GeometryDragHandler extends Handler {
         }
         this._lastPoint = point;
         this._lastCoord = coord;
-        geo.translate(coordOffset);
+        const isPoint = !geo.getGeometries && geo.isPoint;
+        isPoint ? geo.setCoordinates(coord) : geo.translate(coordOffset);
         if (geo !== target && !target.options['dragShadow']) {
-            target.translate(coordOffset);
+            isPoint ? target.setCoordinates(coord) : target.translate(coordOffset);
         }
         e['coordOffset'] = coordOffset;
         e['pointOffset'] = pointOffset;

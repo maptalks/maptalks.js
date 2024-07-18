@@ -561,6 +561,8 @@ const Canvas = {
             points = [points];
         }
         const savedCtx = ctx;
+        const dpr = ctx.dpr || 1;
+        const needScale = dpr !== 1;
         if (points.length > 1 && !IS_NODE) {
             if (!TEMP_CANVAS) {
                 TEMP_CANVAS = Canvas.createCanvas(1, 1);
@@ -573,6 +575,10 @@ const Canvas = {
             setLineDash(ctx, []);
             setLineDash(ctx, lineDashArray);
             copyProperties(ctx, savedCtx);
+            if (needScale) {
+                ctx.scale(dpr, dpr);
+            }
+
         }
         // function fillPolygon(points, i, op) {
         //     Canvas.fillCanvas(ctx, op, points[i][0].x, points[i][0].y);
@@ -637,7 +643,14 @@ const Canvas = {
             ctx.fillStyle = fillStyle;
         }
         if (points.length > 1 && !IS_NODE) {
+            if (needScale) {
+                const rScale = 1 / dpr;
+                savedCtx.scale(rScale, rScale);
+            }
             savedCtx.drawImage(TEMP_CANVAS, 0, 0);
+            if (needScale) {
+                savedCtx.scale(dpr, dpr);
+            }
             savedCtx.canvas._drawn = ctx.canvas._drawn;
             copyProperties(savedCtx, ctx);
         }
