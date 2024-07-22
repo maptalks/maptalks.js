@@ -679,22 +679,11 @@ Map.include(/** @lends Map.prototype */{
     }(),
 
     _getCameraFar(fov, pitch) {
-        // const cameraCenterDistance = this.cameraCenterDistance = distance(this.cameraPosition, this.cameraLookAt);
-        // return 4 * cameraCenterDistance;
         const cameraCenterDistance = this.cameraCenterDistance = distance(this.cameraPosition, this.cameraLookAt);
-        let farZ = cameraCenterDistance;
-        let y = (this.options['cameraInfiniteFar'] ? 10 : 4) * cameraCenterDistance;
-        if (pitch > 0) {
-            pitch = pitch * Math.PI / 180;
-            if (2 / Math.PI - pitch > fov / 2) {
-                const tanFov = Math.tan(fov / 2);
-                const tanP = Math.tan(pitch);
-                y = Math.max((cameraCenterDistance * tanFov) / (1 / tanP - tanFov), y);
-            }
-        }
-        farZ += y;
-        //TODO 地下的图形无法显示
-        return farZ + 1.0;
+        const distanceInMeter = cameraCenterDistance / this._meterToGLPoint;
+        pitch = pitch * Math.PI / 180;
+        const cameraFarDistance = distanceInMeter + this.options['cameraFarUndergroundInMeter'] / Math.cos(pitch);
+        return Math.max(cameraFarDistance * this._meterToGLPoint, cameraCenterDistance * 5);
     },
 
     _calcCascadeMatrixes: function () {

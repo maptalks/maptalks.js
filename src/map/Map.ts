@@ -89,11 +89,11 @@ const REDRAW_OPTIONS_PROPERTIES = ['centerCross', 'fog', 'fogColor', 'debugSky']
  * @property {String} [options.renderer=canvas]                 - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
  * @property {Number} [options.devicePixelRatio=null]           - device pixel ratio to override device's default one
  * @property {Number} [options.heightFactor=1]           - the factor for height/altitude calculation,This affects the height calculation of all layers(vectortilelayer/gllayer/threelayer/3dtilelayer)
- * @property {Boolean} [options.cameraInfiniteFar=false]           - Increase camera far plane to infinite. Enable this option may reduce map's performance.
  * @property {Boolean} [options.stopRenderOnOffscreen=true]           - whether to stop map rendering when container is offscreen
  * @property {Boolean} [options.originLatitudeForAltitude=40]         - default latitude for map.altitudeToPoint method
  * @property {Number} [options.mousemoveThrottleTime=48]         - mousemove event interval time(ms)
  * @property {Number} [options.maxFPS=0]         - 0 means no frame is locked, otherwise the frame is locked
+ * @property {Number} [options.cameraFarUndergroundInMeter=2000]      - camera far distance from underground in meter
  * @memberOf Map
  * @instance
  */
@@ -157,8 +157,8 @@ const options: MapOptionsType = {
     'switchDragButton': false,
     'mousemoveThrottleTime': MOUSEMOVE_THROTTLE_TIME,
     'maxFPS': 0,
-    'cameraInfiniteFar': false,
-    'debug': false
+    'debug': false,
+    'cameraFarUndergroundInMeter': 2000
 };
 
 /**
@@ -2556,7 +2556,6 @@ export type MapOptionsType = {
     fogColor?: any; // fixme 确认类型
     devicePixelRatio?: number;
     heightFactor?: number;
-    cameraInfiniteFar?: boolean;
     originLatitudeForAltitude?: number;
 
     viewHistory?: boolean;
@@ -2615,6 +2614,7 @@ export type MapOptionsType = {
     layerSwitcherControl?: boolean;
     navControl?: boolean;
     resetControl?: boolean;
+    cameraFarUndergroundInMeter?: number;
 
 }
 
