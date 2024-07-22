@@ -125,6 +125,10 @@ class MapCanvasRenderer extends MapRenderer {
         return true;
     }
 
+    getFrameTimestamp() {
+        return this._frameTimestamp || 0;
+    }
+
     updateMapDOM() {
         const map = this.map;
         // when map is zooming, container is being transformed with matrix, panel doesn't need to be moved.
