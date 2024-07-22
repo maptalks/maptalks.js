@@ -210,6 +210,18 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     isAnimating() {
+        // maptalks/issues#712
+        // 当highlight更新时，在当前帧（通过frametimestamp来识别）一直返回animating为true，让所有瓦片渲染时都能正确的渲染更新
+        const mapRenderer = this.getMap().getRenderer();
+        // 老版本核心库的mapRenderer上没有定义getFrameTimestamp
+        const timestamp = mapRenderer.getFrameTimestamp && mapRenderer.getFrameTimestamp() || mapRenderer['_frameTimestamp'];
+        if (this._highlightUpdated) {
+            this._highlightFrametime = timestamp;
+            delete this._highlightUpdated;
+        }
+        if (this._highlightFrametime === timestamp) {
+            return true;
+        }
         const plugins = this._getFramePlugins();
         for (let i = 0; i < plugins.length; i++) {
             if (plugins[i] && plugins[i].isAnimating()) {
@@ -1907,6 +1919,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         plugins.forEach(plugin => {
             plugin.highlight(this._highlighted);
         });
+        this._highlightUpdated = true;
     }
 
     cancelHighlight(names) {
@@ -1924,14 +1937,19 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         plugins.forEach(plugin => {
             plugin.highlight(this._highlighted);
         });
+        this._highlightUpdated = true;
     }
 
     cancelAllHighlight() {
+        if (!this._highlighted) {
+            return;
+        }
         delete this._highlighted;
         const plugins = this._getFramePlugins();
         plugins.forEach(plugin => {
             plugin.cancelAllHighlight();
         });
+        this._highlightUpdated = true;
     }
 
     _getLayerOpacity() {
