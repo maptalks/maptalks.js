@@ -683,8 +683,7 @@ Map.include(/** @lends Map.prototype */{
         const distanceInMeter = cameraCenterDistance / this._meterToGLPoint;
         pitch = pitch * Math.PI / 180;
         const cameraFarDistance = distanceInMeter + this.options['cameraFarUndergroundInMeter'] / Math.cos(pitch);
-        console.log(cameraCenterDistance * 20, cameraFarDistance * this._meterToGLPoint);
-        return cameraFarDistance * this._meterToGLPoint;
+        return Math.max(cameraFarDistance * this._meterToGLPoint, cameraCenterDistance * 5);
     },
 
     _calcCascadeMatrixes: function () {
