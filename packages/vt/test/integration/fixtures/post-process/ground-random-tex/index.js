@@ -18,7 +18,7 @@ module.exports = {
         center: [0, 0],
         zoom: 17
     },
-    renderingCount: 2,
+    renderingCount: 1,
     eventName: 'layerload',
     sceneConfig: {
         ground: {

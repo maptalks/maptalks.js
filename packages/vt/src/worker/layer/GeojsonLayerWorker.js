@@ -35,7 +35,8 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
      */
     setData(data, cb) {
         delete this.index;
-        if (!data) {
+        if (isEmptyData(data)) {
+            this.empty = true;
             cb();
             return;
         }
@@ -208,6 +209,12 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
         const tileInfo = context.tileInfo;
         const features = [];
         if (!this.index) {
+            if (this.empty) {
+                setTimeout(function () {
+                    cb(null, features, []);
+                }, 1);
+                return 1;
+            }
             setTimeout(function () {
                 cb({ loading: true });
             }, 1);
@@ -275,4 +282,17 @@ function insertSample(feature, sample1000, i, length) {
     } else if ((step === 0 || i % step === 0) && sample1000.length < 999) {
         sample1000.push(feature);
     }
+}
+
+function isEmptyData(data) {
+    if (!data) {
+        return true;
+    }
+    if (Array.isArray(data) && !data.length) {
+        return true;
+    }
+    if (data.features && !data.features.length) {
+        return true;
+    }
+    return false;
 }
