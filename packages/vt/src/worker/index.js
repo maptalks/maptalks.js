@@ -16,7 +16,8 @@ export const onmessage = function (message, postResponse) {
     } else {
         const command = data.command;
         this.dispatcher[command]({ actorId: message.actorId, mapId: data.mapId, layerId: data.layerId, params: data.params }, (err, data, buffers) => {
-            if (err && err.status !== 404 && err.status !== 204) {
+            if (err && err.status !== 404 && err.status !== 204 && !err.loading) {
+                // err.loading 为true时，说明geojson-vt正在创建索引
                 console.error(command, err);
             }
             postResponse(err, data, buffers);

@@ -121,7 +121,8 @@ export default function (features, dataConfig, extent, uvOrigin, textureSize, re
     }
     if (center) {
         const vertices = faces.vertices;
-        for (let i = 0; i < vertices.getLength(); i += 3) {
+        const l = vertices.length;
+        for (let i = 0; i < l; i += 3) {
             vertices[i] -= center[0];
             vertices[i + 1] -= center[1];
         }

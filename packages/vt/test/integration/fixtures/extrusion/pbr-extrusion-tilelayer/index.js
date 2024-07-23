@@ -65,6 +65,7 @@ module.exports = {
             urlTemplate: 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs='
         })
     ],
+    renderingCount: 2,
     groupSceneConfig: {
         postProcess: {
             enable: true,
