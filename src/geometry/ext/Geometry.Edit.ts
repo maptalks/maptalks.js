@@ -1,6 +1,6 @@
 import Geometry from '../Geometry';
 import GeometryEditor from '../editor/GeometryEditor';
-import { isNil } from '../../core/util';
+// import { isNil } from '../../core/util';
 export type GeometryEditSymbolType = {
     'markerType': string,
     'markerFill': string,

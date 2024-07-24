@@ -450,7 +450,7 @@ Map.include(/** @lends Map.prototype */ {
             eventParam['coordinate'] = map.containerPointToCoordinate(containerPoint);
             eventParam['containerPoint'] = containerPoint;
             eventParam['viewPoint'] = map.containerPointToViewPoint(containerPoint);
-            eventParam['pont2d'] = map._containerPointToPoint(containerPoint);
+            eventParam['point2d'] = map._containerPointToPoint(containerPoint);
         }
         this._wrapTerrainData(eventParam);
         return eventParam;
