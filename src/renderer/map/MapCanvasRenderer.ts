@@ -1,4 +1,4 @@
-import { IS_NODE, isNumber, isFunction, requestAnimFrame, cancelAnimFrame, equalMapView, calCanvasSize } from '../../core/util';
+import { IS_NODE, isNumber, isFunction, requestAnimFrame, cancelAnimFrame, equalMapView, calCanvasSize, pushIn } from '../../core/util';
 import { createEl, preventSelection, computeDomPosition } from '../../core/util/dom';
 import { GlobalEvent, EVENT_DOC_DRAGEND, EVENT_DOC_VISIBILITY_CHANGE, EVENT_DPR_CHANGE, EVENT_DOC_DRAGSTART } from './../../core/GlobalEvent';
 import Browser from '../../core/Browser';
@@ -143,7 +143,40 @@ class MapCanvasRenderer extends MapRenderer {
         }
     }
 
+    //need redraw all layer,cause by collision/crs change/view change etc...
+    _needRedrawAllLayers(layers: Layer[]) {
+        if (!layers || layers.length === 0) {
+            return false;
+        }
+        if (this.isSpatialReferenceChanged() || this.isViewChanged()) {
+            return true;
+        }
+        const needRedrawLayers: Layer[] = [];
+        layers.forEach(layer => {
+            const needsRedraw = this._checkLayerRedraw(layer);
+            if (needsRedraw) {
+                needRedrawLayers.push(layer);
+                const groupLayer = layer as any;
+                const childLayers = groupLayer.getLayers && groupLayer.getLayers();
+                if (childLayers && Array.isArray(childLayers)) {
+                    pushIn(needRedrawLayers, childLayers);
+                }
+            }
+        });
+        for (let i = 0, len = needRedrawLayers.length; i < len; i++) {
+            const layer = needRedrawLayers[i];
+            const layerOptions = layer && layer.options;
+            if (layerOptions && layerOptions.collision && layerOptions.collisionScope === 'map') {
+                return true;
+            }
+            //other condition if need
+        }
+        return false;
+    }
+
     drawLayers(layers: Layer[], framestamp: number) {
+        const needRedrawAllLayers = this._needRedrawAllLayers(layers);
+
         const map = this.map,
             isInteracting = map.isInteracting(),
             // all the visible canvas layers' ids.
@@ -171,7 +204,7 @@ class MapCanvasRenderer extends MapRenderer {
                 continue;
             }
             // if need to call layer's draw/drawInteracting
-            const needsRedraw = this._checkLayerRedraw(layer);
+            const needsRedraw = needRedrawAllLayers || this._checkLayerRedraw(layer);
             if (isCanvas && renderer.isCanvasUpdated()) {
                 // don't need to call layer's draw/drawOnInteracting but need to redraw layer's updated canvas
                 if (!needsRedraw) {
