@@ -64,7 +64,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         return this._styleCounter;
     }
 
-    setStyle(silent) {
+    setStyle() {
         if (this._groundPainter) {
             this._groundPainter.update();
         }
@@ -77,13 +77,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this._workerConn.updateStyle(style, err => {
                 this._workersyncing = false;
                 if (err) throw new Error(err);
-                if (!silent) {
-                    this._needRetire = true;
-                    // this.clear();
-                    // this._clearPlugin();
-                    this._initPlugins();
-                    this.setToRedraw();
-                }
+                this._needRetire = true;
+                // this.clear();
+                // this._clearPlugin();
+                this._initPlugins();
+                this.setToRedraw();
+
                 this.layer.fire('refreshstyle');
             });
         } else {
@@ -175,7 +174,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         plugin.style = styles[idx];
         const needRefresh = plugin.updateSymbol(symbol, styles[idx].symbol);
         if (!needRefresh && needRefreshStyle(symbol)) {
-            this.setStyle(true);
+            this.setStyle();
         }
         this.setToRedraw();
         return needRefresh;
@@ -404,7 +403,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const layer = this.layer;
         this.prepareCanvas();
         if (!this.ready || !layer.ready) {
-            this.completeRender();
+            // this.completeRender();
             return;
         }
         let plugins = this._plugins[this._styleCounter];
@@ -415,7 +414,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
         const featurePlugins = this._getFeaturePlugins();
         if (!layer.isDefaultRender() && (!plugins.length && !featurePlugins.length)) {
-            // this.completeRender();
+            this.completeRender();
             return;
         }
         if (layer.options['collision']) {

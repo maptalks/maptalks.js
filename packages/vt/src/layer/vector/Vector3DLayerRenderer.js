@@ -1161,6 +1161,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                     delete picked.plugin;
                     delete picked.data;
                     delete picked.point;
+                    hits.push(picked);
                 }
             }
         });

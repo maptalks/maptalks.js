@@ -24,7 +24,7 @@ export default class CirclePack extends VectorPack {
         }
         const data = this.data;
         const altitude = this.getAltitude(point.feature.properties);
-        let currentIdx = data.aPosition.length / format[0].width;
+        let currentIdx = data.aPosition.getLength() / format[0].width;
         for (let i = 0; i < anchors.length; i++) {
             const anchor = anchors[i];
             data.aPosition.push(anchor.x * 2 + (-1 + 1) / 2, anchor.y * 2 + (-1 + 1) / 2, altitude);

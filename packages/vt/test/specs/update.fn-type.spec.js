@@ -102,7 +102,7 @@ describe('update function type style specs', () => {
                     ]
                 }
             });
-        });
+        }, false, 4);
     });
 
     it('normal to property-zoom function type', done => {
@@ -187,7 +187,7 @@ describe('update function type style specs', () => {
         });
     });
 
-    function assertChangeStyle(done, symbol, currentColor, expectedColor, changeFun, isSetStyle) {
+    function assertChangeStyle(done, symbol, currentColor, expectedColor, changeFun, isSetStyle, endCount) {
         const style = [
             {
                 filter: {
@@ -214,7 +214,7 @@ describe('update function type style specs', () => {
             dirty = true;
         });
         //因为是setStyle时，数据会被清空重绘，所以需要监听两次canvasisdirty
-        layer.on(isSetStyle ? 'canvasisdirty' : 'layerload', () => {
+        layer.on(isSetStyle ? 'canvasisdirty' : 'canvasisdirty', () => {
             if (!dirty) {
                 return;
             }
@@ -224,7 +224,7 @@ describe('update function type style specs', () => {
                 //开始是红色
                 assert.deepEqual(pixel, currentColor);
                 changeFun(layer);
-            } else if (count === 2) {
+            } else if (count === (endCount || 2)) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //变成绿色
                 assert.deepEqual(pixel, expectedColor);

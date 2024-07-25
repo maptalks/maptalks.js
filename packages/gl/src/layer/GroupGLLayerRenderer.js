@@ -1039,7 +1039,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             return null;
         }
         if (!this._shadowProcess) {
-            this._shadowProcess = new ShadowProcess(this.regl, this.layer._getSceneConfig() || {}, this.layer);
+            this._shadowProcess = new ShadowProcess(this.regl, this.layer);
         }
         const shadow = {
             config: sceneConfig.shadow,

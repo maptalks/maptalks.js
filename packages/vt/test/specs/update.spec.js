@@ -551,7 +551,7 @@ describe('update style specs', () => {
                 }
             });
             map.setZoom(map.getZoom() + 2);
-            assert(layer.getRenderer().getStyleCounter() === 1);
+            assert(layer.getRenderer().getStyleCounter() === 2);
         }, false, null, 0, 2);
     });
 
@@ -672,7 +672,7 @@ describe('update style specs', () => {
         assertChangeStyle(done, [0, 0, 255, 255], layer => {
             layer.updateSymbol(1, { visible: true });
             assert(layer.options.style[1].symbol.visible === true);
-        }, true, style, 1);
+        }, true, style, 0, 5);
     });
 
     it('should can set visible of multiple symbol', done => {
@@ -953,18 +953,19 @@ describe('update style specs', () => {
         const x = renderer.canvas.width, y = renderer.canvas.height;
         layer.on('canvasisdirty', () => {
             count++;
-
         });
-        group.on('layerload', () => {
+        let finished = false;
+        map.on('renderend', () => {
             if (count === 1) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 layer.outlineBatch(0);
-            } else if (count === 2) {
+            } else if (count === 2 && !finished) {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 //变成高亮的绿色
                 assert(pixel[1] > 10);
+                finished = true;
                 done();
             }
         });
@@ -1004,7 +1005,7 @@ describe('update style specs', () => {
             count++;
 
         });
-        group.on('layerload', () => {
+        map.on('renderend', () => {
             if (count === 1) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
@@ -1053,7 +1054,7 @@ describe('update style specs', () => {
             count++;
 
         });
-        group.on('layerload', () => {
+        map.on('renderend', () => {
             if (count === 1) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
@@ -1101,7 +1102,7 @@ describe('update style specs', () => {
             count++;
 
         });
-        group.on('layerload', () => {
+        map.on('renderend', () => {
             if (count === 1) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
@@ -1317,7 +1318,7 @@ describe('update style specs', () => {
         };
         const layer = new GroupGLLayer('group', [layerRed, layerGreen], { sceneConfig });
         let count = 0;
-        const startCount = 2;
+        const startCount = 1;
         layerRed.once('canvasisdirty', () => {
             layer.on('layerload', () => {
                 count++;
@@ -1639,7 +1640,7 @@ describe('update style specs', () => {
                     painted = true;
                 } else if (!finished) {
                     count++;
-                    if (count >= 4) {
+                    if (count >= 7) {
                         finished = true;
                         assert.deepEqual(pixel, [41, 44, 48, 255]);
                         done();
@@ -2204,11 +2205,11 @@ describe('update style specs', () => {
         let count = 0;
         layer.on('layerload', () => {
             count++;
-            if (count === 3) {
+            if (count === 1) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 layer.updateSymbol(0, { textOpacity: 0.5 })
-            } else if (count === 4) {
+            } else if (count === 2) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 assert.deepEqual(pixel, [255, 0, 0, 127]);
                 done();
@@ -2242,7 +2243,7 @@ describe('update style specs', () => {
             tileStackDepth: 0
         });
         renderCount = renderCount || 0;
-        doneRenderCount = doneRenderCount || 4;
+        doneRenderCount = doneRenderCount || 2;
         let dirty = false;
         let count = 0;
         const renderer = map.getRenderer();

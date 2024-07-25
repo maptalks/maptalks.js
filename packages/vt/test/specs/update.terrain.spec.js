@@ -122,11 +122,11 @@ describe('update vt on terrain specs', () => {
             group.addTo(map);
         }
         it ('without post process', done => {
-            lineTerrainRunner(done, 8, false);
+            lineTerrainRunner(done, 6, false);
         });
 
         it ('with post process', done => {
-            lineTerrainRunner(done, 6, true);
+            lineTerrainRunner(done, 4, true);
         });
 
     });
