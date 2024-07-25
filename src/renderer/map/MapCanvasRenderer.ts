@@ -287,6 +287,9 @@ class MapCanvasRenderer extends MapRenderer {
         }
         const map = this.map;
         const renderer = layer._getRenderer();
+        if (!renderer) {
+            return false;
+        }
         if (layer.isCanvasRender()) {
             return renderer.testIfNeedRedraw();
         } else {
