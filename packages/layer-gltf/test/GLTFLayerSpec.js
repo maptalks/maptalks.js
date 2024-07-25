@@ -565,23 +565,6 @@ describe('maptalks.gltf', function () {
         gltflayer.addGeometry(marker);
     });
 
-    it('change translation, rotation, and scale', function (done) {
-        const gltflayer = new maptalks.GLTFLayer('gltf5').addTo(map);
-        const marker = new maptalks.GLTFGeometry(center, { symbol: { url: url1 }});
-        gltflayer.addGeometry(marker);
-        marker.setTranslation(10, 10, 10);
-        marker.setRotation(0, 60, 0);
-        marker.setScale(20, 20, 20);
-        gltflayer.once('rendercomplete-debug', () => {
-            setTimeout(function() {
-                const expectMatrix = maptalksgl.mat4.fromValues(10.000000000000002, 0, -17.32050807568877, 0, 0, 20, 0, 0, 17.32050807568877, 0, 10.000000000000002, 0, 0.13082664542728, 0.1308266454209729, 0.1707822812928094, 1);
-                const modelMatrix = marker.getModelMatrix();
-                expect(maptalksgl.mat4.equals(expectMatrix, modelMatrix)).to.be.ok();
-                done();
-            }, 100);
-        });
-    });
-
     it('isDirty', () => {
         const gltflayer = new maptalks.GLTFLayer('gltf6').addTo(map);
         const marker = new maptalks.GLTFGeometry(center, { symbol: { url: url1 }});
@@ -707,33 +690,6 @@ describe('maptalks.gltf', function () {
     it('empty gltflayer add to groupgllayer', () => {
         const gltflayer = new maptalks.GLTFLayer('layer');
         new maptalks.GroupGLLayer('group', [gltflayer],  { sceneConfig }).addTo(map);
-    });
-
-    it('The units for translations are meters', (done) => {
-        const gltflayer = new maptalks.GLTFLayer('gltflayer');
-        const marker = new maptalks.GLTFGeometry(center, {
-            symbol: {
-                translationX: 0,
-                translationY: 100,
-                translationZ: 0,
-                scaleX: 20,
-                scaleY: 20,
-                scaleZ: 20
-            }
-        }).addTo(gltflayer);
-        marker.on('click', () => {
-            done();
-        });
-        new maptalks.GroupGLLayer('gl', [gltflayer], {sceneConfig}).addTo(map);
-        const clickPoint = new maptalks.Point([200, 50]);
-        marker.on('load', () => {
-            setTimeout(function() {
-                happen.click(eventContainer, {
-                    'clientX': clickPoint.x,
-                    'clientY': clickPoint.y
-                });
-            }, 100);
-        });
     });
 
     it('layer opacity', done => {

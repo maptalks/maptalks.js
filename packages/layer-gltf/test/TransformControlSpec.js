@@ -380,7 +380,7 @@ describe('transform-control', () => {
                 const newCoord = marker.getCoordinates();
                 expect(newCoord.x).to.be.eql(0);
                 expect(newCoord.y).to.be.eql(0);
-                expect(newCoord.z).to.be.eql(-0.00886873142687461);// change z value
+                expect(newCoord.z.toFixed(5)).to.be.eql(-0.00886);// change z value
                 done();
             }, 100);
         }

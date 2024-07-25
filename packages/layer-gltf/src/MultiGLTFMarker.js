@@ -26,6 +26,9 @@ import { coordinateToWorld, defined } from './common/Util';
 const DEFAULT_COLOR = [1.0, 1.0, 1.0, 1.0], EMPTY_VEC = [], EMPTY_QUAT = [], DEFAULT_SCALE = [1, 1, 1], COORD = function() {
     return new Coordinate(0, 0);
 }();
+const TEMP_FIXSIZE_SCALE = [1, 1, 1];
+const defaultColor = [1, 1, 1];
+const defaultOpacity = 1;
 export default class MultiGLTFMarker extends GLTFMarker {
     constructor(data, options) {
         super(null, options);
@@ -69,10 +72,6 @@ export default class MultiGLTFMarker extends GLTFMarker {
             this._data = [];
         }
         this._data.push(item);
-        const layer = this.getLayer();
-        if (layer) {
-            layer._updateMarkerMap();
-        }
         this._dirty = true;
         return this;
     }
@@ -131,8 +130,10 @@ export default class MultiGLTFMarker extends GLTFMarker {
         this._calCenter();
         this._attributeMatrixs = this._attributeMatrixs || [];
         for (let i = 0; i < this._data.length; i++) {
-            const modelMatrix = this._updateItemAttributeMatrix(i);
-            this._attributeMatrixs[i] = modelMatrix;
+            if (this._data[i].visible !== false) {
+                const modelMatrix = this._updateItemAttributeMatrix(i);
+                this._attributeMatrixs[i] = modelMatrix;
+            }
         }
     }
 
@@ -168,6 +169,19 @@ export default class MultiGLTFMarker extends GLTFMarker {
         return center;
     }
 
+    getMap() {
+        const map = super.getMap();
+        return map || (this._layer && this._layer.getMap());
+    }
+
+    _setLayer(layer) {
+        this._layer = layer;
+    }
+
+    getLayer() {
+        return super.getLayer() || this._layer;
+    }
+
     _calCenter() {
         const map = this.getMap();
         const center = this.getCenter();
@@ -189,10 +203,39 @@ export default class MultiGLTFMarker extends GLTFMarker {
         const trans = this._translationToWorldPoint(data['translation'] || this._defaultTRS.translation);
         const translation = vec3.add(EMPTY_VEC, trans || this._defaultTRS.translation, sub || this._defaultTRS.translation);
         const rotation = data['rotation'] || this._defaultTRS.rotation;
-        const scale = data['scale'] || this._defaultTRS.scale;
+        const scale = this._getDataItemScale(idx);
         const eluerQuat = quat.fromEuler(EMPTY_QUAT, rotation[0] || 0, rotation[1] || 0, rotation[2] || 0);
         const modelMatrix = mat4.fromRotationTranslationScale(this._attributeMatrixs[idx] || [], eluerQuat, translation, scale);
         return modelMatrix;
+    }
+
+    _getDataItemScale(idx) {
+        const data = this._data[idx];
+        const { modelHeight, markerPixelHeight } = data;
+        const scale = data['scale'] || this._defaultTRS.scale;
+        if (this._gltfModelBBox) {
+            if (markerPixelHeight && markerPixelHeight > 0) {
+                const pixelHeightScale = this._calFixSizeScale(TEMP_FIXSIZE_SCALE, markerPixelHeight);
+                return vec3.multiply(pixelHeightScale, pixelHeightScale, scale);
+            } else if (modelHeight) {
+                const modelHeightScale = this._calModelHeightScale(TEMP_FIXSIZE_SCALE, modelHeight);
+                return vec3.multiply(modelHeightScale, modelHeightScale, scale);
+            }
+        }
+        return scale;
+    }
+
+    
+    _setLoadState(state) {
+        super._setLoadState(state);
+        if (this._data) {
+            for (let i = 0; i < this._data.length; i++) {
+                const dataItem = this._data[i];
+                if (dataItem.target && dataItem.target instanceof GLTFMarker) {
+                    dataItem.target._setLoadState(state);
+                }
+            }
+        }
     }
 
     _updateTRSMatrix() {
@@ -208,6 +251,7 @@ export default class MultiGLTFMarker extends GLTFMarker {
             'instance_color' : [],
             'aPickingId' : [],
             'aOutline': [],
+            'highlight_color': [],
             'aBloom': []
         };
         this._bloomAttributeData = {
@@ -217,6 +261,7 @@ export default class MultiGLTFMarker extends GLTFMarker {
             'instance_color' : [],
             'aPickingId' : [],
             'aOutline': [],
+            'highlight_color': [],
             'aBloom': []
         };
         for (let i = 0; i < this._attributeMatrixs.length; i++) {
@@ -230,12 +275,17 @@ export default class MultiGLTFMarker extends GLTFMarker {
             this._setDataForAttributes(data, 'instance_vectorB', len, matrix, 1);
             this._setDataForAttributes(data, 'instance_vectorC', len, matrix, 2);
             const color = this._data[i]['color'] || DEFAULT_COLOR;
+            const highlightColor = this._data[i]['highlightColor'] || DEFAULT_COLOR;
             data['instance_color'][len * 4] = color[0];
             data['instance_color'][len * 4 + 1] = color[1];
             data['instance_color'][len * 4 + 2] = color[2];
             data['instance_color'][len * 4 + 3] = color[3];
             data['aPickingId'][len] = this._getPickingId() + i;
             data['aOutline'][len] = this._data[i]['outline'] ? 1 : 0;
+            data['highlight_color'][len * 4] = highlightColor[0];
+            data['highlight_color'][len * 4 + 1] = highlightColor[1];
+            data['highlight_color'][len * 4 + 2] = highlightColor[2];
+            data['highlight_color'][len * 4 + 3] = highlightColor[3]; 
             data['aBloom'][len] = this._data[i]['bloom'] ? 1 : 0;
         }
         return { attributesData: this._attributesData, bloomAttributesData: this._bloomAttributeData };
@@ -375,5 +425,78 @@ export default class MultiGLTFMarker extends GLTFMarker {
             }
         }
         return false;
+    }
+
+    highlightNodes(index, highlights) {
+        const meshes = this._meshes;
+        if (!meshes) {
+            return;
+        }
+        const dataItem = this._data[index];
+        if (!dataItem) {
+            return;
+        }
+        highlights.forEach(highlight => {
+            meshes.forEach(mesh => {
+                if (mesh.properties.nodeIndex === highlight.nodeIndex) {
+                    const { color, opacity, bloom } = highlight;
+                    dataItem['highlightColor'] = color || defaultColor;
+                    dataItem['highlightColor'][3] = opacity || defaultOpacity;
+                    dataItem['highlightBloom'] = bloom;
+                    const defines = mesh.getDefines();
+                    defines['HAS_INSTANCE_HIGHLIGHT'] = 1;
+                    mesh.setDefines(defines);
+                }
+            });
+        });
+        this._dirty = true;
+    }
+
+    highlight(index, highlight) {
+        const { color, opacity, bloom } = highlight;
+        const meshes = this._meshes;
+        if (!meshes) {
+            return;
+        }
+        const dataItem = this._data[index];
+        if (!dataItem) {
+            return;
+        }
+        dataItem['highlightColor'] = color || defaultColor;
+        dataItem['highlightColor'][3] = opacity || defaultOpacity;
+        dataItem['highlightBloom'] = bloom;
+        meshes.forEach(mesh => {
+            const defines = mesh.getDefines();
+            defines['HAS_INSTANCE_HIGHLIGHT'] = 1;
+            mesh.setDefines(defines);
+        });
+        this._dirty = true;
+    }
+
+    cancelHighlight(index, nodes) {
+        let meshes = this._meshes;
+        if (!meshes) {
+            return;
+        }
+        const dataItem = this._data[index];
+        if (!dataItem) {
+            return;
+        }
+        if (nodes) {
+            let nodeList = nodes;
+            if (!Array.isArray(nodeList)) {
+                nodeList = [nodeList];
+            }
+            meshes = meshes.filter(mesh => { return nodeList.indexOf(mesh.properties.nodeIndex) > -1 });
+        }
+        meshes.forEach(mesh => {
+            const defines = mesh.getDefines();
+            delete defines['HAS_INSTANCE_HIGHLIGHT'];
+            mesh.setDefines(defines);
+            dataItem['highlightColor'] = defaultColor;
+            dataItem['highlightColor'][3] = defaultOpacity;
+            dataItem['highlightBloom'] = 0;
+        });
+        this._dirty = true;
     }
 }

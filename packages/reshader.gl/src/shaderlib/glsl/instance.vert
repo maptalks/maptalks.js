@@ -25,9 +25,18 @@ mat4 instance_getAttributeMatrix() {
     return mat;
 }
 
+#ifdef HAS_INSTANCE_HIGHLIGHT
+    attribute vec4 highlight_color;
+#endif
+
 #ifdef HAS_INSTANCE_COLOR
+   
     attribute vec4 instance_color;
     vec4 instance_getInstanceColor() {
-        return instance_color;
+        vec4 color = instance_color;
+        #ifdef HAS_INSTANCE_HIGHLIGHT
+            color = instance_color * highlight_color;
+        #endif
+        return color;
     }
 #endif

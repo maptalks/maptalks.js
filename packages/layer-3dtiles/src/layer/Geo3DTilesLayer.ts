@@ -1175,7 +1175,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         const dpr = map.getDevicePixelRatio();
         const picked = renderer.pick(point.x * dpr, point.y * dpr, options);
         pushIn(results, picked);
-        if (options && options.filter) {
+        if (options && options.filter && !options['excludeMasks']) {
           return results.filter(g => options.filter(g));
         } else {
           return results;

@@ -56,7 +56,7 @@ const BOX_INDEX = [
 ];
 
 const BBOX_LINECOLOR = [0.8, 0.8, 0.1, 1.0], BBOX_LINEOPACITY = 1;
-
+// const DEFAULT_TRANS = [0, 0, 0], DEFAULT_ROTATION = [0, 0, 0], DEFAULT_SCALE = [1, 1, 1];
 export default class GLTFMarker extends Marker {
     constructor(coordinates, options) {
         //Marker中有维护自己的symbol，为避免重复处理symbol，先去掉symbol字段，后面利用自己的处理逻辑
@@ -190,7 +190,7 @@ export default class GLTFMarker extends Marker {
                 }
                 return false;
             });
-            this._dirty = false;
+            this._setDirty(false);
         }
         return meshes;
     }
@@ -526,17 +526,14 @@ export default class GLTFMarker extends Marker {
         return out;
     }
 
-    _calModelHeightScale(out) {
-        const modelHeight = this.getSymbol().modelHeight;
+    _calModelHeightScale(out, modelHeight) {
         const bbox = this._gltfModelBBox;
         const fitScale = modelHeight / (Math.abs(bbox.max[1] - bbox.min[1]));//YZ轴做了翻转，所以需要用y方向来算高度比例
         return vec3.set(out, fitScale, fitScale, fitScale);
     }
 
-    _calFixSizeScale(out) {
+    _calFixSizeScale(out, pixelHeight) {
         const bbox = this._gltfModelBBox;
-        const symbol = this.getSymbol();
-        const pixelHeight = symbol.markerPixelHeight;
         if (!pixelHeight || pixelHeight < 0 || !bbox) {
             return out;
         }
@@ -602,9 +599,11 @@ export default class GLTFMarker extends Marker {
         this._setGLTFData(data.json);
         this._prepareMeshes(url, gltfManager, regl);
         this._updateGeometries(gltfManager, regl);
-        this.fire('load', { data: data.json });
-        this.fire('setUrl-debug');
-        this['_fireEvent']('meshcreate', { url });
+        if (!this.createdBygltfmarker) {
+            this.fire('load', { data: data.json });
+            this.fire('setUrl-debug');
+            this['_fireEvent']('meshcreate', { url });
+        }
     }
 
     _prepareMeshes(url, gltfManager, regl) {
@@ -1051,6 +1050,7 @@ export default class GLTFMarker extends Marker {
     }
 
     outline() {
+        this.updateSymbol({ outline: true });
         const meshes = this._meshes;
         if (!meshes) {
             return this;
@@ -1063,6 +1063,7 @@ export default class GLTFMarker extends Marker {
     }
 
     cancelOutline(nodes) {
+        this.updateSymbol({ outline: false });
         const meshes = this._meshes;
         if (!meshes) {
             return this;
@@ -1078,6 +1079,14 @@ export default class GLTFMarker extends Marker {
         });
         this._dirty = true;
         return this;
+    }
+
+    isOutline() {
+        const symbol = this['_getInternalSymbol']();
+        if (symbol && defined(symbol.outline)) {
+            return symbol.outline;
+        }
+        return false;
     }
 
     isVisible() {
@@ -1138,7 +1147,7 @@ export default class GLTFMarker extends Marker {
         const symbol = this['_getInternalSymbol']();
         return symbol && symbol.uniforms && symbol.uniforms[key];
     }
-
+    
     isAnimated() {
         const symbol = this['_getInternalSymbol']();
         return symbol && symbol.animation && this._gltfData && this._gltfData.animations;
@@ -1295,9 +1304,9 @@ export default class GLTFMarker extends Marker {
 
     _translationToWorldPoint(translation) {
         const map = this.getMap();
-        const point = map.distanceToPointAtRes(translation[0], translation[1], map.getGLRes());
+        const point = map.distanceToPointAtRes(translation[0], translation[1], map.getGLRes(), TEMP_POINT);
         const z = map.altitudeToPoint(translation[2], map.getGLRes());
-        return vec3.set([], getAbsoluteValue(point.x, translation[0]), getAbsoluteValue(point.y, translation[1]), getAbsoluteValue(z, translation[2]));
+        return vec3.set(TEMP_TRANS, getAbsoluteValue(point.x, translation[0]), getAbsoluteValue(point.y, translation[1]), getAbsoluteValue(z, translation[2]));
     }
 
     getRotation() {
@@ -1322,10 +1331,10 @@ export default class GLTFMarker extends Marker {
             const markerPixelHeight = this._getMarkerPixelHeight();
             const modelHeight = this.getModelHeight();
             if (markerPixelHeight && markerPixelHeight > 0) {
-                const pixelHeightScale = this._calFixSizeScale(TEMP_FIXSIZE_SCALE);
+                const pixelHeightScale = this._calFixSizeScale(TEMP_FIXSIZE_SCALE, markerPixelHeight);
                 return vec3.multiply(pixelHeightScale, pixelHeightScale, scale);
             } else if (modelHeight) {
-                const modelHeightScale = this._calModelHeightScale(TEMP_FIXSIZE_SCALE);
+                const modelHeightScale = this._calModelHeightScale(TEMP_FIXSIZE_SCALE, modelHeight);
                 return vec3.multiply(modelHeightScale, modelHeightScale, scale);
             }
         }
@@ -1714,18 +1723,17 @@ export default class GLTFMarker extends Marker {
     }
 
     highlightNodes(highlights) {
-        const layer = this.getLayer();
-        if (!layer) {
-            return;
-        }
-        const renderer = layer.getRenderer();
-        if (!renderer) {
-            return;
-        }
         const meshes = this._meshes;
         if (!meshes) {
+            this.once('load', () => {
+                this._highlightForMeshes(highlights, this._meshes);
+            }, this);
             return;
         }
+        this._highlightForMeshes(highlights, meshes);
+    }
+
+    _highlightForMeshes(highlights, meshes) {
         highlights.forEach(highlight => {
             meshes.forEach(mesh => {
                 if (mesh.properties.nodeIndex === highlight.nodeIndex) {
@@ -1733,27 +1741,25 @@ export default class GLTFMarker extends Marker {
                 }
             });
         });
-        renderer.setToRedraw();
+        this._dirty = true;
     }
 
     highlight(highlight) {
-        const layer = this.getLayer();
-        if (!layer) {
-            return;
-        }
-        const renderer = layer.getRenderer();
-        if (!renderer) {
-            return;
-        }
         const { color, opacity, bloom } = highlight;
         const meshes = this._meshes;
         if (!meshes) {
+            this.once('load', () => {
+                this._meshes.forEach(mesh => {
+                    this._highlightMesh(mesh, color, opacity, bloom);
+                });
+                this._dirty = true;
+            }, this);
             return;
         }
         meshes.forEach(mesh => {
             this._highlightMesh(mesh, color, opacity, bloom);
         });
-        renderer.setToRedraw();
+        this._dirty = true;
     }
 
     _highlightMesh(mesh, color, opacity, bloom) {

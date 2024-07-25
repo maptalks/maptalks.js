@@ -47,7 +47,7 @@ const geojson = {"type":"FeatureCollection","features": [
 ]};
 const sceneConfig = {
     shadow: {
-        enable: true,
+        enable: false,
         opacity: 0.8,
         color: [1, 0, 0]
     },

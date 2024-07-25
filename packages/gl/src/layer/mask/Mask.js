@@ -135,7 +135,7 @@ export default class Mask extends Polygon {
     containsPoint(coordinate) {
         const extent = this.getExtent();
         TEMP_COORD.set(coordinate[0], coordinate[1]);
-        if (!extent || extent.contains(TEMP_COORD)) {
+        if (!extent || !extent.contains(TEMP_COORD)) {
             return false;
         }
         const holes = this.getHoles();

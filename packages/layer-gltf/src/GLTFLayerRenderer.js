@@ -7,7 +7,8 @@ import pickingVert from './common/glsl/picking.vert';
 import sceneVert from './common/glsl/sceneVert.vert';
 import extentFrag from './common/glsl/extent.frag';
 import GLTFWorkerConnection from './common/GLTFWorkerConnection';
-import { loadGLTF } from './worker/'
+import { loadGLTF } from './worker/';
+import MultiGLTFMarker from './MultiGLTFMarker';
 
 const uniformDeclares = [], tempBBox = [];
 const pointLineModes = ['points', 'lines', 'line strip', 'line loop'];
@@ -17,6 +18,7 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
         super(layer);
         this._shaderList = {};
         this._renderMarkerList = [];
+        this._multigltfmarker = {};
     }
 
     onAdd() {
@@ -102,23 +104,94 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
         this.renderer.render(this._shaderList['wireframe'].shader, uniforms, this._bboxScene, targetFBO);
     }
 
+    _createDataItem(marker) {
+        const polygonFill = marker.getUniform('polygonFill') || [1, 1, 1, 1];
+        const polygonOpacity = marker.getUniform('polygonOpacity') || 1;
+        polygonFill[3] = polygonOpacity;
+        return {
+            coordinates: marker.getCoordinates(),
+            translation: marker.getTranslation(),
+            rotation: marker.getRotation(),
+            scale: marker.getScale(),
+            visible: marker.isVisible(),
+            color: polygonFill,
+            bloom: marker.isBloom(),
+            outline: marker.isOutline(),
+            modelHeight: marker.getModelHeight(),
+            markerPixelHeight: marker._getMarkerPixelHeight(),
+            anchorZ: marker.getAnchorZ(),
+            pickingId: marker._getPickingId(),
+            target: marker
+        };
+    }
+
+    _markerToMultiGLTFMarker(marker) {
+        const dataItem = this._createDataItem(marker);
+        const multigltfmarker = new MultiGLTFMarker([dataItem], {
+            symbol: {
+                url: marker.getUrl(),
+                shader: marker.getShader(),
+                shadow: marker.isCastShadow()
+            }
+        });
+        multigltfmarker._markerList = multigltfmarker._markerList || [];
+        marker._converted = true;
+        multigltfmarker._markerList.push(marker);
+        multigltfmarker._setLayer(marker.getLayer());
+        return multigltfmarker;
+    }
+
+    _clearMultiGLTFMarker() {
+        for (const key in this._multigltfmarker) {
+            const marker = this._multigltfmarker[key];
+            marker.removeAllData();
+        }
+    }
+
+    _setRenderMeshes(marker, timestamp) {
+        const meshes = marker.getMeshes(this._gltfManager, this.regl, timestamp);
+        const shader = marker.getShader();
+        if (meshes.length) {
+            this._renderMarkerList.push(marker);
+            this._toRenderMeshes[shader] = this._toRenderMeshes[shader] || [];
+            maptalks.Util.pushIn(this._toRenderMeshes[shader], meshes);
+            for (let i = 0; i < meshes.length; i++) {
+                if (meshes[i].properties.bloomMesh) {
+                    this._toRenderMeshes[shader].push(meshes[i].properties.bloomMesh);
+                }
+            }
+        }
+    }
+
     _prepareRenderMeshes(timestamp) {
         this._renderMarkerList.length = 0;
         const markers = this.layer.getGeometries();
+        if (this._isDirty()) {
+            this._clearMultiGLTFMarker();//不需要每次都clear掉，可以监听multigltfmarker内部是否发生变化
+        }
         for (let i = 0; i < markers.length; i++) {
             const marker = markers[i];
-            const meshes = marker.getMeshes(this._gltfManager, this.regl, timestamp);
-            const shader = marker.getShader();
-            if (meshes.length) {
-                this._renderMarkerList.push(marker);
-                this._toRenderMeshes[shader] = this._toRenderMeshes[shader] || [];
-                maptalks.Util.pushIn(this._toRenderMeshes[shader], meshes);
-                for (let i = 0; i < meshes.length; i++) {
-                    if (meshes[i].properties.bloomMesh) {
-                        this._toRenderMeshes[shader].push(meshes[i].properties.bloomMesh);
-                    }
+            const url = marker.getUrl();
+            if (marker instanceof MultiGLTFMarker || marker.isAnimated() || !marker._converted) {
+                this._setRenderMeshes(marker, timestamp);
+                continue;
+            }
+            if (this._isDirty()) {
+                const shader = marker.getShader();
+                const shadow = marker.isCastShadow() ? 1 : 0;
+                const key = `${url}_${shader}_${shadow}`;
+                if (!this._multigltfmarker[key]) {
+                    this._multigltfmarker[key] = this._markerToMultiGLTFMarker(marker);
+                } else {
+                    this._multigltfmarker[key].addData(this._createDataItem(marker));
                 }
             }
+        }
+
+        for (const key in this._multigltfmarker) {
+            const marker = this._multigltfmarker[key];
+            marker.createdBygltfmarker = true;
+            this._setRenderMeshes(marker, timestamp);
         }
     }
 
@@ -175,6 +248,11 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
         if (super.needToRedraw()) {
             return true;
         }
+        return this._isDirty();
+
+    }
+
+    _isDirty() {
         const geoList = this.layer.getGeometries();
         for (let i = 0; i < geoList.length; i++) {
             if (this._renderMarkerList.indexOf(geoList[i]) > -1 && (geoList[i].isDirty() || geoList[i].isAnimated())) {
@@ -522,8 +600,15 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
         }
         const markers = this.layer.getGeometries();
         for (let i = 0; i < markers.length; i++) {
-            if (markers[i].isCastShadow() && markers[i].isVisible() && markers[i]._getOpacity()) {
+            if (markers[i].isCastShadow() && markers[i].isVisible() && markers[i]._getOpacity() && !markers[i]._converted) {
                 const meshes = markers[i]._meshes || [];
+                maptalks.Util.pushIn(shadowMeshes, meshes);
+            }
+        }
+        for (const key in this._multigltfmarker) {
+            const marker = this._multigltfmarker[key];
+            if (marker.isCastShadow() && marker.isVisible() && marker._getOpacity()) {
+                const meshes = marker._meshes || [];
                 maptalks.Util.pushIn(shadowMeshes, meshes);
             }
         }
@@ -607,7 +692,14 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
         }
         const markers = this.layer.getGeometries();
         for (let i = 0; i < markers.length; i++) {
+            if (markers[i]._converted) {
+                continue;
+            }
             const meshes = markers[i]._getOutlineMeshes();
+            maptalks.Util.pushIn(outlineMeshes, meshes);
+        }
+        for (const key in this._multigltfmarker) {
+            const meshes = this._multigltfmarker[key]._getOutlineMeshes();
             maptalks.Util.pushIn(outlineMeshes, meshes);
         }
         return outlineMeshes;

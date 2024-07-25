@@ -459,9 +459,6 @@ export default class GroupGLLayer extends maptalks.Layer {
             if (!picks || !picks.length) {
                 continue;
             }
-            if (!picks.length) {
-                continue;
-            }
             const id = layer.getId();
             for (let j = 0; j < picks.length; j++) {
                 if (picks[j]) {

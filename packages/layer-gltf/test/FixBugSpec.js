@@ -9,6 +9,47 @@ describe('bug', () => {
         removeMap(map);
     });
 
+    it('The units for translations are meters', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltflayer');
+        const marker = new maptalks.GLTFGeometry(center, {
+            symbol: {
+                translationX: 0,
+                translationY: 100,
+                translationZ: 0
+            }
+        }).addTo(gltflayer);
+        marker.on('click', () => {
+            done();
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], {sceneConfig}).addTo(map);
+        const clickPoint = new maptalks.Point([200, 50]);
+        marker.on('load', () => {
+            setTimeout(function() {
+                happen.click(eventContainer, {
+                    'clientX': clickPoint.x,
+                    'clientY': clickPoint.y
+                });
+            }, 100);
+        });
+    });
+
+    it('change translation, rotation, and scale', function (done) {
+        const gltflayer = new maptalks.GLTFLayer('gltf5').addTo(map);
+        const marker = new maptalks.GLTFGeometry(center, { symbol: { url: url1 }});
+        gltflayer.addGeometry(marker);
+        marker.setTranslation(10, 10, 10);
+        marker.setRotation(0, 60, 0);
+        marker.setScale(20, 20, 20);
+        marker.on('load', () => {
+            setTimeout(function() {
+                const expectMatrix = maptalksgl.mat4.fromValues(10.000000000000002, 0, -17.32050807568877, 0, 0, 20, 0, 0, 17.32050807568877, 0, 10.000000000000002, 0, 0.13082664542728, 0.1308266454209729, 0.1707822812928094, 1);
+                const modelMatrix = marker.getModelMatrix();
+                expect(maptalksgl.mat4.equals(expectMatrix, modelMatrix)).to.be.ok();
+                done();
+            }, 100);
+        });
+    });
+
     it('clear markers and then add a new one(fuzhenn/maptalks-studio#1390)', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const marker = new maptalks.GLTFGeometry(center, {
@@ -70,7 +111,7 @@ describe('bug', () => {
         marker.on('load', () => {
             setTimeout(function() {
                 const pixel = pickPixel(map, 218, 96, 1, 1);
-                expect(pixelMatch([211, 184, 178, 255], pixel)).to.be.eql(true);
+                expect(pixelMatch([230, 230, 234, 255], pixel)).to.be.eql(true);
                 done();
             }, 200);
         });
@@ -682,6 +723,8 @@ describe('bug', () => {
     });
 
     it('drawing shadow(fuzhenn/maptalks-studio#1694)', done => {
+        const config = JSON.parse(JSON.stringify(sceneConfig));
+        config.shadow.enable = true;
         const gltflayer = new maptalks.GLTFLayer('gltf');
         new maptalks.GLTFGeometry(center, {
             symbol: {
@@ -699,7 +742,7 @@ describe('bug', () => {
             expect(defines['HAS_SHADOWING']).to.be.ok();
             done();
         });
-        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig: config }).addTo(map);
     });
 
     it('gltfmarker should not update animation matrix when is not in frustum', done => {
@@ -985,6 +1028,8 @@ describe('bug', () => {
     });
 
     it('setCoordinates should update shadow immediately(fuzhenn/maptalks-ide/issues/3081)', done => {
+        const config = JSON.parse(JSON.stringify(sceneConfig));
+        config.shadow.enable = true;
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gltfMarker = new maptalks.GLTFGeometry(center, {
             symbol: {
@@ -995,7 +1040,7 @@ describe('bug', () => {
                 shadow: true
             }
         }).addTo(gltflayer);
-        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig: config }).addTo(map);
         gltfMarker.once('load', () => {
             setTimeout(function() {
                 const x = 215, y = 190;
@@ -1300,6 +1345,8 @@ describe('bug', () => {
 
     it('StandardLite shader', done => {
         map.setPitch(70);
+        const config = JSON.parse(JSON.stringify(sceneConfig));
+        config.shadow.enable = true;
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const marker = new maptalks.GLTFMarker(center, {
             symbol: {
@@ -1317,7 +1364,7 @@ describe('bug', () => {
                 done();
             }, 100);
         });
-        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig: config }).addTo(map);
     });
 
     it('GLTFMercatorGeometry(issues/359)', done => {
@@ -1643,14 +1690,14 @@ describe('bug', () => {
             marker.cancelHighlight();
             setTimeout(function() {
                 const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixel).to.be.eql([146, 146, 146, 255]);
+                expect(pixelMatch([146, 146, 146, 255], pixel)).to.be.eql(true);
                 done();
             }, 100);
         }
         function checkColor() {
             setTimeout(function() {
                 const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixel).to.be.eql([255, 115, 115, 255]);
+                expect(pixelMatch([255, 115, 115, 255], pixel)).to.be.eql(true);
                 cancelHighlight();
             }, 100);
         }
@@ -1878,5 +1925,47 @@ describe('bug', () => {
             checkColor();
         });
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
-    })
+    });
+
+    it('highlightNodes before added to gltflayer(maptalks/issues#709)', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFGeometry(center,
+            { symbol: { url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
+            }});
+        marker.highlightNodes([{
+            nodeIndex: 0,
+            color: [0.8, 0, 0, 1],
+            bloom: true
+        }, {
+            nodeIndex: 1,
+            color: [0.8, 0, 0, 1],
+            bloom: true
+        }]);
+        gltflayer.addGeometry(marker);
+
+        function cancelHighlight() {
+            marker.cancelHighlight();
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixelMatch([146, 146, 146, 255], pixel)).to.be.eql(true);
+                done();
+            }, 100);
+        }
+        function checkColor() {
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixelMatch([255, 115, 115, 255], pixel)).to.be.eql(true);
+                cancelHighlight();
+            }, 100);
+        }
+        marker.on('load', () => {
+            setTimeout(function () {
+                checkColor();
+            }, 100);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
 });

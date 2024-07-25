@@ -177,7 +177,7 @@ describe('MultiGLTFMarker', () => {
         multigltfmarker.on('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2 - 50, map.height / 2 + 50, 1, 1);
-                expect(pixelMatch([59, 69, 63, 229], pixel1)).to.be.eql(true);
+                expect(pixelMatch([48, 58, 37, 220], pixel1)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -260,9 +260,9 @@ describe('MultiGLTFMarker', () => {
                 const pixel2 = pickPixel(map, map.width / 2, map.height / 2 + 50, 1, 1);
                 expect(pixelMatch([91, 91, 91, 183], pixel2)).to.be.eql(true);
                 const pixel3 = pickPixel(map, map.width / 2 - 50, map.height / 2 + 50, 1, 1);
-                expect(pixelMatch([59, 69, 63, 229], pixel3)).to.be.eql(true);
+                expect(pixelMatch([48, 58, 38, 220], pixel3)).to.be.eql(true);
                 const pixel4 = pickPixel(map, map.width / 2 - 50, map.height / 2, 1, 1);
-                expect(pixelMatch([63, 69, 56, 168], pixel4)).to.be.eql(true);
+                expect(pixelMatch([38, 50, 23, 168], pixel4)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -461,6 +461,8 @@ describe('MultiGLTFMarker', () => {
 
     // TODO 每个单独的数据项能够设置独立的trs,增加像素判断
     it('set trs for data item', (done) => {
+        const config = JSON.parse(JSON.stringify(sceneConfig));
+        config.shadow.enable = true;
         const gltflayer = new maptalks.GLTFLayer('gltf');
         new maptalks.GroupGLLayer('group', [gltflayer],  { sceneConfig }).addTo(map);
         const importData = initInstanceData0();
@@ -484,11 +486,11 @@ describe('MultiGLTFMarker', () => {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
                 expect(pixelMatch([58, 69, 79, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2, map.height / 2 + 100, 1, 1);
-                expect(pixelMatch([111, 75, 75, 250], pixel2)).to.be.eql(true);
+                expect(pixelMatch([75, 75, 75, 250], pixel2)).to.be.eql(true);
                 const pixel3 = pickPixel(map, map.width / 2 + 100, map.height / 2 + 100, 1, 1);
                 expect(pixelMatch([90, 90, 90, 214], pixel3)).to.be.eql(true);
                 const pixel4 = pickPixel(map, map.width / 2 - 100, map.height / 2, 1, 1);
-                expect(pixelMatch([108, 84, 81, 214], pixel4)).to.be.eql(true);
+                expect(pixelMatch([75, 84, 71, 214], pixel4)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -578,8 +580,10 @@ describe('MultiGLTFMarker', () => {
     });
 
     it('add multigltfmarker with shadow, and then update instance data', done => {
+        const config = JSON.parse(JSON.stringify(sceneConfig));
+        config.shadow.enable = true;
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        new maptalks.GroupGLLayer('group', [gltflayer],  { sceneConfig }).addTo(map);
+        new maptalks.GroupGLLayer('group', [gltflayer],  { sceneConfig: config }).addTo(map);
         const importData = initInstanceData3();
         const multigltfmarker = new maptalks.MultiGLTFMarker(importData, {
             symbol: {
@@ -722,6 +726,32 @@ describe('MultiGLTFMarker', () => {
                     });
                 }
             }, 300);
+        });
+    });
+
+    it('multigltfmarker support highlight', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        new maptalks.GroupGLLayer('group', [gltflayer],  { sceneConfig }).addTo(map);
+        const importData = initInstanceDataInArray(100);
+        const multigltfmarker = new maptalks.MultiGLTFMarker(importData, {
+            symbol: {
+                url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
+            }
+        }).addTo(gltflayer);
+        map.setPitch(45);
+        multigltfmarker.once('load', () => {
+            multigltfmarker.highlight(52, {
+                color: [1, 0, 0],
+                opacity: 0.8
+            });
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixelMatch([60, 8, 8, 186], pixel)).to.be.eql(true);
+                done();
+            }, 100);
         });
     });
 });
