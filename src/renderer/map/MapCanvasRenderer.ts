@@ -153,7 +153,7 @@ class MapCanvasRenderer extends MapRenderer {
         }
         const needRedrawLayers: Layer[] = [];
         layers.forEach(layer => {
-            const needsRedraw = this._checkLayerRedraw(layer);
+            const needsRedraw = layer._toRedraw = this._checkLayerRedraw(layer);
             if (needsRedraw) {
                 needRedrawLayers.push(layer);
                 const groupLayer = layer as any;
@@ -204,7 +204,7 @@ class MapCanvasRenderer extends MapRenderer {
                 continue;
             }
             // if need to call layer's draw/drawInteracting
-            const needsRedraw = needRedrawAllLayers || this._checkLayerRedraw(layer);
+            const needsRedraw = needRedrawAllLayers || layer._toRedraw;
             if (isCanvas && renderer.isCanvasUpdated()) {
                 // don't need to call layer's draw/drawOnInteracting but need to redraw layer's updated canvas
                 if (!needsRedraw) {
