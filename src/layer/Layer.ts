@@ -79,6 +79,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     _id: string
     _zIndex: number
     _drawTime: number
+    _toRedraw: boolean
     map: Map
     _mask: Polygon | MultiPolygon | Marker;
     _maskGeoJSON: Record<string, any>;
@@ -87,6 +88,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     _optionsHook?(conf?: any): void
     _silentConfig: boolean | undefined | any
     options: LayerOptionsType;
+    getLayers?(): Layer[];
 
 
     constructor(id: string, options?: LayerOptionsType) {
