@@ -145,19 +145,19 @@ class MapCanvasRenderer extends MapRenderer {
 
     //need redraw all layer,cause by collision/crs change/view change etc...
     _needRedrawAllLayers(layers: Layer[]) {
-        if (!layers || layers.length === 0) {
-            return false;
-        }
-        if (this.isSpatialReferenceChanged() || this.isViewChanged()) {
+        if (this.isSpatialReferenceChanged()) {
             return true;
         }
         const needRedrawLayers: Layer[] = [];
         layers.forEach(layer => {
+            if (!layer) {
+                return;
+            }
+            //always check layer need to redraw
             const needsRedraw = layer._toRedraw = this._checkLayerRedraw(layer);
             if (needsRedraw) {
                 needRedrawLayers.push(layer);
-                const groupLayer = layer as any;
-                const childLayers = groupLayer.getLayers && groupLayer.getLayers();
+                const childLayers = layer.getLayers && layer.getLayers();
                 if (childLayers && Array.isArray(childLayers)) {
                     pushIn(needRedrawLayers, childLayers);
                 }
