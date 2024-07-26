@@ -9,6 +9,7 @@
     "dist/maptalks.vt.es.js"
   ],
   "scripts": {
+    "clean": "rimraf dist",
     "lint": "eslint src/**/*.js test/**/*.js",
     "dev": "rollup -w -c build/rollup.config.js",
     "build": "cd ../vector-packer && npm run build && cd ../vt && rollup --environment BUILD:production -c build/rollup.config.js",
@@ -26,10 +27,10 @@
     "@maptalks/function-type": "^1.3.1",
     "@maptalks/geojson-bbox": "^1.0.4",
     "@maptalks/geojson-vt": "^3.5.0",
-    "@maptalks/gl": "workspace:@maptalks/gl@*",
+    "@maptalks/gl": "workspace:*",
     "@maptalks/tbn-packer": "^1.4.5",
-    "@maptalks/vector-packer": "workspace:@maptalks/vector-packer@*",
-    "@maptalks/vt-plugin": "workspace:@maptalks/vt-plugin@*",
+    "@maptalks/vector-packer": "workspace:*",
+    "@maptalks/vt-plugin": "workspace:*",
     "animation-easings": "^0.1.0",
     "fast-deep-equal": "^2.0.1",
     "point-in-polygon": "^1.1.0",

@@ -14,6 +14,7 @@
     "dist/transform-control.es.js"
   ],
   "scripts": {
+    "clean": "rimraf dist",
     "dev": "rollup -w -c rollup.config.js",
     "build": "rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "rollup -c rollup.config.js",
@@ -35,8 +36,8 @@
     "rollup": "^4.17.2"
   },
   "dependencies": {
-    "@maptalks/gl": "workspace:@maptalks/gl@*",
-    "@maptalks/gltf-loader": "workspace:@maptalks/gltf-loader@*"
+    "@maptalks/gl": "workspace:*",
+    "@maptalks/gltf-loader": "workspace:*"
   },
   "gitHead": "9eeea4807723d460fa7e09969c6556d53f6bed84"
 }

@@ -5,6 +5,7 @@
   "main": "dist/maptalksgl.js",
   "module": "dist/maptalksgl.es.js",
   "scripts": {
+    "clean": "rimraf dist",
     "build": "npm run lint && cd ../reshader.gl && npm run build && cd ../gl && rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "cd ../reshader.gl && npm run build-dev && cd ../gl && rollup -c rollup.config.js",
     "dev": "cd ../reshader.gl && npm run build-dev && cd ../gl && rollup -w -c rollup.config.js",
@@ -28,10 +29,10 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@maptalks/fusiongl": "^0.6.13",
-    "@maptalks/gltf-loader": "workspace:@maptalks/gltf-loader@*",
+    "@maptalks/gltf-loader": "workspace:*",
     "@maptalks/martini": "^0.4.0",
     "@maptalks/regl": "^3.3.5",
-    "@maptalks/reshader.gl": "workspace:@maptalks/reshader.gl@*",
+    "@maptalks/reshader.gl": "workspace:*",
     "color": "^3.0.0",
     "colorin": "^0.6.0"
   },

@@ -1,14 +1,6 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "moduleResolution": "node",
-    "alwaysStrict": true,
-    "allowJs": true,
-    "incremental": false,
-    "module": "es2015",
-    "target": "es2015",
-    "sourceMap": true,
-    "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
     "importHelpers": true,
     "lib": ["esnext", "dom"],
     "paths": {},
@@ -16,6 +8,6 @@
     "rootDir": "./src",
     "baseUrl": "./"
   },
-  "include": ["src/**/*.ts", "src/types/*.d.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

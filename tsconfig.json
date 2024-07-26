@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "allowJs": true,
+    "alwaysStrict": true,
+    // "declaration": true,
+    // "declarationMap": true,
+    // "emitDeclarationOnly": true,
+    "incremental": false,
+    "module": "es2015",
+    "target": "es2015",
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    //dependencies lib version
+    "lib": [
+      "es2015",
+      "dom"
+    ]
+  }
+}

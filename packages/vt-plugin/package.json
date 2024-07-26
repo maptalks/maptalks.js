@@ -1,22 +1,23 @@
 {
-    "name": "@maptalks/vt-plugin",
-    "version": "0.95.0",
-    "description": "The base plugin for maptalks vectortile layer",
-    "module": "index.js",
-    "scripts": {
-        "lint": "eslint *.js",
-        "prepublishOnly": "npm run lint"
-    },
-    "files": [
-        "index.js"
-    ],
-    "keywords": [
-        "maptalks",
-        "vectortile"
-    ],
-    "author": "fuzhenn",
-    "license": "UNLICENSED",
-    "devDependencies": {
-        "eslint": "^8.57.0"
-    }
+  "name": "@maptalks/vt-plugin",
+  "version": "0.95.0",
+  "description": "The base plugin for maptalks vectortile layer",
+  "module": "index.js",
+  "scripts": {
+    "clean": "rimraf dist",
+    "lint": "eslint *.js",
+    "prepublishOnly": "npm run lint"
+  },
+  "files": [
+    "index.js"
+  ],
+  "keywords": [
+    "maptalks",
+    "vectortile"
+  ],
+  "author": "fuzhenn",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "eslint": "^8.57.0"
+  }
 }

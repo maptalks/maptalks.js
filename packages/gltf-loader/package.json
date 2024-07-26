@@ -4,8 +4,10 @@
   "description": "",
   "module": "dist/gltf-loader.es.js",
   "scripts": {
-    "build": "npm run lint && rollup --environment BUILD:production -c",
+    "clean": "rimraf dist",
     "dev": "rollup -c -w",
+    "build": "npm run lint && rollup --environment BUILD:production -c",
+    "build-dev": "npm run lint && rollup -c rollup.config.js",
     "pretest": "cd ../layer-3dtiles && npm run build && cd ../gltf-loader && npm run build",
     "test": "karma start --single-run",
     "tdd": "karma start --no-single-run & karma run",

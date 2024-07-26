@@ -5,6 +5,7 @@
   "main": "dist/maptalks.3dtiles.js",
   "module": "dist/maptalks.3dtiles.es.js",
   "scripts": {
+    "clean": "rimraf dist",
     "lint": "eslint src/**/*.js test/**/*.js",
     "build": "npm run lint && rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "rollup -c rollup.config.js",
@@ -37,7 +38,7 @@
   "homepage": "https://github.com/fuzhenn/3dtiles-issues/",
   "dependencies": {
     "@maptalks/function-type": "^1.3.1",
-    "@maptalks/gltf-loader": "workspace:@maptalks/gltf-loader@*",
+    "@maptalks/gltf-loader": "workspace:*",
     "@maptalks/tbn-packer": "^1.4.5",
     "frustum-intersects": "^0.2.4",
     "gl-matrix": "^3.4.0",
@@ -46,10 +47,10 @@
     "color": "^3.0.0"
   },
   "devDependencies": {
-    "@maptalks/gl": "workspace:@maptalks/gl@*",
-    "@maptalks/transcoders.crn": "workspace:@maptalks/transcoders.crn@*",
-    "@maptalks/transcoders.draco": "workspace:@maptalks/transcoders.draco@*",
-    "@maptalks/transcoders.ktx2": "workspace:@maptalks/transcoders.ktx2@*",
+    "@maptalks/gl": "workspace:*",
+    "@maptalks/transcoders.crn": "workspace:*",
+    "@maptalks/transcoders.draco": "workspace:*",
+    "@maptalks/transcoders.ktx2": "workspace:*",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-replace": "^5.0.5",

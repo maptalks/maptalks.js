@@ -16,6 +16,7 @@
     "dist/maptalks.traffic.es.js"
   ],
   "scripts": {
+    "clean": "rimraf dist",
     "dev": "rollup -w -c rollup.config.js",
     "build": "rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "rollup -c rollup.config.js",

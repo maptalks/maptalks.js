@@ -1,24 +1,10 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "moduleResolution": "node",
-    "alwaysStrict": true,
     "declaration": true,
-    "allowJs": true,
-    "module": "es2015",
-    "target": "es2015",
-    "sourceMap": true,
-    "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
-    //dependencies lib version
-    "lib": [
-      "es2015",
-      "dom"
-    ],
-    //custom types
-    "paths": {},
     "outDir": "./dist/",
     "rootDir": "./src",
-    "baseUrl": "./",
+    "baseUrl": "./"
   },
   "include": [
     "./**/*.ts",

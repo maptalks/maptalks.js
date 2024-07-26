@@ -14,6 +14,7 @@
     "dist/maptalks.video.es.js"
   ],
   "scripts": {
+    "clean": "rimraf dist",
     "dev": "rollup -w -c rollup.config.js",
     "build": "rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "rollup -c rollup.config.js",
@@ -26,7 +27,7 @@
     "prepublishOnly": "npm run lint && npm run build"
   },
   "devDependencies": {
-    "@maptalks/gl": "workspace:@maptalks/gl@*",
+    "@maptalks/gl": "workspace:*",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-replace": "^5.0.5",

@@ -4,6 +4,7 @@
   "description": "A shader centric WebGL engine based on regl",
   "module": "dist/reshadergl.es.js",
   "scripts": {
+    "clean": "rimraf dist",
     "build": "rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "rollup -c rollup.config.js",
     "dev": "rollup -w -c rollup.config.js",
@@ -20,7 +21,7 @@
   "author": "fuzhenn",
   "license": "UNLICENSED",
   "dependencies": {
-    "@maptalks/gltf-loader": "workspace:@maptalks/gltf-loader@*",
+    "@maptalks/gltf-loader": "workspace:*",
     "@maptalks/regl": "^3.3.5",
     "@maptalks/tbn-packer": "^1.4.5",
     "earcut": "^2.2.4",

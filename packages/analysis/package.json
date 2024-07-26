@@ -2,18 +2,31 @@
   "name": "@maptalks/analysis",
   "version": "0.97.4",
   "description": "a plugin to excute many analysis tasks",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/fuzhenn/maptalks.analysis.git"
   },
   "main": "dist/maptalks.analysis.js",
   "module": "dist/maptalks.analysis.es.js",
+  "types": "dist/index.d.ts",
   "files": [
-    "dist/maptalks.analysis.js",
-    "dist/maptalks.analysis.es.js"
+    "dist",
+    "LICENSE",
+    "README.md",
+    "package.json"
   ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/maptalks.analysis.es.js",
+      "require": "./dist/maptalks.analysis.js"
+    },
+    "./dist/*": "./dist/*",
+    "./package.json": "./package.json"
+  },
   "scripts": {
+    "clean": "rimraf dist",
     "dev": "rollup -w -c rollup.config.js",
     "build-gl": "cd ../gl && npm run build",
     "build": "rollup --environment BUILD:production -c rollup.config.js",
@@ -23,8 +36,8 @@
     "prepublishOnly": "npm run lint && npm run build"
   },
   "devDependencies": {
-    "@maptalks/gl": "workspace:@maptalks/gl@*",
-    "@maptalks/gltf-layer": "workspace:@maptalks/gltf-layer@*",
+    "@maptalks/gl": "workspace:*",
+    "@maptalks/gltf-layer": "workspace:*",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-replace": "^5.0.5",
