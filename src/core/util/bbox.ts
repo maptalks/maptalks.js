@@ -105,6 +105,11 @@ export function bboxIntersect(bbox1: BBOX, bbox2: BBOX) {
     return true;
 }
 
+export function bboxInBBOX(bbox1: BBOX, bbox2: BBOX) {
+    const [x1, y1, x2, y2] = bbox1;
+    return x1 >= bbox2[0] && x2 <= bbox2[2] && y1 >= bbox2[1] && y2 <= bbox2[3];
+}
+
 /**
  * bbox Intersect Mask
  * apply on TileLayer,VectorTileLayer,Geo3DTileLayer Layers

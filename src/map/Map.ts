@@ -28,6 +28,7 @@ import SpatialReference, { type SpatialReferenceType } from './spatial-reference
 import { computeDomPosition, MOUSEMOVE_THROTTLE_TIME } from '../core/util/dom';
 import EPSG9807, { type EPSG9807ProjectionType } from '../geo/projection/Projection.EPSG9807.js';
 import { AnimationOptionsType, EasingType } from '../core/Animation';
+import { BBOX, bboxInBBOX, getDefaultBBOX, pointsBBOX } from '../core/util/bbox';
 
 const TEMP_COORD = new Coordinate(0, 0);
 const TEMP_POINT = new Point(0, 0);
@@ -223,6 +224,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     private _mapRes: number;
     private _onLoadHooks: Array<(...args) => void>;
     private cameraCenterDistance: number;
+    private _limitMaxExtenting: boolean;
     options: MapOptionsType;
     static VERSION: string;
     JSON_VERSION: '1.0';
@@ -1751,6 +1753,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
          * @property {Event} domEvent                 - dom event
          */
         this._fireEvent('moving', this._parseEvent(param ? param['domEvent'] : null, 'moving'));
+        this._limitMaxExtent();
     }
 
     onMoveEnd(param) {
@@ -1773,6 +1776,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
          * @property {Event} domEvent                 - dom event
          */
         this._fireEvent('moveend', (param && param['domEvent']) ? this._parseEvent(param['domEvent'], 'moveend') : param);
+        this._limitMaxExtent();
         if (!this._verifyExtent(this._getPrjCenter()) && this._originCenter) {
             const moveTo = this._originCenter;
             this._panTo(moveTo);
@@ -2192,13 +2196,91 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         return maxExt.contains(prjCenter);
     }
 
+    _limitMaxExtent() {
+        if (this._limitMaxExtenting) {
+            return this;
+        }
+        const maxPrjExtent = this._prjMaxExtent;
+        if (!maxPrjExtent) {
+            return this;
+        }
+        const prjCoords = maxPrjExtent.toArray();
+        const points = prjCoords.map(prjCoord => {
+            return this.prjToContainerPoint(prjCoord);
+        })
+        //屏幕坐标包围盒
+        const maxExtentBBOX = getDefaultBBOX();
+        pointsBBOX(points, maxExtentBBOX);
+        const { width, height } = this.getSize();
+        const mapBBOX = [0, 0, width, height] as BBOX;
+
+        const result = bboxInBBOX(mapBBOX, maxExtentBBOX);
+        if (result) {
+            return this;
+        }
+        const currentView = this.getView();
+
+        let translateX = 0, translateY = 0;
+        //x轴方向
+        const xDirection = () => {
+            //left
+            if (mapBBOX[0] < maxExtentBBOX[0]) {
+                // console.log('←');
+                const c1 = this.containerPointToCoord(new Point(0, height / 2));
+                const xoffset = maxExtentBBOX[0] - mapBBOX[0];
+                const c2 = this.containerPointToCoord(new Point(xoffset, height / 2));
+                translateX = c2.x - c1.x;
+            }
+            //right
+            if (mapBBOX[2] > maxExtentBBOX[2]) {
+                // console.log('→');
+                const c1 = this.containerPointToCoord(new Point(width, height / 2));
+                const xoffset = maxExtentBBOX[2] - mapBBOX[2];
+                const c2 = this.containerPointToCoord(new Point(width + xoffset, height / 2));
+                translateX = c2.x - c1.x;
+            }
+        }
+
+        //y轴方向
+        const yDirection = () => {
+            //up
+            if (mapBBOX[1] < maxExtentBBOX[1]) {
+                // console.log('↑');
+                const c1 = this.containerPointToCoord(new Point(width / 2, 0));
+                const yoffset = maxExtentBBOX[1] - mapBBOX[1];
+                const c2 = this.containerPointToCoord(new Point(width / 2, yoffset));
+                translateY = c2.y - c1.y;
+
+            }
+            //down
+            if (mapBBOX[3] > maxExtentBBOX[3]) {
+                // console.log('↓');
+                const c1 = this.containerPointToCoord(new Point(width / 2, height));
+                const yoffset = maxExtentBBOX[3] - mapBBOX[3];
+                const c2 = this.containerPointToCoord(new Point(width / 2, height + yoffset));
+                translateY = c2.y - c1.y;
+            }
+        }
+        xDirection();
+        yDirection();
+        if (translateX !== 0 || translateY !== 0) {
+            this._limitMaxExtenting = true;
+            currentView.center[0] += translateX;
+            currentView.center[1] += translateY;
+            this.setView(currentView);
+            this._limitMaxExtenting = false;
+        }
+
+        return this;
+    }
+
     /**
      * Move map's center by pixels.
      * @param  {Point} pixel - pixels to move, the relation between value and direction is as:
      * -1,1 | 1,1
      * ------------
      *-1,-1 | 1,-1
-     * @private
+     * @private 
      * @returns {Coordinate} the new projected center.
      */
     _offsetCenterByPixel(pixel: Point) {
