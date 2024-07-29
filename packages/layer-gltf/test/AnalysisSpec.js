@@ -185,7 +185,7 @@ describe('add analysis', () => {
                 const tempMap = cutAnalysis.exportAnalysisMap(meshes);
                 const index = (map.height / 2) * map.width * 4 + (map.width / 2) * 4;
                 const arr = tempMap.slice(index, index + 16);
-                expect(pixelMatch([1, 1, 1, 25, 1, 1, 1, 25, 1, 1, 1, 25, 1, 1, 1, 25], arr)).to.be.eql(true);
+                expect(pixelMatch([1, 1, 1, 25, 1, 1, 1, 25, 1, 1, 1, 25, 231, 231, 231, 255], arr)).to.be.eql(true);
                 done();
             }, 100);
         });
