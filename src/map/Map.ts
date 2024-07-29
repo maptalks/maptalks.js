@@ -137,6 +137,7 @@ const options: MapOptionsType = {
     'maxZoom': null,
     'minZoom': null,
     'maxExtent': null,
+    'limitExtentOnMaxExtent': false,
     'fixCenterOnResize': true,
 
     'checkSize': true,
@@ -2197,7 +2198,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     _limitMaxExtent() {
-        if (this._limitMaxExtenting) {
+        if (this._limitMaxExtenting || !this.options.limitExtentOnMaxExtent) {
             return this;
         }
         const maxPrjExtent = this._prjMaxExtent;
@@ -2222,47 +2223,40 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
 
         let translateX = 0, translateY = 0;
         //x轴方向
-        const xDirection = () => {
-            //left
-            if (mapBBOX[0] < maxExtentBBOX[0]) {
-                // console.log('←');
-                const c1 = this.containerPointToCoord(new Point(0, height / 2));
-                const xoffset = maxExtentBBOX[0] - mapBBOX[0];
-                const c2 = this.containerPointToCoord(new Point(xoffset, height / 2));
-                translateX = c2.x - c1.x;
-            }
-            //right
-            if (mapBBOX[2] > maxExtentBBOX[2]) {
-                // console.log('→');
-                const c1 = this.containerPointToCoord(new Point(width, height / 2));
-                const xoffset = maxExtentBBOX[2] - mapBBOX[2];
-                const c2 = this.containerPointToCoord(new Point(width + xoffset, height / 2));
-                translateX = c2.x - c1.x;
-            }
+        //left
+        if (mapBBOX[0] < maxExtentBBOX[0]) {
+            // console.log('←');
+            const c1 = this.containerPointToCoord(new Point(0, height / 2));
+            const xoffset = maxExtentBBOX[0] - mapBBOX[0];
+            const c2 = this.containerPointToCoord(new Point(xoffset, height / 2));
+            translateX = c2.x - c1.x;
+        }
+        //right
+        if (mapBBOX[2] > maxExtentBBOX[2]) {
+            // console.log('→');
+            const c1 = this.containerPointToCoord(new Point(width, height / 2));
+            const xoffset = maxExtentBBOX[2] - mapBBOX[2];
+            const c2 = this.containerPointToCoord(new Point(width + xoffset, height / 2));
+            translateX = c2.x - c1.x;
         }
 
         //y轴方向
-        const yDirection = () => {
-            //up
-            if (mapBBOX[1] < maxExtentBBOX[1]) {
-                // console.log('↑');
-                const c1 = this.containerPointToCoord(new Point(width / 2, 0));
-                const yoffset = maxExtentBBOX[1] - mapBBOX[1];
-                const c2 = this.containerPointToCoord(new Point(width / 2, yoffset));
-                translateY = c2.y - c1.y;
-
-            }
-            //down
-            if (mapBBOX[3] > maxExtentBBOX[3]) {
-                // console.log('↓');
-                const c1 = this.containerPointToCoord(new Point(width / 2, height));
-                const yoffset = maxExtentBBOX[3] - mapBBOX[3];
-                const c2 = this.containerPointToCoord(new Point(width / 2, height + yoffset));
-                translateY = c2.y - c1.y;
-            }
+        //up
+        if (mapBBOX[1] < maxExtentBBOX[1]) {
+            // console.log('↑');
+            const c1 = this.containerPointToCoord(new Point(width / 2, 0));
+            const yoffset = maxExtentBBOX[1] - mapBBOX[1];
+            const c2 = this.containerPointToCoord(new Point(width / 2, yoffset));
+            translateY = c2.y - c1.y;
         }
-        xDirection();
-        yDirection();
+        //down
+        if (mapBBOX[3] > maxExtentBBOX[3]) {
+            // console.log('↓');
+            const c1 = this.containerPointToCoord(new Point(width / 2, height));
+            const yoffset = maxExtentBBOX[3] - mapBBOX[3];
+            const c2 = this.containerPointToCoord(new Point(width / 2, height + yoffset));
+            translateY = c2.y - c1.y;
+        }
         if (translateX !== 0 || translateY !== 0) {
             this._limitMaxExtenting = true;
             currentView.center[0] += translateX;
@@ -2663,6 +2657,7 @@ export type MapOptionsType = {
     maxZoom?: number;
     minZoom?: number;
     maxExtent?: Extent;
+    limitExtentOnMaxExtent?: boolean;
     fixCenterOnResize?: boolean;
     checkSize?: boolean;
     checkSizeInterval?: number;
