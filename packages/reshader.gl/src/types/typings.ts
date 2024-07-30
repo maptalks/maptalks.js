@@ -1,6 +1,6 @@
 import REGL, { Texture, Texture2DOptions, TextureImageData } from "@maptalks/regl";
 import { mat4 } from "gl-matrix";
-import AbstractTexture from "src/AbstractTexture";
+import AbstractTexture from "../AbstractTexture";
 
 export type UrlModifierFunction = (url: string) => string
 

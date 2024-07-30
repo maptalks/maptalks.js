@@ -22,7 +22,7 @@
   ],
   "author": "fuzhenn",
   "license": "UNLICENSED",
-  "d.ts": "dist/maptalks.d.ts",
+  "d.ts": "dist/reshadergl.d.ts",
   "types": "dist/index.d.ts",
   "dependencies": {
     "@maptalks/gltf-loader": "workspace:*",
