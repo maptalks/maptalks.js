@@ -192,21 +192,21 @@ export default class PostProcess {
     //     return this._taaPass.needToRedraw();
     // }
 
-    ssao(sourceTex, depthTex, uniforms) {
-        if (!this._ssaoPass) {
-            this._ssaoPass = new reshader.SsaoPass(this._renderer);
-            this._layer.getRenderer().setToRedraw();
-        }
-        return this._ssaoPass.render({
-            projMatrix: uniforms['projMatrix'],
-            cameraNear: uniforms['cameraNear'],
-            cameraFar: uniforms['cameraFar'],
-            bias: uniforms['ssaoBias'],
-            radius: uniforms['ssaoRadius'],
-            intensity: uniforms['ssaoIntensity'],
-            quality: 0.6
-        }, sourceTex, depthTex);
-    }
+    // ssao(sourceTex, depthTex, uniforms) {
+    //     if (!this._ssaoPass) {
+    //         this._ssaoPass = new reshader.SsaoPass(this._renderer);
+    //         this._layer.getRenderer().setToRedraw();
+    //     }
+    //     return this._ssaoPass.render({
+    //         projMatrix: uniforms['projMatrix'],
+    //         cameraNear: uniforms['cameraNear'],
+    //         cameraFar: uniforms['cameraFar'],
+    //         bias: uniforms['ssaoBias'],
+    //         radius: uniforms['ssaoRadius'],
+    //         intensity: uniforms['ssaoIntensity'],
+    //         quality: 0.6
+    //     }, sourceTex, depthTex);
+    // }
 
     fxaa(fbo, source, noAaSource, pointSource, taaTextureSource, fxaaTextureSource, enableFXAA, enableToneMapping, enableSharpen, pixelRatio, sharpFactor,
         textureOutline, highlightFactor, outlineFactor, outlineWidth, outlineColor) {
@@ -297,10 +297,10 @@ export default class PostProcess {
         //     this._taaPass.dispose();
         //     delete this._taaPass;
         // }
-        if (this._ssaoPass) {
-            this._ssaoPass.dispose();
-            delete this._ssaoPass;
-        }
+        // if (this._ssaoPass) {
+        //     this._ssaoPass.dispose();
+        //     delete this._ssaoPass;
+        // }
         if (this._bloomPass) {
             this._bloomPass.dispose();
             delete this._bloomPass;

@@ -842,9 +842,10 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     isEnableSSAO() {
-        const sceneConfig =  this.layer._getSceneConfig();
-        const config = sceneConfig && sceneConfig.postProcess;
-        return config && config.enable && config.ssao && config.ssao.enable;
+        // const sceneConfig =  this.layer._getSceneConfig();
+        // const config = sceneConfig && sceneConfig.postProcess;
+        // return config && config.enable && config.ssao && config.ssao.enable;
+        return false;
     }
 
     isEnableOutline() {
@@ -1270,14 +1271,14 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             outlineColor = getValueOrDefault(config.outline, 'outlineColor', outlineColor);
         }
 
-        const enableSSAO = this.isEnableSSAO();
+        // const enableSSAO = this.isEnableSSAO();
         const enableSSR = config.ssr && config.ssr.enable;
         const enableBloom = config.bloom && config.bloom.enable;
         const bloomPainted = enableBloom && this._bloomPainted;
         const enableAntialias = +!!(config.antialias && config.antialias.enable);
         const enableAnalysis = this._analysisPainter._hasAnalysis();
         const enableWeather = this._weatherPainter._hasWeather();
-        const hasPost = enableSSAO || enableBloom || enableSSR || enableAnalysis || enableWeather;
+        const hasPost = /* enableSSAO ||  */enableBloom || enableSSR || enableAnalysis || enableWeather;
 
         let postFBO = this._postFBO;
         if (hasPost) {
@@ -1336,18 +1337,18 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             tex = this._getFBOColor(postFBO);
         }
 
-        if (enableSSAO && (this._fxaaAfterTaaDrawCount || this._taaDrawCount || this._fxaaDrawCount)) {
-            //TODO 合成时，SSAO可能会被fxaaFBO上的像素遮住
-            //generate ssao texture for the next frame
-            tex = this._postProcessor.ssao(tex, this._blitDepthTex(), {
-                projMatrix: map.projMatrix,
-                cameraNear: map.cameraNear,
-                cameraFar: map.cameraFar,
-                ssaoBias: config.ssao && config.ssao.bias || 10,
-                ssaoRadius: config.ssao && config.ssao.radius || 100,
-                ssaoIntensity: config.ssao && config.ssao.intensity || 0.5
-            });
-        }
+        // if (enableSSAO && (this._fxaaAfterTaaDrawCount || this._taaDrawCount || this._fxaaDrawCount)) {
+        //     //TODO 合成时，SSAO可能会被fxaaFBO上的像素遮住
+        //     //generate ssao texture for the next frame
+        //     tex = this._postProcessor.ssao(tex, this._blitDepthTex(), {
+        //         projMatrix: map.projMatrix,
+        //         cameraNear: map.cameraNear,
+        //         cameraFar: map.cameraFar,
+        //         ssaoBias: config.ssao && config.ssao.bias || 10,
+        //         ssaoRadius: config.ssao && config.ssao.radius || 100,
+        //         ssaoIntensity: config.ssao && config.ssao.intensity || 0.5
+        //     });
+        // }
 
         if (enableBloom && this._bloomPainted) {
             const bloomConfig = config.bloom;

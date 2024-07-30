@@ -12,6 +12,8 @@
     "sourceMap": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
+    "declaration": true,
+    "declarationMap": true,
     //dependencies lib version
     "lib": [
       "es2015",

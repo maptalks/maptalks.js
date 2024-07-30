@@ -1,4 +1,4 @@
-import { MixinConstructor } from "src/types/typings";
+import { MixinConstructor } from "../types/typings";
 
 export type HandlerFnResultType = {
     type: string;

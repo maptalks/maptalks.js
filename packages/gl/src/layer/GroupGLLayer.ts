@@ -900,12 +900,12 @@ export type ScenePostProcess = {
     ssr?: {
         enable?: boolean
     },
-    ssao?: {
-        enable?: boolean,
-        bias?: number,
-        radius?: number,
-        intensity?: number
-    },
+    // ssao?: {
+    //     enable?: boolean,
+    //     bias?: number,
+    //     radius?: number,
+    //     intensity?: number
+    // },
     sharpen?: {
         enable?: boolean,
         factor?: number

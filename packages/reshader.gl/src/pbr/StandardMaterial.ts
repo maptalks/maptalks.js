@@ -1,7 +1,7 @@
-import { ShaderUniforms, ShaderDefines } from 'src/types/typings';
+import { ShaderUniforms, ShaderDefines } from '../types/typings';
 import Material from '../Material';
 import { extend } from '../common/Util';
-import Geometry from 'src/Geometry';
+import Geometry from '../Geometry';
 
 const DEFAULT_UNIFORMS: ShaderUniforms = {
     'uvScale': [1, 1],

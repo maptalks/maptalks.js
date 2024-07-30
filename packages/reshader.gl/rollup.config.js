@@ -4,6 +4,7 @@ const terser = require('@rollup/plugin-terser');
 const pkg = require('./package.json');
 const glslMinify = require('@maptalks/rollup-plugin-glsl-minify');
 const typescript = require('@rollup/plugin-typescript');
+const { dts } = require("rollup-plugin-dts");
 
 const production = process.env.BUILD === 'production';
 
@@ -66,7 +67,7 @@ if (production) {
 
 module.exports = [
     {
-        input: 'src/index.js',
+        input: 'src/index.ts',
         external : ['gl-matrix', '@maptalks/gltf-loader', '@maptalks/tbn-packer'],
         plugins : plugins,
         output: [
@@ -78,4 +79,17 @@ module.exports = [
             }
         ]
     },
+    {
+        input: 'dist/index.d.ts',
+        plugins: [dts()],
+        output: [
+            {
+                'sourcemap': true,
+                'format': 'es',
+                'name': 'maptalks',
+                banner,
+                'file': pkg['d.ts']
+            }
+        ]
+    }
 ];

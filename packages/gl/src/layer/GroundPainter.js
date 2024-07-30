@@ -433,8 +433,8 @@ class GroundPainter {
         update(hasShadow, 'USE_ESM');
         const hasPattern = !!this._polygonPatternFile;
         update(hasPattern, 'HAS_PATTERN');
-        const hasSSAO = context && context.ssao;
-        update(hasSSAO, 'HAS_SSAO');
+        // const hasSSAO = context && context.ssao;
+        // update(hasSSAO, 'HAS_SSAO');
         if (!updated) {
             return null;
         }

@@ -241,33 +241,40 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
       this.painterSymbol,
       StandardPainter.getBloomSymbol()
     );
+    const layer = this.layer;
     const dataConfig = extend(
       {},
       DEFAULT_DATACONFIG,
-      this.layer.options.dataConfig || {}
+      layer.options.dataConfig || {}
     );
-    if (this.layer.options.material) {
-      this.painterSymbol.material = this.layer.options.material;
+    if (layer.options.material) {
+      this.painterSymbol.material = layer.options.material;
     }
-    if (this.layer.options.sideMaterial) {
-      this.sidePainterSymbol.material = this.layer.options.sideMaterial;
+    if (layer.options.sideMaterial) {
+      this.sidePainterSymbol.material = layer.options.sideMaterial;
     } else {
-      this.sidePainterSymbol.material = this.layer.options.material;
+      this.sidePainterSymbol.material = layer.options.material;
     }
     const sceneConfig = {
-      cullFace: this.layer.options.cullFace,
+      cullFace: layer.options.cullFace,
     };
     Object.defineProperty(sceneConfig, "castShadow", {
       enumerable: true,
       get: () => {
-        return this.layer.options["castShadow"];
+        return layer.options["castShadow"];
+      },
+    });
+    Object.defineProperty(sceneConfig, "depthMask", {
+      enumerable: true,
+      get: () => {
+        return layer.options["depthMask"];
       },
     });
     const topDataConfig = extend({}, dataConfig);
     topDataConfig.upsideUpTexture = true;
     const painter = new StandardPainter(
       this.regl,
-      this.layer,
+      layer,
       this.painterSymbol,
       sceneConfig,
       0,
@@ -275,7 +282,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
     );
     this.sidePainter = new StandardPainter(
       this.regl,
-      this.layer,
+      layer,
       this.sidePainterSymbol,
       sceneConfig,
       0,
@@ -365,7 +372,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
       DEFAULT_DATACONFIG,
       this.layer.options.dataConfig
     );
-    dataConfig.tangent = 1;
+    dataConfig.uv = true;
     if (dataConfig.top) {
       dataConfig.top = top;
     }

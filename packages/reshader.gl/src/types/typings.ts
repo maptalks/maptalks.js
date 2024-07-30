@@ -34,7 +34,7 @@ export type GeometryDesc = {
 
 export type GeometryElements = { array: NumberArray }
 
-type AttributeKey = { key: string }
+export type AttributeKey = { key: string }
 export type ActiveAttributes = { name: string, type: number }[] & AttributeKey
 
 export type ShaderUniformValue = number | boolean | NumberArray | null | AbstractTexture | Texture
@@ -63,12 +63,12 @@ export type MatrixFunction = () => mat4
 
 export type AttributeBufferData = { buffer?: REGL.Buffer, data?: NumberArray, divisor?: number }
 
-type AttributeType = NumberArray | REGL.Buffer | AttributeBufferData;
+export type AttributeType = NumberArray | REGL.Buffer | AttributeBufferData;
 
-type InstancedAttribute = Record<string, AttributeType>;
+export type InstancedAttribute = Record<string, AttributeType>;
 
 
-type ImageObject = {
+export type ImageObject = {
     array: TextureImageData,
     width: number,
     height: number,
