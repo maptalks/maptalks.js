@@ -142,7 +142,7 @@ module.exports = [
     },
 
     {
-        input: 'build/index.js',
+        input: 'build/index.ts',
         plugins: [
             resolve({
                 browser: true,
