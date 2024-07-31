@@ -5,8 +5,8 @@
   "main": "dist/maptalksgl.js",
   "module": "dist/maptalksgl.es.js",
   "scripts": {
-    "clean": "rimraf dist",
-    "build": "npm run lint && cd ../reshader.gl && npm run build && cd ../gl && rollup --environment BUILD:production -c rollup.config.js",
+    "clean": "rimraf dist & rimraf ./build/gl",
+    "build": "npm run clean & rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "cd ../reshader.gl && npm run build-dev && cd ../gl && rollup -c rollup.config.js",
     "dev": "cd ../reshader.gl && npm run build-dev && cd ../gl && rollup -w -c rollup.config.js",
     "test": "cd ../layer-gltf && npm run build && cd ../gl && karma start --single-run",
@@ -19,12 +19,15 @@
   "files": [
     "dist/maptalksgl.js",
     "dist/maptalksgl.es.js",
+    "dist/maptalksgl.d.ts",
     "dist/transcoders.js"
   ],
   "keywords": [
     "webgl",
     "maptalks"
   ],
+  "types": "dist/index.ts",
+  "d.ts": "dist/maptalksgl.d.ts",
   "author": "fuzhenn",
   "license": "UNLICENSED",
   "dependencies": {
@@ -52,6 +55,7 @@
     "mocha": "^10.3.0",
     "pixelmatch": "^4.0.2",
     "rollup": "^4.17.2",
+    "rollup-plugin-dts": "^6.1.0",
     "tslib": "^2.6.2",
     "typescript": "^5.4.2",
     "typescript-eslint": "^7.3.1"

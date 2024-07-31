@@ -3,6 +3,7 @@ const commonjs = require('@rollup/plugin-commonjs');
 const replace = require('@rollup/plugin-replace');
 const terser = require('@rollup/plugin-terser');
 const typescript = require('@rollup/plugin-typescript');
+const { dts } = require("rollup-plugin-dts");
 const pkg = require('./package.json');
 
 function glsl() {
@@ -44,7 +45,6 @@ const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}
 const outro = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg.version}');`;
 const configPlugins = [
     glsl(),
-    typescript(),
     nodeResolve({
         // mainFields: ''
         // module : true,
@@ -53,6 +53,11 @@ const configPlugins = [
     }),
     commonjs(),
 
+];
+
+const tsPlugins = [
+    ...configPlugins,
+    typescript()
 ];
 
 const pluginsWorker = production ? [
@@ -136,8 +141,8 @@ module.exports = [
 
 if (production) {
     module.exports.push({
-        input: 'src/index.js',
-        plugins: configPlugins.concat(plugins),
+        input: 'src/index.ts',
+        plugins: tsPlugins.concat(plugins),
         external : ['maptalks', '@maptalks/reshader.gl', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix'],
         output: {
             'sourcemap': true,
@@ -145,7 +150,7 @@ if (production) {
             'globals' : {
                 'maptalks' : 'maptalks'
             },
-            'file': 'build/gl.es.js'
+            'file': 'build/gl/gl.es.js'
         }
     });
 }
@@ -185,3 +190,16 @@ if (production) {
         }
     });
 }
+module.exports.push({
+    input: 'build/gl/dist/index.d.ts',
+    plugins: [dts()],
+    output: [
+        {
+            'sourcemap': true,
+            'format': 'es',
+            'name': 'maptalks',
+            banner,
+            'file': pkg['d.ts']
+        }
+    ]
+});

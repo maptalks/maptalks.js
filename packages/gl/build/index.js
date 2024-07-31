@@ -9,7 +9,7 @@ export {
 } from '@maptalks/reshader.gl';
 export { createREGL, reshader };
 
-export * from './gl.es.js';
+export * from './gl/gl.es.js';
 import transcoders from '../src/transcoders';
 export { transcoders };
 

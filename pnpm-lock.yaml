@@ -166,6 +166,9 @@ importers:
       rollup:
         specifier: ^4.17.2
         version: 4.17.2
+      rollup-plugin-dts:
+        specifier: ^6.1.0
+        version: 6.1.1(rollup@4.17.2)(typescript@5.4.5)
       tslib:
         specifier: ^2.6.2
         version: 2.6.2

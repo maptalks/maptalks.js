@@ -12,4 +12,4 @@ vt.clay.js
 web.config
 build/layer.js
 build/worker.js
-build/gl.es.js
+build/gl
