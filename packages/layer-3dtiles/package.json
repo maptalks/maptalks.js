@@ -4,6 +4,7 @@
   "description": "3d tiles layer for maptalks",
   "main": "dist/maptalks.3dtiles.js",
   "module": "dist/maptalks.3dtiles.es.js",
+  "types": "dist/maptalks.3dtiles.d.ts",
   "scripts": {
     "clean": "rimraf dist",
     "lint": "eslint src/**/*.js test/**/*.js",
@@ -28,7 +29,8 @@
   ],
   "files": [
     "dist/maptalks.3dtiles.js",
-    "dist/maptalks.3dtiles.es.js"
+    "dist/maptalks.3dtiles.es.js",
+    "dist/maptalks.3dtiles.d.ts"
   ],
   "author": "fuzhenn",
   "license": "UNLICENSED",
@@ -65,6 +67,7 @@
     "maptalks": "^1.0.0-rc.33",
     "pixelmatch": "^4.0.2",
     "rollup": "^4.17.2",
+    "rollup-plugin-dts": "^6.1.0",
     "tslib": "^2.6.2",
     "typescript": "^5.4.2",
     "typescript-eslint": "^7.3.1"
