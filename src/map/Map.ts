@@ -2232,8 +2232,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         const rightOverflow = mapBBOX[2] > maxExtentBBOX[2];
         const topOverflow = mapBBOX[1] < maxExtentBBOX[1];
         const bottomOverflow = mapBBOX[3] > maxExtentBBOX[3];
-        const center = this.getCenter().copy();
-        let forceCenter: Coordinate;
+        let forceCenterX: number, forceCenterY: number;
         if (leftOverflow) {
             // console.log('need ←');
             const c1 = this._containerPointToPrj(new Point(0, height / 2));
@@ -2250,8 +2249,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
         if (leftOverflow && rightOverflow) {
             //强制重置center.x为maxtent.center.x
-            forceCenter = forceCenter || center;
-            forceCenter.x = maxExtent.getCenter().x;
+            forceCenterX = maxPrjExtent.getCenter().x;
         }
 
         if (topOverflow) {
@@ -2271,17 +2269,24 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
 
         if (topOverflow && bottomOverflow) {
             //强制重置center.y为maxtent.center.y
-            forceCenter = forceCenter || center;
-            forceCenter.y = maxExtent.getCenter().y;
+            forceCenterY = maxPrjExtent.getCenter().y;
         }
 
-        if (forceMaxExtentCenter || forceCenter) {
+        if (forceMaxExtentCenter) {
             this._limitMaxExtenting = true;
-            this.setCenter(forceMaxExtentCenter || forceCenter);
-        } else if (translateX !== 0 || translateY !== 0) {
+            this.setCenter(forceMaxExtentCenter);
+        } else if (translateX !== 0 || translateY !== 0 || isNumber(forceCenterX) || isNumber(forceCenterY)) {
             const prjCenter = this._getPrjCenter().copy();
-            prjCenter.x += translateX;
-            prjCenter.y += translateY;
+            if (isNumber(forceCenterX)) {
+                prjCenter.x = forceCenterX;
+            } else {
+                prjCenter.x += translateX;
+            }
+            if (isNumber(forceCenterY)) {
+                prjCenter.y = forceCenterY;
+            } else {
+                prjCenter.y += translateY;
+            }
             this._limitMaxExtenting = true;
             this._setPrjCenter(prjCenter);
         }
