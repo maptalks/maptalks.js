@@ -1777,7 +1777,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
          * @property {Event} domEvent                 - dom event
          */
         this._fireEvent('moveend', (param && param['domEvent']) ? this._parseEvent(param['domEvent'], 'moveend') : param);
-        this._limitMaxExtent();
+
         if (!this._verifyExtent(this._getPrjCenter()) && this._originCenter) {
             const moveTo = this._originCenter;
             this._panTo(moveTo);
@@ -2235,63 +2235,47 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         let forceCenterX: number, forceCenterY: number;
         if (leftOverflow) {
             // console.log('need ←');
-            const c1 = this._containerPointToPrj(new Point(0, height / 2));
-            const xoffset = maxExtentBBOX[0] - mapBBOX[0];
-            const c2 = this._containerPointToPrj(new Point(xoffset, height / 2));
-            translateX = c2.x - c1.x;
+            translateX = maxExtentBBOX[0] - mapBBOX[0]
         }
         if (rightOverflow && translateX === 0) {
             // console.log('need →');
-            const c1 = this._containerPointToPrj(new Point(width, height / 2));
-            const xoffset = maxExtentBBOX[2] - mapBBOX[2];
-            const c2 = this._containerPointToPrj(new Point(width + xoffset, height / 2));
-            translateX = c2.x - c1.x;
+            translateX = maxExtentBBOX[2] - mapBBOX[2]
         }
         if (leftOverflow && rightOverflow) {
             //强制重置center.x为maxtent.center.x
-            forceCenterX = maxPrjExtent.getCenter().x;
+            forceCenterX = maxExtent.getCenter().x;
         }
 
         if (topOverflow) {
             // console.log('need ↑');
-            const c1 = this._containerPointToPrj(new Point(width / 2, 0));
-            const yoffset = maxExtentBBOX[1] - mapBBOX[1];
-            const c2 = this._containerPointToPrj(new Point(width / 2, yoffset));
-            translateY = c2.y - c1.y;
+            translateY = maxExtentBBOX[1] - mapBBOX[1]
         }
         if (bottomOverflow && translateY === 0) {
             // console.log('need ↓');
-            const c1 = this._containerPointToPrj(new Point(width / 2, height));
-            const yoffset = maxExtentBBOX[3] - mapBBOX[3];
-            const c2 = this._containerPointToPrj(new Point(width / 2, height + yoffset));
-            translateY = c2.y - c1.y;
+            translateY = maxExtentBBOX[3] - mapBBOX[3]
         }
 
         if (topOverflow && bottomOverflow) {
             //强制重置center.y为maxtent.center.y
-            forceCenterY = maxPrjExtent.getCenter().y;
+            forceCenterY = maxExtent.getCenter().y;
         }
 
         if (forceMaxExtentCenter) {
             this._limitMaxExtenting = true;
             this.setCenter(forceMaxExtentCenter);
         } else if (translateX !== 0 || translateY !== 0 || isNumber(forceCenterX) || isNumber(forceCenterY)) {
-            const prjCenter = this._getPrjCenter().copy();
+            const point = new Point(width / 2 + translateX, height / 2 + translateY);
+            const center = this.containerPointToCoord(point);
             if (isNumber(forceCenterX)) {
-                prjCenter.x = forceCenterX;
-            } else {
-                prjCenter.x += translateX;
+                center.x = forceCenterX;
             }
             if (isNumber(forceCenterY)) {
-                prjCenter.y = forceCenterY;
-            } else {
-                prjCenter.y += translateY;
+                center.y = forceCenterY;
             }
             this._limitMaxExtenting = true;
-            this._setPrjCenter(prjCenter);
+            this.setCenter(center);
         }
         this._limitMaxExtenting = false;
-
         return this;
     }
 
