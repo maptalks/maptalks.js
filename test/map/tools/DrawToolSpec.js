@@ -11,37 +11,37 @@ describe('DrawTool', function () {
         var point = map.coordinateToContainerPoint(center).add(domPosition);
 
         happen.mousedown(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
         happen.click(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
         for (var i = 0; i < 10; i++) {
             happen.mousemove(eventContainer, {
-                'clientX':point.x + i,
-                'clientY':point.y + i
+                'clientX': point.x + i,
+                'clientY': point.y + i
             });
         }
         happen.mousedown(eventContainer, {
-            'clientX':point.x + 10,
-            'clientY':point.y
+            'clientX': point.x + 10,
+            'clientY': point.y
         });
         happen.click(eventContainer, {
-            'clientX':point.x + 10,
-            'clientY':point.y
+            'clientX': point.x + 10,
+            'clientY': point.y
         });
 
         var geojson1 = drawTool.getCurrentGeometry().toGeoJSON();
 
         happen.mousedown(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y + 10
+            'clientX': point.x,
+            'clientY': point.y + 10
         });
         happen.click(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y + 10
+            'clientX': point.x,
+            'clientY': point.y + 10
         });
 
         var geojson2 = drawTool.getCurrentGeometry().toGeoJSON();
@@ -53,8 +53,8 @@ describe('DrawTool', function () {
         expect(drawTool.getCurrentGeometry().toGeoJSON()).to.be.eqlGeoJSON(geojson2);
 
         happen.dblclick(eventContainer, {
-            'clientX':point.x - 1,
-            'clientY':point.y + 5
+            'clientX': point.x - 1,
+            'clientY': point.y + 5
         });
     }
 
@@ -64,21 +64,21 @@ describe('DrawTool', function () {
         var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         happen.mousedown(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
         mapMousemove(map, 10, function () {
             happen.mouseup(eventContainer, {
-                'clientX':point.x - 10,
-                'clientY':point.y - 10
+                'clientX': point.x - 10,
+                'clientY': point.y - 10
             });
             // callback();
         })
 
         for (var i = 0; i < 10; i++) {
             happen.mousemove(eventContainer, {
-                'clientX':point.x - i,
-                'clientY':point.y - i
+                'clientX': point.x - i,
+                'clientY': point.y - i
             });
         }
 
@@ -90,20 +90,20 @@ describe('DrawTool', function () {
         var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         happen.touchstart(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
         mapMousemove(map, 10, function () {
             happen.touchend(eventContainer, {
-                'clientX':point.x - 10,
-                'clientY':point.y - 10
+                'clientX': point.x - 10,
+                'clientY': point.y - 10
             });
             // callback();
         })
         for (var i = 0; i < 10; i++) {
             happen.touchmove(eventContainer, {
-                'clientX':point.x - i,
-                'clientY':point.y - i
+                'clientX': point.x - i,
+                'clientY': point.y - i
             });
         }
     }
@@ -114,40 +114,40 @@ describe('DrawTool', function () {
         var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         happen.mousedown(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
         happen.click(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
     }
 
-    function drawRegularShape () { // ['circle', 'ellipse', 'rectangle']
+    function drawRegularShape() { // ['circle', 'ellipse', 'rectangle']
         var center = map.getCenter();
         var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
         happen.mousedown(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
         happen.click(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
         for (var i = 0; i < 10; i++) {
             happen.mousemove(eventContainer, {
-                'clientX':point.x + i,
-                'clientY':point.y + i
+                'clientX': point.x + i,
+                'clientY': point.y + i
             });
         }
         happen.mousedown(eventContainer, {
-            'clientX':point.x - 1,
-            'clientY':point.y + 5
+            'clientX': point.x - 1,
+            'clientY': point.y + 5
         });
         happen.click(eventContainer, {
-            'clientX':point.x - 1,
-            'clientY':point.y + 5
+            'clientX': point.x - 1,
+            'clientY': point.y + 5
         });
     }
     beforeEach(function () {
@@ -173,7 +173,7 @@ describe('DrawTool', function () {
         it('throw exception with an invalid mode', function () {
             expect(function () {
                 new maptalks.DrawTool({
-                    mode : 'invalidMode'
+                    mode: 'invalidMode'
                 });
             }).to.throwException();
         });
@@ -187,16 +187,16 @@ describe('DrawTool', function () {
                 done();
             }
             var drawTool = new maptalks.DrawTool({
-                mode : 'Point',
-                symbol : {
-                    'markerPlacement':'point',
-                    'markerFile'   : 'resources/2.png',
-                    'markerRotation' : 30,
-                    'markerWidth'  : 20,
-                    'markerHeight' : 20,
+                mode: 'Point',
+                symbol: {
+                    'markerPlacement': 'point',
+                    'markerFile': 'resources/2.png',
+                    'markerRotation': 30,
+                    'markerWidth': 20,
+                    'markerHeight': 20,
                     'markerOpacity': 1,
-                    'markerDx'     : 0,
-                    'markerDy'     : 0
+                    'markerDx': 0,
+                    'markerDy': 0
                 }
             });
             drawTool.addTo(map);
@@ -211,7 +211,7 @@ describe('DrawTool', function () {
                 done();
             }
             var drawTool = new maptalks.DrawTool({
-                mode : 'LineString'
+                mode: 'LineString'
             });
             drawTool.addTo(map);
             drawTool.on('drawend', drawEnd);
@@ -225,7 +225,7 @@ describe('DrawTool', function () {
                 done();
             }
             var drawTool = new maptalks.DrawTool({
-                mode : 'Polygon'
+                mode: 'Polygon'
             });
             drawTool.addTo(map);
             drawTool.on('drawend', drawEnd);
@@ -239,7 +239,7 @@ describe('DrawTool', function () {
                 done();
             }
             var drawTool = new maptalks.DrawTool({
-                mode : 'Circle'
+                mode: 'Circle'
             });
             drawTool.addTo(map);
             drawTool.on('drawend', drawEnd);
@@ -263,7 +263,7 @@ describe('DrawTool', function () {
                 done();
             }
             var drawTool = new maptalks.DrawTool({
-                mode : 'Rectangle'
+                mode: 'Rectangle'
             });
             drawTool.addTo(map);
             drawTool.on('drawend', drawEnd);
@@ -279,7 +279,7 @@ describe('DrawTool', function () {
                 done();
             }
             var drawTool = new maptalks.DrawTool({
-                mode : 'Ellipse'
+                mode: 'Ellipse'
             });
             drawTool.addTo(map);
             drawTool.on('drawend', drawEnd);
@@ -293,7 +293,7 @@ describe('DrawTool', function () {
                 done();
             }
             var drawTool = new maptalks.DrawTool({
-                mode : 'FreeHandLinestring'
+                mode: 'FreeHandLinestring'
             });
             drawTool.addTo(map);
             drawTool.on('drawend', drawEnd);
@@ -307,7 +307,7 @@ describe('DrawTool', function () {
                 done();
             }
             var drawTool = new maptalks.DrawTool({
-                mode : 'FreeHandLinestring'
+                mode: 'FreeHandLinestring'
             });
             drawTool.addTo(map);
             drawTool.on('drawend', drawEnd);
@@ -321,7 +321,7 @@ describe('DrawTool', function () {
                 done();
             }
             var drawTool = new maptalks.DrawTool({
-                mode : 'FreeHandPolygon'
+                mode: 'FreeHandPolygon'
             });
             drawTool.addTo(map);
             drawTool.on('drawend', drawEnd);
@@ -340,7 +340,7 @@ describe('DrawTool', function () {
                 done();
             }
             var drawTool = new maptalks.DrawTool({
-                mode : 'FreeHandRectangle'
+                mode: 'FreeHandRectangle'
             });
             drawTool.addTo(map);
             drawTool.on('drawend', drawEnd);
@@ -355,7 +355,7 @@ describe('DrawTool', function () {
                 done();
             }
             var drawTool = new maptalks.DrawTool({
-                mode : 'FreeHandCircle'
+                mode: 'FreeHandCircle'
             });
             drawTool.addTo(map);
             drawTool.on('drawend', drawEnd);
@@ -370,7 +370,7 @@ describe('DrawTool', function () {
                 done();
             }
             var drawTool = new maptalks.DrawTool({
-                mode : 'FreeHandEllipse'
+                mode: 'FreeHandEllipse'
             });
             drawTool.addTo(map);
             drawTool.on('drawend', drawEnd);
@@ -406,7 +406,7 @@ describe('DrawTool', function () {
                 done();
             }
             var drawTool = new maptalks.DrawTool({
-                mode : 'Rectangle'
+                mode: 'Rectangle'
             });
             drawTool.addTo(map);
             drawTool.setMode('Ellipse');
@@ -416,7 +416,7 @@ describe('DrawTool', function () {
 
         it('setMode after disable', function () {
             var drawTool = new maptalks.DrawTool({
-                mode : 'Rectangle'
+                mode: 'Rectangle'
             });
             drawTool.addTo(map);
             drawTool.disable();
@@ -454,6 +454,58 @@ describe('DrawTool', function () {
 
             expect(drawTool.getSymbol()).to.not.be(null);
         });
+    });
+
+    it('add custom coordinate width Point', function (done) {
+        function drawEnd(param) {
+            expect(param.geometry instanceof maptalks.Marker).to.be.ok();
+            done();
+        }
+        var drawTool = new maptalks.DrawTool({
+            mode: 'Point'
+        });
+        drawTool.addTo(map);
+        drawTool.on('drawend', drawEnd);
+
+        setTimeout(() => {
+            const center = map.getCenter();
+            drawTool.addCoordinate(center);
+        }, 1000);
+    });
+    it('add custom coordinate width LineString', function (done) {
+
+        var drawTool = new maptalks.DrawTool({
+            mode: 'LineString'
+        });
+        drawTool.addTo(map);
+
+        var center = map.getCenter();
+
+        var domPosition = GET_PAGE_POSITION(container);
+        var point = map.coordinateToContainerPoint(center).add(domPosition);
+
+        happen.mousedown(eventContainer, {
+            'clientX': point.x,
+            'clientY': point.y
+        });
+        happen.click(eventContainer, {
+            'clientX': point.x,
+            'clientY': point.y
+        });
+
+        setTimeout(() => {
+            const coordinate = center.copy();
+            coordinate.x += 10;
+            drawTool.addCoordinate(coordinate);
+
+            setTimeout(() => {
+                const geometry = drawTool.getTempGeometry();
+                expect(geometry instanceof maptalks.LineString).to.be.ok();
+                expect(geometry.getCoordinates().length).to.be(2);
+                drawTool.disable();
+                done();
+            }, 100);
+        }, 100);
     });
 
 
