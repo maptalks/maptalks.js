@@ -191,7 +191,7 @@ if (production) {
     });
 }
 module.exports.push({
-    input: 'build/gl/dist/index.d.ts',
+    input: 'build/index.d.ts',
     plugins: [dts()],
     output: [
         {
