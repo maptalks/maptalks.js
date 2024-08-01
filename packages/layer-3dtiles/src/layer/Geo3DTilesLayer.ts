@@ -56,34 +56,34 @@ const options: Geo3DTilesLayerOptions = {
     ]
 };
 
-const TEMP_VEC3_0 = [0, 0, 0];
-const TEMP_VEC3_1 = [];
-const TEMP_VEC3_2 = [];
-const TEMP_VEC3_3 = [];
-const TEMP_VEC3_4 = [];
-const TEMP_VEC3_5 = [];
-const TEMP_VEC3_6 = [];
-const TEMP_SCALE = [];
+const TEMP_VEC3_0: vec3 = [0, 0, 0];
+const TEMP_VEC3_1: vec3 = [0, 0, 0];
+const TEMP_VEC3_2: vec3 = [0, 0, 0];
+const TEMP_VEC3_3: vec3 = [0, 0, 0];
+const TEMP_VEC3_4: vec3 = [0, 0, 0];
+const TEMP_VEC3_5: vec3 = [0, 0, 0];
+const TEMP_VEC3_6: vec3 = [0, 0, 0];
+const TEMP_SCALE: vec3 = [1, 1, 1];
 
-const TEMP_QUAT_0 = [];
+const TEMP_QUAT_0: quat = [0, 0, 0, 0];
 
 const EMPTY_ARRAY = [];
 const TEMP_COORD = new maptalks.Coordinate(0, 0);
 const TEMP_POINT = new maptalks.Point(0, 0);
 
-const TEMP_MAT3_0 = [];
-const TEMP_MAT4_0 = [];
-const TEMP_MAT4_1 = [];
-const TEMP_MAT4_2 = [];
+const TEMP_MAT3_0: mat3 = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+const TEMP_MAT4_0: mat4 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+const TEMP_MAT4_1: mat4 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+const TEMP_MAT4_2: mat4 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 const CAMERA_COORD = new maptalks.Coordinate(0, 0);
-const IDENTITY_MATRIX = mat4.identity([]);
+const IDENTITY_MATRIX = mat4.identity([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 const EMPTY_COORD_OFFSET = [0, 0];
 
-const DEFAULT_ROTATION = [0, 0, 0];
-const DEFAULT_SCALE = [1, 1, 1];
-const TEMP_SERVICE_SCALE = [0, 0, 0];
-const DEFAULT_TRANSLATION = [0, 0, 0];
+const DEFAULT_ROTATION: [number, number, number] = [0, 0, 0];
+const DEFAULT_SCALE: vec3 = [1, 1, 1];
+const TEMP_SERVICE_SCALE: vec3 = [0, 0, 0];
+const DEFAULT_TRANSLATION: vec3 = [0, 0, 0];
 
 // BOX template
 //    v2----- v1
@@ -127,8 +127,8 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
     private _nodeBoxes: (TileSphereBox | TileOrientedBox | TileRegionBox)[]
     private _rootMap: Record<string, number>
     private _roots: (RootTileNode | null)[]
-    private _cameraLocation: number[]
-    private _cameraCartesian3: number[]
+    private _cameraLocation: [number, number, number]
+    private _cameraCartesian3: [number, number, number]
     private _fovDenominator: number
     private _highlighted: HighlightItem[][] | null
     private _showOnlys: ShowOnlyItem[][] | null
@@ -201,7 +201,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         const services = this.options.services;
         let extentChanged = false;
         if (services && services[idx]) {
-            extentChanged = !equals(services[idx].coordOffset, info.coordOffset) ||
+            extentChanged = !equals(services[idx].coordOffset as vec2, info.coordOffset as vec2) ||
                 !equals(services[idx].heightOffset, info.heightOffset) ||
                 !equals(services[idx].scale, info.scale) ||
                 !equals(services[idx].rotation, info.rotation);
@@ -283,7 +283,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         } else if (node.boundingVolume.sphere) {
             const sphere = node.boundingVolume.sphere;
             // let nodeCenter = sphere.slice(0, 3);
-            const nodeCenter = vec3.transformMat4([], sphere, matrix);
+            const nodeCenter = vec3.transformMat4([0, 0, 0], sphere as [number, number, number], matrix as mat4);
             const center = cartesian3ToDegree([], nodeCenter);
             if (isIdentity) {
                 renderer._lngLatToIdentityCoord(center, center);
@@ -295,16 +295,16 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         } else if (node.boundingVolume.box) {
             const nodeBox = node.boundingVolume.box;
             // let nodeCenter = nodeBox.slice(0, 3);
-            const nodeCenter = vec3.transformMat4([], nodeBox, matrix);
+            const nodeCenter = vec3.transformMat4([0, 0, 0], nodeBox as [number, number, number], matrix as mat4);
             const center = new maptalks.Coordinate(cartesian3ToDegree([], nodeCenter));
             if (isIdentity) {
                 renderer._lngLatToIdentityCoord(center, center);
             }
-            const halfAxes = nodeBox.slice(3);
-            mat3.multiply(halfAxes, mat3.fromMat4([], node.matrix), halfAxes);
-            const rx = vec3.length(halfAxes.slice(0, 3));
-            const ry = vec3.length(halfAxes.slice(3, 6));
-            const rz = vec3.length(halfAxes.slice(6, 9));
+            const halfAxes = nodeBox.slice(3) as [number, number, number, number, number, number, number, number, number];
+            mat3.multiply(halfAxes, mat3.fromMat4([0, 0, 0, 0, 0, 0, 0, 0, 0], node.matrix as mat4), halfAxes);
+            const rx = vec3.length(halfAxes.slice(0, 3) as [number, number, number]);
+            const ry = vec3.length(halfAxes.slice(3, 6) as [number, number, number]);
+            const rz = vec3.length(halfAxes.slice(6, 9) as [number, number, number]);
             const radius = Math.max(rx, ry, rz);
             const nw = map.locate(center, -radius, radius);
             const se = map.locate(center, radius, -radius);
@@ -328,10 +328,10 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         const cameraPosition = map.cameraPosition;
         const distance = map.pointAtResToDistance(cameraPosition[2], 0, map.getGLRes());
         const cameraCoord = this._getCameraLonLat(cameraPosition);
-        this._cameraLocation = this._cameraLocation || [];
+        this._cameraLocation = this._cameraLocation || [0, 0, 0];
         vec3.set(this._cameraLocation, toRadian(cameraCoord.x), toRadian(cameraCoord.y), distance);
         // 变量名带Cartesian3的，就是ecef坐标，目前cameraCatesian3只用来计算screenError
-        this._cameraCartesian3 = radianToCartesian3(this._cameraCartesian3 || [], this._cameraLocation[0], this._cameraLocation[1], this._cameraLocation[2]);
+        this._cameraCartesian3 = radianToCartesian3(this._cameraCartesian3 || [], this._cameraLocation[0], this._cameraLocation[1], this._cameraLocation[2]) as [number, number, number];
         // 用来计算screenError的一个变量
         this._fovDenominator = 2 * Math.tan(0.5 * toRadian(map.getFov()));
         // this._cameraProj = projection.project(cameraCoord).toArray();
@@ -476,7 +476,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
 
     _addCandidateNode(tiles: CandinateNode[], candidate: CandinateNode) {
         const { viewerRequestVolume, matrix } = candidate.node;
-        if (!viewerRequestVolume || inViewerRequestVolume(this._cameraLocation, this._cameraCartesian3, viewerRequestVolume, matrix)) {
+        if (!viewerRequestVolume || inViewerRequestVolume(this._cameraLocation, this._cameraCartesian3, viewerRequestVolume, matrix as mat4)) {
             tiles.push(candidate);
         }
     }
@@ -496,11 +496,11 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
     _initNode(node: TileNode) {
         const layerId = this.getId();
         node.id = layerId + ':' + maptalks.Util.GUID();
-        node.matrix = node.transform || mat4.identity([]);
+        node.matrix = node.transform || mat4.identity([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) as number[];
         node._empty = this._isEmpty(node);
         if (node.parent) {
             if (!isI3SNode(node)) {
-                node.matrix = mat4.multiply(node.matrix, node.parent.matrix, node.matrix);
+                node.matrix = mat4.multiply(node.matrix as mat4, node.parent.matrix as mat4, node.matrix as mat4) as number[];
             }
             node._rootIdx = node.parent._rootIdx;
             if (node._level === undefined) {
@@ -537,7 +537,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         if (!Array.isArray(coordOffset)) {
             throw new Error('service.coordOffset must be an array');
         }
-        if (!boundingVolume._centerTransformed && (!node.boundingVolume || (!heightOffset && mat4.exactEquals(node.matrix, IDENTITY_MATRIX) && !hasOffset && coordOffset === EMPTY_COORD_OFFSET))) {
+        if (!boundingVolume._centerTransformed && (!node.boundingVolume || (!heightOffset && mat4.exactEquals(node.matrix as mat4, IDENTITY_MATRIX) && !hasOffset && coordOffset === EMPTY_COORD_OFFSET))) {
             return;
         }
         if (boundingVolume.box && boundingVolume.region) {
@@ -567,7 +567,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             }
             const volume = box || sphere;
             const originalVolume = boundingVolume.originalVolume;
-            const cart3 = vec3.transformMat4(TEMP_VEC3_0, originalVolume, node.matrix);
+            const cart3 = vec3.transformMat4(TEMP_VEC3_0, originalVolume as vec3, node.matrix as mat4);
             const center = cartesian3ToDegree(TEMP_VEC3_1, cart3);
             const offsetCenter = this._offsetCenter([center[0] + coordOffset[0], center[1] + coordOffset[1]]);
             center[0] = offsetCenter.x;
@@ -646,7 +646,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
                 if (!parent.parent) {
                     parent.matrix = transform;
                 } else if (!isI3S) {
-                    parent.matrix = mat4.multiply([], parent.parent.matrix, transform);
+                    parent.matrix = mat4.multiply([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], parent.parent.matrix as mat4, transform) as number[] ;
                 }
             }
             // parent.matrix = tileset.root.transform || parent.matrix;
@@ -814,11 +814,11 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             rootNode._bboxCenter = boxCenter;
         }
 
-        const serviceTransform = this._getServiceTransform([], node);
-        const isIdentityMatrix = mat4.exactEquals(IDENTITY_MATRIX, serviceTransform);
+        const serviceTransform = this._getServiceTransform([], node) as mat4;
+        const isIdentityMatrix = mat4.exactEquals(IDENTITY_MATRIX, serviceTransform as mat4);
         // 如果service上定义了rotation，scale，则需要计算变形后的bbox端点坐标
         if (!isIdentityMatrix) {
-            vec3.transformMat4(boxCenter, boxCenter, serviceTransform);
+            vec3.transformMat4(boxCenter as vec3, boxCenter as vec3, serviceTransform);
             const pos = TEMP_VEC3_0;
             for (let i = 0; i < boxPosition.length; i += 3) {
                 let point = vec3.set(pos, boxPosition[i], boxPosition[i + 1], boxPosition[i + 2]);
@@ -834,7 +834,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         const boxCoord = map.pointAtResToCoord(new maptalks.Point(boxCenter), glRes);
         boxCoord.z = (ws.z + en.z) / 2;
 
-        const obbox = this._generateOBBox(boxPosition, boxCenter);
+        const obbox = this._generateOBBox(boxPosition, boxCenter as [number, number, number]);
         for (let i = 0; i < boxPosition.length; i++) {
             boxPosition[i] -= boxCenter[i % 3];
         }
@@ -847,11 +847,11 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         const map = this.getMap();
         const isIdentity = map.getProjection().code.toLowerCase() === 'identity';
         const glRes = map.getGLRes();
-        const { boxCenter, boxCoord } = this._calBoxCenter(node);
+        const { boxCenter, boxCoord } = this._calBoxCenter(node) as { boxCenter: vec3, boxCoord: vec3 };
         const box = node.boundingVolume.box;
         const halfAxes = this._createHalfAxes(box, node.matrix);
-        const modelMatrix = fromRotationTranslation([], halfAxes, box);
-        const serviceTransform = this._getServiceTransform([], node);
+        const modelMatrix = fromRotationTranslation([], halfAxes, box) as mat4;
+        const serviceTransform = this._getServiceTransform([], node) as mat4;
         const isIdentityMatrix = mat4.exactEquals(IDENTITY_MATRIX, serviceTransform);
 
         if (!isIdentityMatrix) {
@@ -866,7 +866,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             pos[2] = BOX_POS[i + 2];
 
             vec3.transformMat4(pos, pos, modelMatrix);
-            cartesian3ToDegree(pos, pos)
+            cartesian3ToDegree(pos, pos);
             if (isIdentity) {
                 renderer._lngLatToIdentityCoord(pos, pos);
             }
@@ -885,8 +885,9 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         for (let i = 0; i < boxPosition.length; i++) {
             boxPosition[i] -= boxCenter[i % 3];
         }
+        const tileBoxCenter = boxCenter as number[];
         // boxPosition用来渲染debug，boxCenter是渲染瓦片时的中心点坐标
-        return { obbox, boxPosition, boxCenter, boxCoord };
+        return { obbox, boxPosition, boxCenter: tileBoxCenter, boxCoord };
     }
 
     _createSphere(node: TileNode): TileSphereBox {
@@ -911,7 +912,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return { boxCenter: sphereCenter, boxCoord: coord, sphereBox: [sphereCenter, sphere[3] * scale[2]] };
     }
     // 构造frustum-intersects需要的obbox参数
-    _generateOBBox(boxPosition: number[], obbCenter: number[]): number[] {
+    _generateOBBox(boxPosition: number[], obbCenter: number[] | [number, number, number] | vec3): number[] {
         // let transformedVertices;
         // let transformedCenter;
 
@@ -948,9 +949,9 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
 
         return [
             ...obbCenter,
-            ...vec3.sub(TEMP_VEC3_0, xPlaneCenter, obbCenter),
-            ...vec3.sub(TEMP_VEC3_1, yPlaneCenter, obbCenter),
-            ...vec3.sub(TEMP_VEC3_2, zPlaneCenter, obbCenter)
+            ...vec3.sub(TEMP_VEC3_0, xPlaneCenter, obbCenter as vec3),
+            ...vec3.sub(TEMP_VEC3_1, yPlaneCenter, obbCenter as vec3),
+            ...vec3.sub(TEMP_VEC3_2, zPlaneCenter, obbCenter as vec3)
         ];
     }
 
@@ -977,7 +978,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         const service = this._getNodeService(node._rootIdx);
         const rootCenter = rootNode._bboxCenter;
         const originMat4 = mat4.fromTranslation(TEMP_MAT4_0, vec3.set(TEMP_VEC3_0, -rootCenter[0], -rootCenter[1], -rootCenter[2]));
-        const originMat4Reverse = mat4.fromTranslation(TEMP_MAT4_1, rootCenter);
+        const originMat4Reverse = mat4.fromTranslation(TEMP_MAT4_1, rootCenter as vec3);
 
         const rotation = service.rotation || DEFAULT_ROTATION;
         const q = quat.fromEuler(TEMP_QUAT_0, ...rotation);
@@ -985,8 +986,8 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         const scale = serviceScale && vec3.set(TEMP_SERVICE_SCALE, serviceScale, serviceScale, serviceScale) || DEFAULT_SCALE;
         const transform = mat4.fromRotationTranslationScale(TEMP_MAT4_2, q, DEFAULT_TRANSLATION, scale);
 
-        out = mat4.multiply(out, transform, originMat4);
-        return mat4.multiply(out, originMat4Reverse, out);
+        out = mat4.multiply(out as mat4, transform, originMat4) as number[];
+        return mat4.multiply(out as mat4, originMat4Reverse, out as mat4) as number[];
     }
 
     _updateRootCenter(rootNode: RootTileNode) {
@@ -1033,8 +1034,8 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
 
     _createHalfAxes(box: number[], transform: number[]): number[] {
         let halfAxes = box.slice(3, 12);
-        const rotationScale = mat3.fromMat4(TEMP_MAT3_0, transform);
-        halfAxes = mat3.multiply(halfAxes, rotationScale, halfAxes);
+        const rotationScale = mat3.fromMat4(TEMP_MAT3_0, transform as mat4);
+        halfAxes = mat3.multiply(halfAxes as mat3, rotationScale, halfAxes as mat3) as number[];
         return halfAxes;
     }
 
@@ -1048,7 +1049,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             heightScale = scalePoint.y / 100;
         }
         vec3.set(TEMP_SCALE, scalePoint.x / 100 * 1.01, scalePoint.y / 100 * 1.01, heightScale);
-        return TEMP_SCALE;
+        return TEMP_SCALE as number[];
     }
 
     _offsetCenter(center: maptalks.Coordinate | number[]): maptalks.Coordinate {
@@ -1331,12 +1332,12 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
 
 (Geo3DTilesLayer as maptalks.Layer).registerJSONType('Geo3DTilesLayer');
 
-function computeSphereDistanceToCamera(boundingVolume: BoundingVolume, cameraCartesian3: number[], matrix?: number[]): number {
-    let center = boundingVolume.sphere;
+function computeSphereDistanceToCamera(boundingVolume: BoundingVolume, cameraCartesian3: vec3, matrix?: mat4): number {
+    let center = boundingVolume.sphere as vec3;
     if (matrix) {
-        center = vec3.transformMat4([], center, matrix);
+        center = vec3.transformMat4([0, 0, 0], center, matrix);
     }
-    const distance = vec3.dist(center, cameraCartesian3);
+    const distance = vec3.dist(center as vec3, cameraCartesian3);
     const radius = boundingVolume.sphere[3];
     if (distance < radius) {
         return 0;
@@ -1345,11 +1346,11 @@ function computeSphereDistanceToCamera(boundingVolume: BoundingVolume, cameraCar
     }
 }
 
-function computeBoxDistanceToCamera(boundingVolume: BoundingVolume, cameraCartesian3: number[], matrix?: number[]): number {
+function computeBoxDistanceToCamera(boundingVolume: BoundingVolume, cameraCartesian3: vec3, matrix?: mat4): number {
     const box = boundingVolume.box;
     let boxCenter = vec3.set(TEMP_VEC3_0, box[0], box[1], box[2]);
     if (matrix) {
-        boxCenter = vec3.transformMat4([], boxCenter, matrix);
+        boxCenter = vec3.transformMat4([0, 0, 0], boxCenter, matrix);
     }
     const halfAxes = mat3.set(TEMP_MAT3_0, box[3], box[4], box[5], box[6], box[7], box[8], box[9], box[10], box[11]);
     return distanceToCamera(boxCenter, halfAxes, cameraCartesian3);
@@ -1361,7 +1362,7 @@ function computeBoxDistanceToCamera(boundingVolume: BoundingVolume, cameraCartes
  * @param {Number[3]} cameraCartesian3 camera's cartesian3 position
  * @return {Number}
  */
-function computeRegionDistanceToCamera(node: TileNode, cameraCartesian3: number[], cameraLocation: number[]) {
+function computeRegionDistanceToCamera(node: TileNode, cameraCartesian3: vec3, cameraLocation: vec3) {
     if (!node._tileRegion) {
         node._tileRegion = new TileBoundingRegion(node.boundingVolume.region);
     }
@@ -1381,7 +1382,7 @@ function createRootTile(url: string, idx: number, service: Geo3DTilesService): R
             url
         },
         refine: 'replace',
-        matrix: mat4.identity([]),
+        matrix: mat4.identity([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,]) as number[],
         _rootIdx: idx,
         _level: 0,
         domainKey
@@ -1389,7 +1390,7 @@ function createRootTile(url: string, idx: number, service: Geo3DTilesService): R
     return root;
 }
 
-function inViewerRequestVolume(cameraLocation: number[], cameraCartesian3: number[], volume: BoundingVolume, matrix: number[]): boolean {
+function inViewerRequestVolume(cameraLocation: vec3, cameraCartesian3: vec3, volume: BoundingVolume, matrix: mat4): boolean {
     if (volume.region) {
         const region = volume.region;
         if (cameraLocation[0] >= region[0] && cameraLocation[0] <= region[2] && // x >= xmin && x <= xmax
@@ -1476,15 +1477,15 @@ function fillColumnMajorMatrix4(out: number[],
     return out;
 }
 
-function getBoxPlaneCenter(out: number[], box: number[], v0: number, v1: number, v2: number, v3: number): number[] {
-    v0 = vec3.set(TEMP_VEC3_0, box[v0 * 3], box[v0 * 3 + 1], box[v0 * 3 + 2]);
-    v1 = vec3.set(TEMP_VEC3_1, box[v1 * 3], box[v1 * 3 + 1], box[v1 * 3 + 2]);
-    v2 = vec3.set(TEMP_VEC3_2, box[v2 * 3], box[v2 * 3 + 1], box[v2 * 3 + 2]);
-    v3 = vec3.set(TEMP_VEC3_3, box[v3 * 3], box[v3 * 3 + 1], box[v3 * 3 + 2]);
+function getBoxPlaneCenter(out: vec3, box: number[], v0: number, v1: number, v2: number, v3: number): vec3 {
+    const vv0 = vec3.set(TEMP_VEC3_0, box[v0 * 3], box[v0 * 3 + 1], box[v0 * 3 + 2]);
+    const vv1 = vec3.set(TEMP_VEC3_1, box[v1 * 3], box[v1 * 3 + 1], box[v1 * 3 + 2]);
+    const vv2 = vec3.set(TEMP_VEC3_2, box[v2 * 3], box[v2 * 3 + 1], box[v2 * 3 + 2]);
+    const vv3 = vec3.set(TEMP_VEC3_3, box[v3 * 3], box[v3 * 3 + 1], box[v3 * 3 + 2]);
 
-    out[0] = (v0[0] + v1[0] + v2[0] + v3[0]) / 4;
-    out[1] = (v0[1] + v1[1] + v2[1] + v3[1]) / 4;
-    out[2] = (v0[2] + v1[2] + v2[2] + v3[2]) / 4;
+    out[0] = (vv0[0] + vv1[0] + vv2[0] + vv3[0]) / 4;
+    out[1] = (vv0[1] + vv1[1] + vv2[1] + vv3[1]) / 4;
+    out[2] = (vv0[2] + vv1[2] + vv2[2] + vv3[2]) / 4;
 
     return out;
 }
@@ -1512,12 +1513,12 @@ function isTopTile(node: TileNode): boolean  {
     return true;
 }
 
-function equals(a, b) {
+function equals(a: number | vec2 | vec3, b: number | vec2 | vec3) {
     if (Array.isArray(a) && Array.isArray(b)) {
         if (a.length === 2) {
-            return vec2.exactEquals(a, b);
+            return vec2.exactEquals(a, b as vec2);
         } else {
-            return vec3.exactEquals(a, b);
+            return vec3.exactEquals(a, b as vec3);
         }
     }
     return a === b;
@@ -1623,7 +1624,7 @@ export type Geo3DTilesServiceOptions = {
      * @english
      * Angle of rotation of the model on the xyz-axis in degrees, ranging from -180 to 180.
      */
-    rotation?: number[],
+    rotation?: [number, number, number],
     /**
      * 服务子域，用于替换url中的{s}
      * @english

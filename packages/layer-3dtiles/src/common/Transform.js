@@ -54,7 +54,7 @@ const cartesianToCartographicH = new Array(3);
  * Creates a new Cartographic instance from a Cartesian position. The values in the
  * resulting object will be in radians.
  *
- * @param {Number[]} cartesian The Cartesian position to convert to cartographic representation.
+ * @param cartesian The Cartesian position to convert to cartographic representation.
  * @returns {Cartographic} The modified result parameter, new Cartographic instance if none was provided, or undefined if the cartesian is at the center of the ellipsoid.
  */
 export function cartesian3ToDegree(result, cartesian) {
