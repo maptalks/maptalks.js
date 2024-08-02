@@ -7,9 +7,10 @@ import * as Util from './core/util/index';
 import * as DomUtil from './core/util/dom';
 import * as StringUtil from './core/util/strings';
 import * as MapboxUtil from './core/mapbox';
+import * as BBOXUtil from './core/util/bbox';
 
 import * as MicroTask from './core/MicroTask';
-export { Util, DomUtil, StringUtil, MapboxUtil, MicroTask };
+export { Util, DomUtil, StringUtil, MapboxUtil, MicroTask, BBOXUtil };
 
 export { default as LRUCache } from './core/util/LRUCache';
 export { default as Ajax } from './core/Ajax';
