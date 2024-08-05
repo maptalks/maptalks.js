@@ -15,9 +15,11 @@ import { compress, uncompress } from "./Compress";
 import { extend, hasOwn, isNil, isObject, isString, pushIn } from "../../common/Util";
 
 import Ajax from "../../worker/util/Ajax";
-import type { PositionArray, TileLayerOptionsType } from "maptalks";
 import VectorTileLayerRenderer from "../renderer/VectorTileLayerRenderer";
 import { isFunctionDefinition } from "@maptalks/function-type";
+import { LayerIdentifyOptionsType } from "maptalks/dist/layer/OverlayLayer";
+import { PositionArray } from "maptalks/dist/geo/Position";
+import { TileLayerOptionsType } from "maptalks/dist/layer/tile/TileLayer";
 
 const TMP_POINT = new maptalks.Point(0, 0);
 const TMP_COORD = new maptalks.Coordinate(0, 0);
@@ -95,25 +97,25 @@ class VectorTileLayer extends maptalks.TileLayer {
   ready: boolean;
 
   _polygonOffset: number;
-  _pathRoot?: string;
+//   _pathRoot?: string;
 
-  _featureStates: Record<string, Map<unknown, unknown>>;
-  _featureStamp?: any;
-  _schema: Record<number, object> = {};
-  _originFeatureStyle?: VtComposeStyle;
-  _featureStyle?: VtStyle[];
-  _vtStyle?: VtBaseStyle[];
-  _background?: BackgroundStyle;
-  _backgroundConfig?: BackgroundConfig;
-  _totalPolygonOffset?: number;
-  _isDefaultRender?: boolean;
-  _highlighted: any[];
-  _replacer?: Function;
-  _urlModifier?: Function;
+  private _featureStates: Record<string, Map<unknown, unknown>>;
+  private _featureStamp?: any;
+  private _schema: Record<number, object> = {};
+  private _originFeatureStyle?: VtComposeStyle;
+  private _featureStyle?: VtStyle[];
+  private _vtStyle?: VtBaseStyle[];
+  private _background?: BackgroundStyle;
+  private _backgroundConfig?: BackgroundConfig;
+  private _totalPolygonOffset?: number;
+  private _isDefaultRender?: boolean;
+  private _highlighted: any[];
+  private _replacer?: Function;
+  private _urlModifier?: Function;
   options: VectorTileLayerOptionsType;
 
   // create a layer instance from given json
-  static loadFrom(url: string, fetchOptions: any) {
+  static loadFrom(url: string, fetchOptions: Record<string, any>) {
     return fetch(url, fetchOptions || {})
       .then((data) => {
         return data.json();
@@ -262,7 +264,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     return stateMap.get(source.id);
   }
 
-  _markFeatureState() {
+  private _markFeatureState() {
     const renderer = this.getRenderer();
     if (!renderer) {
       return;
@@ -279,7 +281,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     return this._featureStamp && this._featureStamp !== timestamp;
   }
 
-  _prepareOptions() {
+  protected _prepareOptions() {
     const options = this.options as any;
     const map = this.getMap();
     const projection = map.getProjection();
@@ -407,7 +409,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     return this;
   }
 
-  _tilePointToPoint(out: any, point: any, tilePoint: any, extent: any) {
+  private _tilePointToPoint(out: any, point: any, tilePoint: any, extent: any) {
     const tileSize = this.getTileSize().width;
     const tileScale = extent / tileSize;
     const srcPoint = out.set(
@@ -462,14 +464,14 @@ class VectorTileLayer extends maptalks.TileLayer {
     return terrainHelper.getTerrainTiles(tileInfo);
   }
 
-  _setStyle(style: any) {
-    this._pathRoot = null;
+  private _setStyle(style: any) {
+    // this._pathRoot = null;
     if (style && style["$root"]) {
       let root = style["$root"];
       if (root && root[root.length - 1] === "/") {
         root = root.substring(0, root.length - 1);
       }
-      this._pathRoot = root;
+    //   this._pathRoot = root;
       this._replacer = function replacer(match) {
         if (match === "{$root}") {
           return root;
@@ -574,7 +576,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     return this._totalPolygonOffset;
   }
 
-  _convertFeatures(features) {
+  private _convertFeatures(features) {
     if (!features || !features.length) {
       return;
     }
@@ -623,7 +625,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     return data;
   }
 
-  getRenderedFeaturesAsync(options = {}) {
+  getRenderedFeaturesAsync(options: AsyncFeatureQueryOptions = {}) {
     return new Promise((resolve, reject) => {
       const renderer: any = this.getRenderer();
       if (!renderer) {
@@ -757,7 +759,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     return this;
   }
 
-  _validateHighlight(highlights: any) {
+  private _validateHighlight(highlights: any) {
     if (Array.isArray(highlights)) {
       for (let i = 0; i < highlights.length; i++) {
         this._validateHighlight(highlights[i]);
@@ -806,7 +808,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     return this;
   }
 
-  _parseStylePath() {
+  private _parseStylePath() {
     maptalks.Util.convertStylePath(this._vtStyle, this._replacer);
     maptalks.Util.convertStylePath(this._featureStyle, this._replacer);
   }
@@ -845,7 +847,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     return this._updateSceneConfig(1, idx, sceneConfig, styleIdx);
   }
 
-  _updateSceneConfig(
+  private _updateSceneConfig(
     type: number,
     idx: number,
     sceneConfig: VtSceneConfig,
@@ -949,7 +951,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     return this._updateDataConfig(1, idx, dataConfig, styleIdx);
   }
 
-  _updateDataConfig(
+  private _updateDataConfig(
     type: number,
     idx: number,
     dataConfig: VtDataConfig,
@@ -1037,7 +1039,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     return this._updateSymbol(1, idx, symbol, feaStyleIdx);
   }
 
-  _updateSymbol(
+  private _updateSymbol(
     type: number,
     idx: number,
     symbol: VtSymbol,
@@ -1424,7 +1426,7 @@ class VectorTileLayer extends maptalks.TileLayer {
   //     return -1;
   // }
 
-  _getStyleIndex(name: string) {
+  private _getStyleIndex(name: string) {
     const styles = this._vtStyle;
     if (!styles) {
       return -1;
@@ -1501,7 +1503,7 @@ class VectorTileLayer extends maptalks.TileLayer {
    */
   identify(
     coordinate: maptalks.Coordinate,
-    options: { tolerance?: object; count?: object } = {}
+    options: LayerIdentifyOptionsType = {}
   ): object[] {
     const map = this.getMap();
     const renderer = this.getRenderer();
@@ -1552,7 +1554,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
   }
 
-  _convertPickedFeature(picks: any[]) {
+  private _convertPickedFeature(picks: any[]) {
     const renderer = this.getRenderer();
     if (!renderer) {
       return picks;
@@ -1588,9 +1590,9 @@ class VectorTileLayer extends maptalks.TileLayer {
     return picks;
   }
 
-  _convertGeometry(
+  private _convertGeometry(
     type: number,
-    geometry: maptalks.Geometry[],
+    geometry: any | any[],
     nw: maptalks.Point,
     extent: number,
     res: number
@@ -1649,8 +1651,8 @@ class VectorTileLayer extends maptalks.TileLayer {
     };
   }
 
-  _convertGeometryCoords(
-    geometry: maptalks.Geometry | maptalks.Geometry[],
+  private _convertGeometryCoords(
+    geometry: any | any[],
     nw: maptalks.Point,
     extent: number,
     res: number
@@ -1688,7 +1690,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     } else {
       let coords: PositionArray<number>[] = [];
       for (let i = 0; i < len; i++) {
-        coords.push(singleCoordinate(geometry[i]));
+        coords.push(singleCoordinate(geometry[i]) as PositionArray<number>);
       }
       return coords;
     }
@@ -1940,3 +1942,7 @@ export type VectorTileLayerOptionsType = {
 
   style?: any
 } & TileLayerOptionsType;
+
+export type AsyncFeatureQueryOptions = {
+    countPerTime?: number
+};

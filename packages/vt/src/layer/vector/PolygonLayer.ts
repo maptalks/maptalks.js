@@ -78,18 +78,13 @@ const SYMBOL = {
 
 export class PolygonLayerRenderer extends Vector3DLayerRenderer {
   GeometryTypes = [maptalks.Polygon, maptalks.MultiPolygon];
-  meshes: Record<string, unknown>[];
-  atlas: unknown[];
+  private atlas: unknown[];
   painter: any;
-  painterSymbol: Record<string, unknown>;
+  protected painterSymbol: Record<string, unknown>;
+  protected meshes: Record<string, unknown>[];
 
-  _meshCenter: number[];
-  _isCreatingMesh: boolean;
-
-  constructor(...args: any) {
-    super(...args);
-    // this.PackClass = PolygonPack;
-  }
+  private _meshCenter: number[];
+  private _isCreatingMesh: boolean;
 
   getPolygonOffsetCount() {
     return this.options["altitude"] > 0 ? 0 : 2;

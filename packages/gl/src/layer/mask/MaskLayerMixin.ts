@@ -1,11 +1,12 @@
 import { Coordinate, Extent } from "maptalks";
-import { mat4 } from '@maptalks/reshader.gl';
+import { mat4, vec3, vec4 } from '@maptalks/reshader.gl';
 import Mask from "./Mask";
 import { extend } from "../util/util";
+import { MixinConstructor } from "maptalks/dist/core/Mixin";
 
 const maskLayerEvents = ['shapechange', 'heightrangechange', 'flatheightchange'];
 const COORD_EXTENT = new Coordinate(0, 0);
-const EXTENT_MIN = [], EXTENT_MAX = [];
+const EXTENT_MIN: vec3 = [0, 0, 0], EXTENT_MAX: vec3 = [0, 0, 0];
 
 function clearMasks() {
     if (!this['_maskList']) {
@@ -37,7 +38,7 @@ function getProjViewMatrixInOrtho(extent) {
     const center = extent.getCenter();
     map.setView({ center, zoom, pitch: 0, bearing: 0 });
     const mapExtent = map.getExtent();
-    const pvMatrix = mat4.copy([], map.projViewMatrix);
+    const pvMatrix = mat4.copy([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], map.projViewMatrix);
     map.setView(preView);
     return { mapExtent, projViewMatrix: pvMatrix };
 }
@@ -51,10 +52,12 @@ function hasVisibleMask() {
     return false;
 }
 
-export default function (Base) {
-    return class extends Base {
+export default function <T extends MixinConstructor>(Base: T) {
+    return class MaskLayerMixin extends Base {
+        private _projViewMatrix: mat4;
+        private _extentInWorld: vec4;
 
-        removeMask(masks) {
+        removeMask(masks: undefined | null | any) {
             if (!this['_maskList']) {
                 return this;
             }
@@ -71,12 +74,12 @@ export default function (Base) {
                 }
             }
             this.updateExtent('shapechange');
-            this.fire('removemask', { masks });
+            this['fire']('removemask', { masks });
             return this;
         }
 
         setMask(masks) {
-            this.removeMask();
+            this['removeMask'](null);
             if (!this['_maskList']) {
                 this['_maskList'] = [];
             }
@@ -94,12 +97,12 @@ export default function (Base) {
                 }
             });
             this.updateExtent('shapechange');
-            this.fire('setmask', { masks });
+            this['fire']('setmask', { masks });
             return this;
         }
 
         onAdd() {
-            super.onAdd();
+            super['onAdd']();
             this.updateExtent('shapechange');
         }
 
@@ -124,7 +127,7 @@ export default function (Base) {
         }
 
         identifyMask(point, options) {
-            const map = this.getMap();
+            const map = this['getMap']();
             if (!map) {
                 return [];
             }
@@ -133,7 +136,7 @@ export default function (Base) {
             }
             const opts = extend({}, options);
             opts['excludeMasks'] = true; //此处调用identifyAtPoint时，不需要去identifyMask
-            const identifyData = this.identifyAtPoint(point, opts);
+            const identifyData = this['identifyAtPoint'](point, opts);
             const coordinate = identifyData.length && identifyData[0].coordinate;
             if (coordinate) {
                 return this['_hitMasks'](coordinate);
@@ -162,11 +165,11 @@ export default function (Base) {
                     mask.remove();
                 });
             }
-            super.remove();
+            super['remove']();
         }
 
-        updateMask(extent) {
-            const map = this.getMap();
+        updateMask(extent): { projViewMatrix: mat4, extentInWorld: vec4} {
+            const map = this['getMap']();
             const { projViewMatrix, mapExtent } = getProjViewMatrixInOrtho.call(this, extent);
             COORD_EXTENT.x = mapExtent.xmin;
             COORD_EXTENT.y = mapExtent.ymin;
@@ -174,7 +177,7 @@ export default function (Base) {
             COORD_EXTENT.x = mapExtent.xmax;
             COORD_EXTENT.y = mapExtent.ymax;
             const extentPointMax = coordinateToWorld(EXTENT_MAX, COORD_EXTENT, map);
-            const extentInWorld = [extentPointMin[0], extentPointMin[1], extentPointMax[0], extentPointMax[1]];
+            const extentInWorld = [extentPointMin[0], extentPointMin[1], extentPointMax[0], extentPointMax[1]] as vec4;
             return { projViewMatrix, extentInWorld };
         }
 
@@ -182,11 +185,11 @@ export default function (Base) {
             if (!this['_maskList']) {
                 return;
             }
-            const map = this.getMap();
+            const map = this['getMap']();
             if (!map) {
                 return;
             }
-            const renderer = this.getRenderer();
+            const renderer = this['getRenderer']();
             if (renderer && !this['_maskList'].length) {
                 renderer['_clearMask']();
                 return;
@@ -209,7 +212,7 @@ export default function (Base) {
             if (renderer) {
                 renderer.setMask(this._extentInWorld, this._projViewMatrix, ratio, minHeight);
             } else {
-                this.once('renderercreate', e => {
+                this['once']('renderercreate', e => {
                     e.renderer.setMask(this._extentInWorld, this._projViewMatrix, ratio, minHeight);
                 });
             }
@@ -259,14 +262,14 @@ export default function (Base) {
         }
 
         _inMapExtent(extent) {
-            const map = this.getMap();
+            const map = this['getMap']();
             const mapExtent = map.getExtent();
             return mapExtent.intersects(extent);
         }
     };
 }
 
-function coordinateToWorld(out, coordinate, map, z = 0) {
+function coordinateToWorld(out: vec3, coordinate, map, z = 0) {
     if (!map || !(coordinate instanceof Coordinate)) {
         return null;
     }
