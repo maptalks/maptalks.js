@@ -1968,4 +1968,33 @@ describe('bug', () => {
         });
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
     });
+
+    it('setNodeTRS(maptalks/issues#711)', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFGeometry(center,
+            { symbol: { 
+                scaleX: 0.1,
+                scaleY: 0.1,
+                scaleZ: 0.1,
+                url: url5,
+                animation: false
+            }});
+        gltflayer.addGeometry(marker);
+
+        function checkColor() {
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, 1, 1, 1);
+                expect(pixel).to.be.eql([119, 118, 116, 236]);
+                done();
+            }, 100);
+        }
+        marker.on('load', () => {
+            marker.setNodeTRS(6, {
+                rotation: [45, 0, 0],
+                scale: [2, 2, 2]
+            });
+            checkColor();
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
 });

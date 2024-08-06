@@ -5,10 +5,8 @@
     <title>GLTF DEMO</title>
     <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.css">
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.js"></script>
-    <script type="text/javascript" src="../node_modules/@maptalks/gl/dist/maptalksgl-dev.js"></script>
-    <script type="text/javascript" src="../dist/maptalks.gltf-dev.js"></script>
-    <script type="text/javascript" src="js/dat.gui.min.js"></script>
-    <script type="text/javascript" src="js/ui.control.js"></script>
+    <script type="text/javascript" src="../node_modules/@maptalks/gl/dist/maptalksgl.js"></script>
+    <script type="text/javascript" src="../dist/maptalks.gltf.js"></script>
     <style>
         html,
         body {
@@ -34,10 +32,10 @@
 </head>
 
 <body>
+    <input id="btn" type="button" style="width: 100px;height: 20px;" value="setNodeTRS"/>
     <div id="map"></div>
     <script>
         const { createREGL, mat4, reshader } = maptalksgl;
-        var gui = new dat.GUI({ width: 250 });
         var map = new maptalks.Map('map', {
             center: [120, 30],
             zoom: 14,
@@ -55,7 +53,7 @@
         var url3 = 'gltf/AnimatedMorphCube/glTF/AnimatedMorphCube.gltf';
         var url4 = 'gltf/shanghai-sandboxie/scene.gltf';
         var url5 = 'gltf/tyb/太阳板.gltf';
-        var url6 = 'gltf/LeePerrySmith/LeePerrySmith.glb';
+        var url6 = 'gltf/RobotExpressive/RobotExpressive.glb';
         var url7 = 'gltf/CesiumMan/CesiumMan.gltf';
         var url8 = 'gltf/wy/wy.gltf';
         var url9 = 'gltf/scene/scene.gltf';
@@ -90,30 +88,11 @@
         var gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);//添加一个gltf图层到地图上
         var gltfMarker = new maptalks.GLTFMarker(center, {
             symbol: {
-                url: url1,
-                shader: options.shader,//phong着色器为内置着色器，只需要在options指定一下就可以使用
-                animation: options.animation,
-                loop: options.loop,
-                visible: options.visible,
-                speed: options.speed,
-                translation: [options.x, options.y, options.z],
-                rotation: [0, 0, 0, 1],
-                //scale: [options.scaleX, options.scaleY, options.scaleZ],
-                scale : {
-                    stops : [
-                        [5, [20, 20, 20]],
-                        [10, [10, 10, 10]],
-                        [15, [1, 1, 1]]
-                    ]
-                },
-                uniforms: {
-                    materialShininess: options.materialShininess,//反光度，即影响镜面高光的散射/半径
-                    opacity: options.opacity,
-                    lightAmbient: getColor(options.lightAmbient),
-                    lightDiffuse: getColor(options.lightDiffuse),
-                    lightSpecular: getColor(options.lightSpecular)
-                }
-            }
+                url: url6,
+                modelHeight: 1000
+                
+            },
+            
         });
 
         gltfMarker.addTo(gltflayer);
@@ -126,60 +105,13 @@
         gltfMarker.on('mouseleave', e => {
             map.resetCursor();
         });
-        
-        AddGuiControl(gui, options, [gltfMarker]);
-        // const gltfLayer_1 = new maptalks.GLTFLayer('gltf1').addTo(map);
-        // new maptalks.GLTFMarker(center).addTo(gltfLayer_1);
-        // const style = [{
-        //         "filter": ["num", "<", "1"],
-        //         "symbol": {
-        //             "animation": true,
-        //             "loop": false,
-        //             "speed": 22.5,
-        //             "translation": [1, 1, 1],
-        //             "rotation": [0, 0, 0],
-        //             "scale": [1, 1, 1],
-        //             "shader": "phong",
-        //             "uniforms": {
-        //                 "lightPosition": [1, 1, 1],
-        //                 "lightAmbient": [1, 1, 1, 1],
-        //                 "lightDiffuse": [0.5, 0.5, 0.5, 1],
-        //                 "lightSpecular": [0.1, 0.7, 0.3, 1],
-        //                 "ambientStrength": 0.5,
-        //                 "specularStrength": 0.8,
-        //                 "materialShininess": 32,
-        //                 "opacity": 1
-        //             }
-        //         },
-        //         "uniqueName": "消防车"
-        //     },
-        //     {
-        //         "filter": ["num", ">", "1"],
-        //         "symbol": {
-        //             "animation": true,
-        //             "loop": false,
-        //             "speed": 22.5,
-        //             "translation": [1, 1, 1],
-        //             "rotation": [0, 0, 0],
-        //             "scale": [1, 1, 1],
-        //             "shader": "phong",
-        //             "uniforms": {
-        //                 "lightPosition": [1, 1, 1],
-        //                 "lightAmbient": [1, 1, 1, 1],
-        //                 "lightDiffuse": [0.5, 0.5, 0.5, 1],
-        //                 "lightSpecular": [0.1, 0.7, 0.3, 1],
-        //                 "ambientStrength": 0.5,
-        //                 "specularStrength": 0.8,
-        //                 "materialShininess": 32,
-        //                 "opacity": 1
-        //             }
-        //         },
-        //         "uniqueName": "警车"
-        //     }
-        // ];
-        // setTimeout(function() {
-        //    gltfLayer_1.setStyle();
-        // }, 10*1000);
+
+        document.getElementById('btn').onclick = function() {
+            gltfMarker.setNodeTRS(4, {
+               rotation: [45, 0, 0],
+               scale: [2, 2, 2]
+            });
+        }
     </script>
 </body>
 

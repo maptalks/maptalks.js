@@ -9,7 +9,7 @@ const EMPTY_QUAT = [];
 const options = {
     symbol: null
 };
-const VEC41 = [], VEC42 = [], MAT4 = [], TEMP_SCALE = [1, 1, 1], TEMP_MAT = [], TEMP_TRANS = [], TEMP_FIXSIZE_SCALE = [1, 1, 1];
+const VEC41 = [], VEC42 = [], MAT4 = [], TEMP_SCALE = [1, 1, 1], TEMP_MAT = [], TEMP_TRANS = [], TEMP_FIXSIZE_SCALE = [1, 1, 1], EMPTY_MAT = [];
 const TEMP_BBOX = new reshader.BoundingBox();
 const Y_UP_TO_Z_UP = fromRotationTranslation(fromRotationX(Math.PI * 0.5), [0, 0, 0]);
 const TEMP_POINT = new Point(0, 0);
@@ -409,12 +409,14 @@ export default class GLTFMarker extends Marker {
             const nodeMatrix = isAnimated && animNodeMatrix ? animNodeMatrix : mesh.nodeMatrix;
             mat4.scale(tmpMat, modelMatrix, TEMP_SCALE);
             mat4.multiply(tmpMat, tmpMat, Y_UP_TO_Z_UP);
+            mesh._nodeMatrix = mesh._nodeMatrix || mat4.identity([]);
+            const m = mat4.multiply(EMPTY_MAT, mesh._nodeMatrix, nodeMatrix);
             if (mesh instanceof reshader.InstancedMesh) {
-                mesh.positionMatrix = mat4.multiply(mesh.positionMatrix, tmpMat, nodeMatrix);
+                mesh.positionMatrix = mat4.multiply(mesh.positionMatrix, tmpMat, m);
                 mesh.localTransform = this._getCenterMatrix();
                 this._updateInstancedMeshData(mesh);
             } else {
-                mesh.localTransform = mat4.multiply(mesh.localTransform, tmpMat, nodeMatrix);
+                mesh.localTransform = mat4.multiply(mesh.localTransform, tmpMat, m);
             }
             const gltfBBox = mesh.geometry.boundingBox;
             const meshBox = gltfBBox.copy(TEMP_BBOX);
@@ -1812,6 +1814,31 @@ export default class GLTFMarker extends Marker {
             mesh.bloom = false;
         });
         renderer.setToRedraw();
+    }
+
+    /**
+     * set transltion, rotation and scale for specific node
+     * @param  {Number} nodeIndex   - specific node index for gltf
+     * @param  {Object} [trs = {}]  - includes transltion, rotation, scale
+     * @return this
+     */
+    setNodeTRS(nodeIndex, trs = {}) {
+        const meshes = this._meshes;
+        if (!meshes) {
+            return;
+        }
+        const translation = trs.translation || this._defaultTRS.translation;
+        const r = trs.rotation || this._defaultTRS.rotation;
+        const rotation = quat.fromEuler(EMPTY_QUAT, r[0], r[1], r[2]);
+        const scale = trs.scale || this._defaultTRS.scale;
+        meshes.forEach(mesh => {
+            if (mesh.properties.nodeIndex === nodeIndex) {
+                mesh._nodeMatrix = mat4.fromRotationTranslationScale(mesh._nodeMatrix || [], rotation, translation, scale);
+            }
+        });
+        this._updateMeshMatrix(meshes);
+        this._dirty = true;
+        return this;
     }
 }
 
