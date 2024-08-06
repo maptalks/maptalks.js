@@ -2263,7 +2263,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             translateY = offsetbottom = abs(height - bottom);
         }
 
-        //同时溢出去最小的值
+        //同时溢出取最小的值,四周最近距离吸附
         if (offsetleft !== 0 && offsetright !== 0) {
             translateX = offsetleft;
             if (abs(offsetright) < abs(offsetleft)) {
