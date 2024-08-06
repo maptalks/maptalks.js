@@ -567,7 +567,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
         const projection = this.getProjection();
         const pcenter = projection.project(center);
-        if (!this._verifyExtent(pcenter)) {
+        if (!this._verifyExtent(pcenter) && !this.options.limitExtentOnMaxExtent) {
             return this;
         }
         if (!this._loaded) {
@@ -1778,7 +1778,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
          */
         this._fireEvent('moveend', (param && param['domEvent']) ? this._parseEvent(param['domEvent'], 'moveend') : param);
 
-        if (!this._verifyExtent(this._getPrjCenter()) && this._originCenter) {
+        if (!this._verifyExtent(this._getPrjCenter()) && this._originCenter && !this.options.limitExtentOnMaxExtent) {
             const moveTo = this._originCenter;
             this._panTo(moveTo);
         }
@@ -2216,66 +2216,74 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         const { width, height } = this.getSize();
         const mapBBOX = [0, 0, width, height] as BBOX;
 
-        const result = bboxInBBOX(mapBBOX, maxExtentBBOX);
-        if (result) {
+        if (bboxInBBOX(mapBBOX, maxExtentBBOX)) {
             return this;
         }
-        let forceMaxExtentCenter: Coordinate;
         //maxExtent完全在当前视野内
         if (bboxInBBOX(maxExtentBBOX, mapBBOX)) {
-            //强制重置中心点为maxextent center
-            forceMaxExtentCenter = maxExtent.getCenter();
+            return this;
         }
 
         let translateX = 0, translateY = 0;
-        const leftOverflow = mapBBOX[0] < maxExtentBBOX[0];
-        const rightOverflow = mapBBOX[2] > maxExtentBBOX[2];
-        const topOverflow = mapBBOX[1] < maxExtentBBOX[1];
-        const bottomOverflow = mapBBOX[3] > maxExtentBBOX[3];
-        let forceCenterX: number, forceCenterY: number;
-        if (leftOverflow) {
-            // console.log('need ←');
-            translateX = maxExtentBBOX[0] - mapBBOX[0]
+
+        let offsetleft = 0, offsetright = 0, offsettop = 0, offsetbottom = 0;
+        const abs = Math.abs;
+        const [left, top, right, bottom] = maxExtentBBOX;
+
+        //left overflow
+        if (left > 0 && right > width) {
+            translateX = offsetleft = abs(left);
         }
-        if (rightOverflow && translateX === 0) {
-            // console.log('need →');
-            translateX = maxExtentBBOX[2] - mapBBOX[2]
-        }
-        if (leftOverflow && rightOverflow) {
-            //强制重置center.x为maxtent.center.x
-            forceCenterX = maxExtent.getCenter().x;
+        if (left < 0 && right < width) {
+            translateX = offsetleft = -abs(left);
         }
 
-        if (topOverflow) {
-            // console.log('need ↑');
-            translateY = maxExtentBBOX[1] - mapBBOX[1]
+        //right overflow
+        if (left < 0 && right < width) {
+            translateX = offsetright = - abs(width - right);
         }
-        if (bottomOverflow && translateY === 0) {
-            // console.log('need ↓');
-            translateY = maxExtentBBOX[3] - mapBBOX[3]
-        }
-
-        if (topOverflow && bottomOverflow) {
-            //强制重置center.y为maxtent.center.y
-            forceCenterY = maxExtent.getCenter().y;
+        if (left > 0 && right > width) {
+            translateX = offsetright = abs(width - right);
         }
 
-        if (forceMaxExtentCenter) {
-            this._limitMaxExtenting = true;
-            this.setCenter(forceMaxExtentCenter);
-        } else if (translateX !== 0 || translateY !== 0 || isNumber(forceCenterX) || isNumber(forceCenterY)) {
+        //top overflow
+        if (top > 0 && bottom > height) {
+            translateY = offsettop = abs(top);
+        }
+        if (top < 0 && bottom < height) {
+            translateY = offsettop = -abs(top);
+        }
+
+        //bottom overflow
+        if (top < 0 && bottom < height) {
+            translateY = offsetbottom = -abs(height - bottom);
+        }
+        if (top > 0 && bottom > height) {
+            translateY = offsetbottom = abs(height - bottom);
+        }
+
+        //同时溢出去最小的值
+        if (offsetleft !== 0 && offsetright !== 0) {
+            translateX = offsetleft;
+            if (abs(offsetright) < abs(offsetleft)) {
+                translateX = offsetright;
+            }
+        }
+        if (offsettop !== 0 && offsetbottom !== 0) {
+            translateY = offsettop;
+            if (abs(offsetbottom) < abs(offsettop)) {
+                translateY = offsetbottom;
+            }
+        }
+
+        if (translateX !== 0 || translateY !== 0) {
             const point = new Point(width / 2 + translateX, height / 2 + translateY);
             const center = this.containerPointToCoord(point);
-            if (isNumber(forceCenterX)) {
-                center.x = forceCenterX;
-            }
-            if (isNumber(forceCenterY)) {
-                center.y = forceCenterY;
-            }
             this._limitMaxExtenting = true;
             this.setCenter(center);
+            this._limitMaxExtenting = false;
+
         }
-        this._limitMaxExtenting = false;
         return this;
     }
 
