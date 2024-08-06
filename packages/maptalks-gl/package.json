@@ -1,0 +1,47 @@
+{
+  "name": "@maptalks/gl-layers",
+  "version": "0.97.4",
+  "description": "All-in-one package for maptalks webgl layers",
+  "module": "index.js",
+  "main": "dist/maptalks-gl.js",
+  "unpkg": "dist/maptalks-gl.js",
+  "jsdelivr": "dist/maptalks-gl.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "dev": "rollup -w -c rollup.config.js",
+    "build": "rollup -c rollup.config.js",
+    "prepare": "npm run build"
+  },
+  "files": [
+    "dist/maptalks-gl.js",
+    "index.js"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fuzhenn/gl-layers.git"
+  },
+  "keywords": [
+    "maptalks",
+    "webgl",
+    "layers"
+  ],
+  "author": "fuzhenn",
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "0.4.4",
+    "rollup": "^4.17.2"
+  },
+  "dependencies": {
+    "@maptalks/3dtiles": "workspace:*",
+    "@maptalks/analysis": "workspace:*",
+    "@maptalks/gl": "workspace:*",
+    "@maptalks/gltf-layer": "workspace:*",
+    "@maptalks/msd-json-loader": "^0.1.0",
+    "@maptalks/transform-control": "workspace:*",
+    "@maptalks/video-layer": "workspace:*",
+    "@maptalks/vt": "workspace:*",
+    "maptalks": "1.0.0-rc.33"
+  }
+}

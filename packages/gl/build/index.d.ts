@@ -9,5 +9,4 @@ export {
 } from '@maptalks/reshader.gl';
 export { createREGL, reshader };
 
-export * from './gl/dist/index.d.ts';
-
+export type * from './gl/dist/index.d.ts';

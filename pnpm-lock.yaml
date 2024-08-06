@@ -51,6 +51,9 @@ importers:
       '@maptalks/gltf-layer':
         specifier: workspace:*
         version: link:../layer-gltf
+      '@maptalks/vt':
+        specifier: workspace:*
+        version: link:../vt
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
         version: 25.0.7(rollup@4.17.2)
@@ -468,6 +471,49 @@ importers:
         specifier: ^4.17.2
         version: 4.17.2
 
+  packages/maptalks-gl:
+    dependencies:
+      '@maptalks/3dtiles':
+        specifier: workspace:*
+        version: link:../layer-3dtiles
+      '@maptalks/analysis':
+        specifier: workspace:*
+        version: link:../analysis
+      '@maptalks/gl':
+        specifier: workspace:*
+        version: link:../gl
+      '@maptalks/gltf-layer':
+        specifier: workspace:*
+        version: link:../layer-gltf
+      '@maptalks/msd-json-loader':
+        specifier: ^0.1.0
+        version: 0.1.0
+      '@maptalks/transform-control':
+        specifier: workspace:*
+        version: link:../transform-control
+      '@maptalks/video-layer':
+        specifier: workspace:*
+        version: link:../layer-video
+      '@maptalks/vt':
+        specifier: workspace:*
+        version: link:../vt
+      maptalks:
+        specifier: 1.0.0-rc.33
+        version: 1.0.0-rc.33
+    devDependencies:
+      '@rollup/plugin-commonjs':
+        specifier: ^25.0.7
+        version: 25.0.7(rollup@4.17.2)
+      '@rollup/plugin-node-resolve':
+        specifier: ^15.2.3
+        version: 15.2.3(rollup@4.17.2)
+      '@rollup/plugin-terser':
+        specifier: 0.4.4
+        version: 0.4.4(rollup@4.17.2)
+      rollup:
+        specifier: ^4.17.2
+        version: 4.17.2
+
   packages/reshader.gl:
     dependencies:
       '@maptalks/gltf-loader':
@@ -666,6 +712,9 @@ importers:
       '@maptalks/gltf-loader':
         specifier: workspace:*
         version: link:../gltf-loader
+      maptalks:
+        specifier: 1.0.0-rc.33
+        version: 1.0.0-rc.33
     devDependencies:
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
@@ -721,6 +770,9 @@ importers:
       gl-matrix:
         specifier: ^3.4.0
         version: 3.4.3
+      maptalks:
+        specifier: 1.0.0-rc.33
+        version: 1.0.0-rc.33
       pbf:
         specifier: ^3.2.1
         version: 3.2.1
