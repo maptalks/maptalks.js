@@ -1782,6 +1782,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             const moveTo = this._originCenter;
             this._panTo(moveTo);
         }
+        this._limitMaxExtent();
     }
 
     onDragRotateStart(param) {
