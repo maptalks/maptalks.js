@@ -907,6 +907,37 @@ class DrawTool extends MapTool {
         return this;
     }
 
+    /**
+    * 添加一个自定义的坐标点
+    * @english
+    * add a custom Coordinate
+    * @param  {Coordinate} coordinate -  coordinate
+    * @return this
+    */
+    addCoordinate(coordinate: Coordinate) {
+        if (!this.isEnabled()) {
+            return this;
+        }
+        const map = this.getMap();
+        if (!map) {
+            return this;
+        }
+        coordinate = new Coordinate(coordinate);
+        const eventParam = map._parseEventFromCoord(coordinate);
+        this._clickHandler(eventParam);
+        return this;
+    }
+
+    /**
+     * 获取临时的Geometry
+     * @english
+     * get temp Geometry
+     * @return Geometry
+    */
+    getTempGeometry() {
+        return this._geometry;
+    }
+
 }
 
 DrawTool.mergeOptions(options);
