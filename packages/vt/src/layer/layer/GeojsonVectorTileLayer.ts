@@ -63,7 +63,9 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     options: GeoJSONVectorTileLayerOptionsType;
     features: Record<string, any>;
 
+    //@internal
     _dataExtent: maptalks.Extent;
+    //@internal
     _idMaps: Record<string, any>;
 
     constructor(id: string, options: GeoJSONVectorTileLayerOptionsType) {
@@ -130,6 +132,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     return this;
   }
 
+  //@internal
   _setData(data: unknown) {
     if (this.options.convertFn) {
       const fn = new Function(
@@ -144,6 +147,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     return this;
   }
 
+  //@internal
   _updateWorker() {
     const renderer = this.getRenderer();
     if (renderer) {
@@ -191,10 +195,12 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     this.fire("dataload", { extent: params && params.extent });
   }
 
+  //@internal
   _setExtent(extent: ArrayExtent) {
     this._dataExtent = new maptalks.Extent(...extent);
   }
 
+  //@internal
   _fetchData(data: any, cb: Callback) {
     if (isString(data)) {
       Ajax.getJSON(data, cb);
@@ -223,6 +229,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     return new GeoJSONVectorTileLayer(layerJSON["id"], layerJSON["options"] as any);
   }
 
+  //@internal
   _generateIdMap() {
     if (!this.features) {
       return;

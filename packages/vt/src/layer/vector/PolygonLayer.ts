@@ -83,7 +83,9 @@ export class PolygonLayerRenderer extends Vector3DLayerRenderer {
   protected painterSymbol: Record<string, unknown>;
   protected meshes: Record<string, unknown>[];
 
+  //@internal
   _meshCenter: number[];
+  //@internal
   _isCreatingMesh: boolean;
 
   getPolygonOffsetCount() {
@@ -157,6 +159,7 @@ export class PolygonLayerRenderer extends Vector3DLayerRenderer {
     return this._geometries[uid];
   }
 
+  //@internal
   _groupPolygonFeatures(features: any[]) {
     const feas = [];
     const alphaFeas = [];

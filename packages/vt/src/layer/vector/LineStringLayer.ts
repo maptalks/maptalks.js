@@ -44,7 +44,9 @@ class LineStringLayerRenderer extends Vector3DLayerRenderer {
   meshes: Record<string, unknown>[];
   painter: any;
 
+  //@internal
   _isCreatingMesh: boolean;
+  //@internal
   _meshCenter: number[];
 
   constructor(...args: any) {

@@ -26,15 +26,24 @@ export default class TrafficScene {
   intersections: Pool;
   roads: Pool;
 
+  //@internal
   _lastUpdate = 0;
 
+  //@internal
   _previousTime = 0;
+  //@internal
   _carlayer = new GLTFLayer("traffic");
+  //@internal
   _timeFactor = 5;
+  //@internal
   _state = "stop";
+  //@internal
   _symbols = [];
+  //@internal
   _instanceMap = {};
+  //@internal
   _rafId: number;
+  //@internal
   _groupgllayer: any;
 
   constructor(options: TrafficSceneOptions) {
@@ -100,6 +109,7 @@ export default class TrafficScene {
     }
   }
 
+  //@internal
   _update() {
     if (this._state !== "running") {
       return;
@@ -127,6 +137,7 @@ export default class TrafficScene {
     this._rafId = window.requestAnimationFrame(this._update.bind(this));
   }
 
+  //@internal
   _updateInstanceData() {
     for (const t in this._instanceMap) {
       this._instanceMap[t].removeData();
@@ -138,6 +149,7 @@ export default class TrafficScene {
     }
   }
 
+  //@internal
   _addCar(car: Car) {
     const id = car.id.substring(3);
     if (!this.carsList[id]) {
@@ -228,6 +240,7 @@ export default class TrafficScene {
     player.play();
   }
 
+  //@internal
   _getInstanceIndex(id: string) {
     const car = this.carsList[id];
     if (!car) {
@@ -239,6 +252,7 @@ export default class TrafficScene {
     return index;
   }
 
+  //@internal
   _removeCar(id: string) {
     const ids = id.substring(3);
     if (this.carsList[ids] != null) {

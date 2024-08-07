@@ -153,12 +153,14 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
   sidePainter: Record<string, any>;
   sidePainterSymbol: Record<string, any>;
 
+  //@internal
   _extrudeCenter: number[];
 
   constructor(...args: any) {
     super(...args);
   }
 
+  //@internal
   _groupPolygonFeatures(features) {
     return [features];
   }
@@ -185,6 +187,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
     this.setToRedraw();
   }
 
+  //@internal
   _deleteSideMaterial() {
     if (!this.sidePainter) {
       return;
@@ -291,6 +294,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
     return painter;
   }
 
+  //@internal
   _startFrame(...args: any) {
     super._startFrame(...args);
     const painter = this.painter;
@@ -299,6 +303,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
     this.painter = painter;
   }
 
+  //@internal
   _renderMeshes(...args: any) {
     const context = args[0];
     const sceneFilter = context.sceneFilter;
@@ -357,6 +362,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
     return meshes;
   }
 
+  //@internal
   _createPackData(features, symbol, top, side) {
     const map = this.getMap();
     symbol = SYMBOL;
@@ -445,6 +451,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
     }
   }
 
+  //@internal
   _convertGeo(geo) {
     if (!geo.getProperties()) {
       geo.setProperties({});
