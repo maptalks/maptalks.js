@@ -8,7 +8,7 @@ import {
 import Point from '../geo/Point';
 import Coordinate from '../geo/Coordinate';
 
-export type Callback = (...params: any[]) => any
+export type AnimationCallback = (...params: any[]) => any
 
 const KEY = '__anim_player';
 
@@ -115,7 +115,7 @@ class Frame {
  * @memberof animation
  */
 class Player {
-    _animation: Callback
+    _animation: AnimationCallback
     options: AnimationOptionsPrivateType
     _onFrame: (frame: Frame) => void;
     playState: string
@@ -123,7 +123,7 @@ class Player {
     finished: boolean
     target: any;
     duration: number;
-    _framer: (cb: Callback) => void;
+    _framer: (cb: AnimationCallback) => void;
     currentTime: number;
     startTime: number;
     _playStartTime: number;
@@ -134,7 +134,7 @@ class Player {
      * @param {Object} options     - animation options
      * @param {Function} onFrame  - callback function for animation steps
      */
-    constructor(animation: Callback, options: object, onFrame: Callback, target: object) {
+    constructor(animation: AnimationCallback, options: object, onFrame: AnimationCallback, target: object) {
         this._animation = animation;
         this.options = options;
         this._onFrame = onFrame;
@@ -516,7 +516,7 @@ const Animation = {
 
     },
 
-    _requestAnimFrame(fn: Callback) {
+    _requestAnimFrame(fn: AnimationCallback) {
         if (!this._frameQueue) {
             this._frameQueue = [];
         }
@@ -552,7 +552,7 @@ const Animation = {
      * @param  {Function} step  - callback function for animation steps
      * @return {Player} player
      */
-    animate(styles, options, step: Callback, target) {
+    animate(styles, options, step: AnimationCallback, target) {
         if (!options) {
             options = {};
         }

@@ -169,7 +169,7 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
         return urls;
     }
 
-    retireImage(image: ImageType) {
+    retireImage(image: LayerImageType) {
         const img = image as ImageBitmap;
         if (img.close) {
             img.close();
@@ -213,7 +213,7 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
         }
     }
 
-    _drawImage(image: ImageType, extent: PointExtent, opacity: number) {
+    _drawImage(image: LayerImageType, extent: PointExtent, opacity: number) {
         let globalAlpha = 0;
         const ctx = this.context;
         if (opacity < 1) {
@@ -292,7 +292,7 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
         return true;
     }
 
-    _drawImage(image: ImageType, extent: PointExtent, opacity: number) {
+    _drawImage(image: LayerImageType, extent: PointExtent, opacity: number) {
         this.drawGLImage(image, extent.xmin, extent.ymax, extent.getWidth(), extent.getHeight(), 1, opacity);
     }
 
@@ -316,7 +316,7 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
         this.clearGLCanvas();
     }
 
-    retireImage(image: ImageType) {
+    retireImage(image: LayerImageType) {
         const img = image as ImageBitmap;
         if (img.close) {
             img.close();
@@ -345,7 +345,7 @@ export type ImageDataItem = ImageItem & {
     extent2d: PointExtent;
 }
 
-export type ImageType = HTMLImageElement | ImageBitmap;
+export type LayerImageType = HTMLImageElement | ImageBitmap;
 
 enum depthFuncEnum {
     'never', '<', '=', '<=', ' >', '!=', '>=', 'always'

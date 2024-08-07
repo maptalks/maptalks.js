@@ -1,4 +1,5 @@
 import { loadFunctionTypes, isFunctionDefinition, getFunctionTypeResources, interpolated, hasFunctionDefinition } from '@maptalks/function-type';
+import { compileStyle, isFeatureFilter, createFilter, getFilterFeature } from '@maptalks/feature-filter';
 import { extend } from '../util/common';
 
 /**
@@ -9,7 +10,7 @@ import { extend } from '../util/common';
  * @name MapboxUtil
  */
 
-export * from '@maptalks/feature-filter';
+// export * from '@maptalks/feature-filter';
 export { loadFunctionTypes, isFunctionDefinition, getFunctionTypeResources, interpolated, hasFunctionDefinition }
 
 const arr = [],
@@ -37,4 +38,8 @@ function setProp(prop: any, b: any, p: any, z: any): any {
     prop['{pitch}'] = p;
     prop['{zoom}'] = z;
     return prop;
+}
+
+export {
+    compileStyle, isFeatureFilter, createFilter, getFilterFeature
 }
