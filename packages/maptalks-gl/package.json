@@ -1,5 +1,5 @@
 {
-  "name": "@maptalks/gl-layers",
+  "name": "maptalks-gl",
   "version": "0.97.4",
   "description": "All-in-one package for maptalks webgl layers",
   "module": "index.js",

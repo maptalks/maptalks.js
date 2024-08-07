@@ -14,6 +14,7 @@
     "allowSyntheticDefaultImports": true,
     "declaration": true,
     "declarationMap": true,
+    "stripInternal": true,
     //dependencies lib version
     "lib": [
       "es2015",
