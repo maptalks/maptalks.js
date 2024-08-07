@@ -90,6 +90,7 @@ export class Sector extends Circle {
     }
 
     // The corrected angle is used for calculation and rendering
+    //@internal
     _correctAngles(): [number, number] {
         let startAngle = this.getStartAngle(), endAngle = this.getEndAngle();
         if (endAngle < startAngle) {
@@ -121,6 +122,7 @@ export class Sector extends Circle {
         return this._getShell();
     }
 
+    //@internal
     _getShell(): RingCoordinates {
 
         const [startAngle, endAngle] = this._correctAngles();
@@ -149,11 +151,13 @@ export class Sector extends Circle {
         return 90;
     }
 
+    //@internal
     _getPrjShell(): RingCoordinates {
         const shell = super._getPrjShell();
         return this._rotatePrjCoordinates(shell) as RingCoordinates;
     }
 
+    //@internal
     _computePrjExtent(): Extent {
         if (this.isRotated()) {
             return this._computeRotatedPrjExtent();
@@ -162,6 +166,7 @@ export class Sector extends Circle {
         return Circle.prototype._computePrjExtent.apply(this, arguments);
     }
 
+    //@internal
     _containsPoint(point: Point, tolerance?: number) {
         const map = this.getMap();
         if (map.isTransforming()) {
@@ -190,6 +195,7 @@ export class Sector extends Circle {
         return pp.distanceTo(pc) <= (size.width / 2 + t) && between;
     }
 
+    //@internal
     _computeGeodesicLength() {
         if (isNil(this._radius)) {
             return 0;
@@ -198,6 +204,7 @@ export class Sector extends Circle {
         return Math.PI * 2 * this._radius * Math.abs(startAngle - endAngle) / 360 + 2 * this._radius;
     }
 
+    //@internal
     _computeGeodesicArea() {
         if (isNil(this._radius)) {
             return 0;
@@ -206,6 +213,7 @@ export class Sector extends Circle {
         return Math.PI * Math.pow(this._radius, 2) * Math.abs(startAngle - endAngle) / 360;
     }
 
+    //@internal
     _toJSON(options) {
         const opts = extend({}, options);
         const center = this.getCenter();

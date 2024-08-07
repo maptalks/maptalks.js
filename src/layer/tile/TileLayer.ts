@@ -35,6 +35,7 @@ const MAX_ROOT_NODES = 32;
 
 const isSetAvailable: boolean = typeof Set !== 'undefined';
 class TileHashset {
+    //@internal
     _table: Set<any> | any;
     constructor() {
         this._table = isSetAvailable ? new Set() : {};
@@ -191,20 +192,35 @@ const ARR3: Vector3 = [0, 0, 0];
  */
 class TileLayer extends Layer {
     tileInfoCache: ArrayLRUCache;
+    //@internal
     _tileSize: Size;
+    //@internal
     _coordCache: Record<string, Point>;
+    //@internal
     _disablePyramid: boolean;
+    //@internal
     _hasOwnSR: boolean;
+    //@internal
     _tileFullExtent: PointExtent;
+    //@internal
     _rootNodes: any;
+    //@internal
     _visitedTiles: TileHashset;
+    //@internal
     _zScale: number;
+    //@internal
     _sr: SpatialReference;
+    //@internal
     _srMinZoom: number;
+    //@internal
     _srMaxZoom: number;
+    //@internal
     _defaultTileConfig: TileConfig;
+    //@internal
     _tileConfig: TileConfig;
+    //@internal
     _polygonOffset: number;
+    //@internal
     _renderer: TileLayerCanvasRenderer;
     options: TileLayerOptionsType;
 
@@ -297,11 +313,13 @@ class TileLayer extends Layer {
 
 
 
+    //@internal
     _isPyramidMode() {
         const sr = this.getSpatialReference();
         return !this._disablePyramid && !this._hasOwnSR && this.options['pyramidMode'] && sr && sr.isPyramid();
     }
 
+    //@internal
     _getTileFullExtent(): Extent {
         if (this._tileFullExtent) {
             return this._tileFullExtent;
@@ -315,6 +333,7 @@ class TileLayer extends Layer {
     }
 
 
+    //@internal
     _getRootNodes(offset0: TileOffsetType): TileRootType {
         const map = this.getMap();
         if (this._rootNodes) {
@@ -415,6 +434,7 @@ class TileLayer extends Layer {
         };
     }
 
+    //@internal
     _getRootError() {
         const map = this.getMap();
         const fov = toRadian(map.getFov());
@@ -436,6 +456,7 @@ class TileLayer extends Layer {
     }
 
 
+    //@internal
     _getPyramidTiles(z: number, layer: Layer): TilesType {
         const map = this.getMap();
         if (isNaN(+z)) {
@@ -531,6 +552,7 @@ class TileLayer extends Layer {
 
     }
 
+    //@internal
     _splitNode(
         node: TileNodeType,
         projectionView: Matrix4,
@@ -607,6 +629,7 @@ class TileLayer extends Layer {
 
     }
 
+    //@internal
     _createChildNode(node: TileNodeType, dx: number, dy: number, offset?: TileOffsetType, tileId?: string) {
         // const zoomOffset = this.options['zoomOffset'];
         const { x, y, idx, idy, extent2d } = node;
@@ -641,6 +664,7 @@ class TileLayer extends Layer {
         return childNode;
     }
 
+    //@internal
     _isTileVisible(node: TileNodeType, projectionView: Matrix4, glScale: number, maxZoom: number, offset: TileOffsetType) {
         if (node.z === 0) {
             return 1;
@@ -694,6 +718,7 @@ class TileLayer extends Layer {
     //     return [w, h];
     // }
 
+    //@internal
     _isTileInFrustum(node: TileNodeType, projectionView: Matrix4, glScale: number, offset: TileOffsetType): boolean {
         if (!this._zScale) {
             const map = this.getMap();
@@ -725,6 +750,7 @@ class TileLayer extends Layer {
      * from Cesium
      * 与cesium不同的是，我们用boundingVolume顶面的四个顶点中的最小值作为distanceToCamera
      */
+    //@internal
     _getScreenSpaceError(node: TileNodeType, glScale: number, maxZoom: number, offset: TileOffsetType) {
         // const fovDenominator = this._fovDenominator;
         const geometricError = node.error;
@@ -761,6 +787,7 @@ class TileLayer extends Layer {
      * @param z - zoom
      * @return tile descriptors
      */
+    //@internal
     _getCascadeTiles(z: number, parentLayer: Layer): TilesType {
         const map = this.getMap();
         const pitch = map.getPitch();
@@ -966,6 +993,7 @@ class TileLayer extends Layer {
         return super.getMaxZoom();
     }
 
+    //@internal
     _getTileZoom(zoom: number): number {
         if (!this._hasOwnSR) {
             const res0 = this.getMap().getResolution(zoom);
@@ -994,6 +1022,7 @@ class TileLayer extends Layer {
         return this.options['maxAvailableZoom'] || sr && sr.getMaxZoom();
     }
 
+    //@internal
     _getTiles(
         tileZoom: number,
         containerExtent: PointExtent,
@@ -1218,6 +1247,7 @@ class TileLayer extends Layer {
         } as TileGridType;
     }
 
+    //@internal
     _convertToExtent2d(containerExtent: PointExtent) {
         const map = this.getMap();
         return containerExtent.convertTo(c => {
@@ -1234,6 +1264,7 @@ class TileLayer extends Layer {
         });
     }
 
+    //@internal
     _splitTiles(
         frustumMatrix: Matrix4,
         tiles: TileNodeType[],
@@ -1268,6 +1299,7 @@ class TileLayer extends Layer {
         if (tile) tiles.push(tile);
     }
 
+    //@internal
     _checkAndAddTile(
         frustumMatrix: Matrix4,
         renderer: any,
@@ -1312,6 +1344,7 @@ class TileLayer extends Layer {
         return tileInfo;
     }
 
+    //@internal
     _getTileOffset(...params: number[]): TileOffsetType {
         // offset result can't be cached, as it varies with map's center.
         let offset = this.options['offset'];
@@ -1328,12 +1361,14 @@ class TileLayer extends Layer {
         return this._getTileId(x, y, zoom, id);
     }
 
+    //@internal
     _getTileId(x: number, y: number, zoom: number, id?: string): string {
         //id is to mark GroupTileLayer's child layers
         return `${id || this.getId()}_${x}_${y}_${zoom}`;
     }
 
 
+    //@internal
     _project(pcoord: Coordinate, out: Point) {
         if (this._hasOwnSR) {
             const map = this.getMap();
@@ -1345,6 +1380,7 @@ class TileLayer extends Layer {
         }
     }
 
+    //@internal
     _unproject(pcoord: Coordinate, out: Point) {
         if (this._hasOwnSR) {
             const map = this.getMap();
@@ -1361,6 +1397,7 @@ class TileLayer extends Layer {
      * initialize [tileConfig]{@link TileConfig} for the tilelayer
      * @private
      */
+    //@internal
     _initTileConfig() {
         const map = this.getMap(),
             tileSize = this.getTileSize();
@@ -1388,12 +1425,14 @@ class TileLayer extends Layer {
         delete this._disablePyramid;
     }
 
+    //@internal
     _getTileConfig(): TileConfig {
         if (!this._defaultTileConfig) {
             this._initTileConfig();
         }
         return this._tileConfig || this._defaultTileConfig;
     }
+    //@internal
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _bindMap(args?: any) {
         this._onSpatialReferenceChange();
@@ -1401,6 +1440,7 @@ class TileLayer extends Layer {
         return super._bindMap.apply(this, arguments);
     }
 
+    //@internal
     _isTileInExtent(frustumMatrix: Matrix4, tileExtent: PointExtent, offset: TileOffsetType, glScale: number) {
         const map = this.getMap();
 
@@ -1423,6 +1463,7 @@ class TileLayer extends Layer {
         return intersectsBox(matrix, TILE_BOX);
     }
 
+    //@internal
     _isSplittedTileInExtent(frustumMatrix: any, tileExtent: PointExtent, offset: TileOffsetType, glScale: number): boolean {
         const map = this.getMap();
         TILE_BOX[0][0] = (tileExtent.xmin - offset[0]) * glScale;
@@ -1438,6 +1479,7 @@ class TileLayer extends Layer {
         };
     }
 
+    //@internal
     _onSpatialReferenceChange() {
         delete this._tileConfig;
         delete this._defaultTileConfig;
@@ -1484,6 +1526,7 @@ class TileLayer extends Layer {
         return super.getRenderer() as TileLayerCanvasRenderer;
     }
 
+    //@internal
     _getTileBBox(tile: TileNodeType): BBOX | null {
         const map = this.getMap();
         if (!map) {
@@ -1505,6 +1548,7 @@ class TileLayer extends Layer {
 
     }
 
+    //@internal
     _tileInMask(tile: TileNodeType): boolean {
         const mask = this.getMask();
         if (!mask) {

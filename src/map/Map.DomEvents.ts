@@ -13,13 +13,20 @@ import { Coordinate, Point } from '../geo';
 
 declare module "./Map" {
     interface Map {
-        _removeDomEvents(): void;
-        _ignoreEvent(domEvent: MapEventDomType): boolean;
-        _isEventOutMap(domEvent: MapEventDomType): boolean;
-        _parseEvent(e: MapEventDomType, type?: string): MapEventDataType;
-        _parseEventFromCoord(coord: Coordinate): MapEventDataType;
-        _fireDOMEvent(target: any, e: MapEventDomType, type: string);
-        _getEventParams(e: MapEventDomType): MapEventDataType;
+        //@internal
+    _removeDomEvents(): void;
+        //@internal
+    _ignoreEvent(domEvent: MapEventDomType): boolean;
+        //@internal
+    _isEventOutMap(domEvent: MapEventDomType): boolean;
+        //@internal
+    _parseEvent(e: MapEventDomType, type?: string): MapEventDataType;
+        //@internal
+    _parseEventFromCoord(coord: Coordinate): MapEventDataType;
+        //@internal
+    _fireDOMEvent(target: any, e: MapEventDomType, type: string);
+        //@internal
+    _getEventParams(e: MapEventDomType): MapEventDataType;
 
     }
 }
@@ -225,18 +232,21 @@ const events =
     'drop ';
 
 Map.include(/** @lends Map.prototype */ {
+    //@internal
     _registerDomEvents() {
         const dom = this._panels.mapWrapper || this._containerDOM;
         addDomEvent(dom, events, this._handleDOMEvent, this);
         addDomEvent(dom, DRAGEVENTS, dragEventHanlder, this);
     },
 
+    //@internal
     _removeDomEvents() {
         const dom = this._panels.mapWrapper || this._containerDOM;
         removeDomEvent(dom, events, this._handleDOMEvent);
         removeDomEvent(dom, DRAGEVENTS, dragEventHanlder);
     },
 
+    //@internal
     _handleDOMEvent(e: MapEventDomType) {
         if (e && e.type === 'drop') {
             // https://developer.mozilla.org/zh-CN/docs/Web/API/HTML_Drag_and_Drop_API
@@ -321,6 +331,7 @@ Map.include(/** @lends Map.prototype */ {
         }
     },
 
+    //@internal
     _ignoreEvent(domEvent) {
         //ignore events originated from control and ui doms.
         if (!domEvent || !this._panels.control) {
@@ -345,6 +356,7 @@ Map.include(/** @lends Map.prototype */ {
         return false;
     },
 
+    //@internal
     _isEventOutMap(domEvent: MapEventDomType) {
         if (this.getPitch() > this.options['maxVisualPitch']) {
             const actualEvent = this._getActualEvent(domEvent);
@@ -356,12 +368,14 @@ Map.include(/** @lends Map.prototype */ {
         return false;
     },
 
+    //@internal
     _wrapTerrainData(eventParam: MapEventDataType) {
         if (eventParam.containerPoint && !eventParam.terrain) {
             eventParam.terrain = this._queryTerrainInfo(eventParam.containerPoint);
         }
     },
 
+    //@internal
     _parseEvent(e: MapEventDomType, type: string): MapEventDataType {
         if (!e) {
             return null;
@@ -391,6 +405,7 @@ Map.include(/** @lends Map.prototype */ {
         return eventParam;
     },
 
+    //@internal
     _parseEventFromCoord(coord: Coordinate): MapEventDataType {
         const containerPoint = this.coordToContainerPoint(coord),
             viewPoint = this.containerPointToViewPoint(containerPoint);
@@ -403,6 +418,7 @@ Map.include(/** @lends Map.prototype */ {
         return e;
     },
 
+    //@internal
     _getActualEvent(e: MapEventDomType) {
         e = e as TouchEvent;
         return e.touches && e.touches.length > 0 ?
@@ -410,6 +426,7 @@ Map.include(/** @lends Map.prototype */ {
                 e.changedTouches[0] : e;
     },
 
+    //@internal
     _fireDOMEvent(target, e: MapEventDomType, type: string) {
         if (this.isRemoved()) {
             return;
@@ -439,6 +456,7 @@ Map.include(/** @lends Map.prototype */ {
     // }
 
     // Extract _ geteventparams is reused in other plug-ins,such as maptalks.three plugin
+    //@internal
     _getEventParams(e): MapEventDataType {
         const map = this;
         const eventParam = {

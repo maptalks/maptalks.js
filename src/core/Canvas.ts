@@ -17,12 +17,7 @@ import { BBOX_TEMP, resetBBOX, setBBOX } from './util/bbox';
 import Extent from '../geo/Extent';
 import Size from '../geo/Size';
 
-export type Ctx = CanvasRenderingContext2D
-// export type Ctx = CanvasRenderingContext2D & {
-//     canvas: HTMLCanvasElement & {
-//         _drawn: boolean
-//     }
-// }
+export type Ctx = CanvasRenderingContext2D;
 
 const DEFAULT_STROKE_COLOR = '#000';
 const DEFAULT_FILL_COLOR = 'rgba(255,255,255,0)';
@@ -167,6 +162,7 @@ const Canvas = {
         }
     },
 
+    //@internal
     _createGradient(ctx: Ctx, g, extent: Extent) {
         let gradient = null,
             places = g['places'];
@@ -211,6 +207,7 @@ const Canvas = {
         return gradient;
     },
 
+    //@internal
     _setStrokePattern(ctx: Ctx, strokePattern: string, strokeWidth: number, linePatternOffset: number, resources) {
         const imgUrl = extractImageUrl(strokePattern);
         let imageTexture;
@@ -343,6 +340,7 @@ const Canvas = {
         return Canvas._textOnMultiRow(ctx, textDesc['rows'], style, pt, textDesc['size'], textDesc['rawSize']);
     },
 
+    //@internal
     _textOnMultiRow(ctx: Ctx, texts: any[], style, point, splitTextSize: Size, textSize: Size) {
         const ptAlign = getAlignPoint(splitTextSize, style['textHorizontalAlignment'], style['textVerticalAlignment']),
             lineHeight = textSize['height'] + style['textLineSpacing'],
@@ -368,6 +366,7 @@ const Canvas = {
         return BBOX_TEMP;
     },
 
+    //@internal
     _textOnLine(ctx: Ctx, text, pt, textHaloRadius: number, textHaloFill, textHaloAlpha: number) {
         if (hitTesting) {
             textHaloAlpha = 1;
@@ -427,6 +426,7 @@ const Canvas = {
         ctx.fillText(text, pt.x, pt.y + textOffsetY);
     },
 
+    //@internal
     _stroke(ctx, strokeOpacity, x?, y?) {
         if (hitTesting) {
             strokeOpacity = 1;
@@ -465,6 +465,7 @@ const Canvas = {
         }
     },
 
+    //@internal
     _path(ctx, points, lineDashArray?, lineOpacity?, ignoreStrokePattern?) {
         if (!isArrayHasData(points)) {
             return;
@@ -519,6 +520,7 @@ const Canvas = {
         Canvas._stroke(ctx, lineOpacity);
     },
 
+    //@internal
     _multiClip(ctx, points) {
         if (!points || points.length === 0) return;
         points.forEach(pts => {
@@ -656,6 +658,7 @@ const Canvas = {
         }
     },
 
+    //@internal
     _ring(ctx, ring, lineDashArray, lineOpacity, ignorePattern?) {
         const isPattern = Canvas._isPattern(ctx.strokeStyle);
         if (!ignorePattern && isPattern && !ring[0].equals(ring[ring.length - 1])) {
@@ -824,6 +827,7 @@ const Canvas = {
      * @param  {Point} p2      point 2
      * @param  {Number} degree arc degree between p1 and p2
      */
+    //@internal
     _arcBetween(ctx: CanvasRenderingContext2D, p1, p2, degree) {
         const a = degree,
             dist = p1.distanceTo(p2),
@@ -854,6 +858,7 @@ const Canvas = {
         return [cx, cy];
     },
 
+    //@internal
     _lineTo(ctx: CanvasRenderingContext2D, p) {
         ctx.lineTo(p.x, p.y);
     },
@@ -871,6 +876,7 @@ const Canvas = {
         Canvas._stroke(ctx, lineOpacity);
     },
 
+    //@internal
     _bezierCurveTo(ctx: CanvasRenderingContext2D, p1, p2, p3) {
         ctx.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
     },
@@ -936,6 +942,7 @@ const Canvas = {
         sector(ctx, pt.x, pt.y, size, startAngle, endAngle);
     },
 
+    //@internal
     _isPattern(style: any) {
         return !isString(style) && !('addColorStop' in style);
     },

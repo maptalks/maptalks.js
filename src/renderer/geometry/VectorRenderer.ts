@@ -42,10 +42,13 @@ function isWithinPixel(painter: Painter) {
 }
 
 const geometryInclude = {
+    //@internal
     _redrawWhenPitch: () => false,
 
+    //@internal
     _redrawWhenRotate: () => false,
 
+    //@internal
     _getRenderBBOX(ctx: CanvasRenderingContext2D, points: Point[]) {
         if (!ctx.isHitTesting) {
             resetBBOX(BBOX_TEMP);
@@ -88,14 +91,18 @@ function getRotatedShell() {
 }
 //for Ellipse,Circle,
 const el = {
+    //@internal
     _redrawWhenPitch: (): boolean => true,
 
+    //@internal
     _redrawWhenRotate: function (): boolean {
         return (this instanceof Ellipse) || (this instanceof Sector);
     },
+    //@internal
     _computeRotatedPrjExtent,
     getRotatedShell,
 
+    //@internal
     _paintAsPath: function (): boolean {
         //why? when rotate need draw by path
         if (this.isRotated()) {
@@ -107,6 +114,7 @@ const el = {
         return altitude > 0 || map.getPitch() || ((this instanceof Ellipse) && map.getBearing());
     },
 
+    //@internal
     _getPaintParams(): any[] {
         const map = this.getMap();
         if (this._paintAsPath()) {
@@ -118,6 +126,7 @@ const el = {
         return [pt, ...size];
     },
 
+    //@internal
     _paintOn: function (...args: any[]) {
         if (this._paintAsPath()) {
             // @ts-expect-error
@@ -128,6 +137,7 @@ const el = {
         }
     },
 
+    //@internal
     _getRenderSize(pt: Coordinate) {
         const map = this.getMap(),
             glRes = map.getGLRes();
@@ -153,6 +163,7 @@ declare module '../../geometry/Circle' {
 Circle.include(el);
 
 const rectangleInclude = {
+    //@internal
     _getPaintParams() {
         const map = this.getMap();
         const shell = this._getPrjShell();
@@ -160,7 +171,9 @@ const rectangleInclude = {
         return [points];
     },
 
+    //@internal
     _paintOn: Canvas.polygon,
+    //@internal
     _computeRotatedPrjExtent,
     getRotatedShell
 };
@@ -175,8 +188,10 @@ declare module '../../geometry/Rectangle' {
 Rectangle.include(rectangleInclude);
 
 const sectorInclude = {
+    //@internal
     _redrawWhenPitch: (): boolean => true,
 
+    //@internal
     _getPaintParams(): [Point, number, [number, number]] {
         if (this._paintAsPath()) {
             return Polygon.prototype._getPaintParams.call(this, true);
@@ -192,6 +207,7 @@ const sectorInclude = {
         ];
     },
 
+    //@internal
     _paintOn: function (...args: any[]) {
         if (this._paintAsPath()) {
             // @ts-expect-error
@@ -219,11 +235,13 @@ Sector.include(el, sectorInclude);
 
 declare module '../../geometry/Path' {
     interface Path {
-        _paintAsPath: () => boolean;
+        //@internal
+    _paintAsPath: () => boolean;
     }
 }
 
 Path.include({
+    //@internal
     _paintAsPath: () => true
 });
 
@@ -233,6 +251,7 @@ const lineStringInclude = {
         'classic': [3, 4]
     },
 
+    //@internal
     _getArrowShape(prePoint?: Point, point?: any, lineWidth?: number, arrowStyle?: any, tolerance?: number) {
         if (!prePoint || !point || prePoint.equals(point)) {
             return null;
@@ -264,12 +283,14 @@ const lineStringInclude = {
         return [p0, point, p2, p0];
     },
 
+    //@internal
     _getPaintParams(): [Point[]] {
         const prjVertexes = this._getPrjCoordinates();
         const points = this._getPath2DPoints(prjVertexes, false, this.getMap().getGLRes());
         return [points];
     },
 
+    //@internal
     _paintOn(ctx: CanvasRenderingContext2D, points: Point[], lineOpacity?: number, fillOpacity?: number, dasharray?: number[]) {
         const r = isWithinPixel(this._painter);
         if (r.within) {
@@ -283,10 +304,12 @@ const lineStringInclude = {
         return this._getRenderBBOX(ctx, points);
     },
 
+    //@internal
     _getArrowPlacement() {
         return this.options['arrowPlacement'];
     },
 
+    //@internal
     _getArrowStyle() {
         const arrowStyle = this.options['arrowStyle'];
         if (arrowStyle) {
@@ -295,6 +318,7 @@ const lineStringInclude = {
         return null;
     },
 
+    //@internal
     _getArrows(points: any, lineWidth: number, tolerance?: number) {
         const arrowStyle = this._getArrowStyle();
         if (!arrowStyle || points.length < 2) {
@@ -326,6 +350,7 @@ const lineStringInclude = {
         return arrows;
     },
 
+    //@internal
     _getArrowPoints(arrows: any[], segments: any[], lineWidth?: number, arrowStyle?: any, tolerance?: number) {
         for (let ii = 0, ll = segments.length - 1; ii < ll; ii++) {
             const arrow = this._getArrowShape(segments[ii], segments[ii + 1], lineWidth, arrowStyle, tolerance);
@@ -335,6 +360,7 @@ const lineStringInclude = {
         }
     },
 
+    //@internal
     _paintArrow(ctx: CanvasRenderingContext2D, points: Point[], lineOpacity?: number) {
         let lineWidth = this._getInternalSymbol()['lineWidth'];
         if (!isNumber(lineWidth) || lineWidth < 3) {
@@ -364,6 +390,7 @@ declare module '../../geometry/LineString' {
 LineString.include(lineStringInclude);
 
 const polygonInclude = {
+    //@internal
     _getPaintParams(disableSimplify?: boolean) {
         const glRes = this.getMap().getGLRes();
         const prjVertexes = this._getPrjShell();
@@ -406,6 +433,7 @@ const polygonInclude = {
         return [points];
     },
 
+    //@internal
     _paintOn(ctx: CanvasRenderingContext2D, points: Point[], lineOpacity?: number, fillOpacity?: number, dasharray?: number[]) {
         const r = isWithinPixel(this._painter);
         if (r.within) {
@@ -419,7 +447,8 @@ const polygonInclude = {
 
 declare module '../../geometry/Polygon' {
     interface Polygon {
-        _paintOn(ctx: CanvasRenderingContext2D, points: Point[], lineOpacity?: number, fillOpacity?: number, dasharray?: number[]): WithNull<BBOX>;
+        //@internal
+    _paintOn(ctx: CanvasRenderingContext2D, points: Point[], lineOpacity?: number, fillOpacity?: number, dasharray?: number[]): WithNull<BBOX>;
     }
 }
 

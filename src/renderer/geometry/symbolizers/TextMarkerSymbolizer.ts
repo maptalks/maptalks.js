@@ -14,10 +14,14 @@ import { ResourceCache } from '../..';
 const TEMP_EXTENT = new PointExtent();
 
 export default class TextMarkerSymbolizer extends PointSymbolizer {
+    //@internal
     _dynamic: any;
     strokeAndFill: any;
+    //@internal
     _textDesc: any;
+    //@internal
     _fixedExtent: PointExtent;
+    //@internal
     _index: number;
 
     static test(symbol: any): boolean {

@@ -10,7 +10,8 @@ type AnimationStyles = { [key: string]: any };
 declare module "../Geometry" {
 
     interface Geometry {
-        _animPlayer: Player;
+        //@internal
+    _animPlayer: Player;
         animate(styles: AnimationStyles, options?: AnimationOptionsType | ((frame: Frame) => void), step?: (frame: Frame) => void): Player;
     }
 }
@@ -132,6 +133,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * @return {Object} styles
      * @private
      */
+    //@internal
     _prepareAnimationStyles(styles: AnimationStyles): object {
 
         const symbol = this._getInternalSymbol();
@@ -189,8 +191,9 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * 绑定动画事件
      * @english
      * Bind animation events
-     * @param {string} playState 
+     * @param {string} playState
      */
+    //@internal
     _fireAnimateEvent(playState: string): void {
         if (playState === 'finished') {
             delete this._animationStarted;

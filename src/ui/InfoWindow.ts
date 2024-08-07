@@ -49,9 +49,11 @@ const EMPTY_SIZE = new Size(0, 0);
 class InfoWindow extends UIComponent {
 
     options: InfoWindowOptionsType;
+    //@internal
     _onCloseBtnClick: (event: MouseEvent | TouchEvent) => void;
 
     // TODO: obtain class in super
+    //@internal
     _getClassName() {
         return 'InfoWindow';
     }
@@ -216,6 +218,7 @@ class InfoWindow extends UIComponent {
         return dom;
     }
 
+    //@internal
     _replaceTemplate(dom: Element) {
         const geo = this._owner as Geometry;
         if (this.options['enableTemplate'] && geo && geo.getProperties && dom && dom.innerHTML) {
@@ -318,6 +321,7 @@ class InfoWindow extends UIComponent {
         }
     }
 
+    //@internal
     _onAutoOpen(e: MapEventDataType) {
         const owner = this.getOwner();
         setTimeout(() => {
@@ -336,6 +340,7 @@ class InfoWindow extends UIComponent {
         }, 1);
     }
 
+    //@internal
     _rectifyMouseCoordinte(owner: Geometry | Map, mouseCoordinate: Coordinate): Coordinate {
         if (owner instanceof LineString) {
             return this._rectifyLineStringMouseCoordinate(owner, mouseCoordinate).coordinate;
@@ -350,6 +355,7 @@ class InfoWindow extends UIComponent {
         return mouseCoordinate;
     }
 
+    //@internal
     _rectifyLineStringMouseCoordinate(lineString: LineString, mouseCoordinate: Coordinate) {
         const map = this.getMap();
         const coordinates = lineString.getCoordinates() || [];
@@ -447,6 +453,7 @@ class InfoWindow extends UIComponent {
         };
     }
 
+    //@internal
     _getWindowWidth() {
         const defaultWidth = options.width;
         let width = this.options['width'];

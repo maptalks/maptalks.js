@@ -22,7 +22,7 @@ type VectorLayerToJSONOptions = {
 const TEMP_EXTENT = new PointExtent();
 /**
  * 配置参数
- * 
+ *
  * @english
  * @property {Object}  options - VectorLayer's options
  * @property {Boolean} options.debug=false           - whether the geometries on the layer is in debug mode.
@@ -72,7 +72,7 @@ const options: VectorLayerOptionsType = {
 // const TYPES = ['LineString', 'Polyline', 'Polygon', 'MultiLineString', 'MultiPolygon'];
 /**
  * 用于管理、呈现 geometries 的 layer
- * 
+ *
  * @english
  * @classdesc
  * A layer for managing and rendering geometries.
@@ -117,7 +117,7 @@ class VectorLayer extends OverlayLayer {
 
     /**
      * 通过给定 coordinate 识别 geometries
-     * 
+     *
      * @english
      * Identify the geometries on the given coordinate
      * @param  {maptalks.Coordinate} coordinate   - coordinate to identify
@@ -142,7 +142,7 @@ class VectorLayer extends OverlayLayer {
 
     /**
      * 通过给定 point 识别 geometries
-     * 
+     *
      * @english
      * Identify the geometries on the given container point
      * @param  {maptalks.Point} point   - container point to identify
@@ -164,6 +164,7 @@ class VectorLayer extends OverlayLayer {
         return this._hitGeos(this._geoList, point, options);
     }
 
+    //@internal
     _hitGeos(geometries: Array<Geometry>, cp: Point, options: LayerIdentifyOptionsType) {
         if (!geometries || !geometries.length) {
             return [];
@@ -265,7 +266,7 @@ class VectorLayer extends OverlayLayer {
 
     /**
      * 输出 VectorLayer 的 json
-     * 
+     *
      * @english
      * Export the VectorLayer's JSON. <br>
      * @param  {Object} [options=null] - export options
@@ -318,7 +319,7 @@ class VectorLayer extends OverlayLayer {
 
     /**
      * 通过 json 生成 VectorLayer
-     * 
+     *
      * @english
      * Reproduce a VectorLayer from layer's JSON.
      * @param  {Object} layerJSON - layer's JSON

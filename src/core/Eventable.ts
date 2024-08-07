@@ -34,9 +34,12 @@ export type HandlerFn = (result?: HandlerFnResultType) => void | boolean;
 
 export default function <T extends MixinConstructor>(Base: T) {
     return class EventableMixin extends Base {
-        _eventMap?: Record<string, HandlerContext[]>;
-        _eventParent?: EventableMixin;
-        _eventTarget?: any;
+        //@internal
+    _eventMap?: Record<string, HandlerContext[]>;
+        //@internal
+    _eventParent?: EventableMixin;
+        //@internal
+    _eventTarget?: any;
         /**
          * 注册事件的监听
          *
@@ -307,7 +310,8 @@ export default function <T extends MixinConstructor>(Base: T) {
             return this._fire.call(this, eventType, param);
         }
 
-        _wrapOnceHandler(evtType: string, handler: HandlerFn, context?: any) {
+        //@internal
+    _wrapOnceHandler(evtType: string, handler: HandlerFn, context?: any) {
             // const me = this;
             const key = generateWrapKey(evtType);
             let called = false;
@@ -329,7 +333,8 @@ export default function <T extends MixinConstructor>(Base: T) {
             return fn;
         }
 
-        _switch(to: string, eventRecords: EventRecords, context?: any) {
+        //@internal
+    _switch(to: string, eventRecords: EventRecords, context?: any) {
             for (const p in eventRecords) {
                 if (eventRecords.hasOwnProperty(p)) {
                     this[to](p, eventRecords[p], context);
@@ -338,7 +343,8 @@ export default function <T extends MixinConstructor>(Base: T) {
             return this;
         }
 
-        _clearListeners(eventType: string) {
+        //@internal
+    _clearListeners(eventType: string) {
             if (!this._eventMap || !isString(eventType)) {
                 return;
             }
@@ -349,7 +355,8 @@ export default function <T extends MixinConstructor>(Base: T) {
             this._eventMap[eventType] = null;
         }
 
-        _clearAllListeners() {
+        //@internal
+    _clearAllListeners() {
             this._eventMap = null;
         }
 
@@ -361,17 +368,20 @@ export default function <T extends MixinConstructor>(Base: T) {
          * @param parent - event parent
          * @private
          */
-        _setEventParent(parent: EventableMixin) {
+        //@internal
+    _setEventParent(parent: EventableMixin) {
             this._eventParent = parent;
             return this;
         }
 
-        _setEventTarget(target) {
+        //@internal
+    _setEventTarget(target) {
             this._eventTarget = target;
             return this;
         }
 
-        _fire(eventType: string, param: BaseEventParamsType) {
+        //@internal
+    _fire(eventType: string, param: BaseEventParamsType) {
             if (!this._eventMap) {
                 return this;
             }

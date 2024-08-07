@@ -53,6 +53,7 @@ class Menu extends UIComponent {
     }
 
     // TODO: obtain class in super
+    //@internal
     _getClassName() {
         return 'Menu';
     }
@@ -163,6 +164,7 @@ class Menu extends UIComponent {
         };
     }
 
+    //@internal
     _createMenuItemDom() {
         const me = this;
         const map = this.getMap();
@@ -214,6 +216,7 @@ class Menu extends UIComponent {
         return ul;
     }
 
+    //@internal
     _getMenuWidth() {
         const defaultWidth = 160;
         const width = this.options['width'] || defaultWidth;

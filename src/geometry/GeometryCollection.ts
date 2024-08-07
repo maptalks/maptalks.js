@@ -29,10 +29,15 @@ const TEMP_EXTENT = new PointExtent();
  */
 class GeometryCollection extends Geometry {
 
+    //@internal
     _geometries: Geometry[]
+    //@internal
     _pickGeometryIndex: number
+    //@internal
     _originalSymbol: any
+    //@internal
     _draggbleBeforeEdit: any
+    //@internal
     _editing: boolean
 
     /**
@@ -277,6 +282,7 @@ class GeometryCollection extends Geometry {
         return this;
     }
 
+    //@internal
     _setExternSymbol(symbol: any): this {
         symbol = this._prepareSymbol(symbol);
         this._externSymbol = symbol;
@@ -294,12 +300,14 @@ class GeometryCollection extends Geometry {
      * @param  {Layer} layer
      * @private
      */
+    //@internal
     _bindLayer(): void {
         // eslint-disable-next-line prefer-rest-params
         super._bindLayer.apply(this, arguments);
         this._bindGeometriesToLayer();
     }
 
+    //@internal
     _bindGeometriesToLayer() {
         const layer = this.getLayer();
         this.forEach(function (geometry) {
@@ -314,6 +322,7 @@ class GeometryCollection extends Geometry {
      * @param  {Geometry[]} geometries - geometries to check
      * @private
      */
+    //@internal
     _checkGeometries(geometries: Geometry[]): Geometry[] {
         const invalidGeoError = 'The geometry added to collection is invalid.';
         geometries = Array.isArray(geometries) ? geometries : [geometries];
@@ -338,10 +347,12 @@ class GeometryCollection extends Geometry {
         return filterGeometries;
     }
 
+    //@internal
     _checkGeo(geo: Geometry): boolean {
         return (geo instanceof Geometry);
     }
 
+    //@internal
     _updateCache(): void {
         this._clearCache();
         if (this.isEmpty()) {
@@ -354,6 +365,7 @@ class GeometryCollection extends Geometry {
         });
     }
 
+    //@internal
     _removePainter(): void {
         if (this._painter) {
             this._painter.remove();
@@ -364,6 +376,7 @@ class GeometryCollection extends Geometry {
         });
     }
 
+    //@internal
     _computeCenter(projection: null | ProjectionCommon): Coordinate {
         if (!projection || this.isEmpty()) {
             return null;
@@ -389,6 +402,7 @@ class GeometryCollection extends Geometry {
         return new Coordinate(sumX / counter, sumY / counter);
     }
 
+    //@internal
     _containsPoint(point: Point, t?: number): boolean {
         if (this.isEmpty()) {
             return false;
@@ -405,6 +419,7 @@ class GeometryCollection extends Geometry {
     }
 
     // fix #2177 GeometryCollection hitTolerance always is 0
+    //@internal
     _hitTestTolerance(): number {
         const geometries = this.getGeometries();
         let hitTolerance = 0;
@@ -415,14 +430,17 @@ class GeometryCollection extends Geometry {
         return hitTolerance;
     }
 
+    //@internal
     _computeExtent(projection: null | ProjectionCommon): Extent {
         return computeExtent.call(this, projection, '_computeExtent');
     }
 
+    //@internal
     _computePrjExtent(projection: null | ProjectionCommon): Extent {
         return computeExtent.call(this, projection, '_computePrjExtent');
     }
 
+    //@internal
     _computeGeodesicLength(projection: null | ProjectionCommon): number {
         if (!projection || this.isEmpty()) {
             return 0;
@@ -438,6 +456,7 @@ class GeometryCollection extends Geometry {
         return result;
     }
 
+    //@internal
     _computeGeodesicArea(projection: null | ProjectionCommon): number {
         if (!projection || this.isEmpty()) {
             return 0;
@@ -454,6 +473,7 @@ class GeometryCollection extends Geometry {
     }
 
     //for toGeoJSON
+    //@internal
     _exportGeoJSONGeometry() {
         const children = [];
         if (!this.isEmpty()) {
@@ -471,6 +491,7 @@ class GeometryCollection extends Geometry {
         };
     }
     //for toJSON
+    //@internal
     _toJSON(options?: any) {
         //fix call from feature-filter package
         options = extend({}, options);
@@ -503,6 +524,7 @@ class GeometryCollection extends Geometry {
         return options;
     }
 
+    //@internal
     _clearProjection() {
         if (this.isEmpty()) {
             return;
@@ -524,6 +546,7 @@ class GeometryCollection extends Geometry {
      * @private
      * @return {Coordinate[]}
      */
+    //@internal
     _getConnectPoints(): Coordinate[] {
         const extent = this.getExtent();
         const anchors = [
@@ -535,6 +558,7 @@ class GeometryCollection extends Geometry {
         return anchors;
     }
 
+    //@internal
     _getExternalResources(): any {
         if (this.isEmpty()) {
             return [];

@@ -26,6 +26,7 @@ const END_EVENTS = {
 class DragHandler extends Handler {
 
     options: DragOptionsType;
+    //@internal
     _onMouseDown: (e: any) => any;
     moved: boolean;
     startPos: Point;
@@ -156,6 +157,7 @@ class DragHandler extends Handler {
         this.fire('mouseup', param);
     }
 
+    //@internal
     _offEvents() {
         const dom = this.dom;
         off(dom, 'mouseleave', this.onMouseUp);

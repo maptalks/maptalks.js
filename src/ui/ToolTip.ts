@@ -32,11 +32,15 @@ const options: ToolTipOptionsType = {
 class ToolTip extends UIComponent {
 
     options: ToolTipOptionsType;
+    //@internal
     _content: string;
+    //@internal
     _timeout: NodeJS.Timeout;
+    //@internal
     _owner: Geometry;
 
     // TODO:obtain class in super
+    //@internal
     _getClassName() {
         return 'ToolTip';
     }
@@ -167,6 +171,7 @@ class ToolTip extends UIComponent {
      * override UIComponent method
      * ignore altitude calculation
      */
+    //@internal
     _getViewPoint() {
         return this.getMap().coordToViewPoint(this._coordinate, undefined, 0)
             ._add(this.options['dx'], this.options['dy']);

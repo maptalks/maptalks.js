@@ -54,24 +54,43 @@ const TEMP_BBOX = {
  * @private
  */
 class Painter extends Class {
+    //@internal
     _drawTime: number;
+    //@internal
     _hasPoint: boolean;
+    //@internal
     _debugSymbolizer: DebugSymbolizer;
+    //@internal
     _renderPoints: Record<string, Point[][]>;
+    //@internal
     _hitPoint: WithUndef<Point>;
+    //@internal
     _sprite: any;
+    //@internal
     _paintParams: any;
+    //@internal
     _cachedParams: any;
+    //@internal
     _unsimpledParams: any;
+    //@internal
     _spriting: boolean;
+    //@internal
     _extent2D: Extent & { _zoom: number };
+    //@internal
     _fixedExtent: PointExtent;
+    //@internal
     _altAtGL: any;
+    //@internal
     _propAlt: number | number[] | number[][];
+    //@internal
     _projCode: string;
+    //@internal
     _pitched: boolean;
+    //@internal
     _rotated: boolean;
+    //@internal
     _painted: boolean;
+    //@internal
     _containerBbox: typeof TEMP_BBOX;
 
     bbox: BBOX;
@@ -93,6 +112,7 @@ class Painter extends Class {
         this._drawTime = 0;
     }
 
+    //@internal
     _setDrawTime(time: number) {
         this._drawTime = time;
         return this;
@@ -129,6 +149,7 @@ class Painter extends Class {
     /**
      * create symbolizers
      */
+    //@internal
     _createSymbolizers() {
         const geoSymbol = this.getSymbol(),
             symbolizers = [],
@@ -270,6 +291,7 @@ class Painter extends Class {
         return tr;
     }
 
+    //@internal
     _pointContainerPoints(points, dx, dy, ignoreAltitude, disableClip, pointPlacement, ptkey = '_pt') {
         if (this._aboveCamera()) {
             return null;
@@ -428,6 +450,7 @@ class Painter extends Class {
         return cPoints;
     }
 
+    //@internal
     _clip(points: Point[], altitude?: number) {
         // linestring polygon clip
         if (isNumber(altitude) && altitude !== 0) {
@@ -461,11 +484,13 @@ class Painter extends Class {
         const mapStateCache = renderer.mapStateCache;
         let _2DExtent, glExtent, pitch;
         if (mapStateCache) {
-            _2DExtent = mapStateCache._2DExtent;
+            //@internal
+    _2DExtent = mapStateCache._2DExtent;
             glExtent = mapStateCache.glExtent;
             pitch = mapStateCache.pitch;
         } else {
-            _2DExtent = map.get2DExtent();
+            //@internal
+    _2DExtent = map.get2DExtent();
             glExtent = map.get2DExtentAtRes(map.getGLRes());
             pitch = map.getPitch();
         }
@@ -561,6 +586,7 @@ class Painter extends Class {
      * @param {Number|Number[]} altitude
      * @private
      */
+    //@internal
     _interpolateSegAlt(clipSegs, orig, altitude) {
         if (!Array.isArray(altitude)) {
             const fn = cc => cc.point;
@@ -599,6 +625,7 @@ class Painter extends Class {
         return this.geometry._getInternalSymbol();
     }
 
+    //@internal
     _resetSymbolizersBBOX() {
         //reset all symbolizers render bbox
         for (let i = this.symbolizers.length - 1; i >= 0; i--) {
@@ -730,6 +757,7 @@ class Painter extends Class {
         return !!this._hitPoint;
     }
 
+    //@internal
     _prepareShadow(ctx: CanvasRenderingContext2D, symbol: Record<string, any>) {
         if (symbol['shadowBlur']) {
             //Ignore shadows when hit detection
@@ -745,6 +773,7 @@ class Painter extends Class {
         }
     }
 
+    //@internal
     _eachSymbolizer(fn, context?: any) {
         if (!this.symbolizers) {
             return;
@@ -798,6 +827,7 @@ class Painter extends Class {
         return this._extent2D.add(TEMP_FIXED_EXTENT);
     }
 
+    //@internal
     _computeExtent2D(extent) {
         for (let i = this.symbolizers.length - 1; i >= 0; i--) {
             const symbolizer = this.symbolizers[i];
@@ -806,6 +836,7 @@ class Painter extends Class {
         return extent;
     }
 
+    //@internal
     _computeFixedExtent(resources, extent) {
         for (let i = this.symbolizers.length - 1; i >= 0; i--) {
             const symbolizer = this.symbolizers[i];
@@ -816,6 +847,7 @@ class Painter extends Class {
         return extent;
     }
 
+    //@internal
     _isDynamicSize() {
         for (let i = this.symbolizers.length - 1; i >= 0; i--) {
             const symbolizer = this.symbolizers[i];
@@ -826,6 +858,7 @@ class Painter extends Class {
         return false;
     }
 
+    //@internal
     _aboveCamera() {
         let altitude = this.getMinAltitude();
         const map = this.getMap();
@@ -901,6 +934,7 @@ class Painter extends Class {
         this._removeSymbolizers();
     }
 
+    //@internal
     _removeSymbolizers() {
         this._eachSymbolizer(function (symbolizer) {
             delete symbolizer.painter;
@@ -947,6 +981,7 @@ class Painter extends Class {
         return this.maxAltitude;
     }
 
+    //@internal
     _getGeometryAltitude() {
         const map = this.getMap();
         if (!map) {
@@ -967,6 +1002,7 @@ class Painter extends Class {
         return altitude;
     }
 
+    //@internal
     _verifyProjection() {
         const projection = this.geometry._getProjection() || PROJECTION;
         if (this._projCode && this._projCode !== projection.code) {
@@ -975,9 +1011,11 @@ class Painter extends Class {
         this._projCode = (projection as any).code;
     }
 
+    //@internal
     _beforePaint() {
     }
 
+    //@internal
     _afterPaint() {
     }
 }

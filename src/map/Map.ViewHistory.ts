@@ -9,8 +9,10 @@ declare module "./Map" {
         zoomToNextView(options?: any): MapViewType;
         hasNextView(): boolean;
         getViewHistory(): Array<MapViewType>;
-        _onViewChange(view: MapViewType): void;
-        _getCurrentView(): MapViewType;
+        //@internal
+    _onViewChange(view: MapViewType): void;
+        //@internal
+    _getCurrentView(): MapViewType;
 
 
     }
@@ -19,6 +21,7 @@ declare module "./Map" {
 
 
 Map.include(/** @lends Map.prototype */ {
+    //@internal
     _onViewChange(view: MapViewType) {
         if (!this._viewHistory) {
             this._viewHistory = [];
@@ -104,6 +107,7 @@ Map.include(/** @lends Map.prototype */ {
         return true;
     },
 
+    //@internal
     _zoomToView(view: MapViewType, options: MapAnimationOptionsType) {
         const old = this.getView();
         if (options['animation']) {
@@ -128,6 +132,7 @@ Map.include(/** @lends Map.prototype */ {
         return this._viewHistory;
     },
 
+    //@internal
     _fireViewChange(old: MapViewType, view: MapViewType) {
         this._fireEvent('viewchange', {
             'old': old,
@@ -136,6 +141,7 @@ Map.include(/** @lends Map.prototype */ {
         this._insertUICollidesQueue();
     },
 
+    //@internal
     _getCurrentView(): MapViewType {
         if (!this._viewHistory) {
             return null;

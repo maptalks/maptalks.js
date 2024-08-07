@@ -146,10 +146,12 @@ class Label extends TextMarker {
         return label;
     }
 
+    //@internal
     _canEdit(): boolean {
         return false;
     }
 
+    //@internal
     _toJSON(options: any) {
         return {
             'feature': this.toGeoJSON(options),
@@ -158,6 +160,7 @@ class Label extends TextMarker {
         };
     }
 
+    //@internal
     _refresh(): void {
         const symbol = extend({},
             this.getTextSymbol(),
@@ -206,6 +209,7 @@ class Label extends TextMarker {
         delete this._refreshing;
     }
 
+    //@internal
     _getBoxSize(symbol: any): any {
         if (!symbol['markerType']) {
             symbol['markerType'] = 'square';

@@ -7,10 +7,13 @@ declare module "./Map" {
         getCollisionIndex(): CollisionIndex
         createCollisionIndex(): CollisionIndex
         clearCollisionIndex(): this
-        _insertUICollidesQueue(): this
+        //@internal
+    _insertUICollidesQueue(): this
         uiCollides(): this
-        _addUI(ui: UIComponent): this
-        _removeUI(ui: UIComponent): number
+        //@internal
+    _addUI(ui: UIComponent): this
+        //@internal
+    _removeUI(ui: UIComponent): number
     }
 }
 
@@ -56,6 +59,7 @@ Map.include({
         return this;
     },
 
+    //@internal
     _insertUICollidesQueue(): Map {
         if (!this._uiCollidesQueue) {
             this._uiCollidesQueue = [];
@@ -123,6 +127,7 @@ Map.include({
      * @private
      * @param ui - UIComponent对象
      */
+    //@internal
     _addUI(ui: UIComponent): Map {
         if (!this.uiList) {
             this.uiList = [];
@@ -143,6 +148,7 @@ Map.include({
      * @private
      * @param ui - UIComponent对象
      */
+    //@internal
     _removeUI(ui: UIComponent): number {
         if (!this.uiList) {
             return -1;

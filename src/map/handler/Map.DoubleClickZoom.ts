@@ -18,6 +18,7 @@ class MapDoubleClickZoomHandler extends Handler {
         this.target.off('_dblclick', this._onDoubleClick, this);
     }
 
+    //@internal
     _onDoubleClick(param: Param) {
         const map = this.target;
         if (map.options['doubleClickZoom']) {

@@ -25,14 +25,23 @@ class GeometryDragHandler extends Handler {
 
     container: any
 
+    //@internal
     _dragHandler: any
+    //@internal
     _shadow: any
+    //@internal
     _dragStageLayer: any
+    //@internal
     _shadowConnectors: any
+    //@internal
     _lastCoord: any
+    //@internal
     _lastPoint: any
+    //@internal
     _startParam: any
+    //@internal
     _moved: boolean
+    //@internal
     _isDragging: boolean
 
 
@@ -53,6 +62,7 @@ class GeometryDragHandler extends Handler {
         delete this.container;
     }
 
+    //@internal
     _prepareDragHandler(): void {
         this._dragHandler = new DragHandler(this.container);
         this._dragHandler.on('dragging', this._dragging, this)
@@ -60,6 +70,7 @@ class GeometryDragHandler extends Handler {
             .enable();
     }
 
+    //@internal
     _prepareShadow(): void {
         const target = this.target;
         const needShadow = target.getLayer().options['renderer'] === 'canvas';
@@ -85,6 +96,7 @@ class GeometryDragHandler extends Handler {
         this._prepareShadowConnectors();
     }
 
+    //@internal
     _updateShadowSymbol(shadow: any, target: any): void {
         shadow.setSymbol(target._getInternalSymbol());
         if (target.options['dragShadow']) {
@@ -93,6 +105,7 @@ class GeometryDragHandler extends Handler {
         }
     }
 
+    //@internal
     _prepareShadowConnectors(): void {
         //copy connectors
         const target = this.target;
@@ -125,12 +138,14 @@ class GeometryDragHandler extends Handler {
         this._dragStageLayer.bringToFront().addGeometry(shadowConnectors);
     }
 
+    //@internal
     _onTargetUpdated(): void {
         if (this._shadow) {
             this._shadow.setSymbol(this.target._getSymbol());
         }
     }
 
+    //@internal
     _prepareDragStageLayer(): void {
         const map = this.target.getMap(),
             layer = this.target.getLayer();
@@ -148,6 +163,7 @@ class GeometryDragHandler extends Handler {
         this._dragStageLayer._getRenderer().resources = resources;
     }
 
+    //@internal
     _startDrag(param: any): void {
         const map = this.target.getMap();
         if (!map) {
@@ -178,6 +194,7 @@ class GeometryDragHandler extends Handler {
         return;
     }
 
+    //@internal
     _dragging(param: any): void {
         const target = this.target;
         const map = target.getMap();
@@ -278,6 +295,7 @@ class GeometryDragHandler extends Handler {
         }
     }
 
+    //@internal
     _endDrag(param?: any): void {
         if (this._dragHandler) {
             this._dragHandler.disable();
@@ -332,6 +350,7 @@ class GeometryDragHandler extends Handler {
         return true;
     }
 
+    //@internal
     _updateTargetAndRemoveShadow(eventParam: any): void {
         if (!this._shadow) {
             return;
@@ -364,6 +383,7 @@ class GeometryDragHandler extends Handler {
     }
 
     //find correct coordinate for coordOffset if geometry has altitude
+    //@internal
     _correctCoord(coord: any): any {
         const map = this.target.getMap();
         if (!map.getPitch()) {

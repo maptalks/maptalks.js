@@ -34,6 +34,7 @@ const options: ArcCurveOptionsType = {
  * ).addTo(layer);
  */
 class ArcCurve extends Curve {
+    //@internal
     _toJSON(options: any): any {
         return {
             'feature': this.toGeoJSON(options),
@@ -42,6 +43,7 @@ class ArcCurve extends Curve {
     }
 
     // paint method on canvas
+    //@internal
     _paintOn(ctx: CanvasRenderingContext2D, points: any, lineOpacity: number): void {
         ctx.beginPath();
         this._arc(ctx, points, lineOpacity);

@@ -19,7 +19,9 @@ import { ResourceCache } from '../../layer/CanvasRenderer';
  */
 abstract class CanvasSymbolizer extends Symbolizer {
     symbol: any;
+    //@internal
     _opacityFn: any;
+    //@internal
     _prepareContext(ctx: CanvasRenderingContext2D): void {
         if (isFunctionDefinition(this.symbol['opacity'])) {
             if (!this._opacityFn) {
@@ -56,6 +58,7 @@ abstract class CanvasSymbolizer extends Symbolizer {
 
     hide(): void { }
 
+    //@internal
     _defineStyle(style: any): any {
         if (this.symbol) {
             style.visible = this.symbol.visible;

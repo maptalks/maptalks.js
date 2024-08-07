@@ -45,21 +45,34 @@ class CanvasRenderer extends Class {
     gl: TileRenderingContext;
     middleWest: Point;
     canvasExtent2D: Extent;
+    //@internal
     _extent2D: Extent;
+    //@internal
     _maskExtent: Extent;
 
+    //@internal
     _painted: boolean;
+    //@internal
     _drawTime: number;
+    //@internal
     _frameTime: number;
+    //@internal
     _resWorkerConn: ResourceWorkerConnection;
 
+    //@internal
     _toRedraw: boolean;
+    //@internal
     _loadingResource: boolean;
+    //@internal
     _renderComplete: boolean;
+    //@internal
     _canvasUpdated: boolean;
 
+    //@internal
     _renderZoom: number;
+    //@internal
     _errorThrown: boolean;
+    //@internal
     __zoomTransformMatrix: number[];
 
     drawOnInteracting?(...args: any[]): void;
@@ -460,6 +473,7 @@ class CanvasRenderer extends Class {
 
     }
 
+    //@internal
     _canvasContextScale(context: CanvasRenderingContext2D, dpr: number) {
         context.scale(dpr, dpr);
         context.dpr = dpr;
@@ -798,6 +812,7 @@ class CanvasRenderer extends Class {
         return this._drawTime;
     }
 
+    //@internal
     _tryToDraw(framestamp) {
         this._toRedraw = false;
         if (!this.canvas && this.layer.isEmpty && this.layer.isEmpty()) {
@@ -808,6 +823,7 @@ class CanvasRenderer extends Class {
         this._drawAndRecord(framestamp);
     }
 
+    //@internal
     _drawAndRecord(framestamp: number) {
         if (!this.getMap()) {
             return;
@@ -824,6 +840,7 @@ class CanvasRenderer extends Class {
         }
     }
 
+    //@internal
     _promiseResource(url) {
         const layer = this.layer;
         const resources = this.resources;
@@ -900,6 +917,7 @@ class CanvasRenderer extends Class {
 
     }
 
+    //@internal
     _cacheResource(url: [string, number | string, string | number], img: ImageType) {
         if (!this.layer || !this.resources) {
             return;
@@ -928,6 +946,7 @@ export type ResourceUrl = string | string[]
 export class ResourceCache {
     resources: any;
 
+    //@internal
     _errors: any;
 
     constructor() {
@@ -1026,6 +1045,7 @@ export class ResourceCache {
         return this;
     }
 
+    //@internal
     _getImgUrl(url: ResourceUrl) {
         if (!Array.isArray(url)) {
             return url;

@@ -10,6 +10,7 @@ import {WithNull} from "../../types/typings";
 
 // 有中心点的图形的共同方法
 const CenterPointRenderer = {
+    //@internal
     _getRenderPoints(): [Point[], WithNull<Point[]>] {
         return [[this._getCenter2DPoint(this.getMap().getGLRes())], null];
     }
@@ -33,6 +34,7 @@ Circle.include(CenterPointRenderer);
 Sector.include(CenterPointRenderer);
 
 Rectangle.include({
+    //@internal
     _getRenderPoints(placement?: string): [Point[], WithNull<Point[]>] {
         const map = this.getMap();
         const glRes = map.getGLRes();
@@ -54,6 +56,7 @@ Rectangle.include({
 
 //----------------------------------------------------
 const PolyRenderer = {
+    //@internal
     _getRenderPoints(placement?: string) {
         const map = this.getMap();
         const glRes = map.getGLRes();
@@ -144,7 +147,8 @@ const PolyRenderer = {
 declare module '../../geometry/LineString' {
     // @ts-expect-error 确实需要重写父类的属性
     interface LineString {
-        _getRenderPoints(placement?: string): [Point[], WithNull<Point[]>];
+        //@internal
+    _getRenderPoints(placement?: string): [Point[], WithNull<Point[]>];
     }
 }
 
@@ -152,7 +156,8 @@ LineString.include(PolyRenderer);
 
 declare module '../../geometry/Polygon' {
     interface Polygon {
-        _getRenderPoints(placement?: string): [Point[], WithNull<Point[]>];
+        //@internal
+    _getRenderPoints(placement?: string): [Point[], WithNull<Point[]>];
     }
 }
 

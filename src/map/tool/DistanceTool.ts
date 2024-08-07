@@ -26,7 +26,7 @@ export type DistanceToolOptions = {
 
 /**
  * 配置项说明
- * 
+ *
  * @english
  * @property options
  * @property {String}  options.language         - language of the distance tool, zh-CN or en-US
@@ -96,7 +96,7 @@ const options: DistanceToolOptions = {
 
 /**
  * 距离测量工具类
- * 
+ *
  * @english
  * A map tool to help measure distance on the map
  * @category maptool
@@ -122,18 +122,25 @@ const options: DistanceToolOptions = {
  */
 class DistanceTool extends DrawTool {
     options: DistanceToolOptions;
+    //@internal
     _measureLayers: Array<any>;
     translator: Translator;
+    //@internal
     _tailMarker?: any;
+    //@internal
     _tailLabel?: any;
+    //@internal
     _lastMeasure?: number | string;
+    //@internal
     _lastVertex?: any
+    //@internal
     _measureMarkerLayer?: any
+    //@internal
     _measureLineLayer?: any
 
     /**
      * 配置项
-     * 
+     *
      * @param options=null                  - construct options
      * @param options.language=zh-CN        - language of the distance tool, zh-CN or en-US
      * @param options.metric=true           - display result in metric system
@@ -152,7 +159,7 @@ class DistanceTool extends DrawTool {
 
     /**
      * 清空测量
-     * 
+     *
      * @english
      * Clear the measurements
      * @return {DistanceTool} this
@@ -172,7 +179,7 @@ class DistanceTool extends DrawTool {
 
     /**
      * 获取在绘制图形期间的VectorLayers
-     * 
+     *
      * @english
      * Get the VectorLayers with the geometries drawn on the map during measuring.
      * @return {Array<Layer>}
@@ -183,7 +190,7 @@ class DistanceTool extends DrawTool {
 
     /**
      * 获取最后测量结果
-     * 
+     *
      * @english
      * Get last measuring result
      * @return {Number}
@@ -197,7 +204,7 @@ class DistanceTool extends DrawTool {
 
     /**
      * 撤消绘图，仅适用于点击/删除模式
-     * 
+     *
      * @english
      * Undo drawing, only applicable for click/dblclick mode
      * @return {DistanceTool} this
@@ -218,7 +225,7 @@ class DistanceTool extends DrawTool {
 
     /**
      * 重做绘图，只适用于click/dblclick模式
-     * 
+     *
      * @english
      * Redo drawing, only applicable for click/dblclick mode
      * @return {DistanceTool} this
@@ -237,6 +244,7 @@ class DistanceTool extends DrawTool {
         return this;
     }
 
+    //@internal
     _formatLabelContent(params: any) {
         const formatLabelContent = this.options.formatLabelContent;
         if (formatLabelContent && isFunction(formatLabelContent)) {
@@ -245,6 +253,7 @@ class DistanceTool extends DrawTool {
         return null;
     }
 
+    //@internal
     _measure(toMeasure: any) {
         const map: any = this.getMap();
         let length;
@@ -280,6 +289,7 @@ class DistanceTool extends DrawTool {
         return content;
     }
 
+    //@internal
     _registerMeasureEvents() {
         this.on('drawstart', this._msOnDrawStart, this)
             .on('drawvertex', this._msOnDrawVertex, this)
@@ -287,10 +297,12 @@ class DistanceTool extends DrawTool {
             .on('drawend', this._msOnDrawEnd, this);
     }
 
+    //@internal
     _afterEnable() {
         this._registerMeasureEvents();
     }
 
+    //@internal
     _afterDisable() {
         this.off('drawstart', this._msOnDrawStart, this)
             .off('drawvertex', this._msOnDrawVertex, this)
@@ -298,6 +310,7 @@ class DistanceTool extends DrawTool {
             .off('drawend', this._msOnDrawEnd, this);
     }
 
+    //@internal
     _msOnDrawStart(param: any) {
         const map: any = this.getMap();
         // const prjCoord = map._pointToPrj(param['point2d']);
@@ -336,6 +349,7 @@ class DistanceTool extends DrawTool {
         this._addVertexMarker(marker, startLabel);
     }
 
+    //@internal
     _msOnMouseMove(param: any) {
         const ms = this._measure(this._msGetCoordsToMeasure(param));
         if (!this._tailMarker) {
@@ -358,10 +372,12 @@ class DistanceTool extends DrawTool {
         // this._tailLabel._setPrjCoordinates(lastCoord);
     }
 
+    //@internal
     _msGetCoordsToMeasure(param: any) {
         return param['geometry'].getCoordinates().concat([param['coordinate']]);
     }
 
+    //@internal
     _msOnDrawVertex(param: any) {
         // const prjCoords = this._geometry._getPrjCoordinates();
         // const lastCoord = prjCoords[prjCoords.length - 1];
@@ -382,6 +398,7 @@ class DistanceTool extends DrawTool {
         this._lastVertex = vertexLabel;
     }
 
+    //@internal
     _addVertexMarker(marker: Marker, vertexLabel?: any) {
         if (!this._vertexes) {
             this._vertexes = [];
@@ -396,6 +413,7 @@ class DistanceTool extends DrawTool {
         }
     }
 
+    //@internal
     _msOnDrawEnd(param: any) {
         this._clearTailMarker();
         if (param['geometry'].getCoordinates().length < 2) {
@@ -417,6 +435,7 @@ class DistanceTool extends DrawTool {
         this._lastMeasure = geo.getLength();
     }
 
+    //@internal
     _addClearMarker(coordinates: Coordinate, prjCoord: any, dx: number | string) {
         let symbol = this.options['clearButtonSymbol'];
         let dxSymbol: any | Array<any> = {
@@ -450,6 +469,7 @@ class DistanceTool extends DrawTool {
         // endMarker._setPrjCoordinates(prjCoord);
     }
 
+    //@internal
     _clearTailMarker() {
         if (this._tailMarker) {
             this._tailMarker.remove();
@@ -461,11 +481,13 @@ class DistanceTool extends DrawTool {
         }
     }
 
+    //@internal
     _clearMeasureLayers() {
         this._measureLineLayer.remove();
         this._measureMarkerLayer.remove();
     }
 
+    //@internal
     _getFirstCoordinate() {
         if (!this._geometry) {
             return null;
@@ -474,6 +496,7 @@ class DistanceTool extends DrawTool {
         return coordinates[0];
     }
 
+    //@internal
     _getLasttCoordinate() {
         if (!this._geometry) {
             return null;

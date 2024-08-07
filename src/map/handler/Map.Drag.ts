@@ -7,19 +7,24 @@ import { type Param } from './CommonType';
 
 
 class MapDragHandler extends Handler {
+    //@internal
     _dragHandler: DragHandler
     startDragTime: number
     startBearing: number
+    //@internal
     _mode: 'rotatePitch' | 'move'
     preX: number
     preY: number
     startX: number
     startY: number
     // TODO:等待补充Coordinate类型定义
+    //@internal
     _startPrjCenter: any
     // TODO:等待补充Coordinate类型定义
     startPrjCoord: any
+    //@internal
     _rotateMode: 'rotate_pitch' | 'rotate' | 'pitch'
+    //@internal
     _db: number
     // TODO:等待补充Map类型定义
     // target: Map
@@ -50,6 +55,7 @@ class MapDragHandler extends Handler {
         delete this._dragHandler;
     }
 
+    //@internal
     _cancelOn(domEvent: any) {
         if (this.target.isZooming() || this._ignore(domEvent)) {
             return true;
@@ -57,6 +63,7 @@ class MapDragHandler extends Handler {
         return false;
     }
 
+    //@internal
     _ignore(param: any) {
         if (!param) {
             return false;
@@ -67,6 +74,7 @@ class MapDragHandler extends Handler {
         return this.target._ignoreEvent(param) || this.target._isEventOutMap(param);
     }
 
+    //@internal
     _onMouseDown(param: any) {
         delete this.startDragTime;
         delete this._mode;
@@ -85,6 +93,7 @@ class MapDragHandler extends Handler {
         preventDefault(param['domEvent']);
     }
 
+    //@internal
     _onDragStart(param) {
         this.startDragTime = now();
         if (this._mode === 'move') {
@@ -94,6 +103,7 @@ class MapDragHandler extends Handler {
         }
     }
 
+    //@internal
     _onDragging(param) {
         const map = this.target;
         if (map._isEventOutMap(param['domEvent'])) {
@@ -106,6 +116,7 @@ class MapDragHandler extends Handler {
         }
     }
 
+    //@internal
     _onDragEnd(param) {
         if (this._mode === 'move') {
             this._moveEnd(param);
@@ -116,6 +127,7 @@ class MapDragHandler extends Handler {
         delete this.startBearing;
     }
 
+    //@internal
     _start(param) {
         this.preX = param['mousePos'].x;
         this.preY = param['mousePos'].y;
@@ -124,6 +136,7 @@ class MapDragHandler extends Handler {
         this._startPrjCenter = this.target._getPrjCenter().copy();
     }
 
+    //@internal
     _moveStart(param) {
         this._start(param);
         const map = this.target;
@@ -132,6 +145,7 @@ class MapDragHandler extends Handler {
         this.startPrjCoord = this._containerPointToPrj(p);
     }
 
+    //@internal
     _moving(param) {
         if (!this.startDragTime) {
             return;
@@ -145,6 +159,7 @@ class MapDragHandler extends Handler {
         map.onMoving(param);
     }
 
+    //@internal
     _containerPointToPrj(p) {
         const map = this.target;
         const queryCoord = map._queryTerrainInfo(p);
@@ -156,6 +171,7 @@ class MapDragHandler extends Handler {
         return map._containerPointToPrj(p);
     }
 
+    //@internal
     _moveEnd(param: Param) {
         if (!this.startDragTime) {
             return;
@@ -183,6 +199,7 @@ class MapDragHandler extends Handler {
         }
     }
 
+    //@internal
     _rotateStart(param: Param) {
         this._start(param);
         delete this._rotateMode;
@@ -191,6 +208,7 @@ class MapDragHandler extends Handler {
         this._db = 0;
     }
 
+    //@internal
     _rotating(param: Param) {
         const map = this.target;
         const mx = param['mousePos'].x,
@@ -242,6 +260,7 @@ class MapDragHandler extends Handler {
         }
     }
 
+    //@internal
     _rotateEnd(param: Param) {
         const map = this.target;
         const bearing = map.getBearing();
@@ -259,6 +278,7 @@ class MapDragHandler extends Handler {
         }
     }
 
+    //@internal
     _clear() {
         delete this.startPrjCoord;
         delete this.preX;

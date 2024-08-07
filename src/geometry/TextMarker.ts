@@ -30,8 +30,11 @@ const defaultBoxSymbol: VectorMarkerSymbol = {
  * @extends Marker
  */
 class TextMarker extends Marker {
+    //@internal
     _content: string
+    //@internal
     _refreshing: boolean
+    //@internal
     _refresh?(): void
     getTextStyle?(): any
     setTextStyle?(tyle?: any): any
@@ -108,6 +111,7 @@ class TextMarker extends Marker {
         return this;
     }
 
+    //@internal
     _parseSymbol(symbol: any): any {
         const t = {};
         const b = {};
@@ -123,22 +127,27 @@ class TextMarker extends Marker {
         return [t, b];
     }
 
+    //@internal
     _getTextSize(symbol: any): any {
         return splitTextToRow(this._content, symbol)['size'];
     }
 
+    //@internal
     _getInternalSymbol(): any {
         return this._symbol;
     }
 
+    //@internal
     _getDefaultTextSymbol(): TextSymbol {
         return extend({}, defaultSymbol);
     }
 
+    //@internal
     _getDefaultBoxSymbol(): VectorMarkerSymbol {
         return extend({}, defaultBoxSymbol);
     }
 
+    //@internal
     _getDefaultPadding(): [number, number] {
         return [12, 8];
     }

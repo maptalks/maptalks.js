@@ -185,7 +185,9 @@ const fireGeoEvent = (geometry, domEvent, type?) => {
 };
 
 class MapGeometryEventsHandler extends Handler {
+    //@internal
     _mouseDownTime: number
+    //@internal
     _queryIdentifyTimeout: number
     // target: Map;
 
@@ -201,6 +203,7 @@ class MapGeometryEventsHandler extends Handler {
         off(dom, EVENTS, this._identifyGeometryEvents);
     }
 
+    //@internal
     _identifyGeometryEvents(domEvent, type) {
         const map = this.target;
         if (map.isInteracting() || map._ignoreEvent(domEvent)) {

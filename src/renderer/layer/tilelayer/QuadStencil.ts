@@ -36,6 +36,7 @@ class QuadStencil {
     buffer: any;
 
     program: TileRenderingProgram;
+    //@internal
     _savedProgram: TileRenderingProgram;
     colorLoc: WebGLUniformLocation;
     transformLoc: WebGLUniformLocation;
@@ -129,11 +130,13 @@ class QuadStencil {
         return this;
     }
 
+    //@internal
     _save() {
         const gl = this.gl;
         this._savedProgram = gl.program;
     }
 
+    //@internal
     _restore() {
         const gl = this.gl;
         gl.program = this._savedProgram;
@@ -142,6 +145,7 @@ class QuadStencil {
         }
     }
 
+    //@internal
     _createBuffer() {
         const gl = this.gl;
         this.buffer = gl.createBuffer();
@@ -152,6 +156,7 @@ class QuadStencil {
         gl.bufferData(gl.ARRAY_BUFFER, this.quadVertices, gl.STATIC_DRAW);
     }
 
+    //@internal
     _createProgram() {
         const { program, vertexShader, fragmentShader }  = createProgram(this.gl, vert, frag);
         program.vertexShader = vertexShader;

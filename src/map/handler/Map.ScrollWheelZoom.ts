@@ -17,20 +17,35 @@ const wheelZoomRate = 1 / 450;
 const maxScalePerFrame = 2;
 
 class MapScrollWheelZoomHandler extends Handler {
+    //@internal
     _thisScrollZoom: () => void
+    //@internal
     _thisCheckIfEndZoom: () => void
+    //@internal
     _wheelZoomRate: number
+    //@internal
     _defaultZoomRate: number
+    //@internal
     _delta: number
+    //@internal
     _zooming: boolean
+    //@internal
     _trackPadSuspect: number
+    //@internal
     _ensureTrackpad: boolean
+    //@internal
     _active: boolean
+    //@internal
     _requesting: number
+    //@internal
     _startZoom: number
+    //@internal
     _origin: any
+    //@internal
     _zoomOrigin: any
+    //@internal
     _lastWheelEvent: any
+    //@internal
     _scrollTime: number
 
     constructor(target) {
@@ -50,6 +65,7 @@ class MapScrollWheelZoomHandler extends Handler {
         removeDomEvent(this.target._containerDOM, 'wheel', this._onWheelScroll);
     }
 
+    //@internal
     _onWheelScroll(evt) {
         const map = this.target;
         if (map.options['preventWheelScroll']) {
@@ -73,6 +89,7 @@ class MapScrollWheelZoomHandler extends Handler {
         }
     }
 
+    //@internal
     _seamless(evt, origin) {
         let value = evt.deltaMode === window.WheelEvent.DOM_DELTA_LINE ? evt.deltaY * 60 : evt.deltaY;
         if (value % wheelZoomDelta !== 0) {
@@ -110,6 +127,7 @@ class MapScrollWheelZoomHandler extends Handler {
         this._start();
     }
 
+    //@internal
     _start() {
         if (!this._delta) return;
         this._zooming = true;
@@ -120,6 +138,7 @@ class MapScrollWheelZoomHandler extends Handler {
         }
     }
 
+    //@internal
     _scrollZoom() {
         this._active = false;
         if (!this._delta) {
@@ -139,6 +158,7 @@ class MapScrollWheelZoomHandler extends Handler {
         map.getRenderer().callInNextFrame(this._thisCheckIfEndZoom);
     }
 
+    //@internal
     _checkIfEndZoom() {
         if (!this._zooming) {
             return;
@@ -154,6 +174,7 @@ class MapScrollWheelZoomHandler extends Handler {
         }
     }
 
+    //@internal
     _interval(evt, origin) {
         const map = this.target;
         if (this._zooming) {

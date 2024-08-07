@@ -95,6 +95,7 @@ const TextEditable = {
         return this._editUIMarker;
     },
 
+    //@internal
     _prepareEditor(): void {
         const map = this.getMap();
         const editContainer = this._createEditor();
@@ -111,6 +112,7 @@ const TextEditable = {
         this._setCursorToLast(this._textEditor);
     },
 
+    //@internal
     _getEditorOffset(): object {
         const symbol = this._getInternalSymbol() || {};
         let dx = 0,
@@ -129,6 +131,7 @@ const TextEditable = {
         };
     },
 
+    //@internal
     _createEditor(): HTMLElement {
         const content = this.getContent();
         const labelSize = this.getSize(),
@@ -159,6 +162,7 @@ const TextEditable = {
         return editor;
     },
 
+    //@internal
     _setCursorToLast(obj) {
         let range;
         if (window.getSelection) {

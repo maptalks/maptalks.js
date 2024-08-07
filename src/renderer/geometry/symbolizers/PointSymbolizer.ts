@@ -56,10 +56,12 @@ abstract class PointSymbolizer extends CanvasSymbolizer {
 
     }
 
+    //@internal
     _rotateExtent(fixedExtent: PointExtent, angle: number): PointExtent {
         return fixedExtent.convertTo((p: Point) => p._rotate(angle));
     }
 
+    //@internal
     _getRenderPoints(): Point[][] {
         const painter = this.getPainter();
         const placement = painter.isSpriting() ? 'center' : this.getPlacement();
@@ -72,6 +74,7 @@ abstract class PointSymbolizer extends CanvasSymbolizer {
      * @english
      * Get container points to draw on Canvas
      */
+    //@internal
     _getRenderContainerPoints(ignoreAltitude?: boolean): Point[] {
         const painter = this.getPainter();
         if (painter.isSpriting()) {
@@ -125,6 +128,7 @@ abstract class PointSymbolizer extends CanvasSymbolizer {
         return new Point(dx, dy);
     }
 
+    //@internal
     _getRotationAt(i: number): number {
         let r = this.getRotation();
         if (!r) {
@@ -149,6 +153,7 @@ abstract class PointSymbolizer extends CanvasSymbolizer {
         }
     }
 
+    //@internal
     _rotate(ctx: CanvasRenderingContext2D, origin: Point, rotation: number): Point | null {
         if (rotation) {
             const dxdy = this.getDxDy();

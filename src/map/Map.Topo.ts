@@ -165,6 +165,7 @@ Map.include(/** @lends Map.prototype */ {
         });
     },
 
+    //@internal
     _identify: function (opts, callback, fn) {
         const reqLayers = opts['layers'];
         if (!isArrayHasData(reqLayers)) {

@@ -71,6 +71,7 @@ class LayerSwitcher extends Control {
         }
     }
 
+    //@internal
     _show() {
         if (!hasClass(this.container, 'shown')) {
             addClass(this.container, 'shown');
@@ -78,12 +79,14 @@ class LayerSwitcher extends Control {
         }
     }
 
+    //@internal
     _hide(e) {
         if (!this.panel.contains(e.toElement || e.relatedTarget)) {
             setClass(this.container, this.options['containerClass']);
         }
     }
 
+    //@internal
     _createPanel() {
         this.panel.innerHTML = '';
         const ul = createEl('ul');
@@ -91,6 +94,7 @@ class LayerSwitcher extends Control {
         this._renderLayers(this.getMap(), ul);
     }
 
+    //@internal
     _renderLayers(map: Map, elm: HTMLElement) {
         const base = map.getBaseLayer(),
             layers = map.getLayers(),
@@ -199,12 +203,14 @@ class LayerSwitcher extends Control {
         }
     }
 
+    //@internal
     _isExcluded(layer: Layer) {
         const id = layer.getId(),
             excludeLayers = this.options['excludeLayers'];
         return !(excludeLayers.length && excludeLayers.indexOf(id) >= 0);
     }
 
+    //@internal
     _renderLayer(layer, isBase?: boolean, parentChecked = true) {
         const li = createEl('li', 'layer'),
             label = createEl('label'),
@@ -239,7 +245,8 @@ class LayerSwitcher extends Control {
                 if (baseLayers) {
                     for (let i = 0, len = baseLayers.length; i < len; i++) {
                         const _baseLayer = baseLayers[i];
-                        _baseLayer[_baseLayer === layer ? 'show' : 'hide']();
+                        //@internal
+    _baseLayer[_baseLayer === layer ? 'show' : 'hide']();
                     }
                 } else if (!baseLayer.isVisible()) {
                     baseLayer.show();

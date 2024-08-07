@@ -47,6 +47,7 @@ const layerEvents = 'addlayer removelayer setbaselayer baselayerremove';
  */
 class Attribution extends Control {
     options: AttributionOptionsType;
+    //@internal
     _attributionContainer: HTMLDivElement;
 
     buildOn() {
@@ -65,6 +66,7 @@ class Attribution extends Control {
         this.getMap().off(layerEvents, this._update, this);
     }
 
+    //@internal
     _update() {
         const map = this.getMap();
         if (!map) {

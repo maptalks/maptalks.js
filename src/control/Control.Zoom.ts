@@ -35,8 +35,11 @@ const options: ZoomOptionsType = {
  */
 class Zoom extends Control {
     options: ZoomOptionsType;
+    //@internal
     _levelDOM: HTMLSpanElement;
+    //@internal
     _zoomInButton: HTMLLinkElement;
+    //@internal
     _zoomOutButton: HTMLLinkElement;
     /**
      * method to build DOM of the control
@@ -109,6 +112,7 @@ class Zoom extends Control {
         // }
     }
 
+    //@internal
     _update() {
         // const map = this.getMap();
         // if (this._sliderBox) {
@@ -124,6 +128,7 @@ class Zoom extends Control {
         this._updateText();
     }
 
+    //@internal
     _updateText() {
         if (this._levelDOM) {
             const map = this.getMap();
@@ -135,6 +140,7 @@ class Zoom extends Control {
         }
     }
 
+    //@internal
     _registerDomEvents() {
         if (this._zoomInButton) {
             on(this._zoomInButton, 'click', this._onZoomInClick, this);
@@ -153,11 +159,13 @@ class Zoom extends Control {
         // }
     }
 
+    //@internal
     _onZoomInClick(e) {
         preventDefault(e);
         this.getMap().zoomIn();
     }
 
+    //@internal
     _onZoomOutClick(e) {
         preventDefault(e);
         this.getMap().zoomOut();

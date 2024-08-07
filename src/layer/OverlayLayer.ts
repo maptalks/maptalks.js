@@ -33,7 +33,7 @@ const TMP_EVENTS_ARR = [];
 /**
  * layers 的基础类，可用于 geometries 的添加移除
  * 抽象类,不准备实例化
- * 
+ *
  * @english
  * @classdesc
  * Base class of all the layers that can add/remove geometries. <br>
@@ -43,14 +43,22 @@ const TMP_EVENTS_ARR = [];
  * @extends Layer
  */
 class OverlayLayer extends Layer {
+    //@internal
     _maxZIndex: number
+    //@internal
     _minZIndex: number
+    //@internal
     _geoMap: Record<string, Geometry>;
+    //@internal
     _geoList: Array<Geometry>
+    //@internal
     _toSort: boolean
+    //@internal
     _cookedStyles: any
+    //@internal
     _clearing: boolean
     options: OverlayLayerOptionsType;
+    //@internal
     _renderer: OverlayLayerCanvasRenderer;
 
     constructor(id: string, geometries: OverlayLayerOptionsType | Array<Geometry>, options?: OverlayLayerOptionsType) {
@@ -101,7 +109,7 @@ class OverlayLayer extends Layer {
 
     /**
      * 通过 id 获取 geometry
-     * 
+     *
      * @english
      * Get a geometry by its id
      * @param id   - id of the geometry
@@ -119,7 +127,7 @@ class OverlayLayer extends Layer {
 
     /**
      * 获取所有geometries，如果提供 filter() 方法,则根据方法返回
-     * 
+     *
      * @english
      * Get all the geometries or the ones filtered if a filter function is provided.
      * @param filter=undefined   - a function to filter the geometries
@@ -148,7 +156,7 @@ class OverlayLayer extends Layer {
 
     /**
      * 获取第一个geometry, geometry 位于底部
-     * 
+     *
      * @english
      * Get the first geometry, the geometry at the bottom.
      * @return first geometry
@@ -162,7 +170,7 @@ class OverlayLayer extends Layer {
 
     /**
      * 获取最后一个geometry, geometry 位于上部
-     * 
+     *
      * @english
      * Get the last geometry, the geometry on the top
      * @return last geometry
@@ -177,7 +185,7 @@ class OverlayLayer extends Layer {
 
     /**
      * 获取 geometries 个数
-     * 
+     *
      * Get count of the geometries
      * @return count
      */
@@ -187,7 +195,7 @@ class OverlayLayer extends Layer {
 
     /**
      * 获取 geometries 的 extent, 如果 layer 为空,返回 null
-     * 
+     *
      * @english
      * Get extent of all the geometries in the layer, return null if the layer is empty.
      * @return {Extent} - extent of the layer
@@ -207,7 +215,7 @@ class OverlayLayer extends Layer {
 
     /**
      * 按顺序为图层中的每个 geometry 执行一次提供的回调。
-     * 
+     *
      * @english
      * Executes the provided callback once for each geometry present in the layer in order.
      * @param fn - a callback function
@@ -228,7 +236,7 @@ class OverlayLayer extends Layer {
 
     /**
      * 创建一个包含所有通过由提供的函数实现的测试的 geometries 的 GeometryCollection。
-     * 
+     *
      * @english
      * Creates a GeometryCollection with all the geometries that pass the test implemented by the provided function.
      * @param fn      - Function to test each geometry
@@ -251,7 +259,7 @@ class OverlayLayer extends Layer {
 
     /**
      * layer 是否为空
-     * 
+     *
      * @english
      * Whether the layer is empty.
      * @return {Boolean}
@@ -262,7 +270,7 @@ class OverlayLayer extends Layer {
 
     /**
      * 为 layer 添加 geometries
-     * 
+     *
      * @english
      * Adds one or more geometries to the layer
      * @param geometries - one or more geometries
@@ -359,7 +367,7 @@ class OverlayLayer extends Layer {
         }
         /**
          * addgeo 事件
-         * 
+         *
          * addgeo event.
          *
          * @event OverlayLayer#addgeo
@@ -378,7 +386,7 @@ class OverlayLayer extends Layer {
 
     /**
      * 所有 geometries 最小的 zIndex
-     * 
+     *
      * @english
      * Get minimum zindex of geometries
      */
@@ -388,7 +396,7 @@ class OverlayLayer extends Layer {
 
     /**
      * 所有 geometries 最大的 zIndex
-     * 
+     *
      * @english
      * Get maximum zindex of geometries
      */
@@ -397,6 +405,7 @@ class OverlayLayer extends Layer {
     }
 
 
+    //@internal
     _add(geo: Geometry, extent?: Extent, i?: number) {
         if (!this._toSort) {
             this._toSort = geo.getZIndex() !== 0;
@@ -422,7 +431,7 @@ class OverlayLayer extends Layer {
         }
         /**
          * add 事件
-         * 
+         *
          * @english
          * add event.
          *
@@ -442,7 +451,7 @@ class OverlayLayer extends Layer {
 
     /**
      * 移除一个或多个geometries
-     * 
+     *
      * @english
      * Removes one or more geometries from the layer
      * @param  geometries - geometry ids or geometries to remove
@@ -461,8 +470,8 @@ class OverlayLayer extends Layer {
         }
         /**
          * removegeo 事件
-         * 
-         * @english 
+         *
+         * @english
          * removegeo event.
          *
          * @event OverlayLayer#removegeo
@@ -481,7 +490,7 @@ class OverlayLayer extends Layer {
 
     /**
      * 清除 layer
-     * 
+     *
      * @english
      * Clear all geometries in this layer
      * @returns this
@@ -505,7 +514,7 @@ class OverlayLayer extends Layer {
         this._clearing = false;
         /**
          * clear 事件
-         * 
+         *
          * @english
          * clear event.
          *
@@ -520,7 +529,7 @@ class OverlayLayer extends Layer {
 
     /**
      * 移除geometry 回调函数
-     * 
+     *
      * @english
      * Called when geometry is being removed to clear the context concerned.
      * @param geometry - the geometry instance to remove
@@ -551,7 +560,7 @@ class OverlayLayer extends Layer {
 
     /**
      * 获取 layer 的 style
-     * 
+     *
      * @english
      * Gets layer's style.
      * @return layer's style
@@ -566,7 +575,7 @@ class OverlayLayer extends Layer {
     /**
      * layer 设置 style, 用样式符号对满足条件的 geometries进行样式修改
      * 基于[mapbox-gl-js's style specification]， {https://www.mapbox.com/mapbox-gl-js/style-spec/#types-filter}.
-     * 
+     *
      * @english
      * Sets style to the layer, styling the geometries satisfying the condition with style's symbol. <br>
      * Based on filter type in [mapbox-gl-js's style specification]{https://www.mapbox.com/mapbox-gl-js/style-spec/#types-filter}.
@@ -611,6 +620,7 @@ class OverlayLayer extends Layer {
         return this;
     }
 
+    //@internal
     _styleGeometry(geometry: Geometry): boolean {
         if (!this._cookedStyles) {
             return false;
@@ -627,7 +637,7 @@ class OverlayLayer extends Layer {
 
     /**
      * 移除 style
-     * 
+     *
      * @english
      * Removes layers' style
      * @returns this
@@ -670,6 +680,7 @@ class OverlayLayer extends Layer {
         return Layer.prototype.hide.call(this);
     }
 
+    //@internal
     _initCache() {
         if (!this._geoList) {
             this._geoList = [];
@@ -677,11 +688,13 @@ class OverlayLayer extends Layer {
         }
     }
 
+    //@internal
     _updateZIndex(...zIndex: number[]) {
         this._maxZIndex = Math.max(this._maxZIndex, Math.max(...zIndex));
         this._minZIndex = Math.min(this._minZIndex, Math.min(...zIndex));
     }
 
+    //@internal
     _sortGeometries() {
         if (!this._toSort) {
             return;
@@ -695,6 +708,7 @@ class OverlayLayer extends Layer {
         this._toSort = false;
     }
 
+    //@internal
     _compare(a, b) {
         if (a.getZIndex() === b.getZIndex()) {
             return a._getInternalId() - b._getInternalId();
@@ -703,6 +717,7 @@ class OverlayLayer extends Layer {
     }
 
     //binarySearch
+    //@internal
     _findInList(geo: Geometry): number {
         const len = this._geoList.length;
         if (len === 0) {
@@ -725,6 +740,7 @@ class OverlayLayer extends Layer {
         return -1;
     }
 
+    //@internal
     _onGeometryEvent(param?: HandlerFnResultType) {
         if (!param || !param['target']) {
             return;
@@ -749,6 +765,7 @@ class OverlayLayer extends Layer {
         }
     }
 
+    //@internal
     _onGeometryIdChange(param: HandlerFnResultType) {
         if (param['new'] === param['old']) {
             if (this._geoMap[param['old']] && this._geoMap[param['old']] === param['target']) {
@@ -767,6 +784,7 @@ class OverlayLayer extends Layer {
 
     }
 
+    //@internal
     _onGeometryZIndexChange(param: HandlerFnResultType) {
         if (param['old'] !== param['new']) {
             this._updateZIndex(param['new']);
@@ -777,42 +795,49 @@ class OverlayLayer extends Layer {
         }
     }
 
+    //@internal
     _onGeometryPositionChange(param: HandlerFnResultType) {
         if (this._getRenderer()) {
             this._getRenderer().onGeometryPositionChange(param);
         }
     }
 
+    //@internal
     _onGeometryShapeChange(param: HandlerFnResultType) {
         if (this._getRenderer()) {
             this._getRenderer().onGeometryShapeChange(param);
         }
     }
 
+    //@internal
     _onGeometrySymbolChange(param: HandlerFnResultType) {
         if (this._getRenderer()) {
             this._getRenderer().onGeometrySymbolChange(param);
         }
     }
 
+    //@internal
     _onGeometryShow(param: HandlerFnResultType) {
         if (this._getRenderer()) {
             this._getRenderer().onGeometryShow(param);
         }
     }
 
+    //@internal
     _onGeometryHide(param: HandlerFnResultType) {
         if (this._getRenderer()) {
             this._getRenderer().onGeometryHide(param);
         }
     }
 
+    //@internal
     _onGeometryPropertiesChange(param: HandlerFnResultType) {
         if (this._getRenderer()) {
             this._getRenderer().onGeometryPropertiesChange(param);
         }
     }
 
+    //@internal
     _hasGeoListeners(eventTypes: string | Array<string>): boolean {
         if (!eventTypes) {
             return false;
@@ -844,6 +869,7 @@ class OverlayLayer extends Layer {
     }
 
     //override for typing
+    //@internal
     _getRenderer(): OverlayLayerCanvasRenderer {
         return super._getRenderer() as OverlayLayerCanvasRenderer;
     }

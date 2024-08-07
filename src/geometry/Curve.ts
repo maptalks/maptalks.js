@@ -19,6 +19,7 @@ const options: CurveOptionsType = {
  * @property {Boolean} [options.enableClip=false] - whether to clip curve with map's current extent
  */
 class Curve extends LineString {
+    //@internal
     _arc(ctx: CanvasRenderingContext2D, points: any, lineOpacity: number): void {
         const degree = this.options['arcDegree'] * Math.PI / 180;
         for (let i = 1, l = points.length; i < l; i++) {
@@ -31,6 +32,7 @@ class Curve extends LineString {
         }
     }
 
+    //@internal
     _quadraticCurve(ctx: CanvasRenderingContext2D, points: any): void {
         if (points.length <= 2) {
             Canvas2d._path(ctx, points);
@@ -48,6 +50,7 @@ class Curve extends LineString {
         }
     }
 
+    //@internal
     _bezierCurve(ctx: CanvasRenderingContext2D, points: any): void {
         if (points.length <= 3) {
             Canvas2d._path(ctx, points);
@@ -64,6 +67,7 @@ class Curve extends LineString {
         }
     }
 
+    //@internal
     _getCurveArrowPoints(arrows: any[], segments: [], lineWidth: number, arrowStyle: any, tolerance: any, step: number): void {
         const l = segments.length;
         let i: number;

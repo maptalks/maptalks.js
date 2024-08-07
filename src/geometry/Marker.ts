@@ -92,6 +92,7 @@ export class Marker extends CenterMixin(Geometry) {
         return super.setSymbol.call(this, symbol);
     }
 
+    //@internal
     _getSizeSymbol(symbol: any): any {
         const s = {};
         let dynamic = false;
@@ -129,6 +130,7 @@ export class Marker extends CenterMixin(Geometry) {
         return sizeSymbol;
     }
 
+    //@internal
     _setExternSymbol(symbol: any) {
         if (!this._symbol) {
             delete this._fixedExtent;
@@ -136,10 +138,12 @@ export class Marker extends CenterMixin(Geometry) {
         return super._setExternSymbol(symbol);
     }
 
+    //@internal
     _isDynamicSize(): boolean {
         return this._sizeSymbol && this._sizeSymbol._dynamic;
     }
 
+    //@internal
     _getFixedExtent(): PointExtent {
         if (this._fixedExtent && !this._isDynamicSize()) {
             return this._fixedExtent;
@@ -167,6 +171,7 @@ export class Marker extends CenterMixin(Geometry) {
         return this._fixedExtent;
     }
 
+    //@internal
     _isVectorMarker(): boolean {
         const symbol = this._getInternalSymbol();
         if (Array.isArray(symbol)) {
@@ -182,6 +187,7 @@ export class Marker extends CenterMixin(Geometry) {
      * @return {Boolean}
      * @private
      */
+    //@internal
     _canEdit(): boolean {
         const symbol = this._getInternalSymbol();
         if (Array.isArray(symbol)) {
@@ -190,6 +196,7 @@ export class Marker extends CenterMixin(Geometry) {
         return isVectorSymbol(symbol) || isPathSymbol(symbol) || isImageSymbol(symbol);
     }
 
+    //@internal
     _containsPoint(point: Point, t?: number): boolean {
         let extent = this.getContainerExtent();
         if (t) {
@@ -206,22 +213,27 @@ export class Marker extends CenterMixin(Geometry) {
         }
     }
 
+    //@internal
     _computeExtent(): Extent {
         return computeExtent.call(this, 'getCenter');
     }
 
+    //@internal
     _computePrjExtent(): Extent {
         return computeExtent.call(this, '_getPrjCoordinates');
     }
 
+    //@internal
     _computeGeodesicLength(): number {
         return 0;
     }
 
+    //@internal
     _computeGeodesicArea(): number {
         return 0;
     }
 
+    //@internal
     _getSprite(resources: any, canvasClass: any) {
         if (this._getPainter()) {
             return this._getPainter().getSprite(resources, canvasClass);

@@ -72,18 +72,25 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
         gl: TileRenderingContext;
         canvas: TileRenderingCanvas; // HTMLCHTMLCanvasElementnvasElement
         canvas2?: TileRenderingCanvas;
-        _debugInfoCanvas?: TileRenderingCanvas;
+        //@internal
+    _debugInfoCanvas?: TileRenderingCanvas;
         program?: TileRenderingProgram;
         // webgl point for layerAltitude
-        _layerAlt: number = 0;
-        _layerAltitude: number = 0;
+        //@internal
+    _layerAlt: number = 0;
+        //@internal
+    _layerAltitude: number = 0;
         layer?: any;
         texBuffer?: TileImageBuffer;
-        _debugBuffer?: TileImageBuffer;
+        //@internal
+    _debugBuffer?: TileImageBuffer;
         posBuffer?: TileImageBuffer;
-        _imageBuffers?: TileImageBuffer[];
-        _buffers?: TileImageBuffer[];
-        _textures?: TileImageTexture[];
+        //@internal
+    _imageBuffers?: TileImageBuffer[];
+        //@internal
+    _buffers?: TileImageBuffer[];
+        //@internal
+    _textures?: TileImageTexture[];
         getMap?(): Map;
 
         /**
@@ -365,7 +372,8 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
             delete image.glBuffer;
         }
 
-        _createTexture(image: TileImageType): TileImageTexture {
+        //@internal
+    _createTexture(image: TileImageType): TileImageTexture {
             const gl = this.gl;
             const texture = this.getTexture() || gl.createTexture();   // Create a texture object
             // Bind the texture object to the target
@@ -587,7 +595,8 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
             return uSampler;
         }
 
-        _initUniforms(program: TileRenderingProgram, uniforms: string[]): void {
+        //@internal
+    _initUniforms(program: TileRenderingProgram, uniforms: string[]): void {
             for (let i = 0; i < uniforms.length; i++) {
                 let name = uniforms[i];
                 let uniform = uniforms[i];
@@ -603,7 +612,8 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
             }
         }
 
-        _getUniform(program: TileRenderingProgram, uniformName: string): WebGLUniformLocation {
+        //@internal
+    _getUniform(program: TileRenderingProgram, uniformName: string): WebGLUniformLocation {
             const gl = this.gl;
             const uniform = gl.getUniformLocation(program, uniformName);
             if (!uniform) {

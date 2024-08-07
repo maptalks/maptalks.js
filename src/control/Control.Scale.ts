@@ -38,8 +38,11 @@ const options: ScaleOptionsType = {
 const EVENTS_TO_LISTEN = 'zoomend moving moveend';
 
 class Scale extends Control {
+    //@internal
     _scaleContainer: HTMLDivElement;
+    //@internal
     _mScale: HTMLDivElement;
+    //@internal
     _iScale: HTMLDivElement;
     options: ScaleOptionsType;
 
@@ -64,6 +67,7 @@ class Scale extends Control {
         this.getMap().off(EVENTS_TO_LISTEN, this._update, this);
     }
 
+    //@internal
     _addScales() {
         const css = 'border: 2px solid #000000;border-top: none;line-height: 1.1;padding: 0px;' +
             'color: #000000;font-size: 11px;text-align:center;white-space: nowrap;overflow: hidden' +
@@ -76,12 +80,14 @@ class Scale extends Control {
         }
     }
 
+    //@internal
     _update() {
         const map = this._map;
         const maxMeters = map.pixelToDistance(this.options['maxWidth'], 0);
         this._updateScales(maxMeters);
     }
 
+    //@internal
     _updateScales(maxMeters: number) {
         if (this.options['metric'] && maxMeters) {
             this._updateMetric(maxMeters);
@@ -91,6 +97,7 @@ class Scale extends Control {
         }
     }
 
+    //@internal
     _updateMetric(maxMeters: number) {
         const meters = this._getRoundNum(maxMeters),
             label = meters < 1000 ? meters + ' m' : (meters / 1000) + ' km';
@@ -98,6 +105,7 @@ class Scale extends Control {
         this._updateScale(this._mScale, label, meters / maxMeters);
     }
 
+    //@internal
     _updateImperial(maxMeters: number) {
         const maxFeet = maxMeters * 3.2808399;
         let maxMiles, miles, feet;
@@ -113,11 +121,13 @@ class Scale extends Control {
         }
     }
 
+    //@internal
     _updateScale(scale: HTMLDivElement, text: string, ratio: number) {
         scale['style']['width'] = Math.round(this.options['maxWidth'] * ratio) + 'px';
         scale['innerHTML'] = text;
     }
 
+    //@internal
     _getRoundNum(num: number) {
         const pow10 = Math.pow(10, (Math.floor(num) + '').length - 1);
         let d = num / pow10;

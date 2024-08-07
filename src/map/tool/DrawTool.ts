@@ -91,17 +91,29 @@ const registeredMode = {};
  */
 class DrawTool extends MapTool {
     options: DrawToolOptions;
+    //@internal
     _vertexes: Array<any>;
+    //@internal
     _historyPointer: any;
+    //@internal
     _events: any;
+    //@internal
     _geometry?: any;
+    //@internal
     _drawToolLayer?: any;
+    //@internal
     _mapAutoPanAtEdge?: boolean;
+    //@internal
     _geometryEvents?: boolean;
+    //@internal
     _mapDoubleClickZoom?: boolean;
+    //@internal
     _ending: boolean;
+    //@internal
     _mapDraggable?: boolean;
+    //@internal
     _clickCoords?: Array<any>;
+    //@internal
     _layers?: Array<any>;
 
     /**
@@ -348,14 +360,17 @@ class DrawTool extends MapTool {
      * @returns {boolean}
      * @private
      */
+    //@internal
     _shouldRecordHistory(actions) {
         return Array.isArray(actions) && actions[0] === 'click' && actions[1] === 'mousemove' && actions[2] === 'dblclick';
     }
 
+    //@internal
     _checkMode() {
         this._getRegisterMode();
     }
 
+    //@internal
     _saveMapCfg() {
         const map = this.getMap();
         this._mapDoubleClickZoom = map.options['doubleClickZoom'];
@@ -379,6 +394,7 @@ class DrawTool extends MapTool {
         }
     }
 
+    //@internal
     _restoreMapCfg() {
         const map = this.getMap();
         map.config({
@@ -391,6 +407,7 @@ class DrawTool extends MapTool {
         delete this._mapDoubleClickZoom;
     }
 
+    //@internal
     _loadResources() {
         const symbol = this.getSymbol();
         const resources = getExternalResources(symbol);
@@ -400,10 +417,12 @@ class DrawTool extends MapTool {
         }
     }
 
+    //@internal
     _getProjection() {
         return this._map.getProjection();
     }
 
+    //@internal
     _getRegisterMode() {
         const mode = this.getMode();
         const registerMode = DrawTool.getRegisterMode(mode);
@@ -418,7 +437,8 @@ class DrawTool extends MapTool {
         const _events = {};
         if (Array.isArray(action)) {
             for (let i = 0; i < action.length; i++) {
-                _events[action[i]] = this._events[action[i]];
+                //@internal
+    _events[action[i]] = this._events[action[i]];
             }
             return _events;
         }
@@ -433,6 +453,7 @@ class DrawTool extends MapTool {
      * @param event
      * @private
      */
+    //@internal
     _mouseDownHandler(event: any) {
         this._createGeometry(event);
     }
@@ -445,6 +466,7 @@ class DrawTool extends MapTool {
      * @param event
      * @private
      */
+    //@internal
     _mouseUpHandler(event: any) {
         this.endDraw(event);
     }
@@ -457,6 +479,7 @@ class DrawTool extends MapTool {
      * @param event
      * @private
      */
+    //@internal
     _clickHandler(event: any) {
         if (!this.options.interactive) {
             return this;
@@ -534,6 +557,7 @@ class DrawTool extends MapTool {
      * @param event
      * @private
      */
+    //@internal
     _createGeometry(event: any) {
         const mode = this.getMode();
         const map: any = this.getMap()
@@ -608,6 +632,7 @@ class DrawTool extends MapTool {
      * @param event
      * @private
      */
+    //@internal
     _mouseMoveHandler(event) {
         if (!this.options.interactive) {
             return this;
@@ -677,6 +702,7 @@ class DrawTool extends MapTool {
      * @param event
      * @private
      */
+    //@internal
     _doubleClickHandler(event) {
         if (!this.options.interactive) {
             return this;
@@ -715,6 +741,7 @@ class DrawTool extends MapTool {
         this.endDraw(event);
     }
 
+    //@internal
     _addGeometryToStage(geometry) {
         const drawLayer = this._getDrawLayer();
         drawLayer.addGeometry(geometry);
@@ -765,6 +792,7 @@ class DrawTool extends MapTool {
         return this;
     }
 
+    //@internal
     _clearStage() {
         this._getDrawLayer().clear();
         delete this._geometry;
@@ -780,6 +808,7 @@ class DrawTool extends MapTool {
      * @return
      * @private
      */
+    //@internal
     _getMouseContainerPoint(event: Event): Point {
         const action = this._getRegisterMode()['action'];
         if (action[0].indexOf('mousedown') >= 0 || action[0].indexOf('touchstart') >= 0) {
@@ -789,6 +818,7 @@ class DrawTool extends MapTool {
         return event['containerPoint'];
     }
 
+    //@internal
     _isValidContainerPoint(containerPoint) {
         const mapSize = this._map.getSize();
         const w = mapSize['width'],
@@ -801,6 +831,7 @@ class DrawTool extends MapTool {
         return true;
     }
 
+    //@internal
     _getSnapResult(snapTo, containerPoint) {
         const map: any = this.getMap();
         const lastContainerPoints = [];
@@ -824,6 +855,7 @@ class DrawTool extends MapTool {
         };
     }
 
+    //@internal
     _getDrawLayer() {
         const drawLayerId = INTERNAL_LAYER_PREFIX + 'drawtool';
         let drawToolLayer: any = this._map.getLayer(drawLayerId);
@@ -839,6 +871,7 @@ class DrawTool extends MapTool {
         return drawToolLayer;
     }
 
+    //@internal
     _fireEvent(eventName, param) {
         if (!param) {
             param = {};
@@ -851,6 +884,7 @@ class DrawTool extends MapTool {
         MapTool.prototype._fireEvent.call(this, eventName, param);
     }
 
+    //@internal
     _pushLayers(layers) {
         if (!layers) {
             return this;
@@ -867,6 +901,7 @@ class DrawTool extends MapTool {
         return this;
     }
 
+    //@internal
     _outLayers(layers) {
         if (!layers) {
             return this;
