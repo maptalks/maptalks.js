@@ -1,5 +1,5 @@
 import { createEl, setStyle, on } from '../core/util/dom';
-import Control, { ControlOptionsType, PositionType } from './Control';
+import Control, { ControlOptionsType, DomPositionType } from './Control';
 import Map from '../map/Map';
 
 /**
@@ -95,5 +95,5 @@ Map.addOnLoadHook(function () {
 export default Compass;
 
 export type CompassOptionsType = {
-    position: string | PositionType;
+    position: string | DomPositionType;
 } & ControlOptionsType;

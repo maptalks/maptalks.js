@@ -1,4 +1,4 @@
-import Extent, { ExtentLike, Position, Projection } from './Extent';
+import Extent, { ExtentLike, PositionType, Projection } from './Extent';
 import Point from './Point';
 import type { WithNull } from '../types/typings';
 
@@ -29,7 +29,7 @@ import type { WithNull } from '../types/typings';
  */
 class PointExtent extends Extent {
     constructor(p1?: WithNull<ExtentLike>, p?: Projection);
-    constructor(p1: Position, p2: Position, p?: Projection);
+    constructor(p1: PositionType, p2: PositionType, p?: Projection);
     constructor(p1: number, p2: number, p3: number, p4: number, p?: Projection)
     constructor(...args: any[]) {
         super(...args);

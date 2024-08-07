@@ -23,7 +23,7 @@ const TEMP_COMBINE = [];
 
 export type Projection = any;
 
-export type Position = Point | Coordinate;
+export type PositionType = Point | Coordinate;
 
 export type ArrayExtent = [number, number, number, number];
 export type JsonExtent = {
@@ -37,7 +37,7 @@ export type ExtentLike = Extent | JsonExtent | ArrayExtent;
 
 export interface Constructable<T> {
     new(p1?: WithNull<ExtentLike>, p?: Projection) : T;
-    new(p1: Position, p2: Position, p?: Projection) : T;
+    new(p1: PositionType, p2: PositionType, p?: Projection) : T;
     new(p1: number, p2: number, p3: number, p4: number, p?: Projection) : T;
 }
 
@@ -87,7 +87,7 @@ class Extent {
     bottom?: number;
 
     constructor(p1?: WithNull<ExtentLike>, p?: Projection);
-    constructor(p1: Position, p2: Position, p?: Projection);
+    constructor(p1: PositionType, p2: PositionType, p?: Projection);
     constructor(p1: number, p2: number, p3: number, p4: number, p?: Projection)
     constructor(...args: any[]) {
         this._clazz = Coordinate;
@@ -101,9 +101,9 @@ class Extent {
     }
 
     _initialize(p1: WithNull<ExtentLike>): void;
-    _initialize(p1: Position, p2: Position): void;
+    _initialize(p1: PositionType, p2: PositionType): void;
     _initialize(p1: number, p2: number, p3: number, p4: number): void;
-    _initialize(p1: ExtentLike | Position | number, p2?: Position | number, p3?: number, p4?: number) {
+    _initialize(p1: ExtentLike | PositionType | number, p2?: PositionType | number, p3?: number, p4?: number) {
         /**
          * @property xmin - minimum x
          */
@@ -152,13 +152,13 @@ class Extent {
                 );
             }
         } else if (
-            isNumber((p1 as Position).x) &&
-            isNumber((p2 as Position).x) &&
-            isNumber((p1 as Position).y) &&
-            isNumber((p2 as Position).y)) {
+            isNumber((p1 as PositionType).x) &&
+            isNumber((p2 as PositionType).x) &&
+            isNumber((p1 as PositionType).y) &&
+            isNumber((p2 as PositionType).y)) {
             // Constructor 2: two coordinates
-            const tp1 = p1 as Position;
-            const tp2 = p2 as Position;
+            const tp1 = p1 as PositionType;
+            const tp2 = p2 as PositionType;
             if (projection) {
                 this.set(tp1.x, tp1.y, tp2.x, tp2.y);
             } else {
@@ -197,7 +197,7 @@ class Extent {
      */
     _add(p: Extent): this;
     _add(p: PointExtent): this;
-    _add(p: Position): this;
+    _add(p: PositionType): this;
     _add(p: number[]): this;
     _add(p: any) {
         this._dirty = true;
@@ -231,7 +231,7 @@ class Extent {
      */
     add(p: Extent): this;
     add(p: PointExtent): this;
-    add(p: Position): this;
+    add(p: PositionType): this;
     add(p: number[]): this;
     add(p: any) {
         const e = new (this.constructor as Constructable<Extent | PointExtent>)(this['xmin'], this['ymin'], this['xmax'], this['ymax'], this.projection);
@@ -265,7 +265,7 @@ class Extent {
      * @param p
      */
     _sub(p: [number, number]): this;
-    _sub(p: Position): this;
+    _sub(p: PositionType): this;
     _sub(p: Extent | PointExtent): this;
     _sub(p: any) {
         this._dirty = true;
@@ -297,7 +297,7 @@ class Extent {
      * @param p
      */
     _substract(p: [number, number]): this;
-    _substract(p: Position): this;
+    _substract(p: PositionType): this;
     _substract(p: Extent | PointExtent): this;
     _substract(p: any) {
         return this._sub(p);
@@ -313,7 +313,7 @@ class Extent {
      * @param p
      */
     sub(p: [number, number]): this;
-    sub(p: Position): this;
+    sub(p: PositionType): this;
     sub(p: Extent | PointExtent): this;
     sub(p: any) {
         const e = new (this.constructor as Constructable<Extent | PointExtent>)(this['xmin'], this['ymin'], this['xmax'], this['ymax'], this.projection);
@@ -330,7 +330,7 @@ class Extent {
      * @param p
      */
     substract(p: [number, number]): this;
-    substract(p: Position): this;
+    substract(p: PositionType): this;
     substract(p: Extent | PointExtent): this;
     substract(p: any) {
         return this.sub(p);
@@ -378,7 +378,7 @@ class Extent {
      */
     getMin(out?: Point): Point;
     getMin(out?: Coordinate): Coordinate;
-    getMin(out?: Position): Position {
+    getMin(out?: PositionType): PositionType {
         if (out) {
             out.set(this['xmin'], this['ymin']);
             return out;
@@ -395,7 +395,7 @@ class Extent {
      */
     getMax(out?: Point): Point;
     getMax(out?: Coordinate): Coordinate;
-    getMax(out?: Position) {
+    getMax(out?: PositionType) {
         if (out) {
             out.set(this['xmax'], this['ymax']);
             return out;
@@ -410,7 +410,7 @@ class Extent {
      * Get center of the extent.
      * @params [out=undefined] - optional point to receive result
      */
-    getCenter(out?: Position) {
+    getCenter(out?: PositionType) {
         const x = (this['xmin'] + this['xmax']) / 2;
         const y = (this['ymin'] + this['ymax']) / 2;
         if (out) {
@@ -563,10 +563,10 @@ class Extent {
         return this;
     }
 
-    __combine(extent: Position | Extent | PointExtent): number[] {
-        if ((extent as Position).x !== undefined) {
-            TEMP_EXTENT.xmin = TEMP_EXTENT.xmax = (extent as Position).x;
-            TEMP_EXTENT.ymin = TEMP_EXTENT.ymax = (extent as Position).y;
+    __combine(extent: PositionType | Extent | PointExtent): number[] {
+        if ((extent as PositionType).x !== undefined) {
+            TEMP_EXTENT.xmin = TEMP_EXTENT.xmax = (extent as PositionType).x;
+            TEMP_EXTENT.ymin = TEMP_EXTENT.ymax = (extent as PositionType).y;
             extent = TEMP_EXTENT;
         }
         this._project(extent as (Extent | PointExtent));
@@ -609,7 +609,7 @@ class Extent {
      * @param extent - extent/coordinate/point to combine into
      * @returns extent combined
      */
-    _combine(extent: Position | Extent | PointExtent) {
+    _combine(extent: PositionType | Extent | PointExtent) {
         // 传入的对象如果判断是非法的直接返回，不继续计算
         if (!extent || (extent as Extent).isValid && !(extent as Extent).isValid()) {
             return this;
@@ -627,7 +627,7 @@ class Extent {
      * @param extent - extent/coordinate/point to combine into
      * @returns extent combined
      */
-    combine(extent: Position | Extent | PointExtent) {
+    combine(extent: PositionType | Extent | PointExtent) {
         // 传入的对象如果判断是非法的直接返回，不继续计算
         if (!extent || (extent as Extent).isValid && !(extent as Extent).isValid()) {
             return this;
@@ -732,7 +732,7 @@ class Extent {
      * Get a coordinate array of extent's rectangle area, containing 5 coordinates in which the first equals with the last.
      * @returns coordinates array
      */
-    toArray(out?: Position[]) {
+    toArray(out?: PositionType[]) {
         const xmin = this['xmin'],
             ymin = this['ymin'],
             xmax = this['xmax'],
@@ -804,7 +804,7 @@ class Extent {
         if (out) {
             e.set(null, null, null, null);
         }
-        let coord: Position;
+        let coord: PositionType;
         if (this._clazz === Coordinate) {
             coord = TEMP_COORD5;
         } else if (this._clazz === Point) {
