@@ -16,34 +16,34 @@ let uuid = 0;
  *  transparent, castShadow
  */
 class Mesh {
-    private _version: number
-    private _geometry: Geometry
-    private _material: Material
-    private _localTransform: mat4 | MatrixFunction
-    private _positionMatrix: mat4 | MatrixFunction
-    private _currentTransform?: mat4
-    private _prevTMat?: mat4
-    private _prevPMat?: mat4
-    private _dirtyUniforms: boolean
-    private _dirtyGeometry: boolean
-    private _options?: MeshOptions
-    private _materialVer?: number
-    private _materialPropVer?: number
-    private _dirtyProps?: string[]
-    private _defines?: ShaderDefines
-    private _bakDefines?: ShaderDefines
-    private _commandKey?: string
-    private _materialKeys?: string
-    private _realUniforms?: ShaderUniforms
-    private _bbox?: BoundingBox
-    private _geoBox?: BoundingBox
-    private _bboxArr?: [vec3, vec3]
-    private _uniformDescriptors?: Set<string>
+    _version: number
+    _geometry: Geometry
+    _material: Material
+    _localTransform: mat4 | MatrixFunction
+    _positionMatrix: mat4 | MatrixFunction
+    _currentTransform?: mat4
+    _prevTMat?: mat4
+    _prevPMat?: mat4
+    _dirtyUniforms: boolean
+    _dirtyGeometry: boolean
+    _options?: MeshOptions
+    _materialVer?: number
+    _materialPropVer?: number
+    _dirtyProps?: string[]
+    _defines?: ShaderDefines
+    _bakDefines?: ShaderDefines
+    _commandKey?: string
+    _materialKeys?: string
+    _realUniforms?: ShaderUniforms
+    _bbox?: BoundingBox
+    _geoBox?: BoundingBox
+    _bboxArr?: [vec3, vec3]
+    _uniformDescriptors?: Set<string>
 
     transparent: boolean
     bloom: boolean
     ssr: boolean
-    private _castShadow: boolean
+    _castShadow: boolean
     needUpdateShadow: boolean
     picking: boolean
     disableVAO: boolean
@@ -376,7 +376,7 @@ class Mesh {
         return this._realUniforms;
     }
 
-    private _prepareUniformsForDraco() {
+    _prepareUniformsForDraco() {
         const geometry = this._geometry;
         const position = geometry.data[geometry.desc.positionAttribute],
             texcoord = geometry.data[geometry.desc.uv0Attribute],

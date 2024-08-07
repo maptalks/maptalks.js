@@ -19,7 +19,7 @@ class AbstractTexture extends Eventable(Base) {
     _loading?: boolean
     resLoader: ResourceLoader
     _texture: Texture2D
-    private dirty?: boolean
+    dirty?: boolean
 
     constructor(config, resLoader) {
         super();

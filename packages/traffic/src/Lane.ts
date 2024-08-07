@@ -12,8 +12,8 @@ export default class Lane {
   leftmostAdjacent: Lane | null = null;
   rightmostAdjacent: Lane | null = null;
   middleLine: Segment;
-  private direction: number;
-  private carsPositions: Record<string, LanePosition> = {};
+  direction: number;
+  carsPositions: Record<string, LanePosition> = {};
 
   constructor(sourceSegment: Segment, targetSegment: Segment, road: Road) {
     this.sourceSegment = sourceSegment;

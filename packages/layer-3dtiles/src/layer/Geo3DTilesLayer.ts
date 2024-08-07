@@ -125,14 +125,14 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
     }
 
     options: Geo3DTilesLayerOptions
-    private _nodeBoxes: (TileSphereBox | TileOrientedBox | TileRegionBox)[]
-    private _rootMap: Record<string, number>
-    private _roots: (RootTileNode | null)[]
-    private _cameraLocation: [number, number, number]
-    private _cameraCartesian3: [number, number, number]
-    private _fovDenominator: number
-    private _highlighted: HighlightItem[][] | null
-    private _showOnlys: ShowOnlyItem[][] | null
+    _nodeBoxes: (TileSphereBox | TileOrientedBox | TileRegionBox)[]
+    _rootMap: Record<string, number>
+    _roots: (RootTileNode | null)[]
+    _cameraLocation: [number, number, number]
+    _cameraCartesian3: [number, number, number]
+    _fovDenominator: number
+    _highlighted: HighlightItem[][] | null
+    _showOnlys: ShowOnlyItem[][] | null
 
     constructor(id: string, options: Geo3DTilesLayerOptions) {
         super(id, options);

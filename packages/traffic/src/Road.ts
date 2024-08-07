@@ -13,7 +13,7 @@ export default class Road {
   targetSide: Segment;
   lanes: Lane[] = [];
   lanesNumber: number | null = null;
-  private gridSize: number;
+  gridSize: number;
 
   constructor(source?: Intersection, target?: Intersection, gridSize?: number) {
     this.source = source;

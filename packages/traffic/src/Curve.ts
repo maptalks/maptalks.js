@@ -2,14 +2,14 @@ import Point from "./Point";
 import Segment from "./Segment";
 
 export default class Curve {
-  private A: Point;
-  private B: Point;
-  private O: Point;
-  private Q: Point;
-  private AO: Segment;
-  private OQ: Segment;
-  private QB: Segment;
-  private len: number | null;
+  A: Point;
+  B: Point;
+  O: Point;
+  Q: Point;
+  AO: Segment;
+  OQ: Segment;
+  QB: Segment;
+  len: number | null;
 
   constructor(atA: Point, atB: Point, atO: Point, atQ: Point) {
     this.A = atA;

@@ -7,9 +7,9 @@ import Material from './Material';
 import Geometry from './Geometry';
 
 export default class InstancedMesh extends Mesh {
-    private _instanceCount: number
+    _instanceCount: number
     instancedData: InstancedAttribute
-    private _vao: Record<string, any>
+    _vao: Record<string, any>
 
     constructor(instancedData: InstancedAttribute, instanceCount: number, geometry: Geometry, material?: Material, config: MeshOptions = {}) {
         super(geometry, material, config);

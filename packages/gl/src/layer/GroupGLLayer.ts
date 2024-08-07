@@ -67,13 +67,13 @@ export default class GroupGLLayer extends maptalks.Layer {
     }
 
     options: GroupGLLayerOptions
-    private layers: maptalks.Layer[]
-    private _layerMap: Record<string, maptalks.Layer>
-    private _polygonOffset?: number
+    layers: maptalks.Layer[]
+    _layerMap: Record<string, maptalks.Layer>
+    _polygonOffset?: number
     //TODO 需要等analysis类型定义
-    private _analysisTaskList: Analysis[]
-    private _terrainLayer: TerrainLayer
-    private _raycaster: RayCaster
+    _analysisTaskList: Analysis[]
+    _terrainLayer: TerrainLayer
+    _raycaster: RayCaster
 
     /**
      * @param id    - layer's id
@@ -273,7 +273,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         super.onLoadEnd();
     }
 
-    private _prepareLayer(layer: maptalks.Layer) {
+    _prepareLayer(layer: maptalks.Layer) {
         const map = (this as any).getMap();
         this._layerMap[layer.getId()] = layer;
         layer['_canvas'] = (this as any).getRenderer().canvas;
@@ -311,24 +311,24 @@ export default class GroupGLLayer extends maptalks.Layer {
         return this.getChildLayer(id);
     }
 
-    private _bindChildListeners(layer: maptalks.Layer) {
+    _bindChildListeners(layer: maptalks.Layer) {
         layer.on('show hide', this._onLayerShowHide, this);
         layer.on('idchange', this._onLayerIDChange, this);
     }
 
-    private _unbindChildListeners(layer: maptalks.Layer) {
+    _unbindChildListeners(layer: maptalks.Layer) {
         layer.off('show hide', this._onLayerShowHide, this);
         layer.off('idchange', this._onLayerIDChange, this);
     }
 
-    private _onLayerShowHide() {
+    _onLayerShowHide() {
         const renderer = (this as any).getRenderer();
         if (renderer) {
             renderer.setToRedraw();
         }
     }
 
-    private _onLayerIDChange(e) {
+    _onLayerIDChange(e) {
         const newId = e.new;
         const oldId = e.old;
         const layer = this.getLayer(oldId);
@@ -336,7 +336,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         this._layerMap[newId] = layer;
     }
 
-    private _onChildRendererCreate(e) {
+    _onChildRendererCreate(e) {
         e.renderer.clearCanvas = empty;
     }
 
@@ -360,7 +360,7 @@ export default class GroupGLLayer extends maptalks.Layer {
     //     return false;
     // }
 
-    private _checkChildren() {
+    _checkChildren() {
         const ids = {};
         this.layers.forEach(layer => {
             const layerId = layer.getId();

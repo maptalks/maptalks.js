@@ -5,13 +5,13 @@ const P0: vec3 = [0, 0, 0], P1: vec3 = [0, 0, 0];
 let uid = 0;
 
 class Scene {
-    private _cameraPosition?: vec3
-    private _id: number
-    private _compareBinded: (a: Mesh, b: Mesh) => number
-    private sortedMeshes: { opaques?: Mesh[], transparents?: Mesh[] }
+    _cameraPosition?: vec3
+    _id: number
+    _compareBinded: (a: Mesh, b: Mesh) => number
+    sortedMeshes: { opaques?: Mesh[], transparents?: Mesh[] }
     sortFunction?: (a: Mesh, b: Mesh) => number
-    private meshes?: Mesh[]
-    private _dirty: boolean
+    meshes?: Mesh[]
+    _dirty: boolean
 
     constructor(meshes) {
         this._id = uid++;

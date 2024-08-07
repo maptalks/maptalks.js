@@ -27,9 +27,9 @@ const defaultOptions = {
 const VECTOR_TILE_SIZE = new maptalks.Size(1, 1);
 
 class Vector3DLayer extends maptalks.OverlayLayer {
-  private _urlModifier: Function;
-  private _polygonOffset: number;
-  private _totalPolygonOffset: number;
+  _urlModifier: Function;
+  _polygonOffset: number;
+  _totalPolygonOffset: number;
 
   static registerPainter(name: string, clazz: unknown) {
     if (!(Vector3DLayer as any).painters) {

@@ -13,15 +13,15 @@ class Material extends Eventable(Base) {
     refCount: number
     // 如果unlit，则不产生阴影（但接受阴影）
     unlit: boolean
-    private _version: number
-    private _propVerion: number
-    private _uniformVer?: number
-    private _uniformKeys?: string
-    private _reglUniforms: ShaderUniforms
-    private _bindedOnTextureComplete: () => void
-    private _doubleSided: boolean
-    private _loadingCount?: number
-    private _disposed?: boolean
+    _version: number
+    _propVerion: number
+    _uniformVer?: number
+    _uniformKeys?: string
+    _reglUniforms: ShaderUniforms
+    _bindedOnTextureComplete: () => void
+    _doubleSided: boolean
+    _loadingCount?: number
+    _disposed?: boolean
 
     constructor(uniforms: ShaderUniforms = {}, defaultUniforms: ShaderUniforms) {
         super()

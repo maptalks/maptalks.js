@@ -28,14 +28,14 @@ export default class TrafficScene {
 
   _lastUpdate = 0;
 
-  private _previousTime = 0;
-  private _carlayer = new GLTFLayer("traffic");
-  private _timeFactor = 5;
-  private _state = "stop";
-  private _symbols = [];
-  private _instanceMap = {};
-  private _rafId: number;
-  private _groupgllayer: any;
+  _previousTime = 0;
+  _carlayer = new GLTFLayer("traffic");
+  _timeFactor = 5;
+  _state = "stop";
+  _symbols = [];
+  _instanceMap = {};
+  _rafId: number;
+  _groupgllayer: any;
 
   constructor(options: TrafficSceneOptions) {
     this.options = options || {};

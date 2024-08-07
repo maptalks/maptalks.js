@@ -16,13 +16,13 @@ export default class Car {
   width = 2;
   length = 2;
 
-  private tmpSpeed = 0;
-  private maxSpeed = 30;
-  private s0 = 2;
-  private timeHeadway = 1.5;
-  private maxAcceleration = 1;
-  private maxDeceleration = 3;
-  private alive = true;
+  tmpSpeed = 0;
+  maxSpeed = 30;
+  s0 = 2;
+  timeHeadway = 1.5;
+  maxAcceleration = 1;
+  maxDeceleration = 3;
+  alive = true;
 
   constructor(lane: Lane, position?: number) {
     this.trajectory = new Trajectory(this, lane, position);

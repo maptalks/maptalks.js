@@ -1,17 +1,17 @@
 import type Intersection from "./Intersection";
 
 export default class ControlSignals {
-  private flipMultiplier = 1 + (Math.random() * 0.4 - 0.2);
-  private time = 0;
-  private stateNum = 0;
-  private lightsFlipInterval = 20;
-  private states = [
+  flipMultiplier = 1 + (Math.random() * 0.4 - 0.2);
+  time = 0;
+  stateNum = 0;
+  lightsFlipInterval = 20;
+  states = [
     ["L", "", "L", ""],
     ["FR", "", "FR", ""],
     ["", "L", "", "L"],
     ["", "FR", "", "FR"],
   ];
-  private intersection: Intersection;
+  intersection: Intersection;
 
   constructor(intersection: Intersection) {
     this.intersection = intersection;

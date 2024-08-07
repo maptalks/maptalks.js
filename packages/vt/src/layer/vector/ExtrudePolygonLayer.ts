@@ -150,8 +150,8 @@ const sideFilter = (mesh) => {
 
 class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
   GeometryTypes = [maptalks.Polygon, maptalks.MultiPolygon];
-  private sidePainter: Record<string, any>;
-  private sidePainterSymbol: Record<string, any>;
+  sidePainter: Record<string, any>;
+  sidePainterSymbol: Record<string, any>;
 
   _extrudeCenter: number[];
 

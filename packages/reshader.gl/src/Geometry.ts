@@ -59,18 +59,18 @@ export default class Geometry {
     properties: any
     indices: NumberArray
     boundingBox: BoundingBox
-    private _version: number
-    private _buffers: Record<string, any>
-    private _vao: Record<string, any>
-    private _reglData: Record<string, AttributeData>
-    private _vertexCount?: number
-    private _activeAttributes: ActiveAttributes
-    private _color0Size?: number
-    private _posDirty?: boolean
-    private count1?: number
-    private offset?: number
-    private _tempPosArray?: NumberArray
-    private _disposed?: boolean
+    _version: number
+    _buffers: Record<string, any>
+    _vao: Record<string, any>
+    _reglData: Record<string, AttributeData>
+    _vertexCount?: number
+    _activeAttributes: ActiveAttributes
+    _color0Size?: number
+    _posDirty?: boolean
+    count1?: number
+    offset?: number
+    _tempPosArray?: NumberArray
+    _disposed?: boolean
 
     constructor(data: AttributeData, elements, count?: number, desc?: GeometryDesc) {
         this._version = 0;

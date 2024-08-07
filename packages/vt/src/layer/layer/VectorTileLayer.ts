@@ -99,19 +99,19 @@ class VectorTileLayer extends maptalks.TileLayer {
   _polygonOffset: number;
 //   _pathRoot?: string;
 
-  private _featureStates: Record<string, Map<unknown, unknown>>;
-  private _featureStamp?: any;
-  private _schema: Record<number, object> = {};
-  private _originFeatureStyle?: VtComposeStyle;
-  private _featureStyle?: VtStyle[];
-  private _vtStyle?: VtBaseStyle[];
-  private _background?: BackgroundStyle;
-  private _backgroundConfig?: BackgroundConfig;
-  private _totalPolygonOffset?: number;
-  private _isDefaultRender?: boolean;
-  private _highlighted: any[];
-  private _replacer?: Function;
-  private _urlModifier?: Function;
+  _featureStates: Record<string, Map<unknown, unknown>>;
+  _featureStamp?: any;
+  _schema: Record<number, object> = {};
+  _originFeatureStyle?: VtComposeStyle;
+  _featureStyle?: VtStyle[];
+  _vtStyle?: VtBaseStyle[];
+  _background?: BackgroundStyle;
+  _backgroundConfig?: BackgroundConfig;
+  _totalPolygonOffset?: number;
+  _isDefaultRender?: boolean;
+  _highlighted: any[];
+  _replacer?: Function;
+  _urlModifier?: Function;
   options: VectorTileLayerOptionsType;
 
   // create a layer instance from given json
@@ -264,7 +264,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     return stateMap.get(source.id);
   }
 
-  private _markFeatureState() {
+  _markFeatureState() {
     const renderer = this.getRenderer();
     if (!renderer) {
       return;
@@ -409,7 +409,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     return this;
   }
 
-  private _tilePointToPoint(out: any, point: any, tilePoint: any, extent: any) {
+  _tilePointToPoint(out: any, point: any, tilePoint: any, extent: any) {
     const tileSize = this.getTileSize().width;
     const tileScale = extent / tileSize;
     const srcPoint = out.set(
@@ -464,7 +464,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     return terrainHelper.getTerrainTiles(tileInfo);
   }
 
-  private _setStyle(style: any) {
+  _setStyle(style: any) {
     // this._pathRoot = null;
     if (style && style["$root"]) {
       let root = style["$root"];
@@ -576,7 +576,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     return this._totalPolygonOffset;
   }
 
-  private _convertFeatures(features) {
+  _convertFeatures(features) {
     if (!features || !features.length) {
       return;
     }
@@ -759,7 +759,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     return this;
   }
 
-  private _validateHighlight(highlights: any) {
+  _validateHighlight(highlights: any) {
     if (Array.isArray(highlights)) {
       for (let i = 0; i < highlights.length; i++) {
         this._validateHighlight(highlights[i]);
@@ -808,7 +808,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     return this;
   }
 
-  private _parseStylePath() {
+  _parseStylePath() {
     maptalks.Util.convertStylePath(this._vtStyle, this._replacer);
     maptalks.Util.convertStylePath(this._featureStyle, this._replacer);
   }
@@ -847,7 +847,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     return this._updateSceneConfig(1, idx, sceneConfig, styleIdx);
   }
 
-  private _updateSceneConfig(
+  _updateSceneConfig(
     type: number,
     idx: number,
     sceneConfig: VtSceneConfig,
@@ -951,7 +951,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     return this._updateDataConfig(1, idx, dataConfig, styleIdx);
   }
 
-  private _updateDataConfig(
+  _updateDataConfig(
     type: number,
     idx: number,
     dataConfig: VtDataConfig,
@@ -1039,7 +1039,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     return this._updateSymbol(1, idx, symbol, feaStyleIdx);
   }
 
-  private _updateSymbol(
+  _updateSymbol(
     type: number,
     idx: number,
     symbol: VtSymbol,
@@ -1426,7 +1426,7 @@ class VectorTileLayer extends maptalks.TileLayer {
   //     return -1;
   // }
 
-  private _getStyleIndex(name: string) {
+  _getStyleIndex(name: string) {
     const styles = this._vtStyle;
     if (!styles) {
       return -1;
@@ -1554,7 +1554,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
   }
 
-  private _convertPickedFeature(picks: any[]) {
+  _convertPickedFeature(picks: any[]) {
     const renderer = this.getRenderer();
     if (!renderer) {
       return picks;
@@ -1590,7 +1590,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     return picks;
   }
 
-  private _convertGeometry(
+  _convertGeometry(
     type: number,
     geometry: any | any[],
     nw: maptalks.Point,
@@ -1651,7 +1651,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     };
   }
 
-  private _convertGeometryCoords(
+  _convertGeometryCoords(
     geometry: any | any[],
     nw: maptalks.Point,
     extent: number,

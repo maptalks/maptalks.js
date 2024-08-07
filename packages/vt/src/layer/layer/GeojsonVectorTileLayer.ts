@@ -61,10 +61,10 @@ function get4326SpatialReference(maxZoom: number, code: string) {
 
 class GeoJSONVectorTileLayer extends VectorTileLayer {
     options: GeoJSONVectorTileLayerOptionsType;
-    private features: Record<string, any>;
+    features: Record<string, any>;
 
-    private _dataExtent: maptalks.Extent;
-    private _idMaps: Record<string, any>;
+    _dataExtent: maptalks.Extent;
+    _idMaps: Record<string, any>;
 
     constructor(id: string, options: GeoJSONVectorTileLayerOptionsType) {
     // use map's spatial reference
@@ -130,7 +130,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     return this;
   }
 
-  private _setData(data: unknown) {
+  _setData(data: unknown) {
     if (this.options.convertFn) {
       const fn = new Function(
         "data",
@@ -144,7 +144,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     return this;
   }
 
-  private _updateWorker() {
+  _updateWorker() {
     const renderer = this.getRenderer();
     if (renderer) {
       const workerConn = (renderer as any).getWorkerConnection();
@@ -191,11 +191,11 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     this.fire("dataload", { extent: params && params.extent });
   }
 
-  private _setExtent(extent: ArrayExtent) {
+  _setExtent(extent: ArrayExtent) {
     this._dataExtent = new maptalks.Extent(...extent);
   }
 
-  private _fetchData(data: any, cb: Callback) {
+  _fetchData(data: any, cb: Callback) {
     if (isString(data)) {
       Ajax.getJSON(data, cb);
     } else {
@@ -223,7 +223,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     return new GeoJSONVectorTileLayer(layerJSON["id"], layerJSON["options"] as any);
   }
 
-  private _generateIdMap() {
+  _generateIdMap() {
     if (!this.features) {
       return;
     }

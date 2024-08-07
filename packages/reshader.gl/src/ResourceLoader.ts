@@ -16,8 +16,8 @@ class InnerResourceLoader {
     defaultTexture?: Uint8Array
     defaultCubeTexture: number[]
     urlModifier?: UrlModifierFunction
-    private resources: Record<string, CachedResource>
-    private _count?: number
+    resources: Record<string, CachedResource>
+    _count?: number
 
     constructor(DEFAULT_TEXTURE: Uint8Array, urlModifier?: UrlModifierFunction) {
         this.defaultTexture = DEFAULT_TEXTURE;

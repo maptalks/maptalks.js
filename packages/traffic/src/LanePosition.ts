@@ -6,8 +6,8 @@ export default class LanePosition {
   id = uniqueId("laneposition");
   position: number;
   free = true;
-  private car: Car;
-  private tmpLane: Lane;
+  car: Car;
+  tmpLane: Lane;
 
   constructor(car: Car, lane?: Lane, position?: number) {
     this.car = car;

@@ -54,8 +54,8 @@ function hasVisibleMask() {
 
 export default function <T extends MixinConstructor>(Base: T) {
     return class MaskLayerMixin extends Base {
-        private _projViewMatrix: mat4;
-        private _extentInWorld: vec4;
+        _projViewMatrix: mat4;
+        _extentInWorld: vec4;
 
         removeMask(masks: undefined | null | any) {
             if (!this['_maskList']) {
