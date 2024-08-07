@@ -244,9 +244,8 @@ class LayerSwitcher extends Control {
                     baseLayers = (baseLayer as any).layers;
                 if (baseLayers) {
                     for (let i = 0, len = baseLayers.length; i < len; i++) {
-                        const _baseLayer = baseLayers[i];
-                        //@internal
-    _baseLayer[_baseLayer === layer ? 'show' : 'hide']();
+                        const childLayer = baseLayers[i];
+                        childLayer[childLayer === layer ? 'show' : 'hide']();
                     }
                 } else if (!baseLayer.isVisible()) {
                     baseLayer.show();
