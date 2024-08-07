@@ -3,15 +3,15 @@ import Point from '../geo/Point';
 import Coordinate from '../geo/Coordinate';
 import * as mat4 from '../core/util/mat4';
 import { subtract, add, scale, normalize, dot, set, distance, angle } from '../core/util/vec3';
-import { clamp, interpolate, isNumber, isNil, wrap, toDegree, toRadian, type Matrix4 } from '../core/util';
+import { clamp, interpolate, isNumber, isNil, wrap, toDegree, toRadian, Matrix4 } from '../core/util';
 import { applyMatrix, matrixToQuaternion, quaternionToMatrix, lookAt, setPosition } from '../core/util/math';
 import Browser from '../core/Browser';
 
 
 declare module "./Map" {
-    interface Map {
-        cameraPosition: Point;
-        cameraLookAt: number[];
+    export interface Map {
+        cameraPosition: [number, number, number];
+        cameraLookAt: [number, number, number];
         projViewMatrix: Matrix4;
         getFov(): number;
         setFov(fov: number): this;
@@ -27,7 +27,8 @@ declare module "./Map" {
         setCameraMovements(frameOptions: Array<MapViewType>, option?: { autoRotate: boolean });
         setCameraOrientation(params: MapViewType): this;
         setCameraPosition(coordinate: Coordinate);
-        getFitZoomForCamera(cameraPosition: Array<number>, pitch: number);
+        getFitZoomForCamera(cameraPosition: [number, number, number], pitch: number);
+        getFitZoomForAltitude(altitude: number);
         isTransforming(): boolean;
         getFrustumAltitude(): number;
         updateCenterAltitude();
@@ -397,11 +398,11 @@ Map.include(/** @lends Map.prototype */{
 
         const cameraToCenterDistance = cameraToGroundDistance + centerPointZ;
 
-        const zoom = this._getFitZoomForDistance(cameraToCenterDistance);
+        const zoom = this.getFitZoomForAltitude(cameraToCenterDistance);
         return { zoom, cameraToGroundDistance };
     },
 
-    _getFitZoomForDistance(distance) {
+    getFitZoomForAltitude(distance: number) {
         const ratio = this._getFovRatio();
         const scale = distance * ratio * 2 / (this.height || 1) * this.getGLRes();
         const resolutions = this._getResolutions();

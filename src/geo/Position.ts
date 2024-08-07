@@ -195,7 +195,7 @@ abstract class Position {
 
     abstract add(x: any, y?: number): Point | Coordinate;
 
-    _sub(x: PositionLike): this;
+    _sub(x: PositionLike | PositionArray<number>): this;
     _sub(x: number, y: number): this;
     /**
      * 对原数据的 x 和 y 与传入坐标相减
