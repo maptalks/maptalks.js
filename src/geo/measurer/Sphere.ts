@@ -15,7 +15,7 @@ type CoordsLike = Coordinate | CoordinateJson;
  * @private
  */
 class Sphere {
-    public radius: number;
+    radius: number;
 
     /**
      * @param radius Sphere's radius

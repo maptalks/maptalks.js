@@ -13,8 +13,8 @@ const TEMP_SIZE = new Size(1, 1);
 const TEMP_EXTENT = new PointExtent();
 
 export default class ImageMarkerSymbolizer extends PointSymbolizer {
-    public _url: [string, string | number, string | number];
-    public _fixedExtent: PointExtent;
+    _url: [string, string | number, string | number];
+    _fixedExtent: PointExtent;
     static test(symbol: any): boolean {
         return isImageSymbol(symbol);
     }

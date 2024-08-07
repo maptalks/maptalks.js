@@ -11,9 +11,9 @@ const TEMP_COORD0 = new Coordinate(0, 0);
 const TEMP_COORD1 = new Coordinate(0, 0);
 
 export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
-    public _extMin: Coordinate;
-    public _extMax: Coordinate;
-    public _pxExtent: PointExtent;
+    _extMin: Coordinate;
+    _extMax: Coordinate;
+    _pxExtent: PointExtent;
     static test(symbol: any, geometry: Geometry): boolean {
         if (!symbol) {
             return false;

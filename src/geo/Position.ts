@@ -25,9 +25,9 @@ export type PositionLike = Point | Coordinate | PositionJson<NumberAble> | Point
  * @category basic types
  */
 abstract class Position {
-    public x: number;
-    public y: number;
-    public z: WithUndef<number>;
+    x: number;
+    y: number;
+    z: WithUndef<number>;
 
     constructor(x: PositionLike)
     constructor(x: PositionArray<NumberAble>)

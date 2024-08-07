@@ -66,10 +66,10 @@ const options: TextBoxOptionsType = {
 class TextBox extends TextMarker {
 
     options: TextBoxOptionsType;
-    public _width: number
-    public _height: number
-    public _oldWidth: any
-    public _oldHeight: any
+    _width: number
+    _height: number
+    _oldWidth: any
+    _oldHeight: any
     /**
      * @param {String} content                 - TextBox's text content
      * @param {Coordinate} coordinates         - coordinates

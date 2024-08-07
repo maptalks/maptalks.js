@@ -68,7 +68,7 @@ const options: LabelOptionsType = {
  */
 class Label extends TextMarker {
 
-    public options: any
+    options: any
 
     /**
      * @param {String} content                 - Label's text content

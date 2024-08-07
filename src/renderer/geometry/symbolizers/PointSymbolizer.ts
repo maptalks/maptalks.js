@@ -25,10 +25,10 @@ const TEMP_POINT3 = new Point(0, 0);
  * @extends {symbolizer.CanvasSymbolizer}
  */
 abstract class PointSymbolizer extends CanvasSymbolizer {
-    public style: any;
-    public symbol: any;
-    public geometry: Geometry;
-    public painter: Painter;
+    style: any;
+    symbol: any;
+    geometry: Geometry;
+    painter: Painter;
     constructor(symbol: any, geometry: Geometry, painter: Painter) {
         super();
         this.symbol = symbol;

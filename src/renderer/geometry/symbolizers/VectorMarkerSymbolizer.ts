@@ -19,11 +19,11 @@ const TEMP_EXTENT = new PointExtent();
 const DEFAULT_ANCHOR = new Point(0, 0);
 
 export default class VectorMarkerSymbolizer extends PointSymbolizer {
-    public _dynamic: any;
-    public strokeAndFill: any;
-    public padding: number;
-    public _stamp: any;
-    public _fixedExtent: PointExtent;
+    _dynamic: any;
+    strokeAndFill: any;
+    padding: number;
+    _stamp: any;
+    _fixedExtent: PointExtent;
 
     static test(symbol: any): boolean {
         return isVectorSymbol(symbol);

@@ -92,48 +92,48 @@ const options: GeometryOptionsType = {
  */
 export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     options: GeometryOptionsType;
-    public type: string;
-    public _layer: OverlayLayer;
-    public _angle: number
-    public _pivot: Coordinate
-    public _id: string
-    public properties: Record<string, any>;
-    public _symbol: any
-    public _symbolUpdated: any
-    public _compiledSymbol: any
-    public _symbolHash: any
-    public _textDesc: any
-    public _eventSymbolProperties: any
-    public _sizeSymbol: any
-    public _internalId: number
-    public _extent: Extent
-    public _fixedExtent: PointExtent
-    public _extent2d: PointExtent
-    public _externSymbol: any
-    public _parent: Geometry | GeometryCollection
-    public _silence: boolean
-    public _projCode: string
-    public _painter: Painter
-    public _maskPainter: CollectionPainter | Painter
-    public _dirtyCoords: any
-    public _pcenter: Coordinate
-    public _coordinates: any;
-    public _infoWinOptions: InfoWindowOptionsType;
-    public _minAlt: number
-    public _maxAlt: number;
+    type: string;
+    _layer: OverlayLayer;
+    _angle: number
+    _pivot: Coordinate
+    _id: string
+    properties: Record<string, any>;
+    _symbol: any
+    _symbolUpdated: any
+    _compiledSymbol: any
+    _symbolHash: any
+    _textDesc: any
+    _eventSymbolProperties: any
+    _sizeSymbol: any
+    _internalId: number
+    _extent: Extent
+    _fixedExtent: PointExtent
+    _extent2d: PointExtent
+    _externSymbol: any
+    _parent: Geometry | GeometryCollection
+    _silence: boolean
+    _projCode: string
+    _painter: Painter
+    _maskPainter: CollectionPainter | Painter
+    _dirtyCoords: any
+    _pcenter: Coordinate
+    _coordinates: any;
+    _infoWinOptions: InfoWindowOptionsType;
+    _minAlt: number
+    _maxAlt: number;
     // 在 VectorLayerCanvasRenderer 附加的信息
-    public _isCheck?: boolean;
-    public _cPoint?: any;
-    public _inCurrentView?: boolean;
+    _isCheck?: boolean;
+    _cPoint?: any;
+    _inCurrentView?: boolean;
     // 在 Marker 中附加的信息，Marker 和其子类都具有此属性
-    public isPoint?: boolean;
-    private _savedVisible?: boolean;
+    isPoint?: boolean;
+    _savedVisible?: boolean;
     //
-    public _paintAsPath?: () => any;
-    public _getPaintParams?: (disableSimplify?: boolean) => any[];
-    public _simplified?: boolean;
+    _paintAsPath?: () => any;
+    _getPaintParams?: (disableSimplify?: boolean) => any[];
+    _simplified?: boolean;
     // 本身应该存于 Path 类，但是由于渲染层需要大量的特殊熟悉判断，定义在这里回减少很多麻烦
-    public getHoles?(): Array<Array<Coordinate>>;
+    getHoles?(): Array<Array<Coordinate>>;
     __connectors: Array<Geometry>;
     getShell?(): Array<Coordinate>;
     getGeometries?(): Geometry[];

@@ -9,8 +9,8 @@ import type { WithNull } from '../types/typings';
  * @category geo
  */
 class CRS {
-    public type: string;
-    public properties: any;
+    type: string;
+    properties: any;
 
     /**
      * @param type type of the CRS

@@ -30,8 +30,8 @@ const defaultBoxSymbol: VectorMarkerSymbol = {
  * @extends Marker
  */
 class TextMarker extends Marker {
-    public _content: string
-    public _refreshing: boolean
+    _content: string
+    _refreshing: boolean
     _refresh?(): void
     getTextStyle?(): any
     setTextStyle?(tyle?: any): any

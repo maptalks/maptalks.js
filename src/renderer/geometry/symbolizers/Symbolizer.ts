@@ -18,10 +18,10 @@ import Painter from "../Painter";
  * @private
  */
 abstract class Symbolizer {
-    public bbox: BBOX;
-    public geometry: Geometry;
-    public painter: Painter;
-    public style: any;
+    bbox: BBOX;
+    geometry: Geometry;
+    painter: Painter;
+    style: any;
     constructor() {
         this.bbox = getDefaultBBOX();
     }

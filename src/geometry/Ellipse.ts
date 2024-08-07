@@ -60,8 +60,8 @@ const options: EllipseOptionsType = {
  * });
  */
 export class Ellipse extends CenterMixin(Polygon) {
-    public width: number
-    public height: number
+    width: number
+    height: number
     options: EllipseOptionsType;
 
     static fromJSON(json: Record<string, any>): Ellipse {

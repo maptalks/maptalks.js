@@ -13,7 +13,7 @@ import Point from '../Point';
  * @protected
  */
 class Transformation {
-    public matrix: number[];
+    matrix: number[];
 
     /**
      * The base 2d point system is a fixed system that is consistent with HTML coordinate system: on X-Axis, left is smaller and right is larger; on Y-Axis, top is smaller and bottom is larger. <br>

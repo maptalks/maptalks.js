@@ -6,7 +6,7 @@
     "strict": false,
     "alwaysStrict": true,
     "allowJs": true,
-    "sourceMap": true,
+    "sourceMap": false,
     "esModuleInterop": true,
     "declaration": true,
     "declarationMap": true,
@@ -15,6 +15,7 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "removeComments": false,
+    "stripInternal": true,
     "moduleResolution": "node",
     // ask tsc not to mess up with for ... of
     "downlevelIteration": true,

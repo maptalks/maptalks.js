@@ -29,11 +29,11 @@ const TEMP_EXTENT = new PointExtent();
  */
 class GeometryCollection extends Geometry {
 
-    public _geometries: Geometry[]
-    public _pickGeometryIndex: number
-    public _originalSymbol: any
-    public _draggbleBeforeEdit: any
-    public _editing: boolean
+    _geometries: Geometry[]
+    _pickGeometryIndex: number
+    _originalSymbol: any
+    _draggbleBeforeEdit: any
+    _editing: boolean
 
     /**
      * @param {Geometry[]} geometries - GeometryCollection's geometries

@@ -39,8 +39,8 @@ export type SizeLike = Size | JsonSize;
  * ```
  */
 class Size {
-    public width: number;
-    public height: number;
+    width: number;
+    height: number;
 
     /**
      * @param width - width value
