@@ -5,12 +5,16 @@ const P0: vec3 = [0, 0, 0], P1: vec3 = [0, 0, 0];
 let uid = 0;
 
 class Scene {
+    //@internal
     _cameraPosition?: vec3
+    //@internal
     _id: number
+    //@internal
     _compareBinded: (a: Mesh, b: Mesh) => number
     sortedMeshes: { opaques?: Mesh[], transparents?: Mesh[] }
     sortFunction?: (a: Mesh, b: Mesh) => number
     meshes?: Mesh[]
+    //@internal
     _dirty: boolean
 
     constructor(meshes) {
@@ -161,6 +165,7 @@ class Scene {
         return this.sortedMeshes || {};
     }
 
+    //@internal
     _compare(a: Mesh, b: Mesh) {
         vec3.transformMat4(P0, a.geometry.boundingBox.getCenter(), a.localTransform);
         vec3.transformMat4(P1, b.geometry.boundingBox.getCenter(), b.localTransform);

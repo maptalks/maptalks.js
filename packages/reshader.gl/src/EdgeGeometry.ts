@@ -16,6 +16,7 @@ export default class EdgeGeometry extends Geometry {
         });
     }
 
+    //@internal
     _getPosAttritute(): number[] {
         const pos = this.data[this.desc.positionAttribute];
         if (!pos.length) {
@@ -70,6 +71,7 @@ export default class EdgeGeometry extends Geometry {
         return vertices;
     }
 
+    //@internal
     _calEdgeData(index: number, indexArr: number[], triangle: Triangle, edgeData: Record<string, EdgeItem>, hashes: string[],
         thresholdDot: number, normal: vec3, vertices: number[]) {
         const next = (index + 1) % 3;
@@ -97,6 +99,7 @@ export default class EdgeGeometry extends Geometry {
         }
     }
 
+    //@internal
     _createElements(vertices: number[]): number[] {
         const elements = [];
         const len = vertices.length / 3;

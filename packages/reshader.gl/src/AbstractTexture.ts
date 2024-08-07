@@ -16,8 +16,10 @@ class Base {}
 class AbstractTexture extends Eventable(Base) {
     config: TextureConfig
     promise?: Promise<any>
+    //@internal
     _loading?: boolean
     resLoader: ResourceLoader
+    //@internal
     _texture: Texture2D
     dirty?: boolean
 
@@ -154,6 +156,7 @@ class AbstractTexture extends Eventable(Base) {
         // }
     }
 
+    //@internal
     _updateREGL() {
         if (this._texture && !this._texture[KEY_DISPOSED]) {
             this._texture(this.config as any);
@@ -188,6 +191,7 @@ class AbstractTexture extends Eventable(Base) {
         }
     }
 
+    //@internal
     _needPowerOf2() {
         const config = this.config;
         const isRepeat = config.wrap && config.wrap !== 'clamp' || config.wrapS && config.wrapS !== 'clamp' ||

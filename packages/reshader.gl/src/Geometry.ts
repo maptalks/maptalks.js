@@ -59,17 +59,27 @@ export default class Geometry {
     properties: any
     indices: NumberArray
     boundingBox: BoundingBox
+    //@internal
     _version: number
+    //@internal
     _buffers: Record<string, any>
+    //@internal
     _vao: Record<string, any>
+    //@internal
     _reglData: Record<string, AttributeData>
+    //@internal
     _vertexCount?: number
+    //@internal
     _activeAttributes: ActiveAttributes
+    //@internal
     _color0Size?: number
+    //@internal
     _posDirty?: boolean
     count1?: number
     offset?: number
+    //@internal
     _tempPosArray?: NumberArray
+    //@internal
     _disposed?: boolean
 
     constructor(data: AttributeData, elements, count?: number, desc?: GeometryDesc) {
@@ -115,10 +125,12 @@ export default class Geometry {
     //     throw new Error('Geometry.elements is read only, use setElements instead.');
     // }
 
+    //@internal
     _getPosAttritute() {
         return this.data[this.desc.positionAttribute];
     }
 
+    //@internal
     _prepareData(toUpdateRefCount: boolean) {
         if (!this.data) {
             return;
@@ -288,6 +300,7 @@ export default class Geometry {
         return this._reglData[activeAttributes.key];
     }
 
+    //@internal
     _isAttrChanged(activeAttributes: ActiveAttributes): boolean {
         if (activeAttributes === this._activeAttributes) {
             return false;
@@ -567,6 +580,7 @@ export default class Geometry {
         return this;
     }
 
+    //@internal
     _markVAODirty(forceDelete: boolean) {
         if (this._vao) {
             for (const key in this._vao) {
@@ -694,6 +708,7 @@ export default class Geometry {
         }
     }
 
+    //@internal
     _updateSubBoundingBox(data: NumberArray) {
         const bbox = this.boundingBox;
 
@@ -724,6 +739,7 @@ export default class Geometry {
     // 1. 数组或者类型数组
     // 2. Object形式（regl的buffer定义）
 
+    //@internal
     _getAttributeData(name: string) {
         const data = this.data[name] && this.data[name].array ? this.data[name].array : this.data[name];
         const bufKey = data.buffer;
@@ -880,6 +896,7 @@ export default class Geometry {
         return size;
     }
 
+    //@internal
     _deleteVAO() {
         for (const p in this._vao) {
             this._vao[p].vao.destroy();
@@ -887,6 +904,7 @@ export default class Geometry {
         this._vao = {};
     }
 
+    //@internal
     _forEachBuffer(fn: (buffer: any) => void) {
         if (this.elements && this.elements.destroy)  {
             fn(this.elements);
@@ -920,6 +938,7 @@ export default class Geometry {
         }
     }
 
+    //@internal
     _incrVersion() {
         this._version++;
     }

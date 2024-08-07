@@ -17,6 +17,7 @@ class InnerResourceLoader {
     defaultCubeTexture: number[]
     urlModifier?: UrlModifierFunction
     resources: Record<string, CachedResource>
+    //@internal
     _count?: number
 
     constructor(DEFAULT_TEXTURE: Uint8Array, urlModifier?: UrlModifierFunction) {
@@ -82,6 +83,7 @@ class InnerResourceLoader {
         }
     }
 
+    //@internal
     _disposeOne(url: string) {
         const resources = this.resources;
         if (!resources[url]) {
@@ -93,6 +95,7 @@ class InnerResourceLoader {
         }
     }
 
+    //@internal
     _loadImage(url: string):Promise<PromiseResource> {
         const resources = this.resources;
         if (resources[url]) {
@@ -124,12 +127,14 @@ class InnerResourceLoader {
         return promise;
     }
 
+    //@internal
     _loadImages(urls): Promise<PromiseResource[]> {
         const promises = urls.map(url => this._loadImage(url));
         const promise = Promise.all(promises);
         return promise;
     }
 
+    //@internal
     _getBlankTextures(count) {
         const t = new Array(count);
         for (let i = 0; i < 6; i++) {

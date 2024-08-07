@@ -13,14 +13,23 @@ class Material extends Eventable(Base) {
     refCount: number
     // 如果unlit，则不产生阴影（但接受阴影）
     unlit: boolean
+    //@internal
     _version: number
+    //@internal
     _propVerion: number
+    //@internal
     _uniformVer?: number
+    //@internal
     _uniformKeys?: string
+    //@internal
     _reglUniforms: ShaderUniforms
+    //@internal
     _bindedOnTextureComplete: () => void
+    //@internal
     _doubleSided: boolean
+    //@internal
     _loadingCount?: number
+    //@internal
     _disposed?: boolean
 
     constructor(uniforms: ShaderUniforms = {}, defaultUniforms: ShaderUniforms) {
@@ -210,6 +219,7 @@ class Material extends Eventable(Base) {
         return !!this._disposed;
     }
 
+    //@internal
     _checkTextures() {
         this._loadingCount = 0;
         for (const p in this.uniforms) {
@@ -223,6 +233,7 @@ class Material extends Eventable(Base) {
         }
     }
 
+    //@internal
     _onTextureComplete() {
         this._loadingCount--;
         this._incrVersion();
@@ -237,6 +248,7 @@ class Material extends Eventable(Base) {
         return this._uniformKeys;
     }
 
+    //@internal
     _genUniformKeys() {
         const keys: string[] = [];
         for (const p in this.uniforms) {
@@ -247,6 +259,7 @@ class Material extends Eventable(Base) {
         this._uniformKeys = keys.join();
     }
 
+    //@internal
     _incrVersion() {
         this._version++;
     }

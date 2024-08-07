@@ -15,6 +15,7 @@ class TextureCube extends Texture {
         return regl.cube(this.config);
     }
 
+    //@internal
     _createFaces(/* images */) {
         return [];
     }

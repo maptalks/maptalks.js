@@ -17,6 +17,7 @@ export type HandlerFn = (result?: HandlerFnResultType) => void | boolean;
 
 export default function <T extends MixinConstructor>(Base: T) {
     return class EventableMixin extends Base {
+        //@internal
         _events: Record<string, BaseEventParamsType>
         on(type: string, handler: HandlerFn) {
             if (!this._events) {
@@ -51,6 +52,7 @@ export default function <T extends MixinConstructor>(Base: T) {
             }
             return this;
         }
+        //@internal
         _wrapOnce(type: string, handler: HandlerFn) {
             const self = this;
             let called = false;

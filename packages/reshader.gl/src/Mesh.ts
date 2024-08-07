@@ -16,33 +16,57 @@ let uuid = 0;
  *  transparent, castShadow
  */
 class Mesh {
+    //@internal
     _version: number
+    //@internal
     _geometry: Geometry
+    //@internal
     _material: Material
+    //@internal
     _localTransform: mat4 | MatrixFunction
+    //@internal
     _positionMatrix: mat4 | MatrixFunction
+    //@internal
     _currentTransform?: mat4
+    //@internal
     _prevTMat?: mat4
+    //@internal
     _prevPMat?: mat4
+    //@internal
     _dirtyUniforms: boolean
+    //@internal
     _dirtyGeometry: boolean
+    //@internal
     _options?: MeshOptions
+    //@internal
     _materialVer?: number
+    //@internal
     _materialPropVer?: number
+    //@internal
     _dirtyProps?: string[]
+    //@internal
     _defines?: ShaderDefines
+    //@internal
     _bakDefines?: ShaderDefines
+    //@internal
     _commandKey?: string
+    //@internal
     _materialKeys?: string
+    //@internal
     _realUniforms?: ShaderUniforms
+    //@internal
     _bbox?: BoundingBox
+    //@internal
     _geoBox?: BoundingBox
+    //@internal
     _bboxArr?: [vec3, vec3]
+    //@internal
     _uniformDescriptors?: Set<string>
 
     transparent: boolean
     bloom: boolean
     ssr: boolean
+    //@internal
     _castShadow: boolean
     needUpdateShadow: boolean
     picking: boolean
@@ -207,6 +231,7 @@ class Mesh {
       return Object.prototype.hasOwnProperty.call(this.uniforms, k);
     }
 
+    //@internal
     _updateUniformState(k: string) {
       if (this.uniforms[k] === undefined) {
         this._dirtyUniforms = true;
@@ -229,6 +254,7 @@ class Mesh {
         return defines;
     }
 
+    //@internal
     _getDefines(): ShaderDefines {
         if (!this._defines) {
             this._defines = {};
@@ -263,6 +289,7 @@ class Mesh {
         return this._material && this._material.hasSkinAnimation();
     }
 
+    //@internal
     _getDefinesKey(): string {
         this.dirtyDefines = false;
         return this._createDefinesKey(this.getDefines());
@@ -376,6 +403,7 @@ class Mesh {
         return this._realUniforms;
     }
 
+    //@internal
     _prepareUniformsForDraco() {
         const geometry = this._geometry;
         const position = geometry.data[geometry.desc.positionAttribute],
@@ -408,6 +436,7 @@ class Mesh {
         return this._geometry.getElements();
     }
 
+    //@internal
     _getREGLAttrData(regl, activeAttributes) {
         return this._geometry.getREGLData(regl, activeAttributes, this.disableVAO);
     }
@@ -476,6 +505,7 @@ class Mesh {
 
     }
 
+    //@internal
     _createDefinesKey(defines) {
         const v = [];
         for (const p in defines) {
@@ -484,6 +514,7 @@ class Mesh {
         return v.join(',');
     }
 
+    //@internal
     _incrVersion() {
         this._version++;
     }

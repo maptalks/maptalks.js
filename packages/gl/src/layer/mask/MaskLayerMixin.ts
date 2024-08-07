@@ -54,7 +54,9 @@ function hasVisibleMask() {
 
 export default function <T extends MixinConstructor>(Base: T) {
     return class MaskLayerMixin extends Base {
+        //@internal
         _projViewMatrix: mat4;
+        //@internal
         _extentInWorld: vec4;
 
         removeMask(masks: undefined | null | any) {
@@ -110,6 +112,7 @@ export default function <T extends MixinConstructor>(Base: T) {
             return this['_maskList'] || [];
         }
 
+        //@internal
         _onGeometryEvent(param) {
             if (!param || !param['target']) {
                 return;
@@ -144,6 +147,7 @@ export default function <T extends MixinConstructor>(Base: T) {
             return [];
         }
 
+        //@internal
         _hitMasks(coordinate) {
             const masks = this['_maskList'];
             if (!masks) {
@@ -261,6 +265,7 @@ export default function <T extends MixinConstructor>(Base: T) {
             return { extent, ratio, minHeight };
         }
 
+        //@internal
         _inMapExtent(extent) {
             const map = this['getMap']();
             const mapExtent = map.getExtent();
