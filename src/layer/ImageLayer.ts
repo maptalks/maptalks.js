@@ -198,8 +198,8 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
         this.completeRender();
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     //@interlal
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _drawImages(timestamp?: number, context?: any) {
         const imgData = this.layer._imageData;
         const map = this.getMap();

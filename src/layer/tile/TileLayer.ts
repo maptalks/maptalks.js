@@ -1432,8 +1432,9 @@ class TileLayer extends Layer {
         }
         return this._tileConfig || this._defaultTileConfig;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     //@interlal
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _bindMap(args?: any) {
         this._onSpatialReferenceChange();
         // eslint-disable-next-line prefer-rest-params
