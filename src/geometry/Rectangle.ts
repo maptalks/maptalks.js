@@ -61,7 +61,9 @@ export class Rectangle extends Polygon {
      */
     // @ts-expect-error 确实需要重写父类的属性
     setCoordinates(nw: Coordinate | Array<number>) {
-        this._coordinates = (nw instanceof Coordinate) ? nw : new Coordinate(nw as any);
+        const newCoordinate = (nw instanceof Coordinate) ? nw : new Coordinate(nw as any);
+        this._translateRotatePivot(newCoordinate);
+        this._coordinates = newCoordinate;
         if (!this._coordinates || !this.getMap()) {
             this.onPositionChanged();
             return this;

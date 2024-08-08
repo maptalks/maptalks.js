@@ -21,6 +21,7 @@ export default function <T extends MixinConstructor>(Base: T) {
         onPositionChanged?(): void
         _verifyProjection?(): void
         _clearCache?(): void
+        _translateRotatePivot?(coordinate: Coordinate): this;
         /**
          * 获取几何图形的中心点
          * @english
@@ -43,6 +44,7 @@ export default function <T extends MixinConstructor>(Base: T) {
          */
         setCoordinates(coordinates: Coordinate | Array<number>) {
             const center = (coordinates instanceof Coordinate) ? coordinates : new Coordinate(coordinates as [number, number, number]);
+            this._translateRotatePivot(center);
             this._coordinates = center;
             if (!this.getMap()) {
                 //When not on a layer or when creating a new one, temporarily save the coordinates,
