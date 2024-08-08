@@ -3,7 +3,7 @@ import Map, { MapAnimationOptionsType, MapViewType } from './Map';
 
 declare module "./Map" {
     interface Map {
-
+        _viewHistory: Array<MapViewType>;
         zoomToPreviousView(options?: any): MapViewType;
         hasPreviousView(): boolean;
         zoomToNextView(options?: any): MapViewType;

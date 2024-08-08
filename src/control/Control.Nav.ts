@@ -1,5 +1,5 @@
 import Map from '../map/Map';
-import Control, { ControlOptionsType, PositionType } from './Control';
+import Control, { ControlOptionsType, DomPositionType } from './Control';
 
 
 const options: NavOptionsType = {
@@ -29,5 +29,5 @@ Map.addOnLoadHook(function () {
 });
 
 export type NavOptionsType = {
-    position: string | PositionType;
+    position: string | DomPositionType;
 } & ControlOptionsType;

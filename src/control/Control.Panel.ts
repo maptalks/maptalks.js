@@ -2,7 +2,7 @@ import { extend, isNil, isString } from '../core/util';
 import { createEl } from '../core/util/dom';
 import { Point } from '../geo';
 import DragHandler from '../handler/Drag';
-import Control, { ControlOptionsType, PositionType } from './Control';
+import Control, { ControlOptionsType, DomPositionType } from './Control';
 
 /**
  * @property {Object} options - options
@@ -41,7 +41,7 @@ class Panel extends Control {
     draggable: DragHandler;
     options: PanelOptionsType;
     _startPos: Point;
-    _startPosition: PositionType;
+    _startPosition: DomPositionType;
 
     /**
      * method to build DOM of the control

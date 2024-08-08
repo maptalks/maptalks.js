@@ -987,6 +987,16 @@ class GeometryEditor extends Eventable(Class) {
             }
             onVertexAddOrRemove();
             me._updating = false;
+
+            /**
+             * changed geometry shape event, fired when edit control vertex  remove
+             *
+             * @event Geometry#handleremove
+             * @type {Object}
+             * @property {String} type - handleremove
+             * @property {Geometry} target - the geometry fires the event
+             */
+            me._geometry.fire('handleremove', Object.assign({}, param, { coordinate: map.containerPointToCoordinate(param.containerPoint), vertex: param.target }));
         }
 
         function moveVertexHandle(handleConatainerPoint: any, index: number, ringIndex: number = 0): void {
