@@ -62,15 +62,15 @@ const options: GeometryEditOptionsType = {
 class GeometryEditor extends Eventable(Class) {
 
     _geometry: any;
-    private _originalSymbol: any
-    private _shadowLayer: any
-    private _shadow: any
-    private _geometryDraggble: boolean
-    private _history: any
-    private _historyPointer: any
-    private _editOutline: any
-    private _refreshHooks: Array<any>
-    private _updating: boolean
+    _originalSymbol: any
+    _shadowLayer: any
+    _shadow: any
+    _geometryDraggble: boolean
+    _history: any
+    _historyPointer: any
+    _editOutline: any
+    _refreshHooks: Array<any>
+    _updating: boolean
     editing: boolean;
     options: GeometryEditOptionsType;
 

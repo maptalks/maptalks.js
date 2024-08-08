@@ -928,7 +928,7 @@ export type ResourceUrl = string | string[]
 export class ResourceCache {
     resources: any;
 
-    private _errors: any;
+    _errors: any;
 
     constructor() {
         this.resources = {};

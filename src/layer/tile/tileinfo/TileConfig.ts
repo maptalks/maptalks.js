@@ -18,13 +18,13 @@ class TileConfig {
     map: Map;
     tileSize: Size;
     fullExtent: Extent;
-    private _xScale: number;
-    private _yScale: number;
-    private _pointOrigin: Point;
-    private _glRes: number;
+    _xScale: number;
+    _yScale: number;
+    _pointOrigin: Point;
+    _glRes: number;
     tileSystem: TileSystem;
     transformation: Transformation;
-    private _tileFullIndex: Record<string, Extent>;
+    _tileFullIndex: Record<string, Extent>;
 
     /**
      * @param tileSystem  - tileSystem

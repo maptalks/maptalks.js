@@ -127,12 +127,12 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     _inCurrentView?: boolean;
     // 在 Marker 中附加的信息，Marker 和其子类都具有此属性
     isPoint?: boolean;
-    private _savedVisible?: boolean;
+    _savedVisible?: boolean;
     //
     _paintAsPath?: () => any;
     _getPaintParams?: (disableSimplify?: boolean) => any[];
     _simplified?: boolean;
-    private _dirtyRotate?: boolean;
+    _dirtyRotate?: boolean;
     // 本身应该存于 Path 类，但是由于渲染层需要大量的特殊熟悉判断，定义在这里回减少很多麻烦
     getHoles?(): Array<Array<Coordinate>>;
     __connectors: Array<Geometry>;

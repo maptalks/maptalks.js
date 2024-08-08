@@ -35,7 +35,7 @@ const MAX_ROOT_NODES = 32;
 
 const isSetAvailable: boolean = typeof Set !== 'undefined';
 class TileHashset {
-    private _table: Set<any> | any;
+    _table: Set<any> | any;
     constructor() {
         this._table = isSetAvailable ? new Set() : {};
     }
@@ -694,7 +694,7 @@ class TileLayer extends Layer {
     //     return [w, h];
     // }
 
-    private _isTileInFrustum(node: TileNodeType, projectionView: Matrix4, glScale: number, offset: TileOffsetType): boolean {
+    _isTileInFrustum(node: TileNodeType, projectionView: Matrix4, glScale: number, offset: TileOffsetType): boolean {
         if (!this._zScale) {
             const map = this.getMap();
             const glRes = map.getGLRes();
@@ -725,7 +725,7 @@ class TileLayer extends Layer {
      * from Cesium
      * 与cesium不同的是，我们用boundingVolume顶面的四个顶点中的最小值作为distanceToCamera
      */
-    private _getScreenSpaceError(node: TileNodeType, glScale: number, maxZoom: number, offset: TileOffsetType) {
+    _getScreenSpaceError(node: TileNodeType, glScale: number, maxZoom: number, offset: TileOffsetType) {
         // const fovDenominator = this._fovDenominator;
         const geometricError = node.error;
         const map = this.getMap();
@@ -761,7 +761,7 @@ class TileLayer extends Layer {
      * @param z - zoom
      * @return tile descriptors
      */
-    private _getCascadeTiles(z: number, parentLayer: Layer): TilesType {
+    _getCascadeTiles(z: number, parentLayer: Layer): TilesType {
         const map = this.getMap();
         const pitch = map.getPitch();
         const parentRenderer = parentLayer && parentLayer.getRenderer();

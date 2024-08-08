@@ -49,7 +49,7 @@ function checkLayers(tileLayers: TileLayer[] | TileLayer): TileLayer[] {
 class GroupTileLayer extends TileLayer {
     layers: TileLayer[];
     layerMap: Record<string, TileLayer>;
-    private _groupChildren: any[];
+    _groupChildren: any[];
     /**
      * Reproduce a GroupTileLayer from layer's profile JSON.
      * @param layerJSON - layer's profile JSON

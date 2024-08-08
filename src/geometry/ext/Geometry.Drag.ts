@@ -25,15 +25,15 @@ class GeometryDragHandler extends Handler {
 
     container: any
 
-    private _dragHandler: any
-    private _shadow: any
-    private _dragStageLayer: any
-    private _shadowConnectors: any
-    private _lastCoord: any
-    private _lastPoint: any
-    private _startParam: any
-    private _moved: boolean
-    private _isDragging: boolean
+    _dragHandler: any
+    _shadow: any
+    _dragStageLayer: any
+    _shadowConnectors: any
+    _lastCoord: any
+    _lastPoint: any
+    _startParam: any
+    _moved: boolean
+    _isDragging: boolean
 
 
     /**

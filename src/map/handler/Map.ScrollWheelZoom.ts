@@ -17,8 +17,8 @@ const wheelZoomRate = 1 / 450;
 const maxScalePerFrame = 2;
 
 class MapScrollWheelZoomHandler extends Handler {
-    private _thisScrollZoom: () => void
-    private _thisCheckIfEndZoom: () => void
+    _thisScrollZoom: () => void
+    _thisCheckIfEndZoom: () => void
     _wheelZoomRate: number
     _defaultZoomRate: number
     _delta: number
@@ -31,7 +31,7 @@ class MapScrollWheelZoomHandler extends Handler {
     _origin: any
     _zoomOrigin: any
     _lastWheelEvent: any
-    private _scrollTime: number
+    _scrollTime: number
 
     constructor(target) {
         super(target);
