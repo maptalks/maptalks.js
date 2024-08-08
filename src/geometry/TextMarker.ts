@@ -30,8 +30,11 @@ const defaultBoxSymbol: VectorMarkerSymbol = {
  * @extends Marker
  */
 class TextMarker extends Marker {
+    //@interlal
     _content: string
+    //@interlal
     _refreshing: boolean
+    //@interlal
     _refresh?(): void
     getTextStyle?(): any
     setTextStyle?(tyle?: any): any
@@ -108,6 +111,7 @@ class TextMarker extends Marker {
         return this;
     }
 
+    //@interlal
     _parseSymbol(symbol: any): any {
         const t = {};
         const b = {};
@@ -123,22 +127,27 @@ class TextMarker extends Marker {
         return [t, b];
     }
 
+    //@interlal
     _getTextSize(symbol: any): any {
         return splitTextToRow(this._content, symbol)['size'];
     }
 
+    //@interlal
     _getInternalSymbol(): any {
         return this._symbol;
     }
 
+    //@interlal
     _getDefaultTextSymbol(): TextSymbol {
         return extend({}, defaultSymbol);
     }
 
+    //@interlal
     _getDefaultBoxSymbol(): VectorMarkerSymbol {
         return extend({}, defaultBoxSymbol);
     }
 
+    //@interlal
     _getDefaultPadding(): [number, number] {
         return [12, 8];
     }

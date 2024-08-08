@@ -52,7 +52,9 @@ const TEMP_POINT = new Point(0, 0);
     }])
  */
 class ImageLayer extends Layer {
+    //@interlal
     _images: Array<ImageItem>;
+    //@interlal
     _imageData: Array<ImageDataItem>;
 
     constructor(id: string, images?: ImageLayerOptionsType | Array<ImageItem>, options?: ImageLayerOptionsType) {
@@ -93,6 +95,7 @@ class ImageLayer extends Layer {
         return this._images;
     }
 
+    //@interlal
     _prepareImages(images: Array<ImageItem>) {
         images = images || [];
         if (!Array.isArray(images)) {
@@ -128,6 +131,7 @@ ImageLayer.mergeOptions(options);
 const EMPTY_ARRAY = [];
 
 export class ImageLayerCanvasRenderer extends CanvasRenderer {
+    //@interlal
     _imageLoaded: boolean
 
     isDrawable() {
@@ -195,6 +199,7 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    //@interlal
     _drawImages(timestamp?: number, context?: any) {
         const imgData = this.layer._imageData;
         const map = this.getMap();
@@ -213,6 +218,7 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
         }
     }
 
+    //@interlal
     _drawImage(image: LayerImageType, extent: PointExtent, opacity: number) {
         let globalAlpha = 0;
         const ctx = this.context;
@@ -254,6 +260,7 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
         this.draw(timestamp, context);
     }
 
+    //@interlal
     _prepareGLContext() {
         const gl = this.gl;
         if (gl) {
@@ -268,6 +275,7 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
         }
     }
 
+    //@interlal
     _drawImages(timestamp?: number, parentContext?: any) {
         const gl = this.gl;
         if (parentContext && parentContext.renderTarget) {
@@ -292,6 +300,7 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
         return true;
     }
 
+    //@interlal
     _drawImage(image: LayerImageType, extent: PointExtent, opacity: number) {
         this.drawGLImage(image, extent.xmin, extent.ymax, extent.getWidth(), extent.getHeight(), 1, opacity);
     }

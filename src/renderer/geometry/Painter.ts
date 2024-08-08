@@ -54,24 +54,43 @@ const TEMP_BBOX = {
  * @private
  */
 class Painter extends Class {
+    //@interlal
     _drawTime: number;
+    //@interlal
     _hasPoint: boolean;
+    //@interlal
     _debugSymbolizer: DebugSymbolizer;
+    //@interlal
     _renderPoints: Record<string, Point[][]>;
+    //@interlal
     _hitPoint: WithUndef<Point>;
+    //@interlal
     _sprite: any;
+    //@interlal
     _paintParams: any;
+    //@interlal
     _cachedParams: any;
+    //@interlal
     _unsimpledParams: any;
+    //@interlal
     _spriting: boolean;
+    //@interlal
     _extent2D: Extent & { _zoom: number };
+    //@interlal
     _fixedExtent: PointExtent;
+    //@interlal
     _altAtGL: any;
+    //@interlal
     _propAlt: number | number[] | number[][];
+    //@interlal
     _projCode: string;
+    //@interlal
     _pitched: boolean;
+    //@interlal
     _rotated: boolean;
+    //@interlal
     _painted: boolean;
+    //@interlal
     _containerBbox: typeof TEMP_BBOX;
 
     bbox: BBOX;
@@ -93,6 +112,7 @@ class Painter extends Class {
         this._drawTime = 0;
     }
 
+    //@interlal
     _setDrawTime(time: number) {
         this._drawTime = time;
         return this;
@@ -129,6 +149,7 @@ class Painter extends Class {
     /**
      * create symbolizers
      */
+    //@interlal
     _createSymbolizers() {
         const geoSymbol = this.getSymbol(),
             symbolizers = [],
@@ -270,6 +291,7 @@ class Painter extends Class {
         return tr;
     }
 
+    //@interlal
     _pointContainerPoints(points, dx, dy, ignoreAltitude, disableClip, pointPlacement, ptkey = '_pt') {
         if (this._aboveCamera()) {
             return null;
@@ -428,6 +450,7 @@ class Painter extends Class {
         return cPoints;
     }
 
+    //@interlal
     _clip(points: Point[], altitude?: number) {
         // linestring polygon clip
         if (isNumber(altitude) && altitude !== 0) {
@@ -461,11 +484,13 @@ class Painter extends Class {
         const mapStateCache = renderer.mapStateCache;
         let _2DExtent, glExtent, pitch;
         if (mapStateCache) {
-            _2DExtent = mapStateCache._2DExtent;
+            //@interlal
+    _2DExtent = mapStateCache._2DExtent;
             glExtent = mapStateCache.glExtent;
             pitch = mapStateCache.pitch;
         } else {
-            _2DExtent = map.get2DExtent();
+            //@interlal
+    _2DExtent = map.get2DExtent();
             glExtent = map.get2DExtentAtRes(map.getGLRes());
             pitch = map.getPitch();
         }
@@ -561,6 +586,7 @@ class Painter extends Class {
      * @param {Number|Number[]} altitude
      * @private
      */
+    //@interlal
     _interpolateSegAlt(clipSegs, orig, altitude) {
         if (!Array.isArray(altitude)) {
             const fn = cc => cc.point;
@@ -599,6 +625,7 @@ class Painter extends Class {
         return this.geometry._getInternalSymbol();
     }
 
+    //@interlal
     _resetSymbolizersBBOX() {
         //reset all symbolizers render bbox
         for (let i = this.symbolizers.length - 1; i >= 0; i--) {
@@ -730,6 +757,7 @@ class Painter extends Class {
         return !!this._hitPoint;
     }
 
+    //@interlal
     _prepareShadow(ctx: CanvasRenderingContext2D, symbol: Record<string, any>) {
         if (symbol['shadowBlur']) {
             //Ignore shadows when hit detection
@@ -745,6 +773,7 @@ class Painter extends Class {
         }
     }
 
+    //@interlal
     _eachSymbolizer(fn, context?: any) {
         if (!this.symbolizers) {
             return;
@@ -798,6 +827,7 @@ class Painter extends Class {
         return this._extent2D.add(TEMP_FIXED_EXTENT);
     }
 
+    //@interlal
     _computeExtent2D(extent) {
         for (let i = this.symbolizers.length - 1; i >= 0; i--) {
             const symbolizer = this.symbolizers[i];
@@ -806,6 +836,7 @@ class Painter extends Class {
         return extent;
     }
 
+    //@interlal
     _computeFixedExtent(resources, extent) {
         for (let i = this.symbolizers.length - 1; i >= 0; i--) {
             const symbolizer = this.symbolizers[i];
@@ -816,6 +847,7 @@ class Painter extends Class {
         return extent;
     }
 
+    //@interlal
     _isDynamicSize() {
         for (let i = this.symbolizers.length - 1; i >= 0; i--) {
             const symbolizer = this.symbolizers[i];
@@ -826,6 +858,7 @@ class Painter extends Class {
         return false;
     }
 
+    //@interlal
     _aboveCamera() {
         let altitude = this.getMinAltitude();
         const map = this.getMap();
@@ -901,6 +934,7 @@ class Painter extends Class {
         this._removeSymbolizers();
     }
 
+    //@interlal
     _removeSymbolizers() {
         this._eachSymbolizer(function (symbolizer) {
             delete symbolizer.painter;
@@ -947,6 +981,7 @@ class Painter extends Class {
         return this.maxAltitude;
     }
 
+    //@interlal
     _getGeometryAltitude() {
         const map = this.getMap();
         if (!map) {
@@ -967,6 +1002,7 @@ class Painter extends Class {
         return altitude;
     }
 
+    //@interlal
     _verifyProjection() {
         const projection = this.geometry._getProjection() || PROJECTION;
         if (this._projCode && this._projCode !== projection.code) {
@@ -975,9 +1011,11 @@ class Painter extends Class {
         this._projCode = (projection as any).code;
     }
 
+    //@interlal
     _beforePaint() {
     }
 
+    //@interlal
     _afterPaint() {
     }
 }

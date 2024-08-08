@@ -35,9 +35,13 @@ export type RingsCoordinates = PathsCoordinates;
 
 export class Polygon extends Path {
 
+    //@interlal
     _holes: RingsCoordinates;
+    //@interlal
     _prjHoles: RingsCoordinates;
+    //@interlal
     _prjShell: RingCoordinates;
+    //@interlal
     _getShell?(): RingCoordinates;
     /**
      * @param {Number[][]|Number[][][]|Coordinate[]|Coordinate[][]} coordinates - coordinates, shell coordinates or all the rings.
@@ -171,6 +175,7 @@ export class Polygon extends Path {
         return this.getHoles().length > 0;
     }
 
+    //@interlal
     _projectRings(): void {
         if (!this.getMap()) {
             this.onShapeChanged();
@@ -181,11 +186,13 @@ export class Polygon extends Path {
         this.onShapeChanged();
     }
 
+    //@interlal
     _setPrjCoordinates(prjCoords: RingCoordinates): void {
         this._prjCoords = prjCoords;
         this.onShapeChanged();
     }
 
+    //@interlal
     _cleanRing(ring: RingCoordinates) {
         for (let i = ring.length - 1; i >= 0; i--) {
             if (!ring[i]) {
@@ -202,6 +209,7 @@ export class Polygon extends Path {
      * @return {Boolean} is ring a closed one
      * @private
      */
+    //@interlal
     _checkRing(ring: RingCoordinates): boolean {
         this._cleanRing(ring);
         if (!ring || !isArrayHasData(ring)) {
@@ -221,6 +229,7 @@ export class Polygon extends Path {
      * If the first coordinate is equal with the last one, then remove the last coordinates.
      * @private
      */
+    //@interlal
     _trimRing(ring: RingCoordinates): RingCoordinates {
         const isClose = this._checkRing(ring);
         if (isArrayHasData(ring) && isClose) {
@@ -235,6 +244,7 @@ export class Polygon extends Path {
      * If the first coordinate is different with the last one, then copy the first coordinates and add to the ring.
      * @private
      */
+    //@interlal
     _copyAndCloseRing(ring: RingCoordinates): RingCoordinates {
         ring = ring.slice(0);
         const isClose = this._checkRing(ring);
@@ -246,6 +256,7 @@ export class Polygon extends Path {
         }
     }
 
+    //@interlal
     _getPrjShell(): RingCoordinates {
         if (this.getJSONType() === JSON_TYPE) {
             return this._getPrjCoordinates();
@@ -258,6 +269,7 @@ export class Polygon extends Path {
         return this._prjShell;
     }
 
+    //@interlal
     _getPrjHoles(): RingsCoordinates {
         const projection = this._getProjection();
         this._verifyProjection();
@@ -267,6 +279,7 @@ export class Polygon extends Path {
         return this._prjHoles;
     }
 
+    //@interlal
     _computeGeodesicLength(measurer: any): number {
         const rings = this.getCoordinates();
         if (!isArrayHasData(rings)) {
@@ -279,6 +292,7 @@ export class Polygon extends Path {
         return result;
     }
 
+    //@interlal
     _computeGeodesicArea(measurer: any): number {
         const rings = this.getCoordinates();
         if (!isArrayHasData(rings)) {
@@ -293,6 +307,7 @@ export class Polygon extends Path {
         return result;
     }
 
+    //@interlal
     _updateCache(): void {
         super._updateCache();
         if (this._prjHoles) {
@@ -300,11 +315,13 @@ export class Polygon extends Path {
         }
     }
 
+    //@interlal
     _clearCache(): any {
         delete this._prjShell;
         return super._clearCache();
     }
 
+    //@interlal
     _clearProjection(): void {
         if (this._prjHoles) {
             this._prjHoles = null;

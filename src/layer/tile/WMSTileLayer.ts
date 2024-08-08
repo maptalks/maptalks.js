@@ -59,6 +59,7 @@ let wmsExcludeParams: WMSTileLayerOptionsType;
 class WMSTileLayer extends TileLayer {
     wmsParams: WMSTileLayerOptionsType;
     options: WMSTileLayerOptionsType;
+    //@interlal
     _wmsVersion: number;
 
     constructor(id: string, options: WMSTileLayerOptionsType) {
@@ -75,6 +76,7 @@ class WMSTileLayer extends TileLayer {
     }
 
     //in Hook,Reset wmsParams
+    //@interlal
     _optionsHook(options = {}) {
         for (const p in options) {
             //clear tilesize cache

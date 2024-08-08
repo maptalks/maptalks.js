@@ -98,10 +98,12 @@ export class LineString extends Path {
         return this._getCenterInExtent(extent, this.getCoordinates(), clipLine);
     }
 
+    //@interlal
     _computeGeodesicLength(measurer: any): number {
         return measurer.measureLength(this.getCoordinates());
     }
 
+    //@interlal
     _computeGeodesicArea(): number {
         return 0;
     }

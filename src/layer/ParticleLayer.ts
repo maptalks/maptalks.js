@@ -92,6 +92,7 @@ class ParticleLayer extends CanvasLayer {
         this._fillCanvas(context);
     }
 
+    //@interlal
     _fillCanvas(context: CanvasRenderingContext2D) {
         const g = context.globalCompositeOperation;
         context.globalCompositeOperation = 'destination-out';
@@ -104,6 +105,7 @@ class ParticleLayer extends CanvasLayer {
 
 ParticleLayer.mergeOptions(options);
 ParticleLayer.registerRenderer('canvas', class extends CanvasLayerRenderer {
+    //@interlal
     _shouldClear: boolean;
     layer: ParticleLayer;
 

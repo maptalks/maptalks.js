@@ -93,60 +93,102 @@ const options: GeometryOptionsType = {
 export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     options: GeometryOptionsType;
     type: string;
+    //@interlal
     _layer: OverlayLayer;
+    //@interlal
     _angle: number
+    //@interlal
     _pivot: Coordinate
+    //@interlal
     _id: string
     properties: Record<string, any>;
+    //@interlal
     _symbol: any
+    //@interlal
     _symbolUpdated: any
+    //@interlal
     _compiledSymbol: any
+    //@interlal
     _symbolHash: any
+    //@interlal
     _textDesc: any
+    //@interlal
     _eventSymbolProperties: any
+    //@interlal
     _sizeSymbol: any
+    //@interlal
     _internalId: number
+    //@interlal
     _extent: Extent
+    //@interlal
     _fixedExtent: PointExtent
+    //@interlal
     _extent2d: PointExtent
+    //@interlal
     _externSymbol: any
+    //@interlal
     _parent: Geometry | GeometryCollection
+    //@interlal
     _silence: boolean
+    //@interlal
     _projCode: string
+    //@interlal
     _painter: Painter
+    //@interlal
     _maskPainter: CollectionPainter | Painter
+    //@interlal
     _dirtyCoords: boolean;
+    //@interlal
     _pcenter: Coordinate
+    //@interlal
     _coordinates: any;
+    //@interlal
     _infoWinOptions: InfoWindowOptionsType;
+    //@interlal
     _minAlt: number
+    //@interlal
     _maxAlt: number;
     // 在 VectorLayerCanvasRenderer 附加的信息
+    //@interlal
     _isCheck?: boolean;
+    //@interlal
     _cPoint?: any;
+    //@interlal
     _inCurrentView?: boolean;
     // 在 Marker 中附加的信息，Marker 和其子类都具有此属性
     isPoint?: boolean;
+    //@interlal
     _savedVisible?: boolean;
     //
+    //@interlal
     _paintAsPath?: () => any;
+    //@interlal
     _getPaintParams?: (disableSimplify?: boolean) => any[];
+    //@interlal
     _simplified?: boolean;
+    //@interlal
     _dirtyRotate?: boolean;
     // 本身应该存于 Path 类，但是由于渲染层需要大量的特殊熟悉判断，定义在这里回减少很多麻烦
     getHoles?(): Array<Array<Coordinate>>;
+    //@interlal
     __connectors: Array<Geometry>;
     getShell?(): Array<Coordinate>;
     getGeometries?(): Geometry[];
     getCoordinates?(): Coordinate | Array<Coordinate> | Array<Array<Coordinate>> | Array<Array<Array<Coordinate>>>
     setCoordinates?(coordinate: any): this;
+    //@interlal
     _computeCenter?(T: any): Coordinate;
+    //@interlal
     _computeExtent?(T: any): Extent;
     onRemove?(): void;
+    //@interlal
     _computeGeodesicLength?(T: any): number;
+    //@interlal
     _computeGeodesicArea?(T: any): number;
     getRotateOffsetAngle?(): number;
+    //@interlal
     _computePrjExtent?(T: null | ProjectionType): Extent;
+    //@interlal
     _updateCache?(): void;
     onAdd?(): void;
 
@@ -585,6 +627,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return extent;
     }
 
+    //@interlal
     _getFixedExtent(): PointExtent {
         // only for LineString and Polygon, Marker's will be overrided
         if (!this._fixedExtent) {
@@ -659,6 +702,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         // return this._containsPoint(this.getMap()._containerPointToPoint(new Point(containerPoint)), t);
     }
 
+    //@interlal
     _containsPoint(containerPoint: Point, t?: number): boolean {
         const painter = this._getPainter();
         if (!painter) {
@@ -1180,6 +1224,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return this;
     }
 
+    //@interlal
     _rotatePrjCoordinates(coordinates: Coordinate | Array<Coordinate>): Coordinate | Coordinate[] {
         if (!coordinates || this._angle === 0 || !this._pivot) {
             return coordinates;
@@ -1246,11 +1291,13 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @return {Coordinate[]} connect points
      * @private
      */
+    //@interlal
     _getConnectPoints(): Coordinate[] {
         return [this.getCenter()];
     }
 
     //options initializing
+    //@interlal
     _initOptions(options: GeometryOptionsType): void {
         const opts = extend({}, options);
         const symbol = opts['symbol'];
@@ -1272,6 +1319,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     //bind the geometry to a layer
+    //@interlal
     _bindLayer(layer: OverlayLayer): void {
         if (layer === this.getLayer()) {
             return;
@@ -1288,6 +1336,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         // this.callInitHooks();
     }
 
+    //@interlal
     _prepareSymbol(symbol: any): any {
         if (Array.isArray(symbol)) {
             const cookedSymbols = [];
@@ -1302,6 +1351,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return null;
     }
 
+    //@interlal
     _checkAndCopySymbol(symbol: any): any {
         const s = {};
         for (const i in symbol) {
@@ -1314,6 +1364,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return s;
     }
 
+    //@interlal
     _getSymbol(): any {
         return this._symbol;
     }
@@ -1325,6 +1376,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @private
      * @param {Object} symbol - external symbol
      */
+    //@interlal
     _setExternSymbol(symbol: any): this {
         this._eventSymbolProperties = symbol;
         if (!this._symbol) {
@@ -1335,6 +1387,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return this;
     }
 
+    //@interlal
     _getInternalSymbol(): any {
         if (this._symbol) {
             return this._symbol;
@@ -1346,6 +1399,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return null;
     }
 
+    //@interlal
     _getPrjExtent(): Extent {
         const p = this._getProjection();
         this._verifyProjection();
@@ -1355,6 +1409,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return this._extent;
     }
 
+    //@interlal
     _unbind(): void {
         const layer = this.getLayer();
         if (!layer) {
@@ -1385,15 +1440,18 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         delete this._extent;
     }
 
+    //@interlal
     _getInternalId(): number {
         return this._internalId;
     }
 
     //只能被图层调用
+    //@interlal
     _setInternalId(id: number): void {
         this._internalId = id;
     }
 
+    //@interlal
     _getMeasurer(): any {
         if (this._getProjection()) {
             return this._getProjection();
@@ -1401,6 +1459,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return SpatialReference.getProjectionInstance(this.options['defaultProjection']);
     }
 
+    //@interlal
     _getProjection(): WithNull<ProjectionType> {
         const map = this.getMap();
         if (map) {
@@ -1409,6 +1468,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return null;
     }
 
+    //@interlal
     _verifyProjection(): void {
         const projection = this._getProjection();
         if (this._projCode && projection && this._projCode !== projection.code) {
@@ -1418,11 +1478,13 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     //获取geometry样式中依赖的外部图片资源
+    //@interlal
     _getExternalResources(): string[] {
         const symbol = this._getInternalSymbol();
         return getExternalResources(symbol);
     }
 
+    //@interlal
     _getPainter(): any {
         //for performance
         if (this._painter) {
@@ -1451,6 +1513,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return this._painter;
     }
 
+    //@interlal
     _getMaskPainter(): CollectionPainter | Painter {
         if (this._maskPainter) {
             return this._maskPainter;
@@ -1459,6 +1522,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return this._maskPainter;
     }
 
+    //@interlal
     _removePainter(): void {
         if (this._painter) {
             this._painter.remove();
@@ -1466,6 +1530,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         delete this._painter;
     }
 
+    //@interlal
     _paint(extent?: Extent): void {
         if (!this.symbolIsVisible()) {
             return;
@@ -1487,17 +1552,20 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
     }
 
+    //@interlal
     _clearCache(): void {
         delete this._extent;
         delete this._extent2d;
         this._clearAltitudeCache();
     }
 
+    //@interlal
     _clearProjection(): void {
         delete this._extent;
         delete this._extent2d;
     }
 
+    //@interlal
     _repaint(): void {
         if (this._painter) {
             this._painter.repaint();
@@ -1562,6 +1630,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         this._fireEvent('symbolchange', e);
     }
 
+    //@interlal
     _genSizeSymbol(): void {
         const symbol = this._getInternalSymbol();
         if (!symbol) {
@@ -1583,6 +1652,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
     }
 
+    //@interlal
     _getSizeSymbol(symbol: any): any {
         const symbolSize = loadGeoSymbol({
             lineWidth: symbol['lineWidth'],
@@ -1595,6 +1665,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return symbolSize;
     }
 
+    //@interlal
     _getCompiledSymbol(): any {
         if (this._compiledSymbol) {
             return this._compiledSymbol;
@@ -1634,16 +1705,19 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @param {GeometryCollection} geometry - parent geometry
      * @private
      */
+    //@interlal
     _setParent(geometry?: Geometry | GeometryCollection): void {
         if (geometry) {
             this._parent = geometry;
         }
     }
 
+    //@interlal
     _getParent(): any {
         return this._parent;
     }
 
+    //@interlal
     _fireEvent(eventName: string, param?: BaseEventParamsType) {
         if (this._silence) {
             return;
@@ -1659,12 +1733,14 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         this.fire(eventName, param);
     }
 
+    //@interlal
     _toJSON(options?: any): any {
         return {
             'feature': this.toGeoJSON(options)
         };
     }
 
+    //@interlal
     _recordVisible() {
         let visible = this.options.visible;
         if (isNil(visible)) {
@@ -1674,10 +1750,12 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
 
+    //@interlal
     _recoveryVisible() {
         delete this._savedVisible;
     }
 
+    //@interlal
     _exportGraphicOptions(options: any): any {
         const json = {};
         if (isNil(options['options']) || options['options']) {
@@ -1697,6 +1775,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return json;
     }
 
+    //@interlal
     _exportGeoJSONGeometry(): any {
         const points: any = this.getCoordinates();
         const coordinates = Coordinate.toNumberArrays(points);
@@ -1706,6 +1785,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         };
     }
 
+    //@interlal
     _exportProperties(): any {
         let properties = null;
         const geoProperties = this.getProperties();
@@ -1719,6 +1799,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return properties;
     }
 
+    //@interlal
     _hitTestTolerance(): number {
         return 0;
     }
@@ -1727,6 +1808,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     //------------- altitude + layer.altitude -------------
     //this is for vectorlayer
     //内部方法 for render,返回的值受layer和layer.options.enableAltitude,layer.options.altitude影响
+    //@interlal
     _getAltitude(): number | number[] | number[][] {
         const layer = this.getLayer();
         if (!layer) {
@@ -1818,6 +1900,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return this;
     }
 
+    //@interlal
     _genMinMaxAlt(): void {
         if (this._minAlt === undefined || this._maxAlt === undefined) {
             const altitude = this._getAltitude();
@@ -1838,6 +1921,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     //clear alt cache
+    //@interlal
     _clearAltitudeCache(): Geometry {
         this._minAlt = undefined;
         this._maxAlt = undefined;

@@ -7,19 +7,24 @@ import { type Param } from './CommonType';
 
 
 class MapDragHandler extends Handler {
+    //@interlal
     _dragHandler: DragHandler
     startDragTime: number
     startBearing: number
+    //@interlal
     _mode: 'rotatePitch' | 'move'
     preX: number
     preY: number
     startX: number
     startY: number
     // TODO:等待补充Coordinate类型定义
+    //@interlal
     _startPrjCenter: any
     // TODO:等待补充Coordinate类型定义
     startPrjCoord: any
+    //@interlal
     _rotateMode: 'rotate_pitch' | 'rotate' | 'pitch'
+    //@interlal
     _db: number
     // TODO:等待补充Map类型定义
     // target: Map
@@ -50,6 +55,7 @@ class MapDragHandler extends Handler {
         delete this._dragHandler;
     }
 
+    //@interlal
     _cancelOn(domEvent: any) {
         if (this.target.isZooming() || this._ignore(domEvent)) {
             return true;
@@ -57,6 +63,7 @@ class MapDragHandler extends Handler {
         return false;
     }
 
+    //@interlal
     _ignore(param: any) {
         if (!param) {
             return false;
@@ -67,6 +74,7 @@ class MapDragHandler extends Handler {
         return this.target._ignoreEvent(param) || this.target._isEventOutMap(param);
     }
 
+    //@interlal
     _onMouseDown(param: any) {
         delete this.startDragTime;
         delete this._mode;
@@ -85,6 +93,7 @@ class MapDragHandler extends Handler {
         preventDefault(param['domEvent']);
     }
 
+    //@interlal
     _onDragStart(param) {
         this.startDragTime = now();
         if (this._mode === 'move') {
@@ -94,6 +103,7 @@ class MapDragHandler extends Handler {
         }
     }
 
+    //@interlal
     _onDragging(param) {
         const map = this.target;
         if (map._isEventOutMap(param['domEvent'])) {
@@ -106,6 +116,7 @@ class MapDragHandler extends Handler {
         }
     }
 
+    //@interlal
     _onDragEnd(param) {
         if (this._mode === 'move') {
             this._moveEnd(param);
@@ -116,6 +127,7 @@ class MapDragHandler extends Handler {
         delete this.startBearing;
     }
 
+    //@interlal
     _start(param) {
         this.preX = param['mousePos'].x;
         this.preY = param['mousePos'].y;
@@ -124,6 +136,7 @@ class MapDragHandler extends Handler {
         this._startPrjCenter = this.target._getPrjCenter().copy();
     }
 
+    //@interlal
     _moveStart(param) {
         this._start(param);
         const map = this.target;
@@ -132,6 +145,7 @@ class MapDragHandler extends Handler {
         this.startPrjCoord = this._containerPointToPrj(p);
     }
 
+    //@interlal
     _moving(param) {
         if (!this.startDragTime) {
             return;
@@ -145,6 +159,7 @@ class MapDragHandler extends Handler {
         map.onMoving(param);
     }
 
+    //@interlal
     _containerPointToPrj(p) {
         const map = this.target;
         const queryCoord = map._queryTerrainInfo(p);
@@ -156,6 +171,7 @@ class MapDragHandler extends Handler {
         return map._containerPointToPrj(p);
     }
 
+    //@interlal
     _moveEnd(param: Param) {
         if (!this.startDragTime) {
             return;
@@ -183,6 +199,7 @@ class MapDragHandler extends Handler {
         }
     }
 
+    //@interlal
     _rotateStart(param: Param) {
         this._start(param);
         delete this._rotateMode;
@@ -191,6 +208,7 @@ class MapDragHandler extends Handler {
         this._db = 0;
     }
 
+    //@interlal
     _rotating(param: Param) {
         const map = this.target;
         const mx = param['mousePos'].x,
@@ -242,6 +260,7 @@ class MapDragHandler extends Handler {
         }
     }
 
+    //@interlal
     _rotateEnd(param: Param) {
         const map = this.target;
         const bearing = map.getBearing();
@@ -259,6 +278,7 @@ class MapDragHandler extends Handler {
         }
     }
 
+    //@interlal
     _clear() {
         delete this.startPrjCoord;
         delete this.preX;

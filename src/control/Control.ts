@@ -17,8 +17,11 @@ import Map from '../map/Map';
 abstract class Control extends Eventable(Class) {
 
 
+    //@interlal
     _map: Map;
+    //@interlal
     __ctrlContainer: HTMLElement;
+    //@interlal
     _controlDom: HTMLElement;
     options: ControlOptionsType;
     static positions: { [key: string]: DomPositionType };
@@ -43,6 +46,7 @@ abstract class Control extends Eventable(Class) {
         super(options);
     }
 
+    //@interlal
     _appendCustomClass(dom: HTMLElement) {
         if (!dom) {
             console.warn('dom is null:', dom);
@@ -244,6 +248,7 @@ abstract class Control extends Eventable(Class) {
         return this;
     }
 
+    //@interlal
     _parse(position: ControlPositionType): DomPositionType {
         let p = position;
         if (isString(position)) {
@@ -252,6 +257,7 @@ abstract class Control extends Eventable(Class) {
         return p as DomPositionType;
     }
 
+    //@interlal
     _updatePosition() {
         let position = this.getPosition();
         if (!position) {

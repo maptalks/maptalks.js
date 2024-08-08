@@ -15,6 +15,7 @@ const TEMP_EXTENT = new PointExtent();
  * @private
  */
 export default class CollectionPainter extends Class {
+    //@interlal
     _drawTime: number;
 
     bbox: BBOX;
@@ -32,6 +33,7 @@ export default class CollectionPainter extends Class {
         this._drawTime = 0;
     }
 
+    //@interlal
     _setDrawTime(time: number) {
         this._drawTime = time;
         this._eachPainter((painter: Painter) => {
@@ -59,6 +61,7 @@ export default class CollectionPainter extends Class {
         return null;
     }
 
+    //@interlal
     _eachPainter(fn: (p: Painter) => void) {
         const geometries = this.geometry.getGeometries();
         let painter: Painter;

@@ -25,14 +25,23 @@ class GeometryDragHandler extends Handler {
 
     container: any
 
+    //@interlal
     _dragHandler: any
+    //@interlal
     _shadow: any
+    //@interlal
     _dragStageLayer: any
+    //@interlal
     _shadowConnectors: any
+    //@interlal
     _lastCoord: any
+    //@interlal
     _lastPoint: any
+    //@interlal
     _startParam: any
+    //@interlal
     _moved: boolean
+    //@interlal
     _isDragging: boolean
 
 
@@ -53,6 +62,7 @@ class GeometryDragHandler extends Handler {
         delete this.container;
     }
 
+    //@interlal
     _prepareDragHandler(): void {
         this._dragHandler = new DragHandler(this.container);
         this._dragHandler.on('dragging', this._dragging, this)
@@ -60,6 +70,7 @@ class GeometryDragHandler extends Handler {
             .enable();
     }
 
+    //@interlal
     _prepareShadow(): void {
         const target = this.target;
         const needShadow = target.getLayer().options['renderer'] === 'canvas';
@@ -85,6 +96,7 @@ class GeometryDragHandler extends Handler {
         this._prepareShadowConnectors();
     }
 
+    //@interlal
     _updateShadowSymbol(shadow: any, target: any): void {
         shadow.setSymbol(target._getInternalSymbol());
         if (target.options['dragShadow']) {
@@ -93,6 +105,7 @@ class GeometryDragHandler extends Handler {
         }
     }
 
+    //@interlal
     _prepareShadowConnectors(): void {
         //copy connectors
         const target = this.target;
@@ -125,12 +138,14 @@ class GeometryDragHandler extends Handler {
         this._dragStageLayer.bringToFront().addGeometry(shadowConnectors);
     }
 
+    //@interlal
     _onTargetUpdated(): void {
         if (this._shadow) {
             this._shadow.setSymbol(this.target._getSymbol());
         }
     }
 
+    //@interlal
     _prepareDragStageLayer(): void {
         const map = this.target.getMap(),
             layer = this.target.getLayer();
@@ -148,6 +163,7 @@ class GeometryDragHandler extends Handler {
         this._dragStageLayer._getRenderer().resources = resources;
     }
 
+    //@interlal
     _startDrag(param: any): void {
         const map = this.target.getMap();
         if (!map) {
@@ -178,6 +194,7 @@ class GeometryDragHandler extends Handler {
         return;
     }
 
+    //@interlal
     _dragging(param: any): void {
         const target = this.target;
         const map = target.getMap();
@@ -278,6 +295,7 @@ class GeometryDragHandler extends Handler {
         }
     }
 
+    //@interlal
     _endDrag(param?: any): void {
         if (this._dragHandler) {
             this._dragHandler.disable();
@@ -332,6 +350,7 @@ class GeometryDragHandler extends Handler {
         return true;
     }
 
+    //@interlal
     _updateTargetAndRemoveShadow(eventParam: any): void {
         if (!this._shadow) {
             return;
@@ -364,6 +383,7 @@ class GeometryDragHandler extends Handler {
     }
 
     //find correct coordinate for coordOffset if geometry has altitude
+    //@interlal
     _correctCoord(coord: any): any {
         const map = this.target.getMap();
         if (!map.getPitch()) {

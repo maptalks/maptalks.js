@@ -50,18 +50,30 @@ export type MultiPathsCoordinates = Array<PathsCoordinates>;
  */
 export class Path extends Geometry {
 
+    //@interlal
     _coordinates: Coordinate[];
+    //@interlal
     _showPlayer: Player;
+    //@interlal
     _animIdx: number
+    //@interlal
     _animLenSoFar: number
+    //@interlal
     _animTailRatio: number
+    //@interlal
     _prjAniShowCenter: Coordinate
+    //@interlal
     _aniShowCenter: Coordinate
+    //@interlal
     _tempCoord: Coordinate
+    //@interlal
     _tempPrjCoord: Point
+    //@interlal
     _simplified: boolean
+    //@interlal
     _prjCoords: Array<Coordinate>
     hasHoles?(): boolean;
+    //@interlal
     _getPrjHoles?(): Array<Array<Coordinate>>;
 
     /**
@@ -162,6 +174,7 @@ export class Path extends Geometry {
         return player;
     }
 
+    //@interlal
     _drawAnimShowFrame(t: number, duration: number, length: number, coordinates: Coordinate[], prjCoords: Array<Coordinate>): Coordinate {
         if (t === 0) {
             return coordinates[0];
@@ -233,6 +246,7 @@ export class Path extends Geometry {
         return targetCoord;
     }
 
+    //@interlal
     _getCenterInExtent(extent: Extent, coordinates: Coordinate[], clipFn: any): Coordinate {
         const meExtent = this.getExtent();
         if (!extent.intersects(meExtent)) {
@@ -278,6 +292,7 @@ export class Path extends Geometry {
      * @returns {Point[]}
      * @private
      */
+    //@interlal
     _getPath2DPoints(prjCoords: PathCoordinates | PathsCoordinates, disableSimplify: boolean, res?: number): Point | Array<Point> | Array<Array<Point>> {
         if (!isArrayHasData(prjCoords)) {
             return [];
@@ -316,17 +331,20 @@ export class Path extends Geometry {
         // return forEachCoord(prjCoords, c => map._prjToPoint(c, zoom));
     }
 
+    //@interlal
     _shouldSimplify(): boolean {
         const layer = this.getLayer();
         const hasAltitude = layer.options['enableAltitude'];
         return layer && layer.options['enableSimplify'] && !hasAltitude && this.options['enableSimplify'] && !this._showPlayer/* && !this.options['smoothness'] */;
     }
 
+    //@interlal
     _setPrjCoordinates(prjPoints: PathCoordinates): void {
         this._prjCoords = prjPoints;
         this.onShapeChanged();
     }
 
+    //@interlal
     _getPrjCoordinates(): PathCoordinates {
         this._verifyProjection();
         if (!this._prjCoords && this._getProjection()) {
@@ -336,6 +354,7 @@ export class Path extends Geometry {
     }
 
     //update cached variables if geometry is updated.
+    //@interlal
     _updateCache(): void {
         this._clearCache();
         const projection = this._getProjection();
@@ -347,11 +366,13 @@ export class Path extends Geometry {
         }
     }
 
+    //@interlal
     _clearProjection(): void {
         this._prjCoords = null;
         super._clearProjection();
     }
 
+    //@interlal
     _projectCoords(points: PathCoordinates | PathsCoordinates): PathCoordinates | PathsCoordinates {
         const projection = this._getProjection();
         if (projection) {
@@ -360,6 +381,7 @@ export class Path extends Geometry {
         return [];
     }
 
+    //@interlal
     _unprojectCoords(prjPoints: PathCoordinates | PathsCoordinates): PathCoordinates | PathsCoordinates {
         const projection = this._getProjection();
         if (projection) {
@@ -368,6 +390,7 @@ export class Path extends Geometry {
         return [];
     }
 
+    //@interlal
     _computeCenter(): null | Coordinate {
         const ring = this._coordinates;
         if (!isArrayHasData(ring)) {
@@ -389,6 +412,7 @@ export class Path extends Geometry {
         return new Coordinate(sumx / counter, sumy / counter);
     }
 
+    //@interlal
     _computeExtent(_?: any): Extent {
         const shell = this._coordinates;
         if (!isArrayHasData(shell)) {
@@ -401,6 +425,7 @@ export class Path extends Geometry {
         return this._coords2Extent(rings, this._getProjection());
     }
 
+    //@interlal
     _computePrjExtent(_?: any): Extent {
         const coords = [this._getPrjCoordinates()];
         if (this.hasHoles && this.hasHoles()) {
@@ -409,6 +434,7 @@ export class Path extends Geometry {
         return this._coords2Extent(coords);
     }
 
+    //@interlal
     _get2DLength(): number {
         const vertexes = this._getPath2DPoints(this._getPrjCoordinates(), true) as Point[];
         let len = 0;
@@ -418,6 +444,7 @@ export class Path extends Geometry {
         return len;
     }
 
+    //@interlal
     _hitTestTolerance(): number {
         const symbol = this._getInternalSymbol();
         let w;
@@ -436,6 +463,7 @@ export class Path extends Geometry {
         return super._hitTestTolerance() + (isNumber(w) ? w / 2 : 1.5);
     }
 
+    //@interlal
     _coords2Extent(coords: PathsCoordinates, proj?: CommonProjectionType): Extent {
         // linestring,  polygon
         if (!coords || coords.length === 0 || (Array.isArray(coords[0]) && coords[0].length === 0)) {

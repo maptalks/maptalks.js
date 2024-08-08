@@ -234,6 +234,7 @@ const Canvas = {
         }
     },
 
+    //@interlal
     _createGradient(ctx: Ctx, g, extent: Extent) {
         let gradient = null,
             places = g['places'];
@@ -278,6 +279,7 @@ const Canvas = {
         return gradient;
     },
 
+    //@interlal
     _setStrokePattern(ctx: Ctx, strokePattern: string, strokeWidth: number, linePatternOffset: number, resources) {
         const imgUrl = extractImageUrl(strokePattern);
         let imageTexture;
@@ -410,6 +412,7 @@ const Canvas = {
         return Canvas._textOnMultiRow(ctx, textDesc['rows'], style, pt, textDesc['size'], textDesc['rawSize']);
     },
 
+    //@interlal
     _textOnMultiRow(ctx: Ctx, texts: any[], style, point, splitTextSize: Size, textSize: Size) {
         const ptAlign = getAlignPoint(splitTextSize, style['textHorizontalAlignment'], style['textVerticalAlignment']),
             lineHeight = textSize['height'] + style['textLineSpacing'],
@@ -435,6 +438,7 @@ const Canvas = {
         return BBOX_TEMP;
     },
 
+    //@interlal
     _textOnLine(ctx: Ctx, text, pt, textHaloRadius: number, textHaloFill, textHaloAlpha: number) {
         if (hitTesting) {
             textHaloAlpha = 1;
@@ -494,6 +498,7 @@ const Canvas = {
         ctx.fillText(text, pt.x, pt.y + textOffsetY);
     },
 
+    //@interlal
     _stroke(ctx, strokeOpacity, x?, y?) {
         if (hitTesting) {
             strokeOpacity = 1;
@@ -532,6 +537,7 @@ const Canvas = {
         }
     },
 
+    //@interlal
     _path(ctx, points, lineDashArray?, lineOpacity?, ignoreStrokePattern?) {
         if (!isArrayHasData(points)) {
             return;
@@ -586,6 +592,7 @@ const Canvas = {
         Canvas._stroke(ctx, lineOpacity);
     },
 
+    //@interlal
     _multiClip(ctx, points) {
         if (!points || points.length === 0) return;
         points.forEach(pts => {
@@ -723,6 +730,7 @@ const Canvas = {
         }
     },
 
+    //@interlal
     _ring(ctx, ring, lineDashArray, lineOpacity, ignorePattern?) {
         const isPattern = Canvas._isPattern(ctx.strokeStyle);
         if (!ignorePattern && isPattern && !ring[0].equals(ring[ring.length - 1])) {
@@ -909,6 +917,7 @@ const Canvas = {
      * @param  {Point} p2      point 2
      * @param  {Number} degree arc degree between p1 and p2
      */
+    //@interlal
     _arcBetween(ctx: CanvasRenderingContext2D, p1: Point, p2: Point, degree: number) {
         //degree可能是负角度
         const a = Math.abs(degree),
@@ -976,6 +985,7 @@ const Canvas = {
         return [cx, cy];
     },
 
+    //@interlal
     _lineTo(ctx: CanvasRenderingContext2D, p) {
         ctx.lineTo(p.x, p.y);
     },
@@ -993,6 +1003,7 @@ const Canvas = {
         Canvas._stroke(ctx, lineOpacity);
     },
 
+    //@interlal
     _bezierCurveTo(ctx: CanvasRenderingContext2D, p1, p2, p3) {
         ctx.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
     },
@@ -1058,6 +1069,7 @@ const Canvas = {
         sector(ctx, pt.x, pt.y, size, startAngle, endAngle);
     },
 
+    //@interlal
     _isPattern(style: any) {
         return !isString(style) && !('addColorStop' in style);
     },

@@ -188,43 +188,75 @@ const options: MapOptionsType = {
  */
 export class Map extends Handlerable(Eventable(Renderable(Class))) {
     VERSION: string;
+    //@interlal
     _loaded: boolean;
+    //@interlal
     _panels: Record<string, PanelDom>;
+    //@interlal
     _baseLayer: Layer;
+    //@interlal
     _layers: Array<Layer>;
+    //@interlal
     _zoomLevel: number;
+    //@interlal
     _center: Coordinate;
+    //@interlal
     _centerZ: number;
+    //@interlal
     _mapViewPoint: Point;
     isMap: boolean;
+    //@interlal
     _containerDOM: HTMLDivElement | HTMLCanvasElement;
+    //@interlal
     _spatialReference: SpatialReference;
+    //@interlal
     _originLng: number;
+    //@interlal
     _altitudeOriginDirty: boolean;
+    //@interlal
     _glScale: number;
+    //@interlal
     _cursor: string;
+    //@interlal
     _prjCenter: Coordinate;
     centerAltitude: number;
     width: number;
     height: number;
+    //@interlal
     _prjMaxExtent: PointExtent;
+    //@interlal
     _glRes: number;
+    //@interlal
     _zooming: boolean;
+    //@interlal
     _layerCache: { [key: string]: Layer };
+    //@interlal
     _mapViewCoord: Coordinate;
+    //@interlal
     _eventSilence: boolean;
+    //@interlal
     _moving: boolean;
+    //@interlal
     _originCenter: Coordinate;
+    //@interlal
     _suppressRecenter: boolean;
+    //@interlal
     _dragRotating: boolean;
     CanvasClass: any;
+    //@interlal
     _priorityCursor: string;
+    //@interlal
     _initTime: number;
+    //@interlal
     _renderer: any;
+    //@interlal
     _containerDomContentRect: DOMRect;
+    //@interlal
     _mapRes: number;
+    //@interlal
     _onLoadHooks: Array<(...args) => void>;
     cameraCenterDistance: number;
+    //@interlal
     _limitMaxExtenting: boolean;
     options: MapOptionsType;
     static VERSION: string;
@@ -395,6 +427,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this;
     }
 
+    //@interlal
     _updateSpatialReference(ref: SpatialReferenceType, oldRef) {
         if (isString(ref)) {
             ref = SpatialReference.getPreset(ref);
@@ -606,6 +639,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         return new PointExtent(0, this.height - visualHeight, this.width, this.height);
     }
 
+    //@interlal
     _getVisualHeight(visualPitch) {
         // const pitch = this.getPitch();
         // const visualDistance = this.height / 2 * Math.tan(visualPitch * Math.PI / 180);
@@ -941,6 +975,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {Number} [options.paddingBottom] - Sets the amount of padding in the bottom of a map container
      * @returns {Object|null}
      */
+    //@interlal
     _getPaddingSize(options = {}) {
         if (options['paddingLeft'] || options['paddingTop'] || options['paddingRight'] || options['paddingBottom']) {
             return {
@@ -1002,6 +1037,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         };
     }
 
+    //@interlal
     _validateView(view: MapViewType) {
         if (!view || !isObject(view)) {
             return;
@@ -1080,6 +1116,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {Number} [padding.paddingBottom] - Sets the amount of padding in the bottom of a map container
      * @return {Coordinate}
      */
+    //@interlal
     _getCenterByPadding(center: Coordinate, zoom?: number, padding?: MapPaddingType) {
         const point = this.coordinateToPoint(center, zoom);
         const { paddingLeft = 0, paddingRight = 0, paddingTop = 0, paddingBottom = 0 } = padding || {};
@@ -1880,6 +1917,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     //-----------------------------------------------------------
 
+    //@interlal
     _initContainer(container: MapContainerType) {
         if (isString(container)) {
             this._containerDOM = document.getElementById(container) as HTMLDivElement;
@@ -1907,6 +1945,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @private
      * @param  {String} cursor css cursor
      */
+    //@interlal
     _trySetCursor(cursor: string) {
         if (!this._cursor && !this._priorityCursor) {
             if (!cursor) {
@@ -1917,6 +1956,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this;
     }
 
+    //@interlal
     _setPriorityCursor(cursor: string) {
         if (!cursor) {
             let hasCursor = false;
@@ -1934,6 +1974,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this;
     }
 
+    //@interlal
     _setCursorToPanel(cursor: string) {
         const panel = this.getMainPanel();
         if (panel && panel.style && panel.style.cursor !== cursor) {
@@ -1943,6 +1984,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
 
 
     //remove a layer from the layerList
+    //@interlal
     _removeLayer(layer: Layer, layerList: Array<Layer>) {
         if (!layer || !layerList) {
             return;
@@ -1953,6 +1995,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
     }
 
+    //@interlal
     _sortLayersByZIndex() {
         if (!this._layers) {
             return;
@@ -1976,6 +2019,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
 
+    //@interlal
     _fireEvent(eventName: string, param?: { [key: string]: any }) {
         if (this._eventSilence) {
             return;
@@ -1988,6 +2032,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         this.fire(eventName, param);
     }
 
+    //@interlal
     _Load() {
         this._resetMapStatus();
         if (this.options['pitch']) {
@@ -2006,6 +2051,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         this._initTime = now();
     }
 
+    //@interlal
     _initRenderer() {
         const renderer = this.options['renderer'];
         const clazz = Map.getRendererClass(renderer) as any;
@@ -2013,10 +2059,12 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         this._renderer.load();
     }
 
+    //@interlal
     _getRenderer() {
         return this._renderer;
     }
 
+    //@interlal
     _loadAllLayers() {
         function loadLayer(layer) {
             if (layer) {
@@ -2035,6 +2083,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Layer[]}
      * @private
      */
+    //@interlal
     _getLayers(filter?: (layer: Layer) => boolean) {
         const layers = this._baseLayer ? [this._baseLayer].concat(this._layers) : this._layers;
         const result = [];
@@ -2046,6 +2095,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         return result;
     }
 
+    //@interlal
     _eachLayer(fn, ...layerLists) {
         if (arguments.length < 2) {
             return;
@@ -2063,6 +2113,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
     }
 
+    //@interlal
     _onLayerEvent(param) {
         if (!param) {
             return;
@@ -2074,6 +2125,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     //Check and reset map's status when map's spatial reference is changed.
+    //@interlal
     _resetMapStatus() {
         let maxZoom = this.getMaxZoom(),
             minZoom = this.getMinZoom();
@@ -2112,6 +2164,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         this._containerDomContentRect = domRect;
     }
 
+    //@interlal
     _getContainerDomSize(): Size | null {
         if (!this._containerDOM) {
             return null;
@@ -2143,6 +2196,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         return new Size(width, height);
     }
 
+    //@interlal
     _updateMapSize(mSize: Size) {
         this.width = mSize['width'];
         this.height = mSize['height'];
@@ -2156,10 +2210,12 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Coordinate}
      * @private
      */
+    //@interlal
     _getPrjCenter() {
         return this._prjCenter;
     }
 
+    //@interlal
     _setPrjCenter(pcenter: Coordinate) {
         this._prjCenter = pcenter;
         if (this.isInteracting() && !this.isMoving()) {
@@ -2170,6 +2226,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         this._calcMatrices();
     }
 
+    //@interlal
     _setPrjCoordAtContainerPoint(coordinate: Coordinate, point: Point) {
         if (!this.centerAltitude && point.x === this.width / 2 && point.y === this.height / 2) {
             return this;
@@ -2181,12 +2238,14 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this;
     }
 
+    //@interlal
     _setPrjCoordAtOffsetToCenter(prjCoord: Coordinate, offset: Point) {
         const pcenter = this._pointToPrj(this._prjToPoint(prjCoord)._sub(offset));
         this._setPrjCenter(pcenter);
         return this;
     }
 
+    //@interlal
     _verifyExtent(prjCenter: Coordinate) {
         if (!prjCenter) {
             return false;
@@ -2198,6 +2257,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         return maxExt.contains(prjCenter);
     }
 
+    //@interlal
     _limitMaxExtent() {
         if (this._limitMaxExtenting || !this.options.limitExtentOnMaxExtent) {
             return this;
@@ -2297,6 +2357,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @
      * @returns {Coordinate} the new projected center.
      */
+    //@interlal
     _offsetCenterByPixel(pixel: Point) {
         const pos = TEMP_POINT.set(this.width / 2 - pixel.x, this.height / 2 - pixel.y);
         const coord = this._containerPointToPrj(pos, TEMP_COORD);
@@ -2339,6 +2400,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
 
+    //@interlal
     _resetMapViewPoint() {
         this._mapViewPoint = new Point(0, 0);
         // mapViewCoord is the proj coordinate of current view point
@@ -2350,6 +2412,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Number} resolution
      * @private
      */
+    //@interlal
     _getResolution(zoom?: number) {
         if ((zoom === undefined || zoom === this._zoomLevel) && this._mapRes !== undefined) {
             return this._mapRes;
@@ -2360,6 +2423,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this._spatialReference.getResolution(zoom);
     }
 
+    //@interlal
     _getResolutions() {
         return this._spatialReference.getResolutions();
     }
@@ -2371,12 +2435,14 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Point} 2D point
      * @private
      */
+    //@interlal
     _prjToPoint(pCoord, zoom?: number, out?: Point) {
         zoom = (isNil(zoom) ? this.getZoom() : zoom);
         const res = this._getResolution(zoom);
         return this._prjToPointAtRes(pCoord, res, out);
     }
 
+    //@interlal
     _prjToPointAtRes(pCoord: Coordinate, res?: number, out?: Point): Point {
         return this._spatialReference.getTransformation().transform(pCoord, res, out);
     }
@@ -2388,6 +2454,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Point} 2D point
      * @private
      */
+    //@interlal
     _prjsToPointsAtRes(pCoords: Array<Coordinate>, res?: number, resultPoints = []): Array<Point> {
         const transformation = this._spatialReference.getTransformation();
         const pts = [];
@@ -2405,12 +2472,14 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Coordinate} projected coordinate
      * @private
      */
+    //@interlal
     _pointToPrj(point: Point, zoom?: number, out?: Coordinate): Coordinate {
         zoom = (isNil(zoom) ? this.getZoom() : zoom);
         const res = this._getResolution(zoom);
         return this._pointToPrjAtRes(point, res, out);
     }
 
+    //@interlal
     _pointToPrjAtRes(point: Point, res?: number, out?: Coordinate): Coordinate {
         return this._spatialReference.getTransformation().untransform(point, res, out);
     }
@@ -2422,6 +2491,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Point} point at current zoom
      * @private
      */
+    //@interlal
     _pointToPoint(point: Point, zoom?: number, out?: Point): Point {
         if (!isNil(zoom)) {
             return this._pointAtResToPoint(point, this._getResolution(zoom), out);
@@ -2435,6 +2505,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         return out;
     }
 
+    //@interlal
     _pointAtResToPoint(point: Point, res?: number, out?: Point): Point {
         if (out) {
             out.x = point.x;
@@ -2452,6 +2523,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Point} point at target res
      * @private
      */
+    //@interlal
     _pointToPointAtRes(point: Point, res?: number, out?: Point): Point {
         if (out) {
             out.x = point.x;
@@ -2469,12 +2541,14 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Coordinate}
      * @private
      */
+    //@interlal
     _containerPointToPrj(containerPoint: Point, out?: Coordinate) {
         return this._pointToPrj(this._containerPointToPoint(containerPoint, undefined, out as Point), undefined, out);
     }
 
 
     /* eslint no-extend-native: 0 */
+    //@interlal
     _callOnLoadHooks() {
         const proto = Map.prototype;
         if (!proto._onLoadHooks) {
@@ -2485,6 +2559,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
     }
     //fix prj value when current view is world wide
+    //@interlal
     _fixPrjOnWorldWide(prjCoord: Coordinate) {
         const projection = this.getProjection() as any;
         if (projection && projection.fullExtent && prjCoord) {

@@ -26,6 +26,7 @@ abstract class Symbolizer {
         this.bbox = getDefaultBBOX();
     }
 
+    //@interlal
     _setBBOX(ctx: CanvasRenderingContext2D, x1?: number | BBOX, y1?: number, x2?: number, y2?: number): Symbolizer {
         if (!ctx.isHitTesting) {
             setBBOX(this.bbox, x1, y1, x2, y2);
@@ -33,6 +34,7 @@ abstract class Symbolizer {
         return this;
     }
 
+    //@interlal
     _bufferBBOX(ctx: CanvasRenderingContext2D, bufferSize: number): Symbolizer {
         if (!ctx.isHitTesting) {
             bufferBBOX(this.bbox, bufferSize);

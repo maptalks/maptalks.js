@@ -146,10 +146,12 @@ class Label extends TextMarker {
         return label;
     }
 
+    //@interlal
     _canEdit(): boolean {
         return false;
     }
 
+    //@interlal
     _toJSON(options: any) {
         return {
             'feature': this.toGeoJSON(options),
@@ -158,6 +160,7 @@ class Label extends TextMarker {
         };
     }
 
+    //@interlal
     _refresh(): void {
         const symbol = extend({},
             this.getTextSymbol(),
@@ -206,6 +209,7 @@ class Label extends TextMarker {
         delete this._refreshing;
     }
 
+    //@interlal
     _getBoxSize(symbol: any): any {
         if (!symbol['markerType']) {
             symbol['markerType'] = 'square';

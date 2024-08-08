@@ -18,12 +18,17 @@ class TileConfig {
     map: Map;
     tileSize: Size;
     fullExtent: Extent;
+    //@interlal
     _xScale: number;
+    //@interlal
     _yScale: number;
+    //@interlal
     _pointOrigin: Point;
+    //@interlal
     _glRes: number;
     tileSystem: TileSystem;
     transformation: Transformation;
+    //@interlal
     _tileFullIndex: Record<string, Extent>;
 
     /**
@@ -69,6 +74,7 @@ class TileConfig {
      * @param res  - current resolution
      * @return       tile index
      */
+    //@interlal
     _getTileNum(point: Point, res: number): { x: number, y: number } {
         const tileSystem = this.tileSystem,
             tileSize = this['tileSize'],
@@ -182,6 +188,7 @@ class TileConfig {
         };
     }
 
+    //@interlal
     _getTileFullIndex(res: number) {
         if (!this._tileFullIndex) {
             this._tileFullIndex = {};

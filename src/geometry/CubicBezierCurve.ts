@@ -31,6 +31,7 @@ class CubicBezierCurve extends Curve {
         return curve;
     }
 
+    //@interlal
     _toJSON(options: any): any {
         return {
             'feature': this.toGeoJSON(options),
@@ -39,6 +40,7 @@ class CubicBezierCurve extends Curve {
     }
 
     // paint method on canvas
+    //@interlal
     _paintOn(ctx: CanvasRenderingContext2D, points: any, lineOpacity: number): void {
         ctx.beginPath();
         ctx.moveTo(points[0].x, points[0].y);
@@ -47,6 +49,7 @@ class CubicBezierCurve extends Curve {
         this._paintArrow(ctx, points, lineOpacity);
     }
 
+    //@interlal
     _getArrowPoints(arrows: any[], segments: [], lineWidth: number, arrowStyle: any, tolerance: any): any {
         return this._getCurveArrowPoints(arrows, segments, lineWidth, arrowStyle, tolerance, 3);
     }

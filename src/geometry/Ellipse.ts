@@ -145,6 +145,7 @@ export class Ellipse extends CenterMixin(Polygon) {
         return this._getShell();
     }
 
+    //@interlal
     _getShell(): RingCoordinates {
         const measurer = this._getMeasurer(),
             center = this.getCoordinates(),
@@ -200,6 +201,7 @@ export class Ellipse extends CenterMixin(Polygon) {
         return shell;
     }
 
+    //@interlal
     _getPrjShell(): RingCoordinates {
         const shell = super._getPrjShell();
         return this._rotatePrjCoordinates(shell) as RingCoordinates;
@@ -219,6 +221,7 @@ export class Ellipse extends CenterMixin(Polygon) {
         return this.show();
     }
 
+    //@interlal
     _containsPoint(point: Point, tolerance?: number): boolean {
         const map = this.getMap();
         if (map.isTransforming()) {
@@ -232,6 +235,7 @@ export class Ellipse extends CenterMixin(Polygon) {
         return withInEllipse(point, p0, p1, t);
     }
 
+    //@interlal
     _computePrjExtent(): Extent {
         if (this.isRotated()) {
             return this._computeRotatedPrjExtent();
@@ -240,11 +244,13 @@ export class Ellipse extends CenterMixin(Polygon) {
         return Circle.prototype._computePrjExtent.apply(this, arguments);
     }
 
+    //@interlal
     _computeExtent(): any {
         // eslint-disable-next-line prefer-rest-params
         return Circle.prototype._computeExtent.apply(this, arguments);
     }
 
+    //@interlal
     _getMinMax(measurer: any): [Coordinate, Coordinate, Coordinate, Coordinate] {
         if (!measurer || !this._coordinates || isNil(this.width) || isNil(this.height)) {
             return null;
@@ -258,6 +264,7 @@ export class Ellipse extends CenterMixin(Polygon) {
         return [p1, p2, p3, p4];
     }
 
+    //@interlal
     _computeGeodesicLength(): number {
         if (isNil(this.width) || isNil(this.height)) {
             return 0;
@@ -268,6 +275,7 @@ export class Ellipse extends CenterMixin(Polygon) {
         return 2 * Math.PI * longer / 2 - 4 * Math.abs(this.width - this.height);
     }
 
+    //@interlal
     _computeGeodesicArea(): number {
         if (isNil(this.width) || isNil(this.height)) {
             return 0;
@@ -275,6 +283,7 @@ export class Ellipse extends CenterMixin(Polygon) {
         return Math.PI * this.width * this.height / 4;
     }
 
+    //@interlal
     _exportGeoJSONGeometry() {
         const coordinates = Coordinate.toNumberArrays([this.getShell()]);
         return {
@@ -283,6 +292,7 @@ export class Ellipse extends CenterMixin(Polygon) {
         };
     }
 
+    //@interlal
     _toJSON(options: any) {
         const opts = extend({}, options);
         const center = this.getCenter();
