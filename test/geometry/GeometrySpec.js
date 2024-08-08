@@ -101,7 +101,7 @@ describe('Geometry.main', function () {
         test();
     });
 
-    it('#2381 rotate pivoid should change when coordinates change', function (done) {
+    it('#2381 rotate pivot should change when coordinates change', function (done) {
         //rect ellipse etc
         const center = map.getCenter();
         const rect = new maptalks.Rectangle(center, 100, 70);
