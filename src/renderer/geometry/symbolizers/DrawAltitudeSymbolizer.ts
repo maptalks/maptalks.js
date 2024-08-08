@@ -14,7 +14,7 @@ const defaultSymbol = {
 };
 
 export default class DrawAltitudeSymbolizer extends PointSymbolizer {
-    public dxdy: any;
+    dxdy: any;
     static test(symbol: any, geometry: Geometry) {
         const layer = geometry.getLayer();
         if (!layer) {

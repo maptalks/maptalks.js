@@ -23,7 +23,7 @@ const EVENTS = Browser.touch ? 'touchstart mousedown' : 'mousedown';
  */
 class GeometryDragHandler extends Handler {
 
-    public container: any
+    container: any
 
     private _dragHandler: any
     private _shadow: any

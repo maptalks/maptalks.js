@@ -26,8 +26,8 @@ const options = {
  * });
  */
 export class Sector extends Circle {
-    public startAngle: number
-    public endAngle: number
+    startAngle: number
+    endAngle: number
 
     static fromJSON(json: Record<string, any>): Sector {
         const feature = json['feature'];

@@ -37,14 +37,14 @@ class ResourceWorkerConnection extends Actor {
  * @extends Class
  */
 class CanvasRenderer extends Class {
-    public layer: any;
-    public resources: ResourceCache;
+    layer: any;
+    resources: ResourceCache;
 
-    public context: CanvasRenderingContext2D;
-    public canvas: TileRenderingCanvas;
-    public gl: TileRenderingContext;
-    public middleWest: Point;
-    public canvasExtent2D: Extent;
+    context: CanvasRenderingContext2D;
+    canvas: TileRenderingCanvas;
+    gl: TileRenderingContext;
+    middleWest: Point;
+    canvasExtent2D: Extent;
     _extent2D: Extent;
     _maskExtent: Extent;
 

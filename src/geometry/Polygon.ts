@@ -35,9 +35,9 @@ export type RingsCoordinates = PathsCoordinates;
 
 export class Polygon extends Path {
 
-    public _holes: RingsCoordinates;
-    public _prjHoles: RingsCoordinates;
-    public _prjShell: RingCoordinates;
+    _holes: RingsCoordinates;
+    _prjHoles: RingsCoordinates;
+    _prjShell: RingCoordinates;
     _getShell?(): RingCoordinates;
     /**
      * @param {Number[][]|Number[][][]|Coordinate[]|Coordinate[][]} coordinates - coordinates, shell coordinates or all the rings.

@@ -33,7 +33,7 @@ const options: CircleOptionsType = {
  * @mixes CenterMixin
  */
 export class Circle extends CenterMixin(Polygon) {
-    public _radius: number
+    _radius: number
 
     static fromJSON(json: Record<string, any>): Circle {
         const feature = json['feature'];

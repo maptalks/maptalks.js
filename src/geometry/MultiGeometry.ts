@@ -24,7 +24,7 @@ type GeometryClass<T> = (new (coordinates: SingleGeometryCreateCoordinates, opti
 
 
 class MultiGeometry extends GeometryCollection {
-    public GeometryType: GeometryClass<Geometry>;
+    GeometryType: GeometryClass<Geometry>;
 
     /**
      * @param  {Class} geoType      Type of the geometry

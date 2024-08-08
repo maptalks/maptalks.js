@@ -18,8 +18,8 @@ import { ResourceCache } from '../../layer/CanvasRenderer';
  * @extends {Symbolizer}
  */
 abstract class CanvasSymbolizer extends Symbolizer {
-    public symbol: any;
-    public _opacityFn: any;
+    symbol: any;
+    _opacityFn: any;
     _prepareContext(ctx: CanvasRenderingContext2D): void {
         if (isFunctionDefinition(this.symbol['opacity'])) {
             if (!this._opacityFn) {

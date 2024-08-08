@@ -2,7 +2,7 @@ import Canvas from '../../../core/Canvas';
 import CanvasRenderer from '../../../renderer/layer/CanvasRenderer';
 
 export default class CanvasLayerRenderer extends CanvasRenderer {
-    public buffer: HTMLCanvasElement;
+    buffer: HTMLCanvasElement;
     _drawContext: any[];
     _predrawed: boolean;
     _shouldClear: boolean;

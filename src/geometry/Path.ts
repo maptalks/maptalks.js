@@ -51,16 +51,16 @@ export type MultiPathsCoordinates = Array<PathsCoordinates>;
 export class Path extends Geometry {
 
     _coordinates: Coordinate[];
-    public _showPlayer: Player;
-    public _animIdx: number
-    public _animLenSoFar: number
-    public _animTailRatio: number
-    public _prjAniShowCenter: Coordinate
-    public _aniShowCenter: Coordinate
-    public _tempCoord: Coordinate
-    public _tempPrjCoord: Point
-    public _simplified: boolean
-    public _prjCoords: Array<Coordinate>
+    _showPlayer: Player;
+    _animIdx: number
+    _animLenSoFar: number
+    _animTailRatio: number
+    _prjAniShowCenter: Coordinate
+    _aniShowCenter: Coordinate
+    _tempCoord: Coordinate
+    _tempPrjCoord: Point
+    _simplified: boolean
+    _prjCoords: Array<Coordinate>
     hasHoles?(): boolean;
     _getPrjHoles?(): Array<Array<Coordinate>>;
 

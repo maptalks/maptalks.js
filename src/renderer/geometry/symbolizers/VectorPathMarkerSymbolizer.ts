@@ -7,7 +7,7 @@ import { ResourceCache } from '../../layer/CanvasRenderer';
 // import { ResourceProxy } from '../../../core/ResourceProxy';
 
 export default class VectorPathMarkerSymbolizer extends ImageMarkerSymbolizer {
-    public _url: any;
+    _url: any;
     static test(symbol: any): boolean {
         return isPathSymbol(symbol);
     }
