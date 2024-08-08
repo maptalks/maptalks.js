@@ -28,6 +28,7 @@ import SpatialReference, { type SpatialReferenceType } from './spatial-reference
 import { computeDomPosition, MOUSEMOVE_THROTTLE_TIME } from '../core/util/dom';
 import EPSG9807, { type EPSG9807ProjectionType } from '../geo/projection/Projection.EPSG9807.js';
 import { AnimationOptionsType, EasingType } from '../core/Animation';
+import { BBOX, bboxInBBOX, getDefaultBBOX, pointsBBOX } from '../core/util/bbox';
 
 const TEMP_COORD = new Coordinate(0, 0);
 const TEMP_POINT = new Point(0, 0);
@@ -136,6 +137,7 @@ const options: MapOptionsType = {
     'maxZoom': null,
     'minZoom': null,
     'maxExtent': null,
+    'limitExtentOnMaxExtent': false,
     'fixCenterOnResize': true,
 
     'checkSize': true,
@@ -223,6 +225,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     private _mapRes: number;
     private _onLoadHooks: Array<(...args) => void>;
     private cameraCenterDistance: number;
+    private _limitMaxExtenting: boolean;
     options: MapOptionsType;
     static VERSION: string;
     JSON_VERSION: '1.0';
@@ -564,7 +567,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
         const projection = this.getProjection();
         const pcenter = projection.project(center);
-        if (!this._verifyExtent(pcenter)) {
+        if (!this._verifyExtent(pcenter) && !this.options.limitExtentOnMaxExtent) {
             return this;
         }
         if (!this._loaded) {
@@ -1751,6 +1754,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
          * @property {Event} domEvent                 - dom event
          */
         this._fireEvent('moving', this._parseEvent(param ? param['domEvent'] : null, 'moving'));
+        this._limitMaxExtent();
     }
 
     onMoveEnd(param) {
@@ -1773,10 +1777,12 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
          * @property {Event} domEvent                 - dom event
          */
         this._fireEvent('moveend', (param && param['domEvent']) ? this._parseEvent(param['domEvent'], 'moveend') : param);
-        if (!this._verifyExtent(this._getPrjCenter()) && this._originCenter) {
+
+        if (!this._verifyExtent(this._getPrjCenter()) && this._originCenter && !this.options.limitExtentOnMaxExtent) {
             const moveTo = this._originCenter;
             this._panTo(moveTo);
         }
+        this._limitMaxExtent();
     }
 
     onDragRotateStart(param) {
@@ -2192,13 +2198,103 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         return maxExt.contains(prjCenter);
     }
 
+    _limitMaxExtent() {
+        if (this._limitMaxExtenting || !this.options.limitExtentOnMaxExtent) {
+            return this;
+        }
+        const maxPrjExtent = this._prjMaxExtent;
+        const maxExtent = this.getMaxExtent();
+        if (!maxPrjExtent || !maxExtent) {
+            return this;
+        }
+        const prjCoords = maxPrjExtent.toArray();
+        const points = prjCoords.map(prjCoord => {
+            return this.prjToContainerPoint(prjCoord);
+        })
+        //屏幕坐标包围盒
+        const maxExtentBBOX = getDefaultBBOX();
+        pointsBBOX(points, maxExtentBBOX);
+        const { width, height } = this.getSize();
+        const mapBBOX = [0, 0, width, height] as BBOX;
+
+        if (bboxInBBOX(mapBBOX, maxExtentBBOX)) {
+            return this;
+        }
+        //maxExtent完全在当前视野内
+        if (bboxInBBOX(maxExtentBBOX, mapBBOX)) {
+            return this;
+        }
+
+        let translateX = 0, translateY = 0;
+
+        let offsetleft = 0, offsetright = 0, offsettop = 0, offsetbottom = 0;
+        const abs = Math.abs;
+        const [left, top, right, bottom] = maxExtentBBOX;
+
+        //left overflow
+        if (left > 0 && right > width) {
+            translateX = offsetleft = abs(left);
+        }
+        if (left < 0 && right < width) {
+            translateX = offsetleft = -abs(left);
+        }
+
+        //right overflow
+        if (left < 0 && right < width) {
+            translateX = offsetright = - abs(width - right);
+        }
+        if (left > 0 && right > width) {
+            translateX = offsetright = abs(width - right);
+        }
+
+        //top overflow
+        if (top > 0 && bottom > height) {
+            translateY = offsettop = abs(top);
+        }
+        if (top < 0 && bottom < height) {
+            translateY = offsettop = -abs(top);
+        }
+
+        //bottom overflow
+        if (top < 0 && bottom < height) {
+            translateY = offsetbottom = -abs(height - bottom);
+        }
+        if (top > 0 && bottom > height) {
+            translateY = offsetbottom = abs(height - bottom);
+        }
+
+        //同时溢出取最小的值,四周最近距离吸附
+        if (offsetleft !== 0 && offsetright !== 0) {
+            translateX = offsetleft;
+            if (abs(offsetright) < abs(offsetleft)) {
+                translateX = offsetright;
+            }
+        }
+        if (offsettop !== 0 && offsetbottom !== 0) {
+            translateY = offsettop;
+            if (abs(offsetbottom) < abs(offsettop)) {
+                translateY = offsetbottom;
+            }
+        }
+
+        if (translateX !== 0 || translateY !== 0) {
+            const point = new Point(width / 2 + translateX, height / 2 + translateY);
+            const center = this.containerPointToCoord(point);
+            this._limitMaxExtenting = true;
+            this.setCenter(center);
+            this._limitMaxExtenting = false;
+
+        }
+        return this;
+    }
+
     /**
      * Move map's center by pixels.
      * @param  {Point} pixel - pixels to move, the relation between value and direction is as:
      * -1,1 | 1,1
      * ------------
      *-1,-1 | 1,-1
-     * @private
+     * @private 
      * @returns {Coordinate} the new projected center.
      */
     _offsetCenterByPixel(pixel: Point) {
@@ -2581,6 +2677,7 @@ export type MapOptionsType = {
     maxZoom?: number;
     minZoom?: number;
     maxExtent?: Extent;
+    limitExtentOnMaxExtent?: boolean;
     fixCenterOnResize?: boolean;
     checkSize?: boolean;
     checkSizeInterval?: number;
