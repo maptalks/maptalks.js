@@ -295,40 +295,84 @@ const lineStringInclude = {
         return null;
     },
 
-    _getArrows(points: any, lineWidth: number, tolerance?: number) {
+    _getArrows(points: Array<Point> | Array<Array<Point>>, lineWidth: number, tolerance?: number) {
         const arrowStyle = this._getArrowStyle();
         if (!arrowStyle || points.length < 2) {
             return [];
         }
         const isSplitted = points.length > 0 && Array.isArray(points[0]);
-        const segments = isSplitted ? points : [points];
+        const segments: Array<Array<Point>> = (isSplitted ? points : [points]) as Array<Array<Point>>;
         const placement = this._getArrowPlacement();
         const arrows = [];
-        const map = this.getMap(),
-            first = map.coordToContainerPoint(this.getFirstCoordinate()),
-            last = map.coordToContainerPoint(this.getLastCoordinate());
+        // const map = this.getMap();
+        // first = map.coordToContainerPoint(this.getFirstCoordinate()),
+        //     last = map.coordToContainerPoint(this.getLastCoordinate());
+        let p1: Point, p2: Point;
+        const createArrow = () => {
+            if (p1 && p2) {
+                const arrow = this._getArrowShape(p1, p2, lineWidth, arrowStyle, tolerance);
+                if (arrow) {
+                    arrows.push(arrow);
+                }
+            }
+        }
+        //关于弧线或者平滑曲线的箭头节点分布
+        /**
+         * P0--arrowNextPoint----------arrowPrePoint--P1-------------arrowPrePoint--P2------------arrowPrePoint--P3.............arrowPrePoint--Pn
+         */
         for (let i = segments.length - 1; i >= 0; i--) {
-            if (placement === 'vertex-first' || placement === 'vertex-firstlast' && segments[i][0].closeTo(first, 0.01)) {
-                const arrow = this._getArrowShape(segments[i][1], segments[i][0], lineWidth, arrowStyle, tolerance);
-                if (arrow) {
-                    arrows.push(arrow);
-                }
+            const path = segments[i];
+            const len = path.length;
+            const first = path[0];
+            const last = path[len - 1];
+            //忽略closeTo判断，因为点可能有海拔，比如两个点可能是垂直关系
+            if (placement === 'vertex-first') {
+                //如果有箭头专用节点使用箭头专用节点,一般是弧线或者平滑曲线
+                //第一个节点有箭头专用后置节点
+                p1 = first.arrowNextPoint || path[1];
+                p2 = first;
+            } else if (placement === 'vertex-last') {
+                //如果有箭头专用节点使用箭头专用节点,一般是弧线或者平滑曲线
+                //其他节点有箭头专用的前置节点
+                p1 = last.arrowPrePoint || path[len - 2];
+                p2 = last;
             }
-            if (placement === 'vertex-last' || placement === 'vertex-firstlast' && segments[i][segments[i].length - 1].closeTo(last, 0.01)) {
-                const arrow = this._getArrowShape(segments[i][segments[i].length - 2], segments[i][segments[i].length - 1], lineWidth, arrowStyle, tolerance);
-                if (arrow) {
-                    arrows.push(arrow);
-                }
-            } else if (placement === 'point') {
-                this._getArrowPoints(arrows, segments[i], lineWidth, arrowStyle, tolerance);
+            createArrow();
+            if (placement === 'vertex-firstlast') {
+                p1 = first.arrowNextPoint || path[1];
+                p2 = first;
+                createArrow();
+                p1 = last.arrowPrePoint || path[len - 2];
+                p2 = last;
+                createArrow();
             }
+            if (placement === 'point') {
+                this._getArrowPoints(arrows, path, lineWidth, arrowStyle, tolerance);
+            }
+            // if (placement === 'vertex-first' || placement === 'vertex-firstlast' && segments[i][0].closeTo(first, 0.01)) {
+            //     const arrow = this._getArrowShape(segments[i][1], segments[i][0], lineWidth, arrowStyle, tolerance);
+            //     if (arrow) {
+            //         arrows.push(arrow);
+            //     }
+            // }
+            // if (placement === 'vertex-last' || placement === 'vertex-firstlast' && segments[i][segments[i].length - 1].closeTo(last, 0.01)) {
+            //     const arrow = this._getArrowShape(segments[i][segments[i].length - 2], segments[i][segments[i].length - 1], lineWidth, arrowStyle, tolerance);
+            //     if (arrow) {
+            //         arrows.push(arrow);
+            //     }
+            // } else if (placement === 'point') {
+            //     this._getArrowPoints(arrows, segments[i], lineWidth, arrowStyle, tolerance);
+            // }
         }
         return arrows;
     },
 
     _getArrowPoints(arrows: any[], segments: any[], lineWidth?: number, arrowStyle?: any, tolerance?: number) {
         for (let ii = 0, ll = segments.length - 1; ii < ll; ii++) {
-            const arrow = this._getArrowShape(segments[ii], segments[ii + 1], lineWidth, arrowStyle, tolerance);
+            const pre = segments[ii];
+            const next = segments[ii + 1];
+            //如果有箭头专用节点使用箭头专用节点
+            const arrow = this._getArrowShape(next.arrowPrePoint || pre, next, lineWidth, arrowStyle, tolerance);
             if (arrow) {
                 arrows.push(arrow);
             }
