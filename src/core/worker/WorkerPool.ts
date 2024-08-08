@@ -8,7 +8,9 @@ const hardwareConcurrency = typeof window !== 'undefined' ? (window.navigator.ha
 const hardwareWorkerCount = Math.max(Math.floor(hardwareConcurrency / 2), 1);
 
 class MessageBatch {
+    //@interlal
     _limit: number
+    //@interlal
     _messages: Message[]
     buffers: ArrayBuffer[]
     constructor(limit = 50) {
@@ -49,7 +51,9 @@ export default class WorkerPool {
         [key: number]: boolean
     }
     workerCount: number
+    //@interlal
     _messages: MessageBatch[][]
+    //@interlal
     _messageBuffers: ArrayBuffer[]
     workers: Worker[]
     constructor() {

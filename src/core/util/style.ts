@@ -78,9 +78,11 @@ export function lowerSymbolOpacity(symbol: Object | Object[], ratio: number): Ob
     function s(_symbol, _ratio) {
         const op = _symbol['opacity'];
         if (isNil(op)) {
-            _symbol['opacity'] = _ratio;
+            //@interlal
+    _symbol['opacity'] = _ratio;
         } else {
-            _symbol['opacity'] *= _ratio;
+            //@interlal
+    _symbol['opacity'] *= _ratio;
         }
     }
     let lower;

@@ -61,17 +61,27 @@ const options: GeometryEditOptionsType = {
  */
 class GeometryEditor extends Eventable(Class) {
 
-    public _geometry: any;
-    private _originalSymbol: any
-    private _shadowLayer: any
-    private _shadow: any
-    private _geometryDraggble: boolean
-    private _history: any
-    private _historyPointer: any
-    private _editOutline: any
-    private _refreshHooks: Array<any>
-    private _updating: boolean
-    public editing: boolean;
+    //@interlal
+    _geometry: any;
+    //@interlal
+    _originalSymbol: any
+    //@interlal
+    _shadowLayer: any
+    //@interlal
+    _shadow: any
+    //@interlal
+    _geometryDraggble: boolean
+    //@interlal
+    _history: any
+    //@interlal
+    _historyPointer: any
+    //@interlal
+    _editOutline: any
+    //@interlal
+    _refreshHooks: Array<any>
+    //@interlal
+    _updating: boolean
+    editing: boolean;
     options: GeometryEditOptionsType;
 
     /**
@@ -119,6 +129,7 @@ class GeometryEditor extends Eventable(Class) {
         this._prepareEditStageLayer();
     }
 
+    //@interlal
     _prepareEditStageLayer(): void {
         const layer = this._geometry.getLayer();
         if (layer.options['renderer'] !== 'canvas') {
@@ -258,6 +269,7 @@ class GeometryEditor extends Eventable(Class) {
         return this.editing;
     }
 
+    //@interlal
     _getGeometryEvents(): GeometryEvents {
         return {
             'symbolchange': this._onGeoSymbolChange,
@@ -268,6 +280,7 @@ class GeometryEditor extends Eventable(Class) {
         };
     }
 
+    //@interlal
     _switchGeometryEvents(oper: any): void {
         if (this._geometry) {
             const events = this._getGeometryEvents();
@@ -277,12 +290,14 @@ class GeometryEditor extends Eventable(Class) {
         }
     }
 
+    //@interlal
     _onGeoSymbolChange(param: any): void {
         if (this._shadow) {
             this._shadow.setSymbol(param.target._getInternalSymbol());
         }
     }
 
+    //@interlal
     _onMarkerDragEnd(): void {
         this._update('setCoordinates', this._shadow.getCoordinates().toArray());
     }
@@ -293,6 +308,7 @@ class GeometryEditor extends Eventable(Class) {
      * create rectangle outline of the geometry
      * @private
      */
+    //@interlal
     _createOrRefreshOutline(): any {
         const geometry = this._geometry;
         const outline = this._editOutline;
@@ -316,6 +332,7 @@ class GeometryEditor extends Eventable(Class) {
     }
 
 
+    //@interlal
     _createCenterHandle(): void {
         const map = this.getMap();
         const symbol = this.options['centerHandleSymbol'];
@@ -355,6 +372,7 @@ class GeometryEditor extends Eventable(Class) {
         });
     }
 
+    //@interlal
     _createHandleInstance(containerPoint: any, opts: any): EditHandle {
         const map = this.getMap();
         const symbol = loadFunctionTypes(opts['symbol'], (): any => {
@@ -454,6 +472,7 @@ class GeometryEditor extends Eventable(Class) {
      * @param {fn} onHandleMove callback
      * @private
      */
+    //@interlal
     _createResizeHandles(blackList: Array<any>, onHandleMove: any, onHandleUp: any): any {
         //cursor styles.
         const cursors = [
@@ -1206,6 +1225,7 @@ class GeometryEditor extends Eventable(Class) {
         });
     }
 
+    //@interlal
     _refresh(): void {
         if (this._refreshHooks) {
             for (let i = this._refreshHooks.length - 1; i >= 0; i--) {
@@ -1214,6 +1234,7 @@ class GeometryEditor extends Eventable(Class) {
         }
     }
 
+    //@interlal
     _hideContext(): void {
         if (this._geometry) {
             this._geometry.closeMenu();
@@ -1221,6 +1242,7 @@ class GeometryEditor extends Eventable(Class) {
         }
     }
 
+    //@interlal
     _addRefreshHook(fn: any): void {
         if (!fn) {
             return;
@@ -1231,11 +1253,13 @@ class GeometryEditor extends Eventable(Class) {
         this._refreshHooks.push(fn);
     }
 
+    //@interlal
     _update(method: any, ...args: any): void {
         this._exeHistory([method, args]);
         this._recordHistory(method, ...args);
     }
 
+    //@interlal
     _updateCoordFromShadow(ignoreRecord?: any): void {
         const geoToEdit = this._shadow || this._geometry;
 
@@ -1250,6 +1274,7 @@ class GeometryEditor extends Eventable(Class) {
         this._updating = updating;
     }
 
+    //@interlal
     _recordHistory(method: any, ...args: any): void {
         if (!this._history) {
             this._history = [];
@@ -1322,6 +1347,7 @@ class GeometryEditor extends Eventable(Class) {
         return this;
     }
 
+    //@interlal
     _exeAndReset(record: any): void {
         if (this._updating) {
             return;
@@ -1335,14 +1361,17 @@ class GeometryEditor extends Eventable(Class) {
         this.start();
     }
 
+    //@interlal
     _onDragStart(): void {
         this._updating = true;
     }
 
+    //@interlal
     _onDragEnd(): void {
         this._updating = false;
     }
 
+    //@interlal
     _exeHistory(record: any): void {
         if (!Array.isArray(record)) {
             return;

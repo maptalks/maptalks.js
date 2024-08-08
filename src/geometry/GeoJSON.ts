@@ -98,6 +98,7 @@ class GeoJSONFetchActor extends Actor {
         super(WORKER_KEY);
     }
 
+    //@interlal
     _sendMsg(options: any, featuresList: any, cb: any) {
         this.send(options, [], (error?: any, data?: any) => {
             if (error) {
@@ -108,6 +109,7 @@ class GeoJSONFetchActor extends Actor {
         }, options.workerId);
     }
 
+    //@interlal
     _fetchGeoJSON(url: any, options: any, featuresList: [] = [], cb: any): void {
         const opts = extend({}, options);
         opts.type = 'fetchdata';
@@ -115,6 +117,7 @@ class GeoJSONFetchActor extends Actor {
         this._sendMsg(opts, featuresList, cb);
     }
 
+    //@interlal
     _pageFeatures(options: any, features: any, featuresList: any, cb: any): void {
         featuresList.push(features);
         if (features.length === 0) {
@@ -265,6 +268,7 @@ const GeoJSON = {
      * @return {Geometry}
      * @private
      */
+    //@interlal
     _convert: function (json: any, foreachFn?: any): any {
         if (!json || isNil(json['type'])) {
             return null;
@@ -326,6 +330,7 @@ const GeoJSON = {
         return null;
     },
 
+    //@interlal
     _isGeoJSON(json: any): boolean {
         if (!json) {
             return false;

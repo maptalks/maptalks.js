@@ -20,6 +20,7 @@ const search: Search = {
  *   2.2 如果没有，如果需要的，insert到collisionIndex中
  */
 class CollisionIndex {
+    //@interlal
     _tree: any
     constructor() {
         this._tree = rbush(9, ['[0]', '[1]', '[2]', '[3]']);

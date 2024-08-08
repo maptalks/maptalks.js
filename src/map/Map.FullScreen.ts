@@ -5,8 +5,10 @@ declare module "./Map" {
         isFullScreen(): boolean;
         requestFullScreen(dom?: HTMLDivElement): this;
         cancelFullScreen(): this;
-        _requestFullScreen(dom: HTMLDivElement): void;
-        _cancelFullScreen(): void;
+        //@interlal
+    _requestFullScreen(dom: HTMLDivElement): void;
+        //@interlal
+    _cancelFullScreen(): void;
 
     }
 }
@@ -70,6 +72,7 @@ Map.include(/** @lends Map.prototype */ {
         return this;
     },
 
+    //@interlal
     _requestFullScreen(dom) {
         if (dom.requestFullscreen) {
             dom.requestFullscreen();
@@ -92,6 +95,7 @@ Map.include(/** @lends Map.prototype */ {
         }
     },
 
+    //@interlal
     _cancelFullScreen() {
         const doc=document as any;
         if (document.exitFullscreen) {

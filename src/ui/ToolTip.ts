@@ -32,11 +32,15 @@ const options: ToolTipOptionsType = {
 class ToolTip extends UIComponent {
 
     options: ToolTipOptionsType;
+    //@interlal
     _content: string;
+    //@interlal
     _timeout: NodeJS.Timeout;
+    //@interlal
     _owner: Geometry;
 
     // TODO:obtain class in super
+    //@interlal
     _getClassName() {
         return 'ToolTip';
     }
@@ -167,6 +171,7 @@ class ToolTip extends UIComponent {
      * override UIComponent method
      * ignore altitude calculation
      */
+    //@interlal
     _getViewPoint() {
         return this.getMap().coordToViewPoint(this._coordinate, undefined, 0)
             ._add(this.options['dx'], this.options['dy']);

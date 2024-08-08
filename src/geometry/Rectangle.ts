@@ -17,10 +17,14 @@ import Polygon, { PolygonOptionsType, RingCoordinates, RingsCoordinates } from '
  */
 export class Rectangle extends Polygon {
     // @ts-expect-error 确实需要重写父类的属性
+    //@interlal
     _coordinates: Coordinate;
-    public _width: number
-    public _height: number
-    public _pnw: any
+    //@interlal
+    _width: number
+    //@interlal
+    _height: number
+    //@interlal
+    _pnw: any
 
     static fromJSON(json): Rectangle {
         const feature = json['feature'];
@@ -124,6 +128,7 @@ export class Rectangle extends Polygon {
         return this._getShell();
     }
 
+    //@interlal
     _getShell(): RingCoordinates {
         const measurer = this._getMeasurer();
         const nw = this._coordinates;
@@ -167,6 +172,7 @@ export class Rectangle extends Polygon {
     }
 
     // @ts-expect-error 确实需要重写父类的属性
+    //@interlal
     _getPrjCoordinates(): Coordinate {
         const projection = this._getProjection();
         this._verifyProjection();
@@ -178,11 +184,13 @@ export class Rectangle extends Polygon {
         return this._pnw;
     }
 
+    //@interlal
     _setPrjCoordinates(pnw) {
         this._pnw = pnw;
         this.onPositionChanged();
     }
 
+    //@interlal
     _getPrjShell(): RingCoordinates {
         const shell = super._getPrjShell();
         const projection = this._getProjection();
@@ -211,6 +219,7 @@ export class Rectangle extends Polygon {
     }
 
     //update cached variables if geometry is updated.
+    //@interlal
     _updateCache() {
         this._clearCache();
         const projection = this._getProjection();
@@ -219,15 +228,18 @@ export class Rectangle extends Polygon {
         }
     }
 
+    //@interlal
     _clearProjection() {
         this._pnw = null;
         super._clearProjection();
     }
 
+    //@interlal
     _computeCenter(measurer?: any): Coordinate {
         return measurer.locate(this._coordinates, this._width / 2, -this._height / 2);
     }
 
+    //@interlal
     _containsPoint(point: Point, tolerance?: number) {
         const map = this.getMap();
         if (map.isTransforming()) {
@@ -240,6 +252,7 @@ export class Rectangle extends Polygon {
         return extent.contains(p);
     }
 
+    //@interlal
     _computePrjExtent(projection: CommonProjectionType): Extent {
         if (this.isRotated()) {
             return this._computeRotatedPrjExtent();
@@ -255,6 +268,7 @@ export class Rectangle extends Polygon {
         return new Extent(prjs[0] as Coordinate, prjs[1] as Coordinate);
     }
 
+    //@interlal
     _computeExtent(measurer?: any): Extent {
         const se = this._getSouthEast(measurer);
         if (!se) {
@@ -263,6 +277,7 @@ export class Rectangle extends Polygon {
         return new Extent(this._coordinates, se, this._getProjection());
     }
 
+    //@interlal
     _getSouthEast(measurer): Coordinate {
         if (!measurer || !this._coordinates || isNil(this._width) || isNil(this._height)) {
             return null;
@@ -284,6 +299,7 @@ export class Rectangle extends Polygon {
         return rightPoint;
     }
 
+    //@interlal
     _computeGeodesicLength() {
         if (isNil(this._width) || isNil(this._height)) {
             return 0;
@@ -291,6 +307,7 @@ export class Rectangle extends Polygon {
         return 2 * (this._width + this._height);
     }
 
+    //@interlal
     _computeGeodesicArea() {
         if (isNil(this._width) || isNil(this._height)) {
             return 0;
@@ -298,6 +315,7 @@ export class Rectangle extends Polygon {
         return this._width * this._height;
     }
 
+    //@interlal
     _exportGeoJSONGeometry() {
         const coordinates = Coordinate.toNumberArrays([this.getShell()]);
         return {
@@ -306,6 +324,7 @@ export class Rectangle extends Polygon {
         };
     }
 
+    //@interlal
     _toJSON(options) {
         const opts = extend({}, options);
         const nw = this.getCoordinates();

@@ -55,7 +55,9 @@ class Overview extends Control {
     options: OverviewOptionsType;
     mapContainer: HTMLDivElement;
     button: HTMLDivElement;
+    //@interlal
     _overview: Map;
+    //@interlal
     _perspective: Polygon;
 
     /**
@@ -143,6 +145,7 @@ class Overview extends Control {
         return this._overview;
     }
 
+    //@interlal
     _onButtonClick() {
         if (!this._overview) {
             this.maxmize();
@@ -152,6 +155,7 @@ class Overview extends Control {
         this._updateButtonText();
     }
 
+    //@interlal
     _updateButtonText() {
         if (this._overview) {
             this.button.innerHTML = '-';
@@ -160,6 +164,7 @@ class Overview extends Control {
         }
     }
 
+    //@interlal
     _createOverview() {
         const map = this.getMap(),
             dom = this.mapContainer;
@@ -190,6 +195,7 @@ class Overview extends Control {
         this.fire('load');
     }
 
+    //@interlal
     _getOverviewZoom() {
         const map = this.getMap(),
             zoom = map.getZoom(),
@@ -213,12 +219,14 @@ class Overview extends Control {
     }
 
 
+    //@interlal
     _onDragEnd() {
         const center = this._perspective.getCenter();
         this._overview.setCenter(center);
         this.getMap().panTo(center);
     }
 
+    //@interlal
     _getPerspectiveCoords() {
         const map = this.getMap();
         const projection = map.getProjection();
@@ -232,6 +240,7 @@ class Overview extends Control {
         });
     }
 
+    //@interlal
     _update() {
         if (!this._overview) {
             return;
@@ -243,6 +252,7 @@ class Overview extends Control {
         this._overview.setCenterAndZoom(this.getMap().getCenter(), this._getOverviewZoom());
     }
 
+    //@interlal
     _updateSpatialReference() {
         if (!this._overview) {
             return;
@@ -252,6 +262,7 @@ class Overview extends Control {
         this._overview.setSpatialReference(spatialRef);
     }
 
+    //@interlal
     _updateBaseLayer() {
         if (!this._overview) {
             return;

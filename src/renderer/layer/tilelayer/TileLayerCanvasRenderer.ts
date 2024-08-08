@@ -68,25 +68,37 @@ class TileWorkerConnection extends Actor {
 class TileLayerCanvasRenderer extends CanvasRenderer {
     tilesInView: TilesInViewType;
     tilesLoading: { [key: string]: any };
+    //@interlal
     _parentTiles: any[];
+    //@interlal
     _childTiles: any[];
+    //@interlal
     _tileZoom: number;
+    //@interlal
     _tileQueue: {
         tileInfo: any;
         tileData: any;
     }[];
+    //@interlal
     _tileQueueIds: Set<LayerId>;
     tileCache: typeof LRUCache;
+    //@interlal
     _compareTiles: any;
+    //@interlal
     _tileImageWorkerConn: TileWorkerConnection;
+    //@interlal
     _renderTimestamp: number;
+    //@interlal
     _frameTiles: {
         empty: boolean;
         timestamp: number;
     };
 
+    //@interlal
     _terrainHelper: TerrainHelper;
+    //@interlal
     _tilePlaceHolder: any;
+    //@interlal
     _frameTileGrids: TileGrids;
 
     drawingCurrentTiles: WithUndef<boolean>;
@@ -194,6 +206,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return this._renderTimestamp || 0;
     }
 
+    //@interlal
     _getTilesInCurrentFrame() {
         const map = this.getMap();
         const layer = this.layer;
@@ -435,6 +448,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return this._getTileFadingOpacity(tileImage) < 1;
     }
 
+    //@interlal
     _drawTiles(tiles, parentTiles, childTiles, placeholders, parentContext, missedTiles, incompleteTiles) {
         if (parentTiles.length) {
             //closer the latter (to draw on top)
@@ -511,6 +525,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     }
 
+    //@interlal
     _drawChildTiles(childTiles, parentContext) {
         // _hasOwnSR 时，瓦片之间会有重叠，会产生z-fighting，所以背景瓦片要后绘制
         this.drawingChildTiles = true;
@@ -518,6 +533,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         delete this.drawingChildTiles;
     }
 
+    //@interlal
     _drawParentTiles(parentTiles, parentContext) {
         this.drawingParentTiles = true;
         this._parentTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
@@ -529,12 +545,14 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onDrawTileEnd(context: RenderContext, parentContext: RenderContext) { }
 
+    //@interlal
     _drawTile(info, image, parentContext) {
         if (image) {
             this.drawTile(info, image, parentContext);
         }
     }
 
+    //@interlal
     _drawTileAndCache(tile: Tile, parentContext) {
         if (this.isValidCachedTile(tile)) {
             this.tilesInView[tile.info.id] = tile;
@@ -571,6 +589,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
      * @private
      * limit tile number to load when map is interacting
      */
+    //@interlal
     _getLoadLimit(): number {
         if (this.getMap().isInteracting()) {
             return this.layer.options['loadingLimitOnInteracting'];
@@ -601,6 +620,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         super.clear();
     }
 
+    //@interlal
     _isLoadingTile(tileId: TileId): boolean {
         return !!this.tilesLoading[tileId];
     }
@@ -614,6 +634,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     // clip canvas to avoid rough edge of tiles
+    //@interlal
     _clipByPitch(ctx: CanvasRenderingContext2D): boolean {
         const map = this.getMap();
         if (map.getPitch() <= map.options['maxVisualPitch']) {
@@ -682,6 +703,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return tileImage;
     }
 
+    //@interlal
     _fetchImage(image: any, tile: Tile['info']) {
         if (image instanceof Image) {
             image.src = tile.url;
@@ -736,6 +758,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.setToRedraw();
     }
 
+    //@interlal
     _consumeTileQueue(): void {
         let count = 0;
         const limit = this.layer.options['tileLimitPerFrame'];
@@ -756,6 +779,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         /* eslint-enable no-unmodified-loop-condition */
     }
 
+    //@interlal
     _computeAvgTileAltitude() {
         let sumMin = 0;
         let sumMax = 0;
@@ -932,6 +956,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return this._findChildTiles(info);
     }
 
+    //@interlal
     _findChildTiles(info: Tile['info']): Tile[] | any {
         const layer = this._getLayerOfTile(info.layer);
         const terrainTileMode = layer && layer.options['terrainTileMode'] && layer._isPyramidMode();
@@ -1085,6 +1110,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return children;
     }
 
+    //@interlal
     _findChildTilesAt(children: Tile[], pmin: number, pmax: number, layer: any, childZoom: number) {
         const layerId = layer.getId(),
             res = layer.getSpatialReference().getResolution(childZoom);
@@ -1114,6 +1140,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return this._findParentTile(info, targetDiff);
     }
 
+    //@interlal
     _findParentTile(info: Tile['info'], targetDiff?: number): Tile {
         const map = this.getMap(),
             layer = this._getLayerOfTile(info.layer);
@@ -1174,6 +1201,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return true;
     }
 
+    //@interlal
     _getLayerOfTile(layerId: LayerId) {
         return this.layer.getChildLayer ? this.layer.getChildLayer(layerId) : this.layer;
     }
@@ -1205,6 +1233,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return cached;
     }
 
+    //@interlal
     _addTileToCache(tileInfo: Tile['info'], tileImage: Tile['image']) {
         if (this.isValidCachedTile({ info: tileInfo, image: tileImage } as Tile)) {
             const cached = {
@@ -1227,6 +1256,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return opacity;
     }
 
+    //@interlal
     _getTileFadingOpacity(tileImage: Tile['image']): number {
         if (!this.layer.options['fadeAnimation'] || !tileImage.loadTime) {
             return 1;
@@ -1303,6 +1333,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
     }
 
+    //@interlal
     _generatePlaceHolder(res: number): HTMLCanvasElement {
         const map = this.getMap();
         const placeholder = this.layer.options['placeholder'];
@@ -1394,7 +1425,8 @@ export interface Tile {
         // todo：检查是否存在定义
         minAltitude?: number;
         maxAltitude?: number;
-        _glScale: number;
+        //@interlal
+    _glScale: number;
     };
 
     image: TileImage;

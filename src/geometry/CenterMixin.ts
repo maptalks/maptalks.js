@@ -13,15 +13,22 @@ import type { Map } from '../map';
  */
 export default function <T extends MixinConstructor>(Base: T) {
     return class extends Base {
-        public _coordinates: Coordinate
-        public _pcenter: Coordinate
-        public _dirtyCoords: boolean
+        //@interlal
+        _coordinates: Coordinate
+        //@interlal
+        _pcenter: Coordinate
+        //@interlal
+        _dirtyCoords: boolean
         getMap?(): Map
+        //@interlal
         _getProjection?(): CommonProjectionType
         onPositionChanged?(): void
-        _verifyProjection?(): void
-        _clearCache?(): void
+        //@interlal
         _translateRotatePivot?(coordinate: Coordinate): this;
+        //@interlal
+        _verifyProjection?(): void
+        //@interlal
+        _clearCache?(): void
         /**
          * 获取几何图形的中心点
          * @english
@@ -58,6 +65,7 @@ export default function <T extends MixinConstructor>(Base: T) {
         }
 
         //Gets view point of the geometry's center
+        //@interlal
         _getCenter2DPoint(res?: number): Point {
             const map = this.getMap();
             if (!map) {
@@ -71,6 +79,7 @@ export default function <T extends MixinConstructor>(Base: T) {
             return map._prjToPointAtRes(pcenter, res);
         }
 
+        //@interlal
         _getPrjCoordinates(): Coordinate {
             const projection = this._getProjection();
             this._verifyProjection();
@@ -83,12 +92,14 @@ export default function <T extends MixinConstructor>(Base: T) {
         }
 
         //Set center by projected coordinates
+        //@interlal
         _setPrjCoordinates(pcenter: Coordinate): void {
             this._pcenter = pcenter;
             this.onPositionChanged();
         }
 
         //update cached const iables if geometry is updated.
+        //@interlal
         _updateCache(): void {
             this._clearCache();
             const projection = this._getProjection();
@@ -97,12 +108,14 @@ export default function <T extends MixinConstructor>(Base: T) {
             }
         }
 
+        //@interlal
         _clearProjection(): void {
             this._pcenter = null;
             // @ts-expect-error todo
             super._clearProjection();
         }
 
+        //@interlal
         _computeCenter(): Coordinate | null {
             return this._coordinates ? this._coordinates.copy() : null;
         }

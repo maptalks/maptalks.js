@@ -18,8 +18,10 @@ import { ResourceCache } from '../../layer/CanvasRenderer';
  * @extends {Symbolizer}
  */
 abstract class CanvasSymbolizer extends Symbolizer {
-    public symbol: any;
-    public _opacityFn: any;
+    symbol: any;
+    //@interlal
+    _opacityFn: any;
+    //@interlal
     _prepareContext(ctx: CanvasRenderingContext2D): void {
         if (isFunctionDefinition(this.symbol['opacity'])) {
             if (!this._opacityFn) {
@@ -56,6 +58,7 @@ abstract class CanvasSymbolizer extends Symbolizer {
 
     hide(): void { }
 
+    //@interlal
     _defineStyle(style: any): any {
         if (this.symbol) {
             style.visible = this.symbol.visible;

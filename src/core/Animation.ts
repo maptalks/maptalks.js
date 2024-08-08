@@ -115,17 +115,21 @@ class Frame {
  * @memberof animation
  */
 class Player {
+    //@interlal
     _animation: AnimationCallback
     options: AnimationOptionsPrivateType
+    //@interlal
     _onFrame: (frame: Frame) => void;
     playState: string
     ready: boolean
     finished: boolean
     target: any;
     duration: number;
+    //@interlal
     _framer: (cb: AnimationCallback) => void;
     currentTime: number;
     startTime: number;
+    //@interlal
     _playStartTime: number;
 
     /**
@@ -144,6 +148,7 @@ class Player {
         this.target = target;
     }
 
+    //@interlal
     _prepare() {
         const options = this.options;
         let duration = options['speed'] || options['duration'];
@@ -234,6 +239,7 @@ class Player {
     reverse() {
     }
 
+    //@interlal
     _run() {
         const onFrame = this._onFrame;
         const t = now();
@@ -317,6 +323,7 @@ const Animation = {
      * @return {Object[]}  styles resolved
      * @private
      */
+    //@interlal
     _resolveStyles(styles) {
         if (!styles) {
             return null;
@@ -516,6 +523,7 @@ const Animation = {
 
     },
 
+    //@interlal
     _requestAnimFrame(fn: AnimationCallback) {
         if (!this._frameQueue) {
             this._frameQueue = [];
@@ -524,12 +532,14 @@ const Animation = {
         this._a();
     },
 
+    //@interlal
     _a() {
         if (!this._animationFrameId) {
             this._animationFrameId = requestAnimFrame(Animation._frameFn);
         }
     },
 
+    //@interlal
     _run() {
         if (this._frameQueue.length) {
             const running = this._frameQueue;
@@ -561,6 +571,7 @@ const Animation = {
         return player;
     },
 
+    //@interlal
     _frameFn: () => { }
 };
 
