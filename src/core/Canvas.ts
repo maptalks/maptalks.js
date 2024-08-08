@@ -17,12 +17,7 @@ import { BBOX_TEMP, resetBBOX, setBBOX } from './util/bbox';
 import Extent from '../geo/Extent';
 import Size from '../geo/Size';
 
-export type Ctx = CanvasRenderingContext2D
-// export type Ctx = CanvasRenderingContext2D & {
-//     canvas: HTMLCanvasElement & {
-//         _drawn: boolean
-//     }
-// }
+export type Ctx = CanvasRenderingContext2D;
 
 const DEFAULT_STROKE_COLOR = '#000';
 const DEFAULT_FILL_COLOR = 'rgba(255,255,255,0)';
@@ -961,9 +956,9 @@ const Canvas = {
         const x2 = Math.cos(endAngle - aAngle) * r + cx;
         const y2 = Math.sin(endAngle - aAngle) * r + cy;
         /**
-         * 
+         *
          * P1-arrowNextPoint------------------arrowNextPoint-P2
-         * 
+         *
          */
         p1.arrowNextPoint = p1.arrowNextPoint || new Point(0, 0);
         p2.arrowPrePoint = p2.arrowPrePoint || new Point(0, 0);
