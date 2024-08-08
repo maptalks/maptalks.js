@@ -65,19 +65,19 @@ const builds = [
             }
         ]
     },
-    {
-        input: 'dist/index.d.ts',
-        plugins: [dts()],
-        output: [
-            {
-                'sourcemap': true,
-                'format': 'es',
-                'name': 'maptalks',
-                banner,
-                'file': pkg['d.ts']
-            }
-        ]
-    },
+    // {
+    //     input: 'dist/index.d.ts',
+    //     plugins: [dts()],
+    //     output: [
+    //         {
+    //             'sourcemap': true,
+    //             'format': 'es',
+    //             'name': 'maptalks',
+    //             banner,
+    //             'file': pkg['d.ts']
+    //         }
+    //     ]
+    // },
     {
         input: 'src/index.ts',
         plugins: rollupPlugins.concat([terser()]),
@@ -108,7 +108,7 @@ const builds = [
 ];
 
 if (isDebug) {
-    module.exports = builds.slice(0, 2);
+    module.exports = builds.slice(0, 1);
 } else {
     module.exports = builds;
 }

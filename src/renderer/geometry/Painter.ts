@@ -295,6 +295,8 @@ class Painter extends Class {
         const clipBBoxBufferSize = renderer.layer.options['clipBBoxBufferSize'] || 3;
         const symbolizers = this.symbolizers;
 
+        const enableClip = geometry.options.enableClip;
+
         function pointsContainerPoints(viewPoints = [], alts = []) {
             let pts = getPointsResultPts(viewPoints, ptkey);
             pts = map._pointsAtResToContainerPoints(viewPoints, glRes, alts, pts);
@@ -314,7 +316,7 @@ class Painter extends Class {
                 maxx = Math.max(p.x, maxx);
                 maxy = Math.max(p.y, maxy);
             }
-            if (needClip && isDashLine(symbolizers)) {
+            if (enableClip && needClip && isDashLine(symbolizers)) {
                 TEMP_CLIP_EXTENT2.ymin = containerExtent.ymin;
                 if (TEMP_CLIP_EXTENT2.ymin < clipBBoxBufferSize) {
                     TEMP_CLIP_EXTENT2.ymin = containerExtent.ymin - clipBBoxBufferSize;
@@ -472,7 +474,7 @@ class Painter extends Class {
             const c = map.cameraLookAt;
             const pos = map.cameraPosition;
             //add [1px, 1px] towards camera's lookAt
-            TEMP_POINT0.set(pos.x, pos.y);
+            TEMP_POINT0.set(pos[0], pos[1]);
             extent2D = extent2D._combine(TEMP_POINT0._add(sign(c[0] - pos[0]), sign(c[1] - pos[1])));
         }
         const e = this.get2DExtent(null, TEMP_CLIP_EXTENT1);

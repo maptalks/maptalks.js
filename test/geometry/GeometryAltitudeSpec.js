@@ -455,4 +455,38 @@ describe('Geometry.Altitude', function () {
         }, 100);
     });
 
+    it('#2354 fire positionchange event when altitude update', function (done) {
+        map.addLayer(layer);
+        const point = new maptalks.Marker(map.getCenter()).addTo(layer);
+
+        setTimeout(() => {
+            var spy = sinon.spy();
+            point.on('positionchange', spy);
+            point.setAltitude(100);
+            setTimeout(() => {
+                expect(spy.called).to.be.ok();
+                done();
+            }, 100);
+
+        }, 100);
+    });
+
+    it('#2354 fire positionchange event when layer enableAltitude change', function (done) {
+        map.addLayer(layer);
+        const point = new maptalks.Marker(map.getCenter()).addTo(layer);
+
+        setTimeout(() => {
+            var spy = sinon.spy();
+            point.on('positionchange', spy);
+            layer.config({ enableAltitude: false });
+            setTimeout(() => {
+                expect(spy.called).to.be.ok();
+                expect(point._minAlt).to.be.equal(undefined);
+                expect(point._maxAlt).to.be.equal(undefined);
+                done();
+            }, 100);
+
+        }, 100);
+    });
+
 });

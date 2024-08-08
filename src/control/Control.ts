@@ -21,7 +21,7 @@ abstract class Control extends Eventable(Class) {
     __ctrlContainer: HTMLElement;
     _controlDom: HTMLElement;
     options: ControlOptionsType;
-    static positions: { [key: string]: PositionType };
+    static positions: { [key: string]: DomPositionType };
 
     /**
      * Methods needs to implement:  <br>
@@ -41,6 +41,23 @@ abstract class Control extends Eventable(Class) {
             options['position'] = extend({}, options['position']);
         }
         super(options);
+    }
+
+    _appendCustomClass(dom: HTMLElement) {
+        if (!dom) {
+            console.warn('dom is null:', dom);
+            return this;
+        }
+        if (this.options.cssName) {
+            let cssName = this.options.cssName;
+            if (!Array.isArray(cssName)) {
+                cssName = [cssName];
+            }
+            cssName.forEach(name => {
+                dom.classList.add(name);
+            });
+        }
+        return this;
     }
 
     onAdd() {
@@ -114,7 +131,7 @@ abstract class Control extends Eventable(Class) {
      * Get the position of the control
      * @return {Object}
      */
-    getPosition(): PositionType {
+    getPosition(): DomPositionType {
         return extend({}, this._parse(this.options['position']));
     }
 
@@ -227,12 +244,12 @@ abstract class Control extends Eventable(Class) {
         return this;
     }
 
-    _parse(position: ControlPositionType): PositionType {
+    _parse(position: ControlPositionType): DomPositionType {
         let p = position;
         if (isString(position)) {
             p = Control['positions'][p as string];
         }
-        return p as PositionType;
+        return p as DomPositionType;
     }
 
     _updatePosition() {
@@ -288,17 +305,19 @@ Control.positions = {
     }
 };
 
-export type PositionType = {
+export type DomPositionType = {
     top?: number | string;
     bottom?: number | string;
     left?: number | string;
     right?: number | string;
 };
 
-export type ControlPositionType = string | PositionType;
+export type ControlPositionType = string | DomPositionType;
 
 export type ControlOptionsType = {
-    position?: ControlPositionType
+    position?: ControlPositionType,
+    cssName?: string | Array<string>;
+
 }
 
 Map.mergeOptions({

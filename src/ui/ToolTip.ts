@@ -111,6 +111,7 @@ class ToolTip extends UIComponent {
         } else {
             dom.innerHTML = `<div class="${cssName}">${this._content}</div>`;
         }
+        this._appendCustomClass(dom);
         return dom;
     }
 

@@ -127,6 +127,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     public _inCurrentView?: boolean;
     // 在 Marker 中附加的信息，Marker 和其子类都具有此属性
     public isPoint?: boolean;
+    private _savedVisible?: boolean;
     //
     public _paintAsPath?: () => any;
     public _getPaintParams?: (disableSimplify?: boolean) => any[];
@@ -1095,6 +1096,8 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             options = {};
         }
         const json = this._toJSON(options);
+
+
         const other = this._exportGraphicOptions(options);
         extend(json, other);
         return json;
@@ -1646,10 +1649,26 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         };
     }
 
+    _recordVisible() {
+        let visible = this.options.visible;
+        if (isNil(visible)) {
+            visible = true;
+        }
+        this._savedVisible = visible;
+    }
+
+
+    _recoveryVisible() {
+        delete this._savedVisible;
+    }
+
     _exportGraphicOptions(options: any): any {
         const json = {};
         if (isNil(options['options']) || options['options']) {
             json['options'] = this.config();
+        }
+        if (json['options'] && this.isEditing && this.isEditing()) {
+            json['options'].visible = this._savedVisible;
         }
         if (isNil(options['symbol']) || options['symbol']) {
             json['symbol'] = this.getSymbol();
@@ -1700,7 +1719,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         const layerOpts = layer.options;
         const layerAltitude = layer.getAltitude ? layer.getAltitude() : 0;
         const enableAltitude = layerOpts['enableAltitude'];
-        if (!enableAltitude) {
+        if (!enableAltitude && (layer as any).isVectorLayer) {
             return layerAltitude;
         }
         const altitudeProperty = getAltitudeProperty(layer);
@@ -1779,6 +1798,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             }
         }
         this._clearAltitudeCache();
+        this.onPositionChanged();
         return this;
     }
 
@@ -1834,6 +1854,10 @@ export type GeometryOptionsType = {
 function getAltitudeProperty(layer: OverlayLayer): string {
     let altitudeProperty = 'altitude';
     if (layer) {
+        //only VectorLayer support properties.altitude
+        if (!(layer as any).isVectorLayer) {
+            return null;
+        }
         const layerOpts = layer.options;
         altitudeProperty = layerOpts['altitudeProperty'];
     }

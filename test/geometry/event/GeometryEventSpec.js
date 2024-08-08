@@ -564,4 +564,23 @@ describe('Geometry.Events', function () {
 
     });
 
+    it('#2386 Geometry event result point2d attribute typo ', function (done) {
+        var circle = new maptalks.Circle(map.getCenter(), 10);
+        circle.addTo(layer);
+        var domPosition = GET_PAGE_POSITION(container);
+        var point = map.coordinateToContainerPoint(center).add(domPosition);
+        // var spy = sinon.spy();
+        circle.on('click', (e) => {
+            expect(e).to.have.property('point2d');
+            expect(e.point2d).to.be.an(maptalks.Point);
+            done();
+        });
+
+        happen.click(eventContainer, {
+            'clientX': point.x,
+            'clientY': point.y
+        });
+
+    });
+
 });

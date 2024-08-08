@@ -537,8 +537,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     _drawTileAndCache(tile: Tile, parentContext) {
         if (this.isValidCachedTile(tile)) {
-            this._addTileToCache(tile.info, tile.image);
-            // this.tilesInView[tile.info.id] = tile;
+            this.tilesInView[tile.info.id] = tile;
         }
         this._drawTile(tile.info, tile.image, parentContext);
     }
@@ -659,8 +658,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             const onLoad = (bitmap) => {
                 this.onTileLoad(bitmap, tile);
             };
+            const onError = (error, image) => {
+                this.onTileError(image, tile, error);
+            };
             // @ts-expect-error todo
-            this.loadTileBitmap(tile['url'], tile, onLoad);
+            this.loadTileBitmap(tile['url'], tile, onLoad, onError);
         } else if (this._tileImageWorkerConn && this.loadTileImage === this.constructor.prototype.loadTileImage) {
             this._fetchImage(tileImage, tile);
         } else {
@@ -1205,11 +1207,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     _addTileToCache(tileInfo: Tile['info'], tileImage: Tile['image']) {
         if (this.isValidCachedTile({ info: tileInfo, image: tileImage } as Tile)) {
-            this.tilesInView[tileInfo.id] = {
+            const cached = {
                 image: tileImage,
-                current: true,
                 info: tileInfo
             } as Tile;
+            this.tileCache.add(tileInfo.id, cached);
         }
     }
 

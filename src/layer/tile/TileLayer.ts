@@ -26,7 +26,7 @@ import * as vec3 from '../../core/util/vec3';
 import { formatResourceUrl } from '../../core/ResourceProxy';
 import { Coordinate, Extent } from '../../geo';
 import { type TileLayerCanvasRenderer } from '../../renderer';
-import { type Map } from '../../map';
+import { BBOX, bboxInMask } from '../../core/util/bbox';
 
 const DEFAULT_MAXERROR = 1;
 const TEMP_POINT = new Point(0, 0);
@@ -95,7 +95,7 @@ class TileHashset {
  * @property              [options.fetchOptions=object]       - fetch params,such as fetchOptions: { 'headers': { 'accept': '' } }, about accept value more info https://developer.mozilla.org/en-US/docs/Web/HTTP/Content_negotiation/List_of_default_Accept_values
  * @property             [options.awareOfTerrain=true]       - if the tile layer is aware of terrain.
  * @property             [options.bufferPixel=0.5]       - tile buffer size,the unit is pixel
- * @property             [options.depthMask=true]       - mask to decide whether to write depth buffer
+ * @property             [options.depthMask=true]       - mask to decide whether to write depth buffe
  * @memberOf TileLayer
  * @instance
  */
@@ -160,7 +160,8 @@ const options: TileLayerOptionsType = {
     'bufferPixel': 0.5,
     'mipmapTexture': true,
     'depthMask': true,
-    'currentTilesFirst': true
+    'currentTilesFirst': true,
+    'forceRenderOnMoving': true
 };
 
 const URL_PATTERN = /\{ *([\w_]+) *\}/g;
@@ -205,6 +206,7 @@ class TileLayer extends Layer {
     _tileConfig: TileConfig;
     _polygonOffset: number;
     _renderer: TileLayerCanvasRenderer;
+    options: TileLayerOptionsType;
 
     /**
      *
@@ -264,12 +266,36 @@ class TileLayer extends Layer {
 
     getTiles(z: number, parentLayer: Layer) {
         this._coordCache = {};
+        let result;
         if (this._isPyramidMode()) {
-            return this._getPyramidTiles(z, parentLayer);
+            result = this._getPyramidTiles(z, parentLayer);
         } else {
-            return this._getCascadeTiles(z, parentLayer);
+            result = this._getCascadeTiles(z, parentLayer);
         }
+        if (!this._maskGeoJSON) {
+            return result;
+        }
+        const tileGrids: Array<TileGridType> = result.tileGrids || [];
+        let count = 0;
+        //filter tiles by mask
+        tileGrids.forEach(tileGrid => {
+            const tiles = tileGrid.tiles || [];
+            tileGrid.tiles = tiles.filter(tile => {
+                return this._tileInMask(tile);
+            });
+            count += tileGrid.tiles.length;
+            const parentIds = tileGrid.tiles.map(tile => {
+                return tile.parent;
+            });
+            tileGrid.parents = tileGrid.parents.filter(parent => {
+                return parentIds.indexOf(parent.id) > -1;
+            });
+        });
+        result.count = count;
+        return result;
     }
+
+
 
     _isPyramidMode() {
         const sr = this.getSpatialReference();
@@ -675,7 +701,14 @@ class TileLayer extends Layer {
             this._zScale = (map.altitudeToPoint(100, glRes) as any) / 100;
         }
         const renderer = this.getRenderer();
-        const { xmin, ymin, xmax, ymax } = node.extent2d;
+        let { xmin, ymin, xmax, ymax } = node.extent2d;
+        if (node.offset && !isFunction(this.options.offset)) {
+            const [x, y] = node.offset;
+            xmin += x;
+            xmax += x;
+            ymin += y;
+            ymax += y;
+        }
         TILE_BOX[0][0] = (xmin - offset[0]) * glScale;
         TILE_BOX[0][1] = (ymin - offset[1]) * glScale;
         const minAltitude = node.minAltitude || renderer && renderer.avgMinAltitude || 0;
@@ -716,6 +749,10 @@ class TileLayer extends Layer {
         }
         // const r = 1;
         const error = geometricError * r / distance;
+        const pitch = this.getMap().getPitch();
+        if (pitch <= 60) {
+            return error * 1.45;
+        }
         return error;
     }
 
@@ -1284,7 +1321,7 @@ class TileLayer extends Layer {
         if (isNumber(offset)) {
             offset = [offset, offset];
         }
-        return offset || [0, 0];
+        return (offset as [number, number]) || [0, 0];
     }
 
     getTileId(x: number, y: number, zoom: number, id: string): string {
@@ -1357,16 +1394,8 @@ class TileLayer extends Layer {
         }
         return this._tileConfig || this._defaultTileConfig;
     }
-
-    _bindMap(map: Map) {
-        const baseLayer = map.getBaseLayer();
-        if (baseLayer === this) {
-            if (!baseLayer.options.hasOwnProperty('forceRenderOnMoving')) {
-                this.config({
-                    'forceRenderOnMoving': true
-                });
-            }
-        }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _bindMap(args?: any) {
         this._onSpatialReferenceChange();
         // eslint-disable-next-line prefer-rest-params
         return super._bindMap.apply(this, arguments);
@@ -1454,6 +1483,61 @@ class TileLayer extends Layer {
     getRenderer() {
         return super.getRenderer() as TileLayerCanvasRenderer;
     }
+
+    _getTileBBox(tile: TileNodeType): BBOX | null {
+        const map = this.getMap();
+        if (!map) {
+            return;
+        }
+
+        const extent2d = tile.extent2d;
+        if (!extent2d) {
+            return;
+        }
+        const res = tile.res;
+
+        const { xmin, ymin, xmax, ymax } = extent2d;
+        const pmin = new Point(xmin, ymin),
+            pmax = new Point(xmax, ymax);
+        const min = map.pointAtResToCoordinate(pmin, res, TEMP_POINT0),
+            max = map.pointAtResToCoordinate(pmax, res, TEMP_POINT1);
+        return [min.x, min.y, max.x, max.y];
+
+    }
+
+    _tileInMask(tile: TileNodeType): boolean {
+        const mask = this.getMask();
+        if (!mask) {
+            return true;
+        }
+        const maskType = mask.type;
+        if (!maskType || maskType.indexOf('Polygon') === -1) {
+            return true;
+        }
+        const maskGeoJSON = this._maskGeoJSON;
+        if (!maskGeoJSON || !maskGeoJSON.geometry) {
+            return true;
+        }
+        const { coordinates, type } = maskGeoJSON.geometry;
+        if (!coordinates || !type) {
+            return true;
+        }
+        if (type.indexOf('Polygon') === -1) {
+            return true;
+        }
+        if (!maskGeoJSON.bbox) {
+            const extent = mask.getExtent();
+            if (!extent) {
+                return true;
+            }
+            maskGeoJSON.bbox = [extent.xmin, extent.ymin, extent.xmax, extent.ymax];
+        }
+        const tileBBOX = this._getTileBBox(tile);
+        if (!tileBBOX) {
+            return true;
+        }
+        return bboxInMask(tileBBOX, this._maskGeoJSON);
+    }
 }
 
 TileLayer.registerJSONType('TileLayer');
@@ -1537,7 +1621,7 @@ export type TileLayerOptionsType = LayerOptionsType & {
     urlTemplate: string | ((...args) => string);
     subdomains?: string[];
     spatialReference?: SpatialReferenceType;
-    tileSize?: number[] | number;
+    tileSize?: number | [number, number];
     offset?: number[] | ((...args) => number[]);
     tileSystem?: [number, number, number, number];
     maxAvailableZoom?: number;

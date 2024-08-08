@@ -14,5 +14,8 @@ declare global {
 
     interface CanvasRenderingContext2D {
         isHitTesting: boolean;
+        isClip: boolean;
+        isMultiClip: boolean;
+        dpr: number;
     }
 }

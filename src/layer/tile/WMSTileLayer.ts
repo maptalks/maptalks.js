@@ -10,8 +10,8 @@ import TileLayer, { TileLayerOptionsType } from './TileLayer';
  * @property options.layers              - Comma-separated list of WMS layers to show.
  * @property [options.styles='']         - Comma-separated list of WMS styles.
  * @property [options.format=image/jpeg] - WMS image format (use `'image/png'` for layers with transparency).
- * @property [options.transparent=false] - Version of the WMS service to use
- * @property [options.version=1.1.1]     - size of the tile image
+ * @property [options.transparent=false] - Is the tile transparent 
+ * @property [options.version=1.1.1]     - Version of the WMS service to use 
  * @property [options.crs=null]          - Coordinate Reference System to use for the WMS requests, defaults to map CRS. Don't change this if you're not sure what it means.
  * @property [options.uppercase=false]   - If `true`, WMS request parameter keys will be uppercase.
  * @property [options.detectRetina=false]   - If `true` and user is on a retina display, it will request four tiles of half the specified size and a bigger zoom level in place of one to utilize the high resolution.

@@ -2,7 +2,7 @@ import { extend, isNil, isString } from '../core/util';
 import { createEl } from '../core/util/dom';
 import { Point } from '../geo';
 import DragHandler from '../handler/Drag';
-import Control, { ControlOptionsType, PositionType } from './Control';
+import Control, { ControlOptionsType, DomPositionType } from './Control';
 
 /**
  * @property {Object} options - options
@@ -41,7 +41,7 @@ class Panel extends Control {
     draggable: DragHandler;
     options: PanelOptionsType;
     _startPos: Point;
-    _startPosition: PositionType;
+    _startPosition: DomPositionType;
 
     /**
      * method to build DOM of the control
@@ -54,17 +54,20 @@ class Panel extends Control {
             if (isString(this.options['content'])) {
                 dom = createEl('div');
                 dom.innerHTML = this.options['content'];
+                this._appendCustomClass(dom);
             } else {
                 dom = this.options['content'];
             }
         } else {
             dom = createEl('div', 'maptalks-panel');
+            this._appendCustomClass(dom);
             if (this.options['closeButton']) {
                 const closeButton = createEl('a', 'maptalks-close') as HTMLLinkElement;
                 closeButton.innerText = '×';
                 closeButton.href = 'javascript:;';
-                closeButton.onclick = function () {
+                closeButton.onclick = () => {
                     dom.style.display = 'none';
+                    this.fire('close');
                 };
                 dom.appendChild(closeButton);
             }

@@ -1,4 +1,5 @@
 import Coordinate from '../../geo/Coordinate';
+import lineclip from 'lineclip';
 
 const minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
 
@@ -86,4 +87,74 @@ export function bufferBBOX(bbox: BBOX, bufferSize = 0) {
     bbox[1] -= bufferSize;
     bbox[2] += bufferSize;
     bbox[3] += bufferSize;
+}
+
+export function bboxIntersect(bbox1: BBOX, bbox2: BBOX) {
+    if (bbox1[2] < bbox2[0]) {
+        return false;
+    }
+    if (bbox1[1] > bbox2[3]) {
+        return false;
+    }
+    if (bbox1[0] > bbox2[2]) {
+        return false;
+    }
+    if (bbox1[3] < bbox2[1]) {
+        return false;
+    }
+    return true;
+}
+
+export function bboxInBBOX(bbox1: BBOX, bbox2: BBOX) {
+    const [x1, y1, x2, y2] = bbox1;
+    return x1 >= bbox2[0] && x2 <= bbox2[2] && y1 >= bbox2[1] && y2 <= bbox2[3];
+}
+
+/**
+ * bbox Intersect Mask
+ * apply on TileLayer,VectorTileLayer,Geo3DTileLayer Layers
+ * @param bbox 
+ * @param maskGeoJSON(Polygon/MultiPolygon GeoJSON)
+ * @returns 
+ */
+export function bboxInMask(bbox: BBOX, maskGeoJSON: Record<string, any>): boolean {
+    //geojson bbox
+    const maskBBOX = maskGeoJSON.bbox;
+    if (!maskBBOX) {
+        console.error('maskGeoJSON bbox is null:', maskGeoJSON);
+        return false;
+    }
+    if (!bboxIntersect(maskBBOX, bbox)) {
+        return false;
+    } else {
+        const geometry = maskGeoJSON.geometry;
+        if (!geometry) {
+            console.error('maskGeoJSON is error,not find geometry.', maskGeoJSON);
+            return false;
+        }
+        let { coordinates } = geometry;
+        const type = geometry.type;
+        if (type === 'Polygon') {
+            coordinates = [coordinates];
+        }
+        for (let i = 0, len = coordinates.length; i < len; i++) {
+            const rings = coordinates[i];
+            const outRing = rings[0];
+            const result = lineclip.polygon(outRing, bbox);
+            if (result.length > 0) {
+                let minx = Infinity, maxx = -Infinity, miny = Infinity, maxy = -Infinity;
+                for (let j = 0, len1 = result.length; j < len1; j++) {
+                    const [x, y] = result[j];
+                    minx = Math.min(x, minx);
+                    miny = Math.min(y, miny);
+                    maxx = Math.max(x, maxx);
+                    maxy = Math.max(y, maxy);
+                }
+                if (minx !== maxx && miny !== maxy) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

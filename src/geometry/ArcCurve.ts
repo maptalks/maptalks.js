@@ -1,5 +1,6 @@
 import Curve, { CurveOptionsType } from './Curve';
 import Canvas from '../core/Canvas';
+import Point from '../geo/Point';
 
 /**
  * @property {Object} options
@@ -42,7 +43,7 @@ class ArcCurve extends Curve {
     }
 
     // paint method on canvas
-    _paintOn(ctx: CanvasRenderingContext2D, points: any, lineOpacity: number): void {
+    _paintOn(ctx: CanvasRenderingContext2D, points: Array<Point>, lineOpacity: number): void {
         ctx.beginPath();
         this._arc(ctx, points, lineOpacity);
         Canvas._stroke(ctx, lineOpacity);

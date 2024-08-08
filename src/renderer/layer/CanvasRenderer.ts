@@ -460,6 +460,12 @@ class CanvasRenderer extends Class {
 
     }
 
+    _canvasContextScale(context: CanvasRenderingContext2D, dpr: number) {
+        context.scale(dpr, dpr);
+        context.dpr = dpr;
+        return this;
+    }
+
     createContext(): void {
         //Be compatible with layer renderers that overrides create canvas and create gl/context
         if (this.gl && this.gl.canvas === this.canvas || this.context) {
@@ -469,12 +475,13 @@ class CanvasRenderer extends Class {
         if (!this.context) {
             return;
         }
+        this.context.dpr = 1;
         if (this.layer.options['globalCompositeOperation']) {
             this.context.globalCompositeOperation = this.layer.options['globalCompositeOperation'];
         }
         const dpr = this.getMap().getDevicePixelRatio();
         if (dpr !== 1) {
-            this.context.scale(dpr, dpr);
+            this._canvasContextScale(this.context, dpr);
         }
     }
 
@@ -510,8 +517,11 @@ class CanvasRenderer extends Class {
         //retina support
         canvas.height = height;
         canvas.width = width;
+        if (this.context) {
+            this.context.dpr = 1;
+        }
         if (r !== 1 && this.context) {
-            this.context.scale(r, r);
+            this._canvasContextScale(this.context, r);
         }
     }
 
@@ -571,7 +581,8 @@ class CanvasRenderer extends Class {
             return null;
         }
         const maskExtent2D = this._maskExtent = mask._getMaskPainter().get2DExtent();
-        if (!maskExtent2D.intersects(this._extent2D)) {
+        //fix vt _extent2D is null
+        if (maskExtent2D && this._extent2D && !maskExtent2D.intersects(this._extent2D)) {
             this.layer.fire('renderstart', {
                 'context': this.context,
                 'gl': this.gl
@@ -594,9 +605,12 @@ class CanvasRenderer extends Class {
         return maskExtent2D;
     }
 
-    clipCanvas(context: CanvasRenderingContext2D & { isMultiClip: boolean, isClip: boolean }) {
+    clipCanvas(context: CanvasRenderingContext2D) {
         const mask = this.layer.getMask();
         if (!mask) {
+            return false;
+        }
+        if (!this.layer.options.maskClip) {
             return false;
         }
         const old = this.middleWest;
@@ -607,7 +621,7 @@ class CanvasRenderer extends Class {
         const dpr = map.getDevicePixelRatio();
         if (dpr !== 1) {
             context.save();
-            context.scale(dpr, dpr);
+            this._canvasContextScale(context, dpr);
         }
         // Handle MultiPolygon
         if (mask.getGeometries) {

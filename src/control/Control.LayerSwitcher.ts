@@ -34,6 +34,7 @@ const options: LayerSwitcherOptionsType = {
  * }).addTo(map);
 */
 class LayerSwitcher extends Control {
+    options: LayerSwitcherOptionsType;
     container: HTMLDivElement;
     panel: HTMLDivElement;
     button: HTMLButtonElement;
@@ -47,6 +48,7 @@ class LayerSwitcher extends Control {
             button = this.button = createEl('button') as HTMLButtonElement;
         container.appendChild(button);
         container.appendChild(panel);
+        this._appendCustomClass(container);
         return container;
     }
 

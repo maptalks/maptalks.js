@@ -3,15 +3,15 @@ import Point from '../geo/Point';
 import Coordinate from '../geo/Coordinate';
 import * as mat4 from '../core/util/mat4';
 import { subtract, add, scale, normalize, dot, set, distance, angle } from '../core/util/vec3';
-import { clamp, interpolate, isNumber, isNil, wrap, toDegree, toRadian, type Matrix4 } from '../core/util';
+import { clamp, interpolate, isNumber, isNil, wrap, toDegree, toRadian, Matrix4 } from '../core/util';
 import { applyMatrix, matrixToQuaternion, quaternionToMatrix, lookAt, setPosition } from '../core/util/math';
 import Browser from '../core/Browser';
 
 
 declare module "./Map" {
-    interface Map {
-        cameraPosition: Point;
-        cameraLookAt: number[];
+    export interface Map {
+        cameraPosition: [number, number, number];
+        cameraLookAt: [number, number, number];
         projViewMatrix: Matrix4;
         getFov(): number;
         setFov(fov: number): this;
@@ -27,7 +27,8 @@ declare module "./Map" {
         setCameraMovements(frameOptions: Array<MapViewType>, option?: { autoRotate: boolean });
         setCameraOrientation(params: MapViewType): this;
         setCameraPosition(coordinate: Coordinate);
-        getFitZoomForCamera(cameraPosition: Array<number>, pitch: number);
+        getFitZoomForCamera(cameraPosition: [number, number, number], pitch: number);
+        getFitZoomForAltitude(altitude: number);
         isTransforming(): boolean;
         getFrustumAltitude(): number;
         updateCenterAltitude();
@@ -125,10 +126,12 @@ Map.include(/** @lends Map.prototype */{
      * @return {Map} this
      */
     setBearing(bearing) {
+        const view = { bearing };
+        this._validateView(view);
         if (this._mapAnimPlayer) {
             this._stopAnim(this._mapAnimPlayer);
         }
-        return this._setBearing(bearing);
+        return this._setBearing(view.bearing);
     },
 
     _setBearing(bearing) {
@@ -192,10 +195,12 @@ Map.include(/** @lends Map.prototype */{
      * @return {Map} this
      */
     setPitch(pitch) {
+        const view = { pitch };
+        this._validateView(view);
         if (this._mapAnimPlayer) {
             this._stopAnim(this._mapAnimPlayer);
         }
-        return this._setPitch(pitch);
+        return this._setPitch(view.pitch);
     },
 
     _setPitch(pitch) {
@@ -252,6 +257,9 @@ Map.include(/** @lends Map.prototype */{
         if (!Array.isArray(frameOptions) || !frameOptions.length) {
             return this;
         }
+        frameOptions.forEach(frameOption => {
+            this._validateView(frameOption);
+        });
         this.setView({
             center: frameOptions[0].center,
             zoom: frameOptions[0].zoom,
@@ -326,6 +334,7 @@ Map.include(/** @lends Map.prototype */{
     setCameraOrientation(params) {
         const { position } = params;
         let { pitch, bearing } = params;
+        this._validateView(params);
         pitch = pitch || 0;
         bearing = bearing || 0;
         const { zoom, cameraToGroundDistance } = this.getFitZoomForCamera(position, pitch);
@@ -389,11 +398,11 @@ Map.include(/** @lends Map.prototype */{
 
         const cameraToCenterDistance = cameraToGroundDistance + centerPointZ;
 
-        const zoom = this._getFitZoomForDistance(cameraToCenterDistance);
+        const zoom = this.getFitZoomForAltitude(cameraToCenterDistance);
         return { zoom, cameraToGroundDistance };
     },
 
-    _getFitZoomForDistance(distance) {
+    getFitZoomForAltitude(distance: number) {
         const ratio = this._getFovRatio();
         const scale = distance * ratio * 2 / (this.height || 1) * this.getGLRes();
         const resolutions = this._getResolutions();
@@ -671,22 +680,11 @@ Map.include(/** @lends Map.prototype */{
     }(),
 
     _getCameraFar(fov, pitch) {
-        // const cameraCenterDistance = this.cameraCenterDistance = distance(this.cameraPosition, this.cameraLookAt);
-        // return 4 * cameraCenterDistance;
         const cameraCenterDistance = this.cameraCenterDistance = distance(this.cameraPosition, this.cameraLookAt);
-        let farZ = cameraCenterDistance;
-        let y = (this.options['cameraInfiniteFar'] ? 10 : 4) * cameraCenterDistance;
-        if (pitch > 0) {
-            pitch = pitch * Math.PI / 180;
-            if (2 / Math.PI - pitch > fov / 2) {
-                const tanFov = Math.tan(fov / 2);
-                const tanP = Math.tan(pitch);
-                y = Math.max((cameraCenterDistance * tanFov) / (1 / tanP - tanFov), y);
-            }
-        }
-        farZ += y;
-        //TODO 地下的图形无法显示
-        return farZ + 1.0;
+        const distanceInMeter = cameraCenterDistance / this._meterToGLPoint;
+        pitch = pitch * Math.PI / 180;
+        const cameraFarDistance = distanceInMeter + this.options['cameraFarUndergroundInMeter'] / Math.cos(pitch);
+        return Math.max(cameraFarDistance * this._meterToGLPoint, cameraCenterDistance * 5);
     },
 
     _calcCascadeMatrixes: function () {
@@ -817,7 +815,8 @@ Map.include(/** @lends Map.prototype */{
             // up.rotateZ(target,radians);
             const d = dist || 1;
             // const up = this.cameraUp = set(this.cameraUp || [0, 0, 0], Math.sin(bearing) * d, Math.cos(bearing) * d, 0);
-            const up = this.cameraUp = this.getPitch() > 0 ? set(this.cameraUp || [0, 0, 0], 0, 0, 1) : set(this.cameraUp || [0, 0, 0], Math.sin(bearing) * d, Math.cos(bearing) * d, 0);
+            this.cameraUp = this.cameraUp || [0, 0, 0];
+            const up = this.cameraUp = set(this.cameraUp, Math.sin(bearing) * d, Math.cos(bearing) * d, Math.sin(pitch) * d);
             const m = this.cameraWorldMatrix = this.cameraWorldMatrix || createMat4();
             lookAt(m, this.cameraPosition, this.cameraLookAt, up);
 

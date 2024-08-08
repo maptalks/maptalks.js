@@ -32,6 +32,8 @@ export type PointLike = Point | PointJson | PointArray;
  * @category basic types
  */
 class Point extends Position {
+    arrowPrePoint?: Point;
+    arrowNextPoint?: Point;
     /**
      * 使用差值与另一个点进行比较，判断是否临近
      *

@@ -313,9 +313,10 @@ export default class SpatialReference {
         this._resolutions = resolutions;
         this._pyramid = true;
         if (this._pyramid) {
+            const delta = 1E4;
             for (let i = 0; i < resolutions.length; i++) {
                 if (resolutions[i] && resolutions[i - 1]) {
-                    if (resolutions[i - 1] / resolutions[i] !== 2) {
+                    if (Math.round(resolutions[i - 1] / resolutions[i] * delta) / delta !== 2) {
                         this._pyramid = false;
                         break;
                     }
