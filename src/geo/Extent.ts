@@ -85,6 +85,7 @@ class Extent {
     right?: number;
     top?: number;
     bottom?: number;
+    antiMeridian?: boolean;
 
     constructor(p1?: WithNull<ExtentLike>, p?: Projection);
     constructor(p1: PositionType, p2: PositionType, p?: Projection);
@@ -97,7 +98,9 @@ class Extent {
             this.projection = args[l - 1];
         }
         this._dirty = true;
+        this.antiMeridian = false;
         this._initialize(args[0], args[1], args[2], args[3]);
+
     }
 
     _initialize(p1: WithNull<ExtentLike>): void;
@@ -842,11 +845,11 @@ class Extent {
             //FIXME a rare but potential bug:
             //An extent may be projected by multiple projection
             if (ext._dirty) {
-                TEMP_COORD6.set(ext.xmax, ext.ymin);
-                TEMP_COORD7.set(ext.xmin, ext.ymax);
+                TEMP_COORD6.set(ext.xmin, ext.ymin);
+                TEMP_COORD7.set(ext.xmax, ext.ymax);
                 MINMAX[0] = TEMP_COORD6;
                 MINMAX[1] = TEMP_COORD7;
-                const minmax = proj.projectCoords(MINMAX);
+                const minmax = proj.projectCoords(MINMAX, this.antiMeridian);
                 const min = minmax[0],
                     max = minmax[1];
                 ext.pxmin = Math.min(min.x, max.x);

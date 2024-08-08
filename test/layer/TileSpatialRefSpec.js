@@ -95,10 +95,10 @@ describe('TileSpatialRefSpec', function () {
             }
         };
         var tileLayer = new maptalks.TileLayer('tile', {
-            renderer : 'canvas',
+            renderer: 'canvas',
             spatialReference: crs,
-            urlTemplate : '#',
-            placeholder : true,
+            urlTemplate: '#',
+            placeholder: true,
             pyramidMode: 1,
             repeatWorld: true
         }).addTo(map);
@@ -109,9 +109,9 @@ describe('TileSpatialRefSpec', function () {
     it('tilelayer with baidu projection on zoom 0', function () {
         createMap([0, 0], 0, { projection: 'baidu' });
         var tileLayer = new maptalks.TileLayer('tile', {
-            renderer : 'canvas',
-            urlTemplate : '#',
-            placeholder : true,
+            renderer: 'canvas',
+            urlTemplate: '#',
+            placeholder: true,
             pyramidMode: 1,
             repeatWorld: true
         }).addTo(map);
@@ -126,12 +126,12 @@ describe('TileSpatialRefSpec', function () {
         expect(actual).to.be.eql(expected);
     });
 
-     it('tilelayer with baidu projection on zoom 3', function () {
+    it('tilelayer with baidu projection on zoom 3', function () {
         createMap([0, 0], 3, { projection: 'baidu' });
         var tileLayer = new maptalks.TileLayer('tile', {
-            renderer : 'canvas',
-            urlTemplate : '#',
-            placeholder : true,
+            renderer: 'canvas',
+            urlTemplate: '#',
+            placeholder: true,
             pyramidMode: 1,
             repeatWorld: true
         }).addTo(map);
@@ -149,9 +149,9 @@ describe('TileSpatialRefSpec', function () {
     it('tilelayer with baidu projection without pyramidMode on zoom 0', function () {
         createMap([0, 0], 0, { projection: 'baidu' });
         var tileLayer = new maptalks.TileLayer('tile', {
-            renderer : 'canvas',
-            urlTemplate : '#',
-            placeholder : true,
+            renderer: 'canvas',
+            urlTemplate: '#',
+            placeholder: true,
             pyramidMode: 0,
             repeatWorld: true
         }).addTo(map);
@@ -169,16 +169,16 @@ describe('TileSpatialRefSpec', function () {
     it('tilelayer with EPSG:3857 projection on zoom 0', function () {
         createMap([0, 0], 0, { projection: 'EPSG:3857' });
         var tileLayer = new maptalks.TileLayer('tile', {
-            renderer : 'canvas',
-            urlTemplate : '#',
-            placeholder : true,
+            renderer: 'canvas',
+            urlTemplate: '#',
+            placeholder: true,
             pyramidMode: 1,
             repeatWorld: true
         }).addTo(map);
         var tileGrid = tileLayer.getTiles().tileGrids[0];
         var tiles = tileGrid.tiles;
         var extent = tileGrid.extent;
-        expect(extent.toJSON()).to.be.eql({xmin: -384, ymin: -384, xmax: 384, ymax: 384});
+        expect(extent.toJSON()).to.be.eql({ xmin: -384, ymin: -384, xmax: 384, ymax: 384 });
         var expected = '-1,-1,0,{"xmin":-384,"ymin":128,"xmax":-128,"ymax":384}|-1,0,0,{"xmin":-384,"ymin":-128,"xmax":-128,"ymax":128}|-1,1,0,{"xmin":-384,"ymin":-384,"xmax":-128,"ymax":-128}|0,-1,0,{"xmin":-128,"ymin":128,"xmax":128,"ymax":384}|0,0,0,{"xmin":-128,"ymin":-128,"xmax":128,"ymax":128}|0,1,0,{"xmin":-128,"ymin":-384,"xmax":128,"ymax":-128}|1,-1,0,{"xmin":128,"ymin":128,"xmax":384,"ymax":384}|1,0,0,{"xmin":128,"ymin":-128,"xmax":384,"ymax":128}|1,1,0,{"xmin":128,"ymin":-384,"xmax":384,"ymax":-128}';
         var actual = tiles.map(function (t) {
             return [t.idx, t.idy, t.z, JSON.stringify(t.extent2d.toJSON())].join();
@@ -186,19 +186,19 @@ describe('TileSpatialRefSpec', function () {
         expect(actual).to.be.eql(expected);
     });
 
-     it('tilelayer with EPSG:3857 projection on zoom 3', function () {
+    it('tilelayer with EPSG:3857 projection on zoom 3', function () {
         createMap([0, 0], 3, { projection: 'EPSG:3857' });
         var tileLayer = new maptalks.TileLayer('tile', {
-            renderer : 'canvas',
-            urlTemplate : '#',
-            placeholder : true,
+            renderer: 'canvas',
+            urlTemplate: '#',
+            placeholder: true,
             pyramidMode: 1,
             repeatWorld: true
         }).addTo(map);
         var tileGrid = tileLayer.getTiles().tileGrids[0];
         var tiles = tileGrid.tiles;
         var extent = tileGrid.extent;
-        expect(extent.toJSON()).to.be.eql({xmin: -512, ymin: -512, xmax: 512, ymax: 512});
+        expect(extent.toJSON()).to.be.eql({ xmin: -512, ymin: -512, xmax: 512, ymax: 512 });
         var expected = '2,2,3,{"xmin":-512,"ymin":256,"xmax":-256,"ymax":512}|2,3,3,{"xmin":-512,"ymin":0,"xmax":-256,"ymax":256}|2,4,3,{"xmin":-512,"ymin":-256,"xmax":-256,"ymax":0}|2,5,3,{"xmin":-512,"ymin":-512,"xmax":-256,"ymax":-256}|3,2,3,{"xmin":-256,"ymin":256,"xmax":0,"ymax":512}|3,3,3,{"xmin":-256,"ymin":0,"xmax":0,"ymax":256}|3,4,3,{"xmin":-256,"ymin":-256,"xmax":0,"ymax":0}|3,5,3,{"xmin":-256,"ymin":-512,"xmax":0,"ymax":-256}|4,2,3,{"xmin":0,"ymin":256,"xmax":256,"ymax":512}|4,3,3,{"xmin":0,"ymin":0,"xmax":256,"ymax":256}|4,4,3,{"xmin":0,"ymin":-256,"xmax":256,"ymax":0}|4,5,3,{"xmin":0,"ymin":-512,"xmax":256,"ymax":-256}|5,2,3,{"xmin":256,"ymin":256,"xmax":512,"ymax":512}|5,3,3,{"xmin":256,"ymin":0,"xmax":512,"ymax":256}|5,4,3,{"xmin":256,"ymin":-256,"xmax":512,"ymax":0}|5,5,3,{"xmin":256,"ymin":-512,"xmax":512,"ymax":-256}';
         var actual = tiles.map(function (t) {
             return [t.idx, t.idy, t.z, JSON.stringify(t.extent2d.toJSON())].join();
@@ -209,16 +209,16 @@ describe('TileSpatialRefSpec', function () {
     it('tilelayer with EPSG:3857 projection without pyramidMode on zoom 0', function () {
         createMap([0, 0], 0, { projection: 'EPSG:3857' });
         var tileLayer = new maptalks.TileLayer('tile', {
-            renderer : 'canvas',
-            urlTemplate : '#',
-            placeholder : true,
+            renderer: 'canvas',
+            urlTemplate: '#',
+            placeholder: true,
             pyramidMode: 0,
             repeatWorld: true
         }).addTo(map);
         var tileGrid = tileLayer.getTiles().tileGrids[0];
         var tiles = tileGrid.tiles;
         var extent = tileGrid.extent;
-        expect(extent.toJSON()).to.be.eql({xmin: -384, ymin: -384, xmax: 384, ymax: 384});
+        expect(extent.toJSON()).to.be.eql({ xmin: -384, ymin: -384, xmax: 384, ymax: 384 });
         var expected = '-1,-1,0,{"xmin":-384,"ymin":128,"xmax":-128,"ymax":384}|-1,0,0,{"xmin":-384,"ymin":-128,"xmax":-128,"ymax":128}|-1,1,0,{"xmin":-384,"ymin":-384,"xmax":-128,"ymax":-128}|0,-1,0,{"xmin":-128,"ymin":128,"xmax":128,"ymax":384}|0,0,0,{"xmin":-128,"ymin":-128,"xmax":128,"ymax":128}|0,1,0,{"xmin":-128,"ymin":-384,"xmax":128,"ymax":-128}|1,-1,0,{"xmin":128,"ymin":128,"xmax":384,"ymax":384}|1,0,0,{"xmin":128,"ymin":-128,"xmax":384,"ymax":128}|1,1,0,{"xmin":128,"ymin":-384,"xmax":384,"ymax":-128}';
         var actual = tiles.map(function (t) {
             return [t.idx, t.idy, t.z, JSON.stringify(t.extent2d.toJSON())].join();
@@ -230,24 +230,24 @@ describe('TileSpatialRefSpec', function () {
         var firstRes = 0.009507170090264933;
         var res = [];
         for (var i = 0; i <= 5; i++) {
-          res.push(firstRes / Math.pow(2, i));
+            res.push(firstRes / Math.pow(2, i));
         }
         var crs = {
-          projection: "EPSG:4326",
-          resolutions: res,
-          // fullExtent: {
-          //   top: 42.31,
-          //   left: 114.59,
-          //   bottom: 37.44232891378436,
-          //   right:  119.45767108621564
-          // }
+            projection: "EPSG:4326",
+            resolutions: res,
+            // fullExtent: {
+            //   top: 42.31,
+            //   left: 114.59,
+            //   bottom: 37.44232891378436,
+            //   right:  119.45767108621564
+            // }
         };
         createMap([114.59, 42.31], 0, crs);
         var tileLayer = new maptalks.TileLayer("base", {
-          urlTemplate: '#',
-          // repeatWorld:true,
-          spatialReference: crs,
-          tileSystem: [1, -1, 114.59, 42.31]
+            urlTemplate: '#',
+            // repeatWorld:true,
+            spatialReference: crs,
+            tileSystem: [1, -1, 114.59, 42.31]
         }).addTo(map);
         var tileGrid = tileLayer.getTiles().tileGrids[0];
         var tiles = tileGrid.tiles;
@@ -266,25 +266,25 @@ describe('TileSpatialRefSpec', function () {
         var firstRes = 0.009507170090264933;
         var res = [];
         for (var i = 0; i <= 5; i++) {
-          res.push(firstRes / Math.pow(2, i));
+            res.push(firstRes / Math.pow(2, i));
         }
         var crs = {
-          projection: "EPSG:4326",
-          resolutions: res,
-          fullExtent: {
-            top: 42.31,
-            left: 114.59,
-            bottom: 37.44232891378436,
-            right:  119.45767108621564
-          }
+            projection: "EPSG:4326",
+            resolutions: res,
+            fullExtent: {
+                top: 42.31,
+                left: 114.59,
+                bottom: 37.44232891378436,
+                right: 119.45767108621564
+            }
         };
         createMap([114.59, 42.31], 0, crs);
         var tileLayer = new maptalks.TileLayer("base", {
-          debug: true,
-          urlTemplate: '#',
-          // repeatWorld:true,
-          spatialReference: crs,
-          tileSystem: [1, -1, 114.59, 42.31]
+            debug: true,
+            urlTemplate: '#',
+            // repeatWorld:true,
+            spatialReference: crs,
+            tileSystem: [1, -1, 114.59, 42.31]
         }).addTo(map);
         var tileGrid = tileLayer.getTiles().tileGrids[0];
         var tiles = tileGrid.tiles;
@@ -304,30 +304,30 @@ describe('TileSpatialRefSpec', function () {
         var firstRes = 0.009507170090264933;
         var res = [];
         for (var i = 0; i <= 5; i++) {
-          res.push(firstRes / Math.pow(2, i));
+            res.push(firstRes / Math.pow(2, i));
         }
         var crs = {
-          projection: "EPSG:4326",
-          resolutions: res,
-          fullExtent: {
-            top: 42.31,
-            left: 114.59,
-            bottom: 37.44232891378454,
-            right:  119.45767108621599
-          }
+            projection: "EPSG:4326",
+            resolutions: res,
+            fullExtent: {
+                top: 42.31,
+                left: 114.59,
+                bottom: 37.44232891378454,
+                right: 119.45767108621599
+            }
         };
         createMap([114.59, 42.31], 0, crs);
         var tileLayer = new maptalks.TileLayer("base", {
-          urlTemplate: '#',
-          repeatWorld: false,
-          spatialReference: crs,
-          tileSystem: [1, -1, 114.59, 42.31]
+            urlTemplate: '#',
+            repeatWorld: false,
+            spatialReference: crs,
+            tileSystem: [1, -1, 114.59, 42.31]
         }).addTo(map);
         var tileGrid = tileLayer.getTiles().tileGrids[0];
         var tiles = tileGrid.tiles;
         var extent = tileGrid.extent;
         expect(extent.toJSON()).to.be.eql({ xmin: 12053.008299213752, ymin: 3938.3253437449507, xmax: 12565.008299213754, ymax: 4450.32534374495 });
-        var expected =  '0,0,0,{"xmin":12053.008299213752,"ymin":4194.32534374495,"xmax":12309.008299213752,"ymax":4450.32534374495}|0,1,0,{"xmin":12053.008299213752,"ymin":3938.3253437449507,"xmax":12309.008299213752,"ymax":4194.32534374495}|1,0,0,{"xmin":12309.008299213752,"ymin":4194.32534374495,"xmax":12565.008299213754,"ymax":4450.32534374495}|1,1,0,{"xmin":12309.008299213752,"ymin":3938.3253437449507,"xmax":12565.008299213754,"ymax":4194.32534374495}';
+        var expected = '0,0,0,{"xmin":12053.008299213752,"ymin":4194.32534374495,"xmax":12309.008299213752,"ymax":4450.32534374495}|0,1,0,{"xmin":12053.008299213752,"ymin":3938.3253437449507,"xmax":12309.008299213752,"ymax":4194.32534374495}|1,0,0,{"xmin":12309.008299213752,"ymin":4194.32534374495,"xmax":12565.008299213754,"ymax":4450.32534374495}|1,1,0,{"xmin":12309.008299213752,"ymin":3938.3253437449507,"xmax":12565.008299213754,"ymax":4194.32534374495}';
         var actual = tiles.map(function (t) {
             return [t.idx, t.idy, t.z, JSON.stringify(t.extent2d.toJSON())].join();
         }).sort().join('|');
@@ -341,26 +341,26 @@ describe('TileSpatialRefSpec', function () {
         var firstRes = 0.009507170090264933;
         var res = [];
         for (var i = 0; i <= 5; i++) {
-          res.push(firstRes / Math.pow(2, i));
+            res.push(firstRes / Math.pow(2, i));
         }
         var crs = {
-          projection: "EPSG:4326",
-          resolutions: res,
-          fullExtent: {
-            top: 42.31,
-            left: 114.59,
-            bottom: 37.44232891378436,
-            right:  119.45767108621564
-          }
+            projection: "EPSG:4326",
+            resolutions: res,
+            fullExtent: {
+                top: 42.31,
+                left: 114.59,
+                bottom: 37.44232891378436,
+                right: 119.45767108621564
+            }
         };
         createMap([114.59, 42.31], 0, crs);
         var tileLayer = new maptalks.TileLayer("base", {
-          urlTemplate: '#',
-          // repeatWorld:true,
-          debug: true,
-          spatialReference: crs,
-          pyramidMode: 0,
-          tileSystem: [1, -1, 114.59, 42.31]
+            urlTemplate: '#',
+            // repeatWorld:true,
+            debug: true,
+            spatialReference: crs,
+            pyramidMode: 0,
+            tileSystem: [1, -1, 114.59, 42.31]
         }).addTo(map);
         var tileGrid = tileLayer.getTiles().tileGrids[0];
         var tiles = tileGrid.tiles;
@@ -377,21 +377,28 @@ describe('TileSpatialRefSpec', function () {
 
     it('tilelayer with 3857 in map of 4326', function () {
         var crs = {
-          projection: "EPSG:4326"
+            projection: "EPSG:4326"
         };
-        createMap([121.47791752169039,31.18614357868957], 17, crs);
+        createMap([121.47791752169039, 31.18614357868957], 17, crs);
         var tileLayer = new maptalks.TileLayer("base", {
-          urlTemplate: '#',
-          // repeatWorld:true,
-          spatialReference:{
-            projection:'EPSG:3857'
-          }
+            urlTemplate: '#',
+            // repeatWorld:true,
+            spatialReference: {
+                projection: 'EPSG:3857'
+            }
         }).addTo(map);
         var tileGrid = tileLayer.getTiles().tileGrids[0];
         var tiles = tileGrid.tiles;
         var extent = tileGrid.extent;
-        expect(extent.toJSON()).to.be.eql({ xmin: 11322112, ymin: 2906396.2408107626, xmax: 11322880, ymax: 2907054.2476699273 });
-        var expected = '109763,53574,17,{"xmin":11322112,"ymin":2906834.2476699273,"xmax":11322368,"ymax":2907054.2476699273}|109763,53575,17,{"xmin":11322112,"ymin":2906615.2469585394,"xmax":11322368,"ymax":2906835.2469585394}|109763,53576,17,{"xmin":11322112,"ymin":2906396.2408107626,"xmax":11322368,"ymax":2906616.2408107626}|109764,53574,17,{"xmin":11322368,"ymin":2906834.2476699273,"xmax":11322624,"ymax":2907054.2476699273}|109764,53575,17,{"xmin":11322368,"ymin":2906615.2469585394,"xmax":11322624,"ymax":2906835.2469585394}|109764,53576,17,{"xmin":11322368,"ymin":2906396.2408107626,"xmax":11322624,"ymax":2906616.2408107626}|109765,53574,17,{"xmin":11322624,"ymin":2906834.2476699273,"xmax":11322880,"ymax":2907054.2476699273}|109765,53575,17,{"xmin":11322624,"ymin":2906615.2469585394,"xmax":11322880,"ymax":2906835.2469585394}|109765,53576,17,{"xmin":11322624,"ymin":2906396.2408107626,"xmax":11322880,"ymax":2906616.2408107626}';
+        // expect(extent.toJSON()).to.be.eql({ xmin: 11322112, ymin: 2906396.2408107626, xmax: 11322880, ymax: 2907054.2476699273 });
+        expect(extent.toJSON()).to.be.eql({
+            xmin: 11322111.999999998,
+            ymin: 2906396.2408107654,
+            xmax: 11322879.999999998,
+            ymax: 2907054.247669927
+        });
+        // var expected = '109763,53574,17,{"xmin":11322112,"ymin":2906834.2476699273,"xmax":11322368,"ymax":2907054.2476699273}|109763,53575,17,{"xmin":11322112,"ymin":2906615.2469585394,"xmax":11322368,"ymax":2906835.2469585394}|109763,53576,17,{"xmin":11322112,"ymin":2906396.2408107626,"xmax":11322368,"ymax":2906616.2408107626}|109764,53574,17,{"xmin":11322368,"ymin":2906834.2476699273,"xmax":11322624,"ymax":2907054.2476699273}|109764,53575,17,{"xmin":11322368,"ymin":2906615.2469585394,"xmax":11322624,"ymax":2906835.2469585394}|109764,53576,17,{"xmin":11322368,"ymin":2906396.2408107626,"xmax":11322624,"ymax":2906616.2408107626}|109765,53574,17,{"xmin":11322624,"ymin":2906834.2476699273,"xmax":11322880,"ymax":2907054.2476699273}|109765,53575,17,{"xmin":11322624,"ymin":2906615.2469585394,"xmax":11322880,"ymax":2906835.2469585394}|109765,53576,17,{"xmin":11322624,"ymin":2906396.2408107626,"xmax":11322880,"ymax":2906616.2408107626}';
+        var expected = '109763,53574,17,{"xmin":11322111.999999998,"ymin":2906834.247669927,"xmax":11322367.999999998,"ymax":2907054.247669927}|109763,53575,17,{"xmin":11322111.999999998,"ymin":2906615.2469585375,"xmax":11322367.999999998,"ymax":2906835.2469585375}|109763,53576,17,{"xmin":11322111.999999998,"ymin":2906396.2408107654,"xmax":11322367.999999998,"ymax":2906616.2408107654}|109764,53574,17,{"xmin":11322367.999999998,"ymin":2906834.247669927,"xmax":11322623.999999998,"ymax":2907054.247669927}|109764,53575,17,{"xmin":11322367.999999998,"ymin":2906615.2469585375,"xmax":11322623.999999998,"ymax":2906835.2469585375}|109764,53576,17,{"xmin":11322367.999999998,"ymin":2906396.2408107654,"xmax":11322623.999999998,"ymax":2906616.2408107654}|109765,53574,17,{"xmin":11322623.999999998,"ymin":2906834.247669927,"xmax":11322879.999999998,"ymax":2907054.247669927}|109765,53575,17,{"xmin":11322623.999999998,"ymin":2906615.2469585375,"xmax":11322879.999999998,"ymax":2906835.2469585375}|109765,53576,17,{"xmin":11322623.999999998,"ymin":2906396.2408107654,"xmax":11322879.999999998,"ymax":2906616.2408107654}';
         var actual = tiles.map(function (t) {
             return [t.idx, t.idy, t.z, JSON.stringify(t.extent2d.toJSON())].join();
         }).sort().join('|');
@@ -402,21 +409,28 @@ describe('TileSpatialRefSpec', function () {
 
     it('tilelayer with 3857 in map of 4326, #1802', function () {
         var crs = {
-          projection: "EPSG:4326"
+            projection: "EPSG:4326"
         };
-        createMap([121.47791752169039,31.18614357868957], 17.1, crs);
+        createMap([121.47791752169039, 31.18614357868957], 17.1, crs);
         var tileLayer = new maptalks.TileLayer("base", {
-          urlTemplate: '#',
-          // repeatWorld:true,
-          spatialReference:{
-            projection:'EPSG:3857'
-          }
+            urlTemplate: '#',
+            // repeatWorld:true,
+            spatialReference: {
+                projection: 'EPSG:3857'
+            }
         }).addTo(map);
         var tileGrid = tileLayer.getTiles().tileGrids[0];
         var tiles = tileGrid.tiles;
         var extent = tileGrid.extent;
-        expect(extent.toJSON()).to.be.eql({ xmin: 11322112, ymin: 2906396.2408107626, xmax: 11322880, ymax: 2907054.2476699273 });
-        var expected = '109763,53574,17,{"xmin":11322112,"ymin":2906834.2476699273,"xmax":11322368,"ymax":2907054.2476699273},0.000010728836059570312|109763,53575,17,{"xmin":11322112,"ymin":2906615.2469585394,"xmax":11322368,"ymax":2906835.2469585394},0.000010728836059570312|109763,53576,17,{"xmin":11322112,"ymin":2906396.2408107626,"xmax":11322368,"ymax":2906616.2408107626},0.000010728836059570312|109764,53574,17,{"xmin":11322368,"ymin":2906834.2476699273,"xmax":11322624,"ymax":2907054.2476699273},0.000010728836059570312|109764,53575,17,{"xmin":11322368,"ymin":2906615.2469585394,"xmax":11322624,"ymax":2906835.2469585394},0.000010728836059570312|109764,53576,17,{"xmin":11322368,"ymin":2906396.2408107626,"xmax":11322624,"ymax":2906616.2408107626},0.000010728836059570312|109765,53574,17,{"xmin":11322624,"ymin":2906834.2476699273,"xmax":11322880,"ymax":2907054.2476699273},0.000010728836059570312|109765,53575,17,{"xmin":11322624,"ymin":2906615.2469585394,"xmax":11322880,"ymax":2906835.2469585394},0.000010728836059570312|109765,53576,17,{"xmin":11322624,"ymin":2906396.2408107626,"xmax":11322880,"ymax":2906616.2408107626},0.000010728836059570312';
+        // expect(extent.toJSON()).to.be.eql({ xmin: 11322112, ymin: 2906396.2408107626, xmax: 11322880, ymax: 2907054.2476699273 });
+        expect(extent.toJSON()).to.be.eql({
+            xmin: 11322111.999999998,
+            ymin: 2906396.2408107654,
+            xmax: 11322879.999999998,
+            ymax: 2907054.247669927
+        });
+        // var expected = '109763,53574,17,{"xmin":11322112,"ymin":2906834.2476699273,"xmax":11322368,"ymax":2907054.2476699273},0.000010728836059570312|109763,53575,17,{"xmin":11322112,"ymin":2906615.2469585394,"xmax":11322368,"ymax":2906835.2469585394},0.000010728836059570312|109763,53576,17,{"xmin":11322112,"ymin":2906396.2408107626,"xmax":11322368,"ymax":2906616.2408107626},0.000010728836059570312|109764,53574,17,{"xmin":11322368,"ymin":2906834.2476699273,"xmax":11322624,"ymax":2907054.2476699273},0.000010728836059570312|109764,53575,17,{"xmin":11322368,"ymin":2906615.2469585394,"xmax":11322624,"ymax":2906835.2469585394},0.000010728836059570312|109764,53576,17,{"xmin":11322368,"ymin":2906396.2408107626,"xmax":11322624,"ymax":2906616.2408107626},0.000010728836059570312|109765,53574,17,{"xmin":11322624,"ymin":2906834.2476699273,"xmax":11322880,"ymax":2907054.2476699273},0.000010728836059570312|109765,53575,17,{"xmin":11322624,"ymin":2906615.2469585394,"xmax":11322880,"ymax":2906835.2469585394},0.000010728836059570312|109765,53576,17,{"xmin":11322624,"ymin":2906396.2408107626,"xmax":11322880,"ymax":2906616.2408107626},0.000010728836059570312';
+        var expected = '109763,53574,17,{"xmin":11322111.999999998,"ymin":2906834.247669927,"xmax":11322367.999999998,"ymax":2907054.247669927},0.000010728836059570312|109763,53575,17,{"xmin":11322111.999999998,"ymin":2906615.2469585375,"xmax":11322367.999999998,"ymax":2906835.2469585375},0.000010728836059570312|109763,53576,17,{"xmin":11322111.999999998,"ymin":2906396.2408107654,"xmax":11322367.999999998,"ymax":2906616.2408107654},0.000010728836059570312|109764,53574,17,{"xmin":11322367.999999998,"ymin":2906834.247669927,"xmax":11322623.999999998,"ymax":2907054.247669927},0.000010728836059570312|109764,53575,17,{"xmin":11322367.999999998,"ymin":2906615.2469585375,"xmax":11322623.999999998,"ymax":2906835.2469585375},0.000010728836059570312|109764,53576,17,{"xmin":11322367.999999998,"ymin":2906396.2408107654,"xmax":11322623.999999998,"ymax":2906616.2408107654},0.000010728836059570312|109765,53574,17,{"xmin":11322623.999999998,"ymin":2906834.247669927,"xmax":11322879.999999998,"ymax":2907054.247669927},0.000010728836059570312|109765,53575,17,{"xmin":11322623.999999998,"ymin":2906615.2469585375,"xmax":11322879.999999998,"ymax":2906835.2469585375},0.000010728836059570312|109765,53576,17,{"xmin":11322623.999999998,"ymin":2906396.2408107654,"xmax":11322879.999999998,"ymax":2906616.2408107654},0.000010728836059570312';
         var actual = tiles.map(function (t) {
             return [t.idx, t.idy, t.z, JSON.stringify(t.extent2d.toJSON()), t.res].join();
         }).sort().join('|');

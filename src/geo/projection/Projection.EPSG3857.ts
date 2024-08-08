@@ -1,5 +1,5 @@
 import { extend } from '../../core/util/common';
-import { wrap, sign } from '../../core/util/util';
+import { sign } from '../../core/util/util';
 import Common, { type CommonProjectionType } from './Projection';
 import Coordinate from '../Coordinate';
 import { WGS84Sphere, type WGS84SphereType } from '../measurer';
@@ -18,10 +18,10 @@ const EPSG3857Projection = {
 
     project: function (lnglat: Coordinate, out?: Coordinate) {
         const rad = this.rad,
-          metersPerDegree = this.metersPerDegree,
-          max = this.maxLatitude;
+            metersPerDegree = this.metersPerDegree,
+            max = this.maxLatitude;
         const lng = lnglat.x,
-          lat = Math.max(Math.min(max, lnglat.y), -max);
+            lat = Math.max(Math.min(max, lnglat.y), -max);
         let c;
         if (lat === 0) {
             c = 0;
@@ -56,8 +56,10 @@ const EPSG3857Projection = {
         if (Math.abs(Math.abs(c) - this.maxLatitude) < delta) {
             c = sign(c) * this.maxLatitude;
         }
-        const rx = wrap(x, -180, 180);
-        const ry = wrap(c, -this.maxLatitude, this.maxLatitude);
+        // const rx = wrap(x, -180, 180);
+        // const ry = wrap(c, -this.maxLatitude, this.maxLatitude);
+        const rx = x;
+        const ry = c;
         if (out) {
             out.x = rx;
             out.y = ry;
@@ -84,4 +86,4 @@ export type EPSG3857ProjectionType = CommonProjectionType & typeof EPSG3857Proje
  * {@inheritDoc projection.Common}
  * {@inheritDoc measurer.WGS84Sphere}
  */
-export default extend<EPSG3857ProjectionType, CommonProjectionType, typeof EPSG3857Projection, WGS84SphereType>({} as EPSG3857ProjectionType, Common, EPSG3857Projection , WGS84Sphere);
+export default extend<EPSG3857ProjectionType, CommonProjectionType, typeof EPSG3857Projection, WGS84SphereType>({} as EPSG3857ProjectionType, Common, EPSG3857Projection, WGS84Sphere);
