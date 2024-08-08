@@ -24,11 +24,11 @@ export default function <T extends MixinConstructor>(Base: T) {
         _getProjection?(): CommonProjectionType
         onPositionChanged?(): void
         //@interlal
-        _translateRotatePivot?(coordinate: Coordinate): this;
-        //@interlal
         _verifyProjection?(): void
         //@interlal
         _clearCache?(): void
+        //@interlal
+        _translateRotatePivot?(coordinate: Coordinate): this;
         /**
          * 获取几何图形的中心点
          * @english
