@@ -101,6 +101,55 @@ describe('Geometry.main', function () {
         test();
     });
 
+    it('#2381 rotate pivoid should change when coordinates change', function (done) {
+        //rect ellipse etc
+        const center = map.getCenter();
+        const rect = new maptalks.Rectangle(center, 100, 70);
+        const ellipse = new maptalks.Ellipse(center, 100, 70);
+        const sector = new maptalks.Sector(center, 50, 0, 45);
+        const geos = [rect, ellipse, sector];
+        let idx = 0;
+        const test = () => {
+            layer.clear();
+            if (idx === geos.length) {
+                done();
+                return;
+            } else {
+                const geo = geos[idx];
+                geo.addTo(layer);
+
+
+                const angle = Math.random() * 180;
+                const offset = Math.random() / 100;
+                geo.rotate(angle);
+
+                setTimeout(() => {
+                    expect(geo).to.have.property('_pivot');
+                    expect(geo).to.have.property('_angle');
+                    expect(geo._angle).to.eql(angle);
+
+                    expect(geo.options).to.have.property('rotateAngle');
+                    expect(geo.options.rotateAngle).to.eql(angle);
+
+                    expect(geo.options).to.have.property('rotatePivot');
+                    expect(geo.options.rotatePivot).to.be.an('array');
+
+                    const rotatePivot = geo.options.rotatePivot;
+                    geo.translate(new maptalks.Coordinate(offset, offset));
+
+                    setTimeout(() => {
+                        rotatePivot[0] += offset;
+                        rotatePivot[1] += offset;
+                        expect(geo.options.rotatePivot).to.eql(rotatePivot);
+                        idx++;
+                        test();
+                    }, 100);
+                }, 100);
+            }
+        }
+        test();
+    });
+
 });
 //测试Geometry的公共方法
 function registerGeometryCommonTest(geometry, _context) {
