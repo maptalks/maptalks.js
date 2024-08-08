@@ -3,14 +3,17 @@ import Map, { MapAnimationOptionsType, MapViewType } from './Map';
 
 declare module "./Map" {
     interface Map {
-        _viewHistory: Array<MapViewType>;
+        //@interlal
+    _viewHistory: Array<MapViewType>;
         zoomToPreviousView(options?: any): MapViewType;
         hasPreviousView(): boolean;
         zoomToNextView(options?: any): MapViewType;
         hasNextView(): boolean;
         getViewHistory(): Array<MapViewType>;
-        _onViewChange(view: MapViewType): void;
-        _getCurrentView(): MapViewType;
+        //@interlal
+    _onViewChange(view: MapViewType): void;
+        //@interlal
+    _getCurrentView(): MapViewType;
 
 
     }
@@ -19,6 +22,7 @@ declare module "./Map" {
 
 
 Map.include(/** @lends Map.prototype */ {
+    //@interlal
     _onViewChange(view: MapViewType) {
         if (!this._viewHistory) {
             this._viewHistory = [];
@@ -104,6 +108,7 @@ Map.include(/** @lends Map.prototype */ {
         return true;
     },
 
+    //@interlal
     _zoomToView(view: MapViewType, options: MapAnimationOptionsType) {
         const old = this.getView();
         if (options['animation']) {
@@ -128,6 +133,7 @@ Map.include(/** @lends Map.prototype */ {
         return this._viewHistory;
     },
 
+    //@interlal
     _fireViewChange(old: MapViewType, view: MapViewType) {
         this._fireEvent('viewchange', {
             'old': old,
@@ -136,6 +142,7 @@ Map.include(/** @lends Map.prototype */ {
         this._insertUICollidesQueue();
     },
 
+    //@interlal
     _getCurrentView(): MapViewType {
         if (!this._viewHistory) {
             return null;

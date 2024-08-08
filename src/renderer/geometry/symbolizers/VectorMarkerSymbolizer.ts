@@ -19,11 +19,14 @@ const TEMP_EXTENT = new PointExtent();
 const DEFAULT_ANCHOR = new Point(0, 0);
 
 export default class VectorMarkerSymbolizer extends PointSymbolizer {
-    public _dynamic: any;
-    public strokeAndFill: any;
-    public padding: number;
-    public _stamp: any;
-    public _fixedExtent: PointExtent;
+    //@interlal
+    _dynamic: any;
+    strokeAndFill: any;
+    padding: number;
+    //@interlal
+    _stamp: any;
+    //@interlal
+    _fixedExtent: PointExtent;
 
     static test(symbol: any): boolean {
         return isVectorSymbol(symbol);
@@ -69,6 +72,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         }
     }
 
+    //@interlal
     _drawMarkers(ctx: CanvasRenderingContext2D, cookedPoints: any[], resources: ResourceCache) {
         for (let i = cookedPoints.length - 1; i >= 0; i--) {
             let point = cookedPoints[i];
@@ -96,6 +100,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         }
     }
 
+    //@interlal
     _drawMarkersWithCache(ctx: CanvasRenderingContext2D, cookedPoints: any[], resources: ResourceCache) {
         const stamp = this._stampSymbol();
         let image = resources.getImage(stamp);
@@ -128,6 +133,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         }
     }
 
+    //@interlal
     _createMarkerImage(ctx: CanvasRenderingContext2D, resources: ResourceCache): any {
         const canvasClass = ctx.canvas.constructor,
             size = calVectorMarkerSize(MARKER_SIZE, this.style),
@@ -138,6 +144,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         return canvas;
     }
 
+    //@interlal
     _stampSymbol(): any {
         if (!this._stamp) {
             this._stamp = hashCode([
@@ -159,6 +166,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         return this._stamp;
     }
 
+    //@interlal
     _getCacheImageAnchor(w: number, h: number): Point {
         const shadow = 2 * (this.symbol['shadowBlur'] || 0),
             margin = shadow + this.padding;
@@ -172,6 +180,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         }
     }
 
+    //@interlal
     _getGraidentExtent(points: PointExtent | Extent): PointExtent {
         const e = new PointExtent(),
             dxdy = this.getDxDy(),
@@ -190,6 +199,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         return e;
     }
 
+    //@interlal
     _drawVectorMarker(ctx: CanvasRenderingContext2D, point: Point, resources: ResourceCache) {
         drawVectorMarker(ctx, point, this.style, resources);
     }

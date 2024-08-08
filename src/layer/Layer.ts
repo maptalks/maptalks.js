@@ -74,18 +74,30 @@ const options: LayerOptionsType = {
  * @mixes Renderable
  */
 class Layer extends JSONAble(Eventable(Renderable(Class))) {
+    //@interlal
     _canvas: HTMLCanvasElement;
+    //@interlal
     _renderer: CanvasRenderer;
+    //@interlal
     _id: string
+    //@interlal
     _zIndex: number
+    //@interlal
     _drawTime: number
+    //@interlal
     _toRedraw: boolean
     map: Map
+    //@interlal
     _mask: Polygon | MultiPolygon | Marker;
+    //@interlal
     _maskGeoJSON: Record<string, any>;
+    //@interlal
     _loaded: boolean
+    //@interlal
     _collisionIndex: CollisionIndex
+    //@interlal
     _optionsHook?(conf?: any): void
+    //@interlal
     _silentConfig: boolean | undefined | any
     options: LayerOptionsType;
     getLayers?(): Layer[];
@@ -687,6 +699,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     onRemove() { }
 
+    //@interlal
     _bindMap(map: Map, zIndex?: number) {
         if (!map) {
             return;
@@ -702,6 +715,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         this.fire('add');
     }
 
+    //@interlal
     _initRenderer() {
         const renderer = this.options['renderer'];
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -744,6 +758,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         });
     }
 
+    //@interlal
     _doRemove() {
         this._loaded = false;
 
@@ -758,16 +773,19 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         delete this._collisionIndex;
     }
 
+    //@interlal
     _switchEvents(to, emitter) {
         if (emitter && emitter.getEvents && this.getMap()) {
             this.getMap()[to](emitter.getEvents(), emitter);
         }
     }
 
+    //@interlal
     _getRenderer() {
         return this._renderer;
     }
 
+    //@interlal
     _getLayerList() {
         if (!this.map) {
             return [];
@@ -776,6 +794,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         return this.map.getLayers().slice(beginIndex);
     }
 
+    //@interlal
     _getMask2DExtent() {
         if (!this._mask || !this.getMap()) {
             return null;

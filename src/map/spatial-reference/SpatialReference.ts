@@ -143,11 +143,16 @@ DefaultSpatialReference['PRESET-4490-512'] = DefaultSpatialReference['PRESET-VT-
  */
 export default class SpatialReference {
     options: SpatialReferenceType
+    //@interlal
     _projection: ProjectionType
     isEPSG: boolean
+    //@interlal
     _resolutions: number[]
+    //@interlal
     _pyramid: boolean
+    //@interlal
     _fullExtent: Extent;
+    //@interlal
     _transformation: Transformation
     json: SpatialReferenceType
     constructor(options: SpatialReferenceType = ({} as SpatialReferenceType)) {
@@ -281,6 +286,7 @@ export default class SpatialReference {
         return true;
     }
 
+    //@interlal
     _initSpatialRef() {
         let projection: ProjectionType;
         if (this.options['projection']) {

@@ -16,7 +16,7 @@ export type AreaToolOptions = {
 
 /**
  * options 配置项说明
- * 
+ *
  * @english
  * @property options
  * @property options.language         - language of the distance tool, zh-CN or en-US
@@ -44,7 +44,7 @@ const options: AreaToolOptions = {
 
 /**
  * 一个继承于DistanceTool类，测量面积的地图工具类。
- * 
+ *
  * @english
  * A map tool to help measure area on the map .it is extends DistanceTool
  * @category maptool
@@ -71,7 +71,7 @@ class AreaTool extends DistanceTool {
     options: AreaToolOptions;
     /**
      * 配置项
-     * 
+     *
      * @english
      * @param options option              - construct options
      * @param options.language=zh-CN      - language of the distance tool, zh-CN or en-US
@@ -89,6 +89,7 @@ class AreaTool extends DistanceTool {
         this._measureLayers = [];
     }
 
+    //@interlal
     _measure(toMeasure: Geometry | Array<any>) {
         const map: any = this.getMap();
         let area: number;
@@ -125,10 +126,12 @@ class AreaTool extends DistanceTool {
         return content;
     }
 
+    //@interlal
     _msGetCoordsToMeasure(param: any) {
         return param['geometry'].getShell().concat([param['coordinate']]);
     }
 
+    //@interlal
     _msOnDrawVertex(param: any) {
         // const prjCoord = this.getMap()._pointToPrj(param['point2d']);
         const lastCoordinate = this._getLasttCoordinate() || param.coordinate;
@@ -141,6 +144,7 @@ class AreaTool extends DistanceTool {
         this._addVertexMarker(vertexMarker);
     }
 
+    //@interlal
     _msOnDrawEnd(param: any) {
         this._clearTailMarker();
         let prjCoord;

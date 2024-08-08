@@ -109,6 +109,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         }
     }
 
+    //@interlal
     _bindGLBuffer(image: Tile['image'], w: number, h: number): void {
         if (!image.glBuffer) {
             image.glBuffer = this.bufferTileData(0, 0, w, h);

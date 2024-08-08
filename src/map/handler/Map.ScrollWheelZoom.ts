@@ -17,21 +17,36 @@ const wheelZoomRate = 1 / 450;
 const maxScalePerFrame = 2;
 
 class MapScrollWheelZoomHandler extends Handler {
-    private _thisScrollZoom: () => void
-    private _thisCheckIfEndZoom: () => void
+    //@interlal
+    _thisScrollZoom: () => void
+    //@interlal
+    _thisCheckIfEndZoom: () => void
+    //@interlal
     _wheelZoomRate: number
+    //@interlal
     _defaultZoomRate: number
+    //@interlal
     _delta: number
+    //@interlal
     _zooming: boolean
+    //@interlal
     _trackPadSuspect: number
+    //@interlal
     _ensureTrackpad: boolean
+    //@interlal
     _active: boolean
+    //@interlal
     _requesting: number
+    //@interlal
     _startZoom: number
+    //@interlal
     _origin: any
+    //@interlal
     _zoomOrigin: any
+    //@interlal
     _lastWheelEvent: any
-    private _scrollTime: number
+    //@interlal
+    _scrollTime: number
 
     constructor(target) {
         super(target);
@@ -50,6 +65,7 @@ class MapScrollWheelZoomHandler extends Handler {
         removeDomEvent(this.target._containerDOM, 'wheel', this._onWheelScroll);
     }
 
+    //@interlal
     _onWheelScroll(evt) {
         const map = this.target;
         if (map.options['preventWheelScroll']) {
@@ -73,6 +89,7 @@ class MapScrollWheelZoomHandler extends Handler {
         }
     }
 
+    //@interlal
     _seamless(evt, origin) {
         let value = evt.deltaMode === window.WheelEvent.DOM_DELTA_LINE ? evt.deltaY * 60 : evt.deltaY;
         if (value % wheelZoomDelta !== 0) {
@@ -110,6 +127,7 @@ class MapScrollWheelZoomHandler extends Handler {
         this._start();
     }
 
+    //@interlal
     _start() {
         if (!this._delta) return;
         this._zooming = true;
@@ -120,6 +138,7 @@ class MapScrollWheelZoomHandler extends Handler {
         }
     }
 
+    //@interlal
     _scrollZoom() {
         this._active = false;
         if (!this._delta) {
@@ -139,6 +158,7 @@ class MapScrollWheelZoomHandler extends Handler {
         map.getRenderer().callInNextFrame(this._thisCheckIfEndZoom);
     }
 
+    //@interlal
     _checkIfEndZoom() {
         if (!this._zooming) {
             return;
@@ -154,6 +174,7 @@ class MapScrollWheelZoomHandler extends Handler {
         }
     }
 
+    //@interlal
     _interval(evt, origin) {
         const map = this.target;
         if (this._zooming) {

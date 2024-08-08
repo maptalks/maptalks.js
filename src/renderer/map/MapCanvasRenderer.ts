@@ -27,29 +27,52 @@ const tempCollisionIndex = new CollisionIndex();
  * @memberOf renderer
  */
 class MapCanvasRenderer extends MapRenderer {
+    //@interlal
     _containerIsCanvas: boolean;
+    //@interlal
     _loopTime: number;
+    //@interlal
     _resizeTime: number;
+    //@interlal
     _resizeCount: number;
+    //@interlal
     _frameCycleRenderCount: number;
+    //@interlal
     _resizeEventList: ResizeObserverEntry[];
 
+    //@interlal
     _needClear: boolean;
+    //@interlal
     _canvasUpdated: boolean;
+    //@interlal
     _isViewChanged: WithUndef<boolean>;
+    //@interlal
     _spatialRefChanged: WithUndef<boolean>;
+    //@interlal
     _resizeObserver: ResizeObserver;
+    //@interlal
     _resizeInterval: number;
+    //@interlal
     _checkSizeInterval: number;
+    //@interlal
     _hitDetectFrame: number;
+    //@interlal
     _animationFrame: number;
+    //@interlal
     _mapview: MapView;
+    //@interlal
     _zoomMatrix: number[];
+    //@interlal
     _eventParam: any;
+    //@interlal
     _canvasIds: string[];
+    //@interlal
     _updatedIds: string[];
+    //@interlal
     _frameTimestamp: number;
+    //@interlal
     _checkPositionTime: number;
+    //@interlal
     _tops: (EditHandle | EditOutline)[];
 
     context: CanvasRenderingContext2D;
@@ -144,6 +167,7 @@ class MapCanvasRenderer extends MapRenderer {
     }
 
     //need redraw all layer,cause by collision/crs change/view change etc...
+    //@interlal
     _needRedrawAllLayers(layers: Layer[]) {
         if (this.isSpatialReferenceChanged()) {
             return true;
@@ -281,6 +305,7 @@ class MapCanvasRenderer extends MapRenderer {
      * check if need to call layer's draw/drawInteracting
      * @param layer
      */
+    //@interlal
     _checkLayerRedraw(layer: Layer): boolean {
         if (this.isSpatialReferenceChanged()) {
             return true;
@@ -310,6 +335,7 @@ class MapCanvasRenderer extends MapRenderer {
      * @returns time to draw this layer
      * @private
      */
+    //@interlal
     _drawCanvasLayerOnInteracting(layer: Layer, t: number, timeLimit: number, framestamp: number): number {
         const map = this.map,
             renderer = layer._getRenderer(),
@@ -358,6 +384,7 @@ class MapCanvasRenderer extends MapRenderer {
      * Make sure layer are drawn on map when firing the events
      * @private
      */
+    //@interlal
     _fireLayerLoadEvents() {
         if (this._updatedIds && this._updatedIds.length > 0) {
             const map = this.map;
@@ -587,6 +614,7 @@ class MapCanvasRenderer extends MapRenderer {
         map._trySetCursor(cursor);
     }
 
+    //@interlal
     _getLayerImage(layer: Layer) {
         const renderer = layer._getRenderer();
         if (renderer.getCanvasImage) {
@@ -673,6 +701,7 @@ class MapCanvasRenderer extends MapRenderer {
         return this._isViewChanged;
     }
 
+    //@interlal
     _recordView() {
         const map = this.map;
         if (!map._onViewChange || map.isInteracting() || map.isAnimating()) {
@@ -687,6 +716,7 @@ class MapCanvasRenderer extends MapRenderer {
         return this._spatialRefChanged;
     }
 
+    //@interlal
     _getMapView(): MapView {
         const map = this.map;
         const center = map._getPrjCenter();
@@ -701,6 +731,7 @@ class MapCanvasRenderer extends MapRenderer {
         };
     }
 
+    //@interlal
     _lockFrameRenderEnable() {
         const { maxFPS } = this.map.options || {};
         if (maxFPS <= 0 || GlobalConfig.maxFPS <= maxFPS) {
@@ -713,6 +744,7 @@ class MapCanvasRenderer extends MapRenderer {
     /**
     * Main frame loop
     */
+    //@interlal
     _frameLoop(framestamp: number) {
         if (!this.map) {
             this._cancelFrameLoop();
@@ -732,12 +764,14 @@ class MapCanvasRenderer extends MapRenderer {
         this._animationFrame = requestAnimFrame((framestamp: number) => { this._frameLoop(framestamp); });
     }
 
+    //@interlal
     _cancelFrameLoop() {
         if (this._animationFrame) {
             cancelAnimFrame(this._animationFrame);
         }
     }
 
+    //@interlal
     _drawLayerCanvasImage(layer: Layer, layerImage: any, targetWidth?: number, targetHeight?: number) {
         const ctx = this.context;
         const point = layerImage['point'].round();
@@ -810,6 +844,7 @@ class MapCanvasRenderer extends MapRenderer {
         ctx.globalAlpha = alpha;
     }
 
+    //@interlal
     _drawCenterCross() {
         const cross = this.map.options['centerCross'];
         if (cross) {
@@ -823,6 +858,7 @@ class MapCanvasRenderer extends MapRenderer {
         }
     }
 
+    //@interlal
     _drawContainerExtent() {
         const { cascadePitches } = this.map.options;
         const h30 = this.map.height - this.map._getVisualHeight(cascadePitches[0]);
@@ -848,6 +884,7 @@ class MapCanvasRenderer extends MapRenderer {
         // console.log(extent.ymin, h30, h60);
     }
 
+    //@interlal
     _drawFog() {
         const map = this.map;
         if (map.getPitch() <= map.options['maxVisualPitch'] || !map.options['fog']) {
@@ -873,6 +910,7 @@ class MapCanvasRenderer extends MapRenderer {
         ctx.fillRect(0, top, Math.ceil(clipExtent.getWidth()) * r, Math.ceil(h + fogThickness));
     }
 
+    //@interlal
     _debugSky() {
         const map = this.map;
         if (!map) {
@@ -888,6 +926,7 @@ class MapCanvasRenderer extends MapRenderer {
         return this;
     }
 
+    //@interlal
     _getAllLayerToRender() {
         return this.map._getLayers();
     }
@@ -899,6 +938,7 @@ class MapCanvasRenderer extends MapRenderer {
         Canvas2D.clearRect(this.context, 0, 0, this.canvas.width, this.canvas.height);
     }
 
+    //@interlal
     _updateCanvasSize() {
         if (!this.canvas || this._containerIsCanvas) {
             return false;
@@ -938,6 +978,7 @@ class MapCanvasRenderer extends MapRenderer {
         this.context = this.canvas.getContext('2d');
     }
 
+    //@interlal
     _updateDomPosition(framestamp: number) {
         if (this._checkPositionTime === undefined) {
             this._checkPositionTime = -Infinity;
@@ -951,6 +992,7 @@ class MapCanvasRenderer extends MapRenderer {
         return this;
     }
 
+    //@interlal
     _handleResizeEventList(time: number) {
         if (!this._resizeEventList) {
             return this;
@@ -973,6 +1015,7 @@ class MapCanvasRenderer extends MapRenderer {
         return this;
     }
 
+    //@interlal
     _checkSize() {
         if (!this.map) {
             return;
@@ -980,6 +1023,7 @@ class MapCanvasRenderer extends MapRenderer {
         this.map.checkSize();
     }
 
+    //@interlal
     _setCheckSizeInterval(interval: number) {
         // ResizeObserver priority of use
         // https://developer.mozilla.org/zh-CN/docs/Web/API/ResizeObserver
@@ -1013,6 +1057,7 @@ class MapCanvasRenderer extends MapRenderer {
         }
     }
 
+    //@interlal
     _registerEvents() {
         const map = this.map;
 
@@ -1055,6 +1100,7 @@ class MapCanvasRenderer extends MapRenderer {
         }
     }
 
+    //@interlal
     _onMapMouseMove(param: any) {
         const map = this.map;
         if (map.isInteracting() || !map.options['hitDetect']) {
@@ -1068,6 +1114,7 @@ class MapCanvasRenderer extends MapRenderer {
         });
     }
 
+    //@interlal
     _getCanvasLayers() {
         return this.map._getLayers(layer => layer.isCanvasRender());
     }

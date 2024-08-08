@@ -11,9 +11,12 @@ const TEMP_COORD0 = new Coordinate(0, 0);
 const TEMP_COORD1 = new Coordinate(0, 0);
 
 export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
-    public _extMin: Coordinate;
-    public _extMax: Coordinate;
-    public _pxExtent: PointExtent;
+    //@interlal
+    _extMin: Coordinate;
+    //@interlal
+    _extMax: Coordinate;
+    //@interlal
+    _pxExtent: PointExtent;
     static test(symbol: any, geometry: Geometry): boolean {
         if (!symbol) {
             return false;
@@ -145,6 +148,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         return new PointExtent(-t, -t, t, t);
     }
 
+    //@interlal
     _getPaintParams(): any[] {
         // @ts-expect-error todo fix must has four params
         return this.getPainter().getPaintParams(this.style['lineDx'], this.style['lineDy']);
@@ -180,6 +184,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         return result;
     }
 
+    //@interlal
     _createGradient(ctx: CanvasRenderingContext2D, points: any[], lineColor: any): void {
         if (!Array.isArray(points) || !points.length) {
             return;

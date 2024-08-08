@@ -19,14 +19,22 @@ type handlerQueueFn = () => void
 abstract class MapRenderer extends Class {
     map: Map;
 
+    //@interlal
     _handlerQueue: handlerQueueFn[];
+    //@interlal
     _frontCount: WithUndef<number>;
+    //@interlal
     _backCount: WithUndef<number>;
+    //@interlal
     _uiCount: WithUndef<number>;
 
+    //@interlal
     _thisDocVisibilitychange: () => void;
+    //@interlal
     _thisDocDragStart: () => void;
+    //@interlal
     _thisDocDragEnd: () => void;
+    //@interlal
     _thisDocDPRChange: () => void;
 
     constructor(map: Map) {
@@ -127,6 +135,7 @@ abstract class MapRenderer extends Class {
         this._frameLoop();
     }
 
+    //@interlal
     _onDocVisibilitychange() {
         if (document.visibilityState !== 'visible') {
             return;
@@ -134,6 +143,7 @@ abstract class MapRenderer extends Class {
         this.setToRedraw();
     }
 
+    //@interlal
     _getWrapPanel() {
         if (!this.map) {
             return null;
@@ -141,6 +151,7 @@ abstract class MapRenderer extends Class {
         const panels = this.map.getPanels();
         return panels && panels.mapWrapper;
     }
+    //@interlal
     _onDocDragStart() {
         const wrapPanel = this._getWrapPanel();
         if (wrapPanel) {
@@ -149,6 +160,7 @@ abstract class MapRenderer extends Class {
         return;
     }
 
+    //@interlal
     _onDocDragEnd() {
         const wrapPanel = this._getWrapPanel();
         if (wrapPanel) {
@@ -157,6 +169,7 @@ abstract class MapRenderer extends Class {
         return;
     }
 
+    //@interlal
     _onDocDPRChange() {
         const map = this.map;
         if (!map || !map.options || map.options['devicePixelRatio'] || !map.checkSize || !map.getRenderer) {
@@ -168,6 +181,7 @@ abstract class MapRenderer extends Class {
         }
     }
 
+    //@interlal
     _containerIsOffscreen() {
         const container = this.map.getContainer();
         if (!container || !container.style || container.style.display === 'none') {

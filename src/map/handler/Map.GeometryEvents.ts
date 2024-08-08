@@ -185,7 +185,9 @@ const fireGeoEvent = (geometry, domEvent, type?) => {
 };
 
 class MapGeometryEventsHandler extends Handler {
+    //@interlal
     _mouseDownTime: number
+    //@interlal
     _queryIdentifyTimeout: number
     // target: Map;
 
@@ -201,6 +203,7 @@ class MapGeometryEventsHandler extends Handler {
         off(dom, EVENTS, this._identifyGeometryEvents);
     }
 
+    //@interlal
     _identifyGeometryEvents(domEvent, type) {
         const map = this.target;
         if (map.isInteracting() || map._ignoreEvent(domEvent)) {

@@ -22,7 +22,9 @@ const key = '_map_tool';
  * @mixes Eventable
  */
 class MapTool extends Eventable(Class) {
+    //@interlal
     _map: Map;
+    //@interlal
     _enabled?: boolean;
     onEnable?(): void;
     getEvents?(): void;
@@ -157,10 +159,12 @@ class MapTool extends Eventable(Class) {
         return this;
     }
 
+    //@interlal
     _registerEvents() {
         this._switchEvents('on');
     }
 
+    //@interlal
     _switchEvents(to: any) {
         const events:any = this.getEvents();
         if (events) {
@@ -168,6 +172,7 @@ class MapTool extends Eventable(Class) {
         }
     }
 
+    //@interlal
     _fireEvent(eventName:string, param?: any) {
         if (!param) {
             param = {};

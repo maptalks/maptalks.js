@@ -53,6 +53,7 @@ class Menu extends UIComponent {
     }
 
     // TODO: obtain class in super
+    //@interlal
     _getClassName() {
         return 'Menu';
     }
@@ -163,6 +164,7 @@ class Menu extends UIComponent {
         };
     }
 
+    //@interlal
     _createMenuItemDom() {
         const me = this;
         const map = this.getMap();
@@ -214,6 +216,7 @@ class Menu extends UIComponent {
         return ul;
     }
 
+    //@interlal
     _getMenuWidth() {
         const defaultWidth = 160;
         const width = this.options['width'] || defaultWidth;

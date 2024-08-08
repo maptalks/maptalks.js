@@ -76,15 +76,25 @@ const options: UIComponentOptionsType = {
 class UIComponent extends Eventable(Class) {
 
     options: UIComponentOptionsType;
+    //@interlal
     _owner: Map | Geometry;
+    //@interlal
     _coordinate: Coordinate;
+    //@interlal
     _showBySymbolChange: boolean;
+    //@interlal
     _mapEventsOn: boolean;
+    //@interlal
     __uiDOM: HTMLElement;
+    //@interlal
     _pos: Point;
+    //@interlal
     _autoPanId: NodeJS.Timeout;
+    //@interlal
     _domContentRect: { width: number, height: number };
+    //@interlal
     _size: Size;
+    //@interlal
     _resizeObserver: ResizeObserver;
 
     /**
@@ -109,6 +119,7 @@ class UIComponent extends Eventable(Class) {
         this.proxyOptions();
     }
 
+    //@interlal
     _appendCustomClass(dom: HTMLElement) {
         if (!dom) {
             console.warn('dom is null:', dom);
@@ -192,6 +203,7 @@ class UIComponent extends Eventable(Class) {
         return (this._owner as Geometry).getMap();
     }
 
+    //@interlal
     _collides() {
         const map = this.getMap();
         if (!map) {
@@ -202,6 +214,7 @@ class UIComponent extends Eventable(Class) {
         return this;
     }
 
+    //@interlal
     _collidesEffect(show: boolean) {
         const dom = this.getDOM();
         if (!dom) {
@@ -511,6 +524,7 @@ class UIComponent extends Eventable(Class) {
         return this;
     }
 
+    //@interlal
     _roundPoint(point: Point) {
         if (this.options.roundPoint) {
             point = point._round();
@@ -532,6 +546,7 @@ class UIComponent extends Eventable(Class) {
         return p;
     }
 
+    //@interlal
     _getAnimation() {
         const anim = {
             'fade': false,
@@ -561,6 +576,7 @@ class UIComponent extends Eventable(Class) {
         return anim;
     }
 
+    //@interlal
     _getViewPoint() {
         let altitude = 0;
         //后期有了地形后，拿到的数据会带altitude，这里适配下,以后点击地图拿到的数据应该带海拔的（lng,lat,alt）
@@ -589,12 +605,14 @@ class UIComponent extends Eventable(Class) {
             ._add(this.options['dx'], this.options['dy']);
     }
 
+    //@interlal
     _meterToPoint(center: Coordinate, altitude: number) {
         return altitude;
         // const map = this.getMap();
         // return map.altitudeToPoint(altitude, map._getResolution()) * sign(altitude);
     }
 
+    //@interlal
     _autoPan() {
         const map = this.getMap(),
             dom = this.getDOM();
@@ -687,6 +705,7 @@ class UIComponent extends Eventable(Class) {
      * @return {Size} size
      * @private
      */
+    //@interlal
     _measureSize(dom: HTMLElement) {
         const container = this._getUIContainer();
         dom.style.position = 'absolute';
@@ -712,6 +731,7 @@ class UIComponent extends Eventable(Class) {
      *
      * @private
      */
+    //@interlal
     _removePrevDOM() {
         if (this.onDomRemove) {
             this.onDomRemove();
@@ -757,22 +777,27 @@ class UIComponent extends Eventable(Class) {
      * @private
      * @return {String} cache key
      */
+    //@interlal
     _uiDomKey() {
         return '__ui_' + this._getClassName();
     }
 
+    //@interlal
     _singleton() {
         return this.options['single'];
     }
 
+    //@interlal
     _getUIContainer() {
         return this.getMap().getPanels()['ui'];
     }
 
+    //@interlal
     _getClassName() {
         return 'UIComponent';
     }
 
+    //@interlal
     _switchMapEvents(to: string) {
         const map = this.getMap();
         if (!map) {
@@ -792,6 +817,7 @@ class UIComponent extends Eventable(Class) {
         }
     }
 
+    //@interlal
     _switchEvents(to: string) {
         //At the beginning,not bind map events,bind evetns when show
         // this._switchMapEvents(to);
@@ -805,6 +831,7 @@ class UIComponent extends Eventable(Class) {
         }
     }
 
+    //@interlal
     _getDefaultEvents() {
         return {
             'zooming rotate pitch': this.onEvent,
@@ -815,6 +842,7 @@ class UIComponent extends Eventable(Class) {
         };
     }
 
+    //@interlal
     _getOwnerEvents() {
         const events: { [key: string]: (...args) => void } = {};
         if (this._owner && (this._owner instanceof Geometry)) {
@@ -877,6 +905,7 @@ class UIComponent extends Eventable(Class) {
         }
     }
 
+    //@interlal
     _updatePosition() {
         if (!this.getMap()) {
             return this;
@@ -887,6 +916,7 @@ class UIComponent extends Eventable(Class) {
         return this;
     }
 
+    //@interlal
     _setPosition() {
         const dom = this.getDOM();
         if (!dom) return;
@@ -896,6 +926,7 @@ class UIComponent extends Eventable(Class) {
         dom.style[TRANSFORM] = this._toCSSTranslate(p) + ' scale(1)';
     }
 
+    //@interlal
     _toCSSTranslate(p: Point) {
         if (!p) {
             return '';
@@ -917,6 +948,7 @@ class UIComponent extends Eventable(Class) {
         }
     }
 
+    //@interlal
     _observerDomSize(dom: HTMLElement) {
         if (!dom || !Browser.resizeObserver || this._resizeObserver) {
             return this;
@@ -965,6 +997,7 @@ class UIComponent extends Eventable(Class) {
         return false;
     }
 
+    //@interlal
     _bindDomEvents(dom: HTMLElement, to: string) {
         if (!dom) {
             return;
@@ -980,6 +1013,7 @@ class UIComponent extends Eventable(Class) {
         }
     }
 
+    //@interlal
     _getDomEvents() {
         return {
             'mouseover': this._onDomMouseover,
@@ -987,6 +1021,7 @@ class UIComponent extends Eventable(Class) {
         };
     }
 
+    //@interlal
     _configMapPreventWheelScroll(preventWheelScroll: boolean) {
         const map = this.getMap();
         if (!map) {
@@ -999,11 +1034,13 @@ class UIComponent extends Eventable(Class) {
     }
 
     // eslint-disable-next-line no-unused-vars
+    //@interlal
     _onDomMouseover() {
         this._configMapPreventWheelScroll(false);
     }
 
     // eslint-disable-next-line no-unused-vars
+    //@interlal
     _onDomMouseout() {
         this._configMapPreventWheelScroll(true);
     }
