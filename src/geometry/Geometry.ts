@@ -971,6 +971,30 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return this;
     }
 
+    //translate rotate Pivot when coordinates change
+    //@interlal
+    _translateRotatePivot(newCoordinate: Coordinate) {
+        if (!this._pivot || !newCoordinate) {
+            return this;
+        }
+        if (this.options.rotatePivot) {
+            const oldCoordinate = this.getCoordinates();
+            if (!oldCoordinate) {
+                return this;
+            }
+            if (!(newCoordinate instanceof Coordinate)) {
+                newCoordinate = new Coordinate(newCoordinate);
+            }
+            const offset = newCoordinate.sub(oldCoordinate as Coordinate);
+            if (offset.x === 0 && offset.y === 0) {
+                return this;
+            }
+            this._pivot._add(offset);
+            this.options.rotatePivot = this._pivot.toArray();
+        }
+        return this;
+    }
+
     /**
      * 闪烁几何图形，按一定的内部显示和隐藏计数次数。
      * @english

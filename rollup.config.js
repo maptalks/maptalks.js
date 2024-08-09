@@ -33,7 +33,9 @@ const rollupPlugins = [
         main: true
     }),
     commonjs(),
-    typescript()
+    typescript({
+         sourceMap: true
+    })
 ];
 
 // const compilePlugins = [
