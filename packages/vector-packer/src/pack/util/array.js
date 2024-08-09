@@ -53,7 +53,7 @@ export function getUnsignedArrayType(max) {
 }
 
 export function createTypedArray(values, ctor) {
-    const length = values.getLength();
+    const length = values.getLength ? values.getLength() : values.length;
     if (values instanceof ctor) {
         return values.slice(0, length);
     }

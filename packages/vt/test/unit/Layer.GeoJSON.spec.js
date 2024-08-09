@@ -134,7 +134,7 @@ describe('GeoJSONVectorTileLayer', () => {
         let count = 0;
         layer2.on('layerload', e => {
             count++;
-            if (count === 2) {
+            if (count === 1) {
                 assert.ok(e);
                 assert.ok(layer2.getLayers()[0].getData().features.length === points.features.length);
                 done();
@@ -158,7 +158,7 @@ describe('GeoJSONVectorTileLayer', () => {
         let count = 0;
         layer2.on('layerload', e => {
             count++;
-            if (count === 2) {
+            if (count === 1) {
                 assert.ok(e);
                 const data = layer2.getLayers()[0].getData();
                 assert.ok(data.type === 'FeatureCollection');
@@ -223,7 +223,7 @@ describe('GeoJSONVectorTileLayer', () => {
         let count = 0;
         layer.on('layerload', () => {
             count++;
-            if (count === 2) {
+            if (count === 1) {
                 layer.updateSceneConfig(0, { foo2: 2 });
                 assert.deepStrictEqual(layer.options.style.style[0].renderPlugin.sceneConfig, layer.getComputedStyle().style[0].renderPlugin.sceneConfig);
                 assert.deepStrictEqual(layer.getStyle().style[0].renderPlugin.sceneConfig, layer.getComputedStyle().style[0].renderPlugin.sceneConfig);
@@ -256,7 +256,7 @@ describe('GeoJSONVectorTileLayer', () => {
         let count = 0;
         layer.on('layerload', () => {
             count++;
-            if (count === 2) {
+            if (count === 1) {
                 layer.updateSceneConfig(0, { foo2: 2 });
                 assert.deepStrictEqual(layer.options.style.style[0].renderPlugin.sceneConfig, layer.getComputedStyle().style[0].renderPlugin.sceneConfig);
                 assert.deepStrictEqual(layer.getStyle().style[0].renderPlugin.sceneConfig, layer.getComputedStyle().style[0].renderPlugin.sceneConfig);
@@ -280,7 +280,7 @@ describe('GeoJSONVectorTileLayer', () => {
         let count = 0;
         layer.on('layerload', () => {
             count++;
-            if (count === 2) {
+            if (count === 1) {
                 assert.deepStrictEqual(layer.getComputedStyle().style[0].renderPlugin.sceneConfig, { foo: 1 });
                 done();
             }

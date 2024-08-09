@@ -55,7 +55,7 @@ describe('vector tile integration specs', () => {
             if (!options.lights) {
                 options.lights = DEFAULT_VIEW.lights;
             }
-            const eventName = style.eventName || 'canvasisdirty';
+            const eventName = style.eventName || 'layerload';
             const limit = style.renderingCount || 1;
             map = new maptalks.Map(container, options);
             style.debugCollision = true;

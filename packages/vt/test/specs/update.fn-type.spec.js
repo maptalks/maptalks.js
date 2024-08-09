@@ -102,7 +102,7 @@ describe('update function type style specs', () => {
                     ]
                 }
             });
-        }, false, 4);
+        }, false, 8);
     });
 
     it('normal to property-zoom function type', done => {

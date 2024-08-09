@@ -672,7 +672,7 @@ describe('update style specs', () => {
         assertChangeStyle(done, [0, 0, 255, 255], layer => {
             layer.updateSymbol(1, { visible: true });
             assert(layer.options.style[1].symbol.visible === true);
-        }, true, style, 0, 5);
+        }, true, style, 0, 8);
     });
 
     it('should can set visible of multiple symbol', done => {
@@ -1328,7 +1328,7 @@ describe('update style specs', () => {
                     assert(pixel[1] > pixel[0]);
                     // 调用zindex后，红色就变为上层
                     layerRed.setZIndex(2);
-                } else if (count === startCount + 2) {
+                } else if (count === startCount + 1) {
                     const canvas = layer.getRenderer().canvas;
                     const pixel = readPixel(canvas, canvas.width / 2 + 30, canvas.height / 2 + 30);
                     assert(pixel[1] < pixel[0]);
@@ -1640,7 +1640,7 @@ describe('update style specs', () => {
                     painted = true;
                 } else if (!finished) {
                     count++;
-                    if (count >= 7) {
+                    if (count >= 10) {
                         finished = true;
                         assert.deepEqual(pixel, [41, 44, 48, 255]);
                         done();
