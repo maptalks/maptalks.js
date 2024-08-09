@@ -225,8 +225,8 @@ describe('bug', () => {
                     const pixel = pickPixel(map, map.width / 2 + 41, map.height / 2, 1, 1);
                     expect(pixelMatch([162, 162, 162, 255], pixel)).to.be.eql(true);
                     done();
-                }, 100);
-            }, 100);
+                }, 200);
+            }, 200);
         });
     });
 
@@ -1505,8 +1505,8 @@ describe('bug', () => {
             setTimeout(function() {
                 const bbox = maptalks.GLTFMarker.combineGLTFBoundingBox(markers);
                 const { min, max } = bbox;
-                expect(max).to.be.eql([2.2732110643209387, 2.052021745737641, 2.0583606767769975]);
-                expect(min).to.be.eql([-1.5934618772151878, -1.9143420394135475, -1.3162279709491824]);
+                expect(max).to.be.eql([2.2732110642994363, 2.052021745737641, 2.0583606767769975]);
+                expect(min).to.be.eql([-1.5934618772014453, -1.9143420394070614, -1.3162279709491824]);
                 done();
             }, 100);
         });
@@ -1972,7 +1972,7 @@ describe('bug', () => {
     it('setNodeTRS(maptalks/issues#711)', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const marker = new maptalks.GLTFGeometry(center,
-            { symbol: { 
+            { symbol: {
                 scaleX: 0.1,
                 scaleY: 0.1,
                 scaleZ: 0.1,

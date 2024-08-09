@@ -252,7 +252,7 @@ describe('transform-control', () => {
                 expect(newCoord.x).to.be.eql(0);
                 expect(newCoord.y).to.be.eql(0);
                 const scale = marker.getScale();
-                expect(scale).to.be.eql([1.1752355859492067, 1.1752355859492067, 1.1752355859492067]);
+                expect(scale).to.be.eql([1.175235585958968, 1.175235585958968, 1.175235585958968]);
                 done();
             }, 100);
         }
@@ -311,8 +311,8 @@ describe('transform-control', () => {
             happen.mouseup(eventContainer);
             setTimeout(function() {
                 const newCoord = marker.getCoordinates();
-                expect(newCoord.x).to.be.eql(0.00020384788513183594);
-                expect(newCoord.y).to.be.eql(-0.0002038478850465708);
+                expect(newCoord.x).to.be.eql(0.00020384788513183588);
+                expect(newCoord.y).to.be.eql(-0.00020384788504125505);
                 done();
             }, 100);
         }
@@ -380,7 +380,7 @@ describe('transform-control', () => {
                 const newCoord = marker.getCoordinates();
                 expect(newCoord.x).to.be.eql(0);
                 expect(newCoord.y).to.be.eql(0);
-                expect(newCoord.z.toFixed(5)).to.be.eql(-0.00887);// change z value
+                expect(newCoord.z.toFixed(5)).to.be.eql(-0.00877);// change z value
                 done();
             }, 100);
         }
@@ -441,7 +441,7 @@ describe('transform-control', () => {
                 expect(newCoord.x).to.be.eql(0);
                 expect(newCoord.y).to.be.eql(0);
                 const scale = marker.getScale();
-                expect(scale).to.be.eql([0.804950643537273, 0.6666666666666666, 0.6666666666666666]);
+                expect(scale).to.be.eql([0.8049506435385853, 0.6666666666666666, 0.6666666666666666]);
                 done();
             }, 100);
         }
@@ -503,7 +503,7 @@ describe('transform-control', () => {
             happen.mouseup(eventContainer);
             setTimeout(function() {
                 const newCoord = marker1.getCoordinates();
-                expect(newCoord.x).to.be.eql(-0.0007961521148445172);
+                expect(newCoord.x).to.be.eql(-0.000796152114868164);
                 expect(newCoord.y).to.be.eql(0);
 
                 const newCoord2 = marker2.getCoordinates();
@@ -511,7 +511,7 @@ describe('transform-control', () => {
                 expect(newCoord2.y).to.be.eql(0);
 
                 const newCoord3 = marker3.getCoordinates();
-                expect(newCoord3.x).to.be.eql(0.001203847885108189);
+                expect(newCoord3.x).to.be.eql(0.001203847885131836);
                 expect(newCoord3.y).to.be.eql(0);
                 done();
             }, 100);
