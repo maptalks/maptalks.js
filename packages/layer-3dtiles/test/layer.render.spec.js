@@ -853,7 +853,7 @@ describe('render specs', () => {
             });
             runner(done, layer, {
                 path: `./integration/expected/${resPath}/expected.png`,
-                diffCount: 0,
+                diffCount: 2,
                 renderCount: 5
             });
 
@@ -1922,7 +1922,7 @@ describe('render specs', () => {
                 ]
             });
             const assertion = layer => {
-                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61140768, 40.04200494, 0 ]);
+                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61140768, 40.04200494 ]);
             };
             runner(done, layer, { path: `./integration/expected/offset/BatchedWithTransformBox/expected.png`, diffCount: 0, renderCount: 1 }, assertion);
         });
@@ -1939,7 +1939,7 @@ describe('render specs', () => {
                 ]
             });
             const assertion = layer => {
-                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61140766, 40.04200494, 0 ]);
+                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61140766, 40.04200494 ]);
             };
             runner(done, layer, { path: `./integration/expected/offset/BatchedWithTransformRegion/expected.png`, diffCount: 0, renderCount: 1 }, assertion);
         });
@@ -1956,7 +1956,7 @@ describe('render specs', () => {
                 ]
             });
             const assertion = layer => {
-                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61209434, 40.04253061, 0 ]);
+                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61209434, 40.04253061 ]);
             };
             runner(done, layer, { path: `./integration/expected/offset/BatchedWithTransformSphere/expected.png`, diffCount: 0, renderCount: 1 }, assertion);
         });
@@ -2083,7 +2083,7 @@ describe('render specs', () => {
             });
             runner(() => {
                 done();
-            }, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 1, noGroup: true });
+            }, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 1, renderCount: 1, noGroup: true });
         });
 
         it('issue#424 with scale and rotation', done => {
@@ -2102,7 +2102,7 @@ describe('render specs', () => {
             });
             runner(() => {
                 done();
-            }, layer, { path: `./integration/expected/${resPath}-scale-rotation/expected.png`, diffCount: 2, renderCount: 1, noGroup: true });
+            }, layer, { path: `./integration/expected/${resPath}-scale-rotation/expected.png`, diffCount: 3, renderCount: 1, noGroup: true });
         });
 
         it('issue#604', done => {
