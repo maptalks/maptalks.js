@@ -92,19 +92,19 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
         return 'point';
     }
 
-    //@interlal
+    //@internal
     _getPaintParams(dx: any, dy: any): any[] {
         return this.getPainter().getPaintParams(dx || 0, dy || 0, null, true, '_altpt');
     }
 
-    //@interlal
+    //@internal
     _drawMarkerAltitude(ctx: CanvasRenderingContext2D, point: Point, groundPoint: Point): void {
         const style = this._getStyle();
         this.prepareCanvas(ctx, style);
         Canvas.path(ctx, [point, groundPoint], style['lineOpacity'], null, style['lineDasharray']);
     }
 
-    //@interlal
+    //@internal
     _drawLineAltitude(ctx: CanvasRenderingContext2D, points: any[], groundPoints: any[]): void {
         const style = this._getStyle();
         const isSplitted = points.length > 0 && Array.isArray(points[0]);
@@ -122,7 +122,7 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
         }
     }
 
-    //@interlal
+    //@internal
     _drawLine(ctx: CanvasRenderingContext2D, points: any[], groundPoints: any[]): void {
         const style = this._getStyle();
         this.prepareCanvas(ctx, style);
@@ -131,7 +131,7 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
         }
     }
 
-    //@interlal
+    //@internal
     _getStyle(): any {
         // read drawAltitude from layer every time
         const layer = this.geometry.getLayer();

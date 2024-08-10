@@ -122,20 +122,20 @@ const options: DistanceToolOptions = {
  */
 class DistanceTool extends DrawTool {
     options: DistanceToolOptions;
-    //@interlal
+    //@internal
     _measureLayers: Array<any>;
     translator: Translator;
-    //@interlal
+    //@internal
     _tailMarker?: any;
-    //@interlal
+    //@internal
     _tailLabel?: any;
-    //@interlal
+    //@internal
     _lastMeasure?: number | string;
-    //@interlal
+    //@internal
     _lastVertex?: any
-    //@interlal
+    //@internal
     _measureMarkerLayer?: any
-    //@interlal
+    //@internal
     _measureLineLayer?: any
 
     /**
@@ -244,7 +244,7 @@ class DistanceTool extends DrawTool {
         return this;
     }
 
-    //@interlal
+    //@internal
     _formatLabelContent(params: any) {
         const formatLabelContent = this.options.formatLabelContent;
         if (formatLabelContent && isFunction(formatLabelContent)) {
@@ -253,7 +253,7 @@ class DistanceTool extends DrawTool {
         return null;
     }
 
-    //@interlal
+    //@internal
     _measure(toMeasure: any) {
         const map: any = this.getMap();
         let length;
@@ -289,7 +289,7 @@ class DistanceTool extends DrawTool {
         return content;
     }
 
-    //@interlal
+    //@internal
     _registerMeasureEvents() {
         this.on('drawstart', this._msOnDrawStart, this)
             .on('drawvertex', this._msOnDrawVertex, this)
@@ -297,12 +297,12 @@ class DistanceTool extends DrawTool {
             .on('drawend', this._msOnDrawEnd, this);
     }
 
-    //@interlal
+    //@internal
     _afterEnable() {
         this._registerMeasureEvents();
     }
 
-    //@interlal
+    //@internal
     _afterDisable() {
         this.off('drawstart', this._msOnDrawStart, this)
             .off('drawvertex', this._msOnDrawVertex, this)
@@ -310,7 +310,7 @@ class DistanceTool extends DrawTool {
             .off('drawend', this._msOnDrawEnd, this);
     }
 
-    //@interlal
+    //@internal
     _msOnDrawStart(param: any) {
         const map: any = this.getMap();
         // const prjCoord = map._pointToPrj(param['point2d']);
@@ -349,7 +349,7 @@ class DistanceTool extends DrawTool {
         this._addVertexMarker(marker, startLabel);
     }
 
-    //@interlal
+    //@internal
     _msOnMouseMove(param: any) {
         const ms = this._measure(this._msGetCoordsToMeasure(param));
         if (!this._tailMarker) {
@@ -372,12 +372,12 @@ class DistanceTool extends DrawTool {
         // this._tailLabel._setPrjCoordinates(lastCoord);
     }
 
-    //@interlal
+    //@internal
     _msGetCoordsToMeasure(param: any) {
         return param['geometry'].getCoordinates().concat([param['coordinate']]);
     }
 
-    //@interlal
+    //@internal
     _msOnDrawVertex(param: any) {
         // const prjCoords = this._geometry._getPrjCoordinates();
         // const lastCoord = prjCoords[prjCoords.length - 1];
@@ -398,7 +398,7 @@ class DistanceTool extends DrawTool {
         this._lastVertex = vertexLabel;
     }
 
-    //@interlal
+    //@internal
     _addVertexMarker(marker: Marker, vertexLabel?: any) {
         if (!this._vertexes) {
             this._vertexes = [];
@@ -413,7 +413,7 @@ class DistanceTool extends DrawTool {
         }
     }
 
-    //@interlal
+    //@internal
     _msOnDrawEnd(param: any) {
         this._clearTailMarker();
         if (param['geometry'].getCoordinates().length < 2) {
@@ -435,7 +435,7 @@ class DistanceTool extends DrawTool {
         this._lastMeasure = geo.getLength();
     }
 
-    //@interlal
+    //@internal
     _addClearMarker(coordinates: Coordinate, prjCoord: any, dx: number | string) {
         let symbol = this.options['clearButtonSymbol'];
         let dxSymbol: any | Array<any> = {
@@ -469,7 +469,7 @@ class DistanceTool extends DrawTool {
         // endMarker._setPrjCoordinates(prjCoord);
     }
 
-    //@interlal
+    //@internal
     _clearTailMarker() {
         if (this._tailMarker) {
             this._tailMarker.remove();
@@ -481,13 +481,13 @@ class DistanceTool extends DrawTool {
         }
     }
 
-    //@interlal
+    //@internal
     _clearMeasureLayers() {
         this._measureLineLayer.remove();
         this._measureMarkerLayer.remove();
     }
 
-    //@interlal
+    //@internal
     _getFirstCoordinate() {
         if (!this._geometry) {
             return null;
@@ -496,7 +496,7 @@ class DistanceTool extends DrawTool {
         return coordinates[0];
     }
 
-    //@interlal
+    //@internal
     _getLasttCoordinate() {
         if (!this._geometry) {
             return null;

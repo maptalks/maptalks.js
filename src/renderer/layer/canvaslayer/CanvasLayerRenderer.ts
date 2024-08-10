@@ -3,11 +3,11 @@ import CanvasRenderer from '../../../renderer/layer/CanvasRenderer';
 
 export default class CanvasLayerRenderer extends CanvasRenderer {
     buffer: HTMLCanvasElement;
-    //@interlal
+    //@internal
     _drawContext: any[];
-    //@interlal
+    //@internal
     _predrawed: boolean;
-    //@interlal
+    //@internal
     _shouldClear: boolean;
 
     getPrepareParams() {
@@ -118,7 +118,7 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
         }
     }
 
-    //@interlal
+    //@internal
     _prepareDrawParams() {
         if (!this.getMap()) {
             return null;
@@ -137,7 +137,7 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
         ];
     }
 
-    //@interlal
+    //@internal
     _drawLayer(...args: any[]) {
         const params = this._prepareDrawParams();
         if (!params) {
@@ -148,7 +148,7 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
         this.completeRender();
     }
 
-    //@interlal
+    //@internal
     _drawLayerOnInteracting(...args: any[]) {
         if (!this.layer.drawOnInteracting) {
             return;

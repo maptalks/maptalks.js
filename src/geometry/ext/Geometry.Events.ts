@@ -6,8 +6,8 @@ import Geometry from '../Geometry';
 declare module "../Geometry" {
 
     interface Geometry {
-        //@interlal
-    _onEvent(event: MouseEvent | TouchEvent, type?: string): void;
+        //@internal
+        _onEvent(event: MouseEvent | TouchEvent, type?: string): void;
     }
 }
 
@@ -20,7 +20,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * @param  {Event} event - dom event
      * @private
      */
-    //@interlal
+    //@internal
     _onEvent(event: MouseEvent | TouchEvent, type: string): void {
         const map = this.getMap();
         if (!map) {
@@ -46,7 +46,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * @param {any} domEvent
      * @returns
      */
-    //@interlal
+    //@internal
     _getEventTypeToFire(domEvent: any): string {
         // let eventType = domEvent.type;
         // //change event type to contextmenu

@@ -3,17 +3,17 @@ import Map, { MapAnimationOptionsType, MapViewType } from './Map';
 
 declare module "./Map" {
     interface Map {
-        //@interlal
-    _viewHistory: Array<MapViewType>;
+        //@internal
+        _viewHistory: Array<MapViewType>;
         zoomToPreviousView(options?: any): MapViewType;
         hasPreviousView(): boolean;
         zoomToNextView(options?: any): MapViewType;
         hasNextView(): boolean;
         getViewHistory(): Array<MapViewType>;
-        //@interlal
-    _onViewChange(view: MapViewType): void;
-        //@interlal
-    _getCurrentView(): MapViewType;
+        //@internal
+        _onViewChange(view: MapViewType): void;
+        //@internal
+        _getCurrentView(): MapViewType;
 
 
     }
@@ -22,7 +22,7 @@ declare module "./Map" {
 
 
 Map.include(/** @lends Map.prototype */ {
-    //@interlal
+    //@internal
     _onViewChange(view: MapViewType) {
         if (!this._viewHistory) {
             this._viewHistory = [];
@@ -108,7 +108,7 @@ Map.include(/** @lends Map.prototype */ {
         return true;
     },
 
-    //@interlal
+    //@internal
     _zoomToView(view: MapViewType, options: MapAnimationOptionsType) {
         const old = this.getView();
         if (options['animation']) {
@@ -133,7 +133,7 @@ Map.include(/** @lends Map.prototype */ {
         return this._viewHistory;
     },
 
-    //@interlal
+    //@internal
     _fireViewChange(old: MapViewType, view: MapViewType) {
         this._fireEvent('viewchange', {
             'old': old,
@@ -142,7 +142,7 @@ Map.include(/** @lends Map.prototype */ {
         this._insertUICollidesQueue();
     },
 
-    //@interlal
+    //@internal
     _getCurrentView(): MapViewType {
         if (!this._viewHistory) {
             return null;

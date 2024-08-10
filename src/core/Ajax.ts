@@ -168,7 +168,7 @@ const Ajax = {
         return client;
     },
 
-    //@interlal
+    //@internal
     _wrapCallback: function (client, cb: Callback) {
         return function () {
             if (client.readyState === 4) {
@@ -195,7 +195,7 @@ const Ajax = {
         };
     },
 
-    //@interlal
+    //@internal
     _getClient: function (cb: Callback) {
         /*eslint-disable no-empty, no-undef*/
         let client;

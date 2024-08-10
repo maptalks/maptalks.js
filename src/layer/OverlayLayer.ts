@@ -43,22 +43,22 @@ const TMP_EVENTS_ARR = [];
  * @extends Layer
  */
 class OverlayLayer extends Layer {
-    //@interlal
+    //@internal
     _maxZIndex: number
-    //@interlal
+    //@internal
     _minZIndex: number
-    //@interlal
+    //@internal
     _geoMap: Record<string, Geometry>;
-    //@interlal
+    //@internal
     _geoList: Array<Geometry>
-    //@interlal
+    //@internal
     _toSort: boolean
-    //@interlal
+    //@internal
     _cookedStyles: any
-    //@interlal
+    //@internal
     _clearing: boolean
     options: OverlayLayerOptionsType;
-    //@interlal
+    //@internal
     _renderer: OverlayLayerCanvasRenderer;
 
     constructor(id: string, geometries: OverlayLayerOptionsType | Array<Geometry>, options?: OverlayLayerOptionsType) {
@@ -405,7 +405,7 @@ class OverlayLayer extends Layer {
     }
 
 
-    //@interlal
+    //@internal
     _add(geo: Geometry, extent?: Extent, i?: number) {
         if (!this._toSort) {
             this._toSort = geo.getZIndex() !== 0;
@@ -620,7 +620,7 @@ class OverlayLayer extends Layer {
         return this;
     }
 
-    //@interlal
+    //@internal
     _styleGeometry(geometry: Geometry): boolean {
         if (!this._cookedStyles) {
             return false;
@@ -680,7 +680,7 @@ class OverlayLayer extends Layer {
         return Layer.prototype.hide.call(this);
     }
 
-    //@interlal
+    //@internal
     _initCache() {
         if (!this._geoList) {
             this._geoList = [];
@@ -688,13 +688,13 @@ class OverlayLayer extends Layer {
         }
     }
 
-    //@interlal
+    //@internal
     _updateZIndex(...zIndex: number[]) {
         this._maxZIndex = Math.max(this._maxZIndex, Math.max(...zIndex));
         this._minZIndex = Math.min(this._minZIndex, Math.min(...zIndex));
     }
 
-    //@interlal
+    //@internal
     _sortGeometries() {
         if (!this._toSort) {
             return;
@@ -708,7 +708,7 @@ class OverlayLayer extends Layer {
         this._toSort = false;
     }
 
-    //@interlal
+    //@internal
     _compare(a, b) {
         if (a.getZIndex() === b.getZIndex()) {
             return a._getInternalId() - b._getInternalId();
@@ -717,7 +717,7 @@ class OverlayLayer extends Layer {
     }
 
     //binarySearch
-    //@interlal
+    //@internal
     _findInList(geo: Geometry): number {
         const len = this._geoList.length;
         if (len === 0) {
@@ -740,7 +740,7 @@ class OverlayLayer extends Layer {
         return -1;
     }
 
-    //@interlal
+    //@internal
     _onGeometryEvent(param?: HandlerFnResultType) {
         if (!param || !param['target']) {
             return;
@@ -765,7 +765,7 @@ class OverlayLayer extends Layer {
         }
     }
 
-    //@interlal
+    //@internal
     _onGeometryIdChange(param: HandlerFnResultType) {
         if (param['new'] === param['old']) {
             if (this._geoMap[param['old']] && this._geoMap[param['old']] === param['target']) {
@@ -784,7 +784,7 @@ class OverlayLayer extends Layer {
 
     }
 
-    //@interlal
+    //@internal
     _onGeometryZIndexChange(param: HandlerFnResultType) {
         if (param['old'] !== param['new']) {
             this._updateZIndex(param['new']);
@@ -795,49 +795,49 @@ class OverlayLayer extends Layer {
         }
     }
 
-    //@interlal
+    //@internal
     _onGeometryPositionChange(param: HandlerFnResultType) {
         if (this._getRenderer()) {
             this._getRenderer().onGeometryPositionChange(param);
         }
     }
 
-    //@interlal
+    //@internal
     _onGeometryShapeChange(param: HandlerFnResultType) {
         if (this._getRenderer()) {
             this._getRenderer().onGeometryShapeChange(param);
         }
     }
 
-    //@interlal
+    //@internal
     _onGeometrySymbolChange(param: HandlerFnResultType) {
         if (this._getRenderer()) {
             this._getRenderer().onGeometrySymbolChange(param);
         }
     }
 
-    //@interlal
+    //@internal
     _onGeometryShow(param: HandlerFnResultType) {
         if (this._getRenderer()) {
             this._getRenderer().onGeometryShow(param);
         }
     }
 
-    //@interlal
+    //@internal
     _onGeometryHide(param: HandlerFnResultType) {
         if (this._getRenderer()) {
             this._getRenderer().onGeometryHide(param);
         }
     }
 
-    //@interlal
+    //@internal
     _onGeometryPropertiesChange(param: HandlerFnResultType) {
         if (this._getRenderer()) {
             this._getRenderer().onGeometryPropertiesChange(param);
         }
     }
 
-    //@interlal
+    //@internal
     _hasGeoListeners(eventTypes: string | Array<string>): boolean {
         if (!eventTypes) {
             return false;
@@ -869,7 +869,7 @@ class OverlayLayer extends Layer {
     }
 
     //override for typing
-    //@interlal
+    //@internal
     _getRenderer(): OverlayLayerCanvasRenderer {
         return super._getRenderer() as OverlayLayerCanvasRenderer;
     }

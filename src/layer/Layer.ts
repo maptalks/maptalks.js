@@ -74,30 +74,30 @@ const options: LayerOptionsType = {
  * @mixes Renderable
  */
 class Layer extends JSONAble(Eventable(Renderable(Class))) {
-    //@interlal
+    //@internal
     _canvas: HTMLCanvasElement;
-    //@interlal
+    //@internal
     _renderer: CanvasRenderer;
-    //@interlal
+    //@internal
     _id: string
-    //@interlal
+    //@internal
     _zIndex: number
-    //@interlal
+    //@internal
     _drawTime: number
-    //@interlal
+    //@internal
     _toRedraw: boolean
     map: Map
-    //@interlal
+    //@internal
     _mask: Polygon | MultiPolygon | Marker;
-    //@interlal
+    //@internal
     _maskGeoJSON: Record<string, any>;
-    //@interlal
+    //@internal
     _loaded: boolean
-    //@interlal
+    //@internal
     _collisionIndex: CollisionIndex
-    //@interlal
+    //@internal
     _optionsHook?(conf?: any): void
-    //@interlal
+    //@internal
     _silentConfig: boolean | undefined | any
     options: LayerOptionsType;
     getLayers?(): Layer[];
@@ -699,7 +699,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     onRemove() { }
 
-    //@interlal
+    //@internal
     _bindMap(map: Map, zIndex?: number) {
         if (!map) {
             return;
@@ -715,7 +715,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         this.fire('add');
     }
 
-    //@interlal
+    //@internal
     _initRenderer() {
         const renderer = this.options['renderer'];
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -758,7 +758,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         });
     }
 
-    //@interlal
+    //@internal
     _doRemove() {
         this._loaded = false;
 
@@ -773,19 +773,19 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         delete this._collisionIndex;
     }
 
-    //@interlal
+    //@internal
     _switchEvents(to, emitter) {
         if (emitter && emitter.getEvents && this.getMap()) {
             this.getMap()[to](emitter.getEvents(), emitter);
         }
     }
 
-    //@interlal
+    //@internal
     _getRenderer() {
         return this._renderer;
     }
 
-    //@interlal
+    //@internal
     _getLayerList() {
         if (!this.map) {
             return [];
@@ -794,7 +794,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         return this.map.getLayers().slice(beginIndex);
     }
 
-    //@interlal
+    //@internal
     _getMask2DExtent() {
         if (!this._mask || !this.getMap()) {
             return null;

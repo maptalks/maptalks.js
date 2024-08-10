@@ -45,34 +45,34 @@ class CanvasRenderer extends Class {
     gl: TileRenderingContext;
     middleWest: Point;
     canvasExtent2D: Extent;
-    //@interlal
+    //@internal
     _extent2D: Extent;
-    //@interlal
+    //@internal
     _maskExtent: Extent;
 
-    //@interlal
+    //@internal
     _painted: boolean;
-    //@interlal
+    //@internal
     _drawTime: number;
-    //@interlal
+    //@internal
     _frameTime: number;
-    //@interlal
+    //@internal
     _resWorkerConn: ResourceWorkerConnection;
 
-    //@interlal
+    //@internal
     _toRedraw: boolean;
-    //@interlal
+    //@internal
     _loadingResource: boolean;
-    //@interlal
+    //@internal
     _renderComplete: boolean;
-    //@interlal
+    //@internal
     _canvasUpdated: boolean;
 
-    //@interlal
+    //@internal
     _renderZoom: number;
-    //@interlal
+    //@internal
     _errorThrown: boolean;
-    //@interlal
+    //@internal
     __zoomTransformMatrix: number[];
 
     drawOnInteracting?(...args: any[]): void;
@@ -473,7 +473,7 @@ class CanvasRenderer extends Class {
 
     }
 
-    //@interlal
+    //@internal
     _canvasContextScale(context: CanvasRenderingContext2D, dpr: number) {
         context.scale(dpr, dpr);
         context.dpr = dpr;
@@ -812,7 +812,7 @@ class CanvasRenderer extends Class {
         return this._drawTime;
     }
 
-    //@interlal
+    //@internal
     _tryToDraw(framestamp) {
         this._toRedraw = false;
         if (!this.canvas && this.layer.isEmpty && this.layer.isEmpty()) {
@@ -823,7 +823,7 @@ class CanvasRenderer extends Class {
         this._drawAndRecord(framestamp);
     }
 
-    //@interlal
+    //@internal
     _drawAndRecord(framestamp: number) {
         if (!this.getMap()) {
             return;
@@ -840,7 +840,7 @@ class CanvasRenderer extends Class {
         }
     }
 
-    //@interlal
+    //@internal
     _promiseResource(url) {
         const layer = this.layer;
         const resources = this.resources;
@@ -917,7 +917,7 @@ class CanvasRenderer extends Class {
 
     }
 
-    //@interlal
+    //@internal
     _cacheResource(url: [string, number | string, string | number], img: ImageType) {
         if (!this.layer || !this.resources) {
             return;
@@ -946,7 +946,7 @@ export type ResourceUrl = string | string[]
 export class ResourceCache {
     resources: any;
 
-    //@interlal
+    //@internal
     _errors: any;
 
     constructor() {
@@ -1045,7 +1045,7 @@ export class ResourceCache {
         return this;
     }
 
-    //@interlal
+    //@internal
     _getImgUrl(url: ResourceUrl) {
         if (!Array.isArray(url)) {
             return url;

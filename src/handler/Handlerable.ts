@@ -10,8 +10,8 @@ import Handler from "./Handler";
 export default function <T extends MixinConstructor>(Base: T) {
 
     return class Handlerable extends Base {
-        //@interlal
-    _handlers?: Handler[];
+        //@internal
+        _handlers?: Handler[];
         /**
          * Register a handler
          * @param {String} name       - name of the handler
@@ -67,8 +67,8 @@ export default function <T extends MixinConstructor>(Base: T) {
             return this;
         }
 
-        //@interlal
-    _clearHandlers() {
+        //@internal
+        _clearHandlers() {
             for (let i = 0, len = this._handlers.length; i < len; i++) {
                 this._handlers[i].remove();
             }

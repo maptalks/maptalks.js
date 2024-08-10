@@ -33,11 +33,11 @@ export default class EditHandle extends Eventable<any>(Class) {
 
     url: string;
     bbox: BBOX;
-    //@interlal
+    //@internal
     _point: Point;
-    //@interlal
+    //@internal
     _img: any;
-    //@interlal
+    //@internal
     _dragger: DragHandler;
 
     constructor(target: GeometryEditor, map: Map, options: EditHandleOptions) {
@@ -59,7 +59,7 @@ export default class EditHandle extends Eventable<any>(Class) {
         return this.options['cursor'] || 'default';
     }
 
-    //@interlal
+    //@internal
     _fetchImage() {
         const map = this.map;
         const symbol = this.options.symbol;

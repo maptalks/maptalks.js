@@ -7,7 +7,7 @@ import { ResourceCache } from '../../layer/CanvasRenderer';
 // import { ResourceProxy } from '../../../core/ResourceProxy';
 
 export default class VectorPathMarkerSymbolizer extends ImageMarkerSymbolizer {
-    //@interlal
+    //@internal
     _url: any;
     static test(symbol: any): boolean {
         return isPathSymbol(symbol);
@@ -34,12 +34,12 @@ export default class VectorPathMarkerSymbolizer extends ImageMarkerSymbolizer {
         }
     }
 
-    //@interlal
+    //@internal
     _prepareContext(): void {
         //for VectorPathMarkerSymbolizer, opacity is already added into SVG element.
     }
 
-    //@interlal
+    //@internal
     _getImage(resources: ResourceCache): any {
         if (resources && resources.isResourceLoaded(this._url)) {
             return resources.getImage(this._url);

@@ -55,9 +55,9 @@ class Overview extends Control {
     options: OverviewOptionsType;
     mapContainer: HTMLDivElement;
     button: HTMLDivElement;
-    //@interlal
+    //@internal
     _overview: Map;
-    //@interlal
+    //@internal
     _perspective: Polygon;
 
     /**
@@ -145,7 +145,7 @@ class Overview extends Control {
         return this._overview;
     }
 
-    //@interlal
+    //@internal
     _onButtonClick() {
         if (!this._overview) {
             this.maxmize();
@@ -155,7 +155,7 @@ class Overview extends Control {
         this._updateButtonText();
     }
 
-    //@interlal
+    //@internal
     _updateButtonText() {
         if (this._overview) {
             this.button.innerHTML = '-';
@@ -164,7 +164,7 @@ class Overview extends Control {
         }
     }
 
-    //@interlal
+    //@internal
     _createOverview() {
         const map = this.getMap(),
             dom = this.mapContainer;
@@ -195,7 +195,7 @@ class Overview extends Control {
         this.fire('load');
     }
 
-    //@interlal
+    //@internal
     _getOverviewZoom() {
         const map = this.getMap(),
             zoom = map.getZoom(),
@@ -219,14 +219,14 @@ class Overview extends Control {
     }
 
 
-    //@interlal
+    //@internal
     _onDragEnd() {
         const center = this._perspective.getCenter();
         this._overview.setCenter(center);
         this.getMap().panTo(center);
     }
 
-    //@interlal
+    //@internal
     _getPerspectiveCoords() {
         const map = this.getMap();
         const projection = map.getProjection();
@@ -240,7 +240,7 @@ class Overview extends Control {
         });
     }
 
-    //@interlal
+    //@internal
     _update() {
         if (!this._overview) {
             return;
@@ -252,7 +252,7 @@ class Overview extends Control {
         this._overview.setCenterAndZoom(this.getMap().getCenter(), this._getOverviewZoom());
     }
 
-    //@interlal
+    //@internal
     _updateSpatialReference() {
         if (!this._overview) {
             return;
@@ -262,7 +262,7 @@ class Overview extends Control {
         this._overview.setSpatialReference(spatialRef);
     }
 
-    //@interlal
+    //@internal
     _updateBaseLayer() {
         if (!this._overview) {
             return;

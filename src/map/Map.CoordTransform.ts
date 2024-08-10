@@ -445,7 +445,7 @@ Map.include(/** @lends Map.prototype */{
         };
     }(),
 
-    //@interlal
+    //@internal
     _get2DExtent(zoom, out) {
         let cached;
         if ((zoom === undefined || zoom === this._zoomLevel) && this._mapExtent2D) {
@@ -466,7 +466,7 @@ Map.include(/** @lends Map.prototype */{
         return this._get2DExtent(zoom, out);
     },
 
-    //@interlal
+    //@internal
     _get2DExtentAtRes: function () {
         const POINT = new Point(0, 0);
         return function (res, out) {
@@ -486,7 +486,7 @@ Map.include(/** @lends Map.prototype */{
         return this._pointToExtent(extent2D);
     },
 
-    //@interlal
+    //@internal
     _pointToExtent: function () {
         const COORD0 = new Coordinate(0, 0);
         const COORD1 = new Coordinate(0, 0);
@@ -522,7 +522,7 @@ Map.include(/** @lends Map.prototype */{
         };
     }(),
 
-    //@interlal
+    //@internal
     _viewPointToPrj: function () {
         const POINT = new Point(0, 0);
         return function (viewPoint, out) {
@@ -534,7 +534,7 @@ Map.include(/** @lends Map.prototype */{
         return this._viewPointToPrj(viewPoint, out);
     },
 
-    //@interlal
+    //@internal
     _prjToContainerPoint(pCoordinate, zoom, out, altitude) {
         const res = this._getResolution(zoom);
         return this._prjToContainerPointAtRes(pCoordinate, res, out, altitude);
@@ -544,7 +544,7 @@ Map.include(/** @lends Map.prototype */{
         return this._prjToContainerPoint(pCoordinate, zoom, out, altitude);
     },
 
-    //@interlal
+    //@internal
     _prjToContainerPointAtRes: function () {
         const POINT = new Point(0, 0);
         return function (pCoordinate, res, out, altitude) {
@@ -556,7 +556,7 @@ Map.include(/** @lends Map.prototype */{
         return this.prjToContainerPointAtRes(pCoordinate, res, out, altitude);
     },
 
-    //@interlal
+    //@internal
     _prjToViewPoint: function () {
         const POINT = new Point(0, 0);
         return function (pCoordinate, out, altitude) {
@@ -569,7 +569,7 @@ Map.include(/** @lends Map.prototype */{
         return this._prjToViewPoint(pCoordinate, out, altitude);
     },
 
-    //@interlal
+    //@internal
     _viewPointToPoint: function () {
         const POINT = new Point(0, 0);
         return function (viewPoint, zoom, out) {
@@ -581,7 +581,7 @@ Map.include(/** @lends Map.prototype */{
         return this._viewPointToPoint(viewPoint, zoom, out);
     },
 
-    //@interlal
+    //@internal
     _pointToViewPoint: function () {
         const COORD = new Coordinate(0, 0);
         return function (point, zoom, out) {

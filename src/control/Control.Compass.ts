@@ -22,9 +22,9 @@ const options = {
 
 class Compass extends Control {
     options: CompassOptionsType;
-    //@interlal
+    //@internal
     _compass: HTMLDivElement;
-    //@interlal
+    //@internal
     _bearing: number;
     /**
      * method to build DOM of the control
@@ -47,18 +47,18 @@ class Compass extends Control {
         this._rotateCompass();
     }
 
-    //@interlal
+    //@internal
     _getCompass() {
         const compass = createEl('div', 'maptalks-compass');
         return compass;
     }
 
-    //@interlal
+    //@internal
     _registerDomEvents() {
         on(this._compass, 'click', this._resetView, this);
     }
 
-    //@interlal
+    //@internal
     _rotateCompass() {
         const b = this.getMap().getBearing().toFixed(1);
         let bearing = parseFloat(b);
@@ -78,7 +78,7 @@ class Compass extends Control {
         delete this._bearing;
     }
 
-    //@interlal
+    //@internal
     _resetView() {
         const view = { bearing: 0 };
         this.getMap().animateTo(view);

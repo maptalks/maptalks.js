@@ -7,17 +7,17 @@ import type Coordinate from '../../geo/Coordinate';
 declare module "../Geometry" {
 
     interface Geometry {
-        //@interlal
-    _infoWindow: InfoWindow;
+        //@internal
+        _infoWindow: InfoWindow;
         setInfoWindow(options: InfoWindowOptionsType): this;
         getInfoWindow(): InfoWindow;
         openInfoWindow(coordinate?: Coordinate): this;
         closeInfoWindow(): this;
         removeInfoWindow(): this;
-        //@interlal
-    _bindInfoWindow(): this;
-        //@interlal
-    _unbindInfoWindow(): this;
+        //@internal
+        _bindInfoWindow(): this;
+        //@internal
+        _unbindInfoWindow(): this;
     }
 }
 
@@ -123,7 +123,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * Bing InfoWindow to Geometry
      * @returns {Geometry} this
      */
-    //@interlal
+    //@internal
     _bindInfoWindow() {
         const options = this._infoWinOptions;
         if (!options) {
@@ -141,7 +141,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * Unbind InfoWindow
      * @returns {Geometry} this
      */
-    //@interlal
+    //@internal
     _unbindInfoWindow() {
         if (this._infoWindow) {
             this.closeInfoWindow();

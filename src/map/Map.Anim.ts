@@ -7,13 +7,13 @@ import { isNil, isFunction, hasOwn, extend, clamp } from '../core/util';
 
 declare module "./Map" {
     interface Map {
-        //@interlal
-    _mapAnimPlayer: Player;
+        //@internal
+        _mapAnimPlayer: Player;
         isRotating(): boolean;
-        //@interlal
-    _animateTo(view: MapViewType, options?: MapAnimationOptionsType, step?: (frame) => void): Player;
-        //@interlal
-    _stopAnim(player?: Player): void;
+        //@internal
+        _animateTo(view: MapViewType, options?: MapAnimationOptionsType, step?: (frame) => void): Player;
+        //@internal
+        _stopAnim(player?: Player): void;
         animateTo(view: MapViewType, options?: MapAnimationOptionsType, step?: (frame) => void): Player;
         flyTo(view: MapViewType, options?: MapAnimationOptionsType, step?: (frame) => void): this;
         isAnimating(): boolean;
@@ -186,7 +186,7 @@ Map.include(/** @lends Map.prototype */{
         return player;
     },
 
-    //@interlal
+    //@internal
     _animateTo(view, options = {}, step) {
         if (this._mapAnimPlayer) {
             this._stopAnim(this._mapAnimPlayer);
@@ -426,7 +426,7 @@ Map.include(/** @lends Map.prototype */{
         return this.isDragRotating() || !!this._animRotating;
     },
 
-    //@interlal
+    //@internal
     _endAnim(player, props, zoomOrigin, options) {
         delete this._animRotating;
         /**
@@ -494,7 +494,7 @@ Map.include(/** @lends Map.prototype */{
         }
     },
 
-    //@interlal
+    //@internal
     _startAnim(props, zoomOrigin) {
         if (!this._animPlayer) {
             return;
@@ -520,7 +520,7 @@ Map.include(/** @lends Map.prototype */{
         this._animPlayer.play();
     },
 
-    //@interlal
+    //@internal
     _stopAnim(player) {
         if (!player) {
             return;
@@ -539,7 +539,7 @@ Map.include(/** @lends Map.prototype */{
         // this._resumePrev(player);
     },
 
-    //@interlal
+    //@internal
     _resumePrev(player) {
         if (!this._prevAnimPlayer) {
             return;

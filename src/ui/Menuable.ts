@@ -4,9 +4,9 @@ import Menu, { MenuItem, MenuOptionsType } from './Menu';
 import { Coordinate } from '../geo';
 
 interface MenuAbles {
-    //@interlal
+    //@internal
     _menuOptions: MenuOptionsType;
-    //@interlal
+    //@internal
     _menu: Menu;
     setMenu(options: MenuOptionsType): this;
     getMenu(): Menu;
@@ -15,11 +15,11 @@ interface MenuAbles {
     getMenuItems(): Array<MenuItem>;
     closeMenu(): this;
     removeMenu(): this;
-    //@interlal
+    //@internal
     _bindMenu(): this;
-    //@interlal
+    //@internal
     _unbindMenu(): this;
-    //@interlal
+    //@internal
     _defaultOpenMenu(param: any): boolean;
 }
 
@@ -215,7 +215,7 @@ const Menuable = {
         return this;
     },
 
-    //@interlal
+    //@internal
     _bindMenu() {
         if (!this._menuOptions) {
             return this;
@@ -226,7 +226,7 @@ const Menuable = {
         return this;
     },
 
-    //@interlal
+    //@internal
     _unbindMenu() {
         if (this._menu) {
             this.closeMenu();
@@ -243,7 +243,7 @@ const Menuable = {
      * @return {Boolean} true | false to stop event propagation
      * @private
      */
-    //@interlal
+    //@internal
     _defaultOpenMenu(param) {
         // 如果用户想自定义右键菜单，其不应该setMenu,既然其设置了说明就是想用默认的menu,应该根据是否设置了menu为参考依据而不是 contextmenu监听次数
         this.openMenu(param['coordinate']);

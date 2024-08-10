@@ -119,7 +119,7 @@ class Toolbar extends Control {
         return dom;
     }
 
-    //@interlal
+    //@internal
     _createDropMenu(index: number) {
         const me = this;
 
@@ -181,7 +181,7 @@ class Toolbar extends Control {
         return menuDom;
     }
 
-    //@interlal
+    //@internal
     _getItems() {
         return this.options['items'] || [];
     }

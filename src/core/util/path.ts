@@ -45,7 +45,7 @@ export function clipSegment(a, b, bounds, useLastCode, round, noCut) {
         codeOut, p, newCode;
 
     // save 2nd code to avoid calculating it on the next segment
-    //@interlal
+    //@internal
     _lastCode = codeB;
     /* eslint-disable no-constant-condition */
     while (true) {

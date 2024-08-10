@@ -66,13 +66,13 @@ const options: TextBoxOptionsType = {
 class TextBox extends TextMarker {
 
     options: TextBoxOptionsType;
-    //@interlal
+    //@internal
     _width: number
-    //@interlal
+    //@internal
     _height: number
-    //@interlal
+    //@internal
     _oldWidth: any
-    //@interlal
+    //@internal
     _oldHeight: any
     /**
      * @param {String} content                 - TextBox's text content
@@ -205,7 +205,7 @@ class TextBox extends TextMarker {
         return textBox;
     }
 
-    //@interlal
+    //@internal
     _toJSON(options: any) {
         return {
             'feature': this.toGeoJSON(options),
@@ -216,7 +216,7 @@ class TextBox extends TextMarker {
         };
     }
 
-    //@interlal
+    //@internal
     _refresh(): void {
         const textStyle = this.getTextStyle() || {},
             padding = textStyle['padding'] || [12, 8];

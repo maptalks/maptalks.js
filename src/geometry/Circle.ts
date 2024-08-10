@@ -33,7 +33,7 @@ const options: CircleOptionsType = {
  * @mixes CenterMixin
  */
 export class Circle extends CenterMixin(Polygon) {
-    //@interlal
+    //@internal
     _radius: number
 
     static fromJSON(json: Record<string, any>): Circle {
@@ -119,7 +119,7 @@ export class Circle extends CenterMixin(Polygon) {
         return this.show();
     }
 
-    //@interlal
+    //@internal
     _containsPoint(point: Point, tolerance?: number): boolean {
         const map = this.getMap();
         if (map.getPitch()) {
@@ -132,7 +132,7 @@ export class Circle extends CenterMixin(Polygon) {
         return withInEllipse(point, center, se, t);
     }
 
-    //@interlal
+    //@internal
     _computePrjExtent(projection: CommonProjectionType): Extent {
         const minmax = this._getMinMax(projection);
         if (!minmax) {
@@ -148,7 +148,7 @@ export class Circle extends CenterMixin(Polygon) {
         return new Extent(pcenter.add(leftx, topy), pcenter.add(rightx, bottomy));
     }
 
-    //@interlal
+    //@internal
     _computeExtent(measurer: any): Extent {
         const minmax = this._getMinMax(measurer);
         if (!minmax) {
@@ -157,7 +157,7 @@ export class Circle extends CenterMixin(Polygon) {
         return new Extent(minmax[0].x, minmax[2].y, minmax[1].x, minmax[3].y, this._getProjection());
     }
 
-    //@interlal
+    //@internal
     _getMinMax(measurer: any): [Coordinate, Coordinate, Coordinate, Coordinate] {
         if (!measurer || !this._coordinates || isNil(this._radius)) {
             return null;
@@ -170,7 +170,7 @@ export class Circle extends CenterMixin(Polygon) {
         return [p1, p2, p3, p4];
     }
 
-    //@interlal
+    //@internal
     _computeGeodesicLength(): number {
         if (isNil(this._radius)) {
             return 0;
@@ -178,7 +178,7 @@ export class Circle extends CenterMixin(Polygon) {
         return Math.PI * 2 * this._radius;
     }
 
-    //@interlal
+    //@internal
     _computeGeodesicArea(): number {
         if (isNil(this._radius)) {
             return 0;
@@ -186,7 +186,7 @@ export class Circle extends CenterMixin(Polygon) {
         return Math.PI * Math.pow(this._radius, 2);
     }
 
-    //@interlal
+    //@internal
     _exportGeoJSONGeometry() {
         const coordinates = Coordinate.toNumberArrays([this.getShell()]);
         return {
@@ -195,7 +195,7 @@ export class Circle extends CenterMixin(Polygon) {
         };
     }
 
-    //@interlal
+    //@internal
     _toJSON(options: any) {
         const center = this.getCenter();
         const opts = extend({}, options);

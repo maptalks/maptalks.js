@@ -22,9 +22,9 @@ const options: ResetOptionsType = {
 };
 
 class Reset extends Control {
-    //@interlal
+    //@internal
     _reset: HTMLDivElement;
-    //@interlal
+    //@internal
     _view: MapViewType;
     options: ResetOptionsType;
     /**
@@ -50,13 +50,13 @@ class Reset extends Control {
         this._view = view;
     }
 
-    //@interlal
+    //@internal
     _getReset() {
         const reset = createEl('div', 'maptalks-reset');
         return reset as HTMLDivElement;
     }
 
-    //@interlal
+    //@internal
     _registerDomEvents() {
         on(this._reset, 'click', this._resetView, this);
     }
@@ -66,7 +66,7 @@ class Reset extends Control {
         delete this._view;
     }
 
-    //@interlal
+    //@internal
     _resetView() {
         this.getMap().setView(this._view);
     }

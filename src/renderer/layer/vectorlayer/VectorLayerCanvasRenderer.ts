@@ -43,23 +43,23 @@ function isDebug(layer: any) {
  * @param layer - layer to render
  */
 class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
-    //@interlal
+    //@internal
     _lastRenderTime: number;
-    //@interlal
+    //@internal
     _lastCollisionTime: number;
-    //@interlal
+    //@internal
     _imageData: ImageData;
-    //@interlal
+    //@internal
     _geosToDraw: Geometries[];
-    //@interlal
+    //@internal
     _lastGeosToDraw: Geometries[];
-    //@interlal
+    //@internal
     _hasPoint: boolean;
-    //@interlal
+    //@internal
     _onlyHasPoint: WithUndef<boolean>;
-    //@interlal
+    //@internal
     _displayExtent: Extent;
-    //@interlal
+    //@internal
     _drawnRes: number;
 
     renderEnd: boolean;
@@ -75,7 +75,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return this;
     }
 
-    //@interlal
+    //@internal
     _geoIsCollision(geo: GeoType, collisionIndex: any) {
         if (!geo) {
             return false;
@@ -268,7 +268,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this.layer.forEach(fn, context);
     }
 
-    //@interlal
+    //@internal
     _checkGeos() {
         const geos = this._getCurrentNeedRenderGeos();
         for (let i = 0, len = geos.length; i < len; i++) {
@@ -310,7 +310,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return this;
     }
 
-    //@interlal
+    //@internal
     _setDrawGeosDrawTime() {
         const time = now();
         const drawTime = this.layer._drawTime;
@@ -366,7 +366,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this._geosToDraw.push(geo);
     }
 
-    //@interlal
+    //@internal
     _collidesGeos() {
         const collision = this.layer.options['collision'];
         if (!collision) {
@@ -411,7 +411,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         super.onGeometryPropertiesChange(param);
     }
 
-    //@interlal
+    //@internal
     _updateDisplayExtent() {
         let extent2D = this.canvasExtent2D;
         if (this._maskExtent) {
@@ -432,7 +432,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return this.layer._hitGeos(geometries, point, options);
     }
 
-    //@interlal
+    //@internal
     _updateMapStateCache() {
         const map = this.getMap();
         const offset = map._pointToContainerPoint(this.middleWest)._add(0, -map.height / 2);
@@ -450,8 +450,8 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             bearing,
             glScale,
             glRes,
-            //@interlal
-    _2DExtent,
+            //@internal
+        _2DExtent,
             glExtent,
             containerExtent,
             offset
@@ -466,7 +466,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
      * Better performance of batch coordinate conversion
      * @param glRes
      */
-    //@interlal
+    //@internal
     _batchConversionMarkers(glRes: number) {
         this._onlyHasPoint = undefined;
         if (!this._constructorIsThis()) {
@@ -554,7 +554,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return pts;
     }
 
-    //@interlal
+    //@internal
     _sortByDistanceToCamera(cameraPosition: Vector3) {
         if (!this.layer.options['sortByDistanceToCamera']) {
             return;
@@ -589,7 +589,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         });
     }
 
-    //@interlal
+    //@internal
     _constructorIsThis(): boolean {
         return this.constructor === VectorLayerRenderer;
     }
@@ -625,7 +625,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return this.geoPainterList || [];
     }
 
-    //@interlal
+    //@internal
     _checkSnapshotCanvas() {
         if (!this.isProgressiveRender()) {
             delete this.snapshotCanvas;
@@ -654,7 +654,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     }
 
-    //@interlal
+    //@internal
     _getCurrentNeedRenderGeos(): Geometries[] {
         const geos = this.layer._geoList || [];
         if (!this.isProgressiveRender()) {
@@ -672,7 +672,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return pageGeos;
     }
 
-    //@interlal
+    //@internal
     _resetProgressiveRender() {
         if (isDebug(this.layer)) {
             console.log('progressiveRender resetProgressiveRender');
@@ -685,7 +685,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this._clearSnapshotCanvas();
     }
 
-    //@interlal
+    //@internal
     _clearSnapshotCanvas() {
         const snapshotCanvas = this._checkSnapshotCanvas();
         if (snapshotCanvas) {
@@ -693,7 +693,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         }
     }
 
-    //@interlal
+    //@internal
     _snapshot() {
         const progressiveRender = this.isProgressiveRender();
         const geosToDraw = this._geosToDraw || [];
@@ -733,7 +733,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return this;
     }
 
-    //@interlal
+    //@internal
     _drawSnapshot() {
         if (!this.isProgressiveRender()) {
             return this;

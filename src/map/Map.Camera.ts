@@ -17,18 +17,18 @@ declare module "./Map" {
         setFov(fov: number): this;
         getBearing(): number;
         setBearing(bearing: number): this;
-        //@interlal
-    _setBearing(bearing: number): this;
+        //@internal
+        _setBearing(bearing: number): this;
         getPitch(): number;
         setPitch(pitch: number): this;
-        //@interlal
-    _setPitch(pitch: number): this;
-        //@interlal
-    _calcMatrices(): void;
-        //@interlal
-    _containerPointToPoint(p: Point, zoom?: number, out?: Point): Point;
-        //@interlal
-    _recenterOnTerrain(): void;
+        //@internal
+        _setPitch(pitch: number): this;
+        //@internal
+        _calcMatrices(): void;
+        //@internal
+        _containerPointToPoint(p: Point, zoom?: number, out?: Point): Point;
+        //@internal
+        _recenterOnTerrain(): void;
         setCameraMovements(frameOptions: Array<MapViewType>, option?: { autoRotate: boolean });
         setCameraOrientation(params: MapViewType): this;
         setCameraPosition(coordinate: Coordinate);
@@ -37,18 +37,18 @@ declare module "./Map" {
         isTransforming(): boolean;
         getFrustumAltitude(): number;
         updateCenterAltitude();
-        //@interlal
-    _queryTerrainByProjCoord(coord: Coordinate): number;
-        //@interlal
-    _hasAltitudeLayer(): boolean;
-        //@interlal
-    _queryTerrainInfo(containerPoint: Point): { coordinate: Coordinate, altitude: number } | null;
-        //@interlal
-    _pointAtResToContainerPoint(point: Point, res?: number, altitude?: number, out?: Point): Point;
-        //@interlal
-    _pointToContainerPoint(point: Point, zoom?: number, out?: Point): Point;
-        //@interlal
-    _pointsAtResToContainerPoints(point: Point[], res?: number, altitude?: number[], out?: Point[]): Point[];
+        //@internal
+        _queryTerrainByProjCoord(coord: Coordinate): number;
+        //@internal
+        _hasAltitudeLayer(): boolean;
+        //@internal
+        _queryTerrainInfo(containerPoint: Point): { coordinate: Coordinate, altitude: number } | null;
+        //@internal
+        _pointAtResToContainerPoint(point: Point, res?: number, altitude?: number, out?: Point): Point;
+        //@internal
+        _pointToContainerPoint(point: Point, zoom?: number, out?: Point): Point;
+        //@internal
+        _pointsAtResToContainerPoints(point: Point[], res?: number, altitude?: number[], out?: Point[]): Point[];
     }
 }
 
@@ -145,7 +145,7 @@ Map.include(/** @lends Map.prototype */{
         return this._setBearing(view.bearing);
     },
 
-    //@interlal
+    //@internal
     _setBearing(bearing) {
         if (Browser.ie9) {
             throw new Error('map can\'t rotate in IE9.');
@@ -215,7 +215,7 @@ Map.include(/** @lends Map.prototype */{
         return this._setPitch(view.pitch);
     },
 
-    //@interlal
+    //@internal
     _setPitch(pitch) {
         if (Browser.ie9) {
             throw new Error('map can\'t tilt in IE9.');
@@ -324,7 +324,7 @@ Map.include(/** @lends Map.prototype */{
         };
     },
 
-    //@interlal
+    //@internal
     _setCameraMovement(frameOption, frame) {
         this.animateTo({
             zoom: frameOption.zoom,
@@ -449,7 +449,7 @@ Map.include(/** @lends Map.prototype */{
         return this._frustumAltitude;
     },
 
-    //@interlal
+    //@internal
     _calcFrustumAltitude() {
         const pitch = 90 - this.getPitch();
         let fov = this.getFov() / 2;
@@ -473,13 +473,13 @@ Map.include(/** @lends Map.prototype */{
      * @private
      * @function
      */
-    //@interlal
+    //@internal
     _pointToContainerPoint: function (point, zoom, altitude = 0, out) {
         const res = this._getResolution(zoom);
         return this._pointAtResToContainerPoint(point, res, altitude, out);
     },
 
-    //@interlal
+    //@internal
     _pointAtResToContainerPoint: function (point, res, altitude = 0, out) {
         if (!out) {
             out = new Point(0, 0);
@@ -498,7 +498,7 @@ Map.include(/** @lends Map.prototype */{
     /**
      *Batch conversion for better performance
      */
-    //@interlal
+    //@internal
     _pointsAtResToContainerPoints: function (points, targetRes, altitudes = [], resultPoints = []) {
         const pitch = this.getPitch(), bearing = this.getBearing();
         const scale = targetRes / this._getResolution();
@@ -541,7 +541,7 @@ Map.include(/** @lends Map.prototype */{
         return resultPoints;
     },
 
-    //@interlal
+    //@internal
     _toContainerPoint: function () {
         const a = [0, 0, 0];
         return function (out, isTransforming, altitude, centerPoint) {
@@ -565,7 +565,7 @@ Map.include(/** @lends Map.prototype */{
     }(),
 
     // https://forum.unity.com/threads/camera-worldtoscreenpoint-bug.85311/#post-2121212
-    //@interlal
+    //@internal
     _projIfBehindCamera: function () {
         const vectorFromCam = new Array(3);
         const proj = new Array(3);
@@ -590,13 +590,13 @@ Map.include(/** @lends Map.prototype */{
      * @private
      * @function
      */
-    //@interlal
+    //@internal
     _containerPointToPoint: function (p, zoom, out, height) {
         const res = this._getResolution(zoom);
         return this._containerPointToPointAtRes(p, res, out, height);
     },
 
-    //@interlal
+    //@internal
     _containerPointToPointAtRes: function () {
         const cp = [0, 0, 0],
             coord0 = [0, 0, 0, 1],
@@ -655,7 +655,7 @@ Map.include(/** @lends Map.prototype */{
      * map.projViewMatrixInverse = projViewMatrix.inverse()
      *  @private
      */
-    //@interlal
+    //@internal
     _calcMatrices: function () {
         // closure matrixes to reuse
         const m1 = createMat4();
@@ -702,7 +702,7 @@ Map.include(/** @lends Map.prototype */{
         };
     }(),
 
-    //@interlal
+    //@internal
     _getCameraFar(fov, pitch) {
         const cameraCenterDistance = this.cameraCenterDistance = distance(this.cameraPosition, this.cameraLookAt);
         const distanceInMeter = cameraCenterDistance / this._meterToGLPoint;
@@ -711,7 +711,7 @@ Map.include(/** @lends Map.prototype */{
         return Math.max(cameraFarDistance * this._meterToGLPoint, cameraCenterDistance * 5);
     },
 
-    //@interlal
+    //@internal
     _calcCascadeMatrixes: function () {
         // const cameraLookAt = [];
         // const cameraPosition = [];
@@ -763,7 +763,7 @@ Map.include(/** @lends Map.prototype */{
         };
     }(),
 
-    //@interlal
+    //@internal
     _calcDomMatrix: function () {
         const m = createMat4(),
             m1 = createMat4(),
@@ -787,14 +787,14 @@ Map.include(/** @lends Map.prototype */{
         };
     }(),
 
-    //@interlal
+    //@internal
     _getFovZ(zoom) {
         const scale = this.getGLScale(zoom);
         const ratio = this._getFovRatio();
         return scale * (this.height || 1) / 2 / ratio;
     },
 
-    //@interlal
+    //@internal
     _getCameraWorldMatrix: function () {
         const q = {};
         return function () {
@@ -869,7 +869,7 @@ Map.include(/** @lends Map.prototype */{
         this._recenterOnTerrain();
     },
 
-    //@interlal
+    //@internal
     _recenterOnTerrain() {
         if (this.centerAltitude === undefined || this._centerZ !== undefined) {
             return;
@@ -947,7 +947,7 @@ Map.include(/** @lends Map.prototype */{
     //     return zoom;
     // },
 
-    //@interlal
+    //@internal
     _queryTerrainByProjCoord(coord) {
         const layers = this._getLayers();
         for (let i = 0; i < layers.length; i++) {
@@ -958,7 +958,7 @@ Map.include(/** @lends Map.prototype */{
         return 0;
     },
 
-    //@interlal
+    //@internal
     _hasAltitudeLayer() {
         const layers = this._getLayers();
         for (let i = 0; i < layers.length; i++) {
@@ -969,7 +969,7 @@ Map.include(/** @lends Map.prototype */{
         return false;
     },
 
-    //@interlal
+    //@internal
     _queryTerrainInfo(containerPoint) {
         const layers = this._getLayers() || [];
         for (let i = 0; i < layers.length; i++) {
@@ -989,13 +989,13 @@ Map.include(/** @lends Map.prototype */{
         return null;
     },
 
-    //@interlal
+    //@internal
     _getFovRatio() {
         const fov = this.getFov();
         return Math.tan(fov / 2 * RADIAN);
     },
 
-    //@interlal
+    //@internal
     _renderLayers() {
         if (this.isInteracting()) {
             return;

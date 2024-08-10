@@ -19,22 +19,22 @@ type handlerQueueFn = () => void
 abstract class MapRenderer extends Class {
     map: Map;
 
-    //@interlal
+    //@internal
     _handlerQueue: handlerQueueFn[];
-    //@interlal
+    //@internal
     _frontCount: WithUndef<number>;
-    //@interlal
+    //@internal
     _backCount: WithUndef<number>;
-    //@interlal
+    //@internal
     _uiCount: WithUndef<number>;
 
-    //@interlal
+    //@internal
     _thisDocVisibilitychange: () => void;
-    //@interlal
+    //@internal
     _thisDocDragStart: () => void;
-    //@interlal
+    //@internal
     _thisDocDragEnd: () => void;
-    //@interlal
+    //@internal
     _thisDocDPRChange: () => void;
 
     constructor(map: Map) {
@@ -135,7 +135,7 @@ abstract class MapRenderer extends Class {
         this._frameLoop();
     }
 
-    //@interlal
+    //@internal
     _onDocVisibilitychange() {
         if (document.visibilityState !== 'visible') {
             return;
@@ -143,7 +143,7 @@ abstract class MapRenderer extends Class {
         this.setToRedraw();
     }
 
-    //@interlal
+    //@internal
     _getWrapPanel() {
         if (!this.map) {
             return null;
@@ -151,7 +151,7 @@ abstract class MapRenderer extends Class {
         const panels = this.map.getPanels();
         return panels && panels.mapWrapper;
     }
-    //@interlal
+    //@internal
     _onDocDragStart() {
         const wrapPanel = this._getWrapPanel();
         if (wrapPanel) {
@@ -160,7 +160,7 @@ abstract class MapRenderer extends Class {
         return;
     }
 
-    //@interlal
+    //@internal
     _onDocDragEnd() {
         const wrapPanel = this._getWrapPanel();
         if (wrapPanel) {
@@ -169,7 +169,7 @@ abstract class MapRenderer extends Class {
         return;
     }
 
-    //@interlal
+    //@internal
     _onDocDPRChange() {
         const map = this.map;
         if (!map || !map.options || map.options['devicePixelRatio'] || !map.checkSize || !map.getRenderer) {
@@ -181,7 +181,7 @@ abstract class MapRenderer extends Class {
         }
     }
 
-    //@interlal
+    //@internal
     _containerIsOffscreen() {
         const container = this.map.getContainer();
         if (!container || !container.style || container.style.display === 'none') {

@@ -27,7 +27,7 @@ class MapBoxZoomHander extends Handler {
         }
     }
 
-    //@interlal
+    //@internal
     _onMouseDown(param: Param) {
         if (!this.target.options['boxZoom']) {
             return;
@@ -39,7 +39,7 @@ class MapBoxZoomHander extends Handler {
         }
     }
 
-    //@interlal
+    //@internal
     _boxZoom(param: Param) {
         const map = this.target;
         this.drawTool.remove();

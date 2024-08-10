@@ -10,7 +10,7 @@ interface MapStateCacheType {
     bearing: number;
     glScale: number;
     glRes: number;
-    //@interlal
+    //@internal
     _2DExtent: Extent;
     glExtent: Extent;
     containerExtent: Extent;
@@ -29,12 +29,12 @@ interface MapStateCacheType {
  * @extends renderer.CanvasRenderer
  */
 class OverlayLayerRenderer extends CanvasRenderer {
-    //@interlal
+    //@internal
     _geosToCheck: Geometries[];
-    //@interlal
+    //@internal
     _resourceChecked: boolean;
     clearImageData?(): void;
-    //@interlal
+    //@internal
     _lastGeosToDraw: Geometry[];
     mapStateCache: MapStateCacheType;
 
@@ -85,7 +85,7 @@ class OverlayLayerRenderer extends CanvasRenderer {
         return super.render.apply(this, args);
     }
 
-    //@interlal
+    //@internal
     _addGeoToCheckRes(res: Geometries | Geometries[]) {
         if (!res) {
             return;

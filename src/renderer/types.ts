@@ -1,7 +1,7 @@
 export type TileRenderingCanvas = {
     gl?: TileRenderingContext;
     texture?: TileImageTexture;
-    //@interlal
+    //@internal
     _parentTileTimestamp?: number;
 } & HTMLCanvasElement;
 
