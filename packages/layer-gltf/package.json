@@ -23,7 +23,6 @@
     "pretest": "cd ../gltf-loader && npm run build && cd ../gl && npm run build && cd ../analysis && npm run build && cd ../layer-gltf && npm run build",
     "test": "karma start --single-run",
     "tdd": "karma start --no-single-run",
-    "preversion": "npm test",
     "version": "npm run build",
     "lint": "eslint src/**/*.js test/**/*.js",
     "prepublishOnly": "npm run lint && npm run build"
