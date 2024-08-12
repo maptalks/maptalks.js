@@ -35,7 +35,7 @@
     "preversion": "npm run lint",
     "test": "karma start build/karma.config.js",
     "tdd": "karma start build/karma.config.js --no-single-run",
-    "version": "npm run build && npm run doc && git add -A docs/api"
+    "version": "npm run build"
   },
   "types": "dist/index.d.ts",
   "unpkg": "dist/maptalks.js",
