@@ -16,6 +16,7 @@
     "isolatedModules": true,
     "removeComments": false,
     "moduleResolution": "node",
+    "stripInternal": true,
     // ask tsc not to mess up with for ... of
     "downlevelIteration": true,
     "module": "esnext",

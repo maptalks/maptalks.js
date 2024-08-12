@@ -13,9 +13,9 @@ const TEMP_SIZE = new Size(1, 1);
 const TEMP_EXTENT = new PointExtent();
 
 export default class ImageMarkerSymbolizer extends PointSymbolizer {
-    //@interlal
+    //@internal
     _url: [string, string | number, string | number];
-    //@interlal
+    //@internal
     _fixedExtent: PointExtent;
     static test(symbol: any): boolean {
         return isImageSymbol(symbol);
@@ -107,7 +107,7 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
         }
     }
 
-    //@interlal
+    //@internal
     _getImage(resources: ResourceCache): any {
         return getImage(resources, this.style['markerFile']);
     }

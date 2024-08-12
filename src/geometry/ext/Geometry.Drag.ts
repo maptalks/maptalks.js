@@ -25,23 +25,23 @@ class GeometryDragHandler extends Handler {
 
     container: any
 
-    //@interlal
+    //@internal
     _dragHandler: any
-    //@interlal
+    //@internal
     _shadow: any
-    //@interlal
+    //@internal
     _dragStageLayer: any
-    //@interlal
+    //@internal
     _shadowConnectors: any
-    //@interlal
+    //@internal
     _lastCoord: any
-    //@interlal
+    //@internal
     _lastPoint: any
-    //@interlal
+    //@internal
     _startParam: any
-    //@interlal
+    //@internal
     _moved: boolean
-    //@interlal
+    //@internal
     _isDragging: boolean
 
 
@@ -62,7 +62,7 @@ class GeometryDragHandler extends Handler {
         delete this.container;
     }
 
-    //@interlal
+    //@internal
     _prepareDragHandler(): void {
         this._dragHandler = new DragHandler(this.container);
         this._dragHandler.on('dragging', this._dragging, this)
@@ -70,7 +70,7 @@ class GeometryDragHandler extends Handler {
             .enable();
     }
 
-    //@interlal
+    //@internal
     _prepareShadow(): void {
         const target = this.target;
         const needShadow = target.getLayer().options['renderer'] === 'canvas';
@@ -99,7 +99,7 @@ class GeometryDragHandler extends Handler {
         this._prepareShadowConnectors();
     }
 
-    //@interlal
+    //@internal
     _updateShadowSymbol(shadow: any, target: any): void {
         shadow.setSymbol(target._getInternalSymbol());
         if (target.options['dragShadow']) {
@@ -108,7 +108,7 @@ class GeometryDragHandler extends Handler {
         }
     }
 
-    //@interlal
+    //@internal
     _prepareShadowConnectors(): void {
         //copy connectors
         const target = this.target;
@@ -141,14 +141,14 @@ class GeometryDragHandler extends Handler {
         this._dragStageLayer.bringToFront().addGeometry(shadowConnectors);
     }
 
-    //@interlal
+    //@internal
     _onTargetUpdated(): void {
         if (this._shadow) {
             this._shadow.setSymbol(this.target._getSymbol());
         }
     }
 
-    //@interlal
+    //@internal
     _prepareDragStageLayer(): void {
         const map = this.target.getMap(),
             layer = this.target.getLayer();
@@ -166,7 +166,7 @@ class GeometryDragHandler extends Handler {
         this._dragStageLayer._getRenderer().resources = resources;
     }
 
-    //@interlal
+    //@internal
     _startDrag(param: any): void {
         const map = this.target.getMap();
         if (!map) {
@@ -197,7 +197,7 @@ class GeometryDragHandler extends Handler {
         return;
     }
 
-    //@interlal
+    //@internal
     _dragging(param: any): void {
         const target = this.target;
         const map = target.getMap();
@@ -298,7 +298,7 @@ class GeometryDragHandler extends Handler {
         }
     }
 
-    //@interlal
+    //@internal
     _endDrag(param?: any): void {
         if (this._dragHandler) {
             this._dragHandler.disable();
@@ -353,7 +353,7 @@ class GeometryDragHandler extends Handler {
         return true;
     }
 
-    //@interlal
+    //@internal
     _updateTargetAndRemoveShadow(eventParam: any): void {
         if (!this._shadow) {
             return;
@@ -386,7 +386,7 @@ class GeometryDragHandler extends Handler {
     }
 
     //find correct coordinate for coordOffset if geometry has altitude
-    //@interlal
+    //@internal
     _correctCoord(coord: any): any {
         const map = this.target.getMap();
         if (!map.getPitch()) {

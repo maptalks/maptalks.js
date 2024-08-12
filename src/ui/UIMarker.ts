@@ -212,16 +212,16 @@ const domEvents =
  *  }).addTo(map);
  */
 class UIMarker extends Handlerable(UIComponent) {
-    //@interlal
+    //@internal
     _markerCoord: Coordinate;
     options: UIMarkerOptionsType;
-    //@interlal
+    //@internal
     _owner: Map;
-    //@interlal
+    //@internal
     _mousedownEvent: MouseEvent;
-    //@interlal
+    //@internal
     _mouseupEvent: MouseEvent;
-    //@interlal
+    //@internal
     _touchstartTime: number;
 
     /**
@@ -237,7 +237,7 @@ class UIMarker extends Handlerable(UIComponent) {
     }
 
     // TODO: obtain class in super
-    //@interlal
+    //@internal
     _getClassName() {
         return 'UIMarker';
     }
@@ -449,12 +449,12 @@ class UIMarker extends Handlerable(UIComponent) {
         return false;
     }
 
-    //@interlal
+    //@internal
     _registerDOMEvents(dom: HTMLElement) {
         on(dom, domEvents, this._onDomEvents, this);
     }
 
-    //@interlal
+    //@internal
     _onDomEvents(e: MouseEvent, type?: string) {
         const event = this.getMap()._parseEvent(e, e.type);
         type = type || e.type;
@@ -480,12 +480,12 @@ class UIMarker extends Handlerable(UIComponent) {
         }
     }
 
-    //@interlal
+    //@internal
     _removeDOMEvents(dom: HTMLElement) {
         off(dom, domEvents, this._onDomEvents);
     }
 
-    //@interlal
+    //@internal
     _mouseClickPositionIsChange() {
         const { x: x1, y: y1 } = this._mousedownEvent || {};
         const { x: x2, y: y2 } = this._mouseupEvent || {};
@@ -496,7 +496,7 @@ class UIMarker extends Handlerable(UIComponent) {
      * Get the connect points of panel for connector lines.
      * @private
      */
-    //@interlal
+    //@internal
     _getConnectPoints() {
         const map = this.getMap();
         const containerPoint = map.coordToContainerPoint(this.getCoordinates());
@@ -525,7 +525,7 @@ class UIMarker extends Handlerable(UIComponent) {
         return anchors;
     }
 
-    //@interlal
+    //@internal
     _getViewPoint() {
         let alt = 0;
         if (this._owner) {
@@ -538,12 +538,12 @@ class UIMarker extends Handlerable(UIComponent) {
             ._add(this.options['dx'], this.options['dy']);
     }
 
-    //@interlal
+    //@internal
     _getDefaultEvents() {
         return extend({}, super._getDefaultEvents(), { 'zooming zoomend': this.onZoomFilter });
     }
 
-    //@interlal
+    //@internal
     _setPosition() {
         //show/hide zoomFilter
         this.onZoomFilter();
@@ -587,13 +587,13 @@ UIMarker.mergeOptions(options);
 const EVENTS = Browser.touch ? 'touchstart mousedown' : 'mousedown';
 
 class UIMarkerDragHandler extends Handler {
-    //@interlal
+    //@internal
     _lastCoord: Coordinate;
-    //@interlal
+    //@internal
     _lastPoint: Point;
-    //@interlal
+    //@internal
     _dragHandler: DragHandler;
-    //@interlal
+    //@internal
     _isDragging: boolean;
     target: UIMarker;
 
@@ -609,7 +609,7 @@ class UIMarkerDragHandler extends Handler {
         this.target.off(EVENTS, this._startDrag, this);
     }
 
-    //@interlal
+    //@internal
     _startDrag(param) {
         const domEvent = param['domEvent'];
         if (domEvent.touches && domEvent.touches.length > 1 || domEvent.button === 2) {
@@ -638,7 +638,7 @@ class UIMarkerDragHandler extends Handler {
         this.target.fire('dragstart', param);
     }
 
-    //@interlal
+    //@internal
     _prepareDragHandler() {
         this._dragHandler = new DragHandler(this.target.getDOM(), {
             'cancelOn': this._cancelOn.bind(this),
@@ -650,7 +650,7 @@ class UIMarkerDragHandler extends Handler {
         this._dragHandler.enable();
     }
 
-    //@interlal
+    //@internal
     _cancelOn(domEvent) {
         const target = domEvent.srcElement || domEvent.target,
             tagName = target.tagName.toLowerCase();
@@ -664,12 +664,12 @@ class UIMarkerDragHandler extends Handler {
         return false;
     }
 
-    //@interlal
+    //@internal
     _onMouseDown(param) {
         stopPropagation(param['domEvent']);
     }
 
-    //@interlal
+    //@internal
     _dragging(param) {
         const target = this.target,
             map = target.getMap(),
@@ -715,7 +715,7 @@ class UIMarkerDragHandler extends Handler {
 
     }
 
-    //@interlal
+    //@internal
     _endDrag(param) {
         const target = this.target,
             map = target.getMap();

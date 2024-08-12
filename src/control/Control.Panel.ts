@@ -40,9 +40,9 @@ const options: PanelOptionsType = {
 class Panel extends Control {
     draggable: DragHandler;
     options: PanelOptionsType;
-    //@interlal
+    //@internal
     _startPos: Point;
-    //@interlal
+    //@internal
     _startPosition: DomPositionType;
 
     /**
@@ -148,7 +148,7 @@ class Panel extends Control {
         return this.options['content'];
     }
 
-    //@interlal
+    //@internal
     _cancelOn(domEvent) {
         const target = domEvent.srcElement || domEvent.target,
             tagName = target.tagName.toLowerCase();
@@ -162,7 +162,7 @@ class Panel extends Control {
         return false;
     }
 
-    //@interlal
+    //@internal
     _onDragStart(param) {
         this._startPos = param['mousePos'];
         this._startPosition = extend({}, this.getPosition());
@@ -178,7 +178,7 @@ class Panel extends Control {
         this.fire('dragstart', param);
     }
 
-    //@interlal
+    //@internal
     _onDragging(param) {
         const pos = param['mousePos'];
         const offset = pos.sub(this._startPos);
@@ -210,7 +210,7 @@ class Panel extends Control {
         this.fire('dragging', param);
     }
 
-    //@interlal
+    //@internal
     _onDragEnd(param) {
         delete this._startPos;
         delete this._startPosition;
@@ -230,7 +230,7 @@ class Panel extends Control {
      * Get the connect points of panel for connector lines.
      * @private
      */
-    //@interlal
+    //@internal
     _getConnectPoints() {
         const map = this.getMap();
         const containerPoint = this.getContainerPoint();

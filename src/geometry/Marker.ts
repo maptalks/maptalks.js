@@ -92,7 +92,7 @@ export class Marker extends CenterMixin(Geometry) {
         return super.setSymbol.call(this, symbol);
     }
 
-    //@interlal
+    //@internal
     _getSizeSymbol(symbol: any): any {
         const s = {};
         let dynamic = false;
@@ -130,7 +130,7 @@ export class Marker extends CenterMixin(Geometry) {
         return sizeSymbol;
     }
 
-    //@interlal
+    //@internal
     _setExternSymbol(symbol: any) {
         if (!this._symbol) {
             delete this._fixedExtent;
@@ -138,12 +138,12 @@ export class Marker extends CenterMixin(Geometry) {
         return super._setExternSymbol(symbol);
     }
 
-    //@interlal
+    //@internal
     _isDynamicSize(): boolean {
         return this._sizeSymbol && this._sizeSymbol._dynamic;
     }
 
-    //@interlal
+    //@internal
     _getFixedExtent(): PointExtent {
         if (this._fixedExtent && !this._isDynamicSize()) {
             return this._fixedExtent;
@@ -171,7 +171,7 @@ export class Marker extends CenterMixin(Geometry) {
         return this._fixedExtent;
     }
 
-    //@interlal
+    //@internal
     _isVectorMarker(): boolean {
         const symbol = this._getInternalSymbol();
         if (Array.isArray(symbol)) {
@@ -187,7 +187,7 @@ export class Marker extends CenterMixin(Geometry) {
      * @return {Boolean}
      * @private
      */
-    //@interlal
+    //@internal
     _canEdit(): boolean {
         const symbol = this._getInternalSymbol();
         if (Array.isArray(symbol)) {
@@ -196,7 +196,7 @@ export class Marker extends CenterMixin(Geometry) {
         return isVectorSymbol(symbol) || isPathSymbol(symbol) || isImageSymbol(symbol);
     }
 
-    //@interlal
+    //@internal
     _containsPoint(point: Point, t?: number): boolean {
         let extent = this.getContainerExtent();
         if (t) {
@@ -213,27 +213,27 @@ export class Marker extends CenterMixin(Geometry) {
         }
     }
 
-    //@interlal
+    //@internal
     _computeExtent(): Extent {
         return computeExtent.call(this, 'getCenter');
     }
 
-    //@interlal
+    //@internal
     _computePrjExtent(): Extent {
         return computeExtent.call(this, '_getPrjCoordinates');
     }
 
-    //@interlal
+    //@internal
     _computeGeodesicLength(): number {
         return 0;
     }
 
-    //@interlal
+    //@internal
     _computeGeodesicArea(): number {
         return 0;
     }
 
-    //@interlal
+    //@internal
     _getSprite(resources: any, canvasClass: any) {
         if (this._getPainter()) {
             return this._getPainter().getSprite(resources, canvasClass);

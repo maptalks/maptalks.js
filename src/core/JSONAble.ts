@@ -10,8 +10,8 @@ const registeredTypes:JSONTypes = {};
  */
 export default function <Class extends MixinConstructor>(Base: Class) {
     return class JSONAble extends Base {
-        //@interlal
-    _jsonType?: string
+        //@internal
+        _jsonType?: string
         /**
          * 静态方法，用于将该类注册用于JSON序列化与反序列化
          *

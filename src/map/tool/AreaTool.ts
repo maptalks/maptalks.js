@@ -89,7 +89,7 @@ class AreaTool extends DistanceTool {
         this._measureLayers = [];
     }
 
-    //@interlal
+    //@internal
     _measure(toMeasure: Geometry | Array<any>) {
         const map: any = this.getMap();
         let area: number;
@@ -126,12 +126,12 @@ class AreaTool extends DistanceTool {
         return content;
     }
 
-    //@interlal
+    //@internal
     _msGetCoordsToMeasure(param: any) {
         return param['geometry'].getShell().concat([param['coordinate']]);
     }
 
-    //@interlal
+    //@internal
     _msOnDrawVertex(param: any) {
         // const prjCoord = this.getMap()._pointToPrj(param['point2d']);
         const lastCoordinate = this._getLasttCoordinate() || param.coordinate;
@@ -144,7 +144,7 @@ class AreaTool extends DistanceTool {
         this._addVertexMarker(vertexMarker);
     }
 
-    //@interlal
+    //@internal
     _msOnDrawEnd(param: any) {
         this._clearTailMarker();
         let prjCoord;

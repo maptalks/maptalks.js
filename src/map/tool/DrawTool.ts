@@ -91,29 +91,29 @@ const registeredMode = {};
  */
 class DrawTool extends MapTool {
     options: DrawToolOptions;
-    //@interlal
+    //@internal
     _vertexes: Array<any>;
-    //@interlal
+    //@internal
     _historyPointer: any;
-    //@interlal
+    //@internal
     _events: any;
-    //@interlal
+    //@internal
     _geometry?: any;
-    //@interlal
+    //@internal
     _drawToolLayer?: any;
-    //@interlal
+    //@internal
     _mapAutoPanAtEdge?: boolean;
-    //@interlal
+    //@internal
     _geometryEvents?: boolean;
-    //@interlal
+    //@internal
     _mapDoubleClickZoom?: boolean;
-    //@interlal
+    //@internal
     _ending: boolean;
-    //@interlal
+    //@internal
     _mapDraggable?: boolean;
-    //@interlal
+    //@internal
     _clickCoords?: Array<any>;
-    //@interlal
+    //@internal
     _layers?: Array<any>;
 
     /**
@@ -360,17 +360,17 @@ class DrawTool extends MapTool {
      * @returns {boolean}
      * @private
      */
-    //@interlal
+    //@internal
     _shouldRecordHistory(actions) {
         return Array.isArray(actions) && actions[0] === 'click' && actions[1] === 'mousemove' && actions[2] === 'dblclick';
     }
 
-    //@interlal
+    //@internal
     _checkMode() {
         this._getRegisterMode();
     }
 
-    //@interlal
+    //@internal
     _saveMapCfg() {
         const map = this.getMap();
         this._mapDoubleClickZoom = map.options['doubleClickZoom'];
@@ -394,7 +394,7 @@ class DrawTool extends MapTool {
         }
     }
 
-    //@interlal
+    //@internal
     _restoreMapCfg() {
         const map = this.getMap();
         map.config({
@@ -407,7 +407,7 @@ class DrawTool extends MapTool {
         delete this._mapDoubleClickZoom;
     }
 
-    //@interlal
+    //@internal
     _loadResources() {
         const symbol = this.getSymbol();
         const resources = getExternalResources(symbol);
@@ -417,12 +417,12 @@ class DrawTool extends MapTool {
         }
     }
 
-    //@interlal
+    //@internal
     _getProjection() {
         return this._map.getProjection();
     }
 
-    //@interlal
+    //@internal
     _getRegisterMode() {
         const mode = this.getMode();
         const registerMode = DrawTool.getRegisterMode(mode);
@@ -437,8 +437,8 @@ class DrawTool extends MapTool {
         const _events = {};
         if (Array.isArray(action)) {
             for (let i = 0; i < action.length; i++) {
-                //@interlal
-    _events[action[i]] = this._events[action[i]];
+                //@internal
+        _events[action[i]] = this._events[action[i]];
             }
             return _events;
         }
@@ -453,7 +453,7 @@ class DrawTool extends MapTool {
      * @param event
      * @private
      */
-    //@interlal
+    //@internal
     _mouseDownHandler(event: any) {
         this._createGeometry(event);
     }
@@ -466,7 +466,7 @@ class DrawTool extends MapTool {
      * @param event
      * @private
      */
-    //@interlal
+    //@internal
     _mouseUpHandler(event: any) {
         this.endDraw(event);
     }
@@ -479,7 +479,7 @@ class DrawTool extends MapTool {
      * @param event
      * @private
      */
-    //@interlal
+    //@internal
     _clickHandler(event: any) {
         if (!this.options.interactive) {
             return this;
@@ -557,7 +557,7 @@ class DrawTool extends MapTool {
      * @param event
      * @private
      */
-    //@interlal
+    //@internal
     _createGeometry(event: any) {
         const mode = this.getMode();
         const map: any = this.getMap()
@@ -632,7 +632,7 @@ class DrawTool extends MapTool {
      * @param event
      * @private
      */
-    //@interlal
+    //@internal
     _mouseMoveHandler(event) {
         if (!this.options.interactive) {
             return this;
@@ -702,7 +702,7 @@ class DrawTool extends MapTool {
      * @param event
      * @private
      */
-    //@interlal
+    //@internal
     _doubleClickHandler(event) {
         if (!this.options.interactive) {
             return this;
@@ -741,7 +741,7 @@ class DrawTool extends MapTool {
         this.endDraw(event);
     }
 
-    //@interlal
+    //@internal
     _addGeometryToStage(geometry) {
         const drawLayer = this._getDrawLayer();
         drawLayer.addGeometry(geometry);
@@ -792,7 +792,7 @@ class DrawTool extends MapTool {
         return this;
     }
 
-    //@interlal
+    //@internal
     _clearStage() {
         this._getDrawLayer().clear();
         delete this._geometry;
@@ -808,7 +808,7 @@ class DrawTool extends MapTool {
      * @return
      * @private
      */
-    //@interlal
+    //@internal
     _getMouseContainerPoint(event: Event): Point {
         const action = this._getRegisterMode()['action'];
         if (action[0].indexOf('mousedown') >= 0 || action[0].indexOf('touchstart') >= 0) {
@@ -818,7 +818,7 @@ class DrawTool extends MapTool {
         return event['containerPoint'];
     }
 
-    //@interlal
+    //@internal
     _isValidContainerPoint(containerPoint) {
         const mapSize = this._map.getSize();
         const w = mapSize['width'],
@@ -831,7 +831,7 @@ class DrawTool extends MapTool {
         return true;
     }
 
-    //@interlal
+    //@internal
     _getSnapResult(snapTo, containerPoint) {
         const map: any = this.getMap();
         const lastContainerPoints = [];
@@ -855,7 +855,7 @@ class DrawTool extends MapTool {
         };
     }
 
-    //@interlal
+    //@internal
     _getDrawLayer() {
         const drawLayerId = INTERNAL_LAYER_PREFIX + 'drawtool';
         let drawToolLayer: any = this._map.getLayer(drawLayerId);
@@ -871,7 +871,7 @@ class DrawTool extends MapTool {
         return drawToolLayer;
     }
 
-    //@interlal
+    //@internal
     _fireEvent(eventName, param) {
         if (!param) {
             param = {};
@@ -884,7 +884,7 @@ class DrawTool extends MapTool {
         MapTool.prototype._fireEvent.call(this, eventName, param);
     }
 
-    //@interlal
+    //@internal
     _pushLayers(layers) {
         if (!layers) {
             return this;
@@ -901,7 +901,7 @@ class DrawTool extends MapTool {
         return this;
     }
 
-    //@interlal
+    //@internal
     _outLayers(layers) {
         if (!layers) {
             return this;

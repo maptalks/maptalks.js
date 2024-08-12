@@ -115,21 +115,21 @@ class Frame {
  * @memberof animation
  */
 class Player {
-    //@interlal
+    //@internal
     _animation: AnimationCallback
     options: AnimationOptionsPrivateType
-    //@interlal
+    //@internal
     _onFrame: (frame: Frame) => void;
     playState: string
     ready: boolean
     finished: boolean
-    target: any;
+    target?: any;
     duration: number;
-    //@interlal
+    //@internal
     _framer: (cb: AnimationCallback) => void;
     currentTime: number;
     startTime: number;
-    //@interlal
+    //@internal
     _playStartTime: number;
 
     /**
@@ -138,7 +138,7 @@ class Player {
      * @param {Object} options     - animation options
      * @param {Function} onFrame  - callback function for animation steps
      */
-    constructor(animation: AnimationCallback, options: object, onFrame: AnimationCallback, target: object) {
+    constructor(animation: AnimationCallback, options: object, onFrame: AnimationCallback, target?: object) {
         this._animation = animation;
         this.options = options;
         this._onFrame = onFrame;
@@ -148,7 +148,7 @@ class Player {
         this.target = target;
     }
 
-    //@interlal
+    //@internal
     _prepare() {
         const options = this.options;
         let duration = options['speed'] || options['duration'];
@@ -239,7 +239,7 @@ class Player {
     reverse() {
     }
 
-    //@interlal
+    //@internal
     _run() {
         const onFrame = this._onFrame;
         const t = now();
@@ -323,7 +323,7 @@ const Animation = {
      * @return {Object[]}  styles resolved
      * @private
      */
-    //@interlal
+    //@internal
     _resolveStyles(styles) {
         if (!styles) {
             return null;
@@ -523,7 +523,7 @@ const Animation = {
 
     },
 
-    //@interlal
+    //@internal
     _requestAnimFrame(fn: AnimationCallback) {
         if (!this._frameQueue) {
             this._frameQueue = [];
@@ -532,14 +532,14 @@ const Animation = {
         this._a();
     },
 
-    //@interlal
+    //@internal
     _a() {
         if (!this._animationFrameId) {
             this._animationFrameId = requestAnimFrame(Animation._frameFn);
         }
     },
 
-    //@interlal
+    //@internal
     _run() {
         if (this._frameQueue.length) {
             const running = this._frameQueue;
@@ -562,7 +562,7 @@ const Animation = {
      * @param  {Function} step  - callback function for animation steps
      * @return {Player} player
      */
-    animate(styles, options, step: AnimationCallback, target) {
+    animate(styles, options, step: AnimationCallback, target?: any) {
         if (!options) {
             options = {};
         }
@@ -571,7 +571,7 @@ const Animation = {
         return player;
     },
 
-    //@interlal
+    //@internal
     _frameFn: () => { }
 };
 

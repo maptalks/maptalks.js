@@ -67,7 +67,7 @@ class Translator extends Class {
         this.nodes = newLanguageNodes;
     }
 
-    //@interlal
+    //@internal
     _validateNestedProps(nestedProps: string[]) {
         nestedProps.forEach(p => {
             if (p === '') throw new TranslatorError('Any of sides of a dot "." cannot be empty');

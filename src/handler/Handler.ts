@@ -14,7 +14,7 @@ class Base {}
 abstract class Handler extends Eventable(Base) {
     target: any;
     dom?: HTMLElement;
-    //@interlal
+    //@internal
     _enabled: boolean = false;
 
     constructor(target: any) {

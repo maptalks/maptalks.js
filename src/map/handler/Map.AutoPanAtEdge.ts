@@ -20,7 +20,7 @@ class MapAutoPanAtEdgeHandler extends Handler {
         this.target.off('_mousemove', this._onMouseMove, this);
     }
 
-    //@interlal
+    //@internal
     _onMouseMove(event: Event) {
         const map = this.target;
         if (map.options['autoPanAtEdge']) {

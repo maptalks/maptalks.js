@@ -49,7 +49,7 @@ function checkLayers(tileLayers: TileLayer[] | TileLayer): TileLayer[] {
 class GroupTileLayer extends TileLayer {
     layers: TileLayer[];
     layerMap: Record<string, TileLayer>;
-    //@interlal
+    //@internal
     _groupChildren: any[];
     /**
      * Reproduce a GroupTileLayer from layer's profile JSON.
@@ -242,7 +242,7 @@ class GroupTileLayer extends TileLayer {
         return null;
     }
 
-    //@interlal
+    //@internal
     _removeChildTileCache(layer: TileLayer) {
         if (!layer) {
             return this;
@@ -285,7 +285,7 @@ class GroupTileLayer extends TileLayer {
         return this;
     }
 
-    //@interlal
+    //@internal
     _onLayerShowHide(e: { type: string; target: any }) {
         const { type, target } = e || {};
         //listen tilelayer.remove() method fix #1629
@@ -303,7 +303,7 @@ class GroupTileLayer extends TileLayer {
     }
 
     // render all layers
-    //@interlal
+    //@internal
     _renderLayers() {
         const renderer = this.getRenderer();
         if (renderer) {
@@ -313,7 +313,7 @@ class GroupTileLayer extends TileLayer {
     }
 
     // reset layerMap,_groupChildren,listen tilelayers events
-    //@interlal
+    //@internal
     _refresh() {
         const map = this.getMap();
         this._groupChildren = [];
@@ -347,7 +347,7 @@ class GroupTileLayer extends TileLayer {
         return false;
     }
 
-    //@interlal
+    //@internal
     _checkChildren() {
         const ids = {};
         this.layers.forEach(layer => {
@@ -360,7 +360,7 @@ class GroupTileLayer extends TileLayer {
         });
     }
 
-    //@interlal
+    //@internal
     _sortLayers() {
         this.layers.sort(function (a, b) {
             return a.options.zIndex - b.options.zIndex;

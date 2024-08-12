@@ -74,7 +74,7 @@ class MultiGeometry extends GeometryCollection {
         return this;
     }
 
-    //@interlal
+    //@internal
     _initData(data: MultiGeometryData): void {
         data = data || [];
         if (data.length) {
@@ -86,14 +86,14 @@ class MultiGeometry extends GeometryCollection {
         }
     }
 
-    //@interlal
+    //@internal
     _checkGeo(geo: Geometry): boolean {
         return (geo instanceof this.GeometryType);
     }
 
     //override _exportGeoJSONGeometry in GeometryCollection
     // @ts-expect-error 确实需要重写父类的属性
-    //@interlal
+    //@internal
     _exportGeoJSONGeometry() {
         const points = this.getCoordinates();
         const coordinates = Coordinate.toNumberArrays(points as MultiPathsCoordinates);
@@ -103,7 +103,7 @@ class MultiGeometry extends GeometryCollection {
         };
     }
 
-    //@interlal
+    //@internal
     _toJSON(options: any) {
         return {
             'feature': this.toGeoJSON(options)

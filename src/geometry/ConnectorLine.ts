@@ -18,10 +18,10 @@ const Connectable = function <T extends MixinConstructor>(Base: T) {
     return class extends Base {
 
         options: ConnectableOptionsType;
-        //@interlal
-    _connSource: Geometry;
-        //@interlal
-    _connTarget: Geometry;
+        //@internal
+        _connSource: Geometry;
+        //@internal
+        _connTarget: Geometry;
         getMap?(): Map;
         getCoordinates?(): Coordinate[];
         setCoordinates?(coordinates: Coordinate[]): this;
@@ -98,8 +98,8 @@ const Connectable = function <T extends MixinConstructor>(Base: T) {
             return this;
         }
 
-        //@interlal
-    _updateCoordinates() {
+        //@internal
+        _updateCoordinates() {
             let map = this.getMap();
             if (!map && this._connSource) {
                 map = this._connSource.getMap();
@@ -172,8 +172,8 @@ const Connectable = function <T extends MixinConstructor>(Base: T) {
             }
         }
 
-        //@interlal
-    _showConnect(): void {
+        //@internal
+        _showConnect(): void {
             if (!this._connSource || !this._connTarget) {
                 return;
             }
@@ -183,8 +183,8 @@ const Connectable = function <T extends MixinConstructor>(Base: T) {
             }
         }
 
-        //@interlal
-    _registerEvents(): void {
+        //@internal
+        _registerEvents(): void {
             if (!this._connSource || !this._connTarget) {
                 return;
             }

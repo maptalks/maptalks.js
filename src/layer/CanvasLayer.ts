@@ -268,7 +268,7 @@ class CanvasLayer extends Layer {
         return this;
     }
 
-    //@interlal
+    //@internal
     _getRenderer() {
         return super._getRenderer() as CanvasLayerRenderer;
     }

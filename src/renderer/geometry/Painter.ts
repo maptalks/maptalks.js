@@ -54,43 +54,43 @@ const TEMP_BBOX = {
  * @private
  */
 class Painter extends Class {
-    //@interlal
+    //@internal
     _drawTime: number;
-    //@interlal
+    //@internal
     _hasPoint: boolean;
-    //@interlal
+    //@internal
     _debugSymbolizer: DebugSymbolizer;
-    //@interlal
+    //@internal
     _renderPoints: Record<string, Point[][]>;
-    //@interlal
+    //@internal
     _hitPoint: WithUndef<Point>;
-    //@interlal
+    //@internal
     _sprite: any;
-    //@interlal
+    //@internal
     _paintParams: any;
-    //@interlal
+    //@internal
     _cachedParams: any;
-    //@interlal
+    //@internal
     _unsimpledParams: any;
-    //@interlal
+    //@internal
     _spriting: boolean;
-    //@interlal
+    //@internal
     _extent2D: Extent & { _zoom: number };
-    //@interlal
+    //@internal
     _fixedExtent: PointExtent;
-    //@interlal
+    //@internal
     _altAtGL: any;
-    //@interlal
+    //@internal
     _propAlt: number | number[] | number[][];
-    //@interlal
+    //@internal
     _projCode: string;
-    //@interlal
+    //@internal
     _pitched: boolean;
-    //@interlal
+    //@internal
     _rotated: boolean;
-    //@interlal
+    //@internal
     _painted: boolean;
-    //@interlal
+    //@internal
     _containerBbox: typeof TEMP_BBOX;
 
     bbox: BBOX;
@@ -112,7 +112,7 @@ class Painter extends Class {
         this._drawTime = 0;
     }
 
-    //@interlal
+    //@internal
     _setDrawTime(time: number) {
         this._drawTime = time;
         return this;
@@ -149,7 +149,7 @@ class Painter extends Class {
     /**
      * create symbolizers
      */
-    //@interlal
+    //@internal
     _createSymbolizers() {
         const geoSymbol = this.getSymbol(),
             symbolizers = [],
@@ -291,7 +291,7 @@ class Painter extends Class {
         return tr;
     }
 
-    //@interlal
+    //@internal
     _pointContainerPoints(points, dx, dy, ignoreAltitude, disableClip, pointPlacement, ptkey = '_pt') {
         if (this._aboveCamera()) {
             return null;
@@ -450,7 +450,7 @@ class Painter extends Class {
         return cPoints;
     }
 
-    //@interlal
+    //@internal
     _clip(points: Point[], altitude?: number) {
         // linestring polygon clip
         if (isNumber(altitude) && altitude !== 0) {
@@ -484,13 +484,13 @@ class Painter extends Class {
         const mapStateCache = renderer.mapStateCache;
         let _2DExtent, glExtent, pitch;
         if (mapStateCache) {
-            //@interlal
-    _2DExtent = mapStateCache._2DExtent;
+            //@internal
+        _2DExtent = mapStateCache._2DExtent;
             glExtent = mapStateCache.glExtent;
             pitch = mapStateCache.pitch;
         } else {
-            //@interlal
-    _2DExtent = map.get2DExtent();
+            //@internal
+        _2DExtent = map.get2DExtent();
             glExtent = map.get2DExtentAtRes(map.getGLRes());
             pitch = map.getPitch();
         }
@@ -586,7 +586,7 @@ class Painter extends Class {
      * @param {Number|Number[]} altitude
      * @private
      */
-    //@interlal
+    //@internal
     _interpolateSegAlt(clipSegs, orig, altitude) {
         if (!Array.isArray(altitude)) {
             const fn = cc => cc.point;
@@ -625,7 +625,7 @@ class Painter extends Class {
         return this.geometry._getInternalSymbol();
     }
 
-    //@interlal
+    //@internal
     _resetSymbolizersBBOX() {
         //reset all symbolizers render bbox
         for (let i = this.symbolizers.length - 1; i >= 0; i--) {
@@ -757,7 +757,7 @@ class Painter extends Class {
         return !!this._hitPoint;
     }
 
-    //@interlal
+    //@internal
     _prepareShadow(ctx: CanvasRenderingContext2D, symbol: Record<string, any>) {
         if (symbol['shadowBlur']) {
             //Ignore shadows when hit detection
@@ -773,7 +773,7 @@ class Painter extends Class {
         }
     }
 
-    //@interlal
+    //@internal
     _eachSymbolizer(fn, context?: any) {
         if (!this.symbolizers) {
             return;
@@ -827,7 +827,7 @@ class Painter extends Class {
         return this._extent2D.add(TEMP_FIXED_EXTENT);
     }
 
-    //@interlal
+    //@internal
     _computeExtent2D(extent) {
         for (let i = this.symbolizers.length - 1; i >= 0; i--) {
             const symbolizer = this.symbolizers[i];
@@ -836,7 +836,7 @@ class Painter extends Class {
         return extent;
     }
 
-    //@interlal
+    //@internal
     _computeFixedExtent(resources, extent) {
         for (let i = this.symbolizers.length - 1; i >= 0; i--) {
             const symbolizer = this.symbolizers[i];
@@ -847,7 +847,7 @@ class Painter extends Class {
         return extent;
     }
 
-    //@interlal
+    //@internal
     _isDynamicSize() {
         for (let i = this.symbolizers.length - 1; i >= 0; i--) {
             const symbolizer = this.symbolizers[i];
@@ -858,7 +858,7 @@ class Painter extends Class {
         return false;
     }
 
-    //@interlal
+    //@internal
     _aboveCamera() {
         let altitude = this.getMinAltitude();
         const map = this.getMap();
@@ -934,7 +934,7 @@ class Painter extends Class {
         this._removeSymbolizers();
     }
 
-    //@interlal
+    //@internal
     _removeSymbolizers() {
         this._eachSymbolizer(function (symbolizer) {
             delete symbolizer.painter;
@@ -981,7 +981,7 @@ class Painter extends Class {
         return this.maxAltitude;
     }
 
-    //@interlal
+    //@internal
     _getGeometryAltitude() {
         const map = this.getMap();
         if (!map) {
@@ -1002,7 +1002,7 @@ class Painter extends Class {
         return altitude;
     }
 
-    //@interlal
+    //@internal
     _verifyProjection() {
         const projection = this.geometry._getProjection() || PROJECTION;
         if (this._projCode && this._projCode !== projection.code) {
@@ -1011,11 +1011,11 @@ class Painter extends Class {
         this._projCode = (projection as any).code;
     }
 
-    //@interlal
+    //@internal
     _beforePaint() {
     }
 
-    //@interlal
+    //@internal
     _afterPaint() {
     }
 }

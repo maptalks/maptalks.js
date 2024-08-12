@@ -58,7 +58,7 @@ const EMPTY_BUFFERS = [];
     });
  */
 class Actor {
-    //@interlal
+    //@internal
     _delayMessages: Message[]
     initializing: boolean
     workerKey: string

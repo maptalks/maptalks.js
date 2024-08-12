@@ -29,7 +29,7 @@ class QuadBezierCurve extends Curve {
         return curve;
     }
 
-    //@interlal
+    //@internal
     _toJSON(options: any): any {
         return {
             'feature': this.toGeoJSON(options),
@@ -38,7 +38,7 @@ class QuadBezierCurve extends Curve {
     }
 
     // paint method on canvas
-    //@interlal
+    //@internal
     _paintOn(ctx: CanvasRenderingContext2D, points: any, lineOpacity: number) {
         ctx.beginPath();
         ctx.moveTo(points[0].x, points[0].y);
@@ -48,7 +48,7 @@ class QuadBezierCurve extends Curve {
         this._paintArrow(ctx, points, lineOpacity);
     }
 
-    //@interlal
+    //@internal
     _getArrowPoints(arrows: any[], segments: [], lineWidth: number, arrowStyle: any, tolerance: any) {
         return this._getCurveArrowPoints(arrows, segments, lineWidth, arrowStyle, tolerance, 2);
     }

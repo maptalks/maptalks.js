@@ -9,11 +9,11 @@ declare module "./Map" {
     interface Map {
 
         panTo(coordinate: Coordinate, options?: MapAnimationOptionsType, step?: (frame) => void): this;
-        //@interlal
-    _panTo(prjCoord: Coordinate, options?: MapAnimationOptionsType): this;
+        //@internal
+        _panTo(prjCoord: Coordinate, options?: MapAnimationOptionsType): this;
         panBy(offset: Point | Array<number>, options?: MapAnimationOptionsType, step?: (frame) => void): this;
-        //@interlal
-    _panAnimation(target: Coordinate, t?: number, cb?: (frame) => void): void;
+        //@internal
+        _panAnimation(target: Coordinate, t?: number, cb?: (frame) => void): void;
 
     }
 }
@@ -47,7 +47,7 @@ Map.include(/** @lends Map.prototype */ {
         return this;
     },
 
-    //@interlal
+    //@internal
     _panTo: function (prjCoord, options: MapAnimationOptionsType = {}) {
         if (typeof (options['animation']) === 'undefined' || options['animation']) {
             return this._panAnimation(prjCoord, options['duration']);
@@ -104,7 +104,7 @@ Map.include(/** @lends Map.prototype */ {
         return this;
     },
 
-    //@interlal
+    //@internal
     _panAnimation: function (target: Coordinate, t: number, cb: (frame) => void) {
         return this._animateTo({
             'prjCenter': target

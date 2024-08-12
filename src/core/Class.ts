@@ -41,11 +41,11 @@ export type ClassOptions = Record<string, any>;
  * @category core
  */
 class Class {
-    //@interlal
+    //@internal
     _isUpdatingOptions?: boolean;
-    //@interlal
+    //@internal
     _initHooksCalled?: boolean;
-    //@interlal
+    //@internal
     _initHooks?: Function[];
     options?: ClassOptions;
     /**
@@ -193,7 +193,7 @@ class Class {
     }
     /* eslint-enable @typescript-eslint/no-unused-vars */
 
-    //@interlal
+    //@internal
     _visitInitHooks(proto) {
         if (this._initHooksCalled) {
             return;

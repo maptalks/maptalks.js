@@ -76,25 +76,25 @@ const options: UIComponentOptionsType = {
 class UIComponent extends Eventable(Class) {
 
     options: UIComponentOptionsType;
-    //@interlal
+    //@internal
     _owner: Map | Geometry;
-    //@interlal
+    //@internal
     _coordinate: Coordinate;
-    //@interlal
+    //@internal
     _showBySymbolChange: boolean;
-    //@interlal
+    //@internal
     _mapEventsOn: boolean;
-    //@interlal
+    //@internal
     __uiDOM: HTMLElement;
-    //@interlal
+    //@internal
     _pos: Point;
-    //@interlal
+    //@internal
     _autoPanId: NodeJS.Timeout;
-    //@interlal
+    //@internal
     _domContentRect: { width: number, height: number };
-    //@interlal
+    //@internal
     _size: Size;
-    //@interlal
+    //@internal
     _resizeObserver: ResizeObserver;
 
     /**
@@ -119,7 +119,7 @@ class UIComponent extends Eventable(Class) {
         this.proxyOptions();
     }
 
-    //@interlal
+    //@internal
     _appendCustomClass(dom: HTMLElement) {
         if (!dom) {
             console.warn('dom is null:', dom);
@@ -203,7 +203,7 @@ class UIComponent extends Eventable(Class) {
         return (this._owner as Geometry).getMap();
     }
 
-    //@interlal
+    //@internal
     _collides() {
         const map = this.getMap();
         if (!map) {
@@ -214,7 +214,7 @@ class UIComponent extends Eventable(Class) {
         return this;
     }
 
-    //@interlal
+    //@internal
     _collidesEffect(show: boolean) {
         const dom = this.getDOM();
         if (!dom) {
@@ -524,7 +524,7 @@ class UIComponent extends Eventable(Class) {
         return this;
     }
 
-    //@interlal
+    //@internal
     _roundPoint(point: Point) {
         if (this.options.roundPoint) {
             point = point._round();
@@ -546,7 +546,7 @@ class UIComponent extends Eventable(Class) {
         return p;
     }
 
-    //@interlal
+    //@internal
     _getAnimation() {
         const anim = {
             'fade': false,
@@ -576,7 +576,7 @@ class UIComponent extends Eventable(Class) {
         return anim;
     }
 
-    //@interlal
+    //@internal
     _getViewPoint() {
         let altitude = 0;
         //后期有了地形后，拿到的数据会带altitude，这里适配下,以后点击地图拿到的数据应该带海拔的（lng,lat,alt）
@@ -605,14 +605,14 @@ class UIComponent extends Eventable(Class) {
             ._add(this.options['dx'], this.options['dy']);
     }
 
-    //@interlal
+    //@internal
     _meterToPoint(center: Coordinate, altitude: number) {
         return altitude;
         // const map = this.getMap();
         // return map.altitudeToPoint(altitude, map._getResolution()) * sign(altitude);
     }
 
-    //@interlal
+    //@internal
     _autoPan() {
         const map = this.getMap(),
             dom = this.getDOM();
@@ -705,7 +705,7 @@ class UIComponent extends Eventable(Class) {
      * @return {Size} size
      * @private
      */
-    //@interlal
+    //@internal
     _measureSize(dom: HTMLElement) {
         const container = this._getUIContainer();
         dom.style.position = 'absolute';
@@ -731,7 +731,7 @@ class UIComponent extends Eventable(Class) {
      *
      * @private
      */
-    //@interlal
+    //@internal
     _removePrevDOM() {
         if (this.onDomRemove) {
             this.onDomRemove();
@@ -777,27 +777,27 @@ class UIComponent extends Eventable(Class) {
      * @private
      * @return {String} cache key
      */
-    //@interlal
+    //@internal
     _uiDomKey() {
         return '__ui_' + this._getClassName();
     }
 
-    //@interlal
+    //@internal
     _singleton() {
         return this.options['single'];
     }
 
-    //@interlal
+    //@internal
     _getUIContainer() {
         return this.getMap().getPanels()['ui'];
     }
 
-    //@interlal
+    //@internal
     _getClassName() {
         return 'UIComponent';
     }
 
-    //@interlal
+    //@internal
     _switchMapEvents(to: string) {
         const map = this.getMap();
         if (!map) {
@@ -817,7 +817,7 @@ class UIComponent extends Eventable(Class) {
         }
     }
 
-    //@interlal
+    //@internal
     _switchEvents(to: string) {
         //At the beginning,not bind map events,bind evetns when show
         // this._switchMapEvents(to);
@@ -831,7 +831,7 @@ class UIComponent extends Eventable(Class) {
         }
     }
 
-    //@interlal
+    //@internal
     _getDefaultEvents() {
         return {
             'zooming rotate pitch': this.onEvent,
@@ -842,7 +842,7 @@ class UIComponent extends Eventable(Class) {
         };
     }
 
-    //@interlal
+    //@internal
     _getOwnerEvents() {
         const events: { [key: string]: (...args) => void } = {};
         if (this._owner && (this._owner instanceof Geometry)) {
@@ -905,7 +905,7 @@ class UIComponent extends Eventable(Class) {
         }
     }
 
-    //@interlal
+    //@internal
     _updatePosition() {
         if (!this.getMap()) {
             return this;
@@ -916,7 +916,7 @@ class UIComponent extends Eventable(Class) {
         return this;
     }
 
-    //@interlal
+    //@internal
     _setPosition() {
         const dom = this.getDOM();
         if (!dom) return;
@@ -926,7 +926,7 @@ class UIComponent extends Eventable(Class) {
         dom.style[TRANSFORM] = this._toCSSTranslate(p) + ' scale(1)';
     }
 
-    //@interlal
+    //@internal
     _toCSSTranslate(p: Point) {
         if (!p) {
             return '';
@@ -948,7 +948,7 @@ class UIComponent extends Eventable(Class) {
         }
     }
 
-    //@interlal
+    //@internal
     _observerDomSize(dom: HTMLElement) {
         if (!dom || !Browser.resizeObserver || this._resizeObserver) {
             return this;
@@ -997,7 +997,7 @@ class UIComponent extends Eventable(Class) {
         return false;
     }
 
-    //@interlal
+    //@internal
     _bindDomEvents(dom: HTMLElement, to: string) {
         if (!dom) {
             return;
@@ -1013,7 +1013,7 @@ class UIComponent extends Eventable(Class) {
         }
     }
 
-    //@interlal
+    //@internal
     _getDomEvents() {
         return {
             'mouseover': this._onDomMouseover,
@@ -1021,7 +1021,7 @@ class UIComponent extends Eventable(Class) {
         };
     }
 
-    //@interlal
+    //@internal
     _configMapPreventWheelScroll(preventWheelScroll: boolean) {
         const map = this.getMap();
         if (!map) {
@@ -1034,13 +1034,13 @@ class UIComponent extends Eventable(Class) {
     }
 
     // eslint-disable-next-line no-unused-vars
-    //@interlal
+    //@internal
     _onDomMouseover() {
         this._configMapPreventWheelScroll(false);
     }
 
     // eslint-disable-next-line no-unused-vars
-    //@interlal
+    //@internal
     _onDomMouseout() {
         this._configMapPreventWheelScroll(true);
     }
