@@ -179,7 +179,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         if (layerRenderer && layerRenderer.setTerrainHelper) {
             layerRenderer.setTerrainHelper(null);
         }
-        layer._doRemove();
+        layer['_doRemove']();
         this._unbindChildListeners(layer);
         delete this._layerMap[layer.getId()];
         this.layers.splice(idx, 1);
@@ -753,7 +753,6 @@ export default class GroupGLLayer extends maptalks.Layer {
                 }
             }
         }
-        //@ts-expect-error-error
         return super['_bindMap'](...args);
     }
 

@@ -54,10 +54,6 @@ function hasVisibleMask() {
 
 export default function <T extends MixinConstructor>(Base: T) {
     return class MaskLayerMixin extends Base {
-        //@internal
-        _projViewMatrix: mat4;
-        //@internal
-        _extentInWorld: vec4;
 
         removeMask(masks: undefined | null | any) {
             if (!this['_maskList']) {
@@ -75,7 +71,7 @@ export default function <T extends MixinConstructor>(Base: T) {
                     this['_maskList'].splice(index, 1);
                 }
             }
-            this.updateExtent('shapechange');
+            this.updateExtent();
             this['fire']('removemask', { masks });
             return this;
         }
@@ -98,14 +94,14 @@ export default function <T extends MixinConstructor>(Base: T) {
                     mask._updateCoordinates();
                 }
             });
-            this.updateExtent('shapechange');
+            this.updateExtent();
             this['fire']('setmask', { masks });
             return this;
         }
 
         onAdd() {
             super['onAdd']();
-            this.updateExtent('shapechange');
+            this.updateExtent();
         }
 
         getMasks() {
@@ -122,7 +118,7 @@ export default function <T extends MixinConstructor>(Base: T) {
                 param['target']._updateShape();
             }
             if (param['target'] instanceof Mask && maskLayerEvents.indexOf(type) > -1) {
-                this.updateExtent(type);
+                this.updateExtent();
             }
             if (super['_onGeometryEvent']) {
                 super['_onGeometryEvent'](param);
@@ -185,7 +181,7 @@ export default function <T extends MixinConstructor>(Base: T) {
             return { projViewMatrix, extentInWorld };
         }
 
-        updateExtent(type) {
+        updateExtent() {
             if (!this['_maskList']) {
                 return;
             }
@@ -208,16 +204,12 @@ export default function <T extends MixinConstructor>(Base: T) {
                 return;
             }
             const { extent, ratio, minHeight } = maskExtent;
-            if (type || !this._projViewMatrix || !this._projViewMatrix) {
-                const { projViewMatrix, extentInWorld } = this.updateMask(extent);
-                this._projViewMatrix = projViewMatrix;
-                this._extentInWorld = extentInWorld;
-            }
+            const { projViewMatrix, extentInWorld } = this.updateMask(extent);
             if (renderer) {
-                renderer.setMask(this._extentInWorld, this._projViewMatrix, ratio, minHeight);
+                renderer.setMask(extentInWorld, projViewMatrix, ratio, minHeight);
             } else {
                 this['once']('renderercreate', e => {
-                    e.renderer.setMask(this._extentInWorld, this._projViewMatrix, ratio, minHeight);
+                    e.renderer.setMask(extentInWorld, projViewMatrix, ratio, minHeight);
                 });
             }
         }
@@ -225,13 +217,15 @@ export default function <T extends MixinConstructor>(Base: T) {
         getMaskExtent() {
             let xmin = Infinity, ymin = Infinity, xmax = -Infinity, ymax = -Infinity, maxheight = -Infinity, minheight = Infinity;
             let hasMaskInExtent = false;
+            const map = this['getMap']();
+            const mapExtent = map.getExtent();
             for (let i = 0; i < this['_maskList'].length; i++) {
                 const mask = this['_maskList'][i];
                 if (!mask.isVisible()) {
                     continue;
                 }
                 const extent = mask.getExtent();
-                if (!extent || !this._inMapExtent(extent)) {
+                if (!extent || !mapExtent.intersects(extent)) {
                     continue;
                 }
                 hasMaskInExtent = true;
@@ -265,12 +259,6 @@ export default function <T extends MixinConstructor>(Base: T) {
             return { extent, ratio, minHeight };
         }
 
-        //@internal
-        _inMapExtent(extent) {
-            const map = this['getMap']();
-            const mapExtent = map.getExtent();
-            return mapExtent.intersects(extent);
-        }
     };
 }
 
