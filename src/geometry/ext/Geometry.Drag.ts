@@ -77,6 +77,9 @@ class GeometryDragHandler extends Handler {
         if (!needShadow) {
             return;
         }
+        if (!target.options.dragShadow) {
+            return;
+        }
         this._prepareDragStageLayer();
         if (this._shadow) {
             this._shadow.remove();
