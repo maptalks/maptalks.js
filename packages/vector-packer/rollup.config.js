@@ -58,7 +58,7 @@ module.exports = [
         plugins: plugins,
         output: [
             {
-                'sourcemap': false,
+                'sourcemap': true,
                 'format': 'es',
                 'banner': banner,
                 'file': pkg.module

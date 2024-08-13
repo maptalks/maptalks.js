@@ -18,7 +18,8 @@
   "author": "fuzhenn, liubing",
   "license": "UNLICENSED",
   "files": [
-    "dist/gltf-loader.es.js"
+    "dist/gltf-loader.es.js",
+    "dist/gltf-loader.es.js.map"
   ],
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",

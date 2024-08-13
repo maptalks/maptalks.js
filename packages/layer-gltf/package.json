@@ -13,7 +13,9 @@
   "jsdelivr": "dist/maptalks.gltf.js",
   "files": [
     "dist/maptalks.gltf.js",
-    "dist/maptalks.gltf.es.js"
+    "dist/maptalks.gltf.js.map",
+    "dist/maptalks.gltf.es.js",
+    "dist/maptalks.gltf.es.js.map"
   ],
   "scripts": {
     "clean": "rimraf dist",

@@ -169,7 +169,7 @@ module.exports = [
             name: 'maptalks',
             file: outputFile,
             format: 'umd',
-            sourcemap: production ? false : 'inline',
+            sourcemap: true
         },
         watch: {
             include: ['src/layer/**/*', 'build/worker.js']
@@ -213,7 +213,7 @@ if (production) {
                 name: 'maptalks',
                 file: outputESFile,
                 format: 'es',
-                sourcemap: production ? false : 'inline',
+                sourcemap: true
             },
             watch: {
                 include: ['src/**/*']

@@ -21,7 +21,7 @@ module.exports = [
         plugins: plugins,
         output: [
             {
-                'sourcemap': 'inline',
+                'sourcemap': true,
                 'format': 'umd',
                 'name': 'gltf',
                 'banner': banner,
@@ -36,7 +36,7 @@ module.exports = [
             terser({ output : { comments : '/^!/' }})
         ] : []),
         output: {
-            'sourcemap': false,
+            'sourcemap': true,
             'format': 'es',
             'banner': banner,
             'file': pkg.module

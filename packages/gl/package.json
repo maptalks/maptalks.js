@@ -18,7 +18,9 @@
   },
   "files": [
     "dist/maptalksgl.js",
+    "dist/maptalksgl.js.map",
     "dist/maptalksgl.es.js",
+    "dist/maptalksgl.es.js.map",
     "dist/maptalksgl.d.ts",
     "dist/transcoders.js"
   ],

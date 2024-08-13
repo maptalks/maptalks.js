@@ -2,7 +2,7 @@ import { Coordinate, Extent } from "maptalks";
 import { mat4, vec3, vec4 } from '@maptalks/reshader.gl';
 import Mask from "./Mask";
 import { extend } from "../util/util";
-import { MixinConstructor } from "maptalks/dist/core/Mixin";
+import { MixinConstructor } from "maptalks";
 
 const maskLayerEvents = ['shapechange', 'heightrangechange', 'flatheightchange'];
 const COORD_EXTENT = new Coordinate(0, 0);
@@ -16,7 +16,7 @@ function clearMasks() {
         mask.remove();
     });
     this['_maskList'] = [];
-    this.updateExtent('shapechange');
+    this.updateMaskExtent('shapechange');
     return this;
 }
 
@@ -71,7 +71,7 @@ export default function <T extends MixinConstructor>(Base: T) {
                     this['_maskList'].splice(index, 1);
                 }
             }
-            this.updateExtent();
+            this.updateMaskExtent();
             this['fire']('removemask', { masks });
             return this;
         }
@@ -94,14 +94,14 @@ export default function <T extends MixinConstructor>(Base: T) {
                     mask._updateCoordinates();
                 }
             });
-            this.updateExtent();
+            this.updateMaskExtent();
             this['fire']('setmask', { masks });
             return this;
         }
 
         onAdd() {
             super['onAdd']();
-            this.updateExtent();
+            this.updateMaskExtent();
         }
 
         getMasks() {
@@ -109,7 +109,7 @@ export default function <T extends MixinConstructor>(Base: T) {
         }
 
         //@internal
-        _onGeometryEvent(param) {
+        onGeometryEvent(param) {
             if (!param || !param['target']) {
                 return;
             }
@@ -118,10 +118,10 @@ export default function <T extends MixinConstructor>(Base: T) {
                 param['target']._updateShape();
             }
             if (param['target'] instanceof Mask && maskLayerEvents.indexOf(type) > -1) {
-                this.updateExtent();
+                this.updateMaskExtent();
             }
-            if (super['_onGeometryEvent']) {
-                super['_onGeometryEvent'](param);
+            if (super['onGeometryEvent']) {
+                super['onGeometryEvent'](param);
             }
         }
 
@@ -138,25 +138,20 @@ export default function <T extends MixinConstructor>(Base: T) {
             const identifyData = this['identifyAtPoint'](point, opts);
             const coordinate = identifyData.length && identifyData[0].coordinate;
             if (coordinate) {
-                return this['_hitMasks'](coordinate);
+                const masks = this['_maskList'];
+                if (!masks) {
+                    return [];
+                }
+                const hits = [];
+                for (let i = 0; i < masks.length; i++) {
+                    const maskMode = masks[i].getMode();
+                    if (masks[i].containsPoint(coordinate) && (maskMode === 'color' || maskMode === 'video')) {
+                        hits.push(masks[i]);
+                    }
+                }
+                return hits;
             }
             return [];
-        }
-
-        //@internal
-        _hitMasks(coordinate) {
-            const masks = this['_maskList'];
-            if (!masks) {
-                return [];
-            }
-            const hits = [];
-            for (let i = 0; i < masks.length; i++) {
-                const maskMode = masks[i].getMode();
-                if (masks[i].containsPoint(coordinate) && (maskMode === 'color' || maskMode === 'video')) {
-                    hits.push(masks[i]);
-                }
-            }
-            return hits;
         }
 
         remove() {
@@ -181,7 +176,7 @@ export default function <T extends MixinConstructor>(Base: T) {
             return { projViewMatrix, extentInWorld };
         }
 
-        updateExtent() {
+        updateMaskExtent() {
             if (!this['_maskList']) {
                 return;
             }

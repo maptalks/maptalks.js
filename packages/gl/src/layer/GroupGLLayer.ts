@@ -5,7 +5,7 @@ import { isNil, extend } from './util/util.js';
 import TerrainLayer from './terrain/TerrainLayer';
 import RayCaster from './raycaster/RayCaster.js';
 import Mask from './mask/Mask.js';
-import { LayerJSONType } from 'maptalks/dist/layer/Layer';
+import { LayerJSONType } from 'maptalks';
 
 const options: GroupGLLayerOptions = {
     renderer : 'gl',

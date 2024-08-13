@@ -14,7 +14,9 @@
   },
   "files": [
     "dist/maptalks-gl.js",
-    "index.js"
+    "dist/maptalks-gl.js.map",
+    "index.js",
+    "index.d.ts"
   ],
   "repository": {
     "type": "git",
@@ -31,7 +33,8 @@
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "0.4.4",
-    "rollup": "^4.17.2"
+    "rollup": "^4.17.2",
+    "rollup-plugin-sourcemaps": "0.6.3"
   },
   "dependencies": {
     "@maptalks/3dtiles": "workspace:*",

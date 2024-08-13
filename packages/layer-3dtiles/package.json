@@ -28,7 +28,9 @@
   ],
   "files": [
     "dist/maptalks.3dtiles.js",
+    "dist/maptalks.3dtiles.js.map",
     "dist/maptalks.3dtiles.es.js",
+    "dist/maptalks.3dtiles.es.js.map",
     "dist/maptalks.3dtiles.d.ts"
   ],
   "author": "fuzhenn",

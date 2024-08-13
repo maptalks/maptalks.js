@@ -32,7 +32,6 @@ export { default as color } from 'color';
 
 if (typeof window !== 'undefined') {
     // append GroupGLLayer on maptalks manually
-    // @ts-expect-error-error
     if (window.maptalks) {
       // @ts-expect-error-error
         window.maptalks.GroupGLLayer = GroupGLLayer;

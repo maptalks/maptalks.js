@@ -13,9 +13,9 @@
     "preversion": "npm run lint"
   },
   "files": [
+    "dist/reshadergl.es.js.map",
     "dist/reshadergl.es.js",
-    "dist/reshadergl.d.ts",
-    "dist/**/*.d.ts"
+    "dist/reshadergl.d.ts"
   ],
   "keywords": [
     "webgl"

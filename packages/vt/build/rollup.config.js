@@ -161,7 +161,7 @@ module.exports = [
             name: "maptalks",
             file: outputFile,
             format: "umd",
-            sourcemap: production ? false : "inline",
+            sourcemap: true
         },
         plugins: [
             json(),
@@ -213,7 +213,7 @@ module.exports = [
             name: "maptalks",
             file: pkg.module,
             format: "es",
-            sourcemap: production ? false : "inline",
+            sourcemap: true
         },
         plugins: [
             json(),

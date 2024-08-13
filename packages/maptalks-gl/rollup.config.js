@@ -2,6 +2,7 @@ const { nodeResolve } = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
 const pkg = require('./package.json');
 const terser = require('@rollup/plugin-terser');
+const sourcemaps = require('rollup-plugin-sourcemaps');
 
 const outputFile = pkg.main;
 
@@ -20,6 +21,7 @@ module.exports = [
                 main: true
             }),
             commonjs(),
+            sourcemaps(),
             terser({
                 mangle: false,
                 compress: {
@@ -34,7 +36,7 @@ module.exports = [
             })
         ],
         output: {
-            sourcemap: false,
+            sourcemap: true,
             banner,
             outro,
             extend: true,

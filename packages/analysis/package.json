@@ -11,10 +11,10 @@
   "module": "dist/maptalks.analysis.es.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist",
-    "LICENSE",
-    "README.md",
-    "package.json"
+    "./dist/maptalks.analysis.es.js",
+    "./dist/maptalks.analysis.es.js.map",
+    "./dist/maptalks.analysis.js",
+    "./dist/maptalks.analysis.js.map"
   ],
   "exports": {
     ".": {

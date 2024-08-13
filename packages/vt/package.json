@@ -6,7 +6,9 @@
   "module": "dist/maptalks.vt.es.js",
   "files": [
     "dist/maptalks.vt.js",
-    "dist/maptalks.vt.es.js"
+    "dist/maptalks.vt.js.map",
+    "dist/maptalks.vt.es.js",
+    "dist/maptalks.vt.es.js.map"
   ],
   "scripts": {
     "clean": "rimraf dist",

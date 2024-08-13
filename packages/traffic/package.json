@@ -9,11 +9,14 @@
   },
   "main": "dist/maptalks.traffic.js",
   "module": "dist/maptalks.traffic.es.js",
+  "types": "dist/maptalks.traffic.d.js",
   "unpkg": "dist/maptalks.traffic.js",
   "jsdelivr": "dist/maptalks.traffic.js",
   "files": [
     "dist/maptalks.traffic.js",
-    "dist/maptalks.traffic.es.js"
+    "dist/maptalks.traffic.js.map",
+    "dist/maptalks.traffic.es.js",
+    "dist/maptalks.traffic.es.js.map"
   ],
   "scripts": {
     "clean": "rimraf dist",
@@ -46,7 +49,8 @@
     "karma-mocha-reporter": "^2.2.5",
     "maptalks": "^1.0.0-rc.33",
     "mocha": "^10.3.0",
-    "rollup": "^4.17.2"
+    "rollup": "^4.17.2",
+    "rollup-plugin-dts": "^6.1.0"
   },
   "gitHead": "9eeea4807723d460fa7e09969c6556d53f6bed84"
 }
