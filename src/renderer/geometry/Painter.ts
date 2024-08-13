@@ -669,7 +669,7 @@ class Painter extends Class {
             if (ctx.shadowBlur || this.symbolizers[i].symbol['shadowBlur']) {
                 this._prepareShadow(ctx, this.symbolizers[i].symbol);
             }
-            this.symbolizers[i].symbolize(...contexts);
+            this.symbolizers[i].symbolize(contexts[0], contexts[1]);
         }
         this._afterPaint();
         this._painted = true;
@@ -707,7 +707,7 @@ class Painter extends Class {
                     ]
                 };
                 this._prepareShadow(ctx, this.symbolizers[i].symbol);
-                this.symbolizers[i].symbolize(...contexts);
+                this.symbolizers[i].symbolize(contexts[0], contexts[1]);
             }
             if (bak) {
                 this._renderPoints = bak;

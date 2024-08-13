@@ -1,3 +1,4 @@
+import { pushIn } from 'maptalks/dist/core/util';
 import { ResourceCache } from '../..';
 import { getValueOrDefault } from '../../../core/util';
 import { isGradient as checkGradient } from '../../../core/util/style';
@@ -83,11 +84,13 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
                 }
                 const params = [ctx, points[i]];
                 if (paintParams.length > 1) {
-                    params.push(...paintParams.slice(1));
+                    // params.push(...paintParams.slice(1));
+                    pushIn(params, paintParams.slice(1));
                 }
                 params.push(style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']);
                 // @ts-expect-error todo 属性“_paintOn”在类型“Geometry”上不存在
-                const bbox = this.geometry._paintOn(...params);
+                // eslint-disable-next-line prefer-spread
+                const bbox = this.geometry._paintOn.apply(this.geometry, params);
                 this._setBBOX(ctx, bbox);
                 this._bufferBBOX(ctx, tolerance);
             }
@@ -97,10 +100,12 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
                 this._createGradient(ctx, points, style['lineColor']);
             }
             const params = [ctx];
-            params.push(...paintParams);
+            // params.push(...paintParams);
+            pushIn(params, paintParams);
             params.push(style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']);
             // @ts-expect-error todo 属性“_paintOn”在类型“Geometry”上不存在
-            const bbox = this.geometry._paintOn(...params);
+            // eslint-disable-next-line prefer-spread
+            const bbox = this.geometry._paintOn.apply(this.geometry, params);
             this._setBBOX(ctx, bbox);
             this._bufferBBOX(ctx, tolerance);
         }

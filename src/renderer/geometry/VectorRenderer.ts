@@ -127,17 +127,19 @@ const el = {
         const pcenter = this._getPrjCoordinates();
         const pt: Point = map._prjToPointAtRes(pcenter, map.getGLRes());
         const size = this._getRenderSize(pt);
-        return [pt, ...size];
+        const result = [pt];
+        pushIn(result, size);
+        return result;
     },
 
     //@internal
     _paintOn: function (...args: any[]) {
         if (this._paintAsPath()) {
-            // @ts-expect-error
-            return Canvas.polygon(...args);
+            // eslint-disable-next-line prefer-spread
+            return Canvas.polygon.apply(Canvas, args);
         } else {
-            // @ts-expect-error
-            return Canvas.ellipse(...args);
+            // eslint-disable-next-line prefer-spread
+            return Canvas.ellipse.apply(Canvas, args);
         }
     },
 
@@ -216,8 +218,8 @@ const sectorInclude = {
     //@internal
     _paintOn: function (...args: any[]) {
         if (this._paintAsPath()) {
-            // @ts-expect-error
-            return Canvas.polygon(...args);
+            // eslint-disable-next-line prefer-spread
+            return Canvas.polygon.apply(Canvas, args);
         } else {
             const r = this.getMap().getBearing();
             if (r) {
@@ -225,8 +227,8 @@ const sectorInclude = {
                 args[3][0] += r;
                 args[3][1] += r;
             }
-            // @ts-expect-error
-            return Canvas.sector(...args);
+            // eslint-disable-next-line prefer-spread
+            return Canvas.sector.apply(Canvas, args);
         }
     }
 };

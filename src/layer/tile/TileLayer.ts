@@ -10,7 +10,8 @@ import {
     isString,
     extend,
     Vector3,
-    Matrix4
+    Matrix4,
+    pushIn
 } from '../../core/util';
 import LRUCache, { ArrayLRUCache } from '../../core/util/LRUCache';
 import Browser from '../../core/Browser';
@@ -495,7 +496,9 @@ class TileLayer extends Layer {
                     this._disablePyramid = true;
                     return this.getTiles(z, layer);
                 }
-                queue = [...rootNodes.tiles];
+                // queue = [...rootNodes.tiles];
+                queue = [];
+                pushIn(queue, rootNodes.tiles);
             }
         } else {
             const rootNodes = this._getRootNodes(offset0);
@@ -504,7 +507,9 @@ class TileLayer extends Layer {
                 this._disablePyramid = true;
                 return this.getTiles(z, layer);
             }
-            queue = [...rootNodes.tiles];
+            // queue = [...rootNodes.tiles];
+            queue = [];
+            pushIn(queue, rootNodes.tiles);
         }
         const glRes = map.getGLRes();
         const offsets = {
@@ -618,13 +623,15 @@ class TileLayer extends Layer {
         }
         if (z === maxZoom) {
             if (hasCurrentIn) {
-                queue.push(...children);
+                // queue.push(...children);
+                pushIn(queue, children);
             } else {
                 tiles.push(node);
                 gridExtent._combine(node.extent2d);
             }
         } else {
-            queue.push(...children);
+            // queue.push(...children);
+            pushIn(queue, children);
         }
 
     }
@@ -1350,7 +1357,7 @@ class TileLayer extends Layer {
         // offset result can't be cached, as it varies with map's center.
         let offset = this.options['offset'];
         if (isFunction(offset)) {
-            offset = offset.call(this, ...params);
+            offset = offset.apply(this, params);
         }
         if (isNumber(offset)) {
             offset = [offset, offset];

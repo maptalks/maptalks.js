@@ -127,7 +127,8 @@ export default function <T extends MixinConstructor>(Base: T) {
          * @param context        - the context of the handler
          */
         addEventListener(...args): this {
-            return this.on.call(this, ...args);
+            // eslint-disable-next-line prefer-spread
+            return this.on.apply(this, args);
         }
 
         /**
@@ -228,7 +229,8 @@ export default function <T extends MixinConstructor>(Base: T) {
          * @param context          - the context of the handler
          */
         removeEventListener(...args) {
-            return this.off.call(this, ...args);
+            // eslint-disable-next-line prefer-spread
+            return this.off.apply(this, args);
         }
 
         /**
@@ -322,9 +324,9 @@ export default function <T extends MixinConstructor>(Base: T) {
                 delete fn[key];
                 called = true;
                 if (context) {
-                    handler.call(context, ...args);
+                    handler.apply(context, args);
                 } else {
-                    handler.call(this, ...args);
+                    handler.apply(this, args);
                 }
                 (onceHandler as any)._called = true;
                 // me.off(evtType, onceHandler, this);

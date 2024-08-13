@@ -353,7 +353,8 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     static addOnLoadHook(fn: string | ((...args) => void), ...args) { // (Function) || (String, args...)
         // const args = Array.prototype.slice.call(arguments, 1);
         const onload = typeof fn === 'function' ? fn : function () {
-            this[fn].call(this, ...args);
+            // eslint-disable-next-line prefer-spread
+            this[fn].apply(this, args);
         };
         this.prototype._onLoadHooks = this.prototype._onLoadHooks || [];
         this.prototype._onLoadHooks.push(onload);

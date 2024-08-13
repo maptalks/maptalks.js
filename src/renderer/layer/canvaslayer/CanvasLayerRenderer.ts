@@ -1,3 +1,4 @@
+import { pushIn } from 'maptalks/dist/core/util';
 import Canvas from '../../../core/Canvas';
 import CanvasRenderer from '../../../renderer/layer/CanvasRenderer';
 
@@ -38,11 +39,13 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
     draw(...args: any[]) {
         this.prepareCanvas();
         this.prepareDrawContext();
-        this._drawLayer(...args);
+        // eslint-disable-next-line prefer-spread
+        this._drawLayer.apply(this, args);
     }
 
     drawOnInteracting(...args: any[]) {
-        this._drawLayerOnInteracting(...args);
+        // eslint-disable-next-line prefer-spread
+        this._drawLayerOnInteracting.apply(this, args);
     }
 
     getCanvasImage() {
@@ -130,11 +133,14 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
         }
         const args: any[] = [this.context, view];
         const params = ensureParams(this.getDrawParams());
-        return [
-            ...args,
-            ...params,
-            ...this._drawContext
-        ];
+        const result = [];
+        pushIn(result, args, params, this._drawContext);
+        return result;
+        // return [
+        //     ...args,
+        //     ...params,
+        //     ...this._drawContext
+        // ];
     }
 
     //@internal
@@ -157,7 +163,8 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
         if (!params) {
             return;
         }
-        this.layer.drawOnInteracting(...params, ...args);
+        pushIn(params, args);
+        this.layer.drawOnInteracting.apply(this, params);
         this.completeRender();
     }
 }

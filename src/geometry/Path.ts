@@ -421,7 +421,8 @@ export class Path extends Geometry {
         }
         const rings = [shell];
         if (this.hasHoles && this.hasHoles()) {
-            rings.push.call(rings, ...this.getHoles());
+            // eslint-disable-next-line prefer-spread
+            rings.push.apply(rings, this.getHoles());
         }
         return this._coords2Extent(rings, this._getProjection());
     }
@@ -430,7 +431,8 @@ export class Path extends Geometry {
     _computePrjExtent(_?: any): Extent {
         const coords = [this._getPrjCoordinates()];
         if (this.hasHoles && this.hasHoles()) {
-            coords.push.call(coords, ...this._getPrjHoles());
+            // eslint-disable-next-line prefer-spread
+            coords.push.apply(coords, this._getPrjHoles());
         }
         return this._coords2Extent(coords);
     }

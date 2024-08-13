@@ -64,7 +64,8 @@ class OverlayLayerRenderer extends CanvasRenderer {
             }
             if (!this.resources) {
                 // @tip 解构会有一定的性能影响，对于少量数据是否可以忽略
-                resources.push(...res);
+                // resources.push(...res);
+                pushIn(resources, res);
             } else {
                 for (let i = 0; i < res.length; i++) {
                     const url = res[i][0];

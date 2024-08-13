@@ -1,5 +1,5 @@
 import { INTERNAL_LAYER_PREFIX } from '../../core/Constants';
-import { isNil, isNumber, sign, removeFromArray, UID, isFunction } from '../../core/util';
+import { isNil, isNumber, sign, removeFromArray, UID, isFunction, extend } from '../../core/util';
 import { lowerSymbolOpacity } from '../../core/util/style';
 import Class from '../../core/Class';
 import Eventable from '../../core/Eventable';
@@ -1015,7 +1015,7 @@ class GeometryEditor extends Eventable(Class) {
              * @property {String} type - handleremove
              * @property {Geometry} target - the geometry fires the event
              */
-            me._geometry.fire('handleremove', Object.assign({}, param, { coordinate: map.containerPointToCoordinate(param.containerPoint), vertex: param.target }));
+            me._geometry.fire('handleremove', extend({}, param, { coordinate: map.containerPointToCoordinate(param.containerPoint), vertex: param.target }));
         }
 
         function moveVertexHandle(handleConatainerPoint: any, index: number, ringIndex: number = 0): void {
@@ -1384,15 +1384,19 @@ class GeometryEditor extends Eventable(Class) {
             record[0].forEach(o => {
                 const m = o[0],
                     args = o.slice(1);
-                geoToEdit[m].call(geoToEdit, ...args);
+                // eslint-disable-next-line prefer-spread
+                geoToEdit[m].apply(geoToEdit, args);
                 if (geoToEdit !== geo) {
-                    geo[m].call(geo, ...args);
+                    // eslint-disable-next-line prefer-spread
+                    geo[m].apply(geo, args);
                 }
             });
         } else {
-            geoToEdit[record[0]].call(geoToEdit, ...record[1]);
+            // eslint-disable-next-line prefer-spread
+            geoToEdit[record[0]].apply(geoToEdit, record[1]);
             if (geoToEdit !== geo) {
-                geo[record[0]].call(geo, ...record[1]);
+                // eslint-disable-next-line prefer-spread
+                geo[record[0]].apply(geo, record[1]);
             }
         }
         this._updating = updating;

@@ -1,5 +1,5 @@
 import Class from '../core/Class';
-import { isFunction, isNil, isNumber } from '../core/util';
+import { extend, isFunction, isNil, isNumber } from '../core/util';
 import Eventable from '../core/Eventable';
 import JSONAble from '../core/JSONAble';
 import Renderable from '../renderer/Renderable';
@@ -867,7 +867,7 @@ Layer.prototype.fire = function (eventType: string, param) {
         * @property {Layer} target    - the layer fires the event
         * @property {Boolean} visible        - value of visible
        */
-        this.fire('visiblechange', Object.assign({}, param, { visible: this.options.visible }));
+        this.fire('visiblechange', extend({}, param, { visible: this.options.visible }));
     }
     return this;
 };

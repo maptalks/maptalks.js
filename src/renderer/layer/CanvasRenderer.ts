@@ -144,10 +144,10 @@ class CanvasRenderer extends Class {
                     }
                 });
             } else {
-                drawFn.call(this, ...args);
+                drawFn.apply(this, args);
             }
         } else {
-            drawFn.call(this, ...args);
+            drawFn.apply(this, args);
         }
     }
 

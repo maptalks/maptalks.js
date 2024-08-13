@@ -815,7 +815,8 @@ class MapCanvasRenderer extends MapRenderer {
         const clipped = renderer.clipCanvas(this.context as any);
         if (matrix) {
             ctx.save();
-            ctx.setTransform(...(matrix as any));
+            // eslint-disable-next-line prefer-spread
+            ctx.setTransform.apply(ctx, matrix);
         }
 
         /*let outlineColor = layer.options['debugOutline'];

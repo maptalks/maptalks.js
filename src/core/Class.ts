@@ -223,7 +223,8 @@ class Class {
      */
     static addInitHook(fn: Function | string, ...args) {
         const init: Function = typeof fn === 'function' ? fn : function () {
-            this[fn].call(this, ...args);
+            // eslint-disable-next-line prefer-spread
+            this[fn].apply(this, args);
         };
         const proto = this.prototype;
         const parentProto = Object.getPrototypeOf(proto);
