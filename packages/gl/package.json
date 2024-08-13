@@ -29,7 +29,6 @@
     "maptalks"
   ],
   "types": "dist/maptalksgl.d.ts",
-  "d.ts": "dist/maptalksgl.d.ts",
   "author": "fuzhenn",
   "license": "UNLICENSED",
   "dependencies": {
@@ -53,7 +52,7 @@
     "karma-chrome-launcher": "^3.1.1",
     "karma-mocha": "^2.0.1",
     "karma-mocha-reporter": "^2.2.5",
-    "maptalks": "^1.0.0-rc.33",
+    "maptalks": "^1.0.0-rc.35",
     "mocha": "^10.3.0",
     "pixelmatch": "^4.0.2",
     "rollup": "^4.17.2",

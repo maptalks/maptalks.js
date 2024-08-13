@@ -9,7 +9,6 @@
   },
   "main": "dist/maptalks.analysis.js",
   "module": "dist/maptalks.analysis.es.js",
-  "types": "dist/index.d.ts",
   "files": [
     "./dist/maptalks.analysis.es.js",
     "./dist/maptalks.analysis.es.js.map",
@@ -50,7 +49,7 @@
     "karma-expect": "^1.1.3",
     "karma-mocha": "^2.0.1",
     "karma-mocha-reporter": "^2.2.5",
-    "maptalks": "^1.0.0-rc.33",
+    "maptalks": "^1.0.0-rc.35",
     "mocha": "^10.3.0",
     "pixelmatch": "^4.0.2",
     "rollup": "^4.17.2"

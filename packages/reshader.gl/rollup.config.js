@@ -84,11 +84,11 @@ module.exports = [
         plugins: [dts()],
         output: [
             {
-                'sourcemap': true,
+                'sourcemap': false,
                 'format': 'es',
                 'name': 'maptalks',
                 banner,
-                'file': pkg['d.ts']
+                'file': pkg['types']
             }
         ]
     }
