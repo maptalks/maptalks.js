@@ -6,7 +6,6 @@
     "strict": false,
     "alwaysStrict": true,
     "allowJs": true,
-    "sourceMap": true,
     "esModuleInterop": true,
     "declaration": true,
     "declarationMap": true,

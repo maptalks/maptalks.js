@@ -740,6 +740,10 @@ class OverlayLayer extends Layer {
         return -1;
     }
 
+    onGeometryEvent(param?: HandlerFnResultType) {
+        return this._onGeometryEvent(param);
+    }
+
     //@internal
     _onGeometryEvent(param?: HandlerFnResultType) {
         if (!param || !param['target']) {
