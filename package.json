@@ -28,7 +28,9 @@
     "dist/maptalks.es.js.map",
     "dist/maptalks.d.ts",
     "dist/maptalks.css",
-    "dist/images/**/*"
+    "dist/images/**/*",
+    "src/**/*.ts",
+    "src/**/*.json"
   ],
   "homepage": "https://maptalks.org",
   "scripts": {
