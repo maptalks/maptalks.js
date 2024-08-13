@@ -1,11 +1,11 @@
-import { pushIn } from 'maptalks/dist/core/util';
 import Canvas from '../../../core/Canvas';
+import { pushIn } from '../../../core/util';
 import CanvasRenderer from '../../../renderer/layer/CanvasRenderer';
 
 export default class CanvasLayerRenderer extends CanvasRenderer {
     buffer: HTMLCanvasElement;
     //@internal
-    _drawContext: any[];
+    _drawContext: any[];df
     //@internal
     _predrawed: boolean;
     //@internal

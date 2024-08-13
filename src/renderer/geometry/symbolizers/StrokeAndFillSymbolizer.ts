@@ -1,6 +1,5 @@
-import { pushIn } from 'maptalks/dist/core/util';
 import { ResourceCache } from '../..';
-import { getValueOrDefault } from '../../../core/util';
+import { getValueOrDefault, pushIn } from '../../../core/util';
 import { isGradient as checkGradient } from '../../../core/util/style';
 import Coordinate from '../../../geo/Coordinate';
 import PointExtent from '../../../geo/PointExtent';
