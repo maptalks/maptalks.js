@@ -87,8 +87,9 @@ class Point extends Position {
 
     _perp() {
         // [this.x, this.y] = [-this.y, this.x]
+        const x = this.x;
         this.x = -this.y;
-        this.y = this.x;
+        this.y = x;
         return this;
     }
 
