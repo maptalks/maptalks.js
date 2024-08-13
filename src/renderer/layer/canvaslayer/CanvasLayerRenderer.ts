@@ -5,7 +5,7 @@ import CanvasRenderer from '../../../renderer/layer/CanvasRenderer';
 export default class CanvasLayerRenderer extends CanvasRenderer {
     buffer: HTMLCanvasElement;
     //@internal
-    _drawContext: any[];df
+    _drawContext: any[];
     //@internal
     _predrawed: boolean;
     //@internal
