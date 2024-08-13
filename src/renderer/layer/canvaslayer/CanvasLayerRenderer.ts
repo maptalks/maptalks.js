@@ -133,14 +133,11 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
         }
         const args: any[] = [this.context, view];
         const params = ensureParams(this.getDrawParams());
-        const result = [];
-        pushIn(result, args, params, this._drawContext);
-        return result;
-        // return [
-        //     ...args,
-        //     ...params,
-        //     ...this._drawContext
-        // ];
+        return [
+            ...args,
+            ...params,
+            ...this._drawContext
+        ];
     }
 
     //@internal
