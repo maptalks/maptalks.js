@@ -77,7 +77,8 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         for (let i = cookedPoints.length - 1; i >= 0; i--) {
             let point = cookedPoints[i];
             const size = calVectorMarkerSize(MARKER_SIZE, this.style);
-            const [width, height] = size;
+            // const [width, height] = size;
+            const width = size[0], height = size[1];
             // const origin = this._rotate(ctx, point, this._getRotationAt(i));
             let extent: PointExtent;
             const origin = this.getRotation() ? this._rotate(ctx, point, this._getRotationAt(i)) : null;

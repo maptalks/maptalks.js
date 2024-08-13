@@ -256,7 +256,8 @@ export class Path extends Geometry {
         if (clipped.length === 0) {
             return null;
         }
-        let [sumx, sumy, counter] = [0, 0, 0];
+        // let [sumx, sumy, counter] = [0, 0, 0];
+        let sumx = 0, sumy = 0, counter = 0;
         clipped.forEach(part => {
             if (Array.isArray(part)) {
                 part.forEach(c => {

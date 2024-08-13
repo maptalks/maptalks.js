@@ -494,8 +494,10 @@ Map.include(/** @lends Map.prototype */{
             const min2d = extent2D.getMin(),
                 max2d = extent2D.getMax();
             const fullExtent = this.getFullExtent();
-            const [minx, maxx] = (!fullExtent || fullExtent.left <= fullExtent.right) ? [min2d.x, max2d.x] : [max2d.x, min2d.x];
-            const [miny, maxy] = (!fullExtent || fullExtent.top > fullExtent.bottom) ? [max2d.y, min2d.y] : [min2d.y, max2d.y];
+            const minmaxx = (!fullExtent || fullExtent.left <= fullExtent.right) ? [min2d.x, max2d.x] : [max2d.x, min2d.x];
+            const minmaxy = (!fullExtent || fullExtent.top > fullExtent.bottom) ? [max2d.y, min2d.y] : [min2d.y, max2d.y];
+            const minx = minmaxx[0], maxx = minmaxx[1];
+            const miny = minmaxy[0], maxy = minmaxy[1];
             const min = min2d.set(minx, maxy);
             const max = max2d.set(maxx, miny);
             return new Extent(

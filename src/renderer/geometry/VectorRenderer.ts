@@ -72,7 +72,11 @@ function _computeRotatedPrjExtent() {
     const bbox = getDefaultBBOX();
     //cal all points center
     pointsBBOX(coord, bbox);
-    const [minx, miny, maxx, maxy] = bbox;
+    // const [minx, miny, maxx, maxy] = bbox;
+    const minx = bbox[0];
+    const miny = bbox[1];
+    const maxx = bbox[2];
+    const maxy = bbox[3];
     return new Extent(minx, miny, maxx, maxy);
 }
 
@@ -199,7 +203,9 @@ const sectorInclude = {
         const map = this.getMap();
         const pt = map._prjToPointAtRes(this._getPrjCoordinates(), map.getGLRes());
         const size = this._getRenderSize(pt);
-        const [startAngle, endAngle] = this._correctAngles();
+        // const [startAngle, endAngle] = this._correctAngles();
+        const angles = this._correctAngles();
+        const startAngle = angles[0], endAngle = angles[1];
         return [
             pt,
             size[0],

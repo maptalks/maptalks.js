@@ -106,7 +106,8 @@ export function bboxIntersect(bbox1: BBOX, bbox2: BBOX) {
 }
 
 export function bboxInBBOX(bbox1: BBOX, bbox2: BBOX) {
-    const [x1, y1, x2, y2] = bbox1;
+    // const [x1, y1, x2, y2] = bbox1;
+    const x1 = bbox1[0], y1 = bbox1[1], x2 = bbox1[2], y2 = bbox1[3];
     return x1 >= bbox2[0] && x2 <= bbox2[2] && y1 >= bbox2[1] && y2 <= bbox2[3];
 }
 
@@ -144,7 +145,8 @@ export function bboxInMask(bbox: BBOX, maskGeoJSON: Record<string, any>): boolea
             if (result.length > 0) {
                 let minx = Infinity, maxx = -Infinity, miny = Infinity, maxy = -Infinity;
                 for (let j = 0, len1 = result.length; j < len1; j++) {
-                    const [x, y] = result[j];
+                    // const [x, y] = result[j];
+                    const x = result[j][0], y = result[j][1];
                     minx = Math.min(x, minx);
                     miny = Math.min(y, miny);
                     maxx = Math.max(x, maxx);

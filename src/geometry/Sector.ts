@@ -125,7 +125,9 @@ export class Sector extends Circle {
     //@internal
     _getShell(): RingCoordinates {
 
-        const [startAngle, endAngle] = this._correctAngles();
+        const angles = this._correctAngles();
+        const startAngle = angles[0], endAngle = angles[1];
+        // const [startAngle, endAngle] = this._correctAngles();
 
         const measurer = this._getMeasurer(),
             center = this.getCoordinates(),
@@ -183,7 +185,9 @@ export class Sector extends Circle {
             // [0.0, 360.0)
             angle = atan2 < 0 ? (atan2 + 2 * Math.PI) * 360 / (2 * Math.PI) :
                 atan2 * 360 / (2 * Math.PI);
-        const [startAngle, endAngle] = this._correctAngles();
+        // const [startAngle, endAngle] = this._correctAngles();
+        const angles = this._correctAngles();
+        const startAngle = angles[0], endAngle = angles[1];
         const sAngle = startAngle % 360,
             eAngle = endAngle % 360;
         let between = false;
@@ -200,7 +204,8 @@ export class Sector extends Circle {
         if (isNil(this._radius)) {
             return 0;
         }
-        const [startAngle, endAngle] = this._correctAngles();
+        const angles = this._correctAngles();
+        const startAngle = angles[0], endAngle = angles[1];
         return Math.PI * 2 * this._radius * Math.abs(startAngle - endAngle) / 360 + 2 * this._radius;
     }
 
@@ -209,7 +214,8 @@ export class Sector extends Circle {
         if (isNil(this._radius)) {
             return 0;
         }
-        const [startAngle, endAngle] = this._correctAngles();
+        const angles = this._correctAngles();
+        const startAngle = angles[0], endAngle = angles[1];
         return Math.PI * Math.pow(this._radius, 2) * Math.abs(startAngle - endAngle) / 360;
     }
 

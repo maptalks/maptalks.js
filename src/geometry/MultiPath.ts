@@ -22,7 +22,9 @@ class MultiPath extends MultiGeometry {
      */
     getCenterInExtent(extent: Extent): null | Coordinate {
         const children = this.getGeometries();
-        let [sumx, sumy, counter] = [0, 0, 0];
+        let sumx = 0,
+            sumy = 0,
+            counter = 0;
         children.forEach(l => {
             // @ts-expect-error todo
             const c = l.getCenterInExtent(extent);

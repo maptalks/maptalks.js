@@ -108,7 +108,12 @@ export function getMarkerRotationExtent(out: PointExtent, rad: number, width: nu
     minx += rx;
     miny += ry;
     //计算旋转图形后新的图形的BBOX
-    const [offsetX, offsetY, w, h] = getImageRotateBBOX(width, height, rad);
+    const bbox = getImageRotateBBOX(width, height, rad);
+    const offsetX = bbox[0];
+    const offsetY = bbox[1];
+    const w = bbox[2];
+    const h = bbox[3];
+    // const [offsetX, offsetY, w, h] = getImageRotateBBOX(width, height, rad);
     minx += offsetX;
     miny += offsetY;
     const maxx = minx + Math.max(width, w), maxy = miny + Math.max(height, h);
@@ -213,7 +218,7 @@ function rotateExtent(fixedExtent: PointExtent, angle: number) {
     return ROTATE_EXTENT.convertTo(p => p._rotate(angle), fixedExtent);
 }
 
-export function getMarkerRotation(symbol:any, prop = 'markerRotation') {
+export function getMarkerRotation(symbol: any, prop = 'markerRotation') {
     const r = symbol[prop];
     if (!isNumber(r)) {
         return 0;

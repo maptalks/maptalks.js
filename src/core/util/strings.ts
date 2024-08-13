@@ -190,7 +190,8 @@ export function replaceVariable(str: string, props: Object) {
         }
         return value;
     }
-    const [left, right] = TEMPLATE_CHARS;
+    // const [left, right] = TEMPLATE_CHARS;
+    const left = TEMPLATE_CHARS[0], right = TEMPLATE_CHARS[1];
     const keys = templateKeys(str);
     for (let i = 0, len = keys.length; i < len; i++) {
         const key = keys[i];
@@ -202,7 +203,7 @@ export function replaceVariable(str: string, props: Object) {
 
 function templateKeys(str) {
     str += EMPTY_STRING;
-    const [left, right] = TEMPLATE_CHARS;
+    const left = TEMPLATE_CHARS[0], right = TEMPLATE_CHARS[1];
     const keys = [];
     let start = false;
     let key = EMPTY_STRING;

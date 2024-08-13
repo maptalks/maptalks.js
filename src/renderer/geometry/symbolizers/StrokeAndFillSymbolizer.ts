@@ -189,14 +189,16 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         if (!Array.isArray(points) || !points.length) {
             return;
         }
-        const [p1, p2] = getGradientPoints(points);
+        const pts = getGradientPoints(points);
+        const p1 = pts[0], p2 = pts[1];
         if (!p1 || !p2) {
             console.error('unable create canvas LinearGradient,error data:', points);
             return;
         }
         const grad = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
         lineColor['colorStops'].forEach(function (stop: [number, string]) {
-            grad.addColorStop(...stop);
+            const step = stop[0], color = stop[1];
+            grad.addColorStop(step, color);
         });
         ctx.strokeStyle = grad;
     }

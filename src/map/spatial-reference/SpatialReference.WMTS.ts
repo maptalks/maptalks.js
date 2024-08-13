@@ -26,7 +26,8 @@ function getProjection(projection) {
 
 function strReplace(str, repArray = []) {
     repArray.forEach(rep => {
-        const [template, value] = rep;
+        // const [template, value] = rep;
+        const template = rep[0], value = rep[1];
         str = str.replace(template, value);
     });
     return str;

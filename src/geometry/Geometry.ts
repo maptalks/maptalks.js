@@ -1272,7 +1272,11 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             const bbox = getDefaultBBOX();
             //cal all points center
             pointsBBOX(coord, bbox);
-            const [minx, miny, maxx, maxy] = bbox;
+            // const [minx, miny, maxx, maxy] = bbox;
+            const minx = bbox[0];
+            const miny = bbox[1];
+            const maxx = bbox[2];
+            const maxy = bbox[3];
             cx = (minx + maxx) / 2;
             cy = (miny + maxy) / 2;
         }
@@ -1928,9 +1932,9 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     _genMinMaxAlt(): void {
         if (this._minAlt === undefined || this._maxAlt === undefined) {
             const altitude = this._getAltitude();
-            const [min, max] = getMinMaxAltitude(altitude);
-            this._minAlt = min;
-            this._maxAlt = max;
+            const minmax = getMinMaxAltitude(altitude);
+            this._minAlt = minmax[0];
+            this._maxAlt = minmax[1];
         }
     }
 

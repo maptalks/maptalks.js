@@ -1885,7 +1885,11 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         const screenBottomBoundary = height + viewportPadding;
         let { xmin, ymin, xmax, ymax } = (box as PointExtent);
         if (Array.isArray(box)) {
-            [xmin, ymin, xmax, ymax] = box;
+            // [xmin, ymin, xmax, ymax] = box;
+            xmin = box[0];
+            ymin = box[1];
+            xmax = box[2];
+            ymax = box[3];
         }
         return xmax < viewportPadding || xmin >= screenRightBoundary || ymax < viewportPadding || ymin > screenBottomBoundary;
     }
@@ -2289,7 +2293,11 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
 
         let offsetleft = 0, offsetright = 0, offsettop = 0, offsetbottom = 0;
         const abs = Math.abs;
-        const [left, top, right, bottom] = maxExtentBBOX;
+        // const [left, top, right, bottom] = maxExtentBBOX;
+        const left = maxExtentBBOX[0];
+        const top = maxExtentBBOX[1];
+        const right = maxExtentBBOX[2];
+        const bottom = maxExtentBBOX[3];
 
         //left overflow
         if (left > 0 && right > width) {

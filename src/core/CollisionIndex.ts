@@ -32,7 +32,11 @@ class CollisionIndex {
      * @returns {Boolean}
      */
     collides(box) {
-        [search.minX, search.minY, search.maxX, search.maxY] = box;
+        // [search.minX, search.minY, search.maxX, search.maxY] = box;
+        search.minX = box[0];
+        search.minY = box[1];
+        search.maxX = box[2];
+        search.maxY = box[3];
         return this._tree.collides(search);
     }
 

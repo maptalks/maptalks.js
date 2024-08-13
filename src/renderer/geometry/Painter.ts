@@ -485,12 +485,12 @@ class Painter extends Class {
         let _2DExtent, glExtent, pitch;
         if (mapStateCache) {
             //@internal
-        _2DExtent = mapStateCache._2DExtent;
+            _2DExtent = mapStateCache._2DExtent;
             glExtent = mapStateCache.glExtent;
             pitch = mapStateCache.pitch;
         } else {
             //@internal
-        _2DExtent = map.get2DExtent();
+            _2DExtent = map.get2DExtent();
             glExtent = map.get2DExtentAtRes(map.getGLRes());
             pitch = map.getPitch();
         }
@@ -989,7 +989,9 @@ class Painter extends Class {
         }
         const altitude = this.geometry._getAltitude();
         this._propAlt = altitude;
-        const [min, max] = getMinMaxAltitude(altitude);
+        const minmax = getMinMaxAltitude(altitude);
+        const min = minmax[0], max = minmax[1];
+        // const [min, max] = getMinMaxAltitude(altitude);
         this.minAltitude = min;
         this.maxAltitude = max;
         if (!altitude) {
