@@ -11,20 +11,20 @@ const outputFile = pkg.main;
 const outputESFile = pkg.module;
 const plugins = [].concat(production ? [
     removeGlobal(),
-    terser({
-        mangle: {
-            properties: {
-                'regex' : /^_/,
-                'keep_quoted' : true,
-                'reserved': ['on', 'once', 'off']
-            }
-        },
-        output : {
-            keep_quoted_props: true,
-            beautify: false,
-            comments : '/^!/'
-        }
-    })
+    // terser({
+    //     mangle: {
+    //         properties: {
+    //             'regex' : /^_/,
+    //             'keep_quoted' : true,
+    //             'reserved': ['on', 'once', 'off']
+    //         }
+    //     },
+    //     output : {
+    //         keep_quoted_props: true,
+    //         beautify: false,
+    //         comments : '/^!/'
+    //     }
+    // })
 ] : []);
 
 //worker.js中的global可能被webpack替换为全局变量，造成worker代码执行失败，所以这里统一把typeof global替换为typeof undefined

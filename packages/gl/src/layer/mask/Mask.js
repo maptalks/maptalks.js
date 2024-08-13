@@ -65,12 +65,12 @@ export default class Mask extends Polygon {
             POSITION: pos,
             TEXCOORD: this._createTexcoords(data.vertices)
         },
-        triangles,
-        0,
-        {
-            positionAttribute: 'POSITION',
-            uv0Attribute: 'TEXCOORD'
-        });
+            triangles,
+            0,
+            {
+                positionAttribute: 'POSITION',
+                uv0Attribute: 'TEXCOORD'
+            });
         geometry.generateBuffers(regl);
         return geometry;
     }
@@ -88,6 +88,9 @@ export default class Mask extends Polygon {
     _updateShape() {
         this._dispose();
         delete this._mesh;
+        if (this.maskGeoJSON) {
+            this.maskGeoJSON = null;
+        }
     }
 
     _getMaskMode() {
