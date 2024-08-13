@@ -190,3 +190,4 @@ export function getVectorMarkerPoints(markerType: MarkerType, width: number, hei
     }
     return [];
 }
+
