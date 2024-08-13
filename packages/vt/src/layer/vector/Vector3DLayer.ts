@@ -1,6 +1,6 @@
 import * as maptalks from "maptalks";
 
-import { LayerIdentifyOptionsType, OverlayLayerOptionsType } from "maptalks/dist/layer/OverlayLayer";
+import { LayerIdentifyOptionsType } from "maptalks";
 import { extend } from "../../common/Util";
 
 const defaultOptions = {

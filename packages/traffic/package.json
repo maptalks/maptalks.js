@@ -9,19 +9,20 @@
   },
   "main": "dist/maptalks.traffic.js",
   "module": "dist/maptalks.traffic.es.js",
-  "types": "dist/maptalks.traffic.d.js",
+  "types": "dist/maptalks.traffic.d.ts",
   "unpkg": "dist/maptalks.traffic.js",
   "jsdelivr": "dist/maptalks.traffic.js",
   "files": [
     "dist/maptalks.traffic.js",
     "dist/maptalks.traffic.js.map",
     "dist/maptalks.traffic.es.js",
-    "dist/maptalks.traffic.es.js.map"
+    "dist/maptalks.traffic.es.js.map",
+    "dist/maptalks.traffic.d.ts"
   ],
   "scripts": {
     "clean": "rimraf dist",
     "dev": "rollup -w -c rollup.config.js",
-    "build": "rollup --environment BUILD:production -c rollup.config.js",
+    "build": "npm run clean && rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "rollup -c rollup.config.js",
     "pretest": "npm run lint && npm run build",
     "test": "karma start --single-run",
@@ -31,8 +32,10 @@
     "lint": "eslint src/**/*.js",
     "prepublishOnly": "npm run build"
   },
+  "dependencies": {
+    "@maptalks/gltf-layer": "workspace:*"
+  },
   "devDependencies": {
-    "@maptalks/gl-layers": "*",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-replace": "^5.0.5",

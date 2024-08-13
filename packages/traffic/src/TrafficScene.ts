@@ -1,6 +1,6 @@
 import * as maptalks from "maptalks";
 import * as turf from "@turf/turf";
-
+//@ts-expect-error-error
 import { GLTFLayer, MultiGLTFMarker } from "@maptalks/gltf-layer";
 
 import Car from "./Car";
@@ -390,7 +390,7 @@ export default class TrafficScene {
    * @param line - line data
    * @return intersect data info
    */
-  intersectSegment(segment, line) {
+  intersectSegment(segment, line): any {
     for (let i = 0; i < line.length - 1; i++) {
       const lineSegment = [line[i], line[i + 1]];
       const turfSegment = turf.lineString(lineSegment);

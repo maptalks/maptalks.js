@@ -13,7 +13,7 @@ import Geo3DTilesRenderer from './renderer/Geo3DTilesRenderer';
 import { radianToCartesian3, cartesian3ToDegree } from '../common/Transform';
 import { distanceToCamera } from '../common/intersects_oriented_box.js';
 import TileBoundingRegion from './renderer/TileBoundingRegion';
-import { LayerJSONType } from 'maptalks/dist/layer/Layer';
+import { LayerJSONType } from 'maptalks';
 
 const options: Geo3DTilesLayerOptions = {
     'services': [],

@@ -1,7 +1,7 @@
 import * as maptalks from "maptalks";
 
 import { ICON_PAINTER_SCENECONFIG } from "../core/Constant";
-import type { OverlayLayerOptionsType } from "maptalks/dist/layer/OverlayLayer";
+import type { OverlayLayerOptionsType } from "maptalks";
 import Vector3DLayer from "./Vector3DLayer";
 import Vector3DLayerRenderer from "./Vector3DLayerRenderer";
 import { extend } from "../../common/Util";

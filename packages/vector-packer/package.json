@@ -4,7 +4,8 @@
   "description": "Packer to pack simple vector graphics for gl",
   "module": "dist/vector-packer.es.js",
   "files": [
-    "dist/vector-packer.es.js"
+    "dist/vector-packer.es.js",
+    "dist/vector-packer.es.js.map"
   ],
   "scripts": {
     "clean": "rimraf dist",

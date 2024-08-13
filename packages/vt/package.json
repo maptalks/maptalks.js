@@ -4,17 +4,19 @@
   "description": "The vector-tile plugin for maptalks.js",
   "main": "dist/maptalks.vt.js",
   "module": "dist/maptalks.vt.es.js",
+  "types": "dist/maptalks.vt.d.ts",
   "files": [
     "dist/maptalks.vt.js",
     "dist/maptalks.vt.js.map",
     "dist/maptalks.vt.es.js",
-    "dist/maptalks.vt.es.js.map"
+    "dist/maptalks.vt.es.js.map",
+    "dist/maptalks.vt.d.ts"
   ],
   "scripts": {
     "clean": "rimraf dist",
     "lint": "eslint src/**/*.js test/**/*.js",
     "dev": "rollup -w -c build/rollup.config.js",
-    "build": "cd ../vector-packer && npm run build && cd ../vt && rollup --environment BUILD:production -c build/rollup.config.js",
+    "build": "cd ../vector-packer && npm run build && cd ../vt && npm run clean && rollup --environment BUILD:production -c build/rollup.config.js",
     "build-dev": "rollup -c build/rollup.config.js",
     "test": "electron-mocha --show-window --renderer ./test/**/*.spec.js",
     "tdd": "electron-mocha --interactive --renderer ./test/**/*.spec.js",
@@ -59,7 +61,8 @@
     "maptalks": "^1.0.0-rc.33",
     "mocha": "^10.3.0",
     "pixelmatch": "^4.0.2",
-    "rollup": "^4.17.2"
+    "rollup": "^4.17.2",
+    "rollup-plugin-dts": "^6.1.0"
   },
   "gitHead": "36a6954658f5a3aff0fe84dd79964ee7f1317b06"
 }

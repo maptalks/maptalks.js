@@ -11,7 +11,9 @@
   "module": "dist/transform-control.es.js",
   "files": [
     "dist/transform-control.js",
-    "dist/transform-control.es.js"
+    "dist/transform-control.js.map",
+    "dist/transform-control.es.js",
+    "dist/transform-control.es.js.map"
   ],
   "scripts": {
     "clean": "rimraf dist",

@@ -17,9 +17,8 @@ import { extend, hasOwn, isNil, isObject, isString, pushIn } from "../../common/
 import Ajax from "../../worker/util/Ajax";
 import VectorTileLayerRenderer from "../renderer/VectorTileLayerRenderer";
 import { isFunctionDefinition } from "@maptalks/function-type";
-import { LayerIdentifyOptionsType } from "maptalks/dist/layer/OverlayLayer";
-import { PositionArray } from "maptalks/dist/geo/Position";
-import { TileLayerOptionsType } from "maptalks/dist/layer/tile/TileLayer";
+import { LayerIdentifyOptionsType } from "maptalks";
+import { PositionArray, TileLayerOptionsType } from "maptalks";
 
 const TMP_POINT = new maptalks.Point(0, 0);
 const TMP_COORD = new maptalks.Coordinate(0, 0);

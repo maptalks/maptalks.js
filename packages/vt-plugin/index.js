@@ -96,6 +96,9 @@ parentProto.constructor = VectorTilePlugin;
 const hasOwn = Object.prototype.hasOwnProperty;
 
 VectorTilePlugin.extend = function (type, props) {
+    /**
+     * @type Class
+     */
     const clazz = function () {
         if (this.init) {
             this.init();

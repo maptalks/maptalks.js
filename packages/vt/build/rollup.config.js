@@ -5,6 +5,7 @@ const terser = require("@rollup/plugin-terser");
 const typescript = require("@rollup/plugin-typescript");
 const glslMinify = require("@maptalks/rollup-plugin-glsl-minify");
 const replace = require("@rollup/plugin-replace");
+const { dts } = require("rollup-plugin-dts");
 const pkg = require("../package.json");
 
 const production = process.env.BUILD === "production";
@@ -125,7 +126,6 @@ module.exports = [
                 mainFields: ["module", "main"],
             }),
             commonjs(),
-            typescript(),
             replace({
                 // 'this.exports = this.exports || {}': '',
                 "(function (exports) {": "function (exports) {",
@@ -234,3 +234,18 @@ module.exports = [
         },
     },
 ];
+if (production) {
+    module.exports.push({
+        input: './dist/layer/types.d.ts',
+        plugins: [dts()],
+        output: [
+            {
+                'sourcemap': true,
+                'format': 'es',
+                'name': 'maptalks',
+                banner,
+                'file': pkg['types']
+            }
+        ]
+    });
+}

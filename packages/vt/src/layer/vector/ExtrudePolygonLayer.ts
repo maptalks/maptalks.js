@@ -5,7 +5,7 @@ import { extend, isNil } from "../../common/Util";
 
 import { DEFAULT_TEX_WIDTH } from "@maptalks/vector-packer";
 import { ID_PROP } from "./util/convert_to_feature";
-import type { OverlayLayerOptionsType } from "maptalks/dist/layer/OverlayLayer";
+import type { OverlayLayerOptionsType } from "maptalks";
 import { PROP_OMBB } from "../../common/Constant";
 import { PolygonLayerRenderer } from "./PolygonLayer";
 import Vector3DLayer from "./Vector3DLayer";

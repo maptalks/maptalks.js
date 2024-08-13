@@ -3,10 +3,8 @@ import * as maptalks from "maptalks";
 import { isNumber, isObject, isString } from "../../common/Util";
 
 import Ajax from "../../worker/util/Ajax";
-import type { ArrayExtent } from "maptalks/dist/geo/Extent";
-import type { Callback } from "maptalks/dist/core/Ajax";
+import type { ArrayExtent, Callback, LayerJSONType } from "maptalks";
 import VectorTileLayer, { VectorTileLayerOptionsType } from "./VectorTileLayer";
-import { LayerJSONType } from "maptalks/dist/layer/Layer";
 
 const options = {
   //feature data to return from worker
