@@ -724,21 +724,19 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         TILENODE_BBOX[1] = nodeExtent.ymin;
         TILENODE_BBOX[2] = nodeExtent.xmax;
         TILENODE_BBOX[3] = nodeExtent.ymax;
-        const inCurrentView = BBOXUtil.bboxIntersect(TILENODE_BBOX, mapExtentBBOX);
+        const inCurrentView = BBOXUtil.bboxIntersect(TILENODE_BBOX, mapExtentBBOX as BBOX);
         if (!inCurrentView) {
             return false;
         }
-        if (clipMasks.length > 0) {
-            let inMasks = false;
+        if (clipMasks.length) {
             for (let i = 0, len = clipMasks.length; i < len; i++) {
                 const maskGeoJSON = (clipMasks[i] as any).maskGeoJSON;
                 //filter by masks
                 if (!maskGeoJSON || !maskGeoJSON.bbox || BBOXUtil.bboxInMask(TILENODE_BBOX, maskGeoJSON)) {
-                    inMasks = true;
-                    break;
+                    return true;
                 }
             }
-            return inMasks;
+            return false;
         }
         return true;
     }
