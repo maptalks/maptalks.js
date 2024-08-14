@@ -12,7 +12,7 @@
     "prettier": "prettier --parser=typescript --write **/*.{js,ts,md}",
     "test": "turbo run test --filter=@maptalks/*",
     "changeset": "changeset",
-    "changeset-version": "changeset version --ignore maptalks-gl",
+    "changeset-version": "changeset version",
     "changeset-publish": "changeset publish"
   },
   "repository": {
