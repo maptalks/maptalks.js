@@ -32,7 +32,6 @@
     "color": "^3.0.0",
     "earcut": "^2.2.4",
     "gl-matrix": "^3.4.0",
-    "maptalks": "1.0.0-rc.35",
     "pbf": "^3.2.1",
     "quickselect": "^1.0.0",
     "tinyqueue": "^2.0.3"
@@ -43,6 +42,7 @@
     "@rollup/plugin-terser": "0.4.4",
     "eslint": "^8.57.0",
     "eslint-plugin-mocha": "^10.4.1",
+    "maptalks": "1.0.0-rc.35",
     "rollup": "^4.17.2"
   }
 }
