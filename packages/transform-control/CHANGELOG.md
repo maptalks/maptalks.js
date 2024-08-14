@@ -1,5 +1,11 @@
 # @maptalks/transform-control
 
+## 0.98.1
+
+### Patch Changes
+
+- upgrade maptalks
+
 ## 0.98.0
 
 ### Minor Changes

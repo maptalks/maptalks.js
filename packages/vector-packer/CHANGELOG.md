@@ -1,5 +1,11 @@
 # @maptalks/vector-packer
 
+## 0.96.1
+
+### Patch Changes
+
+- upgrade maptalks
+
 ## 0.96.0
 
 ### Minor Changes
