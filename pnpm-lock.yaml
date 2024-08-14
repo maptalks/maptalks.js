@@ -501,8 +501,8 @@ importers:
         specifier: workspace:*
         version: link:../vt
       maptalks:
-        specifier: 1.0.0-rc.33
-        version: 1.0.0-rc.33
+        specifier: 1.0.0-rc.35
+        version: 1.0.0-rc.35
     devDependencies:
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
@@ -565,12 +565,6 @@ importers:
       rollup-plugin-dts:
         specifier: ^6.1.0
         version: 6.1.1(rollup@4.17.2)(typescript@5.4.5)
-
-  packages/test:
-    dependencies:
-      maptalks-gl:
-        specifier: workspace:*
-        version: link:../maptalks-gl
 
   packages/traffic:
     dependencies:
@@ -729,8 +723,8 @@ importers:
         specifier: workspace:*
         version: link:../gltf-loader
       maptalks:
-        specifier: 1.0.0-rc.33
-        version: 1.0.0-rc.33
+        specifier: 1.0.0-rc.35
+        version: 1.0.0-rc.35
     devDependencies:
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
@@ -787,8 +781,8 @@ importers:
         specifier: ^3.4.0
         version: 3.4.3
       maptalks:
-        specifier: 1.0.0-rc.33
-        version: 1.0.0-rc.33
+        specifier: 1.0.0-rc.35
+        version: 1.0.0-rc.35
       pbf:
         specifier: ^3.2.1
         version: 3.2.1
@@ -2965,9 +2959,6 @@ packages:
   magic-string@0.30.10:
     resolution: {integrity: sha512-iIRwTIf0QKV3UAnYK4PU8uiEc4SRh5jX0mwpIwETPpHdhVM4f53RSwS/vXvN1JhGX+Cs7B8qIq3d6AH49O5fAQ==}
 
-  maptalks@1.0.0-rc.33:
-    resolution: {integrity: sha512-ivIZMlN3DQ5dh5ZUpq8QmKNHvg29W05p8D/pcVnRdldvYBvO0FAyU6bBHc1Yqj/Eofuj2pYhBthFQwkyYaiHlA==}
-
   maptalks@1.0.0-rc.35:
     resolution: {integrity: sha512-RVFqe/+v7hGf6usS35vgHIygWBGQJPkhUwdYI3YMfGucbNsRK03W9Q611+WB2L7Wsal68nkPkauHKNV+ar/Z6w==}
 
@@ -3949,9 +3940,6 @@ packages:
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
-
-  zousan@2.5.1:
-    resolution: {integrity: sha512-ZER+1EJNPHs9G3I6kTqhTmeqPjdU8XoaSIFzaUcSWmxcZBeXMuf5LM6Ih8LLNlQ46wg2Au+3ayn7KgjklVnOfA==}
 
 snapshots:
 
@@ -6908,15 +6896,6 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.4.15
 
-  maptalks@1.0.0-rc.33:
-    dependencies:
-      '@maptalks/feature-filter': 1.3.0
-      '@maptalks/function-type': 1.3.1
-      frustum-intersects: 0.1.0
-      rbush: 2.0.2
-      simplify-js: 1.2.4
-      zousan: 2.5.1
-
   maptalks@1.0.0-rc.35:
     dependencies:
       '@maptalks/feature-filter': 1.3.0
@@ -7878,5 +7857,3 @@ snapshots:
       fd-slicer: 1.1.0
 
   yocto-queue@0.1.0: {}
-
-  zousan@2.5.1: {}
