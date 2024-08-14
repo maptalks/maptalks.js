@@ -1,4 +1,4 @@
-import { extend } from './util/common';
+import { extend, isNil, isObject } from './util/common';
 import Handler from '../handler/Handler';
 import Browser from './Browser';
 
@@ -108,7 +108,7 @@ class Class {
      * @param options - options to set
      */
     setOptions(options: ClassOptions) {
-        if (!this.hasOwnProperty('options')) {
+        if (!this.hasOwnProperty('options') || isNil(this.options) || this.options === undefined) {
             this.options = this.options ? Object.create(this.options) : {};
         }
         if (!options) {
