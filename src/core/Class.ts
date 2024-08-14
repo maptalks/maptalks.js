@@ -108,7 +108,7 @@ class Class {
      * @param options - options to set
      */
     setOptions(options: ClassOptions) {
-        if (!this.hasOwnProperty('options') || isNil(this.options) || this.options === undefined) {
+        if (!this.hasOwnProperty('options') || isNil(this.options)) {
             this.options = this.options ? Object.create(this.options) : {};
         }
         if (!options) {
