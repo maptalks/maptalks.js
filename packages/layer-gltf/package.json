@@ -27,7 +27,7 @@
     "tdd": "karma start --no-single-run",
     "version": "npm run build",
     "lint": "eslint src/**/*.js test/**/*.js",
-    "prepublishOnly": "npm run lint && npm run build"
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@maptalks/gl": "workspace:*",

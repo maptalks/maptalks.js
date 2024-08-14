@@ -18,7 +18,7 @@
   "scripts": {
     "clean": "rimraf dist",
     "dev": "rollup -w -c rollup.config.js",
-    "build": "npm run clean && rollup --environment BUILD:production -c rollup.config.js",
+    "build": "npm run clean && npm run lint && rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "rollup -c rollup.config.js",
     "pretest": "npm run lint && npm run build",
     "test": "karma start --single-run",
@@ -26,7 +26,7 @@
     "preversion": "npm run lint",
     "version": "npm run build",
     "lint": "eslint src/**/*.js test/**/*.js",
-    "prepublishOnly": "npm run lint && npm run build"
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@maptalks/gl": "workspace:*",
