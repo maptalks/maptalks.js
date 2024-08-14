@@ -18,7 +18,7 @@
   "scripts": {
     "clean": "rimraf dist",
     "dev": "rollup -w -c rollup.config.js",
-    "build": "rollup --environment BUILD:production -c rollup.config.js",
+    "build": "npm run clean && rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "rollup -c rollup.config.js",
     "pretest": "npm run lint && npm run build",
     "tdd": "karma start --no-single-run",
