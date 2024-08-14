@@ -105,8 +105,8 @@ export default class GlyphRequestor {
         });
     }
 
-    _requestGlyph(font, charCode) {
-        const url = this._sdfURL;
+    _requestGlyph(/* font, charCode */) {
+        /* const url = this._sdfURL;
         let entry = this.entries[font];
         if (!entry) {
             entry = this.entries[font] = {
@@ -134,7 +134,8 @@ export default class GlyphRequestor {
             } else if (result) {
                 fnCallback(null, {stack, id, glyph: result.glyphs[id] || null});
             }
-        });
+        }); */
+        return Promise.resolve(null);
     }
 
     _tinySDF(entry, fonts, charCode, isCharsCompact) {
