@@ -1,6 +1,5 @@
 {
   "name": "gl-layer",
-  "private": true,
   "workspaces": [
     "packages/*"
   ],

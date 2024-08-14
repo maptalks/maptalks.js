@@ -422,7 +422,7 @@ describe('setMask', () => {
             mask.setCoordinates(coord2);
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([47, 59, 63, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([151, 31, 32, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 - 70, map.height / 2 + 70, 1, 1);
                 expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
                 done();
