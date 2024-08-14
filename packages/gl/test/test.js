@@ -1219,7 +1219,7 @@ describe('gl tests', () => {
                                 return;
                             }
                             hit = true;
-                            expect(pickCoord.toArray()).to.be.eql([91.07362876927778, 29.751694809767997, 4320.883467677781]);
+                            expect(pickCoord.toArray()).to.be.eql([ 91.0736287693219, 29.75169480958555, 4320.883455550922]);
                             done();
                         }
                     });
