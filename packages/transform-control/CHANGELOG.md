@@ -1,5 +1,11 @@
 # @maptalks/transform-control
 
+## 0.98.2
+
+### Patch Changes
+
+- move maptalks to devDep
+
 ## 0.98.1
 
 ### Patch Changes

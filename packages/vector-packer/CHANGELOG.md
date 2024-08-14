@@ -1,5 +1,11 @@
 # @maptalks/vector-packer
 
+## 0.96.2
+
+### Patch Changes
+
+- move maptalks to devDep
+
 ## 0.96.1
 
 ### Patch Changes

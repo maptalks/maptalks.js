@@ -1,5 +1,12 @@
 # @maptalks/vt
 
+## 0.96.2
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/vector-packer@0.96.2
+
 ## 0.96.1
 
 ### Patch Changes
