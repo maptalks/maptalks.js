@@ -54,6 +54,10 @@ function hasVisibleMask() {
 
 export default function <T extends MixinConstructor>(Base: T) {
     return class MaskLayerMixin extends Base {
+        //@internal
+        private _maskProjViewMatrix: mat4;
+        //@internal
+        private _maskExtentInWorld: vec4;
 
         removeMask(masks: undefined | null | any) {
             if (!this['_maskList']) {
@@ -71,7 +75,7 @@ export default function <T extends MixinConstructor>(Base: T) {
                     this['_maskList'].splice(index, 1);
                 }
             }
-            this.updateMaskExtent();
+            this.updateMaskExtent('shapechange');
             this['fire']('removemask', { masks });
             return this;
         }
@@ -94,14 +98,14 @@ export default function <T extends MixinConstructor>(Base: T) {
                     mask._updateCoordinates();
                 }
             });
-            this.updateMaskExtent();
+            this.updateMaskExtent('shapechange');
             this['fire']('setmask', { masks });
             return this;
         }
 
         onAdd() {
             super['onAdd']();
-            this.updateMaskExtent();
+            this.updateMaskExtent('shapechange');
         }
 
         getMasks() {
@@ -118,7 +122,7 @@ export default function <T extends MixinConstructor>(Base: T) {
                 param['target']._updateShape();
             }
             if (param['target'] instanceof Mask && maskLayerEvents.indexOf(type) > -1) {
-                this.updateMaskExtent();
+                this.updateMaskExtent(type);
             }
             if (super['onGeometryEvent']) {
                 super['onGeometryEvent'](param);
@@ -176,7 +180,7 @@ export default function <T extends MixinConstructor>(Base: T) {
             return { projViewMatrix, extentInWorld };
         }
 
-        updateMaskExtent() {
+        updateMaskExtent(type: string) {
             if (!this['_maskList']) {
                 return;
             }
@@ -199,12 +203,16 @@ export default function <T extends MixinConstructor>(Base: T) {
                 return;
             }
             const { extent, ratio, minHeight } = maskExtent;
-            const { projViewMatrix, extentInWorld } = this.updateMask(extent);
+            if (type || !this._maskProjViewMatrix || !this._maskProjViewMatrix) {
+                const { projViewMatrix, extentInWorld } = this.updateMask(extent);
+                this._maskProjViewMatrix = projViewMatrix;
+                this._maskExtentInWorld = extentInWorld;
+            }
             if (renderer) {
-                renderer.setMask(extentInWorld, projViewMatrix, ratio, minHeight);
+                renderer.setMask(this._maskExtentInWorld, this._maskProjViewMatrix, ratio, minHeight);
             } else {
                 this['once']('renderercreate', e => {
-                    e.renderer.setMask(extentInWorld, projViewMatrix, ratio, minHeight);
+                    e.renderer.setMask(this._maskExtentInWorld, this._maskProjViewMatrix, ratio, minHeight);
                 });
             }
         }
