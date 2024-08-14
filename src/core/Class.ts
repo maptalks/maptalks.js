@@ -1,4 +1,4 @@
-import { extend, isNil, isObject } from './util/common';
+import { extend, isNil } from './util/common';
 import Handler from '../handler/Handler';
 import Browser from './Browser';
 
