@@ -501,8 +501,8 @@ importers:
         specifier: workspace:*
         version: link:../vt
       maptalks:
-        specifier: 1.0.0-rc.35
-        version: 1.0.0-rc.35
+        specifier: 1.0.0-rc.36
+        version: 1.0.0-rc.36
     devDependencies:
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
@@ -722,9 +722,6 @@ importers:
       '@maptalks/gltf-loader':
         specifier: workspace:*
         version: link:../gltf-loader
-      maptalks:
-        specifier: 1.0.0-rc.35
-        version: 1.0.0-rc.35
     devDependencies:
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
@@ -744,6 +741,9 @@ importers:
       eslint-plugin-mocha:
         specifier: ^10.4.1
         version: 10.4.3(eslint@8.57.0)
+      maptalks:
+        specifier: 1.0.0-rc.35
+        version: 1.0.0-rc.35
       pixelmatch:
         specifier: ^4.0.2
         version: 4.0.2
@@ -780,9 +780,6 @@ importers:
       gl-matrix:
         specifier: ^3.4.0
         version: 3.4.3
-      maptalks:
-        specifier: 1.0.0-rc.35
-        version: 1.0.0-rc.35
       pbf:
         specifier: ^3.2.1
         version: 3.2.1
@@ -808,6 +805,9 @@ importers:
       eslint-plugin-mocha:
         specifier: ^10.4.1
         version: 10.4.3(eslint@8.57.0)
+      maptalks:
+        specifier: 1.0.0-rc.35
+        version: 1.0.0-rc.35
       rollup:
         specifier: ^4.17.2
         version: 4.17.2
@@ -2961,6 +2961,9 @@ packages:
 
   maptalks@1.0.0-rc.35:
     resolution: {integrity: sha512-RVFqe/+v7hGf6usS35vgHIygWBGQJPkhUwdYI3YMfGucbNsRK03W9Q611+WB2L7Wsal68nkPkauHKNV+ar/Z6w==}
+
+  maptalks@1.0.0-rc.36:
+    resolution: {integrity: sha512-a26Naf30ovHxpZcE70UYP2OSXQOxZASxdDvSP3DE1llzSrW/LIooNflRYBGAb1V+KubCOQpsqhs3tn/dQfU7WQ==}
 
   marchingsquares@1.3.3:
     resolution: {integrity: sha512-gz6nNQoVK7Lkh2pZulrT4qd4347S/toG9RXH2pyzhLgkL5mLkBoqgv4EvAGXcV0ikDW72n/OQb3Xe8bGagQZCg==}
@@ -6897,6 +6900,18 @@ snapshots:
       '@jridgewell/sourcemap-codec': 1.4.15
 
   maptalks@1.0.0-rc.35:
+    dependencies:
+      '@maptalks/feature-filter': 1.3.0
+      '@maptalks/function-type': 1.3.1
+      frustum-intersects: 0.1.0
+      lineclip: 1.1.5
+      rbush: 2.0.2
+      simplify-js: 1.2.4
+    optionalDependencies:
+      '@rollup/rollup-darwin-x64': 4.17.2
+      '@rollup/rollup-linux-x64-gnu': 4.17.2
+
+  maptalks@1.0.0-rc.36:
     dependencies:
       '@maptalks/feature-filter': 1.3.0
       '@maptalks/function-type': 1.3.1
