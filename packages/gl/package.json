@@ -14,8 +14,7 @@
     "prepublishOnly": "npm run build",
     "lint": "eslint src/**/*.js",
     "pretest": "cd ../analysis && npm run build",
-    "preversion": "npm test",
-    "prepare": "npm run build"
+    "preversion": "npm test"
   },
   "files": [
     "dist/maptalksgl.js",
