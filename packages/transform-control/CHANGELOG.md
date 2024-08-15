@@ -1,5 +1,14 @@
 # @maptalks/transform-control
 
+## 0.98.4
+
+### Patch Changes
+
+- bump version
+- Updated dependencies
+  - @maptalks/gl@0.98.2
+  - @maptalks/gltf-loader@0.98.2
+
 ## 0.98.3
 
 ### Patch Changes

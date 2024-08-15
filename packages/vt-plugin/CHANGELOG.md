@@ -1,5 +1,11 @@
 # @maptalks/vt-plugin
 
+## 0.96.2
+
+### Patch Changes
+
+- bump version
+
 ## 0.96.1
 
 ### Patch Changes

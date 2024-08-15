@@ -1,5 +1,11 @@
 # @maptalks/video-layer
 
+## 0.98.2
+
+### Patch Changes
+
+- bump version
+
 ## 0.98.1
 
 ### Patch Changes

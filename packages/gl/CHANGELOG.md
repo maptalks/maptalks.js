@@ -1,5 +1,14 @@
 # @maptalks/gl
 
+## 0.98.2
+
+### Patch Changes
+
+- bump version
+- Updated dependencies
+  - @maptalks/gltf-loader@0.98.2
+  - @maptalks/reshader.gl@0.98.2
+
 ## 0.98.1
 
 ### Patch Changes

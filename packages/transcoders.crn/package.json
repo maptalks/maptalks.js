@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/transcoders.crn",
-  "version": "0.98.1",
+  "version": "0.98.2",
   "description": "crn transcoder for @maptalks/gl",
   "main": "dist/transcoders.crn.js",
   "module": "dist/transcoders.crn.es.js",

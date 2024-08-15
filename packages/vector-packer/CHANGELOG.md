@@ -1,5 +1,11 @@
 # @maptalks/vector-packer
 
+## 0.96.4
+
+### Patch Changes
+
+- bump version
+
 ## 0.96.3
 
 ### Patch Changes
