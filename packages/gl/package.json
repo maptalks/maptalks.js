@@ -12,7 +12,7 @@
     "test": "cd ../layer-gltf && npm run build && cd ../gl && karma start --single-run",
     "tdd": "karma start --no-single-run",
     "prepublishOnly": "npm run build",
-    "lint": "eslint src/**/*.js",
+    "lint": "eslint \"src/**/*.{js,jsx,mjs,ts,tsx}\"",
     "pretest": "cd ../analysis && npm run build",
     "preversion": "npm test"
   },

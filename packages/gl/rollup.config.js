@@ -154,9 +154,10 @@ if (production) {
         }
     });
 }
+
 module.exports.push({
     input: production ? 'build/index.js' : 'src/index-dev.js',
-    plugins: configPlugins,
+    plugins: production ? configPlugins : tsPlugins,
     external : ['maptalks'],
     output: {
         'sourcemap': true,
@@ -173,6 +174,7 @@ module.exports.push({
         include: ['src/**/*.js', 'src/**/*.glsl',  'src/**/*.vert',  'src/**/*.frag', '../reshader.gl/dist/*.es.js', 'build/worker.js']
     }
 });
+
 if (production) {
     module.exports.push({
         input: 'build/index.js',
@@ -190,6 +192,7 @@ if (production) {
         }
     });
 }
+
 module.exports.push({
     input: 'build/index.d.ts',
     plugins: [dts()],

@@ -9,9 +9,9 @@ export {
 } from '@maptalks/reshader.gl';
 export { createREGL, reshader };
 
-export * from './index.js';
+export * from './index.ts';
 
-import transcoders from '../src/transcoders';
+import transcoders from './transcoders';
 export { transcoders };
 
 
