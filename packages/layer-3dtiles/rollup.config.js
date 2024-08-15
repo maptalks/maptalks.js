@@ -155,7 +155,7 @@ module.exports = [
                 ignoreGlobal: true
             }),
             glsl(),
-            typescript({ tsconfig: './tsconfig.json', sourceMap: true, inlineSources: true } )
+            typescript({ tsconfig: './tsconfig.json', sourceMap: true } )
         ].concat(plugins),
         external: ['maptalks', '@maptalks/gl'],
         output: {

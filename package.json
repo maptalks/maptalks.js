@@ -13,10 +13,9 @@
     "test": "turbo run test --filter=@maptalks/*",
     "changeset": "changeset",
     "changeset-version": "changeset version",
-    "changeset-publish": "changeset publish",
     "release": "pnpm build && changeset publish",
     "changeset-version-snapshot": "changeset version --snaphot",
-    "changeset-publish-snapshot": "changeset publish --no-git-tag --snapshot --tag snapshot"
+    "release-snapshot": "pnpm build && changeset publish --no-git-tag --snapshot --tag snapshot"
   },
   "repository": {
     "type": "git",
