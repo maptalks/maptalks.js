@@ -10,8 +10,7 @@
   "scripts": {
     "clean": "rimraf dist",
     "dev": "rollup -w -c rollup.config.js",
-    "build": "npm run clean && rollup -c rollup.config.js",
-    "prepublishOnly": "npm run build"
+    "build": "npm run clean && rollup -c rollup.config.js"
   },
   "files": [
     "dist/maptalks-gl.js",

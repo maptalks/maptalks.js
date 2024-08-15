@@ -24,8 +24,7 @@
     "tdd": "karma start --no-single-run",
     "preversion": "npm run lint",
     "version": "npm run build",
-    "lint": "eslint src/**/*.js",
-    "prepublishOnly": "npm run build"
+    "lint": "eslint src/**/*.js"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",

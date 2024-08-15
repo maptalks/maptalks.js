@@ -29,8 +29,7 @@
     "tdd": "karma start --no-single-run",
     "preversion": "npm run lint",
     "version": "npm run build",
-    "lint": "eslint \"src/**/*.{js,jsx,mjs,ts,tsx}\"",
-    "prepublishOnly": "npm run build"
+    "lint": "eslint \"src/**/*.{js,jsx,mjs,ts,tsx}\""
   },
   "dependencies": {
     "@maptalks/gltf-layer": "workspace:*"

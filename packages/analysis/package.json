@@ -31,8 +31,7 @@
     "build": "npm run clean && npm run lint && rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "rollup -c rollup.config.js",
     "version": "npm run build",
-    "lint": "eslint \"src/**/*.{js,jsx,mjs,ts,tsx}\"",
-    "prepublishOnly": "npm run build"
+    "lint": "eslint \"src/**/*.{js,jsx,mjs,ts,tsx}\""
   },
   "devDependencies": {
     "@maptalks/gl": "workspace:*",

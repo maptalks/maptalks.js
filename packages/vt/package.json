@@ -21,7 +21,6 @@
     "test": "electron-mocha --show-window --renderer ./test/**/*.spec.js",
     "tdd": "electron-mocha --interactive --renderer ./test/**/*.spec.js",
     "pretest": "npm run build",
-    "prepublishOnly": "npm run build",
     "preversion": "npm run pretest"
   },
   "dependencies": {

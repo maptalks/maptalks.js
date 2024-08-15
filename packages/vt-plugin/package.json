@@ -5,8 +5,7 @@
   "module": "index.js",
   "scripts": {
     "clean": "rimraf dist",
-    "lint": "eslint *.js",
-    "prepublishOnly": "npm run lint"
+    "lint": "eslint *.js"
   },
   "files": [
     "index.js"

@@ -13,7 +13,6 @@
     "build-dev": "rollup -c rollup.config.js",
     "dev": "rollup -w -c rollup.config.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepublishOnly": "npm run build",
     "lint": "eslint src/**/*.js",
     "preversion": "npm run lint"
   },

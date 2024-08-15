@@ -11,7 +11,6 @@
     "pretest": "cd ../layer-3dtiles && npm run build && cd ../gltf-loader && npm run build",
     "test": "karma start --single-run",
     "tdd": "karma start --no-single-run & karma run",
-    "prepublishOnly": "npm run build",
     "preversion": "npm test",
     "lint": "eslint src/**/*.js test/**/*.js"
   },
