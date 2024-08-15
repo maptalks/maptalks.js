@@ -23,7 +23,7 @@ module.exports = [
             commonjs(),
             sourcemaps(),
             terser({
-                mangle: false,
+                mangle: true,
                 compress: {
                     pure_getters: true
                 },
