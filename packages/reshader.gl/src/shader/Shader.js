@@ -73,7 +73,7 @@ class Shader {
     /**
      * The framebuffer object to render to
      * Set to null to render to default display
-     * @param {REGLFramebuffer} framebuffer
+     * @param framebuffer
      */
     setFramebuffer(framebuffer) {
         this.context.framebuffer = framebuffer;
@@ -135,9 +135,7 @@ class Shader {
 
     /**
      * Set or get context uniform to or from the shader
-     * @param {String} k - key
-     * @param {Any} v - value
-     * @returns {Any}
+     * @returns {this}
      */
     setUniforms(uniforms) {
         if (uniforms['modelMatrix'] || uniforms['positionMatrix']) {

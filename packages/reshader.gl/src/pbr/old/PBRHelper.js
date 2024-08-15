@@ -19,8 +19,8 @@ import irradianceFS from './glsl/irradiance_convolution.frag';
  *  prefilterCubeSize,
  *  brdfSize
  * }
- * @param {REGL} regl - regl
- * @param {Object} config - config
+ * @param regl - regl
+ * @param config - config
  */
 export function createIBLMaps(regl, config = {}) {
     // config values

@@ -1,6 +1,6 @@
 {
   "name": "maptalks-gl",
-  "version": "0.97.8",
+  "version": "0.98.0",
   "description": "All-in-one package for maptalks webgl layers",
   "module": "index.js",
   "main": "dist/maptalks-gl.js",
