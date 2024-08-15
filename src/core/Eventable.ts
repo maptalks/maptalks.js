@@ -52,7 +52,7 @@ export default function <T extends MixinConstructor>(Base: T) {
          * @example
          * foo.on('mousedown mousemove mouseup', onMouseEvent, foo);
          */
-        on(eventsOn: string | EventRecords, handler: HandlerFn, context?: any): this {
+        on(eventsOn: string | EventRecords, handler: HandlerFn, context?: any) {
             if (!eventsOn) {
                 return this;
             }
@@ -126,7 +126,7 @@ export default function <T extends MixinConstructor>(Base: T) {
          * @param handler        - handler function to be called
          * @param context        - the context of the handler
          */
-        addEventListener(...args): this {
+        addEventListener(...args) {
             return this.on.call(this, ...args);
         }
 
@@ -303,7 +303,7 @@ export default function <T extends MixinConstructor>(Base: T) {
          * @param  eventType - an event type to fire
          * @param  param     - parameters for the listener function.
          */
-        fire(eventType: string, param?: BaseEventParamsType): this {
+        fire(eventType: string, param?: BaseEventParamsType) {
             if (this._eventParent) {
                 return this._eventParent.fire.call(this._eventParent, eventType, param);
             }

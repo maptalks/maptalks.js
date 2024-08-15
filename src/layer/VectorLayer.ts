@@ -165,7 +165,7 @@ class VectorLayer extends OverlayLayer {
     }
 
     //@internal
-    _hitGeos(geometries: Array<Geometry>, cp: Point, options: LayerIdentifyOptionsType) {
+    _hitGeos(geometries: Array<Geometry>, cp: Point, options: LayerIdentifyOptionsType = {}) {
         if (!geometries || !geometries.length) {
             return [];
         }
