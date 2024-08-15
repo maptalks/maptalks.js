@@ -1,5 +1,14 @@
 # @maptalks/transform-control
 
+## 0.98.3
+
+### Patch Changes
+
+- fix incorrect bundle
+- Updated dependencies
+  - @maptalks/gl@0.98.1
+  - @maptalks/gltf-loader@0.98.1
+
 ## 0.98.2
 
 ### Patch Changes

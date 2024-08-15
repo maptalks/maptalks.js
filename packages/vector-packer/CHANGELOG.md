@@ -1,5 +1,11 @@
 # @maptalks/vector-packer
 
+## 0.96.3
+
+### Patch Changes
+
+- fix incorrect bundle
+
 ## 0.96.2
 
 ### Patch Changes

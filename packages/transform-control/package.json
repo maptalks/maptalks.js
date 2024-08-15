@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/transform-control",
-  "version": "0.98.2",
+  "version": "0.98.3",
   "description": "a plugin to control model's translate、rotation and scale",
   "license": "UNLICENSED",
   "repository": {

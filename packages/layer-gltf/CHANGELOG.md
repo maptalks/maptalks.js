@@ -1,5 +1,13 @@
 # @maptalks/gltf-layer
 
+## 0.98.1
+
+### Patch Changes
+
+- fix incorrect bundle
+- Updated dependencies
+  - @maptalks/gltf-loader@0.98.1
+
 ## 0.98.0
 
 ### Minor Changes
