@@ -489,7 +489,7 @@ class VectorTileLayer extends maptalks.TileLayer {
       if (root && root[root.length - 1] === "/") {
         root = root.substring(0, root.length - 1);
       }
-    //   this._pathRoot = root;
+      //   this._pathRoot = root;
       this._replacer = function replacer(match) {
         if (match === "{$root}") {
           return root;
@@ -1652,7 +1652,7 @@ class VectorTileLayer extends maptalks.TileLayer {
       }
     } else if (type === 3) {
       coordinates = [];
-      let polygon;
+      let polygon = [];
       let count = 0;
       for (let i = 0; i < geometry.length; i++) {
         const area = PackUtil.calculateSignedArea(geometry[i]);
@@ -1976,5 +1976,5 @@ export type VectorTileLayerOptionsType = {
 } & TileLayerOptionsType;
 
 export type AsyncFeatureQueryOptions = {
-    countPerTime?: number
+  countPerTime?: number
 };
