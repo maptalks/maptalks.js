@@ -21,6 +21,7 @@ export interface EditHandleOptions {
     events: string[];
     cursor: string;
     zIndex?: number;
+    ignoreCollision?: boolean
 }
 
 export default class EditHandle extends Eventable<any>(Class) {
@@ -231,6 +232,9 @@ export default class EditHandle extends Eventable<any>(Class) {
 
     needCollision(): boolean {
         const { target } = this;
+        if (this.options.ignoreCollision) {
+            return false;
+        }
         return target && target.options && target.options.collision;
     }
 
