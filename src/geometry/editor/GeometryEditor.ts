@@ -969,12 +969,7 @@ class GeometryEditor extends Eventable(Class) {
             }
             const isEnd = (geoToEdit instanceof LineString) && (index === 0 || index === prjCoordinates.length - 1);
             prjCoordinates.splice(index, 1);
-            const len = prjCoordinates.length;
-            const first = prjCoordinates[0];
-            const last = prjCoordinates[len - 1];
-            if (!first.equals(last)) {
-                prjCoordinates.push(first.copy());
-            }
+
             if (ringIndex > 0) {
                 //update hole prj
                 geoToEdit._prjHoles[ringIndex - 1] = prjCoordinates;
