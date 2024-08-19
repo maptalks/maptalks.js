@@ -436,5 +436,53 @@ describe('Geometry.Edit', function () {
         test();
     });
 
+    it('#2401 vertex remove bug', function (done) {
+        const polygon = new maptalks.Polygon(
+            [
+                [
+                    [-0.131049, 51.498568],
+                    [-0.107049, 51.498568],
+                    [-0.107049, 51.493568],
+                    [-0.131049, 51.493568],
+                    [-0.131049, 51.498568]
+                ],
+                [
+                    [-0.121049, 51.497568],
+                    [-0.117049, 51.497568],
+                    [-0.117049, 51.494568],
+                    [-0.121049, 51.494568],
+                    [-0.121049, 51.497568]
+                ]
+            ],
+            {
+                symbol: {
+                    polygonFill: "rgb(135,196,240)",
+                    polygonOpacity: 1,
+                    lineColor: "#1bbc9b",
+                    lineWidth: 2
+                }
+            }
+        ).addTo(layer);
+
+        map.setCenter(polygon.getCenter());
+        setTimeout(() => {
+            polygon.startEdit({
+                'removeVertexOn': 'contextmenu'
+            });
+            const coordinate = new maptalks.Coordinate([-0.117049, 51.497568]);
+            const point = map.coordinateToContainerPoint(coordinate);
+            var domPosition = GET_PAGE_POSITION(container);
+            point._add(domPosition);
+            happen.once(eventContainer, {
+                'type': 'contextmenu',
+                'clientX': point.x,
+                'clientY': point.y
+            });
+            polygon.endEdit();
+            expect(polygon.getCoordinates()[1].length).to.be(4);
+            done();
+        }, 100);
+    });
+
 
 });
