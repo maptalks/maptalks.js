@@ -14,7 +14,7 @@ import { projectPoint } from './util/projection';
 import { getShapeMatrix } from './util/box_util';
 import { createTextMesh, DEFAULT_UNIFORMS, createTextShader, GAMMA_SCALE, getTextFnTypeConfig, isLabelCollides, getLabelEntryKey } from './util/create_text_painter';
 import { GLYPH_SIZE } from './Constant';
-import { TextUtil, PackUtil, FilterUtil } from '@maptalks/vector-packer';
+import { TextUtil, PackUtil, FilterUtil } from '../../../packer';
 import { getCentiMeterScale } from '../../../common/Util';
 import { INVALID_PROJECTED_ANCHOR, INVALID_ALTITUDE } from '../../../common/Constant';
 

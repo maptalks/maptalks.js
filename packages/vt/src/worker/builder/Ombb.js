@@ -1,7 +1,7 @@
 import concaveman from './concaveman.js';
 import { isNumber } from '../../common/Util.js';
 import { project } from '../builder/projection.js';
-import { PackUtil } from '@maptalks/vector-packer';
+import { PackUtil } from '../../packer';
 
 // Computing oriented minimum bounding boxes
 // credits of https://github.com/geidav/ombb-rotating-calipers

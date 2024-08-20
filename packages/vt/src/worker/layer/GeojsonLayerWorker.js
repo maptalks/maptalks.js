@@ -3,7 +3,7 @@ import Ajax from '../util/Ajax';
 import geojsonvt from '@maptalks/geojson-vt';
 import BaseLayerWorker from './BaseLayerWorker';
 import bbox from '@maptalks/geojson-bbox';
-import { PackUtil } from '@maptalks/vector-packer';
+import { PackUtil } from '../../packer';
 import computeOMBB from '../builder/Ombb.js';
 import { PROP_OMBB } from '../../common/Constant';
 // import { project } from '../builder/projection.js';

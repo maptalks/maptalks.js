@@ -1,7 +1,7 @@
 import * as maptalks from "maptalks";
 
 import { ID_PROP } from "./util/convert_to_feature";
-import { PolygonPack } from "@maptalks/vector-packer";
+import { PolygonPack } from "../../packer";
 import Vector3DLayer from "./Vector3DLayer";
 import Vector3DLayerRenderer from "./Vector3DLayerRenderer";
 import { extend } from "../../common/Util";

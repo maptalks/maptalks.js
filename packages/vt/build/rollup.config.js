@@ -190,7 +190,6 @@ module.exports = [
             "@maptalks/geojson-bbox",
             "@maptalks/tbn-packer",
             "@maptalks/vt-plugin",
-            "@maptalks/vector-packer",
             "animation-easings",
             "color",
             "earcut",

@@ -1,4 +1,4 @@
-import { Color } from '@maptalks/vector-packer';
+import Color from 'color';
 import { reshader, mat4 } from '@maptalks/gl';
 import BasicPainter from './BasicPainter';
 import vert from './glsl/native-point.vert';

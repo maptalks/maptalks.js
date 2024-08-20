@@ -3,7 +3,7 @@ import { setUniformFromSymbol, createColorSetter, wrap, toUint8ColorInGlobalVar,
 import { DEFAULT_ICON_ALPHA_TEST } from '../Constant';
 import { prepareFnTypeData, PREFIX } from './fn_type_util';
 import { isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
-import { Color } from '@maptalks/vector-packer';
+import Color from 'color';
 import { getAnchor, getLabelBox } from './get_label_box';
 import { projectPoint } from './projection';
 import { getLabelContent } from './get_label_content';

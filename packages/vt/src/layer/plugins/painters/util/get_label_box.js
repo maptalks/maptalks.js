@@ -2,7 +2,7 @@ import { vec2, vec3 } from '@maptalks/gl';
 import { clamp, isIconText } from '../../Util';
 import { getPitchPosition, getPosition, getShapeMatrix } from './box_util';
 import { GLYPH_SIZE } from '../Constant';
-import { PackUtil } from '@maptalks/vector-packer';
+import { PackUtil } from '../../../../packer';
 import { getCentiMeterScale } from '../../../../common/Util';
 
 const TEXT_BOX_MARGIN = 1;

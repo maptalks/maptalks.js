@@ -10,7 +10,8 @@ import type {
   VtStyle,
   VtSymbol,
 } from "../../types";
-import { Color, PackUtil } from "@maptalks/vector-packer";
+import Color from 'color';
+import { PackUtil } from "../../packer";
 import { compress, uncompress } from "./Compress";
 import { extend, hasOwn, isNil, isObject, isString, pushIn } from "../../common/Util";
 

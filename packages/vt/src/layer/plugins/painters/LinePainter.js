@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { Color } from '@maptalks/vector-packer';
+import Color from 'color';
 import BasicPainter from './BasicPainter';
 import { reshader } from '@maptalks/gl';
 import { vec2, mat4 } from '@maptalks/gl';

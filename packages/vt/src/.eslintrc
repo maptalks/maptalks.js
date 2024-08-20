@@ -15,5 +15,6 @@
   "rules": {
     "object-curly-spacing": [2, "always"],
     "key-spacing": 2
-  }
+  },
+  "ignorePatterns": ["mapbox-gl-style-spec.js"]
 }

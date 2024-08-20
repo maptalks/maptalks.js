@@ -1,5 +1,5 @@
 import LayerWorker from './BaseLayerWorker';
-import { pbf as Pbf } from '@maptalks/vector-packer';
+import pbf from 'pbf';
 import { VectorTile } from '@mapbox/vector-tile';
 import Ajax from '../util/Ajax';
 import { hasOwn, isString } from '../../common/Util';
@@ -53,7 +53,7 @@ export default class VectorTileLayerWorker extends LayerWorker {
         }
         let tile;
         try {
-            tile = new VectorTile(new Pbf(data));
+            tile = new VectorTile(new pbf(data));
         } catch (err) {
             cb(err.message, [], []);
             return;

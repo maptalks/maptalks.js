@@ -1,6 +1,6 @@
 import * as maptalks from 'maptalks';
-import { Color } from '@maptalks/vector-packer';
-import { StyleUtil } from '@maptalks/vector-packer';
+import Color from 'color';
+import { StyleUtil } from '../../../packer';
 import { reshader, mat4, mat3 } from '@maptalks/gl';
 import BasicPainter from './BasicPainter';
 import { setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar, isNil } from '../Util';

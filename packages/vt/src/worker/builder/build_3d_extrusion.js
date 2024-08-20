@@ -3,7 +3,8 @@ import { buildExtrudeFaces } from './Extrusion';
 // import { buildUniqueVertex, buildShadowVolume } from './Build';
 import { buildNormals, buildTangents, packTangentFrame } from '@maptalks/tbn-packer';
 import { interpolated, piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
-import { StyleUtil, PackUtil, ArrayPool, vec3, vec4 } from '@maptalks/vector-packer';
+import { StyleUtil, PackUtil, ArrayPool } from '../../packer';
+import { vec3, vec4 } from 'gl-matrix';
 
 const arrayPool = ArrayPool.getInstance();
 

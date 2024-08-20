@@ -1,6 +1,6 @@
 import GeoJSONLayerWorker from './layer/GeojsonLayerWorker';
 import VectorTileLayerWorker from './layer/VectorTileLayerWorker';
-import { LRUCache } from '@maptalks/vector-packer';
+import { LRUCache } from '../packer';
 
 let callbackId = 0;
 

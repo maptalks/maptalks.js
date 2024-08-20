@@ -501,7 +501,7 @@ importers:
         specifier: workspace:*
         version: link:../vt
       maptalks:
-        specifier: 1.0.0-rc.36
+        specifier: ^1.0.0-rc.36
         version: 1.0.0-rc.36
     devDependencies:
       '@rollup/plugin-commonjs':
@@ -817,6 +817,12 @@ importers:
       '@mapbox/point-geometry':
         specifier: ^0.1.0
         version: 0.1.0
+      '@mapbox/shelf-pack':
+        specifier: ^3.1.0
+        version: 3.2.0
+      '@mapbox/tiny-sdf':
+        specifier: ^1.1.0
+        version: 1.2.5
       '@mapbox/vector-tile':
         specifier: ^1.3.1
         version: 1.3.1
@@ -838,18 +844,27 @@ importers:
       '@maptalks/tbn-packer':
         specifier: ^1.4.5
         version: 1.4.5
-      '@maptalks/vector-packer':
-        specifier: workspace:*
-        version: link:../vector-packer
       '@maptalks/vt-plugin':
         specifier: workspace:*
         version: link:../vt-plugin
       animation-easings:
         specifier: ^0.1.0
         version: 0.1.0
+      color:
+        specifier: ^3.0.0
+        version: 3.2.1
+      earcut:
+        specifier: ^2.2.4
+        version: 2.2.4
       fast-deep-equal:
         specifier: ^2.0.1
         version: 2.0.1
+      gl-matrix:
+        specifier: ^3.4.0
+        version: 3.4.3
+      pbf:
+        specifier: ^3.2.1
+        version: 3.2.1
       point-in-polygon:
         specifier: ^1.1.0
         version: 1.1.0

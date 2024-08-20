@@ -1,6 +1,7 @@
 import { countVertexes, isClippedEdge, fillPosArray } from './Common';
 import { KEY_IDX } from '../../common/Constant';
-import { PackUtil, StyleUtil, FilterUtil, vec3 } from '@maptalks/vector-packer';
+import { PackUtil, StyleUtil, FilterUtil } from '../../packer';
+import { vec3 } from 'gl-matrix';
 import { isFunctionDefinition } from '@maptalks/function-type';
 
 export function buildWireframe(

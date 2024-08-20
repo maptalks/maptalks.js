@@ -1,6 +1,6 @@
 import * as maptalks from 'maptalks';
 import { isFunctionDefinition } from '@maptalks/function-type';
-import { Color } from '@maptalks/vector-packer';
+import Color from 'color';
 
 /**
  * Merges the properties of sources into destination object.

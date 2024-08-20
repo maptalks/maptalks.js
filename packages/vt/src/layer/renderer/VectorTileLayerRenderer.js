@@ -7,7 +7,7 @@ import TileStencilRenderer from './stencil/TileStencilRenderer';
 import { extend, pushIn, getCentiMeterScale, isNil } from '../../common/Util';
 import { default as convertToPainterFeatures, oldPropsKey }  from './utils/convert_to_painter_features';
 import { isFunctionDefinition } from '@maptalks/function-type';
-import { FilterUtil } from '@maptalks/vector-packer';
+import { FilterUtil } from '../../packer';
 import { meterToPoint } from '../plugins/Util';
 
 // const DEFAULT_PLUGIN_ORDERS = ['native-point', 'native-line', 'fill'];

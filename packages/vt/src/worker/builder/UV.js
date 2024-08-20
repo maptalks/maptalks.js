@@ -1,4 +1,4 @@
-import { vec2 } from '@maptalks/vector-packer';
+import { vec2 } from 'gl-matrix';
 import { project } from './projection.js';
 
 // 按照原来的uv计算时的缩放比例，计算的 meter 到 gl point 坐标的比例

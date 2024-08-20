@@ -1,4 +1,5 @@
 import { createTypedArray } from './array.js';
+// eslint-disable-next-line no-undef
 const inWorker = typeof WorkerGlobalScope !== 'undefined' && (self instanceof WorkerGlobalScope);
 
 const ArrayItemMixin = function (Base) {

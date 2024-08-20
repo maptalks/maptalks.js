@@ -1,6 +1,6 @@
 import { pushIn, exportIndices } from '../../common/Util';
-import { earcut, vec3 } from '@maptalks/vector-packer';
-
+import earcut from 'earcut';
+import { vec3 } from 'gl-matrix';
 
 /**
  * Create a unique vertex for each index.

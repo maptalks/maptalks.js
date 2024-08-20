@@ -3,7 +3,7 @@ import * as maptalks from "maptalks";
 import type { LitDataConfig, LitMaterial } from "../../types";
 import { extend, isNil } from "../../common/Util";
 
-import { DEFAULT_TEX_WIDTH } from "@maptalks/vector-packer";
+import { DEFAULT_TEX_WIDTH } from "../../packer";
 import { ID_PROP } from "./util/convert_to_feature";
 import type { OverlayLayerOptionsType } from "maptalks";
 import { PROP_OMBB } from "../../common/Constant";
