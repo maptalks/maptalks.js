@@ -13,10 +13,9 @@ export { default as IconRequestor } from './IconRequestor';
 export { default as LRUCache } from './LRUCache';
 export { default as StyledPoint } from './pack/StyledPoint';
 export { default as StyledVector } from './pack/StyledVector';
+export { default as ArrayPool } from './pack/util/ArrayPool.js';
 import * as PackUtil from './pack/util/index.js';
 export { PackUtil };
-import ArrayPool from './pack/util/ArrayPool.js';
-export { ArrayPool };
 import * as TextUtil from './style/Text.js';
 export { TextUtil };
 import * as StyleUtil from './style/Util.js';
@@ -25,14 +24,6 @@ import * as FilterUtil from './style/Filter.js';
 export { FilterUtil };
 import * as FuncTypeUtil from './style/FuncType.js';
 export { FuncTypeUtil };
-
-export { default as pbf } from 'pbf';
-export { vec2, vec3, vec4 } from 'gl-matrix';
-
-import earcut from 'earcut';
-export { earcut };
-
-export { default as Color } from 'color';
 
 // in meters
 export const DEFAULT_TEX_WIDTH = 128 / 256 * 46.5;
