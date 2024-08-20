@@ -820,9 +820,6 @@ importers:
       '@mapbox/shelf-pack':
         specifier: ^3.1.0
         version: 3.2.0
-      '@mapbox/tiny-sdf':
-        specifier: ^1.1.0
-        version: 1.2.5
       '@mapbox/vector-tile':
         specifier: ^1.3.1
         version: 1.3.1
