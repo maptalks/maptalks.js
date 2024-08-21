@@ -1474,7 +1474,7 @@ describe('update style specs', () => {
                     const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2 + 20);
                     assert.deepEqual(pixel, [159, 159, 159, 255]);
                     layerRed.updateSymbol(1, { ssr: true });
-                } else if (count === startCount + 2) {
+                } else if (count === startCount + 1) {
                     const canvas = layer.getRenderer().canvas;
                     const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2 + 20);
                     assert.deepEqual(pixel, [134, 113, 113, 255]);

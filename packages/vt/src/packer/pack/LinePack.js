@@ -7,6 +7,7 @@ import { isFunctionDefinition } from '@maptalks/function-type';
 import Point from '@mapbox/point-geometry';
 import Point3 from './point3/Point3';
 import mergeLineFeatures from './util/merge_line_features';
+import { vec2 } from 'gl-matrix';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -688,6 +689,7 @@ export default class LinePack extends VectorPack {
                     if (hasPattern) {
                         // mitter两边的normal distance值不同，所以需要增加一个新端点
                         segment.currentNormal = nextNormal;
+                        segment.dir = nextVertex.sub(currentVertex)._unit();
                         this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment);
                     }
                 }
@@ -741,6 +743,7 @@ export default class LinePack extends VectorPack {
                 if (nextVertex) {
                     // Start next segment
                     segment.currentNormal = nextNormal;
+                    segment.dir = nextVertex.sub(currentVertex)._unit();
                     this.addCurrentVertex(currentVertex, nextNormal, -offsetA, -offsetB, segment);
                 }
 
@@ -821,25 +824,28 @@ export default class LinePack extends VectorPack {
         const rightY = -normal.y - normal.x * endRight;
         let leftNormalDistance = 0;
         let rightNormalDistance = 0;
+        // 根据 normal 计算shader中 linesofar 的修正值，保证pattern不会因为lineJoin变形
         if (segment.middleVertex) {
+            // join 左边的方向和线长
             TEMP_NORMAL_1.x = leftX;
             TEMP_NORMAL_1.y = leftY;
-            TEMP_NORMAL_2.x = rightX;
-            TEMP_NORMAL_2.y = rightY;
             const segLeftNormal = segment.currentNormal;
-            // debugger
-            leftNormalDistance = getNormalDistance(segLeftNormal, TEMP_NORMAL_1);
+            leftNormalDistance = getNormalDistance(segLeftNormal, TEMP_NORMAL_1, segment.dir);
             if (endLeft === 0 && endRight === 0) {
                 // endLeft和endRight为0时，rightNormalDistance一定是-leftNormalDistance
                 // miter时能保证计算正确
                 rightNormalDistance = -leftNormalDistance;
             } else {
-                // miter时 rightNormalDistance 的计算是错误的
-                const segRightNormal = TEMP_NORMAL_3;
+                // 线段右边的垂线方向和线长
+                const segRightNormal = TEMP_NORMAL_2;
                 segRightNormal.x = segLeftNormal.x;
                 segRightNormal.y = segLeftNormal.y;
                 segRightNormal._mult(-1);
-                rightNormalDistance = getNormalDistance(segRightNormal, TEMP_NORMAL_2);
+                // join 右边的方向和线长
+                TEMP_NORMAL_3.x = rightX;
+                TEMP_NORMAL_3.y = rightY;
+
+                rightNormalDistance = getNormalDistance(segRightNormal, TEMP_NORMAL_3, segment.dir);
             }
         }
         this.addHalfVertex(p, leftX, leftY, round, false, endLeft, segment, leftNormalDistance);
@@ -1123,15 +1129,19 @@ function hasFeatureDash(features, zoom, fn) {
     return false;
 }
 
-const ORIGINZERO = new Point(0, 0);
+const TEMP_DIR = [];
+const TEMP_JOIN_NORMAL = [];
 
-function getNormalDistance(perp, normal) {
-    const x = perp.mag();
-    const z = normal.mag();
-    const perpAngle = perp.angleTo(ORIGINZERO);
-    const normalAngle = normal.angleTo(ORIGINZERO);
-    const sign = Math.sign(normalAngle - perpAngle);
-    return sign * Math.sqrt(z * z - x * x);
+function getNormalDistance(segmentNormal, joinNormal, segmentDir) {
+    // 线段垂线边长
+    const x = segmentNormal.mag();
+    // join边长
+    const z = joinNormal.mag();
+    // 测试join的方向是否与线段方向相同
+    vec2.set(TEMP_DIR, segmentDir.x, segmentDir.y);
+    vec2.set(TEMP_JOIN_NORMAL, joinNormal.x, joinNormal.y);
+    const isSameDir = vec2.dot(TEMP_DIR, TEMP_JOIN_NORMAL);
+    return -Math.sign(isSameDir) * Math.sqrt(z * z - x * x);
 }
 
 function equalPoint(p1, p2) {

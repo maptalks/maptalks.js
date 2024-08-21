@@ -472,14 +472,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
 
     _fillCommonProps(geometry) {
-        const map = this.getMap();
+        const glRes = this.getMap().getGLRes();
         const props = geometry.properties;
-        Object.defineProperty(props, 'tileResolution', {
-            enumerable: true,
-            get: function () {
-                return map.getGLRes();
-            }
-        });
+        props.tileResolution = glRes;
         props.tileRatio = 1;
         props.z = 1;
         props.tileExtent = 1;

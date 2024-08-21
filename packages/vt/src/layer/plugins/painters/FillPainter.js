@@ -497,14 +497,14 @@ class FillPainter extends BasicPainter {
     }
 
     isEnableTileStencil(context) {
-        const isVT = this.layer.getJSONType() === 'VectorTileLayer';
+        const isVectorTile = this.layer.getJSONType() === 'VectorTileLayer';
         const isTileLayer = this.layer instanceof maptalks.TileLayer;
         const isRenderingTerrainSkin = !!(context && context.isRenderingTerrain && this.isTerrainSkin());
         const isEnableStencil = !isRenderingTerrainSkin;
         // 只在VectorTileLayer上打开stencil maptalks/issues#566
         // 原有stencil打开后，前面的polygon绘制后，后面的polygon不再绘制，用以解决底图上，半透明polygon重叠时的z-fighting，但比较反直觉
         // GeoJSONVectorTileLayer不用于底图绘制，所以应该关闭该特性
-        return isEnableStencil && (isVT || isTileLayer && this.isOnly2D());
+        return isEnableStencil && (isVectorTile || isTileLayer && this.isOnly2D());
     }
 
     init(context) {
@@ -545,9 +545,9 @@ class FillPainter extends BasicPainter {
                     fail: 'keep',
                     zfail: 'keep',
                     zpass: () => {
-                        const isVT = this.layer.getJSONType() === 'VectorTileLayer';
+                        const isVectorTile = this.layer.getJSONType() === 'VectorTileLayer';
                         const stencil = this.isOnly2D();
-                        return (isVT && stencil) ? 'zero' : 'replace';
+                        return (isVectorTile && stencil) ? 'zero' : 'replace';
                     }
 
                 }
