@@ -1141,9 +1141,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     _addTileStencil(tileInfo, ref) {
         const tilePoint = TILE_POINT.set(tileInfo.extent2d.xmin, tileInfo.extent2d.ymax);
-        const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tilePoint, tileInfo.z, tileInfo.extent);
+        const extent = tileInfo.extent || 8192;
+        const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tilePoint, tileInfo.z, extent);
         tileInfo.stencilRef = ref;
-        this._stencilRenderer.add(ref, tileInfo.extent, tileTransform);
+        this._stencilRenderer.add(ref, extent, tileTransform);
     }
 
     onDrawTileStart(context) {
