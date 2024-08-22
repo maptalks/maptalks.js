@@ -339,6 +339,7 @@ class GeometryEditor extends Eventable(Class) {
         let shadow;
         const cointainerPoint = map.coordToContainerPoint(this._geometry.getCenter());
         const handle = this.createHandle(cointainerPoint, {
+            ignoreCollision: true,
             'symbol': symbol,
             'cursor': 'move',
             onDown: (): void => {
@@ -373,7 +374,8 @@ class GeometryEditor extends Eventable(Class) {
     }
 
     //@internal
-    _createHandleInstance(containerPoint: any, opts: any): EditHandle {
+    _createHandleInstance(containerPoint: Point, opts: GeometryEditOptionsType): EditHandle {
+        opts = opts || {};
         const map = this.getMap();
         const symbol = loadFunctionTypes(opts['symbol'], (): any => {
             return [
@@ -386,7 +388,7 @@ class GeometryEditor extends Eventable(Class) {
             ];
         });
         const removeVertexOn = this.options['removeVertexOn'];
-        const handle = new EditHandle(this, map, { symbol, cursor: opts['cursor'], events: removeVertexOn as any });
+        const handle = new EditHandle(this, map, { symbol, cursor: opts['cursor'], events: removeVertexOn as any, ignoreCollision: (opts as any).ignoreCollision });
         handle.setContainerPoint(containerPoint);
         return handle;
     }
@@ -967,6 +969,7 @@ class GeometryEditor extends Eventable(Class) {
             }
             const isEnd = (geoToEdit instanceof LineString) && (index === 0 || index === prjCoordinates.length - 1);
             prjCoordinates.splice(index, 1);
+
             if (ringIndex > 0) {
                 //update hole prj
                 geoToEdit._prjHoles[ringIndex - 1] = prjCoordinates;
@@ -997,7 +1000,8 @@ class GeometryEditor extends Eventable(Class) {
                 //fix hole Vertex delete
                 const ring = coordiantes[ringIndex];
                 if (ring && Array.isArray(ring) && ring.length > 1) {
-                    ring.splice(index, 1);
+                    //上面投影坐标里已经处理过了
+                    // ring.splice(index, 1);
                     //update shadow coordinates
                     if (geoToEdit !== this._geometry) {
                         geoToEdit.setCoordinates(coordiantes);

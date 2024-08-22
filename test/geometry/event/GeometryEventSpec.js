@@ -322,7 +322,7 @@ describe('Geometry.Events', function () {
                 markerHeight: 40
             },
             {
-                markerFile: 'resources/infownd-close-hover.png',
+                markerFile: 'resources/2.png',
                 markerWidth: 40,
                 markerHeight: 40
             },

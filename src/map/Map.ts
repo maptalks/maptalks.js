@@ -2703,6 +2703,8 @@ export default Map;
 export type MapOptionsType = {
     // center: Array<number> | Coordinate;
     // zoom: number;
+    pitch?: number;
+    bearing?: number;
     baseLayer?: Layer;
     layers?: Array<Layer>;
     draggable?: boolean;
