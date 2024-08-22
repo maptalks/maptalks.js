@@ -32,7 +32,7 @@ class Sphere {
      * @param c1
      * @param c2
      */
-    measureLenBetween(c1: CoordsLike, c2: CoordsLike): number {
+    measureLenBetween(c1: CoordsLike, c2: CoordsLike, ignoreAltitude = false): number {
         if (!c1 || !c2) {
             return 0;
         }
@@ -42,7 +42,16 @@ class Sphere {
             f = toRadian(c1.x) - toRadian(c2.x);
         b = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(e / 2), 2) + Math.cos(b) * Math.cos(d) * Math.pow(Math.sin(f / 2), 2)));
         b *= this.radius;
-        return b;
+        const distance = b;
+        if (ignoreAltitude) {
+            return distance;
+        }
+        const z1 = c1.z || 0, z2 = c2.z || 0;
+        const dz = z1 - z2;
+        if (dz === 0) {
+            return distance;
+        }
+        return Math.sqrt(distance * distance + dz * dz);
     }
 
     /**
@@ -159,7 +168,7 @@ class Sphere {
     _rotate(c: Coordinate, pivot: Coordinate, angle: number) {
         const initialAngle = rhumbBearing(pivot, c);
         const finalAngle = initialAngle - angle;
-        const distance = this.measureLenBetween(pivot, c);
+        const distance = this.measureLenBetween(pivot, c, true);
         c.x = pivot.x;
         c.y = pivot.y;
         return calculateRhumbDestination(c, distance, finalAngle, this.radius);
