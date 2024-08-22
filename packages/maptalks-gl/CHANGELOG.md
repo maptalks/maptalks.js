@@ -1,5 +1,11 @@
 # maptalks-gl
 
+## 0.99.1
+
+### Patch Changes
+
+- bump maptalks-gl version
+
 ## 0.99.0
 
 ### Minor Changes
