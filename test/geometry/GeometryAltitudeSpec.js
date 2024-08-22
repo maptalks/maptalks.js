@@ -489,4 +489,18 @@ describe('Geometry.Altitude', function () {
         }, 100);
     });
 
+    it('#1970 geometry measure length consider altitude ', function (done) {
+        map.addLayer(layer);
+        const altitude = 100;
+        const c1 = map.getCenter();
+        const c2 = c1.copy();
+        c2.z = altitude;
+        const line = new maptalks.LineString([c1, c2]).addTo(layer);
+        setTimeout(() => {
+            expect(line.getLength()).to.be.equal(altitude);
+            expect(map.computeGeometryLength(line)).to.be.equal(altitude);
+            done();
+        }, 100);
+    });
+
 });
