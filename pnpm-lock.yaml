@@ -91,8 +91,8 @@ importers:
         specifier: ^2.2.5
         version: 2.2.5(karma@6.4.3)
       maptalks:
-        specifier: ^1.0.0-rc.36
-        version: 1.0.0-rc.36
+        specifier: ^1.0.0-rc.37
+        version: 1.0.0-rc.37
       mocha:
         specifier: ^10.3.0
         version: 10.4.0
@@ -161,8 +161,8 @@ importers:
         specifier: ^2.2.5
         version: 2.2.5(karma@6.4.3)
       maptalks:
-        specifier: ^1.0.0-rc.36
-        version: 1.0.0-rc.36
+        specifier: ^1.0.0-rc.37
+        version: 1.0.0-rc.37
       mocha:
         specifier: ^10.3.0
         version: 10.4.0
@@ -225,8 +225,8 @@ importers:
         specifier: ^2.2.5
         version: 2.2.5(karma@6.4.3)
       maptalks:
-        specifier: ^1.0.0-rc.36
-        version: 1.0.0-rc.36
+        specifier: ^1.0.0-rc.37
+        version: 1.0.0-rc.37
       mocha:
         specifier: ^10.3.0
         version: 10.4.0
@@ -307,8 +307,8 @@ importers:
         specifier: ^4.17.1
         version: 4.19.2
       maptalks:
-        specifier: ^1.0.0-rc.36
-        version: 1.0.0-rc.36
+        specifier: ^1.0.0-rc.37
+        version: 1.0.0-rc.37
       pixelmatch:
         specifier: ^4.0.2
         version: 4.0.2
@@ -401,8 +401,8 @@ importers:
         specifier: ^2.2.5
         version: 2.2.5(karma@6.4.3)
       maptalks:
-        specifier: ^1.0.0-rc.36
-        version: 1.0.0-rc.36
+        specifier: ^1.0.0-rc.37
+        version: 1.0.0-rc.37
       mocha:
         specifier: ^10.3.0
         version: 10.4.0
@@ -465,8 +465,8 @@ importers:
         specifier: ^2.2.5
         version: 2.2.5(karma@6.4.3)
       maptalks:
-        specifier: ^1.0.0-rc.36
-        version: 1.0.0-rc.36
+        specifier: ^1.0.0-rc.37
+        version: 1.0.0-rc.37
       mocha:
         specifier: ^10.3.0
         version: 10.4.0
@@ -501,8 +501,8 @@ importers:
         specifier: workspace:*
         version: link:../vt
       maptalks:
-        specifier: ^1.0.0-rc.36
-        version: 1.0.0-rc.36
+        specifier: ^1.0.0-rc.37
+        version: 1.0.0-rc.37
     devDependencies:
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
@@ -615,8 +615,8 @@ importers:
         specifier: ^2.2.5
         version: 2.2.5(karma@6.4.3)
       maptalks:
-        specifier: ^1.0.0-rc.36
-        version: 1.0.0-rc.36
+        specifier: ^1.0.0-rc.37
+        version: 1.0.0-rc.37
       mocha:
         specifier: ^10.3.0
         version: 10.4.0
@@ -751,67 +751,6 @@ importers:
         specifier: ^4.17.2
         version: 4.17.2
 
-  packages/vector-packer:
-    dependencies:
-      '@mapbox/point-geometry':
-        specifier: ^0.1.0
-        version: 0.1.0
-      '@mapbox/shelf-pack':
-        specifier: ^3.1.0
-        version: 3.2.0
-      '@mapbox/tiny-sdf':
-        specifier: ^1.1.0
-        version: 1.2.5
-      '@maptalks/feature-filter':
-        specifier: ^1.3.0
-        version: 1.3.0
-      '@maptalks/function-type':
-        specifier: ^1.3.1
-        version: 1.3.1
-      '@maptalks/tbn-packer':
-        specifier: ^1.4.5
-        version: 1.4.5
-      color:
-        specifier: ^3.0.0
-        version: 3.2.1
-      earcut:
-        specifier: ^2.2.4
-        version: 2.2.4
-      gl-matrix:
-        specifier: ^3.4.0
-        version: 3.4.3
-      pbf:
-        specifier: ^3.2.1
-        version: 3.2.1
-      quickselect:
-        specifier: ^1.0.0
-        version: 1.1.1
-      tinyqueue:
-        specifier: ^2.0.3
-        version: 2.0.3
-    devDependencies:
-      '@rollup/plugin-commonjs':
-        specifier: ^25.0.7
-        version: 25.0.7(rollup@4.17.2)
-      '@rollup/plugin-node-resolve':
-        specifier: ^15.2.3
-        version: 15.2.3(rollup@4.17.2)
-      '@rollup/plugin-terser':
-        specifier: 0.4.4
-        version: 0.4.4(rollup@4.17.2)
-      eslint:
-        specifier: ^8.57.0
-        version: 8.57.0
-      eslint-plugin-mocha:
-        specifier: ^10.4.1
-        version: 10.4.3(eslint@8.57.0)
-      maptalks:
-        specifier: 1.0.0-rc.35
-        version: 1.0.0-rc.35
-      rollup:
-        specifier: ^4.17.2
-        version: 4.17.2
-
   packages/vt:
     dependencies:
       '@mapbox/point-geometry':
@@ -921,8 +860,8 @@ importers:
         specifier: ^0.3.1
         version: 0.3.2
       maptalks:
-        specifier: ^1.0.0-rc.36
-        version: 1.0.0-rc.36
+        specifier: ^1.0.0-rc.37
+        version: 1.0.0-rc.37
       mocha:
         specifier: ^10.3.0
         version: 10.4.0
@@ -1093,9 +1032,6 @@ packages:
   '@mapbox/shelf-pack@3.2.0':
     resolution: {integrity: sha512-dyQxe6ukILV6qaEvxoKCIwhblgRjYp1ZGlClo4xvfbmxzFO5LYu7Tnrg2AZrRgN7VsSragsGcNjzUe9kCdKHYQ==}
     engines: {node: '>=6.0.0'}
-
-  '@mapbox/tiny-sdf@1.2.5':
-    resolution: {integrity: sha512-cD8A/zJlm6fdJOk6DqPUV8mcpyJkRz2x2R+/fYcWDYG3oWbG7/L7Yl/WqQ1VZCjnL9OTIMAn6c+BC5Eru4sQEw==}
 
   '@mapbox/vector-tile@1.3.1':
     resolution: {integrity: sha512-MCEddb8u44/xfQ3oD+Srl/tNcQoqTw3goGk2oLsrFxOTc3dUp+kAnby3PvAeeBYSMSjSPD1nd1AJA6W49WnoUw==}
@@ -2974,8 +2910,8 @@ packages:
   maptalks@1.0.0-rc.35:
     resolution: {integrity: sha512-RVFqe/+v7hGf6usS35vgHIygWBGQJPkhUwdYI3YMfGucbNsRK03W9Q611+WB2L7Wsal68nkPkauHKNV+ar/Z6w==}
 
-  maptalks@1.0.0-rc.36:
-    resolution: {integrity: sha512-a26Naf30ovHxpZcE70UYP2OSXQOxZASxdDvSP3DE1llzSrW/LIooNflRYBGAb1V+KubCOQpsqhs3tn/dQfU7WQ==}
+  maptalks@1.0.0-rc.37:
+    resolution: {integrity: sha512-Zn1pjS0wgnYJBGQBt656QoeCaLj5SnUIPwV8i8eAhpQj6oln5rEwKSBnUjO8RqqEmeGjgP11kssXjKUDd2FTxw==}
 
   marchingsquares@1.3.3:
     resolution: {integrity: sha512-gz6nNQoVK7Lkh2pZulrT4qd4347S/toG9RXH2pyzhLgkL5mLkBoqgv4EvAGXcV0ikDW72n/OQb3Xe8bGagQZCg==}
@@ -4238,8 +4174,6 @@ snapshots:
   '@mapbox/point-geometry@0.1.0': {}
 
   '@mapbox/shelf-pack@3.2.0': {}
-
-  '@mapbox/tiny-sdf@1.2.5': {}
 
   '@mapbox/vector-tile@1.3.1':
     dependencies:
@@ -6923,7 +6857,7 @@ snapshots:
       '@rollup/rollup-darwin-x64': 4.17.2
       '@rollup/rollup-linux-x64-gnu': 4.17.2
 
-  maptalks@1.0.0-rc.36:
+  maptalks@1.0.0-rc.37:
     dependencies:
       '@maptalks/feature-filter': 1.3.0
       '@maptalks/function-type': 1.3.1
