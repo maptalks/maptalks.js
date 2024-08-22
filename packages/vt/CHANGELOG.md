@@ -1,5 +1,11 @@
 # @maptalks/vt
 
+## 0.97.1
+
+### Patch Changes
+
+- bump version
+
 ## 0.97.0
 
 ### Minor Changes
