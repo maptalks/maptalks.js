@@ -1,4 +1,4 @@
-import { extend } from '../core/util';
+import { extend, isNumber } from '../core/util';
 import { getDepthFunc } from '../core/util/gl';
 import Browser from '../core/Browser';
 import Point from '../geo/Point';
@@ -212,7 +212,11 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
                     this._painted = true;
-                    this._drawImage(image, extent, imgData[i].opacity || 1);
+                    let opacity = imgData[i].opacity;
+                    if (!isNumber(opacity)) {
+                        opacity = 1;
+                    }
+                    this._drawImage(image, extent, opacity);
                 }
             }
         }

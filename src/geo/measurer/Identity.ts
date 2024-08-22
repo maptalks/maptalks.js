@@ -18,12 +18,21 @@ const identity = {
      * @param c1
      * @param c2
      */
-    measureLenBetween: function (c1: Coordinate | CoordinateJson, c2: Coordinate | CoordinateJson): number {
+    measureLenBetween: function (c1: Coordinate | CoordinateJson, c2: Coordinate | CoordinateJson, ignoreAltitude = false): number {
         if (!c1 || !c2) {
             return 0;
         }
         try {
-            return Math.sqrt(Math.pow(c1.x - c2.x, 2) + Math.pow(c1.y - c2.y, 2));
+            const distance = Math.sqrt(Math.pow(c1.x - c2.x, 2) + Math.pow(c1.y - c2.y, 2));
+            if (ignoreAltitude) {
+                return distance;
+            }
+            const z1 = c1.z || 0, z2 = c2.z || 0;
+            const dz = z1 - z2;
+            if (dz === 0) {
+                return distance;
+            }
+            return Math.sqrt(distance * distance + dz * dz);
         } catch (err) {
             return 0;
         }
@@ -63,7 +72,7 @@ const identity = {
      * @param yDist
      * @param out
      */
-    locate : function (c: Coordinate | CoordinateJson, xDist: number, yDist: number, out?: Coordinate) {
+    locate: function (c: Coordinate | CoordinateJson, xDist: number, yDist: number, out?: Coordinate) {
         out = out || new Coordinate(0, 0);
         out.set(c.x, c.y);
         return this._locate(out, xDist, yDist);
