@@ -1,5 +1,18 @@
 # maptalks-gl
 
+## 0.99.0
+
+### Minor Changes
+
+- remove vector-packer package, fix some bugs in VectorTileLayer and upgrade maptalks
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/vt@0.97.0
+  - @maptalks/analysis@0.98.2
+  - @maptalks/gltf-layer@0.98.2
+
 ## 0.97.8
 
 ### Patch Changes

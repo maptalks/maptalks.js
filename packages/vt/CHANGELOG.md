@@ -1,5 +1,11 @@
 # @maptalks/vt
 
+## 0.97.0
+
+### Minor Changes
+
+- remove vector-packer package, fix some bugs in VectorTileLayer and upgrade maptalks
+
 ## 0.96.4
 
 ### Patch Changes
