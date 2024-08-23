@@ -1,6 +1,8 @@
 import GLContext from "../GLContext";
 import { include } from "../Utils";
 
+const nonNaNArray = [];
+
 include(GLContext.prototype, {
     bindAttribLocation(program, index, name) {
         return this._gl.bindAttribLocation(program, index, name);
@@ -129,11 +131,38 @@ include(GLContext.prototype, {
         this._gl.uniformMatrix3fv(location, transpose, value);
     },
     uniformMatrix4fv(location, transpose, value) {
-        value = checkMatrix4fvNaN(value);
+        value = this._checkMatrix4fvNaN(value);
         if (this._ifUniformEquals(location, transpose, value)) {
             return;
         }
         this._gl.uniformMatrix4fv(location, transpose, value);
+    },
+    // defense NaN value cause non-finite error when calling uniformMatrix4fv
+    _checkMatrix4fvNaN(array) {
+        if (!array) {
+            return array;
+        }
+        nonNaNArray[0] = isNaN(array[0]) ? -1E30 : array[0];
+        nonNaNArray[1] = isNaN(array[1]) ? -1E30 : array[1];
+        nonNaNArray[2] = isNaN(array[2]) ? -1E30 : array[2];
+        nonNaNArray[3] = isNaN(array[3]) ? -1E30 : array[3];
+
+        nonNaNArray[4] = isNaN(array[4]) ? -1E30 : array[4];
+        nonNaNArray[5] = isNaN(array[5]) ? -1E30 : array[5];
+        nonNaNArray[6] = isNaN(array[6]) ? -1E30 : array[6];
+        nonNaNArray[7] = isNaN(array[7]) ? -1E30 : array[7];
+
+        nonNaNArray[8] = isNaN(array[8]) ? -1E30 : array[8];
+        nonNaNArray[9] = isNaN(array[9]) ? -1E30 : array[9];
+        nonNaNArray[10] = isNaN(array[10]) ? -1E30 : array[10];
+        nonNaNArray[11] = isNaN(array[11]) ? -1E30 : array[11];
+
+        nonNaNArray[12] = isNaN(array[12]) ? -1E30 : array[12];
+        nonNaNArray[13] = isNaN(array[13]) ? -1E30 : array[13];
+        nonNaNArray[14] = isNaN(array[14]) ? -1E30 : array[14];
+        nonNaNArray[15] = isNaN(array[15]) ? -1E30 : array[15];
+
+        return nonNaNArray;
     },
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniform
@@ -412,31 +441,3 @@ function equalArgs(args0, args1) {
     return true;
 }
 
-const nonNaNArray = [];
-// defence NaN value cause non-finite error when calling uniformMatrix4fv
-function checkMatrix4fvNaN(array) {
-    if (!array) {
-        return array;
-    }
-    nonNaNArray[0] = isNaN(array[0]) ? Infinity : array[0];
-    nonNaNArray[1] = isNaN(array[1]) ? Infinity : array[1];
-    nonNaNArray[2] = isNaN(array[2]) ? Infinity : array[2];
-    nonNaNArray[3] = isNaN(array[3]) ? Infinity : array[3];
-
-    nonNaNArray[4] = isNaN(array[4]) ? Infinity : array[4];
-    nonNaNArray[5] = isNaN(array[5]) ? Infinity : array[5];
-    nonNaNArray[6] = isNaN(array[6]) ? Infinity : array[6];
-    nonNaNArray[7] = isNaN(array[7]) ? Infinity : array[7];
-
-    nonNaNArray[8] = isNaN(array[8]) ? Infinity : array[8];
-    nonNaNArray[9] = isNaN(array[9]) ? Infinity : array[9];
-    nonNaNArray[10] = isNaN(array[10]) ? Infinity : array[10];
-    nonNaNArray[11] = isNaN(array[11]) ? Infinity : array[11];
-
-    nonNaNArray[12] = isNaN(array[12]) ? Infinity : array[12];
-    nonNaNArray[13] = isNaN(array[13]) ? Infinity : array[13];
-    nonNaNArray[14] = isNaN(array[14]) ? Infinity : array[14];
-    nonNaNArray[15] = isNaN(array[15]) ? Infinity : array[15];
-
-    return nonNaNArray;
-}
