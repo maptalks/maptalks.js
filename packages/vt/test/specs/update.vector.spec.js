@@ -1082,8 +1082,12 @@ describe('vector layers update style specs', () => {
             count++;
         });
         let outlined = false;
+        let finished = false;
         group.on('layerload', () => {
             if (count >= 1 && !outlined) {
+                if (finished) {
+                    return;
+                }
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
@@ -1093,6 +1097,7 @@ describe('vector layers update style specs', () => {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 //变成高亮的绿色
                 assert(pixel[1] > 10);
+                finished = true;
                 done();
             }
         });
