@@ -712,7 +712,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                     feature.tile = tileInfo;
                 }
             }
-            tileInfo.extent = tileData && tileData.extent;
+            tileInfo.extent = tileData.extent;
+            if (!this._receivedTileExtent) {
+                this._receivedTileExtent = tileInfo.extent;
+            }
             tileData.features = Object.values(features);
             tileData.styleCounter = data.styleCounter;
             this.onTileLoad(tileData, tileInfo)
@@ -1141,7 +1144,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     _addTileStencil(tileInfo, ref) {
         const tilePoint = TILE_POINT.set(tileInfo.extent2d.xmin, tileInfo.extent2d.ymax);
-        const extent = tileInfo.extent || 8192;
+        const extent = tileInfo.extent || this._receivedTileExtent || 8192;
         const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tilePoint, tileInfo.z, extent);
         tileInfo.stencilRef = ref;
         this._stencilRenderer.add(ref, extent, tileTransform);
@@ -1322,9 +1325,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const isRenderingTerrain = !!this._terrainLayer;
         const tileCache = tileData.cache;
         const tilePoint = TILE_POINT.set(tileInfo.extent2d.xmin, tileInfo.extent2d.ymax);
-        const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tilePoint, tileInfo.z, tileInfo.extent);
+        const extent = tileInfo.extent || this._receivedTileExtent || 8192;
+        const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tilePoint, tileInfo.z, extent);
         const tileTranslationMatrix = tileInfo.tileTranslationMatrix = tileInfo.tileTranslationMatrix || this.calculateTileTranslationMatrix(tilePoint, tileInfo.z);
-        const terrainTileTransform = tileInfo.terrainTransform = tileInfo.terrainTransform || this.calculateTerrainTileMatrix(tilePoint, tileInfo.z, tileInfo.extent);
+        const terrainTileTransform = tileInfo.terrainTransform = tileInfo.terrainTransform || this.calculateTerrainTileMatrix(tilePoint, tileInfo.z, extent);
 
         const parentContext = this._parentContext;
         const pluginData = [];
