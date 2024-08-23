@@ -106,8 +106,8 @@ importers:
   packages/gl:
     dependencies:
       '@maptalks/fusiongl':
-        specifier: ^0.6.13
-        version: 0.6.13
+        specifier: ^0.7.2
+        version: 0.7.2
       '@maptalks/gltf-loader':
         specifier: workspace:*
         version: link:../gltf-loader
@@ -1042,8 +1042,8 @@ packages:
   '@maptalks/function-type@1.3.1':
     resolution: {integrity: sha512-VoKE84IDhAn1Co25IVggptNzZdQ3fPUCRlw8+SBxyW8ATT45kFDqYECktqnNW445h44tT+3Ge5fyP+dHVCDP6g==}
 
-  '@maptalks/fusiongl@0.6.13':
-    resolution: {integrity: sha512-aiT+a28K4+2dybBnbl4l5H9ni0L7/yjUywwCWRSu7YbDNUoGzTMGSoomnJx1ho5qPKbiEEK9mt9sqHVSUnSNuQ==}
+  '@maptalks/fusiongl@0.7.2':
+    resolution: {integrity: sha512-y3RjqQ0Uu4+wRhDb+gobMSp+Q02cuCRsSKTMnABgm1mYvYjdqlHcydMy/6Y2Bk5Hma4Z215xTPy7/nJcc00nIg==}
 
   '@maptalks/geojson-bbox@1.0.5':
     resolution: {integrity: sha512-DLeXOssDHx1cWTMhAh3ZDSEv2mMEaEbYeX/4DrGzUMpYAzQHV86BGFymLvhyZ/K08vVImzeQ882aPiRWm0OXGQ==}
@@ -4185,7 +4185,7 @@ snapshots:
     dependencies:
       colorin: 0.2.0
 
-  '@maptalks/fusiongl@0.6.13':
+  '@maptalks/fusiongl@0.7.2':
     dependencies:
       fast-deep-equal: 2.0.1
 
