@@ -75,6 +75,14 @@ class WebGL2RenderingContext /* GLContext */ {
         return this._gl.drawingBufferHeight;
     }
 
+    get drawingBufferColorSpace() {
+        return this._gl.drawingBufferColorSpace;
+    }
+
+    set drawingBufferColorSpace(colorSpace) {
+        this._gl.drawingBufferColorSpace = colorSpace;
+    }
+
     /**
      * get webglrendercontext
      * @returns {WebGLRenderingContext}
