@@ -1,5 +1,19 @@
 # maptalks-gl
 
+## 0.99.2
+
+### Patch Changes
+
+- upgrade fusion.gl and fix NaN value caused non-finite value error in WebGL2RenderingContext.uniformMatrix4fv
+- Updated dependencies
+  - @maptalks/gl@0.98.3
+  - @maptalks/vt@0.97.2
+  - @maptalks/analysis@0.98.2
+  - @maptalks/3dtiles@0.98.2
+  - @maptalks/gltf-layer@0.98.2
+  - @maptalks/video-layer@0.98.2
+  - @maptalks/transform-control@0.98.5
+
 ## 0.99.1
 
 ### Patch Changes
