@@ -66,7 +66,7 @@ export default class RayCaster {
             const altitudes = (geometry.data[geometry.desc.altitudeAttribute] && geometry.data[geometry.desc.altitudeAttribute].array) || NULL_ALTITUDES;
             const geoIndices = geometry.indices;
             if (!positions || !geoIndices) {
-                console.warn('there are no POSITION or inidces in mesh');
+                // console.warn('there are no POSITION or inidces in mesh');
                 continue;
             }
             const matrix = mat4.multiply(EMPTY_MAT, localTransform, mesh.positionMatrix);

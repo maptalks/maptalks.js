@@ -13,6 +13,7 @@ import Geo3DTilesRenderer from './renderer/Geo3DTilesRenderer';
 import { radianToCartesian3, cartesian3ToDegree } from '../common/Transform';
 import { distanceToCamera } from '../common/intersects_oriented_box.js';
 import TileBoundingRegion from './renderer/TileBoundingRegion';
+import { eastNorthUpToFixedFrame } from '../common/TileHelper';
 import { LayerJSONType } from 'maptalks';
 
 type BBOX = [number, number, number, number];
@@ -72,6 +73,7 @@ const TEMP_VEC3_4: vec3 = [0, 0, 0];
 const TEMP_VEC3_5: vec3 = [0, 0, 0];
 const TEMP_VEC3_6: vec3 = [0, 0, 0];
 const TEMP_SCALE: vec3 = [1, 1, 1];
+const TEMP_SCALING: vec3 = [1, 1, 1];
 
 const TEMP_QUAT_0: quat = [0, 0, 0, 0];
 
@@ -130,6 +132,14 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             return null;
         }
         return new Geo3DTilesLayer(layerJSON['id'], layerJSON['options']);
+    }
+
+    static getEnuTransform(coordinate: [number, number, number], scale: [number, number, number] = [1, 1, 1], rotation: [number, number, number] = [0, 0, 0]) {
+        const cart3 = radianToCartesian3([], coordinate[0] * Math.PI / 180, coordinate[1] * Math.PI / 180, coordinate[2] || 0) as vec3;
+        const enu = eastNorthUpToFixedFrame(cart3, null, []);
+        const q = quat.fromEuler([0, 0, 0, 0], ...rotation);
+        const out = mat4.fromRotationTranslationScale([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,], q, [0, 0, 0], scale);
+        return mat4.multiply(out, enu, out);
     }
 
     options: Geo3DTilesLayerOptions
@@ -680,13 +690,18 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             if (boundingVolume) {
                 parent.boundingVolume = boundingVolume;
             }
-            const transform = tileset.root.transform;
-            if (transform) {
-                if (!parent.parent) {
+            const transform = tileset.root.transform || mat4.identity([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+
+            if (!parent.parent ) {
+                // service root node
+                const service = this._getNodeService(parent._rootIdx);
+                if (service.ecefTransform) {
+                    parent.matrix = mat4.multiply([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], service.ecefTransform, transform) as number[];
+                } else {
                     parent.matrix = transform;
-                } else if (!isI3S) {
-                    parent.matrix = mat4.multiply([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], parent.parent.matrix as mat4, transform) as number[];
                 }
+            } else if (!isI3S) {
+                parent.matrix = mat4.multiply([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], parent.parent.matrix as mat4, transform) as number[];
             }
             // parent.matrix = tileset.root.transform || parent.matrix;
             // delete parent._topBottom;
@@ -1058,7 +1073,12 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         const rotation = service.rotation || DEFAULT_ROTATION;
         const q = quat.fromEuler(TEMP_QUAT_0, ...rotation);
         const serviceScale = service.scale;
-        const scale = serviceScale && vec3.set(TEMP_SERVICE_SCALE, serviceScale, serviceScale, serviceScale) || DEFAULT_SCALE;
+        let scale;
+        if (Array.isArray(serviceScale)) {
+            scale = vec3.set(TEMP_SERVICE_SCALE, serviceScale[0], serviceScale[1], serviceScale[2]);
+        } else {
+            scale = serviceScale && vec3.set(TEMP_SERVICE_SCALE, serviceScale, serviceScale, serviceScale) || DEFAULT_SCALE;
+        }
         const transform = mat4.fromRotationTranslationScale(TEMP_MAT4_2, q, DEFAULT_TRANSLATION, scale);
 
         out = mat4.multiply(out as mat4, transform, originMat4) as number[];
@@ -1186,7 +1206,17 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             return 0;
         }
         const service = this._getNodeService(node._rootIdx);
-        const serviceScale = service.scale || 1;
+        let serviceScale = service.scale || 1;
+        if (Array.isArray(serviceScale)) {
+            serviceScale = vec3.length(serviceScale as vec3);
+        } else {
+            serviceScale = Math.sqrt(serviceScale * serviceScale * 3);
+        }
+        if (service.ecefTransform) {
+            const scaling = mat4.getScaling(TEMP_SCALING, service.ecefTransform);
+            const length = vec3.len(scaling);
+            serviceScale = serviceScale * length;
+        }
         const map = this.getMap();
         let distanceToCamera;
 
@@ -1693,11 +1723,17 @@ export type Geo3DTilesServiceOptions = {
      */
     alphaTest?: number,
     /**
+     * 模型在ECEF坐标系下的转换矩阵，优先级比rotation，scale，coordOffset和heightOffset更高
+     * @english
+     * Model's transform matrix in ECEF coordinate system, Higher priority than rotation, scale, coordinateOffset and heightOffset
+     */
+    ecefTransform?: [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number],
+    /**
      * 模型的缩放比例
      * @english
      * Model scaling
      */
-    scale?: number,
+    scale?: number | [number, number, number],
     /**
      * 模型在xy平面上的偏移量，与地图的坐标系一致。
      * @english

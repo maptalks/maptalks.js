@@ -2013,7 +2013,7 @@ describe('render specs', () => {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
                         shader: 'phong',
                         heightOffset: -420,
-                        scale: 4,
+                        scale: [4, 4, 4],
                         rotation: [0, 0, 45]
                     }
                 ]
@@ -2022,6 +2022,23 @@ describe('render specs', () => {
                 assert(map.getCenter().x.toFixed(3) === '108.959');
                 done();
             }, layer, { path: `./integration/expected/${resPath}/trs/expected.png`, diffCount: 0, renderCount: 1, noGroup: true, zoomOffset: -2 });
+        });
+
+        it('set transform', done => {
+            const resPath = 'BatchedDraco/BatchedWithNonTransform/';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                        shader: 'phong',
+                        ecefTransform: [0.9686356343768792, 0.24848542777253735, 0, 0, -0.15986460744966327, 0.623177611820219, 0.765567091384559, 0, 0.19023226619126932, -0.7415555652213445, 0.6433560667227647, 0, 1215011.9317263428, -4736309.3434217675, 4081602.0044800863, 1]
+                    }
+                ]
+            });
+            runner(() => {
+                assert(map.getCenter().x.toFixed(3) === '-75.612');
+                done();
+            }, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 1 });
         });
 
         it('update service rotation and scale', done => {

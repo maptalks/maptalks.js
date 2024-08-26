@@ -224,9 +224,7 @@ class StandardPainter extends MeshPainter {
                 }
             },
             stencil: {
-                enable: (_, props) => {
-                    return props['hasAlpha'] === undefined || !!props['hasAlpha'];
-                },
+                enable: true,
                 func: {
                     cmp: '<=',
                     ref: (_, props) => {
