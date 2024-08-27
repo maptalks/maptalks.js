@@ -1,10 +1,11 @@
-import { mat4, quat, vec3, vec2, reshader, GroupGLLayer } from '@maptalks/gl';
-import { Handlerable, Eventable, Class, Point, Coordinate } from 'maptalks';
+import { mat4, quat, vec3, vec2, reshader } from '@maptalks/gl';
+import { Handlerable, Eventable, Class, Point, Coordinate, INTERNAL_LAYER_PREFIX } from 'maptalks';
 import TransformHelper from './helper/TransformHelper';
 import { calFixedScale, getTranslationPoint } from './common/Util';
 import vert from './common/helper.vert';
 import frag from './common/helper.frag';
 import TransformTarget from './TransformTarget';
+import { GLTFLayer, GLTFMarker } from '@maptalks/gltf-layer';
 
 const translatePickingIds = [5, 6, 7, 8, 9, 10];
 const translatePickingIds0 = [5, 7, 8, 9, 10];
@@ -30,6 +31,12 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
         this._target = new TransformTarget();
         this.helperScene = new reshader.Scene([]);
         this.addToMapCount = 0;
+        this._createHelperLayer();
+    }
+
+    setCoordinates(coordinate) {
+        this._helper.setCoordinates(coordinate);
+        this.transform(this._helper);
     }
 
     enable() {
@@ -88,15 +95,30 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
         if (this.map) {
             this._removeEvents();
             console.warn('transform control has been added to a map, it suggest remove from the map before');
+            return;
         }
         this.addToMapCount++;
         this.map = map;
+        this._helperlayer.addTo(this.map);
         this.container = map.getContainer();
         map.on('dom:mousemove', this._mouseMoveHandle, this);
         map.on('dom:mousedown', this._mousedownHandle, this);
         map.on('dom:mouseup', this._mouseupHandle, this);
         map.on('zooming moving dragrotating', this._viewchanging, this);
         this._initShader();
+    }
+
+    _createHelperLayer() {
+        this._helperlayer = new GLTFLayer(`${INTERNAL_LAYER_PREFIX}_transformcontrol`);
+        this._helper = new GLTFMarker([0, 0], {
+            symbol: {
+                url: 'cube',
+                modelHeight: 1,
+                uniforms: {
+                    polygonOpacity: 0.01
+                }
+            }
+        }).addTo(this._helperlayer);
     }
 
     remove() {
@@ -106,6 +128,9 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
         this._removeEvents();
         this.TransformHelper.dispose();
         this.layerRenderer.setToRedraw();
+        this._helperlayer.remove();
+        delete this._helper;
+        delete this._helperlayer;
         delete this.map;
         delete this.layer;
         delete this.layerRenderer;
@@ -630,24 +655,6 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
             layer.off('renderend', this.render);
             layer.off('resizeCanvas', this._resize);
         }
-        const layers = this.map.getLayers();
-        let gllayer = null;
-        for (let i = 0; i < layers.length; i++) {
-            if (layers[i] instanceof GroupGLLayer) {
-                gllayer = layers[i];
-                break;
-            }
-        }
-        if (!gllayer) {
-            return;
-        }
-        const gllayers = gllayer.getLayers();
-        const layerIndex = gllayers.indexOf(layer);
-        if (layerIndex < 0) {
-            return;
-        }
-        gllayers.splice(layerIndex, 1);
-        gllayers.push(layer);
         const map = this.map;
         const layerRenderer = layer.getRenderer();
         this.layerRenderer = layerRenderer;

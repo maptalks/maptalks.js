@@ -58,7 +58,7 @@ describe('transform-control', () => {
         setTimeout(function () {
             transformControl.transform(gltfmarker);
             const picked = transformControl.picked(center);
-            expect(picked).not.to.be.ok();
+            expect(picked).to.be.ok();
             transformControl.remove();
             done();
         }, 100);
@@ -380,7 +380,7 @@ describe('transform-control', () => {
                 const newCoord = marker.getCoordinates();
                 expect(newCoord.x).to.be.eql(0);
                 expect(newCoord.y).to.be.eql(0);
-                expect(newCoord.z.toFixed(5)).to.be.eql(-0.00877);// change z value
+                expect(newCoord.z.toFixed(5)).to.be.eql(-0.00822);// change z value
                 done();
             }, 100);
         }
@@ -524,6 +524,52 @@ describe('transform-control', () => {
             });
             happen.mouseup(eventContainer);
             moveTransformControl();
+        }, 100);
+    });
+
+    it('independent of gltfmarker', (done) => {
+        const transformControl = new maptalks.TransformControl();
+        transformControl.addTo(map);
+        let currentCoord = null;
+        transformControl.on('positionchange', e => {
+            currentCoord = e.center;
+        });
+
+        map.on('mousedown', e => {
+            transformControl.enable();
+            transformControl.setCoordinates(e.coordinate);
+        });
+
+        function moveTransformControl() {
+            const point = map.coordinateToContainerPoint(center).add(25, 0);
+            happen.mousedown(eventContainer, {
+                'clientX':point.x,
+                'clientY':point.y
+            });
+            for (let i = 0; i < 20; i++) {
+                happen.mousemove(eventContainer, {
+                    'clientX':point.x + i,
+                    'clientY':point.y + i
+                });
+            }
+            happen.mouseup(eventContainer);
+            setTimeout(function() {
+                const newCoord =currentCoord;
+                expect(newCoord.x).to.be.eql(0.0003862380981445312);
+                expect(newCoord.y).to.be.eql(-0.00011801719654256872);
+                done();
+            }, 100);
+        }
+        setTimeout(function() {
+            const point = map.coordinateToContainerPoint(center);
+            happen.mousedown(eventContainer, {
+                'clientX':point.x,
+                'clientY':point.y
+            });
+            happen.mouseup(eventContainer);
+            setTimeout(function() {
+                moveTransformControl();
+            }, 100);
         }, 100);
     });
 });
