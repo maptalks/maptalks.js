@@ -441,3 +441,8 @@ export default class SpatialReference {
         return this._pyramid;
     }
 }
+
+
+export function getDefaultSpatialReference(): Record<string, SpatialReferenceType> {
+    return JSON.parse(JSON.stringify(DefaultSpatialReference));
+}
