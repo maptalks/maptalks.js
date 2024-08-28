@@ -15,6 +15,7 @@ describe('SpatialReference.Default', function () {
             expect(value.fullExtent).to.be.a('object');
  
         });
+        done();
 
     });
 
