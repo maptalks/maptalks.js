@@ -24,6 +24,9 @@ const ARR2_1 = [];
 
 //一个三维mesh绘制的通用painter，负责mesh的create, add 和 delete, 负责fn-type的更新
 class MeshPainter extends Painter {
+    isEnableTileStencil() {
+        return false;
+    }
 
     supportRenderMode(mode) {
         if (this.isAnimating()) {

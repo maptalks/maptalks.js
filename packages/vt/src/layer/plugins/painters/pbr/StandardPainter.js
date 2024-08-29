@@ -224,18 +224,7 @@ class StandardPainter extends MeshPainter {
                 }
             },
             stencil: {
-                enable: true,
-                func: {
-                    cmp: '<=',
-                    ref: (_, props) => {
-                        return props.stencilRef;
-                    },
-                },
-                op: {
-                    fail: 'keep',
-                    zfail: 'keep',
-                    zpass: 'replace'
-                }
+                enable: false
             },
             viewport,
             depth: {
