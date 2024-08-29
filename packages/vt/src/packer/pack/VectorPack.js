@@ -26,6 +26,8 @@ const availableImages = [];
 
 const arrayPool = ArrayPool.getInstance();
 
+let textAngleWarned = false;
+
 const ALTITUDE_LIMIT = Math.pow(2, 17);
 /**
  * abstract class for all vector packs
@@ -527,7 +529,8 @@ export default class VectorPack {
             }
             maxFeaIndex = Math.max(maxFeaIndex, vectors[i].featureIdx);
         }
-        if (this.countOutOfAngle > 0) {
+        if (this.countOutOfAngle > 0 && !textAngleWarned) {
+            textAngleWarned = true;
             console.warn('text anchor along line is ignored as anchor\'s line angle is bigger than textMaxAngle.');
         }
         if (this.hasElements() && !elements.getLength()) {
