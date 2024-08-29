@@ -349,9 +349,6 @@ importers:
       '@maptalks/transcoders.draco':
         specifier: workspace:*
         version: link:../transcoders.draco
-      '@maptalks/transform-control':
-        specifier: workspace:*
-        version: link:../transform-control
       '@maptalks/vt':
         specifier: workspace:*
         version: link:../vt
@@ -719,6 +716,9 @@ importers:
       '@maptalks/gl':
         specifier: workspace:*
         version: link:../gl
+      '@maptalks/gltf-layer':
+        specifier: workspace:*
+        version: link:../layer-gltf
       '@maptalks/gltf-loader':
         specifier: workspace:*
         version: link:../gltf-loader

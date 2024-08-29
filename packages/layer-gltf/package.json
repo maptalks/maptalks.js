@@ -31,7 +31,6 @@
   "devDependencies": {
     "@maptalks/gl": "workspace:*",
     "@maptalks/transcoders.draco": "workspace:*",
-    "@maptalks/transform-control": "workspace:*",
     "@maptalks/vt": "workspace:*",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-json": "^6.1.0",
