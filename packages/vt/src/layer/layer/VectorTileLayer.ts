@@ -335,6 +335,15 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
   }
 
+  forceReload(): this {
+      // expire cached tiles in worker
+      const renderer = this.getRenderer() as any;
+      if (renderer) {
+        renderer._incrWorkerCacheIndex();
+      }
+      return super.forceReload();
+  }
+
   onWorkerReady() { }
 
   /**

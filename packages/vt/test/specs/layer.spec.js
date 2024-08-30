@@ -92,6 +92,21 @@ describe('layer related specs', () => {
         // done();
     });
 
+    it('VectorTileLayer forceReload', done => {
+        map = new maptalks.Map(container, DEFAULT_VIEW);
+        map.setZoom(1);
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: polygon
+        });
+        layer.once('datareceived', () => {
+            layer.forceReload();
+            setTimeout(() => {
+                done();
+            }, 200);
+        });
+        layer.addTo(map);
+    });
+
     it('loading 4326 projection tiles', () => {
         map = new maptalks.Map(container, {
             center: [0, 0],

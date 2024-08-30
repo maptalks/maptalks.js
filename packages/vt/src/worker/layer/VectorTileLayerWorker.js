@@ -21,8 +21,9 @@ export default class VectorTileLayerWorker extends LayerWorker {
     getTileFeatures(context, cb) {
         const url = context.tileInfo.url;
         const fetchOptions = context.fetchOptions || {};
-        if (this._cache.has(url)) {
-            const { err, data } = this._cache.get(url);
+        const cached = this._cache.get(url);
+        if (cached && cached.cacheIndex === context.workerCacheIndex) {
+            const { err, data } = cached;
             // setTimeout是因为该方法需要返回对象，否则BaseLayerWorker中的this.requests没有缓存，导致BaseLayerWorker不执行回调逻辑
             return setTimeout(() => {
                 this._readTile(url, err, data, cb);
@@ -36,10 +37,10 @@ export default class VectorTileLayerWorker extends LayerWorker {
             }
             if (err) {
                 if (!err.loading) {
-                    this._cache.add(url, { err, data: response && response.data });
+                    this._cache.add(url, { err, data: response && response.data, cacheIndex: context.workerCacheIndex });
                 }
             } else if (response && response.data) {
-                this._cache.add(url, { err: null, data: response.data });
+                this._cache.add(url, { err: null, data: response.data, cacheIndex: context.workerCacheIndex });
             }
 
             this._readTile(url, err, response && response.data, cb);
