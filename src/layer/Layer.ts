@@ -688,6 +688,14 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             if (renderer && renderer.setToRedraw) {
                 renderer.setToRedraw();
             }
+            //auto update attribution control
+            if ('attribution' in conf) {
+                const map = this.getMap();
+                if (map && map.attributionControl && map.attributionControl._update) {
+                    map.attributionControl._update();
+                }
+            }
+
         }
     }
 

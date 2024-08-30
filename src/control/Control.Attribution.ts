@@ -1,6 +1,7 @@
 import { createEl } from '../core/util/dom';
 import Control, { ControlOptionsType } from './Control';
 import Map from '../map/Map';
+import { isString } from '../core/util';
 
 /**
  * @property {Object} options - options
@@ -14,7 +15,8 @@ const options: AttributionOptionsType = {
         'bottom': 0,
         'left': 0
     },
-    'content': '<a href="http://maptalks.org" target="_blank">maptalks</a>'
+    'content': '<a href="http://maptalks.org" target="_blank">maptalks</a>',
+    'custom': false
 };
 
 const layerEvents = 'addlayer removelayer setbaselayer baselayerremove';
@@ -58,6 +60,16 @@ class Attribution extends Control {
         return this._attributionContainer;
     }
 
+    getContent() {
+        return this.options.content;
+    }
+
+    setContent(content: string | HTMLElement) {
+        this.options.content = content;
+        this._update();
+        return this;
+    }
+
     onAdd() {
         this.getMap().on(layerEvents, this._update, this);
     }
@@ -67,7 +79,27 @@ class Attribution extends Control {
     }
 
     //@internal
+    _updateContent() {
+        const container = this._attributionContainer;
+        const content = this.options.content || '';
+        if (container) {
+            //clear
+            container.innerHTML = '';
+            if (isString(content)) {
+                container.innerHTML = content;
+            } else if (content instanceof HTMLElement) {
+                container.appendChild(container);
+            }
+        }
+        return this;
+    }
+
+    //@internal
     _update() {
+        if (this.options.custom) {
+            this._updateContent();
+            return;
+        }
         const map = this.getMap();
         if (!map) {
             return;
@@ -99,5 +131,6 @@ Map.addOnLoadHook(function () {
 export default Attribution;
 
 export type AttributionOptionsType = {
-    content?: string;
+    content?: string | HTMLElement;
+    custom?: boolean;
 } & ControlOptionsType;
