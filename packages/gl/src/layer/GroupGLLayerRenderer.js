@@ -1063,16 +1063,21 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             const shadowMeshes = renderer.getShadowMeshes();
             if (Array.isArray(shadowMeshes)) {
                 for (let i = 0; i < shadowMeshes.length; i++) {
+                    if (!shadowMeshes[i]) {
+                        continue;
+                    }
                     if (shadowMeshes[i].needUpdateShadow) {
                         forceUpdate = true;
+                        shadowMeshes[i].needUpdateShadow = false;
                     }
-                    shadowMeshes[i].needUpdateShadow = false;
-                    if (!shadowMeshes[i].hasFunctionUniform('minAltitude')) {
-                        shadowMeshes[i].setFunctionUniform('minAltitude', () => {
-                            return layer && layer.options.altitude || 0;
-                        });
+                    if (shadowMeshes[i].hasFunctionUniform) {
+                        if (!shadowMeshes[i].hasFunctionUniform('minAltitude')) {
+                            shadowMeshes[i].setFunctionUniform('minAltitude', () => {
+                                return layer && layer.options.altitude || 0;
+                            });
+                        }
+                        meshes.push(shadowMeshes[i]);
                     }
-                    meshes.push(shadowMeshes[i]);
                 }
             }
         });
