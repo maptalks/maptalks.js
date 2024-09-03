@@ -1901,27 +1901,6 @@ function checkStyleExist(styles, idx) {
   }
 }
 
-const MAX_ZOOM = 22;
-const preset4326 = {
-  projection: "EPSG:4326",
-  fullExtent: {
-    top: 90,
-    left: -180,
-    bottom: -90,
-    right: 180,
-  },
-  resolutions: (function () {
-    const resolutions = [];
-    for (let i = 0; i < MAX_ZOOM; i++) {
-      resolutions[i] = 180 / 4 / (Math.pow(2, i) * 128);
-    }
-    return resolutions;
-  })(),
-};
-
-maptalks.SpatialReference.registerPreset("preset-vt-4326", preset4326);
-maptalks.SpatialReference.registerPreset("preset-4326-512", preset4326);
-
 // const preset3857 = {
 //     'projection': 'EPSG:3857',
 //     'resolutions': (function () {

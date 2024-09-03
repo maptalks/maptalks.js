@@ -45,7 +45,8 @@ export default class Mask extends Polygon {
         const map = this.getMap();
         const geojson = this.toGeoJSON();
         const data = earcut.flatten(geojson.geometry.coordinates);
-        for (let ii = 0; ii < data.vertices.length; ii += 2) {
+        const dimension = data.dimensions;
+        for (let ii = 0; ii < data.vertices.length; ii += dimension) {
             TEMP_COORD.x = data.vertices[ii];
             TEMP_COORD.y = data.vertices[ii + 1];
             const point = coordinateToWorld(map, TEMP_COORD);
@@ -54,16 +55,16 @@ export default class Mask extends Polygon {
         }
         const centerPos = coordinateToWorld(map, this.getCenter());
         const pos = [];
-        const len = this.getMode() === 'video' ? 4 : data.vertices.length / 2;
+        const len = this.getMode() === 'video' ? 4 : data.vertices.length / dimension;
         for (let i = 0; i < len; i++) {
-            pos.push(data.vertices[i * 2] - centerPos[0]);
-            pos.push(data.vertices[i * 2 + 1] - centerPos[1]);
+            pos.push(data.vertices[i * dimension] - centerPos[0]);
+            pos.push(data.vertices[i * dimension + 1] - centerPos[1]);
             pos.push(0);
         }
         const triangles = earcut(pos, data.holes, 3);
         const geometry = new reshader.Geometry({
             POSITION: pos,
-            TEXCOORD: this._createTexcoords(data.vertices)
+            TEXCOORD: this._createTexcoords(data.vertices, dimension)
         },
             triangles,
             0,
@@ -75,10 +76,11 @@ export default class Mask extends Polygon {
         return geometry;
     }
 
-    _createTexcoords(vertices) {
+    _createTexcoords(vertices, dimension) {
         const texcoords = [0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0];
         if (this.hasHoles()) {
-            for (let i = texcoords.length / 2 - 1; i < vertices.length; i += 2) {
+            const count = vertices.length / dimension * 2;
+            for (let i = texcoords.length / 2 - 1; i < count; i += 2) {
                 texcoords[i] = texcoords[i + 1] = 0.0;
             }
         }
