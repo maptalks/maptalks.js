@@ -119,7 +119,7 @@ export default function <T extends MixinConstructor>(Base: T) {
             }
             const type = param['type'];
             if (type === 'shapechange' && param['target'] instanceof Mask) {
-                param['target']._updateShape();
+                param['target'].clearMesh();
             }
             if (param['target'] instanceof Mask && maskLayerEvents.indexOf(type) > -1) {
                 this.updateMaskExtent(type);
@@ -203,7 +203,7 @@ export default function <T extends MixinConstructor>(Base: T) {
                 return;
             }
             const { extent, ratio, minHeight } = maskExtent;
-            if (type || !this._maskProjViewMatrix || !this._maskProjViewMatrix) {
+            if (type || !this._maskProjViewMatrix || !this._maskExtentInWorld) {
                 const { projViewMatrix, extentInWorld } = this.updateMask(extent);
                 this._maskProjViewMatrix = projViewMatrix;
                 this._maskExtentInWorld = extentInWorld;

@@ -19,6 +19,7 @@ export default class ExtentPass extends AnalysisPass {
             }),
             depth: true
         });
+        const projViewModelMatrix = []
         this._shader = new reshader.MeshShader({
             vert,
             frag,
@@ -27,7 +28,7 @@ export default class ExtentPass extends AnalysisPass {
                     name: 'projViewModelMatrix',
                     type: 'function',
                     fn: (context, props) => {
-                        return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
+                        return mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                     }
                 }
             ],

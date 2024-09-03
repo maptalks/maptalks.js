@@ -177,8 +177,8 @@ module.exports.push({
 
 if (production) {
     module.exports.push({
-        input: 'build/index.js',
-        plugins: configPlugins,
+        input: 'src/index-dev.js',
+        plugins: tsPlugins,
         external : ['maptalks', '@maptalks/reshader.gl', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix'],
         output: {
             'sourcemap': true,

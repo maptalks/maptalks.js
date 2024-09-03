@@ -87,7 +87,7 @@ export default class Mask extends Polygon {
         return texcoords;
     }
 
-    _updateShape() {
+    clearMesh() {
         this._dispose();
         delete this._mesh;
         if (this.maskGeoJSON) {
