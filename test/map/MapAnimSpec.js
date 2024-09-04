@@ -172,21 +172,23 @@ describe('Map.Anim', function () {
 
 
     it('bearing>180', function (done) {
+        const bearing = 180 + Math.floor(Math.random() * 180);
         map.setView({
-            bearing: 210
+            bearing
         });
         setTimeout(() => {
-            expect(map.getBearing()).to.be.eql(-150);
+            expect(map.getBearing()).to.be.eql(-180 + (Math.abs(bearing) - 180));
             done();
         }, 100);
     });
 
     it('bearing<-180', function (done) {
+        const bearing = -180 - Math.floor(Math.random() * 180);
         map.setView({
-            bearing: -210
+            bearing
         });
         setTimeout(() => {
-            expect(map.getBearing()).to.be.eql(150);
+            expect(map.getBearing()).to.be.eql(180 - (Math.abs(bearing) - 180));
             done();
         }, 100);
     });
@@ -226,9 +228,10 @@ describe('Map.Anim', function () {
         map.setView({
             bearing: 175
         })
+        const bearing = 180 + Math.floor(Math.random() * 180);
         map.animateTo(
             {
-                bearing: 220,
+                bearing,
 
                 // callName: "setAzimuthalAngle",
             },
@@ -237,7 +240,7 @@ describe('Map.Anim', function () {
             },
             frame => {
                 if (frame.state.playState === 'finished') {
-                    expect(frame.styles.bearing).to.be.eql(220);
+                    expect(frame.styles.bearing).to.be.eql(bearing);
                     done();
                 }
             }
@@ -248,9 +251,10 @@ describe('Map.Anim', function () {
         map.setView({
             bearing: -175
         })
+        const bearing = -180 - Math.floor(Math.random() * 180);
         map.animateTo(
             {
-                bearing: -220,
+                bearing,
 
                 // callName: "setAzimuthalAngle",
             },
@@ -259,7 +263,7 @@ describe('Map.Anim', function () {
             },
             frame => {
                 if (frame.state.playState === 'finished') {
-                    expect(frame.styles.bearing).to.be.eql(-220);
+                    expect(frame.styles.bearing).to.be.eql(bearing);
                     done();
                 }
             }
@@ -292,9 +296,10 @@ describe('Map.Anim', function () {
         map.setView({
             bearing: 0
         })
+        const bearing = Math.floor(Math.random() * 180);
         map.animateTo(
             {
-                bearing: 40,
+                bearing,
 
                 // callName: "setAzimuthalAngle",
             }, {
@@ -303,7 +308,7 @@ describe('Map.Anim', function () {
         },
             frame => {
                 if (frame.state.playState === 'finished') {
-                    expect(frame.styles.bearing).to.be.eql(-320);
+                    expect(frame.styles.bearing).to.be.eql(-(360 - bearing));
                     done();
                 }
             }
@@ -314,9 +319,10 @@ describe('Map.Anim', function () {
         map.setView({
             bearing: 0
         })
+        const bearing = -Math.floor(Math.random() * 180);
         map.animateTo(
             {
-                bearing: -40,
+                bearing,
 
                 // callName: "setAzimuthalAngle",
             }, {
@@ -325,7 +331,7 @@ describe('Map.Anim', function () {
         },
             frame => {
                 if (frame.state.playState === 'finished') {
-                    expect(frame.styles.bearing).to.be.eql(320);
+                    expect(frame.styles.bearing).to.be.eql(360 + bearing);
                     done();
                 }
             }
