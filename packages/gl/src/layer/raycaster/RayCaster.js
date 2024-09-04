@@ -98,7 +98,7 @@ export default class RayCaster {
     }
 
     _testIntersection(out, triangle, ray) {
-        return ray.intersectTriangle(triangle[0], triangle[1], triangle[2], null, out);
+        return ray.intersectTriangle(triangle[0], triangle[1], triangle[2], true, out);
     }
 
     _checkBBox(bbox, ray) {
