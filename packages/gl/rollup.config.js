@@ -171,7 +171,7 @@ module.exports.push({
         'file': outputFile
     },
     watch: {
-        include: ['src/**/*.js', 'src/**/*.glsl',  'src/**/*.vert',  'src/**/*.frag', '../reshader.gl/dist/*.es.js', 'build/worker.js']
+        include: ['src/**/*.js', 'src/**/*.ts', 'src/**/*.glsl',  'src/**/*.vert',  'src/**/*.frag', '../reshader.gl/dist/*.es.js', 'build/worker.js']
     }
 });
 

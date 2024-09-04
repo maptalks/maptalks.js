@@ -1427,7 +1427,7 @@ export default class TileMeshPainter {
             indices,
             0,
             {
-                static: true,
+                // static: true,
                 positionAttribute: attributeSemantics['POSITION'],
                 normalAttribute: attributeSemantics['NORMAL'],
                 uv0Attribute: attributeSemantics['TEXCOORD_0'],

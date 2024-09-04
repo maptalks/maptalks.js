@@ -1,5 +1,5 @@
 import { Coordinate, Extent } from "maptalks";
-import { mat4, vec3, vec4 } from '@maptalks/reshader.gl';
+import { mat4, vec3 } from '@maptalks/reshader.gl';
 import Mask from "./Mask";
 import { extend } from "../util/util";
 import { MixinConstructor } from "maptalks";
@@ -55,9 +55,9 @@ function hasVisibleMask() {
 export default function <T extends MixinConstructor>(Base: T) {
     return class MaskLayerMixin extends Base {
         //@internal
-        private _maskProjViewMatrix: mat4;
+        private _maskProjViewMatrix: number[];
         //@internal
-        private _maskExtentInWorld: vec4;
+        private _maskExtentInWorld: [number, number, number, number];
 
         removeMask(masks: undefined | null | any) {
             if (!this['_maskList']) {
@@ -167,7 +167,7 @@ export default function <T extends MixinConstructor>(Base: T) {
             super['remove']();
         }
 
-        updateMask(extent): { projViewMatrix: mat4, extentInWorld: vec4} {
+        updateMask(extent): { projViewMatrix: number[], extentInWorld: [number, number, number, number]} {
             const map = this['getMap']();
             const { projViewMatrix, mapExtent } = getProjViewMatrixInOrtho.call(this, extent);
             COORD_EXTENT.x = mapExtent.xmin;
@@ -176,7 +176,7 @@ export default function <T extends MixinConstructor>(Base: T) {
             COORD_EXTENT.x = mapExtent.xmax;
             COORD_EXTENT.y = mapExtent.ymax;
             const extentPointMax = coordinateToWorld(EXTENT_MAX, COORD_EXTENT, map);
-            const extentInWorld = [extentPointMin[0], extentPointMin[1], extentPointMax[0], extentPointMax[1]] as vec4;
+            const extentInWorld = [extentPointMin[0], extentPointMin[1], extentPointMax[0], extentPointMax[1]] as [number, number, number, number];
             return { projViewMatrix, extentInWorld };
         }
 
