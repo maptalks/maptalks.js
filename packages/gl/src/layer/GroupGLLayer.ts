@@ -575,7 +575,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         return this;
     }
 
-    queryTerrain(coord: maptalks.Coordinate, out: TerrainResult): TerrainResult {
+    queryTerrain(coord: maptalks.Coordinate, out: QueryHitResult): QueryHitResult {
         if (!this._terrainLayer) {
             if (out) {
                 out[0] = null;
@@ -587,10 +587,37 @@ export default class GroupGLLayer extends maptalks.Layer {
     }
 
     // 结果需要与queryTerrain统一起来
-    queryTerrainAtPoint(containerPoint: maptalks.Point, options:any = {}): any {
+    queryTerrainAtPoint(containerPoint: maptalks.Point) {
         if (!this._terrainLayer) {
             return null;
         }
+        const terrainLayer = this._terrainLayer as any;
+        const terrainRenderer = terrainLayer.getRenderer();
+        const meshes = terrainRenderer.getAnalysisMeshes();
+        return this._queryRayCast(containerPoint, meshes);
+    }
+
+    query3DTilesAtPoint(containerPoint: maptalks.Point) {
+        const layers = this._getLayers();
+        const tilesLayers = layers.filter(layer => layer && layer.getJSONType() === 'Geo3DTilesLayer');
+        if (!tilesLayers.length) {
+            return null;
+        }
+
+        const meshes = []
+        for (let i = 0; i < tilesLayers.length; i++) {
+            const renderer = tilesLayers[i].getRenderer() as any;
+            if (!renderer) {
+                continue;
+            }
+            const analysisMeshes = renderer.getAnalysisMeshes();
+            meshes.push(...analysisMeshes);
+        }
+        return this._queryRayCast(containerPoint, meshes);
+    }
+
+    _queryRayCast(containerPoint: maptalks.Point, meshes: any[]) {
+
         const map = (this as any).getMap();
         const glRes = map.getGLRes();
         const w2 = map.width / 2 || 1,
@@ -608,17 +635,8 @@ export default class GroupGLLayer extends maptalks.Layer {
         from.z = coord0[2] / map.altitudeToPoint(1, glRes);
         const to = map.pointAtResToCoordinate(point1, glRes, EMPTY_COORD1);
         to.z = coord1[2] / map.altitudeToPoint(1, glRes);
-        if (!this._raycaster) {
-            options['allowPointNotOnLine'] = true;
-            this._raycaster = new RayCaster(from, to, options);
-        } else {
-            this._raycaster.setFromPoint(from);
-            this._raycaster.setToPoint(to);
-        }
-        const terrainLayer = this._terrainLayer as any;
-        const terrainRenderer = terrainLayer.getRenderer();
-        const meshes = terrainRenderer.getAnalysisMeshes();
-        const results = this._raycaster.test(meshes, map);
+        const raycaster = new RayCaster(from, to);
+        const results = raycaster.test(meshes, map);
         const coordinates = [];
         const fromPoint = vec3.set(TEMP_VEC3, from.x, from.y, from.z);
         results.forEach(result => {
@@ -632,7 +650,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         return coordinates[0];
     }
 
-    queryTerrainByProjCoord(projCoord: maptalks.Coordinate, out: TerrainResult): TerrainResult {
+    queryTerrainByProjCoord(projCoord: maptalks.Coordinate, out: QueryHitResult): QueryHitResult {
         if (!this._terrainLayer) {
             if (out) {
                 out[0] = null;
@@ -828,7 +846,7 @@ export type TerrainOptions = {
     masks?: Mask[]
 }
 
-export type TerrainResult = [number | null, 0 | 1]
+export type QueryHitResult = [number | null, 0 | 1]
 
 export type GroupGLLayerOptions = {
     renderer?: 'gl',
