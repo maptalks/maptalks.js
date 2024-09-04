@@ -347,8 +347,8 @@ Map.include(/** @lends Map.prototype */{
      */
     setCameraOrientation(params) {
         const { position } = params;
-        let { pitch, bearing } = params;
         this._validateView(params);
+        let { pitch, bearing } = params;
         pitch = pitch || 0;
         bearing = bearing || 0;
         const { zoom, cameraToGroundDistance } = this.getFitZoomForCamera(position, pitch);
