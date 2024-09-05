@@ -2,7 +2,7 @@ import Map from './Map';
 import Point from '../geo/Point';
 import Coordinate from '../geo/Coordinate';
 import * as mat4 from '../core/util/mat4';
-import { subtract, add, scale, normalize, dot, set, distance, angle } from '../core/util/vec3';
+import { subtract, add, scale, normalize, dot, set, distance, angle, cross } from '../core/util/vec3';
 import { clamp, interpolate, isNumber, isNil, wrap, toDegree, toRadian, Matrix4 } from '../core/util';
 import { applyMatrix, matrixToQuaternion, quaternionToMatrix, lookAt, setPosition } from '../core/util/math';
 import Browser from '../core/Browser';
@@ -57,7 +57,7 @@ const RADIAN = Math.PI / 180;
 const DEFAULT_FOV = 0.6435011087932844;
 const TEMP_COORD = new Coordinate(0, 0);
 const TEMP_POINT = new Point(0, 0);
-const SOUTH = [0, -1, 0], BEARING = []
+const SOUTH = [0, -1, 0], BEARING = [];
 
 const altitudesHasData = (altitudes) => {
     if (isNumber(altitudes)) {
@@ -706,6 +706,7 @@ Map.include(/** @lends Map.prototype */{
     _getCameraFar(fov, pitch) {
         const cameraCenterDistance = this.cameraCenterDistance = distance(this.cameraPosition, this.cameraLookAt);
         const distanceInMeter = cameraCenterDistance / this._meterToGLPoint;
+        pitch = Math.min(pitch, 85);
         pitch = pitch * Math.PI / 180;
         const cameraFarDistance = distanceInMeter + this.options['cameraFarUndergroundInMeter'] / Math.cos(pitch);
         return Math.max(cameraFarDistance * this._meterToGLPoint, cameraCenterDistance * 5);
@@ -841,12 +842,11 @@ Map.include(/** @lends Map.prototype */{
             // if you want to rotate the map after up an incline,please rotateZ like this:
             // let up = new vec3(0,1,0);
             // up.rotateZ(target,radians);
-            const d = dist || 1;
             // const up = this.cameraUp = set(this.cameraUp || [0, 0, 0], Math.sin(bearing) * d, Math.cos(bearing) * d, 0);
             this.cameraUp = this.cameraUp || [0, 0, 0];
-            const up = this.cameraUp = set(this.cameraUp, Math.sin(bearing) * d, Math.cos(bearing) * d, Math.sin(pitch) * d);
+            this.cameraUp = this._getCameraUp(this.cameraUp, this.cameraLookAt, this.cameraPosition, pitch, bearing);
             const m = this.cameraWorldMatrix = this.cameraWorldMatrix || createMat4();
-            lookAt(m, this.cameraPosition, this.cameraLookAt, up);
+            lookAt(m, this.cameraPosition, this.cameraLookAt, this.cameraUp);
 
             const cameraForward = this.cameraForward || [0, 0, 0];
             subtract(cameraForward, this.cameraLookAt, this.cameraPosition);
@@ -859,6 +859,25 @@ Map.include(/** @lends Map.prototype */{
             // mat4.scale(m, m, minusY);
             return m;
         };
+    }(),
+
+    _getCameraUp: function () {
+        const q: [number, number, number] = [0, 0, 0];
+        const c: [number, number, number] = [0, 0, 0];
+        const axis: [number, number, number] = [0, 0, 0];
+        return function (out, cameraPosition, cameraLookAt, pitch, bearing) {
+            set(axis, 0, 0, 1);
+            if (pitch === 0) {
+                set(axis, Math.sin(bearing), Math.cos(bearing), 0);
+            } else if (pitch === Math.PI) {
+                set(axis, -Math.sin(bearing), -Math.cos(bearing), 0);
+            }
+            // https://stackoverflow.com/questions/3427379/effective-way-to-calculate-the-up-vector-for-glulookat-which-points-up-the-y-axi
+            const lookAt = subtract(q, cameraPosition, cameraLookAt);
+            normalize(lookAt, lookAt);
+            const right = cross(c, lookAt, axis);
+            return cross(out, right, lookAt);
+        }
     }(),
 
     updateCenterAltitude() {
