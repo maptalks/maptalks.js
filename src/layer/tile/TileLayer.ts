@@ -257,7 +257,9 @@ class TileLayer extends Layer {
     forceReload() {
         this.fire('forcereloadstart');
         this.clear();
-        this.load();
+        if (this._renderer) {
+            this._renderer.setToRedraw();
+        }
         this.fire('forcereloadend');
         return this;
     }
