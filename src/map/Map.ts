@@ -29,6 +29,7 @@ import { computeDomPosition, MOUSEMOVE_THROTTLE_TIME } from '../core/util/dom';
 import EPSG9807, { type EPSG9807ProjectionType } from '../geo/projection/Projection.EPSG9807.js';
 import { AnimationOptionsType, EasingType } from '../core/Animation';
 import { BBOX, bboxInBBOX, getDefaultBBOX, pointsBBOX } from '../core/util/bbox';
+import { Attribution } from '../control';
 
 const TEMP_COORD = new Coordinate(0, 0);
 const TEMP_POINT = new Point(0, 0);
@@ -261,6 +262,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     options: MapOptionsType;
     static VERSION: string;
     JSON_VERSION: '1.0';
+    attributionControl?: Attribution;
 
 
     /**
