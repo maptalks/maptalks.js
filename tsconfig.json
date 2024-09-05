@@ -19,7 +19,7 @@
     // ask tsc not to mess up with for ... of
     "downlevelIteration": true,
     "module": "esnext",
-    "target": "es5",
+    "target": "es6",
     "jsx": "preserve",
     "lib": [
       "es2015",

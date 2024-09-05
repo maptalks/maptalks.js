@@ -35,6 +35,10 @@ const rollupPlugins = [
     commonjs(),
     typescript({
          sourceMap: true
+    }),
+    babel({
+        extensions: [".ts"],
+        babelHelpers: 'bundled'
     })
 ];
 
