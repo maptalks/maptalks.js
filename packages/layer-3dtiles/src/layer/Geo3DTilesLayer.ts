@@ -349,14 +349,6 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         // this._cameraProj = projection.project(cameraCoord).toArray();
 
         const projectionView = map.projViewMatrix;
-        const mapExtent = map.getExtent();
-        const halfWidth = mapExtent.getWidth() / 2, halfHeight = mapExtent.getHeight() / 2;
-        //buffer map extent
-        mapExtent.xmin -= halfWidth;
-        mapExtent.ymin -= halfHeight;
-        mapExtent.xmax += halfWidth;
-        mapExtent.ymax += halfHeight;
-        const mapExtentBBOX = extentToBBOX(mapExtent);
         const clipMasks = (this.getMasks() || []).filter(mask => {
             return mask && mask instanceof ClipOutsideMask;
         });
@@ -399,7 +391,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
                 // if (this.options.debugTile && node.id === this.options.debugTile) {
                 //     debugger
                 // }
-                const visible = this._isVisible(node, maxExtent, projectionView, mapExtentBBOX, clipMasks);
+                const visible = this._isVisible(node, maxExtent, projectionView, clipMasks);
 
 
                 // // find ancestors
@@ -730,18 +722,9 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
     }
 
     //@internal
-    _isTileInMasks(node: TileNode, mapExtentBBOX: number[], clipMasks: ClipOutsideMask[]) {
-        if (!node.extent || !BBOXUtil || !mapExtentBBOX) {
+    _isTileInMasks(node: TileNode, clipMasks: ClipOutsideMask[]) {
+        if (!node.extent || !BBOXUtil) {
             return true;
-        }
-        const nodeExtent = node.extent;
-        TILENODE_BBOX[0] = nodeExtent.xmin;
-        TILENODE_BBOX[1] = nodeExtent.ymin;
-        TILENODE_BBOX[2] = nodeExtent.xmax;
-        TILENODE_BBOX[3] = nodeExtent.ymax;
-        const inCurrentView = BBOXUtil.bboxIntersect(TILENODE_BBOX, mapExtentBBOX as BBOX);
-        if (!inCurrentView) {
-            return false;
         }
         if (clipMasks.length) {
             for (let i = 0, len = clipMasks.length; i < len; i++) {
@@ -757,8 +740,8 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
     }
 
 
-    _isVisible(node: TileNode, maxExtent: maptalks.Extent, projectionView: number[], mapExtentBBOX: BBOX, clipMasks: ClipOutsideMask[]): TileVisibility {
-        if (!this._isTileInMasks(node, mapExtentBBOX, clipMasks)) {
+    _isVisible(node: TileNode, maxExtent: maptalks.Extent, projectionView: number[], clipMasks: ClipOutsideMask[]): TileVisibility {
+        if (!this._isTileInMasks(node, clipMasks)) {
             return TileVisibility.OUT_OF_FRUSTUM;
         }
         node._cameraDistance = Infinity;
