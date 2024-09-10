@@ -1,5 +1,5 @@
 import GlobalConfig from '../GlobalConfig';
-import { now, extend } from '../core/util';
+import { now, extend, Vector3 } from '../core/util';
 import {
     addDomEvent,
     removeDomEvent,
@@ -10,6 +10,8 @@ import {
 } from '../core/util/dom';
 import Map from './Map';
 import { Coordinate, Point } from '../geo';
+import Ray from '../core/math/Ray';
+import * as vec3 from '../core/util/vec3';
 
 declare module "./Map" {
     interface Map {
@@ -30,6 +32,8 @@ declare module "./Map" {
 
     }
 }
+
+const PITCH_TO_CHECK = [60, 120];
 
 export type MapEventDomType = MouseEvent | TouchEvent | DragEvent;
 export type MapEventDataType = {
@@ -280,7 +284,7 @@ Map.include(/** @lends Map.prototype */ {
         } else {
             this._fireDOMEvent(this, e, 'dom:' + e.type);
         }
-        if (this._ignoreEvent(e) || this._isEventOutMap(e)) {
+        if (this._ignoreEvent(e)) {
             return;
         }
         let mimicClick = false;
@@ -322,7 +326,7 @@ Map.include(/** @lends Map.prototype */ {
                 this._fireDOMEvent(this, e, 'dom:click');
             }
         }
-        if (this._ignoreEvent(e) || this._isEventOutMap(e)) {
+        if (this._ignoreEvent(e)) {
             return;
         }
         this._fireDOMEvent(this, e, type);
@@ -358,15 +362,44 @@ Map.include(/** @lends Map.prototype */ {
 
     //@internal
     _isEventOutMap(domEvent: MapEventDomType) {
-        if (this.getPitch() > this.options['maxVisualPitch']) {
-            const actualEvent = this._getActualEvent(domEvent);
-            const eventPos = getEventContainerPoint(actualEvent, this._containerDOM);
-            if (!this.getContainerExtent().contains(eventPos)) {
-                return true;
-            }
-        }
-        return false;
+        const actualEvent = this._getActualEvent(domEvent);
+        const cp = getEventContainerPoint(actualEvent, this._containerDOM);
+        return this._isContainerPointOutOfMap(cp);
     },
+
+    _isContainerPointOutOfMap: function () {
+        const from: Vector3 = [0, 0, 0];
+        const to: Vector3 = [0, 0, 0];
+        const ray = new Ray(from, to);
+        const target: Vector3 = [0, 0, 0];
+        const fromGround : Vector3 = [0, 0, 0];
+        const rayOnGround: Vector3 = [0, 0, 0];
+
+        return function (containerPoint: Point) {
+            const pitch = this.getPitch();
+            if (pitch > PITCH_TO_CHECK[0] && pitch < PITCH_TO_CHECK[1]) {
+                this.getContainerPointRay(from, to, containerPoint, 0, 0.5);
+                ray.setFromTo(from, to);
+                const intersection = ray.intersectGround(target);
+                if (intersection === null) {
+                    return true;
+                }
+                const t = ray.distanceToGround();
+                if (t <= 0) {
+                    return true;
+                }
+                const dir = ray.direction;
+                vec3.set(fromGround, from[0], from[1], 0);
+                vec3.sub(rayOnGround, fromGround, rayOnGround);
+                vec3.normalize(rayOnGround, rayOnGround);
+                const dot = vec3.dot(dir, rayOnGround);
+                const angle = Math.abs(Math.acos(dot));
+                // 如果鼠标射线与地面的角度小于设定度数，则认为
+                return angle <= 30 * Math.PI / 180;
+            }
+            return false;
+        }
+    }(),
 
     //@internal
     _wrapTerrainData(eventParam: MapEventDataType) {
@@ -391,9 +424,8 @@ Map.include(/** @lends Map.prototype */ {
                     'containerPoint': containerPoint,
                     'viewPoint': this.containerPointToViewPoint(containerPoint)
                 });
-                const maxVisualPitch = this.options['maxVisualPitch'];
                 // ignore coorindate out of visual extent
-                if (this.getPitch() <= maxVisualPitch || containerPoint.y >= (this.height - this._getVisualHeight(maxVisualPitch))) {
+                if (!this._isContainerPointOutOfMap(containerPoint)) {
                     eventParam = extend(eventParam, {
                         'coordinate': this.containerPointToCoord(containerPoint),
                         'point2d': this._containerPointToPoint(containerPoint)

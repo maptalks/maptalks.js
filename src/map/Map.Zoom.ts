@@ -52,7 +52,7 @@ Map.include(/** @lends Map.prototype */{
 
     //@internal
     _checkZoomOrigin(origin?: Point) {
-        if (!origin || this.options['zoomInCenter']) {
+        if (!origin || this.options['zoomInCenter'] || this._isContainerPointOutOfMap(origin)) {
             origin = new Point(this.width / 2, this.height / 2);
         }
         if (this.options['zoomOrigin']) {
