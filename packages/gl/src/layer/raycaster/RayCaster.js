@@ -1,5 +1,5 @@
 import { vec3, vec4, mat4 } from '@maptalks/reshader.gl';
-import { Coordinate, Point, Util } from 'maptalks';
+import { Point, Util } from 'maptalks';
 import Ray from './Ray';
 
 const TRIANGLE = [], POS_A = [], POS_B = [], POS_C = [], TEMP_POINT = new Point(0, 0), NULL_ALTITUDES = [];
@@ -10,14 +10,14 @@ const INTERSECT_POINT = [];
 const bboxIntersects = [];
 export default class RayCaster {
     constructor(from, to) {
-        this._from = new Coordinate(from);
-        this._to = new Coordinate(to);
+        this._from = from;
+        this._to = to;
     }
 
     test(meshes, map) {
         const results = [];
-        const from = coordinateToWorld(map, this._from.x, this._from.y, this._from.z);
-        const to = coordinateToWorld(map, this._to.x, this._to.y, this._to.z);
+        const from = this._from;
+        const to = this._to;
         const ray = new Ray(from, to);
         for (let i = 0; i < meshes.length; i++) {
             const mesh = meshes[i];
@@ -105,16 +105,3 @@ export default class RayCaster {
         return ray.intersectBox(bbox, bboxIntersects);
     }
 }
-
-const COORD = new Coordinate(0, 0);
-
-function coordinateToWorld(map, x, y, z) {
-    if (!map) {
-        return null;
-    }
-    COORD.set(x, y);
-    const p = map.coordinateToPointAtRes(COORD, map.getGLRes());
-    const height = map.altitudeToPoint(z || 0, map.getGLRes());
-    return [p.x, p.y, height];
-}
-

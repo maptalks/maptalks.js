@@ -1,6 +1,6 @@
 import * as maptalks from 'maptalks';
 import Renderer from './GroupGLLayerRenderer.js';
-import { mat4, vec3, vec4 } from '@maptalks/reshader.gl';
+import { vec3, vec4 } from '@maptalks/reshader.gl';
 import { isNil, extend } from './util/util.js';
 import TerrainLayer from './terrain/TerrainLayer';
 import RayCaster from './raycaster/RayCaster.js';
@@ -45,9 +45,9 @@ const options: GroupGLLayerOptions = {
 
 //
 const emptyMethod = () => {};
-const EMPTY_COORD0 = new maptalks.Coordinate(0, 0), EMPTY_COORD1 = new maptalks.Coordinate(0, 0);
+const EMPTY_COORD0 = new maptalks.Coordinate(0, 0);
 const TEMP_VEC3: vec3 = [0, 0, 0];
-const cp: vec3 = [0, 0, 0], coord0: vec4 = [0, 0, 0, 1], coord1: vec4 = [0, 0, 0, 1];
+const coord0: vec4 = [0, 0, 0, 1], coord1: vec4 = [0, 0, 0, 1];
 
 export default class GroupGLLayer extends maptalks.Layer {
     /**
@@ -617,33 +617,23 @@ export default class GroupGLLayer extends maptalks.Layer {
     }
 
     _queryRayCast(containerPoint: maptalks.Point, meshes: any[]) {
-
-        const map = (this as any).getMap();
+        const map = this.getMap();
         const glRes = map.getGLRes();
-        const w2 = map.width / 2 || 1,
-            h2 = map.height / 2 || 1;
-        const p = containerPoint;
-        vec3.set(cp, (p.x - w2) / w2, (h2 - p.y) / h2, 0);
-        vec3.set(coord0 as vec3, cp[0], cp[1], 0);
-        vec3.set(coord1 as vec3, cp[0], cp[1], 0.5);
-        coord0[3] = coord1[3] = 1;
-        applyMatrix(coord0 as vec3, coord0 as vec3, map.projViewMatrixInverse);
-        applyMatrix(coord1 as vec3, coord1 as vec3, map.projViewMatrixInverse);
-        const point0 = new maptalks.Point(coord0.slice(0, 3) as [number, number, number]);
-        const point1 = new maptalks.Point(coord1.slice(0, 3) as [number, number, number]);
-        const from = map.pointAtResToCoordinate(point0, glRes, EMPTY_COORD0);
-        from.z = coord0[2] / map.altitudeToPoint(1, glRes);
-        const to = map.pointAtResToCoordinate(point1, glRes, EMPTY_COORD1);
-        to.z = coord1[2] / map.altitudeToPoint(1, glRes);
-        const raycaster = new RayCaster(from, to);
+        map.getContainerPointRay(coord0, coord1, containerPoint);
+        const raycaster = new RayCaster(coord0, coord1);
         const results = raycaster.test(meshes, map);
+
         const coordinates = [];
-        const fromPoint = vec3.set(TEMP_VEC3, from.x, from.y, from.z);
         results.forEach(result => {
             result.coordinates.forEach(c => {
                 coordinates.push(c.coordinate)
             });
         });
+
+        const from = map.pointAtResToCoordinate(new maptalks.Point(coord0[0], coord0[1]), glRes, EMPTY_COORD0);
+        from.z = coord0[2] / map.altitudeToPoint(1, glRes);
+        const fromPoint = vec3.set(TEMP_VEC3, from.x, from.y, from.z);
+
         coordinates.sort((a, b) => {
             return vec3.dist(a.toArray(), fromPoint) - vec3.dist(b.toArray(), fromPoint);
         });
@@ -815,17 +805,6 @@ function isTerrainSkin(layer: maptalks.Layer) {
         return false;
     }
     return !!renderer.renderTerrainSkin;
-}
-
-function applyMatrix(out: vec3, v: vec3, e: mat4) {
-    const x = v[0],
-        y = v[1],
-        z = v[2];
-    const w = 1 / (e[3] * x + e[7] * y + e[11] * z + e[15]);
-    out[0] = (e[0] * x + e[4] * y + e[8] * z + e[12]) * w;
-    out[1] = (e[1] * x + e[5] * y + e[9] * z + e[13]) * w;
-    out[2] = (e[2] * x + e[6] * y + e[10] * z + e[14]) * w;
-    return out;
 }
 
 export type TerrainOptions = {
