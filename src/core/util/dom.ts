@@ -322,7 +322,7 @@ export function computeDomPosition(dom: HTMLElement): number[] {
  * @param ev    event
  * @return
  */
-export function getEventContainerPoint(ev: MouseEvent, dom: HTMLElement) {
+export function getEventContainerPoint(ev: MouseEvent | TouchEvent, dom: HTMLElement) {
     if (!ev) {
         // @ts-expect-error
         ev = window.event;
@@ -342,6 +342,7 @@ export function getEventContainerPoint(ev: MouseEvent, dom: HTMLElement) {
     if (toucheEvent.changedTouches && toucheEvent.changedTouches.length) {
         ev = toucheEvent.changedTouches[0] as unknown as MouseEvent;
     }
+    ev = ev as MouseEvent;
     // div by scaleX, scaleY to fix #450
     return new Point(
         (ev.clientX - domPos[0] - dom.clientLeft) / domPos[2],

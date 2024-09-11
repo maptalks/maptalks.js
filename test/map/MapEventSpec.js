@@ -137,8 +137,8 @@ describe('Map.Event', function () {
         });
         expect(spy.called).not.to.be.ok();
     });
-
-    it('ignore events out of container extent', function () {
+    // #2419 增加了对地图范围外的鼠标交互支持，该用例不再需要
+    it.skip('ignore events out of container extent', function () {
         var domPosition = GET_PAGE_POSITION(container);
         var x = domPosition.x + 2;
         var y = domPosition.y + 2;

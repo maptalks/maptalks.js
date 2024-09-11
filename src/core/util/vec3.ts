@@ -46,6 +46,17 @@ export function subtract(out: Vec3, a: Vec3, b: Vec3) {
     return out;
 }
 
+export function sub(out: Vec3, a: Vec3, b: Vec3) {
+    return subtract(out, a, b);
+}
+
+export function copy(out: Vec3, a: Vec3) {
+    out[0] = a[0];
+    out[1] = a[1];
+    out[2] = a[2];
+    return out;
+}
+
 /**
  * Calculates the length of a vec3
  * @ignore

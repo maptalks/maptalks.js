@@ -3,7 +3,7 @@ import Point from '../geo/Point';
 import Coordinate from '../geo/Coordinate';
 import * as mat4 from '../core/util/mat4';
 import { subtract, add, scale, normalize, dot, set, distance, angle, cross } from '../core/util/vec3';
-import { clamp, interpolate, isNumber, isNil, wrap, toDegree, toRadian, Matrix4 } from '../core/util';
+import { clamp, interpolate, isNumber, isNil, wrap, toDegree, toRadian, Matrix4, Vector3 } from '../core/util';
 import { applyMatrix, matrixToQuaternion, quaternionToMatrix, lookAt, setPosition } from '../core/util/math';
 import Browser from '../core/Browser';
 
@@ -26,7 +26,7 @@ declare module "./Map" {
         //@internal
         _calcMatrices(): void;
         //@internal
-        _containerPointToPoint(p: Point, zoom?: number, out?: Point): Point;
+        _containerPointToPoint(p: Point, zoom?: number, out?: Point, height?: number): Point;
         //@internal
         _recenterOnTerrain(): void;
         setCameraMovements(frameOptions: Array<MapViewType>, option?: { autoRotate: boolean });
@@ -49,6 +49,14 @@ declare module "./Map" {
         _pointToContainerPoint(point: Point, zoom?: number, out?: Point): Point;
         //@internal
         _pointsAtResToContainerPoints(point: Point[], res?: number, altitude?: number[], out?: Point[]): Point[];
+        //@internal
+        getContainerPointRay(from: Vector3, to: Vector3, containerPoint: Point, near: number, far: number);
+        //@internal
+        _query3DTilesInfo(containerPoint: Point);
+        //@internal
+        _queryTerrainInfo(containerPoint: Point);
+        //@internal
+        queryPrjCoordAtContainerPoint(containerPoint: Point);
     }
 }
 
@@ -598,20 +606,11 @@ Map.include(/** @lends Map.prototype */{
 
     //@internal
     _containerPointToPointAtRes: function () {
-        const cp = [0, 0, 0],
-            coord0 = [0, 0, 0, 1],
-            coord1 = [0, 0, 0, 1];
+        const coord0 = [0, 0, 0],
+            coord1 = [0, 0, 0];
         return function (p, res, out, height) {
             if (this.isTransforming()) {
-                const w2 = this.width / 2 || 1, h2 = this.height / 2 || 1;
-                set(cp as any, (p.x - w2) / w2, (h2 - p.y) / h2, 0);
-
-                set(coord0 as any, cp[0], cp[1], 0);
-                set(coord1 as any, cp[0], cp[1], 1);
-                coord0[3] = coord1[3] = 1;
-
-                applyMatrix(coord0, coord0 as any, this.projViewMatrixInverse);
-                applyMatrix(coord1, coord1 as any, this.projViewMatrixInverse);
+                this.getContainerPointRay(coord0, coord1, p);
                 const x0 = coord0[0];
                 const x1 = coord1[0];
                 const y0 = coord0[1];
@@ -639,6 +638,23 @@ Map.include(/** @lends Map.prototype */{
                 y = scale * (p.y - this.height / 2);
             return centerPoint._add(x, -y);
         };
+    }(),
+
+    getContainerPointRay: function () {
+        const cp = [0, 0, 0],
+            coord0 = [0, 0, 0, 1],
+            coord1 = [0, 0, 0, 1];
+        return function (from: Vector3, to: Vector3, containerPoint: Point, near = 0, far = 1) {
+        const w2 = this.width / 2 || 1,
+                h2 = this.height / 2 || 1;
+            const p = containerPoint;
+            set(cp as Vector3, (p.x - w2) / w2, (h2 - p.y) / h2, 0);
+            set(coord0 as Vector3, cp[0], cp[1], near);
+            set(coord1 as Vector3, cp[0], cp[1], far);
+            coord0[3] = coord1[3] = 1;
+            applyMatrix(from, coord0 as Vector3, this.projViewMatrixInverse);
+            applyMatrix(to, coord1 as Vector3, this.projViewMatrixInverse);
+        }
     }(),
 
     /**
@@ -1006,6 +1022,43 @@ Map.include(/** @lends Map.prototype */{
             }
         }
         return null;
+    },
+
+    //@internal
+    _query3DTilesInfo(containerPoint) {
+        const layers = this._getLayers() || [];
+        for (let i = 0; i < layers.length; i++) {
+            const layer = layers[i];
+            if (containerPoint && layer && layer.query3DTilesAtPoint) {
+                const coordinate = layer.query3DTilesAtPoint(containerPoint);
+                if (coordinate) {
+                    return {
+                        coordinate,
+                        altitude: coordinate.z
+                    };
+                } else {
+                    break;
+                }
+            }
+        }
+        return null;
+    },
+
+    //@internal
+    queryPrjCoordAtContainerPoint(p) {
+        let queryCoord = this._query3DTilesInfo(p)
+        if (!queryCoord) {
+            queryCoord = this._queryTerrainInfo(p);
+        }
+        if (queryCoord) {
+            const prjCoord = this.getProjection().project(queryCoord.coordinate);
+            prjCoord.z = queryCoord.altitude;
+            return prjCoord;
+        }
+        if (this._isContainerPointOutOfMap(p)) {
+            p = new Point(this.width / 2, this.height / 2);
+        }
+        return this._containerPointToPrj(p);
     },
 
     //@internal

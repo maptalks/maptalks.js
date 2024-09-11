@@ -4,6 +4,7 @@ import Handler from '../../handler/Handler';
 import DragHandler from '../../handler/Drag';
 import Map from '../Map';
 import { type Param } from './CommonType';
+import Point from '../../geo/Point';
 
 
 class MapDragHandler extends Handler {
@@ -26,6 +27,8 @@ class MapDragHandler extends Handler {
     _rotateMode: 'rotate_pitch' | 'rotate' | 'pitch'
     //@internal
     _db: number
+    //@internal
+    private startContainerPoint: Point
     // TODO:等待补充Map类型定义
     // target: Map
 
@@ -71,7 +74,7 @@ class MapDragHandler extends Handler {
         if (param.domEvent) {
             param = param.domEvent;
         }
-        return this.target._ignoreEvent(param) || this.target._isEventOutMap(param);
+        return this.target._ignoreEvent(param);
     }
 
     //@internal
@@ -105,10 +108,6 @@ class MapDragHandler extends Handler {
 
     //@internal
     _onDragging(param) {
-        const map = this.target;
-        if (map._isEventOutMap(param['domEvent'])) {
-            return;
-        }
         if (this._mode === 'move') {
             this._moving(param);
         } else if (this._mode === 'rotatePitch') {
@@ -138,11 +137,17 @@ class MapDragHandler extends Handler {
 
     //@internal
     _moveStart(param) {
+        delete this.startContainerPoint;
         this._start(param);
-        const map = this.target;
+        const map = this.target as Map;
         map.onMoveStart(param);
         const p = getEventContainerPoint(map._getActualEvent(param.domEvent), map.getContainer());
-        this.startPrjCoord = this._containerPointToPrj(p);
+        this.startPrjCoord = map.queryPrjCoordAtContainerPoint(p);
+        // 如果 startPrjCoord.z 不为 undefined，说明是3dtiles或terrain上的查询结果
+        if (map._isContainerPointOutOfMap(p) && this.startPrjCoord.z === undefined) {
+            // containerPoint的射线不与地图相交，则以中心点作为拖拽基准
+            this.startContainerPoint = p;
+        }
     }
 
     //@internal
@@ -150,25 +155,17 @@ class MapDragHandler extends Handler {
         if (!this.startDragTime) {
             return;
         }
-        const map = this.target;
+        const map = this.target as Map;
         const p = getEventContainerPoint(map._getActualEvent(param.domEvent), map.getContainer());
+        if (this.startContainerPoint) {
+            const offset = p._sub(this.startContainerPoint);
+            p.set(map.width / 2 + offset.x, map.height / 2 + offset.y);
+        }
+        // 如果point的位置比相机高，地图的移动方向会相反
         const movingPoint = map._containerPointToPoint(p, undefined, undefined, this.startPrjCoord.z);
-        const point = map._prjToPoint(map._pointToPrj(movingPoint));
-        const offset = point._sub(map._prjToPoint(map._getPrjCenter()));
+        const offset = movingPoint._sub(map._prjToPoint(map._getPrjCenter()));
         map._setPrjCoordAtOffsetToCenter(this.startPrjCoord, offset);
         map.onMoving(param);
-    }
-
-    //@internal
-    _containerPointToPrj(p) {
-        const map = this.target;
-        const queryCoord = map._queryTerrainInfo(p);
-        if (queryCoord) {
-            const prjCoord = map.getProjection().project(queryCoord.coordinate);
-            prjCoord.z = queryCoord.altitude;
-            return prjCoord;
-        }
-        return map._containerPointToPrj(p);
     }
 
     //@internal
@@ -177,7 +174,7 @@ class MapDragHandler extends Handler {
             return;
         }
         const isTouch = param.domEvent.type === 'touchend';
-        const map = this.target;
+        const map = this.target as Map;
         let t = now() - this.startDragTime;
         const mx = param['mousePos'].x,
             my = param['mousePos'].y;
