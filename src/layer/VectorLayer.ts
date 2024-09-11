@@ -53,7 +53,7 @@ const options: VectorLayerOptionsType = {
     'defaultIconSize': [20, 20],
     'cacheVectorOnCanvas': true,
     'cacheSvgOnCanvas': Browser.gecko,
-    'enableAltitude': false,
+    'enableAltitude': true,
     'altitudeProperty': 'altitude',
     'drawAltitude': false,
     'sortByDistanceToCamera': false,
