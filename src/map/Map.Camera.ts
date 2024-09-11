@@ -26,7 +26,7 @@ declare module "./Map" {
         //@internal
         _calcMatrices(): void;
         //@internal
-        _containerPointToPoint(p: Point, zoom?: number, out?: Point): Point;
+        _containerPointToPoint(p: Point, zoom?: number, out?: Point, height?: number): Point;
         //@internal
         _recenterOnTerrain(): void;
         setCameraMovements(frameOptions: Array<MapViewType>, option?: { autoRotate: boolean });
@@ -51,6 +51,12 @@ declare module "./Map" {
         _pointsAtResToContainerPoints(point: Point[], res?: number, altitude?: number[], out?: Point[]): Point[];
         //@internal
         getContainerPointRay(from: Vector3, to: Vector3, containerPoint: Point, near: number, far: number);
+        //@internal
+        _query3DTilesInfo(containerPoint: Point);
+        //@internal
+        _queryTerrainInfo(containerPoint: Point);
+        //@internal
+        queryPrjCoordAtContainerPoint(containerPoint: Point);
     }
 }
 
@@ -1036,6 +1042,23 @@ Map.include(/** @lends Map.prototype */{
             }
         }
         return null;
+    },
+
+    //@internal
+    queryPrjCoordAtContainerPoint(p) {
+        let queryCoord = this._query3DTilesInfo(p)
+        if (!queryCoord) {
+            queryCoord = this._queryTerrainInfo(p);
+        }
+        if (queryCoord) {
+            const prjCoord = this.getProjection().project(queryCoord.coordinate);
+            prjCoord.z = queryCoord.altitude;
+            return prjCoord;
+        }
+        if (this._isContainerPointOutOfMap(p)) {
+            p = new Point(this.width / 2, this.height / 2);
+        }
+        return this._containerPointToPrj(p);
     },
 
     //@internal

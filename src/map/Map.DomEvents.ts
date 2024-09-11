@@ -29,7 +29,10 @@ declare module "./Map" {
         _fireDOMEvent(target: any, e: MapEventDomType, type: string);
         //@internal
         _getEventParams(e: MapEventDomType): MapEventDataType;
-
+        //@internal
+        _isContainerPointOutOfMap(containerPoint: Point): boolean;
+        //@internal
+        _getActualEvent(e: MapEventDomType): MapEventDomType;
     }
 }
 
