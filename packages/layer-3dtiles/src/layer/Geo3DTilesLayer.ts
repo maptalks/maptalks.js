@@ -1192,8 +1192,6 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         let serviceScale = service.scale || 1;
         if (Array.isArray(serviceScale)) {
             serviceScale = vec3.length(serviceScale as vec3);
-        } else {
-            serviceScale = Math.sqrt(serviceScale * serviceScale * 3);
         }
         if (service.ecefTransform) {
             const scaling = mat4.getScaling(TEMP_SCALING, service.ecefTransform);

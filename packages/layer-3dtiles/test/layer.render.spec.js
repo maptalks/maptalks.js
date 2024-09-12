@@ -2140,7 +2140,7 @@ describe('render specs', () => {
             }, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 5, renderCount: 4, noGroup: true });
         });
 
-        it('issue#708, fix incorrect ktx2 min filter', done => {
+        it('maptalks/issue#708, fix incorrect ktx2 min filter', done => {
             const resPath = 'BatchedDraco/issue-708';
             const layer = new Geo3DTilesLayer('3d-tiles', {
                 services : [
