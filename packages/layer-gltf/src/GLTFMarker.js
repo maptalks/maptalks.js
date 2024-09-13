@@ -292,11 +292,10 @@ export default class GLTFMarker extends Marker {
         const url = this.getUrl();
         this._gltfManager = gltfManager;
         if (!this._login) {
-            if (!this._gltfRequestor) {
-                const renderer = this.getLayer().getRenderer();
-                this._gltfRequestor = renderer._requestor.bind(renderer);
-            }
-            gltfManager.loginGLTF(url, this._gltfRequestor);
+            const renderer = this.getLayer().getRenderer();
+            gltfManager.loginGLTF(url, (...args) => {
+                return renderer._requestor.apply(renderer, args);
+            });
             this._login = true;
         }
         const resource = gltfManager.getGLTF(url);
@@ -966,7 +965,6 @@ export default class GLTFMarker extends Marker {
             const zoom = map.getZoom();
             this._zoomOnAdded = zoom;
         }
-        delete this._gltfRequestor;
     }
 
     onRemove() {
@@ -1149,7 +1147,7 @@ export default class GLTFMarker extends Marker {
         const symbol = this['_getInternalSymbol']();
         return symbol && symbol.uniforms && symbol.uniforms[key];
     }
-    
+
     isAnimated() {
         const symbol = this['_getInternalSymbol']();
         return symbol && symbol.animation && this._gltfData && this._gltfData.animations;

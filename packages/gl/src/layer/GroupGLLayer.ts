@@ -142,7 +142,7 @@ export default class GroupGLLayer extends maptalks.Layer {
      * @param index - index to insert
      * @returns {GroupGLLayer} this
      */
-    addLayer(layer: maptalks.Layer, index: number): this {
+    addLayer(layer: maptalks.Layer, index?: number): this {
         if (layer.getMap()) {
             throw new Error(`layer(${layer.getId()}) is already added on map`);
         }

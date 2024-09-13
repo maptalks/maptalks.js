@@ -35,7 +35,9 @@ export function loadGLTF(actorId, url, fetchOptions, urlModifier) {
     if (urlModifier) {
         url = urlModifier(url);
     }
-    const imgRequest = requestImage.bind(this, actorId);
+    const imgRequest = (...args) => {
+        return requestImage.call(this, actorId, ...args);
+    };
     return getArrayBuffer(url, fetchOptions).then(res => {
         if (res.message) {
             return res;

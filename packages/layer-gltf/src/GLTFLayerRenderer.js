@@ -53,7 +53,7 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
             if (shaderName === 'pointline') {
                 continue;
             }
-            if (context && context.includes) {
+            if (context && context.states.includesChanged) {
                 const { newShader, uniforms } = this._updateShader(context, shaderName);
                 this._shaderList[shaderName].shader = newShader;
                 maptalks.Util.extend(renderUniforms, uniforms);
@@ -239,7 +239,8 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
                 });
             }
         }
-        const triangleScene = new reshader.Scene(triangle);
+        const triangleScene = this._triangleScene = this._triangleScene || new reshader.Scene();
+        triangleScene.setMeshes(triangle);
         triangleScene.sortMeshes(this._uniforms.cameraPosition);
         return triangleScene;
     }

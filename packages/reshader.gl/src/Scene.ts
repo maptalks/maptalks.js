@@ -4,13 +4,19 @@ import Mesh from './Mesh';
 const P0: vec3 = [0, 0, 0], P1: vec3 = [0, 0, 0];
 let uid = 0;
 
+let CAM_POS;
+function compare(a: Mesh, b: Mesh) {
+    vec3.transformMat4(P0, a.geometry.boundingBox.getCenter(), a.localTransform);
+    vec3.transformMat4(P1, b.geometry.boundingBox.getCenter(), b.localTransform);
+    return vec3.dist(P1, CAM_POS) - vec3.dist(P0, CAM_POS);
+}
+
+
 class Scene {
     //@internal
     _cameraPosition?: vec3
     //@internal
     _id: number
-    //@internal
-    _compareBinded: (a: Mesh, b: Mesh) => number
     sortedMeshes: { opaques?: Mesh[], transparents?: Mesh[] }
     sortFunction?: (a: Mesh, b: Mesh) => number
     meshes?: Mesh[]
@@ -21,7 +27,6 @@ class Scene {
         this._id = uid++;
         this.sortedMeshes = {};
         this.setMeshes(meshes);
-        this._compareBinded = this._compare.bind(this);
         this.dirty();
     }
 
@@ -150,9 +155,8 @@ class Scene {
         //     return 1;
         // });
         if (cameraPosition && transparents.length > 1) {
-            this._cameraPosition = cameraPosition;
-            transparents.sort(this._compareBinded);
-            delete this._cameraPosition;
+            CAM_POS = cameraPosition;
+            transparents.sort(compare);
         }
 
         this._dirty = false;
@@ -165,12 +169,6 @@ class Scene {
         return this.sortedMeshes || {};
     }
 
-    //@internal
-    _compare(a: Mesh, b: Mesh) {
-        vec3.transformMat4(P0, a.geometry.boundingBox.getCenter(), a.localTransform);
-        vec3.transformMat4(P1, b.geometry.boundingBox.getCenter(), b.localTransform);
-        return vec3.dist(P1, this._cameraPosition) - vec3.dist(P0, this._cameraPosition);
-    }
 }
 
 export default Scene;
