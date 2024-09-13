@@ -908,13 +908,16 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         const terrainData = {};
         const layerOptions = layer.options;
 
+        const tileSize = layer.getTileSize();
+
         const options = {
             terrainWidth,
             type: layerOptions.type,
             accessToken: layerOptions.accessToken,
             cesiumIonTokenURL: layerOptions.cesiumIonTokenURL,
             error: error,
-            colors: layerOptions.colors
+            colors: layerOptions.colors,
+            tileSize: tileSize ? [tileSize.width, tileSize.height] : [256, 256]
         };
         this.workerConn.fetchTerrain(terrainUrl, options, (err, resource) => {
             if (this._parentRequests) {

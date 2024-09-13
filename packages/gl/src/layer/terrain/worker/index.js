@@ -8,6 +8,18 @@ let workerId;
 
 let BITMAP_CANVAS = null;
 let BITMAP_CTX = null;
+const TEMP_RGB = [0, 0, 0];
+const DEFAULT_TILESIZE= [256, 256];
+
+function checkBitMapCanvas() {
+    try {
+        if (!BITMAP_CANVAS) {
+            BITMAP_CANVAS = new OffscreenCanvas(1, 1);
+        }
+    } catch (error) {
+        console.error(error);
+    }
+}
 
 const colorInCache = {};
 
@@ -512,10 +524,67 @@ function fetchTerrain(url, headers, type, terrainWidth, error, cb) {
     });
 }
 
+/**https://github.com/FreeGIS/dem2terrain/blob/master/src/dem-encode.js
+ * MapboxGL raster-dem 编码
+ * @param {number} height 高程值
+ * @returns {[number, number, number]}
+ */
+function mapboxEncode(height, out) {
+    const value = Math.floor((height + 10000) * 10);
+    const r = value >> 16;
+    const g = value >> 8 & 0x0000FF;
+    const b = value & 0x0000FF;
+    if (out) {
+        out[0] = r;
+        out[1] = g;
+        out[2] = b;
+        return out;
+    }
+    return [r, g, b];
+}
+
+//terrain hegihts to image for texture
+function heights2RGBImage(terrainData) {
+    checkBitMapCanvas();
+    if (!BITMAP_CANVAS) {
+        return;
+    }
+    const { width, height, data } = terrainData;
+    if (!width || !height || !data) {
+        return;
+    }
+    try {
+        let ctx = BITMAP_CANVAS.getContext('2d', { willReadFrequently: true });
+        const imageData = ctx.createImageData(width, height);
+        for (let i = 0, len = data.length; i < len; i++) {
+            const height = data[i];
+            const [r, g, b] = mapboxEncode(height, TEMP_RGB);
+            const idx = 4 * i;
+            imageData.data[idx] = r;
+            imageData.data[idx + 1] = g;
+            imageData.data[idx + 2] = b;
+            imageData.data[idx + 3] = 255;
+        }
+        BITMAP_CANVAS.width = width;
+        BITMAP_CANVAS.height = height;
+        ctx = BITMAP_CANVAS.getContext('2d', { willReadFrequently: true });
+        clearCanvas(ctx);
+        ctx.putImageData(imageData, 0, 0);
+        return BITMAP_CANVAS.transferToImageBitmap();
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 
 function triangulateTerrain(error, terrainData, terrainWidth, imageBitmap, hasSkirts, cb) {
     const mesh = createMartiniData(error, terrainData.data, terrainWidth, hasSkirts);
     const transferables = [mesh.positions.buffer, mesh.texcoords.buffer, mesh.triangles.buffer];
+    //tdt,cesium terrain etc
+    if (!imageBitmap) {
+        imageBitmap = heights2RGBImage(terrainData);
+    }
     if (imageBitmap) {
         transferables.push(imageBitmap);
     }
@@ -632,7 +701,7 @@ function colorTerrain(imgdata, colors) {
     }
 }
 
-function createColorsTexture(data, colors) {
+function createColorsTexture(data, colors, tileSize) {
     if (!colors || !Array.isArray(colors) || colors.length < 2) {
         return;
     }
@@ -640,12 +709,15 @@ function createColorsTexture(data, colors) {
         return null;
     }
     let { width, height } = data.image;
+    tileSize = tileSize || DEFAULT_TILESIZE;
+    if (tileSize[0] !== width || tileSize[1] !== height) {
+        width = tileSize[0];
+        height = tileSize[1];
+    }
     width *= 2;
     height *= 2;
     try {
-        if (!BITMAP_CANVAS) {
-            BITMAP_CANVAS = new OffscreenCanvas(1, 1);
-        }
+        checkBitMapCanvas();
         if (!BITMAP_CANVAS) {
             return;
         }
@@ -683,8 +755,9 @@ export const onmessage = function (message, postResponse) {
     } else if (data.command === 'fetchTerrain') {
         //加载地形数据的逻辑
         const colors = (data.params || {}).colors;
+        const tileSize = (data.params || {}).tileSize;
         loadTerrain(data.params, (data, transferables) => {
-            const texture = createColorsTexture(data, colors);
+            const texture = createColorsTexture(data, colors, tileSize);
             if (texture) {
                 data.colorsTexture = texture;
                 transferables = transferables || [];
