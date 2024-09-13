@@ -1537,12 +1537,18 @@ class TileLayer extends Layer {
         }
 
         const extent2d = tile.extent2d;
+        const offset = tile.offset || [0, 0];
         if (!extent2d) {
             return;
         }
         const res = tile.res;
+        const [offsetX, offsetY] = offset;
 
-        const { xmin, ymin, xmax, ymax } = extent2d;
+        let { xmin, ymin, xmax, ymax } = extent2d;
+        xmin -= offsetX;
+        xmax -= offsetX;
+        ymin -= offsetY;
+        ymax -= offsetY;
         const pmin = new Point(xmin, ymin),
             pmax = new Point(xmax, ymax);
         const min = map.pointAtResToCoordinate(pmin, res, TEMP_POINT0),
