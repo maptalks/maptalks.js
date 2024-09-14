@@ -668,6 +668,9 @@ const Canvas = {
                     const tempStep = Math.min((n * minStep), percent);
                     const [r, g, b, a] = colorIn.getColor(step + tempStep);
                     color = `rgba(${r},${g},${b},${a})`;
+                    if (color === preColor) {
+                        continue;
+                    }
                     const point = getSegmentPercentPoint(prePoint, currentPoint, tempStep / percent);
                     currentX = point.x;
                     currentY = point.y;
