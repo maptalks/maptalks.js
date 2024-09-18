@@ -227,6 +227,13 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     return new GeoJSONVectorTileLayer(layerJSON["id"], layerJSON["options"] as any);
   }
 
+  getGeometryById(id: number) {
+    if (!this._idMaps) {
+        return null;
+    }
+    return this._idMaps[id];
+  }
+
   //@internal
   _generateIdMap() {
     if (!this.features) {
