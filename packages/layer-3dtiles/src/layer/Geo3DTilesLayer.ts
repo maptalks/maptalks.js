@@ -449,16 +449,16 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
                 const hasChildren = children && children.length;
                 const hasContent = candidate.content;
 
-                // if (hasContent) tiles[candidate.node.id] = candidate;
-                if (!hasChildren && hasContent) {
-                    // candidate.selected = true;
-                    // tiles[candidate.node.id] = candidate;
+                const shouldAddContent = hasContent && (!hasChildren || visible === TileVisibility.SCREEN_ERROR_TOO_SMALL);
+                if (shouldAddContent) {
                     this._addCandidateNode(tiles, candidate);
+                }
+                // top tile with too small screen error, escape children visit
+                if (visible === TileVisibility.SCREEN_ERROR_TOO_SMALL) {
+                    continue;
                 }
                 if (hasChildren) {
                     if (hasContent && node.refine === 'add') {
-                        // candidate.selected = true;
-                        // tiles[candidate.node.id] = candidate;
                         this._addCandidateNode(tiles, candidate);
                     }
                     currentParent = candidate;
