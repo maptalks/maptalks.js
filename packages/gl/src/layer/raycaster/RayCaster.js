@@ -1,6 +1,6 @@
 import { vec3, vec4, mat4 } from '@maptalks/reshader.gl';
 import { Point, Util } from 'maptalks';
-import Ray from './Ray';
+import * as maptalks from 'maptalks';
 
 const TRIANGLE = [], POS_A = [], POS_B = [], POS_C = [], TEMP_POINT = new Point(0, 0), NULL_ALTITUDES = [];
 const TEMP_VEC_AB = [], TEMP_VEC_AC = [];
@@ -18,7 +18,7 @@ export default class RayCaster {
         const results = [];
         const from = this._from;
         const to = this._to;
-        const ray = new Ray(from, to);
+        const ray = new maptalks.math.Ray(from, to);
         for (let i = 0; i < meshes.length; i++) {
             const mesh = meshes[i];
             if (!this._checkBBox(mesh.getBoundingBox(), ray)) {

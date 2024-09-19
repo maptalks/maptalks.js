@@ -1,6 +1,6 @@
 import * as maptalks from 'maptalks';
 import Renderer from './GroupGLLayerRenderer.js';
-import { vec3, vec4 } from '@maptalks/reshader.gl';
+import { vec3 } from '@maptalks/reshader.gl';
 import { isNil, extend } from './util/util.js';
 import TerrainLayer from './terrain/TerrainLayer';
 import RayCaster from './raycaster/RayCaster.js';
@@ -47,7 +47,7 @@ const options: GroupGLLayerOptions = {
 const emptyMethod = () => {};
 const EMPTY_COORD0 = new maptalks.Coordinate(0, 0);
 const TEMP_VEC3: vec3 = [0, 0, 0];
-const coord0: vec4 = [0, 0, 0, 1], coord1: vec4 = [0, 0, 0, 1];
+const coord0: [number, number, number] = [0, 0, 0], coord1: [number, number, number] = [0, 0, 0];
 
 export default class GroupGLLayer extends maptalks.Layer {
     /**
@@ -77,8 +77,6 @@ export default class GroupGLLayer extends maptalks.Layer {
     _analysisTaskList: Analysis[]
     //@internal
     _terrainLayer: TerrainLayer
-    //@internal
-    _raycaster: RayCaster
 
     /**
      * @param id    - layer's id
