@@ -58,7 +58,9 @@ export default class BaseLayerWorker {
     constructor(id, options, uploader, cb) {
         this.id = id;
         this.options = options;
-        this._bindedRequestImage = this.requestImage.bind(this);
+        this._bindedRequestImage = (...args) => {
+            return this.requestImage.call(this, ...args);
+        };
         this._uploader = uploader;
         this._requests = {};
         cb(null, {}, []);

@@ -43,7 +43,9 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         this.tilesLoading = {};
         this._requests = {};
         this._modelQueue = [];
-        this._fnFetchNodepages = this._fetchI3DNodepages.bind(this);
+        this._fnFetchNodepages = (...args) => {
+            return this._fetchI3DNodepages.call(this, ...args);
+        };
     }
 
     getAnalysisMeshes() {

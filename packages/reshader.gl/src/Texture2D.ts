@@ -1,7 +1,7 @@
-import parseRGBE from './common/HDR.js';
-import { isArray } from './common/Util.js';
-import { default as Texture, REF_COUNT_KEY } from './AbstractTexture.js';
-import { getUniqueTexture } from './common/REGLHelper.js';
+import parseRGBE from './common/HDR';
+import { isArray } from './common/Util';
+import { default as Texture, REF_COUNT_KEY } from './AbstractTexture';
+import { getUniqueTexture } from './common/REGLHelper';
 import REGL, { Regl } from '@maptalks/regl';
 
 /**

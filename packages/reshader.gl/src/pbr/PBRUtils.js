@@ -6,7 +6,9 @@ export function loginIBLResOnCanvas(canvas, regl, map) {
         canvas.dfgLUT = generateDFGLUT(regl);
         canvas.dfgLUT.mtkRefCount = 0;
         if (map) {
-            const listener = onUpdatelights.bind(this, canvas, regl);
+            const listener = (...args) => {
+                return onUpdatelights.call(this, canvas, regl, ...args);
+            };
             map.on('updatelights', listener);
             canvas._iblResListener = listener;
         }
@@ -153,7 +155,7 @@ export function createIBLTextures(regl, map) {
 
 export function disposeIBLTextures(iblTexes) {
     for (const p in iblTexes) {
-        if (iblTexes[p].destroy) {
+        if (iblTexes[p] && iblTexes[p].destroy) {
             iblTexes[p].destroy();
         }
         delete iblTexes[p];

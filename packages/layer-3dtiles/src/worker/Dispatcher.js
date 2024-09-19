@@ -26,7 +26,9 @@ export default class Dispatcher {
         const key = this._genKey(mapId, layerId);
         const options = params.options;
         // debugger
-        const uploader = this.send.bind(this, actorId);
+        const uploader = (...args) => {
+            return this.send.call(this, actorId, ...args);
+        };
         this.workers[key] = new LayerWorker(layerId, options, uploader, cb);
     }
 

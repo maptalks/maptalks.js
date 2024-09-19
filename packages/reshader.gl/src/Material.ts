@@ -48,7 +48,9 @@ class Material extends Eventable(Base) {
         this.unlit = false;
         this._reglUniforms = {};
         this.refCount = 0;
-        this._bindedOnTextureComplete = this._onTextureComplete.bind(this);
+        this._bindedOnTextureComplete = (...args) => {
+            return this._onTextureComplete.call(this, ...args);
+        };
         this._genUniformKeys();
         this._checkTextures();
     }
@@ -212,6 +214,7 @@ class Material extends Eventable(Base) {
         }
         delete this.uniforms;
         delete this._reglUniforms;
+        delete this._bindedOnTextureComplete;
         this._disposed = true;
     }
 

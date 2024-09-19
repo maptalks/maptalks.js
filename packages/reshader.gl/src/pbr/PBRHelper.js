@@ -214,7 +214,7 @@ function createEquirectangularMapCube(regl, texture, size, rgbm) {
     const color = regl.cube({
         width: size,
         height: size,
-        min: 'linear',
+        min: 'linear mipmap linear',
         mag: 'linear',
         format: 'rgba',
     });

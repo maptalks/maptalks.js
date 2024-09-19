@@ -122,7 +122,9 @@ export default class TileMeshPainter {
         this._i3dmScene = new reshader.Scene();
         this._boxScene = new reshader.Scene();
         this._resLoader = new reshader.ResourceLoader(regl.texture(2));
-        this._bindedListener = this._onResourceLoad.bind(this);
+        this._bindedListener = (...args) => {
+            return this._onResourceLoad.call(this, ...args);
+        };
         // this._defaultMaterial = new reshader.PhongMaterial({
         //     'baseColorFactor' : [1, 1, 1, 1]
         // });
@@ -321,7 +323,6 @@ export default class TileMeshPainter {
     _callShader(shader, uniforms, filter, renderTarget, parentMeshes, meshes, i3dmMeshes) {
         shader.filter = filter.filter(fn => !!fn);
 
-        // this._modelScene.sortFunction = this._sort.bind(this);
         // this._modelScene.setMeshes(meshes);
 
         // uniforms['debug'] = true;

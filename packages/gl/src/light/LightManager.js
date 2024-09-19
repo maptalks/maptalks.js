@@ -1,16 +1,13 @@
 import createREGL from '@maptalks/regl';
 import * as reshader from '@maptalks/reshader.gl';
 
-const PREFILTER_CUBE_SIZE = 128;
+const PREFILTER_CUBE_SIZE = 1024;
 
 class LightManager {
 
     constructor(map) {
         this._map = map;
         this._loader = new reshader.ResourceLoader();
-
-        this.onHDRLoaded = this._onHDRLoaded.bind(this);
-        this.onHDRError = this._onHDRError.bind(this);
     }
 
     getDirectionalLight() {
@@ -123,8 +120,12 @@ class LightManager {
                 props,
                 this._loader
             );
-            this._hdr.once('complete', this.onHDRLoaded);
-            this._hdr.once('error', this.onHDRError);
+            this._hdr.once('complete', () => {
+                this._onHDRLoaded();
+            });
+            this._hdr.once('error', () => {
+                this._onHDRError();
+            });
         }
     }
 
