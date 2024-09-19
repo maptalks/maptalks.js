@@ -29,7 +29,7 @@ export default class HeatmapPainter extends BasicPainter {
         if (ref === undefined) {
             const symbolDef = this.getSymbolDef(symbolIndex);
             const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
-            prepareFnTypeData(geometry, symbolDef, fnTypeConfig);
+            prepareFnTypeData(geometry, symbolDef, fnTypeConfig, this.layer);
         }
 
         // heatmap 只支持一个symbol

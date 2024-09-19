@@ -16,7 +16,7 @@ const SAVED_FN_TYPE = '__current_fn_types';
  * @param {*} symbolDef
  * @param {*} configs
  */
-export function prepareFnTypeData(geometry, symbolDef, configs) {
+export function prepareFnTypeData(geometry, symbolDef, configs, layer) {
     const features = geometry.properties.features;
     if (isObjectEmpty(features)) {
         return;
@@ -25,11 +25,11 @@ export function prepareFnTypeData(geometry, symbolDef, configs) {
         const { symbolName } = configs[i];
         const savedTypes = geometry[SAVED_FN_TYPE] = geometry[SAVED_FN_TYPE] || {};
         savedTypes[symbolName] = symbolDef[symbolName];
-        prepareAttr(geometry, symbolDef, configs[i]);
+        prepareAttr(geometry, symbolDef, configs[i], layer);
     }
 }
 
-function prepareAttr(geometry, symbolDef, config) {
+function prepareAttr(geometry, symbolDef, config, layer) {
     // 因为symbol有可能被更新为fn-type，aPickingId 是必须保存的
     const aPickingId = preparePickingId(geometry);
     const { attrName, symbolName, related } = config;
@@ -40,7 +40,7 @@ function prepareAttr(geometry, symbolDef, config) {
         } else {
             //symbol是fn-type，但arr不存在，则创建
             arr = geometry.data[attrName] = new config.type(config.width * aPickingId.length);
-            updateAttrValue(arr, geometry, symbolDef, config);
+            updateAttrValue(arr, geometry, symbolDef, config, layer);
             return arr;
         }
     } else if (!isFnTypeSymbol(symbolDef[symbolName]) && !hasRelatedFnTypeSymbol(related, symbolDef)) {
@@ -68,13 +68,13 @@ function preparePickingId(geometry) {
     return aPickingId;
 }
 
-function updateAttrValue(arr, geometry, symbolDef, config) {
+function updateAttrValue(arr, geometry, symbolDef, config, layer) {
     const { attrName } = config;
     const aIndexPropName = (PREFIX + attrName + 'Index').trim();
     //symbol是fn-type，但arr不存在，则创建
     createZoomFnTypeIndexData(geometry, symbolDef, config);
     const aIndex = geometry.properties[aIndexPropName];
-    updateFnTypeAttrib(geometry, aIndex, config);
+    updateFnTypeAttrib(geometry, aIndex, config, layer);
     return arr;
 }
 
@@ -130,13 +130,13 @@ function removeFnTypePropArrs(geometry, attrName) {
  * @param {Object} config
  * @param {Array} meshes
  */
-export function updateGeometryFnTypeAttrib(regl, symbolDef, config, meshes, z) {
+export function updateGeometryFnTypeAttrib(regl, layer, symbolDef, config, meshes, z) {
     for (let i = 0; i < meshes.length; i++) {
-        updateOneGeometryFnTypeAttrib(regl, symbolDef, config, meshes[i], z);
+        updateOneGeometryFnTypeAttrib(regl, layer, symbolDef, config, meshes[i], z);
     }
 }
 
-export function updateOneGeometryFnTypeAttrib(regl, symbolDef, configs, mesh, z) {
+export function updateOneGeometryFnTypeAttrib(regl, layer, symbolDef, configs, mesh, z) {
     if (!mesh) {
         return;
     }
@@ -148,7 +148,7 @@ export function updateOneGeometryFnTypeAttrib(regl, symbolDef, configs, mesh, z)
     if (isObjectEmpty(features)) {
         return;
     }
-    const layer = mesh.geometry.properties.layer;
+    // const layer = mesh.geometry.properties.layer;
     for (let i = 0; i < configs.length; i++) {
         const config = configs[i];
         const attrName = config.attrName;
@@ -163,7 +163,7 @@ export function updateOneGeometryFnTypeAttrib(regl, symbolDef, configs, mesh, z)
                 continue;
             }
             //fn-type的二级stops与zoom有关，更新数据
-            updateFnTypeAttrib(geometry, aIndex, config);
+            updateFnTypeAttrib(geometry, aIndex, config, layer);
             continue;
         }
         // debugger
@@ -191,7 +191,7 @@ export function updateOneGeometryFnTypeAttrib(regl, symbolDef, configs, mesh, z)
             const aIndexPropName = (PREFIX + attrName + 'Index').trim();
             const aIndex = geometry.properties[aIndexPropName];
             //增加了新的fn-type arr，相应的需要增加define
-            updateFnTypeAttrib(geometry, aIndex, config);
+            updateFnTypeAttrib(geometry, aIndex, config, layer);
             if (layer._getFeatureStateStamp) {
                 geometry._featureTimestamp = layer._getFeatureStateStamp();
             }
@@ -274,7 +274,7 @@ function getFnTypePropertyStopValues(stops) {
  * @param {Array} aIndex
  * @param {Function} evaluate
  */
-function updateFnTypeAttrib(geometry, aIndex, config) {
+function updateFnTypeAttrib(geometry, aIndex, config, layer) {
     const { attrName, evaluate } = config;
     const { aPickingId, features } = geometry.properties;
     let arr;
@@ -291,7 +291,7 @@ function updateFnTypeAttrib(geometry, aIndex, config) {
             if (!feature || !feature.feature) {
                 continue;
             }
-            evaluateAndUpdate(arr, feature, evaluate, start, end, len, geometry);
+            evaluateAndUpdate(arr, feature, evaluate, start, end, len, geometry, layer);
         }
     } else {
         //存在fn-type，但symbol更新过，要重新计算arr里的值
@@ -316,7 +316,7 @@ function updateFnTypeAttrib(geometry, aIndex, config) {
             }
             let feature = features[aPickingId[start]];
             if (feature && feature.feature) {
-                evaluateAndUpdate(arr, feature, evaluate, start, i === l - 1 ? l : i, len, geometry);
+                evaluateAndUpdate(arr, feature, evaluate, start, i === l - 1 ? l : i, len, geometry, layer);
                 start = i;
             }
         }
@@ -328,7 +328,7 @@ function updateFnTypeAttrib(geometry, aIndex, config) {
 }
 
 const SOURCE = {};
-function evaluateAndUpdate(arr, feature, evaluate, start, end, len, geometry) {
+function evaluateAndUpdate(arr, feature, evaluate, start, end, len, geometry, layer) {
     feature = feature.feature;
     const properties = feature.properties || {};
     if (properties['$layer'] === undefined) {
@@ -338,7 +338,6 @@ function evaluateAndUpdate(arr, feature, evaluate, start, end, len, geometry) {
         properties['$layer'] = feature.layer;
         properties['$type'] = feature.type;
     }
-    const layer = geometry.properties.layer;
     if (layer.getFeatureState) {
         SOURCE.layer = feature.layer;
         SOURCE.id = feature.id;

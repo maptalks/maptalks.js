@@ -38,7 +38,7 @@ class NativePointPainter extends BasicPainter {
         if (ref === undefined) {
             const symbolDef = this.getSymbolDef(symbolIndex);
             const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
-            prepareFnTypeData(geometry, symbolDef, fnTypeConfig);
+            prepareFnTypeData(geometry, symbolDef, fnTypeConfig, this.layer);
             geometry.generateBuffers(this.regl);
         }
 

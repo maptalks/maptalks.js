@@ -131,7 +131,7 @@ class IconPainter extends CollisionPainter {
             } else {
                 this.drawDebugAtlas(geometry.properties.iconAtlas);
             }
-            prepareMarkerGeometry(geometry, symbolDef, fnTypeConfig.icon);
+            prepareMarkerGeometry(geometry, symbolDef, fnTypeConfig.icon, this.layer);
         } else if (this._isTextGeo(geometry)) {
             if (isIconText(symbolDef)) {
                 const len = geometries.length;
@@ -333,7 +333,7 @@ class IconPainter extends CollisionPainter {
             const symbolDef = this.getSymbolDef(symbolIndex);
             const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
 
-            updateOneGeometryFnTypeAttrib(this.regl, symbolDef, symbolIndex.type === 0 ? fnTypeConfig.icon : fnTypeConfig.text, meshes[i], z);
+            updateOneGeometryFnTypeAttrib(this.regl, this.layer, symbolDef, symbolIndex.type === 0 ? fnTypeConfig.icon : fnTypeConfig.text, meshes[i], z);
             const { aMarkerWidth, aMarkerHeight, aPadOffsetX, aPadOffsetY } = geometry.properties;
             if (aMarkerWidth && aMarkerWidth.dirty) {
                 geometry.updateData('aMarkerWidth', aMarkerWidth);

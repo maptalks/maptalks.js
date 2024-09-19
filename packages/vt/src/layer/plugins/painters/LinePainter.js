@@ -97,7 +97,7 @@ class LinePainter extends BasicPainter {
         const symbolDef = this.getSymbolDef(symbolIndex);
         if (ref === undefined) {
             const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
-            prepareFnTypeData(geometry, symbolDef, fnTypeConfig);
+            prepareFnTypeData(geometry, symbolDef, fnTypeConfig, this.layer);
         }
 
         const symbol = this.getSymbol(symbolIndex);

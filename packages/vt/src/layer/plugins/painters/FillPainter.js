@@ -122,7 +122,7 @@ class FillPainter extends BasicPainter {
         if (ref === undefined) {
 
             const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
-            prepareFnTypeData(geometry, symbolDef, fnTypeConfig);
+            prepareFnTypeData(geometry, symbolDef, fnTypeConfig, this.layer);
             geometry.generateBuffers(this.regl);
         }
 

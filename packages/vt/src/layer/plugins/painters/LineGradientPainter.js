@@ -36,7 +36,7 @@ class LineGradientPainter extends LinePainter {
         const symbolDef = this.getSymbolDef(symbolIndex);
         if (ref === undefined) {
             const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
-            prepareFnTypeData(geometry, symbolDef, fnTypeConfig);
+            prepareFnTypeData(geometry, symbolDef, fnTypeConfig, this.layer);
         }
 
         const uniforms = {

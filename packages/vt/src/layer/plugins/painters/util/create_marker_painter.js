@@ -119,8 +119,8 @@ export function createMarkerMesh(regl, geometry, transform, symbolDef, symbol, f
     return mesh;
 }
 
-export function prepareMarkerGeometry(iconGeometry, symbolDef, iconFnTypeConfig) {
-    prepareFnTypeData(iconGeometry, symbolDef, iconFnTypeConfig);
+export function prepareMarkerGeometry(iconGeometry, symbolDef, iconFnTypeConfig, layer) {
+    prepareFnTypeData(iconGeometry, symbolDef, iconFnTypeConfig, layer);
     prepareIconGeometry(iconGeometry);
 }
 

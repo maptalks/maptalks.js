@@ -66,7 +66,7 @@ class MeshPainter extends Painter {
         }
         const symbolDef = this.getSymbolDef(symbolIndex);
         const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
-        prepareFnTypeData(geometry, symbolDef, fnTypeConfig);
+        prepareFnTypeData(geometry, symbolDef, fnTypeConfig, this.layer);
         const shader = this.getShader();
         const defines = shader.getGeometryDefines ? shader.getGeometryDefines(geometry) : {};
         const symbol = this.getSymbol(symbolIndex);

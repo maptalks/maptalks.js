@@ -739,7 +739,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return true;
     }
 
-
+    //@internal
     _isVisible(node: TileNode, maxExtent: maptalks.Extent, projectionView: number[], clipMasks: ClipOutsideMask[]): TileVisibility {
         if (!this._isTileInMasks(node, clipMasks)) {
             return TileVisibility.OUT_OF_FRUSTUM;

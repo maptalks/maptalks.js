@@ -453,7 +453,7 @@ class Painter {
             }
             this._currentTimestamp = context.timestamp;
             const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
-            updateOneGeometryFnTypeAttrib(this.regl, symbolDef, fnTypeConfig, meshes[i], z);
+            updateOneGeometryFnTypeAttrib(this.regl, this.layer, symbolDef, fnTypeConfig, meshes[i], z);
         }
     }
 

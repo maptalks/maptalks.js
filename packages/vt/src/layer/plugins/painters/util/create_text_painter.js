@@ -47,7 +47,7 @@ export function createTextMesh(regl, geometry, transform, symbolDef, symbol, fnT
     if (symbolDef['textSize'] === 0 || symbolDef['textOpacity'] === 0) {
         return meshes;
     }
-    prepareFnTypeData(geometry, symbolDef, fnTypeConfig);
+    prepareFnTypeData(geometry, symbolDef, fnTypeConfig, this.layer);
 
 
     //避免重复创建属性数据
