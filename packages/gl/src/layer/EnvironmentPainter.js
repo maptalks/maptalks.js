@@ -99,6 +99,7 @@ class EnvironmentPainter {
         const transform = this._transform = this._transform || [];
         const hsv = ambient && ambient.hsv || EMPTY_HSV;
         const brightness = envConfig.brightness || 0;
+        const intensity = envConfig.intensity || 1;
         vec3.copy(HSV, hsv);
         if (brightness) {
             HSV[2] += brightness;
@@ -111,6 +112,7 @@ class EnvironmentPainter {
             'bias': level,
             'size': cubeSize / Math.pow(2, Math.max(0, level - 1)),
             'environmentExposure': isNumber(ambient && ambient.exposure) ? ambient.exposure : 1,
+            'backgroundIntensity': intensity,
             'diffuseSPH': iblTexes.sh,
             'viewMatrix': map.viewMatrix,
             'projMatrix': map.projMatrix,

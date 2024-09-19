@@ -16,7 +16,7 @@ const diffuseSPH = [[0.1341, 0.1298, 0.1150], [0.0306, 0.0478, 0.0725], [-0.0145
  * @param {Boolean} [useHDR=false] - whether export color using HDR
  * @param {REGLFramebuffer} [frameBuffer=false] - the framebuffer to render to
  */
-export function drawSkybox(regl, cubeMap, viewMatrix, projMatrix, useHDR, frameBuffer, decRGBM, useMipmap, blur, uSize, uBackgroundExposure, environmentExposure, useAmbient) {
+export function drawSkybox(regl, cubeMap, viewMatrix, projMatrix, useHDR, frameBuffer, decRGBM, useMipmap, blur, uSize, uBackgroundExposure, environmentExposure, useAmbient, backgroundIntensity = 1) {
     let drawCommand;
     config = config || {
         vert : skyboxVS,
@@ -69,6 +69,7 @@ export function drawSkybox(regl, cubeMap, viewMatrix, projMatrix, useHDR, frameB
         cubeMap,
         uBackgroundExposure,
         environmentExposure,
+        backgroundIntensity,
         bias: blur,
         uSize,
         diffuseSPH,

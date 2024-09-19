@@ -129,6 +129,7 @@ function createSkybox(regl, cubemap, size, encRgbm, rgbmRange) {
             'bias': 0,
             'size': cubemap.width,
             'environmentExposure': 1,
+            'backgroundIntensity': 1,
             'rgbmRange': rgbmRange
         },
         elements : cubeData.indices
