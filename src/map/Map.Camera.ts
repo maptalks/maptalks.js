@@ -49,8 +49,7 @@ declare module "./Map" {
         _pointToContainerPoint(point: Point, zoom?: number, out?: Point): Point;
         //@internal
         _pointsAtResToContainerPoints(point: Point[], res?: number, altitude?: number[], out?: Point[]): Point[];
-        //@internal
-        getContainerPointRay(from: Vector3, to: Vector3, containerPoint: Point, near: number, far: number);
+        getContainerPointRay(from: Vector3, to: Vector3, containerPoint: Point, near?: number, far?: number);
         //@internal
         _query3DTilesInfo(containerPoint: Point);
         //@internal
@@ -644,7 +643,7 @@ Map.include(/** @lends Map.prototype */{
         const cp = [0, 0, 0],
             coord0 = [0, 0, 0, 1],
             coord1 = [0, 0, 0, 1];
-        return function (from: Vector3, to: Vector3, containerPoint: Point, near = 0, far = 1) {
+        return function (from: Vector3, to: Vector3, containerPoint: Point, near:number = 0, far:number = 1) {
         const w2 = this.width / 2 || 1,
                 h2 = this.height / 2 || 1;
             const p = containerPoint;
