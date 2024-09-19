@@ -63,14 +63,14 @@ export function logoutIBLResOnCanvas(canvas, map) {
 function onUpdatelights(canvas, regl, e) {
     if (e.ambientUpdate) {
         const { iblTexes } = canvas;
+        const map = e.target;
         if (iblTexes) {
-            const map = e.target;
             disposeIBLTextures(iblTexes);
             canvas.iblTexes = createIBLTextures(regl, map);
         } else {
-            const map = e.target;
             canvas.iblTexes = createIBLTextures(regl, map);
         }
+        map.getRenderer().setToRedraw();
     }
 
 }

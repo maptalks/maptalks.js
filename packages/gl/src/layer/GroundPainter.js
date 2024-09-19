@@ -6,7 +6,8 @@ import ShadowProcess from './shadow/ShadowProcess';
 import { extend, getGroundTransform, hasOwn, normalizeColor } from './util/util.js';
 import { computeUVUniforms } from './util/uvUniforms.js';
 
-const { createIBLTextures, disposeIBLTextures, getPBRUniforms } = reshader.pbr.PBRUtils;
+const { getIBLResOnCanvas, logoutIBLResOnCanvas, getPBRUniforms, loginIBLResOnCanvas } = reshader.pbr.PBRUtils;
+
 const DEFAULT_TEX_OFFSET = [0, 0];
 const DEFAULT_TEX_SCALE = [1, 1];
 
@@ -26,8 +27,12 @@ class GroundPainter {
         this.renderer = new reshader.Renderer(regl);
         this._layer = layer;
         this._loader = new reshader.ResourceLoader();
-        this._bindOnMaterialComplete = this._onMaterialComplete.bind(this);
+        this._bindOnMaterialComplete = (...args) => {
+            return this._onMaterialComplete.call(this, ...args);
+        }
         this._init();
+        const canvas = this.getMap().getRenderer().canvas;
+        loginIBLResOnCanvas(canvas, regl, this.getMap());
     }
 
     needToRedraw() {
@@ -169,14 +174,6 @@ class GroundPainter {
             delete this._standardShader;
         }
         this._disposeIblTextures();
-        if (this._dfgLUT) {
-            this._dfgLUT.destroy();
-            delete this._dfgLUT;
-        }
-        const map = this.getMap();
-        if (map) {
-            map.off('updatelights', this._updateLights, this);
-        }
     }
 
     _getShader() {
@@ -210,13 +207,9 @@ class GroundPainter {
         const type = groundConfig.renderPlugin.type;
         let uniforms;
         if (type === 'lit') {
-            if (!this._iblTexes) {
-                this._iblTexes = createIBLTextures(this._regl, this.getMap());
-            }
-            if (!this._dfgLUT) {
-                this._dfgLUT = reshader.pbr.PBRHelper.generateDFGLUT(this._regl);
-            }
-            uniforms = getPBRUniforms(this.getMap(), this._iblTexes, this._dfgLUT, context && context.ssr, context && context.jitter);
+            const canvas = this.getMap().getRenderer().canvas;
+            const { iblTexes, dfgLUT } = getIBLResOnCanvas(canvas);
+            uniforms = getPBRUniforms(this.getMap(), iblTexes, dfgLUT, context && context.ssr, context && context.jitter);
         } else {
             const map = this.getMap();
             uniforms = {
@@ -241,15 +234,11 @@ class GroundPainter {
     }
 
     _disposeIblTextures() {
-        if (!this._iblTexes) {
-            return;
-        }
-        disposeIBLTextures(this._iblTexes);
-        delete this._iblTexes;
+        const canvas = this.getMap().getRenderer().canvas;
+        logoutIBLResOnCanvas(canvas, this.getMap());
     }
 
     _init() {
-        this.getMap().on('updatelights', this._updateLights, this);
         //fill shader
         const extraCommandProps = this._getExtraCommandProps();
         const fillUniforms = ShadowProcess.getUniformDeclares();
@@ -513,17 +502,6 @@ class GroundPainter {
             wrap: 'repeat'
         };
         return regl.texture(config);
-    }
-
-    _updateLights(param) {
-        if (param.ambientUpdate) {
-            this._disposeIblTextures();
-            const map = this.getMap();
-            if (map) {
-                this._iblTexes = createIBLTextures(this._regl, map);
-            }
-        }
-        this.setToRedraw();
     }
 
     _parseColor(c) {
