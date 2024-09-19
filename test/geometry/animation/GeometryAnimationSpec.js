@@ -7,7 +7,7 @@ describe('Geometry.Animation', function () {
         var expected = GEN_GEOMETRIES_OF_ALL_TYPES();
         var i;
         for (i = 0; i < expected.length; i++) {
-            expected[i].translate([0.01, 0.01]);
+            expected[i].translate([0.01, 0.01, 2]);
         }
         var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
         var counter = 0;
@@ -26,7 +26,7 @@ describe('Geometry.Animation', function () {
         }
         for (i = 0; i < geometries.length; i++) {
             var player = geometries[i].animate({
-                translate : new maptalks.Coordinate(0.01, 0.01)
+                translate : [0.01, 0.01, 2]
             }, { duration : animSpeed }, cmp);
             expect(player).to.be.ok();
         }

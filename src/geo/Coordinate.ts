@@ -214,7 +214,7 @@ class Coordinate extends Position {
      * @param y - coordinate to add
      * @returns result
      */
-    add(x: number, y: number): Coordinate;
+    add(x: number, y: number, z?: number): Coordinate;
 
     /**
      * 与传入坐标相加，返回一个新 Coordinate
@@ -226,19 +226,28 @@ class Coordinate extends Position {
      * @param y - coordinate to add
      * @returns result
      */
-    add(x: any, y?: number) {
-        let nx, ny;
+    add(x: any, y?: number, z?: number) {
+        let nx, ny, nz = this.z;
         if (!isNil(x.x)) {
             nx = this.x + x.x;
             ny = this.y + x.y;
+            if (!isNil(x.z)) {
+                nz = (this.z || 0) + x.z;
+            }
         } else if (!isNil(x[0])) {
             nx = this.x + x[0];
             ny = this.y + x[1];
+            if (!isNil(x[2])) {
+                nz = (this.z || 0) + x[2];
+            }
         } else {
             nx = this.x + x;
             ny = this.y + y;
+            if (!isNil(z)) {
+                nz = (this.z || 0) + z;
+            }
         }
-        return new Coordinate(nx, ny);
+        return new Coordinate(nx, ny, nz);
     }
 
     /**
@@ -260,9 +269,10 @@ class Coordinate extends Position {
      * Returns the result of subtraction of another coordinate.
      * @param x - coordinate to add
      * @param y - coordinate to add
+     * @param z - altitude to add
      * @returns result
      */
-    sub(x: number, y: number): Coordinate;
+    sub(x: number, y: number, z?: number): Coordinate;
 
     /**
      * 与传入坐标相减，返回一个新 Coordinate。
@@ -274,19 +284,28 @@ class Coordinate extends Position {
      * @param [y=undefined] - optional, coordinate to add
      * @returns result
      */
-    sub(x: any, y?: number): any {
-        let nx, ny;
+    sub(x: any, y?: number, z?: number): any {
+        let nx, ny, nz = this.z;
         if (!isNil(x.x)) {
             nx = this.x - x.x;
             ny = this.y - x.y;
+            if (!isNil(x.z)) {
+                nz = (this.z || 0) - x.z;
+            }
         } else if (!isNil(x[0])) {
             nx = this.x - x[0];
             ny = this.y - x[1];
+            if (!isNil(x[2])) {
+                nz = (this.z || 0) - x[2];
+            }
         } else {
             nx = this.x - x;
             ny = this.y - y;
+            if (!isNil(z)) {
+                nz = (this.z || 0) - z;
+            }
         }
-        return new Coordinate(nx, ny);
+        return new Coordinate(nx, ny, nz);
     }
 
     /**
@@ -295,7 +314,7 @@ class Coordinate extends Position {
      * @returns result
      */
     multi(ratio: number) {
-        return new Coordinate(this.x * ratio, this.y * ratio);
+        return new Coordinate(this.x * ratio, this.y * ratio, isNil(this.z) ? this.z : this.z * ratio);
     }
 
     /**
