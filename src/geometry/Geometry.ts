@@ -942,16 +942,17 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      *
      * @param  {Number} x - x offset
      * @param  {Number} y - y offset
+     * @param  {Number} z - z offset
      * @return {Geometry} this
      * @fires Geometry#positionchange
      * @fires Geometry#shapechange
      */
-    translate(x: number | Coordinate, y?: number): this {
+    translate(x: number | Coordinate, y?: number, z?: number): this {
         if (isNil(x)) {
             return this;
         }
-        const offset = new Coordinate(x as number, y);
-        if (offset.x === 0 && offset.y === 0) {
+        const offset = new Coordinate(x as number, y, z);
+        if (offset.x === 0 && offset.y === 0 && (isNil(offset.z) || offset.z === 0)) {
             return this;
         }
         const coordinates: any = this.getCoordinates();
