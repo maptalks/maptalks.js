@@ -316,6 +316,8 @@ function convertUrl(data, urlModifier) {
   return data;
 }
 
+type OmitUrlTemplate = Omit<VectorTileLayerOptionsType, 'urlTemplate'>;
+
 export type GeoJSONVectorTileLayerOptionsType = {
     features?: string,
     tileBuffer?: number,
@@ -326,4 +328,4 @@ export type GeoJSONVectorTileLayerOptionsType = {
     generateOMBB?: boolean,
     data?: any;
     convertFn?: (data: any) => any;
-} & VectorTileLayerOptionsType;
+} & OmitUrlTemplate;
