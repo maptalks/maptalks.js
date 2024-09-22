@@ -507,7 +507,7 @@ function getSegmenIntersections(currentPoint, nextPoint, p1, p2, p3, p4) {
 }
 
 export function clipLineByQuadrilateral(path, p1, p2, p3, p4) {
-    debug(path, p1, p2, p3, p4);
+    const { ctx, bbox } = debug(path, p1, p2, p3, p4);
     const result = [];
     let line = [];
     let nextInView;
@@ -531,17 +531,24 @@ export function clipLineByQuadrilateral(path, p1, p2, p3, p4) {
             }
             const cross = getSegmenIntersections(point1, point2, p1, p2, p3, p4);
             line.push(...cross);
+            if (cross.length > 1) {
+                console.error('error:只应该一个交点才对');
+            }
             // console.log(i);
             if (point3) {
-                if (!pointInQuadrilateral(point3, p1, p2, p3, p4)) {
-                    // console.log(i);
-                    const cross1 = getSegmenIntersections(point2, point3, p1, p2, p3, p4);
-                    console.log(cross1, i);
-                    // if (cross.length > 0) {
-                    //     console.log(i);
-                    //     line.push(cross[0].segment[1]);
-                    // }
+
+                // console.log(i);
+                const cross1 = getSegmenIntersections(point2, point3, p1, p2, p3, p4);
+                if (cross1.length && cross.length) {
+                    const p = cross[0];
+                    const segments = cross1.filter(c => {
+                        return c.segment.index === p.segment.index;
+                    });
+                    if (segments.length === 0) {
+                        line.push(p.segment.points[1]);
+                    }
                 }
+
             }
 
         } else {
@@ -573,6 +580,7 @@ export function clipLineByQuadrilateral(path, p1, p2, p3, p4) {
             path[index] = { point: p };
         });
     });
+    drawClipPoints(ctx, bbox, result);
     return result;
 }
 
@@ -602,13 +610,29 @@ function debug(path, p1, p2, p3, p4) {
     // drawBBOX(ctx, bbox, pathBBOX);
     // drawExtent(ctx, bbox, extent);
 
+    return {
+        ctx,
+        bbox
+    }
+
+}
+
+function drawClipPoints(ctx, bbox, clipPoints) {
+    ctx.strokeStyle = 'yellow';
+    clipPoints.forEach(d => {
+        const points = d.map(item => {
+            return item.point;
+        })
+        const pts = toPixels(points, bbox, ctx.canvas);
+        drawPolyline(ctx, pts);
+    });
 }
 
 function drawQuadrilateral(ctx, bbox, p1, p2, p3, p4) {
     ctx.strokeStyle = 'red';
     const points = [p1, p2, p3, p4, p1];
-    const pixel1 = toPixels(points, bbox, ctx.canvas);
-    drawPolyline(ctx, pixel1);
+    const pts = toPixels(points, bbox, ctx.canvas);
+    drawPolyline(ctx, pts);
 
 }
 
@@ -621,15 +645,15 @@ function drawBBOX(ctx, bbox, pathBBOX) {
     points.push(new Point(xmax, ymax));
     points.push(new Point(xmax, ymin));
     points.push(new Point(xmin, ymin));
-    const pixel1 = toPixels(points, bbox, ctx.canvas);
-    drawPolyline(ctx, pixel1);
+    const pts = toPixels(points, bbox, ctx.canvas);
+    drawPolyline(ctx, pts);
 }
 
 function drawPaths(ctx, bbox, paths) {
     ctx.strokeStyle = 'green';
     paths.forEach(path => {
-        const pixel1 = toPixels(path, bbox, ctx.canvas);
-        drawPolyline(ctx, pixel1);
+        const pts = toPixels(path, bbox, ctx.canvas);
+        drawPolyline(ctx, pts);
     });
 
 }
@@ -637,8 +661,8 @@ function drawPaths(ctx, bbox, paths) {
 function drawExtent(ctx, bbox, extent) {
     ctx.strokeStyle = 'green';
     const points = extent.toArray();
-    const pixel1 = toPixels(points, bbox, ctx.canvas);
-    drawPolyline(ctx, pixel1);
+    const pts = toPixels(points, bbox, ctx.canvas);
+    drawPolyline(ctx, pts);
 }
 
 function drawPolyline(ctx, points) {

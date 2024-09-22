@@ -508,7 +508,7 @@ class Painter extends Class {
         if (pitched) {
             const glRes = map.getGLRes();
             let { xmin, ymin, xmax, ymax } = map.getContainerExtent();
-            const offset = 10;
+            const offset = 0;
             xmin += offset;
             xmax -= offset;
             ymax -= offset;
