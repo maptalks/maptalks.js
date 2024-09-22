@@ -1,5 +1,5 @@
 import { isNumber, sign, pushIn, isDashLine, getPointsResultPts } from '../../core/util';
-import { clipPolygon, clipLine, getMinMaxAltitude } from '../../core/util/path';
+import { clipPolygon, clipLine, getMinMaxAltitude, bboxInInQuadrilateral, clipLineByQuadrilateral } from '../../core/util/path';
 import Class from '../../core/Class';
 import Size from '../../geo/Size';
 import Point from '../../geo/Point';
@@ -7,7 +7,7 @@ import PointExtent from '../../geo/PointExtent';
 import Canvas from '../../core/Canvas';
 import * as Symbolizers from './symbolizers';
 import { interpolate } from '../../core/util/util';
-import { BBOX, getDefaultBBOX, resetBBOX, setBBOX, validateBBOX } from '../../core/util/bbox';
+import { BBOX, getDefaultBBOX, pointsBBOX, resetBBOX, setBBOX, validateBBOX } from '../../core/util/bbox';
 import Map from '../../map/Map'
 import { DebugSymbolizer } from './symbolizers';
 import Extent from '../../geo/Extent';
@@ -485,12 +485,12 @@ class Painter extends Class {
         let _2DExtent, glExtent, pitch;
         if (mapStateCache) {
             //@internal
-        _2DExtent = mapStateCache._2DExtent;
+            _2DExtent = mapStateCache._2DExtent;
             glExtent = mapStateCache.glExtent;
             pitch = mapStateCache.pitch;
         } else {
             //@internal
-        _2DExtent = map.get2DExtent();
+            _2DExtent = map.get2DExtent();
             glExtent = map.get2DExtentAtRes(map.getGLRes());
             pitch = map.getPitch();
         }
@@ -503,8 +503,43 @@ class Painter extends Class {
             extent2D = extent2D._combine(TEMP_POINT0._add(sign(c[0] - pos[0]), sign(c[1] - pos[1])));
         }
         const e = this.get2DExtent(null, TEMP_CLIP_EXTENT1);
+        const pitched = map.getPitch() > 0;
+        let p1, p2, p3, p4;
+        if (pitched) {
+            const glRes = map.getGLRes();
+            let { xmin, ymin, xmax, ymax } = map.getContainerExtent();
+            const offset = 10;
+            xmin += offset;
+            xmax -= offset;
+            ymax -= offset;
+            const p = new Point(xmin, ymin);
+            p1 = map['_containerPointToPointAtRes'](p, glRes);
+
+            p.x = xmax;
+            p.y = ymin;
+            p2 = map['_containerPointToPointAtRes'](p, glRes);
+
+            p.x = xmax;
+            p.y = ymax;
+            p3 = map['_containerPointToPointAtRes'](p, glRes);
+
+            p.x = xmin;
+            p.y = ymax;
+            p4 = map['_containerPointToPointAtRes'](p, glRes);
+        }
         let clipPoints = points;
-        if (e.within(extent2D)) {
+
+        if (pitched) {
+            const bbox = getDefaultBBOX();
+            pointsBBOX(points, bbox);
+            if (bboxInInQuadrilateral(bbox, p1, p2, p3, p4)) {
+                return {
+                    points: clipPoints,
+                    altitude: altitude,
+                    inView: true
+                };
+            }
+        } else if (!pitched && e.within(extent2D)) {
             // if (this.geometry.getJSONType() === 'LineString') {
             //     // clip line with altitude
             //     return this._clipLineByAlt(clipPoints, altitude);
@@ -549,7 +584,11 @@ class Painter extends Class {
         } else if (geometry.getJSONType() === 'LineString' && !smoothness) {
             // clip the line string to draw less and improve performance
             if (!Array.isArray(points[0])) {
-                clipPoints = clipLine(points, TEMP_CLIP_EXTENT0, false, !!smoothness);
+                if (pitched) {
+                    clipPoints = clipLineByQuadrilateral(points, p1, p2, p3, p4);
+                } else {
+                    clipPoints = clipLine(points, TEMP_CLIP_EXTENT0, false, !!smoothness);
+                }
             } else {
                 clipPoints = [];
                 for (let i = 0; i < points.length; i++) {
