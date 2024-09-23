@@ -432,6 +432,12 @@ export function lineSegmentIntersection(p1, p2, p3, p4) {
     } else if (dx2 === 0) {
         x = p3.x;
         y = k1 * x + b1;
+    } else if (dy1 === 0) {
+        y = p1.y;
+        x = (y - b2) / k2;
+    } else if (dy2 === 0) {
+        y = p3.y;
+        x = (y - b1) / k1;
     } else {
         x = (b2 - b1) / (k1 - k2);
         y = k1 * x + b1;
@@ -459,51 +465,58 @@ export function lineSegmentIntersection(p1, p2, p3, p4) {
 }
 
 
-function getSegmenIntersections(currentPoint, nextPoint, p1, p2, p3, p4) {
+function getSegmenQuadrilateralIntersections(currentPoint, nextPoint, p1, p2, p3, p4) {
     const a = lineSegmentIntersection(currentPoint, nextPoint, p1, p2);
     const b = lineSegmentIntersection(currentPoint, nextPoint, p2, p3);
     const c = lineSegmentIntersection(currentPoint, nextPoint, p3, p4);
     const d = lineSegmentIntersection(currentPoint, nextPoint, p4, p1);
     const points = [];
     if (a) {
-        points.push(a);
-        a.segment = {
-            index: 1,
-            points: [p1, p2]
-        }
+        points.push({
+            point: a,
+            edgeIndex: 1,
+            edge: [p1, p2]
+        });
     }
     if (b) {
-        points.push(b);
-        b.segment = {
-            index: 2,
-            points: [p2, p3]
-        }
+        points.push({
+            point: b,
+            edgeIndex: 2,
+            edge: [p2, p3]
+        });
     }
     if (c) {
-        points.push(c);
-        c.segment = {
-            index: 3,
-            points: [p3, p4]
-        }
+        points.push({
+            point: c,
+            edgeIndex: 3,
+            edge: [p3, p4]
+        });
     }
     if (d) {
-        points.push(d);
-        d.segment = {
-            index: 4,
-            points: [p4, p1]
-        }
+        points.push({
+            point: d,
+            edgeIndex: 4,
+            edge: [p4, p1]
+        });
     }
     if (points.length < 2) {
         return points
     }
-    const [c1, c2] = points;
-    const distance1 = c1.distanceTo(currentPoint);
-    const distance2 = c2.distanceTo(currentPoint);
+    const [item1, item2] = points;
+    const distance1 = item1.point.distanceTo(currentPoint);
+    const distance2 = item2.point.distanceTo(currentPoint);
     if (distance1 < distance2) {
-        return [c1, c2];
+        return [item1, item2];
     }
-    return [c2, c1];
+    return [item2, item1];
 
+}
+
+function hasSameEdge(p, crossList) {
+    const edges = crossList.filter(item => {
+        return item.edgeIndex === p.edgeIndex;
+    });
+    return edges.length > 0;
 }
 
 export function clipLineByQuadrilateral(path, p1, p2, p3, p4) {
@@ -521,7 +534,9 @@ export function clipLineByQuadrilateral(path, p1, p2, p3, p4) {
         }
         // console.log(i, inView);
         if (inView) {
-            line.push(point1);
+            line.push({
+                point: point1
+            });
             if (!point2) {
                 continue;
             }
@@ -529,26 +544,22 @@ export function clipLineByQuadrilateral(path, p1, p2, p3, p4) {
             if (nextInView) {
                 continue;
             }
-            const cross = getSegmenIntersections(point1, point2, p1, p2, p3, p4);
-            line.push(...cross);
-            if (cross.length > 1) {
+            const cross = getSegmenQuadrilateralIntersections(point1, point2, p1, p2, p3, p4);
+
+            if (cross.length !== 1) {
                 console.error('error:只应该一个交点才对');
             }
-            // console.log(i);
+            line.push(...cross)
             if (point3) {
-
-                // console.log(i);
-                const cross1 = getSegmenIntersections(point2, point3, p1, p2, p3, p4);
-                if (cross1.length && cross.length) {
+                const cross1 = getSegmenQuadrilateralIntersections(point2, point3, p1, p2, p3, p4);
+                if (cross1.length) {
                     const p = cross[0];
-                    const segments = cross1.filter(c => {
-                        return c.segment.index === p.segment.index;
-                    });
-                    if (segments.length === 0) {
-                        line.push(p.segment.points[1]);
+                    if (!hasSameEdge(p, cross1)) {
+                        line.push({
+                            point: p.edge[1]
+                        });
                     }
                 }
-
             }
 
         } else {
@@ -556,30 +567,38 @@ export function clipLineByQuadrilateral(path, p1, p2, p3, p4) {
                 continue;
             }
             nextInView = pointInQuadrilateral(point2, p1, p2, p3, p4);
-            if (!nextInView) {
-                const cross = getSegmenIntersections(point1, point2, p1, p2, p3, p4);
-                if (cross.length) {
-                    line.push(...cross);
-                    continue;
+            if (nextInView) {
+                const cross = getSegmenQuadrilateralIntersections(point1, point2, p1, p2, p3, p4);
+                if (cross.length !== 1) {
+                    console.error('error:只应该一个交点才对');
                 }
-                if (line.length > 1) {
-                    result.push(line);
-                    line = [];
+                line.push(...cross)
+                continue;
+            }
+
+            const cross = getSegmenQuadrilateralIntersections(point1, point2, p1, p2, p3, p4);
+            if (cross.length) {
+                line.push(...cross);
+                if (point3 && pointInQuadrilateral(point3, p1, p2, p3, p4)) {
+                    const cross1 = getSegmenQuadrilateralIntersections(point2, point3, p1, p2, p3, p4);
+                    const p = cross1[0];
+                    if (!hasSameEdge(p, cross)) {
+                        line.push({
+                            point: p.edge[0]
+                        });
+                    }
                 }
                 continue;
             }
-            const cross = getSegmenIntersections(point1, point2, p1, p2, p3, p4);
-            line.push(...cross)
+            if (line.length > 1) {
+                result.push(line);
+                line = [];
+            }
         }
     }
     if (line.length > 1) {
         result.push(line);
     }
-    result.forEach((path) => {
-        path.forEach((p, index) => {
-            path[index] = { point: p };
-        });
-    });
     drawClipPoints(ctx, bbox, result);
     return result;
 }

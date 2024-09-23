@@ -508,7 +508,7 @@ class Painter extends Class {
         if (pitched) {
             const glRes = map.getGLRes();
             let { xmin, ymin, xmax, ymax } = map.getContainerExtent();
-            const offset = 0;
+            const offset = 4;
             xmin += offset;
             xmax -= offset;
             ymax -= offset;
@@ -584,6 +584,7 @@ class Painter extends Class {
         } else if (geometry.getJSONType() === 'LineString' && !smoothness) {
             // clip the line string to draw less and improve performance
             if (!Array.isArray(points[0])) {
+                // clipPoints = clipLine(points, TEMP_CLIP_EXTENT0, false, !!smoothness);
                 if (pitched) {
                     clipPoints = clipLineByQuadrilateral(points, p1, p2, p3, p4);
                 } else {
