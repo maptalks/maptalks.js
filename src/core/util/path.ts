@@ -1,9 +1,17 @@
 import Point from '../../geo/Point';
 import Coordinate from '../../geo/Coordinate';
 import { isNumber } from './common';
-import { bboxIntersect, getDefaultBBOX, pointsBBOX } from './bbox';
+import { getDefaultBBOX, pointsBBOX } from './bbox';
+import polygonClipping from 'polygon-clipping';
 
 const TEMP_POINT = new Point(0, 0);
+const MAP_TEMP_RING = [
+    [],
+    [],
+    [],
+    [],
+    []
+];
 
 export function clipLine(points, bounds, round?: boolean, noCut?: boolean) {
     const parts = [];
@@ -456,12 +464,6 @@ export function lineSegmentIntersection(p1, p2, p3, p4) {
         return;
     }
     return new Point(x, y);
-    // TEMP_POINT.x = x;
-    // TEMP_POINT.y = y;
-    // if (pointInSegment(TEMP_POINT, p1, p2) && pointInSegment(TEMP_POINT, p3, p4)) {
-    //     return new Point(x, y);
-    // }
-    // return null;
 }
 
 
@@ -520,7 +522,7 @@ function hasSameEdge(p, crossList) {
 }
 
 export function clipLineByQuadrilateral(path, p1, p2, p3, p4) {
-    const { ctx, bbox } = debug(path, p1, p2, p3, p4);
+    // const { ctx, bbox } = debug(path, p1, p2, p3, p4);
     const result = [];
     let line = [];
     let nextInView;
@@ -547,7 +549,7 @@ export function clipLineByQuadrilateral(path, p1, p2, p3, p4) {
             const cross = getSegmenQuadrilateralIntersections(point1, point2, p1, p2, p3, p4);
 
             if (cross.length !== 1) {
-                console.error('error:只应该一个交点才对');
+                console.error('error:只应该一个交点才对,实际有,', cross.length);
             }
             line.push(...cross)
             if (point3) {
@@ -561,7 +563,6 @@ export function clipLineByQuadrilateral(path, p1, p2, p3, p4) {
                     }
                 }
             }
-
         } else {
             if (!point2) {
                 continue;
@@ -570,7 +571,7 @@ export function clipLineByQuadrilateral(path, p1, p2, p3, p4) {
             if (nextInView) {
                 const cross = getSegmenQuadrilateralIntersections(point1, point2, p1, p2, p3, p4);
                 if (cross.length !== 1) {
-                    console.error('error:只应该一个交点才对');
+                    console.error('error:只应该一个交点才对,实际有,', cross.length);
                 }
                 line.push(...cross)
                 continue;
@@ -599,8 +600,67 @@ export function clipLineByQuadrilateral(path, p1, p2, p3, p4) {
     if (line.length > 1) {
         result.push(line);
     }
-    drawClipPoints(ctx, bbox, result);
+    // drawClipPoints(ctx, bbox, result);
     return result;
+}
+
+function checkRing(path) {
+    const ring = [];
+    let idx = 0;
+    for (let i = 0, len = path.length; i < len; i++) {
+        const point = path[i];
+        if (!point) {
+            continue;
+        }
+        if (!point._array) {
+            point._array = [point.x, point.y];
+        }
+        ring[idx] = point._array;
+        idx++;
+    }
+    const first = ring[0], last = ring[ring.length - 1];
+    const x1 = first[0], y1 = first[1], x2 = last[0], y2 = last[1];
+    if (x1 !== x2 || y1 !== y2) {
+        ring.push(first);
+    }
+    return ring;
+}
+
+export function clipPolygonByQuadrilateral(path, p1, p2, p3, p4) {
+    MAP_TEMP_RING[0][0] = p1.x;
+    MAP_TEMP_RING[0][1] = p1.y;
+
+    MAP_TEMP_RING[1][0] = p2.x;
+    MAP_TEMP_RING[1][1] = p2.y;
+
+    MAP_TEMP_RING[2][0] = p3.x;
+    MAP_TEMP_RING[2][1] = p3.y;
+
+    MAP_TEMP_RING[3][0] = p4.x;
+    MAP_TEMP_RING[3][1] = p4.y;
+
+    MAP_TEMP_RING[4][0] = p1.x;
+    MAP_TEMP_RING[4][1] = p1.y;
+
+
+    const ring = checkRing(path);
+    try {
+        const result = polygonClipping.intersection([MAP_TEMP_RING], [ring]);
+        if (result.length > 1) {
+            console.warn('clip polygon的结果>1:', result.length);
+        }
+        const points = [];
+        const clipPath = result[0][0];
+        for (let i = 0, len = clipPath.length; i < len; i++) {
+            const p = clipPath[i];
+            const point = new Point(p[0], p[1]);
+            points[i] = point;
+        }
+        return points;
+    } catch (eror) {
+        return null;
+    }
+
 }
 
 function debug(path, p1, p2, p3, p4) {
