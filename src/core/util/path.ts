@@ -580,13 +580,15 @@ export function clipLineByQuadrilateral(path, p1, p2, p3, p4) {
             const cross = getSegmenQuadrilateralIntersections(point1, point2, p1, p2, p3, p4);
             if (cross.length) {
                 line.push(...cross);
-                if (point3 && pointInQuadrilateral(point3, p1, p2, p3, p4)) {
+                if (point3) {
                     const cross1 = getSegmenQuadrilateralIntersections(point2, point3, p1, p2, p3, p4);
-                    const p = cross1[0];
-                    if (!hasSameEdge(p, cross)) {
-                        line.push({
-                            point: p.edge[0]
-                        });
+                    if (cross1.length) {
+                        const p = cross1[0];
+                        if (!hasSameEdge(p, cross)) {
+                            line.push({
+                                point: p.edge[0]
+                            });
+                        }
                     }
                 }
                 continue;
@@ -713,6 +715,7 @@ function drawQuadrilateral(ctx, bbox, p1, p2, p3, p4) {
     const pts = toPixels(points, bbox, ctx.canvas);
     drawPolyline(ctx, pts);
 
+
 }
 
 function drawBBOX(ctx, bbox, pathBBOX) {
@@ -732,6 +735,10 @@ function drawPaths(ctx, bbox, paths) {
     ctx.strokeStyle = 'green';
     paths.forEach(path => {
         const pts = toPixels(path, bbox, ctx.canvas);
+        pts.slice(0, pts.length - 1).forEach((pt, index) => {
+            ctx.fillStyle = 'white';
+            ctx.fillText(index, pt.x, pt.y);
+        });
         drawPolyline(ctx, pts);
     });
 
