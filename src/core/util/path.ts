@@ -548,9 +548,9 @@ export function clipLineByQuadrilateral(path, p1, p2, p3, p4) {
             }
             const cross = getSegmenQuadrilateralIntersections(point1, point2, p1, p2, p3, p4);
 
-            if (cross.length !== 1) {
-                console.error('error:只应该一个交点才对,实际有,', cross.length);
-            }
+            // if (cross.length !== 1) {
+            //     console.error('只应该一个交点才对,实际有,', cross.length);
+            // }
             line.push(...cross)
             if (point3) {
                 const cross1 = getSegmenQuadrilateralIntersections(point2, point3, p1, p2, p3, p4);
@@ -570,9 +570,9 @@ export function clipLineByQuadrilateral(path, p1, p2, p3, p4) {
             nextInView = pointInQuadrilateral(point2, p1, p2, p3, p4);
             if (nextInView) {
                 const cross = getSegmenQuadrilateralIntersections(point1, point2, p1, p2, p3, p4);
-                if (cross.length !== 1) {
-                    console.error('error:只应该一个交点才对,实际有,', cross.length);
-                }
+                // if (cross.length !== 1) {
+                //     console.error('只应该一个交点才对,实际有,', cross.length);
+                // }
                 line.push(...cross)
                 continue;
             }
@@ -648,9 +648,9 @@ export function clipPolygonByQuadrilateral(path, p1, p2, p3, p4) {
     const ring = checkRing(path);
     try {
         const result = polygonClipping.intersection([MAP_TEMP_RING], [ring]);
-        if (result.length > 1) {
-            console.warn('clip polygon的结果>1:', result.length);
-        }
+        // if (result.length > 1) {
+        //     console.warn('clip polygon的结果>1:', result.length);
+        // }
         const points = [];
         const clipPath = result[0][0];
         for (let i = 0, len = clipPath.length; i < len; i++) {
@@ -665,111 +665,111 @@ export function clipPolygonByQuadrilateral(path, p1, p2, p3, p4) {
 
 }
 
-function debug(path, p1, p2, p3, p4) {
-    let canvas: HTMLCanvasElement = document.getElementById('c');
-    if (!canvas) {
-        canvas = document.createElement('canvas') as HTMLCanvasElement;
-        canvas.width = 400;
-        canvas.height = 400;
-        canvas.style.position = 'absolute';
-        canvas.style.zIndex = 1 + '';
-        canvas.style.top = '0px';
-        canvas.style.backgroundColor = 'black';
-        canvas.id = 'c';
-        document.body.appendChild(canvas);
-    }
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+// function debug(path, p1, p2, p3, p4) {
+//     let canvas: HTMLCanvasElement = document.getElementById('c');
+//     if (!canvas) {
+//         canvas = document.createElement('canvas') as HTMLCanvasElement;
+//         canvas.width = 400;
+//         canvas.height = 400;
+//         canvas.style.position = 'absolute';
+//         canvas.style.zIndex = 1 + '';
+//         canvas.style.top = '0px';
+//         canvas.style.backgroundColor = 'black';
+//         canvas.id = 'c';
+//         document.body.appendChild(canvas);
+//     }
+//     const ctx = canvas.getContext('2d');
+//     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const points = [p1, p2, p3, p4, ...path];
-
-
-    const bbox = getDefaultBBOX();
-    pointsBBOX(points, bbox);
-    drawQuadrilateral(ctx, bbox, p1, p2, p3, p4);
-    drawPaths(ctx, bbox, [path]);
-    // drawBBOX(ctx, bbox, pathBBOX);
-    // drawExtent(ctx, bbox, extent);
-
-    return {
-        ctx,
-        bbox
-    }
-
-}
-
-function drawClipPoints(ctx, bbox, clipPoints) {
-    ctx.strokeStyle = 'yellow';
-    clipPoints.forEach(d => {
-        const points = d.map(item => {
-            return item.point;
-        })
-        const pts = toPixels(points, bbox, ctx.canvas);
-        drawPolyline(ctx, pts);
-    });
-}
-
-function drawQuadrilateral(ctx, bbox, p1, p2, p3, p4) {
-    ctx.strokeStyle = 'red';
-    const points = [p1, p2, p3, p4, p1];
-    const pts = toPixels(points, bbox, ctx.canvas);
-    drawPolyline(ctx, pts);
+//     const points = [p1, p2, p3, p4, ...path];
 
 
-}
+//     const bbox = getDefaultBBOX();
+//     pointsBBOX(points, bbox);
+//     drawQuadrilateral(ctx, bbox, p1, p2, p3, p4);
+//     drawPaths(ctx, bbox, [path]);
+//     // drawBBOX(ctx, bbox, pathBBOX);
+//     // drawExtent(ctx, bbox, extent);
 
-function drawBBOX(ctx, bbox, pathBBOX) {
-    ctx.strokeStyle = 'green';
-    const points = [];
-    const [xmin, ymin, xmax, ymax] = pathBBOX;
-    points.push(new Point(xmin, ymin));
-    points.push(new Point(xmin, ymax));
-    points.push(new Point(xmax, ymax));
-    points.push(new Point(xmax, ymin));
-    points.push(new Point(xmin, ymin));
-    const pts = toPixels(points, bbox, ctx.canvas);
-    drawPolyline(ctx, pts);
-}
+//     return {
+//         ctx,
+//         bbox
+//     }
 
-function drawPaths(ctx, bbox, paths) {
-    ctx.strokeStyle = 'green';
-    paths.forEach(path => {
-        const pts = toPixels(path, bbox, ctx.canvas);
-        pts.slice(0, pts.length - 1).forEach((pt, index) => {
-            ctx.fillStyle = 'white';
-            ctx.fillText(index, pt.x, pt.y);
-        });
-        drawPolyline(ctx, pts);
-    });
+// }
 
-}
+// function drawClipPoints(ctx, bbox, clipPoints) {
+//     ctx.strokeStyle = 'yellow';
+//     clipPoints.forEach(d => {
+//         const points = d.map(item => {
+//             return item.point;
+//         })
+//         const pts = toPixels(points, bbox, ctx.canvas);
+//         drawPolyline(ctx, pts);
+//     });
+// }
 
-function drawExtent(ctx, bbox, extent) {
-    ctx.strokeStyle = 'green';
-    const points = extent.toArray();
-    const pts = toPixels(points, bbox, ctx.canvas);
-    drawPolyline(ctx, pts);
-}
+// function drawQuadrilateral(ctx, bbox, p1, p2, p3, p4) {
+//     ctx.strokeStyle = 'red';
+//     const points = [p1, p2, p3, p4, p1];
+//     const pts = toPixels(points, bbox, ctx.canvas);
+//     drawPolyline(ctx, pts);
 
-function drawPolyline(ctx, points) {
-    ctx.beginPath();
-    points.forEach((p, index) => {
-        const { x, y } = p;
-        if (index === 0) {
-            ctx.moveTo(x, y);
-        } else {
-            ctx.lineTo(x, y)
-        }
-    });
-    ctx.stroke();
-}
 
-function toPixels(points, bbox, canvas) {
-    const [xmin, ymin, xmax, ymax] = bbox;
-    const ax = (canvas.width - 20) / (xmax - xmin), ay = (canvas.height - 20) / (ymax - ymin);
-    return points.map(p => {
-        const x = (p.x - xmin) * ax + 10;
-        const y = (canvas.height) - (p.y - ymin) * ay - 10;
-        return new Point(x, y);
-    })
-}
+// }
+
+// function drawBBOX(ctx, bbox, pathBBOX) {
+//     ctx.strokeStyle = 'green';
+//     const points = [];
+//     const [xmin, ymin, xmax, ymax] = pathBBOX;
+//     points.push(new Point(xmin, ymin));
+//     points.push(new Point(xmin, ymax));
+//     points.push(new Point(xmax, ymax));
+//     points.push(new Point(xmax, ymin));
+//     points.push(new Point(xmin, ymin));
+//     const pts = toPixels(points, bbox, ctx.canvas);
+//     drawPolyline(ctx, pts);
+// }
+
+// function drawPaths(ctx, bbox, paths) {
+//     ctx.strokeStyle = 'green';
+//     paths.forEach(path => {
+//         const pts = toPixels(path, bbox, ctx.canvas);
+//         pts.slice(0, pts.length - 1).forEach((pt, index) => {
+//             ctx.fillStyle = 'white';
+//             ctx.fillText(index, pt.x, pt.y);
+//         });
+//         drawPolyline(ctx, pts);
+//     });
+
+// }
+
+// function drawExtent(ctx, bbox, extent) {
+//     ctx.strokeStyle = 'green';
+//     const points = extent.toArray();
+//     const pts = toPixels(points, bbox, ctx.canvas);
+//     drawPolyline(ctx, pts);
+// }
+
+// function drawPolyline(ctx, points) {
+//     ctx.beginPath();
+//     points.forEach((p, index) => {
+//         const { x, y } = p;
+//         if (index === 0) {
+//             ctx.moveTo(x, y);
+//         } else {
+//             ctx.lineTo(x, y)
+//         }
+//     });
+//     ctx.stroke();
+// }
+
+// function toPixels(points, bbox, canvas) {
+//     const [xmin, ymin, xmax, ymax] = bbox;
+//     const ax = (canvas.width - 20) / (xmax - xmin), ay = (canvas.height - 20) / (ymax - ymin);
+//     return points.map(p => {
+//         const x = (p.x - xmin) * ax + 10;
+//         const y = (canvas.height) - (p.y - ymin) * ay - 10;
+//         return new Point(x, y);
+//     })
+// }
