@@ -270,7 +270,7 @@ describe('Map.Anim', function () {
         )
     });
 
-    it('#851 bearing reverse', function (done) {
+    it('#851 bearing counterclockwise', function (done) {
         map.setView({
             bearing: -178
         })
@@ -281,7 +281,7 @@ describe('Map.Anim', function () {
                 // callName: "setAzimuthalAngle",
             }, {
             duration: 1000,
-            reverse: true
+            counterclockwise: true
         },
             frame => {
                 if (frame.state.playState === 'finished') {
@@ -292,7 +292,7 @@ describe('Map.Anim', function () {
         )
     });
 
-    it('bearing reverse current bearing>0 and bearing>0', function (done) {
+    it('bearing counterclockwise current bearing>0 and bearing>0', function (done) {
         map.setView({
             bearing: 0
         })
@@ -304,7 +304,7 @@ describe('Map.Anim', function () {
                 // callName: "setAzimuthalAngle",
             }, {
             duration: 1000,
-            reverse: true
+            counterclockwise: true
         },
             frame => {
                 if (frame.state.playState === 'finished') {
@@ -315,7 +315,7 @@ describe('Map.Anim', function () {
         )
     });
 
-    it('bearing reverse current bearing<0 and bearing<0', function (done) {
+    it('bearing counterclockwise current bearing<0 and bearing<0', function (done) {
         map.setView({
             bearing: 0
         })
@@ -327,7 +327,7 @@ describe('Map.Anim', function () {
                 // callName: "setAzimuthalAngle",
             }, {
             duration: 1000,
-            reverse: true
+            counterclockwise: true
         },
             frame => {
                 if (frame.state.playState === 'finished') {

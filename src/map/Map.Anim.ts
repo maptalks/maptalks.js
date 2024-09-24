@@ -103,7 +103,7 @@ Map.include(/** @lends Map.prototype */{
             step = options;
             options = {};
         }
-        if ((options as any).reverse) {
+        if ((options as any).counterclockwise) {
             reverseBearing(view, this);
         }
         if (needValidateView(view, this)) {
@@ -269,7 +269,7 @@ Map.include(/** @lends Map.prototype */{
         // function in van Wijk (2003).
         view = extend({}, this.getView(), view);
         view.bearing = view.bearing % 360;
-        if ((options as any).reverse) {
+        if ((options as any).counterclockwise) {
             reverseBearing(view, this);
         }
         if (needValidateView(view, this)) {

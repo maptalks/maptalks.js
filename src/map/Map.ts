@@ -2839,7 +2839,7 @@ export type MapDataURLType = {
     save?: boolean;
 }
 
-export type MapAnimationOptionsType = AnimationOptionsType & { reverse?: boolean }
+export type MapAnimationOptionsType = AnimationOptionsType & { counterclockwise?: boolean }
 
 export type MapIdentifyOptionsType = {
     tolerance?: number;
