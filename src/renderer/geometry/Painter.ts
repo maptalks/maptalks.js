@@ -515,19 +515,24 @@ class Painter extends Class {
             xmin -= offset;
             xmax += offset;
             ymax += offset;
+            ymin += 0;
             const p = new Point(xmin, ymin);
+            //LT
             p1 = map['_containerPointToPointAtRes'](p, glRes);
 
             p.x = xmax;
             p.y = ymin;
+            //RT
             p2 = map['_containerPointToPointAtRes'](p, glRes);
 
             p.x = xmax;
             p.y = ymax;
+            //BR
             p3 = map['_containerPointToPointAtRes'](p, glRes);
 
             p.x = xmin;
             p.y = ymax;
+            //BL
             p4 = map['_containerPointToPointAtRes'](p, glRes);
         }
         let clipPoints = points;
@@ -535,6 +540,7 @@ class Painter extends Class {
         if (pitched) {
             const bbox = getDefaultBBOX();
             pointsBBOX(points, bbox);
+            // paths in current view
             if (bboxInInQuadrilateral(bbox, p1, p2, p3, p4)) {
                 return {
                     points: clipPoints,
@@ -587,7 +593,7 @@ class Painter extends Class {
                 for (let i = 0; i < points.length; i++) {
                     let part;
                     if (strictClipEnable) {
-                        part = clipPolygonByQuadrilateral(points[i], p1, p2, p3, p4);
+                        part = clipPolygonByQuadrilateral(points[i] as unknown as Array<Point>, p1, p2, p3, p4);
                         if (!part) {
                             part = clipPolygon(points[i], TEMP_CLIP_EXTENT0);
                         }

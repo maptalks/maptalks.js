@@ -1,7 +1,7 @@
 import Point from '../../geo/Point';
 import Coordinate from '../../geo/Coordinate';
 import { isNumber } from './common';
-import { getDefaultBBOX, pointsBBOX } from './bbox';
+import { BBOX} from './bbox';
 import polygonClipping from 'polygon-clipping';
 
 const TEMP_POINT = new Point(0, 0);
@@ -311,7 +311,14 @@ export function getMinMaxAltitude(altitude: number | number[] | number[][]): [nu
     return [min, max];
 }
 
-function pointInSegment(p, p1, p2) {
+/**
+ * point in segment
+ * @param p 
+ * @param p1 
+ * @param p2 
+ * @returns 
+ */
+function pointInSegment(p: Point, p1: Point, p2: Point) {
     const dx = p2.x - p1.x;
     if (dx === 0) {
         const miny = Math.min(p1.y, p2.y);
@@ -332,26 +339,42 @@ function pointInSegment(p, p1, p2) {
     return Math.abs(y - p.y) <= 0.0000001;
 }
 
-function pointLeftSegment(p, p1, p2) {
+/**
+ * point left segment
+ * @param p 
+ * @param p1 
+ * @param p2 
+ * @returns 
+ */
+function pointLeftSegment(p: Point, p1: Point, p2: Point) {
     const x1 = p1.x, y1 = p1.y;
     const x2 = p2.x, y2 = p2.y;
     const x = p.x, y = p.y;
     return (y1 - y2) * x + (x2 - x1) * y + x1 * y2 - x2 * y1 > 0;
 }
 
-function pointRightSegment(p, p1, p2) {
+function pointRightSegment(p: Point, p1: Point, p2: Point) {
     return !pointLeftSegment(p, p1, p2);
 }
 
-function pointInQuadrilateral(point, p1, p2, p3, p4) {
+/**
+ * Points within a convex quadrilateral
+ * @param point 
+ * @param p1 
+ * @param p2 
+ * @param p3 
+ * @param p4 
+ * @returns 
+ */
+function pointInQuadrilateral(p: Point, p1: Point, p2: Point, p3: Point, p4: Point) {
     //LT-RT
-    const a = pointRightSegment(point, p1, p2) || pointInSegment(point, p1, p2);
+    const a = pointRightSegment(p, p1, p2) || pointInSegment(p, p1, p2);
     //RT-RB
-    const b = pointRightSegment(point, p2, p3) || pointInSegment(point, p2, p3);
+    const b = pointRightSegment(p, p2, p3) || pointInSegment(p, p2, p3);
     //RB-LB
-    const c = pointRightSegment(point, p3, p4) || pointInSegment(point, p3, p4);
+    const c = pointRightSegment(p, p3, p4) || pointInSegment(p, p3, p4);
     //LB-LT
-    const d = pointRightSegment(point, p4, p1) || pointInSegment(point, p4, p1);
+    const d = pointRightSegment(p, p4, p1) || pointInSegment(p, p4, p1);
     return a && b && c && d;
 }
 
@@ -378,7 +401,16 @@ function pointInQuadrilateral(point, p1, p2, p3, p4) {
 //     return true;
 // }
 
-export function bboxInInQuadrilateral(bbox, p1, p2, p3, p4) {
+/**
+ * bbox within a convex quadrilateral
+ * @param bbox 
+ * @param p1 
+ * @param p2 
+ * @param p3 
+ * @param p4 
+ * @returns 
+ */
+export function bboxInInQuadrilateral(bbox: BBOX, p1: Point, p2: Point, p3: Point, p4: Point) {
     const [xmin, ymin, xmax, ymax] = bbox;
 
     TEMP_POINT.x = xmin;
@@ -409,14 +441,14 @@ export function bboxInInQuadrilateral(bbox, p1, p2, p3, p4) {
 }
 
 /**
- * 
+ * Intersection of two line segments
  * @param p1 
  * @param p2 
  * @param p3 
  * @param p4 
  * @returns 
  */
-export function lineSegmentIntersection(p1, p2, p3, p4) {
+export function lineSegmentIntersection(p1: Point, p2: Point, p3: Point, p4: Point) {
     const dx1 = p2.x - p1.x, dy1 = p2.y - p1.y;
     const dx2 = p4.x - p3.x, dy2 = p4.y - p3.y;
     if (dx1 === 0 && dx2 === 0) {
@@ -466,8 +498,17 @@ export function lineSegmentIntersection(p1, p2, p3, p4) {
     return new Point(x, y);
 }
 
-
-function getSegmenQuadrilateralIntersections(currentPoint, nextPoint, p1, p2, p3, p4) {
+/**
+ * Intersection point of line segment and convex quadrilateral
+ * @param currentPoint 
+ * @param nextPoint 
+ * @param p1 
+ * @param p2 
+ * @param p3 
+ * @param p4 
+ * @returns 
+ */
+function getSegmenQuadrilateralIntersections(currentPoint: Point, nextPoint: Point, p1: Point, p2: Point, p3: Point, p4: Point) {
     const a = lineSegmentIntersection(currentPoint, nextPoint, p1, p2);
     const b = lineSegmentIntersection(currentPoint, nextPoint, p2, p3);
     const c = lineSegmentIntersection(currentPoint, nextPoint, p3, p4);
@@ -507,6 +548,7 @@ function getSegmenQuadrilateralIntersections(currentPoint, nextPoint, p1, p2, p3
     const [item1, item2] = points;
     const distance1 = item1.point.distanceTo(currentPoint);
     const distance2 = item2.point.distanceTo(currentPoint);
+    //sort Intersection
     if (distance1 < distance2) {
         return [item1, item2];
     }
@@ -521,8 +563,16 @@ function hasSameEdge(p, crossList) {
     return edges.length > 0;
 }
 
-export function clipLineByQuadrilateral(path, p1, p2, p3, p4) {
-    // const { ctx, bbox } = debug(path, p1, p2, p3, p4);
+/**
+ * clip path by convex quadrilateral
+ * @param path 
+ * @param p1 
+ * @param p2 
+ * @param p3 
+ * @param p4 
+ * @returns 
+ */
+export function clipLineByQuadrilateral(path: Array<Point>, p1: Point, p2: Point, p3: Point, p4: Point) {
     const result = [];
     let line = [];
     let nextInView;
@@ -534,8 +584,8 @@ export function clipLineByQuadrilateral(path, p1, p2, p3, p4) {
         } else {
             inView = nextInView;
         }
-        // console.log(i, inView);
         if (inView) {
+            //点在四边形内
             line.push({
                 point: point1
             });
@@ -547,10 +597,6 @@ export function clipLineByQuadrilateral(path, p1, p2, p3, p4) {
                 continue;
             }
             const cross = getSegmenQuadrilateralIntersections(point1, point2, p1, p2, p3, p4);
-
-            // if (cross.length !== 1) {
-            //     console.error('只应该一个交点才对,实际有,', cross.length);
-            // }
             line.push(...cross)
             if (point3) {
                 const cross1 = getSegmenQuadrilateralIntersections(point2, point3, p1, p2, p3, p4);
@@ -570,9 +616,6 @@ export function clipLineByQuadrilateral(path, p1, p2, p3, p4) {
             nextInView = pointInQuadrilateral(point2, p1, p2, p3, p4);
             if (nextInView) {
                 const cross = getSegmenQuadrilateralIntersections(point1, point2, p1, p2, p3, p4);
-                // if (cross.length !== 1) {
-                //     console.error('只应该一个交点才对,实际有,', cross.length);
-                // }
                 line.push(...cross)
                 continue;
             }
@@ -602,7 +645,6 @@ export function clipLineByQuadrilateral(path, p1, p2, p3, p4) {
     if (line.length > 1) {
         result.push(line);
     }
-    // drawClipPoints(ctx, bbox, result);
     return result;
 }
 
@@ -628,7 +670,16 @@ function checkRing(path) {
     return ring;
 }
 
-export function clipPolygonByQuadrilateral(path, p1, p2, p3, p4) {
+/**
+ * clip polygon by convex quadrilateral
+ * @param path 
+ * @param p1 
+ * @param p2 
+ * @param p3 
+ * @param p4 
+ * @returns 
+ */
+export function clipPolygonByQuadrilateral(path: Array<Point>, p1: Point, p2: Point, p3: Point, p4: Point) {
     MAP_TEMP_RING[0][0] = p1.x;
     MAP_TEMP_RING[0][1] = p1.y;
 
@@ -645,13 +696,13 @@ export function clipPolygonByQuadrilateral(path, p1, p2, p3, p4) {
     MAP_TEMP_RING[4][1] = p1.y;
 
 
-    const ring = checkRing(path);
     try {
+        const ring = checkRing(path);
         const result = polygonClipping.intersection([MAP_TEMP_RING], [ring]);
-        // if (result.length > 1) {
-        //     console.warn('clip polygon的结果>1:', result.length);
-        // }
         const points = [];
+        if (!result[0] || !result[0][0]) {
+            return null;
+        }
         const clipPath = result[0][0];
         for (let i = 0, len = clipPath.length; i < len; i++) {
             const p = clipPath[i];
@@ -664,112 +715,3 @@ export function clipPolygonByQuadrilateral(path, p1, p2, p3, p4) {
     }
 
 }
-
-// function debug(path, p1, p2, p3, p4) {
-//     let canvas: HTMLCanvasElement = document.getElementById('c');
-//     if (!canvas) {
-//         canvas = document.createElement('canvas') as HTMLCanvasElement;
-//         canvas.width = 400;
-//         canvas.height = 400;
-//         canvas.style.position = 'absolute';
-//         canvas.style.zIndex = 1 + '';
-//         canvas.style.top = '0px';
-//         canvas.style.backgroundColor = 'black';
-//         canvas.id = 'c';
-//         document.body.appendChild(canvas);
-//     }
-//     const ctx = canvas.getContext('2d');
-//     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-//     const points = [p1, p2, p3, p4, ...path];
-
-
-//     const bbox = getDefaultBBOX();
-//     pointsBBOX(points, bbox);
-//     drawQuadrilateral(ctx, bbox, p1, p2, p3, p4);
-//     drawPaths(ctx, bbox, [path]);
-//     // drawBBOX(ctx, bbox, pathBBOX);
-//     // drawExtent(ctx, bbox, extent);
-
-//     return {
-//         ctx,
-//         bbox
-//     }
-
-// }
-
-// function drawClipPoints(ctx, bbox, clipPoints) {
-//     ctx.strokeStyle = 'yellow';
-//     clipPoints.forEach(d => {
-//         const points = d.map(item => {
-//             return item.point;
-//         })
-//         const pts = toPixels(points, bbox, ctx.canvas);
-//         drawPolyline(ctx, pts);
-//     });
-// }
-
-// function drawQuadrilateral(ctx, bbox, p1, p2, p3, p4) {
-//     ctx.strokeStyle = 'red';
-//     const points = [p1, p2, p3, p4, p1];
-//     const pts = toPixels(points, bbox, ctx.canvas);
-//     drawPolyline(ctx, pts);
-
-
-// }
-
-// function drawBBOX(ctx, bbox, pathBBOX) {
-//     ctx.strokeStyle = 'green';
-//     const points = [];
-//     const [xmin, ymin, xmax, ymax] = pathBBOX;
-//     points.push(new Point(xmin, ymin));
-//     points.push(new Point(xmin, ymax));
-//     points.push(new Point(xmax, ymax));
-//     points.push(new Point(xmax, ymin));
-//     points.push(new Point(xmin, ymin));
-//     const pts = toPixels(points, bbox, ctx.canvas);
-//     drawPolyline(ctx, pts);
-// }
-
-// function drawPaths(ctx, bbox, paths) {
-//     ctx.strokeStyle = 'green';
-//     paths.forEach(path => {
-//         const pts = toPixels(path, bbox, ctx.canvas);
-//         pts.slice(0, pts.length - 1).forEach((pt, index) => {
-//             ctx.fillStyle = 'white';
-//             ctx.fillText(index, pt.x, pt.y);
-//         });
-//         drawPolyline(ctx, pts);
-//     });
-
-// }
-
-// function drawExtent(ctx, bbox, extent) {
-//     ctx.strokeStyle = 'green';
-//     const points = extent.toArray();
-//     const pts = toPixels(points, bbox, ctx.canvas);
-//     drawPolyline(ctx, pts);
-// }
-
-// function drawPolyline(ctx, points) {
-//     ctx.beginPath();
-//     points.forEach((p, index) => {
-//         const { x, y } = p;
-//         if (index === 0) {
-//             ctx.moveTo(x, y);
-//         } else {
-//             ctx.lineTo(x, y)
-//         }
-//     });
-//     ctx.stroke();
-// }
-
-// function toPixels(points, bbox, canvas) {
-//     const [xmin, ymin, xmax, ymax] = bbox;
-//     const ax = (canvas.width - 20) / (xmax - xmin), ay = (canvas.height - 20) / (ymax - ymin);
-//     return points.map(p => {
-//         const x = (p.x - xmin) * ax + 10;
-//         const y = (canvas.height) - (p.y - ymin) * ay - 10;
-//         return new Point(x, y);
-//     })
-// }
