@@ -1,7 +1,7 @@
 import Point from '../../geo/Point';
 import Coordinate from '../../geo/Coordinate';
 import { isNumber } from './common';
-import { BBOX} from './bbox';
+import { BBOX } from './bbox';
 import polygonClipping from 'polygon-clipping';
 
 const TEMP_POINT = new Point(0, 0);
@@ -312,6 +312,7 @@ export function getMinMaxAltitude(altitude: number | number[] | number[][]): [nu
 }
 
 /**
+ * 点在线段上
  * point in segment
  * @param p 
  * @param p1 
@@ -355,6 +356,45 @@ function pointLeftSegment(p: Point, p1: Point, p2: Point) {
 
 function pointRightSegment(p: Point, p1: Point, p2: Point) {
     return !pointLeftSegment(p, p1, p2);
+}
+
+function isClockwise(ring) {
+    let sum = 0;
+    let i = 1;
+    let prev;
+    let cur;
+    const len = ring.length;
+
+    while (i < len) {
+        prev = cur || ring[0];
+        cur = ring[i];
+        sum += (cur.x - prev.x) * (cur.y + prev.y);
+        i++;
+    }
+    return sum > 0;
+}
+/**
+ * 点在三角形内
+ * point in Triangle
+ * @param p 
+ * @param p1 
+ * @param p2 
+ * @param p3 
+ * @returns 
+ */
+function pointInTriangle(p: Point, p1: Point, p2: Point, p3: Point) {
+    if (isClockwise([p1, p2, p3, p1])) {
+        const a = pointRightSegment(p, p1, p2);
+        const b = pointRightSegment(p, p2, p3);
+        const c = pointRightSegment(p, p3, p1);
+        return a && b && c;
+    }
+
+    const a = pointLeftSegment(p, p1, p2);
+    const b = pointLeftSegment(p, p2, p3);
+    const c = pointLeftSegment(p, p3, p1);
+    return a && b && c;
+
 }
 
 /**
@@ -441,6 +481,7 @@ export function bboxInInQuadrilateral(bbox: BBOX, p1: Point, p2: Point, p3: Poin
 }
 
 /**
+ * 线段与线段交点
  * Intersection of two line segments
  * @param p1 
  * @param p2 
@@ -499,6 +540,7 @@ export function lineSegmentIntersection(p1: Point, p2: Point, p3: Point, p4: Poi
 }
 
 /**
+ * 点与凸四边形的交点
  * Intersection point of line segment and convex quadrilateral
  * @param currentPoint 
  * @param nextPoint 
@@ -556,11 +598,36 @@ function getSegmenQuadrilateralIntersections(currentPoint: Point, nextPoint: Poi
 
 }
 
-function hasSameEdge(p, crossList) {
-    const edges = crossList.filter(item => {
-        return item.edgeIndex === p.edgeIndex;
-    });
-    return edges.length > 0;
+/**
+ * 公共的边
+ * @param p 
+ * @param crossList 
+ * @returns 
+ */
+function hasSameEdge(cross, crossList) {
+    for (let i = 0, len = crossList.length; i < len; i++) {
+        const item = crossList[i];
+        if (item.edgeIndex === cross.edgeIndex) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * 找出边上在给定三角形内的点
+ * @param edge 
+ * @param p1 
+ * @param p2 
+ * @param p3 
+ * @returns 
+ */
+function getEdgeVertexInTriangle(edge, p1, p2, p3) {
+    const [pt1, pt2] = edge;
+    if (pointInTriangle(pt1, p1, p2, p3)) {
+        return pt1;
+    }
+    return pt2;
 }
 
 /**
@@ -593,18 +660,22 @@ export function clipLineByQuadrilateral(path: Array<Point>, p1: Point, p2: Point
                 continue;
             }
             nextInView = pointInQuadrilateral(point2, p1, p2, p3, p4);
+            //下一个点在视野内
             if (nextInView) {
                 continue;
             }
             const cross = getSegmenQuadrilateralIntersections(point1, point2, p1, p2, p3, p4);
-            line.push(...cross)
-            if (point3) {
+            line.push(...cross);
+
+            if (point3 && cross.length) {
+                const p = cross[cross.length - 1];
                 const cross1 = getSegmenQuadrilateralIntersections(point2, point3, p1, p2, p3, p4);
                 if (cross1.length) {
-                    const p = cross[0];
+
+                    //是否需要加入视野的拐点
                     if (!hasSameEdge(p, cross1)) {
                         line.push({
-                            point: p.edge[1]
+                            point: getEdgeVertexInTriangle(p.edge, point1, point2, point3)
                         });
                     }
                 }
@@ -614,6 +685,7 @@ export function clipLineByQuadrilateral(path: Array<Point>, p1: Point, p2: Point
                 continue;
             }
             nextInView = pointInQuadrilateral(point2, p1, p2, p3, p4);
+            //下一个点在视野内
             if (nextInView) {
                 const cross = getSegmenQuadrilateralIntersections(point1, point2, p1, p2, p3, p4);
                 line.push(...cross)
@@ -621,17 +693,16 @@ export function clipLineByQuadrilateral(path: Array<Point>, p1: Point, p2: Point
             }
 
             const cross = getSegmenQuadrilateralIntersections(point1, point2, p1, p2, p3, p4);
-            if (cross.length) {
-                line.push(...cross);
-                if (point3) {
-                    const cross1 = getSegmenQuadrilateralIntersections(point2, point3, p1, p2, p3, p4);
-                    if (cross1.length) {
-                        const p = cross1[0];
-                        if (!hasSameEdge(p, cross)) {
-                            line.push({
-                                point: p.edge[0]
-                            });
-                        }
+            line.push(...cross);
+            if (point3 && cross.length) {
+                const p = cross[cross.length - 1];
+                const cross1 = getSegmenQuadrilateralIntersections(point2, point3, p1, p2, p3, p4);
+                if (cross1.length) {
+                    //是否需要加入视野的拐点
+                    if (!hasSameEdge(p, cross1)) {
+                        line.push({
+                            point: getEdgeVertexInTriangle(p.edge, point1, point2, point3)
+                        });
                     }
                 }
                 continue;

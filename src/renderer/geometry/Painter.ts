@@ -515,7 +515,7 @@ class Painter extends Class {
             xmin -= offset;
             xmax += offset;
             ymax += offset;
-            ymin += 0;
+            ymin -= offset;
             const p = new Point(xmin, ymin);
             //LT
             p1 = map['_containerPointToPointAtRes'](p, glRes);
