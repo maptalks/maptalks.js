@@ -497,5 +497,5 @@ function hammersley(i, sampleSize) {
 
 
 export function supportFloat16(regl) {
-    return regl.hasExtension('EXT_color_buffer_float') || regl.hasExtension('OES_texture_half_float');
+    return regl['_gl'] instanceof WebGL2RenderingContext || regl.hasExtension('OES_texture_half_float');
 }

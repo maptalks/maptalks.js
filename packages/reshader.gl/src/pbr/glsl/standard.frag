@@ -294,10 +294,6 @@ vec4 fetchTexture(sampler2D tex, in vec2 uv) {
 
 #define SHADER_NAME PBR
 
-vec3 decodeRGBM(const in vec4 color, const in float range) {
-    if(range <= 0.0) return color.rgb;
-    return range * color.rgb * color.a;
-}
 vec3 getMaterialAlbedo() {
     // return sRGBToLinear(materialUniforms.albedo);
     return materialUniforms.albedo;
