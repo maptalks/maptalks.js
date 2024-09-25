@@ -157,7 +157,6 @@ class LightManager {
         const regl = this._tryToGetREGLContext(this._map);
         const maps = reshader.pbr.PBRHelper.createIBLMaps(regl, {
             envTexture: Array.isArray(envTexture) ? envTexture : envTexture.getREGLTexture(regl),
-            rgbmRange: Array.isArray(envTexture) ? 9 : envTexture.rgbmRange,
             ignoreSH: !!config['sh'],
             envCubeSize: cubeSize,
             prefilterCubeSize: cubeSize,

@@ -3,13 +3,13 @@ import { isArray } from './common/Util';
 import { default as Texture, REF_COUNT_KEY } from './AbstractTexture';
 import { getUniqueTexture } from './common/REGLHelper';
 import REGL, { Regl } from '@maptalks/regl';
+import DataUtils from './common/DataUtils';
 
 /**
  * config properties:
  * https://github.com/regl-project/regl/blob/gh-pages/API.md#textures
  */
 class Texture2D extends Texture {
-    rgbmRange?: number
 
     onLoad({ data }) {
         const config = this.config;
@@ -18,12 +18,19 @@ class Texture2D extends Texture {
             return;
         }
         if (config.hdr) {
-            data = parseRGBE(data.data, 0, config.maxRange);
+            data = parseRGBE(data.data, 0);
             if (!data) {
                 throw new Error('Invalid hdr data' + (config.url ? ':' + config.url : ''));
             } else {
-                this.rgbmRange = data.rgbmRange;
-                config.data = data.pixels;
+                const uint16 = new Uint16Array(data.pixels.length)
+                for (let i = 0; i < data.pixels.length; i++) {
+                    uint16[i] = Math.min(DataUtils.toHalfFloat(data.pixels[i]), 65504);
+                }
+                config.data = uint16;
+                config.type = 'float16';
+                config.colorSpace = 'browser';
+                config.min = 'linear';
+                config.mag = 'linear';
             }
         } else {
             config.data = data;

@@ -123,7 +123,6 @@ function getLightUniforms(map, iblTexes) {
             'ambientColor': ambientLight.color || [0.2, 0.2, 0.2]
         };
     }
-    uniforms['rgbmRange'] = iblMaps ? iblTexes.rgbmRange : 7;
     uniforms['environmentExposure'] = isNumber(ambientLight.exposure) ? ambientLight.exposure : 1; //2]
     uniforms['environmentOrientation'] = ambientLight.orientation || 0;
 
@@ -138,18 +137,28 @@ export function createIBLTextures(regl, map) {
     if (!resource) {
         return null;
     }
+    const isHDR = resource.isHDR;
     return {
         'prefilterMap': regl.cube({
             width: resource.prefilterMap.width,
             height: resource.prefilterMap.height,
             faces: resource.prefilterMap.faces,
-            min : 'linear mipmap linear',
+            min : 'linear',
             mag : 'linear',
             format: 'rgba',
+            type: isHDR ? 'float16' : 'uint8'
             // mipmap: true
         }),
-        'sh': resource.sh,
-        'rgbmRange': resource.rgbmRange
+        'envMap': regl.cube({
+            width: resource.envMap.width,
+            height: resource.envMap.height,
+            faces: resource.envMap.faces,
+            min : 'linear',
+            mag : 'linear',
+            format: 'rgba',
+            type: isHDR ? 'float16' : 'uint8'
+        }),
+        'sh': resource.sh
     };
 }
 

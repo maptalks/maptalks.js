@@ -64,7 +64,6 @@ uniform float environmentExposure;
 uniform float roughnessFactor;
 uniform float metallicFactor;
 uniform float normalMapFactor;
-uniform float rgbmRange;
 uniform float specularF0;
 uniform int emitMultiplicative;
 uniform int normalMapFlipY;
@@ -422,7 +421,7 @@ const in vec3 normal, const in vec3 V, const in float NoL, const in float roughn
         vec3 dir = R;
         float maxLevels = prefilterMiplevel.x;
         float lod = min(maxLevels, roughness * prefilterMiplevel.y);
-        vec3 envLight = decodeRGBM(textureCubeLod(prefilterMap, dir, lod), rgbmRange);
+        vec3 envLight = textureCubeLod(prefilterMap, dir, lod);
         if (length(hdrHSV) > 0.0) {
             return hsv_apply(envLight, hdrHSV);
         } else {
@@ -1005,7 +1004,6 @@ void main() {
     #ifdef HAS_VERTEX_COLOR
         glFragColor *= vertexColor_get();
     #endif
-    // gl_FragColor = encodeRGBM(frag, rgbmRange);
     // gl_FragColor = vec4(vec3(metal), 1.0);
 
 // #if defined(HAS_TONE_MAPPING)

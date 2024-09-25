@@ -112,7 +112,7 @@ function readColors(scan: number[][], buffer: Uint8Array, offset: number, xmax: 
 // http://www.graphics.cornell.edu/~bjw/rgbe.html
 // Blender source
 // http://radsite.lbl.gov/radiance/refer/Notes/picture_format.html
-function parseRGBE(arrayBuffer: ArrayBufferLike, exposure = 0, maxRange = 9) {
+function parseRGBE(arrayBuffer: ArrayBufferLike, exposure = 0) {
     const data = new Uint8Array(arrayBuffer);
     const size = data.length;
     if (uint82string(data, 0, 2) !== '#?') {
@@ -155,8 +155,8 @@ function parseRGBE(arrayBuffer: ArrayBufferLike, exposure = 0, maxRange = 9) {
             scanline[x][j] = 0;
         }
     }
-    let range = 0;
-    const pixels: number[] = new Array(width * height * 4);
+    // let range = 0;
+    const pixels: any = new Float32Array(width * height * 4);
     let offset2 = 0;
     for (let y = 0; y < height; y++) {
         offset = readColors(scanline, data, offset, width);
@@ -165,24 +165,23 @@ function parseRGBE(arrayBuffer: ArrayBufferLike, exposure = 0, maxRange = 9) {
         }
         for (let x = 0; x < width; x++) {
             rgbe2float(scanline[x], pixels, offset2, exposure);
-            range = Math.max(range, pixels[offset2], pixels[offset2 + 1], pixels[offset2 + 2], pixels[offset2 + 3]);
+            // range = Math.max(range, pixels[offset2], pixels[offset2 + 1], pixels[offset2 + 2], pixels[offset2 + 3]);
             offset2 += 4;
         }
     }
-    range = Math.min(range, maxRange);
+    // range = Math.min(range, maxRange);
 
-    offset2 = 0;
-    for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-            encodeRGBM(pixels, offset2, range);
-            offset2 += 4;
-        }
-    }
+    // offset2 = 0;
+    // for (let y = 0; y < height; y++) {
+    //     for (let x = 0; x < width; x++) {
+    //         encodeRGBM(pixels, offset2, range);
+    //         offset2 += 4;
+    //     }
+    // }
     return {
         width : width,
         height : height,
-        pixels : pixels,
-        rgbmRange: range
+        pixels : pixels
     };
 }
 

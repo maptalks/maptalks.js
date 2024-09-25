@@ -11,6 +11,8 @@
 #endif
 precision highp float;
 
+#define saturate(x)        clamp(x, 0.0, 1.0)
+
 #include <gl2_frag>
 
 #include <hsv_frag>
@@ -29,10 +31,6 @@ varying vec3 vWorldPos;
 uniform float environmentExposure;
 uniform float backgroundIntensity;
 
-#if defined(INPUT_RGBM) || defined(ENC_RGBM)
-    uniform float rgbmRange;
-#endif
-
 vec4 encodeRGBM(const in vec3 color, const in float range) {
     if(range <= 0.0) return vec4(color, 1.0);
     vec4 rgbm;
@@ -44,8 +42,9 @@ vec4 encodeRGBM(const in vec3 color, const in float range) {
 }
 
 vec3 decodeRGBM(const in vec4 color, const in float range) {
-    if(range <= 0.0) return color.rgb;
-    return range * color.rgb * color.a;
+    // if(range <= 0.0) return color.rgb;
+    // return range * color.rgb * color.a;
+    return color.rgb;
 }
 
 vec4 textureCubeFixed(const in samplerCube tex, const in vec3 R, const in float size, const in float bias) {
@@ -85,6 +84,39 @@ float pseudoRandom(const in vec2 fragCoord) {
     return fract((p3.x + p3.y) * p3.z);
 }
 
+const float toneMappingExposure = 1.0;
+
+vec3 RRTAndODTFit( vec3 v ) {
+    vec3 a = v * ( v + 0.0245786 ) - 0.000090537;
+    vec3 b = v * ( 0.983729 * v + 0.4329510 ) + 0.238081;
+    return a / b;
+}
+
+vec3 ACESFilmicToneMapping( vec3 color ) {
+    const mat3 ACESInputMat = mat3(
+    vec3( 0.59719, 0.07600, 0.02840 ), vec3( 0.35458, 0.90834, 0.13383 ), vec3( 0.04823, 0.01566, 0.83777 )
+    );
+    const mat3 ACESOutputMat = mat3(
+    vec3(  1.60475, -0.10208, -0.00327 ), vec3( -0.53108, 1.10813, -0.07276 ), vec3( -0.07367, -0.00605, 1.07602 )
+    );
+    color *= toneMappingExposure / 0.6;
+    color = ACESInputMat * color;
+    color = RRTAndODTFit( color );
+    color = ACESOutputMat * color;
+    return saturate( color );
+}
+
+vec3 toneMapping( vec3 color ) {
+    return ACESFilmicToneMapping( color );
+}
+
+vec4 sRGBTransferOETF( in vec4 value ) {
+    return vec4( mix( pow( value.rgb, vec3( 0.41666 ) ) * 1.055 - vec3( 0.055 ), value.rgb * 12.92, vec3( lessThanEqual( value.rgb, vec3( 0.0031308 ) ) ) ), value.a );
+}
+vec4 linearToOutputTexel( vec4 value ) {
+    return ( sRGBTransferOETF( value ) );
+}
+
 void main()
 {
     vec4 envColor;
@@ -99,28 +131,15 @@ void main()
     #endif
     envColor.rgb *= environmentExposure;
     envColor.rgb *= backgroundIntensity;
-    #ifdef ENC_RGBM
-        #if !defined(USE_AMBIENT) && defined(INPUT_RGBM)
-            if (length(hsv) > 0.0) {
-                envColor.rgb = hsv_apply(decodeRGBM(envColor, rgbmRange).rgb, hsv);
-                envColor = encodeRGBM(envColor.rgb, rgbmRange);
-            }
-        #else
-            envColor = encodeRGBM(envColor.rgb, rgbmRange);
-        #endif
-        // glFragColor = vec4(clamp(envColor.rgb, 0.0, 1.0), 1.0);
-        glFragColor = envColor;
-    #elif !defined(USE_AMBIENT) && defined(INPUT_RGBM)
-        glFragColor = vec4(decodeRGBM(envColor, rgbmRange), 1.0);
-        if (length(hsv) > 0.0) {
-            glFragColor.rgb = hsv_apply(clamp(glFragColor.rgb, 0.0, 1.0), hsv);
-        }
-    #else
-        if (length(hsv) > 0.0) {
-            envColor.rgb = hsv_apply(envColor.rgb, hsv);
-        }
-        glFragColor = envColor;
-    #endif
+
+    glFragColor = envColor;
+    if (length(hsv) > 0.0) {
+        glFragColor.rgb = hsv_apply(clamp(glFragColor.rgb, 0.0, 1.0), hsv);
+    }
+
+    glFragColor.rgb = toneMapping(glFragColor.rgb);
+
+    glFragColor = linearToOutputTexel(glFragColor);
 
     // #ifdef USE_HDR
     //     vec3 color = gl_FragColor.rgb;

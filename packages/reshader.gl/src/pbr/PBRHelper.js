@@ -1,8 +1,10 @@
 import { renderToCube } from '../common/RenderHelper.js';
+import DataUtils from '../common/DataUtils';
 
 import cubeData from './CubeData.js';
 
 import cubemapVS from './glsl/helper/cubemap.vert';
+import cubemapFS from './glsl/helper/cubemap.frag';
 import equirectangularMapFS from './glsl/helper/equirectangular_to_cubemap.frag';
 import prefilterFS from './glsl/helper/prefilter.frag';
 import dfgFS from './glsl/helper/dfg.frag';
@@ -45,19 +47,21 @@ export function createIBLMaps(regl, config = {}) {
     //----------------------------------------------------
     // generate ibl maps
     let envMap;
+    let isHDR = false;
     if (!Array.isArray(envTexture)) {
-        envMap = createEquirectangularMapCube(regl, envTexture, envCubeSize, true);
+        envMap = createEquirectangularMapCube(regl, envTexture, envCubeSize);
+        isHDR = true;
     } else {
         const cube = regl.cube({
             flipY: true,
             faces: envTexture
         });
         // const cube = regl.cube(...envTexture);
-        envMap = createSkybox(regl, cube, envCubeSize, true, config.rgbmRange);
+        envMap = createSkybox(regl, cube, envCubeSize);
         cube.destroy();
     }
 
-    const { prefilterMap, prefilterMipmap } = createPrefilterCube(regl, envMap, config.rgbmRange, prefilterCubeSize, sampleSize, roughnessLevels);
+    const { prefilterMap, prefilterMipmap } = createPrefilterCube(regl, envMap, prefilterCubeSize, sampleSize, roughnessLevels, isHDR);
 
     // const dfgLUT = generateDFGLUT(regl, dfgSize, sampleSize, roughnessLevels);
 
@@ -73,7 +77,7 @@ export function createIBLMaps(regl, config = {}) {
         // cube.destroy();
         // }
         // const lod = regl.hasExtension('EXT_shader_texture_lod') ? '1.0' : undefined;
-        const faces = getEnvmapPixels(regl, prefilterMap, size);
+        const faces = getEnvmapPixels(regl, prefilterMap, size, isHDR);
         sh = coefficients(faces, size, size);
         const flatten = [];
         for (let i = 0; i < sh.length; i++) {
@@ -86,8 +90,8 @@ export function createIBLMaps(regl, config = {}) {
     // const irradianceMap = createIrradianceCube(regl, envMap, irradianceCubeSize);
 
     const maps = {
-        rgbmRange: config.rgbmRange,
         envMap,
+        isHDR,
         prefilterMap,
         // dfgLUT
     };
@@ -100,7 +104,7 @@ export function createIBLMaps(regl, config = {}) {
         maps['envMap'] = {
             width: envMap.width,
             height: envMap.height,
-            faces: getEnvmapPixels(regl, envMap, envCubeSize)
+            faces: getEnvmapPixels(regl, envMap, envCubeSize, isHDR)
         };
         maps['prefilterMap'] = {
             width: prefilterMap.width,
@@ -114,9 +118,9 @@ export function createIBLMaps(regl, config = {}) {
     return maps;
 }
 
-function createSkybox(regl, cubemap, size, encRgbm, rgbmRange) {
+function createSkybox(regl, cubemap, size) {
     const drawCube = regl({
-        frag : encRgbm ? '#define ENC_RGBM 1\n' + skyboxFrag : skyboxFrag,
+        frag : skyboxFrag,
         vert : cubemapVS,
         attributes : {
             'aPosition' : cubeData.vertices
@@ -129,8 +133,7 @@ function createSkybox(regl, cubemap, size, encRgbm, rgbmRange) {
             'bias': 0,
             'size': cubemap.width,
             'environmentExposure': 1,
-            'backgroundIntensity': 1,
-            'rgbmRange': rgbmRange
+            'backgroundIntensity': 1
         },
         elements : cubeData.indices
     });
@@ -159,9 +162,9 @@ function createSkybox(regl, cubemap, size, encRgbm, rgbmRange) {
     return envMapFBO;
 }
 
-function getEnvmapPixels(regl, cubemap, envCubeSize) {
+function getEnvmapPixels(regl, cubemap, envCubeSize, isHDR) {
     const drawCube = regl({
-        frag : skyboxFrag,
+        frag : cubemapFS,
         vert : cubemapVS,
         attributes : {
             'aPosition' : cubeData.vertices
@@ -169,21 +172,36 @@ function getEnvmapPixels(regl, cubemap, envCubeSize) {
         uniforms : {
             'projMatrix' : regl.context('projMatrix'),
             'viewMatrix' :  regl.context('viewMatrix'),
-            'cubeMap' : cubemap,
-            'environmentExposure': 1,
-            'bias': 0,
-            'size': envCubeSize,
-            'hsv': [0, 0, 0]
+            'cubeMap' : cubemap
         },
         elements : cubeData.indices
     });
     const faces = [];
-    const tmpFBO = regl.framebuffer(envCubeSize);
+    const color = regl.texture({
+        radius : envCubeSize,
+        min : 'linear',
+        mag : 'linear',
+        type: isHDR ? 'float' : 'uint8',
+        format: 'rgba'
+    });
+    const tmpFBO = regl.framebuffer({
+        radius : envCubeSize,
+        color
+    });
     renderToCube(regl, tmpFBO, drawCube, {
         size : envCubeSize
     }, function (/* context, props, batchId */) {
         const pixels = regl.read();
-        faces.push(new pixels.constructor(pixels));
+        if (isHDR) {
+            const uint16 = new Uint16Array(pixels.length)
+            for (let i = 0; i < pixels.length; i++) {
+                uint16[i] = Math.min(DataUtils.toHalfFloat(pixels[i]), 65504);
+            }
+            faces.push(uint16);
+        } else {
+            faces.push(pixels);
+        }
+
     });
     drawCube.destroy();
     tmpFBO.destroy();
@@ -196,10 +214,13 @@ function getEnvmapPixels(regl, cubemap, envCubeSize) {
  * @param {REGLTexture} texture - a regl texture
  * @param {Number} [size=512] - size of the cubemap, 512 by default
  */
-function createEquirectangularMapCube(regl, texture, size, rgbm) {
+function createEquirectangularMapCube(regl, texture, size) {
+    if (!supportFloat16(regl)) {
+        throw new Error('HDR is not supported for lack of support for float 16 texture');
+    }
     size = size || 512;
     const drawCube = regl({
-        frag : rgbm ? '#define INPUT_RGBM 1\n' + equirectangularMapFS : equirectangularMapFS,
+        frag: equirectangularMapFS,
         vert : cubemapVS,
         attributes : {
             'aPosition' : cubeData.vertices
@@ -217,6 +238,7 @@ function createEquirectangularMapCube(regl, texture, size, rgbm) {
         height: size,
         min: 'linear mipmap linear',
         mag: 'linear',
+        type: 'float16',
         format: 'rgba',
     });
     const envMapFBO = regl.framebufferCube({
@@ -229,7 +251,7 @@ function createEquirectangularMapCube(regl, texture, size, rgbm) {
     return envMapFBO;
 }
 
-function createPrefilterMipmap(regl, fromCubeMap, rgbmRange, SIZE, sampleSize, roughnessLevels) {
+function createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLevels, isHDR) {
     //1. 生成NormalDistribution采样的LUT
     sampleSize = sampleSize || 1024;
     roughnessLevels = roughnessLevels || 256;
@@ -256,8 +278,7 @@ function createPrefilterMipmap(regl, fromCubeMap, rgbmRange, SIZE, sampleSize, r
             'environmentMap' : fromCubeMap,
             'distributionMap' : distributionMap,
             'roughness' : regl.prop('roughness'),
-            'resolution': SIZE,
-            'rgbmRange': rgbmRange || 7
+            'resolution': SIZE
         },
         elements : cubeData.indices,
         viewport : {
@@ -273,6 +294,7 @@ function createPrefilterMipmap(regl, fromCubeMap, rgbmRange, SIZE, sampleSize, r
         radius : SIZE,
         min : 'linear',
         mag : 'linear',
+        type: isHDR ? 'float' : 'uint8'
     });
     const tmpFBO = regl.framebuffer({
         radius: SIZE,
@@ -292,13 +314,21 @@ function createPrefilterMipmap(regl, fromCubeMap, rgbmRange, SIZE, sampleSize, r
             size : size
         }, function (/* context, props, batchId */) {
             const pixels = regl.read({ framebuffer: tmpFBO });
+            let data = pixels;
+            if (isHDR) {
+                data = new Uint16Array(pixels.length)
+                for (let i = 0; i < pixels.length; i++) {
+                    data[i] = Math.min(DataUtils.toHalfFloat(pixels[i]), 65504);
+                }
+            }
+
             if (!mipmap[faceId]) {
                 //regl要求的cube face的mipmap数据格式
                 mipmap[faceId] = {
                     mipmap : []
                 };
             }
-            mipmap[faceId].mipmap.push(pixels);
+            mipmap[faceId].mipmap.push(data);
             //下一个面
             faceId++;
         });
@@ -317,7 +347,7 @@ function createPrefilterMipmap(regl, fromCubeMap, rgbmRange, SIZE, sampleSize, r
 //参考代码：
 //https://github.com/JoeyDeVries/LearnOpenGL/blob/master/src/6.pbr/2.2.2.ibl_specular_textured/ibl_specular_textured.cpp#L290
 //https://github.com/vorg/pragmatic-pbr/blob/master/local_modules/prefilter-cubemap/index.js
-function createPrefilterCube(regl, fromCubeMap, rgbmRange, SIZE, sampleSize, roughnessLevels) {
+function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevels, isHDR) {
     //基于rgbm格式生成mipmap
     // const faces = getEnvmapPixels(regl, fromCubeMap, fromCubeMap.width);
     // const mipmapCube = regl.cube({
@@ -329,13 +359,15 @@ function createPrefilterCube(regl, fromCubeMap, rgbmRange, SIZE, sampleSize, rou
     //     mipmap: true
     // });
 
-    const mipmap = createPrefilterMipmap(regl, fromCubeMap, rgbmRange, SIZE, sampleSize, roughnessLevels);
+    const mipmap = createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLevels, isHDR);
     // debugger
     const prefilterMap = regl.cube({
         radius : SIZE,
-        min : 'linear mipmap linear',
+        min : 'linear',
         mag : 'linear',
-        faces : mipmap
+        type:  isHDR ? 'float16' : 'uint8',
+        faces : mipmap,
+        format: 'rgba'
     });
     // mipmapCube.destroy();
     return { prefilterMap, prefilterMipmap: mipmap };
@@ -424,7 +456,7 @@ export function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
 //因为glsl不支持位操作，所以预先生成采样LUT， 代替原代码中的采样逻辑
 //https://github.com/JoeyDeVries/LearnOpenGL/blob/master/src/6.pbr/2.2.2.ibl_specular_textured/2.2.2.prefilter.fs
 function generateNormalDistribution(sampleSize, roughnessLevels) {
-    const pixels = new Array(sampleSize * roughnessLevels * 4);
+    const pixels = new Float32Array(sampleSize * roughnessLevels * 4);
     for (let i = 0; i < sampleSize; i++) {
         const { x, y } = hammersley(i, sampleSize);
 
@@ -461,4 +493,9 @@ function hammersley(i, sampleSize) {
     y = (((y & 16711935) << 8 | (y & 4278255360) >>> 8) >>> 0) / 4294967296;
 
     return { x, y };
+}
+
+
+export function supportFloat16(regl) {
+    return regl.hasExtension('EXT_color_buffer_float') || regl.hasExtension('OES_texture_half_float');
 }

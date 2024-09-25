@@ -107,7 +107,6 @@ class EnvironmentPainter {
         OUTSIZE[0] = canvas.width;
         OUTSIZE[1] = canvas.height;
         return {
-            'rgbmRange': iblTexes.rgbmRange,
             'cubeMap': iblTexes.prefilterMap,
             'bias': level,
             'size': cubeSize / Math.pow(2, Math.max(0, level - 1)),

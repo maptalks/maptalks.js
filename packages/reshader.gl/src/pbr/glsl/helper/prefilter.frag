@@ -7,7 +7,6 @@ uniform samplerCube environmentMap;
 uniform sampler2D distributionMap;
 uniform float roughness;
 uniform float resolution; // resolution of source cubemap (per face)
-uniform float rgbmRange;
 
 const float PI = 3.14159265359;
 
@@ -99,13 +98,12 @@ void main()
             // prefilteredColor += decodeRGBM(textureCube(environmentMap, L, mipLevel), 7.0).rgb * NdotL;
             // totalWeight      += NdotL;
             //--------------------------------------------------------
-            prefilteredColor += decodeRGBM(textureCube(environmentMap, L), rgbmRange).rgb * NdotL;
+            prefilteredColor += textureCube(environmentMap, L).rgb * NdotL;
             totalWeight      += NdotL;
         }
     }
 
     prefilteredColor = prefilteredColor / totalWeight;
 
-    gl_FragColor = encodeRGBM(prefilteredColor, rgbmRange);
-    // gl_FragColor = vec4(prefilteredColor, 1.0);
+    gl_FragColor = vec4(prefilteredColor, 1.0);
 }

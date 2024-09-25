@@ -18,7 +18,6 @@ uniform float layerOpacity;
     uniform vec3 hdrHSV;
     uniform samplerCube prefilterMap;
     uniform sampler2D brdfLUT;
-    uniform float rgbmRange;
     uniform mat3 environmentTransform;
     uniform vec3 diffuseSPH[9];
 
@@ -419,7 +418,7 @@ vec3 getSkyColor(in vec3 n, in vec3 v, in float upDotV, in float roughness) {
         vec4 prefilteredColor = textureCube(prefilterMap, environmentTransform * R);
         float factor = clamp(1.0 + dot(R, n), 0.0, 1.0);
         prefilteredColor *= factor * factor;
-        vec3 specular = decodeRGBM(prefilteredColor, rgbmRange);
+        vec3 specular = prefilteredColor;
         vec3 diffuse = computeDiffuseSPH(n);
         float f90 = clamp(50.0 * waterBaseColor.g, 0.0, 1.0);
         vec3 brdf = integrateBRDF(waterBaseColor.rgb, roughness, dot(n, v), f90);
