@@ -1802,7 +1802,14 @@ export type Geo3DTilesServiceOptions = {
      * @english
      * The preset value of the material uniforms
      */
-    material?: any
+    material?: any,
+
+    /**
+     * 如果模型没有法线属性数据，则为其创建
+     * @english
+     * Create normal attribute for models if it's missing
+     */
+    createNormalIfMissed?: boolean
 };
 
 export type TileNode = {

@@ -128,7 +128,9 @@ export default class BaseLayerWorker {
                 i3sData.gltf.url = url;
                 const { transferables } = i3sData;
                 i3sData.magic = 'b3dm';
-                this._createGLTFMissedAttrs(i3sData.gltf);
+                if (service.createNormalIfMissed) {
+                    this._createGLTFMissedAttrs(i3sData.gltf);
+                }
                 if (service.compressGeometry) {
                     this._compressAttrFloat32ToInt16(i3sData.gltf);
                 }
@@ -1161,10 +1163,10 @@ export default class BaseLayerWorker {
         if (tangentAttr) {
             return false;
         }
-        const texCoordAttr = primitive.attributes['TEXCOORD_0'];
-        if (!texCoordAttr) {
-            return false;
-        }
+        // const texCoordAttr = primitive.attributes['TEXCOORD_0'];
+        // if (!texCoordAttr) {
+        //     return false;
+        // }
         return true;
     }
 
