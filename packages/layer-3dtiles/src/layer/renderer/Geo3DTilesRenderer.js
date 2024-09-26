@@ -60,13 +60,13 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         const meshes = [];
         const { b3dmMeshes, pntsMeshes, i3dmMeshes } = paintedMeshes;
         if (b3dmMeshes.length) {
-            pushIn(meshes, b3dmMeshes);
+            pushIn(meshes, b3dmMeshes.filter(mesh => !!(mesh && mesh.geometry)));
         }
         if (pntsMeshes.length) {
-            pushIn(meshes, pntsMeshes);
+            pushIn(meshes, pntsMeshes.filter(mesh => !!(mesh && mesh.geometry)));
         }
         if (i3dmMeshes.length) {
-            pushIn(meshes, i3dmMeshes);
+            pushIn(meshes, i3dmMeshes.filter(mesh => !!(mesh && mesh.geometry)));
         }
         return meshes;
     }
@@ -689,7 +689,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
     prepareWorker() {
         const map = this.getMap();
         if (!this.workerConn) {
-            this.workerConn = new Geo3DTilesWorkerConnection('@maptalks/3dtiles', map.id);
+            this.workerConn = new Geo3DTilesWorkerConnection('@maptalks/3dtiles', map.id, reshader.Util.supportNPOT(this.regl));
         }
         const workerConn = this.workerConn;
         //setTimeout in case layer's style is set to layer after layer's creating.

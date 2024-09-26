@@ -102,6 +102,9 @@ export default class RayCaster {
     }
 
     _checkBBox(bbox, ray) {
+        if (!bbox) {
+            return false;
+        }
         return ray.intersectBox(bbox, bboxIntersects);
     }
 }

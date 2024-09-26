@@ -468,6 +468,9 @@ class Mesh {
     }
 
     getBoundingBox() {
+        if (!this._geometry) {
+            return null;
+        }
         if (!this._bbox) {
             this.updateBoundingBox();
         }
