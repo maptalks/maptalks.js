@@ -1,5 +1,5 @@
 import parseRGBE from './common/HDR';
-import { isArray } from './common/Util';
+import { isArray, isPowerOfTwo, resizeToPowerOfTwo } from './common/Util';
 import { default as Texture, REF_COUNT_KEY } from './AbstractTexture';
 import { getUniqueTexture } from './common/REGLHelper';
 import REGL, { Regl } from '@maptalks/regl';
@@ -42,6 +42,14 @@ class Texture2D extends Texture {
     }
 
     createREGLTexture(regl: Regl): REGL.Texture2D {
+        const config = this.config;
+        if (config.data && this._needPowerOf2(regl)) {
+            if ((config.data instanceof Image)) {
+                config.data = resizeToPowerOfTwo(config.data);
+            } else if (!config.hdr && isArray(config.data) && (!isPowerOfTwo(config.width) || !isPowerOfTwo(config.height))) {
+                config.data = resizeToPowerOfTwo(config.data as any, config.width, config.height);
+            }
+        }
         if (isArray(this.config.data) || isArray(this.config.mipmap)) {
             const tex = getUniqueTexture(regl, this.config);
             if (!tex[REF_COUNT_KEY]) {

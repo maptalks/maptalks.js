@@ -3,9 +3,10 @@ import * as maptalks from 'maptalks';
 const canvas = typeof document === 'undefined' ? null : document.createElement('canvas');
 
 export default class Geo3DTilesWorkerConnection extends maptalks.worker.Actor {
-    constructor(workerKey, mapId) {
+    constructor(workerKey, mapId, supportNPOT) {
         super(workerKey);
         this.mapId = mapId;
+        this._supportNPOT = supportNPOT;
     }
 
     initialize(cb) {
@@ -71,7 +72,7 @@ export default class Geo3DTilesWorkerConnection extends maptalks.worker.Actor {
                 cb(new Error('There is no canvas to draw image!'));
                 return;
             }
-            const img = resize(image);
+            const img = this._supportNPOT ? image : resize(image);
             canvas.width = img.width;
             canvas.height = img.height;
             const ctx = canvas.getContext('2d', { willReadFrequently: true });

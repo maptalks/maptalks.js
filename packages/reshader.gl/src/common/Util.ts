@@ -484,3 +484,7 @@ export function resizeToPowerOfTwo(image: HTMLImageElement | NumberArray, width?
     console.warn(`Texture(${filename})'s size is not power of two, resize from (${image.width}, ${image.height}) to (${width}, ${height})`);
     return canvas;
 }
+
+export function supportNPOT(regl: any) {
+    return regl['_gl'] instanceof WebGL2RenderingContext;
+}

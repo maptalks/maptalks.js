@@ -1,4 +1,4 @@
-import { GL_LINEAR, GL_NEAREST, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST_MIPMAP_LINEAR } from '../common/Constants.js';
+import { GL_LINEAR, GL_NEAREST, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR } from '../common/Constants.js';
 import { defined, extend, btoa } from '../common/Util.js';
 import Accessor from '../core/Accessor.js';
 import GLTFAdapter from './GLTFAdapter';
@@ -97,7 +97,7 @@ export default class V2 extends GLTFAdapter {
             if (sampler) {
                 out.sampler = sampler;
                 out.sampler.magFilter = sampler.magFilter || GL_LINEAR;
-                out.sampler.minFilter = sampler.minFilter || GL_LINEAR;
+                out.sampler.minFilter = sampler.minFilter || GL_LINEAR_MIPMAP_LINEAR;
                 out.sampler.wrapS = sampler.wrapS || 10497;
                 out.sampler.wrapT = sampler.wrapT || 10497;
             }

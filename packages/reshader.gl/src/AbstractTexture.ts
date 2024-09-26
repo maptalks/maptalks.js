@@ -1,4 +1,4 @@
-import { isFunction, hasOwn, getTextureByteWidth, getTextureChannels, isArray, isPowerOfTwo, resizeToPowerOfTwo } from './common/Util.js';
+import { isFunction, hasOwn, getTextureByteWidth, getTextureChannels, supportNPOT } from './common/Util.js';
 import Eventable from './common/Eventable';
 import { KEY_DISPOSED } from './common/Constants.js';
 import ResourceLoader from './ResourceLoader';
@@ -65,9 +65,6 @@ class AbstractTexture extends Eventable(Base) {
                         //disposed
                         return data;
                     }
-                    if ((data.data instanceof Image) && this._needPowerOf2()) {
-                        data.data = resizeToPowerOfTwo(data.data);
-                    }
                     self.onLoad(data);
                     if (!Array.isArray(data)) {
                         data = [data];
@@ -78,12 +75,6 @@ class AbstractTexture extends Eventable(Base) {
                     console.error('error when loading texture image.', err);
                     (self as any).fire('error', { target: this, error: err });
                 });
-            } else if (config.data && this._needPowerOf2()) {
-                if ((config.data instanceof Image)) {
-                    config.data = resizeToPowerOfTwo(config.data);
-                } else if (!config.hdr && isArray(config.data) && (!isPowerOfTwo(config.width) || !isPowerOfTwo(config.height))) {
-                    config.data = resizeToPowerOfTwo(config.data, config.width, config.height);
-                }
             }
         }
 
@@ -192,7 +183,10 @@ class AbstractTexture extends Eventable(Base) {
     }
 
     //@internal
-    _needPowerOf2() {
+    _needPowerOf2(regl) {
+        if (supportNPOT(regl)) {
+            return false;
+        }
         const config = this.config;
         const isRepeat = config.wrap && config.wrap !== 'clamp' || config.wrapS && config.wrapS !== 'clamp' ||
             config.wrapT && config.wrapT !== 'clamp';

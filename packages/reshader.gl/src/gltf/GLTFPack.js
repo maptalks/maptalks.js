@@ -452,7 +452,7 @@ export default class GLTFPack {
             height,
             data,
             mag: getTextureMagFilter(sampler.magFilter) || 'linear',
-            min: getTextureMinFilter(sampler.minFilter) || 'linear',
+            min: getTextureMinFilter(sampler.minFilter) || 'linear mipmap linear',
             wrapS: getTextureWrap(sampler.wrapS) || 'repeat',
             wrapT: getTextureWrap(sampler.wrapT) || 'repeat'
         });
