@@ -618,7 +618,7 @@ export default class GLTFMarker extends Marker {
                 return;
             }
             this.gltfPack = gltfResource.gltfPack;
-            gltfResource.resources.forEach(resource => {
+            gltfResource.resources.forEach((resource) => {
                 const modelMesh = this._prepareMesh(resource, shaderName, regl);
                 modelMeshes.push(modelMesh);
             });
@@ -785,9 +785,6 @@ export default class GLTFMarker extends Marker {
         if (modelMesh.geometry.data['COLOR_0']) {
             defines['HAS_COLOR0'] = 1;
         }
-        if (geometryResource.extraInfo && geometryResource.extraInfo.alphaMode === 'MASK') {
-            defines['HAS_ALPHAMODE'] = 1;
-        }
         defines['HAS_MIN_ALTITUDE'] = 1;
         defines['HAS_LAYER_OPACITY'] = 1;
         modelMesh.setDefines(defines);
@@ -833,7 +830,7 @@ export default class GLTFMarker extends Marker {
         }
         modelMesh.transparent = this._isTransparent();
         const extraInfo = geometryResource.extraInfo;
-        if (extraInfo.alphaMode === 'BLEND' || extraInfo.alphaMode === 'MASK') {
+        if (extraInfo.alphaMode === 'BLEND') {
             modelMesh.transparent = true;
         }
         modelMesh.properties.pickingId = this._getPickingId();
@@ -853,7 +850,7 @@ export default class GLTFMarker extends Marker {
         const shader = this.getShader();
         const markerUniforms = this.getUniforms() || {};
         const materialInfo = geometryResource.materialInfo || {};
-        materialInfo.alphaTest = 0.1;
+        // materialInfo.alphaTest = 0.1;
         const renderer = this.getLayer().getRenderer();
         if (shader === 'phong') {
             if (materialInfo.name === 'pbrSpecularGlossiness') {
@@ -883,8 +880,8 @@ export default class GLTFMarker extends Marker {
         }
         const symbol = this.getSymbol()
         const doubleSided = symbol && symbol.doubleSided;
-        if (doubleSided !== false) {
-            material.doubleSided = +!!(doubleSided || geometryResource.extraInfo && geometryResource.extraInfo['doubleSided']);
+        if (defined(doubleSided)) {
+            material.doubleSided = doubleSided;
         }
         for (const m in markerUniforms) {
             material.set(m, markerUniforms[m]);

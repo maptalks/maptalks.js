@@ -68,11 +68,11 @@ class Material extends Eventable(Base) {
     }
 
     set doubleSided(value: boolean) {
-        this._doubleSided = value;
+        this.uniforms.doubleSided = value;
     }
 
     get doubleSided(): boolean {
-        return this._doubleSided;
+        return !!this.uniforms.doubleSided;
     }
 
     isReady() {

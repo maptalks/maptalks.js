@@ -410,6 +410,8 @@ export default class GLTFPack {
                 materialUniforms['emissiveFactor'] = material.emissiveFactor;
             }
             materialUniforms['alphaCutoff'] = material.alphaCutoff || 0.5;
+            materialUniforms['doubleSided'] = material.doubleSided;
+            materialUniforms['alphaMode'] = material.alphaMode || 'OPAQUE';
         }
         return materialUniforms;
     }

@@ -134,7 +134,12 @@ class StandardMaterial extends Material {
         } else if (geometry.data[geometry.desc.normalAttribute]) {
             defines['HAS_NORMAL'] = 1;
         }
-
+        const alphaMode = uniforms['alphaMode'] && (uniforms['alphaMode'] as string).toUpperCase();
+        if (alphaMode === 'MASK') {
+            defines['ALPHA_MODE'] = 1;
+        } else if (alphaMode === 'OPAQUE') {
+            defines['ALPHA_MODE'] = 2;
+        }
         return defines;
     }
 }

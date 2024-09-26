@@ -132,7 +132,7 @@ class MeshShader extends Shader {
             const commandProps = {};
             if (material) {
                 const doubleSided = material.doubleSided;
-                if (doubleSided && this.extraCommandProps && this.extraCommandProps.cull) {
+                if (doubleSided && this.extraCommandProps) {
                     commandProps.cull = { enable: false };
                 }
             }

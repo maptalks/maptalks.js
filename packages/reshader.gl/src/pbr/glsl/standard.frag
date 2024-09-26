@@ -89,7 +89,7 @@ uniform mat3 environmentTransform;
     uniform sampler2D skinTexture;
 #endif
 
-#if defined(HAS_ALPHAMODE)
+#if defined(ALPHA_MODE) && ALPHA_MODE == 1
     uniform float alphaCutoff;
 #endif
 
@@ -299,15 +299,7 @@ vec3 getMaterialAlbedo() {
     return materialUniforms.albedo;
 }
 float getMaterialAlpha() {
-    #if defined(HAS_ALPHAMODE)
-        if ( materialUniforms.alpha >= alphaCutoff) {
-            return 1.0;
-        } else {
-            return 0.0;
-        }
-    #else
-        return materialUniforms.alpha;
-    #endif
+    return materialUniforms.alpha;
 }
 float getMaterialMetalness() {
     #if defined(SHADING_MODEL_SPECULAR_GLOSSINESS)
@@ -992,6 +984,17 @@ void main() {
     #endif
 
     float alpha = getMaterialAlpha();
+    #if defined(ALPHA_MODE)
+        #if ALPHA_MODE == 1
+            if (alpha < alphaCutoff) {
+                discard;
+            } else {
+                alpha = 1.0;
+            }
+        #else
+            alpha = 1.0;
+        #endif
+    #endif
     glFragColor = vec4(frag * alpha, alpha);
     if (glFragColor.a < alphaTest) {
         discard;
