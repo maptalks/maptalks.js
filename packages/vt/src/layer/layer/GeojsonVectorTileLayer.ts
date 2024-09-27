@@ -66,11 +66,11 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     //@internal
     _idMaps: Record<string, any>;
 
-    constructor(id: string, options: GeoJSONVectorTileLayerOptionsType) {
+    constructor(id: string, options: GeoJSONVectorTileLayerParamOptionsType) {
     // use map's spatial reference
-    options = options || { urlTemplate: null };
+    options = options || {};
     options.spatialReference = null;
-    super(id, options);
+    super(id, options as GeoJSONVectorTileLayerOptionsType);
     this.setData(options["data"]);
   }
 
@@ -318,7 +318,7 @@ function convertUrl(data, urlModifier) {
 
 type OmitUrlTemplate = Omit<VectorTileLayerOptionsType, 'urlTemplate'>;
 
-export type GeoJSONVectorTileLayerOptionsType = {
+type OptionsType = {
     features?: string,
     tileBuffer?: number,
     extent?: number,
@@ -328,4 +328,7 @@ export type GeoJSONVectorTileLayerOptionsType = {
     generateOMBB?: boolean,
     data?: any;
     convertFn?: (data: any) => any;
-} & OmitUrlTemplate;
+};
+
+export type GeoJSONVectorTileLayerParamOptionsType = OptionsType & OmitUrlTemplate;
+export type GeoJSONVectorTileLayerOptionsType = OptionsType & VectorTileLayerOptionsType;
