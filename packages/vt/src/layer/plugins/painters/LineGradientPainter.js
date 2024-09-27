@@ -5,7 +5,7 @@ import vert from './glsl/line.vert';
 import frag from './glsl/line.gradient.frag';
 import { prepareFnTypeData } from './util/fn_type_util';
 
-const MAX_LINE_COUNT = 128;
+const GRADIENTS_COUNT_TO_WARN = 2048;
 
 class LineGradientPainter extends LinePainter {
 
@@ -16,19 +16,39 @@ class LineGradientPainter extends LinePainter {
         const gradProp = symbol['lineGradientProperty'];
         const featureIndexes = geometry.data.aPickingId;
         const aGradIndex = new Uint8Array(featureIndexes.length);
-        const grads = [];
+        const gradients = [];
+        const gradientIndex = new Map();
+
+        function fillGradients(properties) {
+            let grad = properties && properties[gradProp];
+            if (!Array.isArray(grad)) {
+                grad = [0, 'black', 1, 'black'];
+            }
+            let key = grad.join();
+            let index;
+            if (gradientIndex.has(key)) {
+                index = gradientIndex.get(key);
+            } else {
+                index = gradients.length;
+                gradientIndex.set(key, index);
+                gradients.push(grad);
+            }
+            return index;
+        }
+
         let current = featureIndexes[0];
-        const properties = features[current].feature.properties;
-        grads.push(properties && properties[gradProp] || 0);
+        let properties = features[current].feature.properties;
+        let gradIndex = fillGradients(properties);
         for (let i = 1; i < featureIndexes.length; i++) {
             if (featureIndexes[i] !== current) {
                 current = featureIndexes[i];
-                grads.push(properties && properties[gradProp] || 0);
+                properties = features[current].feature.properties;
+                gradIndex = fillGradients(properties);
             }
-            aGradIndex[i] = grads.length - 1;
+            aGradIndex[i] = gradIndex;
         }
         geometry.data.aGradIndex = aGradIndex;
-        geometry.properties.gradients = grads;
+        geometry.properties.gradients = gradients;
     }
 
     createMesh(geo, transform) {
@@ -49,10 +69,7 @@ class LineGradientPainter extends LinePainter {
         this.setLineUniforms(symbol, uniforms);
 
         const gradients = geometry.properties.gradients;
-        let height = gradients.length * 2;
-        if (!isPowerOfTwo(height)) {
-            height = ceilPowerOfTwo(height);
-        }
+        const height = gradients.length * 2;
         const texture = this.regl.texture({
             width: 256,
             height,
@@ -124,9 +141,8 @@ class LineGradientPainter extends LinePainter {
 export default LineGradientPainter;
 
 function createGradient(grads) {
-    if (grads.length > MAX_LINE_COUNT) {
-        console.warn(`Line count in a tile exceeds maximum limit (${MAX_LINE_COUNT}) for line-gradient render plugin.`);
-        grads = grads.slice(0, MAX_LINE_COUNT);
+    if (grads.length > GRADIENTS_COUNT_TO_WARN) {
+        console.warn(`Gradients count is (${grads.length}), it may be slow to render.`);
     }
     // create a 256x1 gradient that we'll use to turn a grayscale heatmap into a colored one
     const canvas = document.createElement('canvas'),
@@ -134,9 +150,6 @@ function createGradient(grads) {
 
     canvas.width = 256;
     canvas.height = 2 * grads.length;
-    if (!isPowerOfTwo(canvas.height)) {
-        canvas.height = ceilPowerOfTwo(2 * grads.length);
-    }
 
     for (let g = 0; g < grads.length; g++) {
         const grad = grads[g];
@@ -150,12 +163,4 @@ function createGradient(grads) {
     }
 
     return ctx.canvas;
-}
-
-function isPowerOfTwo(value) {
-    return (value & (value - 1)) === 0 && value !== 0;
-}
-
-function ceilPowerOfTwo(value) {
-    return Math.pow(2, Math.ceil(Math.log(value) / Math.LN2));
 }
