@@ -336,22 +336,26 @@ class MapGeometryEventsHandler extends Handler {
                 return geos || [];
             };
 
-            const oldGeosMouseout = (oldTargets = [], geoMap = {}) => {
+            const oldGeosMouseout = (oldTargets = [], newTargets = []) => {
                 if (oldTargets && oldTargets.length > 0) {
                     for (let i = oldTargets.length - 1; i >= 0; i--) {
                         const oldTarget = oldTargets[i];
                         if (!isGeo(oldTarget)) {
                             continue;
                         }
-                        // const oldTargetId = oldTargets[i]._getInternalId();
-                        const oldTargetId = getGeoId(oldTargets[i]);
                         /**
                          * 鼠标经过的新位置中不包含老的目标geometry
                          */
-                        if (!geoMap[oldTargetId]) {
-                            // propagation = oldTarget._onEvent(domEvent, 'mouseout');
+                        if (newTargets.indexOf(oldTarget) === -1) {
                             propagation = fireGeoEvent(oldTarget, domEvent, 'mouseout');
                         }
+                        // // const oldTargetId = oldTargets[i]._getInternalId();
+                        // const oldTargetId = getGeoId(oldTargets[i]);
+
+                        // if (!geoMap[oldTargetId]) {
+                        //     // propagation = oldTarget._onEvent(domEvent, 'mouseout');
+                        //     propagation = fireGeoEvent(oldTarget, domEvent, 'mouseout');
+                        // }
                     }
                 }
             };
@@ -362,7 +366,7 @@ class MapGeometryEventsHandler extends Handler {
                     'geos': [],
                     'geomap': {}
                 };
-                oldGeosMouseout(oldTargets, {});
+                oldGeosMouseout(oldTargets, []);
             } else if (eventType === 'mousemove') {
                 const geoMap = {};
                 if (geometries.length > 0) {
@@ -391,7 +395,7 @@ class MapGeometryEventsHandler extends Handler {
                     'geos': geometries,
                     'geomap': geoMap
                 };
-                oldGeosMouseout(oldTargets, geoMap);
+                oldGeosMouseout(oldTargets, geometries);
 
             } else {
                 if (!geometries || !geometries.length) { return; }
