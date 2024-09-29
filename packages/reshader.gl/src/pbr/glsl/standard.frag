@@ -302,12 +302,12 @@ float getMaterialAlpha() {
     return materialUniforms.alpha;
 }
 float getMaterialMetalness() {
-    #if defined(SHADING_MODEL_SPECULAR_GLOSSINESS)
-        vec3 color = materialUniforms.specularColor;
-        return max(max(color.r, color.g), color.b);
-    #else
-        return materialUniforms.roughnessMetalness.y;
-    #endif
+    // #if defined(SHADING_MODEL_SPECULAR_GLOSSINESS)
+    //     vec3 color = materialUniforms.specularColor;
+    //     return max(max(color.r, color.g), color.b);
+    // #else
+       return materialUniforms.roughnessMetalness.y;
+    // #endif
 }
 float getMaterialRoughness() {
     #if defined(SHADING_MODEL_SPECULAR_GLOSSINESS)
@@ -430,7 +430,7 @@ const in vec3 normal, const in vec3 V, const in float NoL, const in float roughn
     }
 #else
     vec3 getIBLEnvMap(const in vec3 normal, const in vec3 eyeVector, const in float roughness, const in vec3 frontNormal) {
-        return ambientColor;
+        return vec3(0.0);
     }
 #endif
 vec3 computeBRDF(const in vec3 spec, const in float roughness, const in float NoV, const in float f90) {
@@ -880,6 +880,13 @@ float normalFiltering(float roughness, const vec3 worldNormal) {
 
 #include <highlight_frag>
 
+vec4 sRGBTransferOETF( in vec4 value ) {
+    return vec4( mix( pow( value.rgb, vec3( 0.41666 ) ) * 1.055 - vec3( 0.055 ), value.rgb * 12.92, vec3( lessThanEqual( value.rgb, vec3( 0.0031308 ) ) ) ), value.a );
+}
+vec4 linearToOutputTexel( vec4 value ) {
+    return ( sRGBTransferOETF( value ) );
+}
+
 void main() {
     initMaterial();
     vec3 eyeVector = normalize(cameraPosition - vModelVertex.xyz);
@@ -1057,6 +1064,7 @@ void main() {
     // glFragColor = vec4(1.0, 0.0, 0.0, 1.0);
     // glFragColor.rgb = materialNormal;
 
+    // glFragColor = linearToOutputTexel(glFragColor);
 
     #ifdef HAS_MASK_EXTENT
         glFragColor = setMask(glFragColor);
