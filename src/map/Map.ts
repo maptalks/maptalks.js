@@ -2711,6 +2711,7 @@ export type MapOptionsType = {
     layers?: Array<Layer>;
     draggable?: boolean;
     dragPan?: boolean;
+    dragPanEasing?: EasingType;
     dragRotate?: boolean;
     dragPitch?: boolean;
     dragRotatePitch?: boolean;
