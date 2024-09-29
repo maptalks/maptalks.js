@@ -374,8 +374,7 @@ Map.include(/** @lends Map.prototype */ {
         const from: Vector3 = [0, 0, 0];
         const to: Vector3 = [0, 0, 0];
         const ray = new Ray(from, to);
-        const target: Vector3 = [0, 0, 0];
-        const fromGround : Vector3 = [0, 0, 0];
+        // const fromGround : Vector3 = [0, 0, 0];
         const rayOnGround: Vector3 = [0, 0, 0];
 
         return function (containerPoint: Point) {
@@ -383,22 +382,22 @@ Map.include(/** @lends Map.prototype */ {
             if (pitch > PITCH_TO_CHECK[0] && pitch < PITCH_TO_CHECK[1]) {
                 this.getContainerPointRay(from, to, containerPoint, 0, 0.5);
                 ray.setFromTo(from, to);
-                const intersection = ray.intersectGround(target);
-                if (intersection === null) {
+                const intersection = ray.intersectGround(rayOnGround);
+                if (!intersection) {
                     return true;
                 }
                 const t = ray.distanceToGround();
                 if (t <= 0) {
                     return true;
                 }
-                const dir = ray.direction;
-                vec3.set(fromGround, from[0], from[1], 0);
-                vec3.sub(rayOnGround, fromGround, rayOnGround);
-                vec3.normalize(rayOnGround, rayOnGround);
-                const dot = vec3.dot(dir, rayOnGround);
-                const angle = Math.abs(Math.acos(dot));
-                // 如果鼠标射线与地面的角度小于设定度数，则认为
-                return angle <= 30 * Math.PI / 180;
+                // const dir = ray.direction;
+                // vec3.set(fromGround, from[0], from[1], 0);
+                // vec3.sub(rayOnGround, fromGround, rayOnGround);
+                // vec3.normalize(rayOnGround, rayOnGround);
+                // const dot = vec3.dot(dir, rayOnGround);
+                // const angle = Math.abs(Math.acos(dot));
+                // // 如果鼠标射线与地面的角度小于设定度数，则认为
+                // return Math.PI - angle < 1 * Math.PI / 180;
             }
             return false;
         }
