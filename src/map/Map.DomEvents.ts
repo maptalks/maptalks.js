@@ -11,7 +11,6 @@ import {
 import Map from './Map';
 import { Coordinate, Point } from '../geo';
 import Ray from '../core/math/Ray';
-import * as vec3 from '../core/util/vec3';
 
 declare module "./Map" {
     interface Map {
