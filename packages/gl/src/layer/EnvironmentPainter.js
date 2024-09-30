@@ -59,7 +59,8 @@ class EnvironmentPainter {
             return;
         }
         const sceneConfig = this._layer._getSceneConfig();
-        this._shader.setMode(1, 0, sceneConfig.environment && sceneConfig.environment.mode ? 1 : 0);
+        const environment = sceneConfig.environment || {};
+        this._shader.setMode(environment.toneMapping, environment.mode ? 1 : 0);
     }
 
     isEnable() {

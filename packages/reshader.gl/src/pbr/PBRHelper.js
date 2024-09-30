@@ -77,7 +77,7 @@ export function createIBLMaps(regl, config = {}) {
         // cube.destroy();
         // }
         // const lod = regl.hasExtension('EXT_shader_texture_lod') ? '1.0' : undefined;
-        const faces = getEnvmapPixels(regl, prefilterMap, size, isHDR);
+        const faces = getEnvmapPixels(regl, prefilterMap, size, false, config.environmentExposure);
         sh = coefficients(faces, size, size);
         const flatten = [];
         for (let i = 0; i < sh.length; i++) {
@@ -162,7 +162,7 @@ function createSkybox(regl, cubemap, size) {
     return envMapFBO;
 }
 
-function getEnvmapPixels(regl, cubemap, envCubeSize, isHDR) {
+function getEnvmapPixels(regl, cubemap, envCubeSize, isHDR, environmentExposure = 1) {
     const drawCube = regl({
         frag : cubemapFS,
         vert : cubemapVS,
@@ -172,7 +172,8 @@ function getEnvmapPixels(regl, cubemap, envCubeSize, isHDR) {
         uniforms : {
             'projMatrix' : regl.context('projMatrix'),
             'viewMatrix' :  regl.context('viewMatrix'),
-            'cubeMap' : cubemap
+            'cubeMap' : cubemap,
+            'exposure': environmentExposure
         },
         elements : cubeData.indices
     });

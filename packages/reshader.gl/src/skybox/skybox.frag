@@ -33,12 +33,6 @@ uniform float backgroundIntensity;
 
 vec4 textureCubeFixed(const in samplerCube tex, const in vec3 R, const in float size, const in float bias) {
     vec3 dir = R;
-    // float scale = 1.0 - 1.0 / size;
-    // vec3 absDir = abs(dir);
-    // float M = max(max(absDir.x, absDir.y), absDir.z);
-    // if (absDir.x != M) dir.x *= scale;
-    // if (absDir.y != M) dir.y *= scale;
-    // if (absDir.z != M) dir.z *= scale;
     return textureCubeLod(tex, dir, bias);
 }
 
@@ -67,7 +61,40 @@ float pseudoRandom(const in vec2 fragCoord) {
     p3 += dot(p3, p3.yzx + 19.19);
     return fract((p3.x + p3.y) * p3.z);
 }
+#if defined(TONE_MAPPING)
+    const float toneMappingExposure = 1.0;
 
+    vec3 RRTAndODTFit( vec3 v ) {
+        vec3 a = v * ( v + 0.0245786 ) - 0.000090537;
+        vec3 b = v * ( 0.983729 * v + 0.4329510 ) + 0.238081;
+        return a / b;
+    }
+
+    vec3 ACESFilmicToneMapping( vec3 color ) {
+        const mat3 ACESInputMat = mat3(
+        vec3( 0.59719, 0.07600, 0.02840 ), vec3( 0.35458, 0.90834, 0.13383 ), vec3( 0.04823, 0.01566, 0.83777 )
+        );
+        const mat3 ACESOutputMat = mat3(
+        vec3(  1.60475, -0.10208, -0.00327 ), vec3( -0.53108, 1.10813, -0.07276 ), vec3( -0.07367, -0.00605, 1.07602 )
+        );
+        color *= toneMappingExposure / 0.6;
+        color = ACESInputMat * color;
+        color = RRTAndODTFit( color );
+        color = ACESOutputMat * color;
+        return saturate( color );
+    }
+
+    vec3 toneMapping( vec3 color ) {
+        return ACESFilmicToneMapping( color );
+    }
+
+    vec4 sRGBTransferOETF( in vec4 value ) {
+        return vec4( mix( pow( value.rgb, vec3( 0.41666 ) ) * 1.055 - vec3( 0.055 ), value.rgb * 12.92, vec3( lessThanEqual( value.rgb, vec3( 0.0031308 ) ) ) ), value.a );
+    }
+    vec4 linearToOutputTexel( vec4 value ) {
+        return ( sRGBTransferOETF( value ) );
+    }
+#endif
 
 void main()
 {
@@ -75,9 +102,6 @@ void main()
     #ifdef USE_AMBIENT
         vec3 normal = normalize(vWorldPos + mix(-0.5/255.0, 0.5/255.0, pseudoRandom(gl_FragCoord.xy))*2.0);
         envColor = vec4(computeDiffuseSPH(normal, diffuseSPH), 1.0);
-        if (length(hsv) > 0.0) {
-            envColor.rgb = hsv_apply(envColor.rgb, hsv);
-        }
     #else
         envColor = textureCubeFixed(cubeMap, vWorldPos, size, bias);
     #endif
@@ -88,12 +112,12 @@ void main()
     if (length(hsv) > 0.0) {
         glFragColor.rgb = hsv_apply(clamp(glFragColor.rgb, 0.0, 1.0), hsv);
     }
-    // #ifdef USE_HDR
-    //     vec3 color = gl_FragColor.rgb;
-    //     color = color / (color.rgb + vec3(1.0));
-    //     color = pow(color, vec3(1.0/2.2));
-    //     gl_FragColor.rgb = color;
-    // #endif
+
+    #if defined(TONE_MAPPING)
+        glFragColor.rgb = toneMapping(glFragColor.rgb);
+
+        glFragColor = linearToOutputTexel(glFragColor);
+    #endif
     #if __VERSION__ == 100
         gl_FragColor = glFragColor;
     #endif

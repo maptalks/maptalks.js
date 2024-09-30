@@ -1,7 +1,7 @@
 import createREGL from '@maptalks/regl';
 import * as reshader from '@maptalks/reshader.gl';
 
-const PREFILTER_CUBE_SIZE = 1024;
+const PREFILTER_CUBE_SIZE = 512;
 
 class LightManager {
 
@@ -160,6 +160,7 @@ class LightManager {
             ignoreSH: !!config['sh'],
             envCubeSize: cubeSize,
             prefilterCubeSize: cubeSize,
+            environmentExposure: this._config.ambient.exposure,
             format: 'array'
         });
         // hdr.dispose();

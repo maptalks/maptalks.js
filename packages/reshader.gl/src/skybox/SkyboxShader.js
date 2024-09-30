@@ -32,13 +32,10 @@ class SkyboxShader extends MeshShader {
     * @param inputRGBM 输入的cubemap是否是rgbm格式
     * @param mode 模式，0： ambient模式， 1: lod模式
     */
-    setMode(inputRGBM, outputRGBM, mode) {
+    setMode(toneMapping, mode) {
         const defines = {};
-        if (inputRGBM) {
-            defines['INPUT_RGBM'] = 1;
-        }
-        if (outputRGBM) {
-            defines['ENC_RGBM'] = 1;
+        if (toneMapping) {
+            defines['TONE_MAPPING'] = 1;
         }
         if (mode === 0) {
             defines['USE_AMBIENT'] = 1;
