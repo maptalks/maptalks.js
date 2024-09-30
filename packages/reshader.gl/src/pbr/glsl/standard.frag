@@ -409,7 +409,7 @@ const in vec3 normal, const in vec3 V, const in float NoL, const in float roughn
         vec3 dir = R;
         float maxLevels = prefilterMiplevel.x;
         float lod = min(maxLevels, roughness * prefilterMiplevel.y);
-        vec3 envLight = textureCubeLod(prefilterMap, dir, lod);
+        vec3 envLight = textureCubeLod(prefilterMap, dir, lod).rgb;
         if (length(hdrHSV) > 0.0) {
             return hsv_apply(envLight, hdrHSV);
         } else {

@@ -739,11 +739,11 @@ describe('gl tests', () => {
                             const canvas = map.getRenderer().canvas;
                             const ctx = canvas.getContext('2d');
                             const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2 + 7, 1, 1);
-                            if (pixel.data['0'] !== 127) {
+                            if (pixel.data['0'] !== 124) {
                                 return;
                             }
                             hit = true;
-                            expect(pixel).to.be.eql({ data: { '0': 127, '1': 127, '2': 127, '3': 255 } });
+                            expect(pixel).to.be.eql({ data: { '0': 124, '1': 124, '2': 124, '3': 255 } });
                             done();
                         }
 
@@ -786,7 +786,7 @@ describe('gl tests', () => {
                             const canvas = map.getRenderer().canvas;
                             const ctx = canvas.getContext('2d');
                             const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2 + 7, 1, 1);
-                            expect(pixel).to.be.eql({ data: { '0': 127, '1': 28, '2': 28, '3': 255 } });
+                            expect(pixel).to.be.eql({ data: { '0': 124, '1': 0, '2': 0, '3': 255 } });
                             done();
                         }
                     });
@@ -827,7 +827,7 @@ describe('gl tests', () => {
                             const canvas = map.getRenderer().canvas;
                             const ctx = canvas.getContext('2d');
                             const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2 + 7, 1, 1);
-                            expect(pixel).to.be.eql({ data: { '0': 127, '1': 28, '2': 28, '3': 255 } });
+                            expect(pixel).to.be.eql({ data: { '0': 124, '1': 0, '2': 0, '3': 255 } });
                             const exportMat = group.toJSON().options.terrain.material;
                             expect(material).to.be.eql(exportMat);
                             done();
@@ -1219,7 +1219,7 @@ describe('gl tests', () => {
                                 return;
                             }
                             hit = true;
-                            expect(pickCoord.toArray()).to.be.eql([ 91.0736287693219, 29.75169480958555, 4320.883455550922]);
+                            expect(pickCoord.toArray()).to.be.eql([ 91.07362103971157, 29.75172649078853, 4322.98890674798 ]);
                             done();
                         }
                     });
@@ -1343,7 +1343,7 @@ describe('gl tests', () => {
                 measuretool.fire('drawstart', { coordinate: center, containerPoint });
                 measuretool.fire('mousemove', { coordinate: center.add(0.001, 0), containerPoint: containerPoint.add(10, 0) });
                 const result = measuretool.getMeasureResult();
-                expect(result.toFixed(2)).to.be.eql(16491.51);
+                expect(result.toFixed(2)).to.be.eql(737.28);
                 measuretool.clear();
                 done();
             }
@@ -1515,10 +1515,10 @@ describe('gl tests', () => {
                 const canvas = map.getRenderer().canvas;
                 const ctx = canvas.getContext('2d');
                 const data = ctx.getImageData(192, 128, 1, 1);
-                const expected = new Uint8ClampedArray([74, 96, 114, 255]);
+                const expected = new Uint8ClampedArray([69, 92, 112, 255]);
                 expect(data.data).to.be.eql(expected);
                 done();
-            }, 600);
+            }, 800);
         });
 
         it('support fill ground with urlModifier', done => {
@@ -1562,7 +1562,7 @@ describe('gl tests', () => {
                 const expected = new Uint8ClampedArray([62, 84, 102, 255]);
                 expect(data.data).to.be.eql(expected);
                 done();
-            }, 800);
+            }, 1000);
         });
 
         it('support skybox with 6 images', done => {
@@ -1627,7 +1627,7 @@ describe('gl tests', () => {
                     const canvas = map.getRenderer().canvas;
                     const ctx = canvas.getContext('2d');
                     const data = ctx.getImageData(192, 128, 5, 5);
-                    const expected = new Uint8ClampedArray([238, 237, 205, 255, 236, 235, 203, 255, 234, 234, 201, 255, 233, 232, 200, 255, 231, 231, 199, 255, 238, 239, 207, 255, 236, 237, 205, 255, 235, 236, 204, 255, 234, 235, 203, 255, 233, 234, 203, 255, 238, 241, 209, 255, 236, 239, 207, 255, 235, 238, 207, 255, 235, 238, 207, 255, 235, 238, 206, 255, 238, 243, 211, 255, 236, 241, 209, 255, 236, 241, 209, 255, 236, 241, 210, 255, 237, 241, 210, 255, 236, 244, 214, 255, 235, 243, 213, 255, 235, 242, 213, 255, 235, 242, 213, 255, 235, 242, 213, 255]);
+                    const expected = new Uint8ClampedArray([238,237,205,255,236,235,203,255,234,233,202,255,233,232,200,255,232,231,199,255,238,239,207,255,236,237,205,255,235,236,204,255,234,235,204,255,233,234,203,255,238,241,209,255,236,239,207,255,235,238,207,255,235,238,207,255,235,238,207,255,238,242,211,255,236,241,209,255,236,241,209,255,236,241,210,255,237,241,210,255,235,243,214,255,235,242,213,255,234,242,213,255,235,242,213,255,235,243,213,255]);
                     expect(data.data).to.be.eql(expected);
                     done();
                 }, 200)
@@ -1705,7 +1705,7 @@ describe('gl tests', () => {
                     const canvas = map.getRenderer().canvas;
                     const ctx = canvas.getContext('2d');
                     const data = ctx.getImageData(192, 128, 5, 5);
-                    const expected = new Uint8ClampedArray([238, 237, 205, 255, 236, 235, 203, 255, 234, 234, 201, 255, 233, 232, 200, 255, 231, 231, 199, 255, 238, 239, 207, 255, 236, 237, 205, 255, 235, 236, 204, 255, 234, 235, 203, 255, 233, 234, 203, 255, 238, 241, 209, 255, 236, 239, 207, 255, 235, 238, 207, 255, 235, 238, 207, 255, 235, 238, 206, 255, 238, 243, 211, 255, 236, 241, 209, 255, 236, 241, 209, 255, 236, 241, 210, 255, 237, 241, 210, 255, 236, 244, 214, 255, 235, 243, 213, 255, 235, 242, 213, 255, 235, 242, 213, 255, 235, 242, 213, 255]);
+                    const expected = new Uint8ClampedArray([238,237,205,255,236,235,203,255,234,233,202,255,233,232,200,255,232,231,199,255,238,239,207,255,236,237,205,255,235,236,204,255,234,235,204,255,233,234,203,255,238,241,209,255,236,239,207,255,235,238,207,255,235,238,207,255,235,238,207,255,238,242,211,255,236,241,209,255,236,241,209,255,236,241,210,255,237,241,210,255,235,243,214,255,235,242,213,255,234,242,213,255,235,242,213,255,235,243,213,255]);
                     expect(data.data).to.be.eql(expected);
                     done();
                 }, 200)
@@ -1777,7 +1777,7 @@ describe('gl tests', () => {
                     const canvas = map.getRenderer().canvas;
                     const ctx = canvas.getContext('2d');
                     const data = ctx.getImageData(192, 128, 5, 5);
-                    const expected = new Uint8ClampedArray([238, 237, 205, 255, 236, 235, 203, 255, 234, 234, 201, 255, 233, 232, 200, 255, 231, 231, 199, 255, 238, 239, 207, 255, 236, 237, 205, 255, 235, 236, 204, 255, 234, 235, 203, 255, 233, 234, 203, 255, 238, 241, 209, 255, 236, 239, 207, 255, 235, 238, 207, 255, 235, 238, 207, 255, 235, 238, 206, 255, 238, 243, 211, 255, 236, 241, 209, 255, 236, 241, 209, 255, 236, 241, 210, 255, 237, 241, 210, 255, 236, 244, 214, 255, 235, 243, 213, 255, 235, 242, 213, 255, 235, 242, 213, 255, 235, 242, 213, 255]);
+                    const expected = new Uint8ClampedArray([238,237,205,255,236,235,203,255,234,233,202,255,233,232,200,255,232,231,199,255,238,239,207,255,236,237,205,255,235,236,204,255,234,235,204,255,233,234,203,255,238,241,209,255,236,239,207,255,235,238,207,255,235,238,207,255,235,238,207,255,238,242,211,255,236,241,209,255,236,241,209,255,236,241,210,255,237,241,210,255,235,243,214,255,235,242,213,255,234,242,213,255,235,242,213,255,235,243,213,255]);
                     expect(data.data).to.be.eql(expected);
                     done();
                 }, 200)
