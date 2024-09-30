@@ -1045,8 +1045,21 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             return;
         }
         if (isNumber(view.bearing)) {
-            view.bearing = Math.max(-180, view.bearing);
-            view.bearing = Math.min(180, view.bearing);
+            let bearing = view.bearing;
+            //周期性
+            bearing = bearing % 360;
+            //自动转换为负的值
+            if (bearing > 180) {
+                bearing = -180 + Math.abs(bearing - 180);
+            }
+            //自动转换为正的值
+            if (bearing < -180) {
+                bearing = 180 - Math.abs(bearing + 180);
+            }
+            view.bearing = bearing;
+
+            // view.bearing = Math.max(-180, view.bearing);
+            // view.bearing = Math.min(180, view.bearing);
         }
         if (isNumber(view.pitch)) {
             view.pitch = Math.max(0, view.pitch);
@@ -2829,7 +2842,7 @@ export type MapDataURLType = {
     save?: boolean;
 }
 
-export type MapAnimationOptionsType = AnimationOptionsType;
+export type MapAnimationOptionsType = AnimationOptionsType & { counterclockwise?: boolean }
 
 export type MapIdentifyOptionsType = {
     tolerance?: number;

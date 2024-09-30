@@ -1,7 +1,7 @@
 import { Animation, Player } from '../core/Animation';
 import Coordinate from '../geo/Coordinate';
 import Point from '../geo/Point';
-import Map from './Map';
+import { Map, MapViewType } from './Map';
 import { isNil, isFunction, hasOwn, extend, clamp } from '../core/util';
 
 
@@ -36,6 +36,40 @@ declare module "./Map" {
 //     return true;
 // }
 
+function needValidateView(view: MapViewType, map: Map) {
+    const bearing = view.bearing;
+    const currentBearing = map.getBearing();
+    //当bearing溢出半角时,且线型变化时不经过0时,例如：[currentBearing=170,bearing=220],[currentBearing=-170,bearing=-220]
+    if (currentBearing >= 0 && bearing > 180) {
+        return false;
+    }
+    if (currentBearing <= 0 && bearing < -180) {
+        return false;
+    }
+    return true;
+}
+//反向旋转,bearing的变化正常为 [a,b],开启reverse后变化就反向了,例如 [170,-170] reverse后为 [170,190]
+function reverseBearing(view: MapViewType, map: Map) {
+    const bearing = view.bearing;
+    const currentBearing = map.getBearing();
+    //such as  [170,-170]
+    if (currentBearing >= 0 && bearing < 0) {
+        view.bearing = 180 + (180 - Math.abs(bearing));
+    }
+    //such as  [-170,170]
+    if (currentBearing <= 0 && bearing > 0) {
+        view.bearing = -180 - (180 - Math.abs(bearing));
+    }
+
+    if (currentBearing >= 0 && bearing > 0) {
+        view.bearing = -180 - (180 - Math.abs(bearing));
+    }
+
+    if (currentBearing <= 0 && bearing < 0) {
+        view.bearing = 180 + (180 - Math.abs(bearing));
+    }
+}
+
 Map.include(/** @lends Map.prototype */{
 
     /**
@@ -63,11 +97,17 @@ Map.include(/** @lends Map.prototype */{
      */
     animateTo(view, options = {}, step) {
         view = extend({}, this.getView(), view);
-        this._validateView(view);
+        view.bearing = view.bearing % 360;
         // this._stopAnim(this._animPlayer);
         if (isFunction(options)) {
             step = options;
             options = {};
+        }
+        if ((options as any).counterclockwise) {
+            reverseBearing(view, this);
+        }
+        if (needValidateView(view, this)) {
+            this._validateView(view);
         }
         const projection = this.getProjection(),
             currView = this.getView(),
@@ -228,7 +268,13 @@ Map.include(/** @lends Map.prototype */{
         // Where applicable, local variable documentation begins with the associated variable or
         // function in van Wijk (2003).
         view = extend({}, this.getView(), view);
-        this._validateView(view);
+        view.bearing = view.bearing % 360;
+        if ((options as any).counterclockwise) {
+            reverseBearing(view, this);
+        }
+        if (needValidateView(view, this)) {
+            this._validateView(view);
+        }
 
         if (this._animPlayer) {
             if (this._isInternalAnimation) {
