@@ -1,6 +1,9 @@
 import createREGL from '@maptalks/regl';
 import * as reshader from '@maptalks/reshader.gl';
 
+import * as gltf from '@maptalks/gltf-loader';
+export { gltf };
+
 export {
     glMatrix,
     mat2, mat2d, mat3, mat4,
