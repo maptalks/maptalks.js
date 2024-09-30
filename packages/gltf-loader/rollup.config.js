@@ -31,7 +31,6 @@ module.exports = [
     },
     {
         input: 'src/index.js',
-        external : ['gl-matrix'],
         plugins: plugins.concat(production ? [
             terser({ output : { comments : '/^!/' }})
         ] : []),

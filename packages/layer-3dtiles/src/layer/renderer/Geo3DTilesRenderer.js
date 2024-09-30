@@ -39,7 +39,6 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         }
         this.tileCache = GlobalTieCache;
         TileCacheRefCount++;
-        this.prepareWorker();
         this.tilesLoading = {};
         this._requests = {};
         this._modelQueue = [];
@@ -676,6 +675,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             ],
             optionalExtensions : layer.options['optionalExtensions'] || []
         });
+        this.prepareWorker();
         if (inGroup) {
             this.canvas.pickingFBO = this.canvas.pickingFBO || this.regl.framebuffer(this.canvas.width, this.canvas.height);
         }
