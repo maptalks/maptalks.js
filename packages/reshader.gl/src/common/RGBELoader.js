@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 /* eslint-disable no-unreachable */
 /* eslint-disable no-case-declarations */
 /* eslint-disable no-cond-assign */
