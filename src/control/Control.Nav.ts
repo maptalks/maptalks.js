@@ -1,18 +1,14 @@
 import Map from '../map/Map';
 import Control, { ControlOptionsType, DomPositionType } from './Control';
 
-
 const options: NavOptionsType = {
     'position': 'top-left'
 };
 
-
-export default class Nav extends Control {
-
+export default class Nav extends Control<NavOptionsTypeSpec> {
     buildOn() {
         return null;
     }
-
 }
 
 Nav.mergeOptions(options);
@@ -28,6 +24,8 @@ Map.addOnLoadHook(function () {
     }
 });
 
-export type NavOptionsType = {
+export type NavOptionsTypeSpec = {
     position: string | DomPositionType;
-} & ControlOptionsType;
+};
+
+export type NavOptionsType = NavOptionsTypeSpec & ControlOptionsType;

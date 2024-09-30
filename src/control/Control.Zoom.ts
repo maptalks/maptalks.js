@@ -33,8 +33,7 @@ const options: ZoomOptionsType = {
  *     zoomLevel : false
  * }).addTo(map);
  */
-class Zoom extends Control {
-    options: ZoomOptionsType;
+class Zoom extends Control<ZoomOptionsTypeSpec> {
     //@internal
     _levelDOM: HTMLSpanElement;
     //@internal
@@ -237,7 +236,9 @@ Map.addOnLoadHook(function () {
 
 export default Zoom;
 
-export type ZoomOptionsType = {
+export type ZoomOptionsTypeSpec = {
     zoomLevel?: boolean;
     seamless?: boolean;
-} & ControlOptionsType;
+};
+
+export type ZoomOptionsType = ControlOptionsType & ZoomOptionsTypeSpec;

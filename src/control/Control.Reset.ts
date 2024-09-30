@@ -21,12 +21,12 @@ const options: ResetOptionsType = {
     view: null
 };
 
-class Reset extends Control {
+class Reset extends Control<ResetOptionsTypeSpec> {
     //@internal
     _reset: HTMLDivElement;
     //@internal
     _view: MapViewType;
-    options: ResetOptionsType;
+
     /**
      * method to build DOM of the control
      * @param  {Map} map map to build on
@@ -86,6 +86,9 @@ Map.addOnLoadHook(function () {
 });
 
 export default Reset;
-export type ResetOptionsType = {
+
+export type ResetOptionsTypeSpec = {
     view?: MapViewType;
-} & ControlOptionsType;
+};
+
+export type ResetOptionsType = ControlOptionsType & ResetOptionsTypeSpec;
