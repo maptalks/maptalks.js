@@ -142,6 +142,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return mat4.multiply(out, enu, out);
     }
 
+    isGeo3DTilesLayer: boolean
     options: Geo3DTilesLayerOptions
     //@internal
     _nodeBoxes: (TileSphereBox | TileOrientedBox | TileRegionBox)[]
@@ -162,6 +163,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
 
     constructor(id: string, options: Geo3DTilesLayerOptions) {
         super(id, options);
+        this.isGeo3DTilesLayer = true;
         this._initRoots();
         //tileset.json requests
         this._nodeBoxes = [];

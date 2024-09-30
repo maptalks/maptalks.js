@@ -597,7 +597,7 @@ export default class GroupGLLayer extends maptalks.Layer {
 
     query3DTilesAtPoint(containerPoint: maptalks.Point) {
         const layers = this._getLayers();
-        const tilesLayers = layers.filter(layer => layer && layer.getJSONType() === 'Geo3DTilesLayer');
+        const tilesLayers = layers.filter(layer => layer && (layer as any).isGeo3DTilesLayer);
         if (!tilesLayers.length) {
             return null;
         }

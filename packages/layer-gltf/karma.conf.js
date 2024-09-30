@@ -15,12 +15,13 @@ module.exports = function (config) {
         files: [
             './node_modules/maptalks/dist/maptalks.js',
             '../gl/dist/maptalksgl.js',
+            pkg.main,
             "../transcoders.draco/dist/transcoders.draco.js",
             '../transform-control/dist/transform-control.js',
             './node_modules/@maptalks/vt/dist/maptalks.vt.js',
             '../analysis/dist/maptalks.analysis.js',
             'test/js/flv.min.js',
-            pkg.main,
+
             'test/test.config.js',
             'test/**/*.js',
             {

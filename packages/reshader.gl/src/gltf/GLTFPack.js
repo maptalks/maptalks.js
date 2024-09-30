@@ -140,14 +140,14 @@ export default class GLTFPack {
             for (const m in g.materialInfo) {
                 const materialInfo = g.materialInfo[m];
                 //如果是texture对象，需要销毁，如果已经销毁过，不能再重复销毁
-                if (materialInfo.destroy && !materialInfo[KEY_DISPOSED]) {
+                if (materialInfo && materialInfo.destroy && !materialInfo[KEY_DISPOSED]) {
                     materialInfo.destroy();
                 }
             }
         });
         for (const index in this._textureMap) {
             const tex = this._textureMap[index];
-            if (tex.destroy && !tex[KEY_DISPOSED]) {
+            if (tex && tex.destroy && !tex[KEY_DISPOSED]) {
                 tex.destroy();
             }
         }
