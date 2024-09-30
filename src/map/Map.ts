@@ -30,6 +30,7 @@ import EPSG9807, { type EPSG9807ProjectionType } from '../geo/projection/Project
 import { AnimationOptionsType, EasingType } from '../core/Animation';
 import { BBOX, bboxInBBOX, getDefaultBBOX, pointsBBOX } from '../core/util/bbox';
 import { Attribution } from '../control';
+import { AttributionOptionsType } from '../control/Control.Attribution';
 
 const TEMP_COORD = new Coordinate(0, 0);
 const TEMP_POINT = new Point(0, 0);
@@ -2724,7 +2725,7 @@ export type MapOptionsType = {
     scrollWheelZoom?: boolean;
     geometryEvents?: boolean;
     control?: boolean;
-    attribution?: boolean;
+    attribution?: boolean | AttributionOptionsType;
     zoomControl?: boolean;
     scaleControl?: boolean;
     overviewControl?: boolean;

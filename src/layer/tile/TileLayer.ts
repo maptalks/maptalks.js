@@ -1672,7 +1672,7 @@ export type TileRootType = {
 
 export type TileLayerOptionsType = LayerOptionsType & {
     urlTemplate: string | ((...args) => string);
-    subdomains?: string[];
+    subdomains?: (string | number)[];
     spatialReference?: SpatialReferenceType;
     tileSize?: number | [number, number];
     offset?: number[] | ((...args) => number[]);
