@@ -61,7 +61,7 @@ class OverlayLayer extends Layer {
     //@internal
     _renderer: OverlayLayerCanvasRenderer;
 
-    constructor(id: string, geometries: OverlayLayerOptionsType | Array<Geometry>, options?: OverlayLayerOptionsType) {
+    constructor(id: string, geometries?: OverlayLayerOptionsType | Array<Geometry>, options?: OverlayLayerOptionsType) {
         if (geometries && (!isGeometry(geometries) && !Array.isArray(geometries) && GEOJSON_TYPES.indexOf((geometries as any).type) < 0)) {
             options = geometries;
             geometries = null;

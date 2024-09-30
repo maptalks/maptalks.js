@@ -28,7 +28,7 @@ const JSON_TYPE = 'Polygon';
  *  ).addTo(layer);
  */
 
-export type PolygonCoordinatesType = Array<Array<Coordinate>> | Array<Array<number>>;
+export type PolygonCoordinatesType = Array<Array<Coordinate>> | Array<Array<number>> | Array<Array<Array<number>>>;
 export type RingCoordinates = PathCoordinates;
 export type RingsCoordinates = PathsCoordinates;
 

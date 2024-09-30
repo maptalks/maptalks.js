@@ -47,8 +47,7 @@ const layerEvents = 'addlayer removelayer setbaselayer baselayerremove';
  *      attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
  * }));
  */
-class Attribution extends Control {
-    options: AttributionOptionsType;
+class Attribution extends Control<AttributionOptionsTypeSpec> {
     //@internal
     _attributionContainer: HTMLDivElement;
 
@@ -130,7 +129,9 @@ Map.addOnLoadHook(function () {
 
 export default Attribution;
 
-export type AttributionOptionsType = {
+export type AttributionOptionsTypeSpec = {
     content?: string | HTMLElement;
     custom?: boolean;
-} & ControlOptionsType;
+};
+
+export type AttributionOptionsType = AttributionOptionsTypeSpec & ControlOptionsType;

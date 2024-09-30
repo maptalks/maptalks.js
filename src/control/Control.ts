@@ -14,7 +14,7 @@ import Map from '../map/Map';
  * @extends Class
  * @mixes Eventable
  */
-abstract class Control extends Eventable(Class) {
+abstract class Control<T = ControlOptionsType> extends Eventable(Class) {
 
 
     //@internal
@@ -23,7 +23,7 @@ abstract class Control extends Eventable(Class) {
     __ctrlContainer: HTMLElement;
     //@internal
     _controlDom: HTMLElement;
-    options: ControlOptionsType;
+    options: ControlOptionsType & T;
     static positions: { [key: string]: DomPositionType };
 
     /**
@@ -39,7 +39,7 @@ abstract class Control extends Eventable(Class) {
      *  <br>
      * @param  {Object} [options=null] configuration options
      */
-    constructor(options: ControlOptionsType) {
+    constructor(options: ControlOptionsType & T) {
         if (options && options['position'] && !isString(options['position'])) {
             options['position'] = extend({}, options['position']);
         }
