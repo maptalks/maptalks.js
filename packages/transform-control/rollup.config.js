@@ -70,7 +70,7 @@ module.exports = [
                 'maptalks' : 'maptalks',
                 '@maptalks/gl' : 'maptalksgl',
                 '@maptalks/gltf-loader' : 'gltf-loader',
-                '@maptalks/gltf-layer' : 'gltf-layer'
+                '@maptalks/gltf-layer' : 'maptalks'
             },
             'file': outputFile
         }

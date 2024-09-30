@@ -30,6 +30,9 @@ export { earcut };
 
 export { default as color } from 'color';
 
+import * as gltf from '@maptalks/gltf-loader';
+export { gltf };
+
 if (typeof window !== 'undefined') {
     // append GroupGLLayer on maptalks manually
     if (window.maptalks) {

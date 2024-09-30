@@ -1,6 +1,5 @@
-import { mat4, reshader, quat, vec3 } from '@maptalks/gl';
+import { mat4, reshader, quat, vec3, gltf } from '@maptalks/gl';
 import partsModels from './models';
-import * as gltf from '@maptalks/gltf-loader';
 import * as maptalks from 'maptalks';
 
 const point = [];
