@@ -4,6 +4,59 @@ describe('StrokeAndFillSpec', function () {
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
     var patternImage = 'data:image/gif;base64,R0lGODlhEAAQAMQAAORHHOVSKudfOulrSOp3WOyDZu6QdvCchPGolfO0o/XBs/fNwfjZ0frl3/zy7////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAkAABAALAAAAAAQABAAAAVVICSOZGlCQAosJ6mu7fiyZeKqNKToQGDsM8hBADgUXoGAiqhSvp5QAnQKGIgUhwFUYLCVDFCrKUE1lBavAViFIDlTImbKC5Gm2hB0SlBCBMQiB0UjIQA7';
+    const lineCoordinates = [
+        {
+            "x": 116.28890991210938,
+            "y": 39.98369699673039
+        },
+        {
+            "x": 116.43619537353516,
+            "y": 39.98737978325713
+        },
+        {
+            "x": 116.48529052734374,
+            "y": 39.95554342883535
+        },
+        {
+            "x": 116.47979736328125,
+            "y": 39.84887587825816
+        },
+        {
+            "x": 116.46743774414061,
+            "y": 39.83754093169162
+        },
+        {
+            "x": 116.45267486572266,
+            "y": 39.8314772852108
+        },
+        {
+            "x": 116.28135681152342,
+            "y": 39.829104408261685
+        },
+        {
+            "x": 116.27071380615233,
+            "y": 39.883396390093075
+        },
+        {
+            "x": 116.26831054687501,
+            "y": 39.89446035777916
+        },
+        {
+            "x": 116.26899719238281,
+            "y": 39.96791137735179
+        },
+        {
+            "x": 116.28719329833983,
+            "y": 39.98290780236021
+        }
+    ];
+    const lineColorStops = [
+        [0.00, 'red'],
+        [1 / 4, 'orange'],
+        [2 / 4, 'green'],
+        [3 / 4, 'aqua'],
+        [1.00, 'white']
+    ];
 
     beforeEach(function () {
         var setups = COMMON_CREATE_MAP(center, null, { width: 800, height: 600 });
@@ -475,86 +528,99 @@ describe('StrokeAndFillSpec', function () {
     });
 
 
+    describe('lineColor gradient', function () {
 
-    it('#2123 #1712 Canvas simulates gradient path ', function (done) {
-        var line = new maptalks.LineString(
-            [
-                {
-                    "x": 116.28890991210938,
-                    "y": 39.98369699673039
-                },
-                {
-                    "x": 116.43619537353516,
-                    "y": 39.98737978325713
-                },
-                {
-                    "x": 116.48529052734374,
-                    "y": 39.95554342883535
-                },
-                {
-                    "x": 116.47979736328125,
-                    "y": 39.84887587825816
-                },
-                {
-                    "x": 116.46743774414061,
-                    "y": 39.83754093169162
-                },
-                {
-                    "x": 116.45267486572266,
-                    "y": 39.8314772852108
-                },
-                {
-                    "x": 116.28135681152342,
-                    "y": 39.829104408261685
-                },
-                {
-                    "x": 116.27071380615233,
-                    "y": 39.883396390093075
-                },
-                {
-                    "x": 116.26831054687501,
-                    "y": 39.89446035777916
-                },
-                {
-                    "x": 116.26899719238281,
-                    "y": 39.96791137735179
-                },
-                {
-                    "x": 116.28719329833983,
-                    "y": 39.98290780236021
+
+        it('#2123 #1712 Canvas simulates gradient path ', function (done) {
+            var line = new maptalks.LineString(lineCoordinates, {
+                symbol: {
+                    // linear gradient
+                    'lineColor': {
+                        'type': 'linear',
+                        'colorStops': lineColorStops
+                    },
+                    'lineWidth': 4
                 }
-            ], {
-            symbol: {
-                // linear gradient
-                'lineColor': {
-                    'type': 'linear',
-                    'colorStops': [
-                        [0.00, 'red'],
-                        [1 / 4, 'orange'],
-                        [2 / 4, 'green'],
-                        [3 / 4, 'aqua'],
-                        [1.00, 'white']
-                    ]
+            })
+            var layer = new maptalks.VectorLayer('v').addTo(map);
+            line.addTo(layer);
+            const coordinates = line.getCoordinates();
+            const first = coordinates[0], last = coordinates[coordinates.length - 1];
+            map.fitExtent(layer.getExtent());
+            const centerPt = map.coordinateToContainerPoint(map.getCenter());
+
+            setTimeout(() => {
+                const p1 = map.coordinateToContainerPoint(first).sub(centerPt);
+                const p2 = map.coordinateToContainerPoint(last).sub(centerPt);
+                expect(layer).to.be.painted(p1.x, p1.y, [255, 3, 0]);
+                expect(layer).to.be.painted(p2.x, p2.y, [249, 255, 255]);
+                done();
+            }, 1000);
+
+
+        });
+
+        it('lineColor gradient from lineGradientProperty', function (done) {
+            var line = new maptalks.LineString(lineCoordinates, {
+                symbol: {
+                    // linear gradient
+                    lineGradientProperty: 'gradients',
+                    'lineWidth': 4
                 },
-                'lineWidth': 4
-            }
-        })
-        var layer = new maptalks.VectorLayer('v').addTo(map);
-        line.addTo(layer);
-        const coordinates = line.getCoordinates();
-        const first = coordinates[0], last = coordinates[coordinates.length - 1];
-        map.fitExtent(layer.getExtent());
-        const centerPt = map.coordinateToContainerPoint(map.getCenter());
+                properties: {
+                    gradients: lineColorStops
+                }
+            })
+            var layer = new maptalks.VectorLayer('v').addTo(map);
+            line.addTo(layer);
+            const coordinates = line.getCoordinates();
+            const first = coordinates[0], last = coordinates[coordinates.length - 1];
+            map.fitExtent(layer.getExtent());
+            const centerPt = map.coordinateToContainerPoint(map.getCenter());
 
-        setTimeout(() => {
-            const p1 = map.coordinateToContainerPoint(first).sub(centerPt);
-            const p2 = map.coordinateToContainerPoint(last).sub(centerPt);
-            expect(layer).to.be.painted(p1.x, p1.y, [255,3,0]);
-            expect(layer).to.be.painted(p2.x, p2.y, [249, 255, 255]);
-            done();
-        }, 1000);
+            setTimeout(() => {
+                const p1 = map.coordinateToContainerPoint(first).sub(centerPt);
+                const p2 = map.coordinateToContainerPoint(last).sub(centerPt);
+                expect(layer).to.be.painted(p1.x, p1.y, [255, 3, 0]);
+                expect(layer).to.be.painted(p2.x, p2.y, [249, 255, 255]);
+                done();
+            }, 1000);
 
 
+        });
+
+        it('lineColor gradient from lineGradientProperty and colorStops is flat array', function (done) {
+            const colorStops = [];
+            lineColorStops.forEach(lineColorStop => {
+                colorStops.push(...lineColorStop);
+            });
+            var line = new maptalks.LineString(lineCoordinates, {
+                symbol: {
+                    // linear gradient
+                    lineGradientProperty: 'gradients',
+                    'lineWidth': 4
+                },
+                properties: {
+                    gradients: colorStops
+                }
+            })
+            var layer = new maptalks.VectorLayer('v').addTo(map);
+            line.addTo(layer);
+            const coordinates = line.getCoordinates();
+            const first = coordinates[0], last = coordinates[coordinates.length - 1];
+            map.fitExtent(layer.getExtent());
+            const centerPt = map.coordinateToContainerPoint(map.getCenter());
+
+            setTimeout(() => {
+                const p1 = map.coordinateToContainerPoint(first).sub(centerPt);
+                const p2 = map.coordinateToContainerPoint(last).sub(centerPt);
+                expect(layer).to.be.painted(p1.x, p1.y, [255, 3, 0]);
+                expect(layer).to.be.painted(p2.x, p2.y, [249, 255, 255]);
+                done();
+            }, 1000);
+
+
+        });
     });
 
 });

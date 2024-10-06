@@ -127,6 +127,7 @@ export type LineSymbol = {
     linePatternFile?: string;
     lineDx?: SymbolNumberType;
     lineDy?: SymbolNumberType;
+    lineGradientProperty?: string;
 }
 
 export type FillSymbol = {
