@@ -117,6 +117,9 @@ function pathDistance(points: Array<Point>) {
 }
 
 function getColorInMinStep(colorIn: any) {
+    if (isNumber(colorIn.minStep)) {
+        return colorIn.minStep;
+    }
     const colors = colorIn.colors || [];
     const len = colors.length;
     const steps = [];
@@ -132,6 +135,7 @@ function getColorInMinStep(colorIn: any) {
         const stepOffset = step2 - step1;
         min = Math.min(min, stepOffset);
     }
+    colorIn.minStep = min;
     return min;
 
 }
