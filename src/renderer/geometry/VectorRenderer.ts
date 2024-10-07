@@ -291,13 +291,14 @@ const lineStringInclude = {
     },
 
     //@internal
-    _paintOn(ctx: CanvasRenderingContext2D, points: Point[], lineOpacity?: number, fillOpacity?: number, dasharray?: number[]) {
+    _paintOn(ctx: CanvasRenderingContext2D, points: Point[], lineOpacity?: number, fillOpacity?: number, dasharray?: number[], lineColorIn?: any) {
         const r = isWithinPixel(this._painter);
         if (r.within) {
             Canvas.pixelRect(ctx, r.center, lineOpacity, fillOpacity);
         } else if (this.options['smoothness']) {
             Canvas.paintSmoothLine(ctx, points, lineOpacity, this.options['smoothness'], false, this._animIdx, this._animTailRatio);
         } else {
+            ctx.lineColorIn = lineColorIn;
             Canvas.path(ctx, points, lineOpacity, null, dasharray);
         }
         this._paintArrow(ctx, points, lineOpacity);
@@ -478,11 +479,12 @@ const polygonInclude = {
     },
 
     //@internal
-    _paintOn(ctx: CanvasRenderingContext2D, points: Point[], lineOpacity?: number, fillOpacity?: number, dasharray?: number[]) {
+    _paintOn(ctx: CanvasRenderingContext2D, points: Point[], lineOpacity?: number, fillOpacity?: number, dasharray?: number[], lineColorIn?: any) {
         const r = isWithinPixel(this._painter);
         if (r.within) {
             Canvas.pixelRect(ctx, r.center, lineOpacity, fillOpacity);
         } else {
+            ctx.lineColorIn = lineColorIn;
             Canvas.polygon(ctx, points, lineOpacity, fillOpacity, dasharray, this.options['smoothness']);
         }
         return this._getRenderBBOX(ctx, points);
