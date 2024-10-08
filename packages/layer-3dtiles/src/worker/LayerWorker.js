@@ -215,7 +215,9 @@ export default class BaseLayerWorker {
                     return;
                 }
                 const { content, transferables } = this._processB3DM(tile, params);
-                this._createGLTFMissedAttrs(content.gltf);
+                if (service.createNormalIfMissed) {
+                    this._createGLTFMissedAttrs(content.gltf);
+                }
                 if (service.compressGeometry) {
                     this._compressAttrFloat32ToInt16(content.gltf);
                 }
@@ -236,7 +238,9 @@ export default class BaseLayerWorker {
             const promise =  this._i3dmLoader.load(url, arraybuffer, 0, 0, { maxTextureSize: service.maxTextureSize || DEFAULT_MAX_TEXTURE_SIZE });
             promise.then(tile => {
                 const { content:i3dm, transferables } = this._loadI3DM(tile, transform, params.rootIdx);
-                this._createGLTFMissedAttrs(i3dm.gltf);
+                if (service.createNormalIfMissed) {
+                    this._createGLTFMissedAttrs(i3dm.gltf);
+                }
                 if (service.compressGeometry) {
                     this._compressAttrFloat32ToInt16(i3dm.gltf);
                 }
@@ -246,7 +250,7 @@ export default class BaseLayerWorker {
             const promise = new CMPTLoader(this._bindedRequestImage, GLTFLoader, this._supportedFormats, service.maxTextureSize || DEFAULT_MAX_TEXTURE_SIZE).load(url, arraybuffer, 0, 0, { maxTextureSize: service.maxTextureSize || DEFAULT_MAX_TEXTURE_SIZE });
             promise.then(tile => {
                 const { content: cmpt, transferables } = this._processCMPT(tile, params);
-                this._createCMPTMissedAttrs(cmpt);
+                this._createCMPTMissedAttrs(cmpt, service);
                 if (service.compressGeometry) {
                     this._compressCMPTContent(cmpt);
                 }
@@ -270,7 +274,9 @@ export default class BaseLayerWorker {
             loader.load({ skipAttributeTransform: false }).then(gltf => {
                 gltf.url = url;
                 this._processGLTF(gltf, null, params);
-                this._createGLTFMissedAttrs(gltf);
+                if (service.createNormalIfMissed) {
+                    this._createGLTFMissedAttrs(gltf);
+                }
                 if (service.compressGeometry) {
                     this._compressAttrFloat32ToInt16(gltf);
                 }
@@ -281,13 +287,15 @@ export default class BaseLayerWorker {
         }
     }
 
-    _createCMPTMissedAttrs(cmpt) {
+    _createCMPTMissedAttrs(cmpt, service) {
         if (cmpt.content) {
             cmpt.content.forEach(contentItem => {
-                this._createCMPTMissedAttrs(contentItem);
+                this._createCMPTMissedAttrs(contentItem, service);
             });
         } else {
-            this._createGLTFMissedAttrs(cmpt.gltf);
+            if (service.createNormalIfMissed) {
+                this._createGLTFMissedAttrs(cmpt.gltf);
+            }
         }
     }
 
