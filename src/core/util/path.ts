@@ -12,6 +12,7 @@ const MAP_TEMP_RING = [
     [],
     []
 ];
+const TEMP_RING: Array<Point> = [];
 
 export function clipLine(points, bounds, round?: boolean, noCut?: boolean) {
     const parts = [];
@@ -383,7 +384,11 @@ function isClockwise(ring) {
  * @returns 
  */
 function pointInTriangle(p: Point, p1: Point, p2: Point, p3: Point) {
-    if (isClockwise([p1, p2, p3, p1])) {
+    TEMP_RING[0] = p1;
+    TEMP_RING[1] = p2;
+    TEMP_RING[2] = p3;
+    TEMP_RING[3] = p1;
+    if (isClockwise(TEMP_RING)) {
         const a = pointRightSegment(p, p1, p2);
         const b = pointRightSegment(p, p2, p3);
         const c = pointRightSegment(p, p3, p1);
@@ -489,7 +494,7 @@ export function bboxInInQuadrilateral(bbox: BBOX, p1: Point, p2: Point, p3: Poin
  * @param p4 
  * @returns 
  */
-export function lineSegmentIntersection(p1: Point, p2: Point, p3: Point, p4: Point) {
+export function lineSegmentIntersection(p1: Point, p2: Point, p3: Point, p4: Point): Point | null {
     const dx1 = p2.x - p1.x, dy1 = p2.y - p1.y;
     const dx2 = p4.x - p3.x, dy2 = p4.y - p3.y;
     if (dx1 === 0 && dx2 === 0) {
@@ -525,22 +530,27 @@ export function lineSegmentIntersection(p1: Point, p2: Point, p3: Point, p4: Poi
     }
 
     if (x < Math.min(p1.x, p2.x) || x > Math.max(p1.x, p2.x)) {
-        return;
+        return null;
     }
     if (x < Math.min(p3.x, p4.x) || x > Math.max(p3.x, p4.x)) {
-        return;
+        return null;
     }
     if (y < Math.min(p1.y, p2.y) || y > Math.max(p1.y, p2.y)) {
-        return;
+        return null;
     }
     if (y < Math.min(p3.y, p4.y) || y > Math.max(p3.y, p4.y)) {
-        return;
+        return null;
     }
     return new Point(x, y);
 }
 
+type CrossPoint = {
+    point: Point,
+    edgeIndex: number,
+    edge: [Point, Point]
+}
 /**
- * 点与凸四边形的交点
+ * 线段与凸四边形的交点
  * Intersection point of line segment and convex quadrilateral
  * @param currentPoint 
  * @param nextPoint 
@@ -555,7 +565,7 @@ function getSegmenQuadrilateralIntersections(currentPoint: Point, nextPoint: Poi
     const b = lineSegmentIntersection(currentPoint, nextPoint, p2, p3);
     const c = lineSegmentIntersection(currentPoint, nextPoint, p3, p4);
     const d = lineSegmentIntersection(currentPoint, nextPoint, p4, p1);
-    const points = [];
+    const points: Array<CrossPoint> = [];
     if (a) {
         points.push({
             point: a,
@@ -604,7 +614,7 @@ function getSegmenQuadrilateralIntersections(currentPoint: Point, nextPoint: Poi
  * @param crossList 
  * @returns 
  */
-function hasSameEdge(cross, crossList) {
+function hasSameEdge(cross: CrossPoint, crossList: Array<CrossPoint>) {
     for (let i = 0, len = crossList.length; i < len; i++) {
         const item = crossList[i];
         if (item.edgeIndex === cross.edgeIndex) {
@@ -622,7 +632,7 @@ function hasSameEdge(cross, crossList) {
  * @param p3 
  * @returns 
  */
-function getEdgeVertexInTriangle(edge, p1, p2, p3) {
+function getEdgeVertexInTriangle(edge: [Point, Point], p1: Point, p2: Point, p3: Point) {
     const [pt1, pt2] = edge;
     if (pointInTriangle(pt1, p1, p2, p3)) {
         return pt1;
