@@ -1,4 +1,5 @@
 #define PI 3.141593
+#define RECIPROCAL_PI 0.3183098861837907
 #if __VERSION__ == 100
     #if defined(GL_EXT_shader_texture_lod)
         #extension GL_EXT_shader_texture_lod : enable
@@ -366,8 +367,13 @@ vec3 computeSpecularBRDF(const float roughness, const vec3 normal, const vec3 V,
     vec3 F = F_Schlick(specular, f90, L, H);
     return (D * V_S * PI) * F;
 }
+
+vec3 BRDF_Lambert( const in vec3 diffuseColor ) {
+    return RECIPROCAL_PI * diffuseColor;
+}
+
 void computeLambert(
-const in vec3 normal, const in vec3 V, const in float NoL, const in float roughness,const in vec3 diffuse, const in vec3 specular, const in vec3 lightColor, const in vec3 L, const in float f90, out vec3 lightDiffuse, out vec3 lightSpecular) {
+const in vec3 normal, const in vec3 V, const in float NoL, const in float roughness,const in vec3 materialDiffuse, const in vec3 specular, const in vec3 lightColor, const in vec3 L, const in float f90, out vec3 lightDiffuse, out vec3 lightSpecular) {
     if (NoL <= 0.0) {
         lightSpecular = lightDiffuse = vec3(0.0);
         return;
@@ -376,7 +382,7 @@ const in vec3 normal, const in vec3 V, const in float NoL, const in float roughn
     vec3 brdf = computeSpecularBRDF(roughness, normal, V, L, specular, NoL, f90);
 
     lightSpecular = a * brdf;
-    lightDiffuse = a * diffuse;
+    lightDiffuse = a * BRDF_Lambert(materialDiffuse);
 }
 
 #if defined(HAS_IBL_LIGHTING)
@@ -419,7 +425,7 @@ const in vec3 normal, const in vec3 V, const in float NoL, const in float roughn
         // return textureCubeLodEXT(prefilterMap, dir, lod).rgb;
     }
 
-    vec3 getIBLEnvMap(const in vec3 N, const in vec3 V, const in float roughness, const in vec3 frontNormal) {
+    vec3 getIBLEnvMap(const in vec3 N, const in vec3 V, const in float roughness, const in vec3 frontNormal, const in vec3 materialDiffuse) {
         float smoothness = 1.0 - roughness;
         vec3 R = mix(N, reflect(-V, N), smoothness * (sqrt(smoothness) + roughness));
 
@@ -429,8 +435,8 @@ const in vec3 normal, const in vec3 V, const in float NoL, const in float roughn
         return prefilteredEnvColor;
     }
 #else
-    vec3 getIBLEnvMap(const in vec3 normal, const in vec3 eyeVector, const in float roughness, const in vec3 frontNormal) {
-        return vec3(0.0);
+    vec3 getIBLEnvMap(const in vec3 normal, const in vec3 eyeVector, const in float roughness, const in vec3 frontNormal, const in vec3 materialDiffuse) {
+        return ambientColor * BRDF_Lambert(materialDiffuse);
     }
 #endif
 vec3 computeBRDF(const in vec3 spec, const in float roughness, const in float NoV, const in float f90) {
@@ -442,8 +448,8 @@ vec3 computeBRDF(const in vec3 spec, const in float roughness, const in float No
     // vec4 rgba = texture2D(brdfLUT, vec2(NoV, roughness));
     // return (specular * rgba.x + rgba.y * f90);
 }
-vec3 computeIBLSpecular(const in vec3 normal, const in vec3 eyeVector, const in float NoV, const in float roughness, const in vec3 specular, const in vec3 frontNormal, const in float f90) {
-    return getIBLEnvMap(normal, eyeVector, roughness, frontNormal) * computeBRDF(specular, roughness, NoV, f90);
+vec3 computeIBLSpecular(const in vec3 normal, const in vec3 eyeVector, const in float NoV, const in float roughness, const in vec3 specular, const in vec3 frontNormal, const in float f90, const in vec3 materialDiffuse) {
+    return getIBLEnvMap(normal, eyeVector, roughness, frontNormal, materialDiffuse) * computeBRDF(specular, roughness, NoV, f90);
 }
 
 float computeSpecularAO(const in float ao, const in float NoV) {
@@ -938,7 +944,7 @@ void main() {
         diffuse = materialDiffuse * ambientColor;
     #endif
     float NoV = dot(materialNormal, eyeVector);
-    specular = computeIBLSpecular(materialNormal, eyeVector, NoV, materialRoughness, materialSpecular, frontNormal, materialF90);
+    specular = computeIBLSpecular(materialNormal, eyeVector, NoV, materialRoughness, materialSpecular, frontNormal, materialF90, materialDiffuse);
     float ccNoV;
 
     float specularAO = 1.0;
@@ -965,7 +971,7 @@ void main() {
     vec3 ambientSpecular, ambientDiffuse;
     vec3 modelNormal = vModelNormal;
     vec3 lightDir = -light0_viewDirection;
-    float dotNL = dot(lightDir, materialNormal);
+    float dotNL = saturate(dot(lightDir, materialNormal));
     computeLambert(materialNormal, eyeVector, dotNL, max(0.045, materialRoughness), materialDiffuse, materialSpecular, light0_diffuse.rgb, lightDir, materialF90, ambientDiffuse, ambientSpecular);
 
     #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
