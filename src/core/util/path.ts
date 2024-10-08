@@ -325,7 +325,7 @@ function pointInSegment(p: Point, p1: Point, p2: Point) {
     if (dx === 0) {
         const miny = Math.min(p1.y, p2.y);
         const maxy = Math.max(p1.y, p2.y);
-        return p.y >= miny && p.y <= maxy;
+        return p.y >= miny && p.y <= maxy && p.x === p1.x;
     }
     const dy = p2.y - p1.y;
     const k = dy / dx;
@@ -333,7 +333,7 @@ function pointInSegment(p: Point, p1: Point, p2: Point) {
     if (k === 0) {
         const minx = Math.min(p1.x, p2.x);
         const maxx = Math.max(p1.x, p2.x);
-        return p.x >= minx && p.x <= maxx;
+        return p.x >= minx && p.x <= maxx && p.y === p1.y;
     }
 
     const b = p1.y - k * p1.x;
