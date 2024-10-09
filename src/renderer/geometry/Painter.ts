@@ -1,5 +1,5 @@
 import { isNumber, sign, pushIn, isDashLine, getPointsResultPts } from '../../core/util';
-import { clipPolygon, clipLine, getMinMaxAltitude } from '../../core/util/path';
+import { clipPolygon, clipLine, getMinMaxAltitude, bboxInInQuadrilateral, clipLineByQuadrilateral, clipPolygonByQuadrilateral } from '../../core/util/path';
 import Class from '../../core/Class';
 import Size from '../../geo/Size';
 import Point from '../../geo/Point';
@@ -7,7 +7,7 @@ import PointExtent from '../../geo/PointExtent';
 import Canvas from '../../core/Canvas';
 import * as Symbolizers from './symbolizers';
 import { interpolate } from '../../core/util/util';
-import { BBOX, getDefaultBBOX, resetBBOX, setBBOX, validateBBOX } from '../../core/util/bbox';
+import { BBOX, getDefaultBBOX, pointsBBOX, resetBBOX, setBBOX, validateBBOX } from '../../core/util/bbox';
 import Map from '../../map/Map'
 import { DebugSymbolizer } from './symbolizers';
 import Extent from '../../geo/Extent';
@@ -485,12 +485,12 @@ class Painter extends Class {
         let _2DExtent, glExtent, pitch;
         if (mapStateCache) {
             //@internal
-        _2DExtent = mapStateCache._2DExtent;
+            _2DExtent = mapStateCache._2DExtent;
             glExtent = mapStateCache.glExtent;
             pitch = mapStateCache.pitch;
         } else {
             //@internal
-        _2DExtent = map.get2DExtent();
+            _2DExtent = map.get2DExtent();
             glExtent = map.get2DExtentAtRes(map.getGLRes());
             pitch = map.getPitch();
         }
@@ -503,8 +503,52 @@ class Painter extends Class {
             extent2D = extent2D._combine(TEMP_POINT0._add(sign(c[0] - pos[0]), sign(c[1] - pos[1])));
         }
         const e = this.get2DExtent(null, TEMP_CLIP_EXTENT1);
+        const pitched = map.getPitch() > 0;
+        const strictClipMode = geometry.options.strictClipMode;
+
+        const strictClipEnable = pitched && strictClipMode;
+        let p1, p2, p3, p4;
+        if (pitched) {
+            const glRes = map.getGLRes();
+            let { xmin, ymin, xmax, ymax } = map.getContainerExtent();
+            const offset = lineWidth;
+            xmin -= offset;
+            xmax += offset;
+            ymax += offset;
+            ymin -= offset;
+            const p = new Point(xmin, ymin);
+            //LT
+            p1 = map['_containerPointToPointAtRes'](p, glRes);
+
+            p.x = xmax;
+            p.y = ymin;
+            //RT
+            p2 = map['_containerPointToPointAtRes'](p, glRes);
+
+            p.x = xmax;
+            p.y = ymax;
+            //BR
+            p3 = map['_containerPointToPointAtRes'](p, glRes);
+
+            p.x = xmin;
+            p.y = ymax;
+            //BL
+            p4 = map['_containerPointToPointAtRes'](p, glRes);
+        }
         let clipPoints = points;
-        if (e.within(extent2D)) {
+
+        if (pitched) {
+            const bbox = getDefaultBBOX();
+            pointsBBOX(points, bbox);
+            // paths in current view
+            if (bboxInInQuadrilateral(bbox, p1, p2, p3, p4)) {
+                return {
+                    points: clipPoints,
+                    altitude: altitude,
+                    inView: true
+                };
+            }
+        } else if (!pitched && e.within(extent2D)) {
             // if (this.geometry.getJSONType() === 'LineString') {
             //     // clip line with altitude
             //     return this._clipLineByAlt(clipPoints, altitude);
@@ -536,11 +580,22 @@ class Painter extends Class {
             TEMP_CLIP_EXTENT0.ymax = glExtent2D.ymax + ry;
             // clip the polygon to draw less and improve performance
             if (!Array.isArray(points[0])) {
-                clipPoints = clipPolygon(points, TEMP_CLIP_EXTENT0);
+                if (strictClipEnable) {
+                    clipPoints = clipPolygonByQuadrilateral(points, p1, p2, p3, p4);
+                }
+                if ((!strictClipEnable || !clipPoints)) {
+                    clipPoints = clipPolygon(points, TEMP_CLIP_EXTENT0);
+                }
             } else {
                 clipPoints = [];
                 for (let i = 0; i < points.length; i++) {
-                    const part = clipPolygon(points[i], TEMP_CLIP_EXTENT0);
+                    let part;
+                    if (strictClipEnable) {
+                        part = clipPolygonByQuadrilateral(points[i] as unknown as Array<Point>, p1, p2, p3, p4);
+                    }
+                    if ((!strictClipEnable || !part)) {
+                        part = clipPolygon(points[i], TEMP_CLIP_EXTENT0);
+                    }
                     if (part.length) {
                         clipPoints.push(part);
                     }
@@ -549,11 +604,19 @@ class Painter extends Class {
         } else if (geometry.getJSONType() === 'LineString' && !smoothness) {
             // clip the line string to draw less and improve performance
             if (!Array.isArray(points[0])) {
-                clipPoints = clipLine(points, TEMP_CLIP_EXTENT0, false, !!smoothness);
+                if (strictClipEnable) {
+                    clipPoints = clipLineByQuadrilateral(points, p1, p2, p3, p4);
+                } else {
+                    clipPoints = clipLine(points, TEMP_CLIP_EXTENT0, false, !!smoothness);
+                }
             } else {
                 clipPoints = [];
                 for (let i = 0; i < points.length; i++) {
-                    pushIn(clipPoints, clipLine(points[i], TEMP_CLIP_EXTENT0, false, !!smoothness));
+                    if (strictClipEnable) {
+                        pushIn(clipPoints, clipLineByQuadrilateral(points, p1, p2, p3, p4));
+                    } else {
+                        pushIn(clipPoints, clipLine(points[i], TEMP_CLIP_EXTENT0, false, !!smoothness));
+                    }
                 }
             }
             //interpolate line's segment's altitude if altitude is an array

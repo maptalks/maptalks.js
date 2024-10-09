@@ -23,6 +23,7 @@ const options: PathOptionsType = {
     'smoothness': false,
     'enableClip': true,
     'enableSimplify': true,
+    'strictClipMode': false,
     'simplifyTolerance': 2,
     'symbol': {
         'lineColor': '#000',
@@ -486,6 +487,7 @@ export default Path;
 export type PathOptionsType = GeometryOptionsType & {
     'smoothness'?: boolean;
     'enableClip'?: boolean;
+    'strictClipMode'?: boolean;
     'enableSimplify'?: boolean;
     'simplifyTolerance'?: number;
     'symbol'?: FillSymbol | LineSymbol;

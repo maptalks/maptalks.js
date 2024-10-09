@@ -64,6 +64,7 @@
     "@maptalks/function-type": "^1.3.1",
     "frustum-intersects": "^0.1.0",
     "lineclip": "^1.1.5",
+    "polygon-clipping": "^0.15.7",
     "rbush": "^2.0.2",
     "simplify-js": "^1.2.1"
   },
