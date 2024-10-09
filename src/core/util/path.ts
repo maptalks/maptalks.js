@@ -780,10 +780,14 @@ export function clipPolygonByQuadrilateral(path: Array<Point>, p1: Point, p2: Po
     try {
         const ring = checkRing(path);
         const result = polygonClipping.intersection([MAP_TEMP_RING], [ring]);
-        const points = [];
+        if (!result || result.length > 1) {
+            return null;
+        }
         if (!result[0] || !result[0][0]) {
             return null;
         }
+        const points = [];
+
         const clipPath = result[0][0];
         for (let i = 0, len = clipPath.length; i < len; i++) {
             const p = clipPath[i];

@@ -582,10 +582,8 @@ class Painter extends Class {
             if (!Array.isArray(points[0])) {
                 if (strictClipEnable) {
                     clipPoints = clipPolygonByQuadrilateral(points, p1, p2, p3, p4);
-                    if (!clipPoints) {
-                        clipPoints = clipPolygon(points, TEMP_CLIP_EXTENT0);
-                    }
-                } else {
+                }
+                if ((!strictClipEnable || !clipPoints)) {
                     clipPoints = clipPolygon(points, TEMP_CLIP_EXTENT0);
                 }
             } else {
@@ -594,10 +592,8 @@ class Painter extends Class {
                     let part;
                     if (strictClipEnable) {
                         part = clipPolygonByQuadrilateral(points[i] as unknown as Array<Point>, p1, p2, p3, p4);
-                        if (!part) {
-                            part = clipPolygon(points[i], TEMP_CLIP_EXTENT0);
-                        }
-                    } else {
+                    }
+                    if ((!strictClipEnable || !part)) {
                         part = clipPolygon(points[i], TEMP_CLIP_EXTENT0);
                     }
                     if (part.length) {
