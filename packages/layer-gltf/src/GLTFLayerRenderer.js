@@ -548,21 +548,22 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
     //更新shader
     _updateShader(context, shaderName) {
         const { shader, type } = this._shaderList[shaderName];
-        const defines = {}, uniforms = {};
-        this._fillIncludes(defines, uniformDeclares, context);
-        this._setIncludeUniformValues(uniforms, context);
-        const shaderConfig = {
-            vert: shader.vert,
-            frag: shader.frag,
-            uniforms: shader.uniforms,
-            extraCommandProps: shader.extraCommandProps
-        };
-        shaderConfig.defines = defines;
-        shaderConfig.uniforms = maptalks.Util.extend([], shaderConfig.uniforms, uniformDeclares);
         let newShader = null;
+        const uniforms = {};
+        this._setIncludeUniformValues(uniforms, context);
         //includesChanged为true时重新创建shader
         //首帧由于includesChanged始终为false，需要重新创建shader
         if (context.states.includesChanged) {
+            const defines = {};
+            this._fillIncludes(defines, uniformDeclares, context);
+            const shaderConfig = {
+                vert: shader.vert,
+                frag: shader.frag,
+                uniforms: shader.uniforms,
+                extraCommandProps: shader.extraCommandProps
+            };
+            shaderConfig.defines = defines;
+            shaderConfig.uniforms = maptalks.Util.extend([], shaderConfig.uniforms, uniformDeclares);
             if (Array.isArray(type)) {
                 newShader = new  reshader[type[0]][type[1]](shaderConfig);
             } else {
