@@ -263,7 +263,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             for (let j = 0, l = allTiles.length; j < l; j++) {
                 const tile = allTiles[j];
                 const tileId = tile.id;
-                const isParentTile = j < parentCount;
+                const isParentTile = !isFirstRender && j < parentCount;
                 //load tile in cache at first if it has.
                 let tileLoading = false;
                 const tilesCount = tiles.length;
