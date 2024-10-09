@@ -208,44 +208,40 @@ export default class PostProcess {
     //     }, sourceTex, depthTex);
     // }
 
-    fxaa(fbo, source, noAaSource, pointSource, taaTextureSource, fxaaTextureSource, enableFXAA, enableToneMapping, enableSharpen, pixelRatio, sharpFactor,
+    fxaa(fbo, source, enableFXAA, enableToneMapping, enableSharpen, pixelRatio, sharpFactor,
         textureOutline, highlightFactor, outlineFactor, outlineWidth, outlineColor) {
         if (fbo && (fbo.width !== source.fbo || fbo.height !== source.height)) {
             fbo.resize(source.width, source.height);
         }
-        const shaderDefines = {};
-        if (taaTextureSource) {
-            shaderDefines['HAS_TAA_TEX'] = 1;
-        } else {
-            delete shaderDefines['HAS_TAA_TEX'];
-        }
-        if (fxaaTextureSource) {
-            shaderDefines['HAS_FXAA_TEX'] = 1;
-        } else {
-            delete shaderDefines['HAS_FXAA_TEX'];
-        }
-        if (textureOutline) {
-            shaderDefines['HAS_OUTLINE_TEX'] = 1;
-        } else {
-            delete shaderDefines['HAS_OUTLINE_TEX'];
-        }
-        if (noAaSource) {
-            shaderDefines['HAS_NOAA_TEX'] = 1;
-        } else {
-            delete shaderDefines['HAS_NOAA_TEX'];
-        }
-        if (pointSource) {
-            shaderDefines['HAS_POINT_TEX'] = 1;
-        } else {
-            delete shaderDefines['HAS_POINT_TEX'];
-        }
-        this._fxaaShader.setDefines(shaderDefines);
+        // const shaderDefines = {};
+        // if (taaTextureSource) {
+        //     shaderDefines['HAS_TAA_TEX'] = 1;
+        // } else {
+        //     delete shaderDefines['HAS_TAA_TEX'];
+        // }
+        // if (fxaaTextureSource) {
+        //     shaderDefines['HAS_FXAA_TEX'] = 1;
+        // } else {
+        //     delete shaderDefines['HAS_FXAA_TEX'];
+        // }
+        // if (textureOutline) {
+        //     shaderDefines['HAS_OUTLINE_TEX'] = 1;
+        // } else {
+        //     delete shaderDefines['HAS_OUTLINE_TEX'];
+        // }
+        // if (noAaSource) {
+        //     shaderDefines['HAS_NOAA_TEX'] = 1;
+        // } else {
+        //     delete shaderDefines['HAS_NOAA_TEX'];
+        // }
+        // if (pointSource) {
+        //     shaderDefines['HAS_POINT_TEX'] = 1;
+        // } else {
+        //     delete shaderDefines['HAS_POINT_TEX'];
+        // }
+        // this._fxaaShader.setDefines(shaderDefines);
         this._renderer.render(this._fxaaShader, {
             textureSource: source,
-            noAaTextureSource: noAaSource,
-            pointTextureSource: pointSource,
-            taaTextureSource,
-            fxaaTextureSource,
             resolution: vec2.set(RESOLUTION, source.width, source.height),
             enableFXAA,
             enableToneMapping,

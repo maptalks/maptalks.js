@@ -110,14 +110,15 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const config = sceneConfig && sceneConfig.postProcess;
         const ssrMode = this.isSSROn();
 
-        const enableTAA = this.isEnableTAA();
-        const jitter = drawContext.jitter;
+        // const enableTAA = this.isEnableTAA();
+        // const jitter = drawContext.jitter;
         drawContext.jitter = NO_JITTER;
         const groundConfig = this.layer.getGroundConfig();
         drawContext.hasSSRGround = !!(ssrMode && groundConfig && groundConfig.enable && groundConfig.symbol && groundConfig.symbol.ssr);
         fGL.resetDrawCalls();
-        this._renderInMode(enableTAA ? 'fxaaBeforeTaa' : 'fxaa', this._targetFBO, methodName, args);
-        this._fxaaDrawCount = fGL.getDrawCalls();
+        // this._renderInMode(enableTAA ? 'fxaaBeforeTaa' : 'fxaa', this._targetFBO, methodName, args);
+        this._renderInMode('default', this._targetFBO, methodName, args);
+        // this._fxaaDrawCount = fGL.getDrawCalls();
 
         // 重用上一帧的深度纹理，先绘制ssr图形
         // 解决因TAA jitter偏转，造成的ssr图形与taa图形的空白缝隙问题
@@ -128,43 +129,43 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
 
 
-        if (enableTAA) {
-            const map = this.getMap();
-            const needRefresh = this._postProcessor.isTaaNeedRedraw() || this._needRetireFrames || map.getRenderer().isViewChanged();
-            drawContext.jitter = needRefresh ? jitter : this._jitGetter.getAverage();
-            drawContext.onlyUpdateDepthInTaa = !needRefresh;
-            let taaFBO = this._taaFBO;
-            if (!taaFBO) {
-                const regl = this.regl;
-                const info = this.createFBOInfo(config, this._depthTex);
-                taaFBO = this._taaFBO = regl.framebuffer(info);
-            } else if (taaFBO.width !== this._targetFBO.width || taaFBO.height !== this._targetFBO.height) {
-                taaFBO.resize(this._targetFBO.width, this._targetFBO.height);
-            }
-            fGL.resetDrawCalls();
-            this._renderInMode('taa', taaFBO, methodName, args);
-            this._taaDrawCount = fGL.getDrawCalls();
-            delete drawContext.onlyUpdateDepthInTaa;
-            drawContext.jitter = NO_JITTER;
+        // if (enableTAA) {
+        //     const map = this.getMap();
+        //     const needRefresh = this._postProcessor.isTaaNeedRedraw() || this._needRetireFrames || map.getRenderer().isViewChanged();
+        //     drawContext.jitter = needRefresh ? jitter : this._jitGetter.getAverage();
+        //     drawContext.onlyUpdateDepthInTaa = !needRefresh;
+        //     let taaFBO = this._taaFBO;
+        //     if (!taaFBO) {
+        //         const regl = this.regl;
+        //         const info = this.createFBOInfo(config, this._depthTex);
+        //         taaFBO = this._taaFBO = regl.framebuffer(info);
+        //     } else if (taaFBO.width !== this._targetFBO.width || taaFBO.height !== this._targetFBO.height) {
+        //         taaFBO.resize(this._targetFBO.width, this._targetFBO.height);
+        //     }
+        //     fGL.resetDrawCalls();
+        //     this._renderInMode('taa', taaFBO, methodName, args);
+        //     this._taaDrawCount = fGL.getDrawCalls();
+        //     delete drawContext.onlyUpdateDepthInTaa;
+        //     drawContext.jitter = NO_JITTER;
 
-            let fxaaFBO = this._fxaaFBO;
-            if (!fxaaFBO) {
-                const regl = this.regl;
-                const info = this.createFBOInfo(config, this._depthTex);
-                fxaaFBO = this._fxaaFBO = regl.framebuffer(info);
-            } else if (fxaaFBO.width !== this._targetFBO.width || fxaaFBO.height !== this._targetFBO.height) {
-                fxaaFBO.resize(this._targetFBO.width, this._targetFBO.height);
-            }
-            fGL.resetDrawCalls();
-            this._renderInMode('fxaaAfterTaa', this._fxaaFBO, methodName, args);
-            this._fxaaAfterTaaDrawCount = fGL.getDrawCalls();
-        } else if (this._taaFBO) {
-            this._taaFBO.destroy();
-            this._fxaaFBO.destroy();
-            delete this._taaFBO;
-            delete this._fxaaFBO;
-            delete this._fxaaAfterTaaDrawCount;
-        }
+        //     let fxaaFBO = this._fxaaFBO;
+        //     if (!fxaaFBO) {
+        //         const regl = this.regl;
+        //         const info = this.createFBOInfo(config, this._depthTex);
+        //         fxaaFBO = this._fxaaFBO = regl.framebuffer(info);
+        //     } else if (fxaaFBO.width !== this._targetFBO.width || fxaaFBO.height !== this._targetFBO.height) {
+        //         fxaaFBO.resize(this._targetFBO.width, this._targetFBO.height);
+        //     }
+        //     fGL.resetDrawCalls();
+        //     this._renderInMode('fxaaAfterTaa', this._fxaaFBO, methodName, args);
+        //     this._fxaaAfterTaaDrawCount = fGL.getDrawCalls();
+        // } else if (this._taaFBO) {
+        //     this._taaFBO.destroy();
+        //     this._fxaaFBO.destroy();
+        //     delete this._taaFBO;
+        //     delete this._fxaaFBO;
+        //     delete this._fxaaAfterTaaDrawCount;
+        // }
 
         // let tex = this._fxaaFBO ? this._getFBOColor(this._fxaaFBO) : this._getFBOColor(this._targetFBO);
 
@@ -181,11 +182,11 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
         // noAa的绘制放在bloom后，避免noAa的数据覆盖了bloom效果
         fGL.resetDrawCalls();
-        this._renderInMode('noAa', this._noAaFBO, methodName, args);
-        this._noaaDrawCount = fGL.getDrawCalls();
+        // this._renderInMode('noAa', this._noAaFBO, methodName, args);
+        // this._noaaDrawCount = fGL.getDrawCalls();
 
-        fGL.resetDrawCalls();
-        this._renderInMode('point', this._pointFBO, methodName, args, true);
+        // fGL.resetDrawCalls();
+        // this._renderInMode('point', this._pointFBO, methodName, args, true);
         this._weatherPainter.renderScene(drawContext);
         this._pointDrawCount = fGL.getDrawCalls();
 
@@ -208,12 +209,14 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             if (!layer.isVisible()) {
                 return;
             }
-            if (mode === 'default' ||
-                !renderer.supportRenderMode && (mode === 'fxaa' || mode === 'fxaaAfterTaa') ||
-                renderer.supportRenderMode && renderer.supportRenderMode(mode)) {
-                this.clearStencil(renderer, fbo);
-                renderer[methodName].apply(renderer, args);
-            }
+            // if (mode === 'default' ||
+            //     !renderer.supportRenderMode && (mode === 'fxaa' || mode === 'fxaaAfterTaa') ||
+            //     renderer.supportRenderMode && renderer.supportRenderMode(mode)) {
+            //     this.clearStencil(renderer, fbo);
+            //     renderer[methodName].apply(renderer, args);
+            // }
+            this.clearStencil(renderer, fbo);
+            renderer[methodName].apply(renderer, args);
         });
     }
 
@@ -545,26 +548,26 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 stencil: 0xFF,
                 framebuffer: this._targetFBO
             });
-            regl.clear({
-                color: EMPTY_COLOR,
-                framebuffer: this._noAaFBO
-            });
-            regl.clear({
-                color: EMPTY_COLOR,
-                framebuffer: this._pointFBO
-            });
-            if (this._taaFBO && this._taaDrawCount) {
-                regl.clear({
-                    color: EMPTY_COLOR,
-                    framebuffer: this._taaFBO
-                });
-            }
-            if (this._fxaaFBO && this._fxaaAfterTaaDrawCount) {
-                regl.clear({
-                    color: EMPTY_COLOR,
-                    framebuffer: this._fxaaFBO
-                });
-            }
+            // regl.clear({
+            //     color: EMPTY_COLOR,
+            //     framebuffer: this._noAaFBO
+            // });
+            // regl.clear({
+            //     color: EMPTY_COLOR,
+            //     framebuffer: this._pointFBO
+            // });
+            // if (this._taaFBO && this._taaDrawCount) {
+            //     regl.clear({
+            //         color: EMPTY_COLOR,
+            //         framebuffer: this._taaFBO
+            //     });
+            // }
+            // if (this._fxaaFBO && this._fxaaAfterTaaDrawCount) {
+            //     regl.clear({
+            //         color: EMPTY_COLOR,
+            //         framebuffer: this._fxaaFBO
+            //     });
+            // }
         }
         if (this._outlineFBO) {
             regl.clear({
@@ -586,14 +589,14 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this._targetFBO.height !== height)) {
             super.resizeCanvas();
             this._targetFBO.resize(width, height);
-            this._noAaFBO.resize(width, height);
-            this._pointFBO.resize(width, height);
-            if (this._taaFBO) {
-                this._taaFBO.resize(width, height);
-            }
-            if (this._fxaaFBO) {
-                this._fxaaFBO.resize(width, height);
-            }
+            // this._noAaFBO.resize(width, height);
+            // this._pointFBO.resize(width, height);
+            // if (this._taaFBO) {
+            //     this._taaFBO.resize(width, height);
+            // }
+            // if (this._fxaaFBO) {
+            //     this._fxaaFBO.resize(width, height);
+            // }
             this._clearFramebuffers();
             this.forEachRenderer(renderer => {
                 if (renderer.canvas) {
@@ -692,19 +695,19 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
     _destroyFramebuffers() {
         if (this._targetFBO) {
             this._targetFBO.destroy();
-            this._noAaFBO.destroy();
-            this._pointFBO.destroy();
-            if (this._taaFBO) {
-                this._taaFBO.destroy();
-                delete this._taaFBO;
-            }
-            if (this._fxaaFBO) {
-                this._fxaaFBO.destroy();
-                delete this._fxaaFBO;
-            }
+            // this._noAaFBO.destroy();
+            // this._pointFBO.destroy();
+            // if (this._taaFBO) {
+            //     this._taaFBO.destroy();
+            //     delete this._taaFBO;
+            // }
+            // if (this._fxaaFBO) {
+            //     this._fxaaFBO.destroy();
+            //     delete this._fxaaFBO;
+            // }
             delete this._targetFBO;
-            delete this._noAaFBO;
-            delete this._pointFBO;
+            // delete this._noAaFBO;
+            // delete this._pointFBO;
             if (this._postFBO) {
                 this._postFBO.destroy();
                 delete this._postFBO;
@@ -1137,10 +1140,10 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             const fboInfo = this.createFBOInfo(config, depthTex);
             this._depthTex = fboInfo.depth || fboInfo.depthStencil;
             this._targetFBO = regl.framebuffer(fboInfo);
-            const noAaInfo = this.createFBOInfo(config, this._depthTex);
-            this._noAaFBO = regl.framebuffer(noAaInfo);
-            const pointInfo = this.createFBOInfo(config, this._depthTex);
-            this._pointFBO = regl.framebuffer(pointInfo);
+            // const noAaInfo = this.createFBOInfo(config, this._depthTex);
+            // this._noAaFBO = regl.framebuffer(noAaInfo);
+            // const pointInfo = this.createFBOInfo(config, this._depthTex);
+            // this._pointFBO = regl.framebuffer(pointInfo);
             this._clearFramebuffers();
         }
         return {
@@ -1238,25 +1241,25 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this.layer.fire('postprocessstart');
         const map = this.layer.getMap();
 
-        const enableTAA = this.isEnableTAA();
-        let taaTex;
-        if (enableTAA) {
-            const needClear = this._needRetireFrames || map.getRenderer().isViewChanged();
-            if (needClear) {
-                this.layer.fire('taastart');
-            }
-            const { outputTex, redraw } = this._postProcessor.taa(this._getFBOColor(this._taaFBO), this._blitDepthTex(), {
-                projMatrix: map.projMatrix,
-                needClear
-            });
-            taaTex = outputTex;
-            if (redraw) {
-                this.setToRedraw();
-            } else {
-                this.layer.fire('taaend');
-            }
-            this._needRetireFrames = false;
-        }
+        // const enableTAA = this.isEnableTAA();
+        // let taaTex;
+        // if (enableTAA) {
+        //     const needClear = this._needRetireFrames || map.getRenderer().isViewChanged();
+        //     if (needClear) {
+        //         this.layer.fire('taastart');
+        //     }
+        //     const { outputTex, redraw } = this._postProcessor.taa(this._getFBOColor(this._taaFBO), this._blitDepthTex(), {
+        //         projMatrix: map.projMatrix,
+        //         needClear
+        //     });
+        //     taaTex = outputTex;
+        //     if (redraw) {
+        //         this.setToRedraw();
+        //     } else {
+        //         this.layer.fire('taaend');
+        //     }
+        //     this._needRetireFrames = false;
+        // }
 
         let sharpFactor = config.sharpen && config.sharpen.factor;
         if (!sharpFactor && sharpFactor !== 0) {
@@ -1279,8 +1282,8 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         // const enableSSAO = this.isEnableSSAO();
         const enableSSR = config.ssr && config.ssr.enable;
         const enableBloom = config.bloom && config.bloom.enable;
-        const bloomPainted = enableBloom && this._bloomPainted;
-        const enableAntialias = +!!(config.antialias && config.antialias.enable);
+        // const bloomPainted = enableBloom && this._bloomPainted;
+        // const enableAntialias = +!!(config.antialias && config.antialias.enable);
         const enableAnalysis = this._analysisPainter._hasAnalysis();
         const enableWeather = this._weatherPainter._hasWeather();
         const hasPost = /* enableSSAO ||  */enableBloom || enableSSR || enableAnalysis || enableWeather;
@@ -1312,19 +1315,16 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         }
 
         let tex = this._getFBOColor(this._targetFBO);
-        const noAaTex = this._noaaDrawCount && this._getFBOColor(this._noAaFBO);
-        const pointTex = this._pointDrawCount && this._getFBOColor(this._pointFBO);
+        // const noAaTex = this._noaaDrawCount && this._getFBOColor(this._noAaFBO);
+        // const pointTex = this._pointDrawCount && this._getFBOColor(this._pointFBO);
 
         // const enableFXAA = config.antialias && config.antialias.enable && (config.antialias.fxaa || config.antialias.fxaa === undefined);
+
+        // 2024-10-09 disable fxaa to ensure layer's render order except for ssr/bloom/outline, maptalks/issues#750
         this._postProcessor.fxaa(
             postFBO,
             tex,
-            // 如果hasPost为true，则fxaa阶段不输入noAaTex，否则会在renderFBOToScreen阶段给文字和图标应用抗锯齿，造成绘制问题
-            !bloomPainted && noAaTex,
-            !bloomPainted && pointTex,
-            taaTex,
-            this._fxaaAfterTaaDrawCount && this._fxaaFBO && this._getFBOColor(this._fxaaFBO),
-            enableAntialias,//+(!hasPost && enableAntialias),
+            0,//+(!hasPost && enableAntialias),
             // +!!enableFXAA,
             // 1,
             +!!(config.toneMapping && config.toneMapping.enable),
@@ -1360,7 +1360,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             const threshold = +bloomConfig.threshold || 0;
             const factor = getValueOrDefault(bloomConfig, 'factor', 1);
             const radius = getValueOrDefault(bloomConfig, 'radius', 1);
-            tex = this._postProcessor.bloom(tex, noAaTex, pointTex, threshold, factor, radius, enableAntialias);
+            tex = this._postProcessor.bloom(tex, null, null, threshold, factor, radius, 0);
         }
 
         if (enableSSR) {

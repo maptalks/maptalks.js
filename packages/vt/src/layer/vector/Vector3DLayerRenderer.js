@@ -75,10 +75,6 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         return this._urlModifier;
     }
 
-    hasNoAARendering() {
-        return true;
-    }
-
     //always redraw when map is interacting
     needToRedraw() {
         const redraw = super.needToRedraw();
