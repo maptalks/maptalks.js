@@ -4,7 +4,7 @@ import B3DMLoader from '../loaders/B3DMLoader';
 import I3DMLoader from '../loaders/I3DMLoader';
 import CMPTLoader from '../loaders/CMPTLoader';
 import PNTSLoader from '../loaders/PNTSLoader';
-import { stringFromUTF8Array } from '../common/Util';
+import { isNil, stringFromUTF8Array } from '../common/Util';
 import { readMagic } from '../common/TileHelper';
 import { cartesian3ToDegree } from '../common/Transform';
 import { iterateMesh, iterateBufferData } from '../common/GLTFHelpers';
@@ -557,6 +557,10 @@ export default class BaseLayerWorker {
     _processGLTF(gltf, featureTable, params) {
         const isSharePosition = ifSharingPosition(gltf);
         this._markTextures(gltf);
+        const service = params.service;
+        if (!service.createNormalIfMissed) {
+            this._markUnlit(gltf);
+        }
         if (!gltf.asset) {
             gltf.asset = {};
         }
@@ -794,6 +798,40 @@ export default class BaseLayerWorker {
                 if (isColor) {
                     textures[i].image.color = [r / 255, g / 255, b / 255, a / 255];
                     delete textures[i].image.array;
+                }
+            }
+        }
+    }
+
+    _markUnlit(gltf) {
+        // 将没有NORMAL数据的gltf标记为unlit
+        const meshes = gltf.meshes;
+        for (const meshIndex in meshes) {
+            const mesh = meshes[meshIndex];
+            if (!mesh) {
+                continue;
+            }
+            const primitives = mesh.primitives;
+            if (!primitives) {
+                continue;
+            }
+            for (let i = 0; i < primitives.length; i++) {
+                if (!primitives[i]) {
+                    continue;
+                }
+                if (!primitives[i].attributes || primitives[i].attributes['NORMAL']) {
+                    continue;
+                }
+                const materialIndex = primitives[i].material;
+                if (!isNil(materialIndex)) {
+                    const material = gltf.materials[materialIndex];
+                    if (!material) {
+                        continue;
+                    }
+                    if (!material.extensions) {
+                        material.extensions = {};
+                    }
+                    material.extensions['KHR_materials_unlit'] = {};
                 }
             }
         }
