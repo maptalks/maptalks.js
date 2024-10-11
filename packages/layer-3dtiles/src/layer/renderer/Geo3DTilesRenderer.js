@@ -595,13 +595,13 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         const b3dmMeshes = this.painter.getCurrentB3DMMeshes();
 
         for (const p in b3dmMeshes) {
-            if (b3dmMeshes[p]) {
+            if (b3dmMeshes[p] && b3dmMeshes[p].isValid()) {
                 meshes.push(b3dmMeshes[p]);
             }
         }
         const i3dmMeshes = this.painter.getCurrentI3DMMeshes();
         for (const p in i3dmMeshes) {
-            if (i3dmMeshes[p]) {
+            if (i3dmMeshes[p] && i3dmMeshes[p].isValid()) {
                 meshes.push(i3dmMeshes[p]);
             }
         }

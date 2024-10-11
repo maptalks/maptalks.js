@@ -120,6 +120,9 @@ class Material extends Eventable(Base) {
     }
 
     hasFunctionUniform(k: string): boolean {
+      if (!this.uniforms) {
+        return false;
+      }
       return Object.prototype.hasOwnProperty.call(this.uniforms, k);
     }
 
