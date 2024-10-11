@@ -101,7 +101,7 @@ export default class V2 extends GLTFAdapter {
                 out.sampler.wrapS = sampler.wrapS || 10497;
                 out.sampler.wrapT = sampler.wrapT || 10497;
             }
-            if (out.image.mimeType === 'image/ktx2' && !out.mipmap && out.sampler && out.sampler.minFilter !== GL_LINEAR && out.sampler.minFilter !== GL_NEAREST) {
+            if (out.image.mimeType === 'image/ktx2' && !out.image.mipmap && out.sampler && out.sampler.minFilter !== GL_LINEAR && out.sampler.minFilter !== GL_NEAREST) {
                 const minFilter = out.sampler.minFilter;
                 if (minFilter === GL_NEAREST_MIPMAP_NEAREST || minFilter === GL_NEAREST_MIPMAP_LINEAR) {
                     out.sampler.minFilter = GL_NEAREST;
