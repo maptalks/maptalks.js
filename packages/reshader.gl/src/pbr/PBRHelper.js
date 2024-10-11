@@ -162,9 +162,9 @@ function createSkybox(regl, cubemap, size) {
     return envMapFBO;
 }
 
-function getEnvmapPixels(regl, cubemap, envCubeSize, isHDR, environmentExposure = 1) {
+function getEnvmapPixels(regl, cubemap, envCubeSize, isHDR, environmentExposure = 1, encodeRGBM = false) {
     const drawCube = regl({
-        frag : cubemapFS,
+        frag : (encodeRGBM ? '#define ENCODE_RGBM\n' : '') + cubemapFS,
         vert : cubemapVS,
         attributes : {
             'aPosition' : cubeData.vertices

@@ -1186,7 +1186,9 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     createFBOInfo(config, depthTex) {
-        const { width, height } = this.canvas;
+        let { width, height } = this.canvas;
+        width = width || 1;
+        height = height || 1;
         const regl = this.regl;
         const fboInfo = this._createSimpleFBOInfo();
         const useMultiSamples = this._isUseMultiSample();
