@@ -420,11 +420,11 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             }
 
             const map = this.getMap();
-            if (renderer && map) {
+            if (renderer && map && map.getRenderer()) {
                 //fire show at renderend to make sure layer is shown
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore Map 缺少once方法
-                map.once('renderend', () => {
+                map.getRenderer().callInNextFrame(() => {
                     this.fire('show');
                 });
             } else {
@@ -458,11 +458,11 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             }
 
             const map = this.getMap();
-            if (renderer && map) {
+            if (renderer && map && map.getRenderer()) {
                 //fire hide at renderend to make sure layer is hidden
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore Map 缺少once方法
-                map.once('renderend', () => {
+                map.getRenderer().callInNextFrame(() => {
                     this.fire('hide');
                 });
             } else {
