@@ -618,7 +618,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         const map = this.getMap();
         const glRes = map.getGLRes();
         map.getContainerPointRay(coord0, coord1, containerPoint);
-        const raycaster = new RayCaster(coord0, coord1);
+        const raycaster = new RayCaster(coord0, coord1, false);
         const results = raycaster.test(meshes, map);
 
         const coordinates = [];
