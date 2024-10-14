@@ -841,14 +841,19 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (!this.layer) {
             return;
         }
-        tileImage.onerrorTick = tileImage.onerrorTick || 0;
-        const tileRetryCount = this.layer.options['tileRetryCount'];
-        if (tileRetryCount > tileImage.onerrorTick) {
-            tileImage.onerrorTick++;
-            this._fetchImage(tileImage, tileInfo);
-            this.removeTileLoading(tileInfo);
+        const reloadErrorTileFunction = this.layer.options['reloadErrorTileFunction'];
+        if (reloadErrorTileFunction) {
+            reloadErrorTileFunction.call(this, this.layer, this, tileInfo, tileImage);
             return;
         }
+        // tileImage.onerrorTick = tileImage.onerrorTick || 0;
+        // const tileRetryCount = this.layer.options['tileRetryCount'];
+        // if (tileRetryCount > tileImage.onerrorTick) {
+        //     tileImage.onerrorTick++;
+        //     this._fetchImage(tileImage, tileInfo);
+        //     this.removeTileLoading(tileInfo);
+        //     return;
+        // }
         const errorUrl = this.layer.options['errorUrl'];
         if (errorUrl) {
             if ((tileImage instanceof Image) && tileImage.src !== errorUrl) {
@@ -1401,7 +1406,7 @@ export type TileImage = (HTMLImageElement | HTMLCanvasElement | ImageBitmap) & {
     loadTime: number;
     glBuffer?: TileImageBuffer;
     texture?: TileImageTexture;
-    onerrorTick?: number;
+    // onerrorTick?: number;
 }
 
 export interface Tile {

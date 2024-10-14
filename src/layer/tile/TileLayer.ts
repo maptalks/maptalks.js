@@ -26,6 +26,7 @@ import * as vec3 from '../../core/util/vec3';
 import { formatResourceUrl } from '../../core/ResourceProxy';
 import { Coordinate, Extent } from '../../geo';
 import { type TileLayerCanvasRenderer } from '../../renderer';
+import { Tile } from '../../renderer/layer/tilelayer/TileLayerCanvasRenderer';
 import { BBOX, bboxInMask } from '../../core/util/bbox';
 
 const DEFAULT_MAXERROR = 1;
@@ -114,7 +115,7 @@ const options: TileLayerOptionsType = {
     'loadingLimitOnInteracting': 3,
     'loadingLimit': 0,
 
-    'tileRetryCount': 0,
+    // 'tileRetryCount': 0,
 
     'placeholder': false,
 
@@ -1690,7 +1691,8 @@ export type TileLayerOptionsType = LayerOptionsType & {
     maxCacheSize?: number;
     cascadeTiles?: boolean;
     zoomOffset?: number;
-    tileRetryCount?: number;
+    reloadErrorTileFunction?: (layer: TileLayer, renderer: TileLayerCanvasRenderer, tileImage: Tile['image'], tileInfo: Tile['info']) => void;
+    // tileRetryCount?: number;
     errorUrl?: string;
     customTags?: Record<string, any>;
     decodeImageInWorker?: boolean;
