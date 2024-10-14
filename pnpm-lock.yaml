@@ -14,6 +14,9 @@ importers:
       '@maptalks/function-type':
         specifier: ^1.3.1
         version: 1.3.1
+      colorin:
+        specifier: ^0.6.0
+        version: 0.6.0
       frustum-intersects:
         specifier: ^0.1.0
         version: 0.1.0
@@ -1252,6 +1255,9 @@ packages:
 
   colorin@0.2.0:
     resolution: {integrity: sha512-sdsDdBwR1PF5fMABS1p7tyy0LRk4mAkw4BUI+zjXlmhQ9nQnjnHOOe9e099F4FxfJl0DHCbvgabR2w4/zTajyw==}
+
+  colorin@0.6.0:
+    resolution: {integrity: sha512-huI54MwKNMP6eypurqzxGf7rvTA3pNWdXZopQbN7v3TDxXYWyyGQ3CtQndNZ2Z0Gy6HDWqA7sRYxbjRDO2FZMA==}
 
   colorspace@1.1.4:
     resolution: {integrity: sha512-BgvKJiuVu1igBUF2kEjRCZXol6wiiGbY5ipL/oVPwm0BL9sIpMIzM8IK7vwuxIIzOXMV3Ey5w+vxhm0rR/TN8w==}
@@ -3912,6 +3918,8 @@ snapshots:
       color-string: 1.9.1
 
   colorin@0.2.0: {}
+
+  colorin@0.6.0: {}
 
   colorspace@1.1.4:
     dependencies:

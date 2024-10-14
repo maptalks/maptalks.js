@@ -423,7 +423,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             if (renderer && map && map.getRenderer()) {
                 //fire show in next frame to make sure layer is shown
                 map.getRenderer().callInNextFrame(() => {
-                    this.fire('show');
+                    map.getRenderer().callInNextFrame(() => {
+                        this.fire('show');
+                    });
                 });
             } else {
                 /**
@@ -459,7 +461,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             if (renderer && map && map.getRenderer()) {
                 //fire hide in next frame to make sure layer is hidden
                 map.getRenderer().callInNextFrame(() => {
-                    this.fire('hide');
+                    map.getRenderer().callInNextFrame(() => {
+                        this.fire('hide');
+                    });
                 });
             } else {
                 /**
