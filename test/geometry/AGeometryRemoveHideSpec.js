@@ -123,8 +123,11 @@ function test(geometry, context, fn, done) {
             })
         });
         layer.once('hide', function () {
-            expect(isDrawn(testPoints, context.container)).not.to.be.ok();
-            done();
+
+            map.once('frameend', function () {
+                expect(isDrawn(testPoints, context.container)).not.to.be.ok();
+                done();
+            })
         });
         fn();
     });

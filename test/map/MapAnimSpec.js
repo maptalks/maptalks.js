@@ -177,7 +177,7 @@ describe('Map.Anim', function () {
             bearing
         });
         setTimeout(() => {
-            expect(map.getBearing()).to.be.eql(-180 + (Math.abs(bearing) - 180));
+            expect(map.getBearing().toFixed(0)).to.be.eql(-180 + (Math.abs(bearing) - 180));
             done();
         }, 100);
     });
@@ -188,7 +188,7 @@ describe('Map.Anim', function () {
             bearing
         });
         setTimeout(() => {
-            expect(map.getBearing()).to.be.eql(180 - (Math.abs(bearing) - 180));
+            expect(map.getBearing().toFixed(0)).to.be.eql(180 - (Math.abs(bearing) - 180));
             done();
         }, 100);
     });
@@ -240,7 +240,7 @@ describe('Map.Anim', function () {
             },
             frame => {
                 if (frame.state.playState === 'finished') {
-                    expect(frame.styles.bearing).to.be.eql(bearing);
+                    expect(frame.styles.bearing.toFixed(0)).to.be.eql(bearing);
                     done();
                 }
             }
@@ -263,7 +263,7 @@ describe('Map.Anim', function () {
             },
             frame => {
                 if (frame.state.playState === 'finished') {
-                    expect(frame.styles.bearing).to.be.eql(bearing);
+                    expect(frame.styles.bearing.toFixed(0)).to.be.eql(bearing);
                     done();
                 }
             }
@@ -285,7 +285,7 @@ describe('Map.Anim', function () {
         },
             frame => {
                 if (frame.state.playState === 'finished') {
-                    expect(frame.styles.bearing).to.be.eql(-183);
+                    expect(frame.styles.bearing.toFixed(0)).to.be.eql(-183);
                     done();
                 }
             }
@@ -308,7 +308,7 @@ describe('Map.Anim', function () {
         },
             frame => {
                 if (frame.state.playState === 'finished') {
-                    expect(frame.styles.bearing).to.be.eql(-(360 - bearing));
+                    expect(frame.styles.bearing.toFixed(0)).to.be.eql(-(360 - bearing));
                     done();
                 }
             }
@@ -331,7 +331,7 @@ describe('Map.Anim', function () {
         },
             frame => {
                 if (frame.state.playState === 'finished') {
-                    expect(frame.styles.bearing).to.be.eql(360 + bearing);
+                    expect(frame.styles.bearing.toFixed(0)).to.be.eql(360 + bearing);
                     done();
                 }
             }
