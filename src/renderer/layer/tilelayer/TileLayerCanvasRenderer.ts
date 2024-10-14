@@ -841,6 +841,14 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (!this.layer) {
             return;
         }
+        // example:
+        /* reloadErrorTileFunction: (layer, renderer, tileInfo, tileImage) => {
+            const url = tileInfo.url;
+            // check if need to reload, e.g. server return 500 status code temporarily
+            if (needReload) {
+              renderer.loadTile(tileInfo, tileImage);
+            }
+          } */
         const reloadErrorTileFunction = this.layer.options['reloadErrorTileFunction'];
         if (reloadErrorTileFunction) {
             reloadErrorTileFunction.call(this, this.layer, this, tileInfo, tileImage);
