@@ -568,7 +568,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         // const emptyB3DM = gltf.B3DMLoader.createEmptyB3DM();
         // emptyB3DM.loadTime = 0;
         delete this.tilesLoading[node.id];
-        if (!this.layer.options['onlyCacheNoContentTileWhenError'] || err && !maptalks.Util.isNotFoundHttpCode(err.status)) {
+        if (!this.layer.options['onlyCacheNoContentTileWhenError'] || err && !maptalks.Util.isNoContentHttpCode(err.status)) {
             this._addErrorToCache(node, err);
         }
         this.setToRedraw();
