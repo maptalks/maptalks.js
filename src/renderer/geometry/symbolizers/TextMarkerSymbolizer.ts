@@ -63,6 +63,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         this.prepareCanvas(ctx, strokeAndFill, resources);
         Canvas.prepareCanvasFont(ctx, style);
         const textHaloRadius = style.textHaloRadius || 0;
+        this.rotations = [];
         for (let i = 0, len = cookedPoints.length; i < len; i++) {
             let p = cookedPoints[i];
             const origin = this._rotate(ctx, p, this._getRotationAt(i));
@@ -76,6 +77,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
                 const alignPoint = getAlignPoint(textDesc.size, style['textHorizontalAlignment'], style['textVerticalAlignment']);
                 extent = getMarkerRotationExtent(TEMP_EXTENT, rad, width, height, p, alignPoint);
                 extent._add(pixel);
+                this.rotations.push(rad);
             }
             const bbox = Canvas.text(ctx, textContent, p, style, textDesc);
             if (origin) {

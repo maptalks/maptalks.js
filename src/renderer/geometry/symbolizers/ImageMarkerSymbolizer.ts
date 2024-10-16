@@ -74,6 +74,7 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
         TEMP_SIZE.width = width;
         TEMP_SIZE.height = height;
         const alignPoint = getAlignPoint(TEMP_SIZE, style['markerHorizontalAlignment'], style['markerVerticalAlignment']);
+        this.rotations = [];
         for (let i = 0, len = cookedPoints.length; i < len; i++) {
             let p = cookedPoints[i];
             // //for debug
@@ -88,6 +89,7 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
                 const rad = this._getRotationAt(i);
                 extent = getMarkerRotationExtent(TEMP_EXTENT, rad, width, height, p, alignPoint);
                 extent._add(pixel);
+                this.rotations.push(rad);
             }
             const x = p.x + alignPoint.x,
                 y = p.y + alignPoint.y;

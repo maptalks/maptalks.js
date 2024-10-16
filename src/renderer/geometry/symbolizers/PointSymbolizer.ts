@@ -29,11 +29,13 @@ abstract class PointSymbolizer extends CanvasSymbolizer {
     symbol: any;
     geometry: Geometry;
     painter: Painter;
+    rotations: Array<number>;
     constructor(symbol: any, geometry: Geometry, painter: Painter) {
         super();
         this.symbol = symbol;
         this.geometry = geometry;
         this.painter = painter;
+        this.rotations = [];
     }
 
     get2DExtent(): PointExtent {
