@@ -65,8 +65,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         const textHaloRadius = style.textHaloRadius || 0;
         for (let i = 0, len = cookedPoints.length; i < len; i++) {
             let p = cookedPoints[i];
-            // const origin = this._rotate(ctx, p, this._getRotationAt(i));
-            const origin = this.getRotation() ? this._rotate(ctx, p, this._getRotationAt(i)) : null;
+            const origin = this._rotate(ctx, p, this._getRotationAt(i));
             let extent: PointExtent;
             if (origin) {
                 //坐标对应的像素点

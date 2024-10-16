@@ -130,10 +130,15 @@ abstract class PointSymbolizer extends CanvasSymbolizer {
 
     //@internal
     _getRotationAt(i: number): number {
+        //from style
         let r = this.getRotation();
         if (!r) {
             r = 0;
         }
+        if (r !== 0) {
+            return r;
+        }
+        //from markerPlacement ,textPlacement
         const rotations = this._getRenderPoints()[1];
         if (!rotations || !rotations[i]) {
             return r;

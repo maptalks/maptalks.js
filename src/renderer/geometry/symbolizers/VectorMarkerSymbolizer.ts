@@ -78,9 +78,8 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             let point = cookedPoints[i];
             const size = calVectorMarkerSize(MARKER_SIZE, this.style);
             const [width, height] = size;
-            // const origin = this._rotate(ctx, point, this._getRotationAt(i));
+            const origin = this._rotate(ctx, point, this._getRotationAt(i));
             let extent: PointExtent;
-            const origin = this.getRotation() ? this._rotate(ctx, point, this._getRotationAt(i)) : null;
             if (origin) {
                 const pixel = point.sub(origin);
                 point = origin;
@@ -111,8 +110,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         const anchor = getVectorMarkerAnchor(this.style, image.width, image.height);
         for (let i = cookedPoints.length - 1; i >= 0; i--) {
             let point = cookedPoints[i];
-            // const origin = this._rotate(ctx, point, this._getRotationAt(i));
-            const origin = this.getRotation() ? this._rotate(ctx, point, this._getRotationAt(i)) : null;
+            const origin = this._rotate(ctx, point, this._getRotationAt(i));
             let extent: PointExtent;
             if (origin) {
                 //坐标对应的像素点

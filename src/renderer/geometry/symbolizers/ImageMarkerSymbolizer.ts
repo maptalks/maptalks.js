@@ -79,8 +79,7 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
             // //for debug
             // ctx.fillStyle = 'red';
             // ctx.fillRect(p.x - 2, p.y - 160, 4, 4);
-            // const origin = this._rotate(ctx, p, this._getRotationAt(i));
-            const origin = this.getRotation() ? this._rotate(ctx, p, this._getRotationAt(i)) : null;
+            const origin = this._rotate(ctx, p, this._getRotationAt(i));
             let extent: PointExtent;
             if (origin) {
                 //坐标对应的像素点
