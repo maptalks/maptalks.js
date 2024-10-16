@@ -237,8 +237,8 @@ importers:
   packages/layer-3dtiles:
     dependencies:
       '@maptalks/function-type':
-        specifier: ^1.3.1
-        version: 1.3.1
+        specifier: ^1.4.0
+        version: 1.4.0
       '@maptalks/gltf-loader':
         specifier: workspace:*
         version: link:../gltf-loader
@@ -334,8 +334,8 @@ importers:
         specifier: ^1.3.0
         version: 1.3.0
       '@maptalks/function-type':
-        specifier: ^1.3.1
-        version: 1.3.1
+        specifier: ^1.4.0
+        version: 1.4.0
       '@maptalks/gltf-loader':
         specifier: workspace:*
         version: link:../gltf-loader
@@ -766,8 +766,8 @@ importers:
         specifier: ^1.3.0
         version: 1.3.0
       '@maptalks/function-type':
-        specifier: ^1.3.1
-        version: 1.3.1
+        specifier: ^1.4.0
+        version: 1.4.0
       '@maptalks/geojson-bbox':
         specifier: ^1.0.4
         version: 1.0.5
@@ -1041,6 +1041,9 @@ packages:
 
   '@maptalks/function-type@1.3.1':
     resolution: {integrity: sha512-VoKE84IDhAn1Co25IVggptNzZdQ3fPUCRlw8+SBxyW8ATT45kFDqYECktqnNW445h44tT+3Ge5fyP+dHVCDP6g==}
+
+  '@maptalks/function-type@1.4.0':
+    resolution: {integrity: sha512-T6Ss+EyBdMhTMoD8z4KVyX9NVGQ/pu2asBcAP1T6Bzl+fgnmGZu8T2meO8MfBDyvqjqgQhAb+/RAYtSMQLeVEg==}
 
   '@maptalks/fusiongl@0.7.2':
     resolution: {integrity: sha512-y3RjqQ0Uu4+wRhDb+gobMSp+Q02cuCRsSKTMnABgm1mYvYjdqlHcydMy/6Y2Bk5Hma4Z215xTPy7/nJcc00nIg==}
@@ -1976,6 +1979,9 @@ packages:
 
   colorin@0.2.0:
     resolution: {integrity: sha512-sdsDdBwR1PF5fMABS1p7tyy0LRk4mAkw4BUI+zjXlmhQ9nQnjnHOOe9e099F4FxfJl0DHCbvgabR2w4/zTajyw==}
+
+  colorin@0.5.0:
+    resolution: {integrity: sha512-gN6fIMCehYUonAhbmm5+ZHeFunG75u77hI2tRlVndNthO6v0wZMV2G2FwYSi8Ws4b4lpFJK1ql2a/MlW9z/Vhg==}
 
   colorin@0.6.0:
     resolution: {integrity: sha512-huI54MwKNMP6eypurqzxGf7rvTA3pNWdXZopQbN7v3TDxXYWyyGQ3CtQndNZ2Z0Gy6HDWqA7sRYxbjRDO2FZMA==}
@@ -4185,6 +4191,10 @@ snapshots:
     dependencies:
       colorin: 0.2.0
 
+  '@maptalks/function-type@1.4.0':
+    dependencies:
+      colorin: 0.5.0
+
   '@maptalks/fusiongl@0.7.2':
     dependencies:
       fast-deep-equal: 2.0.1
@@ -5783,6 +5793,8 @@ snapshots:
 
   colorin@0.2.0: {}
 
+  colorin@0.5.0: {}
+
   colorin@0.6.0: {}
 
   commander@12.1.0: {}
@@ -6848,7 +6860,7 @@ snapshots:
   maptalks@1.0.0-rc.35:
     dependencies:
       '@maptalks/feature-filter': 1.3.0
-      '@maptalks/function-type': 1.3.1
+      '@maptalks/function-type': 1.4.0
       frustum-intersects: 0.1.0
       lineclip: 1.1.5
       rbush: 2.0.2

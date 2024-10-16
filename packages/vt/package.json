@@ -28,7 +28,7 @@
     "@mapbox/shelf-pack": "^3.1.0",
     "@mapbox/vector-tile": "^1.3.1",
     "@maptalks/feature-filter": "^1.3.0",
-    "@maptalks/function-type": "^1.3.1",
+    "@maptalks/function-type": "^1.4.0",
     "@maptalks/geojson-bbox": "^1.0.4",
     "@maptalks/geojson-vt": "^3.5.0",
     "@maptalks/gl": "workspace:*",
