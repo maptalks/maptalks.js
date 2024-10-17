@@ -98,6 +98,53 @@ describe('update style specs', () => {
         server.close();
     });
 
+    it('TileLayer covered GeoJSONVectorTileLayer, maptalks/issues#750', done => {
+        const style = [
+            {
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
+                renderPlugin: {
+                    type: 'text',
+                    dataConfig: { type: 'point' },
+                    sceneConfig: { collision: false }
+                },
+                symbol: { textName: '■■■', textSize: 10, textFill: '#0f0' }
+            }
+        ];
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            tileLimitPerFrame: 0,
+            loadingLimit: 0,
+            data: point,
+            style,
+            tileStackDepth: 0
+        });
+        const tileLayer = new maptalks.TileLayer('tile', {
+            urlTemplate: path.join(__dirname, './resources/tile-red-256.png')
+        })
+        const sceneConfig = {
+            postProcess: {
+                enable: true
+            }
+        };
+        const group = new GroupGLLayer('group', [layer, tileLayer], { sceneConfig });
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        group.addTo(map);
+        setTimeout(() => {
+            group.remove();
+            setTimeout(() => {
+                group.addTo(map);
+                setTimeout(() => {
+                    const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                    assert.deepEqual(pixel, [255, 0, 0, 255]);
+                    done();
+                }, 200);
+            }, 200);
+        }, 200);
+    });
+
     it('GeoJSONVectorTileLayer  in GroupGLLayer remove and add again to map, maptalks/issues#256', done => {
         const style = [
             {

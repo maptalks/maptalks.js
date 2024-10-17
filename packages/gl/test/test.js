@@ -259,6 +259,37 @@ describe('gl tests', () => {
                 done();
             }, 500);
         });
+
+        it('tilelayer hide in GroupGLLayer, maptalks/issues#758', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            const sceneConfig = {
+                postProcess: {
+                    enable: true
+                }
+            };
+            const tileLayer = new maptalks.TileLayer('base', {
+                urlTemplate: '/fixtures/google-256/{z}/{x}/{y}.jpg'
+            });
+            const group = new maptalks.GroupGLLayer('group', [tileLayer], {
+                sceneConfig
+            });
+
+            tileLayer.once('hide', () => {
+                const canvas = map.getRenderer().canvas;
+                const ctx = canvas.getContext('2d');
+                const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
+                expect(pixel).to.be.eql({ data: { '0': 138, '1': 142, '2': 143, '3': 255 } });
+                done();
+
+            });
+            group.once('layerload', () => {
+                tileLayer.hide();
+            });
+            group.addTo(map);
+        });
     });
 
     context('GroupGLLayer tests', () => {

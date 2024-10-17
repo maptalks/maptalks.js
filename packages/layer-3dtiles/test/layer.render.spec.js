@@ -2154,6 +2154,39 @@ describe('render specs', () => {
                 done();
             }, layer, { path: `./integration/expected/${resPath}/expected.png`, zoomOffset: 1, diffCount: 5, renderCount: 1, noGroup: true });
         });
-    });
+
+        it('3dtiles under hdr, maptalks/issues#755', done => {
+            const resPath = 'BatchedDraco/issue-755';
+            map.setLights({
+                directional: {
+                  direction: [-1, -1, -1],
+                  color: [1, 1, 1]
+                },
+                ambient: {
+                  resource: {
+                    url: `http://localhost:${PORT}/integration/fixtures/${resPath}/env3.hdr`,
+                  },
+                  exposure: 1,
+                  hsv: [0, 0, 0],
+                  orientation: 302.553
+                }
+              })
+
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                        heightOffset: 0,
+                        scale: 1,
+                        rotation: [0, 0, 0],
+                        debug: true
+                    }
+                ]
+            });
+            runner(() => {
+                done();
+            }, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 1, renderCount: 3, noGroup: true });
+        });
+    }).timeout(10000);
 });
 

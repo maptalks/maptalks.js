@@ -1,0 +1,239 @@
+{
+	"asset": {
+		"version": "1.0",
+		"gltfUpAxis": "Y"
+	},
+	"geometricError": 2204.34704,
+	"refine": "REPLACE",
+	"root": {
+		"boundingVolume": {
+			"sphere": [-1960962.75337, 4931075.54286, 3528119.94163, 2204.34704]
+		},
+		"geometricError": 2204.34704,
+		"children": [{
+			"boundingVolume": {
+				"sphere": [-1961335.00435, 4930645.43020, 3528064.91044, 379.96376]
+			},
+			"geometricError": 379.96376,
+			"children": [{
+				"boundingVolume": {
+					"sphere": [-1961335.00435, 4930645.43020, 3528064.91044, 379.96376]
+				},
+				"geometricError": 16,
+				"content": {
+					"uri": "BlockAABABYX\/BlockAABABYX.json"
+				}
+			}]
+		}, {
+			"boundingVolume": {
+				"sphere": [-1961211.41568, 4930358.99501, 3528666.40670, 549.01143]
+			},
+			"geometricError": 549.01143,
+			"children": [{
+				"boundingVolume": {
+					"sphere": [-1961211.41568, 4930358.99501, 3528666.40670, 549.01143]
+				},
+				"geometricError": 32,
+				"content": {
+					"uri": "BlockAABABBX\/BlockAABABBX.json"
+				}
+			}]
+		}, {
+			"boundingVolume": {
+				"sphere": [-1961679.51283, 4930220.96242, 3528671.29739, 639.14118]
+			},
+			"geometricError": 639.14118,
+			"children": [{
+				"boundingVolume": {
+					"sphere": [-1961679.51283, 4930220.96242, 3528671.29739, 639.14118]
+				},
+				"geometricError": 32,
+				"content": {
+					"uri": "BlockAABABBA\/BlockAABABBA.json"
+				}
+			}]
+		}, {
+			"boundingVolume": {
+				"sphere": [-1961927.31967, 4930475.32453, 3528081.39920, 578.02939]
+			},
+			"geometricError": 578.02939,
+			"children": [{
+				"boundingVolume": {
+					"sphere": [-1961927.31967, 4930475.32453, 3528081.39920, 578.02939]
+				},
+				"geometricError": 64,
+				"content": {
+					"uri": "BlockAABABYA\/BlockAABABYA.json"
+				}
+			}]
+		}, {
+			"boundingVolume": {
+				"sphere": [-1961438.50216, 4930892.20665, 3527678.93999, 360.62931]
+			},
+			"geometricError": 360.62931,
+			"children": [{
+				"boundingVolume": {
+					"sphere": [-1961438.50216, 4930892.20665, 3527678.93999, 360.62931]
+				},
+				"geometricError": 32,
+				"content": {
+					"uri": "BlockAABAYXB\/BlockAABAYXB.json"
+				}
+			}]
+		}, {
+			"boundingVolume": {
+				"sphere": [-1961791.11225, 4930914.66820, 3527516.32001, 502.17954]
+			},
+			"geometricError": 502.17954,
+			"children": [{
+				"boundingVolume": {
+					"sphere": [-1961791.11225, 4930914.66820, 3527516.32001, 502.17954]
+				},
+				"geometricError": 32,
+				"content": {
+					"uri": "BlockAABAYAX\/BlockAABAYAX.json"
+				}
+			}]
+		}, {
+			"boundingVolume": {
+				"sphere": [-1961536.97430, 4931110.38171, 3527326.98852, 362.82718]
+			},
+			"geometricError": 362.82718,
+			"children": [{
+				"boundingVolume": {
+					"sphere": [-1961536.97430, 4931110.38171, 3527326.98852, 362.82718]
+				},
+				"geometricError": 32,
+				"content": {
+					"uri": "BlockAABAYXY\/BlockAABAYXY.json"
+				}
+			}]
+		}, {
+			"boundingVolume": {
+				"sphere": [-1962199.68488, 4930748.87032, 3527539.76144, 665.35824]
+			},
+			"geometricError": 665.35824,
+			"children": [{
+				"boundingVolume": {
+					"sphere": [-1962199.68488, 4930748.87032, 3527539.76144, 665.35824]
+				},
+				"geometricError": 64,
+				"content": {
+					"uri": "BlockAABAYAA\/BlockAABAYAA.json"
+				}
+			}]
+		}, {
+			"boundingVolume": {
+				"sphere": [-1961059.07968, 4931139.59562, 3527537.73048, 352.07548]
+			},
+			"geometricError": 352.07548,
+			"children": [{
+				"boundingVolume": {
+					"sphere": [-1961059.07968, 4931139.59562, 3527537.73048, 352.07548]
+				},
+				"geometricError": 32,
+				"content": {
+					"uri": "BlockAABXAYB\/BlockAABXAYB.json"
+				}
+			}]
+		}, {
+			"boundingVolume": {
+				"sphere": [-1960990.11163, 4930948.41566, 3527865.98817, 385.01679]
+			},
+			"geometricError": 385.01679,
+			"children": [{
+				"boundingVolume": {
+					"sphere": [-1960990.11163, 4930948.41566, 3527865.98817, 385.01679]
+				},
+				"geometricError": 32,
+				"content": {
+					"uri": "BlockAABXABY\/BlockAABXABY.json"
+				}
+			}]
+		}, {
+			"boundingVolume": {
+				"sphere": [-1961122.74155, 4931301.90837, 3527277.02018, 338.22475]
+			},
+			"geometricError": 338.22475,
+			"children": [{
+				"boundingVolume": {
+					"sphere": [-1961122.74155, 4931301.90837, 3527277.02018, 338.22475]
+				},
+				"geometricError": 32,
+				"content": {
+					"uri": "BlockAABXAYY\/BlockAABXAYY.json"
+				}
+			}]
+		}, {
+			"boundingVolume": {
+				"sphere": [-1960743.99530, 4931417.35717, 3527332.84577, 316.43514]
+			},
+			"geometricError": 316.43514,
+			"children": [{
+				"boundingVolume": {
+					"sphere": [-1960743.99530, 4931417.35717, 3527332.84577, 316.43514]
+				},
+				"geometricError": 16,
+				"content": {
+					"uri": "BlockAABXXAY\/BlockAABXXAY.json"
+				}
+			}]
+		}, {
+			"boundingVolume": {
+				"sphere": [-1960909.06639, 4930643.91246, 3528417.58742, 581.69863]
+			},
+			"geometricError": 581.69863,
+			"children": [{
+				"boundingVolume": {
+					"sphere": [-1960909.06639, 4930643.91246, 3528417.58742, 581.69863]
+				},
+				"geometricError": 32,
+				"content": {
+					"uri": "BlockAABXABB\/BlockAABXABB.json"
+				}
+			}]
+		}, {
+			"boundingVolume": {
+				"sphere": [-1960622.55404, 4931083.16071, 3527984.82490, 612.46280]
+			},
+			"geometricError": 612.46280,
+			"children": [{
+				"boundingVolume": {
+					"sphere": [-1960622.55404, 4931083.16071, 3527984.82490, 612.46280]
+				},
+				"geometricError": 32,
+				"content": {
+					"uri": "BlockAABXXAB\/BlockAABXXAB.json"
+				}
+			}]
+		}, {
+			"boundingVolume": {
+				"sphere": [-1960454.81043, 4931323.25438, 3527716.35666, 705.41227]
+			},
+			"geometricError": 705.41227,
+			"children": [{
+				"boundingVolume": {
+					"sphere": [-1960454.81043, 4931323.25438, 3527716.35666, 705.41227]
+				},
+				"geometricError": 32,
+				"content": {
+					"uri": "BlockAABXXXA\/BlockAABXXXA.json"
+				}
+			}]
+		}, {
+			"boundingVolume": {
+				"sphere": [-1959890.64197, 4931662.41801, 3527659.57283, 925.05997]
+			},
+			"geometricError": 925.05997,
+			"children": [{
+				"boundingVolume": {
+					"sphere": [-1959890.64197, 4931662.41801, 3527659.57283, 925.05997]
+				},
+				"geometricError": 64,
+				"content": {
+					"uri": "BlockAABXXXX\/BlockAABXXXX.json"
+				}
+			}]
+		}]
+	}
+}
