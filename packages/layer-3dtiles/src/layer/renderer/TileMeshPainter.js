@@ -175,7 +175,7 @@ export default class TileMeshPainter {
         for (let i = 0, l = tiles.length; i < l; i++) {
             const node = tiles[i].data.node;
             let mesh = this._getMesh(node);
-            if (!mesh) {
+            if (!mesh || !mesh.isValid()) {
                 continue;
             }
             const service = this._layer._getNodeService(node._rootIdx);

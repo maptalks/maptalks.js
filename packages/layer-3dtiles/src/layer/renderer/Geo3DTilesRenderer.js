@@ -314,7 +314,6 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
                 boxMeshes.push(node._boxMesh);
             }
         }
-        this.tileCache.shrink();
 
         const services = this.layer.options.services;
         for (let i = 0; i < services.length; i++) {
@@ -341,6 +340,8 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         if (count) {
             this.layer.fire('canvasisdirty', { renderCount: count });
         }
+        // 改为绘制结束后，再 shrink cache，以免当前帧需要绘制的瓦片被delete掉, maptalks/issues#766
+        this.tileCache.shrink();
     }
 
     onDrawTileStart() {}
