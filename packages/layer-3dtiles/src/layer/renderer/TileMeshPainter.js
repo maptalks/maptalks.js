@@ -175,7 +175,7 @@ export default class TileMeshPainter {
         for (let i = 0, l = tiles.length; i < l; i++) {
             const node = tiles[i].data.node;
             let mesh = this._getMesh(node);
-            if (!mesh || !mesh.isValid()) {
+            if (!mesh) {
                 continue;
             }
             const service = this._layer._getNodeService(node._rootIdx);
@@ -200,6 +200,9 @@ export default class TileMeshPainter {
                 mesh = oneMeshArray;
             }
             for (let ii = 0, ll = mesh.length; ii < ll; ii++) {
+                if (!mesh[ii] || !mesh[ii].isValid || !mesh[ii].isValid()) {
+                    continue;
+                }
                 const magic = mesh[ii].properties.magic;
                 if (mesh[ii].properties.heightOffset !== heightOffset || mesh[ii].properties.coordOffset[0] !== coordOffset[0] || mesh[ii].properties.coordOffset[1] !== coordOffset[1]) {
                     this._updateMeshLocalTransform(mesh[ii]);
