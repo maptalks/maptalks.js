@@ -6,6 +6,7 @@ import PointExtent from '../../../geo/PointExtent';
 import { Geometry } from '../../../geometry';
 import Painter from '../Painter';
 import CanvasSymbolizer from './CanvasSymbolizer';
+import { ColorIn } from 'colorin';
 
 const TEMP_COORD0 = new Coordinate(0, 0);
 const TEMP_COORD1 = new Coordinate(0, 0);
@@ -17,6 +18,10 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
     _extMax: Coordinate;
     //@internal
     _pxExtent: PointExtent;
+    //@internal
+    _lineColorStopsKey?: string;
+    //@internal
+    _lineColorIn?: any;
     static test(symbol: any, geometry: Geometry): boolean {
         if (!symbol) {
             return false;
@@ -59,7 +64,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
             return;
         }
         this._prepareContext(ctx);
-        const isGradient = checkGradient(style['lineColor']),
+        const isGradient = checkGradient(style['lineColor']) || style['lineGradientProperty'],
             isPath = this.geometry.getJSONType() === 'Polygon' || this.geometry.type === 'LineString';
         if (isGradient && (style['lineColor']['places'] || !isPath)) {
             style['lineGradientExtent'] = this.geometry.getContainerExtent()._expand(style['lineWidth']);
@@ -86,6 +91,9 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
                     params.push(...paintParams.slice(1));
                 }
                 params.push(style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']);
+                if (isGradient) {
+                    params.push(this._lineColorIn);
+                }
                 // @ts-expect-error todo 属性“_paintOn”在类型“Geometry”上不存在
                 const bbox = this.geometry._paintOn(...params);
                 this._setBBOX(ctx, bbox);
@@ -99,6 +107,9 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
             const params = [ctx];
             params.push(...paintParams);
             params.push(style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']);
+            if (isGradient) {
+                params.push(this._lineColorIn);
+            }
             // @ts-expect-error todo 属性“_paintOn”在类型“Geometry”上不存在
             const bbox = this.geometry._paintOn(...params);
             this._setBBOX(ctx, bbox);
@@ -173,6 +184,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
             polygonPatternDy: getValueOrDefault(s['polygonPatternDy'], 0),
             linePatternDx: getValueOrDefault(s['linePatternDx'], 0),
             linePatternDy: getValueOrDefault(s['linePatternDy'], 0),
+            lineGradientProperty: getValueOrDefault(s['lineGradientProperty'], null),
         };
         if (result['lineWidth'] === 0) {
             result['lineOpacity'] = 0;
@@ -194,11 +206,49 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
             console.error('unable create canvas LinearGradient,error data:', points);
             return;
         }
+        let colorStops;
+        //get colorStops from style
+        if (lineColor['colorStops']) {
+            colorStops = lineColor['colorStops'];
+        }
+        // get colorStops from properties
+        if (!colorStops) {
+            const properties = this.geometry.properties || {};
+            const style = this.style || {};
+            colorStops = properties[style['lineGradientProperty']];
+        }
+        if (!colorStops || !Array.isArray(colorStops) || colorStops.length < 2) {
+            return;
+        }
+        //is flat colorStops https://github.com/maptalks/maptalks.js/pull/2423
+        if (!Array.isArray(colorStops[0])) {
+            const colorStopsArray = [];
+            let colors = [];
+            let idx = 0;
+            for (let i = 0, len = colorStops.length; i < len; i += 2) {
+                colors[0] = colorStops[i];
+                colors[1] = colorStops[i + 1];
+                colorStopsArray[idx] = colors;
+                idx++;
+                colors = [];
+            }
+            colorStops = colorStopsArray;
+        }
         const grad = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
-        lineColor['colorStops'].forEach(function (stop: [number, string]) {
+        colorStops.forEach(function (stop: [number, string]) {
             grad.addColorStop(...stop);
         });
         ctx.strokeStyle = grad;
+
+        const key = JSON.stringify(colorStops);
+        if (key === this._lineColorStopsKey) {
+            return;
+        }
+        this._lineColorStopsKey = key;
+        const colors: Array<[value: number, color: string]> = colorStops.map(c => {
+            return [parseFloat(c[0]), c[1]];
+        })
+        this._lineColorIn = new ColorIn(colors, { height: 1, width: 100 });
     }
 }
 

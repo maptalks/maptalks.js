@@ -17,5 +17,6 @@ declare global {
         isClip: boolean;
         isMultiClip: boolean;
         dpr: number;
+        lineColorIn: any;
     }
 }

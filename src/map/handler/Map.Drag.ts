@@ -190,7 +190,7 @@ class MapDragHandler extends Handler {
             const dscale = isTouch ? 5 : 2.8;
             const targetPrjCoord = currentCenter.add(dxy._multi(dscale));
             // map._fixPrjOnWorldWide(targetPrjCoord);
-            map._panTo(targetPrjCoord, { 'duration': isTouch ? t * 3 : t * 2, 'easing': 'outExpo' });
+            map._panTo(targetPrjCoord, { 'duration': isTouch ? t * 3 : t * 2, 'easing': map.options.dragPanEasing || 'outExpo' });
         } else {
             map.onMoveEnd(param);
         }

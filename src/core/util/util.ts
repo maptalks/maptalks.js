@@ -530,3 +530,9 @@ export function calCanvasSize(size: { width: number, height: number }, devicePix
     CANVAS_SIZE_TEMP.height = Math.round(height * devicePixelRatio);
     return CANVAS_SIZE_TEMP;
 }
+
+export function isNoContentHttpCode(code: number) {
+    // https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+    // 501 Not Implemented
+    return code === 204 || code >= 400 && code < 500 || code === 501;
+}

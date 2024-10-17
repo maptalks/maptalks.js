@@ -86,7 +86,7 @@ Map.include(/** @lends Map.prototype */{
         delete this.cameraZenithDistance;
         this._zooming = true;
         this._startZoomVal = this.getZoom();
-        this._startZoomCoord = origin && this.queryPrjCoordAtContainerPoint(origin);
+        this._startZoomCoord = origin && this._containerPointToPrj(origin);
         /**
           * zoomstart event
           * @event Map#zoomstart
@@ -174,12 +174,13 @@ Map.include(/** @lends Map.prototype */{
         this._zoomLevel = nextZoom;
         this._calcMatrices();
         if (origin && this._startZoomCoord) {
-            // const p = this._containerPointToPoint(origin);
-            // const offset = p._sub(this._prjToPoint(this._getPrjCenter()));
-            // this._setPrjCoordAtOffsetToCenter(this._startZoomCoord, offset);
-            const movingPoint = this._containerPointToPoint(origin, undefined, undefined, this._startZoomCoord.z);
-            const point = this._prjToPoint(this._pointToPrj(movingPoint));
-            const offset = point._sub(this._prjToPoint(this._getPrjCenter()));
+            const p = this._containerPointToPoint(origin);
+            const offset = p._sub(this._prjToPoint(this._getPrjCenter()));
+
+            // const movingPoint = this._containerPointToPoint(origin, undefined, undefined, this._startZoomCoord.z);
+            // const point = this._prjToPoint(this._pointToPrj(movingPoint));
+            // const offset = point._sub(this._prjToPoint(this._getPrjCenter()));
+
             this._setPrjCoordAtOffsetToCenter(this._startZoomCoord, offset);
         }
     },
