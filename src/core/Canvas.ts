@@ -798,7 +798,7 @@ const Canvas = {
         ctx.fillText(text, pt.x, pt.y + textOffsetY);
     },
 
-    textAloneLine(ctx: Ctx, text: string, paths: Array<Array<Point>>, style, textDesc): BBOX {
+    textAloneLine(ctx: Ctx, text: string, paths: Array<Array<Point>>, style, textDesc, globalCollisonIndex: CollisionIndex): BBOX {
         if (!text) {
             return;
         }
@@ -887,6 +887,10 @@ const Canvas = {
                         hasCollision = true;
                         break;
                     }
+                    if (globalCollisonIndex && globalCollisonIndex.collides(bbox)) {
+                        hasCollision = true;
+                        break;
+                    }
                 }
                 if (hasCollision) {
                     continue;
@@ -906,6 +910,7 @@ const Canvas = {
                     const char = chars[i];
                     const { point, bbox } = items[i];
                     pathCollisionIndex.insertBox(bbox);
+                    globalCollisonIndex && globalCollisonIndex.insertBox(bbox);
                     const { x, y } = point;
                     const rad = getCharRotation(p1, p2, char, direction, isDefaultChars);
                     ctx.save();

@@ -114,7 +114,8 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
                 paths = filterPathByMapSize(paths, map.getSize());
             }
             if (paths) {
-                const bbox = Canvas.textAloneLine(ctx, textContent, paths, style, textDesc);
+                const layer = this.geometry.getLayer();
+                const bbox = Canvas.textAloneLine(ctx, textContent, paths, style, textDesc, layer.options.collision ? layer.getCollisionIndex() : null);
                 if (bbox) {
                     this._setBBOX(ctx, bbox);
                     this._bufferBBOX(ctx, textHaloRadius);

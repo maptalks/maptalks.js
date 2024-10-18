@@ -5,7 +5,6 @@ import OverlayLayerCanvasRenderer from './OverlayLayerCanvasRenderer';
 import Extent from '../../../geo/Extent';
 import PointExtent from '../../../geo/PointExtent';
 import * as vec3 from '../../../core/util/vec3';
-import CollisionIndex from '../../../core/CollisionIndex';
 import Canvas from '../../../core/Canvas';
 import type { Painter, CollectionPainter } from '../../geometry';
 import { Point } from '../../../geo';
@@ -16,7 +15,6 @@ const TEMP_EXTENT = new PointExtent();
 const TEMP_VEC3: Vector3 = [] as unknown as Vector3;
 const TEMP_FIXEDEXTENT = new PointExtent();
 const PLACEMENT_CENTER = 'center';
-const tempCollisionIndex = new CollisionIndex();
 
 function clearCanvas(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
     if (!canvas) {
@@ -373,9 +371,8 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             return this;
         }
         const collisionScope = this.layer.options['collisionScope'];
-        const map = this.layer.getMap();
-        const collisionIndex = collisionScope === 'map' ? map.getCollisionIndex() : tempCollisionIndex;
-        if (collisionIndex === tempCollisionIndex) {
+        const collisionIndex = this.layer.getCollisionIndex();
+        if (collisionScope === 'layer') {
             collisionIndex.clear();
         }
         const geos = this._geosToDraw;
@@ -451,7 +448,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             glScale,
             glRes,
             //@internal
-        _2DExtent,
+            _2DExtent,
             glExtent,
             containerExtent,
             offset
