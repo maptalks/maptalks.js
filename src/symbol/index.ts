@@ -96,6 +96,7 @@ export type PathMarkerSymbol = {
 export type TextSymbol = {
     textName?: string;
     textPlacement?: 'point' | 'vertex' | 'line' | 'vertex-first' | 'vertex-last';
+    textSpacing?: number;
     textFaceName?: string;
     textFont?: string;
     textWeight?: string;
