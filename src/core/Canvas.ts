@@ -20,6 +20,24 @@ import CollisionIndex from './CollisionIndex';
 
 export type Ctx = CanvasRenderingContext2D;
 
+type segmentType = {
+    p1: Point,
+    p2: Point,
+    distance: number
+}
+
+type linechunkType = {
+    points: Array<Point>,
+    distance: number
+}
+
+type charItemType = {
+    char: string,
+    charSize: number,
+    point: Point,
+    bbox: BBOX
+}
+
 const DEFAULT_STROKE_COLOR = '#000';
 const DEFAULT_FILL_COLOR = 'rgba(255,255,255,0)';
 const DEFAULT_TEXT_COLOR = '#000';
@@ -83,7 +101,7 @@ function getCharRotation(p1: Point, p2: Point, char: string, direction: string, 
 }
 
 
-function charLength(char: string, fontSize: number) {
+function measureCharSize(char: string, fontSize: number) {
     let w = fontSize, h = fontSize;
     if (defaultChars.indexOf(char) > -1) {
         w = fontSize / 4;
@@ -93,16 +111,16 @@ function charLength(char: string, fontSize: number) {
     return d;
 }
 
-function textLength(textName: string, fontSize: number) {
+function measureTextLength(textName: string, fontSize: number) {
     let textLen = 0;
     for (let i = 0, len = textName.length; i < len; i++) {
         const char = textName[i];
-        textLen += charLength(char, fontSize);
+        textLen += measureCharSize(char, fontSize);
     }
     return textLen;
 }
 
-function getPercentPoint(segment, dis: number) {
+function getPercentPoint(segment: segmentType, dis: number) {
     const { distance, p1, p2 } = segment;
     const dx = p2.x - p1.x,
         dy = p2.y - p1.y,
@@ -117,7 +135,7 @@ function getPercentPoint(segment, dis: number) {
 function lineSeg(points: Array<Point>, options: any) {
     options = Object.assign({ segDistance: 1, isGeo: true }, options);
     const segDistance = Math.max(options.segDistance, 0.00000000000000001);
-    const segments = [];
+    const segments: Array<segmentType> = [];
     let totalLen = 0;
     for (let i = 0, len = points.length; i < len - 1; i++) {
         const p1 = points[i], p2 = points[i + 1];
@@ -136,12 +154,12 @@ function lineSeg(points: Array<Point>, options: any) {
         }]
     }
     const len = segments.length;
-    const firstPoint = segments[0];
+    const first = segments[0];
     let idx = 0;
     let currentPoint;
     let currentLen = 0;
     const lines = [];
-    let tempLine = [firstPoint.p1];
+    let tempLine = [first.p1];
     while (idx < len) {
         const { distance, p2 } = segments[idx];
         currentLen += distance;
@@ -174,7 +192,7 @@ function lineSeg(points: Array<Point>, options: any) {
     if (tempLine.length) {
         lines.push(tempLine);
     }
-    const result = [];
+    const result: Array<linechunkType> = [];
     for (let i = 0, len = lines.length; i < len; i++) {
         const line = lines[i];
         result.push({
@@ -185,11 +203,14 @@ function lineSeg(points: Array<Point>, options: any) {
     return result;
 }
 
-function textPathDirection(path: Array<Point>) {
+function textPathDirection(path: Array<charItemType>) {
     const len = path.length;
-    const first = path[0], last = path[len - 1];
+    const first = path[0].point, last = path[len - 1].point;
     const bbox = getDefaultBBOX();
-    pointsBBOX(path, bbox);
+    for (let i = 0, len = path.length; i < len; i++) {
+        const point = path[i].point;
+        pointsBBOX(point, bbox);
+    }
     const [minx, miny, maxx, maxy] = bbox;
     const dx = maxx - minx, dy = maxy - miny;
     let ishorizontal = true;
@@ -210,24 +231,21 @@ function textPathDirection(path: Array<Point>) {
 }
 
 function getTextPath(chunk: Array<Point>, chars: string[], fontSize: number) {
-    chunk[0].distance = 0;
-    for (let i = 1, len = chunk.length; i < len; i++) {
-        const p1 = chunk[i - 1], p2 = chunk[i];
-        const distance = p2.distanceTo(p1);
-        p2.distance = p1.distance + distance;
-    }
-    const total = chunk[chunk.length - 1].distance;
-    const result = [];
+    const total = pathDistance(chunk);
+    const result: Array<charItemType> = [];
     let tempLen = 0;
     let hasCollision = false;
     charCollisionIndex.clear();
+    let idx = 1;
     for (let i = 0, len = chars.length; i < len; i++) {
-        const charSize = charLength(chars[i], fontSize);
+        const char = chars[i];
+        const charSize = measureCharSize(char, fontSize);
         let d = charSize + tempLen;
-        for (let j = 1, len1 = chunk.length; j < len1; j++) {
+        for (let j = idx, len1 = chunk.length; j < len1; j++) {
             const p1 = chunk[j - 1];
             const p2 = chunk[j];
             if (p2.distance >= d) {
+                idx = j;
                 const dDistance = d - p1.distance;
                 const percent = dDistance / (p2.distance - p1.distance);
                 const dx = p2.x - p1.x, dy = p2.y - p1.y;
@@ -243,6 +261,8 @@ function getTextPath(chunk: Array<Point>, chars: string[], fontSize: number) {
                 }
                 bufferSize = charSize / 2;
                 result.push({
+                    char,
+                    charSize,
                     point,
                     bbox: [x - bufferSize, y - bufferSize, x + bufferSize, y + bufferSize]
                 });
@@ -342,12 +362,15 @@ function pathDistance(points: Array<Point>) {
     if (points.length < 2) {
         return 0;
     }
-    let distance = 0;
+    let total = 0;
+    points[0].distance = 0;
     for (let i = 1, len = points.length; i < len; i++) {
         const p1 = points[i - 1], p2 = points[i];
-        distance += p1.distanceTo(p2);
+        const distance = p1.distanceTo(p2);
+        p2.distance = distance + p1.distance;
+        total += distance;
     }
-    return distance;
+    return total;
 }
 
 function getColorInMinStep(colorIn: any) {
@@ -783,7 +806,7 @@ const Canvas = {
         const fontSize = style.textSize || 14;
         const textSpacing = style.textSpacing || 0;
 
-        const textLen = textLength(text, fontSize);
+        const textLen = measureTextLength(text, fontSize);
         if (textSpacing < textLen) {
             return;
         }
@@ -818,7 +841,7 @@ const Canvas = {
             if (pathLen < textLen) {
                 return;
             }
-            const lines = lineSeg(path, { segDistance: textLen + 100 });
+            const lines = lineSeg(path, { segDistance: textSpacing });
             if (!lines || !lines.length) {
                 return;
             }
@@ -841,9 +864,7 @@ const Canvas = {
                     continue;
                 }
                 const isDefaultChars = isAllDefaultChars(chars);
-                const direction = textPathDirection(items.map(d => {
-                    return d.point;
-                }));
+                const direction = textPathDirection(items);
                 if (direction === 'left') {
                     chars = chars.reverse();
                     items = getTextPath(points, chars, fontSize);
