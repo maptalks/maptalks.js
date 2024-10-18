@@ -50,8 +50,8 @@ const RADIAN = Math.PI / 180;
 const textOffsetY = 1;
 const TEXT_BASELINE = 'top';
 
-const charCollisionIndex = new CollisionIndex();
-const pathCollisionIndex = new CollisionIndex();
+const textCharsCollisionIndex = new CollisionIndex();
+const textPathsCollisionIndex = new CollisionIndex();
 
 function getDefaultCharacterSet(): string[] {
     const charSet = [];
@@ -79,6 +79,17 @@ function textIsDefaultChars(chars: string[]) {
         }
     }
     return true;
+}
+
+function reverseChars(chars: string[]) {
+    if (chars.toReversed) {
+        return chars.toReversed();
+    }
+    const newChars = [];
+    for (let i = 0, len = chars.length - 1; i <= len; i++) {
+        newChars[i] = chars[len - i];
+    }
+    return newChars;
 }
 
 /**
@@ -276,12 +287,12 @@ function textPathDirection(path: Array<charItemType>) {
  * @param fontSize 
  * @returns 
  */
-function getTextPath(chunk: Array<Point>, chars: string[], fontSize: number) {
+function getTextPath(chunk: Array<Point>, chars: string[], fontSize: number, globalCollisonIndex: CollisionIndex) {
     const total = pathDistance(chunk);
     const result: Array<charItemType> = [];
     let tempLen = 0;
     let hasCollision = false;
-    charCollisionIndex.clear();
+    textCharsCollisionIndex.clear();
     let idx = 1;
     for (let i = 0, len = chars.length; i < len; i++) {
         const char = chars[i];
@@ -290,32 +301,38 @@ function getTextPath(chunk: Array<Point>, chars: string[], fontSize: number) {
         for (let j = idx, len1 = chunk.length; j < len1; j++) {
             const p1 = chunk[j - 1];
             const p2 = chunk[j];
-            if (p2.distance >= d) {
-                idx = j;
-                const dDistance = d - p1.distance;
-                const percent = dDistance / (p2.distance - p1.distance);
-                const dx = p2.x - p1.x, dy = p2.y - p1.y;
-                const point = new Point(p1.x + dx * percent, p1.y + dy * percent);
-                const { x, y } = point;
-                let bufferSize = charSize / 3;
-                const bbox = [x - bufferSize, y - bufferSize, x + bufferSize, y + bufferSize];
-                //文本内部是否已经碰撞
-                if (charCollisionIndex.collides(bbox)) {
-                    hasCollision = true;
-                    break;
-                } else {
-                    charCollisionIndex.insertBox(bbox);
-                }
-                bufferSize = charSize / 2;
-                result.push({
-                    char,
-                    charSize,
-                    point,
-                    bbox: [x - bufferSize, y - bufferSize, x + bufferSize, y + bufferSize]
-                });
-                tempLen += charSize;
+            if (p2.distance < d) {
+                continue;
+            }
+            idx = j;
+            const dDistance = d - p1.distance;
+            const percent = dDistance / (p2.distance - p1.distance);
+            const dx = p2.x - p1.x, dy = p2.y - p1.y;
+            const point = new Point(p1.x + dx * percent, p1.y + dy * percent);
+            const { x, y } = point;
+            let bufferSize = charSize / 3;
+            const bbox = [x - bufferSize, y - bufferSize, x + bufferSize, y + bufferSize];
+            //全局碰撞器里文本内部是否已经碰撞
+            if (globalCollisonIndex && globalCollisonIndex.collides(bbox)) {
+                hasCollision = true;
                 break;
             }
+            //文本内部是否已经碰撞
+            if (textCharsCollisionIndex.collides(bbox)) {
+                hasCollision = true;
+                break;
+            } else {
+                textCharsCollisionIndex.insertBox(bbox);
+            }
+            bufferSize = charSize / 2;
+            result.push({
+                char,
+                charSize,
+                point,
+                bbox: [x - bufferSize, y - bufferSize, x + bufferSize, y + bufferSize]
+            });
+            tempLen += charSize;
+            break;
         }
         if (hasCollision) {
             break;
@@ -845,7 +862,7 @@ const Canvas = {
         ctx.fillText(text, pt.x, pt.y + textOffsetY);
     },
 
-    textAloneLine(ctx: Ctx, text: string, paths: Array<Array<Point>>, style, textDesc, globalCollisonIndex: CollisionIndex): BBOX {
+    textAlongLine(ctx: Ctx, text: string, paths: Array<Array<Point>>, style, textDesc, globalCollisonIndex: CollisionIndex): BBOX {
         if (!text) {
             return;
         }
@@ -884,8 +901,10 @@ const Canvas = {
             ctx.strokeStyle = textHaloFill;
             ctx.lineWidth = textHaloRadius * 2;
         }
-        pathCollisionIndex.clear();
+        textPathsCollisionIndex.clear();
         const charsBBOX = getDefaultBBOX();
+        const charArray = text.split('');
+        const isDefaultChars = textIsDefaultChars(charArray);
         paths.forEach(path => {
             const pathLen = pathDistance(path);
             if (pathLen < textLen) {
@@ -911,29 +930,28 @@ const Canvas = {
                     ctx.fillRect(x - 2, y - 2, 4, 4);
                     ctx.fillStyle = fillStyle;
                 }
-
-                let chars = text.split('');
-                let items = getTextPath(points, chars, fontSize);
+                let chars = charArray;
+                let items = getTextPath(points, chars, fontSize, globalCollisonIndex);
                 if (!items.length) {
                     continue;
                 }
-                const isDefaultChars = textIsDefaultChars(chars);
+
                 const direction = textPathDirection(items);
                 if (direction === 'left') {
                     //反向文本顺序
-                    chars = chars.reverse();
-                    items = getTextPath(points, chars, fontSize);
+                    chars = reverseChars(chars);
+                    items = getTextPath(points, chars, fontSize, globalCollisonIndex);
                 }
                 if (direction === 'up' && !isDefaultChars) {
-                      //反向文本顺序
-                    chars = chars.reverse();
-                    items = getTextPath(points, chars, fontSize);
+                    //反向文本顺序
+                    chars = reverseChars(chars);
+                    items = getTextPath(points, chars, fontSize, globalCollisonIndex);
                 }
                 let hasCollision = false;
                 for (let i = 0, len = items.length; i < len; i++) {
                     const { bbox } = items[i];
                     //当前pahts绘制时是否已经碰撞
-                    if (pathCollisionIndex.collides(bbox)) {
+                    if (textPathsCollisionIndex.collides(bbox)) {
                         hasCollision = true;
                         break;
                     }
@@ -961,7 +979,7 @@ const Canvas = {
                     }
                     const char = chars[i];
                     const { point, bbox } = items[i];
-                    pathCollisionIndex.insertBox(bbox);
+                    textPathsCollisionIndex.insertBox(bbox);
                     globalCollisonIndex && globalCollisonIndex.insertBox(bbox);
                     const { x, y } = point;
                     const rad = getCharRotation(p1, p2, char, direction, isDefaultChars);

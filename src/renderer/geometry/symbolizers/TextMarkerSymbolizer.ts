@@ -19,7 +19,10 @@ function filterPathByMapSize(paths, mapSize) {
     const { width, height } = mapSize;
     const buffer = 100;
     const minx = -buffer, miny = -buffer, maxx = width + buffer, maxy = height + buffer;
-    const extent = new Extent(minx, miny, maxx, maxy);
+    TEMP_EXTENT.xmin = minx;
+    TEMP_EXTENT.ymin = miny;
+    TEMP_EXTENT.xmax = maxx;
+    TEMP_EXTENT.ymax = maxy;
     if (!Array.isArray(paths[0])) {
         paths = [paths];
     }
@@ -34,7 +37,7 @@ function filterPathByMapSize(paths, mapSize) {
             }
         }
         if (hasDirty) {
-            const parts = clipLine(path, extent, false, false);
+            const parts = clipLine(path, TEMP_EXTENT, false, false);
             parts.forEach(part => {
                 const line = [];
                 for (let j = 0, len1 = part.length; j < len1; j++) {
@@ -115,7 +118,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
             }
             if (paths) {
                 const layer = this.geometry.getLayer();
-                const bbox = Canvas.textAloneLine(ctx, textContent, paths, style, textDesc, layer.options.collision ? layer.getCollisionIndex() : null);
+                const bbox = Canvas.textAlongLine(ctx, textContent, paths, style, textDesc, layer.options.collision ? layer.getCollisionIndex() : null);
                 if (bbox) {
                     this._setBBOX(ctx, bbox);
                     this._bufferBBOX(ctx, textHaloRadius);
