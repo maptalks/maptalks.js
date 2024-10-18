@@ -114,37 +114,42 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
                 paths = filterPathByMapSize(paths, map.getSize());
             }
             if (paths) {
-                Canvas.textAloneLine(ctx, textContent, paths, style, textDesc);
+                const bbox = Canvas.textAloneLine(ctx, textContent, paths, style, textDesc);
+                if (bbox) {
+                    this._setBBOX(ctx, bbox);
+                    this._bufferBBOX(ctx, textHaloRadius);
+                }
             }
-            return;
-        }
-        const cookedPoints = this._getRenderContainerPoints();
-        if (!isArrayHasData(cookedPoints)) {
-            return;
-        }
-        for (let i = 0, len = cookedPoints.length; i < len; i++) {
-            let p = cookedPoints[i];
-            // const origin = this._rotate(ctx, p, this._getRotationAt(i));
-            const origin = this.getRotation() ? this._rotate(ctx, p, this._getRotationAt(i)) : null;
-            let extent: PointExtent;
-            if (origin) {
-                //坐标对应的像素点
-                const pixel = p.sub(origin);
-                p = origin;
-                const rad = this._getRotationAt(i);
-                const { width, height } = textDesc.size || { width: 0, height: 0 };
-                const alignPoint = getAlignPoint(textDesc.size, style['textHorizontalAlignment'], style['textVerticalAlignment']);
-                extent = getMarkerRotationExtent(TEMP_EXTENT, rad, width, height, p, alignPoint);
-                extent._add(pixel);
+        } else {
+
+            const cookedPoints = this._getRenderContainerPoints();
+            if (!isArrayHasData(cookedPoints)) {
+                return;
             }
-            const bbox = Canvas.text(ctx, textContent, p, style, textDesc);
-            if (origin) {
-                this._setBBOX(ctx, extent.xmin, extent.ymin, extent.xmax, extent.ymax);
-                ctx.restore();
-            } else {
-                this._setBBOX(ctx, bbox);
+            for (let i = 0, len = cookedPoints.length; i < len; i++) {
+                let p = cookedPoints[i];
+                // const origin = this._rotate(ctx, p, this._getRotationAt(i));
+                const origin = this.getRotation() ? this._rotate(ctx, p, this._getRotationAt(i)) : null;
+                let extent: PointExtent;
+                if (origin) {
+                    //坐标对应的像素点
+                    const pixel = p.sub(origin);
+                    p = origin;
+                    const rad = this._getRotationAt(i);
+                    const { width, height } = textDesc.size || { width: 0, height: 0 };
+                    const alignPoint = getAlignPoint(textDesc.size, style['textHorizontalAlignment'], style['textVerticalAlignment']);
+                    extent = getMarkerRotationExtent(TEMP_EXTENT, rad, width, height, p, alignPoint);
+                    extent._add(pixel);
+                }
+                const bbox = Canvas.text(ctx, textContent, p, style, textDesc);
+                if (origin) {
+                    this._setBBOX(ctx, extent.xmin, extent.ymin, extent.xmax, extent.ymax);
+                    ctx.restore();
+                } else {
+                    this._setBBOX(ctx, bbox);
+                }
+                this._bufferBBOX(ctx, textHaloRadius);
             }
-            this._bufferBBOX(ctx, textHaloRadius);
         }
     }
 

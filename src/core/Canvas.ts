@@ -13,7 +13,7 @@ import { createEl } from './util/dom';
 import Browser from './Browser';
 import Point from '../geo/Point';
 import { getFont, getAlignPoint } from './util/strings';
-import { BBOX_TEMP, getDefaultBBOX, pointsBBOX, resetBBOX, setBBOX } from './util/bbox';
+import { BBOX, BBOX_TEMP, getDefaultBBOX, pointsBBOX, resetBBOX, setBBOX, validateBBOX } from './util/bbox';
 import Extent from '../geo/Extent';
 import Size from '../geo/Size';
 import CollisionIndex from './CollisionIndex';
@@ -775,14 +775,14 @@ const Canvas = {
         ctx.fillText(text, pt.x, pt.y + textOffsetY);
     },
 
-    textAloneLine(ctx: Ctx, text: string, paths: Array<Array<Point>>, style, textDesc) {
+    textAloneLine(ctx: Ctx, text: string, paths: Array<Array<Point>>, style, textDesc): BBOX {
         if (!text) {
             return;
         }
-        pathCollisionIndex.clear();
+
         const fontSize = style.textSize || 14;
         const textSpacing = style.textSpacing || 0;
-        const textAlongDebug = style.textAlongDebug;
+
         const textLen = textLength(text, fontSize);
         if (textSpacing < textLen) {
             return;
@@ -792,8 +792,27 @@ const Canvas = {
         }
         const textBaseline = ctx.textBaseline;
         const textAlign = ctx.textAlign;
+        const strokeStyle = ctx.strokeStyle;
+        const globalAlpha = ctx.globalAlpha;
+        const lineWidth = ctx.lineWidth;
+
+        const textAlongDebug = style.textAlongDebug;
+        let textHaloFill = style.textHaloFill || DEFAULT_STROKE_COLOR;
+        let textHaloRadius = style.textHaloRadius || 0;
+        let textHaloOpacity = style.textHaloOpacity || 0;
+        const drawHalo = textHaloOpacity !== 0 && textHaloRadius !== 0;
+
         ctx.textBaseline = 'middle';
         ctx.textAlign = 'center';
+        if (drawHalo) {
+            if (Array.isArray(textHaloFill)) {
+                textHaloFill = Canvas.normalizeColorToRGBA(textHaloFill);
+            }
+            ctx.strokeStyle = textHaloFill;
+            ctx.lineWidth = textHaloRadius * 2;
+        }
+        pathCollisionIndex.clear();
+        const charsBBOX = getDefaultBBOX();
         paths.forEach(path => {
             const pathLen = pathDistance(path);
             if (pathLen < textLen) {
@@ -864,13 +883,28 @@ const Canvas = {
                     ctx.save();
                     ctx.translate(x, y);
                     ctx.rotate(rad);
+                    if (drawHalo) {
+                        const alpha = ctx.globalAlpha;
+                        ctx.globalAlpha = 1;
+                        ctx.globalAlpha *= textHaloOpacity;
+                        ctx.strokeText(char, 0, 0);
+                        ctx.globalAlpha = alpha;
+                    }
                     ctx.fillText(char, 0, 0);
                     ctx.restore();
+                    setBBOX(charsBBOX, bbox);
                 }
             }
         });
         ctx.textBaseline = textBaseline;
         ctx.textAlign = textAlign;
+        ctx.strokeStyle = strokeStyle;
+        ctx.globalAlpha = globalAlpha;
+        ctx.lineWidth = lineWidth;
+        if (!validateBBOX(charsBBOX)) {
+            return;
+        }
+        return charsBBOX;
     },
 
     //@internal
