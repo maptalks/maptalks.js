@@ -61,8 +61,16 @@ function getDefaultCharacterSet(): string[] {
     return charSet;
 }
 
+/**
+ * 默认的字符
+ */
 const defaultChars = getDefaultCharacterSet();
 
+/**
+ * 文本是否全部是默认字符
+ * @param chars
+ * @returns 
+ */
 function textIsDefaultChars(chars: string[]) {
     for (let i = 0, len = chars.length; i < len; i++) {
         const char = chars[i];
@@ -73,7 +81,15 @@ function textIsDefaultChars(chars: string[]) {
     return true;
 }
 
-
+/**
+ * 字符的旋转角度
+ * @param p1 
+ * @param p2 
+ * @param char 
+ * @param direction 
+ * @param isDefaultChars 
+ * @returns 
+ */
 function getCharRotation(p1: Point, p2: Point, char: string, direction: string, isDefaultChars: boolean) {
     const x0 = p1.x, y0 = p1.y;
     const x1 = p2.x, y1 = p2.y;
@@ -100,7 +116,12 @@ function getCharRotation(p1: Point, p2: Point, char: string, direction: string, 
     return rad;
 }
 
-
+/**
+ * 测量字符的大小
+ * @param char 
+ * @param fontSize 
+ * @returns 
+ */
 function measureCharSize(char: string, fontSize: number) {
     let w = fontSize, h = fontSize;
     if (defaultChars.indexOf(char) > -1) {
@@ -111,6 +132,12 @@ function measureCharSize(char: string, fontSize: number) {
     return d;
 }
 
+/**
+ * 计算文本的长度
+ * @param textName 
+ * @param fontSize 
+ * @returns 
+ */
 function measureTextLength(textName: string, fontSize: number) {
     let textLen = 0;
     for (let i = 0, len = textName.length; i < len; i++) {
@@ -132,6 +159,13 @@ function getPercentPoint(segment: segmentType, dis: number) {
     return new Point(x, y, z);
 }
 
+/**
+ * path 分割
+ * https://github.com/deyihu/lineseg
+ * @param points 
+ * @param options 
+ * @returns 
+ */
 function lineSeg(points: Array<Point>, options: any) {
     options = Object.assign({ segDistance: 1, isGeo: true }, options);
     const segDistance = Math.max(options.segDistance, 0.00000000000000001);
@@ -203,6 +237,11 @@ function lineSeg(points: Array<Point>, options: any) {
     return result;
 }
 
+/**
+ * 文本路径方向
+ * @param path 
+ * @returns 
+ */
 function textPathDirection(path: Array<charItemType>) {
     const len = path.length;
     const first = path[0].point, last = path[len - 1].point;
@@ -230,6 +269,13 @@ function textPathDirection(path: Array<charItemType>) {
     }
 }
 
+/**
+ * 获取文本沿线路径的点
+ * @param chunk 
+ * @param chars 
+ * @param fontSize 
+ * @returns 
+ */
 function getTextPath(chunk: Array<Point>, chars: string[], fontSize: number) {
     const total = pathDistance(chunk);
     const result: Array<charItemType> = [];
@@ -253,6 +299,7 @@ function getTextPath(chunk: Array<Point>, chars: string[], fontSize: number) {
                 const { x, y } = point;
                 let bufferSize = charSize / 3;
                 const bbox = [x - bufferSize, y - bufferSize, x + bufferSize, y + bufferSize];
+                //文本内部是否已经碰撞
                 if (charCollisionIndex.collides(bbox)) {
                     hasCollision = true;
                     break;
@@ -873,25 +920,30 @@ const Canvas = {
                 const isDefaultChars = textIsDefaultChars(chars);
                 const direction = textPathDirection(items);
                 if (direction === 'left') {
+                    //反向文本顺序
                     chars = chars.reverse();
                     items = getTextPath(points, chars, fontSize);
                 }
                 if (direction === 'up' && !isDefaultChars) {
+                      //反向文本顺序
                     chars = chars.reverse();
                     items = getTextPath(points, chars, fontSize);
                 }
                 let hasCollision = false;
                 for (let i = 0, len = items.length; i < len; i++) {
                     const { bbox } = items[i];
+                    //当前pahts绘制时是否已经碰撞
                     if (pathCollisionIndex.collides(bbox)) {
                         hasCollision = true;
                         break;
                     }
+                    //全局碰撞器里是否已经碰撞了,全局碰撞器可能来自地图或者图层
                     if (globalCollisonIndex && globalCollisonIndex.collides(bbox)) {
                         hasCollision = true;
                         break;
                     }
                 }
+                //没有通过碰撞检测
                 if (hasCollision) {
                     continue;
                 }
@@ -916,6 +968,7 @@ const Canvas = {
                     ctx.save();
                     ctx.translate(x, y);
                     ctx.rotate(rad);
+                    //描边
                     if (drawHalo) {
                         const alpha = ctx.globalAlpha;
                         ctx.globalAlpha = 1;
@@ -925,7 +978,9 @@ const Canvas = {
                     }
                     ctx.fillText(char, 0, 0);
                     ctx.restore();
+                    //合并所有的字符的包围盒
                     setBBOX(charsBBOX, bbox);
+                    //for debug
                     if (textAlongDebug) {
                         const strokeStyle = ctx.strokeStyle;
                         const lineWidth = ctx.lineWidth;
@@ -941,6 +996,7 @@ const Canvas = {
                 }
             }
         });
+        //restore canvas states
         ctx.textBaseline = textBaseline;
         ctx.textAlign = textAlign;
         ctx.strokeStyle = strokeStyle;
