@@ -63,7 +63,7 @@ function getDefaultCharacterSet(): string[] {
 
 const defaultChars = getDefaultCharacterSet();
 
-function isAllDefaultChars(chars: string[]) {
+function textIsDefaultChars(chars: string[]) {
     for (let i = 0, len = chars.length; i < len; i++) {
         const char = chars[i];
         if (defaultChars.indexOf(char) === -1) {
@@ -822,7 +822,10 @@ const Canvas = {
         const textAlongDebug = style.textAlongDebug;
         let textHaloFill = style.textHaloFill || DEFAULT_STROKE_COLOR;
         let textHaloRadius = style.textHaloRadius || 0;
-        let textHaloOpacity = style.textHaloOpacity || 0;
+        let textHaloOpacity = style.textHaloOpacity;
+        if (!isNumber(textHaloOpacity)) {
+            textHaloOpacity = 1;
+        }
         const drawHalo = textHaloOpacity !== 0 && textHaloRadius !== 0;
 
         ctx.textBaseline = 'middle';
@@ -849,13 +852,17 @@ const Canvas = {
                 const chunk = lines[m];
                 const chunkDistance = chunk.distance;
                 if (chunkDistance < textLen) {
-                    return;
+                    continue;
                 }
                 const points = chunk.points;
                 //for debug
                 if (textAlongDebug) {
+                    const fillStyle = ctx.fillStyle;
+                    ctx.fillStyle = 'red';
                     const { x, y } = points[0];
+                    ctx.beginPath();
                     ctx.fillRect(x - 2, y - 2, 4, 4);
+                    ctx.fillStyle = fillStyle;
                 }
 
                 let chars = text.split('');
@@ -863,7 +870,7 @@ const Canvas = {
                 if (!items.length) {
                     continue;
                 }
-                const isDefaultChars = isAllDefaultChars(chars);
+                const isDefaultChars = textIsDefaultChars(chars);
                 const direction = textPathDirection(items);
                 if (direction === 'left') {
                     chars = chars.reverse();
@@ -914,6 +921,18 @@ const Canvas = {
                     ctx.fillText(char, 0, 0);
                     ctx.restore();
                     setBBOX(charsBBOX, bbox);
+                    if (textAlongDebug) {
+                        const strokeStyle = ctx.strokeStyle;
+                        const lineWidth = ctx.lineWidth;
+                        ctx.strokeStyle = 'red';
+                        ctx.lineWidth = 0.5;
+                        const [minx, miny, maxx, maxy] = bbox;
+                        ctx.beginPath();
+                        ctx.rect(minx, miny, maxx - minx, maxy - miny);
+                        ctx.stroke();
+                        ctx.lineWidth = lineWidth;
+                        ctx.strokeStyle = strokeStyle;
+                    }
                 }
             }
         });
