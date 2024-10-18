@@ -485,12 +485,12 @@ class Painter extends Class {
         let _2DExtent, glExtent, pitch;
         if (mapStateCache) {
             //@internal
-        _2DExtent = mapStateCache._2DExtent;
+            _2DExtent = mapStateCache._2DExtent;
             glExtent = mapStateCache.glExtent;
             pitch = mapStateCache.pitch;
         } else {
             //@internal
-        _2DExtent = map.get2DExtent();
+            _2DExtent = map.get2DExtent();
             glExtent = map.get2DExtentAtRes(map.getGLRes());
             pitch = map.getPitch();
         }
@@ -1017,6 +1017,16 @@ class Painter extends Class {
 
     //@internal
     _afterPaint() {
+    }
+
+    getPathTempRenderPoints() {
+        const symbolizers = this.symbolizers || [];
+        for (let i = 0, len = symbolizers.length; i < len; i++) {
+            const symbolizer = this.symbolizers[i];
+            if ((symbolizer instanceof Symbolizers.StrokeAndFillSymbolizer) && symbolizer._tempRenderPoints) {
+                return symbolizer._tempRenderPoints;
+            }
+        }
     }
 }
 

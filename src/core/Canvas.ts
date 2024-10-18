@@ -13,9 +13,10 @@ import { createEl } from './util/dom';
 import Browser from './Browser';
 import Point from '../geo/Point';
 import { getFont, getAlignPoint } from './util/strings';
-import { BBOX_TEMP, resetBBOX, setBBOX } from './util/bbox';
+import { BBOX_TEMP, getDefaultBBOX, pointsBBOX, resetBBOX, setBBOX } from './util/bbox';
 import Extent from '../geo/Extent';
 import Size from '../geo/Size';
+import CollisionIndex from './CollisionIndex';
 
 export type Ctx = CanvasRenderingContext2D;
 
@@ -30,6 +31,239 @@ let TEMP_CANVAS = null;
 const RADIAN = Math.PI / 180;
 const textOffsetY = 1;
 const TEXT_BASELINE = 'top';
+
+const charCollisionIndex = new CollisionIndex();
+const pathCollisionIndex = new CollisionIndex();
+
+function getDefaultCharacterSet(): string[] {
+    const charSet = [];
+    for (let i = 32; i < 128; i++) {
+        charSet.push(String.fromCharCode(i));
+    }
+    return charSet;
+}
+
+const defaultChars = getDefaultCharacterSet();
+
+function isAllDefaultChars(chars: string[]) {
+    for (let i = 0, len = chars.length; i < len; i++) {
+        const char = chars[i];
+        if (defaultChars.indexOf(char) === -1) {
+            return false;
+        }
+    }
+    return true;
+}
+
+
+function getCharRotation(p1: Point, p2: Point, char: string, direction: string, isDefaultChars: boolean) {
+    const x0 = p1.x, y0 = p1.y;
+    const x1 = p2.x, y1 = p2.y;
+    const dx = x1 - x0;
+    const dy = y1 - y0;
+    let rad = Math.atan2(dy, dx);
+    let degree = rad / Math.PI * 180;
+    // console.log(degree);
+    if (direction === 'left') {
+        degree += 180;
+        rad = degree / 180 * Math.PI;
+        return rad;
+    }
+    if (direction === 'down' && !isDefaultChars) {
+        degree -= 90;
+        rad = degree / 180 * Math.PI;
+        return rad;
+    }
+    if (direction === 'up' && !isDefaultChars) {
+        degree += 90;
+        rad = degree / 180 * Math.PI;
+        return rad;
+    }
+    return rad;
+}
+
+
+function charLength(char: string, fontSize: number) {
+    let w = fontSize, h = fontSize;
+    if (defaultChars.indexOf(char) > -1) {
+        w = fontSize / 4;
+        h = fontSize;
+    }
+    const d = Math.sqrt(w * w + h * h);
+    return d;
+}
+
+function textLength(textName: string, fontSize: number) {
+    let textLen = 0;
+    for (let i = 0, len = textName.length; i < len; i++) {
+        const char = textName[i];
+        textLen += charLength(char, fontSize);
+    }
+    return textLen;
+}
+
+function getPercentPoint(segment, dis: number) {
+    const { distance, p1, p2 } = segment;
+    const dx = p2.x - p1.x,
+        dy = p2.y - p1.y,
+        dh = (p2.z || 0) - (p1.z || 0);
+    const percent = dis / distance;
+    const x = p1.x + percent * dx;
+    const y = p1.y + percent * dy;
+    const z = (p1.z || 0) + percent * dh;
+    return new Point(x, y, z);
+}
+
+function lineSeg(points: Array<Point>, options: any) {
+    options = Object.assign({ segDistance: 1, isGeo: true }, options);
+    const segDistance = Math.max(options.segDistance, 0.00000000000000001);
+    const segments = [];
+    let totalLen = 0;
+    for (let i = 0, len = points.length; i < len - 1; i++) {
+        const p1 = points[i], p2 = points[i + 1];
+        const dis = p2.distanceTo(p1);
+        segments.push({
+            p1,
+            distance: dis,
+            p2
+        });
+        totalLen += dis;
+    }
+    if (totalLen <= segDistance) {
+        return [{
+            distance: totalLen,
+            points
+        }]
+    }
+    const len = segments.length;
+    const firstPoint = segments[0];
+    let idx = 0;
+    let currentPoint;
+    let currentLen = 0;
+    const lines = [];
+    let tempLine = [firstPoint.p1];
+    while (idx < len) {
+        const { distance, p2 } = segments[idx];
+        currentLen += distance;
+        if (currentLen < segDistance) {
+            tempLine.push(p2);
+            idx++;
+            continue;
+        }
+        if (currentLen === segDistance) {
+            tempLine.push(p2);
+            currentLen = 0;
+            lines.push(tempLine);
+            // next
+            tempLine = [p2];
+            idx++;
+            continue;
+        }
+        if (currentLen > segDistance) {
+            const offsetLen = segDistance - (currentLen - distance);
+            currentPoint = getPercentPoint(segments[idx], offsetLen);
+            tempLine.push(currentPoint);
+            lines.push(tempLine);
+            currentLen = 0;
+            segments[idx].p1 = currentPoint;
+            segments[idx].distance = distance - offsetLen;
+            // next
+            tempLine = [currentPoint];
+        }
+    }
+    if (tempLine.length) {
+        lines.push(tempLine);
+    }
+    const result = [];
+    for (let i = 0, len = lines.length; i < len; i++) {
+        const line = lines[i];
+        result.push({
+            points: line,
+            distance: pathDistance(line)
+        })
+    }
+    return result;
+}
+
+function textPathDirection(path: Array<Point>) {
+    const len = path.length;
+    const first = path[0], last = path[len - 1];
+    const bbox = getDefaultBBOX();
+    pointsBBOX(path, bbox);
+    const [minx, miny, maxx, maxy] = bbox;
+    const dx = maxx - minx, dy = maxy - miny;
+    let ishorizontal = true;
+    if (dy > dx) {
+        ishorizontal = false;
+    }
+    if (ishorizontal) {
+        if (first.x < last.x) {
+            return 'right';
+        }
+        return 'left';
+    } else {
+        if (first.y < last.y) {
+            return 'down';
+        }
+        return 'up'
+    }
+}
+
+function getTextPath(chunk: Array<Point>, chars: string[], fontSize: number) {
+    chunk[0].distance = 0;
+    for (let i = 1, len = chunk.length; i < len; i++) {
+        const p1 = chunk[i - 1], p2 = chunk[i];
+        const distance = p2.distanceTo(p1);
+        p2.distance = p1.distance + distance;
+    }
+    const total = chunk[chunk.length - 1].distance;
+    const result = [];
+    let tempLen = 0;
+    let hasCollision = false;
+    charCollisionIndex.clear();
+    for (let i = 0, len = chars.length; i < len; i++) {
+        const charSize = charLength(chars[i], fontSize);
+        let d = charSize + tempLen;
+        for (let j = 1, len1 = chunk.length; j < len1; j++) {
+            const p1 = chunk[j - 1];
+            const p2 = chunk[j];
+            if (p2.distance >= d) {
+                const dDistance = d - p1.distance;
+                const percent = dDistance / (p2.distance - p1.distance);
+                const dx = p2.x - p1.x, dy = p2.y - p1.y;
+                const point = new Point(p1.x + dx * percent, p1.y + dy * percent);
+                const { x, y } = point;
+                let bufferSize = charSize / 3;
+                const bbox = [x - bufferSize, y - bufferSize, x + bufferSize, y + bufferSize];
+                if (charCollisionIndex.collides(bbox)) {
+                    hasCollision = true;
+                    break;
+                } else {
+                    charCollisionIndex.insertBox(bbox);
+                }
+                bufferSize = charSize / 2;
+                result.push({
+                    point,
+                    bbox: [x - bufferSize, y - bufferSize, x + bufferSize, y + bufferSize]
+                });
+                tempLen += charSize;
+                break;
+            }
+        }
+        if (hasCollision) {
+            break;
+        }
+    }
+    if (hasCollision) {
+        return [];
+    }
+    if (total < tempLen) {
+        return [];
+    }
+    return result;
+}
+
+
 
 //推算 cubic 贝塞尔曲线片段的起终点和控制点坐标
 //t0: 片段起始比例 0-1
@@ -539,6 +773,103 @@ const Canvas = {
             ctx.fillStyle = rgba;
         }
         ctx.fillText(text, pt.x, pt.y + textOffsetY);
+    },
+
+    textAloneLine(ctx: Ctx, text: string, paths: Array<Array<Point>>, style, textDesc) {
+        if (!text) {
+            return;
+        }
+        pathCollisionIndex.clear();
+        const fontSize = style.textSize || 14;
+        const textSpacing = style.textSpacing || 0;
+        const textLen = textLength(text, fontSize);
+        if (textSpacing < textLen) {
+            return;
+        }
+        if (!Array.isArray(paths[0])) {
+            paths = [paths] as unknown as Array<Array<Point>>;
+        }
+        const textBaseline = ctx.textBaseline;
+        const textAlign = ctx.textAlign;
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = 'center';
+        paths.forEach(path => {
+            const pathLen = pathDistance(path);
+            if (pathLen < textLen) {
+                return;
+            }
+            const lines = lineSeg(path, { segDistance: textLen + 100 });
+            if (!lines || !lines.length) {
+                return;
+            }
+            for (let m = 0, len1 = lines.length; m < len1; m++) {
+                const chunk = lines[m];
+                const chunkDistance = chunk.distance;
+                if (chunkDistance < textLen) {
+                    return;
+                }
+                const points = chunk.points;
+                //for debug
+                // const { x, y } = points[0];
+                // ctx.fillStyle = 'red';
+                // ctx.fillRect(x, y, 4, 4);
+                // ctx.fillStyle = ctx.lineWidth > fontSize ? 'white' : 'blue'
+
+                let chars = text.split('');
+                let items = getTextPath(points, chars, fontSize);
+                if (!items.length) {
+                    continue;
+                }
+                const isDefaultChars = isAllDefaultChars(chars);
+                const direction = textPathDirection(items.map(d => {
+                    return d.point;
+                }));
+                if (direction === 'left') {
+                    chars = chars.reverse();
+                    items = getTextPath(points, chars, fontSize);
+                }
+                if (direction === 'up' && !isDefaultChars) {
+                    chars = chars.reverse();
+                    items = getTextPath(points, chars, fontSize);
+                }
+                let hasCollision = false;
+                for (let i = 0, len = items.length; i < len; i++) {
+                    const { bbox } = items[i];
+                    if (pathCollisionIndex.collides(bbox)) {
+                        hasCollision = true;
+                        break;
+                    }
+                }
+                if (hasCollision) {
+                    continue;
+                }
+                for (let i = 0, len = items.length; i < len; i++) {
+                    let p1, p2;
+                    if (i === 0) {
+                        p1 = items[i].point;
+                        p2 = items[1].point;
+                    } else if (i === len - 1) {
+                        p1 = items[len - 2].point;
+                        p2 = items[len - 1].point;
+                    } else {
+                        p1 = items[i - 1].point;
+                        p2 = items[i].point;
+                    }
+                    const char = chars[i];
+                    const { point, bbox } = items[i];
+                    pathCollisionIndex.insertBox(bbox);
+                    const { x, y } = point;
+                    const rad = getCharRotation(p1, p2, char, direction, isDefaultChars);
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(rad);
+                    ctx.fillText(char, 0, 0);
+                    ctx.restore();
+                }
+            }
+        });
+        ctx.textBaseline = textBaseline;
+        ctx.textAlign = textAlign;
     },
 
     //@internal
