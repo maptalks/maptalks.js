@@ -782,6 +782,7 @@ const Canvas = {
         pathCollisionIndex.clear();
         const fontSize = style.textSize || 14;
         const textSpacing = style.textSpacing || 0;
+        const textAlongDebug = style.textAlongDebug;
         const textLen = textLength(text, fontSize);
         if (textSpacing < textLen) {
             return;
@@ -810,10 +811,10 @@ const Canvas = {
                 }
                 const points = chunk.points;
                 //for debug
-                // const { x, y } = points[0];
-                // ctx.fillStyle = 'red';
-                // ctx.fillRect(x, y, 4, 4);
-                // ctx.fillStyle = ctx.lineWidth > fontSize ? 'white' : 'blue'
+                if (textAlongDebug) {
+                    const { x, y } = points[0];
+                    ctx.fillRect(x - 2, y - 2, 4, 4);
+                }
 
                 let chars = text.split('');
                 let items = getTextPath(points, chars, fontSize);

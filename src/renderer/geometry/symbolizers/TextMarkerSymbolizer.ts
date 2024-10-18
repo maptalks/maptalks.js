@@ -104,6 +104,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         const textHaloRadius = style.textHaloRadius || 0;
         if (this.isAlongLine()) {
             const painter = this.getPainter();
+            //复用path渲染的结果集
             let paths = painter.getPathTempRenderPoints();
             if (!paths) {
                 return;
@@ -209,6 +210,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
             textMaxWidth: getValueOrDefault(s['textMaxWidth'], 0),
             textMaxHeight: getValueOrDefault(s['textMaxHeight'], 0),
             textSpacing: getValueOrDefault(s['textSpacing'], 0),
+            textAlongDebug: getValueOrDefault(s['textAlongDebug'], false),
         };
 
         if (result['textMaxWidth'] > 0 && (!result['textWrapWidth'] || result['textWrapWidth'] > result['textMaxWidth'])) {
