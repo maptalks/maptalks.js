@@ -53,10 +53,11 @@ const TEXT_BASELINE = 'top';
 const textCharsCollisionIndex = new CollisionIndex();
 const textPathsCollisionIndex = new CollisionIndex();
 
-function getDefaultCharacterSet(): string[] {
-    const charSet = [];
+function getDefaultCharacterSet(): Record<string, string> {
+    const charSet = {};
     for (let i = 32; i < 128; i++) {
-        charSet.push(String.fromCharCode(i));
+        const char = String.fromCharCode(i)
+        charSet[char] = char;
     }
     return charSet;
 }
@@ -74,7 +75,7 @@ const defaultChars = getDefaultCharacterSet();
 function textIsDefaultChars(chars: string[]) {
     for (let i = 0, len = chars.length; i < len; i++) {
         const char = chars[i];
-        if (defaultChars.indexOf(char) === -1) {
+        if (!defaultChars[char]) {
             return false;
         }
     }
@@ -135,7 +136,7 @@ function getCharRotation(p1: Point, p2: Point, char: string, direction: string, 
  */
 function measureCharSize(char: string, fontSize: number) {
     let w = fontSize, h = fontSize;
-    if (defaultChars.indexOf(char) > -1) {
+    if (defaultChars[char]) {
         w = fontSize / 4;
         h = fontSize;
     }
