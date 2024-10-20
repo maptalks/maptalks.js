@@ -17,8 +17,53 @@ import { BBOX, BBOX_TEMP, getDefaultBBOX, pointsBBOX, resetBBOX, setBBOX, valida
 import Extent from '../geo/Extent';
 import Size from '../geo/Size';
 import CollisionIndex from './CollisionIndex';
+import LRUCache from './util/LRUCache';
+
+const charTextureLRUCache = new LRUCache(100000);
+function getCharTexture(tempCtx: Ctx, style, char: string) {
+    const font = tempCtx.font;
+    const fillStyle = tempCtx.fillStyle;
+    const strokeStyle = tempCtx.strokeStyle;
+    let textHaloFill = style.textHaloFill || DEFAULT_STROKE_COLOR;
+    let textHaloRadius = style.textHaloRadius || 0;
+    let textHaloOpacity = style.textHaloOpacity;
+    if (!isNumber(textHaloOpacity)) {
+        textHaloOpacity = 1;
+    }
+    const key = `${font}_${fillStyle}_${textHaloFill}_${textHaloRadius}_${textHaloOpacity}_${char}`;
+    let texture = charTextureLRUCache.get(key);
+    if (!texture) {
+        const drawHalo = textHaloOpacity !== 0 && textHaloRadius !== 0;
+        const textSize = ((style.textSize || 14) + textHaloRadius + 2) * 2;
+        const canvas = Canvas.createCanvas(textSize, textSize);
+        canvas.style.width = `${textSize / 2}px`;
+        canvas.style.height = `${textSize / 2}px`;
+        const x = textSize / 4, y = textSize / 4;
+        const ctx = Canvas.getCanvas2DContext(canvas);
+        ctx.scale(2, 2);
+
+        ctx.font = font;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        if (drawHalo) {
+            ctx.strokeStyle = strokeStyle;
+            ctx.lineWidth = textHaloRadius * 2;
+            ctx.globalAlpha = 1;
+            ctx.globalAlpha *= textHaloOpacity;
+            ctx.strokeText(char, x, y);
+            ctx.globalAlpha = 1;
+        }
+        ctx.fillStyle = fillStyle;
+        ctx.fillText(char, x, y);
+        texture = canvas;
+        charTextureLRUCache.add(key, texture);
+    }
+    return texture;
+
+}
 
 export type Ctx = CanvasRenderingContext2D;
+
 
 type segmentType = {
     p1: Point,
@@ -752,7 +797,7 @@ const Canvas = {
     },
 
     normalizeColorToRGBA(fill: number[], opacity = 1) {
-        return `rgba(${fill[0] * 255},${fill[1] * 255},${fill[2] * 255},${(fill.length === 4 ? fill[3] : 1) * opacity})`;
+        return `rgba(${fill[0] * 255}, ${fill[1] * 255}, ${fill[2] * 255}, ${(fill.length === 4 ? fill[3] : 1) * opacity})`;
     },
 
     image(ctx: Ctx, img: CanvasImageSource, x: number, y: number, width?: number, height?: number) {
@@ -987,15 +1032,18 @@ const Canvas = {
                     ctx.save();
                     ctx.translate(x, y);
                     ctx.rotate(rad);
-                    //描边
-                    if (drawHalo) {
-                        const alpha = ctx.globalAlpha;
-                        ctx.globalAlpha = 1;
-                        ctx.globalAlpha *= textHaloOpacity;
-                        ctx.strokeText(char, 0, 0);
-                        ctx.globalAlpha = alpha;
-                    }
-                    ctx.fillText(char, 0, 0);
+                    const texture = getCharTexture(ctx, style, char);
+                    const { width, height } = texture;
+                    ctx.drawImage(texture, -width / 4, -height / 4, width / 2, height / 2);
+                    // //描边 why? canvas text performance is poor
+                    // if (drawHalo) {
+                    //     const alpha = ctx.globalAlpha;
+                    //     ctx.globalAlpha = 1;
+                    //     ctx.globalAlpha *= textHaloOpacity;
+                    //     ctx.strokeText(char, 0, 0);
+                    //     ctx.globalAlpha = alpha;
+                    // }
+                    // ctx.fillText(char, 0, 0);
                     ctx.restore();
                     //合并所有的字符的包围盒
                     setBBOX(charsBBOX, bbox);
@@ -1097,7 +1145,7 @@ const Canvas = {
         let preX, preY, currentX, currentY, nextPoint;
 
         const [r, g, b, a] = colorIn.getColor(0);
-        preColor = `rgba(${r},${g},${b},${a})`;
+        preColor = `rgba(${r}, ${g}, ${b}, ${a})`;
 
         const firstPoint = points[0];
         preX = firstPoint.x;
@@ -1146,7 +1194,7 @@ const Canvas = {
             //segment的步数小于minStep
             if (percent <= minStep) {
                 const [r, g, b, a] = colorIn.getColor(step + percent);
-                color = `rgba(${r},${g},${b},${a})`;
+                color = `rgba(${r}, ${g}, ${b}, ${a})`;
                 currentX = x;
                 currentY = y;
                 drawSegment();
@@ -1157,7 +1205,7 @@ const Canvas = {
                 for (let n = 1; n <= segments; n++) {
                     const tempStep = Math.min((n * minStep), percent);
                     const [r, g, b, a] = colorIn.getColor(step + tempStep);
-                    color = `rgba(${r},${g},${b},${a})`;
+                    color = `rgba(${r}, ${g}, ${b}, ${a})`;
                     if (color === preColor) {
                         continue;
                     }
