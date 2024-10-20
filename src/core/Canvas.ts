@@ -34,7 +34,7 @@ function getCharTexture(tempCtx: Ctx, style, char: string) {
     let texture = charTextureLRUCache.get(key);
     if (!texture) {
         const drawHalo = textHaloOpacity !== 0 && textHaloRadius !== 0;
-        const textSize = ((style.textSize || 14) + textHaloRadius + 2) * 2;
+        const textSize = ((style.textSize || 14) * 1.2 + textHaloRadius) * 2;
         const canvas = Canvas.createCanvas(textSize, textSize);
         canvas.style.width = `${textSize / 2}px`;
         canvas.style.height = `${textSize / 2}px`;
