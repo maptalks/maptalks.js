@@ -34,7 +34,7 @@
     "@maptalks/fusiongl": "^0.7.2",
     "@maptalks/gltf-loader": "workspace:*",
     "@maptalks/martini": "^0.4.0",
-    "@maptalks/regl": "^3.3.5",
+    "@maptalks/regl": "^3.4.0",
     "@maptalks/reshader.gl": "workspace:*",
     "color": "^3.0.0",
     "colorin": "^0.6.0"

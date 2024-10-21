@@ -115,8 +115,8 @@ importers:
         specifier: ^0.4.0
         version: 0.4.0
       '@maptalks/regl':
-        specifier: ^3.3.5
-        version: 3.3.5
+        specifier: ^3.4.0
+        version: 3.4.0
       '@maptalks/reshader.gl':
         specifier: workspace:*
         version: link:../reshader.gl
@@ -1065,6 +1065,9 @@ packages:
 
   '@maptalks/regl@3.3.5':
     resolution: {integrity: sha512-ild/6zDMJFeJ0XmbsyxN08nnsrjJt4xkYQlyPkFkfHMnw2mX7FKhVTyO0lmFVsKWJ+Zm02oyNzq1mrcCfM4vxg==}
+
+  '@maptalks/regl@3.4.0':
+    resolution: {integrity: sha512-vir0oI5PXlLfxp1/B5TOOkmQfy7qeCwnx16uALViXfwo/ZJ79OLwePYENxwGLkbEV3HxETpdTm3dDU3Et9O4kw==}
 
   '@maptalks/rollup-plugin-glsl-minify@0.1.7':
     resolution: {integrity: sha512-lvm41r1ztVDKhij37I7VdXqICwvZ0g62zJA55SQvxC4vGVlJWvVCfNXOjTM0yTe1nzRryIGCURlz7VL9xgq/NA==}
@@ -4214,6 +4217,8 @@ snapshots:
   '@maptalks/msd-json-loader@0.1.0': {}
 
   '@maptalks/regl@3.3.5': {}
+
+  '@maptalks/regl@3.4.0': {}
 
   '@maptalks/rollup-plugin-glsl-minify@0.1.7':
     dependencies:
