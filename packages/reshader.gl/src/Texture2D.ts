@@ -38,16 +38,29 @@ class Texture2D extends Texture {
         //refresh width / height
         config.width = config.width || data.width;
         config.height = config.height || data.height;
+        if (this._regl) {
+            this._checkNPOT(this._regl);
+        }
         this._updateREGL();
     }
 
     createREGLTexture(regl: Regl): REGL.Texture2D {
+        this._regl = regl;
+        this._checkNPOT(regl);
+        return regl.texture(this.config);
+    }
+
+    _checkNPOT(regl) {
         const config = this.config;
         if (config.data && this._needPowerOf2(regl)) {
             if ((config.data instanceof Image)) {
                 config.data = resizeToPowerOfTwo(config.data);
+                config.width = (config.data as any).width;
+                config.height = (config.data as any).height;
             } else if (!config.hdr && isArray(config.data) && (!isPowerOfTwo(config.width) || !isPowerOfTwo(config.height))) {
                 config.data = resizeToPowerOfTwo(config.data as any, config.width, config.height);
+                config.width = (config.data as any).width;
+                config.height = (config.data as any).height;
             }
         }
         if (isArray(this.config.data) || isArray(this.config.mipmap)) {
@@ -58,7 +71,6 @@ class Texture2D extends Texture {
             tex[REF_COUNT_KEY]++;
             return tex;
         }
-        return regl.texture(this.config);
     }
 }
 

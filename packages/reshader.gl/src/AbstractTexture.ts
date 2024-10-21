@@ -2,7 +2,7 @@ import { isFunction, hasOwn, getTextureByteWidth, getTextureChannels, supportNPO
 import Eventable from './common/Eventable';
 import { KEY_DISPOSED } from './common/Constants.js';
 import ResourceLoader from './ResourceLoader';
-import { Regl, Texture2D } from '@maptalks/regl';
+import REGL, { Regl, Texture2D } from '@maptalks/regl';
 import { TextureConfig } from './types/typings';
 
 export const REF_COUNT_KEY = '_reshader_refCount';
@@ -21,6 +21,8 @@ class AbstractTexture extends Eventable(Base) {
     resLoader: ResourceLoader
     //@internal
     _texture: Texture2D
+    //@internal
+    _regl?: REGL.Regl;
     dirty?: boolean
 
     constructor(config, resLoader) {
@@ -175,6 +177,7 @@ class AbstractTexture extends Eventable(Base) {
             }
         }
         delete this.resLoader;
+        delete this._regl;
         const url = this.config && this.config.url;
         delete this.config;
         if (url) {
