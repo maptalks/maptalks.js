@@ -17,7 +17,7 @@ const TEMP_EXTENT = new PointExtent();
 
 function filterPathByMapSize(paths, mapSize) {
     const { width, height } = mapSize;
-    const buffer = 100;
+    const buffer = 0;
     const minx = -buffer, miny = -buffer, maxx = width + buffer, maxy = height + buffer;
     TEMP_EXTENT.xmin = minx;
     TEMP_EXTENT.ymin = miny;
@@ -113,9 +113,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
                 return;
             }
             const map = this.getMap();
-            if (map.getPitch() > 0) {
-                paths = filterPathByMapSize(paths, map.getSize());
-            }
+            paths = filterPathByMapSize(paths, map.getSize());
             if (paths) {
                 const layer = this.geometry.getLayer();
                 const bbox = Canvas.textAlongLine(ctx, textContent, paths, style, textDesc, layer.options.collision ? layer.getCollisionIndex() : null);
