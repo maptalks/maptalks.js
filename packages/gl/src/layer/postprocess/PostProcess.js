@@ -213,7 +213,7 @@ export default class PostProcess {
         if (fbo && (fbo.width !== source.fbo || fbo.height !== source.height)) {
             fbo.resize(source.width, source.height);
         }
-        // const shaderDefines = {};
+        const shaderDefines = {};
         // if (taaTextureSource) {
         //     shaderDefines['HAS_TAA_TEX'] = 1;
         // } else {
@@ -224,11 +224,11 @@ export default class PostProcess {
         // } else {
         //     delete shaderDefines['HAS_FXAA_TEX'];
         // }
-        // if (textureOutline) {
-        //     shaderDefines['HAS_OUTLINE_TEX'] = 1;
-        // } else {
-        //     delete shaderDefines['HAS_OUTLINE_TEX'];
-        // }
+        if (textureOutline) {
+            shaderDefines['HAS_OUTLINE_TEX'] = 1;
+        } else {
+            delete shaderDefines['HAS_OUTLINE_TEX'];
+        }
         // if (noAaSource) {
         //     shaderDefines['HAS_NOAA_TEX'] = 1;
         // } else {
@@ -239,7 +239,7 @@ export default class PostProcess {
         // } else {
         //     delete shaderDefines['HAS_POINT_TEX'];
         // }
-        // this._fxaaShader.setDefines(shaderDefines);
+        this._fxaaShader.setDefines(shaderDefines);
         this._renderer.render(this._fxaaShader, {
             textureSource: source,
             resolution: vec2.set(RESOLUTION, source.width, source.height),
