@@ -19,7 +19,7 @@ import Size from '../geo/Size';
 import CollisionIndex from './CollisionIndex';
 import LRUCache from './util/LRUCache';
 
-const charTextureLRUCache = new LRUCache(100000);
+const charTextureLRUCache = new LRUCache(50000);
 function getCharTexture(tempCtx: Ctx, style, char: string) {
     const font = tempCtx.font;
     const fillStyle = tempCtx.fillStyle;
@@ -227,15 +227,16 @@ function lineSeg(points: Array<Point>, options: any) {
     options = Object.assign({ segDistance: 1, isGeo: true }, options);
     const segDistance = Math.max(options.segDistance, 0.00000000000000001);
     const segments: Array<segmentType> = [];
-    let totalLen = 0;
+    let totalLen = 0, idx = 0;
     for (let i = 0, len = points.length; i < len - 1; i++) {
         const p1 = points[i], p2 = points[i + 1];
         const dis = p2.distanceTo(p1);
-        segments.push({
+        segments[idx] = {
             p1,
             distance: dis,
             p2
-        });
+        }
+        idx++;
         totalLen += dis;
     }
     if (totalLen <= segDistance) {
@@ -246,7 +247,7 @@ function lineSeg(points: Array<Point>, options: any) {
     }
     const len = segments.length;
     const first = segments[0];
-    let idx = 0;
+    idx = 0;
     let currentPoint;
     let currentLen = 0;
     const lines = [];
@@ -286,10 +287,10 @@ function lineSeg(points: Array<Point>, options: any) {
     const result: Array<linechunkType> = [];
     for (let i = 0, len = lines.length; i < len; i++) {
         const line = lines[i];
-        result.push({
+        result[i] = {
             points: line,
             distance: pathDistance(line)
-        })
+        }
     }
     return result;
 }
