@@ -529,7 +529,7 @@ function requestImage(url, fetchOptions, cb) {
 
 const requests = [];
 const workingRequests = [];
-const requestLimit = 10;
+const requestLimit = 30;
 let offCanvas, offCtx;
 function requestImageOffscreen(url, fetchOptions, cb) {
     if (!offCanvas) {
