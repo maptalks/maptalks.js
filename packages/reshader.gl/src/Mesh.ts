@@ -451,6 +451,7 @@ class Mesh {
             props.elements = this._geometry.getElements();
         }
         props.meshProperties = this.properties;
+        props.geometryProperties = this._geometry.properties;
         props.meshConfig = this.config;
         props.count = this._geometry.getDrawCount();
         props.offset = this._geometry.getDrawOffset();

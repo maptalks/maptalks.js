@@ -144,7 +144,8 @@ export default function (features, dataConfig, extent, uvOrigin, textureSize, re
             },
             indices,
             properties: {
-                maxAltitude: faces.maxAltitude
+                maxAltitude: faces.maxAltitude,
+                hasNegativeHeight: faces.hasNegativeHeight
             },
             dynamicAttributes: fnTypes.dynamicAttributes,
             vertexColors

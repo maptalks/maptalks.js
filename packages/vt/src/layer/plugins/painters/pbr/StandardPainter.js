@@ -48,7 +48,7 @@ class StandardPainter extends MeshPainter {
         const desc = {
             uv0Attribute: 'aTexCoord0'
         };
-        if (glData.aAltitude) {
+        if (glData.data.aAltitude) {
             desc.altitudeAttribute = 'aAltitude';
         }
         const geometry = new reshader.Geometry(glData.data, glData.indices, 0, desc);
@@ -216,8 +216,8 @@ class StandardPainter extends MeshPainter {
         this.fillIncludes(defines, uniformDeclares, context);
         const extraCommandProps = {
             cull: {
-                enable: () => {
-                    return this.sceneConfig.cullFace === undefined || !!this.sceneConfig.cullFace;
+                enable: (_, props) => {
+                    return !props.geometryProperties.hasNegativeHeight && (this.sceneConfig.cullFace === undefined || !!this.sceneConfig.cullFace);
                 },
                 face: () => {
                     return this.sceneConfig.cullFace || 'back';

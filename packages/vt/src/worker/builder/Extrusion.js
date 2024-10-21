@@ -113,7 +113,8 @@ export function buildExtrudeFaces(
             }
 
             if (topThickness > 0 && !generateSide) {
-                offset = buildSide(vertices, geoVertices, holes, indices, offset, uvs, 0, topThickness, EXTENT, generateUV, sideUVMode || 0, sideVerticalUVMode || 0, textureYOrigin, uvSize, tileRatio, verticalCentimeterToPoint, needReverseTriangle);
+                const reverseSide = height < 0;
+                offset = buildSide(vertices, geoVertices, holes, indices, offset, uvs, 0, topThickness, EXTENT, generateUV, sideUVMode || 0, sideVerticalUVMode || 0, textureYOrigin, uvSize, tileRatio, verticalCentimeterToPoint, reverseSide ? !needReverseTriangle : needReverseTriangle);
             }
             verticeTypes.setLength(offset / 3);
             verticeTypes.fill(1, typeStartOffset / 3, offset / 3);
@@ -123,8 +124,9 @@ export function buildExtrudeFaces(
             if (generateTop) {
                 topThickness = 0;
             }
+            const reverseSide = height < 0;
             typeStartOffset = offset;
-            offset = buildSide(vertices, geoVertices, holes, indices, offset, uvs, topThickness, height, EXTENT, generateUV, sideUVMode || 0, sideVerticalUVMode || 0, textureYOrigin, uvSize, tileRatio, verticalCentimeterToPoint, needReverseTriangle);
+            offset = buildSide(vertices, geoVertices, holes, indices, offset, uvs, topThickness, height, EXTENT, generateUV, sideUVMode || 0, sideVerticalUVMode || 0, textureYOrigin, uvSize, tileRatio, verticalCentimeterToPoint, reverseSide ? !needReverseTriangle : needReverseTriangle);
             verticeTypes.setLength(offset / 3);
             const count = geoVertices.getLength() / 3;
             verticeTypes.fill(1, typeStartOffset / 3, typeStartOffset / 3 + count);
@@ -147,6 +149,7 @@ export function buildExtrudeFaces(
     let maxFeaId = 0;
     let hasNegative = false;
     const holes = arrayPool.getProxy();
+    let hasNegativeHeight = false;
     for (; r < n; r++) {
         const feature = features[r];
         const feaId = feature.id;
@@ -165,6 +168,9 @@ export function buildExtrudeFaces(
         let ringOmbb = isMultiOmbb ? ombb[0] : ombb;
 
         const { altitude, height } = PackUtil.getFeaAltitudeAndHeight(feature, altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty);
+        if (height < 0) {
+            hasNegativeHeight = true;
+        }
         maxAltitude = Math.max(Math.abs(altitude), maxAltitude);
 
         const verticeCount = vertices.getLength();
@@ -247,6 +253,7 @@ export function buildExtrudeFaces(
     const pickingCtor = PackUtil.getUnsignedArrayType(pickingIds.getLength() ? pickingIds[pickingIds.getLength() - 1] : 0);
 
     const data = {
+        hasNegativeHeight,
         maxAltitude,
         vertices: vertices,        // vertexes
         verticeTypes,
