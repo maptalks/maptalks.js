@@ -1458,7 +1458,8 @@ export default class GLTFMarker extends Marker {
     toJSON() {
         const json = JSON.parse(JSON.stringify({
             coordinates: this.getCoordinates(),
-            options: this.options || {}
+            options: this.options || {},
+            type: 'GLTFMarker'
         }));
         const id = this.getId();
         if (!Util.isNil(id)) {

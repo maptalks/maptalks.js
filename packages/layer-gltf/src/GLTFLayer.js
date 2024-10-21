@@ -35,7 +35,12 @@ export default class GLTFLayer extends MaskLayerMixin(AbstractGLTFLayer) {
         const geoJSONs = json['geometries'];
         const geometries = [];
         for (let i = 0; i < geoJSONs.length; i++) {
-            const geo = GLTFMarker.parseJSONData(geoJSONs[i]);
+            const type = geoJSONs[i].type;
+            const clazz = GLTFMarker.getJSONClass(type);
+            if (!clazz || !clazz.fromJSON) {
+                throw new Error('unsupported gltfmarker type:' + type);
+            }
+            const geo = clazz.fromJSON(geoJSONs[i]);
             if (geo) {
                 geometries.push(geo);
             }

@@ -10,15 +10,10 @@
         width: 100%;
     }
     #map { width: 100%; height: 100%; background-color : #000;}
-    #btn {
-      position: absolute;
-      right: 0px;
-      top: 0px;
-    }
   </style>
-    <script type="text/javascript" src="./js/maptalks.js"></script>
-    <script type='text/javascript' src='http://localhost:6688/packages/gl/dist/maptalksgl.js'></script>
-    <script type='text/javascript' src='http://localhost:6688/packages/layer-gltf/dist/maptalks.gltf.js'></script>
+    <script type="text/javascript" src="../node_modules/maptalks/dist/maptalks.js"></script>
+    <script type='text/javascript' src='../node_modules/@maptalks/gl/dist/maptalksgl.js'></script>
+    <script type='text/javascript' src='../node_modules/@maptalks/gltf-layer/dist/maptalks.gltf.js'></script>
     <script src="../dist/transform-control.js"></script>
   <body>
     <div id="map"></div>
@@ -34,11 +29,6 @@
             doubleClickZoom : false,
             lights: {
                 ambient: {
-                    resource: {
-                        url: `ibl/resources/env.hdr`,
-                        //可选，预先计算好的hdr的sh值
-                        // sh: [[0.31809728408416826,0.31401226619030004,0.3134470104662589],[0.008704758145334807,0.011318408263042232,0.013078388966477488],[-0.0022599058076237222,0.002440201090172905,0.008080601204569696],[-0.006376439243529652,-0.008455040017515722,-0.010142167789138118],[-0.0010644849511110555,0.00010224644653697268,0.00048268834013221514],[-0.0021339277623529307,-0.0012152300796112823,-0.001073690833185554],[-0.0035723423448581156,-0.0030887617072984245,-0.003414213495055618],[-0.014779247139674757,-0.016330747724572967,-0.021623674274630286],[-0.010174472132809637,-0.009184355154793666,-0.006837585033142022]]
-                    },
                     color: [0.2, 0.2, 0.2],
                     exposure: 1.5
                 },
@@ -46,17 +36,13 @@
                     color: [1.0, 0.2, 0.4],
                     direction: [-1, 1, -0.2]
                 }
-            },
-            baseLayer: new maptalks.TileLayer('base', {
-                urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-                subdomains: ['a','b','c','d']
-            })
+            }
         });
         const center = map.getCenter();
         const sceneConfig = {
             shadow: {
                 type: 'esm',
-                enable: true,
+                enable: false,
                 quality: 'high',
                 opacity: 0.8,
                 color: [0, 0, 0],
@@ -102,115 +88,15 @@
         const myMarker1 = new maptalks.GLTFMarker(center.add(-0.002, 0),
         {
             symbol: {
-                url: 'gltf/DamagedHelmet.glb',
+                url: 'cube',
                 modelHeight: 75,
                 anchorZ: 'bottom'
             }
         }
         ).addTo(gltflayer);
-
-        const myMarker2 = new maptalks.GLTFMarker(center.add(0.002, 0), {
-            symbol: {
-                url: 'gltf/DamagedHelmet.glb',
-                shader: 'phong',
-                modelHeight: 75,
-                anchorZ: 'bottom'
-            }
-        }).addTo(gltflayer);
-
-        const myMarker3 = new maptalks.GLTFMarker(center.add(-0.001, 0.001), {
-            symbol: {
-                url: 'gltf/DamagedHelmet.glb',
-                shader: 'pbr',
-                modelHeight: 100,
-                anchorZ: 'bottom'
-            }
-        }).addTo(gltflayer);
         const groupgllayer = new maptalks.GroupGLLayer('gl', [gltflayer], {sceneConfig}).addTo(map);
         const transformControl = new maptalks.TransformControl({ mode: 'translate' });
         transformControl.addTo(map);
-
-        const drawTool = new maptalks.DrawTool({ mode: 'rectangle'}).addTo(map).disable();
-        const markers = gltflayer.getGeometries();
-        drawTool.on('mousemove drawend', e => {
-          const transformMarkers = [];
-          const rect = e.geometry;
-          for (let i = 0; i < markers.length; i++) {
-            const marker = markers[i];
-            marker.cancelOutline();
-            if (intersect(marker, rect.getExtent())) {
-              marker.outline();
-              transformMarkers.push(marker);
-            }
-          }
-          if (e.type === 'drawend') {
-            transformControl.transform(transformMarkers);
-          }
-        });
-        map.on('click', e => {
-          if (mode === 0) {
-            return;
-          }
-          const identifyData = groupgllayer.identify(e.coordinate);
-          if (identifyData.length) {
-              transformControl.enable();
-              transformControl.transform(identifyData[0].data);
-          } else if (!transformControl.picked(e.coordinate)) {
-              transformControl.disable();
-          }
-        });
-        window.addEventListener( 'keydown', function ( event ) {
-            cancelOutline();
-            switch ( event.keyCode ) {
-                case 32: // Spacebar
-                    const tcMode = transformControl.getMode();
-                    if (tcMode !== 'translate') {
-                      transformControl.setMode('translate');
-                    } else {
-                      transformControl.setMode('xyzScale');
-                    }
-                break;
-                case 68: //D
-                    transformControl.remove();
-                break;
-                case 67: //C
-                    transformControl.reset();
-                break;
-                case 66:
-                  if (mode === 0) {
-                    drawTool.disable();
-                    mode = 1;
-                  } else {
-                    drawTool.enable();
-                    mode = 0;
-                  }
-                break;
-                case 69:
-                  myMarker1.remove();
-                break;
-            }
-        });
-
-        function intersect(marker, extent) {
-          const markerBBox = marker._getBoundingBox();
-          if (!map || !markerBBox) {
-              return;
-          }
-          const { min, max } = markerBBox;
-          TEMP_POINT.set(min[0], min[1]);
-          const minCoord = map.pointAtResToCoordinate(TEMP_POINT, map.getGLRes());
-          TEMP_POINT.set(max[0], max[1]);
-          const maxCoord = map.pointAtResToCoordinate(TEMP_POINT, map.getGLRes());
-          const markerExtent = new maptalks.Extent(minCoord, maxCoord);
-          return extent.intersects(markerExtent);
-        }
-
-        function cancelOutline() {
-          for (let i = 0; i < markers.length; i++) {
-            const marker = markers[i];
-            marker.cancelOutline();
-          }
-        }
     </script>
   </body>
 </html>

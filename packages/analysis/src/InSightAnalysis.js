@@ -132,8 +132,8 @@ export default class InSightAnalysis extends Analysis {
         this._renderOptions = {};
         this._renderOptions['lines'] = this._lines.map(inSightLine => {
             const { from, to } = inSightLine;
-            const fromition = coordinateToWorld(map, ...from);
-            const lookPosition = coordinateToWorld(map, ...to);
+            const fromition = coordinateToWorld(map, from.x || from[0], from.y || from[1], from.z || from[2]);
+            const lookPosition = coordinateToWorld(map, to.x || to[0], to.y || to[1], to.z || to[2]);
             return {
                 from: fromition,
                 to: lookPosition

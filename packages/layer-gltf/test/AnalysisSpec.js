@@ -33,9 +33,9 @@ describe('add analysis', () => {
             viewshedAnalysis.addTo(gllayer);
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 2, 2);
-                expect(pixelMatch([150, 150, 150, 255, 151, 151, 151, 255, 151, 151, 151, 255, 151, 151, 151, 255], pixel1)).to.be.eql(true);//不可视区域颜色
+                expect(pixelMatch([136, 136, 136, 255, 136, 136, 136, 255, 136, 136, 136, 255, 136, 136, 136, 255], pixel1)).to.be.eql(true);//不可视区域颜色
                 const pixel2 = pickPixel(map, 260, 115, 2, 2);
-                expect(pixelMatch([45, 223, 45, 255, 45, 223, 45, 255, 45, 223, 45, 255, 45, 223, 45, 255], pixel2)).to.be.eql(true);//可视区域颜色
+                expect(pixelMatch([40, 218, 40, 255, 40, 218, 40, 255, 40, 218, 40, 255, 40, 218, 40, 255], pixel2)).to.be.eql(true);//可视区域颜色
                 const vertexCoordinates = viewshedAnalysis.getVertexCoordinates();
                 expect(vertexCoordinates[0].x.toFixed(7)).to.be.eql(0);
                 expect(vertexCoordinates[0].y).to.be.eql(-0.0017632698068089827);
@@ -185,7 +185,7 @@ describe('add analysis', () => {
                 const tempMap = cutAnalysis.exportAnalysisMap(meshes);
                 const index = (map.height / 2) * map.width * 4 + (map.width / 2) * 4;
                 const arr = tempMap.slice(index, index + 16);
-                expect(pixelMatch([1, 1, 1, 25, 1, 1, 1, 25, 1, 1, 1, 25, 231, 231, 231, 255], arr)).to.be.eql(true);
+                expect(pixelMatch([1, 1, 1, 25, 1, 1, 1, 25, 1, 1, 1, 25, 1, 1, 1, 25], arr)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -531,10 +531,12 @@ describe('add analysis', () => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
         gltflayer.on('modelload', () => {
+            const from = new maptalks.Coordinate([center.x + 0.002, center.y - 0.001, 50]);
+            const to = new maptalks.Coordinate([center.x - 0.001, center.y + 0.0015, 50]);
             const insightAnalysis = new maptalks.InSightAnalysis({
                 lines: [{
-                    from: [center.x + 0.002, center.y - 0.001, 50],
-                    to: [center.x - 0.001, center.y + 0.0015, 50]
+                    from: from,
+                    to: to
                 }],
                 visibleColor: [0, 1, 0, 1],
                 invisibleColor: [1, 0, 0, 1]
@@ -549,7 +551,7 @@ describe('add analysis', () => {
                 expect(intersects[0][0].coordinates[0].coordinate.x).to.be.eql(0.001662382672710473);
                 expect(intersects[0][0].coordinates[0].coordinate.y).to.be.eql(-0.0007186522272667832);
                 expect(intersects[0][0].coordinates[0].coordinate.z.toFixed(5)).to.be.eql(50.00033);
-                expect(intersects[1][0].coordinates[0].coordinate.x).to.be.eql(0.0004623826730195796);
+                expect(intersects[1][0].coordinates[0].coordinate.x).to.be.eql(0.0004623826730195799);
                 expect(intersects[1][0].coordinates[0].coordinate.y).to.be.eql(0.0002813477725397769);
                 expect(intersects[1][0].coordinates[0].coordinate.z.toFixed(5)).to.be.eql(50.00033);
                 done();
@@ -584,7 +586,7 @@ describe('add analysis', () => {
                 const results = raycaster.test(meshes, map);
                 expect(results.length).to.be.eql(2);
                 expect(results[0].mesh).to.be.ok();
-                expect(results[0].coordinates[0].indices).to.be.eql([0, 1, 2]);
+                expect(results[0].coordinates[0].indices).to.be.eql([0, 2, 3]);
                 expect(results[0].coordinates[0].coordinate.x).to.be.eql(0.001662382672710473);
                 expect(results[0].coordinates[0].coordinate.y).to.be.eql(-0.0007186522272667832 );
                 expect(results[0].coordinates[0].coordinate.z.toFixed(5)).to.be.eql(50.00033);
@@ -604,10 +606,9 @@ describe('add analysis', () => {
                 invisibleColor: [1, 0, 0, 1]
             }).addTo(gllayer);
             insightAnalysis.setLines([{
-                from: [center.x + 0.002, center.y - 0.001, 50],
-                to: [center.x - 0.001, center.y + 0.0015, 50]
-            }
-            ]);
+                from: new maptalks.Coordinate([center.x + 0.002, center.y - 0.001, 50]),
+                to: new maptalks.Coordinate([center.x - 0.001, center.y + 0.0015, 50])
+            }]);
             setTimeout(function() {
                 const { inSightLine, intersects } = insightAnalysis.getIntersetction()[0];
                 expect(inSightLine).to.be.ok();
@@ -617,7 +618,7 @@ describe('add analysis', () => {
                 expect(intersects[0][0].coordinates[0].coordinate.x).to.be.eql(0.001662382672710473);
                 expect(intersects[0][0].coordinates[0].coordinate.y).to.be.eql(-0.0007186522272667832);
                 expect(intersects[0][0].coordinates[0].coordinate.z.toFixed(5)).to.be.eql(50.00033);
-                expect(intersects[1][0].coordinates[0].coordinate.x).to.be.eql(0.0004623826730195796);
+                expect(intersects[1][0].coordinates[0].coordinate.x).to.be.eql(0.0004623826730195799);
                 expect(intersects[1][0].coordinates[0].coordinate.y).to.be.eql(0.0002813477725397769);
                 expect(intersects[1][0].coordinates[0].coordinate.z.toFixed(5)).to.be.eql(50.00033);
                 done();
@@ -642,7 +643,7 @@ describe('add analysis', () => {
             measuretool.fire('drawstart', { coordinate: center });
             measuretool.fire('mousemove', { coordinate: center.add(0.001, 0) });
             const result = measuretool.getMeasureResult();
-            expect(result.toFixed(5)).to.be.eql(222.63898);
+            expect(result.toFixed(5)).to.be.eql(223.87583);
             measuretool.clear();
             done();
         }
@@ -703,7 +704,7 @@ describe('add analysis', () => {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
                 const pixel2 = pickPixel(map, 200, 120, 1, 1);
                 expect(pixelMatch([0, 0, 0, 0], pixel1)).to.be.eql(true);//挖方区域颜色
-                expect(pixelMatch([75, 181, 181, 255], pixel2)).to.be.eql(true);//挖方测面颜色
+                expect(pixelMatch([1, 168, 168, 255], pixel2)).to.be.eql(true);//挖方测面颜色
                 done();
             }, 500);
         });

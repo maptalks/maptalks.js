@@ -17,6 +17,10 @@ export default class GLTFLineString extends MultiGLTFMarker {
         });
     }
 
+    static fromJSON(json) {
+        return new GLTFLineString(json.data, json.options);
+    }
+
     setCoordinates(coordinates) {
         this._coordinates = coordinates;
         this._updateData();
@@ -24,6 +28,12 @@ export default class GLTFLineString extends MultiGLTFMarker {
 
     getCoordinates() {
         return this._coordinates;
+    }
+
+    toJSON() {
+        const json = super.toJSON();
+        json['type'] = 'GLTFLineString';
+        return json;
     }
 
     _updateData() {

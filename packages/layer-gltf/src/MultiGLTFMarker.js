@@ -377,7 +377,8 @@ export default class MultiGLTFMarker extends GLTFMarker {
     toJSON() {
         const json = JSON.parse(JSON.stringify({
             data : this._data,
-            options: this.options
+            options: this.options,
+            type: 'MultiGLTFMarker'
         }));
         const properties = this.getProperties();
         if (json.options) {
@@ -500,3 +501,5 @@ export default class MultiGLTFMarker extends GLTFMarker {
         this._dirty = true;
     }
 }
+
+MultiGLTFMarker.registerJSONType('MultiGLTFMarker');

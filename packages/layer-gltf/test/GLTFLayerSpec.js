@@ -675,7 +675,7 @@ describe('maptalks.gltf', function () {
             }
         }).addTo(gltflayer);
         const layerJSON = gltflayer.toJSON();
-        expect(JSON.stringify(layerJSON)).to.be.eql('{"type":"GLTFLayer","id":"gltf","options":{},"geometries":[{"coordinates":{"x":0,"y":0},"options":{"symbol":{"url":"models/cube-animation/cube.gltf","animation":true,"translationX":1,"translationY":1,"translationZ":1,"rotationX":0,"rotationY":0,"rotationZ":90,"scaleX":1,"scaleY":1,"scaleZ":1,"shadow":true,"uniforms":{"polygonFill":[1,0,0,1],"polygonOpacity":0.8}},"id":"marker","properties":{"prop":"value"}},"zoomOnAdded":17}]}');
+        expect(JSON.stringify(layerJSON)).to.be.eql('{"type":"GLTFLayer","id":"gltf","options":{},"geometries":[{"coordinates":{"x":0,"y":0},"options":{"symbol":{"url":"models/cube-animation/cube.gltf","animation":true,"translationX":1,"translationY":1,"translationZ":1,"rotationX":0,"rotationY":0,"rotationZ":90,"scaleX":1,"scaleY":1,"scaleZ":1,"shadow":true,"uniforms":{"polygonFill":[1,0,0,1],"polygonOpacity":0.8}},"id":"marker","properties":{"prop":"value"}},"type":"GLTFMarker","zoomOnAdded":17}]}');
     });
 
     it('toGeoJSON', () => { //TODO 把json打印出来判断整体是不是一致

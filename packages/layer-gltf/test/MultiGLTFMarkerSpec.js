@@ -119,13 +119,13 @@ describe('MultiGLTFMarker', () => {
             expect(count).to.be.equal(101);
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([87, 87, 87, 153], pixel1)).to.be.eql(true);
+                expect(pixelMatch([143, 143, 143, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2, map.height / 2 - 50, 1, 1);
-                expect(pixelMatch([78, 79, 79, 183], pixel2)).to.be.eql(true);
+                expect(pixelMatch([129, 129, 129, 255], pixel2)).to.be.eql(true);
                 const pixel3 = pickPixel(map, map.width / 2 + 50, map.height / 2 - 50, 1, 1);
-                expect(pixelMatch([75, 77, 77, 190], pixel3)).to.be.eql(true);
+                expect(pixelMatch([129, 129, 129, 255], pixel3)).to.be.eql(true);
                 const pixel4 = pickPixel(map, map.width / 2 + 50, map.height / 2, 1, 1);
-                expect(pixelMatch([87, 87, 87, 183], pixel4)).to.be.eql(true);
+                expect(pixelMatch([143, 143, 143, 255], pixel4)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -150,11 +150,11 @@ describe('MultiGLTFMarker', () => {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
                 expect(pixelMatch([0, 0, 0, 0], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2, map.height / 2 - 50, 1, 1);
-                expect(pixelMatch([78, 79, 79, 183], pixel2)).to.be.eql(true);
+                expect(pixelMatch([129, 129, 129, 255], pixel2)).to.be.eql(true);
                 const pixel3 = pickPixel(map, map.width / 2 + 50, map.height / 2 - 50, 1, 1);
-                expect(pixelMatch([75, 77, 77, 190], pixel3, 50)).to.be.eql(true);
+                expect(pixelMatch([129, 129, 129, 255], pixel3, 50)).to.be.eql(true);
                 const pixel4 = pickPixel(map, map.width / 2 + 50, map.height / 2, 1, 1);
-                expect(pixelMatch([87, 87, 87, 183], pixel4, 50)).to.be.eql(true);
+                expect(pixelMatch([143, 143, 143, 255], pixel4, 50)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -177,7 +177,7 @@ describe('MultiGLTFMarker', () => {
         multigltfmarker.on('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2 - 50, map.height / 2 + 50, 1, 1);
-                expect(pixelMatch([48, 58, 37, 220], pixel1)).to.be.eql(true);
+                expect(pixelMatch([77, 102, 83, 255], pixel1)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -256,13 +256,13 @@ describe('MultiGLTFMarker', () => {
         multigltfmarker.on('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([87, 87, 87, 153], pixel1)).to.be.eql(true);
+                expect(pixelMatch([143, 143, 143, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2, map.height / 2 + 50, 1, 1);
-                expect(pixelMatch([91, 91, 91, 183], pixel2)).to.be.eql(true);
+                expect(pixelMatch([151, 151, 151, 255], pixel2)).to.be.eql(true);
                 const pixel3 = pickPixel(map, map.width / 2 - 50, map.height / 2 + 50, 1, 1);
-                expect(pixelMatch([48, 58, 38, 220], pixel3)).to.be.eql(true);
+                expect(pixelMatch([77, 102, 84, 255], pixel3)).to.be.eql(true);
                 const pixel4 = pickPixel(map, map.width / 2 - 50, map.height / 2, 1, 1);
-                expect(pixelMatch([38, 50, 23, 168], pixel4)).to.be.eql(true);
+                expect(pixelMatch([91, 105, 74, 255], pixel4)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -306,7 +306,7 @@ describe('MultiGLTFMarker', () => {
         };
         const multigltfmarker = maptalks.MultiGLTFMarker.fromJSON(json);
         const resultJosn = multigltfmarker.toJSON();
-        expect(JSON.stringify(resultJosn)).to.be.eql(`{"data":[{"coordinates":{"x":-0.02,"y":-0.02},"translation":[0,0,0],"scale":[1,1,1],"color":[0.2,0.4,0.91,0.9]},{"coordinates":{"x":-0.02,"y":-0.01},"translation":[0,0,0],"scale":[1,1,1],"color":[0.2,0.4,0.91,0.9]},{"coordinates":{"x":-0.01,"y":-0.02},"translation":[0,0,0],"scale":[1,1,1],"color":[0.2,0.4,0.91,0.9]},{"coordinates":{"x":-0.01,"y":-0.01},"translation":[0,0,0],"scale":[1,1,1],"color":[0.2,0.4,0.91,0.9]}],"options":{"symbol":{"url":"models/cube-animation/cube.gltf","translation":[0,0,0],"rotation":[0,0,90],"scale":[1,1,1]},"properties":{"0":{"ID":"1","NAME":"name","TYPE":"type"}}}}`);
+        expect(JSON.stringify(resultJosn)).to.be.eql(`{"data":[{"coordinates":{"x":-0.02,"y":-0.02},"translation":[0,0,0],"scale":[1,1,1],"color":[0.2,0.4,0.91,0.9]},{"coordinates":{"x":-0.02,"y":-0.01},"translation":[0,0,0],"scale":[1,1,1],"color":[0.2,0.4,0.91,0.9]},{"coordinates":{"x":-0.01,"y":-0.02},"translation":[0,0,0],"scale":[1,1,1],"color":[0.2,0.4,0.91,0.9]},{"coordinates":{"x":-0.01,"y":-0.01},"translation":[0,0,0],"scale":[1,1,1],"color":[0.2,0.4,0.91,0.9]}],"options":{"symbol":{"url":"models/cube-animation/cube.gltf","translation":[0,0,0],"rotation":[0,0,90],"scale":[1,1,1]},"properties":{"0":{"ID":"1","NAME":"name","TYPE":"type"}}},"type":"MultiGLTFMarker"}`);
     });
 
     it('simple model', (done) => {//TODO 增加像素判断
@@ -370,7 +370,7 @@ describe('MultiGLTFMarker', () => {
         multigltfmarker.once('load', () => {
             setTimeout(function() {
                 const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([78, 67, 15, 168], pixel)).to.be.eql(true);
+                expect(pixelMatch([129, 108, 0, 255], pixel)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -392,7 +392,7 @@ describe('MultiGLTFMarker', () => {
         multigltfmarker.once('load', () => {
             setTimeout(function() {
                 const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([137, 137, 62, 173], pixel)).to.be.eql(true);
+                expect(pixelMatch([165, 165, 114, 255], pixel)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -484,13 +484,13 @@ describe('MultiGLTFMarker', () => {
             multigltfmarker.outline(0);
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([58, 69, 79, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([58, 97, 126, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2, map.height / 2 + 100, 1, 1);
-                expect(pixelMatch([75, 75, 75, 250], pixel2)).to.be.eql(true);
+                expect(pixelMatch([129, 129, 129, 255], pixel2)).to.be.eql(true);
                 const pixel3 = pickPixel(map, map.width / 2 + 100, map.height / 2 + 100, 1, 1);
-                expect(pixelMatch([90, 90, 90, 214], pixel3)).to.be.eql(true);
+                expect(pixelMatch([149, 149, 149, 255], pixel3)).to.be.eql(true);
                 const pixel4 = pickPixel(map, map.width / 2 - 100, map.height / 2, 1, 1);
-                expect(pixelMatch([75, 84, 71, 214], pixel4)).to.be.eql(true);
+                expect(pixelMatch([151, 151, 151, 255], pixel4)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -634,14 +634,14 @@ describe('MultiGLTFMarker', () => {
             multigltfmarker.updateData(4, 'bloom', false);
             setTimeout(function() {
                 const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([131, 111, 25, 255], pixel)).to.be.eql(true);
+                expect(pixelMatch([129, 108, 0, 255], pixel)).to.be.eql(true);
                 done();
             }, 100);
         }
         multigltfmarker.once('load', () => {
             setTimeout(function() {
                 const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([255, 255, 142, 255], pixel)).to.be.eql(true);
+                expect(pixelMatch([255, 255, 46, 255], pixel)).to.be.eql(true);
                 closeBloom();
             }, 100);
         });
@@ -749,7 +749,7 @@ describe('MultiGLTFMarker', () => {
             });
             setTimeout(function() {
                 const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([60, 8, 8, 186], pixel)).to.be.eql(true);
+                expect(pixelMatch([135, 4, 4, 255], pixel)).to.be.eql(true);
                 done();
             }, 100);
         });

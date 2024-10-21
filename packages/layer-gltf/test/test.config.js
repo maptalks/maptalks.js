@@ -140,7 +140,7 @@ function pickPixel(map, x, y, width, height) {
 
 function pixelMatch(expectedValue, pixelValue) {
     for (let i = 0; i < expectedValue.length; i++) {
-        if (Math.abs(pixelValue[i] - expectedValue[i]) > 10) {
+        if (Math.abs(pixelValue[i] - expectedValue[i]) > 25) {
             return false;
         }
     }

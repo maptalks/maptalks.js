@@ -58,7 +58,7 @@ describe('setMask', () => {
         marker.once('load', () => {
             setTimeout(function() {
                 const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([46, 58, 61, 255], pixel)).to.be.eql(true);
+                expect(pixelMatch([8, 12, 13, 255], pixel)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -92,7 +92,7 @@ describe('setMask', () => {
         marker.once('load', () => {
             setTimeout(function() {
                 const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([21, 21, 21, 255], pixel)).to.be.eql(true);
+                expect(pixelMatch([5, 5, 5, 255], pixel)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -139,7 +139,7 @@ describe('setMask', () => {
         marker.once('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([47, 59, 62, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([7, 12, 13, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 + 150, map.height / 2, 1, 1);
                 expect(pixel2).to.be.eql([0, 0, 0, 0]);
                 done();
@@ -163,7 +163,7 @@ describe('setMask', () => {
         marker.once('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([152, 31, 33, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([133, 7, 7, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 + 100, map.height / 2, 1, 1);
                 expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
                 done();
@@ -191,7 +191,7 @@ describe('setMask', () => {
             gltflayer.removeMask();
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([50, 62, 65, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([7, 12, 13, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 - 50, map.height / 2 + 50, 1, 1);
                 expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
                 done();
@@ -201,7 +201,7 @@ describe('setMask', () => {
         marker.once('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([50, 62, 65, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([7, 12, 13, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 - 50, map.height / 2 + 50, 1, 1);
                 expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
                 clearMask();
@@ -238,7 +238,7 @@ describe('setMask', () => {
             gltflayer.setMask([mask2, mask1]);
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([151, 30, 32, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([132, 7, 7, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 - 30, map.height / 2 + 50, 1, 1);
                 expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
                 done();
@@ -255,7 +255,7 @@ describe('setMask', () => {
             gltflayer.setMask([mask2, mask1]);
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([40, 52, 56, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([7, 11, 12, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 - 30, map.height / 2 + 50, 1, 1);
                 expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
                 updateMask();
@@ -277,7 +277,7 @@ describe('setMask', () => {
         marker.once('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, 179, 129, 1, 1);
-                expect(pixelMatch([37, 68, 108, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([28, 57, 97, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 + 100, map.height / 2, 1, 1);
                 expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
                 done();
@@ -312,18 +312,18 @@ describe('setMask', () => {
             });
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([24, 30, 158, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([5, 7, 136, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 + 50, map.height / 2, 1, 1);
-                expect(pixelMatch([57, 57, 57, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([35, 37, 37, 255], pixel2)).to.be.eql(true);
                 done();
             }, 100);
         }
         marker.once('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([151, 30, 31, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([133, 7, 8, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 + 50, map.height / 2, 1, 1);
-                expect(pixelMatch([57, 57, 57, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([35, 37, 37, 255], pixel2)).to.be.eql(true);
                 updateSymbol();
             }, 100);
         });
@@ -344,18 +344,18 @@ describe('setMask', () => {
             mask.hide();
             setTimeout(function() {
                 const pixel1 = pickPixel(map, 179, 129, 1, 1);
-                expect(pixelMatch([47, 59, 62, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([4, 7, 7, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 + 50, map.height / 2, 1, 1);
-                expect(pixelMatch([57, 57, 57, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([35, 37, 37, 255], pixel2)).to.be.eql(true);
                 done();
             }, 100);
         }
         marker.once('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, 179, 129, 1, 1);
-                expect(pixelMatch([37, 68, 108, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([28, 57, 97, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 + 50, map.height / 2, 1, 1);
-                expect(pixelMatch([57, 57, 57, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([35, 37, 37, 255], pixel2)).to.be.eql(true);
                 hide();
             }, 500);
         });
@@ -381,18 +381,18 @@ describe('setMask', () => {
             mask.pause();
             setTimeout(function() {
                 const pixel1 = pickPixel(map, 179, 129, 1, 1);
-                expect(pixelMatch([36, 66, 105, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([28, 57, 97, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 + 50, map.height / 2, 1, 1);
-                expect(pixelMatch([57, 57, 57, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([35, 37, 37, 255], pixel2)).to.be.eql(true);
                 done();
             }, 100);
         }
         marker.once('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, 179, 129, 1, 1);
-                expect(pixelMatch([36, 66, 106, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([28, 57, 97, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 + 50, map.height / 2, 1, 1);
-                expect(pixelMatch([57, 57, 57, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([35, 37, 37, 255], pixel2)).to.be.eql(true);
                 pause();
             }, 500);
         });
@@ -422,7 +422,7 @@ describe('setMask', () => {
             mask.setCoordinates(coord2);
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([151, 31, 32, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([133, 7, 8, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 - 70, map.height / 2 + 70, 1, 1);
                 expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
                 done();
@@ -431,9 +431,9 @@ describe('setMask', () => {
         marker.once('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, 179, 129, 1, 1);
-                expect(pixelMatch([151, 30, 31, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([130, 3, 4, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 + 50, map.height / 2, 1, 1);
-                expect(pixelMatch([57, 57, 57, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([35, 37, 37, 255], pixel2)).to.be.eql(true);
                 setCoordinates();
             }, 100);
         });
@@ -459,7 +459,7 @@ describe('setMask', () => {
             mask.setHeightRange([140, 180]);
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([47, 59, 63, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([10, 14, 16, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 - 70, map.height / 2 + 70, 1, 1);
                 expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
                 done();
@@ -468,9 +468,9 @@ describe('setMask', () => {
         marker.once('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([47, 59, 63, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([10, 14, 16, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2, map.height / 2 - 50, 1, 1);
-                expect(pixelMatch([61, 91, 73, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([41, 82, 38, 255], pixel2)).to.be.eql(true);
                 updateHeightRange();
             }, 100);
         });
@@ -489,7 +489,7 @@ describe('setMask', () => {
         marker.once('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([42, 54, 57, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([10, 14, 16, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 + 30, map.height / 2, 1, 1);
                 expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
                 done();
@@ -621,7 +621,7 @@ describe('setMask', () => {
                 });
                 gltflayer.setMask(mask);
                 const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([42, 54, 57, 255], pixel)).to.be.eql(true);
+                expect(pixelMatch([10, 14, 16, 255], pixel)).to.be.eql(true);
                 done();
             }, 100);
         });
