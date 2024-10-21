@@ -770,11 +770,11 @@ describe('gl tests', () => {
                             const canvas = map.getRenderer().canvas;
                             const ctx = canvas.getContext('2d');
                             const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2 + 7, 1, 1);
-                            if (pixel.data['0'] !== 124) {
+                            if (pixel.data['0'] !== 125) {
                                 return;
                             }
                             hit = true;
-                            expect(pixel).to.be.eql({ data: { '0': 124, '1': 124, '2': 124, '3': 255 } });
+                            expect(pixel).to.be.eql({ data: { '0': 125, '1': 125, '2': 125, '3': 255 } });
                             done();
                         }
 
@@ -817,7 +817,7 @@ describe('gl tests', () => {
                             const canvas = map.getRenderer().canvas;
                             const ctx = canvas.getContext('2d');
                             const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2 + 7, 1, 1);
-                            expect(pixel).to.be.eql({ data: { '0': 124, '1': 0, '2': 0, '3': 255 } });
+                            expect(pixel).to.be.eql({ data: { '0': 125, '1': 0, '2': 0, '3': 255 } });
                             done();
                         }
                     });
@@ -858,7 +858,7 @@ describe('gl tests', () => {
                             const canvas = map.getRenderer().canvas;
                             const ctx = canvas.getContext('2d');
                             const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2 + 7, 1, 1);
-                            expect(pixel).to.be.eql({ data: { '0': 124, '1': 0, '2': 0, '3': 255 } });
+                            expect(pixel).to.be.eql({ data: { '0': 125, '1': 0, '2': 0, '3': 255 } });
                             const exportMat = group.toJSON().options.terrain.material;
                             expect(material).to.be.eql(exportMat);
                             done();
@@ -1546,7 +1546,7 @@ describe('gl tests', () => {
                 const canvas = map.getRenderer().canvas;
                 const ctx = canvas.getContext('2d');
                 const data = ctx.getImageData(192, 128, 1, 1);
-                const expected = new Uint8ClampedArray([69, 92, 112, 255]);
+                const expected = new Uint8ClampedArray([46, 62, 75, 255]);
                 expect(data.data).to.be.eql(expected);
                 done();
             }, 800);

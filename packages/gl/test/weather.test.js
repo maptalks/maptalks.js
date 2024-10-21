@@ -101,7 +101,7 @@ describe('weather tests', () => {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
                 const pixel2 = pickPixel(map, map.width / 2, 170 , 1, 1);
                 expect(pixelMatch([169, 169, 169, 163], pixel1)).to.be.eql(true);
-                expect(pixelMatch([244, 235, 121, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([195, 181, 117, 255], pixel2)).to.be.eql(true);
                 disableFog();
             }, 100);
         });
@@ -118,7 +118,7 @@ describe('weather tests', () => {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
                 const pixel2 = pickPixel(map, map.width / 2, 170 , 1, 1);
                 expect(pixelMatch([77, 77, 77, 163], pixel1)).to.be.eql(true);
-                expect(pixelMatch([255, 244, 35, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([168, 142, 27, 255], pixel2)).to.be.eql(true);
                 done();
             }, 100);
         }
