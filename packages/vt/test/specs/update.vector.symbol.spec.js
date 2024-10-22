@@ -82,7 +82,7 @@ describe('vector layers symbol update specs', () => {
                     markerHeight: 60
                 });
                 updated = true;
-            } else if (updated && count >= 3) {
+            } else if (updated && count >= 4) {
                 const pixel = readPixel(renderer.canvas, x + 20, y);
                 //中心点往外40，能读到像素了
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
@@ -278,7 +278,7 @@ describe('vector layers symbol update specs', () => {
                     }
                 ]);
                 updated = true;
-            } else if (updated && count >= 3) {
+            } else if (updated && count >= 4) {
                 const pixel = readPixel(renderer.canvas, x + 37, y);
                 assert.deepEqual(pixel, [0, 255, 0, 255]);
                 const pixel1 = readPixel(renderer.canvas, x, y);

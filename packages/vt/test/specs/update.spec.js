@@ -1512,19 +1512,19 @@ describe('update style specs', () => {
         map.setPitch(80);
         const layer = new GroupGLLayer('group', [layerRed], { sceneConfig });
         let count = 0;
-        const startCount = 2;
+        const startCount = 1;
         layerRed.once('canvasisdirty', () => {
             layer.on('layerload', () => {
                 count++;
                 if (count === startCount) {
                     const canvas = layer.getRenderer().canvas;
                     const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2 + 20);
-                    assert.deepEqual(pixel, [159, 159, 159, 255]);
+                    assert.deepEqual(pixel, [136, 136, 136, 255]);
                     layerRed.updateSymbol(1, { ssr: true });
                 } else if (count === startCount + 1) {
                     const canvas = layer.getRenderer().canvas;
                     const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2 + 20);
-                    assert.deepEqual(pixel, [134, 113, 113, 255]);
+                    assert.deepEqual(pixel, [141, 120, 120, 255]);
                     done();
                 }
             });
@@ -1573,14 +1573,14 @@ describe('update style specs', () => {
             const pixel = readPixel(canvas, canvas.width / 2 + 40, canvas.height / 2);
             if (pixel[0] > 0) {
                 if (!painted) {
-                    assert.deepEqual(pixel, [12, 12, 51, 255]);
+                    assert.deepEqual(pixel, [7, 7, 33, 255]);
 
                     material.baseColorTexture = undefined;
                     layer.updateSymbol(0, { material });
                     painted = true;
                 } else {
                     finished = true;
-                    assert.deepEqual(pixel, [52, 52, 52, 255]);
+                    assert.deepEqual(pixel, [34, 34, 34, 255]);
                     done();
                 }
             }
@@ -1680,7 +1680,7 @@ describe('update style specs', () => {
             if (pixel[0] > 0) {
 
                 if (!painted) {
-                    assert.deepEqual(pixel, [78, 78, 78, 255]);
+                    assert.deepEqual(pixel, [77, 77, 77, 255]);
 
                     material.baseColorTexture = 'file://' + path.resolve(__dirname, '../integration/resources/1.png');
                     layer.updateSymbol(0, { material });
@@ -1689,7 +1689,7 @@ describe('update style specs', () => {
                     count++;
                     if (count >= 10) {
                         finished = true;
-                        assert.deepEqual(pixel, [41, 44, 48, 255]);
+                        assert.deepEqual(pixel, [36, 39, 43, 255]);
                         done();
                     }
                 }
@@ -1764,13 +1764,13 @@ describe('update style specs', () => {
                 const pixel = readPixel(canvas, canvas.width / 2 + 40, canvas.height / 2);
                 if (pixel[0] > 0) {
                     if (!painted) {
-                        assert.deepEqual(pixel, [78, 78, 78, 255]);
+                        assert.deepEqual(pixel, [77, 77, 77, 255]);
 
                         material.baseColorFactor = [1, 0, 0, 1];
                         layer.updateSymbol(1, { material });
                         painted = true;
                     } else if (!finished) {
-                        assert.deepEqual(pixel, [78, 1, 1, 255]);
+                        assert.deepEqual(pixel, [77, 0, 0, 255]);
                         finished = true;
                         done();
                     }

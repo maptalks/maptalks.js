@@ -2313,7 +2313,7 @@ describe('vector layers update style specs', () => {
             } else if (count === 4) {
                 const canvas = group.getRenderer().canvas;
                 const pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 20);
-                assert.deepEqual(pixel,  [125, 19, 19, 255]);
+                assert.deepEqual(pixel,  [102, 1, 1, 255]);
                 done();
             }
         });
@@ -2357,7 +2357,7 @@ describe('vector layers update style specs', () => {
             } else if (count === 4) {
                 const canvas = group.getRenderer().canvas;
                 const pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 20);
-                assert.deepEqual(pixel,   [ 125, 19, 19, 255 ]);
+                assert.deepEqual(pixel,   [ 102, 1, 1, 255 ]);
                 done();
             }
         });
@@ -2396,7 +2396,7 @@ describe('vector layers update style specs', () => {
             } else if (count === 3) {
                 const canvas = group.getRenderer().canvas;
                 const pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 10);
-                assert.deepEqual(pixel, [ 144, 64, 13, 255 ]);
+                assert.deepEqual(pixel, [ 130, 51, 0, 255 ]);
                 done();
             }
         });

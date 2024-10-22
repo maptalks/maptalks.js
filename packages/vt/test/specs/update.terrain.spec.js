@@ -107,10 +107,10 @@ describe('update vt on terrain specs', () => {
                         assert.deepEqual(pixel, [255, 0, 0, 255]);
 
                         pixel = readPixel(renderer.canvas, x / 2, y / 2 + 40);
-                        assert(pixel[0] === 113 || pixel[0] === 114);
-                        assert(pixel[1] === 113 || pixel[1] === 114);
-                        assert(pixel[2] === 113 || pixel[2] === 114);
-                        assert(pixel[3] === 255 || pixel[3] === 255);
+                        assert(pixel[0] === 99);
+                        assert(pixel[1] === 99);
+                        assert(pixel[2] === 99);
+                        assert(pixel[3] === 255);
                         done();
                     }
                 });
