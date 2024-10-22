@@ -2,6 +2,11 @@
 
 WebGL layers for maptalks.
 
+## Javascript版本
+
+* maptalks核心库的目标JS版本为ES5
+* maptalks-gl的目标JS版为ES6（ES2015）
+
 ## packages说明
 
 ### 基础库
