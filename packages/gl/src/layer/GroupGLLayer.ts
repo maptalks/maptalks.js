@@ -670,7 +670,7 @@ export default class GroupGLLayer extends maptalks.Layer {
                 }
                 layer.getTiles = () => {
                     // debugger
-                    return this._terrainLayer.getSkinTiles(layer);
+                    return this._terrainLayer && this._terrainLayer.getSkinTiles(layer);
                 };
                 // 重载原有的drawTile方法
                 // 如果renderer定义了drawTileOnTerrain，则代替原有的drawTile，否则用空方法代替
