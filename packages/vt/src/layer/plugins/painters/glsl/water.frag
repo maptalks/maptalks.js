@@ -415,7 +415,7 @@ vec3 getSkyGradientColor(in float cosTheta, in vec3 horizon, in vec3 zenit) {
 vec3 getSkyColor(in vec3 n, in vec3 v, in float upDotV, in float roughness) {
     #ifdef HAS_IBL_LIGHTING
         vec3 R = reflect(-v, n);
-        vec4 prefilteredColor = textureCube(prefilterMap, environmentTransform * R);
+        vec3 prefilteredColor = textureCube(prefilterMap, environmentTransform * R).rgb;
         float factor = clamp(1.0 + dot(R, n), 0.0, 1.0);
         prefilteredColor *= factor * factor;
         vec3 specular = prefilteredColor;
