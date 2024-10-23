@@ -672,7 +672,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -711,7 +711,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -724,7 +724,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -737,7 +737,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr',
+                        shader: 'phong',
                         maximumScreenSpaceError: 1
                     }
                 ]
@@ -751,7 +751,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr',
+                        shader: 'phong',
                         maximumScreenSpaceError: 1
                     }
                 ]
@@ -765,7 +765,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr',
+                        shader: 'phong',
                         maximumScreenSpaceError: 1
                     }
                 ]
@@ -785,7 +785,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr',
+                        shader: 'phong',
                         maximumScreenSpaceError: 1
                     }
                 ]
@@ -805,7 +805,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr',
+                        shader: 'phong',
                         maximumScreenSpaceError: 1
                     }
                 ]
@@ -825,7 +825,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr',
+                        shader: 'phong',
                         maximumScreenSpaceError: 1
                     }
                 ]
@@ -846,7 +846,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr',
+                        shader: 'phong',
                         maximumScreenSpaceError: 1
                     }
                 ]
@@ -867,7 +867,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -880,7 +880,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -893,7 +893,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -927,7 +927,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -940,7 +940,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -953,7 +953,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -966,7 +966,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -979,7 +979,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -992,7 +992,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1005,7 +1005,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1018,7 +1018,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1031,7 +1031,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1044,7 +1044,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1070,7 +1070,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1096,7 +1096,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1122,7 +1122,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1149,7 +1149,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1170,7 +1170,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1463,7 +1463,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1476,7 +1476,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1489,7 +1489,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1503,7 +1503,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1517,7 +1517,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1530,7 +1530,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1543,7 +1543,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1556,7 +1556,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1569,7 +1569,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1583,7 +1583,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1596,7 +1596,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1626,7 +1626,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1653,7 +1653,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1666,7 +1666,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1679,7 +1679,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1692,7 +1692,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1705,7 +1705,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1718,7 +1718,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1731,7 +1731,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1744,7 +1744,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1757,7 +1757,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1787,7 +1787,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr',
+                        shader: 'phong',
                         heightOffset: -420,
                         polygonFill: '#e33',
                         hsv: [1, 0, 0]
@@ -1883,7 +1883,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1898,7 +1898,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1917,7 +1917,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1934,7 +1934,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -1951,7 +1951,7 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
+                        shader: 'phong'
                     }
                 ]
             });
@@ -2185,8 +2185,8 @@ describe('render specs', () => {
             });
             runner(() => {
                 done();
-            }, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 1, renderCount: 3, noGroup: true });
-        });
-    }).timeout(10000);
+            }, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 1, renderCount: 5, noGroup: true });
+        }).timeout(10000);
+    });
 });
 
