@@ -1,5 +1,16 @@
 # @maptalks/gl
 
+## 0.101.0
+
+### Minor Changes
+
+- Version fix
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/reshader.gl@0.100.0
+
 ## 0.100.0
 
 ### Minor Changes
