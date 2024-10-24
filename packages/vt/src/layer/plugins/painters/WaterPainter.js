@@ -305,9 +305,12 @@ class WaterPainter extends BasicPainter {
                 attribute vec3 aPosition;
 
                 uniform mat4 projViewModelMatrix;
+                uniform float minAltitude;
 
                 void main() {
-                    gl_Position = projViewModelMatrix * vec4(aPosition, 1.);
+                    vec3 position = aPosition;
+                    position.z += minAltitude * 100.0;
+                    gl_Position = projViewModelMatrix * vec4(position, 1.);
                 }
             `,
             frag,
@@ -383,6 +386,7 @@ class WaterPainter extends BasicPainter {
     getUniformValues(map) {
         const uniforms = {
             projViewMatrix: map.projViewMatrix,
+            minAltitude: this.layer.options['altitude'] || 0
         };
         return uniforms;
     }
