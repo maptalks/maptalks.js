@@ -7,7 +7,7 @@ import Painter from '../renderer/geometry/Painter';
 import CollectionPainter from '../renderer/geometry/CollectionPainter';
 import Coordinate from '../geo/Coordinate';
 import Point from '../geo/Point';
-import { LineString, Curve } from '../geometry';
+import { LineString, Curve, Marker } from '../geometry';
 import PointExtent from '../geo/PointExtent';
 import { VectorLayerCanvasRenderer } from '../renderer';
 import { LayerJSONType } from './Layer';
@@ -169,6 +169,19 @@ class VectorLayer extends OverlayLayer {
         if (!geometries || !geometries.length) {
             return [];
         }
+        const filterGeos = [];
+        let idx = 0;
+        for (let i = 0, len = geometries.length; i < len; i++) {
+            const geo = geometries[i];
+            // Ignore collided Points
+            if (geo.isPoint && (geo as Marker)._collided === true) {
+                continue;
+            }
+            filterGeos[idx] = geo;
+            idx++;
+        }
+        geometries = filterGeos;
+
         const filter = options['filter'],
             hits: Geometry[] = [];
         const tolerance = options['tolerance'];

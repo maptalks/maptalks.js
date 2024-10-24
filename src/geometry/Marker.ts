@@ -54,7 +54,9 @@ const options: MarkerOptionsType = {
  * });
  */
 export class Marker extends CenterMixin(Geometry) {
-    isPoint: boolean
+    isPoint: boolean;
+    //@internal  Has it already collided
+    _collided: boolean;
     /**
      * @param {Coordinate} coordinates      - coordinates of the marker
      * @param {Object} [options=null]       - construct options defined in [Marker]{@link Marker#options}

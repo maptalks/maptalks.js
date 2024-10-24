@@ -72,7 +72,18 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     setToRedraw(): this {
         super.setToRedraw();
         this._resetProgressiveRender();
+        this._resetGeosCollisionState();
         return this;
+    }
+
+    _resetGeosCollisionState() {
+        const geos = this.layer._geoList || [];
+        for (let i = 0, len = geos.length; i < len; i++) {
+            const geo = geos[i];
+            if (geo.isPoint) {
+                geo._collided = false;
+            }
+        }
     }
 
     //@internal
@@ -99,6 +110,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             geo.bbox[2] = extent.xmax + bufferSize;
             geo.bbox[3] = extent.ymax + bufferSize;
             if (collisionIndex.collides(geo.bbox)) {
+                geo._collided = true;
                 return true;
             }
             collisionIndex.insertBox(geo.bbox);
@@ -451,7 +463,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             glScale,
             glRes,
             //@internal
-        _2DExtent,
+            _2DExtent,
             glExtent,
             containerExtent,
             offset
