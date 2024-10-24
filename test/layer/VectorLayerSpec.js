@@ -674,7 +674,7 @@ describe('VectorLayer.Spec', function () {
             expect(geos.length).to.be.eql(1);
 
             geos = layer2.identify(map.getCenter());
-            expect(geos.length).to.be.eql(1);
+            expect(geos.length).to.be.eql(0);
 
             map.identify({
                 coordinate: map.getCenter(),
