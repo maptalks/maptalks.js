@@ -13,7 +13,7 @@ describe('VectorLayer.Spec', function () {
         var option = {
             zoom: 17,
             center: center,
-            centerCross : true
+            centerCross: true
         };
         map = new maptalks.Map(container, option);
         layer = new maptalks.VectorLayer('id');
@@ -31,13 +31,13 @@ describe('VectorLayer.Spec', function () {
         });
 
         it('create with geometries', function () {
-            var layer = new maptalks.VectorLayer('v', { 'cursor' : 'default' });
+            var layer = new maptalks.VectorLayer('v', { 'cursor': 'default' });
             expect(layer.getCount()).to.be.eql(0);
             expect(layer.options['cursor']).to.be.eql('default');
         });
 
         it('create with geometries', function () {
-            var layer = new maptalks.VectorLayer('v', [new maptalks.Marker(map.getCenter()), new maptalks.Marker(map.getCenter())], { 'cursor' : 'default' });
+            var layer = new maptalks.VectorLayer('v', [new maptalks.Marker(map.getCenter()), new maptalks.Marker(map.getCenter())], { 'cursor': 'default' });
             expect(layer.getCount()).to.be.eql(2);
             expect(layer.options['cursor']).to.be.eql('default');
         });
@@ -45,11 +45,11 @@ describe('VectorLayer.Spec', function () {
         it('create on a given canvas', function (done) {
             var canvas = document.createElement('canvas');
             var symbol = {
-                'markerType' : 'ellipse',
-                'markerWidth' : 20,
-                'markerHeight' : 20
+                'markerType': 'ellipse',
+                'markerWidth': 20,
+                'markerHeight': 20
             };
-            var layer = new maptalks.VectorLayer('v', [new maptalks.Marker(map.getCenter(), { symbol : symbol })], { 'canvas' : canvas });
+            var layer = new maptalks.VectorLayer('v', [new maptalks.Marker(map.getCenter(), { symbol: symbol })], { 'canvas': canvas });
             layer.once('layerload', function () {
                 expect(layer).to.be.painted(0, 0);
                 var w = canvas.width, h = canvas.height;
@@ -151,7 +151,7 @@ describe('VectorLayer.Spec', function () {
         });
 
         it('add a geometry with id of 0', function () {
-            layer.addGeometry(new maptalks.Marker([0, 0], { id:0 }));
+            layer.addGeometry(new maptalks.Marker([0, 0], { id: 0 }));
             var geo = layer.getGeometryById(0);
             expect(geo).to.be.ok();
         });
@@ -160,11 +160,13 @@ describe('VectorLayer.Spec', function () {
             var collection = {
                 'type': 'FeatureCollection',
                 'features': [
-                    { 'type': 'Feature',
+                    {
+                        'type': 'Feature',
                         'geometry': { 'type': 'Point', 'coordinates': [102.0, 0.5] },
                         'properties': { 'prop0': 'value0' }
                     },
-                    { 'type': 'Feature',
+                    {
+                        'type': 'Feature',
                         'geometry': {
                             'type': 'LineString',
                             'coordinates': [
@@ -176,12 +178,13 @@ describe('VectorLayer.Spec', function () {
                             'prop1': 0.0
                         }
                     },
-                    { 'type': 'Feature',
+                    {
+                        'type': 'Feature',
                         'geometry': {
                             'type': 'Polygon',
                             'coordinates': [
                                 [[100.0, 0.0], [101.0, 0.0], [101.0, 1.0],
-                                    [100.0, 1.0], [100.0, 0.0]]
+                                [100.0, 1.0], [100.0, 0.0]]
                             ]
                         },
                         'properties': {
@@ -203,7 +206,7 @@ describe('VectorLayer.Spec', function () {
                         "type": "Point",
                         "coordinates": map.getCenter().toArray()
                     }
-              }
+                }
             ];
             layer.on('layerload', function () {
                 expect(layer).to.be.painted(0, -1);
@@ -225,8 +228,8 @@ describe('VectorLayer.Spec', function () {
 
         it('paint a geometry', function (done) {
             var circle = new maptalks.Circle(map.getCenter(), 100, {
-                symbol : {
-                    'polygonFill' : '#f00'
+                symbol: {
+                    'polygonFill': '#f00'
                 }
             });
             layer.on('layerload', function () {
@@ -240,8 +243,8 @@ describe('VectorLayer.Spec', function () {
             map.getRenderer()._setCheckSizeInterval(80);
 
             var circle = new maptalks.Circle(map.getCenter(), 100, {
-                symbol : {
-                    'polygonFill' : '#f00'
+                symbol: {
+                    'polygonFill': '#f00'
                 }
             });
             layer.once('layerload', function () {
@@ -258,10 +261,10 @@ describe('VectorLayer.Spec', function () {
                     expect(sy).to.be.eql(2);
                     maptalks.Browser.devicePixelRatio = 1;
                     maptalks.Browser.retina = false;
-                    maptalks.Browser.monitorDPRChange=true;
+                    maptalks.Browser.monitorDPRChange = true;
                     done();
                 });
-                maptalks.Browser.monitorDPRChange=false;
+                maptalks.Browser.monitorDPRChange = false;
                 maptalks.Browser.devicePixelRatio = 2;
                 maptalks.Browser.retina = true;
                 container.style.width = (parseInt(container.style.width) - 1) + 'px';
@@ -271,8 +274,8 @@ describe('VectorLayer.Spec', function () {
 
         it('update symbol', function (done) {
             var circle = new maptalks.Circle(map.getCenter(), 100, {
-                symbol : {
-                    'polygonFill' : '#f00'
+                symbol: {
+                    'polygonFill': '#f00'
                 }
             });
             layer.once('layerload', function () {
@@ -281,7 +284,7 @@ describe('VectorLayer.Spec', function () {
                     done();
                 });
                 circle.setSymbol({
-                    'polygonFill' : '#0f0'
+                    'polygonFill': '#0f0'
                 });
 
             });
@@ -290,10 +293,10 @@ describe('VectorLayer.Spec', function () {
 
         it('show', function (done) {
             var circle = new maptalks.Circle(map.getCenter(), 100, {
-                symbol : {
-                    'polygonFill' : '#f00'
+                symbol: {
+                    'polygonFill': '#f00'
                 },
-                visible : false
+                visible: false
             });
             layer.once('layerload', function () {
                 expect(layer).not.to.be.painted(0, 0);
@@ -309,8 +312,8 @@ describe('VectorLayer.Spec', function () {
 
         it('hide', function (done) {
             var circle = new maptalks.Circle(map.getCenter(), 100, {
-                symbol : {
-                    'polygonFill' : '#f00'
+                symbol: {
+                    'polygonFill': '#f00'
                 }
             });
             layer.once('layerload', function () {
@@ -327,8 +330,8 @@ describe('VectorLayer.Spec', function () {
 
         it('remove', function (done) {
             var circle = new maptalks.Circle(map.getCenter(), 100, {
-                symbol : {
-                    'polygonFill' : '#f00'
+                symbol: {
+                    'polygonFill': '#f00'
                 }
             });
             layer.once('layerload', function () {
@@ -345,8 +348,8 @@ describe('VectorLayer.Spec', function () {
 
         it('change position', function (done) {
             var circle = new maptalks.Circle(map.getCenter(), 100, {
-                symbol : {
-                    'polygonFill' : '#f00'
+                symbol: {
+                    'polygonFill': '#f00'
                 }
             });
             layer.once('layerload', function () {
@@ -363,8 +366,8 @@ describe('VectorLayer.Spec', function () {
 
         it('change shape', function (done) {
             var circle = new maptalks.Circle(map.getCenter(), 100, {
-                symbol : {
-                    'polygonFill' : '#f00'
+                symbol: {
+                    'polygonFill': '#f00'
                 }
             });
             layer.once('layerload', function () {
@@ -380,13 +383,13 @@ describe('VectorLayer.Spec', function () {
 
         it('change zindex', function (done) {
             var circle1 = new maptalks.Circle(map.getCenter(), 100, {
-                symbol : {
-                    'polygonFill' : '#f00'
+                symbol: {
+                    'polygonFill': '#f00'
                 }
             });
             var circle2 = new maptalks.Circle(map.getCenter(), 100, {
-                symbol : {
-                    'polygonFill' : '#0f0'
+                symbol: {
+                    'polygonFill': '#0f0'
                 }
             });
             layer.once('layerload', function () {
@@ -402,20 +405,20 @@ describe('VectorLayer.Spec', function () {
 
         it('change properties', function (done) {
             layer.setStyle([{
-                filter : ['==', 'foo', 1],
-                symbol : {
-                    'polygonFill' : '#f00'
+                filter: ['==', 'foo', 1],
+                symbol: {
+                    'polygonFill': '#f00'
                 }
             },
             {
-                filter : ['==', 'foo', 2],
-                symbol : {
-                    'polygonFill' : '#0f0'
+                filter: ['==', 'foo', 2],
+                symbol: {
+                    'polygonFill': '#0f0'
                 }
             }]);
             var circle = new maptalks.Circle(map.getCenter(), 100, {
-                properties : {
-                    'foo' : 1
+                properties: {
+                    'foo': 1
                 }
             });
             layer.once('layerload', function () {
@@ -425,7 +428,7 @@ describe('VectorLayer.Spec', function () {
                     done();
                 });
                 circle.setProperties({
-                    'foo' : 2
+                    'foo': 2
                 });
             });
             layer.addGeometry(circle);
@@ -434,8 +437,8 @@ describe('VectorLayer.Spec', function () {
         it('ignore geometries out of container extent', function (done) {
             var ne = map.getSize().toPoint().multi(1 / 2);
             var circle = new maptalks.Circle(map.getExtent().getMax(), 10, {
-                symbol : {
-                    'polygonFill' : '#f00'
+                symbol: {
+                    'polygonFill': '#f00'
                 }
             });
             layer.config('drawImmediate', true);
@@ -452,11 +455,11 @@ describe('VectorLayer.Spec', function () {
         it('sort markers by camera distance', function (done) {
             var canvas = document.createElement('canvas');
             var marker1 = new maptalks.Marker(map.getCenter(), {
-                symbol : {
+                symbol: {
                     'markerType': 'ellipse',
                     'markerFill': '#f00',
-                    'markerWidth' : 20,
-                    'markerHeight' : 20
+                    'markerWidth': 20,
+                    'markerHeight': 20
                 },
                 properties: {
                     altitude: 2
@@ -464,17 +467,17 @@ describe('VectorLayer.Spec', function () {
 
             });
             var marker2 = new maptalks.Marker(map.getCenter(), {
-                symbol : {
+                symbol: {
                     'markerType': 'ellipse',
                     'markerFill': '#0f0',
-                    'markerWidth' : 20,
-                    'markerHeight' : 20
+                    'markerWidth': 20,
+                    'markerHeight': 20
                 },
                 properties: {
                     altitude: 0
                 }
             });
-            var layer = new maptalks.VectorLayer('v', [marker1, marker2], { 'canvas' : canvas, enableAltitude: true, sortByDistanceToCamera:true });
+            var layer = new maptalks.VectorLayer('v', [marker1, marker2], { 'canvas': canvas, enableAltitude: true, sortByDistanceToCamera: true });
             layer.once('layerload', function () {
                 expect(layer).to.be.painted(0, 0);
                 var w = canvas.width, h = canvas.height;
@@ -491,38 +494,38 @@ describe('VectorLayer.Spec', function () {
             layer.clear();
             var points = [
                 new maptalks.Marker([0, 0], {
-                    properties : {
-                        'foo1' : 1,
-                        'foo2' : 'test1',
-                        'foo3' : true
+                    properties: {
+                        'foo1': 1,
+                        'foo2': 'test1',
+                        'foo3': true
                     }
                 }),
                 new maptalks.Marker([0, 0], {
-                    properties : {
-                        'foo1' : 2,
-                        'foo2' : 'test2',
-                        'foo3' : false
+                    properties: {
+                        'foo1': 2,
+                        'foo2': 'test2',
+                        'foo3': false
                     }
                 }),
                 new maptalks.Marker([0, 0], {
-                    properties : {
-                        'foo1' : 3,
-                        'foo2' : 'test3',
-                        'foo3' : true
+                    properties: {
+                        'foo1': 3,
+                        'foo2': 'test3',
+                        'foo3': true
                     }
                 }),
                 new maptalks.Marker([0, 0], {
-                    properties : {
-                        'foo1' : 4,
-                        'foo2' : 'test4',
-                        'foo3' : true
+                    properties: {
+                        'foo1': 4,
+                        'foo2': 'test4',
+                        'foo3': true
                     }
                 }),
                 new maptalks.Circle([0, 0], 100, {
-                    properties : {
-                        'foo1' : 5,
-                        'foo2' : 'test5',
-                        'foo3' : true
+                    properties: {
+                        'foo1': 5,
+                        'foo2': 'test5',
+                        'foo3': true
                     }
                 })
             ];
@@ -565,58 +568,58 @@ describe('VectorLayer.Spec', function () {
 
         it('setStyle with a singleStyle', function () {
             var symbol = {
-                'markerFile' : 'http://www.foo.com/foo.png'
+                'markerFile': 'http://www.foo.com/foo.png'
             };
             testStyle({
-                filter : [
+                filter: [
                     'all',
                     ['==', 'foo1', 2],
                     ['==', '$type', 'Point']
                 ],
-                symbol : symbol
+                symbol: symbol
             }, [1], [symbol]);
         });
 
         it('setStyle with an array of styles', function () {
             var symbol = {
-                'markerFile' : 'http://www.foo.com/foo.png'
+                'markerFile': 'http://www.foo.com/foo.png'
             };
             var symbol2 = {
-                'markerFile' : 'http://www.foo.com/foo2.png'
+                'markerFile': 'http://www.foo.com/foo2.png'
             };
             testStyle([
                 {
-                    filter : ['==', 'foo1', 2],
-                    symbol : symbol
+                    filter: ['==', 'foo1', 2],
+                    symbol: symbol
                 },
                 {
-                    filter : [
+                    filter: [
                         'all',
                         ['!=', '$type', 'Polygon'],
                         ['==', 'foo1', 3]
                     ],
-                    symbol : symbol2
+                    symbol: symbol2
                 },
             ], [1, 2], [symbol, symbol2]);
         });
         it('symbol first', function () {
             var symbol = {
-                'markerType' : 'ellipse',
-                'markerWidth' : 20,
-                'markerHeight' : 20
+                'markerType': 'ellipse',
+                'markerWidth': 20,
+                'markerHeight': 20
             };
             var styleSymbol = {
-                'markerFile' : 'http://www.foo.com/foo.png'
+                'markerFile': 'http://www.foo.com/foo.png'
             };
-            var vectors = new maptalks.VectorLayer('symbol-style', { 'drawImmediate' : true })
+            var vectors = new maptalks.VectorLayer('symbol-style', { 'drawImmediate': true })
                 .setStyle({
-                    filter : ['==', '$type', 'Point'],
-                    symbol : styleSymbol
+                    filter: ['==', '$type', 'Point'],
+                    symbol: styleSymbol
                 })
                 .addTo(map);
             var geometries = [
                 new maptalks.Marker(map.getCenter(), {
-                    'symbol' : symbol
+                    'symbol': symbol
                 }),
                 new maptalks.Marker(map.getCenter()),
             ];
@@ -632,5 +635,55 @@ describe('VectorLayer.Spec', function () {
             expect(geometries[1]._getInternalSymbol()).not.to.be.eql(styleSymbol);
         });
     });
+
+    it('# https://github.com/maptalks/issues/issues/774 identify ignore collided points', (done) => {
+        const layerOptions = {
+            forceRenderOnRotating: true,
+            collisionDelay: 0,
+            debug: false,
+            collision: true,
+            collisionScope: 'map'
+        }
+
+        function createPoints() {
+            const point = new maptalks.Marker(map.getCenter(), {
+                symbol: {
+                    markerType: 'ellipse',
+                    markerWidth: 20,
+                    markerHeight: 20,
+                    markerFill: 'blue'
+                }
+            });
+            return [point, point.copy()]
+        }
+
+        const layer1 = new maptalks.VectorLayer('vector', Object.assign({}, layerOptions))
+            .addTo(map);
+
+        layer1.addGeometry(createPoints());
+
+
+        var layer2 = new maptalks.VectorLayer('vector1', Object.assign({}, layerOptions))
+            .addTo(map);
+
+
+        layer2.addGeometry(createPoints());
+
+        setTimeout(() => {
+            let geos = layer1.identify(map.getCenter());
+            expect(geos.length).to.be.eql(1);
+
+            geos = layer2.identify(map.getCenter());
+            expect(geos.length).to.be.eql(1);
+
+            map.identify({
+                coordinate: map.getCenter(),
+                layers: [layer1, layer2]
+            }, (geos) => {
+                expect(geos.length).to.be.eql(1);
+                done();
+            })
+        }, 1000);
+    })
 
 });
