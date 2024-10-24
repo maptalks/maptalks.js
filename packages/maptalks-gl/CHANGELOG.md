@@ -1,5 +1,22 @@
 # maptalks-gl
 
+## 0.103.0
+
+### Minor Changes
+
+- Version fix
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.102.0
+  - @maptalks/3dtiles@0.102.0
+  - @maptalks/gltf-layer@0.101.0
+  - @maptalks/transform-control@0.102.0
+  - @maptalks/vt@0.101.0
+  - @maptalks/analysis@0.98.3
+  - @maptalks/video-layer@0.98.3
+
 ## 0.102.0
 
 ### Minor Changes
