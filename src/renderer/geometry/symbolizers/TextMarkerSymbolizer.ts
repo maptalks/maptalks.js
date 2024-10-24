@@ -11,7 +11,6 @@ import { Geometry } from '../../../geometry';
 import Painter from '../Painter';
 import { ResourceCache } from '../..';
 import { clipLine } from '../../../core/util/path';
-import { Extent } from '../../../geo';
 
 const TEMP_EXTENT = new PointExtent();
 
@@ -105,6 +104,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         this.prepareCanvas(ctx, strokeAndFill, resources);
         Canvas.prepareCanvasFont(ctx, style);
         const textHaloRadius = style.textHaloRadius || 0;
+        this.rotations = [];
         if (this.isAlongLine()) {
             const painter = this.getPainter();
             //复用path渲染的结果集
@@ -123,15 +123,13 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
                 }
             }
         } else {
-
             const cookedPoints = this._getRenderContainerPoints();
             if (!isArrayHasData(cookedPoints)) {
                 return;
             }
             for (let i = 0, len = cookedPoints.length; i < len; i++) {
                 let p = cookedPoints[i];
-                // const origin = this._rotate(ctx, p, this._getRotationAt(i));
-                const origin = this.getRotation() ? this._rotate(ctx, p, this._getRotationAt(i)) : null;
+                const origin = this._rotate(ctx, p, this._getRotationAt(i));
                 let extent: PointExtent;
                 if (origin) {
                     //坐标对应的像素点
@@ -142,6 +140,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
                     const alignPoint = getAlignPoint(textDesc.size, style['textHorizontalAlignment'], style['textVerticalAlignment']);
                     extent = getMarkerRotationExtent(TEMP_EXTENT, rad, width, height, p, alignPoint);
                     extent._add(pixel);
+                    this.rotations.push(rad);
                 }
                 const bbox = Canvas.text(ctx, textContent, p, style, textDesc);
                 if (origin) {
@@ -153,6 +152,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
                 this._bufferBBOX(ctx, textHaloRadius);
             }
         }
+
     }
 
     getPlacement(): any {

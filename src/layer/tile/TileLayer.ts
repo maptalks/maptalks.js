@@ -97,7 +97,8 @@ class TileHashset {
  * @property              [options.fetchOptions=object]       - fetch params,such as fetchOptions: { 'headers': { 'accept': '' } }, about accept value more info https://developer.mozilla.org/en-US/docs/Web/HTTP/Content_negotiation/List_of_default_Accept_values
  * @property             [options.awareOfTerrain=true]       - if the tile layer is aware of terrain.
  * @property             [options.bufferPixel=0.5]       - tile buffer size,the unit is pixel
- * @property             [options.depthMask=true]       - mask to decide whether to write depth buffe
+ * @property             [options.depthMask=true]       - mask to decide whether to write depth buffer
+ * @property             [options.tileErrorScale=1]     - scale for tile's geometric error, default is 1
  * @memberOf TileLayer
  * @instance
  */
@@ -163,7 +164,8 @@ const options: TileLayerOptionsType = {
     'mipmapTexture': true,
     'depthMask': true,
     'currentTilesFirst': true,
-    'forceRenderOnMoving': true
+    'forceRenderOnMoving': true,
+    'tileErrorScale': 1
 };
 
 const URL_PATTERN = /\{ *([\w_]+) *\}/g;
@@ -777,7 +779,7 @@ class TileLayer extends Layer {
             r = gap <= 1 ? 1 : gap <= 2 ? 0.7 : 0.605;
         }
         // const r = 1;
-        const error = geometricError * r / distance;
+        const error = geometricError * r / distance * this.options['tileErrorScale'];
         const pitch = this.getMap().getPitch();
         if (pitch <= 60) {
             return error * 1.45;
@@ -1710,4 +1712,5 @@ export type TileLayerOptionsType = LayerOptionsType & {
     tileStackDepth?: number;
     mipmapTexture?: boolean;
     currentTilesFirst?: boolean;
+    tileErrorScale?: number;
 };

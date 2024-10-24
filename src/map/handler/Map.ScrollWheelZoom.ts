@@ -1,4 +1,4 @@
-import { isNil } from '../../core/util';
+import { isNil, isNumber } from '../../core/util';
 import { addDomEvent, removeDomEvent, getEventContainerPoint, preventDefault, stopPropagation } from '../../core/util/dom';
 import Handler from '../../handler/Handler';
 import Map from '../Map';
@@ -66,6 +66,23 @@ class MapScrollWheelZoomHandler extends Handler {
     }
 
     //@internal
+    _currentZoomCanScroll(value: number) {
+        if (isNumber(value)) {
+            const map = this.target;
+            const zoom = map.getZoom();
+            const minZoom = map.getMinZoom();
+            const maxZoom = map.getMaxZoom();
+            if (zoom === minZoom && value > 0) {
+                return false;
+            }
+            if (zoom === maxZoom && value < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    //@internal
     _onWheelScroll(evt) {
         const map = this.target;
         if (map.options['preventWheelScroll']) {
@@ -119,6 +136,9 @@ class MapScrollWheelZoomHandler extends Handler {
             this._delta = 0;
         }
         this._delta -= value;
+        if (!this._currentZoomCanScroll(value)) {
+            return;
+        }
         if (!this._zooming && this._delta) {
             const map = this.target;
             this._zoomOrigin = origin;
