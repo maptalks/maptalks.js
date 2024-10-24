@@ -719,7 +719,7 @@ describe('Geometry.LineString', function () {
             map.setView({
                 "center": [120.61702517, 31.17030688], "zoom": 14.838606578929996, "pitch": 0.20000000000003001, "bearing": -3
             });
- 
+
 
             setTimeout(() => {
                 expect(line._getPainter().symbolizers[0].rotations.length).to.be.above(0);
@@ -748,6 +748,50 @@ describe('Geometry.LineString', function () {
                 done();
             }, 1000);
         });
+    });
+
+    describe('text along path', function () {
+        it('#573 text along path ', function (done) {
+
+            layer.clear();
+            layer.config({
+                collision: true,
+                collisionDelay: 0,
+            });
+
+            const symbol = {
+                lineWidth: 8,
+                lineColor: 'black',
+                textName: '苏州湾大道',
+                // textName: 'Hello World',
+                // textPlacement?: 'point' | 'vertex' | 'line' | 'vertex-first' | 'vertex-last';
+                textPlacement: 'line',
+                textSpacing: 500,
+                textFill: 'yellow',
+                textFaceName: '微软雅黑',
+                textWeight: 'bold',
+                textSize: 12,
+                textOpacity: 1,
+                // textDy: 10,
+                textHaloFill: '#000',
+                textHaloRadius: 1,
+                textHaloOpacity: 1,
+                // textAlongDebug: true
+            }
+            const line = new maptalks.LineString(getLineCoordinates(), {
+                symbol: Object.assign({}, symbol)
+            }).addTo(layer);
+
+            map.setView({
+                "center": getLineCoordinates()[1], "zoom": 18.530837475845765, "pitch": 0, "bearing": 4.499999999999204
+            })
+            setTimeout(() => {
+                expect(layer).to.be.painted(0, 0);
+                done();
+            }, 1000);
+        });
+
+
     });
 
 });

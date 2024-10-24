@@ -1,5 +1,5 @@
 import { DEFAULT_TEXT_SIZE } from '../../../core/Constants';
-import { isNumber, isArrayHasData, getValueOrDefault, getAlignPoint, } from '../../../core/util';
+import { isNumber, isArrayHasData, getValueOrDefault, getAlignPoint } from '../../../core/util';
 import Point from '../../../geo/Point';
 import PointExtent from '../../../geo/PointExtent';
 import { hasFunctionDefinition } from '../../../core/mapbox';
@@ -10,8 +10,46 @@ import { replaceVariable, describeText } from '../../../core/util/strings';
 import { Geometry } from '../../../geometry';
 import Painter from '../Painter';
 import { ResourceCache } from '../..';
+import { clipLine } from '../../../core/util/path';
 
 const TEMP_EXTENT = new PointExtent();
+
+function filterPathByMapSize(paths, mapSize) {
+    const { width, height } = mapSize;
+    const buffer = 0;
+    const minx = -buffer, miny = -buffer, maxx = width + buffer, maxy = height + buffer;
+    TEMP_EXTENT.xmin = minx;
+    TEMP_EXTENT.ymin = miny;
+    TEMP_EXTENT.xmax = maxx;
+    TEMP_EXTENT.ymax = maxy;
+    if (!Array.isArray(paths[0])) {
+        paths = [paths];
+    }
+    const result = [];
+    paths.forEach(path => {
+        let hasDirty = false;
+        for (let i = 0, len = path.length; i < len; i++) {
+            const { x, y } = path[i];
+            if (x < minx || x > maxx || y < miny || y > maxy) {
+                hasDirty = true;
+                break;
+            }
+        }
+        if (hasDirty) {
+            const parts = clipLine(path, TEMP_EXTENT, false, false);
+            parts.forEach(part => {
+                const line = [];
+                for (let j = 0, len1 = part.length; j < len1; j++) {
+                    line[j] = part[j].point;
+                }
+                result.push(line);
+            });
+        } else {
+            result.push(path);
+        }
+    });
+    return result;
+}
 
 export default class TextMarkerSymbolizer extends PointSymbolizer {
     //@internal
@@ -39,6 +77,12 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         this.strokeAndFill = this._defineStyle(this.translateLineAndFill(this.style));
     }
 
+    isAlongLine() {
+        const placement = this.getPlacement();
+        const textSpacing = this.style.textSpacing;
+        return placement === 'line' && isNumber(textSpacing) && textSpacing > 0;
+    }
+
     symbolize(ctx: CanvasRenderingContext2D, resources: ResourceCache): void {
         if (!this.isVisible()) {
             return;
@@ -48,10 +92,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
             this.style['textWrapWidth'] === 0)) {
             return;
         }
-        const cookedPoints = this._getRenderContainerPoints();
-        if (!isArrayHasData(cookedPoints)) {
-            return;
-        }
+
         const style = this.style,
             strokeAndFill = this.strokeAndFill;
         const textContent = replaceVariable(this.style['textName'], this.geometry.getProperties());
@@ -64,30 +105,54 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         Canvas.prepareCanvasFont(ctx, style);
         const textHaloRadius = style.textHaloRadius || 0;
         this.rotations = [];
-        for (let i = 0, len = cookedPoints.length; i < len; i++) {
-            let p = cookedPoints[i];
-            const origin = this._rotate(ctx, p, this._getRotationAt(i));
-            let extent: PointExtent;
-            if (origin) {
-                //坐标对应的像素点
-                const pixel = p.sub(origin);
-                p = origin;
-                const rad = this._getRotationAt(i);
-                const { width, height } = textDesc.size || { width: 0, height: 0 };
-                const alignPoint = getAlignPoint(textDesc.size, style['textHorizontalAlignment'], style['textVerticalAlignment']);
-                extent = getMarkerRotationExtent(TEMP_EXTENT, rad, width, height, p, alignPoint);
-                extent._add(pixel);
-                this.rotations.push(rad);
+        if (this.isAlongLine()) {
+            const painter = this.getPainter();
+            //复用path渲染的结果集
+            let paths = painter.getPathTempRenderPoints();
+            if (!paths) {
+                return;
             }
-            const bbox = Canvas.text(ctx, textContent, p, style, textDesc);
-            if (origin) {
-                this._setBBOX(ctx, extent.xmin, extent.ymin, extent.xmax, extent.ymax);
-                ctx.restore();
-            } else {
-                this._setBBOX(ctx, bbox);
+            const map = this.getMap();
+            paths = filterPathByMapSize(paths, map.getSize());
+            if (paths) {
+                const layer = this.geometry.getLayer();
+                const bbox = Canvas.textAlongLine(ctx, textContent, paths, style, textDesc, layer.options.collision ? layer.getCollisionIndex() : null);
+                if (bbox) {
+                    this._setBBOX(ctx, bbox);
+                    this._bufferBBOX(ctx, textHaloRadius);
+                }
             }
-            this._bufferBBOX(ctx, textHaloRadius);
+        } else {
+            const cookedPoints = this._getRenderContainerPoints();
+            if (!isArrayHasData(cookedPoints)) {
+                return;
+            }
+            for (let i = 0, len = cookedPoints.length; i < len; i++) {
+                let p = cookedPoints[i];
+                const origin = this._rotate(ctx, p, this._getRotationAt(i));
+                let extent: PointExtent;
+                if (origin) {
+                    //坐标对应的像素点
+                    const pixel = p.sub(origin);
+                    p = origin;
+                    const rad = this._getRotationAt(i);
+                    const { width, height } = textDesc.size || { width: 0, height: 0 };
+                    const alignPoint = getAlignPoint(textDesc.size, style['textHorizontalAlignment'], style['textVerticalAlignment']);
+                    extent = getMarkerRotationExtent(TEMP_EXTENT, rad, width, height, p, alignPoint);
+                    extent._add(pixel);
+                    this.rotations.push(rad);
+                }
+                const bbox = Canvas.text(ctx, textContent, p, style, textDesc);
+                if (origin) {
+                    this._setBBOX(ctx, extent.xmin, extent.ymin, extent.xmax, extent.ymax);
+                    ctx.restore();
+                } else {
+                    this._setBBOX(ctx, bbox);
+                }
+                this._bufferBBOX(ctx, textHaloRadius);
+            }
         }
+
     }
 
     getPlacement(): any {
@@ -151,6 +216,8 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
 
             textMaxWidth: getValueOrDefault(s['textMaxWidth'], 0),
             textMaxHeight: getValueOrDefault(s['textMaxHeight'], 0),
+            textSpacing: getValueOrDefault(s['textSpacing'], 0),
+            textAlongDebug: getValueOrDefault(s['textAlongDebug'], false),
         };
 
         if (result['textMaxWidth'] > 0 && (!result['textWrapWidth'] || result['textWrapWidth'] > result['textMaxWidth'])) {

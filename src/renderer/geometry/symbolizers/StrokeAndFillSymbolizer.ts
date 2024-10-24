@@ -22,6 +22,9 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
     _lineColorStopsKey?: string;
     //@internal
     _lineColorIn?: any;
+
+    _tempRenderPoints: any;
+
     static test(symbol: any, geometry: Geometry): boolean {
         if (!symbol) {
             return false;
@@ -119,6 +122,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         if (ctx.setLineDash && Array.isArray(style['lineDasharray'])) {
             ctx.setLineDash([]);
         }
+        this._tempRenderPoints = points;
     }
 
     get2DExtent(): PointExtent {
