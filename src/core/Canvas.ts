@@ -24,8 +24,8 @@ function getCharTexture(tempCtx: Ctx, style, char: string) {
     const font = tempCtx.font;
     const fillStyle = tempCtx.fillStyle;
     const strokeStyle = tempCtx.strokeStyle;
-    let textHaloFill = style.textHaloFill || DEFAULT_STROKE_COLOR;
-    let textHaloRadius = style.textHaloRadius || 0;
+    const textHaloFill = style.textHaloFill || DEFAULT_STROKE_COLOR;
+    const textHaloRadius = style.textHaloRadius || 0;
     let textHaloOpacity = style.textHaloOpacity;
     if (!isNumber(textHaloOpacity)) {
         textHaloOpacity = 1;
@@ -344,7 +344,7 @@ function getTextPath(chunk: Array<Point>, chars: string[], fontSize: number, glo
     for (let i = 0, len = chars.length; i < len; i++) {
         const char = chars[i];
         const charSize = measureCharSize(char, fontSize);
-        let d = charSize + tempLen;
+        const d = charSize + tempLen;
         for (let j = idx, len1 = chunk.length; j < len1; j++) {
             const p1 = chunk[j - 1];
             const p2 = chunk[j];
@@ -932,7 +932,7 @@ const Canvas = {
 
         const textAlongDebug = style.textAlongDebug;
         let textHaloFill = style.textHaloFill || DEFAULT_STROKE_COLOR;
-        let textHaloRadius = style.textHaloRadius || 0;
+        const textHaloRadius = style.textHaloRadius || 0;
         let textHaloOpacity = style.textHaloOpacity;
         if (!isNumber(textHaloOpacity)) {
             textHaloOpacity = 1;

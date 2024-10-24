@@ -1,5 +1,5 @@
 import { DEFAULT_TEXT_SIZE } from '../../../core/Constants';
-import { isNumber, isArrayHasData, getValueOrDefault, getAlignPoint, now, pushIn, } from '../../../core/util';
+import { isNumber, isArrayHasData, getValueOrDefault, getAlignPoint } from '../../../core/util';
 import Point from '../../../geo/Point';
 import PointExtent from '../../../geo/PointExtent';
 import { hasFunctionDefinition } from '../../../core/mapbox';
