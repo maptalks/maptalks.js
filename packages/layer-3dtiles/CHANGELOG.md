@@ -1,5 +1,16 @@
 # @maptalks/3dtiles
 
+## 0.99.0
+
+### Minor Changes
+
+- Mainly a bug fix version with some minor features in Geo3DTilesLayer and VectorTileLayer
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gltf-loader@0.98.3
+
 ## 0.98.2
 
 ### Patch Changes

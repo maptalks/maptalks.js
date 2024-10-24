@@ -1,5 +1,11 @@
 # @maptalks/transcoders.crn
 
+## 0.98.3
+
+### Patch Changes
+
+- Mainly a bug fix version with some minor features in Geo3DTilesLayer and VectorTileLayer
+
 ## 0.98.2
 
 ### Patch Changes

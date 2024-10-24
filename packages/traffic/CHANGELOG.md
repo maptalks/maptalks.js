@@ -1,5 +1,13 @@
 # @maptalks/traffic
 
+## 0.98.3
+
+### Patch Changes
+
+- Mainly a bug fix version with some minor features in Geo3DTilesLayer and VectorTileLayer
+- Updated dependencies
+  - @maptalks/gltf-layer@0.98.3
+
 ## 0.98.2
 
 ### Patch Changes

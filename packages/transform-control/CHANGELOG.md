@@ -1,5 +1,18 @@
 # @maptalks/transform-control
 
+## 0.99.0
+
+### Minor Changes
+
+- Mainly a bug fix version with some minor features in Geo3DTilesLayer and VectorTileLayer
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.99.0
+  - @maptalks/gltf-loader@0.98.3
+  - @maptalks/gltf-layer@0.98.3
+
 ## 0.98.5
 
 ### Patch Changes

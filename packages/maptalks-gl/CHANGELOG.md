@@ -1,5 +1,22 @@
 # maptalks-gl
 
+## 0.100.0
+
+### Minor Changes
+
+- Mainly a bug fix version with some minor features in Geo3DTilesLayer and VectorTileLayer
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.99.0
+  - @maptalks/3dtiles@0.99.0
+  - @maptalks/transform-control@0.99.0
+  - @maptalks/vt@0.98.0
+  - @maptalks/analysis@0.98.3
+  - @maptalks/gltf-layer@0.98.3
+  - @maptalks/video-layer@0.98.3
+
 ## 0.99.2
 
 ### Patch Changes

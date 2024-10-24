@@ -1,5 +1,17 @@
 # @maptalks/vt
 
+## 0.98.0
+
+### Minor Changes
+
+- Mainly a bug fix version with some minor features in Geo3DTilesLayer and VectorTileLayer
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.99.0
+  - @maptalks/vt-plugin@0.96.3
+
 ## 0.97.2
 
 ### Patch Changes

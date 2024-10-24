@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/3dtiles",
-  "version": "0.98.2",
+  "version": "0.99.0",
   "description": "3d tiles layer for maptalks",
   "main": "dist/maptalks.3dtiles.js",
   "module": "dist/maptalks.3dtiles.es.js",
