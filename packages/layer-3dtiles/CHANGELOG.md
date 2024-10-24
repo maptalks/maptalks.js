@@ -1,5 +1,11 @@
 # @maptalks/3dtiles
 
+## 0.100.0
+
+### Minor Changes
+
+- A version fix
+
 ## 0.99.0
 
 ### Minor Changes

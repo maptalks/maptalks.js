@@ -1,5 +1,12 @@
 # @maptalks/traffic
 
+## 0.98.4
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gltf-layer@0.99.0
+
 ## 0.98.3
 
 ### Patch Changes
