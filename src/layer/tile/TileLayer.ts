@@ -1693,7 +1693,7 @@ export type TileLayerOptionsType = LayerOptionsType & {
     maxCacheSize?: number;
     cascadeTiles?: boolean;
     zoomOffset?: number;
-    reloadErrorTileFunction?: (layer: TileLayer, renderer: TileLayerCanvasRenderer, tileImage: Tile['image'], tileInfo: Tile['info']) => void;
+    reloadErrorTileFunction?: (layer: TileLayer, renderer: TileLayerCanvasRenderer, tileInfo: Tile['info'], tileImage: Tile['image']) => void;
     // tileRetryCount?: number;
     errorUrl?: string;
     customTags?: Record<string, any>;
