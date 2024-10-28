@@ -27,6 +27,8 @@ module.exports = [
                 compress: {
                     pure_getters: true
                 },
+                // three.js 151-160 needs constructor.name to decide if isWebGL2
+                keep_classnames: true,
                 output: {
                     ecma: 2017,
                     // keep_quoted_props: true,
