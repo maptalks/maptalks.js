@@ -585,24 +585,24 @@ export default class GroupGLLayer extends maptalks.Layer {
     }
 
     // 结果需要与queryTerrain统一起来
-    queryTerrainAtPoint(containerPoint: maptalks.Point) {
+    queryTerrainAtPoint(containerPoint: maptalks.Point, options: any) {
         if (!this._terrainLayer) {
             return null;
         }
         const terrainLayer = this._terrainLayer as any;
         const terrainRenderer = terrainLayer.getRenderer();
         const meshes = terrainRenderer.getAnalysisMeshes();
-        return this._queryRayCast(containerPoint, meshes);
+        return this._queryRayCast(containerPoint, meshes, options);
     }
 
-    query3DTilesAtPoint(containerPoint: maptalks.Point) {
+    query3DTilesAtPoint(containerPoint: maptalks.Point, options: any) {
         const layers = this._getLayers();
         const tilesLayers = layers.filter(layer => layer && (layer as any).isGeo3DTilesLayer);
         if (!tilesLayers.length) {
             return null;
         }
 
-        const meshes = []
+        const meshes = [];
         for (let i = 0; i < tilesLayers.length; i++) {
             const renderer = tilesLayers[i].getRenderer() as any;
             if (!renderer) {
@@ -611,15 +611,15 @@ export default class GroupGLLayer extends maptalks.Layer {
             const analysisMeshes = renderer.getAnalysisMeshes();
             meshes.push(...analysisMeshes);
         }
-        return this._queryRayCast(containerPoint, meshes);
+        return this._queryRayCast(containerPoint, meshes, options);
     }
 
-    _queryRayCast(containerPoint: maptalks.Point, meshes: any[]) {
+    _queryRayCast(containerPoint: maptalks.Point, meshes: any[], options) {
         const map = this.getMap();
         const glRes = map.getGLRes();
         map.getContainerPointRay(coord0, coord1, containerPoint);
         const raycaster = new RayCaster(coord0, coord1, false);
-        const results = raycaster.test(meshes, map);
+        const results = raycaster.test(meshes, map, options);
 
         const coordinates = [];
         results.forEach(result => {

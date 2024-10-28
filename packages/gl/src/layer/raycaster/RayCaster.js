@@ -23,7 +23,8 @@ export default class RayCaster {
         this._to = Array.isArray(to) ? new Coordinate(to) : to;
     }
 
-    test(meshes, map) {
+    test(meshes, map, options = {}) {
+        const count = options.count || 0;
         const results = [];
         let from = this._from;
         let to = this._to;
@@ -47,7 +48,7 @@ export default class RayCaster {
                 continue;
             }
             const matrix = mat4.multiply(EMPTY_MAT, localTransform, mesh.positionMatrix);
-            const coordinates = this._testMesh(mesh, ray, map, positions, altitudes, geoIndices, geometry.desc.positionSize, matrix);
+            const coordinates = this._testMesh(mesh, ray, map, positions, altitudes, geoIndices, geometry.desc.positionSize, matrix, count);
             if (coordinates) {
                 // const { coordinate, indices } = intersect;
                 const result = {
@@ -55,12 +56,15 @@ export default class RayCaster {
                     coordinates
                 };
                 results.push(result);
+                if (count !== 0 && results.length >= count) {
+                    break;
+                }
             }
         }
         return results;
     }
 
-    _testMesh(mesh, ray, map, positions, altitudes, indices, dim, matrix) {
+    _testMesh(mesh, ray, map, positions, altitudes, indices, dim, matrix, count) {
         const coordinates = [];
         for (let j = 0; j < indices.length; j += 3) {
             if (j > mesh.properties.skirtOffset) {
@@ -91,6 +95,9 @@ export default class RayCaster {
                     indices: [a, b, c],
                     normal: vec3.cross([], vAB, vAC)
                 });
+                if (count !== 0 && coordinates.length >= count) {
+                    break;
+                }
             }
         }
         return coordinates.length ? coordinates : null;
