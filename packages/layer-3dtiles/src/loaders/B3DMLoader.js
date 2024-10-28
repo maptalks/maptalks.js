@@ -53,13 +53,18 @@ export default class B3DMLoader {
             return Promise.resolve(components);
         }
         const rootPath = url.substring(0, url.lastIndexOf('/'));
-        const loader = new this._loaderCtor(rootPath, components.glb, {
-            transferable: true,
-            requestImage: this._requestImage,
-            decoders: this._decoders,
-            supportedFormats: this._supportedFormats,
-            maxTextureSize
-        });
+        let loader;
+        try {
+            loader = new this._loaderCtor(rootPath, components.glb, {
+                transferable: true,
+                requestImage: this._requestImage,
+                decoders: this._decoders,
+                supportedFormats: this._supportedFormats,
+                maxTextureSize
+            });
+        } catch (e) {
+            return Promise.resolve({ error: e });
+        }
 
         return loader.load({ skipAttributeTransform: false }).then(gltf => {
             // 相同url的geometry会缓存在MeshPainter中，不会重复创建

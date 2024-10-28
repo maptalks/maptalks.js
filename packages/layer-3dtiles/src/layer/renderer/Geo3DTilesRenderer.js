@@ -592,7 +592,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
 
     getShadowMeshes() {
         if (!this.painter) {
-            return;
+            return [];
         }
         const meshes = [];
         const b3dmMeshes = this.painter.getCurrentB3DMMeshes();

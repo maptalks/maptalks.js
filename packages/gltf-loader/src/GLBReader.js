@@ -49,7 +49,7 @@ export default class GLBReader {
         let json, glbByteLength, glbOffset;
         const chunkView = new DataView(glb, bufOffset + BINARY_EXTENSION_HEADER_LENGTH);
         let chunkIndex = 0;
-        while (chunkIndex < chunkView.byteLength) {
+        while (chunkIndex + 8 < chunkView.byteLength) {
             const chunkLength = chunkView.getUint32(chunkIndex, true);
             chunkIndex += 4;
             const chunkType = chunkView.getUint32(chunkIndex, true);

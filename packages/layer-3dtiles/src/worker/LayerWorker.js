@@ -264,13 +264,19 @@ export default class BaseLayerWorker {
             }
             const rootPath = url.substring(0, url.lastIndexOf('/'));
             const gltfContent = arraybuffer instanceof ArrayBuffer && { buffer: arraybuffer, byteOffset: 0, byteLength: arraybuffer.byteLength } || arraybuffer;
-            const loader = new GLTFLoader(rootPath, gltfContent, {
-                transferable: true,
-                requestImage: this._bindedRequestImage,
-                decoders: this._decoders,
-                supportedFormats: this._supportedFormats,
-                maxTextureSize: service.maxTextureSize || DEFAULT_MAX_TEXTURE_SIZE
-            });
+            let loader;
+            try {
+                loader = new GLTFLoader(rootPath, gltfContent, {
+                    transferable: true,
+                    requestImage: this._bindedRequestImage,
+                    decoders: this._decoders,
+                    supportedFormats: this._supportedFormats,
+                    maxTextureSize: service.maxTextureSize || DEFAULT_MAX_TEXTURE_SIZE
+                });
+            } catch (e) {
+                cb(e);
+            }
+
             loader.load({ skipAttributeTransform: false }).then(gltf => {
                 gltf.url = url;
                 this._processGLTF(gltf, null, params);
