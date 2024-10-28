@@ -6,16 +6,15 @@
   "scripts": {
     "clean": "turbo run clean",
     "dev": "turbo run dev",
-    "build": "turbo run build",
+    "build": "turbo run build --filter=maptalks-gl",
+    "build-all": "turbo run build",
     "build-dev": "turbo run build-dev*",
     "lint": "turbo run lint",
     "prettier": "prettier --parser=typescript --write **/*.{js,ts,md}",
     "test": "turbo run test",
     "changeset": "changeset",
     "changeset-version": "changeset version",
-    "release": "pnpm build && changeset publish",
-    "changeset-version-snapshot": "changeset version --snaphot",
-    "release-snapshot": "pnpm build && changeset publish --no-git-tag --snapshot --tag snapshot"
+    "release": "pnpm build && changeset publish"
   },
   "repository": {
     "type": "git",
