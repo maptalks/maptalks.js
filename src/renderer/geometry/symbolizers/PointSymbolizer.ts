@@ -146,6 +146,9 @@ abstract class PointSymbolizer extends CanvasSymbolizer {
         const map = this.getMap();
         let p0 = rotations[i][0],
             p1 = rotations[i][1];
+        if(!p0 || !p1){
+            return r;
+        }
         if (map.isTransforming()) {
             const glRes = map.getGLRes();
             p0 = map._pointAtResToContainerPoint(rotations[i][0], glRes, 0, TEMP_POINT0);
