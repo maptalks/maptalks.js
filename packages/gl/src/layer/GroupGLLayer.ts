@@ -592,7 +592,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         const terrainLayer = this._terrainLayer as any;
         const terrainRenderer = terrainLayer.getRenderer();
         const meshes = terrainRenderer.getAnalysisMeshes();
-        return this._queryRayCast(containerPoint, meshes, options);
+        return this._queryRayCast(containerPoint, meshes);
     }
 
     query3DTilesAtPoint(containerPoint: maptalks.Point) {

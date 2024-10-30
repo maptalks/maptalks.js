@@ -77,7 +77,7 @@ export function createIBLMaps(regl, config = {}) {
         // cube.destroy();
         // }
         // const lod = regl.hasExtension('EXT_shader_texture_lod') ? '1.0' : undefined;
-        const faces = getEnvmapPixels(regl, prefilterMap, size, false, config.environmentExposure);
+        const faces = getEnvmapPixels(regl, prefilterMap, size, false, config.environmentExposure, true);
         sh = coefficients(faces, size, size);
         const flatten = [];
         for (let i = 0; i < sh.length; i++) {
