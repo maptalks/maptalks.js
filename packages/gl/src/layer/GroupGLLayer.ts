@@ -602,16 +602,17 @@ export default class GroupGLLayer extends maptalks.Layer {
             return null;
         }
 
-        const meshes = [];
         for (let i = 0; i < tilesLayers.length; i++) {
             const renderer = tilesLayers[i].getRenderer() as any;
             if (!renderer) {
                 continue;
             }
-            const analysisMeshes = renderer.getAnalysisMeshes();
-            meshes.push(...analysisMeshes);
+            const hits = (tilesLayers[i] as any).identifyAtPoint(containerPoint);
+            if (hits.length) {
+                return new maptalks.Coordinate(hits[0].coordinate);
+            }
         }
-        return this._queryRayCast(containerPoint, meshes);
+        return null;
     }
 
     _queryRayCast(containerPoint: maptalks.Point, meshes: any[]) {
