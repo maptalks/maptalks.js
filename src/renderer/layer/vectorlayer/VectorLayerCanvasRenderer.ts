@@ -8,7 +8,7 @@ import * as vec3 from '../../../core/util/vec3';
 import Canvas from '../../../core/Canvas';
 import type { Painter, CollectionPainter } from '../../geometry';
 import { Point } from '../../../geo';
-import { Geometries } from '../../../geometry';
+import { Geometries, Marker } from '../../../geometry';
 import type { WithUndef } from '../../../types/typings';
 
 const TEMP_EXTENT = new PointExtent();
@@ -70,19 +70,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     setToRedraw(): this {
         super.setToRedraw();
         this._resetProgressiveRender();
-        this._resetGeosCollisionState();
         return this;
     }
 
-    _resetGeosCollisionState() {
-        const geos = this.layer._geoList || [];
-        for (let i = 0, len = geos.length; i < len; i++) {
-            const geo = geos[i];
-            if (geo.isPoint) {
-                geo._collided = false;
-            }
-        }
-    }
 
     //@internal
     _geoIsCollision(geo: GeoType, collisionIndex: any) {
@@ -378,8 +368,16 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     //@internal
     _collidesGeos() {
+        const geos = this._geosToDraw;
         const collision = this.layer.options['collision'];
         if (!collision) {
+            //reset points _collided
+            for (let i = 0, len = geos.length; i < len; i++) {
+                const geo = geos[i];
+                if (geo.isPoint) {
+                    (geo as Marker)._collided = false;
+                }
+            }
             return this;
         }
         const collisionScope = this.layer.options['collisionScope'];
@@ -387,11 +385,15 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (collisionScope === 'layer') {
             collisionIndex.clear();
         }
-        const geos = this._geosToDraw;
         this._geosToDraw = [];
         for (let i = 0, len = geos.length; i < len; i++) {
-            if (this._geoIsCollision(geos[i], collisionIndex)) {
-                continue;
+            const geo = geos[i];
+            if (geo.isPoint) {
+                (geo as Marker)._collided = false;
+                if (this._geoIsCollision(geo, collisionIndex)) {
+                    (geo as Marker)._collided = true;
+                    continue;
+                }
             }
             this._geosToDraw.push(geos[i]);
         }
