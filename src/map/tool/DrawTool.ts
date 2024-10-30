@@ -634,6 +634,9 @@ class DrawTool extends MapTool {
      */
     //@internal
     _mouseMoveHandler(event) {
+        if(!event?.coordinate) {
+            return
+        }
         if (!this.options.interactive) {
             return this;
         }
