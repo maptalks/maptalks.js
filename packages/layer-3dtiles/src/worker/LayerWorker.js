@@ -131,7 +131,7 @@ export default class BaseLayerWorker {
                 if (service.createNormalIfMissed) {
                     this._createGLTFMissedAttrs(i3sData.gltf);
                 }
-                if (service.compressGeometry) {
+                if (ifCompressGeometry(service)) {
                     this._compressAttrFloat32ToInt16(i3sData.gltf);
                 }
                 cb(null, i3sData, transferables);
@@ -218,7 +218,7 @@ export default class BaseLayerWorker {
                 if (service.createNormalIfMissed) {
                     this._createGLTFMissedAttrs(content.gltf);
                 }
-                if (service.compressGeometry) {
+                if (ifCompressGeometry(service)) {
                     this._compressAttrFloat32ToInt16(content.gltf);
                 }
                 cb(null, content, transferables);
@@ -241,7 +241,7 @@ export default class BaseLayerWorker {
                 if (service.createNormalIfMissed) {
                     this._createGLTFMissedAttrs(i3dm.gltf);
                 }
-                if (service.compressGeometry) {
+                if (ifCompressGeometry(service)) {
                     this._compressAttrFloat32ToInt16(i3dm.gltf);
                 }
                 cb(null, i3dm, transferables);
@@ -251,7 +251,7 @@ export default class BaseLayerWorker {
             promise.then(tile => {
                 const { content: cmpt, transferables } = this._processCMPT(tile, params);
                 this._createCMPTMissedAttrs(cmpt, service);
-                if (service.compressGeometry) {
+                if (ifCompressGeometry(service)) {
                     this._compressCMPTContent(cmpt);
                 }
                 cb(null, cmpt, transferables);
@@ -283,7 +283,7 @@ export default class BaseLayerWorker {
                 if (service.createNormalIfMissed) {
                     this._createGLTFMissedAttrs(gltf);
                 }
-                if (service.compressGeometry) {
+                if (ifCompressGeometry(service)) {
                     this._compressAttrFloat32ToInt16(gltf);
                 }
                 cb(null, { magic: 'gltf', gltf }, loader.transferables);
@@ -1422,4 +1422,8 @@ function isUnlit(primitive, gltf) {
     const material = gltf.materials[primitive.material];
     const isUnlit = material && material.extensions && material.extensions['KHR_materials_unlit'];
     return isUnlit;
+}
+
+function ifCompressGeometry(service) {
+    return service.compressGeometry === undefined || service.compressGeometry;
 }
