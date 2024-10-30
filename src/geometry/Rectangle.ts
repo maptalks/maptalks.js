@@ -336,7 +336,7 @@ export class Rectangle extends Polygon {
         return {
             'feature': feature,
             'subType': 'Rectangle',
-            'coordinates': [nw.x, nw.y],
+            'coordinates': nw.toArray(),
             'width': this.getWidth(),
             'height': this.getHeight()
         };

@@ -304,7 +304,7 @@ export class Ellipse extends CenterMixin(Polygon) {
         return {
             'feature': feature,
             'subType': 'Ellipse',
-            'coordinates': [center.x, center.y],
+            'coordinates': center.toArray(),
             'width': this.getWidth(),
             'height': this.getHeight()
         };
