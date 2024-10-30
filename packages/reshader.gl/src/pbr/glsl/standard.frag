@@ -1,5 +1,5 @@
 #define PI 3.141593
-#define RECIPROCAL_PI 0.3183098861837907
+#define RECIPROCAL_PI 1.0
 #if __VERSION__ == 100
     #if defined(GL_EXT_shader_texture_lod)
         #extension GL_EXT_shader_texture_lod : enable
