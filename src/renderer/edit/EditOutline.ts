@@ -22,7 +22,7 @@ export default class EditOutline {
         this.target = target;
         target.once('remove', this.delete, this);
         this.map = map;
-        this.options = options;
+        this.options = options || {};
         this.addTo(map);
     }
 
