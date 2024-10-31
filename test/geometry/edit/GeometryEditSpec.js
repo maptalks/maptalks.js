@@ -533,5 +533,29 @@ describe('Geometry.Edit', function () {
 
     });
 
+    it('#2452 EditOutline.options null defense', function (done) {
+
+        const point = new maptalks.Marker([-0.131049, 51.498568, 10]).addTo(layer);
+
+        const line = new maptalks.LineString(
+            [
+                [-0.131049, 51.498568, 10],
+                [-0.107049, 51.498568, 20],
+                [-0.107049, 51.493568, 49],
+                [-0.131049, 51.493568, 22],
+                [-0.131049, 51.498568, 0]
+            ]
+        ).addTo(layer);
+
+        map.setCenter(point.getCenter());
+
+        point.startEdit({});
+        line.startEdit({});
+
+        done();
+
+
+    });
+
 
 });

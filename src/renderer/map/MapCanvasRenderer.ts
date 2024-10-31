@@ -1144,8 +1144,8 @@ class MapCanvasRenderer extends MapRenderer {
 
     sortTopElements() {
         this._tops = this._tops.sort((top1, top2) => {
-            const zIndex1 = top1.options.zIndex || 0;
-            const zIndex2 = top2.options.zIndex || 0;
+            const zIndex1 = (top1.options || {}).zIndex || 0;
+            const zIndex2 = (top2.options || {}).zIndex || 0;
             return zIndex2 - zIndex1;
         });
     }
