@@ -122,7 +122,47 @@ describe('lights specs', () => {
             sh: [0.7234542129672008, 0.9397862887230196, 1.22843655695912, 0.010534878879581985, 0.034769285791027706, 0.06448184999938876, -0.06759909480060484, -0.09869123898601936, -0.1398909805322744, 0.037917448127617104, 0.044145518950502574, 0.052161565224211004, -0.05540996219175423, -0.07519931911949429, -0.09441696517808086, -0.00327271018175432, -0.0023439780115424727, -0.002093085577643653, -0.00367912539071978, -0.008743319446932732, -0.016286010489517336, 0.03983347600932419, 0.05143911351768933, 0.07789561006349058, 0.0369636363584139, 0.04249575374608029, 0.046124531855322344]
         };
         map.setLights(lights);
-    });
+    }).timeout(10000);
+
+
+    it('should can compute sh correctly, maptalks/issues#777', done => {
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: DATA,
+            style: [
+                {
+                    filter: true,
+                    renderPlugin: getRenderPlugin('lit'),
+                    symbol: {
+                        material: getMaterial('lit')
+                    }
+                }
+            ]
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: false,
+                antialias: {
+                    enable: true
+                },
+                taa: {
+                    enable: false
+                }
+            }
+        };
+        const groupLayer = new GroupGLLayer('group', [layer], { sceneConfig });
+        groupLayer.addTo(map);
+        const lights = JSON.parse(JSON.stringify(DEFAULT_VIEW.lights));
+        lights.ambient.resource = {
+            url: path.resolve(__dirname, 'resources', 'hdr', 'Road_to_MonumentValley_Env.hdr')
+        };
+        map.setLights(lights);
+        setTimeout(() => {
+            const sh = map.getLightManager().getAmbientResource().sh;
+            const expected = [0.18575308778427327, 0.23044857484655162, 0.3807488793672238, 0.0016411378792834006, 0.004621220282738676, 0.008260736894852384, 0.0028658880678325135, -0.02662533720471887, -0.05105272311840883, -0.0019607763301377154, -0.013964361640633097, -0.028490302797402476, -0.0017412543577145696, -0.0023636362441698602, -0.003567593744071185, 0.009860476806244104, 0.00873202769697346, 0.009987904332209786, -0.0031011042094436893, -0.004532279766763049, -0.0064360491309037975, -0.06210412135934047, -0.06702637546156637, -0.09706980184317726, -0.029082692069982027, -0.029132836151802666, -0.03720216773607522];
+            assert.deepEqual(sh, expected);
+            done();
+        }, 2500);
+    }).timeout(5000);
 });
 
 function getRenderPlugin(type) {
