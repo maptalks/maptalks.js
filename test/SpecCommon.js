@@ -348,4 +348,13 @@ function mapMousemove(map, steps, callback) {
         }
     })
 }
+
+function coordinate2PointWidthAltitude(map, coordinate) {
+    const glRes = map.getGLRes();
+    //coordinates to glpoint
+    const renderPoints = map.coordToPointAtRes(coordinate, glRes);
+    const altitude = coordinate.z || 0;
+    const point = map._pointAtResToContainerPoint(renderPoints, glRes, altitude);
+    return point;
+}
 /*eslint-enable no-unused-vars */
