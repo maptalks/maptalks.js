@@ -48,6 +48,6 @@
     "@maptalks/transform-control": "workspace:*",
     "@maptalks/video-layer": "workspace:*",
     "@maptalks/vt": "workspace:*",
-    "maptalks": "^1.0.0-rc.39"
+    "maptalks": "^1.0.0-rc.40"
   }
 }
