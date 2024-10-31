@@ -1,5 +1,13 @@
 # @maptalks/reshader.gl
 
+## 0.101.1
+
+### Patch Changes
+
+- 3DTiles and rendering fixes
+- Updated dependencies
+  - @maptalks/gltf-loader@0.98.4
+
 ## 0.101.0
 
 ### Minor Changes

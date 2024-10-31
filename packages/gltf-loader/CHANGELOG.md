@@ -1,5 +1,11 @@
 # @maptalks/gltf-loader
 
+## 0.98.4
+
+### Patch Changes
+
+- 3DTiles and rendering fixes
+
 ## 0.98.3
 
 ### Patch Changes

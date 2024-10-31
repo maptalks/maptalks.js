@@ -1,5 +1,13 @@
 # @maptalks/3dtiles
 
+## 0.102.1
+
+### Patch Changes
+
+- 3DTiles and rendering fixes
+- Updated dependencies
+  - @maptalks/gltf-loader@0.98.4
+
 ## 0.102.0
 
 ### Minor Changes
