@@ -15,7 +15,7 @@ const supportWASM = (() => {
             if (module instanceof WebAssembly.Module)
                 return new WebAssembly.Instance(module) instanceof WebAssembly.Instance;
         }
-    /* eslint-disable no-empty */
+        /* eslint-disable no-empty */
     } catch (e) {
     }
     /* eslint-enable no-empty */
@@ -86,7 +86,7 @@ export function getI3SNodeInfo(url, nodeCache, regl, enableDraco, forceDraco) {
         if (isESLPK) {
             geoUrl += '.bin';
         }
-        const meshInfo = { geometry: { url: geoUrl, info: nodeCache.layerScene.store.defaultGeometrySchema }};
+        const meshInfo = { geometry: { url: geoUrl, info: nodeCache.layerScene.store.defaultGeometrySchema } };
         let textureUrl = node.textureData && node.textureData[0] && node.textureData[0].href;
         if (textureUrl) {
             const mimeType = nodeCache.layerScene.store.textureEncoding[0];
@@ -101,7 +101,7 @@ export function getI3SNodeInfo(url, nodeCache, regl, enableDraco, forceDraco) {
             }
             const matInfo = {
                 pbrMetallicRoughness: {
-                    baseColorTexture:{
+                    baseColorTexture: {
                         url: baseUrl + `/nodes/${node.id}/` + textureUrl,
                         factor: 1,
                         format,
@@ -118,6 +118,8 @@ export function getI3SNodeInfo(url, nodeCache, regl, enableDraco, forceDraco) {
         geometry = node.mesh.geometry;
         material = node.mesh.material;
         const geoDefinitions = nodeCache.layerScene.geometryDefinitions;
+        //read texture encode array
+        const textureEncoding = (nodeCache.layerScene.store || {}).textureEncoding;
         const geoDef = geoDefinitions[geometry.definition];
         const { geometryBuffers } = geoDef;
         // geometryBuffers[1] is the draco version
@@ -128,7 +130,7 @@ export function getI3SNodeInfo(url, nodeCache, regl, enableDraco, forceDraco) {
         if (isESLPK) {
             geoUrl += '.bin';
         }
-        const meshInfo = { geometry: { url: geoUrl, info: geometryInfo }};
+        const meshInfo = { geometry: { url: geoUrl, info: geometryInfo } };
         if (forceDraco && supportWASM && hasCompression && !transcoders['draco']) {
             throw new Error('Must import @maptalks/transcoder.draco to load i3s draco compressed geometry');
         }
@@ -142,7 +144,7 @@ export function getI3SNodeInfo(url, nodeCache, regl, enableDraco, forceDraco) {
         let materialInfo;
         if (materialDefinitions) {
             const resource = material.resource;
-            materialInfo = parseMaterial(materialDef, textureSetDefinitions, baseUrl, resource, regl, nodeCache.layerScene.eslpk);
+            materialInfo = parseMaterial(textureEncoding, materialDef, textureSetDefinitions, baseUrl, resource, regl, nodeCache.layerScene.eslpk);
         } else {
             materialInfo = {
                 pbrMetallicRoughness: {
@@ -165,20 +167,20 @@ export function getI3SNodeInfo(url, nodeCache, regl, enableDraco, forceDraco) {
     };
 }
 
-function parseMaterial(materialDefinition, textureSetDefinitions, baseUrl, nodeIndex, regl, isESLPK) {
+function parseMaterial(textureEncoding, materialDefinition, textureSetDefinitions, baseUrl, nodeIndex, regl, isESLPK) {
     const matInfo = JSON.parse(JSON.stringify(materialDefinition));
 
-    resolveTextures(matInfo, textureSetDefinitions, baseUrl, nodeIndex, regl, isESLPK);
+    resolveTextures(textureEncoding, matInfo, textureSetDefinitions, baseUrl, nodeIndex, regl, isESLPK);
     return matInfo;
 }
 
-function resolveTextures(matInfo, textureSetDefinitions, baseUrl, resource, regl, isESLPK) {
+function resolveTextures(textureEncoding, matInfo, textureSetDefinitions, baseUrl, resource, regl, isESLPK) {
     for (const p in matInfo) {
         // is a texture
         if (matInfo[p] && matInfo[p].textureSetDefinitionId >= 0) {
             const texDef = textureSetDefinitions[matInfo[p].textureSetDefinitionId];
             const mimeType = 'images/' + texDef.formats[0].format;
-            const format = getSupportedTexture(texDef.formats, regl);
+            const format = getSupportedTexture(texDef.formats, regl, textureEncoding);
             const texture = {
                 url: baseUrl + `/nodes/${resource}/textures/${format.name}`,
                 factor: matInfo[p].factor === undefined ? 1 : matInfo[p].factor,
@@ -187,25 +189,48 @@ function resolveTextures(matInfo, textureSetDefinitions, baseUrl, resource, regl
             };
             if (isESLPK) {
                 let ext = '';
-                switch(format.format) {
-                case 'dds':
-                    ext = 'bin.dds';
-                    break;
-                case 'jpg':
-                case 'png':
-                    ext = format.format;
-                    break;
+                switch (format.format) {
+                    case 'dds':
+                        ext = 'bin.dds';
+                        break;
+                    case 'jpg':
+                    case 'png':
+                        ext = format.format;
+                        break;
                 }
                 texture.url += '.' + ext;
             }
             matInfo[p] = texture;
         } else if (isObject(matInfo[p])) {
-            resolveTextures(matInfo[p], textureSetDefinitions, baseUrl, resource, regl, isESLPK);
+            resolveTextures(textureEncoding, matInfo[p], textureSetDefinitions, baseUrl, resource, regl, isESLPK);
         }
     }
 }
 
-function getSupportedTexture(formats, regl) {
+const textureEnCodingMap = {
+    "image/jpeg": 'jpg',
+    "image/jpg": 'jpg',
+    "image/png": 'jpg',
+    "image/vnd-ms.dds": "dds",
+    "image/ktx": 'jpg'
+};
+
+function getSupportedTexture(formats, regl, textureEncoding) {
+    if (textureEncoding && textureEncoding.length) {
+        const textureEncode = textureEncoding[textureEncoding.length - 1];
+        const textureFormat = textureEnCodingMap[textureEncode];
+        if (!textureFormat) {
+            console.error(`i3s not find texture format type from:`, textureEnCodingMap, 'current textureEncoding:', textureEncode);
+        } else {
+            for (let i = 0, len = formats.length; i < len; i++) {
+                const format = formats[i].format;
+                if (format === textureFormat) {
+                    return formats[i];
+                }
+            }
+        }
+
+    }
     // for (let i = formats.length - 1; i >= 0; i--) {
     for (let i = 0; i <= formats.length; i++) {
         const format = formats[i].format;

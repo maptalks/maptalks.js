@@ -108,7 +108,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         this.painter.prepareRender(parentContext);
         this._consumeI3SQueue();
         this._consumeModelQueue(parentContext);
-        const { selectedTiles, leaves, requests} = this._selectTiles(root, tiles);
+        const { selectedTiles, leaves, requests } = this._selectTiles(root, tiles);
 
         if (requests.length) {
             this.loadTiles(requests);
@@ -344,15 +344,15 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         this.tileCache.shrink();
     }
 
-    onDrawTileStart() {}
-    onDrawTileEnd() {}
+    onDrawTileStart() { }
+    onDrawTileEnd() { }
 
     loadTiles(queue) {
         for (let i = 0, l = queue.length; i < l; i++) {
             const node = queue[i];
             // tile image's loading may not be async
             this.tilesLoading[node.id] = {
-                current : true,
+                current: true,
                 node
             };
             this.loadTile(node);
@@ -396,7 +396,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             url = encodeSuperMapURI(url, tile.baseUrl);
         }
         const requestUrl = this.layer.getTileUrl(url, this.layer._roots[tile._rootIdx]);
-        const params = { url: requestUrl, arraybuffer, rootIdx : tile._rootIdx, upAxis : tile._upAxis, transform: tile.matrix, supportedFormats };
+        const params = { url: requestUrl, arraybuffer, rootIdx: tile._rootIdx, upAxis: tile._upAxis, transform: tile.matrix, supportedFormats };
 
         if (isI3SMesh(url)) {
             const nodeCache = this._i3sNodeCache[tile._rootIdx];
@@ -614,8 +614,8 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
     _addErrorToCache(node, err) {
         const tileData = {
             // image : data,
-            loadTime : maptalks.Util.now(),
-            current : true,
+            loadTime: maptalks.Util.now(),
+            current: true,
             error: err,
             node
         };
@@ -626,8 +626,8 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
     _addTileToCache(node) {
         const tileData = {
             // image : data,
-            loadTime : maptalks.Util.now(),
-            current : true,
+            loadTime: maptalks.Util.now(),
+            current: true,
             node
         };
         tileData.renderer = this;
@@ -658,8 +658,8 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         const attributes = layer.options.glOptions || {
             alpha: true,
             depth: true,
-            stencil : true,
-            preserveDrawingBuffer : true,
+            stencil: true,
+            preserveDrawingBuffer: true,
             antialias: layer.options.antialias,
         };
         const inGroup = this.canvas.gl && this.canvas.gl.wrap;
@@ -671,12 +671,12 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             this.gl = this._createGLContext(this.canvas, attributes);
         }
         this.regl = this.regl || createREGL({
-            gl : this.gl,
+            gl: this.gl,
             attributes,
-            extensions : [
+            extensions: [
                 'OES_element_index_uint'
             ],
-            optionalExtensions : layer.options['optionalExtensions'] || []
+            optionalExtensions: layer.options['optionalExtensions'] || []
         });
         this.prepareWorker();
         if (inGroup) {
@@ -751,7 +751,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             this.regl.clear({
                 color: [0, 0, 0, 0],
                 depth: 1,
-                stencil : 0
+                stencil: 0
             });
         }
 
@@ -812,7 +812,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         for (let i = 0; i < names.length; ++i) {
             try {
                 context = canvas.getContext(names[i], options);
-            } catch (e) {}
+            } catch (e) { }
             if (context) {
                 break;
             }
@@ -860,7 +860,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             promises.push(Ajax.getJSON(url, fetchOptions).then(json => {
                 delete this._i3sRequests[url];
                 const nodeCache = this._i3sNodeCache[rootIdx];
-                if (!nodeCache)  {
+                if (!nodeCache) {
                     this.setToRedraw();
                     return;
                 }
@@ -918,6 +918,10 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         nodeCache.version = +(service.i3sVersion || tileset.store.version);
         if (tileset.spatialReference && (!tileset.spatialReference.wkid || tileset.spatialReference.wkid !== 4326)) {
             console.warn('i3s has a spatialReference other than 4326.', tileset.spatialReference);
+        }
+        if (tileset.spatialReference && tileset.spatialReference.wkid === 4490) {
+            console.warn('i3s spatialReference is 4490,auto set spatialReference to 4326,This may cause some location issues, please ensure that your service is 4326');
+            tileset.spatialReference.wkid = 4326;
         }
         nodeCache.projection = tileset.spatialReference;
         parseI3SJSON(this.layer, tileset, rootIdx, service, url, nodeCache, this._fnFetchNodepages).then(json => {
