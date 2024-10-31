@@ -20,8 +20,7 @@ const options = {
     }
 };
 
-class Compass extends Control {
-    options: CompassOptionsType;
+class Compass extends Control<CompassOptionsTypeSpec> {
     //@internal
     _compass: HTMLDivElement;
     //@internal
@@ -100,6 +99,8 @@ Map.addOnLoadHook(function () {
 
 export default Compass;
 
-export type CompassOptionsType = {
+export type CompassOptionsTypeSpec = {
     position: string | DomPositionType;
-} & ControlOptionsType;
+};
+
+export type CompassOptionsType = CompassOptionsTypeSpec & ControlOptionsType;
