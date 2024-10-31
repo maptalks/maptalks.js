@@ -68,13 +68,13 @@ export function fixHandlePointCoordinates(geometry: Geometry, vertex: Coordinate
     //屏幕坐标的偏移量
     const offset = point2.sub(point1);
     const containerPoint = dragContainerPoint.sub(offset);
-    const coordiantes = map.containerPointToCoord(containerPoint);
-    coordiantes.z = 0;
+    const coordinates = map.containerPointToCoord(containerPoint);
+    coordinates.z = 0;
     const isPoint = !geometry.getGeometries && geometry.isPoint;
     if (isPoint) {
-        coordiantes.z = altitude;
+        coordinates.z = altitude;
     }
-    return coordiantes;
+    return coordinates;
 
 
 }
