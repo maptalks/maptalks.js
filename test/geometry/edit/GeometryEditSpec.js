@@ -3,6 +3,27 @@ describe('Geometry.Edit', function () {
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
+
+
+    function dragVertext(coordinate, offset) {
+        var domPosition = GET_PAGE_POSITION(container);
+        var point = coordinate2PointWidthAltitude(map, coordinate).add(domPosition);
+        if (offset) {
+            point._add(offset);
+        }
+        happen.mousedown(eventContainer, {
+            'clientX': point.x,
+            'clientY': point.y
+        });
+        for (var i = 0; i < 10; i++) {
+            happen.mousemove(document, {
+                'clientX': point.x + i,
+                'clientY': point.y + i
+            });
+        }
+        happen.mouseup(document);
+    }
+
     function dragGeometry(geometry, offset) {
         var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(geometry.getCenter()).add(domPosition);
@@ -482,6 +503,34 @@ describe('Geometry.Edit', function () {
             expect(polygon.getCoordinates()[1].length).to.be(4);
             done();
         }, 100);
+    });
+
+    it('edit vertex width altitude', function (done) {
+        const line = new maptalks.LineString(
+            [
+                [-0.131049, 51.498568, 10],
+                [-0.107049, 51.498568, 20],
+                [-0.107049, 51.493568, 49],
+                [-0.131049, 51.493568, 22],
+                [-0.131049, 51.498568, 0]
+            ]
+        ).addTo(layer);
+
+        map.setCenter(line.getCenter());
+        //edit first vertex
+        const vertext = line.getCoordinates()[0];
+        setTimeout(() => {
+            line.startEdit({});
+            dragVertext(vertext);
+            setTimeout(() => {
+                line.endEdit();
+                const vertex1 = line.getCoordinates()[0];
+                expect(vertext.toArray()).not.to.be.eql(vertex1.toArray());
+                expect(vertext.z).to.be.eql(vertex1.z);
+                done();
+            }, 100);
+        }, 100);
+
     });
 
 

@@ -40,6 +40,7 @@ export default class EditHandle extends Eventable<any>(Class) {
     _img: any;
     //@internal
     _dragger: DragHandler;
+    paramOptions: Record<string, any>;
 
     constructor(target: GeometryEditor, map: Map, options: EditHandleOptions) {
         super(options);

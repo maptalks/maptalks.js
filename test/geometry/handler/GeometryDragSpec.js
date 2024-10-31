@@ -4,6 +4,7 @@ describe('Geometry.Drag', function () {
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
 
+
     function dragGeometry(geometry, isMove, offset) {
         var layer = map.getLayer('id').clear();
         map.setCenter(geometry.getFirstCoordinate());
@@ -12,38 +13,39 @@ describe('Geometry.Drag', function () {
         geometry.on('mousedown', spy);
 
         var domPosition = GET_PAGE_POSITION(container);
-        var point = map.coordinateToContainerPoint(geometry.getFirstCoordinate()).add(domPosition);
+        var point = coordinate2PointWidthAltitude(map, geometry.getFirstCoordinate()).add(domPosition);
         if (offset) {
             point._add(offset);
         }
 
         happen.mousedown(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
         expect(spy.called).to.be.ok();
         if (isMove === undefined || isMove) {
             for (var i = 0; i < 10; i++) {
                 happen.mousemove(document, {
-                    'clientX':point.x + i,
-                    'clientY':point.y + i
+                    'clientX': point.x + i,
+                    'clientY': point.y + i
                 });
             }
         }
         happen.mouseup(document);
     }
 
+
     function dragMap() {
         var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(map.getCenter()).add(domPosition).add(new maptalks.Point(30, 20));
         happen.mousedown(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
         for (var i = 0; i < 10; i++) {
             happen.mousemove(document, {
-                'clientX':point.x + i,
-                'clientY':point.y + i
+                'clientX': point.x + i,
+                'clientY': point.y + i
             });
         }
         happen.mouseup(document);
@@ -51,14 +53,14 @@ describe('Geometry.Drag', function () {
 
     beforeEach(function () {
         var setups = COMMON_CREATE_MAP(center, null, {
-            width : 800,
-            height : 600
+            width: 800,
+            height: 600
         });
         container = setups.container;
         map = setups.map;
         map.config('panAnimation', false);
         map.config('centerCross', true);
-        var layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true, 'enableAltitude' : true });
+        var layer = new maptalks.VectorLayer('id', { 'drawImmediate': true, 'enableAltitude': true });
         map.addLayer(layer);
         eventContainer = map.getPanels().canvasContainer;
     });
@@ -70,10 +72,10 @@ describe('Geometry.Drag', function () {
     describe('drag geometries', function () {
         it('in default, geometries cannot be dragged', function () {
             var marker = new maptalks.Marker(center, {
-                symbol : {
-                    markerType : 'ellipse',
-                    markerWidth : 20,
-                    markerHeight : 20
+                symbol: {
+                    markerType: 'ellipse',
+                    markerWidth: 20,
+                    markerHeight: 20
                 }
             });
             dragGeometry(marker);
@@ -82,11 +84,11 @@ describe('Geometry.Drag', function () {
 
         it('can drag a default marker', function () {
             var marker = new maptalks.Marker(center, {
-                draggable:true,
-                symbol : {
-                    markerType : 'ellipse',
-                    markerWidth : 20,
-                    markerHeight : 20
+                draggable: true,
+                symbol: {
+                    markerType: 'ellipse',
+                    markerWidth: 20,
+                    markerHeight: 20
                 }
             });
             dragGeometry(marker);
@@ -97,9 +99,9 @@ describe('Geometry.Drag', function () {
             this.timeout(8000);
             var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
             geometries[0].setSymbol({
-                markerType : 'ellipse',
-                markerWidth : 20,
-                markerHeight : 20
+                markerType: 'ellipse',
+                markerWidth: 20,
+                markerHeight: 20
             });
             for (var i = 0; i < geometries.length; i++) {
                 var geo = geometries[i];
@@ -117,11 +119,11 @@ describe('Geometry.Drag', function () {
         it('enable map draggable after dragging', function () {
             var center = map.getCenter();
             var marker = new maptalks.Marker(center, {
-                draggable:true,
-                symbol : {
-                    markerType : 'ellipse',
-                    markerWidth : 20,
-                    markerHeight : 20
+                draggable: true,
+                symbol: {
+                    markerType: 'ellipse',
+                    markerWidth: 20,
+                    markerHeight: 20
                 }
             });
             dragGeometry(marker);
@@ -133,11 +135,11 @@ describe('Geometry.Drag', function () {
         it('enable map draggable after dragging without moving', function () {
             var center = map.getCenter();
             var marker = new maptalks.Marker(center, {
-                draggable:true,
-                symbol : {
-                    markerType : 'ellipse',
-                    markerWidth : 20,
-                    markerHeight : 20
+                draggable: true,
+                symbol: {
+                    markerType: 'ellipse',
+                    markerWidth: 20,
+                    markerHeight: 20
                 }
             });
             dragGeometry(marker, false);
@@ -148,19 +150,19 @@ describe('Geometry.Drag', function () {
 
         it('can drag a GeometryCollection', function () {
             var marker = new maptalks.Marker(center, {
-                draggable:true,
-                symbol : {
-                    markerType : 'ellipse',
-                    markerWidth : 20,
-                    markerHeight : 20
+                draggable: true,
+                symbol: {
+                    markerType: 'ellipse',
+                    markerWidth: 20,
+                    markerHeight: 20
                 }
             });
             var marker2 = new maptalks.Marker(center.add(0.001, 0.001), {
-                draggable:true,
-                symbol : {
-                    markerType : 'ellipse',
-                    markerWidth : 20,
-                    markerHeight : 20
+                draggable: true,
+                symbol: {
+                    markerType: 'ellipse',
+                    markerWidth: 20,
+                    markerHeight: 20
                 }
             });
             var geometryCollection = new maptalks.GeometryCollection([marker, marker2], { draggable: true });
@@ -172,11 +174,11 @@ describe('Geometry.Drag', function () {
     describe('drag can be disable', function () {
         it('disables dragging', function () {
             var marker = new maptalks.Marker(center, {
-                draggable:false,
-                symbol : {
-                    markerType : 'ellipse',
-                    markerWidth : 20,
-                    markerHeight : 20
+                draggable: false,
+                symbol: {
+                    markerType: 'ellipse',
+                    markerWidth: 20,
+                    markerHeight: 20
                 }
             });
             dragGeometry(marker);
@@ -204,9 +206,9 @@ describe('Geometry.Drag', function () {
                 ]
             ];
             var multiPolygon = new maptalks.MultiPolygon(coordinates, {
-                draggable : true,
-                properties : {
-                    altitude : 50
+                draggable: true,
+                properties: {
+                    altitude: 50
                 }
             });
             map.setCenter(multiPolygon.getCenter());
@@ -217,14 +219,14 @@ describe('Geometry.Drag', function () {
         it('dragging marker', function () {
             map.setPitch(80);
             var marker = new maptalks.Marker(center, {
-                draggable : true,
-                symbol : {
-                    markerType : 'ellipse',
-                    markerWidth : 20,
-                    markerHeight : 20
+                draggable: true,
+                symbol: {
+                    markerType: 'ellipse',
+                    markerWidth: 20,
+                    markerHeight: 20
                 },
-                properties : {
-                    altitude : 50
+                properties: {
+                    altitude: 50
                 }
             });
             dragGeometry(marker, true, new maptalks.Point(0, -45));
@@ -236,21 +238,21 @@ describe('Geometry.Drag', function () {
 
     it('dragging a vector marker, #1570', function (done) {
         var marker = new maptalks.Marker(center, {
-            draggable : true,
+            draggable: true,
             dragShadow: true,
-            symbol : {
+            symbol: {
                 'markerType': 'ellipse',
-                  'markerFill': 'rgb(135,196,240)',
-                  'markerFillOpacity': 1,
-                  'markerLineColor': '#34495e',
-                  'markerLineWidth': 3,
-                  'markerLineOpacity': 1,
-                  'markerLineDasharray': [],
-                  'markerWidth': 40,
-                  'markerHeight': 40,
-                  'markerDx': 0,
-                  'markerDy': 0,
-                  'markerOpacity': 1
+                'markerFill': 'rgb(135,196,240)',
+                'markerFillOpacity': 1,
+                'markerLineColor': '#34495e',
+                'markerLineWidth': 3,
+                'markerLineOpacity': 1,
+                'markerLineDasharray': [],
+                'markerWidth': 40,
+                'markerHeight': 40,
+                'markerDx': 0,
+                'markerDy': 0,
+                'markerOpacity': 1
                 // markerType : 'ellipse',
                 //     markerWidth : 20,
                 //     markerHeight : 20
@@ -261,14 +263,14 @@ describe('Geometry.Drag', function () {
             var domPosition = GET_PAGE_POSITION(container);
             var point = map.coordinateToContainerPoint(marker.getFirstCoordinate()).add(domPosition);
             happen.mousedown(eventContainer, {
-                'clientX':point.x,
-                'clientY':point.y
+                'clientX': point.x,
+                'clientY': point.y
             });
 
             for (var i = 0; i < 10; i++) {
                 happen.mousemove(document, {
-                    'clientX':point.x + i,
-                    'clientY':point.y + i
+                    'clientX': point.x + i,
+                    'clientY': point.y + i
                 });
             }
 
@@ -281,6 +283,36 @@ describe('Geometry.Drag', function () {
         });
         marker.addTo(layer);
 
+    });
+
+    it('drag all kinds of geometries with altitude', function (done) {
+        this.timeout(8000);
+        var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
+        geometries[0].setSymbol({
+            markerType: 'ellipse',
+            markerWidth: 20,
+            markerHeight: 20
+        });
+        const altitude = 50;
+        geometries.forEach(geo => {
+            geo.setAltitude(altitude);
+        });
+        for (var i = 0; i < geometries.length; i++) {
+            var geo = geometries[i];
+            if (geo instanceof maptalks.GeometryCollection || geo instanceof maptalks.Sector) {
+                //not fit for geometry collection's test.
+                continue;
+            }
+            geo.config('draggable', true);
+
+            const editCenter = geo._getEditCenter();
+            expect(editCenter.z).to.be.eql(altitude);
+            dragGeometry(geo);
+            const editCenter1 = geo._getEditCenter();
+            expect(editCenter1.z).to.be.eql(altitude);
+            expect(editCenter.toArray()).not.to.be.eql(editCenter1.toArray());
+        }
+        done();
     });
 
 

@@ -1953,6 +1953,35 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return this;
     }
 
+    //@internal
+    _getEditCenter() {
+        const center = this.getCenter().copy();
+        center.z = 0;
+
+        const altitude = this.getAltitude();
+        if (isNumber(altitude)) {
+            center.z = altitude;
+            return center;
+        }
+        let total = 0, count = 0;
+        //计算图形海拔的平均值,确定图形中心点的海拔坐标
+        const checkArray = (altitudeArray) => {
+            for (let i = 0, len = altitudeArray.length; i < len; i++) {
+                if (Array.isArray(altitudeArray[i])) {
+                    checkArray(altitudeArray[i]);
+                } else {
+                    count++;
+                    total += altitudeArray[i];
+                }
+            }
+        }
+        if (Array.isArray(altitude)) {
+            checkArray(altitude);
+            center.z = total / count;
+        }
+        return center;
+    }
+
 }
 
 Geometry.mergeOptions(options);
@@ -2063,4 +2092,5 @@ function getSegmentAngle(cx: number, cy: number, x: number, y: number): number {
 }
 
 export default Geometry;
+
 

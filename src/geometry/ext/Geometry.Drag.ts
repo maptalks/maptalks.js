@@ -8,11 +8,41 @@ import DragHandler from '../../handler/Drag';
 import VectorLayer from '../../layer/VectorLayer';
 import { ConnectorLine } from '../ConnectorLine';
 import { ResourceCache } from '../../renderer/layer/CanvasRenderer';
+import Point from '../../geo/Point';
+import Coordinate from '../../geo/Coordinate';
 
 const DRAG_STAGE_LAYER_ID = INTERNAL_LAYER_PREFIX + '_drag_stage';
 
 const EVENTS = Browser.touch ? 'touchstart mousedown' : 'mousedown';
 
+
+export function fixDragPointCoordinates(geometry: Geometry, dragContainerPoint: Point, dragCoordinates: Coordinate) {
+    const editCenter = geometry._getEditCenter();
+    const map = geometry.getMap();
+    if (!editCenter || editCenter.z === 0) {
+        return dragCoordinates || map.containerPointToCoord(dragContainerPoint);
+    }
+    const altitude = editCenter.z;
+    const glRes = map.getGLRes();
+    //coordinates to glpoint
+    const renderPoints = map.coordToPointAtRes(editCenter, glRes);
+    //没有海拔下的屏幕坐标
+    const point1 = map._pointAtResToContainerPoint(renderPoints, glRes, 0);
+    //有海拔下的屏幕坐标
+    const point2 = map._pointAtResToContainerPoint(renderPoints, glRes, altitude);
+    //屏幕坐标的偏移量
+    const offset = point2.sub(point1);
+    const containerPoint = dragContainerPoint.sub(offset);
+    const coordiantes = map.containerPointToCoord(containerPoint);
+    coordiantes.z = 0;
+    const isPoint = !geometry.getGeometries && geometry.isPoint;
+    if (isPoint) {
+        coordiantes.z = altitude;
+    }
+    return coordiantes;
+
+
+}
 /**
  * 几何图形的拖动处理程序
  * @english
@@ -185,7 +215,9 @@ class GeometryDragHandler extends Handler {
         }
         this.container = map.getPanels().mapWrapper || map.getContainer();
         this.target.on('click', this._endDrag, this);
-        this._lastCoord = this._correctCoord(param['coordinate']);
+        // this._lastCoord = this._correctCoord(param['coordinate']);
+        const coordinates = this._correctCoord(param['coordinate']);
+        this._lastCoord = fixDragPointCoordinates(this.target, param['containerPoint'], coordinates);
         this._lastPoint = param['containerPoint'];
         this._prepareDragHandler();
         this._dragHandler.onMouseDown(param['domEvent']);
@@ -246,6 +278,7 @@ class GeometryDragHandler extends Handler {
             dragOnScreenAxis = geo.options['dragOnScreenAxis'],
             point = e['containerPoint'];
         let coord = e['coordinate'];
+
         this._lastPoint = this._lastPoint || point;
         this._lastCoord = this._lastCoord || coord;
         // drag direction is ScreenCoordinates,The direction of the drag has nothing to do with the map rotation(bearing)
@@ -259,6 +292,7 @@ class GeometryDragHandler extends Handler {
         } else {
             coord = this._correctCoord(coord);
         }
+        coord = fixDragPointCoordinates(target, e['containerPoint'], coord);
         const pointOffset = point.sub(this._lastPoint);
         const coordOffset = coord.sub(this._lastCoord);
         if (!dragOnScreenAxis) {
