@@ -1953,7 +1953,8 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return this;
     }
 
-    getEditCenter() {
+    //@internal
+    _getEditCenter() {
         const center = this.getCenter().copy();
         center.z = 0;
 

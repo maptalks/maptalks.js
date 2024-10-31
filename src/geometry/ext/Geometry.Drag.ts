@@ -17,7 +17,7 @@ const EVENTS = Browser.touch ? 'touchstart mousedown' : 'mousedown';
 
 
 export function fixDragPointCoordinates(geometry: Geometry, dragContainerPoint: Point, dragCoordinates: Coordinate) {
-    const editCenter = geometry.getEditCenter();
+    const editCenter = geometry._getEditCenter();
     const map = geometry.getMap();
     if (!editCenter || editCenter.z === 0) {
         return dragCoordinates || map.containerPointToCoord(dragContainerPoint);

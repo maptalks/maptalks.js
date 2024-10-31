@@ -435,7 +435,7 @@ class GeometryEditor extends Eventable(Class) {
             // this._editOutline.setPoints(points);
 
             const coordinates = geometry.getShell();
-            const editCenter = geometry.getEditCenter();
+            const editCenter = geometry._getEditCenter();
             const bbox = getDefaultBBOX();
             pointsBBOX(coordinates, bbox);
             const extent = new Extent(bbox[0], bbox[1], bbox[2], bbox[3]);
@@ -457,7 +457,7 @@ class GeometryEditor extends Eventable(Class) {
         const symbol = this.options['centerHandleSymbol'];
         let shadow;
         // const cointainerPoint = map.coordToContainerPoint(this._geometry.getCenter());
-        const cointainerPoint = coordinatesToContainerPoint(map, this._geometry.getEditCenter());
+        const cointainerPoint = coordinatesToContainerPoint(map, this._geometry._getEditCenter());
         const handle = this.createHandle(cointainerPoint, {
             ignoreCollision: true,
             'symbol': symbol,
@@ -490,7 +490,7 @@ class GeometryEditor extends Eventable(Class) {
         this._addRefreshHook((): void => {
             // const center = this._geometry.getCenter();
             // handle.setContainerPoint(map.coordToContainerPoint(center));
-            const center = this._geometry.getEditCenter();
+            const center = this._geometry._getEditCenter();
             handle.setContainerPoint(coordinatesToContainerPoint(map, center));
         });
     }
@@ -576,7 +576,7 @@ class GeometryEditor extends Eventable(Class) {
             // const ext = geometry._getPrjExtent();
             //Rect,Ellipse,Circle etc
             const coordinates = geometry.getShell();
-            const editCenter = geometry.getEditCenter();
+            const editCenter = geometry._getEditCenter();
             const bbox = getDefaultBBOX();
             pointsBBOX(coordinates, bbox);
             const extent = new Extent(bbox[0], bbox[1], bbox[2], bbox[3]);
@@ -746,7 +746,7 @@ class GeometryEditor extends Eventable(Class) {
 
             //caculate width and height
             // const viewCenter = map.coordToContainerPoint(geometryToEdit.getCoordinates()).add(dxdy),
-            const viewCenter = coordinatesToContainerPoint(map, geometryToEdit.getEditCenter()).add(dxdy),
+            const viewCenter = coordinatesToContainerPoint(map, geometryToEdit._getEditCenter()).add(dxdy),
                 symbol = geometryToEdit._getInternalSymbol();
             const wh = containerPoint.sub(viewCenter);
             if (verticalAnchor === 'bottom' && containerPoint.y > viewCenter.y) {
