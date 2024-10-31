@@ -137,7 +137,7 @@ describe('highlight and showOnly specs', () => {
             id: 0,
             opacity: 0.5
         };
-        runner(done, layer, { renderCount: 1, highlights, expected: new Uint8ClampedArray([193, 193, 193, 127]) });
+        runner(done, layer, { renderCount: 1, highlights, expected: new Uint8ClampedArray([255, 255, 255, 127]) });
     });
 
     it('highlight visible', done => {
@@ -195,7 +195,7 @@ describe('highlight and showOnly specs', () => {
 
         const onPainted = () => {
             const color = ctx.getImageData(canvas.width / 2 + offset[0], canvas.height / 2 + offset[1], 1, 1);
-            assert.deepEqual(color.data, new Uint8ClampedArray([193, 193, 193, 255]));
+            assert.deepEqual(color.data, new Uint8ClampedArray([255, 255, 255, 255]));
         };
         const afterExe = () => {
             const color = ctx.getImageData(canvas.width / 2 + offset[0], canvas.height / 2 + offset[1], 1, 1);
@@ -204,7 +204,7 @@ describe('highlight and showOnly specs', () => {
         };
         runner(() => {
             const color = ctx.getImageData(canvas.width / 2 + offset[0], canvas.height / 2 + offset[1], 1, 1);
-            assert.deepEqual(color.data, new Uint8ClampedArray([193, 193, 193, 255]));
+            assert.deepEqual(color.data, new Uint8ClampedArray([255, 255, 255, 255]));
             done();
         }, layer, { onPainted, afterExe, renderCount: 1, highlights, offset: [10, 0] });
     });
@@ -229,7 +229,7 @@ describe('highlight and showOnly specs', () => {
 
         const onPainted = () => {
             const color = ctx.getImageData(canvas.width / 2 + offset[0], canvas.height / 2 + offset[1], 1, 1);
-            assert.deepEqual(color.data, new Uint8ClampedArray([193, 193, 193, 255]));
+            assert.deepEqual(color.data, new Uint8ClampedArray([255, 255, 255, 255]));
         };
         const afterExe = () => {
             const color = ctx.getImageData(canvas.width / 2 + offset[0], canvas.height / 2 + offset[1], 1, 1);
@@ -238,7 +238,7 @@ describe('highlight and showOnly specs', () => {
         };
         runner(() => {
             const color = ctx.getImageData(canvas.width / 2 + offset[0], canvas.height / 2 + offset[1], 1, 1);
-            assert.deepEqual(color.data, new Uint8ClampedArray([193, 193, 193, 255]));
+            assert.deepEqual(color.data, new Uint8ClampedArray([255, 255, 255, 255]));
             done();
         }, layer, { onPainted, afterExe, renderCount: 1, highlights, offset: [10, 0] });
     });
@@ -261,12 +261,12 @@ describe('highlight and showOnly specs', () => {
         const onPainted = () => {
             const offset = [-40, 75];
             const color = ctx.getImageData(canvas.width / 2 + offset[0], canvas.height / 2 + offset[1], 1, 1);
-            assert.deepEqual(color.data, new Uint8ClampedArray([193, 193, 193, 255]));
+            assert.deepEqual(color.data, new Uint8ClampedArray([255, 255, 255, 255]));
         };
         runner(() => {
             const offset = [0, 0];
             const color = ctx.getImageData(canvas.width / 2 + offset[0], canvas.height / 2 + offset[1], 1, 1);
-            assert.deepEqual(color.data, new Uint8ClampedArray([193, 193, 193, 255]));
+            assert.deepEqual(color.data, new Uint8ClampedArray([255, 255, 255, 255]));
             done();
         }, layer, { onPainted, renderCount: 1, showOnlys, offset: [-40, 75], expected: new Uint8ClampedArray([0, 0, 0, 0]) });
     });
@@ -289,7 +289,7 @@ describe('highlight and showOnly specs', () => {
         const onPainted = () => {
             const offset = [-40, 75];
             const color = ctx.getImageData(canvas.width / 2 + offset[0], canvas.height / 2 + offset[1], 1, 1);
-            assert.deepEqual(color.data, new Uint8ClampedArray([193, 193, 193, 255]));
+            assert.deepEqual(color.data, new Uint8ClampedArray([255, 255, 255, 255]));
         };
         const afterExe = () => {
             const offset = [-40, 75];
@@ -298,14 +298,14 @@ describe('highlight and showOnly specs', () => {
             assert.deepEqual(color.data, new Uint8ClampedArray([0, 0, 0, 0]));
             color = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
             // 中心的仍然显示
-            assert.deepEqual(color.data, new Uint8ClampedArray([193, 193, 193, 255]));
+            assert.deepEqual(color.data, new Uint8ClampedArray([255, 255, 255, 255]));
             layer.cancelShowOnly();
         };
         runner(() => {
             const offset = [-40, 75];
             // 因为调用了cancelShowOnly，左下角恢复显示
             const color = ctx.getImageData(canvas.width / 2 + offset[0], canvas.height / 2 + offset[1], 1, 1);
-            assert.deepEqual(color.data, new Uint8ClampedArray([193, 193, 193, 255]));
+            assert.deepEqual(color.data, new Uint8ClampedArray([255, 255, 255, 255]));
             done();
         }, layer, { onPainted, afterExe, renderCount: 1, showOnlys, offset: [-40, 75] });
     });
