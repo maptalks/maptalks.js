@@ -47,6 +47,8 @@ const TEMP_BBOX = {
     maxy: -Infinity
 };
 
+const TEMP_CANVAS_CTX = [];
+
 /**
  * @classdesc
  * Painter class for all geometry types except the collection types.
@@ -652,24 +654,29 @@ class Painter extends Class {
                 return;
             }
         }
-        const map = this.getMap();
         if (this._aboveCamera()) {
             return;
         }
         //Multiplexing offset
-        this.containerOffset = offset || mapStateCache.offset || map._pointToContainerPoint(renderer.middleWest)._add(0, -map.height / 2);
+        this.containerOffset = offset || mapStateCache.offset;
+        if (!this.containerOffset) {
+            const map = this.getMap();
+            this.containerOffset = map._pointToContainerPoint(renderer.middleWest)._add(0, -map.height / 2);
+        }
         this._beforePaint();
         const ctx = context || renderer.context;
         if (!ctx.isHitTesting) {
             this._resetSymbolizersBBOX();
         }
-        const contexts = [ctx, renderer.resources];
+        // const contexts = [ctx, renderer.resources];
+        TEMP_CANVAS_CTX[0] = ctx;
+        TEMP_CANVAS_CTX[1] = renderer.resources;
         for (let i = this.symbolizers.length - 1; i >= 0; i--) {
             // reduce function call
             if (ctx.shadowBlur || this.symbolizers[i].symbol['shadowBlur']) {
                 this._prepareShadow(ctx, this.symbolizers[i].symbol);
             }
-            this.symbolizers[i].symbolize(...contexts);
+            this.symbolizers[i].symbolize(...TEMP_CANVAS_CTX);
         }
         this._afterPaint();
         this._painted = true;
