@@ -109,7 +109,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         if (!this._textFont) {
             this._textFont = getFont(style);
         }
-        Canvas.prepareCanvasFont(ctx, style, this._textFont);
+        Canvas.prepareCanvasFont(ctx, style, !this._dynamic ? this._textFont : null);
         const textHaloRadius = style.textHaloRadius || 0;
         this.rotations = [];
         if (this.isAlongLine()) {
