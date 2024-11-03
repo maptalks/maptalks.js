@@ -779,6 +779,9 @@ const Canvas = {
         if (isNil(op)) {
             op = 1;
         }
+        if (color[0] === '#' && op === 1) {
+            return color;
+        }
         if (color[0] !== '#') {
             if (Array.isArray(color)) {
                 color = Canvas.normalizeColorToRGBA(color, op);
