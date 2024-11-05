@@ -254,8 +254,14 @@ function parseTileMatrixSet(TileMatrixSet, options: any = {}) {
         resolutions, tileSize, tileSystem, projection, TileMatrixSet: tset, isGeoServer, levelStr
     };
 }
+type loadWMTSoptionsType = {
+    isArcgis?: boolean;
+    isSuperMap?: boolean;
+    isGeoServer?: boolean,
+    jsonp: true
+}
 
-export const loadWMTS = (url: string, cb: (_, layers?) => void, options = { 'jsonp': true }) => {
+export const loadWMTS = (url: string, cb: (_, layers?) => void, options: loadWMTSoptionsType = { 'jsonp': true }) => {
     if (isString(url)) {
         Ajax.get(url, (err, xml) => {
             if (err) {
