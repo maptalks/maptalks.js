@@ -80,6 +80,9 @@ const defaultOptions: VectorTileLayerOptionsType = {
   // https://docs.mapbox.com/style-spec/reference/sources/#vector-promoteId
   featureIdProperty: null,
   currentTilesFirst: true,
+  // 降低 tileStack 数量， maptalks/issues#786，否则会因为父级数据量过大，造成当前级别瓦片很久才出现
+  tileStackStartDepth: 3,
+  tileStackDepth: 2
 };
 
 /**
