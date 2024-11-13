@@ -601,13 +601,13 @@ export default class GroupGLLayer extends maptalks.Layer {
         if (!tilesLayers.length) {
             return null;
         }
-
+        const options = { excludeMasks: true };
         for (let i = 0; i < tilesLayers.length; i++) {
             const renderer = tilesLayers[i].getRenderer() as any;
             if (!renderer) {
                 continue;
             }
-            const hits = (tilesLayers[i] as any).identifyAtPoint(containerPoint);
+            const hits = (tilesLayers[i] as any).identifyAtPoint(containerPoint, options);
             if (hits.length) {
                 return new maptalks.Coordinate(hits[0].coordinate);
             }
