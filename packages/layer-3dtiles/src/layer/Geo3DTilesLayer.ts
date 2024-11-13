@@ -696,27 +696,34 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             //     rootNode.isS3M = isS3M;
             // }
             const boundingVolume = parent.boundingVolume;
+            const isFirstTileset = parent._notLoaded;
+            if (isFirstTileset) {
+                delete parent._notLoaded;
+            }
             extend(parent, tileset.root);
             parent.refine = parent.refine && parent.refine.toLowerCase() || 'replace';
             if (boundingVolume) {
                 parent.boundingVolume = boundingVolume;
             }
-            const transform = tileset.root.transform || mat4.identity([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
-            if (!parent.parent) {
-                // service root node
+            let transform = tileset.root.transform;
+            if (isFirstTileset) {
+                // 只有第一次加载 tileset.json 时，才计算 ecefTransform
                 const service = this._getNodeService(parent._rootIdx);
                 if (service.ecefTransform) {
-                    parent.matrix = mat4.multiply([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], service.ecefTransform, transform) as number[];
-                } else {
-                    parent.matrix = transform;
+                    transform = mat4.multiply([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], service.ecefTransform, transform || IDENTITY_MATRIX);
                 }
-            } else if (!isI3S) {
-                parent.matrix = mat4.multiply([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], parent.parent.matrix as mat4, transform) as number[];
             }
-            // parent.matrix = tileset.root.transform || parent.matrix;
-            // delete parent._topBottom;
-            // delete this._nodeBoxes[parent.id];
+
+            if (transform) {
+                if (!parent.parent) {
+                    // 如果当前加载的是 tileset.json content 中指定的 tileset.json，parent.matrix 可能是 tileset.json 中定义的 transform，
+                    parent.matrix = mat4.multiply([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], parent.matrix as mat4, transform) as number[];
+                } else if (!isI3S) {
+                    // 父亲节点的matrix
+                    parent.matrix = mat4.multiply([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], parent.parent.matrix as mat4, transform) as number[];
+                }
+            }
 
             delete parent.content;
             if (tileset.root.content) {
@@ -724,13 +731,13 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             }
 
             parent._empty = this._isEmpty(parent);
-            const url = parent.content && (parent.content.url || parent.content.uri);
-            if (url && parent.content.uri) {
+            const contentUrl = parent.content && (parent.content.url || parent.content.uri);
+            if (contentUrl && parent.content.uri) {
                 parent.content.url = parent.content.uri;
                 delete parent.content.uri;
             }
-            if (!isI3S && url && !isBase64(url) && isRelativeURL(url)) {
-                parent.content.url = parent.baseUrl + url;
+            if (!isI3S && contentUrl && !isBase64(contentUrl) && isRelativeURL(contentUrl)) {
+                parent.content.url = parent.baseUrl + contentUrl;
             }
             if (tileset.root && !parent.parent) {
                 this._updateRootCenter(parent as RootTileNode);
@@ -1519,6 +1526,7 @@ function createRootTile(url: string, idx: number, service: Geo3DTilesService): R
         matrix: mat4.identity([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,]) as number[],
         _rootIdx: idx,
         _level: 0,
+        _notLoaded: true,
         domainKey
     };
     return root;
@@ -1855,6 +1863,8 @@ export type TileNode = {
     _level: number,
     //@internal
     _error?: number,
+    //@internal
+    _notLoaded?: boolean;
     transform?: number[],
     matrix: number[],
     refine: string,
