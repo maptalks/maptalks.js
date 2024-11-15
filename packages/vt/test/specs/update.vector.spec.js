@@ -453,6 +453,35 @@ describe('vector layers update style specs', () => {
         layer.addTo(map);
     });
 
+    it('should can update symbol.lineGradientProperty, maptalks/issues#782', done => {
+        const line = new maptalks.LineString([[-1, 0], [1, 0]], {
+            symbol: {
+                lineGradientProperty: 'gradients',
+                lineWidth: 20
+            },
+            properties: {
+                gradients: [0, 'red', 0.7, 'yellow', 1, 'green']
+            }
+        });
+        const layer = new LineStringLayer('vector', line);
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        layer.once('canvasisdirty', () => {
+            const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+            assert.deepEqual(pixel, [255, 184, 0, 255]);
+            layer.once('canvasisdirty', () => {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                assert.deepEqual(pixel, [0, 0, 255, 255]);
+                done();
+            });
+            line.setProperties({
+                gradients: [0, 'blue', 0.7, 'blue', 1, 'blue']
+            });
+
+        });
+        layer.addTo(map);
+    });
+
     it('should can update symbol with function-type lineColor, fuzhenn/maptalks-ide#3099', done => {
         const line = new maptalks.LineString([[-1, 0], [1, 0]]);
         line.setSymbol({

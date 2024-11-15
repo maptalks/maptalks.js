@@ -538,6 +538,14 @@ class Painter {
         return false;
     }
 
+    needRebuildOnGometryPropertiesChanged() {
+        return true;
+    }
+
+    onFeatureChange() {
+
+    }
+
     getPolygonOffset() {
         const layer = this.layer;
         return {

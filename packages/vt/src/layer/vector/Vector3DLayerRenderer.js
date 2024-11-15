@@ -1395,7 +1395,15 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         }
         this.features[uid] = convertToFeature(geo, this._kidGen);
         this._refreshFeatures(this.features[uid], uid);
-        this._markRebuild();
+        if (this._markerMeshes && this._markerMeshes.length && this._markerPainter.needRebuildOnGometryPropertiesChanged() ||
+            this._lineMeshes && this._lineMeshes.length && this._linePainter.needRebuildOnGometryPropertiesChanged() ||
+            this.meshes && this.meshes.length && this.painter.needRebuildOnGometryPropertiesChanged()) {
+                this._markRebuild();
+            } else {
+                this.painter.onFeatureChange(this.features[uid], this.meshes);
+            }
+
+
         redraw(this);
     }
 
