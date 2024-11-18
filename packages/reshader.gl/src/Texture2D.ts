@@ -47,6 +47,14 @@ class Texture2D extends Texture {
     createREGLTexture(regl: Regl): REGL.Texture2D {
         this._regl = regl;
         this._checkNPOT(regl);
+        if (isArray(this.config.data) || isArray(this.config.mipmap)) {
+            const tex = getUniqueTexture(regl, this.config);
+            if (!tex[REF_COUNT_KEY]) {
+                tex[REF_COUNT_KEY] = 0;
+            }
+            tex[REF_COUNT_KEY]++;
+            return tex;
+        }
         return regl.texture(this.config);
     }
 
@@ -62,14 +70,6 @@ class Texture2D extends Texture {
                 config.width = (config.data as any).width;
                 config.height = (config.data as any).height;
             }
-        }
-        if (isArray(this.config.data) || isArray(this.config.mipmap)) {
-            const tex = getUniqueTexture(regl, this.config);
-            if (!tex[REF_COUNT_KEY]) {
-                tex[REF_COUNT_KEY] = 0;
-            }
-            tex[REF_COUNT_KEY]++;
-            return tex;
         }
     }
 }
