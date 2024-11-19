@@ -532,11 +532,6 @@ void initMaterial() {
         materialUniforms.albedo *= vInstanceColor.rgb;
         materialUniforms.alpha *= vInstanceColor.a;
     #endif
-    #if defined(IS_LINE_EXTRUSION)
-        materialUniforms.alpha *= lineOpacity;
-    #else
-        materialUniforms.alpha *= polygonOpacity;
-    #endif
 
 
     #if defined(HAS_METALLICROUGHNESS_MAP)
@@ -997,6 +992,10 @@ void main() {
     #endif
 
     float alpha = getMaterialAlpha();
+
+    if (alpha < alphaTest) {
+        discard;
+    }
     #if defined(ALPHA_MODE)
         #if ALPHA_MODE == 1
             if (alpha < alphaCutoff) {
@@ -1008,10 +1007,12 @@ void main() {
             alpha = 1.0;
         #endif
     #endif
+    #if defined(IS_LINE_EXTRUSION)
+        alpha *= lineOpacity;
+    #else
+        alpha *= polygonOpacity;
+    #endif
     glFragColor = vec4(frag * alpha, alpha);
-    if (glFragColor.a < alphaTest) {
-        discard;
-    }
 
     #ifdef HAS_VERTEX_COLOR
         glFragColor *= vertexColor_get();

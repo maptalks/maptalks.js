@@ -1538,7 +1538,6 @@ export default class TileMeshPainter {
                 },
                 depth: {
                     enable: true,
-                    range: [0, 1],
                     func: '<'
                 }
             }
@@ -1699,7 +1698,6 @@ export default class TileMeshPainter {
             },
             depth: {
                 enable: true,
-                range: [0, 1],
                 func: (_, props) => {
                     return props.meshProperties.depthFunc || '<';
                 }
