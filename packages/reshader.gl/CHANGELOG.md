@@ -1,5 +1,11 @@
 # @maptalks/reshader.gl
 
+## 0.101.2
+
+### Patch Changes
+
+- a buf fix release
+
 ## 0.101.1
 
 ### Patch Changes

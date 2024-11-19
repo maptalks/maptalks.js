@@ -1,5 +1,11 @@
 # @maptalks/3dtiles
 
+## 0.102.2
+
+### Patch Changes
+
+- a buf fix release
+
 ## 0.102.1
 
 ### Patch Changes

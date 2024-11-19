@@ -1,5 +1,13 @@
 # @maptalks/gl
 
+## 0.102.2
+
+### Patch Changes
+
+- a buf fix release
+- Updated dependencies
+  - @maptalks/reshader.gl@0.101.2
+
 ## 0.102.1
 
 ### Patch Changes

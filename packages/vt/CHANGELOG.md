@@ -1,5 +1,13 @@
 # @maptalks/vt
 
+## 0.101.2
+
+### Patch Changes
+
+- a buf fix release
+- Updated dependencies
+  - @maptalks/gl@0.102.2
+
 ## 0.101.1
 
 ### Patch Changes
