@@ -251,6 +251,49 @@ describe('FunctionTypeSpec', function () {
         layer.addGeometry(marker);
     });
 
+    it('markerFile function type', function (done) {
+        const funtype = {
+            stops: [
+                [1, 'resources/2.png'],
+                [5, 'resources/2.png'],
+            ],
+            property: "foo",
+            type: "categorical",
+        }
+        const symbol = {
+            'markerFile': funtype,
+            'markerWidth': 10,
+            'markerHeight': 10,
+            markerDy: 5
+        }
+
+
+        var marker1 = new maptalks.Marker(map.getCenter(), {
+            symbol,
+            properties: {
+                'foo': 5
+            }
+        });
+        var marker2 = new maptalks.Marker(map.getCenter(), {
+            symbol,
+            properties: {
+                'foo': 10
+            }
+        });
+
+        layer.addGeometry(marker1);
+
+        setTimeout(() => {
+            expect(layer).to.be.painted();
+            layer.clear();
+            layer.addGeometry(marker2);
+            setTimeout(() => {
+                expect(layer).not.to.be.painted();
+                done();
+            }, 1000);
+        }, 1000);
+    });
+
     it('symbol.visible function-type', function (done) {
         const symbol1 = {
             markerWidth: 20,
