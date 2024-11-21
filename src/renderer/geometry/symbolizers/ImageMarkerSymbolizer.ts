@@ -38,6 +38,10 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
         if (!isArrayHasData(cookedPoints)) {
             return;
         }
+        if (!style.markerFile) {
+            console.warn('style.markerFile is null:', style);
+            return;
+        }
 
         const img = this._getImage(resources);
         if (!img) {
