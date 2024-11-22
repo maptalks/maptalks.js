@@ -7,7 +7,6 @@ describe('Map.Spec', function () {
     var center = new maptalks.Coordinate(118.846825, 32.046534);
 
     beforeEach(function () {
-        maptalks.GlobalConfig.crsMaxNativeZoom = 25;
 
         container = document.createElement('div');
         container.style.width = '4px';
@@ -34,7 +33,7 @@ describe('Map.Spec', function () {
         expect(maxZoom).to.be.eql(maptalks.GlobalConfig.crsMaxNativeZoom);
         const crs = maptalks.getDefaultSpatialReference();
         for (const epsg in crs) {
-            const resolutions = crs[key].resolutions;
+            const resolutions = crs[epsg].resolutions;
             expect(resolutions.length).to.be.eql(maptalks.GlobalConfig.crsMaxNativeZoom + 1);
         }
         done();

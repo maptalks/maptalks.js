@@ -7,6 +7,7 @@ if (maptalks.Browser.ie) {
         'markerHeight': 20
     };
 }
+maptalks.GlobalConfig.crsMaxNativeZoom = 25;
 
 
 /*eslint-disable no-unused-vars */

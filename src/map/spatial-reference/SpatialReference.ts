@@ -28,7 +28,7 @@ let DEFAULT_CRS: Record<string, SpatialReferenceType>;
 
 function _getDefaultSpatialReference(): Record<string, SpatialReferenceType> {
     if (!DEFAULT_CRS) {
-        let crsMaxNativeZoom = GlobalConfig.crsMaxNativeZoom || 22;
+        const crsMaxNativeZoom = Math.round(GlobalConfig.crsMaxNativeZoom || 22);
         DEFAULT_CRS = {
             'EPSG:3857': {
                 'projection': 'EPSG:3857',
