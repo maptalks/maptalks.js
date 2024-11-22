@@ -153,7 +153,7 @@ export default class TileMeshPainter {
         return this._layer.getMap();
     }
 
-    paint(tiles, leafs, boxMeshes, parentContext) {
+    paint(tiles, boxMeshes, parentContext) {
         // const testMesh = { bloom: 1 };
         // if (!parentContext.sceneFilter(testMesh)) {
         //     return;
@@ -240,7 +240,7 @@ export default class TileMeshPainter {
                 // mesh[ii].setUniform('level', tiles[i].selectionDepth);
                 // mesh[ii].setUniform('id', node.id);
                 // mesh[ii].setUniform('polygonOffset', polygonOffset);
-                mesh[ii].properties.isLeaf = !!leafs[node.id];
+                mesh[ii].properties.isLeaf = tiles[i].leave;
                 // GroupGLLayer中，stencil默认值为0xFF，与GroupGLLayer保持一致
                 mesh[ii].properties.selectionDepth = 255 - tiles[i].selectionDepth;
                 mesh[ii].properties.polygonOffset = polygonOffset;
@@ -256,7 +256,7 @@ export default class TileMeshPainter {
                 //     });
                 // }
 
-                if (!leafs[node.id]) {
+                if (!tiles[i].leave) {
                     parentMeshes.push(mesh[ii]);
                 }
                 this._updateMaskDefines(mesh[ii]);

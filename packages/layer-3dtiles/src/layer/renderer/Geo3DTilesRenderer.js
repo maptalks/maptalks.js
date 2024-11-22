@@ -108,12 +108,12 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         this.painter.prepareRender(parentContext);
         this._consumeI3SQueue();
         this._consumeModelQueue(parentContext);
-        const { selectedTiles, leaves, requests } = this._selectTiles(root, tiles);
+        const { selectedTiles, requests } = this._selectTiles(root, tiles);
 
         if (requests.length) {
             this.loadTiles(requests);
         }
-        this._drawTiles(selectedTiles, leaves, parentContext);
+        this._drawTiles(selectedTiles, parentContext);
         this._abortUnusedTiles();
         if (!requests.length) {
             this.completeRender();
@@ -170,10 +170,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             }
         }
 
-        let selectedTiles = [], leaves = {};
-        if (hit) {
-            ({ selectedTiles, leaves } = this._sortTiles(root));
-        }
+        const selectedTiles = hit ? this._sortTiles(root) : [];
 
         if (requests.length > 1) {
             requests.sort(compareRequests);
@@ -190,14 +187,13 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         return {
             loading,
             requests,
-            selectedTiles,
-            leaves
+            selectedTiles
         };
     }
 
     //based on Cesium's traverseAndSelect in Cesium3DTilesetTraversal.js
     _sortTiles(root) {
-        const selectedTiles = [], leaves = {};
+        const selectedTiles = [];
         let lastAncestor;
         const stack = [root],
             parentStack = [];
@@ -208,8 +204,8 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
                     parentStack.pop();
                     if (waitingTile === lastAncestor) {
                         waitingTile.leave = true;
-                        leaves[waitingTile.node.id] = 1;
                     }
+
                     selectedTiles.push(waitingTile);
                     continue;
                 }
@@ -218,7 +214,6 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             const children = tile.children;
             if (tile.selected) {
                 if (tile.node.refine === 'add') {
-                    leaves[tile.node.id] = 1;
                     tile.selectionDepth = parentStack.length;
                     selectedTiles.push(tile);
                 } else {
@@ -228,7 +223,6 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
 
                     if (children.length === 0) {
                         tile.leave = true;
-                        leaves[tile.node.id] = 1;
                         selectedTiles.push(tile);
                         continue;
                     }
@@ -245,7 +239,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             }
         }
 
-        return { selectedTiles, leaves };
+        return selectedTiles;
     }
 
     _selectParentTile(node) {
@@ -299,7 +293,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         return result;
     }
 
-    _drawTiles(tiles, leaves, parentContext) {
+    _drawTiles(tiles, parentContext) {
 
         this.tileCache.markAll(this, false);
         const boxMeshes = [];
@@ -331,9 +325,9 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             }
         }
 
-        const context = { tiles, leaves };
+        const context = { tiles };
         this.onDrawTileStart(context);
-        const count = this.painter.paint(tiles, leaves, boxMeshes, parentContext);
+        const count = this.painter.paint(tiles, boxMeshes, parentContext);
         this.layer.fire('drawtiles', { count });
 
         this.onDrawTileEnd(context);
