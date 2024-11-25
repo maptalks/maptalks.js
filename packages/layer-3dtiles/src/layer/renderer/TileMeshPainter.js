@@ -3,7 +3,7 @@ import { reshader, vec3, vec4, mat3, mat4, quat, HighlightUtil, ContextUtil } fr
 import { iterateMesh, iterateBufferData, getItemAtBufferData, setInstanceData, } from '../../common/GLTFHelpers';
 import pntsVert from './glsl/pnts.vert';
 import pntsFrag from './glsl/pnts.frag';
-import { isFunction, isNil, extend, setColumn3, flatArr, isNumber, normalizeColor } from '../../common/Util';
+import { isFunction, isNil, extend, setColumn3, flatArr, isNumber, normalizeColor, pushIn } from '../../common/Util';
 import { intersectsBox } from 'frustum-intersects';
 import { basisTo2D, setTranslation, getTranslation, readBatchData } from '../../common/TileHelper';
 import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
@@ -241,6 +241,7 @@ export default class TileMeshPainter {
                 // mesh[ii].setUniform('id', node.id);
                 // mesh[ii].setUniform('polygonOffset', polygonOffset);
                 mesh[ii].properties.isLeaf = tiles[i].leave;
+                mesh[ii].properties.branchRootId = tiles[i].branchRootId;
                 // GroupGLLayer中，stencil默认值为0xFF，与GroupGLLayer保持一致
                 mesh[ii].properties.selectionDepth = 255 - tiles[i].selectionDepth;
                 mesh[ii].properties.polygonOffset = polygonOffset;
@@ -337,61 +338,86 @@ export default class TileMeshPainter {
 
         // uniforms['stencilEnable'] = true;
         uniforms.stencilEnable = false;
+        uniforms.cullFace = 'back';
         // uniforms['cullFace'] = 'back';
         // uniforms['colorMask'] = colorOn;
         const fbo = renderTarget && renderTarget.fbo;
         let drawCount = 0;
 
-        const sceneMeshes = [];
+        const branchMeshes = [];
+        const leafMeshes = [];
+        let hasUnresolved = false;
+
+        let currentBranchRootId = meshes[0] && meshes[0].properties.branchRootId;
         for (let i = 0; i < meshes.length; i++) {
-            const { isLeaf, selectionDepth } = meshes[i].properties;
-            if (isLeaf && selectionDepth === 255) {
-                // 独立的叶子节点
-                if (uniforms.stencilEnable) {
-                    // 清除stencil，避免上一次分支绘制的stencil影响本次绘制
-                    this._clearStencil(fbo);
-                    // sceneMeshes中是某个分支下的非独立叶子节点 + 父亲节点
-                    // 这种情况一般出现在某个分支的子节点不满足要求（没有下载下来或者error不符合设定），需要将父亲节点与子节点一起绘制
-                    // 绘制分支下的非独立节点需要开启stencil，先绘制叶子节点，再绘制父亲节点，保证父节点的绘制不会覆盖掉子节点
-                    this._modelScene.setMeshes(sceneMeshes);
-                    drawCount += this._renderer.render(shader, uniforms, this._modelScene, fbo);
-                    sceneMeshes.length = 0;
-                    uniforms.stencilEnable = false;
+            const { branchRootId } = meshes[i].properties;
+            if (branchRootId !== currentBranchRootId) {
+                // branch 发生变化
+                if (!hasUnresolved) {
+                    // 如果branch中不存在 unresolved 瓦片，则放到leafMeshes中，和其他的leaf瓦片一起绘制，无需分开绘制，减少drawcall
+                    pushIn(leafMeshes, branchMeshes);
+                } else {
+                    if (leafMeshes.length) {
+                        drawCount += this._drawBranchMeshes(shader, uniforms, fbo, false, leafMeshes);
+                        leafMeshes.length = 0;
+                    }
+                    drawCount += this._drawBranchMeshes(shader, uniforms, fbo, hasUnresolved, branchMeshes);
                 }
-                sceneMeshes.push(meshes[i]);
-            } else {
-                // 某个分支下的非独立节点
-                if (!uniforms.stencilEnable) {
-                    // sceneMeshes中都是独立节点
-                    // 关闭stencil直接绘制
-                    this._modelScene.setMeshes(sceneMeshes);
-                    drawCount += this._renderer.render(shader, uniforms, this._modelScene, fbo);
-                    sceneMeshes.length = 0;
-                    uniforms.stencilEnable = true;
-                }
-                sceneMeshes.push(meshes[i]);
+                currentBranchRootId = branchRootId;
+                hasUnresolved = false;
+                branchMeshes.length = 0;
+            }
+            branchMeshes.push(meshes[i]);
+            if (meshes[i].properties.selectionDepth < 255) {
+                hasUnresolved = true;
             }
             if (i === meshes.length - 1) {
-                if (uniforms.stencilEnable) {
-                    this._clearStencil(fbo);
+                if (!hasUnresolved) {
+                    pushIn(leafMeshes, branchMeshes);
+                    branchMeshes.length = 0;
                 }
-                this._modelScene.setMeshes(sceneMeshes);
-                drawCount += this._renderer.render(shader, uniforms, this._modelScene, fbo);
+                if (leafMeshes.length) {
+                    drawCount += this._drawBranchMeshes(shader, uniforms, fbo, false, leafMeshes);
+                }
+                drawCount += this._drawBranchMeshes(shader, uniforms, fbo, hasUnresolved, branchMeshes);
             }
         }
         // pick功能需要把meshes设置到modelScene中，为了避免pick逻辑出错，这里暂时只允许选择叶子节点
         //FIXME 因为父亲节点不在modelScene中，会出现父亲节点无法被选中的问题
         this._modelScene.setMeshes(meshes.filter(m => m.properties.isLeaf));
 
-        // this._modelScene.setMeshes(meshes);
-        // drawCount += this._renderer.render(shader, uniforms, this._modelScene, renderTarget && renderTarget.fbo);
-
-
-        // uniforms['stencilEnable'] = true;
-
         this._i3dmScene.setMeshes(i3dmMeshes);
         drawCount += this._renderer.render(shader, uniforms, this._i3dmScene, renderTarget && renderTarget.fbo);
         return drawCount;
+    }
+
+    _drawBranchMeshes(shader, uniforms, fbo, hasUnresolved, branchMeshes) {
+        if (!branchMeshes.length) {
+            return 0;
+        }
+        this._modelScene.setMeshes(branchMeshes);
+        // 如果branch中不存在unresolved瓦片
+        // 关闭stencil直接绘制
+        uniforms.stencilEnable = false;
+        if (hasUnresolved) {
+            // branch 中存在 unresolved 瓦片。
+            // 解释:
+            //   如果某个瓦片的selectionDepth不为0 (mesh.properties.selectionDepth为255)，则说明它的子瓦片也参与绘制，标记此类瓦片为unsolved
+            //   * selectionDepth 的逻辑在 Geo3DTilesRenderer._sortTiles 方法中
+            //   这种情况一般出现在某个分支的子节点不满足要求（没有下载下来或者error不符合设定），需要将父亲节点与子节点一起绘制
+            // 绘制步骤：
+            // 1. 清除 stencil 缓冲，避免上一次绘制的stencil影响本次绘制
+            // 2. 先绘制所有瓦片的背面，避免后面的子节点，会在视觉上 "透过" 前面的unresolved瓦片
+            // 3. 打开stencil，先绘制叶子节点，再绘制父亲节点，保证父节点的绘制不会覆盖掉子节点
+            this._clearStencil(fbo);
+            uniforms.stencilEnable = false;
+            uniforms.cullFace = 'front';
+            this._renderer.render(shader, uniforms, this._modelScene, fbo);
+            uniforms.cullFace = 'back';
+            uniforms.stencilEnable = true;
+        }
+        this._modelScene.setMeshes(branchMeshes);
+        return this._renderer.render(shader, uniforms, this._modelScene, fbo);
     }
 
     _clearStencil(fbo) {
@@ -1669,17 +1695,17 @@ export default class TileMeshPainter {
             //     return props['colorMask'] || colorOn;
             // },
             cull : {
-                enable: true/*,
+                enable: true,
                 face: (_, props) => {
                     return props.cullFace || 'back';
-                }*/
+                }
             },
             stencil: {
                 enable: (_, props) => {
                     return props.stencilEnable;
                 },
                 func: {
-                    cmp: '>=',
+                    cmp: '<=',
                     ref: (_, props) => {
                         return props.meshProperties.selectionDepth;
                     },
@@ -1699,7 +1725,7 @@ export default class TileMeshPainter {
             depth: {
                 enable: true,
                 func: (_, props) => {
-                    return props.meshProperties.depthFunc || '<';
+                    return props.meshProperties.depthFunc || '<=';
                 }
             },
             blend: {

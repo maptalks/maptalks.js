@@ -195,6 +195,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
     _sortTiles(root) {
         const selectedTiles = [];
         let lastAncestor;
+        let branchRootId;
         const stack = [root],
             parentStack = [];
         while (stack.length > 0 || parentStack.length > 0) {
@@ -205,8 +206,11 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
                     if (waitingTile === lastAncestor) {
                         waitingTile.leave = true;
                     }
-
+                    waitingTile.branchRootId = branchRootId;
                     selectedTiles.push(waitingTile);
+                    if (parentStack.length === 0) {
+                        branchRootId = null;
+                    }
                     continue;
                 }
             }
@@ -215,6 +219,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             if (tile.selected) {
                 if (tile.node.refine === 'add') {
                     tile.selectionDepth = parentStack.length;
+                    tile.branchRootId = branchRootId;
                     selectedTiles.push(tile);
                 } else {
                     tile.selectionDepth = parentStack.length;
@@ -223,10 +228,13 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
 
                     if (children.length === 0) {
                         tile.leave = true;
+                        tile.branchRootId = branchRootId;
                         selectedTiles.push(tile);
                         continue;
                     }
-
+                    if (parentStack.length === 0) {
+                        branchRootId = tile.node.id;
+                    }
                     parentStack.push(tile);
                     tile._stackLength = stack.length;
                 }
