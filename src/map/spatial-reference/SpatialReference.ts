@@ -26,7 +26,7 @@ let DEFAULT_CRS: Record<string, SpatialReferenceType>;
 
 
 
-function _getDefaultSpatialReference(): Record<string, SpatialReferenceType> {
+function createOrGetDefaultSpatialReferences(): Record<string, SpatialReferenceType> {
     if (!DEFAULT_CRS) {
         const crsMaxNativeZoom = Math.round(GlobalConfig.crsMaxNativeZoom || 22);
         DEFAULT_CRS = {
@@ -171,18 +171,19 @@ export default class SpatialReference {
 
     static registerPreset(name: string, value: SpatialReferenceType) {
         name = name && name.toUpperCase();
-        if (_getDefaultSpatialReference()[name]) {
+        const defaultRefs = createOrGetDefaultSpatialReferences();
+        if (defaultRefs[name]) {
             console.warn(`Spatial reference ${name} already registered.`);
         }
-        _getDefaultSpatialReference()[name] = value;
+        defaultRefs[name] = value;
     }
 
     static getPreset(preset: string) {
-        return _getDefaultSpatialReference()[preset.toUpperCase()];
+        return createOrGetDefaultSpatialReferences()[preset.toUpperCase()];
     }
 
     static getAllPresets() {
-        return Object.keys(_getDefaultSpatialReference());
+        return Object.keys(createOrGetDefaultSpatialReferences());
     }
 
     static loadArcgis(url: string, cb: (_, spatialRef?) => void, options: any) {
@@ -311,11 +312,12 @@ export default class SpatialReference {
             extend(projection, DEFAULT);
         }
         this._projection = projection;
+        const systemSpatialRefs = createOrGetDefaultSpatialReferences();
         let defaultSpatialRef,
             resolutions = this.options['resolutions'];
         if (!resolutions) {
             if (projection['code']) {
-                defaultSpatialRef = _getDefaultSpatialReference()[projection['code'].toUpperCase()];
+                defaultSpatialRef = systemSpatialRefs[projection['code'].toUpperCase()];
                 if (defaultSpatialRef) {
                     resolutions = defaultSpatialRef['resolutions'];
                     this.isEPSG = projection['code'] !== 'IDENTITY';
@@ -341,7 +343,7 @@ export default class SpatialReference {
         let fullExtent = this.options['fullExtent'];
         if (!fullExtent) {
             if (projection['code']) {
-                defaultSpatialRef = _getDefaultSpatialReference()[projection['code'].toUpperCase()];
+                defaultSpatialRef = systemSpatialRefs[projection['code'].toUpperCase()];
                 if (defaultSpatialRef) {
                     fullExtent = defaultSpatialRef['fullExtent'];
                 }
@@ -453,5 +455,5 @@ export default class SpatialReference {
 
 
 export function getDefaultSpatialReference(): Record<string, SpatialReferenceType> {
-    return JSON.parse(JSON.stringify(_getDefaultSpatialReference()));
+    return JSON.parse(JSON.stringify(createOrGetDefaultSpatialReferences()));
 }
