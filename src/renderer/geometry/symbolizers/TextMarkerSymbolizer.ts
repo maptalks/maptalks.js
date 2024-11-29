@@ -6,7 +6,7 @@ import { hasFunctionDefinition } from '../../../core/mapbox';
 import { isTextSymbol, getTextMarkerFixedExtent, getMarkerRotationExtent, } from '../../../core/util/marker';
 import Canvas from '../../../core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
-import { replaceVariable, describeText } from '../../../core/util/strings';
+import { replaceVariable, describeText, getFont } from '../../../core/util/strings';
 import { Geometry } from '../../../geometry';
 import Painter from '../Painter';
 import { ResourceCache } from '../..';
@@ -61,6 +61,9 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
     _fixedExtent: PointExtent;
     //@internal
     _index: number;
+    //cache font for performance
+    //@internal
+    _textFont: string;
 
     static test(symbol: any): boolean {
         return isTextSymbol(symbol);
@@ -87,14 +90,14 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         if (!this.isVisible()) {
             return;
         }
-        if (!this.painter.isHitTesting() && (this.style['textSize'] === 0 ||
-            !this.style['textOpacity'] && (!this.style['textHaloRadius'] || !this.style['textHaloOpacity']) ||
-            this.style['textWrapWidth'] === 0)) {
+
+        const style = this.style;
+        if (!this.painter.isHitTesting() && (style['textSize'] === 0 ||
+            !style['textOpacity'] && (!style['textHaloRadius'] || !style['textHaloOpacity']) ||
+            style['textWrapWidth'] === 0)) {
             return;
         }
-
-        const style = this.style,
-            strokeAndFill = this.strokeAndFill;
+        const strokeAndFill = this.strokeAndFill;
         const textContent = replaceVariable(this.style['textName'], this.geometry.getProperties());
         if (this._dynamic) {
             delete this._textDesc;
@@ -102,7 +105,11 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         const textDesc = this._textDesc = this._textDesc || describeText(textContent, this.style);
         this._prepareContext(ctx);
         this.prepareCanvas(ctx, strokeAndFill, resources);
-        Canvas.prepareCanvasFont(ctx, style);
+        //cache font for performance
+        if (!this._textFont) {
+            this._textFont = getFont(style);
+        }
+        Canvas.prepareCanvasFont(ctx, style, !this._dynamic ? this._textFont : null);
         const textHaloRadius = style.textHaloRadius || 0;
         this.rotations = [];
         if (this.isAlongLine()) {

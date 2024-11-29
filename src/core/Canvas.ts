@@ -18,6 +18,7 @@ import Extent from '../geo/Extent';
 import Size from '../geo/Size';
 import CollisionIndex from './CollisionIndex';
 import LRUCache from './util/LRUCache';
+import { TextSymbol } from '../symbol';
 
 const charTextureLRUCache = new LRUCache(50000);
 function getCharTexture(tempCtx: Ctx, style, char: string) {
@@ -535,19 +536,19 @@ const Canvas = {
         return canvas;
     },
 
-    prepareCanvasFont(ctx: Ctx, style) {
+    prepareCanvasFont(ctx: Ctx, style: TextSymbol, font?: string) {
         if (ctx.textBaseline !== TEXT_BASELINE) {
             ctx.textBaseline = TEXT_BASELINE;
         }
-        const font = getFont(style);
+        font = font || getFont(style);
         if (ctx.font !== font) {
             ctx.font = font;
         }
-        let fill = style['textFill'];
+        let fill = style['textFill'] as string;
         if (!fill) {
             fill = DEFAULT_TEXT_COLOR;
         }
-        const fillStyle = Canvas.getRgba(fill, style['textOpacity']);
+        const fillStyle = Canvas.getRgba(fill, style['textOpacity'] as number);
         if (ctx.fillStyle !== fillStyle) {
             ctx.fillStyle = fillStyle;
         }
@@ -774,9 +775,12 @@ const Canvas = {
 
     // support #RRGGBB/#RGB now.
     // if color was like [red, orange...]/rgb(a)/hsl(a), op will not combined to result
-    getRgba(color: any, op: number) {
+    getRgba(color: string, op: number) {
         if (isNil(op)) {
             op = 1;
+        }
+        if (color[0] === '#' && op === 1) {
+            return color;
         }
         if (color[0] !== '#') {
             if (Array.isArray(color)) {
