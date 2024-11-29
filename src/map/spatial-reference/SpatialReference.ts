@@ -7,7 +7,7 @@ import Transformation from '../../geo/transformation/Transformation';
 import { Measurer, DEFAULT } from '../../geo/measurer';
 import loadWMTS from './SpatialReference.WMTS'
 import loadArcgis from './SpatialReference.Arc'
-const MAX_ZOOM = 23;
+import GlobalConfig from '../../GlobalConfig';
 
 export type FullExtent = {
     top: number
@@ -22,118 +22,127 @@ export type SpatialReferenceType = {
     fullExtent?: FullExtent | JsonExtent;
 }
 
-const DefaultSpatialReference: Record<string, SpatialReferenceType> = {
-    'EPSG:3857': {
-        'projection': 'EPSG:3857',
-        'resolutions': (function () {
-            const resolutions = [];
-            const d = 2 * 6378137 * Math.PI;
-            for (let i = 0; i < MAX_ZOOM; i++) {
-                resolutions[i] = d / (256 * Math.pow(2, i));
-            }
-            return resolutions;
-        })(),
-        'fullExtent': {
-            'top': 6378137 * Math.PI,
-            'left': -6378137 * Math.PI,
-            'bottom': -6378137 * Math.PI,
-            'right': 6378137 * Math.PI
-        }
-    },
-    'EPSG:4326': {
-        'projection': 'EPSG:4326',
-        'fullExtent': {
-            'top': 90,
-            'left': -180,
-            'bottom': -90,
-            'right': 180
-        },
-        'resolutions': (function () {
-            const resolutions = [];
-            for (let i = 0; i < MAX_ZOOM; i++) {
-                resolutions[i] = 180 / (Math.pow(2, i) * 128);
-            }
-            return resolutions;
-        })()
-    },
-    'BAIDU': {
-        'projection': 'baidu',
-        'resolutions': (function () {
-            let res = Math.pow(2, 18);
-            const resolutions = [];
-            for (let i = 0; i < MAX_ZOOM; i++) {
-                resolutions[i] = res;
-                res *= 0.5;
-            }
-            return resolutions;
-        })(),
-        'fullExtent': {
-            'top': 33554432,
-            'left': -33554432,
-            'bottom': -33554432,
-            'right': 33554432
-        }
-    },
-    'IDENTITY': {
-        'projection': 'identity',
-        'resolutions': (function () {
-            let res = Math.pow(2, 8);
-            const resolutions = [];
-            for (let i = 0; i < MAX_ZOOM; i++) {
-                resolutions[i] = res;
-                res *= 0.5;
-            }
-            return resolutions;
-        })(),
-        'fullExtent': {
-            'top': 200000,
-            'left': -200000,
-            'bottom': -200000,
-            'right': 200000
-        }
-    },
+let DEFAULT_CRS: Record<string, SpatialReferenceType>;
 
-    // TileSystem: [1, -1, -6378137 * Math.PI, 6378137 * Math.PI]
-    'PRESET-VT-3857': {
-        'projection': 'EPSG:3857',
-        'resolutions': (function () {
-            const resolutions = [];
-            const d = 6378137 * Math.PI;
-            for (let i = 0; i < MAX_ZOOM; i++) {
-                resolutions[i] = d / (256 * Math.pow(2, i));
-            }
-            return resolutions;
-        })(),
-        'fullExtent': {
-            'top': 6378137 * Math.PI,
-            'left': -6378137 * Math.PI,
-            'bottom': -6378137 * Math.PI,
-            'right': 6378137 * Math.PI
-        }
-    },
 
-    'PRESET-VT-4326': {
-        'projection': 'EPSG:4326',
-        'fullExtent': {
-            'top': 90,
-            'left': -180,
-            'bottom': -90,
-            'right': 180
-        },
-        'resolutions': (function () {
-            const resolutions = [];
-            for (let i = 0; i < MAX_ZOOM; i++) {
-                resolutions[i] = 180 / 4 / (Math.pow(2, i) * 128);
+
+function _getDefaultSpatialReference(): Record<string, SpatialReferenceType> {
+    if (!DEFAULT_CRS) {
+        const crsMaxNativeZoom = Math.round(GlobalConfig.crsMaxNativeZoom || 22);
+        DEFAULT_CRS = {
+            'EPSG:3857': {
+                'projection': 'EPSG:3857',
+                'resolutions': (function () {
+                    const resolutions = [];
+                    const d = 2 * 6378137 * Math.PI;
+                    for (let i = 0; i <= crsMaxNativeZoom; i++) {
+                        resolutions[i] = d / (256 * Math.pow(2, i));
+                    }
+                    return resolutions;
+                })(),
+                'fullExtent': {
+                    'top': 6378137 * Math.PI,
+                    'left': -6378137 * Math.PI,
+                    'bottom': -6378137 * Math.PI,
+                    'right': 6378137 * Math.PI
+                }
+            },
+            'EPSG:4326': {
+                'projection': 'EPSG:4326',
+                'fullExtent': {
+                    'top': 90,
+                    'left': -180,
+                    'bottom': -90,
+                    'right': 180
+                },
+                'resolutions': (function () {
+                    const resolutions = [];
+                    for (let i = 0; i <= crsMaxNativeZoom; i++) {
+                        resolutions[i] = 180 / (Math.pow(2, i) * 128);
+                    }
+                    return resolutions;
+                })()
+            },
+            'BAIDU': {
+                'projection': 'baidu',
+                'resolutions': (function () {
+                    let res = Math.pow(2, 18);
+                    const resolutions = [];
+                    for (let i = 0; i <= crsMaxNativeZoom; i++) {
+                        resolutions[i] = res;
+                        res *= 0.5;
+                    }
+                    return resolutions;
+                })(),
+                'fullExtent': {
+                    'top': 33554432,
+                    'left': -33554432,
+                    'bottom': -33554432,
+                    'right': 33554432
+                }
+            },
+            'IDENTITY': {
+                'projection': 'identity',
+                'resolutions': (function () {
+                    let res = Math.pow(2, 8);
+                    const resolutions = [];
+                    for (let i = 0; i <= crsMaxNativeZoom; i++) {
+                        resolutions[i] = res;
+                        res *= 0.5;
+                    }
+                    return resolutions;
+                })(),
+                'fullExtent': {
+                    'top': 200000,
+                    'left': -200000,
+                    'bottom': -200000,
+                    'right': 200000
+                }
+            },
+
+            // TileSystem: [1, -1, -6378137 * Math.PI, 6378137 * Math.PI]
+            'PRESET-VT-3857': {
+                'projection': 'EPSG:3857',
+                'resolutions': (function () {
+                    const resolutions = [];
+                    const d = 6378137 * Math.PI;
+                    for (let i = 0; i <= crsMaxNativeZoom; i++) {
+                        resolutions[i] = d / (256 * Math.pow(2, i));
+                    }
+                    return resolutions;
+                })(),
+                'fullExtent': {
+                    'top': 6378137 * Math.PI,
+                    'left': -6378137 * Math.PI,
+                    'bottom': -6378137 * Math.PI,
+                    'right': 6378137 * Math.PI
+                }
+            },
+
+            'PRESET-VT-4326': {
+                'projection': 'EPSG:4326',
+                'fullExtent': {
+                    'top': 90,
+                    'left': -180,
+                    'bottom': -90,
+                    'right': 180
+                },
+                'resolutions': (function () {
+                    const resolutions = [];
+                    for (let i = 0; i <= crsMaxNativeZoom; i++) {
+                        resolutions[i] = 180 / 4 / (Math.pow(2, i) * 128);
+                    }
+                    return resolutions;
+                })()
             }
-            return resolutions;
-        })()
+        };
+        DEFAULT_CRS['EPSG:4490'] = DEFAULT_CRS['EPSG:4326'];
+        DEFAULT_CRS['PRESET-3857-512'] = DEFAULT_CRS['PRESET-VT-3857'];
+        DEFAULT_CRS['PRESET-4326-512'] = DEFAULT_CRS['PRESET-VT-4326'];
+        DEFAULT_CRS['PRESET-4490-512'] = DEFAULT_CRS['PRESET-VT-4326'];
     }
-};
-
-DefaultSpatialReference['EPSG:4490'] = DefaultSpatialReference['EPSG:4326'];
-DefaultSpatialReference['PRESET-3857-512'] = DefaultSpatialReference['PRESET-VT-3857'];
-DefaultSpatialReference['PRESET-4326-512'] = DefaultSpatialReference['PRESET-VT-4326'];
-DefaultSpatialReference['PRESET-4490-512'] = DefaultSpatialReference['PRESET-VT-4326'];
+    return DEFAULT_CRS;
+}
 
 /**
  * 空间参考类
@@ -162,18 +171,18 @@ export default class SpatialReference {
 
     static registerPreset(name: string, value: SpatialReferenceType) {
         name = name && name.toUpperCase();
-        if (DefaultSpatialReference[name]) {
+        if (_getDefaultSpatialReference()[name]) {
             console.warn(`Spatial reference ${name} already registered.`);
         }
-        DefaultSpatialReference[name] = value;
+        _getDefaultSpatialReference()[name] = value;
     }
 
     static getPreset(preset: string) {
-        return DefaultSpatialReference[preset.toUpperCase()];
+        return _getDefaultSpatialReference()[preset.toUpperCase()];
     }
 
     static getAllPresets() {
-        return Object.keys(DefaultSpatialReference);
+        return Object.keys(_getDefaultSpatialReference());
     }
 
     static loadArcgis(url: string, cb: (_, spatialRef?) => void, options: any) {
@@ -306,7 +315,7 @@ export default class SpatialReference {
             resolutions = this.options['resolutions'];
         if (!resolutions) {
             if (projection['code']) {
-                defaultSpatialRef = DefaultSpatialReference[projection['code'].toUpperCase()];
+                defaultSpatialRef = _getDefaultSpatialReference()[projection['code'].toUpperCase()];
                 if (defaultSpatialRef) {
                     resolutions = defaultSpatialRef['resolutions'];
                     this.isEPSG = projection['code'] !== 'IDENTITY';
@@ -332,7 +341,7 @@ export default class SpatialReference {
         let fullExtent = this.options['fullExtent'];
         if (!fullExtent) {
             if (projection['code']) {
-                defaultSpatialRef = DefaultSpatialReference[projection['code'].toUpperCase()];
+                defaultSpatialRef = _getDefaultSpatialReference()[projection['code'].toUpperCase()];
                 if (defaultSpatialRef) {
                     fullExtent = defaultSpatialRef['fullExtent'];
                 }
@@ -444,5 +453,5 @@ export default class SpatialReference {
 
 
 export function getDefaultSpatialReference(): Record<string, SpatialReferenceType> {
-    return JSON.parse(JSON.stringify(DefaultSpatialReference));
+    return JSON.parse(JSON.stringify(_getDefaultSpatialReference()));
 }

@@ -29,7 +29,7 @@ describe('SpatialReference.Update', function () {
             projection: 'baidu',
             resolutions: resolutions
         };
-        expect(map.getMaxZoom()).to.be.eql(22);
+        expect(map.getMaxZoom()).to.be.eql(25);
         map.setSpatialReference(spatialReference);
         expect(map.getMaxZoom()).to.be.eql(24);
     });

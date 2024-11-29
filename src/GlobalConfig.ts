@@ -17,6 +17,8 @@ const GlobalConfig = {
     //每个Worker Message中封装的task message数量
     messagePostRatioPerWorker: 0.3,
     //当前运行环境的最大FPS,用户可以手动配置，否则将自动检测并赋值,为地图锁帧渲染准备
-    maxFPS: 0
+    maxFPS: 0,
+    //投影最大层级，即地图最大能放大到多大层级
+    crsMaxNativeZoom: 22
 };
 export default GlobalConfig;
