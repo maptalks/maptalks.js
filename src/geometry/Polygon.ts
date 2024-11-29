@@ -1,5 +1,5 @@
 import { isArrayHasData } from '../core/util';
-import Coordinate from '../geo/Coordinate';
+import Coordinate, { CoordinateArray } from '../geo/Coordinate';
 import { clipPolygon } from '../core/util/path';
 import Path, { PathCoordinates, PathOptionsType, PathsCoordinates } from './Path';
 import Extent from '../geo/Extent';
@@ -28,7 +28,7 @@ const JSON_TYPE = 'Polygon';
  *  ).addTo(layer);
  */
 
-export type PolygonCoordinatesType = Array<Array<Coordinate>> | Array<Array<number>>;
+export type PolygonCoordinatesType = Array<Array<Coordinate>> | Array<Array<CoordinateArray>> | Array<Array<number>>;
 export type RingCoordinates = PathCoordinates;
 export type RingsCoordinates = PathsCoordinates;
 
