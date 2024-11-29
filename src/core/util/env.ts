@@ -11,3 +11,13 @@ export const IS_NODE = Object.prototype.toString.call(typeof process !== 'undefi
 export function getGlobalThis() {
     return typeof globalThis !== 'undefined' ? globalThis : global || self;
 }
+
+export function checkMTKVersion(version) {
+    const mtkversion = getGlobalThis().maptalksversion;
+    if (mtkversion) {
+        console.error('maptalks repeated import, which may result in duplicate packaging or the introduction of multiple maptalks umd versions');
+        console.error(`maptalks repeated import error. find version:'${mtkversion}',but Currently mounting version:'${version}'. This may lead to some unpredictable bugs`);
+    } else {
+        getGlobalThis().maptalksversion = version;
+    }
+}
