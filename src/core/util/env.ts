@@ -15,8 +15,7 @@ export function getGlobalThis() {
 export function checkMTKVersion(version) {
     const mtkversion = getGlobalThis().maptalksversion;
     if (mtkversion) {
-        console.error('maptalks repeated import, which may result in duplicate packaging or the introduction of multiple maptalks umd versions');
-        console.error(`maptalks repeated import error. find version:'${mtkversion}',but Currently mounting version:'${version}'. This may lead to some unpredictable bugs`);
+        throw new Error(`Disallow duplicate imports of maptalks version ${version} and ${mtkversion}`);
     } else {
         getGlobalThis().maptalksversion = version;
     }
