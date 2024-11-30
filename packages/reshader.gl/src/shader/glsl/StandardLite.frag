@@ -302,9 +302,7 @@ float Schlick_f(float v, float cosHV) {
     return v + (1.0 - v) * pow(facing, 5.0);
 }
 
-vec3 linearTosRGB(const in vec3 color) {
-    return vec3(color.r < 0.0031308 ? color.r * 12.92 : 1.055 * pow(color.r, 1.0/2.4) - 0.055, color.g < 0.0031308 ? color.g * 12.92 : 1.055 * pow(color.g, 1.0/2.4) - 0.055, color.b < 0.0031308 ? color.b * 12.92 : 1.055 * pow(color.b, 1.0/2.4) - 0.055);
-}
+#include <srgb_frag>
 
 void main() {
     glFragColor = vec4(vec3(1.0), opacity);

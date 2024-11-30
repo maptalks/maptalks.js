@@ -107,9 +107,6 @@ vec3 transformNormal() {
     #endif
 }
 
-vec4 linearTosRGB(const in vec4 color) {
-    return vec4( color.r < 0.0031308 ? color.r * 12.92 : 1.055 * pow(color.r, 1.0/2.4) - 0.055, color.g < 0.0031308 ? color.g * 12.92 : 1.055 * pow(color.g, 1.0/2.4) - 0.055, color.b < 0.0031308 ? color.b * 12.92 : 1.055 * pow(color.b, 1.0/2.4) - 0.055, color.a);
-}
 
 vec4 getBaseColor() {
     #if defined(HAS_BASECOLOR_MAP)
@@ -197,7 +194,6 @@ void main() {
         glFragColor = vec4(result, polygonOpacity * baseColor.a);
     #endif
 
-    // glFragColor = linearTosRGB(glFragColor);
     #if defined(HAS_COLOR) || defined(HAS_COLOR0)
         float colorAlpha = vColor.a;
     #elif defined(IS_LINE_EXTRUSION)

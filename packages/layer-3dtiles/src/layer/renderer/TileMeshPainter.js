@@ -416,7 +416,6 @@ export default class TileMeshPainter {
             uniforms.cullFace = 'back';
             uniforms.stencilEnable = true;
         }
-        this._modelScene.setMeshes(branchMeshes);
         return this._renderer.render(shader, uniforms, this._modelScene, fbo);
     }
 
