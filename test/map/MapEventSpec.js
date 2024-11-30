@@ -170,6 +170,7 @@ describe('Map.Event', function () {
         Object.assign(container.style, { width: '1000px', height: '500px' });
 
         setTimeout(() => {
+            map.setPitch(80);
             const { width, height } = map.getSize();
             const point = new maptalks.Point(width / 2, 2);
             var spy = sinon.spy();
