@@ -1,6 +1,6 @@
 import * as maptalks from 'maptalks';
 import { reshader, vec3, mat4, HighlightUtil } from '@maptalks/gl';
-import { SYMBOLS_NEED_REBUILD_IN_VT, StyleUtil, FuncTypeUtil } from '../../../packer';
+import { getVectorPacker } from '../../../packer/inject';
 import { isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
 import { extend, copyJSON, isNil, hasOwn } from '../Util';
 import outlineFrag from './glsl/outline.frag';
@@ -9,6 +9,8 @@ import { inTerrainTile } from './util/line_offset';
 import deepEuqal from 'fast-deep-equal';
 import { oldPropsKey, externalPropsKey } from '../../renderer/utils/convert_to_painter_features';
 import { INVALID_ALTITUDE } from '../../../common/Constant';
+
+const { SYMBOLS_NEED_REBUILD_IN_VT, StyleUtil, FuncTypeUtil } = getVectorPacker();
 
 const { loginIBLResOnCanvas, logoutIBLResOnCanvas, getIBLResOnCanvas } = reshader.pbr.PBRUtils;
 

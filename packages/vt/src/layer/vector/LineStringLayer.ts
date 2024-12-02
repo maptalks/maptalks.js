@@ -2,11 +2,13 @@ import * as maptalks from "maptalks";
 
 import { LINE_GRADIENT_PROP_KEY, LINE_SYMBOL } from "./util/symbols";
 
-import { LinePack } from "../../packer";
+import { getVectorPacker } from "../../packer/inject";
 import Vector3DLayer from "./Vector3DLayer";
 import Vector3DLayerRenderer from "./Vector3DLayerRenderer";
 import { extend } from "../../common/Util";
 import { fromJSON } from "./util/from_json";
+
+const { LinePack } = getVectorPacker();
 
 const options = {
   meshRenderOrder: 1,

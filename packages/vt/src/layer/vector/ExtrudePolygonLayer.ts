@@ -3,7 +3,7 @@ import * as maptalks from "maptalks";
 import type { LitDataConfig, LitMaterial } from "../../types";
 import { extend, isNil } from "../../common/Util";
 
-import { DEFAULT_TEX_WIDTH } from "../../packer";
+import { getVectorPacker } from "../../packer/inject";
 import { ID_PROP } from "./util/convert_to_feature";
 import type { OverlayLayerOptionsType } from "maptalks";
 import { PROP_OMBB } from "../../common/Constant";
@@ -13,6 +13,8 @@ import { build3DExtrusion } from "../../worker/builder/";
 import computeOMBB from "../../worker/builder/ombb.js";
 import { fromJSON } from "./util/from_json";
 import { meterToPoint } from "../plugins/Util";
+
+const { DEFAULT_TEX_WIDTH } = getVectorPacker();
 
 interface ExtrudePolygonLayerOptions extends OverlayLayerOptionsType {
   dataConfig: LitDataConfig;

@@ -9,7 +9,7 @@ export { default as CirclePack } from './pack/CirclePack';
 export { default as RoundTubePack } from './pack/RoundTubePack';
 export { default as SquareTubePack } from './pack/SquareTubePack';
 export { default as GlyphRequestor } from './GlyphRequestor';
-export { default as IconRequestor } from './IconRequestor';
+// export { default as IconRequestor } from './IconRequestor';
 export { default as LRUCache } from './LRUCache';
 export { default as StyledPoint } from './pack/StyledPoint';
 export { default as StyledVector } from './pack/StyledVector';

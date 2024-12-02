@@ -43,7 +43,6 @@ const pluginsWorker = production
               },
               output: {
                   beautify: false,
-                  comments: "/^!/",
               },
           }),
       ]
@@ -116,7 +115,43 @@ const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${
 }\n * (c) 2016-${new Date().getFullYear()} maptalks.org\n */`;
 const outro = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg.version}');`;
 
+const globalFunc = `
+const getGlobal = function () {
+  if (typeof globalThis !== 'undefined') { return globalThis; }
+  if (typeof self !== "undefined") { return self; }
+  if (typeof window !== "undefined") { return window; }
+  if (typeof global !== "undefined") { return global; }
+};`
+
 module.exports = [
+    {
+        input: "src/packer/index.js",
+        plugins: [
+            json(),
+            nodeResolve({
+                mainFields: ["module", "main"],
+            }),
+            commonjs(),
+            replace({
+                // 'this.exports = this.exports || {}': '',
+                "(function (exports) {": "export function packerExport(exports) {"+ globalFunc + "\n",
+                "})(this.exports = this.exports || {});": "getGlobal()['maptalks_vt_packers'] = exports;}\npackerExport({});",
+                preventAssignment: false,
+                delimiters: ["", ""],
+            }),
+        ]
+            .concat(pluginsWorker),
+            // .concat([transformBackQuote()]),
+        output: {
+            strict: false,
+            format: "iife",
+            name: "exports",
+            globals: ["exports"],
+            extend: true,
+            file: "build/packer.js"
+            // footer: ``
+        },
+    },
     {
         input: "src/worker/index.js",
         external: ["maptalks"],

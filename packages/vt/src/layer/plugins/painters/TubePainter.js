@@ -1,6 +1,5 @@
 import * as maptalks from 'maptalks';
 import Color from 'color';
-import { StyleUtil } from '../../../packer';
 import { reshader, mat4, mat3 } from '@maptalks/gl';
 import BasicPainter from './BasicPainter';
 import { setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar, isNil } from '../Util';
@@ -8,6 +7,9 @@ import { prepareFnTypeData, isFnTypeSymbol } from './util/fn_type_util';
 import { createAtlasTexture } from './util/atlas_util';
 import tubeVert from './glsl/tube.vert';
 import { isFunctionDefinition, piecewiseConstant, interpolated } from '@maptalks/function-type';
+import { getVectorPacker } from '../../../packer/inject';
+
+const { StyleUtil } = getVectorPacker();
 
 const { getPBRUniforms } = reshader.pbr.PBRUtils;
 

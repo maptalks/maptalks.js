@@ -2,8 +2,10 @@ import { fillPosArray, isClippedEdge } from './Common';
 import { buildFaceUV, buildSideUV } from './UV';
 import { isNumber } from '../../common/Util';
 import earcut from 'earcut';
-import { PackUtil, ArrayPool } from '../../packer';
 import { KEY_IDX, PROP_OMBB } from '../../common/Constant';
+import { getVectorPacker } from '../../packer/inject';
+
+const { PackUtil, ArrayPool } = getVectorPacker();
 
 export function buildExtrudeFaces(
     features, EXTENT,

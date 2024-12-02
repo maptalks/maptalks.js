@@ -11,7 +11,7 @@ import type {
   VtSymbol,
 } from "../../types";
 import Color from 'color';
-import { PackUtil } from "../../packer";
+import { getVectorPacker } from "../../packer/inject";
 import { compress, uncompress } from "./Compress";
 import { extend, hasOwn, isNil, isObject, isString, pushIn } from "../../common/Util";
 
@@ -20,6 +20,8 @@ import VectorTileLayerRenderer from "../renderer/VectorTileLayerRenderer";
 import { isFunctionDefinition } from "@maptalks/function-type";
 import { LayerIdentifyOptionsType } from "maptalks";
 import { PositionArray, TileLayerOptionsType } from "maptalks";
+
+const { PackUtil } = getVectorPacker();
 
 const TMP_POINT = new maptalks.Point(0, 0);
 const TMP_COORD = new maptalks.Coordinate(0, 0);

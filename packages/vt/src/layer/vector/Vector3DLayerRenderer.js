@@ -1,14 +1,17 @@
 import * as maptalks from 'maptalks';
 import { createREGL, reshader, mat4, vec3 } from '@maptalks/gl';
 import { convertToFeature, ID_PROP } from './util/convert_to_feature';
-import { SYMBOLS_NEED_REBUILD_IN_VECTOR, IconRequestor, GlyphRequestor, PointPack, LinePack, StyledPoint, VectorPack, StyledVector } from '../../packer';
 import { extend, hasOwn, getCentiMeterScale, isNil } from '../../common/Util';
+import IconRequestor from '../../common/IconRequestor';
 import { MARKER_SYMBOL, TEXT_SYMBOL, LINE_SYMBOL, SYMBOL_PREFIX, LINE_GRADIENT_PROP_KEY } from './util/symbols';
 import { KEY_IDX } from '../../common/Constant';
 import Vector3DLayer from './Vector3DLayer';
 import { isFunctionDefinition, loadFunctionTypes } from '@maptalks/function-type';
 import convertToPainterFeatures from '../renderer/utils/convert_to_painter_features';
 import { ICON_PAINTER_SCENECONFIG } from '../core/Constant';
+import { getVectorPacker } from '../../packer/inject';
+
+const { SYMBOLS_NEED_REBUILD_IN_VECTOR, GlyphRequestor, PointPack, LinePack, StyledPoint, VectorPack, StyledVector } = getVectorPacker();
 
 // const SYMBOL_SIMPLE_PROPS = {
 //     textFill: 1,

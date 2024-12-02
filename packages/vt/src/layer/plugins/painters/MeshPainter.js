@@ -7,7 +7,8 @@ import { setUniformFromSymbol, createColorSetter, isNumber, toUint8ColorInGlobal
 import { prepareFnTypeData } from './util/fn_type_util';
 import { interpolated } from '@maptalks/function-type';
 import Color from 'color';
-import { DEFAULT_TEX_WIDTH } from '../../../packer';
+import { getVectorPacker } from '../../../packer/inject';
+const { DEFAULT_TEX_WIDTH } = getVectorPacker();
 
 const SCALE = [1, 1, 1];
 const DEFAULT_POLYGON_FILL = [1, 1, 1, 1];

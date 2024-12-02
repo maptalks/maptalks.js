@@ -10,7 +10,9 @@ import { createAtlasTexture } from './util/atlas_util';
 import { isFunctionDefinition, piecewiseConstant, interpolated } from '@maptalks/function-type';
 import Color from 'color';
 import { isObjectEmpty } from './util/is_obj_empty';
-import { INVALID_TEX_COORD } from '../../../packer';
+import { getVectorPacker } from '../../../packer/inject';
+
+const { INVALID_TEX_COORD } = getVectorPacker();
 
 const IDENTITY_ARR = mat4.identity([]);
 

@@ -1,6 +1,9 @@
 import * as maptalks from 'maptalks';
 import { extend, uid, toJSON } from '../../../common/Util';
-import { IconRequestor, GlyphRequestor } from '../../../packer';
+import IconRequestor from '../../../common/IconRequestor';
+import { getVectorPacker } from '../../../packer/inject';
+
+const { GlyphRequestor } = getVectorPacker();
 
 // GeoJSONVectorLayer caches data in memory, should use a dedicated worker.
 const dedicatedLayers = ['GeoJSONVectorTileLayer'];

@@ -2,7 +2,9 @@ import { extend, hasOwn } from '../../../common/Util';
 import * as maptalks from 'maptalks';
 import { KEY_IDX } from '../../../common/Constant';
 import { LINE_GRADIENT_PROP_KEY } from './symbols';
-import { PackUtil } from '../../../packer';
+import { getVectorPacker } from '../../../packer/inject';
+
+const { PackUtil } = getVectorPacker();
 
 const POINT = new maptalks.Point(0, 0);
 export const ID_PROP = '_vector3dlayer_id';

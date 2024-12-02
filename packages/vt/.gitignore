@@ -12,5 +12,6 @@ vt.clay.js
 web.config
 build/layer.js
 build/worker.js
+build/packer.js
 actual.png
 diff.png

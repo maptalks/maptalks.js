@@ -1,8 +1,10 @@
 import { vec3, mat4, quat, reshader } from '@maptalks/gl';
-import { PackUtil } from '../../../packer';
 import { setUniformFromSymbol, createColorSetter, isNumber, extend } from '../Util';
 import { getCentiMeterScale, isNil } from '../../../common/Util';
 import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
+import { getVectorPacker } from '../../../packer/inject';
+
+const { PackUtil } = getVectorPacker();
 
 const V3 = [];
 const TEMP_V3_0 = [];

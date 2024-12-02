@@ -17,8 +17,10 @@ import textPickingVert from './glsl/text.vert';
 import { updateOneGeometryFnTypeAttrib } from './util/fn_type_util';
 import { GLYPH_SIZE, ICON_SIZE } from './Constant';
 import { createMarkerMesh, getMarkerFnTypeConfig, prepareMarkerGeometry, prepareLabelIndex, updateMarkerFitSize, BOX_VERTEX_COUNT, BOX_ELEMENT_COUNT } from './util/create_marker_painter';
-import { FilterUtil } from '../../../packer';
+import { getVectorPacker } from '../../../packer/inject';
 import { INVALID_ALTITUDE } from '../../../common/Constant';
+
+const { FilterUtil } = getVectorPacker();
 
 const ICON_FILTER = function (mesh) {
     const renderer = this.layer.getRenderer();

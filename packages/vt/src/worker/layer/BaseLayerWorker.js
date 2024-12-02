@@ -1,11 +1,13 @@
 import { isNil, extend, isString, isObject, isNumber, pushIn, isFnTypeSymbol } from '../../common/Util';
 import { buildWireframe, build3DExtrusion } from '../builder/';
-import { VectorPack, PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack, CirclePack, RoundTubePack, SquareTubePack, FilterUtil, PackUtil, StyleUtil, TextUtil } from '../../packer';
-import { DEFAULT_TEX_WIDTH, GlyphRequestor/*, IconRequestor*/ } from '../../packer';
 import { createFilter } from '@maptalks/feature-filter';
 import { KEY_IDX } from '../../common/Constant';
 import Browser from '../util/Browser';
+import { getVectorPacker } from '../../packer/inject';
 
+const { VectorPack, PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack,
+    LineExtrusionPack, CirclePack, RoundTubePack, SquareTubePack, FilterUtil,
+    PackUtil, StyleUtil, TextUtil, DEFAULT_TEX_WIDTH, GlyphRequestor } = getVectorPacker();
 // let FONT_CANVAS;
 
 const oldPropsKey = '__original_properties';

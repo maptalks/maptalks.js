@@ -1,6 +1,9 @@
 import GeoJSONLayerWorker from './layer/GeojsonLayerWorker';
 import VectorTileLayerWorker from './layer/VectorTileLayerWorker';
-import { LRUCache } from '../packer';
+import { getVectorPacker } from '../packer/inject';
+
+const { LRUCache } = getVectorPacker();
+
 
 let callbackId = 0;
 

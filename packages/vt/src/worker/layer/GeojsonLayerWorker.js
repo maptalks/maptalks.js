@@ -3,10 +3,12 @@ import Ajax from '../util/Ajax';
 import geojsonvt from '@maptalks/geojson-vt';
 import BaseLayerWorker from './BaseLayerWorker';
 import bbox from '@maptalks/geojson-bbox';
-import { PackUtil } from '../../packer';
 import computeOMBB from '../builder/Ombb.js';
 import { PROP_OMBB } from '../../common/Constant';
+import { getVectorPacker } from '../../packer/inject.js';
 // import { project } from '../builder/projection.js';
+
+const { PackUtil } = getVectorPacker();
 
 export default class GeoJSONLayerWorker extends BaseLayerWorker {
     /**
