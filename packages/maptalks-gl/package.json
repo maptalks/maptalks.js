@@ -44,7 +44,6 @@
     "@maptalks/analysis": "workspace:*",
     "@maptalks/gl": "workspace:*",
     "@maptalks/gltf-layer": "workspace:*",
-    "@maptalks/msd-json-loader": "^0.1.0",
     "@maptalks/transform-control": "workspace:*",
     "@maptalks/video-layer": "workspace:*",
     "@maptalks/vt": "workspace:*",
