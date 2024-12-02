@@ -485,9 +485,6 @@ importers:
       '@maptalks/gltf-layer':
         specifier: workspace:*
         version: link:../layer-gltf
-      '@maptalks/msd-json-loader':
-        specifier: ^0.1.0
-        version: 0.1.0
       '@maptalks/transform-control':
         specifier: workspace:*
         version: link:../transform-control
@@ -742,8 +739,8 @@ importers:
         specifier: ^10.4.1
         version: 10.4.3(eslint@8.57.0)
       maptalks:
-        specifier: 1.0.0-rc.35
-        version: 1.0.0-rc.35
+        specifier: 1.0.0-rc.40
+        version: 1.0.0-rc.40
       pixelmatch:
         specifier: ^4.0.2
         version: 4.0.2
@@ -1056,9 +1053,6 @@ packages:
 
   '@maptalks/martini@0.4.0':
     resolution: {integrity: sha512-h7yiE8FXaBhTncygKDOt24VNqvSwzK/nPVu7irr33jdp+1dmvKPWLyp40EUxecs9DOHMr/clbRD3sBJbtU9KnA==}
-
-  '@maptalks/msd-json-loader@0.1.0':
-    resolution: {integrity: sha512-PV1l9WlmndsaZzhFiiI7lhlRPT9+5XFx3YtGQqowInry5DcWVb27HukF51AAGYbO2W+KhUjV8Rj6fvEpxWYK+g==}
 
   '@maptalks/regl@3.4.0':
     resolution: {integrity: sha512-vir0oI5PXlLfxp1/B5TOOkmQfy7qeCwnx16uALViXfwo/ZJ79OLwePYENxwGLkbEV3HxETpdTm3dDU3Et9O4kw==}
@@ -2907,9 +2901,6 @@ packages:
   magic-string@0.30.10:
     resolution: {integrity: sha512-iIRwTIf0QKV3UAnYK4PU8uiEc4SRh5jX0mwpIwETPpHdhVM4f53RSwS/vXvN1JhGX+Cs7B8qIq3d6AH49O5fAQ==}
 
-  maptalks@1.0.0-rc.35:
-    resolution: {integrity: sha512-RVFqe/+v7hGf6usS35vgHIygWBGQJPkhUwdYI3YMfGucbNsRK03W9Q611+WB2L7Wsal68nkPkauHKNV+ar/Z6w==}
-
   maptalks@1.0.0-rc.40:
     resolution: {integrity: sha512-XY6Y/ZxM0PvtJBtadMGgKNkOk1bz8f2wqbN/rOJyAF5OTIkrFtlZsNlZFLhl1PgvluKZLY5Mz79+mYPQRhpw6Q==}
 
@@ -4200,8 +4191,6 @@ snapshots:
       through2: 0.6.5
 
   '@maptalks/martini@0.4.0': {}
-
-  '@maptalks/msd-json-loader@0.1.0': {}
 
   '@maptalks/regl@3.4.0': {}
 
@@ -6844,18 +6833,6 @@ snapshots:
   magic-string@0.30.10:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.4.15
-
-  maptalks@1.0.0-rc.35:
-    dependencies:
-      '@maptalks/feature-filter': 1.3.0
-      '@maptalks/function-type': 1.4.0
-      frustum-intersects: 0.1.0
-      lineclip: 1.1.5
-      rbush: 2.0.2
-      simplify-js: 1.2.4
-    optionalDependencies:
-      '@rollup/rollup-darwin-x64': 4.17.2
-      '@rollup/rollup-linux-x64-gnu': 4.17.2
 
   maptalks@1.0.0-rc.40:
     dependencies:
