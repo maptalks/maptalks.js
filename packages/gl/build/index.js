@@ -1,8 +1,11 @@
+// transcoders必须要在reshader.gl之前import，否则reshader.gl无法识别到GLTFLoader
+import transcoders, { registerGLTFLoaderBundle } from '../src/transcoders';
+export { transcoders };
+import { gltfLoaderExport } from  './gltf-loader-bundle.js';
+registerGLTFLoaderBundle(gltfLoaderExport);
+
 import createREGL from '@maptalks/regl';
 import * as reshader from '@maptalks/reshader.gl';
-
-import * as gltf from '@maptalks/gltf-loader';
-export { gltf };
 
 export {
     glMatrix,
@@ -13,8 +16,7 @@ export {
 export { createREGL, reshader };
 
 export * from './gl/gl.es.js';
-import transcoders from '../src/transcoders';
-export { transcoders };
+
 
 import * as maptalks from 'maptalks';
 import chunk from './worker.js';

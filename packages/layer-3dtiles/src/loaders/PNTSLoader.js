@@ -1,7 +1,9 @@
-import { Ajax } from '@maptalks/gltf-loader';
+import { getGLTFLoaderBundle } from '@maptalks/gl/dist/transcoders.js';
 import { readFeatureTableBatchTable, readBatchId, convertQuantizedPosition, getComponentFromCtor } from '../common/TileHelper.js';
 import getTranscoders from './transcoders.js';
 import { getBatchIdArrayType } from '../common/Util.js';
+
+const { Ajax } = getGLTFLoaderBundle();
 
 // s3m : https://github.com/SuperMap/s3m-spec
 // b3dm: https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/TileFormats/Batched3DModel/README.md

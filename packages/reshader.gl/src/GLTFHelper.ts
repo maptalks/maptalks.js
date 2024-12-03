@@ -1,6 +1,7 @@
-//@ts-expect-error gltf-loader缺少typings定义
-import { Ajax, GLTFLoader } from '@maptalks/gltf-loader';
+import { getGLTFLoaderBundle } from './common/GLTFBundle'
 import GLTFPack from './gltf/GLTFPack';
+
+const { Ajax, GLTFLoader } = getGLTFLoaderBundle();
 
 // options.fetchOptions
 // options.gltfLoaderOptions

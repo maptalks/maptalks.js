@@ -134,7 +134,7 @@ module.exports = [
             commonjs(),
             replace({
                 // 'this.exports = this.exports || {}': '',
-                "(function (exports) {": "export function packerExport(exports) {"+ globalFunc + "\n",
+                "(function (exports) {": "export function packerExport(exports) {"+ globalFunc + ";if (getGlobal()['maptalks_vt_packers']) return;\n",
                 "})(this.exports = this.exports || {});": "getGlobal()['maptalks_vt_packers'] = exports;}\npackerExport({});",
                 preventAssignment: false,
                 delimiters: ["", ""],

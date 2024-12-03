@@ -1,5 +1,6 @@
-import * as gltfloader from '@maptalks/gltf-loader';
-import transcoders from '@maptalks/gl/dist/transcoders';
+import transcoders, { getGLTFLoaderBundle } from '@maptalks/gl/dist/transcoders';
+
+const gltfloader = getGLTFLoaderBundle();
 
 const decoders = {
     'image/crn': transcoders.crn && transcoders.crn(),

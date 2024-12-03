@@ -1,8 +1,11 @@
 import { vec3 } from 'gl-matrix';
-import { Ajax, GLTFLoader } from '@maptalks/gltf-loader';
+import { getGLTFLoaderBundle } from '@maptalks/gl/dist/transcoders.js';
 import { readFeatureTableBatchTable, readBatchId, convertQuantizedPosition } from '../common/TileHelper.js';
 import { stringFromUTF8Array } from '../common/Util.js';
 import getTranscoders from './transcoders.js';
+
+const { Ajax, GLTFLoader } = getGLTFLoaderBundle();
+
 // https://github.com/CesiumGS/3d-tiles/tree/main/specification/TileFormats/Instanced3DModel
 export default class I3DMLoader {
     constructor(requestImage, loaderCtor, supportedFormats, maxTextureSize) {

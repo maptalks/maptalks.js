@@ -1,12 +1,14 @@
 import { isObject } from '../../../common/Util';
 import { getComponentType } from '../../../common/TileHelper';
-import { Ajax } from '@maptalks/gltf-loader';
+import { getGLTFLoaderBundle } from '@maptalks/gl/dist/transcoders.js';
 import { vec3, mat4 } from 'gl-matrix';
 import transcoders from '../../../loaders/transcoders.js';
 import parseDDS from 'parse-dds';
 // import parseDDS from './DDSParser';
 import { iterateBufferData } from '../../../common/GLTFHelpers';
 import { project } from '../../Projection';
+
+const { Ajax } = getGLTFLoaderBundle();
 
 const IDENTITY_MATRIX = mat4.identity([]);
 const DRACO = transcoders().draco;

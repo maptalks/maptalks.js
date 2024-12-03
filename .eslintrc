@@ -17,7 +17,8 @@
   },
   "globals": {
     "importScripts" : true,
-    "WorkerGlobalScope": true
+    "WorkerGlobalScope": true,
+    "globalThis": true
   },
   "overrides": [
     {

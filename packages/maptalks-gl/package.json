@@ -41,7 +41,6 @@
   },
   "dependencies": {
     "@maptalks/3dtiles": "workspace:*",
-    "@maptalks/analysis": "workspace:*",
     "@maptalks/gl": "workspace:*",
     "@maptalks/gltf-layer": "workspace:*",
     "@maptalks/transform-control": "workspace:*",

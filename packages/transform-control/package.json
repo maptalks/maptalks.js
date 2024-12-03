@@ -39,7 +39,6 @@
   },
   "dependencies": {
     "@maptalks/gl": "workspace:*",
-    "@maptalks/gltf-loader": "workspace:*",
     "@maptalks/gltf-layer": "workspace:*"
   },
   "gitHead": "9eeea4807723d460fa7e09969c6556d53f6bed84"

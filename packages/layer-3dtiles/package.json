@@ -40,7 +40,6 @@
   "homepage": "https://github.com/fuzhenn/3dtiles-issues/",
   "dependencies": {
     "@maptalks/function-type": "^1.4.0",
-    "@maptalks/gltf-loader": "workspace:*",
     "@maptalks/tbn-packer": "^1.4.5",
     "frustum-intersects": "^0.2.4",
     "gl-matrix": "^3.4.0",

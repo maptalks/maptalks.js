@@ -181,8 +181,7 @@ if (production) {
                 '@maptalks/gl',
                 '@maptalks/feature-filter',
                 '@maptalks/function-type',
-                'frustum-intersects',
-                '@maptalks/gltf-loader'
+                'frustum-intersects'
             ],
             plugins: [
                 resolve({

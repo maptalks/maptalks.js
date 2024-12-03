@@ -1,6 +1,6 @@
 import * as maptalks from 'maptalks';
 import { reshader } from '@maptalks/gl';
-import { Ajax } from '@maptalks/gltf-loader';
+import { getGLTFLoaderBundle } from '@maptalks/gl/dist/transcoders.js';
 import { createREGL, MaskRendererMixin } from '@maptalks/gl';
 import Geo3DTilesWorkerConnection from '../Geo3DTilesWorkerConnection';
 import LRUCache from './LRUCache';
@@ -12,6 +12,8 @@ import { isRelativeURL, prepareFetchOptions } from '../../common/UrlUtil';
 import { parseI3SJSON, isI3STileset, isI3SMesh, getI3SNodeInfo } from '../i3s/I3SHelper';
 import { fillNodepagesToCache } from '../i3s/Util';
 import I3SNode from '../i3s/I3SNode';
+
+const { Ajax } = getGLTFLoaderBundle();
 
 const COORD_IN = new maptalks.Coordinate(0, 0);
 const COORD_OUT = new maptalks.Coordinate(0, 0);

@@ -1,4 +1,5 @@
 const getGlobal = function () {
+    if (typeof globalThis !== 'undefined') { return globalThis; }
     if (typeof self !== 'undefined') { return self; }
     if (typeof window !== 'undefined') { return window; }
     if (typeof global !== 'undefined') { return global; }
@@ -8,6 +9,7 @@ const getGlobal = function () {
 const globals = getGlobal();
 
 const transcoders = globals['gl_trans__coders'] = globals['gl_trans__coders'] || {};
+
 
 function inject(chunk) {
     // 奇怪的变量名是为了避免与worker源代码中的变量名冲突
@@ -26,6 +28,8 @@ function inject(chunk) {
         }
         injected += 'tran_____scoders["' + p + '"] =' + transcoders[p].toString() + '\n;';
     }
+    const gltfBundle = getGlobal()['maptalks_gltf_loader_bundle'];
+    injected += '\n(' + gltfBundle.toString() + ')({});\n';
     injected += '\n' + fnString.substring(prefix.length);
     return injected;
 }
@@ -39,8 +43,16 @@ function registerTranscoder(name, fn) {
     transcoders[name] = fn;
 }
 
+function getGLTFLoaderBundle() {
+    return getGlobal()['maptalks_gltf_loader'];
+}
+
+function registerGLTFLoaderBundle(fn) {
+    getGlobal()['maptalks_gltf_loader_bundle'] = fn;
+}
+
 transcoders.registerTranscoder = registerTranscoder;
 transcoders.getTranscoder = getTranscoder;
 
 export default transcoders;
-export { getTranscoder, registerTranscoder };
+export { getTranscoder, registerTranscoder, getGLTFLoaderBundle, registerGLTFLoaderBundle };

@@ -23,7 +23,6 @@
   "license": "UNLICENSED",
   "types": "dist/reshadergl.d.ts",
   "dependencies": {
-    "@maptalks/gltf-loader": "workspace:*",
     "@maptalks/regl": "^3.4.0",
     "@maptalks/tbn-packer": "^1.4.5",
     "earcut": "^2.2.4",

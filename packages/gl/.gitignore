@@ -12,4 +12,6 @@ vt.clay.js
 web.config
 build/layer.js
 build/worker.js
+build/gltf-loader-bundle.js
 build/gl
+build/gl.es.js

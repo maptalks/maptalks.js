@@ -54,7 +54,6 @@
   "dependencies": {
     "@maptalks/feature-filter": "^1.3.0",
     "@maptalks/function-type": "^1.4.0",
-    "@maptalks/gltf-loader": "workspace:*",
     "frustum-intersects": "^0.2.4"
   },
   "gitHead": "9eeea4807723d460fa7e09969c6556d53f6bed84"

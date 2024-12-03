@@ -239,9 +239,6 @@ importers:
       '@maptalks/function-type':
         specifier: ^1.4.0
         version: 1.4.0
-      '@maptalks/gltf-loader':
-        specifier: workspace:*
-        version: link:../gltf-loader
       '@maptalks/tbn-packer':
         specifier: ^1.4.5
         version: 1.4.5
@@ -336,9 +333,6 @@ importers:
       '@maptalks/function-type':
         specifier: ^1.4.0
         version: 1.4.0
-      '@maptalks/gltf-loader':
-        specifier: workspace:*
-        version: link:../gltf-loader
       frustum-intersects:
         specifier: ^0.2.4
         version: 0.2.4
@@ -476,9 +470,6 @@ importers:
       '@maptalks/3dtiles':
         specifier: workspace:*
         version: link:../layer-3dtiles
-      '@maptalks/analysis':
-        specifier: workspace:*
-        version: link:../analysis
       '@maptalks/gl':
         specifier: workspace:*
         version: link:../gl
@@ -516,9 +507,6 @@ importers:
 
   packages/reshader.gl:
     dependencies:
-      '@maptalks/gltf-loader':
-        specifier: workspace:*
-        version: link:../gltf-loader
       '@maptalks/regl':
         specifier: ^3.4.0
         version: 3.4.0
@@ -716,9 +704,6 @@ importers:
       '@maptalks/gltf-layer':
         specifier: workspace:*
         version: link:../layer-gltf
-      '@maptalks/gltf-loader':
-        specifier: workspace:*
-        version: link:../gltf-loader
     devDependencies:
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7

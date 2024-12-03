@@ -2,12 +2,14 @@ import { mat4 } from 'gl-matrix';
 import { defined, isNumber, isInterleaved, extend } from '../common/Util';
 import Skin from './Skin';
 import TRS from './TRS';
-import * as gltf from '@maptalks/gltf-loader';
+import { getGLTFLoaderBundle } from '../common/GLTFBundle'
 import Geometry from '../Geometry';
 import { KEY_DISPOSED } from '../common/Constants.js';
 import GLTFResource from './GLTFResource';
 import { getPrimitive, getTextureMagFilter, getTextureMinFilter, getTextureWrap, getUniqueREGLBuffer } from '../common/REGLHelper';
 import Texture from '../Texture2D';
+
+const gltf = getGLTFLoaderBundle();
 
 let timespan = 0;
 

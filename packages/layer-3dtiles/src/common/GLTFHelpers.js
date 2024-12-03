@@ -1,5 +1,7 @@
-import { GLTFLoader } from '@maptalks/gltf-loader';
+import { getGLTFLoaderBundle } from '@maptalks/gl/dist/transcoders.js';
 import { mat4, quat } from 'gl-matrix';
+
+const { GLTFLoader } = getGLTFLoaderBundle();
 
 export function iterateMesh(gltf, cb) {
     if (!gltf.scenes || !gltf.scenes.length) {

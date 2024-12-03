@@ -1,7 +1,9 @@
-import { Ajax, GLTFLoader } from '@maptalks/gltf-loader';
+import { getGLTFLoaderBundle } from '@maptalks/gl/dist/transcoders.js';
 import { readFeatureTableJSON, readBatchTableJSON, readBatchTableBin, readBatchId } from '../common/TileHelper.js';
 // 不能这样引用: import { transcoders } from '@maptalks/gl'，因为会把gl及相关依赖库（如maptalks）都引用进来
 import getTranscoders from './transcoders.js';
+
+const { Ajax, GLTFLoader } = getGLTFLoaderBundle();
 
 // s3m : https://github.com/SuperMap/s3m-spec
 // b3dm: https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/TileFormats/Batched3DModel/README.md

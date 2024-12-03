@@ -1,8 +1,10 @@
-import { Ajax, GLTFLoader } from '@maptalks/gltf-loader';
+import { getGLTFLoaderBundle } from '@maptalks/gl/dist/transcoders.js';
 import { readMagic } from '../common/TileHelper';
 import B3DMLoader from '../loaders/B3DMLoader';
 import I3DMLoader from '../loaders/I3DMLoader';
 import PNTSLoader from '../loaders/PNTSLoader';
+
+const { Ajax, GLTFLoader } = getGLTFLoaderBundle();
 
 // https://github.com/CesiumGS/3d-tiles/blob/main/specification/TileFormats/Composite/README.md
 

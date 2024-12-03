@@ -1,4 +1,4 @@
-import { Ajax, GLTFLoader } from '@maptalks/gltf-loader';
+import { getGLTFLoaderBundle } from '@maptalks/gl/dist/transcoders.js';
 import { vec3, mat3, mat4 } from 'gl-matrix';
 import B3DMLoader from '../loaders/B3DMLoader';
 import I3DMLoader from '../loaders/I3DMLoader';
@@ -16,6 +16,7 @@ import { buildNormals } from '@maptalks/tbn-packer';
 import { project } from './Projection';
 import getTranscoders from '../loaders/transcoders.js';
 
+const { Ajax, GLTFLoader } = getGLTFLoaderBundle();
 
 const DEFAULT_MAX_TEXTURE_SIZE = 0;
 const Y_TO_Z = [1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1];
