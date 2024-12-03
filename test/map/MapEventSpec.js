@@ -11,7 +11,7 @@ describe('Map.Event', function () {
         container.style.height = '20px';
         document.body.appendChild(container);
         var option = {
-            zoomAnimation:false,
+            zoomAnimation: false,
             zoom: 17,
             center: center
         };
@@ -31,13 +31,13 @@ describe('Map.Event', function () {
         map.on('click', spy);
 
         happen.mousedown(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
         setTimeout(function () {
             happen.click(eventContainer, {
-                'clientX':point.x,
-                'clientY':point.y
+                'clientX': point.x,
+                'clientY': point.y
             });
             expect(spy.called).not.to.be.ok();
             done();
@@ -51,17 +51,17 @@ describe('Map.Event', function () {
         map.on('click', spy);
 
         happen.once(eventContainer, {
-            'type' : 'touchstart',
-            'touches' : [{
-                'clientX':point.x,
-                'clientY':point.y
+            'type': 'touchstart',
+            'touches': [{
+                'clientX': point.x,
+                'clientY': point.y
             }]
         });
         happen.once(eventContainer, {
-            'type' : 'touchend',
-            'touches' : [{
-                'clientX':point.x,
-                'clientY':point.y
+            'type': 'touchend',
+            'touches': [{
+                'clientX': point.x,
+                'clientY': point.y
             }]
         });
         expect(spy.called).to.be.ok();
@@ -74,31 +74,31 @@ describe('Map.Event', function () {
         map.on('dblclick', spy);
 
         happen.once(eventContainer, {
-            'type' : 'touchstart',
-            'touches' : [{
-                'clientX':point.x,
-                'clientY':point.y
+            'type': 'touchstart',
+            'touches': [{
+                'clientX': point.x,
+                'clientY': point.y
             }]
         });
         happen.once(eventContainer, {
-            'type' : 'touchend',
-            'touches' : [{
-                'clientX':point.x,
-                'clientY':point.y
+            'type': 'touchend',
+            'touches': [{
+                'clientX': point.x,
+                'clientY': point.y
             }]
         });
         happen.once(eventContainer, {
-            'type' : 'touchstart',
-            'touches' : [{
-                'clientX':point.x,
-                'clientY':point.y
+            'type': 'touchstart',
+            'touches': [{
+                'clientX': point.x,
+                'clientY': point.y
             }]
         });
         happen.once(eventContainer, {
-            'type' : 'touchend',
-            'touches' : [{
-                'clientX':point.x,
-                'clientY':point.y
+            'type': 'touchend',
+            'touches': [{
+                'clientX': point.x,
+                'clientY': point.y
             }]
         });
         expect(spy.called).to.be.ok();
@@ -110,18 +110,18 @@ describe('Map.Event', function () {
         var spy = sinon.spy();
         map.once('click', spy);
         happen.mousedown(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
         happen.click(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
         expect(spy.called).to.be.ok();
         spy.reset();
         happen.click(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
         expect(spy.called).not.to.be.ok();
     });
@@ -132,8 +132,8 @@ describe('Map.Event', function () {
         var spy = sinon.spy();
         map.on('click', spy);
         happen.click(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
         expect(spy.called).not.to.be.ok();
     });
@@ -164,5 +164,36 @@ describe('Map.Event', function () {
             'clientY': y
         });
         expect(spy.called).not.to.be.ok();
+    });
+
+    it('block map mouse event when point in sky area', function (done) {
+        Object.assign(container.style, { width: '1000px', height: '500px' });
+
+        setTimeout(() => {
+            map.setPitch(80);
+            const { width, height } = map.getSize();
+            const point = new maptalks.Point(width / 2, 2);
+            var spy = sinon.spy();
+            const spy1 = sinon.spy();
+            map.on('click', spy);
+            map.on('dom:click', spy1);
+
+            happen.mousedown(eventContainer, {
+                'clientX': point.x,
+                'clientY': point.y
+            });
+            setTimeout(function () {
+                happen.click(eventContainer, {
+                    'clientX': point.x,
+                    'clientY': point.y
+                });
+                expect(spy.called).not.to.be.ok();
+                expect(spy1.called).to.be.ok();
+                done();
+            }, 500);
+
+
+        }, 500);
+      
     });
 });

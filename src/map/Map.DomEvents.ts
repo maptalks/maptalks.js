@@ -466,6 +466,10 @@ Map.include(/** @lends Map.prototype */ {
         }
 
         const eventParam = this._parseEvent(e, type);
+        //mouse point Beyond the visible range of the map(Sky Box Area)
+        if (!eventParam.coordinate && type !== 'keypress' && type.indexOf('dom:') === -1) {
+            return;
+        }
         this._wrapTerrainData(eventParam);
         if (isMoveEvent(type)) {
             this.getRenderer().callInNextFrame(() => {
