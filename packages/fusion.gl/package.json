@@ -1,0 +1,31 @@
+{
+  "name": "@maptalks/fusiongl",
+  "version": "0.7.2",
+  "description": "",
+  "main": "dist/fusiongl.es.js",
+  "module": "dist/fusiongl.es.js",
+  "scripts": {
+    "build": "rollup -c --environment BUILD:production",
+    "dev": "rollup -c -w",
+    "prepare": "npm run lint && npm run build",
+    "lint": "eslint src/**/*.js"
+  },
+  "author": "axmand, fuzhenn",
+  "contributors": [
+    "fuzhenn"
+  ],
+  "license": "UNLICENSED",
+  "files": [
+    "dist/fusiongl.es.js"
+  ],
+  "devDependencies": {
+    "eslint": "^8.46.0",
+    "rollup": "^1.0.1",
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-node-resolve": "^4.0.0",
+    "rollup-plugin-terser": "^4.0.1"
+  },
+  "dependencies": {
+    "fast-deep-equal": "^2.0.1"
+  }
+}

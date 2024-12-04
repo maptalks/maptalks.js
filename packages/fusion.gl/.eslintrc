@@ -1,0 +1,20 @@
+{
+  "root": true,
+  "env": {
+    "node": true,
+    "browser": true,
+    "es6": true
+  },
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "sourceType": "module"
+  },
+  "globals": {
+  },
+  "rules": {
+    "indent": "error",
+    "no-var": "error",
+    "prefer-const": "error",
+    "consistent-return": "error"
+  }
+}
