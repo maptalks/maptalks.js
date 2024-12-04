@@ -1,7 +1,7 @@
 const pkg = require("./package.json");
-const resolve = require("rollup-plugin-node-resolve");
-const terser = require("rollup-plugin-terser").terser;
-const commonjs = require("rollup-plugin-commonjs");
+const { nodeResolve } = require('@rollup/plugin-node-resolve');
+const commonjs = require('@rollup/plugin-commonjs');
+const terser = require('@rollup/plugin-terser');
 
 const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${
     pkg.license
@@ -10,7 +10,7 @@ const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${
 const production = process.env.BUILD === "production";
 
 const plugins = [
-    resolve({
+    nodeResolve({
         module: true,
         jsnext: true,
         main: true,
@@ -35,7 +35,7 @@ if (production) {
     );
 }
 
-export default [
+module.exports = [
     {
         input: "./src/index.js",
         external: ["fast-deep-equal"],

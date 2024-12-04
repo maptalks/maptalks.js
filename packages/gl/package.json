@@ -31,7 +31,7 @@
   "author": "fuzhenn",
   "license": "UNLICENSED",
   "dependencies": {
-    "@maptalks/fusiongl": "^0.7.2",
+    "@maptalks/fusiongl": "workspace:*",
     "@maptalks/gltf-loader": "workspace:*",
     "@maptalks/martini": "^0.4.0",
     "@maptalks/regl": "^3.4.0",

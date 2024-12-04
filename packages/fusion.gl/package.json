@@ -19,11 +19,11 @@
     "dist/fusiongl.es.js"
   ],
   "devDependencies": {
-    "eslint": "^8.46.0",
-    "rollup": "^1.0.1",
-    "rollup-plugin-commonjs": "^9.2.0",
-    "rollup-plugin-node-resolve": "^4.0.0",
-    "rollup-plugin-terser": "^4.0.1"
+    "eslint": "^8.57.0",
+    "rollup": "^4.17.2",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "0.4.4"
   },
   "dependencies": {
     "fast-deep-equal": "^2.0.1"
