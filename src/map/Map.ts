@@ -20,7 +20,7 @@ import Handlerable from '../handler/Handlerable';
 import Point from '../geo/Point';
 import Size from '../geo/Size';
 import PointExtent from '../geo/PointExtent';
-import Extent from '../geo/Extent';
+import Extent, { ExtentLike } from '../geo/Extent';
 import Coordinate from '../geo/Coordinate';
 import Layer from '../layer/Layer';
 import Renderable from '../renderer/Renderable';
@@ -1046,8 +1046,21 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             return;
         }
         if (isNumber(view.bearing)) {
-            view.bearing = Math.max(-180, view.bearing);
-            view.bearing = Math.min(180, view.bearing);
+            let bearing = view.bearing;
+            //周期性
+            bearing = bearing % 360;
+            //自动转换为负的值
+            if (bearing > 180) {
+                bearing = -180 + Math.abs(bearing - 180);
+            }
+            //自动转换为正的值
+            if (bearing < -180) {
+                bearing = 180 - Math.abs(bearing + 180);
+            }
+            view.bearing = bearing;
+
+            // view.bearing = Math.max(-180, view.bearing);
+            // view.bearing = Math.min(180, view.bearing);
         }
         if (isNumber(view.pitch)) {
             view.pitch = Math.max(0, view.pitch);
@@ -1140,7 +1153,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     /**
      * Set the map to be fit for the given extent with the max zoom level possible.
-     * @param  {Extent} extent - extent
+     * @param  {ExtentLike} extent - extent
      * @param  {Number} zoomOffset - zoom offset
      * @param  {Object} [options={}] - options
      * @param  {Object} [options.animation]
@@ -1155,14 +1168,15 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {Function} step - step function for animation
      * @return {Map | player} - this
      */
-    fitExtent(extent: Extent, zoomOffset?: number, options?: MapFitType, step?: (frame) => void) {
+    fitExtent(extent: ExtentLike, zoomOffset?: number, options?: MapFitType, step?: (frame) => void) {
         options = (options || {} as any);
         if (!extent) {
             return this;
         }
-        extent = new Extent(extent, this.getProjection());
-        const zoom = this.getFitZoom(extent, options.isFraction || false, options) + (zoomOffset || 0);
-        let center = extent.getCenter();
+        const syncExtent = new Extent(extent);
+        const zoom = this.getFitZoom(syncExtent, options.isFraction || false, options) + (zoomOffset || 0);
+        const containerExtent = syncExtent.convertTo(p => this.coordToPoint(p));
+        let center = this.pointToCoord(containerExtent.getCenter() as Point);
         if (this._getPaddingSize(options)) {
             center = this._getCenterByPadding(center, zoom, options);
         }
@@ -2830,7 +2844,7 @@ export type MapDataURLType = {
     save?: boolean;
 }
 
-export type MapAnimationOptionsType = AnimationOptionsType;
+export type MapAnimationOptionsType = AnimationOptionsType & { counterclockwise?: boolean }
 
 export type MapIdentifyOptionsType = {
     tolerance?: number;

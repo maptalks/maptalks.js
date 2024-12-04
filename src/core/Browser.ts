@@ -116,16 +116,18 @@ if (!IS_NODE) {
         decodeImageInWorker = false;
     }
     // https://github.com/Modernizr/Modernizr/issues/1894
+    // https://stackoverflow.com/questions/50393418/what-happens-if-i-dont-test-passive-event-listeners-support
     /* Add feature test for passive event listener support */
     let supportsPassive = false;
     try {
-        window.addEventListener('testPassive', () => {
-        }, {
-            get passive() {
+
+        const opts = Object.defineProperty({}, 'passive', {
+            get: function() {
                 supportsPassive = true;
-                return true;
             }
         });
+        window.addEventListener("testPassive", null, opts);
+        window.removeEventListener("testPassive", null, opts);
         /*eslint-disable no-empty */
     } catch (e) {
     }

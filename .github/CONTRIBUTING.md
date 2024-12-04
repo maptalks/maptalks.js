@@ -2,7 +2,7 @@
 
 Hi! It's really really exciting that you are interested in contributing to maptalks.js. Before submitting your contribution though, please make sure to take a moment and read through the following guidelines.
 
-- [Code of Conduct](https://github.com/maptalks/maptalks.js/blob/master/CODE_OF_CONDUCT.md)
+- [Code of Conduct](https://github.com/maptalks/maptalks.js/blob/master/.github/CODE_OF_CONDUCT.md)
 - [Pull Request Guidelines](#pull-request-guidelines)
 - [Development Setup](#development-setup)
 - [CI Tests](#ci-tests)

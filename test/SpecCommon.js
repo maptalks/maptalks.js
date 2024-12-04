@@ -7,6 +7,7 @@ if (maptalks.Browser.ie) {
         'markerHeight': 20
     };
 }
+maptalks.GlobalConfig.crsMaxNativeZoom = 25;
 
 
 /*eslint-disable no-unused-vars */
@@ -347,5 +348,14 @@ function mapMousemove(map, steps, callback) {
             callback()
         }
     })
+}
+
+function coordinate2PointWidthAltitude(map, coordinate) {
+    const glRes = map.getGLRes();
+    //coordinates to glpoint
+    const renderPoints = map.coordToPointAtRes(coordinate, glRes);
+    const altitude = coordinate.z || 0;
+    const point = map._pointAtResToContainerPoint(renderPoints, glRes, altitude);
+    return point;
 }
 /*eslint-enable no-unused-vars */

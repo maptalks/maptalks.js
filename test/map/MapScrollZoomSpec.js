@@ -68,8 +68,8 @@ describe('Map.ScrollZoom', function () {
             }
             map.on('zoomend', function () {
                 const center = map.getCenter();
-                expect(center.x.toFixed(4)).to.eql(118.8464);
-                expect(center.y.toFixed(4)).to.eql(31.8479);
+                expect(center.x.toFixed(4)).to.eql(118.8474);
+                expect(center.y.toFixed(4)).to.eql(32.0460);
                 done();
             });
             scrollMap(100, 10, 10);

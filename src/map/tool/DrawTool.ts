@@ -455,6 +455,9 @@ class DrawTool extends MapTool {
      */
     //@internal
     _mouseDownHandler(event: any) {
+        if(!event?.coordinate) {
+            return
+        }
         this._createGeometry(event);
     }
 
@@ -468,6 +471,9 @@ class DrawTool extends MapTool {
      */
     //@internal
     _mouseUpHandler(event: any) {
+        if(!event?.coordinate) {
+            return
+        }
         this.endDraw(event);
     }
 
@@ -481,6 +487,9 @@ class DrawTool extends MapTool {
      */
     //@internal
     _clickHandler(event: any) {
+        if(!event?.coordinate) {
+            return
+        }
         if (!this.options.interactive) {
             return this;
         }
@@ -559,6 +568,7 @@ class DrawTool extends MapTool {
      */
     //@internal
     _createGeometry(event: any) {
+        
         const mode = this.getMode();
         const map: any = this.getMap()
         const registerMode = this._getRegisterMode();
@@ -634,6 +644,9 @@ class DrawTool extends MapTool {
      */
     //@internal
     _mouseMoveHandler(event) {
+        if(!event?.coordinate) {
+            return
+        }
         if (!this.options.interactive) {
             return this;
         }
@@ -704,6 +717,9 @@ class DrawTool extends MapTool {
      */
     //@internal
     _doubleClickHandler(event) {
+        if(!event?.coordinate) {
+            return
+        }
         if (!this.options.interactive) {
             return this;
         }

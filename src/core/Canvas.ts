@@ -13,11 +13,76 @@ import { createEl } from './util/dom';
 import Browser from './Browser';
 import Point from '../geo/Point';
 import { getFont, getAlignPoint } from './util/strings';
-import { BBOX_TEMP, resetBBOX, setBBOX } from './util/bbox';
+import { BBOX, BBOX_TEMP, getDefaultBBOX, pointsBBOX, resetBBOX, setBBOX, validateBBOX } from './util/bbox';
 import Extent from '../geo/Extent';
 import Size from '../geo/Size';
+import CollisionIndex from './CollisionIndex';
+import LRUCache from './util/LRUCache';
+import { TextSymbol } from '../symbol';
+
+const charTextureLRUCache = new LRUCache(50000);
+function getCharTexture(tempCtx: Ctx, style, char: string) {
+    const font = tempCtx.font;
+    const fillStyle = tempCtx.fillStyle;
+    const strokeStyle = tempCtx.strokeStyle;
+    const textHaloFill = style.textHaloFill || DEFAULT_STROKE_COLOR;
+    const textHaloRadius = style.textHaloRadius || 0;
+    let textHaloOpacity = style.textHaloOpacity;
+    if (!isNumber(textHaloOpacity)) {
+        textHaloOpacity = 1;
+    }
+    const key = `${font}_${fillStyle}_${textHaloFill}_${textHaloRadius}_${textHaloOpacity}_${char}`;
+    let texture = charTextureLRUCache.get(key);
+    if (!texture) {
+        const drawHalo = textHaloOpacity !== 0 && textHaloRadius !== 0;
+        const textSize = ((style.textSize || 14) * 1.2 + textHaloRadius) * 2;
+        const canvas = Canvas.createCanvas(textSize, textSize);
+        canvas.style.width = `${textSize / 2}px`;
+        canvas.style.height = `${textSize / 2}px`;
+        const x = textSize / 4, y = textSize / 4;
+        const ctx = Canvas.getCanvas2DContext(canvas);
+        ctx.scale(2, 2);
+
+        ctx.font = font;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        if (drawHalo) {
+            ctx.strokeStyle = strokeStyle;
+            ctx.lineWidth = textHaloRadius * 2;
+            ctx.globalAlpha = 1;
+            ctx.globalAlpha *= textHaloOpacity;
+            ctx.strokeText(char, x, y);
+            ctx.globalAlpha = 1;
+        }
+        ctx.fillStyle = fillStyle;
+        ctx.fillText(char, x, y);
+        texture = canvas;
+        charTextureLRUCache.add(key, texture);
+    }
+    return texture;
+
+}
 
 export type Ctx = CanvasRenderingContext2D;
+
+
+type segmentType = {
+    p1: Point,
+    p2: Point,
+    distance: number
+}
+
+type linechunkType = {
+    points: Array<Point>,
+    distance: number
+}
+
+type charItemType = {
+    char: string,
+    charSize: number,
+    point: Point,
+    bbox: BBOX
+}
 
 const DEFAULT_STROKE_COLOR = '#000';
 const DEFAULT_FILL_COLOR = 'rgba(255,255,255,0)';
@@ -30,6 +95,307 @@ let TEMP_CANVAS = null;
 const RADIAN = Math.PI / 180;
 const textOffsetY = 1;
 const TEXT_BASELINE = 'top';
+
+const textCharsCollisionIndex = new CollisionIndex();
+const textPathsCollisionIndex = new CollisionIndex();
+
+function getDefaultCharacterSet(): Record<string, string> {
+    const charSet = {};
+    for (let i = 32; i < 128; i++) {
+        const char = String.fromCharCode(i)
+        charSet[char] = char;
+    }
+    return charSet;
+}
+
+/**
+ * 默认的字符
+ */
+const defaultChars = getDefaultCharacterSet();
+
+/**
+ * 文本是否全部是默认字符
+ * @param chars
+ * @returns 
+ */
+function textIsDefaultChars(chars: string[]) {
+    for (let i = 0, len = chars.length; i < len; i++) {
+        const char = chars[i];
+        if (!defaultChars[char]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function reverseChars(chars: string[]) {
+    if (chars.toReversed) {
+        return chars.toReversed();
+    }
+    const newChars = [];
+    for (let i = 0, len = chars.length - 1; i <= len; i++) {
+        newChars[i] = chars[len - i];
+    }
+    return newChars;
+}
+
+/**
+ * 字符的旋转角度
+ * @param p1 
+ * @param p2 
+ * @param char 
+ * @param direction 
+ * @param isDefaultChars 
+ * @returns 
+ */
+function getCharRotation(p1: Point, p2: Point, char: string, direction: string, isDefaultChars: boolean) {
+    const x0 = p1.x, y0 = p1.y;
+    const x1 = p2.x, y1 = p2.y;
+    const dx = x1 - x0;
+    const dy = y1 - y0;
+    let rad = Math.atan2(dy, dx);
+    let degree = rad / Math.PI * 180;
+    // console.log(degree);
+    if (direction === 'left') {
+        degree += 180;
+        rad = degree / 180 * Math.PI;
+        return rad;
+    }
+    if (direction === 'down' && !isDefaultChars) {
+        degree -= 90;
+        rad = degree / 180 * Math.PI;
+        return rad;
+    }
+    if (direction === 'up' && !isDefaultChars) {
+        degree += 90;
+        rad = degree / 180 * Math.PI;
+        return rad;
+    }
+    return rad;
+}
+
+/**
+ * 测量字符的大小
+ * @param char 
+ * @param fontSize 
+ * @returns 
+ */
+function measureCharSize(char: string, fontSize: number) {
+    let w = fontSize, h = fontSize;
+    if (defaultChars[char]) {
+        w = fontSize / 4;
+        h = fontSize;
+    }
+    const d = Math.sqrt(w * w + h * h);
+    return d;
+}
+
+/**
+ * 计算文本的长度
+ * @param textName 
+ * @param fontSize 
+ * @returns 
+ */
+function measureTextLength(textName: string, fontSize: number) {
+    let textLen = 0;
+    for (let i = 0, len = textName.length; i < len; i++) {
+        const char = textName[i];
+        textLen += measureCharSize(char, fontSize);
+    }
+    return textLen;
+}
+
+function getPercentPoint(segment: segmentType, dis: number) {
+    const { distance, p1, p2 } = segment;
+    const dx = p2.x - p1.x,
+        dy = p2.y - p1.y,
+        dh = (p2.z || 0) - (p1.z || 0);
+    const percent = dis / distance;
+    const x = p1.x + percent * dx;
+    const y = p1.y + percent * dy;
+    const z = (p1.z || 0) + percent * dh;
+    return new Point(x, y, z);
+}
+
+/**
+ * path 分割
+ * https://github.com/deyihu/lineseg
+ * @param points 
+ * @param options 
+ * @returns 
+ */
+function lineSeg(points: Array<Point>, options: any) {
+    options = Object.assign({ segDistance: 1, isGeo: true }, options);
+    const segDistance = Math.max(options.segDistance, 0.00000000000000001);
+    const segments: Array<segmentType> = [];
+    let totalLen = 0, idx = 0;
+    for (let i = 0, len = points.length; i < len - 1; i++) {
+        const p1 = points[i], p2 = points[i + 1];
+        const dis = p2.distanceTo(p1);
+        segments[idx] = {
+            p1,
+            distance: dis,
+            p2
+        }
+        idx++;
+        totalLen += dis;
+    }
+    if (totalLen <= segDistance) {
+        return [{
+            distance: totalLen,
+            points
+        }]
+    }
+    const len = segments.length;
+    const first = segments[0];
+    idx = 0;
+    let currentPoint;
+    let currentLen = 0;
+    const lines = [];
+    let tempLine = [first.p1];
+    while (idx < len) {
+        const { distance, p2 } = segments[idx];
+        currentLen += distance;
+        if (currentLen < segDistance) {
+            tempLine.push(p2);
+            idx++;
+            continue;
+        }
+        if (currentLen === segDistance) {
+            tempLine.push(p2);
+            currentLen = 0;
+            lines.push(tempLine);
+            // next
+            tempLine = [p2];
+            idx++;
+            continue;
+        }
+        if (currentLen > segDistance) {
+            const offsetLen = segDistance - (currentLen - distance);
+            currentPoint = getPercentPoint(segments[idx], offsetLen);
+            tempLine.push(currentPoint);
+            lines.push(tempLine);
+            currentLen = 0;
+            segments[idx].p1 = currentPoint;
+            segments[idx].distance = distance - offsetLen;
+            // next
+            tempLine = [currentPoint];
+        }
+    }
+    if (tempLine.length) {
+        lines.push(tempLine);
+    }
+    const result: Array<linechunkType> = [];
+    for (let i = 0, len = lines.length; i < len; i++) {
+        const line = lines[i];
+        result[i] = {
+            points: line,
+            distance: pathDistance(line)
+        }
+    }
+    return result;
+}
+
+/**
+ * 文本路径方向
+ * @param path 
+ * @returns 
+ */
+function textPathDirection(path: Array<charItemType>) {
+    const len = path.length;
+    const first = path[0].point, last = path[len - 1].point;
+    const bbox = getDefaultBBOX();
+    for (let i = 0, len = path.length; i < len; i++) {
+        const point = path[i].point;
+        pointsBBOX(point, bbox);
+    }
+    const [minx, miny, maxx, maxy] = bbox;
+    const dx = maxx - minx, dy = maxy - miny;
+    let ishorizontal = true;
+    if (dy > dx) {
+        ishorizontal = false;
+    }
+    if (ishorizontal) {
+        if (first.x < last.x) {
+            return 'right';
+        }
+        return 'left';
+    } else {
+        if (first.y < last.y) {
+            return 'down';
+        }
+        return 'up'
+    }
+}
+
+/**
+ * 获取文本沿线路径的点
+ * @param chunk 
+ * @param chars 
+ * @param fontSize 
+ * @returns 
+ */
+function getTextPath(chunk: Array<Point>, chars: string[], fontSize: number, globalCollisonIndex: CollisionIndex) {
+    const total = pathDistance(chunk);
+    const result: Array<charItemType> = [];
+    let tempLen = 0;
+    let hasCollision = false;
+    textCharsCollisionIndex.clear();
+    let idx = 1;
+    for (let i = 0, len = chars.length; i < len; i++) {
+        const char = chars[i];
+        const charSize = measureCharSize(char, fontSize);
+        const d = charSize + tempLen;
+        for (let j = idx, len1 = chunk.length; j < len1; j++) {
+            const p1 = chunk[j - 1];
+            const p2 = chunk[j];
+            if (p2.distance < d) {
+                continue;
+            }
+            idx = j;
+            const dDistance = d - p1.distance;
+            const percent = dDistance / (p2.distance - p1.distance);
+            const dx = p2.x - p1.x, dy = p2.y - p1.y;
+            const point = new Point(p1.x + dx * percent, p1.y + dy * percent);
+            const { x, y } = point;
+            let bufferSize = charSize / 3;
+            const bbox = [x - bufferSize, y - bufferSize, x + bufferSize, y + bufferSize];
+            //全局碰撞器里文本内部是否已经碰撞
+            if (globalCollisonIndex && globalCollisonIndex.collides(bbox)) {
+                hasCollision = true;
+                break;
+            }
+            //文本内部是否已经碰撞
+            if (textCharsCollisionIndex.collides(bbox)) {
+                hasCollision = true;
+                break;
+            } else {
+                textCharsCollisionIndex.insertBox(bbox);
+            }
+            bufferSize = charSize / 2;
+            result.push({
+                char,
+                charSize,
+                point,
+                bbox: [x - bufferSize, y - bufferSize, x + bufferSize, y + bufferSize]
+            });
+            tempLen += charSize;
+            break;
+        }
+        if (hasCollision) {
+            break;
+        }
+    }
+    if (hasCollision) {
+        return [];
+    }
+    if (total < tempLen) {
+        return [];
+    }
+    return result;
+}
+
+
 
 //推算 cubic 贝塞尔曲线片段的起终点和控制点坐标
 //t0: 片段起始比例 0-1
@@ -103,6 +469,52 @@ function getCubicControlPoints(x0, y0, x1, y1, x2, y2, x3, y3, smoothValue, t) {
     }
 }
 
+
+function pathDistance(points: Array<Point>) {
+    if (points.length < 2) {
+        return 0;
+    }
+    let total = 0;
+    points[0].distance = 0;
+    for (let i = 1, len = points.length; i < len; i++) {
+        const p1 = points[i - 1], p2 = points[i];
+        const distance = p1.distanceTo(p2);
+        p2.distance = distance + p1.distance;
+        total += distance;
+    }
+    return total;
+}
+
+function getColorInMinStep(colorIn: any) {
+    if (isNumber(colorIn.minStep)) {
+        return colorIn.minStep;
+    }
+    const colors = colorIn.colors || [];
+    const len = colors.length;
+    const steps = [];
+    for (let i = 0; i < len; i++) {
+        steps[i] = colors[i][0];
+    }
+    steps.sort((a, b) => {
+        return a - b;
+    });
+    let min = Infinity;
+    for (let i = 1; i < len; i++) {
+        const step1 = steps[i - 1], step2 = steps[i];
+        const stepOffset = step2 - step1;
+        min = Math.min(min, stepOffset);
+    }
+    colorIn.minStep = min;
+    return min;
+
+}
+
+function getSegmentPercentPoint(p1: Point, p2: Point, percent: number) {
+    const x1 = p1.x, y1 = p1.y, x2 = p2.x, y2 = p2.y;
+    const dx = x2 - x1, dy = y2 - y1;
+    return new Point(x1 + dx * percent, y1 + dy * percent);
+}
+
 const Canvas = {
     getCanvas2DContext(canvas: HTMLCanvasElement) {
         return canvas.getContext('2d', { willReadFrequently: true });
@@ -124,19 +536,19 @@ const Canvas = {
         return canvas;
     },
 
-    prepareCanvasFont(ctx: Ctx, style) {
+    prepareCanvasFont(ctx: Ctx, style: TextSymbol, font?: string) {
         if (ctx.textBaseline !== TEXT_BASELINE) {
             ctx.textBaseline = TEXT_BASELINE;
         }
-        const font = getFont(style);
+        font = font || getFont(style);
         if (ctx.font !== font) {
             ctx.font = font;
         }
-        let fill = style['textFill'];
+        let fill = style['textFill'] as string;
         if (!fill) {
             fill = DEFAULT_TEXT_COLOR;
         }
-        const fillStyle = Canvas.getRgba(fill, style['textOpacity']);
+        const fillStyle = Canvas.getRgba(fill, style['textOpacity'] as number);
         if (ctx.fillStyle !== fillStyle) {
             ctx.fillStyle = fillStyle;
         }
@@ -363,9 +775,12 @@ const Canvas = {
 
     // support #RRGGBB/#RGB now.
     // if color was like [red, orange...]/rgb(a)/hsl(a), op will not combined to result
-    getRgba(color: any, op: number) {
+    getRgba(color: string, op: number) {
         if (isNil(op)) {
             op = 1;
+        }
+        if (color[0] === '#' && op === 1) {
+            return color;
         }
         if (color[0] !== '#') {
             if (Array.isArray(color)) {
@@ -387,7 +802,7 @@ const Canvas = {
     },
 
     normalizeColorToRGBA(fill: number[], opacity = 1) {
-        return `rgba(${fill[0] * 255},${fill[1] * 255},${fill[2] * 255},${(fill.length === 4 ? fill[3] : 1) * opacity})`;
+        return `rgba(${fill[0] * 255}, ${fill[1] * 255}, ${fill[2] * 255}, ${(fill.length === 4 ? fill[3] : 1) * opacity})`;
     },
 
     image(ctx: Ctx, img: CanvasImageSource, x: number, y: number, width?: number, height?: number) {
@@ -498,6 +913,173 @@ const Canvas = {
         ctx.fillText(text, pt.x, pt.y + textOffsetY);
     },
 
+    textAlongLine(ctx: Ctx, text: string, paths: Array<Array<Point>>, style, textDesc, globalCollisonIndex: CollisionIndex): BBOX {
+        if (!text) {
+            return;
+        }
+
+        const fontSize = style.textSize || 14;
+        const textSpacing = style.textSpacing || 0;
+
+        const textLen = measureTextLength(text, fontSize);
+        if (textSpacing < textLen) {
+            return;
+        }
+        if (!Array.isArray(paths[0])) {
+            paths = [paths] as unknown as Array<Array<Point>>;
+        }
+        const textBaseline = ctx.textBaseline;
+        const textAlign = ctx.textAlign;
+        const strokeStyle = ctx.strokeStyle;
+        const globalAlpha = ctx.globalAlpha;
+        const lineWidth = ctx.lineWidth;
+
+        const textAlongDebug = style.textAlongDebug;
+        let textHaloFill = style.textHaloFill || DEFAULT_STROKE_COLOR;
+        const textHaloRadius = style.textHaloRadius || 0;
+        let textHaloOpacity = style.textHaloOpacity;
+        if (!isNumber(textHaloOpacity)) {
+            textHaloOpacity = 1;
+        }
+        const drawHalo = textHaloOpacity !== 0 && textHaloRadius !== 0;
+
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = 'center';
+        if (drawHalo) {
+            if (Array.isArray(textHaloFill)) {
+                textHaloFill = Canvas.normalizeColorToRGBA(textHaloFill);
+            }
+            ctx.strokeStyle = textHaloFill;
+            ctx.lineWidth = textHaloRadius * 2;
+        }
+        textPathsCollisionIndex.clear();
+        const charsBBOX = getDefaultBBOX();
+        const charArray = text.split('');
+        const isDefaultChars = textIsDefaultChars(charArray);
+        paths.forEach(path => {
+            const pathLen = pathDistance(path);
+            if (pathLen < textLen) {
+                return;
+            }
+            const lines = lineSeg(path, { segDistance: textSpacing });
+            if (!lines || !lines.length) {
+                return;
+            }
+            for (let m = 0, len1 = lines.length; m < len1; m++) {
+                const chunk = lines[m];
+                const chunkDistance = chunk.distance;
+                if (chunkDistance < textLen) {
+                    continue;
+                }
+                const points = chunk.points;
+                //for debug
+                if (textAlongDebug) {
+                    const fillStyle = ctx.fillStyle;
+                    ctx.fillStyle = 'red';
+                    const { x, y } = points[0];
+                    ctx.beginPath();
+                    ctx.fillRect(x - 2, y - 2, 4, 4);
+                    ctx.fillStyle = fillStyle;
+                }
+                let chars = charArray;
+                let items = getTextPath(points, chars, fontSize, globalCollisonIndex);
+                if (!items.length) {
+                    continue;
+                }
+
+                const direction = textPathDirection(items);
+                if (direction === 'left') {
+                    //反向文本顺序
+                    chars = reverseChars(chars);
+                    items = getTextPath(points, chars, fontSize, globalCollisonIndex);
+                }
+                if (direction === 'up' && !isDefaultChars) {
+                    //反向文本顺序
+                    chars = reverseChars(chars);
+                    items = getTextPath(points, chars, fontSize, globalCollisonIndex);
+                }
+                let hasCollision = false;
+                for (let i = 0, len = items.length; i < len; i++) {
+                    const { bbox } = items[i];
+                    //当前pahts绘制时是否已经碰撞
+                    if (textPathsCollisionIndex.collides(bbox)) {
+                        hasCollision = true;
+                        break;
+                    }
+                    //全局碰撞器里是否已经碰撞了,全局碰撞器可能来自地图或者图层
+                    if (globalCollisonIndex && globalCollisonIndex.collides(bbox)) {
+                        hasCollision = true;
+                        break;
+                    }
+                }
+                //没有通过碰撞检测
+                if (hasCollision) {
+                    continue;
+                }
+                for (let i = 0, len = items.length; i < len; i++) {
+                    let p1, p2;
+                    if (i === 0) {
+                        p1 = items[i].point;
+                        p2 = items[1].point;
+                    } else if (i === len - 1) {
+                        p1 = items[len - 2].point;
+                        p2 = items[len - 1].point;
+                    } else {
+                        p1 = items[i - 1].point;
+                        p2 = items[i].point;
+                    }
+                    const char = chars[i];
+                    const { point, bbox } = items[i];
+                    textPathsCollisionIndex.insertBox(bbox);
+                    globalCollisonIndex && globalCollisonIndex.insertBox(bbox);
+                    const { x, y } = point;
+                    const rad = getCharRotation(p1, p2, char, direction, isDefaultChars);
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(rad);
+                    const texture = getCharTexture(ctx, style, char);
+                    const { width, height } = texture;
+                    ctx.drawImage(texture, -width / 4, -height / 4, width / 2, height / 2);
+                    // //描边 why? canvas text performance is poor
+                    // if (drawHalo) {
+                    //     const alpha = ctx.globalAlpha;
+                    //     ctx.globalAlpha = 1;
+                    //     ctx.globalAlpha *= textHaloOpacity;
+                    //     ctx.strokeText(char, 0, 0);
+                    //     ctx.globalAlpha = alpha;
+                    // }
+                    // ctx.fillText(char, 0, 0);
+                    ctx.restore();
+                    //合并所有的字符的包围盒
+                    setBBOX(charsBBOX, bbox);
+                    //for debug
+                    if (textAlongDebug) {
+                        const strokeStyle = ctx.strokeStyle;
+                        const lineWidth = ctx.lineWidth;
+                        ctx.strokeStyle = 'red';
+                        ctx.lineWidth = 0.5;
+                        const [minx, miny, maxx, maxy] = bbox;
+                        ctx.beginPath();
+                        ctx.rect(minx, miny, maxx - minx, maxy - miny);
+                        ctx.stroke();
+                        ctx.lineWidth = lineWidth;
+                        ctx.strokeStyle = strokeStyle;
+                    }
+                }
+            }
+        });
+        //restore canvas states
+        ctx.textBaseline = textBaseline;
+        ctx.textAlign = textAlign;
+        ctx.strokeStyle = strokeStyle;
+        ctx.globalAlpha = globalAlpha;
+        ctx.lineWidth = lineWidth;
+        if (!validateBBOX(charsBBOX)) {
+            return;
+        }
+        return charsBBOX;
+    },
+
     //@internal
     _stroke(ctx, strokeOpacity, x?, y?) {
         if (hitTesting) {
@@ -536,6 +1118,113 @@ const Canvas = {
             ctx.globalAlpha = alpha;
         }
     },
+
+    /**
+     * mock gradient path
+     * 利用颜色插值来模拟渐变的Path
+     * @param ctx 
+     * @param points 
+     * @param lineDashArray 
+     * @param lineOpacity 
+     * @param isRing 
+     * @returns 
+     */
+    _gradientPath(ctx: CanvasRenderingContext2D, points, lineDashArray, lineOpacity, isRing = false) {
+        if (!isNumber(lineOpacity)) {
+            lineOpacity = 1;
+        }
+        if (hitTesting) {
+            lineOpacity = 1;
+        }
+        if (lineOpacity === 0 || ctx.lineWidth === 0) {
+            return;
+        }
+        const alpha = ctx.globalAlpha;
+        ctx.globalAlpha *= lineOpacity;
+        const colorIn = ctx.lineColorIn;
+        //颜色插值的最小步数
+        const minStep = getColorInMinStep(colorIn);
+        const distance = pathDistance(points);
+        let step = 0;
+        let preColor, color;
+        let preX, preY, currentX, currentY, nextPoint;
+
+        const [r, g, b, a] = colorIn.getColor(0);
+        preColor = `rgba(${r}, ${g}, ${b}, ${a})`;
+
+        const firstPoint = points[0];
+        preX = firstPoint.x;
+        preY = firstPoint.y;
+        //check polygon ring
+        if (isRing) {
+            const len = points.length;
+            const lastPoint = points[len - 1];
+            if (!firstPoint.equals(lastPoint)) {
+                points.push(firstPoint);
+            }
+        }
+
+        const dashArrayEnable = lineDashArray && Array.isArray(lineDashArray) && lineDashArray.length > 1;
+
+        const drawSegment = () => {
+            //绘制底色,来掩盖多个segment绘制接头的锯齿
+            if (!dashArrayEnable && nextPoint) {
+                ctx.strokeStyle = color;
+                ctx.beginPath();
+                ctx.moveTo(preX, preY);
+                ctx.lineTo(currentX, currentY);
+                ctx.lineTo(nextPoint.x, nextPoint.y);
+                ctx.stroke();
+            }
+            const grad = ctx.createLinearGradient(preX, preY, currentX, currentY);
+            grad.addColorStop(0, preColor);
+            grad.addColorStop(1, color);
+            ctx.strokeStyle = grad;
+            ctx.beginPath();
+            ctx.moveTo(preX, preY);
+            ctx.lineTo(currentX, currentY);
+            ctx.stroke();
+            preColor = color;
+            preX = currentX;
+            preY = currentY;
+        }
+
+        for (let i = 1, len = points.length; i < len; i++) {
+            const prePoint = points[i - 1], currentPoint = points[i];
+            nextPoint = points[i + 1];
+            const x = currentPoint.x, y = currentPoint.y;
+            const dis = currentPoint.distanceTo(prePoint);
+            const percent = dis / distance;
+
+            //segment的步数小于minStep
+            if (percent <= minStep) {
+                const [r, g, b, a] = colorIn.getColor(step + percent);
+                color = `rgba(${r}, ${g}, ${b}, ${a})`;
+                currentX = x;
+                currentY = y;
+                drawSegment();
+            } else {
+                //拆分segment
+                const segments = Math.ceil(percent / minStep);
+                nextPoint = currentPoint;
+                for (let n = 1; n <= segments; n++) {
+                    const tempStep = Math.min((n * minStep), percent);
+                    const [r, g, b, a] = colorIn.getColor(step + tempStep);
+                    color = `rgba(${r}, ${g}, ${b}, ${a})`;
+                    if (color === preColor) {
+                        continue;
+                    }
+                    const point = getSegmentPercentPoint(prePoint, currentPoint, tempStep / percent);
+                    currentX = point.x;
+                    currentY = point.y;
+                    drawSegment();
+                }
+            }
+            step += percent;
+        }
+        ctx.globalAlpha = alpha;
+    },
+
 
     //@internal
     _path(ctx, points, lineDashArray?, lineOpacity?, ignoreStrokePattern?) {
@@ -582,13 +1271,18 @@ const Canvas = {
         }
     },
 
-    path(ctx, points, lineOpacity, fillOpacity?, lineDashArray?) {
+    path(ctx: CanvasRenderingContext2D, points, lineOpacity, fillOpacity?, lineDashArray?) {
         if (!isArrayHasData(points)) {
             return;
         }
-        ctx.beginPath();
-        ctx.moveTo(points[0].x, points[0].y);
-        Canvas._path(ctx, points, lineDashArray, lineOpacity);
+
+        if (ctx.lineColorIn) {
+            this._gradientPath(ctx, points, lineDashArray, lineOpacity);
+        } else {
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            Canvas._path(ctx, points, lineDashArray, lineOpacity);
+        }
         Canvas._stroke(ctx, lineOpacity);
     },
 
@@ -654,6 +1348,8 @@ const Canvas = {
             }
 
         }
+        const lineColorIn = ctx.lineColorIn;
+        const lineWidth = ctx.lineWidth;
         // function fillPolygon(points, i, op) {
         //     Canvas.fillCanvas(ctx, op, points[i][0].x, points[i][0].y);
         // }
@@ -664,6 +1360,10 @@ const Canvas = {
             for (i = 0, len = points.length; i < len; i++) {
                 if (!isArrayHasData(points[i])) {
                     continue;
+                }
+                //渐变时忽略不在绘制storke
+                if (lineColorIn) {
+                    ctx.lineWidth = 0.1;
                 }
                 Canvas._ring(ctx, points[i], null, 0, true);
                 op = fillOpacity;
@@ -679,6 +1379,10 @@ const Canvas = {
                     ctx.fillStyle = '#fff';
                 }
                 Canvas._stroke(ctx, 0);
+                ctx.lineWidth = lineWidth;
+                if (lineColorIn) {
+                    Canvas._gradientPath(ctx, points, null, 0, true);
+                }
             }
             ctx.restore();
         }
@@ -687,7 +1391,9 @@ const Canvas = {
             if (!isArrayHasData(points[i])) {
                 continue;
             }
-
+            if (lineColorIn) {
+                ctx.lineWidth = 0.1;
+            }
             if (smoothness) {
                 Canvas.paintSmoothLine(ctx, points[i], lineOpacity, smoothness, true);
                 ctx.closePath();
@@ -711,6 +1417,10 @@ const Canvas = {
                 }
             }
             Canvas._stroke(ctx, lineOpacity);
+            ctx.lineWidth = lineWidth;
+            if (lineColorIn) {
+                Canvas._gradientPath(ctx, points[i], lineDashArray, lineOpacity, true);
+            }
         }
         //还原fillStyle
         if (ctx.fillStyle !== fillStyle) {
@@ -1221,6 +1931,7 @@ function copyProperties(ctx: CanvasRenderingContext2D, savedCtx) {
     ctx.shadowOffsetX = savedCtx.shadowOffsetX;
     ctx.shadowOffsetY = savedCtx.shadowOffsetY;
     ctx.strokeStyle = savedCtx.strokeStyle;
+    ctx.lineColorIn = savedCtx.lineColorIn;
 }
 
 function setLineDash(ctx: CanvasRenderingContext2D, lineDashArray: number[]) {

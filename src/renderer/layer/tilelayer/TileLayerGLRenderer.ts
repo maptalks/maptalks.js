@@ -171,12 +171,13 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
      * when map is pitching, or fragmentShader is set in options
      */
     isGL(): boolean {
-        if (this.canvas.gl && this.canvas.gl.wrap) {
-            //in GroupGLLayer
-            return true;
-        }
-        const map = this.getMap();
-        return <boolean>(map && (map.getPitch() || map.getBearing()) || this.layer && !!this.layer.options['fragmentShader']);
+        // if (this.canvas.gl && this.canvas.gl.wrap) {
+        //     //in GroupGLLayer
+        //     return true;
+        // }
+        // const map = this.getMap();
+        // return <boolean>(map && (map.getPitch() || map.getBearing()) || this.layer && !!this.layer.options['fragmentShader']);
+        return true;
     }
 
     deleteTile(tile: Tile) {

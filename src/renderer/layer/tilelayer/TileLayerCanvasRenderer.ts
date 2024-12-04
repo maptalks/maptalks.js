@@ -263,7 +263,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             for (let j = 0, l = allTiles.length; j < l; j++) {
                 const tile = allTiles[j];
                 const tileId = tile.id;
-                const isParentTile = j < parentCount;
+                const isParentTile = !isFirstRender && j < parentCount;
                 //load tile in cache at first if it has.
                 let tileLoading = false;
                 const tilesCount = tiles.length;
@@ -841,14 +841,27 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (!this.layer) {
             return;
         }
-        tileImage.onerrorTick = tileImage.onerrorTick || 0;
-        const tileRetryCount = this.layer.options['tileRetryCount'];
-        if (tileRetryCount > tileImage.onerrorTick) {
-            tileImage.onerrorTick++;
-            this._fetchImage(tileImage, tileInfo);
-            this.removeTileLoading(tileInfo);
+        // example:
+        /* reloadErrorTileFunction: (layer, renderer, tileInfo, tileImage) => {
+            const url = tileInfo.url;
+            // check if need to reload, e.g. server return 500 status code temporarily
+            if (needReload) {
+              renderer.loadTile(tileInfo, tileImage);
+            }
+          } */
+        const reloadErrorTileFunction = this.layer.options['reloadErrorTileFunction'];
+        if (reloadErrorTileFunction) {
+            reloadErrorTileFunction.call(this, this.layer, this, tileInfo, tileImage);
             return;
         }
+        // tileImage.onerrorTick = tileImage.onerrorTick || 0;
+        // const tileRetryCount = this.layer.options['tileRetryCount'];
+        // if (tileRetryCount > tileImage.onerrorTick) {
+        //     tileImage.onerrorTick++;
+        //     this._fetchImage(tileImage, tileInfo);
+        //     this.removeTileLoading(tileInfo);
+        //     return;
+        // }
         const errorUrl = this.layer.options['errorUrl'];
         if (errorUrl) {
             if ((tileImage instanceof Image) && tileImage.src !== errorUrl) {
@@ -1401,7 +1414,7 @@ export type TileImage = (HTMLImageElement | HTMLCanvasElement | ImageBitmap) & {
     loadTime: number;
     glBuffer?: TileImageBuffer;
     texture?: TileImageTexture;
-    onerrorTick?: number;
+    // onerrorTick?: number;
 }
 
 export interface Tile {

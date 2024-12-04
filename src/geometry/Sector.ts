@@ -225,7 +225,7 @@ export class Sector extends Circle {
         return {
             'feature': feature,
             'subType': 'Sector',
-            'coordinates': [center.x, center.y],
+            'coordinates': center.toArray(),
             'radius': this.getRadius(),
             'startAngle': this.getStartAngle(),
             'endAngle': this.getEndAngle()

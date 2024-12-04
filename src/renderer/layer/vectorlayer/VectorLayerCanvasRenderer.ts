@@ -5,18 +5,16 @@ import OverlayLayerCanvasRenderer from './OverlayLayerCanvasRenderer';
 import Extent from '../../../geo/Extent';
 import PointExtent from '../../../geo/PointExtent';
 import * as vec3 from '../../../core/util/vec3';
-import CollisionIndex from '../../../core/CollisionIndex';
 import Canvas from '../../../core/Canvas';
 import type { Painter, CollectionPainter } from '../../geometry';
 import { Point } from '../../../geo';
-import { Geometries } from '../../../geometry';
+import { Geometries, Marker } from '../../../geometry';
 import type { WithUndef } from '../../../types/typings';
 
 const TEMP_EXTENT = new PointExtent();
 const TEMP_VEC3: Vector3 = [] as unknown as Vector3;
 const TEMP_FIXEDEXTENT = new PointExtent();
 const PLACEMENT_CENTER = 'center';
-const tempCollisionIndex = new CollisionIndex();
 
 function clearCanvas(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
     if (!canvas) {
@@ -75,6 +73,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return this;
     }
 
+
     //@internal
     _geoIsCollision(geo: GeoType, collisionIndex: any) {
         if (!geo) {
@@ -99,6 +98,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             geo.bbox[2] = extent.xmax + bufferSize;
             geo.bbox[3] = extent.ymax + bufferSize;
             if (collisionIndex.collides(geo.bbox)) {
+                geo._collided = true;
                 return true;
             }
             collisionIndex.insertBox(geo.bbox);
@@ -368,21 +368,32 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     //@internal
     _collidesGeos() {
+        const geos = this._geosToDraw;
         const collision = this.layer.options['collision'];
         if (!collision) {
+            //reset points _collided
+            for (let i = 0, len = geos.length; i < len; i++) {
+                const geo = geos[i];
+                if (geo.isPoint) {
+                    (geo as Marker)._collided = false;
+                }
+            }
             return this;
         }
         const collisionScope = this.layer.options['collisionScope'];
-        const map = this.layer.getMap();
-        const collisionIndex = collisionScope === 'map' ? map.getCollisionIndex() : tempCollisionIndex;
-        if (collisionIndex === tempCollisionIndex) {
+        const collisionIndex = this.layer.getCollisionIndex();
+        if (collisionScope === 'layer') {
             collisionIndex.clear();
         }
-        const geos = this._geosToDraw;
         this._geosToDraw = [];
         for (let i = 0, len = geos.length; i < len; i++) {
-            if (this._geoIsCollision(geos[i], collisionIndex)) {
-                continue;
+            const geo = geos[i];
+            if (geo.isPoint) {
+                (geo as Marker)._collided = false;
+                if (this._geoIsCollision(geo, collisionIndex)) {
+                    (geo as Marker)._collided = true;
+                    continue;
+                }
             }
             this._geosToDraw.push(geos[i]);
         }
@@ -451,7 +462,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             glScale,
             glRes,
             //@internal
-        _2DExtent,
+            _2DExtent,
             glExtent,
             containerExtent,
             offset

@@ -207,7 +207,7 @@ export class Circle extends CenterMixin(Polygon) {
         return {
             'feature': feature,
             'subType': 'Circle',
-            'coordinates': [center.x, center.y],
+            'coordinates': center.toArray(),
             'radius': this.getRadius()
         };
     }

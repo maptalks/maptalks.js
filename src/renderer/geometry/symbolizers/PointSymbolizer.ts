@@ -29,11 +29,13 @@ abstract class PointSymbolizer extends CanvasSymbolizer {
     symbol: any;
     geometry: Geometry;
     painter: Painter;
+    rotations: Array<number>;
     constructor(symbol: any, geometry: Geometry, painter: Painter) {
         super();
         this.symbol = symbol;
         this.geometry = geometry;
         this.painter = painter;
+        this.rotations = [];
     }
 
     get2DExtent(): PointExtent {
@@ -130,10 +132,12 @@ abstract class PointSymbolizer extends CanvasSymbolizer {
 
     //@internal
     _getRotationAt(i: number): number {
+        //from style
         let r = this.getRotation();
         if (!r) {
             r = 0;
         }
+        //from markerPlacement ,textPlacement
         const rotations = this._getRenderPoints()[1];
         if (!rotations || !rotations[i]) {
             return r;
@@ -142,6 +146,9 @@ abstract class PointSymbolizer extends CanvasSymbolizer {
         const map = this.getMap();
         let p0 = rotations[i][0],
             p1 = rotations[i][1];
+        if(!p0 || !p1){
+            return r;
+        }
         if (map.isTransforming()) {
             const glRes = map.getGLRes();
             p0 = map._pointAtResToContainerPoint(rotations[i][0], glRes, 0, TEMP_POINT0);

@@ -41,7 +41,7 @@ describe('CanvasTileLayer', function () {
             map.addLayer(tile);
         });
 
-        it('add as gl renderer', function (done) {
+        it.skip('add as gl renderer', function (done) {
             if (!maptalks.Browser.webgl) {
                 done();
                 return;

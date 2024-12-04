@@ -87,3 +87,5 @@ const worker = {
 };
 
 export { worker };
+
+Util.checkMTKVersion(version);

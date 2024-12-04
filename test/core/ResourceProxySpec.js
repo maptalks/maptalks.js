@@ -7,6 +7,9 @@ describe('ResourceProxy.Spec', function () {
     ResourceProxy.proxy['/geojson/'] = {
         target: `${MTKHOST}/geojson/`
     }
+    ResourceProxy.proxy['/resources/'] = {
+        target: `${hostUrl}/`
+    }
     ResourceProxy.origin['https://www.abc.com/'] = {
         target: `${MTKHOST}/`
     }

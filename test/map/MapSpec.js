@@ -7,6 +7,7 @@ describe('Map.Spec', function () {
     var center = new maptalks.Coordinate(118.846825, 32.046534);
 
     beforeEach(function () {
+
         container = document.createElement('div');
         container.style.width = '4px';
         container.style.height = '3px';
@@ -26,6 +27,16 @@ describe('Map.Spec', function () {
     afterEach(function () {
         map.remove();
         REMOVE_CONTAINER(container);
+    });
+    it('custom crsMaxNativeZoom', function (done) {
+        const maxZoom = map.getMaxZoom();
+        expect(maxZoom).to.be.eql(maptalks.GlobalConfig.crsMaxNativeZoom);
+        const crs = maptalks.getDefaultSpatialReference();
+        for (const epsg in crs) {
+            const resolutions = crs[epsg].resolutions;
+            expect(resolutions.length).to.be.eql(maptalks.GlobalConfig.crsMaxNativeZoom + 1);
+        }
+        done();
     });
 
     describe('status', function () {
@@ -364,6 +375,18 @@ describe('Map.Spec', function () {
                 done();
             });
             map.fitExtent(extent.toJSON());
+        });
+
+        it('fit to china extent', function (done) {
+            const chinaExtent = [73.499013,3.397894,135.087377,53.561308];
+            map.fitExtent(chinaExtent, 0, { 'animation': false });
+            const [lon, lat] = map.getCenter().toArray();
+            const lonDiff = Math.abs(lon - 104.293195);
+            const latDiff = Math.abs(lat - 31.76872613);
+            const delta = Math.pow(10,-10);
+            expect(lonDiff).to.be.below(delta);
+            expect(latDiff).to.be.below(delta);
+            done();
         });
 
         it('update zoom', function (done) {
@@ -913,14 +936,14 @@ describe('Map.Spec', function () {
     it('#2128 clear glRes cache when SpatialReference change', function (done) {
         //clear all layers
         const glRes = map.getGLRes();
-        map.setSpatialReference({ projection:'EPSG:4326' });
+        map.setSpatialReference({ projection: 'EPSG:4326' });
         setTimeout(() => {
             expect(map.getGLRes()).not.to.be(glRes);
             done();
         }, 100);
     });
 
-    it('map\'s center has altitude', function() {
+    it('map\'s center has altitude', function () {
         const center = map.getCenter();
         center.z = 100;
         map.setCenter(center);
