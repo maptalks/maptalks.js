@@ -47,8 +47,7 @@ const options: ToolbarOptionsType = {
  *      ]
  * }).addTo(map);
  */
-class Toolbar extends Control {
-    options: ToolbarOptionsType;
+class Toolbar extends Control<ToolbarOptionsTypeSpec> {
     /**
      * method to build DOM of the control
      * @param  {Map} map map to build on
@@ -196,9 +195,11 @@ export type ToolBarItem = {
     click: () => void;
 }
 
-export type ToolbarOptionsType = {
+export type ToolbarOptionsTypeSpec = {
     height?: number;
     vertical?: boolean;
     reverseMenu?: boolean;
     items: Array<ToolBarItem>;
-} & ControlOptionsType;
+};
+
+export type ToolbarOptionsType = ControlOptionsType & ToolbarOptionsTypeSpec;

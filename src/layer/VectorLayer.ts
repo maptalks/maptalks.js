@@ -90,7 +90,7 @@ class VectorLayer extends OverlayLayer {
      * @param options.style=null    - vectorlayer's style
      * @param options.*=null        - options defined in [VectorLayer]{@link VectorLayer#options}
      */
-    constructor(id: string, geometries: VectorLayerOptionsType | Array<Geometry>, options?: VectorLayerOptionsType) {
+    constructor(id: string, geometries?: VectorLayerOptionsType | Array<Geometry>, options?: VectorLayerOptionsType) {
         super(id, geometries, options);
         this.isVectorLayer = true;
     }
