@@ -575,7 +575,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         const center = projection.unproject(this._prjCenter);
         center.x = Math.round(center.x * 1E8) / 1E8;
         center.y = Math.round(center.y * 1E8) / 1E8;
-        center.z = this._centerZ;
+        center.z = this._centerZ || 0;
         if (this.centerAltitude) {
             center.z = this.centerAltitude;
         }
@@ -609,7 +609,6 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             this._center = center;
             return this;
         }
-        this._centerZ = center.z;
         this.onMoveStart();
         this._setPrjCenter(pcenter);
         this.onMoveEnd(this._parseEventFromCoord(this.getCenter()));
@@ -2234,6 +2233,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     //@internal
     _setPrjCenter(pcenter: Coordinate) {
         this._prjCenter = pcenter;
+        this._centerZ = pcenter.z;
         if (this.isInteracting() && !this.isMoving()) {
             // when map is not moving, map's center is updated but map platform won't
             // mapViewCoord needs to be synced
