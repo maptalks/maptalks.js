@@ -2257,6 +2257,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     //@internal
     _setPrjCoordAtOffsetToCenter(prjCoord: Coordinate, offset: Point) {
         const pcenter = this._pointToPrj(this._prjToPoint(prjCoord)._sub(offset));
+        pcenter.z = this.getCenter().z + (prjCoord.z || 0);
         this._setPrjCenter(pcenter);
         return this;
     }

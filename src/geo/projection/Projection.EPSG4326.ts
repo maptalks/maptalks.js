@@ -14,6 +14,7 @@ const EPSG4326Projection = {
         if (out) {
             out.x = p.x;
             out.y = p.y;
+            out.z = p.z;
             return out;
         }
         return new Coordinate(p);
@@ -22,6 +23,7 @@ const EPSG4326Projection = {
         if (out) {
             out.x = p.x;
             out.y = p.y;
+            out.z = p.z;
             return out;
         }
         return new Coordinate(p);

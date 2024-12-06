@@ -30,7 +30,7 @@ const EPSG3857Projection = {
         }
         const x = lng * metersPerDegree;
         const y = c * metersPerDegree;
-        const z = lnglat.z || 0;
+        const z = lnglat.z;
         if (out) {
             out.x = x;
             out.y = y;
@@ -62,7 +62,7 @@ const EPSG3857Projection = {
         // const ry = wrap(c, -this.maxLatitude, this.maxLatitude);
         const rx = x;
         const ry = c;
-        const rz = pLnglat.z || 0;
+        const rz = pLnglat.z;
         if (out) {
             out.x = rx;
             out.y = ry;

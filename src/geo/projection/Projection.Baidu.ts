@@ -69,12 +69,14 @@ const ProjectionMethods = {
           cD[8] * cB * cB * cB * cB * cB * cB;
         T *= (cC.x < 0 ? -1 : 1);
         cE *= (cC.y < 0 ? -1 : 1);
+        const z = cC.z;
         if (out) {
             out.x = T;
             out.y = cE;
+            out.z = z;
             return out;
         }
-        return new Coordinate(T, cE);
+        return new Coordinate(T, cE, z);
     },
     toRadians: function (T: number): number {
         return Math.PI * T / 180;
