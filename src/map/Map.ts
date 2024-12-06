@@ -609,7 +609,6 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             this._center = center;
             return this;
         }
-        this._centerZ = center.z;
         this.onMoveStart();
         this._setPrjCenter(pcenter);
         this.onMoveEnd(this._parseEventFromCoord(this.getCenter()));
@@ -2234,6 +2233,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     //@internal
     _setPrjCenter(pcenter: Coordinate) {
         this._prjCenter = pcenter;
+        this._centerZ = pcenter.z;
         if (this.isInteracting() && !this.isMoving()) {
             // when map is not moving, map's center is updated but map platform won't
             // mapViewCoord needs to be synced
@@ -2257,6 +2257,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     //@internal
     _setPrjCoordAtOffsetToCenter(prjCoord: Coordinate, offset: Point) {
         const pcenter = this._pointToPrj(this._prjToPoint(prjCoord)._sub(offset));
+        pcenter.z = this.getCenter().z + (prjCoord.z || 0);
         this._setPrjCenter(pcenter);
         return this;
     }

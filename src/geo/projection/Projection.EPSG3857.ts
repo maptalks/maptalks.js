@@ -30,12 +30,14 @@ const EPSG3857Projection = {
         }
         const x = lng * metersPerDegree;
         const y = c * metersPerDegree;
+        const z = lnglat.z;
         if (out) {
             out.x = x;
             out.y = y;
+            out.z = z;
             return out;
         }
-        return new Coordinate(x, y);
+        return new Coordinate(x, y, z);
     },
 
     unproject: function (pLnglat: Coordinate, out?: Coordinate) {
@@ -60,12 +62,14 @@ const EPSG3857Projection = {
         // const ry = wrap(c, -this.maxLatitude, this.maxLatitude);
         const rx = x;
         const ry = c;
+        const rz = pLnglat.z;
         if (out) {
             out.x = rx;
             out.y = ry;
+            out.z = rz;
             return out;
         }
-        return new Coordinate(rx, ry);
+        return new Coordinate(rx, ry, rz);
     }
 };
 

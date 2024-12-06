@@ -71,12 +71,14 @@ const EPSG9807Projection = {
                 P.fwd(lp, xy);
                 const x = P.a * xy.x + P.x0 - originX;
                 const y = P.a * xy.y + P.y0 - originY;
+                const z = p.z;
                 if (out) {
                     out.x = x;
                     out.y = y;
+                    out.z = z;
                     return out;
                 }
-                return new Coordinate(x, y);
+                return new Coordinate(x, y, z);
             },
             unproject: function (p: Coordinate, out?: Coordinate): Coordinate {
                 xy.x = (p.x - P.x0 + originX) / P.a;
@@ -84,12 +86,14 @@ const EPSG9807Projection = {
                 P.inv(xy, lp);
                 const x = (lp.lam + P.lam0) * RAD_TO_DEG;
                 const y = lp.phi * RAD_TO_DEG;
+                const z = p.z;
                 if (out) {
                     out.x = x;
                     out.y = y;
+                    out.z = z;
                     return out;
                 }
-                return new Coordinate(x, y);
+                return new Coordinate(x, y, z);
             }
         };
 
