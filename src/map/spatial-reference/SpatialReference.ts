@@ -186,12 +186,12 @@ export default class SpatialReference {
         return Object.keys(createOrGetDefaultSpatialReferences());
     }
 
-    static loadArcgis(url: string, cb: (_, spatialRef?) => void, options: any) {
+    static loadArcgis(url: string, cb: (_, spatialRef?) => void, options?: any) {
         loadArcgis(url, cb, options)
         return this
     }
 
-    static loadWMTS(url: string, cb: (_, spatialRef?) => void, options: any) {
+    static loadWMTS(url: string, cb: (_, spatialRef?) => void, options?: any) {
         loadWMTS(url, cb, options)
         return this
     }

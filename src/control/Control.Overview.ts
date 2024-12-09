@@ -51,8 +51,7 @@ const options: OverviewOptionsType = {
  *     size: [300, 200]
  * }).addTo(map);
  */
-class Overview extends Control {
-    options: OverviewOptionsType;
+class Overview extends Control<OverviewOptionsTypeSpec> {
     mapContainer: HTMLDivElement;
     button: HTMLDivElement;
     //@internal
@@ -324,7 +323,8 @@ Map.addOnLoadHook(function () {
 });
 
 export default Overview;
-export type OverviewOptionsType = {
+
+export type OverviewOptionsTypeSpec = {
     level?: number;
     size?: Array<number>;
     maximize?: boolean;
@@ -336,4 +336,6 @@ export type OverviewOptionsType = {
     };
     containerClass?: string;
     buttonClass?: string;
-} & ControlOptionsType;
+};
+
+export type OverviewOptionsType = OverviewOptionsTypeSpec & ControlOptionsType;

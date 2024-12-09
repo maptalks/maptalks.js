@@ -37,14 +37,13 @@ const options: ScaleOptionsType = {
  */
 const EVENTS_TO_LISTEN = 'zoomend moving moveend';
 
-class Scale extends Control {
+class Scale extends Control<ScaleOptionsTypeSpec> {
     //@internal
     _scaleContainer: HTMLDivElement;
     //@internal
     _mScale: HTMLDivElement;
     //@internal
     _iScale: HTMLDivElement;
-    options: ScaleOptionsType;
 
     /**
      * method to build DOM of the control
@@ -155,9 +154,12 @@ Map.addOnLoadHook(function () {
 });
 
 export default Scale;
-export type ScaleOptionsType = {
+
+export type ScaleOptionsTypeSpec = {
     maxWidth?: number;
     metric?: boolean;
     imperial?: boolean;
     containerClass?: string;
-} & ControlOptionsType;
+};
+
+export type ScaleOptionsType = ControlOptionsType & ScaleOptionsTypeSpec;

@@ -1,8 +1,8 @@
-import { extend, isNil, isString } from '../core/util';
-import { createEl } from '../core/util/dom';
-import { Point } from '../geo';
-import DragHandler from '../handler/Drag';
-import Control, { ControlOptionsType, DomPositionType } from './Control';
+import { extend, isNil, isString } from "../core/util";
+import { createEl } from "../core/util/dom";
+import { Point } from "../geo";
+import DragHandler from "../handler/Drag";
+import Control, { ControlOptionsType, DomPositionType } from "./Control";
 
 /**
  * @property {Object} options - options
@@ -15,11 +15,11 @@ import Control, { ControlOptionsType, DomPositionType } from './Control';
  * @instance
  */
 const options: PanelOptionsType = {
-    'position': 'top-right',
-    'draggable': true,
-    'custom': false,
-    'content': '',
-    'closeButton': true
+    position: "top-right",
+    draggable: true,
+    custom: false,
+    content: "",
+    closeButton: true,
 };
 
 /**
@@ -37,9 +37,8 @@ const options: PanelOptionsType = {
  *     closeButton : true
  * }).addTo(map);
  */
-class Panel extends Control {
+class Panel extends Control<PanelOptionsTypeSpec> {
     draggable: DragHandler;
-    options: PanelOptionsType;
     //@internal
     _startPos: Point;
     //@internal
@@ -52,31 +51,34 @@ class Panel extends Control {
      */
     buildOn(): HTMLDivElement {
         let dom;
-        if (this.options['custom']) {
-            if (isString(this.options['content'])) {
-                dom = createEl('div');
-                dom.innerHTML = this.options['content'];
+        if (this.options["custom"]) {
+            if (isString(this.options["content"])) {
+                dom = createEl("div");
+                dom.innerHTML = this.options["content"];
                 this._appendCustomClass(dom);
             } else {
-                dom = this.options['content'];
+                dom = this.options["content"];
             }
         } else {
-            dom = createEl('div', 'maptalks-panel');
+            dom = createEl("div", "maptalks-panel");
             this._appendCustomClass(dom);
-            if (this.options['closeButton']) {
-                const closeButton = createEl('a', 'maptalks-close') as HTMLLinkElement;
-                closeButton.innerText = '×';
-                closeButton.href = 'javascript:;';
+            if (this.options["closeButton"]) {
+                const closeButton = createEl(
+                    "a",
+                    "maptalks-close"
+                ) as HTMLLinkElement;
+                closeButton.innerText = "×";
+                closeButton.href = "javascript:;";
                 closeButton.onclick = () => {
-                    dom.style.display = 'none';
-                    this.fire('close');
+                    dom.style.display = "none";
+                    this.fire("close");
                 };
                 dom.appendChild(closeButton);
             }
 
-            const panelContent = createEl('div', 'maptalks-panel-content');
-            if (isString(this.options['content'])) {
-                panelContent.innerHTML = this.options['content'];
+            const panelContent = createEl("div", "maptalks-panel-content");
+            if (isString(this.options["content"])) {
+                panelContent.innerHTML = this.options["content"];
             } else {
                 panelContent.appendChild(this.options.content);
             }
@@ -84,15 +86,16 @@ class Panel extends Control {
         }
 
         this.draggable = new DragHandler(dom, {
-            'cancelOn': this._cancelOn.bind(this),
-            'ignoreMouseleave': true
+            cancelOn: this._cancelOn.bind(this),
+            ignoreMouseleave: true,
         });
 
-        this.draggable.on('dragstart', this._onDragStart, this)
-            .on('dragging', this._onDragging, this)
-            .on('dragend', this._onDragEnd, this);
+        this.draggable
+            .on("dragstart", this._onDragStart, this)
+            .on("dragging", this._onDragging, this)
+            .on("dragend", this._onDragEnd, this);
 
-        if (this.options['draggable']) {
+        if (this.options["draggable"]) {
             this.draggable.enable();
         }
 
@@ -118,8 +121,8 @@ class Panel extends Control {
      * @fires Panel#contentchange
      */
     setContent(content: string | HTMLElement) {
-        const old = this.options['content'];
-        this.options['content'] = content;
+        const old = this.options["content"];
+        this.options["content"] = content;
         /**
          * contentchange event.
          *
@@ -130,9 +133,9 @@ class Panel extends Control {
          * @property {String|HTMLElement} old      - old content
          * @property {String|HTMLElement} new      - new content
          */
-        this.fire('contentchange', {
-            'old': old,
-            'new': content
+        this.fire("contentchange", {
+            old: old,
+            new: content,
         });
         if (this.isVisible()) {
             this.update();
@@ -145,18 +148,20 @@ class Panel extends Control {
      * @return {String|HTMLElement} - content of the infowindow
      */
     getContent() {
-        return this.options['content'];
+        return this.options["content"];
     }
 
     //@internal
     _cancelOn(domEvent) {
         const target = domEvent.srcElement || domEvent.target,
             tagName = target.tagName.toLowerCase();
-        if (tagName === 'button' ||
-            tagName === 'input' ||
-            tagName === 'select' ||
-            tagName === 'option' ||
-            tagName === 'textarea') {
+        if (
+            tagName === "button" ||
+            tagName === "input" ||
+            tagName === "select" ||
+            tagName === "option" ||
+            tagName === "textarea"
+        ) {
             return true;
         }
         return false;
@@ -164,7 +169,7 @@ class Panel extends Control {
 
     //@internal
     _onDragStart(param) {
-        this._startPos = param['mousePos'];
+        this._startPos = param["mousePos"];
         this._startPosition = extend({}, this.getPosition());
         /**
          * drag start event
@@ -175,27 +180,31 @@ class Panel extends Control {
          * @property {Point} mousePos     - mouse position
          * @property {Event} domEvent     - dom event
          */
-        this.fire('dragstart', param);
+        this.fire("dragstart", param);
     }
 
     //@internal
     _onDragging(param) {
-        const pos = param['mousePos'];
+        const pos = param["mousePos"];
         const offset = pos.sub(this._startPos);
 
         const startPosition = this._startPosition;
         const position = this.getPosition();
-        if (!isNil(position['top'])) {
-            position['top'] = parseInt(startPosition['top'] as string) + offset.y;
+        if (!isNil(position["top"])) {
+            position["top"] =
+                parseInt(startPosition["top"] as string) + offset.y;
         }
-        if (!isNil(position['bottom'])) {
-            position['bottom'] = parseInt(startPosition['bottom'] as string) - offset.y;
+        if (!isNil(position["bottom"])) {
+            position["bottom"] =
+                parseInt(startPosition["bottom"] as string) - offset.y;
         }
-        if (!isNil(position['left'])) {
-            position['left'] = parseInt(startPosition['left'] as string) + offset.x;
+        if (!isNil(position["left"])) {
+            position["left"] =
+                parseInt(startPosition["left"] as string) + offset.x;
         }
-        if (!isNil(position['right'])) {
-            position['right'] = parseInt(startPosition['right'] as string) - offset.x;
+        if (!isNil(position["right"])) {
+            position["right"] =
+                parseInt(startPosition["right"] as string) - offset.x;
         }
         this.setPosition(position);
         /**
@@ -207,7 +216,7 @@ class Panel extends Control {
          * @property {Point} mousePos     - mouse position
          * @property {Event} domEvent     - dom event
          */
-        this.fire('dragging', param);
+        this.fire("dragging", param);
     }
 
     //@internal
@@ -223,7 +232,7 @@ class Panel extends Control {
          * @property {Point} mousePos     - mouse position
          * @property {Event} domEvent     - dom event
          */
-        this.fire('dragend', param);
+        this.fire("dragend", param);
     }
 
     /**
@@ -235,13 +244,11 @@ class Panel extends Control {
         const map = this.getMap();
         const containerPoint = this.getContainerPoint();
         const dom = this.getDOM(),
-            width = parseInt(dom.clientWidth + ''),
-            height = parseInt(dom.clientHeight + '');
+            width = parseInt(dom.clientWidth + ""),
+            height = parseInt(dom.clientHeight + "");
         const anchors = [
             //top center
-            map.containerPointToCoordinate(
-                containerPoint.add(width / 2, 0)
-            ),
+            map.containerPointToCoordinate(containerPoint.add(width / 2, 0)),
             //middle right
             map.containerPointToCoordinate(
                 containerPoint.add(width, height / 2)
@@ -251,22 +258,21 @@ class Panel extends Control {
                 containerPoint.add(width / 2, height)
             ),
             //middle left
-            map.containerPointToCoordinate(
-                containerPoint.add(0, height / 2)
-            )
-
+            map.containerPointToCoordinate(containerPoint.add(0, height / 2)),
         ];
         return anchors;
     }
-
 }
 
 Panel.mergeOptions(options);
 
 export default Panel;
-export type PanelOptionsType = {
+
+export type PanelOptionsTypeSpec = {
     draggable?: boolean;
     custom?: boolean;
     content?: string | HTMLElement;
     closeButton?: boolean;
-} & ControlOptionsType;
+};
+
+export type PanelOptionsType = ControlOptionsType & PanelOptionsTypeSpec;

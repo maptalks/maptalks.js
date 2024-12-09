@@ -33,8 +33,7 @@ const options: LayerSwitcherOptionsType = {
  *     position : {'top': '0', 'right': '0'}
  * }).addTo(map);
 */
-class LayerSwitcher extends Control {
-    options: LayerSwitcherOptionsType;
+class LayerSwitcher extends Control<LayerSwitcherOptionsTypeSpec> {
     container: HTMLDivElement;
     panel: HTMLDivElement;
     button: HTMLButtonElement;
@@ -279,9 +278,11 @@ Map.addOnLoadHook(function () {
 
 export default LayerSwitcher;
 
-export type LayerSwitcherOptionsType = {
+export type LayerSwitcherOptionsTypeSpec = {
     baseTitle?: string;
     overlayTitle?: string;
     containerClass?: string;
     excludeLayers?: Array<string>;
-} & ControlOptionsType;
+};
+
+export type LayerSwitcherOptionsType = LayerSwitcherOptionsTypeSpec & ControlOptionsType;
