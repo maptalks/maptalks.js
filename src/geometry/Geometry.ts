@@ -1914,11 +1914,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (layer) {
             const render = layer.getRenderer();
             //for webgllayer,pointlayer/linestringlayer/polygonlayer
-            if (render && render.gl) {
-                this.setCoordinates(coordinates);
-            } else if (render) {
-                this._repaint();
-            }
+            this.setCoordinates(coordinates);
         }
         this._clearAltitudeCache();
         this.onPositionChanged();

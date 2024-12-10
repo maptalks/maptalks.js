@@ -1,11 +1,11 @@
 import TileLayerCanvasRenderer from './TileLayerCanvasRenderer';
-import TileLayerGLRenderer from './TileLayerGLRenderer';
+// import TileLayerGLRenderer from './TileLayerGLRenderer';
 import { CanvasTileLayerCanvasRenderer, CanvasTileLayerGLRenderer } from './CanvasTileLayerRenderer';
 import QuadStencil from './QuadStencil';
 
 export {
     TileLayerCanvasRenderer,
-    TileLayerGLRenderer,
+    // TileLayerGLRenderer,
     CanvasTileLayerCanvasRenderer,
     CanvasTileLayerGLRenderer,
     QuadStencil

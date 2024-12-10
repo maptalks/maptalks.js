@@ -34,7 +34,6 @@ import { AttributionOptionsType } from '../control/Control.Attribution';
 
 const TEMP_COORD = new Coordinate(0, 0);
 const TEMP_POINT = new Point(0, 0);
-const REDRAW_OPTIONS_PROPERTIES = ['centerCross', 'fog', 'fogColor', 'debugSky'];
 /**
  * @property {Object} options                                   - map's options, options must be updated by config method:<br> map.config('zoomAnimation', false);
  * @property {Boolean} [options.centerCross=false]              - Display a red cross in the center of map
@@ -86,10 +85,7 @@ const REDRAW_OPTIONS_PROPERTIES = ['centerCross', 'fog', 'fogColor', 'debugSky']
  * @property {Boolean|Object} [options.scaleControl=false]              - display the scale control on the map if set to true or a object as the control construct option.
  * @property {Boolean|Object} [options.overviewControl=false]           - display the overview control on the map if set to true or a object as the control construct option.
  *
- * @property {Boolean}        [options.fog=true]                        - whether to draw fog in far distance.
- * @property {Number[]}       [options.fogColor=[233, 233, 233]]        - color of fog: [r, g, b]
- *
- * @property {String} [options.renderer=canvas]                 - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
+ * @property {String} [options.renderer=gl]                     - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
  * @property {Number} [options.devicePixelRatio=null]           - device pixel ratio to override device's default one
  * @property {Number} [options.heightFactor=1]           - the factor for height/altitude calculation,This affects the height calculation of all layers(vectortilelayer/gllayer/threelayer/3dtilelayer)
  * @property {Boolean} [options.stopRenderOnOffscreen=true]           - whether to stop map rendering when container is offscreen
@@ -145,7 +141,7 @@ const options: MapOptionsType = {
     'checkSize': true,
     'checkSizeInterval': 1000,
 
-    'renderer': 'canvas',
+    'renderer': 'gl',
 
     'cascadePitches': [10, 60],
     'renderable': true,
@@ -162,7 +158,33 @@ const options: MapOptionsType = {
     'mousemoveThrottleTime': MOUSEMOVE_THROTTLE_TIME,
     'maxFPS': 0,
     'debug': false,
-    'cameraFarUndergroundInMeter': 2000
+    'cameraFarUndergroundInMeter': 2000,
+
+    'onlyWebGL1': false,
+    'forceRedrawPerFrame': false,
+    'preserveDrawingBuffer': true,
+    'extensions': [],
+    'optionalExtensions': [
+        'ANGLE_instanced_arrays',
+        'OES_element_index_uint',
+        'OES_standard_derivatives',
+        'OES_vertex_array_object',
+        'OES_texture_half_float',
+        'OES_texture_half_float_linear',
+        'OES_texture_float',
+        'OES_texture_float_linear',
+        'WEBGL_depth_texture',
+        'EXT_shader_texture_lod',
+        'EXT_frag_depth',
+        'EXT_texture_filter_anisotropic',
+        // compressed textures
+        'WEBGL_compressed_texture_astc',
+        'WEBGL_compressed_texture_etc',
+        'WEBGL_compressed_texture_etc1',
+        'WEBGL_compressed_texture_pvrtc',
+        'WEBGL_compressed_texture_s3tc',
+        'WEBGL_compressed_texture_s3tc_srgb'
+    ],
 };
 
 /**
@@ -490,17 +512,6 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         const ref = conf['spatialReference'] || conf['view'];
         if (!isNil(ref)) {
             this._updateSpatialReference(ref, null);
-        }
-        let needUpdate = false;
-        for (let i = 0, len = REDRAW_OPTIONS_PROPERTIES.length; i < len; i++) {
-            const key = REDRAW_OPTIONS_PROPERTIES[i];
-            if (!isNil(conf[key])) {
-                needUpdate = true;
-                break;
-            }
-        }
-        if (!needUpdate) {
-            return this;
         }
         const renderer = this.getRenderer();
         if (renderer) {
@@ -2743,8 +2754,6 @@ export type MapOptionsType = {
     zoomControl?: boolean;
     scaleControl?: boolean;
     overviewControl?: boolean;
-    fog?: boolean;
-    fogColor?: any; // fixme 确认类型
     devicePixelRatio?: number;
     heightFactor?: number;
     originLatitudeForAltitude?: number;
@@ -2776,7 +2785,7 @@ export type MapOptionsType = {
     fixCenterOnResize?: boolean;
     checkSize?: boolean;
     checkSizeInterval?: number;
-    renderer?: 'canvas' | 'gl';
+    renderer?: 'gl';
     cascadePitches?: Array<number>;
     renderable?: boolean;
     clickTimeThreshold?: number;
@@ -2808,6 +2817,11 @@ export type MapOptionsType = {
     resetControl?: boolean;
     cameraFarUndergroundInMeter?: number;
 
+    onlyWebGL1?: boolean;
+    preserveDrawingBuffer?: boolean;
+    forceRedrawPerFrame?: boolean;
+    extensions?: string[];
+    optionalExtensions?: string[];
 }
 
 export type MapCreateOptionsType = {

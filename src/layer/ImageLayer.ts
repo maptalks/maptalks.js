@@ -298,12 +298,6 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
             }
         }
     }
-
-    //override to set to always drawable
-    isDrawable() {
-        return true;
-    }
-
     //@internal
     _drawImage(image: LayerImageType, extent: PointExtent, opacity: number) {
         this.drawGLImage(image, extent.xmin, extent.ymax, extent.getWidth(), extent.getHeight(), 1, opacity);
@@ -311,22 +305,6 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
 
     createContext() {
         this.createGLContext();
-    }
-
-    resizeCanvas(canvasSize) {
-        if (!this.canvas) {
-            return;
-        }
-        super.resizeCanvas(canvasSize);
-        this.resizeGLCanvas();
-    }
-
-    clearCanvas() {
-        if (!this.canvas) {
-            return;
-        }
-        super.clearCanvas();
-        this.clearGLCanvas();
     }
 
     retireImage(image: LayerImageType) {

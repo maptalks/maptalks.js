@@ -10,7 +10,6 @@ import {
     getAbsoluteURL,
     pushIn
 } from '../../../core/util';
-import Canvas2D from '../../../core/Canvas';
 import Browser from '../../../core/Browser';
 import { default as TileLayer } from '../../../layer/tile/TileLayer';
 import WMSTileLayer from '../../../layer/tile/WMSTileLayer';
@@ -24,8 +23,7 @@ import { imageFetchWorkerKey } from '../../../core/worker/CoreWorkers';
 import { TileImageBuffer, TileImageTexture } from '../../types';
 import type { WithUndef } from '../../../types/typings';
 
-const TILE_POINT = new Point(0, 0);
-const TEMP_POINT = new Point(0, 0);
+
 const TEMP_POINT1 = new Point(0, 0);
 const TEMP_POINT2 = new Point(0, 0);
 
@@ -56,10 +54,10 @@ class TileWorkerConnection extends Actor {
 }
 
 /**
- * 基于 `HTML5 Canvas2D` 的渲染器类，用于瓦片图层
+ * 瓦片图层的渲染器抽象类，实现瓦片的遍历功能，可以继承并实现 drawTile 等方法来实现瓦片图层渲染
  *
  * @english
- * Renderer class based on HTML5 Canvas2D for TileLayers
+ * Abstract renderer class for TileLayers
  * @class
  * @protected
  * @group renderer
@@ -135,9 +133,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     draw(timestamp: number, context): number {
         const map = this.getMap();
-        if (!this.isDrawable()) {
-            return;
-        }
         const mask2DExtent = this.prepareCanvas();
         if (mask2DExtent) {
             if (!mask2DExtent.intersects(this.canvasExtent2D)) {
@@ -445,7 +440,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     isTileFadingIn(tileImage: Tile['image']) {
-        return this._getTileFadingOpacity(tileImage) < 1;
+        return this.getTileFadingOpacity(tileImage) < 1;
     }
 
     //@internal
@@ -472,9 +467,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             }
         }
 
-        // todo 当为 gl 模式时实例应为 TileLayerGLRenderer
-        const renderInGL = this.layer.options.renderer === 'gl' && (!(this as any).isGL || (this as any).isGL());
-
         const context = { tiles, parentTiles: this._parentTiles, childTiles: this._childTiles, parentContext };
         this.onDrawTileStart(context, parentContext);
 
@@ -483,13 +475,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             const fadingAnimation = this.layer.options['fadeAnimation'];
             this.layer.options['fadeAnimation'] = false;
 
-            if (renderInGL) {
-                this._drawChildTiles(childTiles, parentContext);
-                this._drawParentTiles(this._parentTiles, parentContext);
-            } else {
-                this._drawParentTiles(this._parentTiles, parentContext);
-                this._drawChildTiles(childTiles, parentContext);
-            }
+            this._drawChildTiles(childTiles, parentContext);
+            this._drawParentTiles(this._parentTiles, parentContext);
 
             this.layer.options['fadeAnimation'] = fadingAnimation;
             this.layer._silentConfig = false;
@@ -507,19 +494,14 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             const fadingAnimation = this.layer.options['fadeAnimation'];
             this.layer.options['fadeAnimation'] = false;
 
-            if (renderInGL) {
-                this._drawChildTiles(childTiles, parentContext);
-                this._drawParentTiles(this._parentTiles, parentContext);
-            } else {
-                this._drawParentTiles(this._parentTiles, parentContext);
-                this._drawChildTiles(childTiles, parentContext);
-            }
+            this._drawChildTiles(childTiles, parentContext);
+            this._drawParentTiles(this._parentTiles, parentContext);
 
             this.layer.options['fadeAnimation'] = fadingAnimation;
             this.layer._silentConfig = false;
         }
 
-        placeholders.forEach(t => this._drawTile(t.info, t.image, parentContext));
+        // placeholders.forEach(t => this._drawTile(t.info, t.image, parentContext));
 
         this.onDrawTileEnd(context, parentContext);
 
@@ -536,7 +518,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     //@internal
     _drawParentTiles(parentTiles, parentContext) {
         this.drawingParentTiles = true;
-        this._parentTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
+        parentTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
         delete this.drawingParentTiles;
     }
 
@@ -550,6 +532,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (image) {
             this.drawTile(info, image, parentContext);
         }
+    }
+
+    drawTile(tileInfo: Tile['info'], tileImage: Tile['image'], parentContext?: RenderContext) {
     }
 
     //@internal
@@ -572,11 +557,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (map.getPitch()) {
             return super.needToRedraw();
         }
-        if (map.isRotating() || map.isZooming()) {
+        if (map.isInteracting()) {
             return true;
-        }
-        if (map.isMoving()) {
-            return !!this.layer.options['forceRenderOnMoving'];
         }
         return super.needToRedraw();
     }
@@ -597,16 +579,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return this.layer.options['loadingLimit'] || 0;
     }
 
-    isDrawable(): boolean {
-        if (this.getMap().getPitch()) {
-            if (console) {
-                console.warn('TileLayer with canvas renderer can\'t be pitched, use gl renderer (\'renderer\' : \'gl\') instead.');
-            }
-            this.clear();
-            return false;
-        }
-        return true;
-    }
 
     clear(): void {
         this.retireTiles(true);
@@ -631,27 +603,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         //     return this._clipByPitch(context);
         // }
         return super.clipCanvas(context);
-    }
-
-    // clip canvas to avoid rough edge of tiles
-    //@internal
-    _clipByPitch(ctx: CanvasRenderingContext2D): boolean {
-        const map = this.getMap();
-        if (map.getPitch() <= map.options['maxVisualPitch']) {
-            return false;
-        }
-        if (!this.layer.options['clipByPitch']) {
-            return false;
-        }
-        const clipExtent = map.getContainerExtent();
-        const r = map.getDevicePixelRatio();
-        ctx.save();
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0)';
-        ctx.beginPath();
-        ctx.rect(0, Math.ceil(clipExtent.ymin) * r, Math.ceil(clipExtent.getWidth()) * r, Math.ceil(clipExtent.getHeight()) * r);
-        ctx.stroke();
-        ctx.clip();
-        return true;
     }
 
     loadTileQueue(tileQueue): void {
@@ -889,74 +840,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
          * @property {Object} tileInfo - tile info
          */
         this.layer.fire('tileerror', { tile: tileInfo });
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    drawTile(tileInfo: Tile['info'], tileImage: Tile['image'], parentContext?: RenderContext) {
-        if (!tileImage || !this.getMap()) {
-            return;
-        }
-        const { extent2d, offset } = tileInfo;
-        const point = TILE_POINT.set(extent2d.xmin - offset[0], extent2d.ymax - offset[1]),
-            tileZoom = tileInfo.z,
-            tileId = tileInfo.id;
-        const map = this.getMap(),
-            zoom = map.getZoom(),
-            ctx = this.context,
-            cp = map._pointAtResToContainerPoint(point, tileInfo.res, 0, TEMP_POINT),
-            bearing = map.getBearing(),
-            transformed = bearing || zoom !== tileZoom;
-        const opacity = this.getTileOpacity(tileImage, tileInfo);
-        const alpha = ctx.globalAlpha;
-        if (opacity < 1) {
-            ctx.globalAlpha = opacity;
-        }
-        if (!transformed) {
-            cp._round();
-        }
-        let x = cp.x,
-            y = cp.y;
-        let w = tileInfo.extent2d.xmax - tileInfo.extent2d.xmin;
-        let h = tileInfo.extent2d.ymax - tileInfo.extent2d.ymin;
-        const layer = this.layer;
-        const bufferPixel = (layer ? layer.options.bufferPixel : 0);
-        if (transformed) {
-            ctx.save();
-            ctx.translate(x, y);
-            if (bearing) {
-                ctx.rotate(-bearing * Math.PI / 180);
-            }
-            w += bufferPixel;
-            h += bufferPixel;
-            const res = map._getResolution();
-            if (res !== tileInfo.res) {
-                const scale = tileInfo.res / res;
-                ctx.scale(scale, scale);
-            }
-            x = y = 0;
-        }
-        Canvas2D.image(ctx, tileImage, x, y, w, h);
-        if (this.layer.options['debug']) {
-            const color = this.layer.options['debugOutline'];
-            ctx.save();
-            ctx.strokeStyle = color;
-            ctx.fillStyle = color;
-            // ctx.strokeWidth = 10;
-            // ctx.lineWidth = 10
-            ctx.font = '20px monospace';
-            const point = new Point(x, y);
-            Canvas2D.rectangle(ctx, point, { width: w, height: h }, 1, 0);
-            Canvas2D.fillText(ctx, this.getDebugInfo(tileId), point._add(32, h - 14), color);
-            Canvas2D.drawCross(ctx, x + w / 2, y + h / 2, 2, color);
-            ctx.restore();
-        }
-        if (transformed) {
-            ctx.restore();
-        }
-        if (ctx.globalAlpha !== alpha) {
-            ctx.globalAlpha = alpha;
-        }
-        this.setCanvasUpdated();
     }
 
     getDebugInfo(tileId: TileId): string {
@@ -1258,7 +1141,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     getTileOpacity(tileImage: Tile['image'], tileInfo: Tile['info']): number {
-        let opacity = this._getTileFadingOpacity(tileImage);
+        let opacity = this.getTileFadingOpacity(tileImage);
         if (this.layer.getChildLayer) {
             // in GroupTileLayer
             const childLayer = this.layer.getLayer(tileInfo.layer);
@@ -1269,8 +1152,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return opacity;
     }
 
-    //@internal
-    _getTileFadingOpacity(tileImage: Tile['image']): number {
+    getTileFadingOpacity(tileImage: Tile['image']): number {
         if (!this.layer.options['fadeAnimation'] || !tileImage.loadTime) {
             return 1;
         }
@@ -1371,8 +1253,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 }
 
-TileLayer.registerRenderer<typeof TileLayerCanvasRenderer>('canvas', TileLayerCanvasRenderer);
-
 function falseFn(): boolean { return false; }
 
 function defaultPlaceholder(canvas: HTMLCanvasElement): void {
@@ -1438,8 +1318,6 @@ export interface Tile {
         // todo：检查是否存在定义
         minAltitude?: number;
         maxAltitude?: number;
-        //@internal
-        _glScale: number;
     };
 
     image: TileImage;

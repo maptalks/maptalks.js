@@ -4,7 +4,7 @@ import Size from '../../geo/Size';
 import Geometry from '../../geometry/Geometry';
 import Marker from '../../geometry/Marker';
 import Label from '../../geometry/Label';
-import VectorLayer from '../../layer/VectorLayer';
+// import VectorLayer from '../../layer/VectorLayer';
 import Translator from '../../lang/translator';
 import DrawTool, { DrawToolOptions } from './DrawTool';
 import Coordinate from '../../geo/Coordinate';
@@ -318,15 +318,14 @@ class DistanceTool extends DrawTool {
         const layerId = 'distancetool_' + uid;
         const markerLayerId = 'distancetool_markers_' + uid;
         const zIndex = this.options.zIndex;
-        const enableAltitude = this.options.enableAltitude;
+        const lineLayerClass = DrawTool.getLineLayerClass();
+        const markerLayerClass = DrawTool.getMarkerLayerClass();
         if (!map.getLayer(layerId)) {
-            this._measureLineLayer = new VectorLayer(layerId, {
-                zIndex,
-                enableAltitude
+            this._measureLineLayer = new lineLayerClass(layerId, {
+                zIndex
             }).addTo(map);
-            this._measureMarkerLayer = new VectorLayer(markerLayerId, {
-                zIndex,
-                enableAltitude
+            this._measureMarkerLayer = new markerLayerClass(markerLayerId, {
+                zIndex
             }).addTo(map);
         } else {
             this._measureLineLayer = map.getLayer(layerId);

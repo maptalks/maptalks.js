@@ -3,7 +3,6 @@ import TileLayerCanvasRenderer from './TileLayerCanvasRenderer';
 import type { Tile, RenderContext} from './TileLayerCanvasRenderer';
 import ImageGLRenderable from '../ImageGLRenderable';
 import Point from '../../../geo/Point';
-import { SizeLike } from '../../../geo/Size';
 
 const TILE_POINT = new Point(0, 0);
 
@@ -21,11 +20,6 @@ const MESH_TO_TEST = { properties: {}};
  * @param layer - TileLayer to render
  */
 class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
-
-    //override to set to always drawable
-    isDrawable(): boolean {
-        return true;
-    }
 
     needToRedraw(): boolean {
         const map = this.getMap();
@@ -75,17 +69,13 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
             return;
         }
 
-        const scale = tileInfo._glScale = tileInfo._glScale || tileInfo.res / map.getGLRes();
+        const scale = tileInfo.res / map.getGLRes();
         const w = tileInfo.extent2d.xmax - tileInfo.extent2d.xmin;
         const h = tileInfo.extent2d.ymax - tileInfo.extent2d.ymin;
         if (tileInfo.cache !== false) {
             this._bindGLBuffer(tileImage, w, h);
         }
-        if (!this.isGL()) {
-            // fall back to canvas 2D, which is faster
-            super.drawTile(tileInfo, tileImage);
-            return;
-        }
+
         const { extent2d, offset } = tileInfo;
         const point = TILE_POINT.set(extent2d.xmin - offset[0], tileInfo.extent2d.ymax - offset[1]);
         const x = point.x * scale,
@@ -102,10 +92,8 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         gl.polygonOffset(polygonOffset, polygonOffset);
 
         this.drawGLImage(tileImage as any, x, y, w, h, scale, opacity, debugInfo);
-        if (this._getTileFadingOpacity(tileImage) < 1) {
+        if (this.getTileFadingOpacity(tileImage) < 1) {
             this.setToRedraw();
-        } else {
-            this.setCanvasUpdated();
         }
     }
 
@@ -124,36 +112,6 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         return;
     }
 
-    /**
-     * prepare gl, create program, create buffers and fill unchanged data: image samplers, texture coordinates
-     */
-    onCanvasCreate() {
-        //not in a GroupGLLayer
-        if (!this.canvas.gl || !this.canvas.gl.wrap) {
-            this.createCanvas2();
-        }
-    }
-
-    createContext(): void {
-        super.createContext();
-        this.createGLContext();
-    }
-
-    resizeCanvas(canvasSize: SizeLike) {
-        if (!this.canvas) {
-            return;
-        }
-        super.resizeCanvas(canvasSize);
-        this.resizeGLCanvas();
-    }
-
-    clearCanvas(): void {
-        if (!this.canvas) {
-            return;
-        }
-        super.clearCanvas();
-        this.clearGLCanvas();
-    }
 
     getCanvasImage() {
         if (!this.isGL() || !this.canvas2) {
@@ -194,7 +152,6 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
     }
 }
 
-TileLayer.registerRenderer<typeof TileLayerGLRenderer>('gl', TileLayerGLRenderer);
 
 export default TileLayerGLRenderer;
 

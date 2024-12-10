@@ -329,35 +329,6 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
             gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
         }
 
-        /**
-         * Resize GL canvas with renderer's 2D canvas
-         */
-        resizeGLCanvas(): void {
-            if (this.gl) {
-                this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-            }
-            if (!this.canvas2) {
-                return;
-            }
-            if (this.canvas2.width !== this.canvas.width || this.canvas2.height !== this.canvas.height) {
-                this.canvas2.width = this.canvas.width;
-                this.canvas2.height = this.canvas.height;
-            }
-        }
-
-        /**
-         * Clear gl canvas
-         */
-        clearGLCanvas(): void {
-            if (this.gl) {
-                this.gl.clearStencil(0xFF);
-                this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.STENCIL_BUFFER_BIT);
-            }
-            if (!this.gl.wrap) {
-                this.gl.clear(this.gl.DEPTH_BUFFER_BIT);
-            }
-        }
-
         disposeImage(image: TileImageType): void {
             if (!image) {
                 return;

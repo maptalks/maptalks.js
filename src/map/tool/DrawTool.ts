@@ -6,7 +6,7 @@ import { stopPropagation } from '../../core/util/dom';
 import Polygon from '../../geometry/Polygon';
 import Point from '../../geo/Point';
 import Geometry from '../../geometry/Geometry';
-import VectorLayer from '../../layer/VectorLayer';
+// import VectorLayer from '../../layer/VectorLayer';
 import MapTool from './MapTool';
 import { Coordinate } from '../../geo';
 import { MapEventDataType } from '../Map.DomEvents';
@@ -90,6 +90,21 @@ const registeredMode = {};
  * }).addTo(map);
  */
 class DrawTool extends MapTool {
+    static LineLayerClazz: any;
+    static MarkerLayerClazz: any;
+
+    static getLineLayerClass() {
+        return DrawTool.LineLayerClazz;
+    }
+
+    static getMarkerLayerClass() {
+        return DrawTool.MarkerLayerClazz;
+    }
+
+    static setLayerClass(lineLayerClass, markerLayerClass) {
+        DrawTool.LineLayerClazz = lineLayerClass;
+        DrawTool.MarkerLayerClazz = markerLayerClass;
+    }
     options: DrawToolOptions;
     //@internal
     _vertexes: Array<any>;
@@ -568,7 +583,7 @@ class DrawTool extends MapTool {
      */
     //@internal
     _createGeometry(event: any) {
-        
+
         const mode = this.getMode();
         const map: any = this.getMap()
         const registerMode = this._getRegisterMode();
@@ -760,7 +775,7 @@ class DrawTool extends MapTool {
     //@internal
     _addGeometryToStage(geometry) {
         const drawLayer = this._getDrawLayer();
-        drawLayer.addGeometry(geometry);
+        // drawLayer.addGeometry(geometry);
     }
 
     /**
@@ -810,7 +825,7 @@ class DrawTool extends MapTool {
 
     //@internal
     _clearStage() {
-        this._getDrawLayer().clear();
+        // this._getDrawLayer().clear();
         delete this._geometry;
         delete this._clickCoords;
     }
@@ -873,18 +888,19 @@ class DrawTool extends MapTool {
 
     //@internal
     _getDrawLayer() {
-        const drawLayerId = INTERNAL_LAYER_PREFIX + 'drawtool';
-        let drawToolLayer: any = this._map.getLayer(drawLayerId);
-        if (!drawToolLayer) {
-            drawToolLayer = new VectorLayer(drawLayerId, {
-                'enableSimplify': false,
-                'enableAltitude': this.options['enableAltitude'],
-                'zIndex': this.options.zIndex
-            });
-            this._map.addLayer(drawToolLayer);
-        }
-        this._pushLayers(drawToolLayer);
-        return drawToolLayer;
+        // const drawLayerId = INTERNAL_LAYER_PREFIX + 'drawtool';
+        // let drawToolLayer: any = this._map.getLayer(drawLayerId);
+        // if (!drawToolLayer) {
+        //     drawToolLayer = new VectorLayer(drawLayerId, {
+        //         'enableSimplify': false,
+        //         'enableAltitude': this.options['enableAltitude'],
+        //         'zIndex': this.options.zIndex
+        //     });
+        //     this._map.addLayer(drawToolLayer);
+        // }
+        // this._pushLayers(drawToolLayer);
+        // return drawToolLayer;
+        return [];
     }
 
     //@internal
