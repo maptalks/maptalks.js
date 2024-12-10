@@ -129,6 +129,9 @@ module.exports = [
             file: "build/gltf-loader-bundle.js"
             // footer: ``
         },
+        watch: {
+            include: ['../gltf-loader/dist/*.js']
+        }
     },
     {
         input: 'src/layer/terrain/worker/index.js',
@@ -205,7 +208,8 @@ module.exports.push({
         'file': outputFile
     },
     watch: {
-        include: ['src/**/*.js', 'src/**/*.ts', 'src/**/*.glsl',  'src/**/*.vert',  'src/**/*.frag', '../reshader.gl/dist/*.es.js', 'build/worker.js']
+        include: ['src/**/*.js', 'src/**/*.ts', 'src/**/*.glsl',  'src/**/*.vert',  'src/**/*.frag',
+            '../reshader.gl/dist/*.es.js', 'build/worker.js', 'build/gltf-loader-bundle.js']
     }
 });
 
