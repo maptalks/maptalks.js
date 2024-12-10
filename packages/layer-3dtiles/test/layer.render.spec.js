@@ -445,7 +445,8 @@ describe('render specs', () => {
             const layer = new Geo3DTilesLayer('3d-tiles', {
                 services : [
                     {
-                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                        cullFace: false
                     }
                 ]
             });

@@ -168,7 +168,7 @@ export default class TileMeshPainter {
         const projViewMatrix = map.projViewMatrix;
         const oneMeshArray = [];
         const parentMeshes = [];
-        const meshes = [];
+        const b3dmMeshes = [];
         const pntsMeshes = [];
         const i3dmMeshes = [];
 
@@ -228,10 +228,9 @@ export default class TileMeshPainter {
                     }
                     if (parentContext && parentContext.bloom && mesh[ii].properties.hlBloomMesh) {
                         mesh[ii].properties.hlBloomMesh.properties.depthFunc = 'always';
-                        mesh[ii].properties.hlBloomMesh.properties.polygonOffset = polygonOffset;
-                        meshes.push(mesh[ii].properties.hlBloomMesh);
+                        b3dmMeshes.push(mesh[ii].properties.hlBloomMesh);
                     }
-                    meshes.push(mesh[ii]);
+                    b3dmMeshes.push(mesh[ii]);
                 } else if (magic === 'pnts') {
                     pntsMeshes.push(mesh[ii]);
                 } else if (magic === 'i3dm') {
@@ -243,8 +242,20 @@ export default class TileMeshPainter {
                 mesh[ii].properties.isLeaf = tiles[i].leave;
                 mesh[ii].properties.branchRootId = tiles[i].branchRootId;
                 // GroupGLLayer中，stencil默认值为0xFF，与GroupGLLayer保持一致
-                mesh[ii].properties.selectionDepth = 255 - tiles[i].selectionDepth;
+                const selectionDepth = 255 - tiles[i].selectionDepth;
+                mesh[ii].properties.selectionDepth = selectionDepth;
                 mesh[ii].properties.polygonOffset = polygonOffset;
+                const cullFace = service.cullFace === undefined || !!service.cullFace;
+                mesh[ii].properties.cullFace = cullFace;
+
+                const hlBloomMesh = mesh[ii].properties.hlBloomMesh;
+                if (hlBloomMesh) {
+                    const bloomProperties = hlBloomMesh.properties;
+                    bloomProperties.branchRootId = tiles[i].branchRootId;
+                    bloomProperties.selectionDepth = selectionDepth;
+                    bloomProperties.polygonOffset = polygonOffset;
+                    bloomProperties.cullFace = cullFace;
+                }
                 // if (!Object.prototype.hasOwnProperty.call(mesh[ii].uniforms, 'ambientColor')) {
                 //     Object.defineProperty(mesh[ii].uniforms, 'ambientColor', {
                 //         enumerable: true,
@@ -280,12 +291,12 @@ export default class TileMeshPainter {
         let drawCount = 0;
         const khrExludeFilter = this._khrTechniqueWebglManager.getExcludeFilter();
         ContextUtil.setIncludeUniformValues(uniforms, parentContext);
-        drawCount += this._callShader(this._phongShader, uniforms, [filter, phongFilter, khrExludeFilter], renderTarget, parentMeshes, meshes, i3dmMeshes);
-        drawCount += this._callShader(this._standardShader, uniforms, [filter, StandardFilter, khrExludeFilter], renderTarget, parentMeshes, meshes, i3dmMeshes);
+        drawCount += this._callShader(this._phongShader, uniforms, [filter, phongFilter, khrExludeFilter], renderTarget, parentMeshes, b3dmMeshes, i3dmMeshes);
+        drawCount += this._callShader(this._standardShader, uniforms, [filter, StandardFilter, khrExludeFilter], renderTarget, parentMeshes, b3dmMeshes, i3dmMeshes);
 
         this._khrTechniqueWebglManager.forEachShader((shader, shaderFilter, uniformSemantics) => {
             const uniforms = this._getUniformValues(uniformSemantics);
-            drawCount += this._callShader(shader, uniforms, [filter, shaderFilter], renderTarget, parentMeshes, meshes, i3dmMeshes);
+            drawCount += this._callShader(shader, uniforms, [filter, shaderFilter], renderTarget, parentMeshes, b3dmMeshes, i3dmMeshes);
         });
         this._pntsScene.setMeshes(pntsMeshes);
         const pntsUniforms = this._getPntsUniforms();
@@ -294,7 +305,7 @@ export default class TileMeshPainter {
         this._paintedMeshes = {
             pntsMeshes,
             i3dmMeshes,
-            b3dmMeshes: meshes
+            b3dmMeshes
         };
         // boxMeshes.forEach(mesh => {
         // this._updateBBoxMatrix(mesh);
@@ -1694,7 +1705,9 @@ export default class TileMeshPainter {
             //     return props['colorMask'] || colorOn;
             // },
             cull : {
-                enable: true,
+                enable: (_, props) => {
+                    return props.meshProperties.cullFace;
+                },
                 face: (_, props) => {
                     return props.cullFace || 'back';
                 }
