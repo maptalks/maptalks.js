@@ -1315,6 +1315,10 @@ function ifSharingPosition(gltf) {
     if (!gltf || !gltf.meshes) {
         return false;
     }
+    // 有 KHR_techniques_webgl 的模型可能在shader中有顶点计算逻辑，所以不能对顶点进行额外处理和计算
+    if (gltf.extensions && gltf.extensions['KHR_techniques_webgl']) {
+        return true;
+    }
     const visitStamp = 'visited';
     let visitId = 1;
     const buffers = [];

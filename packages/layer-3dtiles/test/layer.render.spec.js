@@ -439,6 +439,19 @@ describe('render specs', () => {
             runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 1, noGroup: true });
         });
 
+
+        it('a tile of old khr_techinque_webgl(not khr_techinques_webgl) extension', done => {
+            const resPath = 'BatchedDraco/oldKhrTechniqueWebGL';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`
+                    }
+                ]
+            });
+            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 1, noGroup: true });
+        });
+
         it('dayanta', done => {
             const resPath = 'BatchedDraco/dayanta/';
             const layer = new Geo3DTilesLayer('3d-tiles', {

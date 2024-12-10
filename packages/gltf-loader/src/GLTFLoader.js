@@ -64,9 +64,79 @@ export default class GLTFLoader {
         });
     }
 
+    _convertKhrTechiqueToTechiques() {
+        // convert extension KHR_technique_webgl (don't have "s") to KHR_techniques_webgl
+        if (!this.gltf['programs']) {
+            return;
+        }
+        const materials = this.gltf.materials;
+        for (let i = 0; i < materials.length; i++) {
+            if (materials[i] && materials[i].extensions && materials[i].extensions['KHR_technique_webgl']) {
+                materials[i].extensions['KHR_techniques_webgl'] = materials[i].extensions['KHR_technique_webgl'];
+                delete materials[i].extensions['KHR_technique_webgl'];
+            }
+        }
+
+        const extensions = this.gltf.extensions || {};
+        const techniques = this.gltf.techniques;
+        extensions['KHR_techniques_webgl'] = {
+            programs: this.gltf.programs,
+            shaders: this.gltf.shaders,
+            techniques: techniques
+        };
+
+        for (let i = 0; i < materials.length; i++) {
+            const techValues = getTechniqueValues(materials[i]);
+            if (techValues) {
+                const { values, technique: techIndex } = techValues;
+                const technique = techniques[techIndex];
+                if (!technique || !values) {
+                    continue;
+                }
+                const { uniforms, parameters } = technique;
+                const realValues = {};
+                for (const p in values) {
+                    const uniName = findUniformName(uniforms, p);
+                    realValues[uniName] = values[p];
+                    if (parameters[p] && parameters[p].type === 35678) {
+                        // texture
+                        realValues[uniName] = { index: values[p] };
+                    }
+                }
+                techValues.values = realValues;
+            }
+        }
+
+        for (let i = 0; i < techniques.length; i++) {
+            const technique = techniques[i];
+            if (!technique) { continue; }
+            const { attributes, uniforms, parameters } = technique;
+            if (attributes) {
+                for (const p in attributes) {
+                    const param = attributes[p];
+                    attributes[p] = parameters[param];
+                }
+            }
+            if (uniforms) {
+                for (const p in uniforms) {
+                    const param = uniforms[p];
+                    uniforms[p] = parameters[param];
+                }
+            }
+            delete technique.parameters;
+        }
+
+        delete this.gltf.programs;
+        delete this.gltf.shaders;
+        delete this.gltf.techniques;
+        this.gltf.extensions = extensions;
+        return extensions;
+    }
+
     load(options) {
         options = options || {};
         // this._initTexture();
+        this._convertKhrTechiqueToTechiques();
         const gltf = this._loadScene(options);
         const animations = this._loadAnimations();
         const textures = this._loadTextures();
@@ -612,4 +682,17 @@ function isPowerOfTwo(value) {
 
 function floorPowerOfTwo(value) {
     return Math.pow(2, Math.floor(Math.log(value) / Math.LN2));
+}
+
+function getTechniqueValues(material) {
+    return material && material.extensions && material.extensions['KHR_techniques_webgl']
+}
+
+function findUniformName(uniforms, value) {
+    for (const p in uniforms) {
+        if (uniforms[p] === value) {
+            return p;
+        }
+    }
+    return value;
 }
