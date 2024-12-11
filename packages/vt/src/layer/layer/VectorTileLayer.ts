@@ -84,7 +84,10 @@ const defaultOptions: VectorTileLayerOptionsType = {
   currentTilesFirst: true,
   // 降低 tileStack 数量， maptalks/issues#786，否则会因为父级数据量过大，造成当前级别瓦片很久才出现
   tileStackStartDepth: 3,
-  tileStackDepth: 2
+  tileStackDepth: 2,
+
+  altitudePropertyName: null,
+  disableAltitudeWarning: false
 };
 
 /**
@@ -1966,7 +1969,10 @@ export type VectorTileLayerOptionsType = {
   featureIdProperty?: string,
   currentTilesFirst?: true,
 
-  style?: any
+  style?: any,
+
+  altitudePropertyName?: string,
+  disableAltitudeWarning?: boolean
 } & TileLayerOptionsType;
 
 export type AsyncFeatureQueryOptions = {

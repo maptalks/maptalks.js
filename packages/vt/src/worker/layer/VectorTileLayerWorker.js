@@ -2,9 +2,13 @@ import LayerWorker from './BaseLayerWorker';
 import pbf from 'pbf';
 import { VectorTile } from '@mapbox/vector-tile';
 import Ajax from '../util/Ajax';
-import { hasOwn, isString } from '../../common/Util';
+import { isNil, hasOwn, isString } from '../../common/Util';
 import { PROP_OMBB } from '../../common/Constant';
 import { projectOMBB } from '../builder/Ombb.js';
+
+const ALTITUDE_ERRORS = {
+    'MISSING_ALTITUDE_ELEMENT': 2,
+};
 
 export default class VectorTileLayerWorker extends LayerWorker {
     constructor(id, options, uploader, cache, loadings, callback) {
@@ -21,6 +25,7 @@ export default class VectorTileLayerWorker extends LayerWorker {
     getTileFeatures(context, cb) {
         const url = context.tileInfo.url;
         const fetchOptions = context.fetchOptions || {};
+        const { altitudePropertyName, disableAltitudeWarning } = context;
         const cached = this._cache.get(url);
         if (cached && cached.cacheIndex === context.workerCacheIndex) {
             const { err, data } = cached;
@@ -43,11 +48,11 @@ export default class VectorTileLayerWorker extends LayerWorker {
                 this._cache.add(url, { err: null, data: response.data, cacheIndex: context.workerCacheIndex });
             }
 
-            this._readTile(url, err, response && response.data, cb);
+            this._readTile(url, altitudePropertyName, disableAltitudeWarning, err, response && response.data, cb);
         });
     }
 
-    _readTile(url, err, data, cb) {
+    _readTile(url, altitudePropertyName, disableAltitudeWarning, err, data, cb) {
         if (err) {
             cb(err);
             return;
@@ -95,6 +100,16 @@ export default class VectorTileLayerWorker extends LayerWorker {
                             }
                             fea.properties[PROP_OMBB] = projectOMBB(ombb, 'EPSG:3857');
                         }
+                        const altitudeBase64 = altitudePropertyName && fea.properties[altitudePropertyName];
+                        if (altitudeBase64) {
+                            const altitudes = decodeAltitude(altitudeBase64);
+                            const errors = [];
+                            fillAltitude(fea.geometry, altitudes, errors);
+                            if (errors.length && !disableAltitudeWarning) {
+                                console.warn('feature.geometry is not consistent with altitude values:');
+                                console.warn(JSON.stringify(fea, null, 2));
+                            }
+                        }
                         features.push(fea);
                     } catch (err) {
                         console.warn('error when load vt geometry:', err);
@@ -131,5 +146,34 @@ export default class VectorTileLayerWorker extends LayerWorker {
             }
         }
         this.requests = {};
+    }
+}
+
+function decodeAltitude(base64) {
+    const decoded = atob(base64);
+    const arr = new Uint8Array(decoded.length);
+    for (let i = 0; i < decoded.length; i++) {
+        arr[i] = decoded.charCodeAt(i);
+    }
+    return new Float32Array(arr.buffer);
+}
+
+function fillAltitude(geometry, altitudes, errors, iterator) {
+    if (!iterator) {
+        iterator = { index: 0 };
+    }
+    for (let i = 0; i < geometry.length; i++) {
+        if (Array.isArray(geometry[i])) {
+            fillAltitude(geometry[i], altitudes, errors, iterator);
+        } else {
+            const index = iterator.index;
+            if (isNil(altitudes[index])) {
+                errors.push(ALTITUDE_ERRORS['MISSING_ALTITUDE_ELEMENT'])
+            } else {
+                // meter to centimeter, reason refers to convert.js
+                geometry[i].z = altitudes[index] * 100;
+            }
+            iterator.index++;
+        }
     }
 }
