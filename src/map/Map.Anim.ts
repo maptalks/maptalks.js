@@ -174,6 +174,7 @@ Map.include(/** @lends Map.prototype */{
                 if (frame.styles['center']) {
                     const center = frame.styles['center'];
                     this._setPrjCenter(projection.project(center));
+                    this._centerZ = center.z;
                     this.onMoving(this._parseEventFromCoord(this.getCenter()));
                 } else if (frame.styles['prjCenter']) {
                     const center = frame.styles['prjCenter'];
