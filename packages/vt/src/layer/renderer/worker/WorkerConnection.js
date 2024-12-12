@@ -145,7 +145,12 @@ export default class WorkerConnection extends maptalks.worker.Actor {
         const { x, y } = context.tileInfo;
         const length = this.workers.length;
         const s = (x + y) % length;
-        this.send(data, null, cb, this._dedicatedVTWorkers[layerId] === undefined ? this.workers[s].id : this._dedicatedVTWorkers[layerId]);
+        const buffers = [];
+        const tileArrayBuffer = params.tileArrayBuffer;
+        if (tileArrayBuffer && tileArrayBuffer instanceof ArrayBuffer) {
+            buffers.push(tileArrayBuffer);
+        }
+        this.send(data, buffers, cb, this._dedicatedVTWorkers[layerId] === undefined ? this.workers[s].id : this._dedicatedVTWorkers[layerId]);
     }
 
     remove() {
