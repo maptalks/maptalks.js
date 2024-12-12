@@ -56,8 +56,7 @@ export default class GLTFAdapter {
         if (decoders[source.mimeType]) {
             return decoders[source.mimeType](dataview, { supportedFormats: this._supportedFormats });
         } else if (source.mimeType === 'image/crn' || source.mimeType === 'image/ktx2' || source.mimeType === 'image/cttf') {
-            console.warn('missing transcoder for ' + source.mimeType, ', visit https://maptalks.com/docs/transcoders for details');
-            return Promise.resolve(null);
+            throw new Error('missing transcoder for ' + source.mimeType, '');
         } else {
             return this._getImageInfo(source.id, dataview);
         }
