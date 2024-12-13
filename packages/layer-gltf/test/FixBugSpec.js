@@ -1918,7 +1918,7 @@ describe('bug', () => {
                 const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
                 expect(pixelMatch([146, 146, 146, 255], pixel)).to.be.eql(true);
                 done();
-            }, 100);
+            }, 600);
         }
         marker.on('load', () => {
             marker.zoomTo();
@@ -1926,6 +1926,38 @@ describe('bug', () => {
         });
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
     });
+
+    // it('zoomto with altitude、bearing、pitch、zoomOffset、duration、step', done => {
+    //     const gltflayer = new maptalks.GLTFLayer('gltf');
+    //     const position = center.add(0, 1);
+    //     position.z = 100;
+    //     const marker = new maptalks.GLTFGeometry(position,
+    //         { symbol: { url: url2,
+    //             modelHeight: 100
+    //         }});
+    //     gltflayer.addGeometry(marker);
+    //     let frm = null;
+    //     function checkColor() {
+    //         setTimeout(function() {
+    //             const pixel = pickPixel(map, map.width / 2, map.height / 2 - 50, 1, 1);
+    //             expect(pixelMatch([71, 97, 117, 255], pixel)).to.be.eql(true);
+    //             expect(frm).to.be.ok();
+    //             done();
+    //         }, 400);
+    //     }
+    //     marker.on('load', () => {
+    //         marker.zoomTo({
+    //             bearing: 45,
+    //             pitch: 45,
+    //             zoomOffset: -1,
+    //             duration: 300
+    //         }, (frame) => {
+    //             frm = frame;
+    //         });
+    //         checkColor();
+    //     });
+    //     new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    // });
 
     it('highlightNodes before added to gltflayer(maptalks/issues#709)', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');

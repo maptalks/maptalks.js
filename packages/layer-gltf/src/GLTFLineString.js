@@ -31,8 +31,19 @@ export default class GLTFLineString extends MultiGLTFMarker {
     }
 
     toJSON() {
-        const json = super.toJSON();
-        json['type'] = 'GLTFLineString';
+        const json = JSON.parse(JSON.stringify({
+            coordinates : this._coordinates,
+            options: this.options,
+            type: 'GLTFLineString'
+        }));
+        const id = this.getId();
+        if (!Util.isNil(id)) {
+            json.options['id'] = id;
+        }
+        const properties = this.getProperties();
+        if (json.options) {
+            json.options['properties'] = properties;
+        }
         return json;
     }
 
@@ -115,7 +126,7 @@ export default class GLTFLineString extends MultiGLTFMarker {
         const scale = [1, 1, 1];
         const modelHeight = this.getModelHeight();
         if (modelHeight) {
-            this._calModelHeightScale(scale);
+            this._calModelHeightScale(scale, modelHeight);
         } else {
             const symbol = this.getSymbol();
             vec3.set(scale, symbol.scaleX || 1, symbol.scaleY || 1, symbol.scaleZ || 1);

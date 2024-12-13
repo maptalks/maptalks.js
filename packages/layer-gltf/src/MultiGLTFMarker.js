@@ -500,6 +500,21 @@ export default class MultiGLTFMarker extends GLTFMarker {
         });
         this._dirty = true;
     }
+
+    /**
+     * set transltion, rotation and scale for specific node
+     * @param  {Object} options   an option object including animation{boolean}、duration{number}、pitch{number}、bearing{number}、zoomOffset{number}
+     * @param  {Function}  - step function during animation, animation frame as the parameter
+     * @return this
+     */
+    zoomAt(index, options = { animation: true, zoomOffset: 0 }, step) {
+        const dataItem = this._data[index];
+        if (!dataItem) {
+            throw new Error('data item is not exist');
+        }
+        const center = new Coordinate(dataItem.coordinates);
+        return this._zoomTo(center, options, step);
+    }
 }
 
 MultiGLTFMarker.registerJSONType('MultiGLTFMarker');

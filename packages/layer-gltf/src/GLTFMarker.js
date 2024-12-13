@@ -764,7 +764,13 @@ export default class GLTFMarker extends Marker {
         }
         const bbox = { min, max };
         this._markerBBox = bbox;
-        this._dirtyMarkerBBox = false;
+        if (this.getGLTFMarkerType() === 'multigltfmarker') {//MultiGLTFMarker的BoundingBox受数据项数量影响, 是否dirty需要特殊处理
+            if (this._data.length) {
+                this._dirtyMarkerBBox = false;
+            }
+        } else {
+            this._dirtyMarkerBBox = false;
+        }
         return bbox;
     }
 
@@ -1627,43 +1633,69 @@ export default class GLTFMarker extends Marker {
         return this._gltfModelBBox;
     }
 
-    zoomTo(zoomOffset, options = { animation: false }) {
+    /**
+     * set transltion, rotation and scale for specific node
+     * @param  {Object} options   an option object including animation{boolean}、duration{number}、pitch{number}、bearing{number}、zoomOffset{number}、heightOffset{number}
+     * @param  {Function}  - step function during animation, animation frame as the parameter
+     * @return this
+     */
+    zoomTo(options = { animation: true }, step) {
         const markerBBox = this.getBoundingBox();
         const map = this.getMap();
         if (!map || !markerBBox) {
             return;
         }
         const { min, max } = markerBBox;
+        TEMP_POINT.set((min[0] + max[0]) / 2, (min[1] + max[1]) / 2);
+        const glRes = map.getGLRes();
+        const bboxCenter = map.pointAtResToCoordinate(TEMP_POINT, glRes);
+        bboxCenter.z = ((min[2] + max[2]) / 2) / map.altitudeToPoint(1, glRes);
+        return this._zoomTo(bboxCenter, options, step);
+    }
+
+    _zoomTo(center, options, step) {
+        const map = this.getMap();
+        const pitch = options.pitch || map.getPitch();
+        const bearing = options.bearing || map.getBearing();
+        const duration = options.duration || 500;
+        const easing = options.easing || 'linear';
+        const zoom = this._getFitZoomByBoundingBox(options.heightOffset || 0) + (options.zoomOffset || 0);
+        if (options.animation || options.animation === undefined) {
+            map.animateTo({
+                center,
+                zoom,
+                bearing,
+                pitch
+            }, {
+                duration,
+                easing
+            }, step);
+        } else {
+            map.setView({
+                center,
+                zoom,
+                bearing,
+                pitch
+            });
+        }
+        return this;
+    }
+
+    _getFitZoomByBoundingBox(heightOffset) {
+        const map = this.getMap();
+        const glRes = map.getGLRes();
+        const meterToGLPoint = map.distanceToPointAtRes(100, 0, glRes).x / 100;
+        const markerBBox = this.getBoundingBox();
+        const { min, max } = markerBBox;
+        const maxHeight = max[2] / map.altitudeToPoint(1, glRes) + heightOffset;
+        const zoom1 = map.getFitZoomForAltitude(maxHeight * meterToGLPoint);
         TEMP_POINT.set(min[0], min[1]);
         const minCoord = map.pointAtResToCoordinate(TEMP_POINT, map.getGLRes());
         TEMP_POINT.set(max[0], max[1]);
         const maxCoord = map.pointAtResToCoordinate(TEMP_POINT, map.getGLRes());
         const extent = new Extent(minCoord, maxCoord);
-        map.fitExtent(extent, zoomOffset, options, (params) => {
-            if (params.state.playState === 'finished') {
-                this._zoomToEnd(min, max, extent);
-            }
-        });
-        if (options.animation === false) {
-            this._zoomToEnd(min, max, extent);
-        }
-    }
-
-    _zoomToEnd(min, max, extent) {
-        const map = this.getMap();
-        const glRes = map.getGLRes();
-        const h = (min[2] + max[2]) / 2;
-        const height = h / map.altitudeToPoint(1, glRes);
-        const cameraPosition = map.cameraPosition;
-        const cameraCoordinate = map.pointAtResToCoordinate(new Point(cameraPosition), glRes);
-        const cameraHeight = cameraPosition[2] / map.altitudeToPoint(1, glRes);
-        cameraCoordinate.z = cameraHeight + height;
-        map.setCameraOrientation({
-            position: [cameraCoordinate.x, cameraCoordinate.y, cameraCoordinate.z],
-            pitch: map.getPitch(),
-            bearing: map.getBearing()
-        });
-        this.fire('zoomtoend', { target: this, extent });
+        const zoom2 = map.getFitZoom(extent);
+        return zoom1 < zoom2 ? zoom1 : zoom2;
     }
 
     _isUniformsDirty() {

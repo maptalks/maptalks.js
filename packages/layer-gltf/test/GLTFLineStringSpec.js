@@ -84,5 +84,48 @@ describe('GLTFLineString', () => {
             }, 100);
         });
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
-    })
+    });
+
+    it('zoomTo', done => {
+        map.setCenter([1, 1]);
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gltfline = new maptalks.GLTFLineString(coordinates, {
+            direction: 2,
+            symbol: {
+                url: './models/fence/wooden_fence.glb',
+                rotationZ: 90
+            },
+        }).addTo(gltflayer);
+        gltfline.on('load', () => {
+            gltfline.zoomTo();
+            setTimeout(function() {
+                const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixelMatch([62, 48, 37, 255], pixel1)).to.be.eql(true);
+                const pixel2 = pickPixel(map, 295, 140, 1, 1);
+                expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
+                done();
+            }, 600);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
+
+    it('toJSON', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gltfline = new maptalks.GLTFLineString(coordinates, {
+            direction: 2,
+            symbol: {
+                url: './models/fence/wooden_fence.glb',
+                rotationZ: 90
+            },
+        }).addTo(gltflayer);
+        gltfline.on('load', () => {
+            gltfline.zoomTo();
+            setTimeout(function() {
+               const json =  gltfline.toJSON();
+               expect(json.coordinates.length).to.be.eql(3);
+               done();
+            }, 100);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
 });
