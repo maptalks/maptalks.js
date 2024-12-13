@@ -90,6 +90,10 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
     }
 
     getMaxAvailableZoom() {
+        // 这里重载了TileLayer里的getMaxAvailableZoom没有读取 layer.options.maxAvalibleZoom
+        // 原因是在TerrainLayerRenderer中会用maxAvaibleZoom的瓦片数据，实时切分出当前请求请求的瓦片
+        // 例如如果 maxAvailbleZoom 是14，16级的地形瓦片是从14级瓦片中且分出来的。
+        // 这样可以让skin layer的渲染逻辑更简单明确
         const sr = this.getSpatialReference();
         return sr.getMaxZoom();
     }
