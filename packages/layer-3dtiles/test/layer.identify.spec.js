@@ -58,7 +58,7 @@ describe('3dtiles identify specs', () => {
 
         layer.once('canvasisdirty', () => {
             setTimeout(() => {
-                const hits = layer.identify([-75.61227133361945, 40.04222670592739]);
+                const hits = layer.identify([-75.6123142489637, 40.042239032448684]);
                 assert(hits[0].data.batchId === 8);
                 assert(hits[0].coordinate[0] !== 0);
                 done();

@@ -1970,7 +1970,7 @@ describe('render specs', () => {
                 ]
             });
             const assertion = layer => {
-                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61209434, 40.04253061 ]);
+                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61209434, 40.04253062 ]);
             };
             runner(done, layer, { path: `./integration/expected/offset/BatchedWithTransformSphere/expected.png`, diffCount: 0, renderCount: 1 }, assertion);
         });

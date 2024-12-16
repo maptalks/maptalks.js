@@ -220,6 +220,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             const children = tile.children;
             if (tile.selected) {
                 if (tile.node.refine === 'add') {
+                    tile.leave = true;
                     tile.selectionDepth = parentStack.length;
                     tile.branchRootId = branchRootId;
                     selectedTiles.push(tile);

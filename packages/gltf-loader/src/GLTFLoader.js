@@ -66,7 +66,7 @@ export default class GLTFLoader {
 
     _convertKhrTechiqueToTechiques() {
         // convert extension KHR_technique_webgl (don't have "s") to KHR_techniques_webgl
-        if (!this.gltf['programs']) {
+        if (!Array.isArray(this.gltf['programs'])) {
             return;
         }
         const materials = this.gltf.materials;
