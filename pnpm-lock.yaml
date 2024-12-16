@@ -91,8 +91,8 @@ importers:
         specifier: ^2.2.5
         version: 2.2.5(karma@6.4.3)
       maptalks:
-        specifier: ^1.0.0-rc.40
-        version: 1.0.0-rc.40
+        specifier: ^1.0.0
+        version: 1.0.0
       mocha:
         specifier: ^10.3.0
         version: 10.4.0
@@ -128,8 +128,8 @@ importers:
   packages/gl:
     dependencies:
       '@maptalks/fusiongl':
-        specifier: ^0.7.2
-        version: 0.7.2
+        specifier: workspace:*
+        version: link:../fusion.gl
       '@maptalks/gltf-loader':
         specifier: workspace:*
         version: link:../gltf-loader
@@ -183,8 +183,8 @@ importers:
         specifier: ^2.2.5
         version: 2.2.5(karma@6.4.3)
       maptalks:
-        specifier: ^1.0.0-rc.40
-        version: 1.0.0-rc.40
+        specifier: ^1.0.0
+        version: 1.0.0
       mocha:
         specifier: ^10.3.0
         version: 10.4.0
@@ -247,8 +247,8 @@ importers:
         specifier: ^2.2.5
         version: 2.2.5(karma@6.4.3)
       maptalks:
-        specifier: ^1.0.0-rc.40
-        version: 1.0.0-rc.40
+        specifier: ^1.0.0
+        version: 1.0.0
       mocha:
         specifier: ^10.3.0
         version: 10.4.0
@@ -326,8 +326,8 @@ importers:
         specifier: ^4.17.1
         version: 4.19.2
       maptalks:
-        specifier: ^1.0.0-rc.40
-        version: 1.0.0-rc.40
+        specifier: ^1.0.0
+        version: 1.0.0
       pixelmatch:
         specifier: ^4.0.2
         version: 4.0.2
@@ -414,8 +414,8 @@ importers:
         specifier: ^2.2.5
         version: 2.2.5(karma@6.4.3)
       maptalks:
-        specifier: ^1.0.0-rc.40
-        version: 1.0.0-rc.40
+        specifier: ^1.0.0
+        version: 1.0.0
       mocha:
         specifier: ^10.3.0
         version: 10.4.0
@@ -478,8 +478,8 @@ importers:
         specifier: ^2.2.5
         version: 2.2.5(karma@6.4.3)
       maptalks:
-        specifier: ^1.0.0-rc.40
-        version: 1.0.0-rc.40
+        specifier: ^1.0.0
+        version: 1.0.0
       mocha:
         specifier: ^10.3.0
         version: 10.4.0
@@ -508,8 +508,8 @@ importers:
         specifier: workspace:*
         version: link:../vt
       maptalks:
-        specifier: ^1.0.0-rc.40
-        version: 1.0.0-rc.40
+        specifier: ^1.0.0
+        version: 1.0.0
     devDependencies:
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
@@ -619,8 +619,8 @@ importers:
         specifier: ^2.2.5
         version: 2.2.5(karma@6.4.3)
       maptalks:
-        specifier: ^1.0.0-rc.40
-        version: 1.0.0-rc.40
+        specifier: ^1.0.0
+        version: 1.0.0
       mocha:
         specifier: ^10.3.0
         version: 10.4.0
@@ -746,8 +746,8 @@ importers:
         specifier: ^10.4.1
         version: 10.4.3(eslint@8.57.0)
       maptalks:
-        specifier: 1.0.0-rc.40
-        version: 1.0.0-rc.40
+        specifier: ^1.0.0
+        version: 1.0.0
       pixelmatch:
         specifier: ^4.0.2
         version: 4.0.2
@@ -864,8 +864,8 @@ importers:
         specifier: ^0.3.1
         version: 0.3.2
       maptalks:
-        specifier: ^1.0.0-rc.40
-        version: 1.0.0-rc.40
+        specifier: ^1.0.0
+        version: 1.0.0
       mocha:
         specifier: ^10.3.0
         version: 10.4.0
@@ -1047,9 +1047,6 @@ packages:
 
   '@maptalks/function-type@1.4.0':
     resolution: {integrity: sha512-T6Ss+EyBdMhTMoD8z4KVyX9NVGQ/pu2asBcAP1T6Bzl+fgnmGZu8T2meO8MfBDyvqjqgQhAb+/RAYtSMQLeVEg==}
-
-  '@maptalks/fusiongl@0.7.2':
-    resolution: {integrity: sha512-y3RjqQ0Uu4+wRhDb+gobMSp+Q02cuCRsSKTMnABgm1mYvYjdqlHcydMy/6Y2Bk5Hma4Z215xTPy7/nJcc00nIg==}
 
   '@maptalks/geojson-bbox@1.0.5':
     resolution: {integrity: sha512-DLeXOssDHx1cWTMhAh3ZDSEv2mMEaEbYeX/4DrGzUMpYAzQHV86BGFymLvhyZ/K08vVImzeQ882aPiRWm0OXGQ==}
@@ -2911,8 +2908,8 @@ packages:
   magic-string@0.30.10:
     resolution: {integrity: sha512-iIRwTIf0QKV3UAnYK4PU8uiEc4SRh5jX0mwpIwETPpHdhVM4f53RSwS/vXvN1JhGX+Cs7B8qIq3d6AH49O5fAQ==}
 
-  maptalks@1.0.0-rc.40:
-    resolution: {integrity: sha512-XY6Y/ZxM0PvtJBtadMGgKNkOk1bz8f2wqbN/rOJyAF5OTIkrFtlZsNlZFLhl1PgvluKZLY5Mz79+mYPQRhpw6Q==}
+  maptalks@1.0.0:
+    resolution: {integrity: sha512-gb2cxIfRiqRlFVmgYGVXD+XUwn9uCl5/lykyC5DFUEIcY/UpTj+nffbgvXWRew2FXBUy7/59qyQoOdXJUJpRNw==}
 
   marchingsquares@1.3.3:
     resolution: {integrity: sha512-gz6nNQoVK7Lkh2pZulrT4qd4347S/toG9RXH2pyzhLgkL5mLkBoqgv4EvAGXcV0ikDW72n/OQb3Xe8bGagQZCg==}
@@ -4185,10 +4182,6 @@ snapshots:
   '@maptalks/function-type@1.4.0':
     dependencies:
       colorin: 0.5.0
-
-  '@maptalks/fusiongl@0.7.2':
-    dependencies:
-      fast-deep-equal: 2.0.1
 
   '@maptalks/geojson-bbox@1.0.5': {}
 
@@ -6844,7 +6837,7 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.4.15
 
-  maptalks@1.0.0-rc.40:
+  maptalks@1.0.0:
     dependencies:
       '@maptalks/feature-filter': 1.3.0
       '@maptalks/function-type': 1.4.0

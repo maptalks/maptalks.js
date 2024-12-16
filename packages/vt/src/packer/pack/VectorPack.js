@@ -1,11 +1,10 @@
-import Point from '@mapbox/point-geometry';
 import convert from './util/convert';
 import IconAtlas from './atlas/IconAtlas';
 import GlyphAtlas from './atlas/GlyphAtlas';
 import { getIndexArrayType, fillTypedArray, getPosArrayType, getUnsignedArrayType } from './util/array';
 import { RGBAImage, AlphaImage } from '../Image';
 import convertGeometry from './util/convert_geometry';
-import { extend } from '../style/Util';
+import { extend, isNil } from '../style/Util';
 import { loadFunctionTypes, interpolated, piecewiseConstant } from '@maptalks/function-type';
 import { isFnTypeSymbol, isNumber, hasOwn } from '../style/Util';
 import { getHeightValue, generatePickingIndiceIndex } from './util/util';
@@ -201,7 +200,7 @@ export default class VectorPack {
             while (Array.isArray(g)) {
                 g = g[0];
             }
-            if (g instanceof Point) {
+            if (!isNil(g.x)) {
                 //a converted one
                 checked = features;
             }
