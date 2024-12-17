@@ -9,8 +9,6 @@ import GLTFResource from './GLTFResource';
 import { getPrimitive, getTextureMagFilter, getTextureMinFilter, getTextureWrap, getUniqueREGLBuffer } from '../common/REGLHelper';
 import Texture from '../Texture2D';
 
-const gltf = getGLTFLoaderBundle();
-
 let timespan = 0;
 
 const MAT4 = [];
@@ -161,6 +159,7 @@ export default class GLTFPack {
         if (!json) {
             return;
         }
+        const gltf = getGLTFLoaderBundle();
         timespan = json.animations ? gltf.GLTFLoader.getAnimationTimeSpan(json, animationName) : null;
         //模型切换过快，会导致上一个模型有动画执行，当前模型没有动画数据，就出现timespan为null的情况
         if (!timespan) {
@@ -198,6 +197,7 @@ export default class GLTFPack {
         if (!startTime || !json) {
             return true;
         }
+        const gltf = getGLTFLoaderBundle();
         timespan = json.animations ? gltf.GLTFLoader.getAnimationTimeSpan(json, animationName) : null;
         return (time* speed * 0.001) / (timespan.max - timespan.min) < 1;
     }
@@ -228,6 +228,7 @@ export default class GLTFPack {
     }
 
     _updateNodeTRS(node, time, animationName) {
+        const gltf = getGLTFLoaderBundle();
         const animation = gltf.GLTFLoader.getAnimationClip(this.gltf, Number(node.nodeIndex), time, animationName);
         if (animation.weights) {
             this._updateMorph(node, animation.weights);

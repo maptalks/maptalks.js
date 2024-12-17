@@ -7,8 +7,6 @@ import { getGLTFLoaderBundle } from './common/GLTFBundle'
 import { ActiveAttributes, AttributeData, GeometryDesc, NumberArray } from './types/typings';
 import REGL, { Regl } from '@maptalks/regl';
 
-const gltf = getGLTFLoaderBundle();
-
 const EMPTY_VAO_BUFFER = [];
 
 const REGL_TYPES = {
@@ -742,6 +740,7 @@ export default class Geometry {
 
     //@internal
     _getAttributeData(name: string) {
+        const gltf = getGLTFLoaderBundle();
         const data = this.data[name] && this.data[name].array ? this.data[name].array : this.data[name];
         const bufKey = data.buffer;
         if (!isInterleaved(data)) {

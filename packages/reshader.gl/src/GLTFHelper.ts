@@ -1,11 +1,10 @@
 import { getGLTFLoaderBundle } from './common/GLTFBundle'
 import GLTFPack from './gltf/GLTFPack';
 
-const { Ajax, GLTFLoader } = getGLTFLoaderBundle();
-
 // options.fetchOptions
 // options.gltfLoaderOptions
 export function load(url, options) {
+    const { Ajax } = getGLTFLoaderBundle();
     const { fetchOptions, gltfLoaderOptions, urlModifier } = options;
     const loaderOptions = gltfLoaderOptions || {};
     loaderOptions.urlModifier = urlModifier;
@@ -30,6 +29,7 @@ export function exportGLTFPack(gltf, regl) {
 }
 
 export function loadGLTF(root, gltf, loaderOptions) {
+    const { GLTFLoader } = getGLTFLoaderBundle();
     const loader = new GLTFLoader(root, gltf, loaderOptions);
     return loader.load();
 }

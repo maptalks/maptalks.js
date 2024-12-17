@@ -2,8 +2,6 @@ import { getGLTFLoaderBundle } from './GLTFBundle'
 import REGL, { Regl } from '@maptalks/regl';
 import { AttributeBufferData, AttributeType, NumberArray, TypedArray } from '../types/typings';
 
-const gltf = getGLTFLoaderBundle();
-
 /**
  * 对象是否是字符串
  * @english
@@ -336,6 +334,7 @@ export function isInStride(dataObj) {
     if (!dataObj.componentType) {
         return false;
     }
+    const gltf = getGLTFLoaderBundle();
     const ctor = gltf.GLTFLoader.getTypedArrayCtor(dataObj.componentType);
     return dataObj.byteStride > 0 && dataObj.byteStride !== dataObj.itemSize * ctor.BYTES_PER_ELEMENT;
 }
