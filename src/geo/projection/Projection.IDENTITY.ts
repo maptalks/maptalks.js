@@ -13,6 +13,7 @@ const IdentityProjection = {
         if (out) {
             out.x = p.x;
             out.y = p.y;
+            out.z = p.z;
             return out;
         }
         return p.copy();
@@ -21,6 +22,7 @@ const IdentityProjection = {
         if (out) {
             out.x = p.x;
             out.y = p.y;
+            out.z = p.z;
             return out;
         }
         return p.copy();

@@ -1,6 +1,6 @@
 {
   "name": "maptalks",
-  "version": "1.0.0-rc.40",
+  "version": "1.0.0",
   "description": "A light JavaScript library to create integrated 2D/3D maps.",
   "license": "BSD-3-Clause",
   "author": "Fu Zhen",
@@ -80,11 +80,11 @@
     "@types/offscreencanvas": "^2019.7.3",
     "dts-bundle-generator": "^9.5.1",
     "eslint": "^8.57.0",
-    "eslint-plugin-mocha": "^10.4.1",
+    "eslint-plugin-mocha": "^10.5.0",
     "expect-maptalks": "^0.4.1",
     "expect.js": "^0.3.1",
     "happen": "^0.3.1",
-    "karma": "^6.4.1",
+    "karma": "^6.4.4",
     "karma-chrome-launcher": "^3.1.1",
     "karma-coverage": "^2.2.0",
     "karma-expect": "^1.1.3",
@@ -99,10 +99,10 @@
     "rollup-plugin-dts": "^6.1.0",
     "sinon": "^3.2.1",
     "tslib": "^2.6.2",
-    "typedoc": "^0.25.13",
-    "typedoc-plugin-markdown": "^4.0.0-next.55",
+    "typedoc": "^0.27.5",
+    "typedoc-plugin-markdown": "^4.3.2",
     "typescript": "^5.4.2",
-    "typescript-eslint": "^7.3.1"
+    "typescript-eslint": "^7.18.0"
   },
   "optionalDependencies": {
     "@rollup/rollup-darwin-x64": "^4.13.0",

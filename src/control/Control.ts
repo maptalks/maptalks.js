@@ -1,7 +1,7 @@
 import { extend, isNil, isNumber, isString } from '../core/util';
 import { createEl, setStyle, removeDomNode } from '../core/util/dom';
 import Eventable from '../core/Eventable';
-import Class from '../core/Class';
+import Class, { ClassOptions } from '../core/Class';
 import Point from '../geo/Point';
 import Map from '../map/Map';
 
@@ -267,6 +267,10 @@ abstract class Control<T = ControlOptionsType> extends Eventable(Class) {
                 'left': 20
             };
         }
+        //reset position style value
+        if (this.__ctrlContainer) {
+            Object.assign(this.__ctrlContainer.style, { top: null, bottom: null, right: null, left: null });
+        }
         for (const p in position) {
             if (position.hasOwnProperty(p)) {
                 let v = position[p] || 0;
@@ -288,6 +292,12 @@ abstract class Control<T = ControlOptionsType> extends Eventable(Class) {
         this.fire('positionchange', {
             'position': extend({}, position)
         });
+    }
+
+    onConfig(conf: ClassOptions): void {
+        if (conf && 'position' in conf) {
+            this._updatePosition();
+        }
     }
 
 }
