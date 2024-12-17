@@ -1,93 +1,210 @@
-# gl-layers
+# maptalks-gl
 
-WebGL layers for maptalks.
+[![NPM Version](https://img.shields.io/npm/v/maptalks-gl.svg)](https://github.com/maptalks/maptalks.js)
 
-## Javascript版本
+## NOTICE
 
-* maptalks核心库的目标JS版本为ES5
-* maptalks-gl的目标JS版为ES6（ES2015）
+maptalks is [upgrading to maptalks-gl](https://github.com/maptalks/maptalks.js/issues/2471), a webgl (and webgpu in near future) driven 2D/3D map engine.
 
-## packages说明
+The [legacy maptalks library](https://github.com/maptalks/maptalks-canvas) will be still maintained.
 
-### 基础库
-* `gltf-loader` gltf 格式解析库
-* `reshader.gl` 基于regl实现的三维渲染接口，包括renderer，scene，Mesh，Material等常用的渲染基础类以及预先定义的各类渲染材质，例如PBR
+## About
 
-### 图层
-* `gl` WebGL基础图层功能，包括 GroupGLLayer，地形，后处理以及各种三维Mask的实现
-* `layer-3dtiles` 3dtiles图层(Geo3DTilesLayer)的实现
-* `layer-gltf` gltf图层(GLTFLayer/GLTFMarker)的实现
-* `layer-video` video图层(VideoLayer/VideoSurface)的实现
+maptalks-gl will be a pure WebGL driven map engine with performance and rich features in 3D. maptalks-gl is in active development now, and will be officially published in few months.
 
-### 矢量瓦片
-* `vector-packer` 矢量瓦片格式的解析以及数据结构的组织
-* `vt-plugin` 矢量瓦片渲染插件的接口定义
-* `vt` 矢量瓦片图层(VectorTileLayer/GeoJSONVectorTileLayer)的实现
+With consistent API upgrade, you can easily migrate from [legacy maptalks](https://github.com/maptalks/maptalks-canvas) to maptalks-gl. (TBD)
 
-### 三维分析
-* `analysis` 包含各类三维分析功能的实现
-* `traffic` 交通模拟的实现
+If you are interested in what is going on, please refer to the previous [releases notes](https://github.com/fuzhenn/maptalks-gl-layers/releases/) of maptalks-gl.
+
+## Features
+
+* Vector Tile format support
+* 3DTiles format support
+* GLTF format support
+* Magnificant performance enhancement by WebGL
+* Rich 3D analysis functions
+* Traffic simulation animations
+
+## Usage
+
+### Install
+
+```shell
+npm i maptalks-gl
+
+#or
+
+yarn add maptalks-gl
+
+#or
+
+pnpm i maptalks-gl
+```
+
+### ESM
+
+```js
+import {
+    Map,
+    GroupGLLayer,
+    VectorTileLayer,
+    GLTFMarker,
+    GLTFLayer,
+    PolygonLayer
+} from 'maptalks-gl';
+
+const map = new Map('map', {
+    center: [0, 0],
+    zoom: 2
+});
+const vtLayer = new VectorTileLayer('vt', {
+    urlTemplate: 'http://tile.maptalks.com/test/planet-single/{z}/{x}/{y}.mvt'
+});
+
+const groupLayer = new GroupGLLayer('group', [vtLayer]).addTo(map);
+
+const gltfLayer = new GLTFLayer('gltflayer');
+groupLayer.addLayer(gltfLayer);
+
+const polygonLayer = new PolygonLayer('polygonlayer');
+groupLayer.addLayer(polygonLayer);
+//other layers
+```
+
+### CDN
+
+You can also reference umd-formatted packages via CDN, note that all exported variables under the gl system are automatically mounted in the `maptalks` namespace.
+
+```html
+<script type="text/javascript" src="https://unpkg.com/maptalks-gl/dist/maptalks-gl.js"></script>
+<script type="text/javascript">
+    const map = new maptalks.Map('map', {
+        center: [0, 0],
+        zoom: 2
+    });
+    const vtLayer = new maptalks.VectorTileLayer('vt', {
+        urlTemplate: 'http://tile.maptalks.com/test/planet-single/{z}/{x}/{y}.mvt'
+    });
+
+    const groupLayer = new maptalks.GroupGLLayer('group', [vtLayer]).addTo(map);
+
+    const gltfLayer = new maptalks.GLTFLayer('gltflayer');
+    groupLayer.addLayer(gltfLayer)
+    const polygonLayer = new maptalks.PolygonLayer('polygonlayer');
+    groupLayer.addLayer(polygonLayer);
+    //other layers
+</script>
+```
+
+### Optional transcoders
+
+If you need to introduce optional draco, ktx2 and other gl format decoding plugins, just introduce the decoding plugins after introducing the summary package as before:
+
+```js
+import {
+    Map,
+    Geo3DTilesLayer,
+    GLTFLayer
+} from 'maptalks-gl';
+import '@maptalks/transcoders.draco';
+import '@maptalks/transcoders.crn';
+import '@maptalks/transcoders.ktx2';
+```
+
+or with umd bundle：
+
+```html
+<link rel="stylesheet" href="https://unpkg.com/maptalks-gl/dist/maptalks-gl.css">
+<script type="text/javascript" src="https://unpkg.com/maptalks-gl/dist/maptalks-gl.js"></script>
+<script type="text/javascript" src="https://unpkg.com/@maptalks/transcoders.draco/dist/transcoders.draco.js"></script>
+<script type="text/javascript" src="https://unpkg.com/@maptalks/transcoders.crn/dist/transcoders.crn.js"></script>
+<script type="text/javascript" src="https://unpkg.com/@maptalks/transcoders.ktx2/dist/transcoders.ktx2.js"></script>
+```
+
+## Packages introductions
+
+### basic libraries
+* `gltf-loader` gltf format parsing library.
+* `reshader.gl` A regl-based implementation of the 3D rendering interface, including renderer, scene, mesh, material and other commonly used rendering base classes and predefined rendering materials, such as PBR.
+
+### Map
+
+* `map` home for Map class and other infrustructures.
+
+### Layers
+* `gl` WebGL base layer functionality, including GroupGLLayer, terrain, post-processing and various 3D mask implementations.
+* `layer-3dtiles` Implementation of the 3dtiles layer (Geo3DTilesLayer).
+* `layer-gltf` Implementation of gltf layer (GLTFLayer/GLTFMarker).
+* `layer-video` video layer (VideoLayer/VideoSurface) implementation
+
+### Vector tiles
+* `vector-packer` Parsing of vector tile formats and organization of data structures.
+* `vt-plugin` Interface definition for the vector tile rendering plugin.
+* `vt` Vector tile layer (VectorTileLayer/GeoJSONVectorTileLayer) implementation.
+
+### Three-dimensional analysis
+* `analysis` Implementation of various 3D analysis functions.
+* `traffic` Implementation of traffic simulation.
 
 ### transcoders
-* `transcoders.crn` crn格式解析库
-* `transcoders.draco` draco格式解析库
-* `transcoders.ktx` ktx2压缩纹理格式解析库
+* `transcoders.crn` crn format parsing library
+* `transcoders.draco` draco format parser library
+* `transcoders.ktx` ktx2 compressed texture format parser library.
 
-## 安装与编译
+## Installation and compilation
 
-### node 环境
+### node environment
 
-node 环境目前最低要求为 18.16.1，如果不符合最低 node 版本要求，可以使用 [nvm](https://github.com/nvm-sh/nvm) / [fnm](https://fnm.vercel.app/) 管理 node 版本
+The current minimum node environment is 18.16.1, if you don't meet the minimum node version requirement, you can use [nvm](https://github.com/nvm-sh/nvm) / [fnm](https://fnm.vercel.app/) to manage the node version.
 
-### pnpm 版本
+### pnpm version
 
-目前本项目使用的 pnpm@9.x，目前推荐使用 pnpm@9.6.0，如果不符合最低 pnpm 版本要求可以升级一下版本。
+Currently this project is using pnpm@9.x.
 
-### 安装依赖
+### Install dependencies
 
 ```shell
 pnpm i
 ```
 
-### 编译
-
-因为packages间存在依赖关系（具体可以参考各个package中package.json中的定义），可以先用下面的指令做一次整体编译：
+### Compile
 
 ```shell
-pnpm run build
+pnpm build
 ```
 
-### 调试编译
+### Debugging
 
-如果需要调试编译，即用watch模式编译，每次修改后都能自动编译，且编译目标包含源代码，方便在浏览器或测试中查看调试代码，在需要调试编译的工程下运行下面的指令即可：
+If you need to debug the code base in watch mode, and the target of the compilation contains the source code, run the following command in the root folder of package you are debugging:
 
 ```shell
 pnpm run dev
 ```
 
-## 测试
+## Test
 
-工程采用[karma](https://karma-runner.github.io/latest/index.html)或[electron-mocha](https://github.com/jprichardson/electron-mocha)(vt与layer-3dtiles)作为测试框架，测试用例都是基于mocha的语法编写。
+The project uses [karma](https://karma-runner.github.io/latest/index.html) or [electron-mocha](https://github.com/jprichardson/electron-mocha) (vt vs. layer-3dtiles) as the test framework, and the test cases are written based on mocha syntax.
 
-### 运行工程的完整测试
 
-在每个工程下运行 ```npm test```
+### Run a full test of the project
 
-### 运行指定用例的测试
+Run ``npm test`` under each project.
 
-* 如果工程基于 [electron-mocha](https://github.com/jprichardson/electron-mocha)，运行
+### Run the tests for the specified use case
+
+* If the project is based on [electron-mocha](https://github.com/jprichardson/electron-mocha), run the
 
 ```shell
-pnpm run tdd -- -g "spec keywords"
+pnpm run tdd -- -g “spec keywords”
 ```
 
-* 如果工程基于 [karma](https://karma-runner.github.io/latest/index.html)，则需要修改测试源代码，通过mocha中的only方法来指定运行的用例，例如:
+* If the project is based on [karma](https://karma-runner.github.io/latest/index.html), you need to modify the test source code to specify the use cases to run via the only method in mocha, e.g..
 
 ```js
 it('spec name', () => {});
 ```
 
-改为：
+Change to:
 
 ```js
 it.only('spec name', () => {});
