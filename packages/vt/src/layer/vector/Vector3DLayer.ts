@@ -1,6 +1,6 @@
-import * as maptalks from "maptalks";
+import * as maptalks from "@maptalks/map";
 
-import { LayerIdentifyOptionsType } from "maptalks";
+import { LayerIdentifyOptionsType } from "@maptalks/map";
 import { extend } from "../../common/Util";
 
 const defaultOptions = {

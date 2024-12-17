@@ -1,5 +1,5 @@
 import MultiGLTFMarker from "./MultiGLTFMarker";
-import { Coordinate, Util } from "maptalks";
+import { Coordinate, Util } from "@maptalks/map";
 import { vec3 } from '@maptalks/gl';
 
 const options = {

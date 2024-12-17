@@ -1,4 +1,4 @@
-import * as maptalks from "maptalks";
+import * as maptalks from "@maptalks/map";
 
 import type {
   BackgroundConfig,
@@ -18,8 +18,8 @@ import { extend, hasOwn, isNil, isObject, isString, pushIn } from "../../common/
 import Ajax from "../../worker/util/Ajax";
 import VectorTileLayerRenderer from "../renderer/VectorTileLayerRenderer";
 import { isFunctionDefinition } from "@maptalks/function-type";
-import { LayerIdentifyOptionsType } from "maptalks";
-import { PositionArray, TileLayerOptionsType } from "maptalks";
+import { LayerIdentifyOptionsType } from "@maptalks/map";
+import { PositionArray, TileLayerOptionsType } from "@maptalks/map";
 
 const { PackUtil } = getVectorPacker();
 

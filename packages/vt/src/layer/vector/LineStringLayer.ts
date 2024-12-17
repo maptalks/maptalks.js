@@ -1,4 +1,4 @@
-import * as maptalks from "maptalks";
+import * as maptalks from "@maptalks/map";
 
 import { LINE_GRADIENT_PROP_KEY, LINE_SYMBOL } from "./util/symbols";
 

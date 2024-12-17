@@ -1,4 +1,4 @@
-import { Coordinate, Polygon, Point } from "maptalks";
+import { Coordinate, Polygon, Point } from "@maptalks/map";
 import * as reshader from '@maptalks/reshader.gl';
 import { mat4, quat } from '@maptalks/reshader.gl';
 import { earcut } from '@maptalks/reshader.gl';

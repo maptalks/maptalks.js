@@ -5,7 +5,7 @@ import {
   Handlerable,
   Polygon,
   VectorLayer,
-} from "maptalks";
+} from "@maptalks/map";
 
 interface VideoSurfaceOptions {
   url?: string;

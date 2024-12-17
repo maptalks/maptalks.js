@@ -33,7 +33,7 @@
     "@rollup/plugin-terser": "0.4.4",
     "eslint": "^8.57.0",
     "eslint-plugin-mocha": "^10.4.1",
-    "maptalks": "^1.0.0",
+    "@maptalks/map": "workspace:*",
     "pixelmatch": "^4.0.2",
     "rollup": "^4.17.2"
   },

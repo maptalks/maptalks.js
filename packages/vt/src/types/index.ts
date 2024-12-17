@@ -3,7 +3,7 @@ import type {
   LineSymbol,
   MarkerCommonSymbol,
   TextSymbol,
-} from "maptalks";
+} from "@maptalks/map";
 
 export interface FillDataConfig {
   type?: "fill";
