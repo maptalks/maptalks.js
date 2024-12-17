@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "./src",
+    "strict": false,
+    "alwaysStrict": true,
+    "allowJs": true,
+    "esModuleInterop": true,
+    "declaration": true,
+    "declarationMap": true,
+    "importHelpers": false,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "removeComments": false,
+    "moduleResolution": "node",
+    "stripInternal": true,
+    // ask tsc not to mess up with for ... of
+    "downlevelIteration": true,
+    "module": "esnext",
+    "target": "es6",
+    "jsx": "preserve",
+    "lib": [
+      "es2015",
+      "esnext",
+      "dom",
+      "webworker",
+      "scripthost"
+    ],
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": [
+      "./src/**/*.ts",
+      "./src/**/*.d.ts",
+  ]
+}

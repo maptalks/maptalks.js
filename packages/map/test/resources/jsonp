@@ -1,0 +1,3 @@
+_maptalks_jsonp_1({
+  foo : 'bar'
+});

@@ -1,0 +1,167 @@
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <script type="text/javascript" src="maptalks.js"></script>
+  <title>TileLayer Tests</title>
+  <!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.1.0/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.1.0/dist/leaflet.js"></script> -->
+  <style>
+    html,
+    body {
+        margin: 0px;
+        height: 100%;
+        width: 100%;
+    }
+
+    .map {
+        width: 400px;
+        height: 400px;
+        border: 1px solid;
+    }
+</style>
+</head>
+  <body>
+  <div style="display:flex;flex-wrap: wrap;">
+    <div id="map1" class="map"></div>
+    <div id="map2" class="map"></div>
+    <div id="map3" class="map"></div>
+    <div id="map4" class="map"></div>
+    <div id="map5" class="map"></div>
+    <div id="map6" class="map"></div>
+    <div id="map7" class="map"></div>
+    <div id="map8" class="map"></div>
+    <div id="map9" class="map"></div>
+  </div>
+    <script>
+    var center = [-73.99596196746747, 40.927671985372456];
+    // The test cases need to be covered:
+
+    createMap('map1', {
+      attribution : {
+        content: 'no rotation, interger zoom, drag and zoom correctly'
+      }
+    });
+    createMap('map2', {
+      zoom : 14.3,
+      attribution : {
+        content: 'no rotation, fractional zoom, drag and zoom correctly'
+      }
+    });
+    createMap('map3', {
+      zoom : 14.3,
+      attribution : {
+        content: 'no rotation, fractional zoom, drag and click to set pitch and bearing'
+      }
+    }, function (e) {
+      e.target.setPitch(30).setBearing(60);
+    });
+    createMap('map4', {
+      zoom : 14,
+      pitch : 30,
+      bearing : 60,
+      attribution : {
+        content: 'with routation, interger zoom, drag and zoom correctly'
+      }
+    });
+    createMap('map5', {
+      zoom : 14.8,
+      pitch : 30,
+      bearing : 60,
+      attribution : {
+        content: 'with routation, fractional zoom, drag and zoom correctly'
+      }
+    });
+    createMap('map6', {
+      zoom : 14.2,
+      pitch : 30,
+      bearing : 60,
+      attribution : {
+        content: 'with routation, fractional zoom, drag and click to remove pitch and bearing'
+      }
+    }, function (e) {
+      e.target.setPitch(0).setBearing(0);
+    });
+    createMap('map7', {
+      zoom : 14,
+      attribution : {
+        content: 'drag and click to animateTo with zoom'
+      },
+      layers : [
+        new maptalks.VectorLayer('v', new maptalks.Marker(center))
+      ]
+    }, function (e) {
+      e.target.animateTo({
+        zoom : e.target.getZoom() - 3
+      }, {
+        duration : 4000
+      })
+    });
+    createMap('map8', {
+      zoom : 14,
+      attribution : {
+        content: 'drag and click to animateTo with zoom and rotation'
+      },
+      layers : [
+        new maptalks.VectorLayer('v', new maptalks.Marker(center))
+      ]
+    }, function (e) {
+      e.target.animateTo({
+        zoom : e.target.getZoom() - 3,
+        bearing : 60
+      }, {
+        duration : 4000
+      })
+    });
+    createMap('map9', {
+      zoom : 14,
+      attribution : {
+        content: 'drag and click to animateTo with center, zoom and rotation'
+      },
+      layers : [
+        new maptalks.VectorLayer('v', new maptalks.Marker(center))
+      ]
+    }, function (e) {
+      e.target.animateTo({
+        center : e.target.getCenter().add(0.01, 0.01),
+        zoom : e.target.getZoom() - 3,
+        bearing : 60
+      }, {
+        duration : 4000
+      })
+    });
+
+
+    function createMap(div, options, cb) {
+
+      /*var map = L.map(div).setView([51.505, -0.09], 13);
+
+      L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+
+      L.marker([51.5, -0.09]).addTo(map)
+          .bindPopup('A pretty CSS3 popup.<br> Easily customizable.')
+          .openPopup();*/
+
+      const opts = maptalks.Util.extend({
+        center:  center,
+        zoom: 14,
+        centerCross : true,
+        baseLayer: new maptalks.TileLayer('base', {
+          'urlTemplate' : 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          'subdomains' : ['a', 'b', 'c']
+        }),
+        layers : [
+          new maptalks.VectorLayer('v', new maptalks.Marker(center))
+        ]
+      }, options);
+      var map = new maptalks.Map(div, opts);
+      if (cb) {
+        map.on('click', cb);
+      }
+      return map;
+    }
+
+    </script>
+  </body>
+</html>

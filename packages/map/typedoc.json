@@ -1,0 +1,15 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["src/index.ts"],
+  "excludeNotDocumented": true,
+  "excludeInternal": true,
+  "excludePrivate": true,
+  "includeVersion": true,
+  "out": "../builder-docs/src/api/",
+  "plugin": ["typedoc-plugin-markdown", "./docs/typedoc-plugins/dist/maptalks-plugin.js"],
+  "useCodeBlocks": true,
+  "expandObjects": true,
+  "hidePageHeader": true,
+  "hideBreadcrumbs": true,
+  "parametersFormat": "table"
+}

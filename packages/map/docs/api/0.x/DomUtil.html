@@ -1,0 +1,3167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=EDGE">
+    <title>Class: DomUtil</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="styles/custom.css">
+    <!--[if lt IE 9]>
+    <script src="scripts/html5shiv.min.js"></script>
+    <script src="scripts/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+
+<div style="position:fixed;top:0px;left:0px;"><h1 class="page-title">Class: DomUtil</h1></div>
+<div id="main" style="margin-top:77px;">
+    
+
+
+
+
+
+<nav class="classnav scroll-styled">
+
+    <h5><a href="#main" style="color:#000">class : DomUtil</a></h5>
+    
+        <h5>Members</h5>
+        <ul>
+        
+            <li><a href="#.exports.TRANSFORM">exports.TRANSFORM</a></li>
+        
+            <li><a href="#.exports.TRANSFORMORIGIN">exports.TRANSFORMORIGIN</a></li>
+        
+            <li><a href="#.exports.TRANSITION">exports.TRANSITION</a></li>
+        
+            <li><a href="#.exports.CSSFILTER">exports.CSSFILTER</a></li>
+        
+        </ul>
+    
+
+    
+
+        
+            
+            
+            <h5>Static Methods</h5>
+            <ul>
+            
+            
+                <li><a href="#.exports.createEl">
+            
+                exports.createEl</a></li>
+        
+            
+            
+            
+                <li><a href="#.exports.createElOn">
+            
+                exports.createElOn</a></li>
+        
+            
+            
+            
+                <li><a href="#.exports.addDomEvent">
+            
+                exports.addDomEvent</a></li>
+        
+            
+            
+            
+                <li><a href="#.exports.removeDomEvent">
+            
+                exports.removeDomEvent</a></li>
+        
+            
+            
+            
+                <li><a href="#.exports.listensDomEvent">
+            
+                exports.listensDomEvent</a></li>
+        
+            
+            
+            
+                <li><a href="#.exports.preventDefault">
+            
+                exports.preventDefault</a></li>
+        
+            
+            
+            
+                <li><a href="#.exports.stopPropagation">
+            
+                exports.stopPropagation</a></li>
+        
+            
+            
+            
+                <li><a href="#.exports.offsetDom">
+            
+                exports.offsetDom</a></li>
+        
+            
+            
+            
+                <li><a href="#.exports.computeDomPosition">
+            
+                exports.computeDomPosition</a></li>
+        
+            
+            
+            
+                <li><a href="#.exports.getEventContainerPoint">
+            
+                exports.getEventContainerPoint</a></li>
+        
+            
+            
+            
+                <li><a href="#.exports.setStyle">
+            
+                exports.setStyle</a></li>
+        
+            
+            
+            
+                <li><a href="#.exports.hasClass">
+            
+                exports.hasClass</a></li>
+        
+            
+            
+            
+                <li><a href="#.exports.addClass">
+            
+                exports.addClass</a></li>
+        
+            
+            
+            
+                <li><a href="#.exports.setClass">
+            
+                exports.setClass</a></li>
+        
+            
+            
+            
+                <li><a href="#.exports.getClass">
+            
+                exports.getClass</a></li>
+        
+            
+            
+            
+                <li><a href="#.exports.setTransform">
+            
+                exports.setTransform</a></li>
+        
+        
+            </ul>
+        
+        <h5>Methods</h5>
+        <ul>
+        
+        </ul>
+    
+
+    
+</nav>
+
+
+<section class="classmain">
+    
+
+
+<header>
+    
+        <h2>DomUtil</h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="DomUtil"><span class="type-signature"></span>new <a href="#DomUtil">DomUtil</a><span class="signature">()</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L1" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L1" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#DomUtil" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    DOM utilities used internally.
+Learned a lot from Leaflet.DomUtil
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+    
+    </div>
+
+    <!--  -->
+
+    
+
+    
+
+     
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<li>
+<h4 class="name" id=".exports.TRANSFORM"><span class="type-signature">(static, constant) </span>exports.TRANSFORM<span class="type-signature"> :String</span>
+
+<!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L50" class="improvelink">[help to improve]</a>
+    
+    <a href="#.exports.TRANSFORM" class="improvelink">[link]</a></h4> -->
+</li>
+
+
+
+<div class="description">
+    <pre>Vendor-prefixed fransform style name (e.g. `'webkitTransform'` for WebKit).</pre>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">String</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>TRANSFORM</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+        
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js">core/util/dom.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L50">line 50</a>
+        
+
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+<hr>
+        
+            
+<li>
+<h4 class="name" id=".exports.TRANSFORMORIGIN"><span class="type-signature">(static, constant) </span>exports.TRANSFORMORIGIN<span class="type-signature"> :String</span>
+
+<!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L59" class="improvelink">[help to improve]</a>
+    
+    <a href="#.exports.TRANSFORMORIGIN" class="improvelink">[link]</a></h4> -->
+</li>
+
+
+
+<div class="description">
+    <pre>Vendor-prefixed tfransform-origin name (e.g. `'webkitTransformOrigin'` for WebKit).</pre>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">String</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>TRANSFORMORIGIN</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+        
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js">core/util/dom.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L59">line 59</a>
+        
+
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+<hr>
+        
+            
+<li>
+<h4 class="name" id=".exports.TRANSITION"><span class="type-signature">(static, constant) </span>exports.TRANSITION<span class="type-signature"> :String</span>
+
+<!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L68" class="improvelink">[help to improve]</a>
+    
+    <a href="#.exports.TRANSITION" class="improvelink">[link]</a></h4> -->
+</li>
+
+
+
+<div class="description">
+    <pre>Vendor-prefixed transition name (e.g. `'WebkitTransition'` for WebKit).</pre>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">String</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>TRANSITION</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+        
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js">core/util/dom.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L68">line 68</a>
+        
+
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+<hr>
+        
+            
+<li>
+<h4 class="name" id=".exports.CSSFILTER"><span class="type-signature">(static, constant) </span>exports.CSSFILTER<span class="type-signature"> :String</span>
+
+<!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L77" class="improvelink">[help to improve]</a>
+    
+    <a href="#.exports.CSSFILTER" class="improvelink">[link]</a></h4> -->
+</li>
+
+
+
+<div class="description">
+    <pre>Vendor-prefixed filter name (e.g. `'WebkitFilter'` for WebKit).</pre>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">String</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>FILTER</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+        
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js">core/util/dom.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L77">line 77</a>
+        
+
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+<hr>
+        
+    
+
+    
+        
+                    <h3 class="subsection-title">Static Methods</h3>
+                
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id=".exports.createEl"><span class="type-signature">(static) </span><a href="#.exports.createEl">exports.createEl</a><span class="signature">(tagName)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L86" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L86" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#.exports.createEl" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Create a html element.
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>tagName</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature">HTMLElement</span>:
+
+        
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id=".exports.createElOn"><span class="type-signature">(static) </span><a href="#.exports.createElOn">exports.createElOn</a><span class="signature">(tagName, style, container)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L102" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L102" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#.exports.createElOn" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Create a html element on the specified container
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>tagName</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>style</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">css styles</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>container</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">HTMLElement</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature">HTMLElement</span>:
+
+        
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id=".exports.addDomEvent"><span class="type-signature">(static) </span><a href="#.exports.addDomEvent">exports.addDomEvent</a><span class="signature">(obj, typeArr, handler, context)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L144" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L144" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#.exports.addDomEvent" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Adds a event listener to the dom element.
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>obj</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">HTMLElement</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">dom element to listen on</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>typeArr</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">event types, seperated by space</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>handler</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">listener function</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>context</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">function context</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id=".exports.removeDomEvent"><span class="type-signature">(static) </span><a href="#.exports.removeDomEvent">exports.removeDomEvent</a><span class="signature">(obj, typeArr, handler)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L192" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L192" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#.exports.removeDomEvent" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Removes event listener from a dom element
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>obj</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">HTMLElement</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">dom element</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>typeArr</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">event types, separated by space</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>handler</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">listening function</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id=".exports.listensDomEvent"><span class="type-signature">(static) </span><a href="#.exports.listensDomEvent">exports.listensDomEvent</a><span class="signature">(obj, typeArr, handler)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L237" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L237" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#.exports.listensDomEvent" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Check if event type of the dom is listened by the handler
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>obj</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">HTMLElement</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">dom element to check</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>typeArr</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">event</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>handler</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">the listening function</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature">Number</span>:
+
+        
+<!-- <div class="param-desc"> -->
+    - the handler's index in the listener chain, returns -1 if not.
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id=".exports.preventDefault"><span class="type-signature">(static) </span><a href="#.exports.preventDefault">exports.preventDefault</a><span class="signature">(event)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L256" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L256" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#.exports.preventDefault" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Prevent default behavior of the browser. <br/>
+preventDefault Cancels the event if it is cancelable, without stopping further propagation of the event.
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>event</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Event</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">browser event</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id=".exports.stopPropagation"><span class="type-signature">(static) </span><a href="#.exports.stopPropagation">exports.stopPropagation</a><span class="signature">(e)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L270" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L270" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#.exports.stopPropagation" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Stop browser event propagation
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>e</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Event</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">browser event.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id=".exports.offsetDom"><span class="type-signature">(static) </span><a href="#.exports.offsetDom">exports.offsetDom</a><span class="signature">(dom, offset<span class="signature-attributes">opt</span>)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L297" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L297" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#.exports.offsetDom" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Get the dom element's current position or offset its position by offset
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>dom</code>
+                
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">HTMLElement</span>
+
+
+            
+            </td>
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">HTMLElement</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>offset</code>
+                
+                    
+                        <span class="signature-attributes">opt</span>
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Point.html">Point</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">position to set.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature"><a href="Point.html">Point</a></span>:
+
+        
+<!-- <div class="param-desc"> -->
+    - dom element's current position if offset is null.
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id=".exports.computeDomPosition"><span class="type-signature">(static) </span><a href="#.exports.computeDomPosition">exports.computeDomPosition</a><span class="signature">(dom)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L317" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L317" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#.exports.computeDomPosition" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Compute dom's position
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>dom</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">HTMLElement</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature">Array.&lt;Number></span>:
+
+        
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id=".exports.getEventContainerPoint"><span class="type-signature">(static) </span><a href="#.exports.getEventContainerPoint">exports.getEventContainerPoint</a><span class="signature">(ev)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L339" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L339" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#.exports.getEventContainerPoint" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Get event's position from the top-left corner of the dom container
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>ev</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Event</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">event</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature"><a href="Point.html">Point</a></span>:
+
+        
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id=".exports.setStyle"><span class="type-signature">(static) </span><a href="#.exports.setStyle">exports.setStyle</a><span class="signature">(dom, strCss)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L365" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L365" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#.exports.setStyle" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    set css style to the dom element
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>dom</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">HTMLElement</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">dom element</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>strCss</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">css text</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id=".exports.hasClass"><span class="type-signature">(static) </span><a href="#.exports.hasClass">exports.hasClass</a><span class="signature">(el, name)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L380" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L380" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#.exports.hasClass" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Whether the dom has the given css class.
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>el</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">HTMLElement</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">HTML Element</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">css class</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id=".exports.addClass"><span class="type-signature">(static) </span><a href="#.exports.addClass">exports.addClass</a><span class="signature">(el, name)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L394" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L394" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#.exports.addClass" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    add css class to dom element
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>el</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">HTMLElement</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">HTML Element</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">css class</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id=".exports.setClass"><span class="type-signature">(static) </span><a href="#.exports.setClass">exports.setClass</a><span class="signature">(el, name)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L413" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L413" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#.exports.setClass" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Set dom's css class
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>el</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">HTMLElement</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">HTML Element</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">css class</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id=".exports.getClass"><span class="type-signature">(static) </span><a href="#.exports.getClass">exports.getClass</a><span class="signature">(name)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L428" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L428" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#.exports.getClass" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Get dom's css class
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">css class</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id=".exports.setTransform"><span class="type-signature">(static) </span><a href="#.exports.setTransform">exports.setTransform</a><span class="signature">(el, offset)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L455" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/util/dom.js#L455" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#.exports.setTransform" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Resets the 3D CSS transform of `el` so it is translated by `offset` pixels
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>el</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">HTMLElement</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>offset</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Point.html">Point</a></span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<nav class="page-nav">
+    <h2><a href="index.html">V0.49.1</a></h2><h4>Classes</h4><ul></ul><h5>Map</h5><ul><li><a href="Map.html">Map</a></li></ul><h5>Layer</h5><ul><li><a href="Layer.html">Layer</a></li><li><a href="TileSystem.html">TileSystem</a></li><li><a href="TileLayer.html">TileLayer</a></li><li><a href="GroupTileLayer.html">GroupTileLayer</a></li><li><a href="WMSTileLayer.html">WMSTileLayer</a></li><li><a href="OverlayLayer.html">OverlayLayer</a></li><li><a href="VectorLayer.html">VectorLayer</a></li><li><a href="CanvasLayer.html">CanvasLayer</a></li><li><a href="ParticleLayer.html">ParticleLayer</a></li><li><a href="ImageLayer.html">ImageLayer</a></li></ul><h5>Geometry</h5><ul><li><a href="Geometry.html">Geometry</a></li><li><a href="Path.html">Path</a></li><li><a href="Marker.html">Marker</a></li><li><a href="TextMarker.html">TextMarker</a></li><li><a href="Label.html">Label</a></li><li><a href="TextBox.html">TextBox</a></li><li><a href="Polygon.html">Polygon</a></li><li><a href="LineString.html">LineString</a></li><li><a href="Curve.html">Curve</a></li><li><a href="ArcCurve.html">ArcCurve</a></li><li><a href="QuadBezierCurve.html">QuadBezierCurve</a></li><li><a href="CubicBezierCurve.html">CubicBezierCurve</a></li><li><a href="ConnectorLine.html">ConnectorLine</a></li><li><a href="ArcConnectorLine.html">ArcConnectorLine</a></li><li><a href="Ellipse.html">Ellipse</a></li><li><a href="Circle.html">Circle</a></li><li><a href="Sector.html">Sector</a></li><li><a href="Rectangle.html">Rectangle</a></li><li><a href="GeometryCollection.html">GeometryCollection</a></li><li><a href="MultiGeometry.html">MultiGeometry</a></li><li><a href="MultiPoint.html">MultiPoint</a></li><li><a href="MultiLineString.html">MultiLineString</a></li><li><a href="MultiPolygon.html">MultiPolygon</a></li><li><a href="GeoJSON.html">GeoJSON</a></li><li><a href="GeometryEditor.html">GeometryEditor</a></li></ul><h5>Basic types</h5><ul><li><a href="Coordinate.html">Coordinate</a></li><li><a href="Extent.html">Extent</a></li><li><a href="Point.html">Point</a></li><li><a href="PointExtent.html">PointExtent</a></li><li><a href="Position.html">Position</a></li><li><a href="Size.html">Size</a></li></ul><h5>Maptool</h5><ul><li><a href="MapTool.html">MapTool</a></li><li><a href="DrawTool.html">DrawTool</a></li><li><a href="DistanceTool.html">DistanceTool</a></li><li><a href="AreaTool.html">AreaTool</a></li></ul><h5>Ui</h5><ul><li><a href="ui.UIComponent.html">ui.UIComponent</a></li><li><a href="ui.UIMarker.html">ui.UIMarker</a></li><li><a href="ui.InfoWindow.html">ui.InfoWindow</a></li><li><a href="ui.ToolTip.html">ui.ToolTip</a></li><li><a href="ui.Menu.html">ui.Menu</a></li></ul><h5>Control</h5><ul><li><a href="control.Control.html">control.Control</a></li><li><a href="control.Zoom.html">control.Zoom</a></li><li><a href="control.LayerSwitcher.html">control.LayerSwitcher</a></li><li><a href="control.Attribution.html">control.Attribution</a></li><li><a href="control.Scale.html">control.Scale</a></li><li><a href="control.Panel.html">control.Panel</a></li><li><a href="control.Toolbar.html">control.Toolbar</a></li><li><a href="control.Overview.html">control.Overview</a></li></ul><h5>Core</h5><ul><li><a href="Ajax.html">Ajax</a></li><li><a href="Class.html">Class</a></li><li><a href="MapboxUtil.html">MapboxUtil</a></li><li><a href="Util.html">Util</a></li><li><a href="DomUtil.html">DomUtil</a></li><li><a href="StringUtil.html">StringUtil</a></li></ul><h5>Animation</h5><ul><li><a href="animation.Easing.html">animation.Easing</a></li><li><a href="animation.Frame.html">animation.Frame</a></li><li><a href="animation.Player.html">animation.Player</a></li><li><a href="animation.Animation.html">animation.Animation</a></li></ul><h5>Geo</h5><ul><li><a href="CRS.html">CRS</a></li><li><a href="measurer.Identity.html">measurer.Identity</a></li><li><a href="measurer.DEFAULT.html">measurer.DEFAULT</a></li><li><a href="measurer.Measurer.html">measurer.Measurer</a></li><li><a href="measurer.WGS84Sphere.html">measurer.WGS84Sphere</a></li><li><a href="measurer.BaiduSphere.html">measurer.BaiduSphere</a></li><li><a href="projection.DEFAULT.html">projection.DEFAULT</a></li><li><a href="projection.BAIDU.html">projection.BAIDU</a></li><li><a href="projection.EPSG3857.html">projection.EPSG3857</a></li><li><a href="projection.EPSG4326.html">projection.EPSG4326</a></li><li><a href="projection.EPSG4490.html">projection.EPSG4490</a></li><li><a href="projection.IDENTITY.html">projection.IDENTITY</a></li><li><a href="Transformation.html">Transformation</a></li></ul><h5>Handler</h5><ul><li><a href="Handler.html">Handler</a></li><li><a href="DragHandler.html">DragHandler</a></li></ul><h5>Other</h5><ul><li><a href="renderer.CanvasRenderer.html">renderer.CanvasRenderer</a></li></ul><h4>Namespaces</h4><ul><li><a href="measurer.html">measurer</a></li><li><a href="projection.html">projection</a></li><li><a href="renderer.html">renderer</a></li></ul><h4>Mixins</h4><ul><li><a href="Eventable.html">Eventable</a></li><li><a href="JSONAble.html">JSONAble</a></li><li><a href="measurer.Common.html">measurer.Common</a></li><li><a href="projection.Common.html">projection.Common</a></li><li><a href="Handlerable.html">Handlerable</a></li><li><a href="CenterMixin.html">CenterMixin</a></li><li><a href="TextEditable.html">TextEditable</a></li><li><a href="Renderable.html">Renderable</a></li><li><a href="ui.Menuable.html">ui.Menuable</a></li></ul><h3>Global</h3><ul><li><a href="global.html#INTERNAL_LAYER_PREFIX">INTERNAL_LAYER_PREFIX</a></li><li><a href="global.html#RESOURCE_PROPERTIES">RESOURCE_PROPERTIES</a></li><li><a href="global.html#RESOURCE_SIZE_PROPERTIES">RESOURCE_SIZE_PROPERTIES</a></li><li><a href="global.html#NUMERICAL_PROPERTIES">NUMERICAL_PROPERTIES</a></li><li><a href="global.html#COLOR_PROPERTIES">COLOR_PROPERTIES</a></li><li><a href="global.html#getListeningEvents">getListeningEvents</a></li><li><a href="global.html#isEmpty">isEmpty</a></li><li><a href="global.html#IS_NODE">IS_NODE</a></li><li><a href="global.html#identity">identity</a></li><li><a href="global.html#copy">copy</a></li><li><a href="global.html#set">set</a></li><li><a href="global.html#add">add</a></li><li><a href="global.html#subtract">subtract</a></li><li><a href="global.html#length">length</a></li><li><a href="global.html#normalize">normalize</a></li><li><a href="global.html#dot">dot</a></li><li><a href="global.html#scale">scale</a></li><li><a href="global.html#cross">cross</a></li><li><a href="global.html#distance">distance</a></li><li><a href="global.html#transformMat4">transformMat4</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Sep 07 2020 17:52:17 GMT+0800 (GMT+08:00)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+
+</body>
+</html>

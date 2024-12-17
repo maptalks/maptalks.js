@@ -1,0 +1,19 @@
+{
+  "distancetool": {
+    "start": "Start",
+    "units": {
+      "mile": " mi",
+      "feet": " ft",
+      "kilometer": " km",
+      "meter": " m"
+    }
+  },
+  "areatool": {
+    "units": {
+      "mile": " mi²",
+      "feet": " ft²",
+      "kilometer": " km²",
+      "meter": " m²"
+    }
+  }
+}

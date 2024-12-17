@@ -1,0 +1,5510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=EDGE">
+    <title>Class: Menu</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="styles/custom.css">
+    <!--[if lt IE 9]>
+    <script src="scripts/html5shiv.min.js"></script>
+    <script src="scripts/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+
+<div style="position:fixed;top:0px;left:0px;"><h1 class="page-title">Class: Menu</h1></div>
+<div id="main" style="margin-top:77px;">
+    
+
+
+
+
+
+<nav class="classnav scroll-styled">
+
+    <h5><a href="#main" style="color:#000">class : ui.Menu</a></h5>
+    
+        <h5>Members</h5>
+        <ul>
+        
+            <li><a href="#defaultOptions">defaultOptions</a></li>
+        
+            <li><a href="#options">options</a></li>
+        
+        </ul>
+    
+
+    
+
+        
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+        
+        <h5>Methods</h5>
+        <ul>
+        
+            
+                <li><a href="#setItems">
+            
+                setItems</a></li>
+        
+            
+                <li><a href="#getItems">
+            
+                getItems</a></li>
+        
+            
+                <li><a href="#buildOn">
+            
+                buildOn</a></li>
+        
+            
+                <li><a class="inherit" href="#addTo">
+            
+                addTo</a></li>
+        
+            
+                <li><a class="inherit" href="#getMap">
+            
+                getMap</a></li>
+        
+            
+                <li><a class="inherit" href="#show">
+            
+                show</a></li>
+        
+            
+                <li><a class="inherit" href="#hide">
+            
+                hide</a></li>
+        
+            
+                <li><a class="inherit" href="#isVisible">
+            
+                isVisible</a></li>
+        
+            
+                <li><a class="inherit" href="#remove">
+            
+                remove</a></li>
+        
+            
+                <li><a class="inherit" href="#getSize">
+            
+                getSize</a></li>
+        
+            
+                <li><a class="inherit" href="#on">
+            
+                on</a></li>
+        
+            
+                <li><a class="inherit" href="#addEventListener">
+            
+                addEventListener</a></li>
+        
+            
+                <li><a class="inherit" href="#once">
+            
+                once</a></li>
+        
+            
+                <li><a class="inherit" href="#off">
+            
+                off</a></li>
+        
+            
+                <li><a class="inherit" href="#removeEventListener">
+            
+                removeEventListener</a></li>
+        
+            
+                <li><a class="inherit" href="#listens">
+            
+                listens</a></li>
+        
+            
+                <li><a class="inherit" href="#copyEventListeners">
+            
+                copyEventListeners</a></li>
+        
+            
+                <li><a class="inherit" href="#fire">
+            
+                fire</a></li>
+        
+            
+                <li><a class="inherit" href="#callInitHooks">
+            
+                callInitHooks</a></li>
+        
+            
+                <li><a class="inherit" href="#setOptions">
+            
+                setOptions</a></li>
+        
+            
+                <li><a class="inherit" href="#config">
+            
+                config</a></li>
+        
+            
+                <li><a class="inherit" href="#onConfig">
+            
+                onConfig</a></li>
+        
+        </ul>
+    
+
+    
+        <h5>Events</h5>
+        <ul>
+        
+            <li><a href="#event:add">add</a></li>
+        
+            <li><a href="#event:showstart">showstart</a></li>
+        
+            <li><a href="#event:showend">showend</a></li>
+        
+            <li><a href="#event:hide">hide</a></li>
+        
+            <li><a href="#event:remove">remove</a></li>
+        
+        </ul>
+    
+</nav>
+
+
+<section class="classmain">
+    
+
+
+<header>
+    
+        <h2>Menu</h2>
+        
+            <div class="class-description">Class for context menu, useful for interactions with right clicks on the map.</div>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <h4 class="name" id="Menu"><span class="type-signature"></span>new <a href="#Menu">ui.Menu</a><span class="signature">(options)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/Menu.js#L35" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/Menu.js#L35" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#Menu" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    
+
+
+
+
+<div class="description">
+    Menu items is set to options.items or by setItems method. <br><br>Normally items is a object array, containing: <br>1. item object: {'item': 'This is a menu text', 'click': function() {alert('oops! You clicked!');)}} <br>2. minus string "-", which will draw a splitor line on the menu. <br><br>If options.custom is set to true, the menu is considered as a customized one. Then items is the customized html codes or HTMLElement. <br>
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">options defined in <a href="ui.Menu.html#options">ui.Menu</a></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+    <h5>Extends:</h5>
+    
+
+
+    <ul>
+        <li><a href="ui.UIComponent.html">ui.UIComponent</a></li>
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Fires:</h5>
+<ul>
+    <li><a href="#event:add">add</a></li>
+
+    <li><a href="#event:showstart">showstart</a></li>
+
+    <li><a href="#event:showend">showend</a></li>
+
+    <li><a href="#event:hide">hide</a></li>
+
+    <li><a href="#event:remove">remove</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+    
+    </div>
+
+    <!-- 
+        <h3 class="subsection-title">Extends</h3>
+
+        
+
+
+    <ul>
+        <li><a href="ui.UIComponent.html">ui.UIComponent</a></li>
+    </ul>
+
+
+     -->
+
+    
+
+    
+
+     
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<li>
+<h4 class="name" id="defaultOptions"><span class="type-signature">(constant) </span>defaultOptions<span class="type-signature"></span>
+
+<!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/Menu.js#L16" class="improvelink">[help to improve]</a>
+    
+    <a href="#defaultOptions" class="improvelink">[link]</a></h4> -->
+</li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">
+                <h6>Properties</h6>
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>autoPan</code>
+                    
+                        
+                           <span class="signature-attributes">opt</span>
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">set it to false if you don't want the map to do panning animation to fit the opened menu.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>width</code>
+                    
+                        
+                           <span class="signature-attributes">opt</span>
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                    160
+                
+                </td>
+            
+
+            <td class="description last">default width</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>maxHeight</code>
+                    
+                        
+                           <span class="signature-attributes">opt</span>
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                    0
+                
+                </td>
+            
+
+            <td class="description last">default max-height</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>custom</code>
+                    
+                        
+                           <span class="signature-attributes">opt</span>
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+|
+
+<span class="param-type">HTMLElement</span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">set it to true if you want a customized menu, customized html codes or a HTMLElement is set to items.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>items</code>
+                    
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;Object></span>
+|
+
+<span class="param-type">String</span>
+|
+
+<span class="param-type">HTMLElement</span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">html code or a html element is options.custom is true. Or a menu items array, containing: item objects, "-" as a splitor line</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+        
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/Menu.js">ui/Menu.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/Menu.js#L16">line 16</a>
+        
+
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+<hr>
+        
+            
+<li>
+<h4 class="name" id="options"><span class="type-signature">(constant) </span>options<span class="type-signature"></span>
+
+<!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L35" class="improvelink">[help to improve]</a>
+    
+    <a href="#options" class="improvelink">[link]</a></h4> -->
+</li>
+
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="ui.UIComponent.html#options">ui.UIComponent#options</a>
+    </li></ul>
+    
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">
+                <h6>Properties</h6>
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>eventsPropagation</code>
+                    
+                        
+                           <span class="signature-attributes">opt</span>
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">whether stop ALL events' propagation.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>eventsToStop</code>
+                    
+                        
+                           <span class="signature-attributes">opt</span>
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">UI's dom events to stop propagation if eventsPropagation is true.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dx</code>
+                    
+                        
+                           <span class="signature-attributes">opt</span>
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                    0
+                
+                </td>
+            
+
+            <td class="description last">pixel offset on x axis</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dy</code>
+                    
+                        
+                           <span class="signature-attributes">opt</span>
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                    0
+                
+                </td>
+            
+
+            <td class="description last">pixel offset on y axis</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>autoPan</code>
+                    
+                        
+                           <span class="signature-attributes">opt</span>
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">set it to false if you don't want the map to do panning animation to fit the opened UI.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>autoPanDuration</code>
+                    
+                        
+                           <span class="signature-attributes">opt</span>
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                    600
+                
+                </td>
+            
+
+            <td class="description last">duration for auto panning animation.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>single</code>
+                    
+                        
+                           <span class="signature-attributes">opt</span>
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">whether the UI is a global single one, only one UI will be shown at the same time if set to true.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>animation</code>
+                    
+                        
+                           <span class="signature-attributes">opt</span>
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">fade | scale | fade,scale, add animation effect when showing and hiding.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>animationDuration</code>
+                    
+                        
+                           <span class="signature-attributes">opt</span>
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                    300
+                
+                </td>
+            
+
+            <td class="description last">animation duration, in milliseconds.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>pitchWithMap</code>
+                    
+                        
+                           <span class="signature-attributes">opt</span>
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">whether tilt with map</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>rotateWithMap</code>
+                    
+                        
+                           <span class="signature-attributes">opt</span>
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">whether rotate with map</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="ui.UIComponent.html#options">ui.UIComponent#options</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+        
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js">ui/UIComponent.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L35">line 35</a>
+        
+
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+<hr>
+        
+    
+
+    
+        
+
+        
+                    <h3 class="subsection-title">Methods</h3>
+                
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="setItems"><span class="type-signature"></span><a href="#setItems">setItems</a><span class="signature">(items)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/Menu.js#L77" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/Menu.js#L77" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#setItems" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Set the items of the menu.
+</div>
+
+
+    <!--<h5>Example:</h5>-->
+    
+    
+        <pre class="prettyprint"><code>menu.setItems([     //return false to prevent event propagation    {'item': 'Query', 'click': function() {alert('Query Clicked!'); return false;}},    '-',    {'item': 'Edit', 'click': function() {alert('Edit Clicked!')}},    {'item': 'About', 'click': function() {alert('About Clicked!')}}]);</code></pre>
+    
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>items</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;Object></span>
+|
+
+<span class="param-type">String</span>
+|
+
+<span class="param-type">HTMLElement</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">items of the menureturn {ui.Menu} this</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="getItems"><span class="type-signature"></span><a href="#getItems">getItems</a><span class="signature">()</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/Menu.js#L86" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/Menu.js#L86" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#getItems" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Get items of  the menu.
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature">Array.&lt;Object>|String|HTMLElement</span>:
+
+        
+<!-- <div class="param-desc"> -->
+    - items of the menu
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="buildOn"><span class="type-signature">(protected) </span><a href="#buildOn">buildOn</a><span class="signature">()</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/Menu.js#L95" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/Menu.js#L95" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#buildOn" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Create the menu DOM.
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature">HTMLElement</span>:
+
+        
+<!-- <div class="param-desc"> -->
+    menu's DOM
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="addTo"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#addTo">addTo</a><span class="signature">(owner)</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L90" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L90" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#addTo" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Adds the UI Component to a geometry or a map
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>owner</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Geometry.html">Geometry</a></span>
+|
+
+<span class="param-type"><a href="Map.html">Map</a></span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">geometry or map to addto.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Fires:</h5>
+<ul>
+    <li><a href="#event:add">add</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature"><a href="ui.UIComponent.html">ui.UIComponent</a></span>:
+
+        
+<!-- <div class="param-desc"> -->
+    this
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="getMap"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#getMap">getMap</a><span class="signature">()</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L114" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L114" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#getMap" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Get the map it added to
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="ui.UIComponent.html#getMap">ui.UIComponent#getMap</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature"><a href="Map.html">Map</a></span>:
+
+        
+<!-- <div class="param-desc"> -->
+    map instance
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="show"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#show">show</a><span class="signature">(coordinate<span class="signature-attributes">opt</span>)</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L132" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L132" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#show" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Show the UI Component, if it is a global single one, it will close previous one.
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>coordinate</code>
+                
+                    
+                        <span class="signature-attributes">opt</span>
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Coordinate.html">Coordinate</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">coordinate to show, default is owner's center</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="ui.UIComponent.html#show">ui.UIComponent#show</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+<h5>Fires:</h5>
+<ul>
+    <li><a href="#event:showstart">showstart</a></li>
+
+    <li><a href="#event:showend">showend</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature"><a href="ui.UIComponent.html">ui.UIComponent</a></span>:
+
+        
+<!-- <div class="param-desc"> -->
+    this
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="hide"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#hide">hide</a><span class="signature">()</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L243" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L243" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#hide" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Hide the UI Component.
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="ui.UIComponent.html#hide">ui.UIComponent#hide</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+<h5>Fires:</h5>
+<ul>
+    <li><a href="#event:hide">hide</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature"><a href="ui.UIComponent.html">ui.UIComponent</a></span>:
+
+        
+<!-- <div class="param-desc"> -->
+    this
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="isVisible"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#isVisible">isVisible</a><span class="signature">()</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L287" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L287" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#isVisible" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Decide whether the ui component is open
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="ui.UIComponent.html#isVisible">ui.UIComponent#isVisible</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature">Boolean</span>:
+
+        
+<!-- <div class="param-desc"> -->
+    true|false
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="remove"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#remove">remove</a><span class="signature">()</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L298" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L298" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#remove" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Remove the UI Component
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="ui.UIComponent.html#remove">ui.UIComponent#remove</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+<h5>Fires:</h5>
+<ul>
+    <li><a href="#event:hide">hide</a></li>
+
+    <li><a href="#event:remove">remove</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature"><a href="ui.UIComponent.html">ui.UIComponent</a></span>:
+
+        
+<!-- <div class="param-desc"> -->
+    this
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="getSize"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#getSize">getSize</a><span class="signature">()</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L328" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L328" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#getSize" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Get pixel size of the UI Component.
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="ui.UIComponent.html#getSize">ui.UIComponent#getSize</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature"><a href="Size.html">Size</a></span>:
+
+        
+<!-- <div class="param-desc"> -->
+    size
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="on"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#on">on</a><span class="signature">(eventsOn, handler, context<span class="signature-attributes">opt</span>)</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L11" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L11" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#on" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Register a handler function to be called whenever this event is fired.
+</div>
+
+
+    <!--<h5>Example:</h5>-->
+    
+    
+        <pre class="prettyprint"><code>foo.on('mousedown mousemove mouseup', onMouseEvent, foo);</code></pre>
+    
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>eventsOn</code>
+                
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">event types to register, seperated by space if more than one.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>handler</code>
+                
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">handler function to be called</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>context</code>
+                
+                    
+                        <span class="signature-attributes">opt</span>
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">the context of the handler</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+    <h5>Mixes From:</h5>
+    <ul><li>
+        
+            <a href="Eventable.html#.on">Eventable.on</a>
+            
+        
+    </li></ul>
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="ui.UIComponent.html#on">ui.UIComponent#on</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature">Any</span>:
+
+        
+<!-- <div class="param-desc"> -->
+    this
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="addEventListener"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#addEventListener">addEventListener</a><span class="signature">(eventTypes, handler, context<span class="signature-attributes">opt</span>)</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L64" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L64" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#addEventListener" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Alias for <a href="Eventable.html#.on">on</a>
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>eventTypes</code>
+                
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">event types to register, seperated by space if more than one.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>handler</code>
+                
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">handler function to be called</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>context</code>
+                
+                    
+                        <span class="signature-attributes">opt</span>
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">the context of the handler</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+    <h5>Mixes From:</h5>
+    <ul><li>
+        
+            <a href="Eventable.html#.addEventListener">Eventable.addEventListener</a>
+            
+        
+    </li></ul>
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="ui.UIComponent.html#addEventListener">ui.UIComponent#addEventListener</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature"></span>:
+
+        
+<!-- <div class="param-desc"> -->
+    this
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="once"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#once">once</a><span class="signature">(eventTypes, handler, context<span class="signature-attributes">opt</span>)</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L77" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L77" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#once" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Same as on, except the listener will only get fired once and then removed.
+</div>
+
+
+    <!--<h5>Example:</h5>-->
+    
+    
+        <pre class="prettyprint"><code>foo.once('mousedown mousemove mouseup', onMouseEvent, foo);</code></pre>
+    
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>eventTypes</code>
+                
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">event types to register, seperated by space if more than one.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>handler</code>
+                
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">listener handler</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>context</code>
+                
+                    
+                        <span class="signature-attributes">opt</span>
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">the context of the handler</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+    <h5>Mixes From:</h5>
+    <ul><li>
+        
+            <a href="Eventable.html#.once">Eventable.once</a>
+            
+        
+    </li></ul>
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="ui.UIComponent.html#once">ui.UIComponent#once</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature"></span>:
+
+        
+<!-- <div class="param-desc"> -->
+    this
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="off"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#off">off</a><span class="signature">(eventsOff, handler, context<span class="signature-attributes">opt</span>)</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L105" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L105" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#off" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Unregister the event handler for the specified event types.
+</div>
+
+
+    <!--<h5>Example:</h5>-->
+    
+    
+        <pre class="prettyprint"><code>foo.off('mousedown mousemove mouseup', onMouseEvent, foo);</code></pre>
+    
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>eventsOff</code>
+                
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">event types to unregister, seperated by space if more than one.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>handler</code>
+                
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">listener handler</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>context</code>
+                
+                    
+                        <span class="signature-attributes">opt</span>
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">the context of the handler</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+    <h5>Mixes From:</h5>
+    <ul><li>
+        
+            <a href="Eventable.html#.off">Eventable.off</a>
+            
+        
+    </li></ul>
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="ui.UIComponent.html#off">ui.UIComponent#off</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature"></span>:
+
+        
+<!-- <div class="param-desc"> -->
+    this
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="removeEventListener"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#removeEventListener">removeEventListener</a><span class="signature">(eventTypes, handler, context<span class="signature-attributes">opt</span>)</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L152" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L152" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#removeEventListener" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Alias for <a href="Eventable.html#.off">off</a>
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>eventTypes</code>
+                
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">event types to unregister, seperated by space if more than one.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>handler</code>
+                
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">listener handler</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>context</code>
+                
+                    
+                        <span class="signature-attributes">opt</span>
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">the context of the handler</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+    <h5>Mixes From:</h5>
+    <ul><li>
+        
+            <a href="Eventable.html#.removeEventListener">Eventable.removeEventListener</a>
+            
+        
+    </li></ul>
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="ui.UIComponent.html#removeEventListener">ui.UIComponent#removeEventListener</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature"></span>:
+
+        
+<!-- <div class="param-desc"> -->
+    this
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="listens"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#listens">listens</a><span class="signature">(eventType, hanlder<span class="signature-attributes">opt</span>, context<span class="signature-attributes">opt</span>)</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L165" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L165" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#listens" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Returns listener's count registered for the event type.
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>eventType</code>
+                
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">an event type</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>hanlder</code>
+                
+                    
+                        <span class="signature-attributes">opt</span>
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">listener function</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>context</code>
+                
+                    
+                        <span class="signature-attributes">opt</span>
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">the context of the handler</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+    <h5>Mixes From:</h5>
+    <ul><li>
+        
+            <a href="Eventable.html#.listens">Eventable.listens</a>
+            
+        
+    </li></ul>
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="ui.UIComponent.html#listens">ui.UIComponent#listens</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature">Number</span>:
+
+        
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="copyEventListeners"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#copyEventListeners">copyEventListeners</a><span class="signature">(target)</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L206" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L206" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#copyEventListeners" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Copy all the event listener to the target object
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>target</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">target object to copy to.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+    <h5>Mixes From:</h5>
+    <ul><li>
+        
+            <a href="Eventable.html#.copyEventListeners">Eventable.copyEventListeners</a>
+            
+        
+    </li></ul>
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="ui.UIComponent.html#copyEventListeners">ui.UIComponent#copyEventListeners</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature"></span>:
+
+        
+<!-- <div class="param-desc"> -->
+    this
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="fire"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#fire">fire</a><span class="signature">(eventType, param)</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L227" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L227" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#fire" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Fire an event, causing all handlers for that event name to run.
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>eventType</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">an event type to fire</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>param</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">parameters for the listener function.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+    <h5>Mixes From:</h5>
+    <ul><li>
+        
+            <a href="Eventable.html#.fire">Eventable.fire</a>
+            
+        
+    </li></ul>
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="ui.UIComponent.html#fire">ui.UIComponent#fire</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature"></span>:
+
+        
+<!-- <div class="param-desc"> -->
+    this
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="callInitHooks"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#callInitHooks">callInitHooks</a><span class="signature">()</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L53" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L53" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#callInitHooks" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Visit and call all the init hooks defined on Class and its parents.
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="Class.html#callInitHooks">Class#callInitHooks</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature"><a href="Class.html">Class</a></span>:
+
+        
+<!-- <div class="param-desc"> -->
+    this
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="setOptions"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#setOptions">setOptions</a><span class="signature">(options)</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L64" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L64" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#setOptions" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Merges options with the default options of the object.
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">options to set</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="Class.html#setOptions">Class#setOptions</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature"><a href="Class.html">Class</a></span>:
+
+        
+<!-- <div class="param-desc"> -->
+    this
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="config"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#config">config</a><span class="signature">(conf)</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L94" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L94" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#config" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    1. Return object's options if no parameter is provided. <br/>2. update an option and enable/disable the handler if a handler with the same name existed.
+</div>
+
+
+    <!--<h5>Example:</h5>-->
+    
+    
+        <pre class="prettyprint"><code>// Get marker's options;var options = marker.config();// Set map's option "draggable" to false and disable map's draggable handler.map.config('draggable', false);// You can update more than one options like this:map.config({    'scrollWheelZoom' : false,    'doubleClickZoom' : false});</code></pre>
+    
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>conf</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">config to update</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="Class.html#config">Class#config</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature"><a href="Class.html">Class</a></span>:
+
+        
+<!-- <div class="param-desc"> -->
+    this
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="onConfig"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#onConfig">onConfig</a><span class="signature">()</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L129" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L129" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#onConfig" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Default callback when config is called
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="Class.html#onConfig">Class#onConfig</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+    
+
+    
+
+    
+        <h3 class="subsection-title">Events</h3>
+
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="event:add"><i><span class="type-signature"> (inherited)  </span><a href="#event:add">add</a></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L97" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L97" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#event:add" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    add event.
+</div>
+
+
+
+
+<!-- 
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+ -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="ui.UIComponent.html#event:add">ui.UIComponent#event:add</a>
+    </li></ul>
+    
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">add</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>target</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="ui.UIComponent.html">ui.UIComponent</a></span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">UIComponent</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="ui.UIComponent.html#event:add">ui.UIComponent#event:add</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+        
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js">ui/UIComponent.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L97">line 97</a>
+        
+
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="event:showstart"><i><span class="type-signature"> (inherited)  </span><a href="#event:showstart">showstart</a></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L146" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L146" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#event:showstart" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    showstart event.
+</div>
+
+
+
+
+<!-- 
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+ -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="ui.UIComponent.html#event:showstart">ui.UIComponent#event:showstart</a>
+    </li></ul>
+    
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">showstart</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>target</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="ui.UIComponent.html">ui.UIComponent</a></span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">UIComponent</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="ui.UIComponent.html#event:showstart">ui.UIComponent#event:showstart</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+        
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js">ui/UIComponent.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L146">line 146</a>
+        
+
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="event:showend"><i><span class="type-signature"> (inherited)  </span><a href="#event:showend">showend</a></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L162" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L162" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#event:showend" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    showend event.
+</div>
+
+
+
+
+<!-- 
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+ -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="ui.UIComponent.html#event:showend">ui.UIComponent#event:showend</a>
+    </li></ul>
+    
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">showend</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>target</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="ui.UIComponent.html">ui.UIComponent</a></span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">UIComponent</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="ui.UIComponent.html#event:showend">ui.UIComponent#event:showend</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+        
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js">ui/UIComponent.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L162">line 162</a>
+        
+
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="event:hide"><i><span class="type-signature"> (inherited)  </span><a href="#event:hide">hide</a></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L255" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L255" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#event:hide" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    hide event.
+</div>
+
+
+
+
+<!-- 
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+ -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="ui.UIComponent.html#event:hide">ui.UIComponent#event:hide</a>
+    </li></ul>
+    
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">hide</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>target</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="ui.UIComponent.html">ui.UIComponent</a></span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">UIComponent</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="ui.UIComponent.html#event:hide">ui.UIComponent#event:hide</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+        
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js">ui/UIComponent.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L255">line 255</a>
+        
+
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="event:remove"><i><span class="type-signature"> (inherited)  </span><a href="#event:remove">remove</a></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L312" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L312" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#event:remove" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    remove event.
+</div>
+
+
+
+
+<!-- 
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+ -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="ui.UIComponent.html#event:remove">ui.UIComponent#event:remove</a>
+    </li></ul>
+    
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">remove</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>target</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="ui.UIComponent.html">ui.UIComponent</a></span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">UIComponent</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="ui.UIComponent.html#event:remove">ui.UIComponent#event:remove</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+        
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js">ui/UIComponent.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/ui/UIComponent.js#L312">line 312</a>
+        
+
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<nav class="page-nav">
+    <h2><a href="index.html">V0.49.1</a></h2><h4>Classes</h4><ul></ul><h5>Map</h5><ul><li><a href="Map.html">Map</a></li></ul><h5>Layer</h5><ul><li><a href="Layer.html">Layer</a></li><li><a href="TileSystem.html">TileSystem</a></li><li><a href="TileLayer.html">TileLayer</a></li><li><a href="GroupTileLayer.html">GroupTileLayer</a></li><li><a href="WMSTileLayer.html">WMSTileLayer</a></li><li><a href="OverlayLayer.html">OverlayLayer</a></li><li><a href="VectorLayer.html">VectorLayer</a></li><li><a href="CanvasLayer.html">CanvasLayer</a></li><li><a href="ParticleLayer.html">ParticleLayer</a></li><li><a href="ImageLayer.html">ImageLayer</a></li></ul><h5>Geometry</h5><ul><li><a href="Geometry.html">Geometry</a></li><li><a href="Path.html">Path</a></li><li><a href="Marker.html">Marker</a></li><li><a href="TextMarker.html">TextMarker</a></li><li><a href="Label.html">Label</a></li><li><a href="TextBox.html">TextBox</a></li><li><a href="Polygon.html">Polygon</a></li><li><a href="LineString.html">LineString</a></li><li><a href="Curve.html">Curve</a></li><li><a href="ArcCurve.html">ArcCurve</a></li><li><a href="QuadBezierCurve.html">QuadBezierCurve</a></li><li><a href="CubicBezierCurve.html">CubicBezierCurve</a></li><li><a href="ConnectorLine.html">ConnectorLine</a></li><li><a href="ArcConnectorLine.html">ArcConnectorLine</a></li><li><a href="Ellipse.html">Ellipse</a></li><li><a href="Circle.html">Circle</a></li><li><a href="Sector.html">Sector</a></li><li><a href="Rectangle.html">Rectangle</a></li><li><a href="GeometryCollection.html">GeometryCollection</a></li><li><a href="MultiGeometry.html">MultiGeometry</a></li><li><a href="MultiPoint.html">MultiPoint</a></li><li><a href="MultiLineString.html">MultiLineString</a></li><li><a href="MultiPolygon.html">MultiPolygon</a></li><li><a href="GeoJSON.html">GeoJSON</a></li><li><a href="GeometryEditor.html">GeometryEditor</a></li></ul><h5>Basic types</h5><ul><li><a href="Coordinate.html">Coordinate</a></li><li><a href="Extent.html">Extent</a></li><li><a href="Point.html">Point</a></li><li><a href="PointExtent.html">PointExtent</a></li><li><a href="Position.html">Position</a></li><li><a href="Size.html">Size</a></li></ul><h5>Maptool</h5><ul><li><a href="MapTool.html">MapTool</a></li><li><a href="DrawTool.html">DrawTool</a></li><li><a href="DistanceTool.html">DistanceTool</a></li><li><a href="AreaTool.html">AreaTool</a></li></ul><h5>Ui</h5><ul><li><a href="ui.UIComponent.html">ui.UIComponent</a></li><li><a href="ui.UIMarker.html">ui.UIMarker</a></li><li><a href="ui.InfoWindow.html">ui.InfoWindow</a></li><li><a href="ui.ToolTip.html">ui.ToolTip</a></li><li><a href="ui.Menu.html">ui.Menu</a></li></ul><h5>Control</h5><ul><li><a href="control.Control.html">control.Control</a></li><li><a href="control.Zoom.html">control.Zoom</a></li><li><a href="control.LayerSwitcher.html">control.LayerSwitcher</a></li><li><a href="control.Attribution.html">control.Attribution</a></li><li><a href="control.Scale.html">control.Scale</a></li><li><a href="control.Panel.html">control.Panel</a></li><li><a href="control.Toolbar.html">control.Toolbar</a></li><li><a href="control.Overview.html">control.Overview</a></li></ul><h5>Core</h5><ul><li><a href="Ajax.html">Ajax</a></li><li><a href="Class.html">Class</a></li><li><a href="MapboxUtil.html">MapboxUtil</a></li><li><a href="Util.html">Util</a></li><li><a href="DomUtil.html">DomUtil</a></li><li><a href="StringUtil.html">StringUtil</a></li></ul><h5>Animation</h5><ul><li><a href="animation.Easing.html">animation.Easing</a></li><li><a href="animation.Frame.html">animation.Frame</a></li><li><a href="animation.Player.html">animation.Player</a></li><li><a href="animation.Animation.html">animation.Animation</a></li></ul><h5>Geo</h5><ul><li><a href="CRS.html">CRS</a></li><li><a href="measurer.Identity.html">measurer.Identity</a></li><li><a href="measurer.DEFAULT.html">measurer.DEFAULT</a></li><li><a href="measurer.Measurer.html">measurer.Measurer</a></li><li><a href="measurer.WGS84Sphere.html">measurer.WGS84Sphere</a></li><li><a href="measurer.BaiduSphere.html">measurer.BaiduSphere</a></li><li><a href="projection.DEFAULT.html">projection.DEFAULT</a></li><li><a href="projection.BAIDU.html">projection.BAIDU</a></li><li><a href="projection.EPSG3857.html">projection.EPSG3857</a></li><li><a href="projection.EPSG4326.html">projection.EPSG4326</a></li><li><a href="projection.EPSG4490.html">projection.EPSG4490</a></li><li><a href="projection.IDENTITY.html">projection.IDENTITY</a></li><li><a href="Transformation.html">Transformation</a></li></ul><h5>Handler</h5><ul><li><a href="Handler.html">Handler</a></li><li><a href="DragHandler.html">DragHandler</a></li></ul><h5>Other</h5><ul><li><a href="renderer.CanvasRenderer.html">renderer.CanvasRenderer</a></li></ul><h4>Namespaces</h4><ul><li><a href="measurer.html">measurer</a></li><li><a href="projection.html">projection</a></li><li><a href="renderer.html">renderer</a></li></ul><h4>Mixins</h4><ul><li><a href="Eventable.html">Eventable</a></li><li><a href="JSONAble.html">JSONAble</a></li><li><a href="measurer.Common.html">measurer.Common</a></li><li><a href="projection.Common.html">projection.Common</a></li><li><a href="Handlerable.html">Handlerable</a></li><li><a href="CenterMixin.html">CenterMixin</a></li><li><a href="TextEditable.html">TextEditable</a></li><li><a href="Renderable.html">Renderable</a></li><li><a href="ui.Menuable.html">ui.Menuable</a></li></ul><h3>Global</h3><ul><li><a href="global.html#INTERNAL_LAYER_PREFIX">INTERNAL_LAYER_PREFIX</a></li><li><a href="global.html#RESOURCE_PROPERTIES">RESOURCE_PROPERTIES</a></li><li><a href="global.html#RESOURCE_SIZE_PROPERTIES">RESOURCE_SIZE_PROPERTIES</a></li><li><a href="global.html#NUMERICAL_PROPERTIES">NUMERICAL_PROPERTIES</a></li><li><a href="global.html#COLOR_PROPERTIES">COLOR_PROPERTIES</a></li><li><a href="global.html#getListeningEvents">getListeningEvents</a></li><li><a href="global.html#isEmpty">isEmpty</a></li><li><a href="global.html#IS_NODE">IS_NODE</a></li><li><a href="global.html#identity">identity</a></li><li><a href="global.html#copy">copy</a></li><li><a href="global.html#set">set</a></li><li><a href="global.html#add">add</a></li><li><a href="global.html#subtract">subtract</a></li><li><a href="global.html#length">length</a></li><li><a href="global.html#normalize">normalize</a></li><li><a href="global.html#dot">dot</a></li><li><a href="global.html#scale">scale</a></li><li><a href="global.html#cross">cross</a></li><li><a href="global.html#distance">distance</a></li><li><a href="global.html#transformMat4">transformMat4</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Sep 07 2020 17:52:21 GMT+0800 (GMT+08:00)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+
+</body>
+</html>
