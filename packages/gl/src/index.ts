@@ -1,7 +1,9 @@
 import GroupGLLayer from './layer/GroupGLLayer';
+import './layer/TileLayerGLRenderer';
 import GroundPainter from './layer/GroundPainter';
 import './light/MapLights';
 import './map/MapPostProcess';
+import './map/MapGLRenderer';
 
 import * as HighlightUtil from './layer/util/highlight';
 import * as ContextUtil from './layer/util/context';
