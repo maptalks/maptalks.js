@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/vt",
-  "version": "0.103.0",
+  "version": "0.103.3",
   "description": "The vector-tile plugin for maptalks.js",
   "main": "dist/maptalks.vt.js",
   "module": "dist/maptalks.vt.es.js",
@@ -61,7 +61,7 @@
     "eslint-plugin-mocha": "^10.4.1",
     "express": "^4.17.1",
     "happen": "^0.3.1",
-    "@maptalks/map": "workspace:*",
+    "maptalks": "^1.0.0",
     "mocha": "^10.3.0",
     "pixelmatch": "^4.0.2",
     "rollup": "^4.17.2",

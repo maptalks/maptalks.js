@@ -1,5 +1,13 @@
 # @maptalks/traffic
 
+## 0.101.1
+
+### Patch Changes
+
+- fix bundle export and analysis's import of reshader.gl
+- Updated dependencies
+  - @maptalks/gltf-layer@0.103.1
+
 ## 0.101.0
 
 ### Minor Changes

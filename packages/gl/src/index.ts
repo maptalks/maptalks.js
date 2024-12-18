@@ -27,35 +27,41 @@ export { MaskLayerMixin, MaskRendererMixin };
 export { ClipInsideMask, ClipOutsideMask, FlatInsideMask, FlatOutsideMask, ElevateMask, ColorMask, VideoMask, BoxInsideClipMask, BoxOutsideClipMask };
 export { RayCaster };
 
+import Distance3DTool from './analysis/Distance3DTool';
+import Measure3DTool from './analysis/Measure3DTool';
+import Area3DTool from './analysis/Area3DTool';
+import Height3DTool from './analysis/Height3DTool';
+export { Distance3DTool, Measure3DTool, Area3DTool, Height3DTool };
+
 import { earcut } from '@maptalks/reshader.gl';
 export { earcut };
 
 export { default as color } from 'color';
 
-if (typeof window !== 'undefined') {
-    // append GroupGLLayer on maptalks manually
-    if (window.maptalks) {
-      // @ts-expect-error-error
-        window.maptalks.GroupGLLayer = GroupGLLayer;
-        // @ts-expect-error-error
-        window.maptalks.ClipInsideMask = ClipInsideMask;
-        // @ts-expect-error-error
-        window.maptalks.ClipOutsideMask = ClipOutsideMask;
-        // @ts-expect-error-error
-        window.maptalks.FlatInsideMask = FlatInsideMask;
-        // @ts-expect-error-error
-        window.maptalks.FlatOutsideMask = FlatOutsideMask;
-        // @ts-expect-error-error
-        window.maptalks.ElevateMask = ElevateMask;
-        // @ts-expect-error-error
-        window.maptalks.ColorMask = ColorMask;
-        // @ts-expect-error-error
-        window.maptalks.VideoMask = VideoMask;
-        // @ts-expect-error-error
-        window.maptalks.BoxInsideClipMask = BoxInsideClipMask;
-        // @ts-expect-error-error
-        window.maptalks.BoxOutsideClipMask = BoxOutsideClipMask;
-        // @ts-expect-error-error
-        window.maptalks.RayCaster = RayCaster;
-    }
-}
+// if (typeof window !== 'undefined') {
+//     // append GroupGLLayer on maptalks manually
+//     if (window.maptalks) {
+//       // @ts-expect-error-error
+//         window.maptalks.GroupGLLayer = GroupGLLayer;
+//         // @ts-expect-error-error
+//         window.maptalks.ClipInsideMask = ClipInsideMask;
+//         // @ts-expect-error-error
+//         window.maptalks.ClipOutsideMask = ClipOutsideMask;
+//         // @ts-expect-error-error
+//         window.maptalks.FlatInsideMask = FlatInsideMask;
+//         // @ts-expect-error-error
+//         window.maptalks.FlatOutsideMask = FlatOutsideMask;
+//         // @ts-expect-error-error
+//         window.maptalks.ElevateMask = ElevateMask;
+//         // @ts-expect-error-error
+//         window.maptalks.ColorMask = ColorMask;
+//         // @ts-expect-error-error
+//         window.maptalks.VideoMask = VideoMask;
+//         // @ts-expect-error-error
+//         window.maptalks.BoxInsideClipMask = BoxInsideClipMask;
+//         // @ts-expect-error-error
+//         window.maptalks.BoxOutsideClipMask = BoxOutsideClipMask;
+//         // @ts-expect-error-error
+//         window.maptalks.RayCaster = RayCaster;
+//     }
+// }

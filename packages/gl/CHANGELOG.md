@@ -1,5 +1,15 @@
 # @maptalks/gl
 
+## 0.104.1
+
+### Patch Changes
+
+- fix bundle export and analysis's import of reshader.gl
+- Updated dependencies
+  - @maptalks/fusiongl@0.9.1
+  - @maptalks/gltf-loader@0.101.1
+  - @maptalks/reshader.gl@0.103.1
+
 ## 0.104.0
 
 ### Minor Changes

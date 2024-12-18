@@ -1,5 +1,11 @@
 # @maptalks/reshader.gl
 
+## 0.103.1
+
+### Patch Changes
+
+- fix bundle export and analysis's import of reshader.gl
+
 ## 0.103.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @maptalks/transcoders.crn
 
+## 0.101.1
+
+### Patch Changes
+
+- fix bundle export and analysis's import of reshader.gl
+
 ## 0.101.0
 
 ### Minor Changes

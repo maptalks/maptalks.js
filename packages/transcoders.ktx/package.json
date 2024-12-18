@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/transcoders.ktx2",
-  "version": "0.101.0",
+  "version": "0.101.1",
   "description": "ktx2 transcoder for @maptalks/gl",
   "main": "dist/transcoders.ktx2.js",
   "module": "dist/transcoders.ktx2.es.js",

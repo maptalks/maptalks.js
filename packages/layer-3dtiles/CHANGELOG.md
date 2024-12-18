@@ -1,5 +1,11 @@
 # @maptalks/3dtiles
 
+## 0.104.1
+
+### Patch Changes
+
+- fix bundle export and analysis's import of reshader.gl
+
 ## 0.104.0
 
 ### Minor Changes
