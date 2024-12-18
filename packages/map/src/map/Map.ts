@@ -26,7 +26,7 @@ import Layer from '../layer/Layer';
 import Renderable from '../renderer/Renderable';
 import SpatialReference, { type SpatialReferenceType } from './spatial-reference/SpatialReference';
 import { computeDomPosition, MOUSEMOVE_THROTTLE_TIME } from '../core/util/dom';
-import EPSG9807, { type EPSG9807ProjectionType } from '../geo/projection/Projection.EPSG9807.js';
+import EPSG9807, { type EPSG9807ProjectionType } from '../geo/projection/Projection.EPSG9807';
 import { AnimationOptionsType, EasingType } from '../core/Animation';
 import { BBOX, bboxInBBOX, getDefaultBBOX, pointsBBOX } from '../core/util/bbox';
 import { Attribution } from '../control';

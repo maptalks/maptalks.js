@@ -10,9 +10,6 @@ const POINT0 = new maptalks.Point(0, 0);
 const EMPTY_ARRAY = [];
 
 const options = {
-    'forceRenderOnMoving': true,
-    'forceRenderOnZooming': true,
-    'forceRenderOnRotating': true,
     'fadeAnimation': false,
     'fadeDuration': (1000 / 60 * 15),
     'tileLimitPerFrame': 2,

@@ -1,5 +1,11 @@
 # @maptalks/vt-plugin
 
+## 0.99.0
+
+### Minor Changes
+
+- fix conlict versions on npm
+
 ## 0.96.3
 
 ### Patch Changes
