@@ -32,6 +32,7 @@ export { default as PointLineShader } from './shader/PointLineShader';
 // export { default as ToonShader } from './shader/ToonShader';
 export { default as FxaaShader } from './shader/FxaaShader';
 export { default as BoxBlurShader } from './shader/BoxBlurShader';
+export { default as ImageShader } from './shader/ImageShader';
 // export { default as SsaoPass } from './ssao/SsaoPass';
 export { default as PostProcessShader } from './shader/PostProcessShader';
 // export { default as TaaPass } from './shader/TaaPass';

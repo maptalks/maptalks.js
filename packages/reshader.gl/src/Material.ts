@@ -32,7 +32,7 @@ class Material extends Eventable(Base) {
     //@internal
     _disposed?: boolean
 
-    constructor(uniforms: ShaderUniforms = {}, defaultUniforms: ShaderUniforms) {
+    constructor(uniforms: ShaderUniforms = {}, defaultUniforms?: ShaderUniforms) {
         super()
         this._version = 0;
         this._propVerion = 0;
@@ -80,6 +80,9 @@ class Material extends Eventable(Base) {
     }
 
     set(k: string, v: ShaderUniformValue): this {
+        if (this.get(k) === v) {
+            return this;
+        }
         const dirty = isNil(this.uniforms[k]) && !isNil(v) ||
             !isNil(this.uniforms[k]) && isNil(v);
 

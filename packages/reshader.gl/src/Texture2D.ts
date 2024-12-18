@@ -11,6 +11,12 @@ import DataUtils from './common/DataUtils';
  */
 class Texture2D extends Texture {
 
+    texParameteri(key: number, value: number) {
+        if (this._texture) {
+            (this._texture as any).texParameteri(key, value);
+        }
+    }
+
     onLoad({ data }) {
         const config = this.config;
         if (!config) {

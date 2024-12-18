@@ -25,7 +25,7 @@ class AbstractTexture extends Eventable(Base) {
     _regl?: REGL.Regl;
     dirty?: boolean
 
-    constructor(config, resLoader) {
+    constructor(config, resLoader?) {
         super();
         //TODO add video support
         if (isFunction(config)) {
