@@ -1,6 +1,6 @@
 {
   "name": "maptalks-gl",
-  "version": "0.103.2",
+  "version": "0.105.0",
   "description": "All-in-one package for maptalks webgl layers",
   "module": "index.js",
   "main": "dist/maptalks-gl.js",
@@ -11,7 +11,7 @@
     "clean": "rimraf dist",
     "dev": "rollup -w -c rollup.config.js",
     "build": "npm run clean && rollup -c rollup.config.js && npm run copy-styles",
-    "copy-darwin-styles": "cp -rf node_modules/maptalks/dist/images dist && cp -f node_modules/maptalks/dist/maptalks.css dist/maptalks-gl.css",
+    "copy-darwin-styles": "cp -rf node_modules/maptalks/dist/images dist && cp -f node_modules/maptalks/dist/maptalks.css dist",
     "copy-win-styles": "xcopy node_modules\\maptalks\\dist\\images dist\\images /e /y /i && copy node_modules\\maptalks\\dist\\maptalks.css dist\\maptalks-gl.css",
     "copy-styles": "npm run copy-win-styles"
   },

@@ -1,5 +1,31 @@
 # @maptalks/gl
 
+## 0.104.0
+
+### Minor Changes
+
+- fix conlict versions on npm
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/fusiongl@0.9.0
+  - @maptalks/gltf-loader@0.101.0
+  - @maptalks/reshader.gl@0.103.0
+
+## 0.103.0
+
+### Minor Changes
+
+- Bug fixes, remove analysis and msd-loader from maptalks-gl
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/fusiongl@0.8.0
+  - @maptalks/gltf-loader@0.99.0
+  - @maptalks/reshader.gl@0.102.0
+
 ## 0.102.2
 
 ### Patch Changes
