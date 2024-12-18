@@ -1,5 +1,11 @@
 # @maptalks/vt-plugin
 
+## 0.99.1
+
+### Patch Changes
+
+- fix bundle export and analysis's import of reshader.gl
+
 ## 0.99.0
 
 ### Minor Changes

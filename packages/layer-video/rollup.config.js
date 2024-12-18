@@ -89,7 +89,7 @@ module.exports = [
             extend: true,
             globals: {
                 maptalks: "maptalks",
-                "@maptalks/gl": "maptalksgl",
+                "@maptalks/gl": "maptalks",
             },
             file: outputFile,
         },

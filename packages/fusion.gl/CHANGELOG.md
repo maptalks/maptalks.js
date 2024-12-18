@@ -1,5 +1,11 @@
 # @maptalks/fusiongl
 
+## 0.9.1
+
+### Patch Changes
+
+- fix bundle export and analysis's import of reshader.gl
+
 ## 0.9.0
 
 ### Minor Changes

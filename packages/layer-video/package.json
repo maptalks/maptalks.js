@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/video-layer",
-  "version": "0.101.0",
+  "version": "0.101.1",
   "description": "A maptalks Layer to render video",
   "license": "UNLICENSED",
   "repository": {
@@ -44,7 +44,7 @@
     "karma-happen": "^0.1.0",
     "karma-mocha": "^2.0.1",
     "karma-mocha-reporter": "^2.2.5",
-    "@maptalks/map": "workspace:*",
+    "maptalks": "^1.0.0",
     "mocha": "^10.3.0",
     "rollup": "^4.17.2"
   },

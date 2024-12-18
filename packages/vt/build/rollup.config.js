@@ -188,7 +188,7 @@ module.exports = [
         output: {
             globals: {
                 maptalks: "maptalks",
-                "@maptalks/gl": "maptalksgl",
+                "@maptalks/gl": "maptalks",
             },
             banner,
             outro,
@@ -239,7 +239,7 @@ module.exports = [
         output: {
             globals: {
                 maptalks: "maptalks",
-                "@maptalks/gl": "maptalksgl",
+                "@maptalks/gl": "maptalks",
             },
             banner,
             outro,

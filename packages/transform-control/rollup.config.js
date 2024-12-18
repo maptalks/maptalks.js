@@ -68,7 +68,7 @@ module.exports = [
             'extend' : true,
             'globals' : {
                 'maptalks' : 'maptalks',
-                '@maptalks/gl' : 'maptalksgl',
+                '@maptalks/gl' : 'maptalks',
                 '@maptalks/gltf-layer' : 'maptalks'
             },
             'file': outputFile

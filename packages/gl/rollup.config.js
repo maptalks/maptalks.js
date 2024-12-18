@@ -197,9 +197,10 @@ module.exports.push({
     plugins: production ? configPlugins : tsPlugins,
     external : ['maptalks'],
     output: {
+        'extend': true,
         'sourcemap': true,
         'format': 'umd',
-        'name': 'maptalksgl',
+        'name': 'maptalks',
         'globals' : {
             'maptalks' : 'maptalks'
         },

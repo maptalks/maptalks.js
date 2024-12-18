@@ -1,5 +1,14 @@
 # @maptalks/transform-control
 
+## 0.104.1
+
+### Patch Changes
+
+- fix bundle export and analysis's import of reshader.gl
+- Updated dependencies
+  - @maptalks/gl@0.104.1
+  - @maptalks/gltf-layer@0.103.1
+
 ## 0.104.0
 
 ### Minor Changes

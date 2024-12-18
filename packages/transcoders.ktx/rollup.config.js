@@ -44,7 +44,7 @@ const terserPlugin = terser({
         // properties: {
         //     // 'regex' : /^_/,
         //     'keep_quoted' : true,
-        //     'reserved': ['maptalksgl', 'transcoders', 'ktx2'],
+        //     'reserved': ['maptalks', 'transcoders', 'ktx2'],
         // }
     },
     compress: {
@@ -68,9 +68,9 @@ module.exports = [
                 'sourcemap': false,
                 'format': 'umd',
                 extend: true,
-                'name': 'maptalksgl.transcoders.ktx2',
+                'name': 'maptalks.transcoders.ktx2',
                 'globals' : {
-                    '@maptalks/gl' : 'maptalksgl'
+                    '@maptalks/gl' : 'maptalks'
                 },
                 intro,
                 outro,
@@ -113,12 +113,12 @@ if (production) {
             plugins : plugins,
             output: {
                 globals: {
-                    '@maptalks/gl': 'maptalksgl'
+                    '@maptalks/gl': 'maptalks'
                 },
                 extend: true,
                 format: 'es',
                 sourcemap: false,
-                name: 'maptalksgl.transcoders.ktx2',
+                name: 'maptalks.transcoders.ktx2',
                 banner,
                 intro: printVer,
                 file: pkg.module
