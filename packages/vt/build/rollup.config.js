@@ -10,18 +10,11 @@ const pkg = require("../package.json");
 
 const production = process.env.BUILD === "production";
 const outputFile = pkg.main;
-const reserves = ["on", "once", "off", "_drawTiles"];
 const plugins = production
     ? [
           terser({
               module: true,
-              mangle: {
-                  properties: {
-                      regex: /^_/,
-                      keep_quoted: true,
-                      reserved: reserves,
-                  },
-              },
+              mangle: true,
               output: {
                   beautify: true,
                   comments: "/^!/",
@@ -34,13 +27,7 @@ const pluginsWorker = production
     ? [
           terser({
               module: true,
-              mangle: {
-                  properties: {
-                      regex: /^_/,
-                      keep_quoted: true,
-                      reserved: reserves,
-                  },
-              },
+              mangle: true,
               output: {
                   beautify: false,
               },
