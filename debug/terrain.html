@@ -8,10 +8,10 @@
     /*.container{width:100%;height:100%;background-color: red;}*/
     .container{width:100%;height:100%;background-color: red;}
   </style>
-  <link rel="stylesheet" href="/maptalks/dist/maptalks.css">
-  <script type="text/javascript" src="/maptalks/dist/maptalks.js"></script>
+  <link rel="stylesheet" href="/maptalks/packages/map/dist/maptalks.css">
+  <script type="text/javascript" src="/maptalks/packages/map/dist/maptalks.js"></script>
   <!-- <script type="text/javascript" src="https://unpkg.com/maptalks/dist/maptalks.min.js"></script> -->
-  <script type="text/javascript" src="/maptalksgl/dist/maptalksgl.js"></script>
+  <script type="text/javascript" src="/maptalks/packages/gl/dist/maptalksgl.js"></script>
   <script type="text/javascript" src="./chncrs.js"></script>
   <!-- <script type="text/javascript" src="../dist/maptalks.terrain-dev.js"></script> -->
   <body>
@@ -70,10 +70,10 @@
         });
 
         map.setLights({
-            ambient: {
-            resource: {
-              url: './terrain/resources/venice_sunset_2k.hdr',
-            },
+          ambient: {
+            // resource: {
+            //   url: './terrain/resources/venice_sunset_2k.hdr',
+            // },
             exposure: 2,
             orientation: 0
           },
@@ -93,14 +93,14 @@
                 spatialReference: {
                   projection: 'EPSG:3857'
                 },
-                offset: function (z) {
-                    //实时计算wgs84和gcj02瓦片的偏移量
-                    const center = map.getCenter();
-                    const c = maptalks.CRSTransform.transform(center.toArray(), 'GCJ02', 'WGS84');
-                    targetCoord.set(c[0], c[1]);
-                    const offset = map.coordToPoint(center, z, POINT0)._sub(map.coordToPoint(targetCoord, z, POINT1));
-                    return offset._round().toArray();
-                },
+                // offset: function (z) {
+                //     //实时计算wgs84和gcj02瓦片的偏移量
+                //     const center = map.getCenter();
+                //     const c = maptalks.CRSTransform.transform(center.toArray(), 'GCJ02', 'WGS84');
+                //     targetCoord.set(c[0], c[1]);
+                //     const offset = map.coordToPoint(center, z, POINT0)._sub(map.coordToPoint(targetCoord, z, POINT1));
+                //     return offset._round().toArray();
+                // },
                 // urlTemplate: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
                 // urlTemplate: 'https://khms{s}.googleapis.com/kh?v=923&hl=en&x={x}&y={y}&z={z}',
                 // subdomains: ['1','2','3'],

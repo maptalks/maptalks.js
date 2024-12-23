@@ -72,7 +72,7 @@ export default class PostProcess {
             getFramebuffer,
             getDepthTexture
         };
-        const fGL = layerRenderer.glCtx;
+        const fGL = layerRenderer.gl;
         fGL.resetDrawCalls();
         if (event) {
             layerRenderer.forEachRenderer(renderer => {
@@ -118,7 +118,7 @@ export default class PostProcess {
         context.renderMode = 'default';
         context['sceneFilter'] = ssrFilter;
         context.renderTarget.fbo = fbo;
-        const fGL = layerRenderer.glCtx;
+        const fGL = layerRenderer.gl;
         let cleared = false;
         if (event) {
             layerRenderer.forEachRenderer(renderer => {

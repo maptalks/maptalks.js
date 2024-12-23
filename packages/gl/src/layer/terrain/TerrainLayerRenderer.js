@@ -1338,14 +1338,11 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         });
     }
 
-    createContext() {
-        const inGroup = this.canvas.gl && this.canvas.gl.wrap;
-        if (inGroup) {
-            this.gl = this.canvas.gl.wrap();
-            this.regl = this.canvas.gl.regl;
-        } else {
-            this._createREGLContext();
-        }
+    initContext() {
+        super.initContext();
+        const { regl } = this.context;
+        this.regl = regl;
+
         this.renderer = new reshader.Renderer(this.regl);
         this.layer.fire('contextcreate', { regl: this.regl });
     }
@@ -1374,62 +1371,6 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
                 this.layer.fire('paintercreated');
             }
         }
-    }
-
-    _createREGLContext() {
-        const layer = this.layer;
-
-        const attributes = layer.options.glOptions || {
-            alpha: true,
-            depth: true,
-            antialias: this.layer.options['antialias']
-            // premultipliedAlpha : false
-        };
-        attributes.preserveDrawingBuffer = true;
-        attributes.stencil = true;
-        this.glOptions = attributes;
-        this.gl = this.gl || this._createGLContext(this.canvas, attributes);
-        // console.log(this.gl.getParameter(this.gl.MAX_VERTEX_UNIFORM_VECTORS));
-        this.regl = createREGL({
-            gl: this.gl,
-            attributes,
-            extensions: [
-                'OES_element_index_uint'
-            ],
-            optionalExtensions: layer.options['glExtensions']
-        });
-    }
-
-    _createGLContext(canvas, options) {
-        const names = ['webgl', 'experimental-webgl'];
-        let context = null;
-        /* eslint-disable no-empty */
-        for (let i = 0; i < names.length; ++i) {
-            try {
-                context = canvas.getContext(names[i], options);
-            } catch (e) { }
-            if (context) {
-                break;
-            }
-        }
-        return context;
-        /* eslint-enable no-empty */
-    }
-
-    resizeCanvas(canvasSize) {
-        if (!this.canvas) {
-            return;
-        }
-        super.resizeCanvas(canvasSize);
-
-    }
-
-    clearCanvas() {
-        if (!this.canvas) {
-            return;
-        }
-        super.clearCanvas();
-
     }
 
     _initSkinShader() {

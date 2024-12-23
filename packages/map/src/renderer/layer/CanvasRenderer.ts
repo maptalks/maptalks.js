@@ -431,6 +431,7 @@ class CanvasRenderer extends Class {
             const map = this.getMap();
             this.canvas = map.getRenderer().canvas;
             this.context = map.getRenderer().context;
+            this.initContext();
         }
         this.prepareContext();
         delete this._maskExtent;
@@ -463,6 +464,10 @@ class CanvasRenderer extends Class {
             'context': this.context
         });
         return maskExtent2D;
+    }
+
+    initContext() {
+
     }
 
     prepareContext() {

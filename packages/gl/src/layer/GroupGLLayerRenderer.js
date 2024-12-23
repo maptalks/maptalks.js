@@ -104,7 +104,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this._renderInMode('default', null, methodName, args, true);
             return;
         }
-        const fGL = this.glCtx;
+        const fGL = this.gl;
 
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
@@ -247,7 +247,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         }
         const fbo = this._getOutlineFBO();
 
-        const fGl = this.glCtx;
+        const fGl = this.gl;
         fGl.resetDrawCalls();
         this.forEachRenderer((renderer, layer) => {
             if (!layer.isVisible()) {
@@ -473,34 +473,13 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         return true;
     }
 
-    createContext() {
+    initContext() {
+        super.initContext();
         const layer = this.layer;
-        const attributes = layer.options['glOptions'] || {
-            alpha: true,
-            depth: true,
-            stencil: true
-        };
-        attributes.preserveDrawingBuffer = true;
-        attributes.antialias = !!layer.options['antialias'];
-        this.glOptions = attributes;
-        const gl = this.gl = createGLContext(this.canvas, attributes, layer.options['onlyWebGL1']);        // this.gl = gl;
-        this._initGL(gl);
-        gl.wrap = () => {
-            return new GLContext(this.gl);
-        };
-        this.glCtx = gl.wrap();
-        this.canvas.gl = this.gl;
-        this.reglGL = gl.wrap();
-        this.regl = createREGL({
-            gl: this.reglGL,
-            attributes,
-            extensions: layer.options['extensions'],
-            optionalExtensions: layer.options['optionalExtensions']
-        });
-        this.gl.regl = this.regl;
+        const { regl, gl } = this.context;
+        this.regl = regl;
+        this.gl = gl;
         this._jitter = [0, 0];
-
-
         this._groundPainter = new GroundPainter(this.regl, this.layer);
         this._envPainter = new EnvironmentPainter(this.regl, this.layer);
         const weatherConfig = this.layer.getWeatherConfig();
@@ -664,6 +643,8 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         if (this.canvas.pickingFBO && this.canvas.pickingFBO.destroy) {
             this.canvas.pickingFBO.destroy();
         }
+        delete this.gl;
+        delete this.regl;
         this._destroyFramebuffers();
         if (this._groundPainter) {
             this._groundPainter.dispose();

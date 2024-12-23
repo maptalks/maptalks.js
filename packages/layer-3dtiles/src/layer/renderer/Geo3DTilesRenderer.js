@@ -1,7 +1,7 @@
 import * as maptalks from '@maptalks/map';
 import { reshader } from '@maptalks/gl';
 import { getGLTFLoaderBundle } from '@maptalks/gl/dist/transcoders.js';
-import { createREGL, MaskRendererMixin } from '@maptalks/gl';
+import { MaskRendererMixin } from '@maptalks/gl';
 import Geo3DTilesWorkerConnection from '../Geo3DTilesWorkerConnection';
 import LRUCache from './LRUCache';
 import TileMeshPainter from './TileMeshPainter';
@@ -658,40 +658,19 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         this.painter.deleteTile(tile);
     }
 
-    createContext() {
+    initContext() {
+        super.initContext();
         const layer = this.layer;
-        const attributes = layer.options.glOptions || {
-            alpha: true,
-            depth: true,
-            stencil: true,
-            preserveDrawingBuffer: true,
-            antialias: layer.options.antialias,
-        };
-        const inGroup = this.canvas.gl && this.canvas.gl.wrap;
-        if (inGroup) {
-            this.gl = this.canvas.gl.wrap();
-            this.regl = this.canvas.gl.regl;
-        } else {
-            this.glOptions = attributes;
-            this.gl = this._createGLContext(this.canvas, attributes);
-        }
-        this.regl = this.regl || createREGL({
-            gl: this.gl,
-            attributes,
-            extensions: [
-                'OES_element_index_uint'
-            ],
-            optionalExtensions: layer.options['optionalExtensions'] || []
-        });
+        const { regl, reglGL } = this.context;
+        this.regl = regl;
+        this.gl = reglGL;
         this.prepareWorker();
-        if (inGroup) {
-            this.canvas.pickingFBO = this.canvas.pickingFBO || this.regl.framebuffer(this.canvas.width, this.canvas.height);
-        }
-        this.pickingFBO = this.canvas.pickingFBO || this.regl.framebuffer(this.canvas.width, this.canvas.height);
-        this.painter = new TileMeshPainter(this.regl, layer);
+        this.canvas.pickingFBO = this.canvas.pickingFBO || regl.framebuffer(this.canvas.width, this.canvas.height);
+        this.pickingFBO = this.canvas.pickingFBO || regl.framebuffer(this.canvas.width, this.canvas.height);
+        this.painter = new TileMeshPainter(regl, layer);
 
         this.layer._resumeHighlights();
-        this.layer.fire('contextcreate', { regl: this.regl });
+        this.layer.fire('contextcreate', { regl });
     }
 
     prepareWorker() {
