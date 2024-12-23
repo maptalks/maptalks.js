@@ -483,18 +483,6 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
         super.remove();
     }
 
-    clearCanvas() {
-        if (!this.canvas) {
-            return;
-        }
-        this.regl.clear({
-            color: [0, 0, 0, 0],
-            depth: 1,
-            stencil : 0
-        });
-        super.clearCanvas();
-    }
-
     resizeCanvas(size) {
         super.resizeCanvas(size);
         if (this.pickingFBO) {

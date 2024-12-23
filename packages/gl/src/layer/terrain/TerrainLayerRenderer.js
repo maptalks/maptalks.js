@@ -1,6 +1,5 @@
 import * as maptalks from '@maptalks/map';
 import TerrainWorkerConnection from './TerrainWorkerConnection';
-import { createREGL } from '@maptalks/regl';
 import * as reshader from '@maptalks/reshader.gl';
 import skinVert from './glsl/terrainSkin.vert';
 import skinFrag from './glsl/terrainSkin.frag';

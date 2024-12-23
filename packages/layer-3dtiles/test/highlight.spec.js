@@ -1,4 +1,4 @@
-const maptalks = require('maptalks');
+const maptalks = require('@maptalks/map');
 const { GroupGLLayer } = require('@maptalks/gl');
 
 const { Geo3DTilesLayer } = require('../dist/maptalks.3dtiles');
@@ -57,38 +57,45 @@ describe('highlight and showOnly specs', () => {
         });
         let hited = false;
         let counter = 0;
+
+        function readPixel(offset) {
+            const renderer = map.getRenderer();
+            const canvas = renderer.canvas;
+            const x = canvas.width / 2 + (offset && offset[0] || 0);
+            const y = canvas.height / 2 + (offset && offset[1] || 0);
+            return map.getRenderer().context.getImageData(x, y, 1 ,1);
+        }
+
         layer.on('canvasisdirty', ({ renderCount }) => {
             if (!hited && renderCount === options.renderCount) {
                 hited = true;
-                if (options.highlights) {
-                    layer.highlight(options.highlights);
-                } else if (options.showOnlys) {
-                    layer.showOnly(options.showOnlys);
-                }
 
-            } else if (hited) {
-                if (counter === 1) {
-                    if (options.afterExe) {
-                        options.afterExe();
-                    } else {
-                        const canvas = map.getRenderer().canvas;
-                        const ctx = canvas.getContext('2d');
-                        const offsetX = options.offset && options.offset[0] || 0;
-                        const offsetY = options.offset && options.offset[1] || 0;
-                        const color = ctx.getImageData(canvas.width / 2 + offsetX, canvas.height / 2 + offsetY, 1, 1);
-                        assert.deepEqual(color.data, options.expected);
+
+                map.on('frameend', () => {
+                    if (counter === 1) {
+                        if (options.afterExe) {
+                            options.afterExe();
+                        } else {
+                            const color = readPixel(options.offset);
+                            assert.deepEqual(color.data, options.expected);
+                            done();
+                        }
+                    } else if (counter === 0) {
+                        if (options.onPainted) {
+                            options.onPainted();
+                        }
+                        if (options.highlights) {
+                            layer.highlight(options.highlights);
+                        } else if (options.showOnlys) {
+                            layer.showOnly(options.showOnlys);
+                        }
+                    } else if (options.afterExe && counter === 3) {
                         done();
                     }
-                } else if (counter === 0) {
-                    if (options.onPainted) {
-                        options.onPainted();
-                    }
-                } else if (options.afterExe && counter === 3) {
-                    done();
-                }
 
-                counter++;
-                layer.getRenderer().setToRedraw();
+                    counter++;
+                    layer.getRenderer().setToRedraw();
+                })
             }
         });
         const sceneConfig = {
@@ -137,7 +144,7 @@ describe('highlight and showOnly specs', () => {
             id: 0,
             opacity: 0.5
         };
-        runner(done, layer, { renderCount: 1, highlights, expected: new Uint8ClampedArray([255, 255, 255, 127]) });
+        runner(done, layer, { renderCount: 1, highlights, expected: new Uint8ClampedArray([138, 138, 138, 127]) });
     });
 
     it('highlight visible', done => {
@@ -172,7 +179,7 @@ describe('highlight and showOnly specs', () => {
             color: '#ff0',
             bloom: 1
         };
-        runner(done, layer, { renderCount: 1, highlights, offset: [10, 0], expected: new Uint8ClampedArray([255, 255, 0, 56]) });
+        runner(done, layer, { renderCount: 1, highlights, offset: [10, 0], expected: new Uint8ClampedArray([75, 75, 0, 56]) });
     });
 
     it('cancelHighlight', done => {
@@ -186,7 +193,7 @@ describe('highlight and showOnly specs', () => {
             ]
         });
         const canvas = map.getRenderer().canvas;
-        const ctx = canvas.getContext('2d');
+        const ctx = map.getRenderer().context;
         const highlights = {
             id: 0,
             color: '#ff0'
@@ -220,7 +227,7 @@ describe('highlight and showOnly specs', () => {
             ]
         });
         const canvas = map.getRenderer().canvas;
-        const ctx = canvas.getContext('2d');
+        const ctx = map.getRenderer().context;
         const highlights = {
             id: 0,
             color: '#ff0'
@@ -254,7 +261,7 @@ describe('highlight and showOnly specs', () => {
             ]
         });
         const canvas = map.getRenderer().canvas;
-        const ctx = canvas.getContext('2d');
+        const ctx = map.getRenderer().context;
         const showOnlys = {
             id: 0
         };
@@ -282,7 +289,7 @@ describe('highlight and showOnly specs', () => {
             ]
         });
         const canvas = map.getRenderer().canvas;
-        const ctx = canvas.getContext('2d');
+        const ctx = map.getRenderer().context;
         const showOnlys = {
             id: 0
         };

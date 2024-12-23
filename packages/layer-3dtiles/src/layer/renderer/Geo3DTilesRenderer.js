@@ -720,6 +720,8 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         }
         this.clear();
         delete this.tileCache;
+        delete this.gl;
+        delete this.regl;
         super.onRemove();
     }
 
@@ -728,18 +730,6 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         this.tileCache.reset(this);
         this.tilesLoading = {};
         super.clear();
-    }
-
-    clearCanvas() {
-        if (this.regl) {
-            this.regl.clear({
-                color: [0, 0, 0, 0],
-                depth: 1,
-                stencil: 0
-            });
-        }
-
-        super.clearCanvas();
     }
 
     getTileOpacity(/* tileData */) {

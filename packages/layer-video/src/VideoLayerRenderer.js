@@ -320,18 +320,6 @@ class VideoLayerRenderer extends maptalks.renderer.CanvasRenderer {
         super.remove();
     }
 
-    clearCanvas() {
-        if (!this.canvas) {
-            return;
-        }
-        this.regl.clear({
-            color: [0, 0, 0, 0],
-            depth: 1,
-            stencil : 0
-        });
-        super.clearCanvas();
-    }
-
     _deleteScene(videoId) {
         const scene = this._scenes[videoId];
         if (!scene) {

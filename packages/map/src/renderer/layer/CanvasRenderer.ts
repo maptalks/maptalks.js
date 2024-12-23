@@ -300,7 +300,6 @@ class CanvasRenderer extends Class {
      * Clear canvas
      */
     clear(): void {
-        // this.clearCanvas();
     }
 
     /**
@@ -471,6 +470,10 @@ class CanvasRenderer extends Class {
     }
 
     prepareContext() {
+
+    }
+
+    clearContext() {
 
     }
 

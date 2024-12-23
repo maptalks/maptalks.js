@@ -1449,7 +1449,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (removed.length > 0) {
             const renderer = this.getRenderer();
             if (renderer) {
-                renderer.setLayerCanvasUpdated();
+                renderer.setToRedraw();
             }
             this.once('frameend', () => {
                 removed.forEach(layer => {

@@ -39,7 +39,7 @@ renderer.MapCanvasRenderer.prototype.renderFrame = function () {
     //filmicGrain animation
     const grainConfig = config && config.filmicGrain;
     if (grainConfig && (grainConfig.enable === undefined || grainConfig.enable === true)) {
-        this.setLayerCanvasUpdated();
+        this.setToRedraw();
     }
     return rendered;
 };
@@ -88,7 +88,6 @@ function doPostProcess(renderer, canvas) {
                     url,
                     texture
                 };
-                renderer.setLayerCanvasUpdated();
             };
             image.src = url;
         }
@@ -117,9 +116,7 @@ function doPostProcess(renderer, canvas) {
         min: 'linear',
         mipmap: false
     }));
-    if (grainConfig.enable) {
-        renderer.setLayerCanvasUpdated();
-    }
+
     renderer.context.drawImage(postCanvas, 0, 0, postCanvas.width, postCanvas.height);
 }
 

@@ -187,7 +187,9 @@ class MapCanvasRenderer extends MapRenderer {
             if (!renderer) {
                 continue;
             }
-            this.clearBeforeEachLayer();
+            if (isCanvas) {
+                this.clearLayerCanvasContext(layer);
+            }
             if (isInteracting && isCanvas) {
                 this._drawCanvasLayerOnInteracting(layer, framestamp);
             } else if (isInteracting && renderer.drawOnInteracting) {
@@ -591,9 +593,10 @@ class MapCanvasRenderer extends MapRenderer {
         // should be implemented by child class
     }
 
-    clearBeforeEachLayer() {
+    clearLayerCanvasContext(_layer) {
         // should be implemented by child class
     }
+
     clearCanvas() {
         // should be implemented by child class
     }

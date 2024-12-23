@@ -282,7 +282,6 @@ export default class GroupGLLayer extends maptalks.Layer {
         this._layerMap[layer.getId()] = layer;
         layer['_canvas'] = (this as any).getRenderer().canvas;
         layer['_bindMap'](map);
-        layer.once('renderercreate', this._onChildRendererCreate, this);
         // layer.on('setstyle updatesymbol', this._onChildLayerStyleChanged, this);
         layer.remove = () => {
             this.removeLayer(layer);
@@ -342,11 +341,6 @@ export default class GroupGLLayer extends maptalks.Layer {
         const layer = this.getLayer(oldId);
         delete this._layerMap[oldId];
         this._layerMap[newId] = layer;
-    }
-
-    //@internal
-    _onChildRendererCreate(e) {
-        e.renderer.clearCanvas = empty;
     }
 
     // _onChildLayerStyleChanged() {
@@ -781,8 +775,6 @@ export default class GroupGLLayer extends maptalks.Layer {
 
 (GroupGLLayer as any).registerRenderer('gl', Renderer);
 (GroupGLLayer as any).registerRenderer('canvas', null);
-
-function empty() {}
 
 function sortLayersByZIndex(a: maptalks.Layer, b: maptalks.Layer) {
     const c = a.getZIndex() - b.getZIndex();

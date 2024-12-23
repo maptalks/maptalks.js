@@ -3,26 +3,28 @@ import createREGL from '@maptalks/regl';
 import { Map, renderer } from '@maptalks/map';
 
 export default class MapGLRenderer extends renderer.MapCanvasRenderer {
-    // createCanvas, createContext, getContextInstance, clearBeforeEachLayer 和 clearCanvas 方法都应该动态注入
+    // createCanvas, createContext, getContextInstance, clearLayerCanvasContext 和 clearCanvas 方法都应该动态注入
 
     clearCanvas() {
         if (!this.regl) {
             return;
         }
-        // depth and stencil will be cleared in clearBeforeEachLayer
+        // depth and stencil will be cleared in clearLayerCanvasContext
         this.regl.clear({
             color: [0, 0, 0, 0]
         });
     }
 
-    clearBeforeEachLayer() {
+    clearLayerCanvasContext(layer) {
         if (!this.regl) {
             return;
         }
+        const renderer = layer.getRenderer();
         this.regl.clear({
             depth: 1,
             stencil: 0
         });
+        renderer.clearContext();
     }
 
     createContext() {
@@ -54,9 +56,10 @@ export default class MapGLRenderer extends renderer.MapCanvasRenderer {
             regl,
             getImageData: (sx, sy, sw, sh) => {
                 const pixels = new Uint8ClampedArray(sw * sh * 4);
+                const canvas = this.canvas;
                 regl.read({
                     x: sx,
-                    y: sy,
+                    y: canvas.height - sy,
                     width: sw,
                     height: sh,
                     data: pixels
