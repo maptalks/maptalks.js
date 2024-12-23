@@ -25,7 +25,7 @@
   "dependencies": {
     "@maptalks/regl": "^3.4.0",
     "@maptalks/tbn-packer": "^1.4.5",
-    "earcut": "^2.2.4",
+    "earcut": "^3.0.1",
     "gl-matrix": "^3.4.0"
   },
   "devDependencies": {

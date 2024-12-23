@@ -36,7 +36,7 @@
     "@maptalks/vt-plugin": "workspace:*",
     "animation-easings": "^0.1.0",
     "color": "^3.0.0",
-    "earcut": "^2.2.4",
+    "earcut": "^3.0.1",
     "fast-deep-equal": "^2.0.1",
     "gl-matrix": "^3.4.0",
     "pbf": "^3.2.1",

@@ -670,8 +670,8 @@ importers:
         specifier: ^1.4.5
         version: 1.4.5
       earcut:
-        specifier: ^2.2.4
-        version: 2.2.4
+        specifier: ^3.0.1
+        version: 3.0.1
       gl-matrix:
         specifier: ^3.4.0
         version: 3.4.3
@@ -928,8 +928,8 @@ importers:
         specifier: ^3.0.0
         version: 3.2.1
       earcut:
-        specifier: ^2.2.4
-        version: 2.2.4
+        specifier: ^3.0.1
+        version: 3.0.1
       fast-deep-equal:
         specifier: ^2.0.1
         version: 2.0.1
@@ -2872,6 +2872,9 @@ packages:
 
   earcut@2.2.4:
     resolution: {integrity: sha512-/pjZsA1b4RPHbeWZQn66SWS8nZZWLQQ23oE3Eam7aroEFGEvwKAsJfZ9ytiEMycfzXWpca4FA9QIOehf7PocBQ==}
+
+  earcut@3.0.1:
+    resolution: {integrity: sha512-0l1/0gOjESMeQyYaK5IDiPNvFeu93Z/cO0TjZh9eZ1vyCtZnA7KMZ8rQggpsJHIbGSdrqYq9OhuveadOVHCshw==}
 
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
@@ -7748,6 +7751,8 @@ snapshots:
       yargs: 17.7.2
 
   earcut@2.2.4: {}
+
+  earcut@3.0.1: {}
 
   eastasianwidth@0.2.0: {}
 
