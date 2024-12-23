@@ -1912,7 +1912,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         //update coordinates.z
         setCoordinatesAlt(coordinates, alt);
         if (layer) {
-            const render = layer.getRenderer();
+            // const render = layer.getRenderer();
             //for webgllayer,pointlayer/linestringlayer/polygonlayer
             this.setCoordinates(coordinates);
         }

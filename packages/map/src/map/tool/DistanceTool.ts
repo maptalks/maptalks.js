@@ -4,11 +4,11 @@ import Size from '../../geo/Size';
 import Geometry from '../../geometry/Geometry';
 import Marker from '../../geometry/Marker';
 import Label from '../../geometry/Label';
-// import VectorLayer from '../../layer/VectorLayer';
 import Translator from '../../lang/translator';
 import DrawTool, { DrawToolOptions } from './DrawTool';
 import Coordinate from '../../geo/Coordinate';
 import { VectorMarkerSymbol } from '../../symbol';
+import DrawToolLayer from '../../layer/DrawToolLayer';
 
 export type DistanceToolOptions = {
     mode?: string,
@@ -178,10 +178,10 @@ class DistanceTool extends DrawTool {
     }
 
     /**
-     * 获取在绘制图形期间的VectorLayers
+     * 获取在绘制图形期间的DrawToolLayers
      *
      * @english
-     * Get the VectorLayers with the geometries drawn on the map during measuring.
+     * Get the DrawToolLayers with the geometries drawn on the map during measuring.
      * @return {Array<Layer>}
      */
     getMeasureLayers() {
@@ -318,13 +318,11 @@ class DistanceTool extends DrawTool {
         const layerId = 'distancetool_' + uid;
         const markerLayerId = 'distancetool_markers_' + uid;
         const zIndex = this.options.zIndex;
-        const lineLayerClass = DrawTool.getLineLayerClass();
-        const markerLayerClass = DrawTool.getMarkerLayerClass();
         if (!map.getLayer(layerId)) {
-            this._measureLineLayer = new lineLayerClass(layerId, {
+            this._measureLineLayer = new DrawToolLayer(layerId, {
                 zIndex
             }).addTo(map);
-            this._measureMarkerLayer = new markerLayerClass(markerLayerId, {
+            this._measureMarkerLayer = new DrawToolLayer(markerLayerId, {
                 zIndex
             }).addTo(map);
         } else {

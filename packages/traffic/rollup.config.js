@@ -31,9 +31,6 @@ const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${
 }\n * (c) 2016-${new Date().getFullYear()} maptalks.org\n */`;
 
 let outro = pkg.name + " v" + pkg.version;
-if (pkg.peerDependencies && pkg.peerDependencies["maptalks"]) {
-    outro += `, requires maptalks@${pkg.peerDependencies.maptalks}.`;
-}
 
 outro = `typeof console !== 'undefined' && console.log('${outro}');`;
 
@@ -50,11 +47,11 @@ const basePlugins = [
 module.exports = [
     {
         input: "src/index.ts",
-        external: ["maptalks", "@maptalks/gltf-layer", "@turf/turf"],
+        external: ["@maptalks/map", "@maptalks/gltf-layer", "@turf/turf"],
         plugins: basePlugins.concat(plugins),
         output: {
             globals: {
-                maptalks: "maptalks",
+                "@maptalks/map": "maptalks",
                 "@maptalks/gltf-layer": "maptalks",
                 '@turf/turf': "turf",
             },
@@ -84,10 +81,10 @@ module.exports = [
                   ]
                 : []
         ),
-        external: ["maptalks", "@maptalks/gltf-layer", "@turf/turf"],
+        external: ["@maptalks/map", "@maptalks/gltf-layer", "@turf/turf"],
         output: {
             globals: {
-                maptalks: "maptalks",
+                "@maptalks/map": "maptalks",
                 "@maptalks/gltf-layer": "maptalks",
                 '@turf/turf': "turf",
             },

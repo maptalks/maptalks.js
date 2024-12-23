@@ -12,10 +12,6 @@
     "3d-maps",
     "geospatial"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/maptalks/maptalks.js.git"
-  },
   "bugs": {
     "url": "https://github.com/maptalks/maptalks.js/issues"
   },
@@ -38,12 +34,12 @@
     "docs:build": "npx tsc --project docs/typedoc-plugins && npx typedoc",
     "docs:english": "npx tsc --project docs/typedoc-plugins && npx typedoc --lang english",
     "tsc": "tsc --noEmit",
-    "build-dts": "dts-bundle-generator src/index.ts -o dist/maptalks.d.ts --umd-module-name maptalks --no-banner --no-check",
+    "build-dts": "dts-bundle-generator src/index.ts -o dist/maptalks.d.ts --no-banner --no-check",
     "build": "npm run clean && npm run lint && npm run tsc && rollup -c && npm run build-styles && npm run build-dts",
     "build-test": "rollup -c --environment BUILD:test",
     "build-styles": "cp -rf assets dist || xcopy assets dist /e /y",
     "dev": "rollup --environment BUILD:dev -c -w",
-    "lint": "npx eslint src/**/*.ts test/**/*.js",
+    "lint": "npx eslint src/**/*.ts",
     "pretest": "npm run lint && npm run build-test",
     "prepare": "npm run build",
     "preversion": "npm run lint",
@@ -69,13 +65,13 @@
     "simplify-js": "^1.2.1"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "0.4.4",
+    "@rollup/plugin-typescript": "^11.1.6",
     "@babel/preset-env": "^7.24.1",
     "@rollup/plugin-babel": "^6.0.4",
-    "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^11.1.6",
     "@types/node": "^20.11.30",
     "@types/offscreencanvas": "^2019.7.3",
     "dts-bundle-generator": "^9.5.1",
@@ -95,7 +91,7 @@
     "karma-sinon": "^1.0.5",
     "mocha": "^10.3.0",
     "rimraf": "^6.0.1",
-    "rollup": "^4.13.0",
+    "rollup": "^4.17.2",
     "rollup-plugin-dts": "^6.1.0",
     "sinon": "^3.2.1",
     "tslib": "^2.6.2",

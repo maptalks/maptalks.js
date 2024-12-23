@@ -1,5 +1,5 @@
 import Analysis from './Analysis';
-import * as maptalks from 'maptalks';
+import * as maptalks from '@maptalks/map';
 import { reshader, mat4 } from '@maptalks/gl';
 import CrossCutPass from './pass/CrossCutPass';
 import pickingVert from './pass/glsl/picking.vert';

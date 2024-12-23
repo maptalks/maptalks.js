@@ -581,7 +581,7 @@ class OverlayLayer extends Layer {
      * Based on filter type in [mapbox-gl-js's style specification]{https://www.mapbox.com/mapbox-gl-js/style-spec/#types-filter}.
      * @param style - layer's style
      * @returns this
-     * @fires VectorLayer#setstyle
+     * @fires OverlayLayer#setstyle
      * @example
      * layer.setStyle([
         {
@@ -606,10 +606,10 @@ class OverlayLayer extends Layer {
          * @english
          * setstyle event.
          *
-         * @event VectorLayer#setstyle
+         * @event OverlayLayer#setstyle
          * @type {Object}
          * @property {String} type - setstyle
-         * @property {VectorLayer} target - layer
+         * @property {OverlayLayer} target - layer
          * @property {Object|Object[]}       style - style to set
          */
         this.fire('setstyle', {
@@ -641,7 +641,7 @@ class OverlayLayer extends Layer {
      * @english
      * Removes layers' style
      * @returns this
-     * @fires VectorLayer#removestyle
+     * @fires OverlayLayer#removestyle
      */
     removeStyle() {
         if (!this.options.style) {
@@ -657,10 +657,10 @@ class OverlayLayer extends Layer {
          * @english
          * removestyle event.
          *
-         * @event VectorLayer#removestyle
+         * @event OverlayLayer#removestyle
          * @type {Object}
          * @property {String} type - removestyle
-         * @property {VectorLayer} target - layer
+         * @property {OverlayLayer} target - layer
          */
         this.fire('removestyle');
         return this;
@@ -884,7 +884,6 @@ OverlayLayer.mergeOptions(options);
 export default OverlayLayer;
 
 export type OverlayLayerOptionsType = LayerOptionsType & {
-    drawImmediate?: boolean,
     geometryEvents?: boolean,
     geometryEventTolerance?: number,
     style?: any;
@@ -895,7 +894,6 @@ export type addGeometryFitViewOptions = {
     duration?: number,
     step?: (frame) => void
 }
-
 export type LayerIdentifyOptionsType = {
     onlyVisible?: boolean;
     tolerance?: number;

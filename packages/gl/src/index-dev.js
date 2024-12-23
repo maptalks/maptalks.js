@@ -18,6 +18,6 @@ export * from './index.ts';
 
 
 
-import * as maptalks from 'maptalks';
+import * as maptalks from '@maptalks/map';
 import chunk from '../build/worker.js';
 maptalks.registerWorkerAdapter('@maptalks/terrain', chunk);

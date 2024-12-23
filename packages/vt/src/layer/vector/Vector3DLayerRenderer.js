@@ -1,4 +1,4 @@
-import * as maptalks from 'maptalks';
+import * as maptalks from '@maptalks/map';
 import { createREGL, reshader, mat4, vec3 } from '@maptalks/gl';
 import { convertToFeature, ID_PROP } from './util/convert_to_feature';
 import { extend, hasOwn, getCentiMeterScale, isNil } from '../../common/Util';
@@ -1394,6 +1394,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const geo = e.target['_getParent']() || e.target;
         const uid = geo[ID_PROP];
         if (uid === undefined) {
+            return;
+        }
+        if (!this.painter) {
             return;
         }
         this.features[uid] = convertToFeature(geo, this._kidGen);

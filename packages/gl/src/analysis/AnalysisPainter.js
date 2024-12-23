@@ -1,7 +1,7 @@
 import * as reshader from '@maptalks/reshader.gl';
 import AnalysisShader from './AnalysisShader.js';
 import { extend } from '../layer/util/util.js';
-import { Util } from 'maptalks';
+import { Util } from '@maptalks/map';
 
 class AnalysisPainter {
     constructor(regl, layer, config) {

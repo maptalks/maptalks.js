@@ -45,7 +45,7 @@ const terserPlugin = terser({
         // properties: {
         //     // 'regex' : /^_/,
         //     'keep_quoted' : true,
-        //     'reserved': ['maptalks', 'transcoders', 'crn'],
+        //     'reserved': ['@maptalks/map', 'transcoders', 'crn'],
         // }
     },
     compress: {

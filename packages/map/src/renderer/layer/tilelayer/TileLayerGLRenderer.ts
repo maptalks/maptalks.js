@@ -1,4 +1,4 @@
-import TileLayer from '../../../layer/tile/TileLayer';
+// import TileLayer from '../../../layer/tile/TileLayer';
 import TileLayerCanvasRenderer from './TileLayerCanvasRenderer';
 import type { Tile, RenderContext} from './TileLayerCanvasRenderer';
 import ImageGLRenderable from '../ImageGLRenderable';

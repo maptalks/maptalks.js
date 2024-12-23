@@ -1,4 +1,4 @@
-import * as maptalks from 'maptalks';
+import * as maptalks from '@maptalks/map';
 import { defined } from './common/Util';
 import { createREGL, mat4, vec2, reshader, MaskRendererMixin } from '@maptalks/gl';
 import { intersectsBox } from 'frustum-intersects';

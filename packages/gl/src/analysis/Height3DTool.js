@@ -1,4 +1,4 @@
-import * as maptalks from 'maptalks';
+import * as maptalks from '@maptalks/map';
 import Measure3DTool from './Measure3DTool';
 
 const MEASURE_HEIGHT_NAMES = [['直线距离', '垂直高度', '水平距离'], ['spatial distance', 'vertical height', 'horizontal distance']];
@@ -6,8 +6,8 @@ export default class Height3DTool extends Measure3DTool {
 
     _addHelperLayer() {
         super._addHelperLayer();
-        this._markerLayer = new maptalks.VectorLayer(maptalks.INTERNAL_LAYER_PREFIX + '_height3dtool_marker', { enableAltitude: true }).addTo(this._map).bringToFront();
-        this._helperLayer = new maptalks.VectorLayer(maptalks.INTERNAL_LAYER_PREFIX + '_height3dtool', { enableAltitude: true }).addTo(this._map).bringToFront();
+        this._helperLayer = new maptalks.DrawToolLayer(maptalks.INTERNAL_LAYER_PREFIX + '_height3dtool').addTo(this._map);
+        this._markerLayer = new maptalks.DrawToolLayer(maptalks.INTERNAL_LAYER_PREFIX + '_height3dtool_marker').addTo(this._map);
     }
 
     _msOnDrawVertex(e) {

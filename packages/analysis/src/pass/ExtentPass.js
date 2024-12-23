@@ -1,5 +1,5 @@
 import { reshader, mat4 } from '@maptalks/gl';
-import * as maptalks from 'maptalks';
+import * as maptalks from '@maptalks/map';
 import vert from './glsl/excavateExtent.vert';
 import frag from './glsl/excavateExtent.frag';
 import AnalysisPass from './AnalysisPass';

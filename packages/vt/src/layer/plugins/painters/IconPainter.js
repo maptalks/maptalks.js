@@ -1,4 +1,4 @@
-import * as maptalks from 'maptalks';
+import * as maptalks from '@maptalks/map';
 import { isFunctionDefinition } from '@maptalks/function-type';
 import CollisionPainter from './CollisionPainter';
 import { reshader } from '@maptalks/gl';

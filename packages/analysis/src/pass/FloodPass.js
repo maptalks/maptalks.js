@@ -1,7 +1,7 @@
 import { reshader } from '@maptalks/gl';
 import vert from './glsl/flood.vert';
 import frag from './glsl/flood.frag';
-import { Util } from 'maptalks';
+import { Util } from '@maptalks/map';
 import AnalysisPass from './AnalysisPass';
 
 export default class FloodPass extends AnalysisPass {

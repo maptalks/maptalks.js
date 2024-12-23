@@ -1,6 +1,6 @@
 import { vec3, vec4, mat4 } from '@maptalks/reshader.gl';
-import { Coordinate, Point, Util } from 'maptalks';
-import * as maptalks from 'maptalks';
+import { Coordinate, Point, Util } from '@maptalks/map';
+import * as maptalks from '@maptalks/map';
 
 const TRIANGLE = [], POS_A = [], POS_B = [], POS_C = [], TEMP_POINT = new Point(0, 0), NULL_ALTITUDES = [];
 const TEMP_VEC_AB = [], TEMP_VEC_AC = [];

@@ -1,4 +1,4 @@
-import * as maptalks from 'maptalks';
+import * as maptalks from '@maptalks/map';
 import { reshader, vec3, mat4, HighlightUtil } from '@maptalks/gl';
 import { getVectorPacker } from '../../../packer/inject';
 import { isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';

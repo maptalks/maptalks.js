@@ -1,5 +1,5 @@
 import EffectMarker  from './EffectMarker';
-import { Util } from 'maptalks';
+import { Util } from '@maptalks/map';
 
 const DEFAULT_SYMBOL = {
     animation : true,

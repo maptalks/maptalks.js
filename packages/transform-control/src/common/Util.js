@@ -1,6 +1,6 @@
 import { mat4, reshader, quat, vec3 } from '@maptalks/gl';
 import partsModels from './models';
-import * as maptalks from 'maptalks';
+import * as maptalks from '@maptalks/map';
 import { getGLTFLoaderBundle } from '@maptalks/gl/dist/transcoders';
 
 const gltfloader = getGLTFLoaderBundle();

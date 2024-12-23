@@ -1,6 +1,6 @@
 
 import GLTFMarker from './GLTFMarker';
-import { Coordinate } from 'maptalks';
+import { Coordinate } from '@maptalks/map';
 import { mat4, vec3, quat, reshader } from '@maptalks/gl';
 import { coordinateToWorld, defined } from './common/Util';
 // The structure of MultiGLTFMarker will like below:
@@ -225,7 +225,7 @@ export default class MultiGLTFMarker extends GLTFMarker {
         return scale;
     }
 
-    
+
     _setLoadState(state) {
         super._setLoadState(state);
         if (this._data) {
@@ -285,7 +285,7 @@ export default class MultiGLTFMarker extends GLTFMarker {
             data['highlight_color'][len * 4] = highlightColor[0];
             data['highlight_color'][len * 4 + 1] = highlightColor[1];
             data['highlight_color'][len * 4 + 2] = highlightColor[2];
-            data['highlight_color'][len * 4 + 3] = highlightColor[3]; 
+            data['highlight_color'][len * 4 + 3] = highlightColor[3];
             data['aBloom'][len] = this._data[i]['bloom'] ? 1 : 0;
         }
         return { attributesData: this._attributesData, bloomAttributesData: this._bloomAttributeData };

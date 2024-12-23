@@ -1,4 +1,4 @@
-import * as maptalks from 'maptalks';
+import * as maptalks from '@maptalks/map';
 
 export default class TerrainWorkerConnection extends maptalks.worker.Actor {
     constructor(mapId) {

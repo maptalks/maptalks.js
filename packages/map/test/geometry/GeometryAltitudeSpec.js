@@ -359,6 +359,12 @@ describe('Geometry.Altitude', function () {
         ];
         // map.addLayer(layer);
         let idx = 0;
+        function expectTest(geometry) {
+            expect(geometry._minAlt).to.be.equal(undefined);
+            expect(geometry._maxAlt).to.be.equal(undefined);
+            //cache alt
+            geometry.getContainerExtent();
+        }
         function test() {
             if (idx === data.length) {
                 done();
@@ -367,25 +373,20 @@ describe('Geometry.Altitude', function () {
                 const { geometry, coordiantes } = data[idx];
                 layer.clear();
                 layer.addGeometry(geometry);
-                function expectTest() {
-                    expect(geometry._minAlt).to.be.equal(undefined);
-                    expect(geometry._maxAlt).to.be.equal(undefined);
-                    //cache alt
-                    geometry.getContainerExtent();
-                }
+
 
                 setTimeout(() => {
                     //default value
-                    expectTest();
+                    expectTest(geometry);
                     //update altitude
                     geometry.setAltitude(10);
-                    expectTest();
+                    expectTest(geometry);
                     // update coordinates
                     geometry.setCoordinates(coordiantes);
-                    expectTest();
+                    expectTest(geometry);
                     // update properties
                     geometry.setProperties({ altitude: 20 });
-                    expectTest();
+                    expectTest(geometry);
                     idx++;
                     test();
                 }, 100);

@@ -1,4 +1,4 @@
-import * as maptalks from 'maptalks';
+import * as maptalks from '@maptalks/map';
 import Color from 'color';
 import { reshader, mat4, mat3 } from '@maptalks/gl';
 import BasicPainter from './BasicPainter';

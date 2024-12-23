@@ -1,5 +1,5 @@
 import { mat4, quat, vec3, vec2, reshader } from '@maptalks/gl';
-import { Handlerable, Eventable, Class, Point, Coordinate, INTERNAL_LAYER_PREFIX } from 'maptalks';
+import { Handlerable, Eventable, Class, Point, Coordinate, INTERNAL_LAYER_PREFIX } from '@maptalks/map';
 import TransformHelper from './helper/TransformHelper';
 import { calFixedScale, getTranslationPoint } from './common/Util';
 import vert from './common/helper.vert';

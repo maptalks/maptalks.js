@@ -2,7 +2,7 @@
 // box: http://localhost/3dtiles/debug/xx.html
 // region:
 
-import * as maptalks from 'maptalks';
+import * as maptalks from '@maptalks/map';
 import { quat, vec2, vec3, mat3, mat4, MaskLayerMixin, ClipOutsideMask } from '@maptalks/gl';
 //https://github.com/fuzhenn/frustum-intersects
 import { intersectsSphere, intersectsOrientedBox } from 'frustum-intersects';
@@ -14,7 +14,7 @@ import { radianToCartesian3, cartesian3ToDegree } from '../common/Transform';
 import { distanceToCamera } from '../common/intersects_oriented_box.js';
 import TileBoundingRegion from './renderer/TileBoundingRegion';
 import { eastNorthUpToFixedFrame } from '../common/TileHelper';
-import { LayerJSONType } from 'maptalks';
+import { LayerJSONType } from '@maptalks/map';
 
 type BBOX = [number, number, number, number];
 

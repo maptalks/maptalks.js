@@ -198,7 +198,6 @@ describe('GeoJSON', function () {
     describe('foreach call back', function () {
 
         it('FeatureCollection', function () {
-            var fJsons = featureCollectionGeoJSON['features'];
             var features = maptalks.GeoJSON.toGeometry(featureCollectionGeoJSON, function (geometry) {
                 expect(geometry).have.property('properties');
                 geometry.config('zIndex', 0);

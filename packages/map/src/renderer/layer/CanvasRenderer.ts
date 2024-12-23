@@ -10,7 +10,7 @@ import Extent from '../../geo/Extent';
 import { imageFetchWorkerKey } from '../../core/worker/CoreWorkers';
 import { registerWorkerAdapter } from '../../core/worker/Worker';
 import { formatResourceUrl } from '../../core/ResourceProxy';
-import { TileRenderingCanvas, TileRenderingContext, ImageType } from '../types';
+import { TileRenderingCanvas, ImageType } from '../types';
 
 const EMPTY_ARRAY = [];
 class ResourceWorkerConnection extends Actor {

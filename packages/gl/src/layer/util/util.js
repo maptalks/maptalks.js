@@ -1,7 +1,7 @@
 const supportAssign = typeof Object.assign === 'function';
 import { vec3, mat4 } from '@maptalks/reshader.gl';
 import Color from 'color';
-import { Coordinate } from 'maptalks';
+import { Coordinate } from '@maptalks/map';
 
 /**
  * Merges the properties of sources into destination object.

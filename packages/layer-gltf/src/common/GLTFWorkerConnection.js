@@ -1,4 +1,4 @@
-import * as maptalks from 'maptalks';
+import * as maptalks from '@maptalks/map';
 import { getAbsoluteURL } from './Util';
 
 const canvas = typeof document === 'undefined' ? null : document.createElement('canvas');

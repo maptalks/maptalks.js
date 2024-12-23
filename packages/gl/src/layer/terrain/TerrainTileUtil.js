@@ -1,4 +1,4 @@
-import * as maptalks from 'maptalks';
+import * as maptalks from '@maptalks/map';
 import { createMartiniData } from './util/martini.js';
 
 export function getCascadeTileIds(layer, x, y, z, center, offset, terrainTileScaleY, scale, levelLimit) {

@@ -18,6 +18,6 @@ export { createREGL, reshader };
 export * from './gl/gl.es.js';
 
 
-import * as maptalks from 'maptalks';
+import * as maptalks from '@maptalks/map';
 import chunk from './worker.js';
 maptalks.registerWorkerAdapter('@maptalks/terrain', chunk);

@@ -34,9 +34,6 @@ const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${
 }\n * (c) 2016-${new Date().getFullYear()} maptalks.org\n */`;
 
 let outro = pkg.name + " v" + pkg.version;
-if (pkg.peerDependencies && pkg.peerDependencies["maptalks"]) {
-    outro += `, requires maptalks@${pkg.peerDependencies.maptalks}.`;
-}
 
 outro = `typeof console !== 'undefined' && console.log('${outro}');`;
 
@@ -79,7 +76,7 @@ module.exports = [
     {
         input: "index.js",
         plugins: basePlugins.concat(plugins),
-        external: ["maptalks", "@maptalks/gl"],
+        external: ["@maptalks/map", "@maptalks/gl"],
         output: {
             sourcemap: true,
             format: "umd",
@@ -88,7 +85,7 @@ module.exports = [
             outro: outro,
             extend: true,
             globals: {
-                maptalks: "maptalks",
+                "@maptalks/map": "maptalks",
                 "@maptalks/gl": "maptalks",
             },
             file: outputFile,
@@ -111,7 +108,7 @@ module.exports = [
                   ]
                 : []
         ),
-        external: ["maptalks", "@maptalks/gl"],
+        external: ["@maptalks/map", "@maptalks/gl"],
         output: {
             sourcemap: true,
             format: "es",

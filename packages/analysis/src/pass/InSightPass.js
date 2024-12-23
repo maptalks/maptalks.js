@@ -2,7 +2,7 @@ import { mat4 } from '@maptalks/gl';
 import { reshader } from '@maptalks/gl';
 import vert from './glsl/insight.vert';
 import frag from './glsl/insight.frag';
-import { Util } from 'maptalks';
+import { Util } from '@maptalks/map';
 import AnalysisPass from './AnalysisPass';
 
 const helperPos = [

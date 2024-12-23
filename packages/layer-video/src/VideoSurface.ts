@@ -4,7 +4,7 @@ import {
   Eventable,
   Handlerable,
   Polygon,
-  VectorLayer,
+  DrawToolLayer,
 } from "@maptalks/map";
 
 interface VideoSurfaceOptions {
@@ -297,9 +297,7 @@ export default class VideoSurface extends Eventable(Handlerable(Class)) {
     this._clearEditHelper();
     if (!this._editHelpLayer) {
       const layerId = layer.getId();
-      this._editHelpLayer = new VectorLayer(`internal_${layerId}_edit`, {
-        enableAltitude: true,
-      }).addTo(map);
+      this._editHelpLayer = new DrawToolLayer(`internal_${layerId}_edit`).addTo(map);
     }
     const coordinates = this.getCoordinates();
     this._editHelpPolygon = new Polygon(coordinates, {

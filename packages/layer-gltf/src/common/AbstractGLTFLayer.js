@@ -1,6 +1,6 @@
 
 
-import * as maptalks from 'maptalks';
+import * as maptalks from '@maptalks/map';
 import { compileStyle } from '@maptalks/feature-filter';
 import { isNil } from './Util';
 import { GeoJSON, GEOJSON_TYPES } from './GeoJSON';

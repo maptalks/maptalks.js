@@ -1,4 +1,4 @@
-import * as maptalks from 'maptalks';
+import * as maptalks from '@maptalks/map';
 import { vec2, vec3, mat4 } from '@maptalks/reshader.gl';
 import { GLContext } from '@maptalks/fusiongl';
 import ShadowProcess from './shadow/ShadowProcess';

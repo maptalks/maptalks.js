@@ -10,6 +10,8 @@ import Browser from '../core/Browser';
 import type { Map } from '../map';
 import type { Marker, MultiPolygon, Polygon } from '../geometry';
 import { CommonProjectionType } from '../geo/projection';
+import Coordinate from '../geo/Coordinate';
+import Point from '../geo/Point';
 
 /**
  * 配置项
@@ -728,7 +730,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         const renderer = this.options['renderer'];
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        if (!this.constructor.getRendererClass) {
+        if (!this.constructor.getRendererClass || !renderer) {
             return;
         }
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -838,6 +840,14 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         }
         return clazz.fromJSON(layerJSON);
     }
+
+    identify(_coordinate: Coordinate, _options: LayerIdentifyOptionsType) {
+        // interface method
+    }
+
+    identifyAtPoint(_containerPoint: Point, _options: LayerIdentifyOptionsType) {
+        // interface method
+    }
 }
 
 Layer.mergeOptions(options);
@@ -890,7 +900,7 @@ export type LayerOptionsType = {
     opacity?: number,
     zIndex?: number
     globalCompositeOperation?: string,
-    renderer?: 'canvas' | 'gl' | 'dom',
+    renderer?: 'canvas' | 'gl' | 'dom' | null,
     debugOutline?: string,
     cssFilter?: string,
     forceRenderOnMoving?: boolean,
@@ -913,4 +923,9 @@ export type LayerJSONType = {
     options: Record<string, any>;
     geometries?: Array<any>;
     layers?: Array<any>;
+}
+
+export type LayerIdentifyOptionsType = {
+    onlyVisible?: boolean;
+    tolerance?: number;
 }

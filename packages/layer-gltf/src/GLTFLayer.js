@@ -1,4 +1,4 @@
-import * as maptalks from 'maptalks';
+import * as maptalks from '@maptalks/map';
 import { reshader, MaskLayerMixin } from '@maptalks/gl';
 import GLTFLayerRenderer from './GLTFLayerRenderer';
 import GLTFMarker from './GLTFMarker';

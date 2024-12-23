@@ -1,4 +1,4 @@
-import * as maptalks from 'maptalks';
+import * as maptalks from '@maptalks/map';
 
 
 export function containerPointToWorldPoint(point, map) {

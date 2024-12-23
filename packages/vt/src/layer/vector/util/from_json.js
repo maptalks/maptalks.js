@@ -1,4 +1,4 @@
-import * as maptalks from 'maptalks';
+import * as maptalks from '@maptalks/map';
 
 export function fromJSON(json, type, clazz) {
     if (!json || json['type'] !== type) {

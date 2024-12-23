@@ -33,6 +33,7 @@
   "dependencies": {
     "@maptalks/fusiongl": "workspace:*",
     "@maptalks/gltf-loader": "workspace:*",
+    "@maptalks/map": "workspace:*",
     "@maptalks/martini": "^0.4.0",
     "@maptalks/regl": "^3.4.0",
     "@maptalks/reshader.gl": "workspace:*",
@@ -45,20 +46,19 @@
     "@rollup/plugin-terser": "0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",
     "eslint": "^8.57.0",
-    "eslint-plugin-mocha": "^10.4.1",
+    "eslint-plugin-mocha": "^10.5.0",
     "expect.js": "^0.3.1",
-    "karma": "^6.4.1",
+    "karma": "^6.4.4",
     "karma-chrome-launcher": "^3.1.1",
     "karma-mocha": "^2.0.1",
     "karma-mocha-reporter": "^2.2.5",
-    "maptalks": "^1.0.0",
     "mocha": "^10.3.0",
     "pixelmatch": "^4.0.2",
     "rollup": "^4.17.2",
     "rollup-plugin-dts": "^6.1.0",
     "tslib": "^2.6.2",
     "typescript": "^5.4.2",
-    "typescript-eslint": "^7.3.1"
+    "typescript-eslint": "^7.18.0"
   },
   "gitHead": "9eeea4807723d460fa7e09969c6556d53f6bed84"
 }

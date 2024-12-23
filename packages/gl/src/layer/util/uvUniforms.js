@@ -1,4 +1,4 @@
-import * as maptalks from 'maptalks';
+import * as maptalks from '@maptalks/map';
 import { vec2 } from '@maptalks/reshader.gl';
 
 const DEFAULT_TEX_OFFSET = [0, 0];

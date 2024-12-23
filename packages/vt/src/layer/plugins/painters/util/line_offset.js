@@ -1,4 +1,4 @@
-import * as maptalks from 'maptalks';
+import * as maptalks from '@maptalks/map';
 import Point from '@mapbox/point-geometry';
 import { projectPoint } from './projection';
 import { vec3 } from '@maptalks/gl';

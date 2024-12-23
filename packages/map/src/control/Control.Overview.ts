@@ -1,8 +1,9 @@
 import { extend, isFunction } from '../core/util';
 import { on, off, createEl, computeDomPosition } from '../core/util/dom';
 import { Point } from '../geo';
-// import { type Geometry } from '../geometry';
+import { type Geometry } from '../geometry';
 import Polygon from '../geometry/Polygon';
+import DrawToolLayer from '../layer/DrawToolLayer';
 import Layer from '../layer/Layer';
 import Map, { MapCreateOptionsType } from '../map/Map';
 import Control, { ControlOptionsType } from './Control';
@@ -189,7 +190,7 @@ class Overview extends Control<OverviewOptionsTypeSpec> {
             'symbol': this.options['symbol']
         })
             .on('dragend', this._onDragEnd, this);
-        // new VectorLayer('perspective_layer', this._perspective as unknown as Array<Geometry>).addTo(this._overview);
+        new DrawToolLayer('perspective_layer', this._perspective as unknown as Array<Geometry>).addTo(this._overview);
         this.fire('load');
     }
 

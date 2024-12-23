@@ -4,7 +4,6 @@ describe('Geometry.Ellipse', function () {
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
-    var canvasContainer;
 
     beforeEach(function () {
         var setups = COMMON_CREATE_MAP(center, null, {
@@ -203,11 +202,11 @@ describe('Geometry.Ellipse', function () {
         var p2 = new maptalks.Point(400 + 10 + 2, 300);
         expect(geometry.containsPoint(p2)).to.be.ok();
 
-        var p1 = new maptalks.Point(400, 300 + 5 + 6);
-        expect(geometry.containsPoint(p1)).not.to.be.ok();
+        var p3 = new maptalks.Point(400, 300 + 5 + 6);
+        expect(geometry.containsPoint(p3)).not.to.be.ok();
 
-        var p2 = new maptalks.Point(400, 300 + 5 + 3);
-        expect(geometry.containsPoint(p2)).to.be.ok();
+        var p4 = new maptalks.Point(400, 300 + 5 + 3);
+        expect(geometry.containsPoint(p4)).to.be.ok();
 
     });
 });

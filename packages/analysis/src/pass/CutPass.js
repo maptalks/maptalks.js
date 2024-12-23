@@ -2,7 +2,7 @@ import { mat4 } from '@maptalks/gl';
 import { reshader } from '@maptalks/gl';
 import vert from './glsl/cut.vert';
 import frag from './glsl/cut.frag';
-import { Util } from 'maptalks';
+import { Util } from '@maptalks/map';
 import CutAnalysisController from './CutAnalysisController';
 import CutShader from './CutShader';
 import AnalysisPass from './AnalysisPass';

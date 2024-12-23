@@ -75,7 +75,7 @@ describe('ResourceProxy.Spec', function () {
         ResourceProxy.loadSprite({
             imgUrl: hostUrl + '/sprite.png',
             jsonUrl: hostUrl + '/sprite.json'
-        }).then(function (result) {
+        }).then(function () {
             layer.clear();
             new maptalks.Marker(map.getCenter(), {
                 symbol: {
@@ -88,13 +88,13 @@ describe('ResourceProxy.Spec', function () {
             }, 200);
         })
     });
-    
+
     it('load sprite custom sourceName', function (done) {
         ResourceProxy.loadSprite({
             imgUrl: hostUrl + '/sprite.png',
             jsonUrl: hostUrl + '/sprite.json',
             sourceName: 'sprite/'
-        }).then(function (result) {
+        }).then(function () {
             layer.clear();
             new maptalks.Marker(map.getCenter(), {
                 symbol: {
@@ -131,7 +131,7 @@ describe('ResourceProxy.Spec', function () {
     it('load svgs with object params', function (done) {
         ResourceProxy.loadSvgs({
             url: hostUrl + '/svgs.json'
-        }).then(function (result) {
+        }).then(function () {
             layer.clear();
             new maptalks.Marker(map.getCenter(), {
                 symbol: {
@@ -154,7 +154,7 @@ describe('ResourceProxy.Spec', function () {
         ResourceProxy.loadSvgs({
             url: hostUrl + '/svgs.json',
             sourceName: 'svgs/'
-        }).then(function (result) {
+        }).then(function () {
             layer.clear();
             new maptalks.Marker(map.getCenter(), {
                 symbol: {

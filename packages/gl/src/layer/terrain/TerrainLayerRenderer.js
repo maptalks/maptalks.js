@@ -1,4 +1,4 @@
-import * as maptalks from 'maptalks';
+import * as maptalks from '@maptalks/map';
 import TerrainWorkerConnection from './TerrainWorkerConnection';
 import { createREGL } from '@maptalks/regl';
 import * as reshader from '@maptalks/reshader.gl';

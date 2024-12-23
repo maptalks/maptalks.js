@@ -1,4 +1,4 @@
-import * as maptalks from 'maptalks';
+import * as maptalks from '@maptalks/map';
 import * as maptalksgl from '@maptalks/gl';
 
 //refereing maptalksgl to include it in rollup bundle

@@ -1,5 +1,5 @@
 import GLTFMarker from './GLTFMarker';
-import { Util } from 'maptalks';
+import { Util } from '@maptalks/map';
 
 const DEFAULT_UNIFORM = {
     offsetX: 0,

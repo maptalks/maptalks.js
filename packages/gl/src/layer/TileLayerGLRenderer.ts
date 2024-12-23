@@ -1,5 +1,5 @@
-import * as maptalks from 'maptalks';
-import { RenderContext, Tile } from 'maptalks';
+import * as maptalks from '@maptalks/map';
+import { RenderContext, Tile } from '@maptalks/map';
 import * as reshader from '@maptalks/reshader.gl';
 import { mat4 } from '@maptalks/reshader.gl';
 

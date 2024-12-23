@@ -1,4 +1,4 @@
-export * from 'maptalks';
+export * from '@maptalks/map';
 export * from '@maptalks/gl';
 import { transcoders } from '@maptalks/gl';
 if (typeof window !== 'undefined') {

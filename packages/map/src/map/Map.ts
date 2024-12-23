@@ -206,7 +206,7 @@ const options: MapOptionsType = {
  *          subdomains:['a','b','c']
  *      }),
  *      layers : [
- *          new maptalks.VectorLayer('v', [new maptalks.Marker([180, 0])])
+ *          new maptalks.PointLayer('v', [new maptalks.Marker([180, 0])])
  *      ]
  * });
  */
