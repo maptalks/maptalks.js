@@ -35,7 +35,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
      *     content  : '<div style="color:#f00">This is content of the InfoWindow</div>'
      * });
      */
-    setInfoWindow(options: InfoWindowOptionsType) {
+    setInfoWindow(options: InfoWindowOptionsType | InfoWindow) {
         this.removeInfoWindow();
         if (options instanceof InfoWindow) {
             this._infoWindow = options;

@@ -89,7 +89,7 @@ export class Marker extends CenterMixin(Geometry) {
         });
     }
 
-    setSymbol(symbol: AnyMarkerSymbol): this {
+    setSymbol(symbol: AnyMarkerSymbol | Array<AnyMarkerSymbol>): this {
         delete this._fixedExtent;
         return super.setSymbol.call(this, symbol);
     }
