@@ -1,4 +1,4 @@
-const maptalks = require('maptalks');
+const maptalks = require('@maptalks/map');
 require('@maptalks/gl');
 require('@maptalks/transcoders.draco');
 require('@maptalks/transcoders.ktx2');
@@ -306,7 +306,7 @@ describe('3dtiles layer', () => {
             count++;
             if (count === 2) {
                 const canvas = map.getRenderer().canvas;
-                const ctx = canvas.getContext('2d');
+                const ctx = map.getRenderer().context;
                 const color = ctx.getImageData(canvas.width / 2 - 43, canvas.height / 2 + 70, 1, 1);
                 assert(color.data[3] > 0);
                 done();
@@ -337,7 +337,7 @@ describe('3dtiles layer', () => {
             count++;
             if (count === 2) {
                 const canvas = map.getRenderer().canvas;
-                const ctx = canvas.getContext('2d');
+                const ctx = map.getRenderer().context;
                 const color = ctx.getImageData(canvas.width / 2 - 43, canvas.height / 2 + 70, 1, 1);
                 assert(color.data[3] > 0);
                 done();
@@ -364,7 +364,7 @@ describe('3dtiles layer', () => {
             layer.addService(service);
             setTimeout(() => {
                 const canvas = map.getRenderer().canvas;
-                const ctx = canvas.getContext('2d');
+                const ctx = map.getRenderer().context;
                 const color = ctx.getImageData(canvas.width / 2 - 43, canvas.height / 2 + 70, 1, 1);
                 assert(color.data[3] > 0);
                 done();
@@ -394,7 +394,7 @@ describe('3dtiles layer', () => {
             } else if (count === 3) {
                 setTimeout(() => {
                     const canvas = map.getRenderer().canvas;
-                    const ctx = canvas.getContext('2d');
+                    const ctx = map.getRenderer().context;
                     const color = ctx.getImageData(canvas.width / 2 - 43, canvas.height / 2 + 70, 1, 1);
                     assert(color.data[3] === 0);
                     done();
@@ -453,7 +453,7 @@ describe('3dtiles layer', () => {
             } else if (count === 3) {
                 setTimeout(() => {
                     const canvas = map.getRenderer().canvas;
-                    const ctx = canvas.getContext('2d');
+                    const ctx = map.getRenderer().context;
                     const color = ctx.getImageData(canvas.width / 2 - 53, canvas.height / 2 + 100, 1, 1);
                     assert(color.data[3] === 255);
                     done();
@@ -489,13 +489,13 @@ describe('3dtiles layer', () => {
                 layer.removeService(0);
                 layer.addService(service);
                 const canvas = map.getRenderer().canvas;
-                const ctx = canvas.getContext('2d');
+                const ctx = map.getRenderer().context;
                 const color = ctx.getImageData(canvas.width / 2 - 43, canvas.height / 2 + 70, 1, 1);
                 assert(color.data[3] === 255);
                 layer.hideService(0);
                 setTimeout(() => {
                     const canvas = map.getRenderer().canvas;
-                    const ctx = canvas.getContext('2d');
+                    const ctx = map.getRenderer().context;
                     const color = ctx.getImageData(canvas.width / 2 - 43, canvas.height / 2 + 70, 1, 1);
                     assert(color.data[3] === 0);
                     done();
@@ -529,7 +529,7 @@ describe('3dtiles layer', () => {
             } else if (count === 3) {
                 setTimeout(() => {
                     const canvas = map.getRenderer().canvas;
-                    const ctx = canvas.getContext('2d');
+                    const ctx = map.getRenderer().context;
                     const color = ctx.getImageData(canvas.width / 2 + 56, canvas.height / 2 + 70, 1, 1);
                     assert(color.data[3] === 255);
                     done();
@@ -563,7 +563,7 @@ describe('3dtiles layer', () => {
             } else if (count === 3) {
                 setTimeout(() => {
                     const canvas = map.getRenderer().canvas;
-                    const ctx = canvas.getContext('2d');
+                    const ctx = map.getRenderer().context;
                     const color = ctx.getImageData(canvas.width / 2 - 43, canvas.height / 2 + 70, 1, 1);
                     assert(color.data[3] === 255);
                     done();
@@ -593,7 +593,7 @@ describe('3dtiles layer', () => {
             layer.updateService(0, { heightOffset: 0 });
             setTimeout(() => {
                 const canvas = map.getRenderer().canvas;
-                const ctx = canvas.getContext('2d');
+                const ctx = map.getRenderer().context;
                 const color = ctx.getImageData(canvas.width / 2 - 43, canvas.height / 2 + 70, 1, 1);
                 assert(color.data[3] === 255);
                 done();
@@ -621,16 +621,14 @@ describe('3dtiles layer', () => {
             if (count === 1) {
                 layer.removeService(0);
                 setTimeout(() => {
-                    const canvas = map.getRenderer().canvas;
-                    const ctx = canvas.getContext('2d');
+                    const ctx = map.getRenderer().context;
                     const color = ctx.getImageData(258, 525, 1, 1);
                     assert(color.data[3] === 0);
                     layer.addService(service);
                 }, 20);
             } else if (count === 2) {
                 setTimeout(() => {
-                    const canvas = map.getRenderer().canvas;
-                    const ctx = canvas.getContext('2d');
+                    const ctx = map.getRenderer().context;
                     const color = ctx.getImageData(258, 525, 1, 1);
                     assert(color.data[3] === 255);
                     done();

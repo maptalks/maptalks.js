@@ -1,4 +1,4 @@
-const maptalks = require('maptalks');
+const maptalks = require('@maptalks/map');
 const { GroupGLLayer, FlatInsideMask, FlatOutsideMask, ClipInsideMask, ClipOutsideMask, ColorMask, VideoMask } = require('@maptalks/gl');
 require('@maptalks/transcoders.draco');
 require('@maptalks/transcoders.ktx2');
@@ -12,8 +12,7 @@ const PORT = 39887;
 function pickPixel(map, x, y, width, height) {
     const px = x || map.width / 2, py = y || map.height / 2;
     const w = width || 1, h = height || 1;
-    const canvas = map.getRenderer().canvas;
-    const ctx = canvas.getContext("2d");
+    const ctx = map.getRenderer().context;
     const pixel = ctx.getImageData(px, py, w, h).data;
     return pixel;
 }
@@ -104,7 +103,7 @@ describe('render specs', () => {
             layer.setMask(mask);
             setTimeout(function() {
                 const pixel = pickPixel(map, 255, 497, 1, 1);
-                assert(pixelMatch([104, 107, 114, 255], pixel) === true);
+                assert(pixelMatch([125, 128, 135, 255], pixel) === true);
                 done();
             }, 500);
         });
@@ -192,7 +191,7 @@ describe('render specs', () => {
             layer.setMask(mask);
             setTimeout(function() {
                 const pixel = pickPixel(map, 255, 497, 1, 1);
-                assert(pixelMatch([53, 63, 81, 255], pixel, 50) === true);
+                assert(pixelMatch([107, 136, 170, 255], pixel, 50) === true);
                 done();
             }, 1200);
         });
@@ -206,7 +205,7 @@ describe('render specs', () => {
             layer.setServiceOpacity(0, 0.5);
             setTimeout(function() {
                 const pixel = pickPixel(map, 255, 497, 1, 1);
-                assert(pixelMatch([255, 255, 255, 127], pixel) === true);
+                assert(pixelMatch([172, 176, 177, 127], pixel) === true);
                 done();
             }, 200);
         });

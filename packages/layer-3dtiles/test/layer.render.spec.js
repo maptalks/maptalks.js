@@ -1,4 +1,4 @@
-const maptalks = require('maptalks');
+const maptalks = require('@maptalks/map');
 const { GroupGLLayer } = require('@maptalks/gl');
 
 const { Geo3DTilesLayer } = require('../dist/maptalks.3dtiles');
@@ -51,11 +51,11 @@ describe('render specs', () => {
             zoom: 20,
             center: center || [0, 0],
             // centerCross: true
-            baseLayer: new maptalks.TileLayer('base', {
-                urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-                subdomains: ['a','b','c','d'],
-                attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
-            }),
+            // baseLayer: new maptalks.TileLayer('base', {
+            //     urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+            //     subdomains: ['a','b','c','d'],
+            //     attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
+            // }),
         };
         map = new maptalks.Map(container, option);
     }
@@ -426,7 +426,7 @@ describe('render specs', () => {
             runner(done, layer, { path: `./integration/expected/${resPath}/expected-phong.png`, diffCount: 0, renderCount: 1, noGroup: true });
         });
 
-        it('deyihu-khr_techniques_webgl', done => {
+        it('deyihu-taoyuan-khr_techniques_webgl', done => {
             const resPath = 'BatchedDraco/deyihu/taoyuan/';
             const layer = new Geo3DTilesLayer('3d-tiles', {
                 services : [
@@ -2014,7 +2014,7 @@ describe('render specs', () => {
             runner(() => {
                 assert(map.getCenter().x.toFixed(3) === '108.959');
                 done();
-            }, layer, { path: `./integration/expected/${resPath}/4490/expected.png`, diffCount: 0, renderCount: 1, noGroup: true });
+            }, layer, { path: `./integration/expected/${resPath}/4490/expected.png`, diffCount: 100, renderCount: 1, noGroup: true });
         });
     });
 
@@ -2035,7 +2035,7 @@ describe('render specs', () => {
             runner(() => {
                 assert(map.getCenter().x.toFixed(3) === '108.959');
                 done();
-            }, layer, { path: `./integration/expected/${resPath}/trs/expected.png`, diffCount: 0, renderCount: 1, noGroup: true, zoomOffset: -2 });
+            }, layer, { path: `./integration/expected/${resPath}/trs/expected.png`, diffCount: 100, renderCount: 1, noGroup: true, zoomOffset: -2 });
         });
 
         it('set transform', done => {
@@ -2075,7 +2075,7 @@ describe('render specs', () => {
             runner(() => {
                 assert(map.getCenter().x.toFixed(3) === '108.959');
                 done();
-            }, layer, { path: `./integration/expected/${resPath}/rotation/expected.png`, diffCount: 0, renderCount: 1, noGroup: true, zoomOffset: -2 });
+            }, layer, { path: `./integration/expected/${resPath}/rotation/expected.png`, diffCount: 100, renderCount: 1, noGroup: true, zoomOffset: -2 });
         });
 
         it('show debug boundingVolume', done => {

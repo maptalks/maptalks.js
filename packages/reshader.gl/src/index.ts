@@ -104,7 +104,11 @@ export { Constants };
 
 export { default as KHRTechniquesWebglManager } from './extensions/KHRTechniquesWebglManager';
 
-export { default as earcut } from 'earcut';
+import { default as earcutFn, flatten } from 'earcut';
+
+const earcut = earcutFn;
+earcut.flatten = flatten;
+export { earcut };
 
 export {
     glMatrix,
