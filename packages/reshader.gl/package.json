@@ -33,6 +33,7 @@
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "0.4.4",
+    "@rollup/plugin-typescript": "^11.1.6",
     "eslint": "^8.57.0",
     "eslint-plugin-mocha": "^10.5.0",
     "mocha": "^10.3.0",
