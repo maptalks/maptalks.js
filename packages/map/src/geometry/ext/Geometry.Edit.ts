@@ -195,5 +195,27 @@ Geometry.include(/** @lends Geometry.prototype */ {
             return this._editor.isEditing();
         }
         return false;
+    },
+    /**
+ * 编辑是否已经全部撤回
+ * @english
+ * Whether the geometry is being edited.
+ * @return {boolean}
+ */
+    undoEditcheck(): boolean {
+        if (this.isEditing()) {
+            return this._editor._isundoEdit();
+        }
+    },
+    /**
+     * 编辑是否已经全部重做
+     * @english
+     * Whether the geometry is being edited.
+     * @return {boolean}
+     */
+    redoEditcheck(): boolean {
+        if (this.isEditing()) {
+            return this._editor._isRedoEdit();
+        }
     }
 });
