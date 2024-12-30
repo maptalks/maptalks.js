@@ -433,6 +433,8 @@ Map.include(/** @lends Map.prototype */{
             c._add(dx, dy);
             const target = this.pointAtResToCoord(c, res, COORD0);
             const src = paramCenter ? paramCenter : projection.unproject(prjCoord, COORD1);
+            src.z = 0;
+            target.z = 0;
             return projection.measureLength(src, target);
         };
     }(),

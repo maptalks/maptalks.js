@@ -18,7 +18,7 @@ const options = {
     'renderer': 'gl',
     'pyramidMode': 1,
     'tileSize': 256,
-    'terrainWidth': 65,
+    'terrainWidth': null,
     'backZoomOffset': 0,
     'depthMask': true,
     'blendSrc': 'one',
@@ -58,6 +58,16 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
                 options.tileSystem = [1, 1, -180, -90];
             } else if (options.type === 'tianditu') {
                 options.tileSystem = [1, -1, -180, 90];
+            }
+        }
+        if (!options.tileSize) {
+            if (options.type === 'mapbox') {
+                options.tileSize = 512;
+            }
+        }
+        if (!options.spatialReference) {
+            if (options.type === 'mapbox') {
+                options.spatialReference = 'preset-3857-512';
             }
         }
         super(id, options);
