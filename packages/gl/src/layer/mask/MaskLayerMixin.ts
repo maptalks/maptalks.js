@@ -55,9 +55,9 @@ function hasVisibleMask() {
 export default function <T extends MixinConstructor>(Base: T) {
     return class MaskLayerMixin extends Base {
         //@internal
-        private _maskProjViewMatrix: number[];
+        _maskProjViewMatrix: number[];
         //@internal
-        private _maskExtentInWorld: [number, number, number, number];
+        _maskExtentInWorld: [number, number, number, number];
 
         removeMask(masks: undefined | null | any) {
             if (!this['_maskList']) {
