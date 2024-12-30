@@ -50,7 +50,7 @@ function GUID() {
 
 const REF_COUNT_KEY = '_reshader_refCount';
 
-export default class Geometry {
+export class AbstractGeometry {
     data: Record<string, AttributeData>
     elements: any
     desc: GeometryDesc
@@ -87,7 +87,7 @@ export default class Geometry {
 
         this.elements = elements;
         this.desc = extend({}, DEFAULT_DESC, desc);
-        const pos = this._getPosAttritute();
+        const pos = this._getPosAttribute();
         this.data[this.desc.positionAttribute] = pos;
         if (!count) {
             if (this.elements) {
@@ -125,7 +125,7 @@ export default class Geometry {
     // }
 
     //@internal
-    _getPosAttritute() {
+    _getPosAttribute() {
         return this.data[this.desc.positionAttribute];
     }
 
@@ -221,83 +221,7 @@ export default class Geometry {
         return this._reglData[key];
     }
 
-    getREGLData(regl: any, activeAttributes: ActiveAttributes, disableVAO: boolean): AttributeData {
-        this.getAttrData(activeAttributes);
-        const updated = !this._reglData || !this._reglData[activeAttributes.key];
-        //support vao
-        if (isSupportVAO(regl) && !disableVAO) {
-            const key = activeAttributes && activeAttributes.key || 'default';
-            if (!this._vao[key] || updated || this._vao[key].dirty) {
-                const reglData = this._reglData[activeAttributes.key];
-                const vertexCount = this._vertexCount;
-                const buffers = [];
 
-                for (let i = 0; i < activeAttributes.length; i++) {
-                    const p = activeAttributes[i];
-                    const attr = p.name;
-                    const buffer = reglData[attr] && reglData[attr].buffer;
-                    if (!buffer || !buffer.destroy) {
-                        const data = reglData[attr];
-                        if (!data) {
-                            if (this.desc.fillEmptyDataInMissingAttribute) {
-                                // 某些老版本浏览器（例如3dtiles中的electron），数据不能传空字符串，否则会报错
-                                // glDrawElements: attempt to access out of range vertices in attribute 1
-                                buffers.push(new Uint8Array(vertexCount * 4));
-                            } else {
-                                buffers.push(EMPTY_VAO_BUFFER);
-                            }
-                            continue;
-                        }
-                        const dimension = (data.data && isArray(data.data) ? data.data.length : data.length) / vertexCount;
-                        if (data.data) {
-                            data.dimension = dimension;
-                            buffers.push(data);
-                        } else {
-                            buffers.push({
-                                data,
-                                dimension
-                            });
-                        }
-                    } else if (reglData[attr].stride !== undefined) {
-                        buffers.push(
-                            reglData[attr]
-                        );
-                    } else {
-                        buffers.push(buffer);
-                    }
-                }
-
-                const vaoData = {
-                    attributes: buffers,
-                    primitive: this.getPrimitive()
-                } as any;
-                if (this.elements && !isNumber(this.elements)) {
-                    if (this.elements.destroy) {
-                        vaoData.elements = this.elements;
-                    } else {
-                        vaoData.elements = {
-                            primitive: this.getPrimitive(),
-                            data: this.elements
-                        };
-                        const type = this.getElementsType(this.elements);
-                        if (type) {
-                            vaoData.elements.type = type;
-                        }
-                    }
-                }
-                if (!this._vao[key]) {
-                    this._vao[key] = {
-                        vao: regl.vao(vaoData)
-                    };
-                } else {
-                    this._vao[key].vao(vaoData);
-                }
-            }
-            delete this._vao[key].dirty;
-            return this._vao[key];
-        }
-        return this._reglData[activeAttributes.key];
-    }
 
     //@internal
     _isAttrChanged(activeAttributes: ActiveAttributes): boolean {
@@ -313,84 +237,6 @@ export default class Geometry {
             }
         }
         return false;
-    }
-
-    generateBuffers(regl: Regl) {
-        //generate regl buffers beforehand to avoid repeated bufferData
-        //提前处理addBuffer插入的arraybuffer
-        const allocatedBuffers = this._buffers;
-        for (const p in allocatedBuffers) {
-            if (!allocatedBuffers[p].buffer) {
-                allocatedBuffers[p].buffer = regl.buffer(allocatedBuffers[p].data);
-            }
-            delete allocatedBuffers[p].data;
-        }
-        const positionName = this.desc.positionAttribute;
-        const altitudeName = this.desc.altitudeAttribute;
-        const data = this.data;
-        const vertexCount = this._vertexCount;
-        const buffers = {};
-        for (const key in data) {
-            if (!data[key]) {
-                continue;
-            }
-            //如果调用过addBuffer，buffer有可能是ArrayBuffer
-            if (data[key].buffer !== undefined && !(data[key].buffer instanceof ArrayBuffer)) {
-                if (data[key].buffer.destroy) {
-                    buffers[key] = data[key];
-                } else if (allocatedBuffers[data[key].buffer]) {
-                    //多个属性共用同一个ArrayBuffer(interleaved)
-                    buffers[key] = extend({}, data[key]);
-                    buffers[key].buffer = allocatedBuffers[data[key].buffer].buffer;
-                }
-            } else {
-                const arr = data[key].data ? data[key].data : data[key];
-                const dimension = arr.length / vertexCount;
-                const info = data[key].data ? data[key] : { data: data[key] };
-                info.dimension = dimension;
-                const buffer = regl.buffer(info);
-                buffer[REF_COUNT_KEY] = 1;
-                buffers[key] = {
-                    buffer
-                };
-                if (key === positionName || key === altitudeName) {//vt中positionSize=2,z存在altitude中，也需要一并保存
-                    buffers[key].array = data[key];
-                }
-
-            }
-            if (this.desc.static || key !== positionName) {//保存POSITION原始数据，用来做额外计算
-                delete data[key].array;
-            }
-        }
-        this.data = buffers;
-        delete this._reglData;
-
-        // const supportVAO = isSupportVAO(regl);
-        // const excludeElementsInVAO = options && options.excludeElementsInVAO;
-        if (this.elements && !isNumber(this.elements)) {
-            const info = {
-                primitive: this.getPrimitive(),
-                data: this.elements
-            } as any;
-            const type = this.getElementsType(this.elements);
-            if (type) {
-                info.type = type;
-            }
-            if (!this.desc.static && !this.elements.destroy) {
-                const elements = this.elements;
-                this.indices = new Uint16Array(elements.length);
-                for (let i = 0; i < elements.length; i++) {
-                    this.indices[i] = elements[i];
-                }
-            }
-            this.elements = this.elements.destroy ? this.elements : regl.elements(info);
-            const elements = this.elements;
-            if (!elements[REF_COUNT_KEY]) {
-                elements[REF_COUNT_KEY] = 0;
-            }
-            elements[REF_COUNT_KEY]++;
-
-        }
     }
 
     getVertexCount(): number {
@@ -432,29 +278,29 @@ export default class Geometry {
      * @param {String} key - 属性
      * @param {ArrayBuffer|REGLBuffer} data - 数据
      */
-    addBuffer(key: string, data: ArrayBuffer | REGL.Buffer): this {
-        this._buffers[key] = {
-            data
-        };
-        delete this._reglData;
-        this._deleteVAO();
-        return this;
-    }
+    // addBuffer(key: string, data: ArrayBuffer | REGL.Buffer): this {
+    //     this._buffers[key] = {
+    //         data
+    //     };
+    //     delete this._reglData;
+    //     this._deleteVAO();
+    //     return this;
+    // }
 
-    updateBuffer(key: string, data: ArrayBuffer | REGL.Buffer): this {
-        if (!this._buffers[key]) {
-            throw new Error(`invalid buffer ${key} in geometry`);
-        }
-        // this._buffers[key].data = data;
-        if (this._buffers[key].buffer) {
-            this._buffers[key].buffer.subdata(data);
-        } else {
-            this._buffers[key].data = data;
-        }
-        delete this._reglData;
-        this._deleteVAO();
-        return this;
-    }
+    // updateBuffer(key: string, data: ArrayBuffer | REGL.Buffer): this {
+    //     if (!this._buffers[key]) {
+    //         throw new Error(`invalid buffer ${key} in geometry`);
+    //     }
+    //     // this._buffers[key].data = data;
+    //     if (this._buffers[key].buffer) {
+    //         this._buffers[key].buffer.subdata(data);
+    //     } else {
+    //         this._buffers[key].data = data;
+    //     }
+    //     delete this._reglData;
+    //     this._deleteVAO();
+    //     return this;
+    // }
 
     deleteData(name: string): this {
         const buf = this.data[name];
@@ -616,7 +462,6 @@ export default class Geometry {
     }
 
     dispose() {
-        this._deleteVAO();
         this._forEachBuffer(buffer => {
             if (!buffer[KEY_DISPOSED]) {
                 let refCount = buffer[REF_COUNT_KEY];
@@ -897,14 +742,6 @@ export default class Geometry {
     }
 
     //@internal
-    _deleteVAO() {
-        for (const p in this._vao) {
-            this._vao[p].vao.destroy();
-        }
-        this._vao = {};
-    }
-
-    //@internal
     _forEachBuffer(fn: (buffer: any) => void) {
         if (this.elements && this.elements.destroy)  {
             fn(this.elements);
@@ -974,86 +811,175 @@ function getTypeCtor(arr: NumberArray, byteWidth: number) {
     return null;
 }
 
-// function buildTangents2(vertices, normals, uvs, indices) {
-//     const vtxCount = vertices.length / 3;
-//     const tangent = new Array(vtxCount * 4);
-//     const tanA = new Array(vertices.length);
-//     const tanB = new Array(vertices.length);
+export default class Geometry extends AbstractGeometry {
+    getREGLData(regl: any, activeAttributes: ActiveAttributes, disableVAO: boolean): AttributeData {
+        this.getAttrData(activeAttributes);
+        const updated = !this._reglData || !this._reglData[activeAttributes.key];
+        //support vao
+        if (isSupportVAO(regl) && !disableVAO) {
+            const key = activeAttributes && activeAttributes.key || 'default';
+            if (!this._vao[key] || updated || this._vao[key].dirty) {
+                const reglData = this._reglData[activeAttributes.key];
+                const vertexCount = this._vertexCount;
+                const buffers = [];
 
-//     // (1)
-//     const indexCount = indices.length;
-//     for (let i = 0; i < indexCount; i += 3) {
-//         const i0 = indices[i];
-//         const i1 = indices[i + 1];
-//         const i2 = indices[i + 2];
+                for (let i = 0; i < activeAttributes.length; i++) {
+                    const p = activeAttributes[i];
+                    const attr = p.name;
+                    const buffer = reglData[attr] && reglData[attr].buffer;
+                    if (!buffer || !buffer.destroy) {
+                        const data = reglData[attr];
+                        if (!data) {
+                            if (this.desc.fillEmptyDataInMissingAttribute) {
+                                // 某些老版本浏览器（例如3dtiles中的electron），数据不能传空字符串，否则会报错
+                                // glDrawElements: attempt to access out of range vertices in attribute 1
+                                buffers.push(new Uint8Array(vertexCount * 4));
+                            } else {
+                                buffers.push(EMPTY_VAO_BUFFER);
+                            }
+                            continue;
+                        }
+                        const dimension = (data.data && isArray(data.data) ? data.data.length : data.length) / vertexCount;
+                        if (data.data) {
+                            data.dimension = dimension;
+                            buffers.push(data);
+                        } else {
+                            buffers.push({
+                                data,
+                                dimension
+                            });
+                        }
+                    } else if (reglData[attr].stride !== undefined) {
+                        buffers.push(
+                            reglData[attr]
+                        );
+                    } else {
+                        buffers.push(buffer);
+                    }
+                }
 
-//         const pos0 = vec3.set([], vertices[i0 * 3], vertices[i0 * 3 + 1], vertices[i0 * 3 + 2]);
-//         const pos1 = vec3.set([], vertices[i1 * 3], vertices[i1 * 3 + 1], vertices[i1 * 3 + 2]);
-//         const pos2 = vec3.set([], vertices[i2 * 3], vertices[i2 * 3 + 1], vertices[i2 * 3 + 2]);
+                const vaoData = {
+                    attributes: buffers,
+                    primitive: this.getPrimitive()
+                } as any;
+                if (this.elements && !isNumber(this.elements)) {
+                    if (this.elements.destroy) {
+                        vaoData.elements = this.elements;
+                    } else {
+                        vaoData.elements = {
+                            primitive: this.getPrimitive(),
+                            data: this.elements
+                        };
+                        const type = this.getElementsType(this.elements);
+                        if (type) {
+                            vaoData.elements.type = type;
+                        }
+                    }
+                }
+                if (!this._vao[key]) {
+                    this._vao[key] = {
+                        vao: regl.vao(vaoData)
+                    };
+                } else {
+                    this._vao[key].vao(vaoData);
+                }
+            }
+            delete this._vao[key].dirty;
+            return this._vao[key];
+        }
+        return this._reglData[activeAttributes.key];
+    }
 
-//         const tex0 = vec2.set([], uvs[i0 * 2], uvs[i0 * 2 + 1]);
-//         const tex1 = vec2.set([], uvs[i1 * 2], uvs[i1 * 2 + 1]);
-//         const tex2 = vec2.set([], uvs[i2 * 2], uvs[i2 * 2 + 1]);
+    generateBuffers(regl: Regl) {
+        //generate regl buffers beforehand to avoid repeated bufferData
+        //提前处理addBuffer插入的arraybuffer
+        const allocatedBuffers = this._buffers;
+        for (const p in allocatedBuffers) {
+            if (!allocatedBuffers[p].buffer) {
+                allocatedBuffers[p].buffer = regl.buffer(allocatedBuffers[p].data);
+            }
+            delete allocatedBuffers[p].data;
+        }
+        const positionName = this.desc.positionAttribute;
+        const altitudeName = this.desc.altitudeAttribute;
+        const data = this.data;
+        const vertexCount = this._vertexCount;
+        const buffers = {};
+        for (const key in data) {
+            if (!data[key]) {
+                continue;
+            }
+            //如果调用过addBuffer，buffer有可能是ArrayBuffer
+            if (data[key].buffer !== undefined && !(data[key].buffer instanceof ArrayBuffer)) {
+                if (data[key].buffer.destroy) {
+                    buffers[key] = data[key];
+                } else if (allocatedBuffers[data[key].buffer]) {
+                    //多个属性共用同一个ArrayBuffer(interleaved)
+                    buffers[key] = extend({}, data[key]);
+                    buffers[key].buffer = allocatedBuffers[data[key].buffer].buffer;
+                }
+            } else {
+                const arr = data[key].data ? data[key].data : data[key];
+                const dimension = arr.length / vertexCount;
+                const info = data[key].data ? data[key] : { data: data[key] };
+                info.dimension = dimension;
+                const buffer = regl.buffer(info);
+                buffer[REF_COUNT_KEY] = 1;
+                buffers[key] = {
+                    buffer
+                };
+                if (key === positionName || key === altitudeName) {//vt中positionSize=2,z存在altitude中，也需要一并保存
+                    buffers[key].array = data[key];
+                }
 
-//         const edge1 = vec3.sub([], pos1, pos0);
-//         const edge2 = vec3.sub([], pos2, pos0);
+            }
+            if (this.desc.static || key !== positionName) {//保存POSITION原始数据，用来做额外计算
+                delete data[key].array;
+            }
+        }
+        this.data = buffers;
+        delete this._reglData;
 
-//         const uv1 = vec2.sub([], tex1, tex0);
-//         const uv2 = vec2.sub([], tex2, tex0);
+        // const supportVAO = isSupportVAO(regl);
+        // const excludeElementsInVAO = options && options.excludeElementsInVAO;
+        if (this.elements && !isNumber(this.elements)) {
+            const info = {
+                primitive: this.getPrimitive(),
+                data: this.elements
+            } as any;
+            const type = this.getElementsType(this.elements);
+            if (type) {
+                info.type = type;
+            }
+            if (!this.desc.static && !this.elements.destroy) {
+                const elements = this.elements;
+                this.indices = new Uint16Array(elements.length);
+                for (let i = 0; i < elements.length; i++) {
+                    this.indices[i] = elements[i];
+                }
+            }
+            this.elements = this.elements.destroy ? this.elements : regl.elements(info);
+            const elements = this.elements;
+            if (!elements[REF_COUNT_KEY]) {
+                elements[REF_COUNT_KEY] = 0;
+            }
+            elements[REF_COUNT_KEY]++;
 
-//         const r = 1.0 / (uv1[0] * uv2[1] - uv1[1] * uv2[0]);
+        }
+    }
 
-//         const tangent = [
-//             ((edge1[0] * uv2[1]) - (edge2[0] * uv1[1])) * r,
-//             ((edge1[1] * uv2[1]) - (edge2[1] * uv1[1])) * r,
-//             ((edge1[2] * uv2[1]) - (edge2[2] * uv1[1])) * r
-//         ];
 
-//         const bitangent = [
-//             ((edge1[0] * uv2[0]) - (edge2[0] * uv1[0])) * r,
-//             ((edge1[1] * uv2[0]) - (edge2[1] * uv1[0])) * r,
-//             ((edge1[2] * uv2[0]) - (edge2[2] * uv1[0])) * r
-//         ];
+    dispose() {
+        this._deleteVAO();
+        super.dispose();
+    }
 
-//         tanA[i0] = tanA[i0] || [0, 0, 0];
-//         tanA[i1] = tanA[i1] || [0, 0, 0];
-//         tanA[i2] = tanA[i2] || [0, 0, 0];
-//         vec3.add(tanA[i0], tanA[i0], tangent);
-//         vec3.add(tanA[i1], tanA[i1], tangent);
-//         vec3.add(tanA[i2], tanA[i2], tangent);
-//         // tanA[i0] += tangent;
-//         // tanA[i1] += tangent;
-//         // tanA[i2] += tangent;
 
-//         tanB[i0] = tanB[i0] || [0, 0, 0];
-//         tanB[i1] = tanB[i1] || [0, 0, 0];
-//         tanB[i2] = tanB[i2] || [0, 0, 0];
-//         vec3.add(tanB[i0], tanB[i0], bitangent);
-//         vec3.add(tanB[i1], tanB[i1], bitangent);
-//         vec3.add(tanB[i2], tanB[i2], bitangent);
-//         // tanB[i0] += bitangent;
-//         // tanB[i1] += bitangent;
-//         // tanB[i2] += bitangent;
-//     }
-
-//     // (2)
-//     for (let j = 0; j < vtxCount; j++) {
-//         const n = vec3.set([], normals[j * 3], normals[j * 3 + 1], normals[j * 3 + 2]);
-//         const t0 = tanA[j];
-//         const t1 = tanB[j];
-
-//         const n1 = vec3.scale([], n, vec3.dot(n, t0));
-//         const t = vec3.sub([], t0, n1);
-//         vec3.normalize(t, t);
-//         // const t = t0 - (n * dot(n, t0));
-//         // t = normaljze(t);
-
-//         const c = vec3.cross(n, n, t0);
-//         const w = (vec3.dot(c, t1) < 0) ? -1.0 : 1.0;
-//         tangent[j * 4] = t[0];
-//         tangent[j * 4 + 1] = t[1];
-//         tangent[j * 4 + 2] = t[2];
-//         tangent[j * 4 + 3] = w;
-//     }
-//     return tangent;
-// }
+    //@internal
+    _deleteVAO() {
+        for (const p in this._vao) {
+            this._vao[p].vao.destroy();
+        }
+        this._vao = {};
+    }
+}

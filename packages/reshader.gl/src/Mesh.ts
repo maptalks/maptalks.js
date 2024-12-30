@@ -15,7 +15,7 @@ let uuid = 0;
  * Config:
  *  transparent, castShadow
  */
-class Mesh {
+export class AbstractMesh {
     //@internal
     _version: number
     //@internal
@@ -299,7 +299,7 @@ class Mesh {
     }
 
     //eslint-disable-next-line
-    getCommandKey(regl: Regl): string {
+    getCommandKey(): string {
         if (!this._commandKey || this.dirtyDefines || (this._material && this._materialKeys !== this._material.getUniformKeys())) {
             //TODO geometry的data变动也可能会改变commandKey，但鉴于geometry一般不会发生变化，暂时不管
             let dKey = this._getDefinesKey();
@@ -439,26 +439,6 @@ class Mesh {
         return this._geometry.getElements();
     }
 
-    //@internal
-    _getREGLAttrData(regl, activeAttributes) {
-        return this._geometry.getREGLData(regl, activeAttributes, this.disableVAO);
-    }
-
-    getREGLProps(regl: Regl, activeAttributes: ActiveAttributes) {
-        const props = this.getUniforms(regl);
-        extend(props, this._getREGLAttrData(regl, activeAttributes));
-        if (!isSupportVAO(regl) || this.disableVAO) {
-            props.elements = this._geometry.getElements();
-        }
-        props.meshProperties = this.properties;
-        props.geometryProperties = this._geometry.properties;
-        props.meshConfig = this.config;
-        props.count = this._geometry.getDrawCount();
-        props.offset = this._geometry.getDrawOffset();
-        // command primitive : triangle, triangle strip, etc
-        props.primitive = this._geometry.getPrimitive();
-        return props;
-    }
 
     dispose() {
         delete this._geometry;
@@ -539,7 +519,6 @@ class Mesh {
     }
 }
 
-export default Mesh;
 
 function equalDefine(obj0, obj1) {
     if (!obj0 && !obj1) {
@@ -556,4 +535,27 @@ function equalDefine(obj0, obj1) {
         }
     }
     return true;
+}
+
+export default class Mesh extends AbstractMesh {
+        //@internal
+        _getREGLAttrData(regl, activeAttributes) {
+            return this._geometry.getREGLData(regl, activeAttributes, this.disableVAO);
+        }
+
+        getREGLProps(regl: Regl, activeAttributes: ActiveAttributes) {
+            const props = this.getUniforms(regl);
+            extend(props, this._getREGLAttrData(regl, activeAttributes));
+            if (!isSupportVAO(regl) || this.disableVAO) {
+                props.elements = this._geometry.getElements();
+            }
+            props.meshProperties = this.properties;
+            props.geometryProperties = this._geometry.properties;
+            props.meshConfig = this.config;
+            props.count = this._geometry.getDrawCount();
+            props.offset = this._geometry.getDrawOffset();
+            // command primitive : triangle, triangle strip, etc
+            props.primitive = this._geometry.getPrimitive();
+            return props;
+        }
 }

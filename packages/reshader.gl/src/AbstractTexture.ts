@@ -1,6 +1,6 @@
-import { isFunction, hasOwn, getTextureByteWidth, getTextureChannels, supportNPOT } from './common/Util.js';
+import { isFunction, hasOwn, getTextureByteWidth, getTextureChannels } from './common/Util.js';
 import Eventable from './common/Eventable';
-import { KEY_DISPOSED } from './common/Constants.js';
+import { ERROR_NOT_IMPLEMENTED, KEY_DISPOSED } from './common/Constants.js';
 import ResourceLoader from './ResourceLoader';
 import REGL, { Regl, Texture2D } from '@maptalks/regl';
 import { TextureConfig } from './types/typings';
@@ -129,7 +129,7 @@ class AbstractTexture extends Eventable(Base) {
             }
         }
         if (this.dirty) {
-            this._updateREGL();
+            this._update();
         }
         return this._texture;
     }
@@ -149,12 +149,8 @@ class AbstractTexture extends Eventable(Base) {
         // }
     }
 
-    //@internal
-    _updateREGL() {
-        if (this._texture && !this._texture[KEY_DISPOSED]) {
-            this._texture(this.config as any);
-        }
-        this.dirty = false;
+    _update() {
+        throw new Error(ERROR_NOT_IMPLEMENTED);
     }
 
     dispose() {
@@ -185,16 +181,7 @@ class AbstractTexture extends Eventable(Base) {
         }
     }
 
-    //@internal
-    _needPowerOf2(regl) {
-        if (supportNPOT(regl)) {
-            return false;
-        }
-        const config = this.config;
-        const isRepeat = config.wrap && config.wrap !== 'clamp' || config.wrapS && config.wrapS !== 'clamp' ||
-            config.wrapT && config.wrapT !== 'clamp';
-        return isRepeat || config.min && config.min !== 'nearest' && config.min !== 'linear';
-    }
+
 }
 
 export default AbstractTexture;

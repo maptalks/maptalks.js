@@ -1,21 +1,16 @@
 import parseRGBE from './common/HDR';
-import { isArray, isPowerOfTwo, resizeToPowerOfTwo } from './common/Util';
+import { isArray, isPowerOfTwo, resizeToPowerOfTwo, supportNPOT } from './common/Util';
 import { default as Texture, REF_COUNT_KEY } from './AbstractTexture';
 import { getUniqueTexture } from './common/REGLHelper';
 import REGL, { Regl } from '@maptalks/regl';
 import DataUtils from './common/DataUtils';
+import { ERROR_NOT_IMPLEMENTED, KEY_DISPOSED } from './common/Constants';
 
 /**
  * config properties:
  * https://github.com/regl-project/regl/blob/gh-pages/API.md#textures
  */
-class Texture2D extends Texture {
-
-    texParameteri(key: number, value: number) {
-        if (this._texture) {
-            (this._texture as any).texParameteri(key, value);
-        }
-    }
+export class AbstractTexture2D extends Texture {
 
     onLoad({ data }) {
         const config = this.config;
@@ -47,7 +42,28 @@ class Texture2D extends Texture {
         if (this._regl) {
             this._checkNPOT(this._regl);
         }
-        this._updateREGL();
+        this._update();
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _checkNPOT(_regl?: any) {
+        throw new Error(ERROR_NOT_IMPLEMENTED);
+    }
+}
+
+export default class Texture2D extends AbstractTexture2D {
+    //@internal
+    _update() {
+        if (this._texture && !this._texture[KEY_DISPOSED]) {
+            this._texture(this.config as any);
+        }
+        this.dirty = false;
+    }
+
+    texParameteri(key: number, value: number) {
+        if (this._texture) {
+            (this._texture as any).texParameteri(key, value);
+        }
     }
 
     createREGLTexture(regl: Regl): REGL.Texture2D {
@@ -78,6 +94,15 @@ class Texture2D extends Texture {
             }
         }
     }
-}
 
-export default Texture2D;
+    //@internal
+    _needPowerOf2(regl) {
+        if (supportNPOT(regl)) {
+            return false;
+        }
+        const config = this.config;
+        const isRepeat = config.wrap && config.wrap !== 'clamp' || config.wrapS && config.wrapS !== 'clamp' ||
+            config.wrapT && config.wrapT !== 'clamp';
+        return isRepeat || config.min && config.min !== 'nearest' && config.min !== 'linear';
+    }
+}

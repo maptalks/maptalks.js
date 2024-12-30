@@ -26,7 +26,7 @@ class ImageShader extends MeshShader {
     }
 
     getMeshCommand(regl, mesh) {
-        const key = mesh.getCommandKey(regl);
+        const key = mesh.getCommandKey();
         if (!this.commands['image_' + key]) {
             const defines = mesh.getDefines();
             this.commands['image_' + key] = this.createREGLCommand(
