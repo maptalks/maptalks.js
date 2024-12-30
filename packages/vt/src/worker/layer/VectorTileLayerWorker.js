@@ -31,7 +31,7 @@ export default class VectorTileLayerWorker extends LayerWorker {
             const { err, data } = cached;
             // setTimeout是因为该方法需要返回对象，否则BaseLayerWorker中的this.requests没有缓存，导致BaseLayerWorker不执行回调逻辑
             return setTimeout(() => {
-                this._readTile(url, err, data, cb);
+                this._readTile(url, altitudePropertyName, disableAltitudeWarning, err, data, cb);
             }, 1);
         }
         //data from laodTileArray for custom
