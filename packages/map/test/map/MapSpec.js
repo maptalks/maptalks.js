@@ -139,6 +139,13 @@ describe('Map.Spec', function () {
             expect(points).to.be.a(Array);
             expect(points[0]).to.be.a(maptalks.Point);
         });
+
+        it('pointAtResToDistance', function () {
+            map.setCenter([121, 114, 5000]);
+            var dist = map.pointAtResToDistance(1, 1, map.getResolution());
+
+            expect(dist).to.be.equal(0.14570758317344668);
+        });
     });
 
     describe('#getCenter', function () {
