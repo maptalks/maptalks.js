@@ -23,7 +23,7 @@ class SsrMipmapShader extends QuadShader {
 
     getMeshCommand(regl, mesh) {
         if (!this.commands['ssr_mimap']) {
-            this.commands['ssr_mimap'] = this.createREGLCommand(
+            this.commands['ssr_mimap'] = this.createMeshCommand(
                 regl,
                 null,
                 mesh.getElements()

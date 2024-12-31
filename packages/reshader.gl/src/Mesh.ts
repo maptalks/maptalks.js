@@ -537,13 +537,25 @@ function equalDefine(obj0, obj1) {
     return true;
 }
 
+export class GPUMesh extends AbstractMesh {
+    // 实现webgpu相关的逻辑
+    getRenderProps(device, activeAttributes) {
+        // 运行时
+        // 1. 根据参数中的 bind group layout，负责生成 mesh 自身 uniform 的 bind group
+        //    1.1 如果uniform buffer是全新的，需要重新生成一个bind group
+        // 2. 负责从dynamic buffers 中请求uniform buffer
+        // 3. 负责从geometry中手机 vertex buffer 相关的信息
+
+    }
+}
+
 export default class Mesh extends AbstractMesh {
         //@internal
         _getREGLAttrData(regl, activeAttributes) {
             return this._geometry.getREGLData(regl, activeAttributes, this.disableVAO);
         }
 
-        getREGLProps(regl: Regl, activeAttributes: ActiveAttributes) {
+        getRenderProps(regl: Regl, activeAttributes: ActiveAttributes) {
             const props = this.getUniforms(regl);
             extend(props, this._getREGLAttrData(regl, activeAttributes));
             if (!isSupportVAO(regl) || this.disableVAO) {

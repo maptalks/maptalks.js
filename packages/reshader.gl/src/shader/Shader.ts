@@ -1,6 +1,7 @@
 import { extend, isString, isFunction, isNumber, isSupportVAO, hasOwn, hashCode } from '../common/Util.js';
 import ShaderLib from '../shaderlib/ShaderLib.js';
 import { KEY_DISPOSED } from '../common/Constants.js';
+import { ShaderUniformValue } from '../types/typings';
 
 const UNIFORM_TYPE = {
     function : 'function',
@@ -11,7 +12,26 @@ let uid = 0;
 
 const activeVarsCache = {};
 
-class Shader {
+export class AbstractShader {
+    vert: string;
+    frag: string;
+    uid: number;
+    //@internal
+    uniforms: ShaderUniformValue[];
+    //@internal
+    contextDesc: Record<string, any>;
+    extraCommandProps: any;
+    //@internal
+    commands: any;
+    //@internal
+    _shaderDefines: Record<string, string | number>;
+    //@internal
+    dkey: string;
+    //@internal
+    context: any;
+    //@internal
+    contextKeys: string;
+
     constructor({ vert, frag, uniforms, defines, extraCommandProps }) {
         this.vert = vert;
         this.frag = frag;
@@ -146,6 +166,38 @@ class Shader {
         return this;
     }
 
+
+    _compileSource() {
+        this.vert = ShaderLib.compile(this.vert);
+        this.frag = ShaderLib.compile(this.frag);
+    }
+}
+
+function parseArrayName(p) {
+    const l = p.indexOf('['), r = p.indexOf(']');
+    const name = p.substring(0, l), len = +p.substring(l + 1, r);
+    return { name, len };
+}
+
+export class GPUShader extends AbstractShader {
+    createMeshCommand(device, materialDefines, elements, isInstanced, disableVAO, commandProps = {}) {
+        //TODO
+        // 生成期：
+        // 1. 负责对 wgsl 做预处理，生成最终执行的wgsl代码
+        // 2. 解析wgsl，生成 bind group layout
+        // 3. 解析wgsl，获得全局uniform变量名和类型
+        // 4. 生成全局 uniform 变量的 bind group
+        // 执行期：
+        // 5. 执行时，从 dynamic buffers 中请求uniform buffer
+        // 6. 负责汇总管理 passEncoder.setBindgroup 方法中的 bind group dynamic offsets
+
+
+    }
+}
+
+export default class Shader extends AbstractShader {
+    version: number;
+
     getVersion(regl, source) {
         const versionDefined = source.substring(0, 8) === '#version';
         if (versionDefined) {
@@ -219,7 +271,18 @@ class Shader {
         return activeVarsCache[cacheKey];
     }
 
-    createREGLCommand(regl, materialDefines, elements, isInstanced, disableVAO, commandProps = {}) {
+
+    _insertDefines(source, defines) {
+        const defineHeaders = [];
+        for (const p in defines) {
+            if (hasOwn(defines, p) && !isFunction(defines[p])) {
+                defineHeaders.push(`#define ${p} ${defines[p]}\n`);
+            }
+        }
+        return defineHeaders.join('') + source;
+    }
+
+    createMeshCommand(regl, materialDefines, elements, isInstanced, disableVAO, commandProps = {}) {
         const isVAO = isSupportVAO(regl) && !disableVAO;
         const defines = extend({}, this.shaderDefines || {}, materialDefines || {});
         const vertSource = this._insertDefines(this.vert, defines);
@@ -265,7 +328,7 @@ class Shader {
             }
         }
 
-        const command = {
+        const command: any = {
             vert, frag, uniforms, attributes
         };
         if (isVAO) {
@@ -303,27 +366,4 @@ class Shader {
         delete this.vert;
         delete this.frag;
     }
-
-    _insertDefines(source, defines) {
-        const defineHeaders = [];
-        for (const p in defines) {
-            if (hasOwn(defines, p) && !isFunction(defines[p])) {
-                defineHeaders.push(`#define ${p} ${defines[p]}\n`);
-            }
-        }
-        return defineHeaders.join('') + source;
-    }
-
-    _compileSource() {
-        this.vert = ShaderLib.compile(this.vert);
-        this.frag = ShaderLib.compile(this.frag);
-    }
 }
-
-function parseArrayName(p) {
-    const l = p.indexOf('['), r = p.indexOf(']');
-    const name = p.substring(0, l), len = +p.substring(l + 1, r);
-    return { name, len };
-}
-
-export default Shader;

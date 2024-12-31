@@ -37,7 +37,7 @@ class CopyDepthShader extends QuadShader {
 
     getMeshCommand(regl, mesh) {
         if (!this.commands['copy_depth']) {
-            this.commands['copy_depth'] = this.createREGLCommand(
+            this.commands['copy_depth'] = this.createMeshCommand(
                 regl,
                 null,
                 mesh.getElements()

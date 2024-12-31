@@ -28,7 +28,7 @@ class MeshShader extends Shader {
             const command = this.getMeshCommand(regl, meshes[i]);
 
             //run command one by one, for debug
-            // const props = extend({}, this.context, meshes[i].getREGLProps());
+            // const props = extend({}, this.context, meshes[i].getRenderProps());
             // console.log(i);
             // command(props);
 
@@ -38,7 +38,7 @@ class MeshShader extends Shader {
                 props.length = 0;
             }
 
-            const v = meshes[i].getREGLProps(regl, command.activeAttributes);
+            const v = meshes[i].getRenderProps(regl, command.activeAttributes);
             this._ensureContextDefines(v);
             v.shaderContext = this.context;
             this.appendDescUniforms(regl, v);
@@ -137,7 +137,7 @@ class MeshShader extends Shader {
                 }
             }
             command = this.commands[dKey] =
-                this.createREGLCommand(
+                this.createMeshCommand(
                     regl,
                     defines,
                     mesh.getElements(),
