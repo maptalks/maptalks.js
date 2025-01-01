@@ -274,7 +274,7 @@ Map.include(/** @lends Map.prototype */{
         const COORD = new Coordinate(0, 0);
         return function (coordinate, res, out) {
             const pCoordinate = this.getProjection().project(coordinate, COORD);
-            return this._prjToContainerPointAtRes(pCoordinate, res, out);
+            return this._prjToContainerPointAtRes(pCoordinate, res, out, pCoordinate.z);
         };
     }(),
 
