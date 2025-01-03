@@ -33,6 +33,8 @@ declare module "../Geometry" {
         undoEdit(): this;
         cancelEdit(): this;
         isEditing(): boolean;
+        undoEditcheck(): boolean;
+        redoEditcheck(): boolean;  
     }
 }
 

@@ -39,6 +39,8 @@ class GeometryCollection extends Geometry {
     _draggbleBeforeEdit: any
     //@internal
     _editing: boolean
+    _lastUndoEditIndex: number
+    _lastRedoEditIndex: number
 
     /**
      * @param {Geometry[]} geometries - GeometryCollection's geometries
@@ -47,6 +49,8 @@ class GeometryCollection extends Geometry {
     constructor(geometries?: Geometry[], opts?: GeometryOptionsType) {
         super(opts);
         this.type = 'GeometryCollection';
+        this._lastUndoEditIndex = 0; // 添加一个属性来跟踪上次编辑的索引
+        this._lastRedoEditIndex = 0; // 添加一个属性来跟踪上次编辑的索引
         this.setGeometries(geometries);
     }
 
@@ -641,6 +645,73 @@ class GeometryCollection extends Geometry {
             return false;
         }
         return true;
+    }
+    undoEdit(): this {
+        if (this.isEmpty()) {
+            return this;
+        }
+        this._recoveryVisible();
+        const geometries = this.getGeometries();
+        let i = this._lastUndoEditIndex; // 从上次停止的地方开始
+
+        for (; i < geometries.length; i++) {
+            if (!geometries[i].undoEditcheck()) {
+                geometries[i].undoEdit();
+                this._lastUndoEditIndex = i; // 更新索引为当前元素
+                break; // 执行一次后停止
+            }
+        }
+
+        // 如果所有元素的undoEditCheck都为true，重置lastUndoEditIndex
+        if (i === geometries.length) {
+            this._lastUndoEditIndex = 0;
+        }
+
+        this.fire('undoedit');
+        return this;
+    }
+    
+    redoEdit(): this {
+        if (this.isEmpty()) {
+            return this;
+        }
+        this._recoveryVisible();
+        const geometries = this.getGeometries();
+        let i = this._lastRedoEditIndex; // 从上次停止的地方开始
+
+        for (; i < geometries.length; i++) {
+            if (!geometries[i].redoEditcheck()) {
+                geometries[i].redoEdit();
+                this._lastRedoEditIndex = i; // 更新索引为当前元素
+                break; // 执行一次后停止
+            }
+        }
+
+        // 如果所有元素的undoEditCheck都为true，重置lastUndoEditIndex
+        if (i === geometries.length) {
+            this._lastRedoEditIndex = 0;
+        }
+
+        this.fire('redoedit');
+        return this;
+    }
+    undoEditcheck(): boolean {
+        const geometries = this.getGeometries();
+        for (let i = 0; i < geometries.length; i++) {
+            if (!geometries[i].undoEditcheck()) {
+                return false; // 如果任何一个元素的undoEditcheck返回false，则整体返回false
+            }
+        }
+        return true; // 所有元素的undoEditcheck都返回true，则整体返回true
+    }
+    redoEditcheck(): boolean {
+        const geometries = this.getGeometries();
+        for (let i = 0; i < geometries.length; i++) {
+            if (!geometries[i].redoEditcheck()) {
+                return false; // 如果任何一个元素的redoEditcheck返回false，则整体返回false
+            }
+        }
+        return true; // 所有元素的redoEditcheck都返回true，则整体返回true
     }
 
     // copy() {
