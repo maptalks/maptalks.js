@@ -3,7 +3,8 @@ import {
     isNumber,
     isString,
     requestAnimFrame,
-    now
+    now,
+    isFunction
 } from './util';
 import Point from '../geo/Point';
 import Coordinate from '../geo/Coordinate';
@@ -443,8 +444,13 @@ const Animation = {
         if (!options) {
             options = {};
         }
-        let easing = options['easing'] ? Easing[options['easing']] : Easing.linear;
-        if (!easing) {
+        let easing;
+        if (isFunction(options.easing)) {
+            easing = options['easing'];
+        } else {
+            easing = options['easing'] ? Easing[options['easing']] : Easing.linear;
+        }
+        if (!easing || !isFunction(easing)) {
             easing = Easing.linear;
         }
         let dStyles, startStyles, destStyles;
@@ -580,7 +586,10 @@ Animation._frameFn = Animation._run.bind(Animation);
 const animate = Animation.animate;
 export { Animation, Easing, Player, Frame, animate };
 
-export type EasingType = 'outExpo' | 'outQuint' | 'in' | 'out' | 'inAndOut' | 'linear' | 'upAndDown';
+/**
+ * more animation easing functions https://echarts.apache.org/examples/zh/editor.html?c=line-easing
+ */
+export type EasingType = 'outExpo' | 'outQuint' | 'in' | 'out' | 'inAndOut' | 'linear' | 'upAndDown' | ((t: number) => number);
 
 export type AnimationOptionsType = {
     duration?: number;
