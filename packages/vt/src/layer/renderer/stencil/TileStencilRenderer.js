@@ -104,13 +104,11 @@ export default class TileStencilRenderer {
             viewport,
             stencil: {
                 enable: true,
-                mask: 0xFF,
                 func: {
                     cmp: 'always',
                     ref: (context, props) => {
                         return props.ref;
-                    },
-                    mask: 0xFF
+                    }
                 },
                 op: {
                     fail: 'replace',

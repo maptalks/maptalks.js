@@ -185,9 +185,6 @@ export default class HeatmapProcess {
             }
         },{
             extraCommandProps: {
-                stencil: {
-                    enable: false
-                },
                 depth: {
                     enable: true,
                     range: depthRange || [0, 1],
@@ -196,9 +193,6 @@ export default class HeatmapProcess {
                 polygonOffset: {
                     enable: true,
                     offset: this._polygonOffset
-                },
-                scissor: {
-                    enable: false
                 }
             }
         });

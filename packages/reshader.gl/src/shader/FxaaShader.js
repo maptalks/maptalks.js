@@ -24,11 +24,7 @@ class FxaaShader extends QuadShader {
     getMeshCommand(regl, mesh) {
         const key = this.dkey || '';
         if (!this.commands[key + '_fxaa']) {
-            this.commands[key + '_fxaa'] = this.createMeshCommand(
-                regl,
-                null,
-                mesh.getElements()
-            );
+            this.commands[key + '_fxaa'] = this.createMeshCommand(regl, mesh);
         }
         return this.commands[key + '_fxaa'];
     }

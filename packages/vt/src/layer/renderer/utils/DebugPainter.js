@@ -160,9 +160,6 @@ class DebugPainter {
                 },
                 equation: 'add'
             },
-            stencil: {
-                enable: false
-            },
             viewport: {
                 x: 0,
                 y: 0,

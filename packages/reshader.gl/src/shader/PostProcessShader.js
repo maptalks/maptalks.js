@@ -23,11 +23,7 @@ class PostProcessShader extends QuadShader {
 
     getMeshCommand(regl, mesh) {
         if (!this.commands['postprocess']) {
-            this.commands['postprocess'] = this.createMeshCommand(
-                regl,
-                null,
-                mesh.getElements()
-            );
+            this.commands['postprocess'] = this.createMeshCommand(regl, mesh);
         }
         return this.commands['postprocess'];
     }

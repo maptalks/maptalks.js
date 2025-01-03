@@ -24,11 +24,7 @@ class BloomExtractShader extends QuadShader {
 
     getMeshCommand(regl, mesh) {
         if (!this.commands['bloom_extract']) {
-            this.commands['bloom_extract'] = this.createMeshCommand(
-                regl,
-                null,
-                mesh.getElements()
-            );
+            this.commands['bloom_extract'] = this.createMeshCommand(regl, mesh);
         }
         return this.commands['bloom_extract'];
     }

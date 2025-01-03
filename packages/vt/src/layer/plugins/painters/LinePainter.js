@@ -529,7 +529,6 @@ class LinePainter extends BasicPainter {
                 enable: () => {
                     return this.isEnableTileStencil(context);
                 },
-                mask: 0xff,
                 func: {
                     cmp: () => {
                         return '<=';

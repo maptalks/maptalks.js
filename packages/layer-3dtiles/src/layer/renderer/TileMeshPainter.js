@@ -1723,12 +1723,7 @@ export default class TileMeshPainter {
                     },
                     // mask: 0xff
                 },
-                opFront: {
-                    fail: 'keep',
-                    zfail: 'keep',
-                    zpass: 'replace'
-                },
-                opBack: {
+                op: {
                     fail: 'keep',
                     zfail: 'keep',
                     zpass: 'replace'

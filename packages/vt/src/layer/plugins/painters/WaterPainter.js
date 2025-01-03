@@ -330,11 +330,9 @@ class WaterPainter extends BasicPainter {
                 colorMask: [false, false, false, false],
                 stencil: {
                     enable: true,
-                    mask: 0xFF,
                     func: {
                         cmp: '<=',
-                        ref: 0xFE,
-                        mask: 0xFF
+                        ref: 0xFE
                     },
                     op: {
                         fail: 'keep',
@@ -357,11 +355,9 @@ class WaterPainter extends BasicPainter {
             viewport,
             stencil: {
                 enable: true,
-                mask: 0xFF,
                 func: {
                     cmp: '==',
-                    ref: 0xFE,
-                    mask: 0xFF
+                    ref: 0xFE
                 },
                 op: {
                     fail: 'keep',

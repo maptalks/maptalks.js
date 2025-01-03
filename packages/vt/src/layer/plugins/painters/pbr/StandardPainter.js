@@ -223,9 +223,6 @@ class StandardPainter extends MeshPainter {
                     return this.sceneConfig.cullFace || 'back';
                 }
             },
-            stencil: {
-                enable: false
-            },
             viewport,
             depth: {
                 enable: true,

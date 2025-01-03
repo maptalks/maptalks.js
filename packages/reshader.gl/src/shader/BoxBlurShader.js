@@ -29,11 +29,7 @@ class BoxBlurShader extends QuadShader {
     getMeshCommand(regl, mesh) {
         const key = 'box_blur_' + this._blurOffset;
         if (!this.commands[key]) {
-            this.commands[key] = this.createMeshCommand(
-                regl,
-                null,
-                mesh.getElements()
-            );
+            this.commands[key] = this.createMeshCommand(regl, mesh);
         }
         return this.commands[key];
     }

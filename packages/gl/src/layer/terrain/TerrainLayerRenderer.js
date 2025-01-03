@@ -1395,9 +1395,6 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
                 depth: {
                     enable: false
                 },
-                stencil: {
-                    enable: false
-                },
                 blend: {
                     enable: true,
                     func: { src: 'one', dst: 'one minus src alpha' },
