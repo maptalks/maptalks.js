@@ -107,7 +107,7 @@ describe('lights specs', () => {
                     //第一次更新环境光的颜色
                     assert.deepEqual(pixel, [161, 0, 110, 255]);
                     done();
-                } else if (count === 1 && renderCount >= 1) {
+                } else if (count === 1 && renderCount >= 2) {
                     //更新环境光后的颜色
                     assert.deepEqual(pixel, [104, 137, 180, 255]);
                     updateLights();

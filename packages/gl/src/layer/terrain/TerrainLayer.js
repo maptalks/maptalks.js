@@ -10,6 +10,9 @@ const POINT0 = new maptalks.Point(0, 0);
 const EMPTY_ARRAY = [];
 
 const options = {
+    'forceRenderOnMoving': true,
+    'forceRenderOnZooming': true,
+    'forceRenderOnRotating': true,
     'fadeAnimation': false,
     'fadeDuration': (1000 / 60 * 15),
     'tileLimitPerFrame': 2,
@@ -17,7 +20,7 @@ const options = {
     'opacity': 1.0,
     'renderer': 'gl',
     'pyramidMode': 1,
-    'tileSize': 256,
+    'tileSize': 512,
     'terrainWidth': null,
     'backZoomOffset': 0,
     'depthMask': true,
@@ -65,12 +68,47 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
                 options.tileSize = 512;
             }
         }
+        super(id, options);
+    }
+
+    onAdd() {
+        const options = this.options;
+        const map = this.getMap();
+        const projection = map.getProjection();
+        const is4326 = projection.code === "EPSG:4326" || projection.code === "EPSG:4490";
+        const is3857 = projection.code === "EPSG:3857";
         if (!options.spatialReference) {
             if (options.type === 'mapbox') {
-                options.spatialReference = 'preset-3857-512';
+                if (is4326) {
+                    options.spatialReference = 'preset-4326-512';
+                } else if (is3857) {
+                    options.spatialReference = 'preset-3857-512';
+                }
+            } else if (options.type === 'cesium' || options.type === 'cesium-ion') {
+                options.spatialReference = 'preset-4326-512';
+            } else if (options.type === 'tianditu') {
+                options.spatialReference = {
+                    'projection': 'EPSG:4326',
+                    'fullExtent': {
+                        'top': 90,
+                        'left': -180,
+                        'bottom': -90,
+                        'right': 180
+                    },
+                    'resolutions': (function () {
+                        const resolutions = [];
+                        for (let i = 0; i <= 22; i++) {
+                            resolutions[i] = 180 / 2 / (Math.pow(2, i) * 128);
+                        }
+                        return resolutions;
+                    })()
+                };
             }
         }
-        super(id, options);
+        if (!options.terrainWidth && options.type === 'tianditu') {
+            // tianditu's terrainWidth has to be 65, decided by the terrain format
+            options.terrainWidth = 65;
+        }
     }
 
     getTileUrl(x, y, z) {
