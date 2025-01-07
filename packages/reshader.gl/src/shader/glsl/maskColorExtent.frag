@@ -11,6 +11,9 @@ void main() {
         gl_FragColor = texture2D(maskTexture, uv);
         gl_FragColor.a = maskColor.a;
     #else
+        if (maskColor.a == 0.0) {
+            discard;
+        }
         gl_FragColor = maskColor;
     #endif
 }

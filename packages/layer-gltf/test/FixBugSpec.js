@@ -42,9 +42,9 @@ describe('bug', () => {
         marker.setScale(20, 20, 20);
         marker.on('load', () => {
             setTimeout(function() {
-                const expectMatrix = maptalksgl.mat4.fromValues(10.000000000000002, 0, -17.32050807568877, 0, 0, 20, 0, 0, 17.32050807568877, 0, 10.000000000000002, 0, 0.13082664542728, 0.1308266454209729, 0.1707822812928094, 1);
+                const expectMatrix = maptalks.mat4.fromValues(10.000000000000002, 0, -17.32050807568877, 0, 0, 20, 0, 0, 17.32050807568877, 0, 10.000000000000002, 0, 0.13082664542728, 0.1308266454209729, 0.1707822812928094, 1);
                 const modelMatrix = marker.getModelMatrix();
-                expect(maptalksgl.mat4.equals(expectMatrix, modelMatrix)).to.be.ok();
+                expect(maptalks.mat4.equals(expectMatrix, modelMatrix)).to.be.ok();
                 done();
             }, 100);
         });
@@ -931,8 +931,8 @@ describe('bug', () => {
         gltflayer.on('modelload', () => {
             const mesh = marker.getMeshes()[0];
             const copyMesh = marker.getMeshes()[0];
-            const scale1 = maptalksgl.mat4.getScaling([], mesh.localTransform);
-            const scale2 = maptalksgl.mat4.getScaling([], copyMesh.localTransform);
+            const scale1 = maptalks.mat4.getScaling([], mesh.localTransform);
+            const scale2 = maptalks.mat4.getScaling([], copyMesh.localTransform);
             expect(scale1).to.be.eql(scale2);
             done();
         });

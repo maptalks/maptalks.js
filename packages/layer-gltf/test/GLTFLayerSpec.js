@@ -58,7 +58,7 @@ describe('maptalks.gltf', function () {
                 const mesh2 = marker2.getMeshes(null, null, 100)[0];
                 const localTransform1 = mesh1.localTransform;
                 const localTransform2 = mesh2.localTransform;
-                expect(maptalksgl.mat4.equals(localTransform1, localTransform2)).not.to.be.ok();
+                expect(maptalks.mat4.equals(localTransform1, localTransform2)).not.to.be.ok();
                 done();
             }, 200);
         });
@@ -557,9 +557,9 @@ describe('maptalks.gltf', function () {
         const marker = new maptalks.GLTFGeometry([center.x, center.y, 0], { symbol: { url: url1 }});
         marker.on('load', () => {
             marker.setCoordinates([center.x + 0.1, center.y, 10]);
-            const expectMatrix = maptalksgl.mat4.fromValues(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+            const expectMatrix = maptalks.mat4.fromValues(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
             const modelMatrix = marker.getModelMatrix();
-            expect(maptalksgl.mat4.equals(expectMatrix, modelMatrix)).to.be.ok();
+            expect(maptalks.mat4.equals(expectMatrix, modelMatrix)).to.be.ok();
             done();
         });
         gltflayer.addGeometry(marker);

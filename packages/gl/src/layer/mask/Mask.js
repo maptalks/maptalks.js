@@ -184,7 +184,7 @@ export default class Mask extends Polygon {
         for (let i = 1; i < coordinates.length - 1; i++) {
             const point1 = map.coordToPointAtRes(coordinates[i], glRes, TEMP_POINT1);
             const point2 = map.coordToPointAtRes(coordinates[i + 1], glRes, TEMP_POINT2);
-            area += Math.abs(det(point0, point1, point2)) / 2;
+            area += det(point0, point1, point2) / 2;
         }
         return area;
     }
