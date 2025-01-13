@@ -1,5 +1,5 @@
-import Shader from './Shader.js';
-import InstancedMesh from '../InstancedMesh.js';
+import Shader, { GPUShader } from './Shader';
+import InstancedMesh from '../InstancedMesh';
 
 class MeshShader extends Shader {
 
@@ -25,7 +25,14 @@ class MeshShader extends Shader {
                 }
                 continue;
             }
-            const command = this.getMeshCommand(regl, meshes[i]);
+
+            const v = meshes[i].getRenderProps(regl, command.activeAttributes);
+            this._ensureContextDefines(v);
+            v.shaderContext = this.context;
+            v.meshObject = meshes[i];
+            this.appendDescUniforms(regl, v);
+
+            const command = this.getMeshCommand(regl, meshes[i], v);
 
             //run command one by one, for debug
             // const props = extend({}, this.context, meshes[i].getRenderProps());
@@ -34,21 +41,17 @@ class MeshShader extends Shader {
 
             if (props.length && preCommand !== command) {
                 //batch mode
-                preCommand(props);
+                this.run(preCommand, props);
                 props.length = 0;
             }
 
-            const v = meshes[i].getRenderProps(regl, command.activeAttributes);
-            this._ensureContextDefines(v);
-            v.shaderContext = this.context;
-            this.appendDescUniforms(regl, v);
             props.push(v);
             count++;
 
             if (i < l - 1) {
                 preCommand = command;
             } else if (i === l - 1) {
-                command(props);
+                this.run(command, props);
             }
         }
         return count;
@@ -109,11 +112,16 @@ class MeshShader extends Shader {
         return filters(m);
     }
 
-    getMeshCommand(regl, mesh) {
+    getMeshCommand(regl, mesh, uniformValues) {
         if (!this._cmdKeys) {
             this._cmdKeys = {};
         }
-        const key = this.dkey || 'default';
+        const material = mesh.getMaterial();
+        let doubleSided = false;
+        if (material) {
+            doubleSided = material.doubleSided;
+        }
+        const key = this.getShaderCommandKey(mesh, uniformValues, doubleSided);
         let storedKeys = this._cmdKeys[key];
         if (!storedKeys) {
             storedKeys = this._cmdKeys[key] = {};
@@ -127,24 +135,13 @@ class MeshShader extends Shader {
         // const dKey = key + '_' + mesh.getCommandKey();
         let command = this.commands[dKey];
         if (!command) {
-            const defines = mesh.getDefines();
-            const material = mesh.getMaterial();
+
+
             const commandProps = {};
-            if (material) {
-                const doubleSided = material.doubleSided;
-                if (doubleSided && this.extraCommandProps) {
-                    commandProps.cull = { enable: false };
-                }
+            if (doubleSided && this.extraCommandProps) {
+                commandProps.cull = { enable: false };
             }
-            command = this.commands[dKey] =
-                this.createMeshCommand(
-                    regl,
-                    defines,
-                    mesh.getElements(),
-                    mesh instanceof InstancedMesh,
-                    mesh.disableVAO,
-                    commandProps
-                );
+            command = this.commands[dKey] = this.createMeshCommand(regl, mesh, commandProps);
         }
         return command;
     }

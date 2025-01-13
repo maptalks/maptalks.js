@@ -228,7 +228,7 @@ export function clamp(n: number, min: number, max: number) {
  */
 export function isSupportVAO(regl: Regl) {
     // return false;
-    return regl && regl.hasExtension('oes_vertex_array_object');
+    return regl && regl.hasExtension && regl.hasExtension('oes_vertex_array_object');
 }
 
 /**

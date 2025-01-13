@@ -779,6 +779,11 @@ export class AbstractGeometry {
     _incrVersion() {
         this._version++;
     }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    getBufferDescriptor(_vertexInfo) {
+        return [];
+    }
 }
 
 function getElementLength(elements) {
@@ -811,7 +816,92 @@ function getTypeCtor(arr: NumberArray, byteWidth: number) {
     return null;
 }
 
+export class GPUGeometry extends AbstractGeometry {
+    getCommandKey() {
+        // 因为attribute组织方式会影响pipeline的创建，所以attributes组织方式不同时，需要创建不同的command key
+        // 我们这里暂时不考虑Geometry会更新attributes组织方式的情况，因为在maptalks的使用场景不会出现
+        // 可能有些attribute没有被wgsl使用，但组织方式不同，这里也不考虑这种情况
+        const keys = [];
+        for (const p in this.data) {
+            const attr = this.data[p];
+            if (attr.bytesStride) {
+                keys.push(`${p}(${attr.byteOffset}/${attr.bytesStride}})`);
+            } else {
+                keys.push(p);
+            }
+        }
+        return keys.sort().join('-');
+    }
+
+    getBufferDescriptor(vertexInfo) {
+        const data = this.data;
+        const bufferDesc = [];
+        const bufferMapping = {};
+        for (const p in data) {
+            const attr = data[p];
+            if (!attr) {
+                continue;
+            }
+            const info = vertexInfo[p];
+            if (isArray(attr)) {
+                const itemBytes = getItemBytes(attr);
+                bufferDesc.push({
+                    arrayStride: info.itemSize * itemBytes,
+                    attributes: [
+                        {
+                            shaderLocation: info.location,
+                            format: info.format,
+                            offset: 0
+                        }
+                    ]
+                });
+            } else {
+                // a descriptor in gltf accessor style
+                const accessorName = attr.accessorName;
+                const byteStride = attr.bytesStride;
+                if (byteStride && accessorName) {
+                    let desc = bufferMapping[accessorName];
+                    if (desc) {
+                        desc.attributes.push({
+                            shaderLocation: info.location,
+                            format: info.format,
+                            offset: attr.byteOffset
+                        });
+                    } else {
+                        desc = {
+                            arrayStride: byteStride,
+                            attributes: [
+                                {
+                                    shaderLocation: info.location,
+                                    format: info.format,
+                                    offset: attr.byteOffset
+                                }
+                            ]
+                        }
+                        bufferMapping[accessorName] = desc;
+                    }
+                } else {
+                    bufferDesc.push({
+                        arrayStride: info.bytes,
+                        attributes: [
+                            {
+                                shaderLocation: info.location,
+                                format: info.format,
+                                offset: 0
+                            }
+                        ]
+                    });
+                }
+            }
+        }
+        return bufferDesc;
+    }
+}
+
 export default class Geometry extends AbstractGeometry {
+    getCommandKey() {
+        return '';
+    }
     getREGLData(regl: any, activeAttributes: ActiveAttributes, disableVAO: boolean): AttributeData {
         this.getAttrData(activeAttributes);
         const updated = !this._reglData || !this._reglData[activeAttributes.key];
@@ -981,5 +1071,19 @@ export default class Geometry extends AbstractGeometry {
             this._vao[p].vao.destroy();
         }
         this._vao = {};
+    }
+}
+
+function getItemBytes(array) {
+    if (array.BYTES_PER_ELEMENT) {
+        return array.BYTES_PER_ELEMENT;
+    } else if (Array.isArray(array)) {
+        // float
+        return 4;
+    } else {
+        const item = array;
+        const gltf = getGLTFLoaderBundle();
+        const ctor = gltf.GLTFLoader.getTypedArrayCtor(item.componentType);
+        return ctor.BYTES_PER_ELEMENT;
     }
 }

@@ -79,6 +79,18 @@ export class AbstractMaterial extends Eventable(Base) {
         return this._loadingCount <= 0;
     }
 
+    hasUniform(k: string) {
+        return Object.prototype.hasOwnProperty.call(this.uniforms, k);
+    }
+
+    setUniform(k: string, v: ShaderUniformValue) {
+        return this.set(k, v);
+    }
+
+    getUniform(k: string): ShaderUniformValue {
+        return this.get(k);
+    }
+
     set(k: string, v: ShaderUniformValue): this {
         if (this.get(k) === v) {
             return this;
@@ -252,7 +264,7 @@ export class AbstractMaterial extends Eventable(Base) {
 }
 
 export default class Material extends AbstractMaterial {
-    getUniforms(regl: Regl) {
+    getUniforms(device: any) {
         if (this._reglUniforms && !this.isDirty()) {
             return this._reglUniforms;
         }
@@ -264,7 +276,7 @@ export default class Material extends AbstractMaterial {
                     enumerable: true,
                     configurable: true,
                     get: function () {
-                        return (uniforms[p] as AbstractTexture).getREGLTexture(regl);
+                        return (uniforms[p] as AbstractTexture).getREGLTexture(device);
                     }
                 });
             } else {

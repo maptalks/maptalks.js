@@ -5,6 +5,7 @@ import Geometry from './Geometry';
 import Material from './Material';
 import { ActiveAttributes, MatrixFunction, MeshOptions, ShaderDefines, ShaderUniformValue, ShaderUniforms } from './types/typings';
 import { Regl } from '@maptalks/regl';
+import DynamicBuffer from './webgpu/DynamicBuffer';
 
 const tempMat4: mat4 = new Array(16) as mat4;
 
@@ -244,6 +245,10 @@ export class AbstractMesh {
       }
     }
 
+    hasUniform(k: string): boolean {
+        return this.uniforms[k] !== undefined;
+    }
+
     getUniform(k: string): ShaderUniformValue {
         return this.uniforms[k];
     }
@@ -302,7 +307,7 @@ export class AbstractMesh {
     getCommandKey(): string {
         if (!this._commandKey || this.dirtyDefines || (this._material && this._materialKeys !== this._material.getUniformKeys())) {
             //TODO geometry的data变动也可能会改变commandKey，但鉴于geometry一般不会发生变化，暂时不管
-            let dKey = this._getDefinesKey();
+            let dKey = this.geometry.getCommandKey() + '_' +  this._getDefinesKey();
             const elementType = isNumber(this.getElements()) ? 'count' : 'elements';
             dKey += '_' + elementType;
             dKey += '_' + +(!!this.disableVAO);
@@ -330,7 +335,28 @@ export class AbstractMesh {
     //     return uniforms;
     // }
 
-    getUniforms(regl: Regl): ShaderUniforms {
+    getRenderProps(device: any, activeAttributes: ActiveAttributes) {
+        const props = this.getUniforms(device);
+        extend(props, this._getGeometryAttributes(device, activeAttributes));
+        if (!isSupportVAO(device) || this.disableVAO) {
+            props.elements = this._geometry.getElements();
+        }
+        props.meshProperties = this.properties;
+        props.geometryProperties = this._geometry.properties;
+        props.meshConfig = this.config;
+        props.count = this._geometry.getDrawCount();
+        props.offset = this._geometry.getDrawOffset();
+        // command primitive : triangle, triangle strip, etc
+        props.primitive = this._geometry.getPrimitive();
+        return props;
+    }
+
+    //@internal
+    _getGeometryAttributes(device, activeAttributes) {
+        return this._geometry.getREGLData(device, activeAttributes, this.disableVAO);
+    }
+
+    getUniforms(device: any): ShaderUniforms {
         if (this._dirtyUniforms || this._dirtyGeometry || this._material && this._materialVer !== this._material.version) {
             this._uniformDescriptors = new Set<string>();
             this._realUniforms = {
@@ -355,7 +381,7 @@ export class AbstractMesh {
                 }
             }
             if (this._material) {
-                const materialUniforms = this._material.getUniforms(regl);
+                const materialUniforms = this._material.getUniforms(device);
                 for (const p in materialUniforms) {
                     if (hasOwn(materialUniforms, p) && !hasOwn(this._realUniforms, p)) {
                         const descriptor = Object.getOwnPropertyDescriptor(materialUniforms, p);
@@ -387,7 +413,7 @@ export class AbstractMesh {
                 }
             }
             if (this._material && this._material.propVersion !== this._materialPropVer) {
-              const materialUniforms = this._material.getUniforms(regl);
+              const materialUniforms = this._material.getUniforms(device);
               for (const p in materialUniforms) {
                   if (hasOwn(materialUniforms, p) && !this._uniformDescriptors.has(p)) {
                       const descriptor = Object.getOwnPropertyDescriptor(materialUniforms, p);
@@ -537,37 +563,28 @@ function equalDefine(obj0, obj1) {
     return true;
 }
 
+
 export class GPUMesh extends AbstractMesh {
+    _meshBuffer: DynamicBuffer;
+    _shaderBuffer: DynamicBuffer;
     // 实现webgpu相关的逻辑
-    getRenderProps(device, activeAttributes) {
+    getDynamicBuffer(device, renderProps, bindGroupMapping) {
+        if (!this._meshBuffer) {
+            this._meshBuffer = new DynamicBuffer(device, renderProps, bindGroupMapping);
+        } else {
+            this._meshBuffer.fill(renderProps, bindGroupMapping);
+        }
         // 运行时
-        // 1. 根据参数中的 bind group layout，负责生成 mesh 自身 uniform 的 bind group
+        // 1. 根据参数中的 bind group mapping，负责生成 mesh 自身 uniform 的 bind group
         //    1.1 如果uniform buffer是全新的，需要重新生成一个bind group
         // 2. 负责从dynamic buffers 中请求uniform buffer
         // 3. 负责从geometry中手机 vertex buffer 相关的信息
-
+        return this._meshBuffer;
     }
 }
 
 export default class Mesh extends AbstractMesh {
-        //@internal
-        _getREGLAttrData(regl, activeAttributes) {
-            return this._geometry.getREGLData(regl, activeAttributes, this.disableVAO);
-        }
 
-        getRenderProps(regl: Regl, activeAttributes: ActiveAttributes) {
-            const props = this.getUniforms(regl);
-            extend(props, this._getREGLAttrData(regl, activeAttributes));
-            if (!isSupportVAO(regl) || this.disableVAO) {
-                props.elements = this._geometry.getElements();
-            }
-            props.meshProperties = this.properties;
-            props.geometryProperties = this._geometry.properties;
-            props.meshConfig = this.config;
-            props.count = this._geometry.getDrawCount();
-            props.offset = this._geometry.getDrawOffset();
-            // command primitive : triangle, triangle strip, etc
-            props.primitive = this._geometry.getPrimitive();
-            return props;
-        }
+
+
 }

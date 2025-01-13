@@ -1,7 +1,14 @@
 import { extend, isString, isFunction, isNumber, isSupportVAO, hasOwn, hashCode } from '../common/Util.js';
+
 import ShaderLib from '../shaderlib/ShaderLib.js';
 import { KEY_DISPOSED } from '../common/Constants.js';
 import { ShaderUniformValue } from '../types/typings';
+import PipelineDescriptor from '../webgpu/common/PipelineDesc';
+import InstancedMesh from '../InstancedMesh';
+import Mesh from '../Mesh';
+import DynamicBuffer from '../webgpu/DynamicBuffer';
+import CommandBuilder from '../webgpu/CommandBuilder';
+
 
 const UNIFORM_TYPE = {
     function : 'function',
@@ -179,24 +186,99 @@ function parseArrayName(p) {
     return { name, len };
 }
 
+const pipelineDesc = new PipelineDescriptor();
+
 export class GPUShader extends AbstractShader {
-    createMeshCommand(device, materialDefines, elements, isInstanced, disableVAO, commandProps = {}) {
-        //TODO
+    gpuCommands: any[];
+    //@internal
+    _presentationFormat: GPUTextureFormat;
+    _bindGroupCache: Record<string, GPUBindGroup>;
+    _buffers: any;
+
+    getShaderCommandKey(mesh, uniformValues, doubleSided) {
+        // 获取pipeline所需要的特征变量，即任何变量发生变化后，就需要创建新的pipeline
+        const commandProps = this.extraCommandProps;
+        pipelineDesc.readFromREGLCommand(commandProps, mesh, uniformValues, doubleSided);
+        return pipelineDesc.getSignatureKey();
+    }
+
+    createMeshCommand(device: GPUDevice, mesh: Mesh) {
         // 生成期：
         // 1. 负责对 wgsl 做预处理，生成最终执行的wgsl代码
-        // 2. 解析wgsl，生成 bind group layout
-        // 3. 解析wgsl，获得全局uniform变量名和类型
-        // 4. 生成全局 uniform 变量的 bind group
-        // 执行期：
-        // 5. 执行时，从 dynamic buffers 中请求uniform buffer
-        // 6. 负责汇总管理 passEncoder.setBindgroup 方法中的 bind group dynamic offsets
+        // 2. 解析wgsl，生成 bind group mapping 信息，用于运行时，mesh生成bind group
+        // 3. 解析wgsl，获得全局 uniform 变量名和类型
+        // 4. 生成 layout 和 pipeline
 
+        // preprocess vert and frag codes
+        const builder = new CommandBuilder(device, this.vert, this.frag, mesh)
+        return builder.build(pipelineDesc);
+    }
 
+    run(device, command, props, context) {
+        const passEncoder: GPURenderPassEncoder = context.passEncoder;
+        passEncoder.setPipeline(command.pipeline);
+
+        const { key, bindGroupFormat, pipeline, vertexInfo } = command;
+        const layout = pipeline.getBindGroupLayout(0);
+        // 1. 生成shader uniform 需要的dynamic buffer
+        let shaderBuffer = this._buffers[key];
+        if (shaderBuffer) {
+            shaderBuffer = this._buffers[key] = new DynamicBuffer(device, bindGroupFormat.getShaderUniforms());
+        }
+        // 向buffer中填入shader uniform值
+        shaderBuffer.writeBuffer(this.uniforms);
+        for (let i = 0; i < props.length; i++) {
+            const mesh = props[i].meshObject;
+            // 获取mesh的dynamicBuffer
+            const meshBuffer = mesh.getDynamicBuffer(device, bindGroupFormat.getShaderUniforms());
+            const groupKey = meshBuffer.uid + '-' + shaderBuffer.uid;
+            // 获取或者生成bind group
+            let bindGroup = this._bindGroupCache[groupKey];
+            if (!bindGroup) {
+                bindGroup = bindGroupFormat.createBindGroup(device, mesh, layout, shaderBuffer, meshBuffer);
+                // 缓存bind group，只要buffer没有发生变化，即可以重用
+                // TODO 可以考虑每帧开始把缓存 bind group 标记为 retire，每帧结束时把不是 current 的 bind group 销毁掉
+                this._bindGroupCache[groupKey] = bindGroup;
+            }
+
+            // 向buffer中填入mesh uniform值
+            meshBuffer.writeBuffer(props[i]);
+
+            // 获取 dynamicOffsets
+            const dynamicOffsets = shaderBuffer.dynamicOffsets.concat(meshBuffer.dynamicOffsets);
+            passEncoder.setBindGroup(0, bindGroup, dynamicOffsets);
+
+            for (const vertex of vertexInfo) {
+                const vertexBuffer = mesh.geometry.getVertexBuffer(vertex.name);
+                passEncoder.setVertexBuffer(vertex.index, vertexBuffer);
+            }
+
+            //TODO InstancedMesh 的参数
+            const elements = mesh.getElements();
+            const drawOffset = mesh.geometry.getDrawOffset();
+            const drawCount = mesh.geometry.getDrawCount();
+            if (isNumber(elements)) {
+                passEncoder.draw(drawCount, 1, drawOffset);
+            } else {
+                passEncoder.setIndexBuffer(elements.getBuffer(), elements.getFormat());
+                passEncoder.drawIndexed(drawCount, 1, drawOffset);
+            }
+        }
+        passEncoder.end();
     }
 }
 
 export default class Shader extends AbstractShader {
     version: number;
+
+    run(command, props) {
+        return command(props);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    getShaderCommandKey() {
+        return this.dkey || 'default';
+    }
 
     getVersion(regl, source) {
         const versionDefined = source.substring(0, 8) === '#version';
@@ -282,7 +364,12 @@ export default class Shader extends AbstractShader {
         return defineHeaders.join('') + source;
     }
 
-    createMeshCommand(regl, materialDefines, elements, isInstanced, disableVAO, commandProps = {}) {
+    createMeshCommand(regl, mesh, commandProps = {}) {
+        const materialDefines = mesh.getDefines();
+        const elements = mesh.getElements();
+        const isInstanced = mesh instanceof InstancedMesh;
+        const disableVAO = mesh.disableVAO;
+
         const isVAO = isSupportVAO(regl) && !disableVAO;
         const defines = extend({}, this.shaderDefines || {}, materialDefines || {});
         const vertSource = this._insertDefines(this.vert, defines);
@@ -367,3 +454,4 @@ export default class Shader extends AbstractShader {
         delete this.frag;
     }
 }
+

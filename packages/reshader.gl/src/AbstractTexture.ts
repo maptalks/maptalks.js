@@ -104,7 +104,7 @@ class AbstractTexture extends Eventable(Base) {
         return null;
     }
 
-    getREGLTexture(regl: Regl) {
+    getREGLTexture(regl: any): any {
         if (!this._texture) {
             this._texture = this.createREGLTexture(regl);
             if (!this.config.persistent) {
