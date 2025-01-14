@@ -5,9 +5,10 @@ import { KEY_DISPOSED } from '../common/Constants.js';
 import { ShaderUniformValue } from '../types/typings';
 import PipelineDescriptor from '../webgpu/common/PipelineDesc';
 import InstancedMesh from '../InstancedMesh';
-import Mesh from '../Mesh';
+import Mesh, { GPUMesh } from '../Mesh';
 import DynamicBuffer from '../webgpu/DynamicBuffer';
 import CommandBuilder from '../webgpu/CommandBuilder';
+import GraphicsDevice from '../webgpu/GraphicsDevice';
 
 
 const UNIFORM_TYPE = {
@@ -193,7 +194,7 @@ export class GPUShader extends AbstractShader {
     //@internal
     _presentationFormat: GPUTextureFormat;
     _bindGroupCache: Record<string, GPUBindGroup>;
-    _buffers: any;
+    _buffers: Record<string, DynamicBuffer>;
 
     getShaderCommandKey(mesh, uniformValues, doubleSided) {
         // 获取pipeline所需要的特征变量，即任何变量发生变化后，就需要创建新的pipeline
@@ -214,24 +215,25 @@ export class GPUShader extends AbstractShader {
         return builder.build(pipelineDesc);
     }
 
-    run(device, command, props, context) {
+    run(device: GraphicsDevice, command, shaderUniforms, props, context) {
+        const buffersPool = device.dynamicBufferPool;
         const passEncoder: GPURenderPassEncoder = context.passEncoder;
         passEncoder.setPipeline(command.pipeline);
 
         const { key, bindGroupFormat, pipeline, vertexInfo } = command;
         const layout = pipeline.getBindGroupLayout(0);
         // 1. 生成shader uniform 需要的dynamic buffer
-        let shaderBuffer = this._buffers[key];
+        let shaderBuffer = this._buffers[key] as DynamicBuffer;
         if (shaderBuffer) {
-            shaderBuffer = this._buffers[key] = new DynamicBuffer(device, bindGroupFormat.getShaderUniforms());
+            shaderBuffer = this._buffers[key] = new DynamicBuffer(bindGroupFormat.getShaderUniforms(), buffersPool);
         }
         // 向buffer中填入shader uniform值
-        shaderBuffer.writeBuffer(this.uniforms);
+        shaderBuffer.writeBuffer(shaderUniforms);
         for (let i = 0; i < props.length; i++) {
-            const mesh = props[i].meshObject;
+            const mesh = props[i].meshObject as GPUMesh;
             // 获取mesh的dynamicBuffer
-            const meshBuffer = mesh.getDynamicBuffer(device, bindGroupFormat.getShaderUniforms());
-            const groupKey = meshBuffer.uid + '-' + shaderBuffer.uid;
+            const meshBuffer = mesh.writeDynamicBuffer(props[i], bindGroupFormat.getMeshUniforms(), buffersPool);
+            const groupKey = meshBuffer.version + '-' + shaderBuffer.version;
             // 获取或者生成bind group
             let bindGroup = this._bindGroupCache[groupKey];
             if (!bindGroup) {
@@ -240,9 +242,6 @@ export class GPUShader extends AbstractShader {
                 // TODO 可以考虑每帧开始把缓存 bind group 标记为 retire，每帧结束时把不是 current 的 bind group 销毁掉
                 this._bindGroupCache[groupKey] = bindGroup;
             }
-
-            // 向buffer中填入mesh uniform值
-            meshBuffer.writeBuffer(props[i]);
 
             // 获取 dynamicOffsets
             const dynamicOffsets = shaderBuffer.dynamicOffsets.concat(meshBuffer.dynamicOffsets);
@@ -265,6 +264,27 @@ export class GPUShader extends AbstractShader {
             }
         }
         passEncoder.end();
+    }
+
+    _deleteCommand(command) {
+        if (command.bindGroupFormat) {
+            command.bindGroupFormat.dispose();
+        }
+    }
+
+    dispose() {
+        for (const key in this._buffers) {
+            if (this._buffers[key]) {
+                this._buffers[key].dispose();
+            }
+        }
+        const commands = this.gpuCommands;
+        for (let i = 0; i < commands.length; i++) {
+            if (!commands[i]) {
+                continue;
+            }
+            this._deleteCommand(commands[i]);
+        }
     }
 }
 

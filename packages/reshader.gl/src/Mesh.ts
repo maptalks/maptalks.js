@@ -4,7 +4,6 @@ import BoundingBox from './BoundingBox.js';
 import Geometry from './Geometry';
 import Material from './Material';
 import { ActiveAttributes, MatrixFunction, MeshOptions, ShaderDefines, ShaderUniformValue, ShaderUniforms } from './types/typings';
-import { Regl } from '@maptalks/regl';
 import DynamicBuffer from './webgpu/DynamicBuffer';
 
 const tempMat4: mat4 = new Array(16) as mat4;
@@ -16,7 +15,7 @@ let uuid = 0;
  * Config:
  *  transparent, castShadow
  */
-export class AbstractMesh {
+export default class Mesh {
     //@internal
     _version: number
     //@internal
@@ -470,6 +469,10 @@ export class AbstractMesh {
         delete this._geometry;
         delete this._material;
         this.uniforms = null;
+        if (this._meshBuffer) {
+            this._meshBuffer.dispose();
+            delete this._meshBuffer;
+        }
         return this;
     }
 
@@ -543,6 +546,21 @@ export class AbstractMesh {
         }
         return this.localTransform;
     }
+
+    _meshBuffer: DynamicBuffer;
+    // 实现webgpu相关的逻辑
+    writeDynamicBuffer(renderProps, bindGroupMapping, pool) {
+        if (!this._meshBuffer) {
+            this._meshBuffer = new DynamicBuffer(bindGroupMapping, pool);
+        }
+        this._meshBuffer.writeBuffer(renderProps);
+        // 运行时
+        // 1. 根据参数中的 bind group mapping，负责生成 mesh 自身 uniform 的 bind group
+        //    1.1 如果uniform buffer是全新的，需要重新生成一个bind group
+        // 2. 负责从dynamic buffers 中请求uniform buffer
+        // 3. 负责从geometry中手机 vertex buffer 相关的信息
+        return this._meshBuffer;
+    }
 }
 
 
@@ -561,30 +579,4 @@ function equalDefine(obj0, obj1) {
         }
     }
     return true;
-}
-
-
-export class GPUMesh extends AbstractMesh {
-    _meshBuffer: DynamicBuffer;
-    _shaderBuffer: DynamicBuffer;
-    // 实现webgpu相关的逻辑
-    getDynamicBuffer(device, renderProps, bindGroupMapping) {
-        if (!this._meshBuffer) {
-            this._meshBuffer = new DynamicBuffer(device, renderProps, bindGroupMapping);
-        } else {
-            this._meshBuffer.fill(renderProps, bindGroupMapping);
-        }
-        // 运行时
-        // 1. 根据参数中的 bind group mapping，负责生成 mesh 自身 uniform 的 bind group
-        //    1.1 如果uniform buffer是全新的，需要重新生成一个bind group
-        // 2. 负责从dynamic buffers 中请求uniform buffer
-        // 3. 负责从geometry中手机 vertex buffer 相关的信息
-        return this._meshBuffer;
-    }
-}
-
-export default class Mesh extends AbstractMesh {
-
-
-
 }

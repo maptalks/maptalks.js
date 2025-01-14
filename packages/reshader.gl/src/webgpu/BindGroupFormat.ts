@@ -32,20 +32,24 @@ export default class BindGroupFormat {
     _parse(bindGroupMapping) {
         this._shaderUniforms = [];
         this._shaderUniforms.index = 0;
+        this._shaderUniforms.totalSize = 0;
         this._meshUniforms = [];
         this._meshUniforms.index = 0;
+        this._meshUniforms.totalSize = 0;
         const groups = bindGroupMapping.groups;
         const group = groups[0];
         for (let i = 0; i < group.length; i++) {
-            const bindedUniform = group[i];
-            if (bindedUniform.isGlobal) {
+            const uniform = group[i];
+            if (uniform.isGlobal) {
                 let index = this._shaderUniforms.index;
-                this._shaderUniforms[index++] = bindedUniform;
+                this._shaderUniforms[index++] = uniform;
                 this._shaderUniforms.index = index;
+                this._shaderUniforms.totalSize += uniform.size;
             } else {
                 let index = this._shaderUniforms.index;
-                this._meshUniforms[index++] = bindedUniform;
+                this._meshUniforms[index++] = uniform;
                 this._meshUniforms.index = index;
+                this._meshUniforms.totalSize += uniform.size;
             }
         }
     }
@@ -72,10 +76,12 @@ export default class BindGroupFormat {
                     resource: (texture.getREGLTexture(device) as GPUTexture).createView()
                 });
             } else {
+                const allocation = group.isGlobal ? shaderBuffer.allocation : meshBuffer.allocation;
                 entries.push({
                     binding: group.binding,
                     resource: {
-                        buffer: group.isGlobal ? shaderBuffer.gpuBuffer : meshBuffer.gpuBuffer,
+                        buffer: allocation.gpuBuffer,
+                        // offset 永远设为0，在setBindGroup中设置dynamicOffsets
                         offset: 0,
                         size: Math.max(group.size, this.alignment)
                     }
@@ -87,5 +93,11 @@ export default class BindGroupFormat {
             label: '',
             entries
         });
+    }
+
+    dispose() {
+        delete this._shaderUniforms;
+        delete this._meshUniforms;
+        delete this.groups;
     }
 }
