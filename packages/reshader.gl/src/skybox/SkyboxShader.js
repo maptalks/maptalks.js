@@ -58,7 +58,7 @@ class SkyboxShader extends MeshShader {
     _createSkyboxMesh(regl) {
         const geometry = new Geometry(
             {
-                aPosition : new Int8Array(skyboxData.vertices)
+                aPosition: new Int8Array(skyboxData.vertices)
             },
             null,
             skyboxData.vertices.length / 3

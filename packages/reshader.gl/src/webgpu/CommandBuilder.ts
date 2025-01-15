@@ -113,8 +113,7 @@ export default class CommandBuilder {
             if (inputMapping[name]) {
                 vertexInfo[name] = {
                     location: inputMapping[name].location,
-                    format: toBufferFormat(inputMapping[name].type),
-                    bytes: inputMapping[name].type.size
+                    itemSize: getItemSize(inputMapping[name].type)
                 };
             }
         }
@@ -226,12 +225,14 @@ export default class CommandBuilder {
     }
 }
 
-
-function toBufferFormat(type: any) {
-    //wgsl中解析的type，转换为buffer的format
-    throw new Error('Function not implemented.');
-}
-
 function meshHasUniform(mesh: Mesh, name: string) {
     return mesh.hasUniform(name) || (mesh.material && mesh.material.hasUniform(name));
+}
+
+function getItemSize(type) {
+    if (type.name.startsWith('vec')) {
+        return parseInt(type.name[3]);
+    } else {
+        return 1;
+    }
 }

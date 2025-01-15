@@ -554,11 +554,6 @@ export default class Mesh {
             this._meshBuffer = new DynamicBuffer(bindGroupMapping, pool);
         }
         this._meshBuffer.writeBuffer(renderProps);
-        // 运行时
-        // 1. 根据参数中的 bind group mapping，负责生成 mesh 自身 uniform 的 bind group
-        //    1.1 如果uniform buffer是全新的，需要重新生成一个bind group
-        // 2. 负责从dynamic buffers 中请求uniform buffer
-        // 3. 负责从geometry中手机 vertex buffer 相关的信息
         return this._meshBuffer;
     }
 }

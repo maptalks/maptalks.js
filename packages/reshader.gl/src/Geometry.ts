@@ -5,7 +5,10 @@ import BoundingBox from './BoundingBox';
 import { KEY_DISPOSED } from './common/Constants';
 import { getGLTFLoaderBundle } from './common/GLTFBundle'
 import { ActiveAttributes, AttributeData, GeometryDesc, NumberArray } from './types/typings';
-import REGL, { Regl } from '@maptalks/regl';
+import REGL from '@maptalks/regl';
+import GraphicsDevice from './webgpu/GraphicsDevice';
+import { flatten } from 'earcut';
+import { getGPUVertexType, getFormatFromGLTFAccessor, getItemBytesFromGLTFAccessor } from './webgpu/common/Types';
 
 const EMPTY_VAO_BUFFER = [];
 
@@ -51,6 +54,24 @@ function GUID() {
 const REF_COUNT_KEY = '_reshader_refCount';
 
 export class AbstractGeometry {
+    static createElementBuffer(device: any, elements: any): any {
+        if (device instanceof GraphicsDevice) {
+            return createGPUBuffer(device, elements, GPUBufferUsage.VERTEX, 'index buffer');
+        } else {
+            // regl
+            return device.elements(elements);
+        }
+    }
+
+    static createBuffer(device: any, data: any, name: string) {
+        if (device instanceof GraphicsDevice) {
+            return createGPUBuffer(device, data, GPUBufferUsage.VERTEX, name);
+        } else {
+            // regl
+            return device.buffer(data);
+        }
+    }
+
     data: Record<string, AttributeData>
     elements: any
     desc: GeometryDesc
@@ -221,7 +242,83 @@ export class AbstractGeometry {
         return this._reglData[key];
     }
 
+    getREGLData(regl: any, activeAttributes: ActiveAttributes, disableVAO: boolean): AttributeData {
+        this.getAttrData(activeAttributes);
+        //support vao
+        if (isSupportVAO(regl) && !disableVAO) {
+            const updated = !this._reglData || !this._reglData[activeAttributes.key];
+            const key = activeAttributes && activeAttributes.key || 'default';
+            if (!this._vao[key] || updated || this._vao[key].dirty) {
+                const reglData = this._reglData[activeAttributes.key];
+                const vertexCount = this._vertexCount;
+                const buffers = [];
 
+                for (let i = 0; i < activeAttributes.length; i++) {
+                    const p = activeAttributes[i];
+                    const attr = p.name;
+                    const buffer = reglData[attr] && reglData[attr].buffer;
+                    if (!buffer || !buffer.destroy) {
+                        const data = reglData[attr];
+                        if (!data) {
+                            if (this.desc.fillEmptyDataInMissingAttribute) {
+                                // 某些老版本浏览器（例如3dtiles中的electron），数据不能传空字符串，否则会报错
+                                // glDrawElements: attempt to access out of range vertices in attribute 1
+                                buffers.push(new Uint8Array(vertexCount * 4));
+                            } else {
+                                buffers.push(EMPTY_VAO_BUFFER);
+                            }
+                            continue;
+                        }
+                        const dimension = (data.data && isArray(data.data) ? data.data.length : data.length) / vertexCount;
+                        if (data.data) {
+                            data.dimension = dimension;
+                            buffers.push(data);
+                        } else {
+                            buffers.push({
+                                data,
+                                dimension
+                            });
+                        }
+                    } else if (reglData[attr].stride !== undefined) {
+                        buffers.push(
+                            reglData[attr]
+                        );
+                    } else {
+                        buffers.push(buffer);
+                    }
+                }
+
+                const vaoData = {
+                    attributes: buffers,
+                    primitive: this.getPrimitive()
+                } as any;
+                if (this.elements && !isNumber(this.elements)) {
+                    if (this.elements.destroy) {
+                        vaoData.elements = this.elements;
+                    } else {
+                        vaoData.elements = {
+                            primitive: this.getPrimitive(),
+                            data: this.elements
+                        };
+                        const type = this.getElementsType(this.elements);
+                        if (type) {
+                            vaoData.elements.type = type;
+                        }
+                    }
+                }
+                if (!this._vao[key]) {
+                    this._vao[key] = {
+                        vao: regl.vao(vaoData)
+                    };
+                } else {
+                    this._vao[key].vao(vaoData);
+                }
+            }
+            delete this._vao[key].dirty;
+            return this._vao[key];
+        }
+        return this._reglData[activeAttributes.key];
+    }
 
     //@internal
     _isAttrChanged(activeAttributes: ActiveAttributes): boolean {
@@ -238,6 +335,85 @@ export class AbstractGeometry {
         }
         return false;
     }
+
+    generateBuffers(device: any) {
+        //generate regl buffers beforehand to avoid repeated bufferData
+        //提前处理addBuffer插入的arraybuffer
+        const allocatedBuffers = this._buffers;
+        for (const p in allocatedBuffers) {
+            if (!allocatedBuffers[p].buffer) {
+                allocatedBuffers[p].buffer = AbstractGeometry.createBuffer(device, allocatedBuffers[p].data, p);
+            }
+            delete allocatedBuffers[p].data;
+        }
+        const positionName = this.desc.positionAttribute;
+        const altitudeName = this.desc.altitudeAttribute;
+        const data = this.data;
+        const vertexCount = this._vertexCount;
+        const buffers = {};
+        for (const key in data) {
+            if (!data[key]) {
+                continue;
+            }
+            //如果调用过addBuffer，buffer有可能是ArrayBuffer
+            if (data[key].buffer !== undefined && !(data[key].buffer instanceof ArrayBuffer)) {
+                if (data[key].buffer.destroy) {
+                    buffers[key] = data[key];
+                } else if (allocatedBuffers[data[key].buffer]) {
+                    //多个属性共用同一个ArrayBuffer(interleaved)
+                    buffers[key] = extend({}, data[key]);
+                    buffers[key].buffer = allocatedBuffers[data[key].buffer].buffer;
+                }
+            } else {
+                const arr = data[key].data ? data[key].data : data[key];
+                const dimension = arr.length / vertexCount;
+                const info = data[key].data ? data[key] : { data: data[key] };
+                info.dimension = dimension;
+                const buffer = AbstractGeometry.createBuffer(device, info, key);
+                buffer[REF_COUNT_KEY] = 1;
+                buffers[key] = {
+                    buffer
+                };
+                if (key === positionName || key === altitudeName) {//vt中positionSize=2,z存在altitude中，也需要一并保存
+                    buffers[key].array = data[key];
+                }
+
+            }
+            if (this.desc.static || key !== positionName) {//保存POSITION原始数据，用来做额外计算
+                delete data[key].array;
+            }
+        }
+        this.data = buffers;
+        delete this._reglData;
+
+        // const supportVAO = isSupportVAO(regl);
+        // const excludeElementsInVAO = options && options.excludeElementsInVAO;
+        if (this.elements && !isNumber(this.elements)) {
+            const info = {
+                primitive: this.getPrimitive(),
+                data: this.elements
+            } as any;
+            const type = this.getElementsType(this.elements);
+            if (type) {
+                info.type = type;
+            }
+            if (!this.desc.static && !this.elements.destroy) {
+                const elements = this.elements;
+                this.indices = new Uint16Array(elements.length);
+                for (let i = 0; i < elements.length; i++) {
+                    this.indices[i] = elements[i];
+                }
+            }
+            this.elements = this.elements.destroy ? this.elements : Geometry.createElementBuffer(device, this.elements);
+            const elements = this.elements;
+            if (!elements[REF_COUNT_KEY]) {
+                elements[REF_COUNT_KEY] = 0;
+            }
+            elements[REF_COUNT_KEY]++;
+
+        }
+    }
+
 
     getVertexCount(): number {
         const { positionAttribute, positionSize, color0Attribute } = this.desc;
@@ -793,8 +969,13 @@ function getElementLength(elements) {
         // object buffer form
         return elements.count;
     } else if (elements.destroy) {
-        // a regl element buffer
-        return elements['_elements'].vertCount;
+        if (elements['_elements']) {
+            // a regl element buffer
+            return elements['_elements'].vertCount;
+        } else {
+            //GPUBuffer
+            return elements.itemCount;
+        }
     } else if (elements.length !== undefined) {
         return elements.length;
     } else if (elements.data) {
@@ -824,8 +1005,8 @@ export class GPUGeometry extends AbstractGeometry {
         const keys = [];
         for (const p in this.data) {
             const attr = this.data[p];
-            if (attr.bytesStride) {
-                keys.push(`${p}(${attr.byteOffset}/${attr.bytesStride}})`);
+            if (attr.byteStride) {
+                keys.push(`${p}(${attr.byteOffset}/${attr.byteStride}})`);
             } else {
                 keys.push(p);
             }
@@ -843,50 +1024,48 @@ export class GPUGeometry extends AbstractGeometry {
                 continue;
             }
             const info = vertexInfo[p];
-            if (isArray(attr)) {
-                const itemBytes = getItemBytes(attr);
-                bufferDesc.push({
-                    arrayStride: info.itemSize * itemBytes,
-                    attributes: [
-                        {
-                            shaderLocation: info.location,
-                            format: info.format,
-                            offset: 0
-                        }
-                    ]
-                });
-            } else {
-                // a descriptor in gltf accessor style
-                const accessorName = attr.accessorName;
-                const byteStride = attr.bytesStride;
-                if (byteStride && accessorName) {
-                    let desc = bufferMapping[accessorName];
-                    if (desc) {
-                        desc.attributes.push({
-                            shaderLocation: info.location,
-                            format: info.format,
-                            offset: attr.byteOffset
-                        });
-                    } else {
-                        desc = {
-                            arrayStride: byteStride,
-                            attributes: [
-                                {
-                                    shaderLocation: info.location,
-                                    format: info.format,
-                                    offset: attr.byteOffset
-                                }
-                            ]
-                        }
-                        bufferMapping[accessorName] = desc;
-                    }
+            const accessorName = attr.accessorName;
+            const byteStride = attr.byteStride;
+            if (byteStride && accessorName) {
+                // a GLTF accessor style attribute
+                const format = getFormatFromGLTFAccessor(attr.componentType, attr.itemSize);
+                let desc = bufferMapping[accessorName];
+                if (desc) {
+                    desc.attributes.push({
+                        shaderLocation: info.location,
+                        format,
+                        offset: attr.byteOffset
+                    });
                 } else {
-                    bufferDesc.push({
-                        arrayStride: info.bytes,
+                    desc = {
+                        arrayStride: byteStride,
                         attributes: [
                             {
                                 shaderLocation: info.location,
-                                format: info.format,
+                                format,
+                                offset: attr.byteOffset
+                            }
+                        ]
+                    }
+                    bufferMapping[accessorName] = desc;
+                }
+            } else {
+                const array = attr.data || attr.array || attr;
+                if (isArray(array)) {
+                    let format, itemBytes;
+                    if (attr.componentType) {
+                        format = getFormatFromGLTFAccessor(attr.componentType, attr.itemSize);
+                        itemBytes = getItemBytesFromGLTFAccessor(attr.componentType);
+                    } else {
+                        format = getItemFormat(array, info.itemSize);
+                        itemBytes = getItemBytes(array);
+                    }
+                    bufferDesc.push({
+                        arrayStride: info.itemSize * itemBytes,
+                        attributes: [
+                            {
+                                shaderLocation: info.location,
+                                format,
                                 offset: 0
                             }
                         ]
@@ -902,168 +1081,11 @@ export default class Geometry extends AbstractGeometry {
     getCommandKey() {
         return '';
     }
-    getREGLData(regl: any, activeAttributes: ActiveAttributes, disableVAO: boolean): AttributeData {
-        this.getAttrData(activeAttributes);
-        const updated = !this._reglData || !this._reglData[activeAttributes.key];
-        //support vao
-        if (isSupportVAO(regl) && !disableVAO) {
-            const key = activeAttributes && activeAttributes.key || 'default';
-            if (!this._vao[key] || updated || this._vao[key].dirty) {
-                const reglData = this._reglData[activeAttributes.key];
-                const vertexCount = this._vertexCount;
-                const buffers = [];
-
-                for (let i = 0; i < activeAttributes.length; i++) {
-                    const p = activeAttributes[i];
-                    const attr = p.name;
-                    const buffer = reglData[attr] && reglData[attr].buffer;
-                    if (!buffer || !buffer.destroy) {
-                        const data = reglData[attr];
-                        if (!data) {
-                            if (this.desc.fillEmptyDataInMissingAttribute) {
-                                // 某些老版本浏览器（例如3dtiles中的electron），数据不能传空字符串，否则会报错
-                                // glDrawElements: attempt to access out of range vertices in attribute 1
-                                buffers.push(new Uint8Array(vertexCount * 4));
-                            } else {
-                                buffers.push(EMPTY_VAO_BUFFER);
-                            }
-                            continue;
-                        }
-                        const dimension = (data.data && isArray(data.data) ? data.data.length : data.length) / vertexCount;
-                        if (data.data) {
-                            data.dimension = dimension;
-                            buffers.push(data);
-                        } else {
-                            buffers.push({
-                                data,
-                                dimension
-                            });
-                        }
-                    } else if (reglData[attr].stride !== undefined) {
-                        buffers.push(
-                            reglData[attr]
-                        );
-                    } else {
-                        buffers.push(buffer);
-                    }
-                }
-
-                const vaoData = {
-                    attributes: buffers,
-                    primitive: this.getPrimitive()
-                } as any;
-                if (this.elements && !isNumber(this.elements)) {
-                    if (this.elements.destroy) {
-                        vaoData.elements = this.elements;
-                    } else {
-                        vaoData.elements = {
-                            primitive: this.getPrimitive(),
-                            data: this.elements
-                        };
-                        const type = this.getElementsType(this.elements);
-                        if (type) {
-                            vaoData.elements.type = type;
-                        }
-                    }
-                }
-                if (!this._vao[key]) {
-                    this._vao[key] = {
-                        vao: regl.vao(vaoData)
-                    };
-                } else {
-                    this._vao[key].vao(vaoData);
-                }
-            }
-            delete this._vao[key].dirty;
-            return this._vao[key];
-        }
-        return this._reglData[activeAttributes.key];
-    }
-
-    generateBuffers(regl: Regl) {
-        //generate regl buffers beforehand to avoid repeated bufferData
-        //提前处理addBuffer插入的arraybuffer
-        const allocatedBuffers = this._buffers;
-        for (const p in allocatedBuffers) {
-            if (!allocatedBuffers[p].buffer) {
-                allocatedBuffers[p].buffer = regl.buffer(allocatedBuffers[p].data);
-            }
-            delete allocatedBuffers[p].data;
-        }
-        const positionName = this.desc.positionAttribute;
-        const altitudeName = this.desc.altitudeAttribute;
-        const data = this.data;
-        const vertexCount = this._vertexCount;
-        const buffers = {};
-        for (const key in data) {
-            if (!data[key]) {
-                continue;
-            }
-            //如果调用过addBuffer，buffer有可能是ArrayBuffer
-            if (data[key].buffer !== undefined && !(data[key].buffer instanceof ArrayBuffer)) {
-                if (data[key].buffer.destroy) {
-                    buffers[key] = data[key];
-                } else if (allocatedBuffers[data[key].buffer]) {
-                    //多个属性共用同一个ArrayBuffer(interleaved)
-                    buffers[key] = extend({}, data[key]);
-                    buffers[key].buffer = allocatedBuffers[data[key].buffer].buffer;
-                }
-            } else {
-                const arr = data[key].data ? data[key].data : data[key];
-                const dimension = arr.length / vertexCount;
-                const info = data[key].data ? data[key] : { data: data[key] };
-                info.dimension = dimension;
-                const buffer = regl.buffer(info);
-                buffer[REF_COUNT_KEY] = 1;
-                buffers[key] = {
-                    buffer
-                };
-                if (key === positionName || key === altitudeName) {//vt中positionSize=2,z存在altitude中，也需要一并保存
-                    buffers[key].array = data[key];
-                }
-
-            }
-            if (this.desc.static || key !== positionName) {//保存POSITION原始数据，用来做额外计算
-                delete data[key].array;
-            }
-        }
-        this.data = buffers;
-        delete this._reglData;
-
-        // const supportVAO = isSupportVAO(regl);
-        // const excludeElementsInVAO = options && options.excludeElementsInVAO;
-        if (this.elements && !isNumber(this.elements)) {
-            const info = {
-                primitive: this.getPrimitive(),
-                data: this.elements
-            } as any;
-            const type = this.getElementsType(this.elements);
-            if (type) {
-                info.type = type;
-            }
-            if (!this.desc.static && !this.elements.destroy) {
-                const elements = this.elements;
-                this.indices = new Uint16Array(elements.length);
-                for (let i = 0; i < elements.length; i++) {
-                    this.indices[i] = elements[i];
-                }
-            }
-            this.elements = this.elements.destroy ? this.elements : regl.elements(info);
-            const elements = this.elements;
-            if (!elements[REF_COUNT_KEY]) {
-                elements[REF_COUNT_KEY] = 0;
-            }
-            elements[REF_COUNT_KEY]++;
-
-        }
-    }
-
 
     dispose() {
         this._deleteVAO();
         super.dispose();
     }
-
 
     //@internal
     _deleteVAO() {
@@ -1074,7 +1096,11 @@ export default class Geometry extends AbstractGeometry {
     }
 }
 
-function getItemBytes(array) {
+function getItemBytes(data) {
+    const array = data.data || data.buffer || data;
+    if (array.destroy) {
+        return array.itemBytes;
+    }
     if (array.BYTES_PER_ELEMENT) {
         return array.BYTES_PER_ELEMENT;
     } else if (Array.isArray(array)) {
@@ -1086,4 +1112,37 @@ function getItemBytes(array) {
         const ctor = gltf.GLTFLoader.getTypedArrayCtor(item.componentType);
         return ctor.BYTES_PER_ELEMENT;
     }
+}
+
+function getItemFormat(data, itemSize) {
+    const array = data.data || data.buffer || data;
+    let format;
+    if (array.destroy) {
+        format = array.itemType;
+    } else {
+        format = getGPUVertexType(data);
+    }
+    return itemSize > 1 ? (format + 'x' + itemSize) : format;
+}
+
+function createGPUBuffer(device, data, usage, label) {
+    data = data.data || data;
+    if (Array.isArray(data[0])) {
+        data = flatten(data);
+    }
+    const ctor = data.constructor;
+     // f32 in default
+    const size = Array.isArray(data) ? data.length * 4 : data.byteLength;
+    const buffer = device.wgpu.createBuffer({
+        label,
+        size,
+        usage,
+        mappedAtCreation: true
+    });
+    new ctor(buffer.getMappedRange()).set(data);
+    buffer.unmap();
+    buffer.itemCount = data.length;
+    buffer.itemBytes = getItemBytes(data);
+    buffer.itemType = getGPUVertexType(data); // uint8, sint8, uint16, sint16, uint32, sint32, float32
+    return buffer;
 }
