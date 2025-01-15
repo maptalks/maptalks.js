@@ -56,7 +56,7 @@ const REF_COUNT_KEY = '_reshader_refCount';
 export class AbstractGeometry {
     static createElementBuffer(device: any, elements: any): any {
         if (device instanceof GraphicsDevice) {
-            return createGPUBuffer(device, elements, GPUBufferUsage.VERTEX, 'index buffer');
+            return createGPUBuffer(device, elements, GPUBufferUsage.INDEX, 'index buffer');
         } else {
             // regl
             return device.elements(elements);
