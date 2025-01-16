@@ -160,6 +160,19 @@ export function isArray(arr) {
         (arr instanceof Float64Array);
 }
 
+export function getArrayCtor(arr) {
+    return Array.isArray(arr) && Array ||
+        (arr instanceof Uint8Array) && Uint8Array ||
+        (arr instanceof Int8Array) && Int8Array ||
+        (arr instanceof Uint16Array) && Uint16Array ||
+        (arr instanceof Int16Array) && Int16Array ||
+        (arr instanceof Uint32Array) && Uint32Array ||
+        (arr instanceof Int32Array) && Int32Array ||
+        (arr instanceof Uint8ClampedArray) && Uint8ClampedArray ||
+        (arr instanceof Float32Array) && Float32Array ||
+        (arr instanceof Float64Array) && Float64Array;
+}
+
 /**
  * 对两个矢量执行线性推算
  *

@@ -4,13 +4,13 @@ import { default as Texture, REF_COUNT_KEY } from './AbstractTexture';
 import { getUniqueTexture } from './common/REGLHelper';
 import REGL, { Regl } from '@maptalks/regl';
 import DataUtils from './common/DataUtils';
-import { ERROR_NOT_IMPLEMENTED, KEY_DISPOSED } from './common/Constants';
+import { KEY_DISPOSED } from './common/Constants';
 
 /**
  * config properties:
  * https://github.com/regl-project/regl/blob/gh-pages/API.md#textures
  */
-export class AbstractTexture2D extends Texture {
+export default class Texture2D extends Texture {
 
     onLoad({ data }) {
         const config = this.config;
@@ -45,13 +45,6 @@ export class AbstractTexture2D extends Texture {
         this._update();
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _checkNPOT(_regl?: any) {
-        throw new Error(ERROR_NOT_IMPLEMENTED);
-    }
-}
-
-export default class Texture2D extends AbstractTexture2D {
     //@internal
     _update() {
         if (this._texture && !this._texture[KEY_DISPOSED]) {

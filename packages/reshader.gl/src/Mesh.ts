@@ -303,10 +303,10 @@ export default class Mesh {
     }
 
     //eslint-disable-next-line
-    getCommandKey(): string {
+    getCommandKey(device: any): string {
         if (!this._commandKey || this.dirtyDefines || (this._material && this._materialKeys !== this._material.getUniformKeys())) {
             //TODO geometry的data变动也可能会改变commandKey，但鉴于geometry一般不会发生变化，暂时不管
-            let dKey = this.geometry.getCommandKey() + '_' +  this._getDefinesKey();
+            let dKey = this.geometry.getCommandKey(device) + '_' +  this._getDefinesKey();
             const elementType = isNumber(this.getElements()) ? 'count' : 'elements';
             dKey += '_' + elementType;
             dKey += '_' + +(!!this.disableVAO);

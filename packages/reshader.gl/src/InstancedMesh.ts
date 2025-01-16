@@ -107,8 +107,8 @@ export default class InstancedMesh extends Mesh {
         return defines;
     }
 
-    getCommandKey() {
-        return 'i_' + super.getCommandKey();
+    getCommandKey(device: any) {
+        return 'i_' + super.getCommandKey(device);
     }
 
     //因为 updateBoundingBox 需要， 不再自动生成buffer，而是把原有的buffer销毁

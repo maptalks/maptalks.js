@@ -1,14 +1,14 @@
 import Eventable from './common/Eventable';
 import { isNil, extendWithoutNil, hasOwn, getTexMemorySize } from './common/Util';
 import AbstractTexture from './AbstractTexture';
-import { ERROR_NOT_IMPLEMENTED, KEY_DISPOSED } from './common/Constants';
+import { KEY_DISPOSED } from './common/Constants';
 import { ShaderUniforms, ShaderUniformValue, ShaderDefines } from './types/typings';
-import { Regl, Texture } from '@maptalks/regl';
+import { Texture } from '@maptalks/regl';
 import Geometry from './Geometry';
 
 class Base {}
 
-export class AbstractMaterial extends Eventable(Base) {
+export default class Material extends Eventable(Base) {
     uniforms: ShaderUniforms
     refCount: number
     // 如果unlit，则不产生阴影（但接受阴影）
@@ -73,6 +73,54 @@ export class AbstractMaterial extends Eventable(Base) {
 
     get doubleSided(): boolean {
         return !!this.uniforms.doubleSided;
+    }
+
+    getUniforms(device: any) {
+        if (this._reglUniforms && !this.isDirty()) {
+            return this._reglUniforms;
+        }
+        const uniforms = this.uniforms;
+        const realUniforms: ShaderUniforms = {};
+        for (const p in uniforms) {
+            if (this.isTexture(p)) {
+                Object.defineProperty(realUniforms, p, {
+                    enumerable: true,
+                    configurable: true,
+                    get: function () {
+                        return (uniforms[p] as AbstractTexture).getREGLTexture(device);
+                    }
+                });
+            } else {
+                const descriptor = Object.getOwnPropertyDescriptor(uniforms, p);
+                if (descriptor.get) {
+                    Object.defineProperty(realUniforms, p, {
+                        enumerable: true,
+                        configurable: true,
+                        get: function () {
+                            return uniforms[p];
+                        }
+                    });
+                } else {
+                    realUniforms[p] = uniforms[p];
+                }
+            }
+        }
+        this._reglUniforms = realUniforms;
+        this._uniformVer = this.version;
+        return realUniforms;
+    }
+
+    getMemorySize() {
+        const uniforms = this.uniforms;
+        let size = 0;
+        for (const p in uniforms) {
+            if (this.isTexture(p)) {
+                size += (uniforms[p] as AbstractTexture).getMemorySize();
+            } else if (this.uniforms[p] && (this.uniforms[p] as any).destroy) {
+                size += getTexMemorySize(this.uniforms[p] as Texture);
+            }
+        }
+        return size;
     }
 
     isReady() {
@@ -250,65 +298,5 @@ export class AbstractMaterial extends Eventable(Base) {
     //@internal
     _incrVersion() {
         this._version++;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    getUniforms(_regl?: any) {
-        throw new Error(ERROR_NOT_IMPLEMENTED);
-    }
-
-    getMemorySize() {
-        throw new Error(ERROR_NOT_IMPLEMENTED);
-    }
-
-}
-
-export default class Material extends AbstractMaterial {
-    getUniforms(device: any) {
-        if (this._reglUniforms && !this.isDirty()) {
-            return this._reglUniforms;
-        }
-        const uniforms = this.uniforms;
-        const realUniforms: ShaderUniforms = {};
-        for (const p in uniforms) {
-            if (this.isTexture(p)) {
-                Object.defineProperty(realUniforms, p, {
-                    enumerable: true,
-                    configurable: true,
-                    get: function () {
-                        return (uniforms[p] as AbstractTexture).getREGLTexture(device);
-                    }
-                });
-            } else {
-                const descriptor = Object.getOwnPropertyDescriptor(uniforms, p);
-                if (descriptor.get) {
-                    Object.defineProperty(realUniforms, p, {
-                        enumerable: true,
-                        configurable: true,
-                        get: function () {
-                            return uniforms[p];
-                        }
-                    });
-                } else {
-                    realUniforms[p] = uniforms[p];
-                }
-            }
-        }
-        this._reglUniforms = realUniforms;
-        this._uniformVer = this.version;
-        return realUniforms;
-    }
-
-    getMemorySize() {
-        const uniforms = this.uniforms;
-        let size = 0;
-        for (const p in uniforms) {
-            if (this.isTexture(p)) {
-                size += (uniforms[p] as AbstractTexture).getMemorySize();
-            } else if (this.uniforms[p] && (this.uniforms[p] as any).destroy) {
-                size += getTexMemorySize(this.uniforms[p] as Texture);
-            }
-        }
-        return size;
     }
 }

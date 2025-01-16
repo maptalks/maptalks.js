@@ -1,6 +1,6 @@
 import { vec3, vec4 } from 'gl-matrix';
 import { packTangentFrame, buildTangents, buildNormals } from '@maptalks/tbn-packer';
-import { isNumber, extend, isArray, isSupportVAO, hasOwn, getBufferSize, isInStride, isInterleaved } from './common/Util';
+import { isNumber, extend, isArray, isSupportVAO, hasOwn, getBufferSize, isInStride, isInterleaved, getArrayCtor } from './common/Util';
 import BoundingBox from './BoundingBox';
 import { KEY_DISPOSED } from './common/Constants';
 import { getGLTFLoaderBundle } from './common/GLTFBundle'
@@ -53,7 +53,8 @@ function GUID() {
 
 const REF_COUNT_KEY = '_reshader_refCount';
 
-export class AbstractGeometry {
+export default class Geometry {
+
     static createElementBuffer(device: any, elements: any): any {
         if (device instanceof GraphicsDevice) {
             return createGPUBuffer(device, elements, GPUBufferUsage.INDEX, 'index buffer');
@@ -205,6 +206,10 @@ export class AbstractGeometry {
         }
     }
 
+    getBuffer(name: string) {
+        return this.data[name] && this.data[name].buffer;
+    }
+
     getAttrData(activeAttributes: ActiveAttributes) {
         const key = activeAttributes.key;
         const updated = !this._reglData || !this._reglData[key];
@@ -342,7 +347,7 @@ export class AbstractGeometry {
         const allocatedBuffers = this._buffers;
         for (const p in allocatedBuffers) {
             if (!allocatedBuffers[p].buffer) {
-                allocatedBuffers[p].buffer = AbstractGeometry.createBuffer(device, allocatedBuffers[p].data, p);
+                allocatedBuffers[p].buffer = Geometry.createBuffer(device, allocatedBuffers[p].data, p);
             }
             delete allocatedBuffers[p].data;
         }
@@ -369,7 +374,7 @@ export class AbstractGeometry {
                 const dimension = arr.length / vertexCount;
                 const info = data[key].data ? data[key] : { data: data[key] };
                 info.dimension = dimension;
-                const buffer = AbstractGeometry.createBuffer(device, info, key);
+                const buffer = Geometry.createBuffer(device, info, key);
                 buffer[REF_COUNT_KEY] = 1;
                 buffers[key] = {
                     buffer
@@ -638,6 +643,7 @@ export class AbstractGeometry {
     }
 
     dispose() {
+        this._deleteVAO();
         this._forEachBuffer(buffer => {
             if (!buffer[KEY_DISPOSED]) {
                 let refCount = buffer[REF_COUNT_KEY];
@@ -671,6 +677,14 @@ export class AbstractGeometry {
         this.elements = [];
         delete this._tempPosArray;
         this._disposed = true;
+    }
+
+    //@internal
+    _deleteVAO() {
+        for (const p in this._vao) {
+            this._vao[p].vao.destroy();
+        }
+        this._vao = {};
     }
 
     isDisposed() {
@@ -874,7 +888,8 @@ export class AbstractGeometry {
                 throw new Error(name + ' must be array to build unique vertex.');
             }
             oldData[name] = attr;
-            data[name] = new attr.constructor(l * size);
+            const ctor = getArrayCtor(attr);
+            data[name] = new ctor(l * size);
         }
 
         let cursor = 0;
@@ -956,62 +971,25 @@ export class AbstractGeometry {
         this._version++;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    getBufferDescriptor(_vertexInfo) {
-        return [];
-    }
-}
-
-function getElementLength(elements) {
-    if (isNumber(elements)) {
-        return elements;
-    } else if (elements.count !== undefined) {
-        // object buffer form
-        return elements.count;
-    } else if (elements.destroy) {
-        if (elements['_elements']) {
-            // a regl element buffer
-            return elements['_elements'].vertCount;
-        } else {
-            //GPUBuffer
-            return elements.itemCount;
-        }
-    } else if (elements.length !== undefined) {
-        return elements.length;
-    } else if (elements.data) {
-        return elements.data.length;
-    }
-    throw new Error('invalid elements length');
-}
-
-function getTypeCtor(arr: NumberArray, byteWidth: number) {
-    if (arr instanceof Uint8Array || arr instanceof Uint16Array || arr instanceof Uint32Array || arr instanceof Uint8ClampedArray) {
-        return byteWidth === 1 ? Uint8Array : byteWidth === 2 ? Uint16Array : Uint32Array;
-    }
-    if (arr instanceof Int8Array || arr instanceof Int16Array || arr instanceof Int32Array) {
-        return byteWidth === 1 ? Int8Array : byteWidth === 2 ? Int16Array : Int32Array;
-    }
-    if (arr instanceof Float32Array || arr instanceof Float64Array) {
-        return byteWidth === 4 ? Float32Array : Float64Array;
-    }
-    return null;
-}
-
-export class GPUGeometry extends AbstractGeometry {
-    getCommandKey() {
-        // 因为attribute组织方式会影响pipeline的创建，所以attributes组织方式不同时，需要创建不同的command key
-        // 我们这里暂时不考虑Geometry会更新attributes组织方式的情况，因为在maptalks的使用场景不会出现
-        // 可能有些attribute没有被wgsl使用，但组织方式不同，这里也不考虑这种情况
-        const keys = [];
-        for (const p in this.data) {
-            const attr = this.data[p];
-            if (attr.byteStride) {
-                keys.push(`${p}(${attr.byteOffset}/${attr.byteStride}})`);
-            } else {
-                keys.push(p);
+    getCommandKey(device: any) {
+        if (device && device.wgpu) {
+            // 因为attribute组织方式会影响pipeline的创建，所以attributes组织方式不同时，需要创建不同的command key
+            // 我们这里暂时不考虑Geometry会更新attributes组织方式的情况，因为在maptalks的使用场景不会出现
+            // 可能有些attribute没有被wgsl使用，但组织方式不同，这里也不考虑这种情况
+            const keys = [];
+            for (const p in this.data) {
+                const attr = this.data[p];
+                if (attr.byteStride) {
+                    keys.push(`${p}(${attr.byteOffset}/${attr.byteStride}})`);
+                } else {
+                    keys.push(p);
+                }
             }
+            return keys.sort().join('-');
+        } else {
+            // regl
+            return '';
         }
-        return keys.sort().join('-');
     }
 
     getBufferDescriptor(vertexInfo) {
@@ -1077,23 +1055,39 @@ export class GPUGeometry extends AbstractGeometry {
     }
 }
 
-export default class Geometry extends AbstractGeometry {
-    getCommandKey() {
-        return '';
-    }
-
-    dispose() {
-        this._deleteVAO();
-        super.dispose();
-    }
-
-    //@internal
-    _deleteVAO() {
-        for (const p in this._vao) {
-            this._vao[p].vao.destroy();
+function getElementLength(elements) {
+    if (isNumber(elements)) {
+        return elements;
+    } else if (elements.count !== undefined) {
+        // object buffer form
+        return elements.count;
+    } else if (elements.destroy) {
+        if (elements['_elements']) {
+            // a regl element buffer
+            return elements['_elements'].vertCount;
+        } else {
+            //GPUBuffer
+            return elements.itemCount;
         }
-        this._vao = {};
+    } else if (elements.length !== undefined) {
+        return elements.length;
+    } else if (elements.data) {
+        return elements.data.length;
     }
+    throw new Error('invalid elements length');
+}
+
+function getTypeCtor(arr: NumberArray, byteWidth: number) {
+    if (arr instanceof Uint8Array || arr instanceof Uint16Array || arr instanceof Uint32Array || arr instanceof Uint8ClampedArray) {
+        return byteWidth === 1 ? Uint8Array : byteWidth === 2 ? Uint16Array : Uint32Array;
+    }
+    if (arr instanceof Int8Array || arr instanceof Int16Array || arr instanceof Int32Array) {
+        return byteWidth === 1 ? Int8Array : byteWidth === 2 ? Int16Array : Int32Array;
+    }
+    if (arr instanceof Float32Array || arr instanceof Float64Array) {
+        return byteWidth === 4 ? Float32Array : Float64Array;
+    }
+    return null;
 }
 
 function getItemBytes(data) {

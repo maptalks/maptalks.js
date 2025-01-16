@@ -1,9 +1,8 @@
-import Shader, { GPUShader } from './Shader';
-import InstancedMesh from '../InstancedMesh';
+import Shader from './Shader';
 
 class MeshShader extends Shader {
 
-    draw(regl, meshes) {
+    draw(device, shaderUniforms, meshes) {
         if (!meshes || !meshes.length) {
             return 0;
         }
@@ -18,21 +17,21 @@ class MeshShader extends Shader {
                 continue;
             }
             if (!meshes[i].geometry.getDrawCount() || !this._runFilter(meshes[i])) {
-                //此处regl有个潜在的bug:
-                //如果count为0的geometry不过滤掉，regl生成的函数中，bind的texture不会执行unbind
+                //此处device有个潜在的bug:
+                //如果count为0的geometry不过滤掉，device生成的函数中，bind的texture不会执行unbind
                 if (i === l - 1 && preCommand && props.length) {
                     preCommand(props);
                 }
                 continue;
             }
 
-            const v = meshes[i].getRenderProps(regl, command.activeAttributes);
+            const v = meshes[i].getRenderProps(device, command.activeAttributes);
             this._ensureContextDefines(v);
             v.shaderContext = this.context;
             v.meshObject = meshes[i];
-            this.appendDescUniforms(regl, v);
+            this.appendDescUniforms(device, v);
 
-            const command = this.getMeshCommand(regl, meshes[i], v);
+            const command = this.getMeshCommand(device, meshes[i], v);
 
             //run command one by one, for debug
             // const props = extend({}, this.context, meshes[i].getRenderProps());
@@ -41,7 +40,7 @@ class MeshShader extends Shader {
 
             if (props.length && preCommand !== command) {
                 //batch mode
-                this.run(preCommand, props);
+                this.run(device, command, shaderUniforms, props);
                 props.length = 0;
             }
 
@@ -51,7 +50,7 @@ class MeshShader extends Shader {
             if (i < l - 1) {
                 preCommand = command;
             } else if (i === l - 1) {
-                this.run(command, props);
+                this.run(device, command, shaderUniforms, props);
             }
         }
         return count;
@@ -112,7 +111,7 @@ class MeshShader extends Shader {
         return filters(m);
     }
 
-    getMeshCommand(regl, mesh, uniformValues) {
+    getMeshCommand(device, mesh, uniformValues) {
         if (!this._cmdKeys) {
             this._cmdKeys = {};
         }
@@ -121,12 +120,12 @@ class MeshShader extends Shader {
         if (material) {
             doubleSided = material.doubleSided;
         }
-        const key = this.getShaderCommandKey(mesh, uniformValues, doubleSided);
+        const key = this.getShaderCommandKey(device, mesh, uniformValues, doubleSided);
         let storedKeys = this._cmdKeys[key];
         if (!storedKeys) {
             storedKeys = this._cmdKeys[key] = {};
         }
-        const meshKey = mesh.getCommandKey();
+        const meshKey = mesh.getCommandKey(device);
         if (!storedKeys[meshKey]) {
             storedKeys[meshKey] = key + '_' + mesh.getCommandKey();
         }
@@ -141,7 +140,7 @@ class MeshShader extends Shader {
             if (doubleSided && this.extraCommandProps) {
                 commandProps.cull = { enable: false };
             }
-            command = this.commands[dKey] = this.createMeshCommand(regl, mesh, commandProps);
+            command = this.commands[dKey] = this.createMeshCommand(device, mesh, commandProps);
         }
         return command;
     }

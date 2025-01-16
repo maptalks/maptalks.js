@@ -1,4 +1,4 @@
-import REGL, { Regl, Uniforms } from "@maptalks/regl";
+import REGL, { Uniforms } from "@maptalks/regl";
 import Scene from "./Scene";
 
 const EMPTY_UNIFORMS = {};
@@ -21,10 +21,10 @@ class Renderer {
         let count = 0;
         if (scene) {
             const { opaques, transparents } = scene.getSortedMeshes();
-            count += shader.draw(this.device, opaques);
-            count += shader.draw(this.device, transparents);
+            count += shader.draw(this.device, uniforms, opaques);
+            count += shader.draw(this.device, uniforms, transparents);
         } else {
-            count += shader.draw(this.device);
+            count += shader.draw(this.device, uniforms);
         }
         return count;
     }
