@@ -8,6 +8,7 @@ import InstancedMesh from '../InstancedMesh';
 import Mesh from '../Mesh';
 import DynamicBuffer from '../webgpu/DynamicBuffer';
 import CommandBuilder from '../webgpu/CommandBuilder';
+import GraphicsDevice from '../webgpu/GraphicsDevice';
 
 
 const UNIFORM_TYPE = {
@@ -418,14 +419,15 @@ export default class GPUShader extends GLShader {
         }
     }
 
-    run(device: any, command, shaderUniforms, props) {
-        if (!device.wgpu) {
+    run(deviceOrRegl: any, command, shaderUniforms, props) {
+        if (!deviceOrRegl.wgpu) {
             // regl command
-            return super.run(device, command, shaderUniforms, props);
+            return super.run(deviceOrRegl, command, shaderUniforms, props);
         }
+        const device = deviceOrRegl as GraphicsDevice;
         this.isGPU = true;
         const buffersPool = device.dynamicBufferPool;
-        const passEncoder: GPURenderPassEncoder = this._currentPassEncoder;
+        const passEncoder: GPURenderPassEncoder = this._getCurrentRenderPassEncoder(device);
         passEncoder.setPipeline(command.pipeline);
 
         const { key, bindGroupFormat, pipeline, vertexInfo } = command;
@@ -472,6 +474,20 @@ export default class GPUShader extends GLShader {
             }
         }
         passEncoder.end();
+    }
+
+    _getCurrentRenderPassEncoder(device: GraphicsDevice) {
+        return this._currentPassEncoder || device.getDefaultRenderPassEncoder();
+    }
+
+    setFramebuffer(framebuffer) {
+        if (!framebuffer.isGPU) {
+            return super.setFramebuffer(framebuffer);
+        }
+        // this.context.framebuffer = framebuffer;
+        // framebuffer => GPURenderPassEncoderDescriptor
+        // this._currentPassEncoder = passEncoder;
+        return this;
     }
 
     dispose() {
