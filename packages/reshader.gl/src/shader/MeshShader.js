@@ -25,13 +25,14 @@ class MeshShader extends Shader {
                 continue;
             }
 
-            const v = meshes[i].getRenderProps(device, command.activeAttributes);
+            const v = meshes[i].getRenderProps(device);
             this._ensureContextDefines(v);
             v.shaderContext = this.context;
             v.meshObject = meshes[i];
             this.appendDescUniforms(device, v);
 
             const command = this.getMeshCommand(device, meshes[i], v);
+            meshes[i].appendGeoAttributes(v, device, command.activeAttributes);
 
             //run command one by one, for debug
             // const props = extend({}, this.context, meshes[i].getRenderProps());

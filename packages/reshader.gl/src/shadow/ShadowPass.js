@@ -80,7 +80,7 @@ class ShadowPass {
     }
 
     _init(defines) {
-        const regl = this.renderer.regl;
+        const regl = this.renderer.device;
         const type = 'uint8';
         const width = this.width,
             height = this.height;

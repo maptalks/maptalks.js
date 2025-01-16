@@ -42,7 +42,7 @@ export default class StencilShadowPass {
         const shadow = new reshader.Geometry({
             aPosition: data.vertices
         }, data.indices);
-        shadow.generateBuffers(this.renderer.regl);
+        shadow.generateBuffers(this.renderer.device);
 
         return [new reshader.Mesh(shadow)];
     }

@@ -219,7 +219,7 @@ class ShadowProcess {
 
     _createGround() {
         const planeGeo = new reshader.Plane();
-        planeGeo.generateBuffers(this.renderer.regl);
+        planeGeo.generateBuffers(this.renderer.device);
         this._ground = new reshader.Mesh(planeGeo);
         this._groundScene = new reshader.Scene([this._ground]);
     }

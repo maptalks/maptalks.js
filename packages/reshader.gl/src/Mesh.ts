@@ -334,12 +334,8 @@ export default class Mesh {
     //     return uniforms;
     // }
 
-    getRenderProps(device: any, activeAttributes: ActiveAttributes) {
+    getRenderProps(device: any) {
         const props = this.getUniforms(device);
-        extend(props, this._getGeometryAttributes(device, activeAttributes));
-        if (!isSupportVAO(device) || this.disableVAO) {
-            props.elements = this._geometry.getElements();
-        }
         props.meshProperties = this.properties;
         props.geometryProperties = this._geometry.properties;
         props.meshConfig = this.config;
@@ -353,6 +349,13 @@ export default class Mesh {
     //@internal
     _getGeometryAttributes(device, activeAttributes) {
         return this._geometry.getREGLData(device, activeAttributes, this.disableVAO);
+    }
+
+    appendGeoAttributes(props, device, activeAttributes) {
+        extend(props, this._getGeometryAttributes(device, activeAttributes));
+        if (!isSupportVAO(device) || this.disableVAO) {
+            props.elements = this._geometry.getElements();
+        }
     }
 
     getUniforms(device: any): ShaderUniforms {

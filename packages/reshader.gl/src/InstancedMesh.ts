@@ -174,8 +174,8 @@ export default class InstancedMesh extends Mesh {
         return this;
     }
 
-    getRenderProps(regl: Regl, activeAttributes: ActiveAttributes) {
-        const props = super.getRenderProps(regl, activeAttributes);
+    getRenderProps(regl: Regl) {
+        const props = super.getRenderProps(regl);
         if (!isSupportVAO(regl)) {
             extend(props, this.instancedData);
         }

@@ -24,7 +24,7 @@ export default class HeatmapProcess {
     render(scene, uniforms, fbo) {
         this._check();
         const map = this._layer.getMap();
-        this.renderer.regl.clear({
+        this.renderer.device.clear({
             color: EMPTY_COLOR,
             depth: 1,
             stencil: 0xFF,
@@ -86,7 +86,7 @@ export default class HeatmapProcess {
         if (this._colorRampTex) {
             this._colorRampTex.destroy();
         }
-        const regl = this.renderer.regl;
+        const regl = this.renderer.device;
         this._colorRampTex = regl.texture({
             width: 256,
             height: 1,
@@ -116,7 +116,7 @@ export default class HeatmapProcess {
 
     _createGround() {
         const planeGeo = new reshader.Plane();
-        planeGeo.generateBuffers(this.renderer.regl);
+        planeGeo.generateBuffers(this.renderer.device);
         this._ground = new reshader.Mesh(planeGeo);
         this._groundScene = new reshader.Scene([this._ground]);
     }
@@ -129,7 +129,7 @@ export default class HeatmapProcess {
 
     _createHeatmapTex() {
         const canvas = this._layer.getRenderer().canvas;
-        const regl = this.renderer.regl;
+        const regl = this.renderer.device;
         const colorType = regl.hasExtension('OES_texture_half_float') ? 'half float' : 'float';
         const width = Math.ceil(canvas.width / 4);
         const height = Math.ceil(canvas.height / 4);

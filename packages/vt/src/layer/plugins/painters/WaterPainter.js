@@ -460,7 +460,7 @@ class WaterPainter extends BasicPainter {
         planeGeo.data.aTexCoord = new Uint8Array(
             [0, 1, 1, 1, 0, 0, 1, 0]
         );
-        planeGeo.generateBuffers(this.renderer.regl);
+        planeGeo.generateBuffers(this.renderer.device);
 
         this._water = new reshader.Mesh(planeGeo, null, { castShadow: false });
         this._waterScene = new reshader.Scene([this._water]);
