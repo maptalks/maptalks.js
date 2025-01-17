@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cube Wireframe</title>
+  <style type="text/css">
+    html,body{margin:0px;height:100%;width:100%}
+    .container{width:1000px;height:800px}
+  </style>
+  <body>
+    <canvas id="canvas" width=1000 height=800 class="container" style="border : 1px solid"></canvas>
+    <script type="importmap">
+        {
+            "imports": {
+                "reshader": "../../packages/reshader.gl/dist/reshadergl.es.js",
+                "meshes": "./meshes/cube.js",
+                "gl-matrix": "./gl-matrix/index.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import { GraphicsDevice, Renderer, MeshShader, Geometry, Mesh, Scene } from 'reshader';
+        import { cubeVertexArray, cubeVertexColors, cubeVertexCount } from 'meshes';
+        import { mat4, vec3 } from 'gl-matrix';
+
+        const vert = `
+            struct Uniforms {
+                modelMatrix : mat4x4f,
+            }
+            @binding(0) @group(0) var<uniform> uniforms : Uniforms;
+
+            struct VertexOutput {
+                @builtin(position) Position : vec4f,
+                @location(0) fragPosition: vec4f,
+            }
+
+            @vertex
+            fn main(
+                @location(0) position : vec4f,
+            ) -> VertexOutput {
+                var output : VertexOutput;
+                output.Position = uniforms.modelMatrix * position;
+                output.fragPosition = 0.5 * (position + vec4(1.0, 1.0, 1.0, 1.0));
+                return output;
+            }
+        `;
+        const frag = `
+            @fragment
+            fn main(
+                @location(0) fragPosition: vec4f
+            ) -> @location(0) vec4f {
+                return fragPosition;
+            }
+        `;
+        const adapter = await navigator.gpu?.requestAdapter();
+        const gpuDevice = await adapter?.requestDevice();
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('webgpu');
+
+        const device = new GraphicsDevice(gpuDevice, context)
+        const renderer = new Renderer(device);
+        const shader = new MeshShader({
+            vert,
+            frag
+        });
+
+        const geometry = new Geometry({
+            position: cubeVertexArray
+        }, cubeVertexCount, 0, {
+            positionAttribute: 'position'
+        });
+        geometry.generateBuffers(device);
+
+        const mesh = new Mesh(geometry);
+        const scene = new Scene();
+
+        function render() {
+            const matrix = getTransformationMatrix();
+            mesh.setLocalTransform(matrix);
+            scene.setMeshes([mesh]);
+
+            renderer.render(shader, null, scene);
+            requestAnimationFrame(render);
+        }
+
+
+        const aspect = canvas.width / canvas.height;
+        const projectionMatrix = mat4.perspective([], (2 * Math.PI) / 5, aspect, 1, 100.0);
+        const modelViewProjectionMatrix = mat4.create();
+        const viewMatrix = mat4.identity([]);
+        const translation = [0, 0, -4];
+        const axis = [];
+        function getTransformationMatrix() {
+            mat4.translate(viewMatrix, viewMatrix, translation);
+            const now = Date.now() / 1000;
+            mat4.rotate(
+                viewMatrix,
+                viewMatrix,
+                1,
+                vec3.set(axis, Math.sin(now), Math.cos(now), 0)
+            );
+            mat4.multiply(modelViewProjectionMatrix, projectionMatrix, viewMatrix);
+            return modelViewProjectionMatrix;
+        }
+
+        render();
+    </script>
+  </body>
+</html>

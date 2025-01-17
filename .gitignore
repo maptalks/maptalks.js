@@ -29,6 +29,6 @@ coverage
 .env
 .env.local
 web.config
-debug
+
 *.tsbuildinfo
 *.map
