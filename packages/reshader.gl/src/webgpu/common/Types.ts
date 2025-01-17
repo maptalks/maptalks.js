@@ -1,19 +1,19 @@
 export function getGPUVertexType(array) {
     let format;
     if (Array.isArray(array) || array instanceof Float32Array) {
-        format === 'float32';
+        format = 'float32';
     } else if (array instanceof Uint32Array) {
-        format === 'uint32';
+        format = 'uint32';
     } else if (array instanceof Int32Array) {
-        format === 'sint32';
+        format = 'sint32';
     } else if (array instanceof Uint16Array) {
-        format === 'uint16';
+        format = 'uint16';
     } else if (array instanceof Int16Array) {
-        format === 'sint16';
+        format = 'sint16';
     } else if (array instanceof Uint8Array) {
-        format === 'uint8';
+        format = 'uint8';
     } else if (array instanceof Int8Array) {
-        format === 'sint8';
+        format = 'sint8';
     }
     return format;
 }

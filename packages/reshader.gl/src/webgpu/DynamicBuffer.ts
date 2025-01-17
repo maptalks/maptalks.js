@@ -14,6 +14,7 @@ export default class DynamicBuffer {
         this.bindgroupMapping = bindgroupMapping;
         this.pool = pool;
         this.dynamicOffsets = new Array(bindgroupMapping.length);
+        this.allocation = {};
     }
 
     writeBuffer(uniformValues: Record<string, ShaderUniformValue>) {
@@ -38,7 +39,7 @@ export default class DynamicBuffer {
                     this._fillValue(storage, offset, size, value);
                 }
                 // size() 返回的值已经考虑过 bufferAlignment
-                dynamicOffset += mapping[i].size();
+                dynamicOffset += mapping[i].size;
                 this.dynamicOffsets[i] = dynamicOffset;
             } else if (uniform.resourceType === ResourceType.Uniform) {
                 const value = uniformValues[uniform.name];

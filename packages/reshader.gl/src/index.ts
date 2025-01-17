@@ -116,3 +116,5 @@ export {
     quat, quat2,
     vec2, vec3, vec4
 } from 'gl-matrix';
+
+export { default as GraphicsDevice } from './webgpu/GraphicsDevice';

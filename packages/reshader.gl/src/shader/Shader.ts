@@ -433,9 +433,15 @@ export default class GPUShader extends GLShader {
         const { key, bindGroupFormat, pipeline, vertexInfo } = command;
         const layout = pipeline.getBindGroupLayout(0);
         // 1. 生成shader uniform 需要的dynamic buffer
+        if (!this._buffers) {
+            this._buffers = {};
+        }
         let shaderBuffer = this._buffers[key] as DynamicBuffer;
-        if (shaderBuffer) {
+        if (!shaderBuffer) {
             shaderBuffer = this._buffers[key] = new DynamicBuffer(bindGroupFormat.getShaderUniforms(), buffersPool);
+        }
+        if (!this._bindGroupCache) {
+            this._bindGroupCache = {};
         }
         // 向buffer中填入shader uniform值
         shaderBuffer.writeBuffer(shaderUniforms);
@@ -457,9 +463,10 @@ export default class GPUShader extends GLShader {
             const dynamicOffsets = shaderBuffer.dynamicOffsets.concat(meshBuffer.dynamicOffsets);
             passEncoder.setBindGroup(0, bindGroup, dynamicOffsets);
 
-            for (const vertex of vertexInfo) {
-                const vertexBuffer = mesh.geometry.getBuffer(vertex.name);
-                passEncoder.setVertexBuffer(vertex.index, vertexBuffer);
+            for (const name in vertexInfo) {
+                const vertex = vertexInfo[name];
+                const vertexBuffer = mesh.geometry.getBuffer(name);
+                passEncoder.setVertexBuffer(vertex.location, vertexBuffer);
             }
 
             //TODO InstancedMesh 的参数
@@ -481,7 +488,7 @@ export default class GPUShader extends GLShader {
     }
 
     setFramebuffer(framebuffer) {
-        if (!framebuffer.isGPU) {
+        if (!framebuffer || !framebuffer.isGPU) {
             return super.setFramebuffer(framebuffer);
         }
         // this.context.framebuffer = framebuffer;

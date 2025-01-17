@@ -3,6 +3,7 @@ import { toGPUSampler } from "./common/ReglTranslator";
 import DynamicBuffer from "./DynamicBuffer";
 import Mesh from "../Mesh";
 import Texture2D from "../Texture2D";
+import GraphicsDevice from "./GraphicsDevice";
 
 export default class BindGroupFormat {
     bytes: number;
@@ -46,7 +47,7 @@ export default class BindGroupFormat {
                 this._shaderUniforms.index = index;
                 this._shaderUniforms.totalSize += uniform.size;
             } else {
-                let index = this._shaderUniforms.index;
+                let index = this._meshUniforms.index;
                 this._meshUniforms[index++] = uniform;
                 this._meshUniforms.index = index;
                 this._meshUniforms.totalSize += uniform.size;
@@ -54,8 +55,8 @@ export default class BindGroupFormat {
         }
     }
 
-    createBindGroup(device: GPUDevice, mesh: Mesh, layout: GPUBindGroupLayout, shaderBuffer: DynamicBuffer, meshBuffer: DynamicBuffer) {
-        const groups = this.groups;
+    createBindGroup(device: GraphicsDevice, mesh: Mesh, layout: GPUBindGroupLayout, shaderBuffer: DynamicBuffer, meshBuffer: DynamicBuffer) {
+        const groups = this.groups[0];
         const entries = [];
         for (let i = 0; i < groups.length; i++) {
             const group = groups[i];
@@ -64,7 +65,7 @@ export default class BindGroupFormat {
                 const texture = (mesh.getUniform(name) || mesh.material && mesh.material.getUniform(name)) as Texture2D;
                 const { min, mag, wrapS, wrapT } = (texture as Texture2D).config;
                 const filters = toGPUSampler(min, mag, wrapS, wrapT);
-                const sampler = device.createSampler(filters);
+                const sampler = device.wgpu.createSampler(filters);
                 entries.push({
                     binding: group.binding,
                     resource: sampler
@@ -88,7 +89,7 @@ export default class BindGroupFormat {
                 });
             }
         }
-        return device.createBindGroup({
+        return device.wgpu.createBindGroup({
             layout,
             label: '',
             entries

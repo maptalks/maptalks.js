@@ -4,9 +4,12 @@ import BindGroupFormat from '../webgpu/BindGroupFormat';
 import Mesh from '../Mesh';
 import { ResourceType } from 'wgsl_reflect';
 import { extend } from '../common/Util';
+import GraphicsDevice from './GraphicsDevice';
+import PipelineDescriptor from './common/PipelineDesc';
+import { ActiveAttributes } from '../types/typings';
 
 export default class CommandBuilder {
-    device: GPUDevice;
+    device: GraphicsDevice;
     vert: string;
     frag: string;
     mesh: Mesh;
@@ -25,8 +28,9 @@ export default class CommandBuilder {
         const defined = key => {
             return !!defines[key];
         }
-        const vert = wgsl(this.vert, defined);
-        const frag = wgsl(this.frag, defined);
+        //FIXME 如何在wgsl中实现defined
+        const vert = wgsl(this.vert);
+        const frag = wgsl(this.frag);
 
         const vertReflect = new WgslReflect(vert);
         const vertexInfo = this._formatBufferInfo(vertReflect, mesh);
@@ -37,31 +41,42 @@ export default class CommandBuilder {
         const pipeline = this._createPipeline(device, vert, vertexInfo, frag, layout, mesh, pipelineDesc);
 
         const bindGroupMapping = this._createBindGroupMapping(vertReflect, fragReflect, mesh);
-        const bindGroupFormat = new BindGroupFormat(bindGroupMapping, device.limits.minUniformBufferOffsetAlignment);
+        const bindGroupFormat = new BindGroupFormat(bindGroupMapping, device.wgpu.limits.minUniformBufferOffsetAlignment);
+        const activeAttributes = this._getActiveAttributes(vertexInfo);
 
         return {
             pipeline,
             vertexInfo,
             bindGroupMapping,
-            bindGroupFormat
+            bindGroupFormat,
+            activeAttributes
         };
+    }
+
+    _getActiveAttributes(vertexInfo): ActiveAttributes {
+        const attributes = [{ name: 'position', type: 1 }];
+        (attributes as any).key = attributes.map(attr => attr.name).join();
+        return attributes as ActiveAttributes;
     }
 
     _createBindGroupLayout(vertReflect: any, fragReflect: any, mesh: Mesh) {
         const vertGroups = vertReflect.getBindGroups();
         const fragGroups = fragReflect.getBindGroups();
-        const layoutEntries = [];
+        const entries = [];
         for (let i = 0; i < vertGroups.length; i++) {
             const groupInfo = vertGroups[i];
             const entry = this._createLayoutEntry(i, GPUShaderStage.VERTEX, groupInfo, mesh);
-            layoutEntries.push(entry);
+            entries.push(entry);
         }
         for (let i = 0; i < fragGroups.length; i++) {
             const groupInfo = fragGroups[i];
             const entry = this._createLayoutEntry(i, GPUShaderStage.FRAGMENT, groupInfo, mesh);
-            layoutEntries.push(entry);
+            entries.push(entry);
         }
-        return layoutEntries;
+        return this.device.wgpu.createBindGroupLayout({
+            label: '',
+            entries
+        });
     }
 
     _createLayoutEntry(binding, visibility, groupInfo, mesh): GPUBindGroupLayoutEntry {
@@ -126,12 +141,15 @@ export default class CommandBuilder {
         const fragGroups = fragReflect.getBindGroups();
         // 解析vertInfo和fragInfo，生成一个 bindGroupMapping，用于mesh在运行时，生成bindGroup
         // mapping 中包含 uniform 变量名对应的 group index 和 binding index
-        this._parseGroupMapping(mapping, vertGroups, mesh);
-        this._parseGroupMapping(mapping, fragGroups, mesh);
+        this._parseGroupMapping(mapping, vertGroups[0], mesh);
+        this._parseGroupMapping(mapping, fragGroups[0], mesh);
         return mapping;
     }
 
     _parseGroupMapping(mapping, groupReflect, mesh) {
+        if (!groupReflect) {
+            return;
+        }
         for (let i = 0; i < groupReflect.length; i++) {
             const groupInfo = groupReflect[i];
             const { group, binding } = groupInfo;
@@ -153,14 +171,14 @@ export default class CommandBuilder {
             }
             mapping.groups = mapping.groups || [];
             mapping.groups[group] = mapping.groups[group] || [];
-            mapping.groups[group][binding] = extend({
-                // we assume all the members in the same struct is all global or mesh owned
-                isGlobal
-            }, groupInfo);
+            groupInfo.isGlobal = isGlobal;
+            // we assume all the members in the same struct is all global or mesh owned
+            mapping.groups[group][binding] = groupInfo;//extend({
         }
     }
     // 运行时调用，生成 uniform buffer， 用来存放全局 uniform 变量的值
-    _createPipeline(device, vert, vertInfo, frag, layout, mesh, pipelineDesc): GPURenderPipeline {
+    _createPipeline(graphicsDevice: GraphicsDevice, vert: string, vertInfo, frag: string, layout: GPUBindGroupLayout, mesh:Mesh, pipelineDesc: PipelineDescriptor): GPURenderPipeline {
+        const device = graphicsDevice.wgpu;
         const vertModule = device.createShaderModule({
             code: vert,
         });
@@ -171,8 +189,12 @@ export default class CommandBuilder {
             this._presentationFormat = navigator.gpu.getPreferredCanvasFormat();
         }
         const buffers = mesh.geometry.getBufferDescriptor(vertInfo);
+        const pipelineLayout = device.createPipelineLayout({
+            label: 'label',
+            bindGroupLayouts: [layout]
+        });
         const pipelineOptions: GPURenderPipelineDescriptor = {
-            layout,
+            layout: pipelineLayout,
             vertex: {
                 module: vertModule,
                 buffers
@@ -226,6 +248,9 @@ export default class CommandBuilder {
 }
 
 function meshHasUniform(mesh: Mesh, name: string) {
+    if (name === 'modelMatrix' || name === 'positionMatrix') {
+        return true;
+    }
     return mesh.hasUniform(name) || (mesh.material && mesh.material.hasUniform(name));
 }
 

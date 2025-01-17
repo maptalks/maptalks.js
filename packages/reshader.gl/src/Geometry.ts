@@ -1091,7 +1091,7 @@ function getTypeCtor(arr: NumberArray, byteWidth: number) {
 }
 
 function getItemBytes(data) {
-    const array = data.data || data.buffer || data;
+    const array = getAttrArray(data);
     if (array.destroy) {
         return array.itemBytes;
     }
@@ -1109,14 +1109,18 @@ function getItemBytes(data) {
 }
 
 function getItemFormat(data, itemSize) {
-    const array = data.data || data.buffer || data;
+    const array = getAttrArray(data);
     let format;
     if (array.destroy) {
         format = array.itemType;
     } else {
-        format = getGPUVertexType(data);
+        format = getGPUVertexType(array);
     }
     return itemSize > 1 ? (format + 'x' + itemSize) : format;
+}
+
+function getAttrArray(data) {
+    return data.data || (data.buffer.destroy && data.buffer) || data;
 }
 
 function createGPUBuffer(device, data, usage, label) {

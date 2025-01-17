@@ -4,10 +4,10 @@
 import * as math from './common/math';
 
 export type DynamicBufferAllocation = {
-    storage: ArrayBuffer;
-    gpuBuffer: GPUBuffer;
-    offset: number;
-    size: number;
+    storage?: ArrayBuffer;
+    gpuBuffer?: GPUBuffer;
+    offset?: number;
+    size?: number;
 }
 
 export default class DynamicBufferPool {

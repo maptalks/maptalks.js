@@ -68,7 +68,7 @@ if (production) {
 module.exports = [
     {
         input: 'src/index.ts',
-        external : ['gl-matrix', '@maptalks/gltf-loader', '@maptalks/tbn-packer'],
+        external : production ? ['gl-matrix', '@maptalks/gltf-loader', '@maptalks/tbn-packer'] : [],
         plugins : plugins,
         output: [
             {

@@ -1,6 +1,5 @@
 import REGL, { Uniforms } from "@maptalks/regl";
 import Scene from "./Scene";
-import GraphicsDevice from "./webgpu/GraphicsDevice";
 
 const EMPTY_UNIFORMS = {};
 /**
@@ -10,11 +9,7 @@ class Renderer {
     device: any
 
     constructor(device: any) {
-        if (device.device) {
-            this.device = new GraphicsDevice(device.device, device.context);
-        } else {
-            this.device = device;
-        }
+        this.device = device;
     }
 
     render(shader, uniforms: Uniforms, scene: Scene, framebuffer: REGL.Framebuffer) {
