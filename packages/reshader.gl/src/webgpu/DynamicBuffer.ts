@@ -21,6 +21,7 @@ export default class DynamicBuffer {
         this.dynamicOffsets.fill(0);
         const totalSize = this.bindgroupMapping.totalSize;
         const gpuBuffer = this.allocation.gpuBuffer;
+        const bufferAlignment = this.pool.bufferAlignment;
         this.pool.alloc(this.allocation, totalSize);
         if (gpuBuffer !== this.allocation.gpuBuffer) {
             this.version++;
@@ -30,6 +31,7 @@ export default class DynamicBuffer {
         const storage = this.allocation.storage;
         for (let i = 0; i < mapping.length; i++) {
             const uniform = mapping[i];
+            this.dynamicOffsets[i] = dynamicOffset;
             if (uniform.members) {
                 for (let j = 0; j < uniform.members.length; j++) {
                     const member = uniform.members[j];
@@ -38,14 +40,11 @@ export default class DynamicBuffer {
                     const size = member.size;
                     this._fillValue(storage, offset, size, value);
                 }
-                // size() 返回的值已经考虑过 bufferAlignment
-                dynamicOffset += mapping[i].size;
-                this.dynamicOffsets[i] = dynamicOffset;
+                dynamicOffset += Math.min(mapping[i].size, bufferAlignment);
             } else if (uniform.resourceType === ResourceType.Uniform) {
                 const value = uniformValues[uniform.name];
                 this._fillValue(storage, dynamicOffset, uniform.size(), value);
-                dynamicOffset += mapping[i].size();
-                this.dynamicOffsets[i] = dynamicOffset;
+                dynamicOffset += Math.min(mapping[i].size(), bufferAlignment);
             }
         }
     }

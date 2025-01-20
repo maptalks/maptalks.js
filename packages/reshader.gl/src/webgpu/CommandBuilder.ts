@@ -3,7 +3,6 @@ import { WgslReflect } from "wgsl_reflect/wgsl_reflect.module.js";
 import BindGroupFormat from '../webgpu/BindGroupFormat';
 import Mesh from '../Mesh';
 import { ResourceType } from 'wgsl_reflect';
-import { extend } from '../common/Util';
 import GraphicsDevice from './GraphicsDevice';
 import PipelineDescriptor from './common/PipelineDesc';
 import { ActiveAttributes } from '../types/typings';
@@ -14,7 +13,9 @@ export default class CommandBuilder {
     frag: string;
     mesh: Mesh;
     _presentationFormat: any;
-    constructor(device, vert, frag, mesh) {
+    name: string;
+    constructor(name: string, device: GraphicsDevice, vert: string, frag: string, mesh: Mesh) {
+        this.name = name;
         this.device = device;
         this.vert = vert;
         this.frag = frag;
@@ -190,7 +191,7 @@ export default class CommandBuilder {
         }
         const buffers = mesh.geometry.getBufferDescriptor(vertInfo);
         const pipelineLayout = device.createPipelineLayout({
-            label: 'label',
+            label: this.name,
             bindGroupLayouts: [layout]
         });
         const pipelineOptions: GPURenderPipelineDescriptor = {

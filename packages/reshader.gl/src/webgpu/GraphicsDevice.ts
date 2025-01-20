@@ -2,7 +2,7 @@ import DynamicBufferPool from "./DynamicBufferPool";
 
 export default class GraphicsDevice {
     wgpu: GPUDevice;
-    commandBuffers: GPUCommandBuffer[];
+    commandBuffers: GPUCommandBuffer[] = [];
     dynamicBufferPool: DynamicBufferPool;
     context: GPUCanvasContext;
     _defaultRenderTarget: GPURenderPassDescriptor;
@@ -41,8 +41,8 @@ export default class GraphicsDevice {
     endCommandEncoder() {
         const { commandEncoder } = this;
         if (commandEncoder) {
-            commandEncoder.finish();
-            // this.addCommandBuffer(cb);
+            const cb = commandEncoder.finish();
+            this.addCommandBuffer(cb, false);
             this.commandEncoder = null;
         }
     }
@@ -53,7 +53,7 @@ export default class GraphicsDevice {
             const canvas = this.context.canvas;
             const depthTexture = this.wgpu.createTexture({
                 size: [canvas.width, canvas.height],
-                format: 'depth24plus',
+                format: 'depth24plus-stencil8',
                 usage: GPUTextureUsage.RENDER_ATTACHMENT,
             });
             rendrTarget = this._defaultRenderTarget = {
@@ -70,6 +70,10 @@ export default class GraphicsDevice {
                     depthClearValue: 1.0,
                     depthLoadOp: "clear",
                     depthStoreOp: "store",
+                    stencilReadOnly: false,
+                    stencilClearValue: 255,
+                    stencilLoadOp: 'clear',
+                    stencilStoreOp: 'store'
                 },
             };
         }

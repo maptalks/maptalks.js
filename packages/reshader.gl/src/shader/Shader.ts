@@ -40,8 +40,10 @@ export class GLShader {
     context: any;
     //@internal
     contextKeys: string;
+    name: string;
 
-    constructor({ vert, frag, uniforms, defines, extraCommandProps }) {
+    constructor({ vert, frag, uniforms, defines, extraCommandProps, name }) {
+        this.name = name;
         this.vert = vert;
         this.frag = frag;
         const shaderId = uid++;
@@ -411,7 +413,7 @@ export default class GPUShader extends GLShader {
             // 4. 生成 layout 和 pipeline
 
             // preprocess vert and frag codes
-            const builder = new CommandBuilder(device, this.vert, this.frag, mesh)
+            const builder = new CommandBuilder(this.name, device, this.vert, this.frag, mesh)
             return builder.build(pipelineDesc);
         } else {
             // regl

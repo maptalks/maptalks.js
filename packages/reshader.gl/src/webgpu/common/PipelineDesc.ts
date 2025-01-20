@@ -118,6 +118,7 @@ export default class PipelineDescriptor {
         if (!doubleSided) {
             const cullProps = commandProps.cull;
             if (cullProps && isEnable(cullProps.enable, uniformValues)) {
+                cullMode = 'back';
                 if (cullProps.face) {
                     cullMode = isFunction(cullProps.face) && cullProps.face(null, uniformValues) || cullProps.face;
                 }

@@ -62,7 +62,13 @@
         const renderer = new Renderer(device);
         const shader = new MeshShader({
             vert,
-            frag
+            frag,
+            name: 'cube',
+            extraCommandProps: {
+                cull: {
+                    enable: true
+                }
+            }
         });
 
         const geometry = new Geometry({
@@ -81,17 +87,18 @@
             scene.setMeshes([mesh]);
 
             renderer.render(shader, null, scene);
+            device.submit();
             requestAnimationFrame(render);
         }
 
-
         const aspect = canvas.width / canvas.height;
-        const projectionMatrix = mat4.perspective([], (2 * Math.PI) / 5, aspect, 1, 100.0);
+        const projectionMatrix = perspectiveZO([], (2 * Math.PI) / 5, aspect, 1, 100.0);
         const modelViewProjectionMatrix = mat4.create();
         const viewMatrix = mat4.identity([]);
         const translation = [0, 0, -4];
         const axis = [];
         function getTransformationMatrix() {
+            mat4.identity(viewMatrix);
             mat4.translate(viewMatrix, viewMatrix, translation);
             const now = Date.now() / 1000;
             mat4.rotate(
@@ -102,6 +109,33 @@
             );
             mat4.multiply(modelViewProjectionMatrix, projectionMatrix, viewMatrix);
             return modelViewProjectionMatrix;
+        }
+
+        function perspectiveZO(out, fovy, aspect, near, far) {
+            const f = 1.0 / Math.tan(fovy / 2);
+            out[0] = f / aspect;
+            out[1] = 0;
+            out[2] = 0;
+            out[3] = 0;
+            out[4] = 0;
+            out[5] = f;
+            out[6] = 0;
+            out[7] = 0;
+            out[8] = 0;
+            out[9] = 0;
+            out[11] = -1;
+            out[12] = 0;
+            out[13] = 0;
+            out[15] = 0;
+            if (far != null && far !== Infinity) {
+                const nf = 1 / (near - far);
+                out[10] = far * nf;
+                out[14] = far * near * nf;
+            } else {
+                out[10] = -1;
+                out[14] = -near;
+            }
+            return out;
         }
 
         render();
