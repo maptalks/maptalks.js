@@ -1,4 +1,7 @@
+import { isArray } from "../common/Util";
+import { toTextureFormat } from "./common/ReglTranslator";
 import DynamicBufferPool from "./DynamicBufferPool";
+import GraphicsTexture from "./GraphicsTexture";
 
 export default class GraphicsDevice {
     wgpu: GPUDevice;
@@ -48,12 +51,12 @@ export default class GraphicsDevice {
     }
 
     getDefaultRenderPassEncoder() {
-        let rendrTarget = this._defaultRenderTarget
+        let rendrTarget = this._defaultRenderTarget;
         if (!rendrTarget) {
             const canvas = this.context.canvas;
             const depthTexture = this.wgpu.createTexture({
                 size: [canvas.width, canvas.height],
-                format: 'depth24plus-stencil8',
+                format: "depth24plus-stencil8",
                 usage: GPUTextureUsage.RENDER_ATTACHMENT,
             });
             rendrTarget = this._defaultRenderTarget = {
@@ -72,8 +75,8 @@ export default class GraphicsDevice {
                     depthStoreOp: "store",
                     stencilReadOnly: false,
                     stencilClearValue: 255,
-                    stencilLoadOp: 'clear',
-                    stencilStoreOp: 'store'
+                    stencilLoadOp: "clear",
+                    stencilStoreOp: "store",
                 },
             };
         }
@@ -103,11 +106,20 @@ export default class GraphicsDevice {
         }
     }
 
-    framebuffer(reglFBODescriptor) {
-        // reglDesciprtor => gpu renderPassEncoder
+    buffer(options) {
+
     }
 
-    texture(reglTextureDescriptor) {
-        // regl texture descriptor => GPUTexture
+    read(options) {
+        //TODO 从帧缓冲中读取像素值
+    }
+
+    framebuffer(reglFBODescriptor) {
+        // reglDesciprtor => gpu renderPassEncoder
+
+    }
+
+    texture(config) {
+        return new GraphicsTexture(this, config);
     }
 }

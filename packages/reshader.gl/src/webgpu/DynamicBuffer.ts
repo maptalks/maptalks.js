@@ -13,7 +13,7 @@ export default class DynamicBuffer {
     constructor(bindgroupMapping, pool: DynamicBufferPool) {
         this.bindgroupMapping = bindgroupMapping;
         this.pool = pool;
-        this.dynamicOffsets = new Array(bindgroupMapping.length);
+        this.dynamicOffsets = new Array(bindgroupMapping.filter(uniform => (uniform.resourceType === ResourceType.Uniform || uniform.members)).length);
         this.allocation = {};
     }
 
@@ -29,10 +29,11 @@ export default class DynamicBuffer {
         let dynamicOffset = this.allocation.offset;
         const mapping = this.bindgroupMapping;
         const storage = this.allocation.storage;
+        let index = 0;
         for (let i = 0; i < mapping.length; i++) {
             const uniform = mapping[i];
-            this.dynamicOffsets[i] = dynamicOffset;
             if (uniform.members) {
+                this.dynamicOffsets[index++] = dynamicOffset;
                 for (let j = 0; j < uniform.members.length; j++) {
                     const member = uniform.members[j];
                     const value = uniformValues[member.name] as number | number[];
@@ -42,6 +43,7 @@ export default class DynamicBuffer {
                 }
                 dynamicOffset += Math.min(mapping[i].size, bufferAlignment);
             } else if (uniform.resourceType === ResourceType.Uniform) {
+                this.dynamicOffsets[index++] = dynamicOffset;
                 const value = uniformValues[uniform.name];
                 this._fillValue(storage, dynamicOffset, uniform.size(), value);
                 dynamicOffset += Math.min(mapping[i].size(), bufferAlignment);

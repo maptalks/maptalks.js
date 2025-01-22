@@ -499,5 +499,5 @@ export function resizeToPowerOfTwo(image: HTMLImageElement | NumberArray, width?
 }
 
 export function supportNPOT(regl: any) {
-    return regl['_gl'] instanceof WebGL2RenderingContext;
+    return !regl['_gl'] || (regl['_gl'] instanceof WebGL2RenderingContext);
 }

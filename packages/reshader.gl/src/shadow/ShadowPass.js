@@ -86,7 +86,7 @@ class ShadowPass {
             height = this.height;
         this.depthTex = regl.texture({
             width, height,
-            format: 'rgb',
+            format: 'rgba',
             type,
             min: 'nearest',
             mag: 'nearest',
@@ -105,7 +105,7 @@ class ShadowPass {
 
         this.blurTex = regl.texture({
             width, height,
-            format : 'rgb',
+            format : 'rgba',
             type,
             min : 'linear',
             mag : 'linear'

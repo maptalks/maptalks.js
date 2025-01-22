@@ -70,3 +70,22 @@ export function toGPUSampler(minFilter: string, magFilter: GPUFilterMode, wrapS:
     sampler.addressModeV = ADDRESS_MODE_DICTIONARY[wrapT || 'clamp'] || wrapT;
     return sampler;
 }
+
+
+export function toTextureFormat(format: string, type: string): GPUTextureFormat {
+    format = format || 'rgba';
+    type = type || 'uint8';
+
+    if (type === 'uint8') {
+        if (format === 'rgba') {
+            return 'rgba8unorm';
+        } else {
+            //TODO 各种压缩纹理的类型
+        }
+    } else if (type === 'float16' || type === 'half float') {
+        return 'r16float';
+    } else if (type === 'float') {
+        return 'r32float';
+    }
+    return 'rgba8unorm';
+}

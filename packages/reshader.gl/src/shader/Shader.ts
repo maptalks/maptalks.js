@@ -454,7 +454,7 @@ export default class GPUShader extends GLShader {
             const groupKey = meshBuffer.version + '-' + shaderBuffer.version;
             // 获取或者生成bind group
             let bindGroup = this._bindGroupCache[groupKey];
-            if (!bindGroup) {
+            if (!bindGroup || (bindGroup as any).outdated) {
                 bindGroup = bindGroupFormat.createBindGroup(device, mesh, layout, shaderBuffer, meshBuffer);
                 // 缓存bind group，只要buffer没有发生变化，即可以重用
                 // TODO 可以考虑每帧开始把缓存 bind group 标记为 retire，每帧结束时把不是 current 的 bind group 销毁掉

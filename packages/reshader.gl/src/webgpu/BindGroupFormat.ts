@@ -58,11 +58,15 @@ export default class BindGroupFormat {
     createBindGroup(device: GraphicsDevice, mesh: Mesh, layout: GPUBindGroupLayout, shaderBuffer: DynamicBuffer, meshBuffer: DynamicBuffer) {
         const groups = this.groups[0];
         const entries = [];
+        const textures = [];
         for (let i = 0; i < groups.length; i++) {
             const group = groups[i];
             const name = group.name;
             if (group.resourceType === ResourceType.Sampler) {
-                const texture = (mesh.getUniform(name) || mesh.material && mesh.material.getUniform(name)) as Texture2D;
+                // we assume sampler's name always be [textureName]Sampler
+                const textureName = name.substring(0, name.length - 7);
+                const texture = (mesh.getUniform(textureName) || mesh.material && mesh.material.getUniform(textureName)) as Texture2D;
+                //TODO texture是否存在
                 const { min, mag, wrapS, wrapT } = (texture as Texture2D).config;
                 const filters = toGPUSampler(min, mag, wrapS, wrapT);
                 const sampler = device.wgpu.createSampler(filters);
@@ -72,9 +76,11 @@ export default class BindGroupFormat {
                 });
             } else if (group.resourceType === ResourceType.Texture) {
                 const texture = (mesh.getUniform(name) || mesh.material && mesh.material.getUniform(name)) as Texture2D;
+                const graphicsTexture = texture.getREGLTexture(device);
+                textures.push(graphicsTexture);
                 entries.push({
                     binding: group.binding,
-                    resource: (texture.getREGLTexture(device) as GPUTexture).createView()
+                    resource: graphicsTexture.getView()
                 });
             } else {
                 const allocation = group.isGlobal ? shaderBuffer.allocation : meshBuffer.allocation;
@@ -89,11 +95,15 @@ export default class BindGroupFormat {
                 });
             }
         }
-        return device.wgpu.createBindGroup({
+        const bindGroup = device.wgpu.createBindGroup({
             layout,
             label: '',
             entries
         });
+        for (let i = 0; i < textures.length; i++) {
+            textures[i].addBindGroup(bindGroup);
+        }
+        return bindGroup;
     }
 
     dispose() {

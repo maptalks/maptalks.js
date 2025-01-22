@@ -66,16 +66,28 @@ export default class CommandBuilder {
         const entries = [];
         for (let i = 0; i < vertGroups.length; i++) {
             const groupInfo = vertGroups[i];
-            const entry = this._createLayoutEntry(i, GPUShaderStage.VERTEX, groupInfo, mesh);
-            entries.push(entry);
+            for (let ii = 0; ii < groupInfo.length; ii++) {
+                const uniform = groupInfo[ii];
+                if (!uniform) {
+                    continue;
+                }
+                const entry = this._createLayoutEntry(uniform.binding, GPUShaderStage.VERTEX, uniform, mesh);
+                entries.push(entry);
+            }
         }
         for (let i = 0; i < fragGroups.length; i++) {
             const groupInfo = fragGroups[i];
-            const entry = this._createLayoutEntry(i, GPUShaderStage.FRAGMENT, groupInfo, mesh);
-            entries.push(entry);
+            for (let ii = 0; ii < groupInfo.length; ii++) {
+                const uniform = groupInfo[ii];
+                if (!uniform) {
+                    continue;
+                }
+                const entry = this._createLayoutEntry(uniform.binding, GPUShaderStage.FRAGMENT, uniform, mesh);
+                entries.push(entry);
+            }
         }
         return this.device.wgpu.createBindGroupLayout({
-            label: '',
+            label: this.name + '-bindgrouplayout',
             entries
         });
     }
@@ -84,7 +96,8 @@ export default class CommandBuilder {
         if (groupInfo.resourceType === ResourceType.Sampler) {
             return {
                 binding,
-                visibility
+                visibility,
+                sampler: {}
                 // sampler 采用默认值
             };
         } else if (groupInfo.resourceType === ResourceType.Texture) {
@@ -153,6 +166,9 @@ export default class CommandBuilder {
         }
         for (let i = 0; i < groupReflect.length; i++) {
             const groupInfo = groupReflect[i];
+            if (!groupInfo) {
+                continue;
+            }
             const { group, binding } = groupInfo;
             const members = groupInfo.members;
             let isGlobal = false;
@@ -191,10 +207,11 @@ export default class CommandBuilder {
         }
         const buffers = mesh.geometry.getBufferDescriptor(vertInfo);
         const pipelineLayout = device.createPipelineLayout({
-            label: this.name,
+            label: this.name + '-pipelinelayout',
             bindGroupLayouts: [layout]
         });
         const pipelineOptions: GPURenderPipelineDescriptor = {
+            label: this.name + '-pipeline',
             layout: pipelineLayout,
             vertex: {
                 module: vertModule,

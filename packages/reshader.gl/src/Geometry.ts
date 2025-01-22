@@ -1029,7 +1029,21 @@ export default class Geometry {
                 }
             } else {
                 const array = attr.data || attr.array || attr;
-                if (isArray(array)) {
+                if (attr.buffer && !isArray(attr)) {
+                    const itemBytes = attr.buffer.itemBytes;
+                    const format = getItemFormat(attr, info.itemSize);
+                    bufferDesc.push({
+                        arrayStride: info.itemSize * itemBytes,
+                        attributes: [
+                            {
+                                shaderLocation: info.location,
+                                format,
+                                offset: 0
+                            }
+                        ]
+                    });
+                    continue;
+                } else if (isArray(array)) {
                     let format, itemBytes;
                     if (attr.componentType) {
                         format = getFormatFromGLTFAccessor(attr.componentType, attr.itemSize);
