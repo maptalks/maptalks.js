@@ -38,7 +38,13 @@ export default class BindGroupFormat {
         this._meshUniforms.index = 0;
         this._meshUniforms.totalSize = 0;
         const groups = bindGroupMapping.groups;
+        if (!groups) {
+            return;
+        }
         const group = groups[0];
+        if (!group) {
+            return;
+        }
         for (let i = 0; i < group.length; i++) {
             const uniform = group[i];
             if (uniform.isGlobal) {
@@ -56,6 +62,13 @@ export default class BindGroupFormat {
     }
 
     createBindGroup(device: GraphicsDevice, mesh: Mesh, layout: GPUBindGroupLayout, shaderBuffer: DynamicBuffer, meshBuffer: DynamicBuffer) {
+        if (!this.groups) {
+            return device.wgpu.createBindGroup({
+                layout,
+                label: '',
+                entries: []
+            });
+        }
         const groups = this.groups[0];
         const entries = [];
         const textures = [];

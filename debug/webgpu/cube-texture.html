@@ -24,6 +24,7 @@
         import { cubeVertexArray, cubeVertexUV, cubeVertexCount } from 'meshes';
         import { mat4, vec3 } from 'gl-matrix';
 
+        //https://webgpu.github.io/webgpu-samples/?sample=texturedCube
         const vert = `
             struct Uniforms {
                 modelMatrix : mat4x4f,
@@ -92,7 +93,6 @@
         const material = new Material({
             myTexture: new Texture2D({
                 url: './Di-3d.png',
-                sampler: 'mySampler'
             }, resourceLoader)
         });
         const mesh = new Mesh(geometry, material);

@@ -6,6 +6,7 @@ import { ResourceType } from 'wgsl_reflect';
 import GraphicsDevice from './GraphicsDevice';
 import PipelineDescriptor from './common/PipelineDesc';
 import { ActiveAttributes } from '../types/typings';
+import InstancedMesh from '../InstancedMesh';
 
 export default class CommandBuilder {
     device: GraphicsDevice;
@@ -146,6 +147,17 @@ export default class CommandBuilder {
                 };
             }
         }
+        if (mesh instanceof InstancedMesh) {
+            const data = (mesh as InstancedMesh).instancedData;
+            for (const name in data) {
+                if (inputMapping[name]) {
+                    vertexInfo[name] = {
+                        location: inputMapping[name].location,
+                        itemSize: getItemSize(inputMapping[name].type)
+                    };
+                }
+            }
+        }
         return vertexInfo;
     }
 
@@ -206,6 +218,10 @@ export default class CommandBuilder {
             this._presentationFormat = navigator.gpu.getPreferredCanvasFormat();
         }
         const buffers = mesh.geometry.getBufferDescriptor(vertInfo);
+        if (mesh instanceof InstancedMesh) {
+            const instanceBuffers = (mesh as InstancedMesh).getBufferDescriptor(vertInfo);
+            buffers.push(...instanceBuffers);
+        }
         const pipelineLayout = device.createPipelineLayout({
             label: this.name + '-pipelinelayout',
             bindGroupLayouts: [layout]

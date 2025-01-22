@@ -4,7 +4,7 @@ import { KEY_DISPOSED } from './common/Constants';
 import REGL, { BufferOptions, Regl } from '@maptalks/regl';
 import { ActiveAttributes, AttributeBufferData, InstancedAttribute, MeshOptions, NumberArray } from './types/typings';
 import Material from './Material';
-import Geometry from './Geometry';
+import Geometry, { getAttrBufferDescriptor } from './Geometry';
 
 export default class InstancedMesh extends Mesh {
     //@internal
@@ -142,7 +142,11 @@ export default class InstancedMesh extends Mesh {
         return this;
     }
 
-    generateInstancedBuffers(regl: Regl) {
+    getInstancedBuffer(name: string) {
+        return this.instancedData[name] && (this.instancedData[name] as any).buffer;
+    }
+
+    generateInstancedBuffers(device: any) {
         const data = this.instancedData;
         const buffers: Record<string, AttributeBufferData> = {};
         for (const key in data) {
@@ -161,11 +165,12 @@ export default class InstancedMesh extends Mesh {
                     divisor: 1
                 };
             } else {
+                const bufferOptions = {
+                    data: data[key],
+                    dimension: (data[key] as NumberArray).length / this._instanceCount
+                } as BufferOptions;
                 buffers[key] = {
-                    buffer: regl.buffer({
-                        data: data[key],
-                        dimension: (data[key] as NumberArray).length / this._instanceCount
-                    } as BufferOptions),
+                    buffer: Geometry.createBuffer(device, bufferOptions, key),
                     divisor: 1
                 };
             }
@@ -203,6 +208,22 @@ export default class InstancedMesh extends Mesh {
             this._vao[p].vao.destroy();
         }
         this._vao = {};
+    }
+
+    getBufferDescriptor(vertexInfo) {
+        const data = this.instancedData;
+        const bufferDesc = [];
+        for (const p in data) {
+            const attr = data[p];
+            if (!attr) {
+                continue;
+            }
+            const info = vertexInfo[p];
+            const desc = getAttrBufferDescriptor(attr, info);
+            desc.stepMode = 'instance';
+            bufferDesc.push(desc);
+        }
+        return bufferDesc;
     }
 
     // getBoundingBox() {

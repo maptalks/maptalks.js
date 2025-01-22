@@ -1026,43 +1026,11 @@ export default class Geometry {
                         ]
                     }
                     bufferMapping[accessorName] = desc;
+                    bufferDesc.push(desc);
                 }
             } else {
-                const array = attr.data || attr.array || attr;
-                if (attr.buffer && !isArray(attr)) {
-                    const itemBytes = attr.buffer.itemBytes;
-                    const format = getItemFormat(attr, info.itemSize);
-                    bufferDesc.push({
-                        arrayStride: info.itemSize * itemBytes,
-                        attributes: [
-                            {
-                                shaderLocation: info.location,
-                                format,
-                                offset: 0
-                            }
-                        ]
-                    });
-                    continue;
-                } else if (isArray(array)) {
-                    let format, itemBytes;
-                    if (attr.componentType) {
-                        format = getFormatFromGLTFAccessor(attr.componentType, attr.itemSize);
-                        itemBytes = getItemBytesFromGLTFAccessor(attr.componentType);
-                    } else {
-                        format = getItemFormat(array, info.itemSize);
-                        itemBytes = getItemBytes(array);
-                    }
-                    bufferDesc.push({
-                        arrayStride: info.itemSize * itemBytes,
-                        attributes: [
-                            {
-                                shaderLocation: info.location,
-                                format,
-                                offset: 0
-                            }
-                        ]
-                    });
-                }
+                const desc = getAttrBufferDescriptor(attr, info);
+                bufferDesc.push(desc);
             }
         }
         return bufferDesc;
@@ -1102,6 +1070,43 @@ function getTypeCtor(arr: NumberArray, byteWidth: number) {
         return byteWidth === 4 ? Float32Array : Float64Array;
     }
     return null;
+}
+
+export function getAttrBufferDescriptor(attr, info): GPUVertexBufferLayout {
+    const array = attr.data || attr.array || attr;
+    if (attr.buffer && !isArray(attr)) {
+        const itemBytes = attr.buffer.itemBytes;
+        const format = getItemFormat(attr, info.itemSize);
+        return {
+            arrayStride: info.itemSize * itemBytes,
+            attributes: [
+                {
+                    shaderLocation: info.location,
+                    format,
+                    offset: 0
+                }
+            ]
+        };
+    } else if (isArray(array)) {
+        let format, itemBytes;
+        if (attr.componentType) {
+            format = getFormatFromGLTFAccessor(attr.componentType, attr.itemSize);
+            itemBytes = getItemBytesFromGLTFAccessor(attr.componentType);
+        } else {
+            format = getItemFormat(array, info.itemSize);
+            itemBytes = getItemBytes(array);
+        }
+        return {
+            arrayStride: info.itemSize * itemBytes,
+            attributes: [
+                {
+                    shaderLocation: info.location,
+                    format,
+                    offset: 0
+                }
+            ]
+        };
+    }
 }
 
 function getItemBytes(data) {

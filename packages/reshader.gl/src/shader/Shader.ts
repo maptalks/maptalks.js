@@ -465,9 +465,16 @@ export default class GPUShader extends GLShader {
             const dynamicOffsets = shaderBuffer.dynamicOffsets.concat(meshBuffer.dynamicOffsets);
             passEncoder.setBindGroup(0, bindGroup, dynamicOffsets);
 
+            let instancedMesh;
+            if (mesh instanceof InstancedMesh) {
+                instancedMesh = mesh as InstancedMesh;
+            }
             for (const name in vertexInfo) {
                 const vertex = vertexInfo[name];
-                const vertexBuffer = mesh.geometry.getBuffer(name);
+                let vertexBuffer = mesh.geometry.getBuffer(name);
+                if (!vertexBuffer && instancedMesh) {
+                    vertexBuffer = instancedMesh.getInstancedBuffer(name);
+                }
                 passEncoder.setVertexBuffer(vertex.location, vertexBuffer);
             }
 
@@ -475,11 +482,16 @@ export default class GPUShader extends GLShader {
             const elements = mesh.getElements();
             const drawOffset = mesh.geometry.getDrawOffset();
             const drawCount = mesh.geometry.getDrawCount();
+            let instanceCount = 1;
+            if (mesh instanceof InstancedMesh) {
+                const instancedMesh = mesh as InstancedMesh;
+                instanceCount = instancedMesh.instanceCount;
+            }
             if (isNumber(elements)) {
-                passEncoder.draw(drawCount, 1, drawOffset);
+                passEncoder.draw(drawCount, instanceCount, drawOffset);
             } else {
                 passEncoder.setIndexBuffer(elements.getBuffer(), elements.getFormat());
-                passEncoder.drawIndexed(drawCount, 1, drawOffset);
+                passEncoder.drawIndexed(drawCount, instanceCount, drawOffset);
             }
         }
         passEncoder.end();
