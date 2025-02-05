@@ -51,7 +51,11 @@
             fn main(
                 @location(0) fragPosition: vec4f
             ) -> @location(0) vec4f {
-                return fragPosition;
+                #if USE_VERTEX_COLOR
+                    return VERTEX_COLOR;
+                #else
+                    return fragPosition;
+                #endif
             }
         `;
         const adapter = await navigator.gpu?.requestAdapter();
@@ -80,6 +84,10 @@
         geometry.generateBuffers(device);
 
         const mesh = new Mesh(geometry);
+        mesh.setDefines({
+            'VERTEX_COLOR': 'vec4(1.0, 0.0, 0.0, 1.0)',
+            // 'USE_VERTEX_COLOR': 1
+        });
         const scene = new Scene();
 
         function render() {

@@ -1,4 +1,3 @@
-import { wgsl } from 'wgsl-preprocessor/wgsl-preprocessor.js';
 import { WgslReflect } from "wgsl_reflect/wgsl_reflect.module.js";
 import BindGroupFormat from '../webgpu/BindGroupFormat';
 import Mesh from '../Mesh';
@@ -7,6 +6,7 @@ import GraphicsDevice from './GraphicsDevice';
 import PipelineDescriptor from './common/PipelineDesc';
 import { ActiveAttributes } from '../types/typings';
 import InstancedMesh from '../InstancedMesh';
+import { WGSLParseDefines } from "./common/WGSLParseDefines";
 
 export default class CommandBuilder {
     device: GraphicsDevice;
@@ -27,12 +27,9 @@ export default class CommandBuilder {
         const mesh = this.mesh;
         const device = this.device;
         const defines = this.mesh.getDefines();
-        const defined = key => {
-            return !!defines[key];
-        }
         //FIXME 如何在wgsl中实现defined
-        const vert = wgsl(this.vert);
-        const frag = wgsl(this.frag);
+        const vert = WGSLParseDefines(this.vert, defines);
+        const frag = WGSLParseDefines(this.frag, defines);
 
         const vertReflect = new WgslReflect(vert);
         const vertexInfo = this._formatBufferInfo(vertReflect, mesh);

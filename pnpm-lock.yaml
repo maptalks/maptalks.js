@@ -678,9 +678,6 @@ importers:
       gl-matrix:
         specifier: ^3.4.0
         version: 3.4.3
-      wgsl-preprocessor:
-        specifier: 1.0.0
-        version: 1.0.0
       wgsl_reflect:
         specifier: ^1.0.16
         version: 1.0.16
@@ -4821,9 +4818,6 @@ packages:
 
   walker@1.0.8:
     resolution: {integrity: sha512-ts/8E8l5b7kY0vlWLewOkDXMmPdLcVV4GmOQLyxuSswIJsweeFZtAsMF7k1Nszz+TYBQrlYRmzOnr398y1JemQ==}
-
-  wgsl-preprocessor@1.0.0:
-    resolution: {integrity: sha512-fpmt1KFFSr5IS1Gc7JYwgNEo2S0dOjUDbTgxc4Zbsp+N8PF+5HH4j2K2RYwz8XCB8kIxURyukNqSJ7yiSCV1jA==}
 
   wgsl_reflect@1.0.16:
     resolution: {integrity: sha512-OE3urfXXbHMD5lhKZwxOxC9SFYynEGEkWXQmvi7B1gzzr5jb9+drh9A8MeBvVqKqznCoBuh8WOzVuSGSZs4CkQ==}
@@ -9791,8 +9785,6 @@ snapshots:
   walker@1.0.8:
     dependencies:
       makeerror: 1.0.12
-
-  wgsl-preprocessor@1.0.0: {}
 
   wgsl_reflect@1.0.16: {}
 
