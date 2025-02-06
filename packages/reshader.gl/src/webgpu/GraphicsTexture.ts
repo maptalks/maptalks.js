@@ -1,5 +1,5 @@
 import { isArray } from "../common/Util";
-import { toTextureFormat } from "./common/ReglTranslator";
+import { GPUTexFormat, toTextureFormat } from "./common/ReglTranslator";
 import GraphicsDevice from "./GraphicsDevice";
 
 export default class GraphicsTexture {
@@ -8,10 +8,13 @@ export default class GraphicsTexture {
     config: any;
     //@internal
     _bindGroups: GPUBindGroup[] = [];
+    //@internal
+    gpuFormat: GPUTexFormat;
 
     constructor(device: GraphicsDevice, config) {
         this.device = device;
         this.config = config;
+        this.gpuFormat = toTextureFormat(config.format, config.type);
         this.update(this.config);
     }
 
@@ -41,10 +44,15 @@ export default class GraphicsTexture {
                     height = data.height;
                 }
             }
+            const format = this.gpuFormat.format;
+            const isDepth = format === 'depth24plus' || format === 'depth24plus-stencil8';
             texture = device.createTexture({
                 size: [width, height, 1],
-                format: toTextureFormat(config.format, config.type),
-                usage:
+                format,
+                usage: isDepth ?
+                    GPUTextureUsage.TEXTURE_BINDING |
+                    GPUTextureUsage.RENDER_ATTACHMENT
+                    :
                     GPUTextureUsage.TEXTURE_BINDING |
                     GPUTextureUsage.COPY_DST |
                     GPUTextureUsage.RENDER_ATTACHMENT,

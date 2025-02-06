@@ -64,7 +64,7 @@ export default class Geometry {
         }
     }
 
-    static createBuffer(device: any, data: any, name: string) {
+    static createBuffer(device: any, data: any, name?: string) {
         if (device instanceof GraphicsDevice) {
             return createGPUBuffer(device, data, GPUBufferUsage.VERTEX, name);
         } else {

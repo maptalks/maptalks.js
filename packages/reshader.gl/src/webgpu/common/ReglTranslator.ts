@@ -71,21 +71,28 @@ export function toGPUSampler(minFilter: string, magFilter: GPUFilterMode, wrapS:
     return sampler;
 }
 
+export type GPUTexFormat = { format: GPUTextureFormat, bytesPerTexel: number };
 
-export function toTextureFormat(format: string, type: string): GPUTextureFormat {
+export function toTextureFormat(format: string, type: string): GPUTexFormat {
     format = format || 'rgba';
     type = type || 'uint8';
 
+    if (format === 'depth stencil') {
+        return { format: 'depth24plus-stencil8', bytesPerTexel: 4 };
+    } else if (format === 'depth') {
+        return { format: 'depth24plus', bytesPerTexel: 4 };
+    }
+
     if (type === 'uint8') {
         if (format === 'rgba') {
-            return 'rgba8unorm';
+            return { format: 'rgba8unorm', bytesPerTexel: 1 };
         } else {
             //TODO 各种压缩纹理的类型
         }
     } else if (type === 'float16' || type === 'half float') {
-        return 'r16float';
+        return { format: 'r16float', bytesPerTexel: 2 };
     } else if (type === 'float') {
-        return 'r32float';
+        return { format: 'r32float', bytesPerTexel: 4 };
     }
-    return 'rgba8unorm';
+    return { format: 'rgba8unorm', bytesPerTexel: 1 };
 }

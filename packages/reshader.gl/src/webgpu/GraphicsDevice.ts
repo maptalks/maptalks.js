@@ -1,16 +1,21 @@
-import { isArray } from "../common/Util";
-import { toTextureFormat } from "./common/ReglTranslator";
+import Geometry from "../Geometry";
 import DynamicBufferPool from "./DynamicBufferPool";
+import GraphicsFramebuffer from "./GraphicsFramebuffer";
 import GraphicsTexture from "./GraphicsTexture";
 
 export default class GraphicsDevice {
     wgpu: GPUDevice;
-    commandBuffers: GPUCommandBuffer[] = [];
-    dynamicBufferPool: DynamicBufferPool;
     context: GPUCanvasContext;
-    _defaultRenderTarget: GPURenderPassDescriptor;
+    //@internal
+    commandBuffers: GPUCommandBuffer[] = [];
+    //@internal
+    dynamicBufferPool: DynamicBufferPool;
+    //@internal
     commandEncoder: GPUCommandEncoder;
-    _currentRenderPass: GPURenderPassEncoder;
+    //@internal
+    _defaultFramebuffer: GraphicsFramebuffer;
+    //@internal
+    _readTargets: Record<number, GPUBuffer> = {};
 
     constructor(device: GPUDevice, context: GPUCanvasContext) {
         this.wgpu = device;
@@ -50,41 +55,29 @@ export default class GraphicsDevice {
         }
     }
 
-    getDefaultRenderPassEncoder() {
-        let rendrTarget = this._defaultRenderTarget;
-        if (!rendrTarget) {
+    _getDefaultFramebuffer() {
+        let fbo = this._defaultFramebuffer;
+        if (!fbo) {
             const canvas = this.context.canvas;
-            const depthTexture = this.wgpu.createTexture({
-                size: [canvas.width, canvas.height],
-                format: "depth24plus-stencil8",
-                usage: GPUTextureUsage.RENDER_ATTACHMENT,
+            fbo = this._defaultFramebuffer = new GraphicsFramebuffer(this, {
+                width: canvas.width,
+                height: canvas.height,
+                depthStencil: true
             });
-            rendrTarget = this._defaultRenderTarget = {
-                colorAttachments: [
-                    {
-                        view: undefined, // Assigned later
-                        clearValue: [0, 0, 0, 0],
-                        loadOp: "clear",
-                        storeOp: "store",
-                    },
-                ],
-                depthStencilAttachment: {
-                    view: depthTexture.createView(),
-                    depthClearValue: 1.0,
-                    depthLoadOp: "clear",
-                    depthStoreOp: "store",
-                    stencilReadOnly: false,
-                    stencilClearValue: 255,
-                    stencilLoadOp: "clear",
-                    stencilStoreOp: "store",
-                },
-            };
         }
-        rendrTarget.colorAttachments[0].view = this.context
-            .getCurrentTexture()
-            .createView();
+        return fbo;
+    }
+
+    getRenderPassEncoder(fbo: GraphicsFramebuffer) {
+        fbo = fbo || this._getDefaultFramebuffer();
+        const desc = fbo.getRenderPassDescriptor();
+        if (fbo === this._defaultFramebuffer) {
+            desc.colorAttachments[0].view = this.context
+                .getCurrentTexture()
+                .createView();
+        }
         const commandEncoder = this.getCommandEncoder();
-        return commandEncoder.beginRenderPass(rendrTarget);
+        return commandEncoder.beginRenderPass(desc);
     }
 
     addCommandBuffer(commandBuffer: GPUCommandBuffer, front: boolean) {
@@ -106,20 +99,92 @@ export default class GraphicsDevice {
         }
     }
 
+    // implementation of regl.buffer
     buffer(options) {
-
+        return Geometry.createBuffer(this.wgpu, options, options.name);
     }
 
-    read(options) {
-        //TODO 从帧缓冲中读取像素值
-    }
-
+    // implementation of regl.framebuffer
     framebuffer(reglFBODescriptor) {
         // reglDesciprtor => gpu renderPassEncoder
-
+        return new GraphicsFramebuffer(this, reglFBODescriptor);
     }
 
+    // implementation of regl.texture
     texture(config) {
         return new GraphicsTexture(this, config);
+    }
+
+    // implementation of regl.clear
+    clear(options) {
+        const fbo = options.fbo || this._getDefaultFramebuffer();
+        fbo.setClearOptions(options);
+    }
+
+
+    // implementation of regl.read
+    async read(options) {
+        const framebuffer = options.framebuffer || this._defaultFramebuffer;
+        let { width, height } = options;
+        if (!width) {
+            width = framebuffer.width;
+        }
+        if (!height) {
+            height = framebuffer.height;
+        }
+        const device = this.wgpu;
+        const colorTexture = framebuffer.colorTexture;
+        const { bytesPerTexel } = colorTexture.gpuFormat;
+        let bytesPerRow = options.width * bytesPerTexel;
+		bytesPerRow = Math.ceil( bytesPerRow / 256 ) * 256; // Align to 256 bytes
+        const encoder = device.createCommandEncoder();
+
+        const bufferSize = width * height * bytesPerTexel;
+        let readBuffer = this._readTargets[bufferSize];
+        if (!readBuffer) {
+            readBuffer = device.createBuffer(
+                {
+                    size: width * height * bytesPerTexel,
+                    usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ
+                }
+            );
+        }
+
+		encoder.copyTextureToBuffer(
+			{
+				texture: colorTexture.texture,
+				origin: { x: options.x, y: options.y, z: 0 },
+			},
+			{
+				buffer: readBuffer,
+				bytesPerRow: bytesPerRow
+			},
+			{
+				width,
+				height
+			}
+		);
+
+		const typedArrayType = options.data.constructor;
+		device.queue.submit([encoder.finish()]);
+		await readBuffer.mapAsync(GPUMapMode.READ);
+		const buffer = readBuffer.getMappedRange();
+		const result = new typedArrayType(buffer);
+        options.data.set(result);
+        readBuffer.unmap();
+    }
+
+    destroy() {
+        if (this._defaultFramebuffer) {
+            this._defaultFramebuffer.destroy();
+            delete this._defaultFramebuffer;
+        }
+        for (const p in this._readTargets) {
+            const buffer = this._readTargets[p];
+            if (buffer) {
+                buffer.destroy();
+            }
+        }
+        this._readTargets = {};
     }
 }

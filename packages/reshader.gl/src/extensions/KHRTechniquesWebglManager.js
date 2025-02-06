@@ -182,7 +182,7 @@ export default class KHRTechniquesWebglManager {
         }
         const attrs = {};
         for (const p in attributes) {
-            const buffer = getUniqueREGLBuffer(this._regl, attributes[p], { dimension: attributes[p].itemSize });
+            const buffer = getUniqueREGLBuffer(this._regl, attributes[p], { dimension: attributes[p].itemSize, name: p });
             // 优先采用 attributeSemantics中定义的属性
             const name = attributeSemantics[p] || p;
             attrs[name] = {

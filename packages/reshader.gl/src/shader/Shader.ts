@@ -9,6 +9,7 @@ import Mesh from '../Mesh';
 import DynamicBuffer from '../webgpu/DynamicBuffer';
 import CommandBuilder from '../webgpu/CommandBuilder';
 import GraphicsDevice from '../webgpu/GraphicsDevice';
+import GraphicsFramebuffer from '../webgpu/GraphicsFramebuffer';
 
 
 const UNIFORM_TYPE = {
@@ -391,6 +392,8 @@ export default class GPUShader extends GLShader {
     _passEncoders: Record<string, GPURenderPassEncoder>;
     //@internal
     _currentPassEncoder: GPURenderPassEncoder
+    //@internal
+    _gpuFramebuffer: GraphicsFramebuffer;
 
     getShaderCommandKey(device, mesh, uniformValues, doubleSided) {
         if (device && device.wgpu) {
@@ -478,7 +481,6 @@ export default class GPUShader extends GLShader {
                 passEncoder.setVertexBuffer(vertex.location, vertexBuffer);
             }
 
-            //TODO InstancedMesh 的参数
             const elements = mesh.getElements();
             const drawOffset = mesh.geometry.getDrawOffset();
             const drawCount = mesh.geometry.getDrawCount();
@@ -498,16 +500,25 @@ export default class GPUShader extends GLShader {
     }
 
     _getCurrentRenderPassEncoder(device: GraphicsDevice) {
-        return this._currentPassEncoder || device.getDefaultRenderPassEncoder();
+        // stencilLoadOp?: GPULoadOp,
+        // stencilClearValue?: number,
+        // colorLoadOp?: GPULoadOp,
+        // depthLoadOp?: GPULoadOp
+        return device.getRenderPassEncoder(this._gpuFramebuffer);
     }
 
     setFramebuffer(framebuffer) {
-        if (!framebuffer || !framebuffer.isGPU) {
+        if (!framebuffer) {
+            if (this._gpuFramebuffer) {
+                this._gpuFramebuffer = null;
+                return this;
+            }
             return super.setFramebuffer(framebuffer);
         }
-        // this.context.framebuffer = framebuffer;
-        // framebuffer => GPURenderPassEncoderDescriptor
-        // this._currentPassEncoder = passEncoder;
+        if (!framebuffer.getRenderPassDescriptor) {
+            return super.setFramebuffer(framebuffer);
+        }
+        this._gpuFramebuffer = framebuffer;
         return this;
     }
 
