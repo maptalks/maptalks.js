@@ -6,7 +6,6 @@ import { KEY_DISPOSED } from './common/Constants';
 import { getGLTFLoaderBundle } from './common/GLTFBundle'
 import { ActiveAttributes, AttributeData, GeometryDesc, NumberArray } from './types/typings';
 import REGL from '@maptalks/regl';
-import GraphicsDevice from './webgpu/GraphicsDevice';
 import { flatten } from 'earcut';
 import { getGPUVertexType, getFormatFromGLTFAccessor, getItemBytesFromGLTFAccessor } from './webgpu/common/Types';
 
@@ -56,7 +55,7 @@ const REF_COUNT_KEY = '_reshader_refCount';
 export default class Geometry {
 
     static createElementBuffer(device: any, elements: any): any {
-        if (device instanceof GraphicsDevice) {
+        if (device.wgpu) {
             return createGPUBuffer(device, elements, GPUBufferUsage.INDEX, 'index buffer');
         } else {
             // regl
@@ -65,7 +64,7 @@ export default class Geometry {
     }
 
     static createBuffer(device: any, data: any, name?: string) {
-        if (device instanceof GraphicsDevice) {
+        if (device.wgpu) {
             return createGPUBuffer(device, data, GPUBufferUsage.VERTEX, name);
         } else {
             // regl
@@ -359,6 +358,9 @@ export default class Geometry {
         for (const key in data) {
             if (!data[key]) {
                 continue;
+            }
+            if (Array.isArray(data[key])) {
+                data[key] = new Float32Array(data[key]);
             }
             //如果调用过addBuffer，buffer有可能是ArrayBuffer
             if (data[key].buffer !== undefined && !(data[key].buffer instanceof ArrayBuffer)) {

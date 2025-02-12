@@ -118,3 +118,5 @@ export {
 } from 'gl-matrix';
 
 export { default as GraphicsDevice } from './webgpu/GraphicsDevice';
+export { default as GraphicsTexture } from './webgpu/GraphicsTexture';
+export { default as GraphicsFramebuffer } from './webgpu/GraphicsFramebuffer';

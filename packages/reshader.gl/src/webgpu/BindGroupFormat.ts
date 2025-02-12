@@ -4,6 +4,9 @@ import DynamicBuffer from "./DynamicBuffer";
 import Mesh from "../Mesh";
 import Texture2D from "../Texture2D";
 import GraphicsDevice from "./GraphicsDevice";
+import { ShaderUniforms } from "../types/typings";
+import AbstractTexture from "../AbstractTexture";
+import GraphicsTexture from "./GraphicsTexture";
 
 export default class BindGroupFormat {
     bytes: number;
@@ -47,6 +50,9 @@ export default class BindGroupFormat {
         }
         for (let i = 0; i < group.length; i++) {
             const uniform = group[i];
+            if (!uniform) {
+                continue;
+            }
             if (uniform.isGlobal) {
                 let index = this._shaderUniforms.index;
                 this._shaderUniforms[index++] = uniform;
@@ -61,7 +67,7 @@ export default class BindGroupFormat {
         }
     }
 
-    createBindGroup(device: GraphicsDevice, mesh: Mesh, layout: GPUBindGroupLayout, shaderBuffer: DynamicBuffer, meshBuffer: DynamicBuffer) {
+    createBindGroup(device: GraphicsDevice, mesh: Mesh, shaderUniforms: ShaderUniforms, layout: GPUBindGroupLayout, shaderBuffer: DynamicBuffer, meshBuffer: DynamicBuffer) {
         if (!this.groups) {
             return device.wgpu.createBindGroup({
                 layout,
@@ -74,26 +80,32 @@ export default class BindGroupFormat {
         const textures = [];
         for (let i = 0; i < groups.length; i++) {
             const group = groups[i];
+            if (!group) {
+                continue;
+            }
             const name = group.name;
             if (group.resourceType === ResourceType.Sampler) {
                 // we assume sampler's name always be [textureName]Sampler
                 const textureName = name.substring(0, name.length - 7);
-                const texture = (mesh.getUniform(textureName) || mesh.material && mesh.material.getUniform(textureName)) as Texture2D;
+                const texture = shaderUniforms && shaderUniforms[textureName] || (mesh.getUniform(textureName) || mesh.material && mesh.material.getUniform(textureName)) as Texture2D;
                 //TODO texture是否存在
-                const { min, mag, wrapS, wrapT } = (texture as Texture2D).config;
-                const filters = toGPUSampler(min, mag, wrapS, wrapT);
+                const { min, mag, wrapS, wrapT, compare } = (texture as Texture2D).config;
+                const filters = toGPUSampler(min, mag, wrapS, wrapT, compare);
                 const sampler = device.wgpu.createSampler(filters);
                 entries.push({
                     binding: group.binding,
                     resource: sampler
                 });
             } else if (group.resourceType === ResourceType.Texture) {
-                const texture = (mesh.getUniform(name) || mesh.material && mesh.material.getUniform(name)) as Texture2D;
-                const graphicsTexture = texture.getREGLTexture(device);
+                const texture = shaderUniforms && shaderUniforms[name] || (mesh.getUniform(name) || mesh.material && mesh.material.getUniform(name)) as Texture2D;
+                let graphicsTexture = texture;
+                if (texture instanceof AbstractTexture) {
+                    graphicsTexture = (texture as AbstractTexture).getREGLTexture(device);
+                }
                 textures.push(graphicsTexture);
                 entries.push({
                     binding: group.binding,
-                    resource: graphicsTexture.getView()
+                    resource: (graphicsTexture as GraphicsTexture).getView()
                 });
             } else {
                 const allocation = group.isGlobal ? shaderBuffer.allocation : meshBuffer.allocation;
@@ -102,7 +114,7 @@ export default class BindGroupFormat {
                     resource: {
                         buffer: allocation.gpuBuffer,
                         // offset 永远设为0，在setBindGroup中设置dynamicOffsets
-                        offset: 0,
+                        // offset: 0,
                         size: Math.max(group.size, this.alignment)
                     }
                 });

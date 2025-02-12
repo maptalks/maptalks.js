@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shadow mapping</title>
+  <style type="text/css">
+    html,body{margin:0px;height:100%;width:100%}
+    .container{width:1000px;height:800px}
+  </style>
+  <body>
+    <canvas id="canvas" width=1000 height=800 class="container" style="border : 1px solid"></canvas>
+    <script type="importmap">
+        {
+            "imports": {
+                "reshader": "../../packages/reshader.gl/dist/reshadergl.es.js",
+                "meshes": "./meshes/cube.js",
+                "gl-matrix": "./gl-matrix/index.js",
+                "ground": "./meshes/ground.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import { GraphicsDevice, GraphicsTexture, Renderer, MeshShader, Geometry, Mesh, Scene } from 'reshader';
+        import { cubeVertexArray, cubeVertexColors, cubeVertexCount } from 'meshes';
+        import { mat4, vec3 } from 'gl-matrix';
+        import { getGroundVertexes } from 'ground';
+
+        //https://webgpu.github.io/webgpu-samples/?sample=rotatingCube
+        const vertShadow = /* wgsl */`
+            struct Scene {
+                lightViewProjMatrix: mat4x4f,
+                cameraViewProjMatrix: mat4x4f,
+                lightPos: vec3f,
+            }
+
+            struct Model {
+                modelMatrix: mat4x4f,
+            }
+
+            @group(0) @binding(0) var<uniform> scene : Scene;
+            @group(0) @binding(1) var<uniform> model : Model;
+
+            struct VertexOutput {
+                @location(0) shadowPos: vec3f,
+                @location(1) fragPos: vec3f,
+
+                @builtin(position) Position: vec4f,
+            }
+
+            @vertex
+            fn main(
+                @location(0) position: vec3f
+            ) -> VertexOutput {
+                var output : VertexOutput;
+
+                // XY is in (-1, 1) space, Z is in (0, 1) space
+                let posFromLight = scene.lightViewProjMatrix * model.modelMatrix * vec4(position, 1.0);
+
+                // Convert XY to (0, 1)
+                // Y is flipped because texture coords are Y-down.
+                output.shadowPos = vec3(
+                    posFromLight.xy * vec2(0.5, -0.5) + vec2(0.5),
+                    posFromLight.z
+                );
+
+                output.Position = scene.cameraViewProjMatrix * model.modelMatrix * vec4(position, 1.0);
+                output.fragPos = output.Position.xyz;
+                return output;
+            }
+        `;
+
+        const vert = `
+            struct Scene {
+                lightViewProjMatrix: mat4x4f,
+                cameraViewProjMatrix: mat4x4f,
+                lightPos: vec3f,
+            }
+
+            struct Model {
+                modelMatrix: mat4x4f,
+            }
+
+            @group(0) @binding(0) var<uniform> scene : Scene;
+            @group(0) @binding(1) var<uniform> model : Model;
+
+            struct VertexOutput {
+                @location(0) shadowPos: vec3f,
+                @location(1) fragPos: vec3f,
+
+                @builtin(position) Position: vec4f,
+            }
+
+            @vertex
+            fn main(
+                @location(0) position: vec4f
+            ) -> VertexOutput {
+                var output : VertexOutput;
+
+                // XY is in (-1, 1) space, Z is in (0, 1) space
+                let posFromLight = scene.lightViewProjMatrix * model.modelMatrix * position;
+
+                // Convert XY to (0, 1)
+                // Y is flipped because texture coords are Y-down.
+                output.shadowPos = vec3(
+                    posFromLight.xy * vec2(0.5, -0.5) + vec2(0.5),
+                    posFromLight.z
+                );
+
+                output.Position = scene.cameraViewProjMatrix * model.modelMatrix * position;
+                output.fragPos = output.Position.xyz;
+                return output;
+            }
+        `;
+        const frag = /* wgsl */`
+            struct Scene {
+                lightViewProjMatrix : mat4x4f,
+                cameraViewProjMatrix : mat4x4f,
+                lightPos : vec3f,
+            }
+            struct Model {
+                modelMatrix: mat4x4f,
+            }
+
+            @group(0) @binding(2) var<uniform> scene : Scene;
+            @group(0) @binding(3) var shadowMap: texture_depth_2d;
+            @group(0) @binding(4) var shadowMapSampler: sampler_comparison;
+
+            struct FragmentInput {
+                @location(0) shadowPos : vec3f,
+                @location(1) fragPos : vec3f
+            }
+
+
+            const ambientFactor = 0.2;
+
+            @fragment
+            fn main(input : FragmentInput) -> @location(0) vec4f {
+                // Percentage-closer filtering. Sample texels in the region
+                // to smooth the result.
+                var shadowDepthTextureSize = 1024.0;
+                var visibility = 0.0;
+                let oneOverShadowDepthTextureSize = 1.0 / shadowDepthTextureSize;
+                for (var y = -1; y <= 1; y++) {
+                    for (var x = -1; x <= 1; x++) {
+                    let offset = vec2f(vec2(x, y)) * oneOverShadowDepthTextureSize;
+
+                    visibility += textureSampleCompare(
+                        shadowMap, shadowMapSampler,
+                        input.shadowPos.xy + offset, input.shadowPos.z - 0.007
+                    );
+                    }
+                }
+                visibility /= 9.0;
+
+                let lightingFactor = min(ambientFactor + visibility, 1.0);
+                let albedo = input.fragPos;
+                // return vec4(lightingFactor, 1.0);
+
+                // return vec4(vec3f(visibility), 1.0);
+                return vec4(scene.lightPos + vec3(0.5), 1.0);
+            }
+
+        `;
+        const adapter = await navigator.gpu?.requestAdapter();
+        const gpuDevice = await adapter?.requestDevice();
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('webgpu');
+
+        const device = new GraphicsDevice(gpuDevice, context)
+        const renderer = new Renderer(device);
+        const shadowShader = new MeshShader({
+            vert: vertShadow,
+            name: 'shadow',
+            extraCommandProps: {
+                depth: {
+                    enable: true,
+                    func: '<'
+                }
+            }
+        });
+        const shader = new MeshShader({
+            vert,
+            frag,
+            name: 'cube',
+            extraCommandProps: {
+                cull: {
+                    enable: true
+                }
+            }
+        });
+
+        const geometry = new Geometry({
+            position: cubeVertexArray
+        }, cubeVertexCount, 0, {
+            positionAttribute: 'position'
+        });
+        geometry.generateBuffers(device);
+
+        const mesh = new Mesh(geometry);
+
+        const groundGeometry = new Geometry({
+            position: getGroundVertexes()
+        }, 6, 0, {
+            positionAttribute: 'position'
+        });
+        groundGeometry.generateBuffers(device);
+        const groundMesh = new Mesh(groundGeometry);
+
+        const scene = new Scene();
+
+        const depthTexture = new GraphicsTexture(device, {
+            width: 1024,
+            height: 1024,
+            format: 'depth',
+            compare: 'less'
+        });
+        const shadowFBO = device.framebuffer({ depth: depthTexture, width: 1024, height: 1024 });
+
+        function render() {
+            const cameraViewProjMatrix = getCameraViewProjMatrix();
+            const { lightViewProjMatrix, lightPos } = getLightMatrix();
+            scene.setMeshes([mesh, groundMesh]);
+
+            const uniforms = { cameraViewProjMatrix, lightViewProjMatrix, lightPos };
+            // renderer.render(shadowShader, uniforms, scene, shadowFBO);
+            renderer.render(shader, {
+                cameraViewProjMatrix, lightViewProjMatrix, lightPos,
+                shadowMap: shadowFBO.depthTexture }, scene);
+            device.submit();
+            requestAnimationFrame(render);
+        }
+
+        const upVector = vec3.set([], 0, 1, 0);
+        const origin = vec3.set([], 0, 0, 0);
+
+        const aspect = canvas.width / canvas.height;
+        const projectionMatrix = perspectiveZO([], (2 * Math.PI) / 5, aspect, 1, 100.0);
+        const cameraViewProjMatrix = mat4.create();
+        const viewMatrix = mat4.identity([]);
+        const axis = [];
+        const eyePosition = [4, -4, 4];
+        function getCameraViewProjMatrix() {
+            mat4.identity(viewMatrix);
+            mat4.lookAt(viewMatrix, eyePosition, origin, upVector);
+            mat4.multiply(cameraViewProjMatrix, projectionMatrix, viewMatrix);
+            return cameraViewProjMatrix;
+        }
+
+        // light related matrices
+
+        const lightPosition = vec3.set([], 0, 2, 4);
+        const lightViewMatrix = mat4.lookAt([], lightPosition, origin, upVector);
+        const lightProjectionMatrix = mat4.create();
+        {
+            const left = -20;
+            const right = 20;
+            const bottom = -20;
+            const top = 20;
+            const near = -20;
+            const far = 20;
+            mat4.ortho(lightProjectionMatrix, left, right, bottom, top, near, far);
+        }
+
+        const lightViewProjMatrix = mat4.multiply([],
+            lightProjectionMatrix,
+            lightViewMatrix
+        );
+
+        function getLightMatrix() {
+            return {
+                lightViewProjMatrix,
+                lightPos: lightPosition
+            };
+        }
+
+        function perspectiveZO(out, fovy, aspect, near, far) {
+            const f = 1.0 / Math.tan(fovy / 2);
+            out[0] = f / aspect;
+            out[1] = 0;
+            out[2] = 0;
+            out[3] = 0;
+            out[4] = 0;
+            out[5] = f;
+            out[6] = 0;
+            out[7] = 0;
+            out[8] = 0;
+            out[9] = 0;
+            out[11] = -1;
+            out[12] = 0;
+            out[13] = 0;
+            out[15] = 0;
+            if (far != null && far !== Infinity) {
+                const nf = 1 / (near - far);
+                out[10] = far * nf;
+                out[14] = far * near * nf;
+            } else {
+                out[10] = -1;
+                out[14] = -near;
+            }
+            return out;
+        }
+
+        render();
+    </script>
+  </body>
+</html>

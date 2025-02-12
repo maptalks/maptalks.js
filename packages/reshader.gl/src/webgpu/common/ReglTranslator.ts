@@ -47,7 +47,8 @@ const ADDRESS_MODE_DICTIONARY = {
     'mirror': 'mirror-repeat'
 };
 
-export function toGPUSampler(minFilter: string, magFilter: GPUFilterMode, wrapS: string, wrapT) {
+export function toGPUSampler(minFilter: string, magFilter: GPUFilterMode,
+    wrapS: string, wrapT: string, compare?: GPUCompareFunction) {
     const sampler: GPUSamplerDescriptor = {
         magFilter
     };
@@ -68,31 +69,34 @@ export function toGPUSampler(minFilter: string, magFilter: GPUFilterMode, wrapS:
     }
     sampler.addressModeU = ADDRESS_MODE_DICTIONARY[wrapS || 'clamp'] || wrapS;
     sampler.addressModeV = ADDRESS_MODE_DICTIONARY[wrapT || 'clamp'] || wrapT;
+    if (compare) {
+        sampler.compare = compare;
+    }
     return sampler;
 }
 
-export type GPUTexFormat = { format: GPUTextureFormat, bytesPerTexel: number };
+export type GPUTexFormat = { format: GPUTextureFormat, bytesPerTexel: number, isDepthStencil: boolean };
 
 export function toTextureFormat(format: string, type: string): GPUTexFormat {
     format = format || 'rgba';
     type = type || 'uint8';
 
     if (format === 'depth stencil') {
-        return { format: 'depth24plus-stencil8', bytesPerTexel: 4 };
+        return { format: 'depth24plus-stencil8', bytesPerTexel: 4, isDepthStencil: true};
     } else if (format === 'depth') {
-        return { format: 'depth24plus', bytesPerTexel: 4 };
+        return { format: 'depth24plus', bytesPerTexel: 4, isDepthStencil: false };
     }
 
     if (type === 'uint8') {
         if (format === 'rgba') {
-            return { format: 'rgba8unorm', bytesPerTexel: 1 };
+            return { format: 'rgba8unorm', bytesPerTexel: 1, isDepthStencil: false };
         } else {
             //TODO 各种压缩纹理的类型
         }
     } else if (type === 'float16' || type === 'half float') {
-        return { format: 'r16float', bytesPerTexel: 2 };
+        return { format: 'r16float', bytesPerTexel: 2, isDepthStencil: false };
     } else if (type === 'float') {
-        return { format: 'r32float', bytesPerTexel: 4 };
+        return { format: 'r32float', bytesPerTexel: 4, isDepthStencil: false };
     }
-    return { format: 'rgba8unorm', bytesPerTexel: 1 };
+    return { format: 'rgba8unorm', bytesPerTexel: 1, isDepthStencil: false };
 }

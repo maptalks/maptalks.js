@@ -5,9 +5,9 @@ export default class GraphicsFramebuffer {
     device: GraphicsDevice;
     options: any;
     //@internal
-    colorTexture: GPUTexture;
+    colorTexture: GraphicsTexture;
     //@internal
-    depthTexture: GPUTexture;
+    depthTexture: GraphicsTexture;
     //@internal
     _renderPass: GPURenderPassDescriptor;
     width: number;
@@ -32,11 +32,11 @@ export default class GraphicsFramebuffer {
     }
 
     _update() {
-        let color = this.options.color || this.options.colors && this.options.colors[0];
+        let color = this.options.colors && this.options.colors[0] || this.options.color;
         const { width, height } = this.options;
         this.width = width;
         this.height = height;
-        if (!color) {
+        if (color && !(color instanceof GraphicsTexture)) {
             color = new GraphicsTexture(this.device, color);
         }
         let depth = this.options.depth;
@@ -49,39 +49,47 @@ export default class GraphicsFramebuffer {
                 }
             }
         }
-
+        // we assume depth and depthStencil won't be used at the same time
         const depthStencil = this.options.depthStencil;
-        if (depthStencil === true) {
-            depth = new GraphicsTexture(this.device, { width, height, format: 'depth stencil' });
-        } else {
-            if (depthStencil instanceof GraphicsTexture) {
-                depth = depthStencil;
+        if (depthStencil) {
+            if (depthStencil === true) {
+                depth = new GraphicsTexture(this.device, { width, height, format: 'depth stencil' });
             } else {
-                depth = new GraphicsTexture(this.device, depthStencil);
+                if (depthStencil instanceof GraphicsTexture) {
+                    depth = depthStencil;
+                } else {
+                    depth = new GraphicsTexture(this.device, depthStencil);
+                }
             }
         }
-        this.colorTexture = color === 'undefined' ? null : color;
+
+        this.colorTexture = color;
         this.depthTexture = depth;
         this._renderPass = {
-            colorAttachments: [
-                {
-                    view: this.colorTexture && this.colorTexture.createView(), // Assigned later
-                    clearValue: [0, 0, 0, 0],
-                    loadOp: 'load',
-                    storeOp: 'store',
-                },
-            ],
-            depthStencilAttachment: {
-                view: this.depthTexture.createView(),
-                depthClearValue: 1.0,
-                depthLoadOp: 'load',
-                depthStoreOp: 'store',
-                stencilReadOnly: false,
-                stencilClearValue: 255,
-                stencilLoadOp: 'load',
-                stencilStoreOp: 'store',
-            },
+            colorAttachments: []
         };
+        if (color !== null) {
+            this._renderPass.colorAttachments[0] = {
+                    view: this.colorTexture && this.colorTexture.getView(), // Assigned later
+                clearValue: [0, 0, 0, 0],
+                loadOp: 'load',
+                storeOp: 'store',
+            };
+        }
+        if (depth) {
+            const depthAttchment = this._renderPass.depthStencilAttachment = {
+                view: this.depthTexture.getView(),
+                depthClearValue: 1,
+                depthLoadOp: 'load',
+                depthStoreOp: 'store'
+            } as GPURenderPassDepthStencilAttachment;
+            if (depth.gpuFormat.isDepthStencil) {
+                depthAttchment.stencilReadOnly = false;
+                depthAttchment.stencilClearValue = 0;
+                depthAttchment.stencilLoadOp = 'load';
+                depthAttchment.stencilStoreOp = 'store';
+            }
+        }
     }
 
     getRenderPassDescriptor() {
@@ -94,10 +102,13 @@ export default class GraphicsFramebuffer {
         if (depthStencilAttachment) {
             depthStencilAttachment.depthLoadOp = this.depthLoadOp || 'load';
             depthStencilAttachment.depthClearValue = this.depthClearValue || 1;
-            depthStencilAttachment.stencilLoadOp = this.stencilLoadOp || 'load';
-            depthStencilAttachment.stencilClearValue = this.stencilClearValue || 0;
+            if (this.depthTexture.gpuFormat.isDepthStencil) {
+                depthStencilAttachment.stencilLoadOp = this.stencilLoadOp || 'load';
+                depthStencilAttachment.stencilClearValue = this.stencilClearValue || 0;
+            }
+
         }
-        this.resetClearOptions();
+        this._resetClearOptions();
         return this._renderPass;
     }
 
@@ -116,7 +127,7 @@ export default class GraphicsFramebuffer {
         }
     }
 
-    resetClearOptions() {
+    _resetClearOptions() {
         this.colorLoadOp = null;
         this.colorClearValue = null;
         this.depthLoadOp = null;

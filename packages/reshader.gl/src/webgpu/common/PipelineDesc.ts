@@ -1,4 +1,5 @@
 import { isFunction, isNil } from "../../common/Util";
+import GraphicsFramebuffer from "../GraphicsFramebuffer";
 import { toGPUCompareFunction, toTopology, toGPUBlendFactor } from "./ReglTranslator";
 
 // Pipeline states we cared
@@ -20,12 +21,15 @@ export default class PipelineDescriptor {
     frontFace?: GPUFrontFace;
     topology?: GPUPrimitiveTopology;
 
-    readFromREGLCommand(commandProps: any, mesh, uniformValues, doubleSided) {
+    readFromREGLCommand(commandProps: any, mesh, uniformValues, doubleSided, fbo: GraphicsFramebuffer) {
         const primitive = mesh.geometry.desc.primitive;
         this.topology = toTopology(primitive);
 
+        const depthEnabled = !fbo || !!fbo.depthTexture;
+        const stencilEnabled = !fbo || fbo.depthTexture.gpuFormat.isDepthStencil;
+
         let depthBias, depthBiasSlopeScale;
-        if (commandProps.polygonOffset && isEnable(commandProps.polygonOffset.enable, uniformValues)) {
+        if (depthEnabled && commandProps.polygonOffset && isEnable(commandProps.polygonOffset.enable, uniformValues)) {
             depthBias = 0;
             depthBiasSlopeScale = 0;
             const offsetProps = commandProps.polygonOffset.offset;
@@ -42,7 +46,7 @@ export default class PipelineDescriptor {
         let depthCompare: GPUCompareFunction = 'always';
         let depthWriteEnable = false;
         const depthProps = commandProps.depth;
-        if (depthProps && isEnable(depthProps.enable, uniformValues)) {
+        if (depthEnabled && depthProps && isEnable(depthProps.enable, uniformValues)) {
             depthCompare = 'less';
             if (depthProps.func) {
                 const depthFunc = isFunction(depthProps.func) && depthProps.func(null, uniformValues) || depthProps.func;
@@ -62,7 +66,7 @@ export default class PipelineDescriptor {
 
         let stencilFrontCompare, stencilFrontPassOp;
         const stencilProps = commandProps.stencil;
-        if (stencilProps && isEnable(stencilProps.enable, uniformValues)) {
+        if (stencilEnabled && stencilProps && isEnable(stencilProps.enable, uniformValues)) {
             if (stencilProps.op) {
                 // 目前还没遇到op是函数的情况，所以可以直接读取
                 stencilFrontPassOp = stencilProps.op.zpass;

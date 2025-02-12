@@ -25,11 +25,12 @@
         import { mat4, vec3 } from 'gl-matrix';
 
         //https://webgpu.github.io/webgpu-samples/?sample=rotatingCube
-        const vert = `
+        const vert = /* wgsl */`
             struct Uniforms {
                 modelMatrix : mat4x4f,
             }
             @binding(0) @group(0) var<uniform> uniforms : Uniforms;
+            @binding(1) @group(0) var<uniform> cameraProjViewMatrix : mat4x4f;
 
             struct VertexOutput {
                 @builtin(position) Position : vec4f,
@@ -41,7 +42,7 @@
                 @location(0) position : vec4f,
             ) -> VertexOutput {
                 var output : VertexOutput;
-                output.Position = uniforms.modelMatrix * position;
+                output.Position = cameraProjViewMatrix * uniforms.modelMatrix * position;
                 output.fragPosition = 0.5 * (position + vec4(1.0, 1.0, 1.0, 1.0));
                 return output;
             }
@@ -92,10 +93,10 @@
 
         function render() {
             const matrix = getTransformationMatrix();
-            mesh.setLocalTransform(matrix);
+
             scene.setMeshes([mesh]);
 
-            renderer.render(shader, null, scene);
+            renderer.render(shader, {  cameraProjViewMatrix: matrix }, scene);
             device.submit();
             requestAnimationFrame(render);
         }
@@ -106,18 +107,37 @@
         const viewMatrix = mat4.identity([]);
         const translation = [0, 0, -4];
         const axis = [];
+
+        const upVector = vec3.set([], 0, 1, 0);
+        const origin = vec3.set([], 0, 0, 0);
+        const eyePosition = [4, -4, 4];
+        const cameraViewProjMatrix = mat4.create();
+
         function getTransformationMatrix() {
+            // mat4.identity(viewMatrix);
+            // mat4.translate(viewMatrix, viewMatrix, translation);
+            // const now = Date.now() / 1000;
+            // mat4.rotate(
+            //     viewMatrix,
+            //     viewMatrix,
+            //     1,
+            //     vec3.set(axis, Math.sin(now), Math.cos(now), 0)
+            // );
+            // mat4.multiply(modelViewProjectionMatrix, projectionMatrix, viewMatrix);
+            // return modelViewProjectionMatrix;
+
             mat4.identity(viewMatrix);
-            mat4.translate(viewMatrix, viewMatrix, translation);
-            const now = Date.now() / 1000;
-            mat4.rotate(
-                viewMatrix,
-                viewMatrix,
-                1,
-                vec3.set(axis, Math.sin(now), Math.cos(now), 0)
-            );
-            mat4.multiply(modelViewProjectionMatrix, projectionMatrix, viewMatrix);
-            return modelViewProjectionMatrix;
+            mat4.lookAt(viewMatrix, eyePosition, origin, upVector);
+            // mat4.translate(viewMatrix, viewMatrix, translation);
+            // const now = Date.now() / 1000;
+            // mat4.rotate(
+            //     viewMatrix,
+            //     viewMatrix,
+            //     1,
+            //     vec3.set(axis, Math.sin(now), Math.cos(now), 0)
+            // );
+            mat4.multiply(cameraViewProjMatrix, projectionMatrix, viewMatrix);
+            return cameraViewProjMatrix;
         }
 
         function perspectiveZO(out, fovy, aspect, near, far) {

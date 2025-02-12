@@ -2,7 +2,7 @@ import { extend, isString, isFunction, isNumber, isSupportVAO, hasOwn, hashCode 
 
 import ShaderLib from '../shaderlib/ShaderLib.js';
 import { KEY_DISPOSED } from '../common/Constants.js';
-import { ShaderUniformValue } from '../types/typings';
+import { ShaderUniforms, ShaderUniformValue } from '../types/typings';
 import PipelineDescriptor from '../webgpu/common/PipelineDesc';
 import InstancedMesh from '../InstancedMesh';
 import Mesh from '../Mesh';
@@ -10,6 +10,7 @@ import DynamicBuffer from '../webgpu/DynamicBuffer';
 import CommandBuilder from '../webgpu/CommandBuilder';
 import GraphicsDevice from '../webgpu/GraphicsDevice';
 import GraphicsFramebuffer from '../webgpu/GraphicsFramebuffer';
+import DynamicOffsets from '../webgpu/DynamicOffsets';
 
 
 const UNIFORM_TYPE = {
@@ -113,7 +114,7 @@ export class GLShader {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    run(regl: any, command, shaderUniforms, props) {
+    run(regl: any, command, props) {
         return command(props);
     }
 
@@ -365,7 +366,9 @@ export class GLShader {
 
     _compileSource() {
         this.vert = ShaderLib.compile(this.vert);
-        this.frag = ShaderLib.compile(this.frag);
+        if (this.frag) {
+            this.frag = ShaderLib.compile(this.frag);
+        }
     }
 }
 
@@ -394,20 +397,23 @@ export default class GPUShader extends GLShader {
     _currentPassEncoder: GPURenderPassEncoder
     //@internal
     _gpuFramebuffer: GraphicsFramebuffer;
+    //@internal
+    _dynamicOffsets: DynamicOffsets;
 
-    getShaderCommandKey(device, mesh, uniformValues, doubleSided) {
+    getShaderCommandKey(device, mesh, renderValues, doubleSided) {
         if (device && device.wgpu) {
             // 获取pipeline所需要的特征变量，即任何变量发生变化后，就需要创建新的pipeline
+            const fbo = this._gpuFramebuffer;
             const commandProps = this.extraCommandProps;
-            pipelineDesc.readFromREGLCommand(commandProps, mesh, uniformValues, doubleSided);
+            pipelineDesc.readFromREGLCommand(commandProps, mesh, renderValues, doubleSided, fbo);
             return pipelineDesc.getSignatureKey();
         } else {
             // regl
-            return super.getShaderCommandKey(device, mesh, uniformValues, doubleSided);
+            return super.getShaderCommandKey(device, mesh, renderValues, doubleSided);
         }
     }
 
-    createMeshCommand(device: any, mesh: Mesh) {
+    createMeshCommand(device: any, mesh: Mesh, commandProps: any) {
         if (device && device.wgpu) {
             // 生成期：
             // 1. 负责对 wgsl 做预处理，生成最终执行的wgsl代码
@@ -416,19 +422,22 @@ export default class GPUShader extends GLShader {
             // 4. 生成 layout 和 pipeline
 
             // preprocess vert and frag codes
-            const builder = new CommandBuilder(this.name, device, this.vert, this.frag, mesh)
-            return builder.build(pipelineDesc);
+            const uniformValues = this.context;
+            const fbo = this._gpuFramebuffer;
+            const builder = new CommandBuilder(this.name, device, this.vert, this.frag, mesh, uniformValues);
+            return builder.build(pipelineDesc, fbo);
         } else {
             // regl
-            return super.createMeshCommand(device, mesh);
+            return super.createMeshCommand(device, mesh, commandProps);
         }
     }
 
-    run(deviceOrRegl: any, command, shaderUniforms, props) {
+    run(deviceOrRegl: any, command, props) {
         if (!deviceOrRegl.wgpu) {
             // regl command
-            return super.run(deviceOrRegl, command, shaderUniforms, props);
+            return super.run(deviceOrRegl, command, props);
         }
+        const shaderUniforms = this.context;
         const device = deviceOrRegl as GraphicsDevice;
         this.isGPU = true;
         const buffersPool = device.dynamicBufferPool;
@@ -448,24 +457,33 @@ export default class GPUShader extends GLShader {
         if (!this._bindGroupCache) {
             this._bindGroupCache = {};
         }
+
+        if (!this._dynamicOffsets) {
+            this._dynamicOffsets = new DynamicOffsets();
+        }
+        this._dynamicOffsets.reset();
         // 向buffer中填入shader uniform值
-        shaderBuffer.writeBuffer(shaderUniforms);
+        shaderBuffer.writeBuffer(shaderUniforms, this._dynamicOffsets);
+        const shaderDynamicOffsets = this._dynamicOffsets.items.slice();
+
         for (let i = 0; i < props.length; i++) {
+            this._dynamicOffsets.reset();
             const mesh = props[i].meshObject as Mesh;
             // 获取mesh的dynamicBuffer
-            const meshBuffer = mesh.writeDynamicBuffer(props[i], bindGroupFormat.getMeshUniforms(), buffersPool);
+            const meshBuffer = mesh.writeDynamicBuffer(props[i], bindGroupFormat.getMeshUniforms(), buffersPool, this._dynamicOffsets);
             const groupKey = meshBuffer.version + '-' + shaderBuffer.version;
             // 获取或者生成bind group
             let bindGroup = this._bindGroupCache[groupKey];
             if (!bindGroup || (bindGroup as any).outdated) {
-                bindGroup = bindGroupFormat.createBindGroup(device, mesh, layout, shaderBuffer, meshBuffer);
+                bindGroup = bindGroupFormat.createBindGroup(device, mesh, shaderUniforms, layout, shaderBuffer, meshBuffer);
                 // 缓存bind group，只要buffer没有发生变化，即可以重用
                 // TODO 可以考虑每帧开始把缓存 bind group 标记为 retire，每帧结束时把不是 current 的 bind group 销毁掉
                 this._bindGroupCache[groupKey] = bindGroup;
             }
 
             // 获取 dynamicOffsets
-            const dynamicOffsets = shaderBuffer.dynamicOffsets.concat(meshBuffer.dynamicOffsets);
+            this._dynamicOffsets.addItems(shaderDynamicOffsets);
+            const dynamicOffsets = this._dynamicOffsets.getDynamicOffsets();
             passEncoder.setBindGroup(0, bindGroup, dynamicOffsets);
 
             let instancedMesh;

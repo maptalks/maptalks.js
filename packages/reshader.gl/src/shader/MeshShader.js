@@ -2,7 +2,7 @@ import Shader from './Shader';
 
 class MeshShader extends Shader {
 
-    draw(device, shaderUniforms, meshes) {
+    draw(device, meshes) {
         if (!meshes || !meshes.length) {
             return 0;
         }
@@ -41,7 +41,7 @@ class MeshShader extends Shader {
 
             if (props.length && preCommand !== command) {
                 //batch mode
-                this.run(device, command, shaderUniforms, props);
+                this.run(device, command, props);
                 props.length = 0;
             }
 
@@ -51,7 +51,7 @@ class MeshShader extends Shader {
             if (i < l - 1) {
                 preCommand = command;
             } else if (i === l - 1) {
-                this.run(device, command, shaderUniforms, props);
+                this.run(device, command, props);
             }
         }
         return count;
@@ -141,7 +141,7 @@ class MeshShader extends Shader {
             if (doubleSided && this.extraCommandProps) {
                 commandProps.cull = { enable: false };
             }
-            command = this.commands[dKey] = this.createMeshCommand(device, mesh, commandProps);
+            command = this.commands[dKey] = this.createMeshCommand(device, mesh, commandProps, uniformValues);
         }
         return command;
     }

@@ -4,26 +4,39 @@ import Mesh from '../Mesh';
 import { ResourceType } from 'wgsl_reflect';
 import GraphicsDevice from './GraphicsDevice';
 import PipelineDescriptor from './common/PipelineDesc';
-import { ActiveAttributes } from '../types/typings';
+import { ActiveAttributes, ShaderUniforms } from '../types/typings';
 import InstancedMesh from '../InstancedMesh';
 import { WGSLParseDefines } from "./common/WGSLParseDefines";
+import GraphicsFramebuffer from "./GraphicsFramebuffer";
+
+const ERROR_INFO = 'global uniform and mesh owned uniform can not be in the same struct';
 
 export default class CommandBuilder {
+    //@internal
     device: GraphicsDevice;
+    //@internal
     vert: string;
+    //@internal
     frag: string;
+    //@internal
     mesh: Mesh;
+    //@internal
     _presentationFormat: any;
+    //@internal
     name: string;
-    constructor(name: string, device: GraphicsDevice, vert: string, frag: string, mesh: Mesh) {
+    //@internal
+    uniformValues: ShaderUniforms;
+
+    constructor(name: string, device: GraphicsDevice, vert: string, frag: string, mesh: Mesh, uniformValues: ShaderUniforms) {
         this.name = name;
         this.device = device;
         this.vert = vert;
         this.frag = frag;
         this.mesh = mesh;
+        this.uniformValues = uniformValues;
     }
 
-    build(pipelineDesc) {
+    build(pipelineDesc: PipelineDescriptor, fbo: GraphicsFramebuffer) {
         const mesh = this.mesh;
         const device = this.device;
         const defines = this.mesh.getDefines();
@@ -35,11 +48,13 @@ export default class CommandBuilder {
         const vertexInfo = this._formatBufferInfo(vertReflect, mesh);
         const fragReflect = new WgslReflect(frag);
 
+        const vertGroups = vertReflect.getBindGroups();
+        const fragGroups = fragReflect.getBindGroups();
         // 生成 bind group layout
-        const layout = this._createBindGroupLayout(vertReflect, fragReflect, mesh);
-        const pipeline = this._createPipeline(device, vert, vertexInfo, frag, layout, mesh, pipelineDesc);
+        const layout = this._createBindGroupLayout(vertGroups, fragGroups, mesh, this.uniformValues);
+        const pipeline = this._createPipeline(device, vert, vertexInfo, frag, layout, mesh, pipelineDesc, fbo);
 
-        const bindGroupMapping = this._createBindGroupMapping(vertReflect, fragReflect, mesh);
+        const bindGroupMapping = this._createBindGroupMapping(vertGroups, fragGroups, mesh);
         const bindGroupFormat = new BindGroupFormat(bindGroupMapping, device.wgpu.limits.minUniformBufferOffsetAlignment);
         const activeAttributes = this._getActiveAttributes(vertexInfo);
 
@@ -53,14 +68,14 @@ export default class CommandBuilder {
     }
 
     _getActiveAttributes(vertexInfo): ActiveAttributes {
+        //TODO
         const attributes = [{ name: 'position', type: 1 }];
         (attributes as any).key = attributes.map(attr => attr.name).join();
         return attributes as ActiveAttributes;
     }
 
-    _createBindGroupLayout(vertReflect: any, fragReflect: any, mesh: Mesh) {
-        const vertGroups = vertReflect.getBindGroups();
-        const fragGroups = fragReflect.getBindGroups();
+    _createBindGroupLayout(vertGroups: any, fragGroups: any, mesh: Mesh, uniformValues: ShaderUniforms) {
+
         const entries = [];
         for (let i = 0; i < vertGroups.length; i++) {
             const groupInfo = vertGroups[i];
@@ -69,7 +84,7 @@ export default class CommandBuilder {
                 if (!uniform) {
                     continue;
                 }
-                const entry = this._createLayoutEntry(uniform.binding, GPUShaderStage.VERTEX, uniform, mesh);
+                const entry = this._createLayoutEntry(uniform.binding, GPUShaderStage.VERTEX, uniform, mesh, uniformValues);
                 entries.push(entry);
             }
         }
@@ -80,30 +95,36 @@ export default class CommandBuilder {
                 if (!uniform) {
                     continue;
                 }
-                const entry = this._createLayoutEntry(uniform.binding, GPUShaderStage.FRAGMENT, uniform, mesh);
+                const entry = this._createLayoutEntry(uniform.binding, GPUShaderStage.FRAGMENT, uniform, mesh, uniformValues);
                 entries.push(entry);
             }
         }
+        // sort by binding
+        entries.sort(sortByBinding);
+
         return this.device.wgpu.createBindGroupLayout({
             label: this.name + '-bindgrouplayout',
             entries
         });
     }
 
-    _createLayoutEntry(binding, visibility, groupInfo, mesh): GPUBindGroupLayoutEntry {
+    _createLayoutEntry(binding, visibility, groupInfo, mesh, uniformValues): GPUBindGroupLayoutEntry {
         if (groupInfo.resourceType === ResourceType.Sampler) {
+            const sampler: GPUSamplerBindingLayout = {};
+            if (groupInfo.type && groupInfo.type.name === 'sampler_comparison') {
+                sampler.type = 'comparison';
+            }
             return {
                 binding,
                 visibility,
-                sampler: {}
-                // sampler 采用默认值
+                sampler
             };
         } else if (groupInfo.resourceType === ResourceType.Texture) {
             const name = groupInfo.name;
-            const texture = mesh.material && mesh.material.get(name);
-            const type = texture && texture.config.type;
+            const texture = uniformValues[name] || mesh.material && mesh.material.get(name);
+            const format = texture && texture.gpuFormat.format;
             let sampleType: GPUTextureSampleType = 'float';//sint， uint
-            if (type === 'depth stencil' || type === 'depth') {
+            if (format && format.startsWith('depth')) {
                 sampleType = 'depth';
             }
             return {
@@ -158,10 +179,8 @@ export default class CommandBuilder {
         return vertexInfo;
     }
 
-    _createBindGroupMapping(vertReflect: any, fragReflect: any, mesh: Mesh) {
+    _createBindGroupMapping(vertGroups: any, fragGroups: any, mesh: Mesh) {
         const mapping = {};
-        const vertGroups = vertReflect.getBindGroups();
-        const fragGroups = fragReflect.getBindGroups();
         // 解析vertInfo和fragInfo，生成一个 bindGroupMapping，用于mesh在运行时，生成bindGroup
         // mapping 中包含 uniform 变量名对应的 group index 和 binding index
         this._parseGroupMapping(mapping, vertGroups[0], mesh);
@@ -185,8 +204,12 @@ export default class CommandBuilder {
                 for (let ii = 0; ii < members.length; ii++) {
                     const name = members[ii].name;
                     if (!meshHasUniform(mesh, name)) {
+                        if (!isGlobal && ii > 0) {
+                            throw new Error(ERROR_INFO + groupInfo);
+                        }
                         isGlobal = true;
-                        break;
+                    } else if (isGlobal) {
+                        throw new Error(ERROR_INFO + groupInfo);
                     }
                 }
             } else {
@@ -198,19 +221,26 @@ export default class CommandBuilder {
             mapping.groups = mapping.groups || [];
             mapping.groups[group] = mapping.groups[group] || [];
             groupInfo.isGlobal = isGlobal;
+            groupInfo.index =
             // we assume all the members in the same struct is all global or mesh owned
             mapping.groups[group][binding] = groupInfo;//extend({
         }
     }
     // 运行时调用，生成 uniform buffer， 用来存放全局 uniform 变量的值
-    _createPipeline(graphicsDevice: GraphicsDevice, vert: string, vertInfo, frag: string, layout: GPUBindGroupLayout, mesh:Mesh, pipelineDesc: PipelineDescriptor): GPURenderPipeline {
+    _createPipeline(graphicsDevice: GraphicsDevice,
+        vert: string, vertInfo, frag: string, layout: GPUBindGroupLayout, mesh:Mesh,
+        pipelineDesc: PipelineDescriptor, fbo: GraphicsFramebuffer): GPURenderPipeline {
         const device = graphicsDevice.wgpu;
         const vertModule = device.createShaderModule({
             code: vert,
         });
-        const fragModule = device.createShaderModule({
-            code: frag,
-        });
+        let fragModule;
+        if (frag) {
+            fragModule = device.createShaderModule({
+                code: frag,
+            });
+        }
+
         if (!this._presentationFormat) {
             this._presentationFormat = navigator.gpu.getPreferredCanvasFormat();
         }
@@ -230,26 +260,33 @@ export default class CommandBuilder {
                 module: vertModule,
                 buffers
             },
-            fragment: {
+            primitive: {
+                topology: pipelineDesc.topology,
+                cullMode: pipelineDesc.cullMode
+            }
+        };
+        const depthEnabled = !fbo || !!fbo.depthTexture;
+
+        if (depthEnabled) {
+            const depthTexture = fbo && fbo.depthTexture;
+            pipelineOptions.depthStencil = {
+                depthBias: pipelineDesc.depthBias,
+                depthBiasSlopeScale: pipelineDesc.depthBiasSlopeScale,
+                depthWriteEnabled: pipelineDesc.depthWriteEnabled,
+                depthCompare: pipelineDesc.depthCompare,
+                format: (!depthTexture || depthTexture.gpuFormat.isDepthStencil) ? 'depth24plus-stencil8' : 'depth24plus'
+            };
+        }
+        if (fragModule) {
+            pipelineOptions.fragment = {
                 module: fragModule,
                 targets: [
                     {
                         format: this._presentationFormat,
                     }
                 ],
-            },
-            primitive: {
-                topology: pipelineDesc.topology,
-                cullMode: pipelineDesc.cullMode
-            },
-            depthStencil: {
-                depthBias: pipelineDesc.depthBias,
-                depthBiasSlopeScale: pipelineDesc.depthBiasSlopeScale,
-                depthWriteEnabled: pipelineDesc.depthWriteEnabled,
-                depthCompare: pipelineDesc.depthCompare,
-                format: 'depth24plus-stencil8'
-            }
-        };
+            };
+        }
         if (pipelineDesc.stencilFrontCompare) {
             pipelineOptions.depthStencil.stencilBack =
             pipelineOptions.depthStencil.stencilFront = {
@@ -257,7 +294,7 @@ export default class CommandBuilder {
                 passOp: pipelineDesc.stencilFrontPassOp
             };
         }
-        if (pipelineDesc.blendAlphaDst) {
+        if (fragModule && pipelineDesc.blendAlphaDst) {
             const fragTargets = pipelineOptions.fragment.targets;
             for (const target of fragTargets) {
                 target.blend = {
@@ -292,3 +329,8 @@ function getItemSize(type) {
         return 1;
     }
 }
+
+function sortByBinding(a: GPUBindGroupLayoutEntry, b: GPUBindGroupLayoutEntry): number {
+    return a.binding - b.binding;
+}
+

@@ -5,6 +5,7 @@ import Geometry from './Geometry';
 import Material from './Material';
 import { ActiveAttributes, MatrixFunction, MeshOptions, ShaderDefines, ShaderUniformValue, ShaderUniforms } from './types/typings';
 import DynamicBuffer from './webgpu/DynamicBuffer';
+import DynamicOffsets from './webgpu/DynamicOffsets';
 
 const tempMat4: mat4 = new Array(16) as mat4;
 
@@ -552,11 +553,11 @@ export default class Mesh {
 
     _meshBuffer: DynamicBuffer;
     // 实现webgpu相关的逻辑
-    writeDynamicBuffer(renderProps, bindGroupMapping, pool) {
+    writeDynamicBuffer(renderProps, bindGroupMapping, pool, dynamicOffsets: DynamicOffsets) {
         if (!this._meshBuffer) {
             this._meshBuffer = new DynamicBuffer(bindGroupMapping, pool);
         }
-        this._meshBuffer.writeBuffer(renderProps);
+        this._meshBuffer.writeBuffer(renderProps, dynamicOffsets);
         return this._meshBuffer;
     }
 }

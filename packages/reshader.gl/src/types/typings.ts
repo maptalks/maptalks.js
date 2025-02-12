@@ -1,6 +1,7 @@
 import REGL, { Texture, Texture2DOptions, TextureImageData } from "@maptalks/regl";
 import { mat4 } from "gl-matrix";
 import AbstractTexture from "../AbstractTexture";
+import GraphicsTexture from "../webgpu/GraphicsTexture";
 
 export type UrlModifierFunction = (url: string) => string
 
@@ -37,7 +38,7 @@ export type GeometryElements = { array: NumberArray }
 export type AttributeKey = { key: string }
 export type ActiveAttributes = { name: string, type: number }[] & AttributeKey
 
-export type ShaderUniformValue = number | boolean | string | NumberArray | null | AbstractTexture | Texture
+export type ShaderUniformValue = number | boolean | string | NumberArray | null | AbstractTexture | Texture | GraphicsTexture
 
 export type ShaderUniforms = {
     meshConfig?: MeshOptions,
@@ -85,5 +86,6 @@ export type TextureConfig = {
      */
     maxRange?: number,
     promise?: Promise<any>,
-    persistent?: boolean
+    persistent?: boolean,
+    compare?: GPUCompareFunction,
 } & Texture2DOptions;

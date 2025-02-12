@@ -21,10 +21,10 @@ class Renderer {
         let count = 0;
         if (scene) {
             const { opaques, transparents } = scene.getSortedMeshes();
-            count += shader.draw(this.device, uniforms, opaques);
-            count += shader.draw(this.device, uniforms, transparents);
+            count += shader.draw(this.device, opaques);
+            count += shader.draw(this.device, transparents);
         } else {
-            count += shader.draw(this.device, uniforms);
+            count += shader.draw(this.device);
         }
         return count;
     }

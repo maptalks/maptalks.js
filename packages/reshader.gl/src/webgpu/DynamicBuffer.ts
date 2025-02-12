@@ -1,7 +1,8 @@
 import { ResourceType } from "wgsl_reflect";
 import { ShaderUniformValue } from "../types/typings";
 import DynamicBufferPool, { DynamicBufferAllocation } from "./DynamicBufferPool";
-import { isArray } from "../common/Util";
+import { isArray, isFunction } from "../common/Util";
+import DynamicOffsets from "./DynamicOffsets";
 
 export default class DynamicBuffer {
     bindgroupMapping: any;
@@ -13,12 +14,10 @@ export default class DynamicBuffer {
     constructor(bindgroupMapping, pool: DynamicBufferPool) {
         this.bindgroupMapping = bindgroupMapping;
         this.pool = pool;
-        this.dynamicOffsets = new Array(bindgroupMapping.filter(uniform => (uniform.resourceType === ResourceType.Uniform || uniform.members)).length);
         this.allocation = {};
     }
 
-    writeBuffer(uniformValues: Record<string, ShaderUniformValue>) {
-        this.dynamicOffsets.fill(0);
+    writeBuffer(uniformValues: Record<string, ShaderUniformValue>, dynamicOffsets: DynamicOffsets) {
         const totalSize = this.bindgroupMapping.totalSize;
         const gpuBuffer = this.allocation.gpuBuffer;
         const bufferAlignment = this.pool.bufferAlignment;
@@ -26,14 +25,16 @@ export default class DynamicBuffer {
         if (gpuBuffer !== this.allocation.gpuBuffer) {
             this.version++;
         }
+
         let dynamicOffset = this.allocation.offset;
+
         const mapping = this.bindgroupMapping;
         const storage = this.allocation.storage;
-        let index = 0;
+
         for (let i = 0; i < mapping.length; i++) {
             const uniform = mapping[i];
             if (uniform.members) {
-                this.dynamicOffsets[index++] = dynamicOffset;
+                dynamicOffsets.addItem({ binding: uniform.binding, offset: dynamicOffset });
                 for (let j = 0; j < uniform.members.length; j++) {
                     const member = uniform.members[j];
                     const value = uniformValues[member.name] as number | number[];
@@ -41,14 +42,17 @@ export default class DynamicBuffer {
                     const size = member.size;
                     this._fillValue(storage, offset, size, value);
                 }
-                dynamicOffset += Math.min(mapping[i].size, bufferAlignment);
+                dynamicOffset += Math.max(mapping[i].size, bufferAlignment);
             } else if (uniform.resourceType === ResourceType.Uniform) {
-                this.dynamicOffsets[index++] = dynamicOffset;
+                dynamicOffsets.addItem({ binding: uniform.binding, offset: dynamicOffset });
                 const value = uniformValues[uniform.name];
-                this._fillValue(storage, dynamicOffset, uniform.size(), value);
-                dynamicOffset += Math.min(mapping[i].size(), bufferAlignment);
+                const size = isFunction(uniform.size) ? uniform.size() : uniform.size;
+                this._fillValue(storage, dynamicOffset, size, value);
+                dynamicOffset += Math.max(size, bufferAlignment);
             }
         }
+
+        // console.log(debugInfo.join());
     }
 
     _fillValue(buffer, offset, size, value) {
@@ -66,6 +70,5 @@ export default class DynamicBuffer {
     dispose() {
         delete this.pool;
         delete this.allocation;
-        delete this.dynamicOffsets;
     }
 }

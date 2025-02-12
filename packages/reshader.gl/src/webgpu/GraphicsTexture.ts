@@ -46,34 +46,35 @@ export default class GraphicsTexture {
             }
             const format = this.gpuFormat.format;
             const isDepth = format === 'depth24plus' || format === 'depth24plus-stencil8';
+            const usage = isDepth ?
+                GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT
+                :
+                GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT;
+
             texture = device.createTexture({
                 size: [width, height, 1],
                 format,
-                usage: isDepth ?
-                    GPUTextureUsage.TEXTURE_BINDING |
-                    GPUTextureUsage.RENDER_ATTACHMENT
-                    :
-                    GPUTextureUsage.TEXTURE_BINDING |
-                    GPUTextureUsage.COPY_DST |
-                    GPUTextureUsage.RENDER_ATTACHMENT,
+                usage
             });
-            if (isArray(config.data)) {
-                let data =config.data;
-                if (Array.isArray(config.data)) {
-                    data = new Float32Array(data);
+            if (config.data) {
+                if (isArray(config.data)) {
+                    let data =config.data;
+                    if (Array.isArray(config.data)) {
+                        data = new Float32Array(data);
+                    }
+                    device.queue.writeTexture(
+                        { texture: texture },
+                        data.buffer,
+                        {},
+                        [width, height]
+                    );
+                } else {
+                    device.queue.copyExternalImageToTexture(
+                        { source: config.data },
+                        { texture: texture },
+                        [width, height]
+                    );
                 }
-                device.queue.writeTexture(
-                    { texture: texture },
-                    data.buffer,
-                    {},
-                    [width, height]
-                );
-            } else {
-                device.queue.copyExternalImageToTexture(
-                    { source: config.data },
-                    { texture: texture },
-                    [width, height]
-                );
             }
         }
         this.texture = texture;
