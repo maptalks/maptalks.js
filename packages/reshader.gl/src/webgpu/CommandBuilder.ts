@@ -8,6 +8,8 @@ import { ActiveAttributes, ShaderUniforms } from '../types/typings';
 import InstancedMesh from '../InstancedMesh';
 import { WGSLParseDefines } from "./common/WGSLParseDefines";
 import GraphicsFramebuffer from "./GraphicsFramebuffer";
+import Texture2D from "../Texture2D";
+import GraphicsTexture from "./GraphicsTexture";
 
 const ERROR_INFO = 'global uniform and mesh owned uniform can not be in the same struct';
 
@@ -122,7 +124,14 @@ export default class CommandBuilder {
         } else if (groupInfo.resourceType === ResourceType.Texture) {
             const name = groupInfo.name;
             const texture = uniformValues[name] || mesh.material && mesh.material.get(name);
-            const format = texture && texture.gpuFormat.format;
+            let format;
+            if (texture) {
+                if (texture instanceof Texture2D) {
+                    format = (texture as Texture2D).config.type;
+                } else if (texture instanceof GraphicsTexture) {
+                    format = (texture as GraphicsTexture).gpuFormat.format;
+                }
+            }
             let sampleType: GPUTextureSampleType = 'float';//sint， uint
             if (format && format.startsWith('depth')) {
                 sampleType = 'depth';

@@ -75,6 +75,7 @@ export default class GraphicsDevice {
             desc.colorAttachments[0].view = this.context
                 .getCurrentTexture()
                 .createView();
+            desc.colorAttachments[0].view.label = 'default canvas view';
         }
         const commandEncoder = this.getCommandEncoder();
         return commandEncoder.beginRenderPass(desc);
