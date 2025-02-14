@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cube Wireframe</title>
+  <style type="text/css">
+    html,body{margin:0px;height:100%;width:100%}
+    .container{width:1000px;height:800px}
+  </style>
+  <body>
+    <canvas id="canvas" width=1000 height=800 class="container" style="border : 1px solid"></canvas>
+    <script type="importmap">
+        {
+            "imports": {
+                "reshader": "../../packages/reshader.gl/dist/reshadergl.es.js",
+                "meshes": "./meshes/cube.js",
+                "gl-matrix": "./gl-matrix/index.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import { GraphicsDevice, Renderer, MeshShader, Geometry, Mesh, Scene } from 'reshader';
+        import { cubeVertexArray, cubeVertexColors, cubeVertexCount } from 'meshes';
+        import { mat4, vec3 } from 'gl-matrix';
+
+        //https://webgpu.github.io/webgpu-samples/?sample=rotatingCube
+        const vert = /* wgsl */`
+            struct Uniforms {
+                modelMatrix : mat4x4f,
+            }
+            @binding(0) @group(0) var<uniform> uniforms : Uniforms;
+            @binding(1) @group(0) var<uniform> cameraProjViewMatrix : mat4x4f;
+
+            struct VertexOutput {
+                @builtin(position) Position : vec4f,
+                @location(0) fragPosition: vec4f,
+            }
+
+            @vertex
+            fn main(
+                @location(0) position : vec4f,
+            ) -> VertexOutput {
+                var output : VertexOutput;
+                output.Position = cameraProjViewMatrix * uniforms.modelMatrix * position;
+                output.fragPosition = 0.5 * (position + vec4(1.0, 1.0, 1.0, 1.0));
+                return output;
+            }
+        `;
+        const frag = `
+            @fragment
+            fn main(
+                @location(0) fragPosition: vec4f
+            ) -> @location(0) vec4f {
+                #if USE_VERTEX_COLOR
+                    return VERTEX_COLOR;
+                #else
+                    return fragPosition;
+                #endif
+            }
+        `;
+        const adapter = await navigator.gpu?.requestAdapter();
+        const gpuDevice = await adapter?.requestDevice();
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('webgpu');
+
+        const device = new GraphicsDevice(gpuDevice, context)
+        const renderer = new Renderer(device);
+        const shader = new MeshShader({
+            vert,
+            frag,
+            name: 'cube',
+            extraCommandProps: {
+                cull: {
+                    enable: true
+                }
+            }
+        });
+
+        const geometry = new Geometry({
+            position: cubeVertexArray
+        }, cubeVertexCount, 0, {
+            positionAttribute: 'position'
+        });
+        geometry.generateBuffers(device);
+
+        const mesh = new Mesh(geometry);
+        mesh.setDefines({
+            'VERTEX_COLOR': 'vec4(1.0, 0.0, 0.0, 1.0)',
+            // 'USE_VERTEX_COLOR': 1
+        });
+        const scene = new Scene();
+
+        function render() {
+            const matrix = getTransformationMatrix();
+
+            scene.setMeshes([mesh]);
+
+            renderer.render(shader, {  cameraProjViewMatrix: matrix }, scene);
+            device.submit();
+            requestAnimationFrame(render);
+        }
+
+        const aspect = canvas.width / canvas.height;
+        const projectionMatrix = perspectiveZO([], (2 * Math.PI) / 5, aspect, 1, 100.0);
+        const modelViewProjectionMatrix = mat4.create();
+        const viewMatrix = mat4.identity([]);
+        const translation = [0, 0, -4];
+        const axis = [];
+
+        const upVector = vec3.set([], 0, 1, 0);
+        const origin = vec3.set([], 0, 0, 0);
+        const eyePosition = [4, -4, 4];
+        const cameraViewProjMatrix = mat4.create();
+
+        function getTransformationMatrix() {
+            // mat4.identity(viewMatrix);
+            // mat4.translate(viewMatrix, viewMatrix, translation);
+            // const now = Date.now() / 1000;
+            // mat4.rotate(
+            //     viewMatrix,
+            //     viewMatrix,
+            //     1,
+            //     vec3.set(axis, Math.sin(now), Math.cos(now), 0)
+            // );
+            // mat4.multiply(modelViewProjectionMatrix, projectionMatrix, viewMatrix);
+            // return modelViewProjectionMatrix;
+
+            mat4.identity(viewMatrix);
+            mat4.lookAt(viewMatrix, eyePosition, origin, upVector);
+            // mat4.translate(viewMatrix, viewMatrix, translation);
+            // const now = Date.now() / 1000;
+            // mat4.rotate(
+            //     viewMatrix,
+            //     viewMatrix,
+            //     1,
+            //     vec3.set(axis, Math.sin(now), Math.cos(now), 0)
+            // );
+            mat4.multiply(cameraViewProjMatrix, projectionMatrix, viewMatrix);
+            return cameraViewProjMatrix;
+        }
+
+        function perspectiveZO(out, fovy, aspect, near, far) {
+            const f = 1.0 / Math.tan(fovy / 2);
+            out[0] = f / aspect;
+            out[1] = 0;
+            out[2] = 0;
+            out[3] = 0;
+            out[4] = 0;
+            out[5] = f;
+            out[6] = 0;
+            out[7] = 0;
+            out[8] = 0;
+            out[9] = 0;
+            out[11] = -1;
+            out[12] = 0;
+            out[13] = 0;
+            out[15] = 0;
+            if (far != null && far !== Infinity) {
+                const nf = 1 / (near - far);
+                out[10] = far * nf;
+                out[14] = far * near * nf;
+            } else {
+                out[10] = -1;
+                out[14] = -near;
+            }
+            return out;
+        }
+
+        render();
+    </script>
+  </body>
+</html>

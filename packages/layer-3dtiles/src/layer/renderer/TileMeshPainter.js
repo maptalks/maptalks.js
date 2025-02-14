@@ -803,7 +803,8 @@ export default class TileMeshPainter {
             instanceBuffers[p] = {
                 buffer: this._regl.buffer({
                     dimension: instanceData[p].length / instanceCount,
-                    data: instanceData[p]
+                    data: instanceData[p],
+                    name: p
                 }),
                 divisor: 1
             };
@@ -1447,17 +1448,14 @@ export default class TileMeshPainter {
         }
         const attrs = {};
         for (const p in attributes) {
-            const buffer = getUniqueREGLBuffer(this._regl, attributes[p], { dimension: attributes[p].itemSize });
+            const buffer = getUniqueREGLBuffer(this._regl, attributes[p], { dimension: attributes[p].itemSize, name: p });
             // 优先采用 attributeSemantics中定义的属性
             const name = attributeSemantics[p] || p;
-            attrs[name] = { buffer };
-            if (attributes[p].quantization) {
-                attrs[name].quantization = attributes[p].quantization;
-            }
+            attrs[name] = extend({}, attributes[p]);
+            attrs[name].buffer = buffer;
+            delete attrs[name].array;
             if (name === attributeSemantics['POSITION']) {
                 attrs[name].array = attributes[p].array;
-                attrs[name].min = attributes[p].min;
-                attrs[name].max = attributes[p].max;
             }
         }
         // createColorArray(attrs);
@@ -1723,12 +1721,7 @@ export default class TileMeshPainter {
                     },
                     // mask: 0xff
                 },
-                opFront: {
-                    fail: 'keep',
-                    zfail: 'keep',
-                    zpass: 'replace'
-                },
-                opBack: {
+                op: {
                     fail: 'keep',
                     zfail: 'keep',
                     zpass: 'replace'

@@ -4,7 +4,8 @@ import BoundingBox from './BoundingBox.js';
 import Geometry from './Geometry';
 import Material from './Material';
 import { ActiveAttributes, MatrixFunction, MeshOptions, ShaderDefines, ShaderUniformValue, ShaderUniforms } from './types/typings';
-import { Regl } from '@maptalks/regl';
+import DynamicBuffer from './webgpu/DynamicBuffer';
+import DynamicOffsets from './webgpu/DynamicOffsets';
 
 const tempMat4: mat4 = new Array(16) as mat4;
 
@@ -15,7 +16,7 @@ let uuid = 0;
  * Config:
  *  transparent, castShadow
  */
-class Mesh {
+export default class Mesh {
     //@internal
     _version: number
     //@internal
@@ -244,6 +245,10 @@ class Mesh {
       }
     }
 
+    hasUniform(k: string): boolean {
+        return this.uniforms[k] !== undefined;
+    }
+
     getUniform(k: string): ShaderUniformValue {
         return this.uniforms[k];
     }
@@ -299,10 +304,10 @@ class Mesh {
     }
 
     //eslint-disable-next-line
-    getCommandKey(regl: Regl): string {
+    getCommandKey(device: any): string {
         if (!this._commandKey || this.dirtyDefines || (this._material && this._materialKeys !== this._material.getUniformKeys())) {
             //TODO geometry的data变动也可能会改变commandKey，但鉴于geometry一般不会发生变化，暂时不管
-            let dKey = this._getDefinesKey();
+            let dKey = this.geometry.getCommandKey(device) + '_' +  this._getDefinesKey();
             const elementType = isNumber(this.getElements()) ? 'count' : 'elements';
             dKey += '_' + elementType;
             dKey += '_' + +(!!this.disableVAO);
@@ -330,7 +335,31 @@ class Mesh {
     //     return uniforms;
     // }
 
-    getUniforms(regl: Regl): ShaderUniforms {
+    getRenderProps(device: any) {
+        const props = this.getUniforms(device);
+        props.meshProperties = this.properties;
+        props.geometryProperties = this._geometry.properties;
+        props.meshConfig = this.config;
+        props.count = this._geometry.getDrawCount();
+        props.offset = this._geometry.getDrawOffset();
+        // command primitive : triangle, triangle strip, etc
+        props.primitive = this._geometry.getPrimitive();
+        return props;
+    }
+
+    //@internal
+    _getGeometryAttributes(device, activeAttributes) {
+        return this._geometry.getREGLData(device, activeAttributes, this.disableVAO);
+    }
+
+    appendGeoAttributes(props, device, activeAttributes) {
+        extend(props, this._getGeometryAttributes(device, activeAttributes));
+        if (!isSupportVAO(device) || this.disableVAO) {
+            props.elements = this._geometry.getElements();
+        }
+    }
+
+    getUniforms(device: any): ShaderUniforms {
         if (this._dirtyUniforms || this._dirtyGeometry || this._material && this._materialVer !== this._material.version) {
             this._uniformDescriptors = new Set<string>();
             this._realUniforms = {
@@ -355,7 +384,7 @@ class Mesh {
                 }
             }
             if (this._material) {
-                const materialUniforms = this._material.getUniforms(regl);
+                const materialUniforms = this._material.getUniforms(device);
                 for (const p in materialUniforms) {
                     if (hasOwn(materialUniforms, p) && !hasOwn(this._realUniforms, p)) {
                         const descriptor = Object.getOwnPropertyDescriptor(materialUniforms, p);
@@ -387,7 +416,7 @@ class Mesh {
                 }
             }
             if (this._material && this._material.propVersion !== this._materialPropVer) {
-              const materialUniforms = this._material.getUniforms(regl);
+              const materialUniforms = this._material.getUniforms(device);
               for (const p in materialUniforms) {
                   if (hasOwn(materialUniforms, p) && !this._uniformDescriptors.has(p)) {
                       const descriptor = Object.getOwnPropertyDescriptor(materialUniforms, p);
@@ -439,31 +468,15 @@ class Mesh {
         return this._geometry.getElements();
     }
 
-    //@internal
-    _getREGLAttrData(regl, activeAttributes) {
-        return this._geometry.getREGLData(regl, activeAttributes, this.disableVAO);
-    }
-
-    getREGLProps(regl: Regl, activeAttributes: ActiveAttributes) {
-        const props = this.getUniforms(regl);
-        extend(props, this._getREGLAttrData(regl, activeAttributes));
-        if (!isSupportVAO(regl) || this.disableVAO) {
-            props.elements = this._geometry.getElements();
-        }
-        props.meshProperties = this.properties;
-        props.geometryProperties = this._geometry.properties;
-        props.meshConfig = this.config;
-        props.count = this._geometry.getDrawCount();
-        props.offset = this._geometry.getDrawOffset();
-        // command primitive : triangle, triangle strip, etc
-        props.primitive = this._geometry.getPrimitive();
-        return props;
-    }
 
     dispose() {
         delete this._geometry;
         delete this._material;
         this.uniforms = null;
+        if (this._meshBuffer) {
+            this._meshBuffer.dispose();
+            delete this._meshBuffer;
+        }
         return this;
     }
 
@@ -537,9 +550,18 @@ class Mesh {
         }
         return this.localTransform;
     }
+
+    _meshBuffer: DynamicBuffer;
+    // 实现webgpu相关的逻辑
+    writeDynamicBuffer(renderProps, bindGroupMapping, pool, dynamicOffsets: DynamicOffsets) {
+        if (!this._meshBuffer) {
+            this._meshBuffer = new DynamicBuffer(bindGroupMapping, pool);
+        }
+        this._meshBuffer.writeBuffer(renderProps, dynamicOffsets);
+        return this._meshBuffer;
+    }
 }
 
-export default Mesh;
 
 function equalDefine(obj0, obj1) {
     if (!obj0 && !obj1) {

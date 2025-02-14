@@ -404,8 +404,8 @@ export function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
         mag : 'nearest'
     });
 
-    const quadBuf = regl.buffer(quadVertices);
-    const quadTexBuf = regl.buffer(quadTexcoords);
+    const quadBuf = regl.buffer({ data: quadVertices, name: 'aPosition' });
+    const quadTexBuf = regl.buffer({ data: quadTexcoords, name: 'aTexCoord' });
     const fbo = regl.framebuffer({
         radius : size,
         colorType: 'uint8',

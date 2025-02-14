@@ -170,7 +170,7 @@ class RainPainer {
                 uv0Attribute: 'TEXCOORD_0'
             }
         );
-        geometry.generateBuffers(this.renderer.regl);
+        geometry.generateBuffers(this.renderer.device);
         const material = new reshader.Material({
             rainMap: this._regl.texture({ width: 2, height: 2 }),
             diffuse: rainConfig.color || [1, 1, 1],

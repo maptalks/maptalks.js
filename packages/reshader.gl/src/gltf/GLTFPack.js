@@ -489,7 +489,7 @@ function createGeometry(primitive, regl, hasAOMap) {
         // 把原有的array赋给attr，用于计算 bbox、buildUniqueVertex
         attrs[name] = extend({}, attributes[name]);
         if (regl) {
-            attrs[name].buffer = getUniqueREGLBuffer(regl, attributes[name], { dimension: attributes[name].itemSize });
+            attrs[name].buffer = getUniqueREGLBuffer(regl, attributes[name], { dimension: attributes[name].itemSize, name });
         }
     }
 

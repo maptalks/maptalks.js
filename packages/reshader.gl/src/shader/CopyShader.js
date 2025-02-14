@@ -24,11 +24,7 @@ class CopyShader extends QuadShader {
 
     getMeshCommand(regl, mesh) {
         if (!this.commands['copy']) {
-            this.commands['copy'] = this.createREGLCommand(
-                regl,
-                null,
-                mesh.getElements()
-            );
+            this.commands['copy'] = this.createMeshCommand(regl, mesh);
         }
         return this.commands['copy'];
     }

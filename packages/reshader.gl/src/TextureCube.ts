@@ -8,7 +8,7 @@ class TextureCube extends Texture {
         }
         // const faces = this._createFaces(images);
         // config.faces = faces.map(face => face.data);
-        this._updateREGL();
+        this._update();
     }
 
     createREGLTexture(regl) {

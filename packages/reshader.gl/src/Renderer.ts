@@ -1,4 +1,4 @@
-import REGL, { Regl, Uniforms } from "@maptalks/regl";
+import REGL, { Uniforms } from "@maptalks/regl";
 import Scene from "./Scene";
 
 const EMPTY_UNIFORMS = {};
@@ -6,10 +6,10 @@ const EMPTY_UNIFORMS = {};
  * A basic renderer to render meshes in fashion of forward rendering
  */
 class Renderer {
-    regl: Regl
+    device: any
 
-    constructor(regl: Regl) {
-        this.regl = regl;
+    constructor(device: any) {
+        this.device = device;
     }
 
     render(shader, uniforms: Uniforms, scene: Scene, framebuffer: REGL.Framebuffer) {
@@ -21,16 +21,16 @@ class Renderer {
         let count = 0;
         if (scene) {
             const { opaques, transparents } = scene.getSortedMeshes();
-            count += shader.draw(this.regl, opaques);
-            count += shader.draw(this.regl, transparents);
+            count += shader.draw(this.device, opaques);
+            count += shader.draw(this.device, transparents);
         } else {
-            count += shader.draw(this.regl);
+            count += shader.draw(this.device);
         }
         return count;
     }
 
     clear(options: REGL.ClearOptions) {
-        this.regl.clear(options);
+        this.device.clear(options);
     }
 }
 

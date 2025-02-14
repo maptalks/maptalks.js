@@ -1,20 +1,24 @@
 import parseRGBE from './common/HDR';
-import { isArray, isPowerOfTwo, resizeToPowerOfTwo } from './common/Util';
+import { isArray, isFunction, isPowerOfTwo, resizeToPowerOfTwo, supportNPOT } from './common/Util';
 import { default as Texture, REF_COUNT_KEY } from './AbstractTexture';
 import { getUniqueTexture } from './common/REGLHelper';
 import REGL, { Regl } from '@maptalks/regl';
 import DataUtils from './common/DataUtils';
+import { KEY_DISPOSED } from './common/Constants';
 
 /**
  * config properties:
  * https://github.com/regl-project/regl/blob/gh-pages/API.md#textures
  */
-class Texture2D extends Texture {
+export default class Texture2D extends Texture {
+    _version: number = 0;
 
-    texParameteri(key: number, value: number) {
-        if (this._texture) {
-            (this._texture as any).texParameteri(key, value);
-        }
+    get version() {
+        return this._version;
+    }
+
+    set version(version) {
+        throw new Error('Texture2D.version is read only.');
     }
 
     onLoad({ data }) {
@@ -47,7 +51,26 @@ class Texture2D extends Texture {
         if (this._regl) {
             this._checkNPOT(this._regl);
         }
-        this._updateREGL();
+        this._update();
+    }
+
+    //@internal
+    _update() {
+        if (this._texture && !this._texture[KEY_DISPOSED]) {
+            this._version++;
+            if (isFunction(this._texture)) {
+                this._texture(this.config as any);
+            } else {
+                (this._texture as any).update(this.config);
+            }
+        }
+        this.dirty = false;
+    }
+
+    texParameteri(key: number, value: number) {
+        if (this._texture) {
+            (this._texture as any).texParameteri(key, value);
+        }
     }
 
     createREGLTexture(regl: Regl): REGL.Texture2D {
@@ -78,6 +101,15 @@ class Texture2D extends Texture {
             }
         }
     }
-}
 
-export default Texture2D;
+    //@internal
+    _needPowerOf2(regl) {
+        if (supportNPOT(regl)) {
+            return false;
+        }
+        const config = this.config;
+        const isRepeat = config.wrap && config.wrap !== 'clamp' || config.wrapS && config.wrapS !== 'clamp' ||
+            config.wrapT && config.wrapT !== 'clamp';
+        return isRepeat || config.min && config.min !== 'nearest' && config.min !== 'linear';
+    }
+}

@@ -26,11 +26,7 @@ class TaaShader extends QuadShader {
 
     getMeshCommand(regl, mesh) {
         if (!this.commands['taa']) {
-            this.commands['taa'] = this.createREGLCommand(
-                regl,
-                null,
-                mesh.getElements()
-            );
+            this.commands['taa'] = this.createMeshCommand(regl, mesh);
         }
         return this.commands['taa'];
     }

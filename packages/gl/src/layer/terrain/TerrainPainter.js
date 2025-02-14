@@ -230,9 +230,6 @@ class TerrainPainter {
                     return canvas ? canvas.height : 1;
                 }
             },
-            stencil: {
-                enable: false
-            },
             cull: {
                 enable: true,
                 face: 'back'

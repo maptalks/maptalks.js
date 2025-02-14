@@ -17,7 +17,7 @@ export default class EdgeGeometry extends Geometry {
     }
 
     //@internal
-    _getPosAttritute(): number[] {
+    _getPosAttribute(): number[] {
         const pos = this.data[this.desc.positionAttribute];
         if (!pos.length) {
             return [];

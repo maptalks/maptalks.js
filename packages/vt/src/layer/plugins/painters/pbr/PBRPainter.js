@@ -198,9 +198,6 @@ class PBRPainter extends Painter {
                     enable: true,
                     face: 'back'
                 },
-                stencil: {
-                    enable: false
-                },
                 viewport
                 // polygonOffset: {
                 //     enable: true,

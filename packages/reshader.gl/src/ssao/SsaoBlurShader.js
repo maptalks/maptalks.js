@@ -23,11 +23,7 @@ class SsaoBlurShader extends QuadShader {
 
     getMeshCommand(regl, mesh) {
         if (!this.commands['ssao_blur']) {
-            this.commands['ssao_blur'] = this.createREGLCommand(
-                regl,
-                null,
-                mesh.getElements()
-            );
+            this.commands['ssao_blur'] = this.createMeshCommand(regl, mesh);
         }
         return this.commands['ssao_blur'];
     }

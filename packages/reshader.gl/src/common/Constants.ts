@@ -10,3 +10,4 @@ export const WEBGL_OPTIONAL_EXTENSIONS = [
     'OES_texture_float', 'OES_texture_float_linear',
     'WEBGL_depth_texture', /*'WEBGL_draw_buffers', */'EXT_shader_texture_lod', 'EXT_texture_filter_anisotropic'
 ];
+export const ERROR_NOT_IMPLEMENTED = 'not implemented';

@@ -24,11 +24,7 @@ class SsrCombineShader extends QuadShader {
 
     getMeshCommand(regl, mesh) {
         if (!this.commands['ssr_combine']) {
-            this.commands['ssr_combine'] = this.createREGLCommand(
-                regl,
-                null,
-                mesh.getElements()
-            );
+            this.commands['ssr_combine'] = this.createMeshCommand(regl, mesh);
         }
         return this.commands['ssr_combine'];
     }

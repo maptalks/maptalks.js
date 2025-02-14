@@ -1,11 +1,13 @@
 import { vec3, vec4 } from 'gl-matrix';
 import { packTangentFrame, buildTangents, buildNormals } from '@maptalks/tbn-packer';
-import { isNumber, extend, isArray, isSupportVAO, hasOwn, getBufferSize, isInStride, isInterleaved } from './common/Util';
+import { isNumber, extend, isArray, isSupportVAO, hasOwn, getBufferSize, isInStride, isInterleaved, getArrayCtor } from './common/Util';
 import BoundingBox from './BoundingBox';
 import { KEY_DISPOSED } from './common/Constants';
 import { getGLTFLoaderBundle } from './common/GLTFBundle'
 import { ActiveAttributes, AttributeData, GeometryDesc, NumberArray } from './types/typings';
-import REGL, { Regl } from '@maptalks/regl';
+import REGL from '@maptalks/regl';
+import { flatten } from 'earcut';
+import { getGPUVertexType, getFormatFromGLTFAccessor, getItemBytesFromGLTFAccessor } from './webgpu/common/Types';
 
 const EMPTY_VAO_BUFFER = [];
 
@@ -51,6 +53,25 @@ function GUID() {
 const REF_COUNT_KEY = '_reshader_refCount';
 
 export default class Geometry {
+
+    static createElementBuffer(device: any, elements: any): any {
+        if (device.wgpu) {
+            return createGPUBuffer(device, elements, GPUBufferUsage.INDEX, 'index buffer');
+        } else {
+            // regl
+            return device.elements(elements);
+        }
+    }
+
+    static createBuffer(device: any, data: any, name?: string) {
+        if (device.wgpu) {
+            return createGPUBuffer(device, data, GPUBufferUsage.VERTEX, name);
+        } else {
+            // regl
+            return device.buffer(data);
+        }
+    }
+
     data: Record<string, AttributeData>
     elements: any
     desc: GeometryDesc
@@ -87,7 +108,7 @@ export default class Geometry {
 
         this.elements = elements;
         this.desc = extend({}, DEFAULT_DESC, desc);
-        const pos = this._getPosAttritute();
+        const pos = this._getPosAttribute();
         this.data[this.desc.positionAttribute] = pos;
         if (!count) {
             if (this.elements) {
@@ -125,7 +146,7 @@ export default class Geometry {
     // }
 
     //@internal
-    _getPosAttritute() {
+    _getPosAttribute() {
         return this.data[this.desc.positionAttribute];
     }
 
@@ -184,6 +205,10 @@ export default class Geometry {
         }
     }
 
+    getBuffer(name: string) {
+        return this.data[name] && this.data[name].buffer;
+    }
+
     getAttrData(activeAttributes: ActiveAttributes) {
         const key = activeAttributes.key;
         const updated = !this._reglData || !this._reglData[key];
@@ -223,9 +248,9 @@ export default class Geometry {
 
     getREGLData(regl: any, activeAttributes: ActiveAttributes, disableVAO: boolean): AttributeData {
         this.getAttrData(activeAttributes);
-        const updated = !this._reglData || !this._reglData[activeAttributes.key];
         //support vao
         if (isSupportVAO(regl) && !disableVAO) {
+            const updated = !this._reglData || !this._reglData[activeAttributes.key];
             const key = activeAttributes && activeAttributes.key || 'default';
             if (!this._vao[key] || updated || this._vao[key].dirty) {
                 const reglData = this._reglData[activeAttributes.key];
@@ -315,13 +340,13 @@ export default class Geometry {
         return false;
     }
 
-    generateBuffers(regl: Regl) {
+    generateBuffers(device: any) {
         //generate regl buffers beforehand to avoid repeated bufferData
         //提前处理addBuffer插入的arraybuffer
         const allocatedBuffers = this._buffers;
         for (const p in allocatedBuffers) {
             if (!allocatedBuffers[p].buffer) {
-                allocatedBuffers[p].buffer = regl.buffer(allocatedBuffers[p].data);
+                allocatedBuffers[p].buffer = Geometry.createBuffer(device, allocatedBuffers[p].data, p);
             }
             delete allocatedBuffers[p].data;
         }
@@ -333,6 +358,9 @@ export default class Geometry {
         for (const key in data) {
             if (!data[key]) {
                 continue;
+            }
+            if (Array.isArray(data[key])) {
+                data[key] = new Float32Array(data[key]);
             }
             //如果调用过addBuffer，buffer有可能是ArrayBuffer
             if (data[key].buffer !== undefined && !(data[key].buffer instanceof ArrayBuffer)) {
@@ -348,7 +376,7 @@ export default class Geometry {
                 const dimension = arr.length / vertexCount;
                 const info = data[key].data ? data[key] : { data: data[key] };
                 info.dimension = dimension;
-                const buffer = regl.buffer(info);
+                const buffer = Geometry.createBuffer(device, info, key);
                 buffer[REF_COUNT_KEY] = 1;
                 buffers[key] = {
                     buffer
@@ -383,7 +411,7 @@ export default class Geometry {
                     this.indices[i] = elements[i];
                 }
             }
-            this.elements = this.elements.destroy ? this.elements : regl.elements(info);
+            this.elements = this.elements.destroy ? this.elements : Geometry.createElementBuffer(device, this.elements);
             const elements = this.elements;
             if (!elements[REF_COUNT_KEY]) {
                 elements[REF_COUNT_KEY] = 0;
@@ -392,6 +420,7 @@ export default class Geometry {
 
         }
     }
+
 
     getVertexCount(): number {
         const { positionAttribute, positionSize, color0Attribute } = this.desc;
@@ -432,29 +461,29 @@ export default class Geometry {
      * @param {String} key - 属性
      * @param {ArrayBuffer|REGLBuffer} data - 数据
      */
-    addBuffer(key: string, data: ArrayBuffer | REGL.Buffer): this {
-        this._buffers[key] = {
-            data
-        };
-        delete this._reglData;
-        this._deleteVAO();
-        return this;
-    }
+    // addBuffer(key: string, data: ArrayBuffer | REGL.Buffer): this {
+    //     this._buffers[key] = {
+    //         data
+    //     };
+    //     delete this._reglData;
+    //     this._deleteVAO();
+    //     return this;
+    // }
 
-    updateBuffer(key: string, data: ArrayBuffer | REGL.Buffer): this {
-        if (!this._buffers[key]) {
-            throw new Error(`invalid buffer ${key} in geometry`);
-        }
-        // this._buffers[key].data = data;
-        if (this._buffers[key].buffer) {
-            this._buffers[key].buffer.subdata(data);
-        } else {
-            this._buffers[key].data = data;
-        }
-        delete this._reglData;
-        this._deleteVAO();
-        return this;
-    }
+    // updateBuffer(key: string, data: ArrayBuffer | REGL.Buffer): this {
+    //     if (!this._buffers[key]) {
+    //         throw new Error(`invalid buffer ${key} in geometry`);
+    //     }
+    //     // this._buffers[key].data = data;
+    //     if (this._buffers[key].buffer) {
+    //         this._buffers[key].buffer.subdata(data);
+    //     } else {
+    //         this._buffers[key].data = data;
+    //     }
+    //     delete this._reglData;
+    //     this._deleteVAO();
+    //     return this;
+    // }
 
     deleteData(name: string): this {
         const buf = this.data[name];
@@ -650,6 +679,14 @@ export default class Geometry {
         this.elements = [];
         delete this._tempPosArray;
         this._disposed = true;
+    }
+
+    //@internal
+    _deleteVAO() {
+        for (const p in this._vao) {
+            this._vao[p].vao.destroy();
+        }
+        this._vao = {};
     }
 
     isDisposed() {
@@ -853,7 +890,8 @@ export default class Geometry {
                 throw new Error(name + ' must be array to build unique vertex.');
             }
             oldData[name] = attr;
-            data[name] = new attr.constructor(l * size);
+            const ctor = getArrayCtor(attr);
+            data[name] = new ctor(l * size);
         }
 
         let cursor = 0;
@@ -897,14 +935,6 @@ export default class Geometry {
     }
 
     //@internal
-    _deleteVAO() {
-        for (const p in this._vao) {
-            this._vao[p].vao.destroy();
-        }
-        this._vao = {};
-    }
-
-    //@internal
     _forEachBuffer(fn: (buffer: any) => void) {
         if (this.elements && this.elements.destroy)  {
             fn(this.elements);
@@ -942,6 +972,71 @@ export default class Geometry {
     _incrVersion() {
         this._version++;
     }
+
+    getCommandKey(device: any) {
+        if (device && device.wgpu) {
+            // 因为attribute组织方式会影响pipeline的创建，所以attributes组织方式不同时，需要创建不同的command key
+            // 我们这里暂时不考虑Geometry会更新attributes组织方式的情况，因为在maptalks的使用场景不会出现
+            // 可能有些attribute没有被wgsl使用，但组织方式不同，这里也不考虑这种情况
+            const keys = [];
+            for (const p in this.data) {
+                const attr = this.data[p];
+                if (attr.byteStride) {
+                    keys.push(`${p}(${attr.byteOffset}/${attr.byteStride}})`);
+                } else {
+                    keys.push(p);
+                }
+            }
+            return keys.sort().join('-');
+        } else {
+            // regl
+            return '';
+        }
+    }
+
+    getBufferDescriptor(vertexInfo) {
+        const data = this.data;
+        const bufferDesc = [];
+        const bufferMapping = {};
+        for (const p in data) {
+            const attr = data[p];
+            if (!attr) {
+                continue;
+            }
+            const info = vertexInfo[p];
+            const accessorName = attr.accessorName;
+            const byteStride = attr.byteStride;
+            if (byteStride && accessorName) {
+                // a GLTF accessor style attribute
+                const format = getFormatFromGLTFAccessor(attr.componentType, attr.itemSize);
+                let desc = bufferMapping[accessorName];
+                if (desc) {
+                    desc.attributes.push({
+                        shaderLocation: info.location,
+                        format,
+                        offset: attr.byteOffset
+                    });
+                } else {
+                    desc = {
+                        arrayStride: byteStride,
+                        attributes: [
+                            {
+                                shaderLocation: info.location,
+                                format,
+                                offset: attr.byteOffset
+                            }
+                        ]
+                    }
+                    bufferMapping[accessorName] = desc;
+                    bufferDesc.push(desc);
+                }
+            } else {
+                const desc = getAttrBufferDescriptor(attr, info);
+                bufferDesc.push(desc);
+            }
+        }
+        return bufferDesc;
+    }
 }
 
 function getElementLength(elements) {
@@ -951,8 +1046,13 @@ function getElementLength(elements) {
         // object buffer form
         return elements.count;
     } else if (elements.destroy) {
-        // a regl element buffer
-        return elements['_elements'].vertCount;
+        if (elements['_elements']) {
+            // a regl element buffer
+            return elements['_elements'].vertCount;
+        } else {
+            //GPUBuffer
+            return elements.itemCount;
+        }
     } else if (elements.length !== undefined) {
         return elements.length;
     } else if (elements.data) {
@@ -974,86 +1074,94 @@ function getTypeCtor(arr: NumberArray, byteWidth: number) {
     return null;
 }
 
-// function buildTangents2(vertices, normals, uvs, indices) {
-//     const vtxCount = vertices.length / 3;
-//     const tangent = new Array(vtxCount * 4);
-//     const tanA = new Array(vertices.length);
-//     const tanB = new Array(vertices.length);
+export function getAttrBufferDescriptor(attr, info): GPUVertexBufferLayout {
+    const array = attr.data || attr.array || attr;
+    if (attr.buffer && !isArray(attr)) {
+        const itemBytes = attr.buffer.itemBytes;
+        const format = getItemFormat(attr, info.itemSize);
+        return {
+            arrayStride: info.itemSize * itemBytes,
+            attributes: [
+                {
+                    shaderLocation: info.location,
+                    format,
+                    offset: 0
+                }
+            ]
+        };
+    } else if (isArray(array)) {
+        let format, itemBytes;
+        if (attr.componentType) {
+            format = getFormatFromGLTFAccessor(attr.componentType, attr.itemSize);
+            itemBytes = getItemBytesFromGLTFAccessor(attr.componentType);
+        } else {
+            format = getItemFormat(array, info.itemSize);
+            itemBytes = getItemBytes(array);
+        }
+        return {
+            arrayStride: info.itemSize * itemBytes,
+            attributes: [
+                {
+                    shaderLocation: info.location,
+                    format,
+                    offset: 0
+                }
+            ]
+        };
+    }
+}
 
-//     // (1)
-//     const indexCount = indices.length;
-//     for (let i = 0; i < indexCount; i += 3) {
-//         const i0 = indices[i];
-//         const i1 = indices[i + 1];
-//         const i2 = indices[i + 2];
+function getItemBytes(data) {
+    const array = getAttrArray(data);
+    if (array.destroy) {
+        return array.itemBytes;
+    }
+    if (array.BYTES_PER_ELEMENT) {
+        return array.BYTES_PER_ELEMENT;
+    } else if (Array.isArray(array)) {
+        // float
+        return 4;
+    } else {
+        const item = array;
+        const gltf = getGLTFLoaderBundle();
+        const ctor = gltf.GLTFLoader.getTypedArrayCtor(item.componentType);
+        return ctor.BYTES_PER_ELEMENT;
+    }
+}
 
-//         const pos0 = vec3.set([], vertices[i0 * 3], vertices[i0 * 3 + 1], vertices[i0 * 3 + 2]);
-//         const pos1 = vec3.set([], vertices[i1 * 3], vertices[i1 * 3 + 1], vertices[i1 * 3 + 2]);
-//         const pos2 = vec3.set([], vertices[i2 * 3], vertices[i2 * 3 + 1], vertices[i2 * 3 + 2]);
+function getItemFormat(data, itemSize) {
+    const array = getAttrArray(data);
+    let format;
+    if (array.destroy) {
+        format = array.itemType;
+    } else {
+        format = getGPUVertexType(array);
+    }
+    return itemSize > 1 ? (format + 'x' + itemSize) : format;
+}
 
-//         const tex0 = vec2.set([], uvs[i0 * 2], uvs[i0 * 2 + 1]);
-//         const tex1 = vec2.set([], uvs[i1 * 2], uvs[i1 * 2 + 1]);
-//         const tex2 = vec2.set([], uvs[i2 * 2], uvs[i2 * 2 + 1]);
+function getAttrArray(data) {
+    return data.data || (data.buffer.destroy && data.buffer) || data;
+}
 
-//         const edge1 = vec3.sub([], pos1, pos0);
-//         const edge2 = vec3.sub([], pos2, pos0);
-
-//         const uv1 = vec2.sub([], tex1, tex0);
-//         const uv2 = vec2.sub([], tex2, tex0);
-
-//         const r = 1.0 / (uv1[0] * uv2[1] - uv1[1] * uv2[0]);
-
-//         const tangent = [
-//             ((edge1[0] * uv2[1]) - (edge2[0] * uv1[1])) * r,
-//             ((edge1[1] * uv2[1]) - (edge2[1] * uv1[1])) * r,
-//             ((edge1[2] * uv2[1]) - (edge2[2] * uv1[1])) * r
-//         ];
-
-//         const bitangent = [
-//             ((edge1[0] * uv2[0]) - (edge2[0] * uv1[0])) * r,
-//             ((edge1[1] * uv2[0]) - (edge2[1] * uv1[0])) * r,
-//             ((edge1[2] * uv2[0]) - (edge2[2] * uv1[0])) * r
-//         ];
-
-//         tanA[i0] = tanA[i0] || [0, 0, 0];
-//         tanA[i1] = tanA[i1] || [0, 0, 0];
-//         tanA[i2] = tanA[i2] || [0, 0, 0];
-//         vec3.add(tanA[i0], tanA[i0], tangent);
-//         vec3.add(tanA[i1], tanA[i1], tangent);
-//         vec3.add(tanA[i2], tanA[i2], tangent);
-//         // tanA[i0] += tangent;
-//         // tanA[i1] += tangent;
-//         // tanA[i2] += tangent;
-
-//         tanB[i0] = tanB[i0] || [0, 0, 0];
-//         tanB[i1] = tanB[i1] || [0, 0, 0];
-//         tanB[i2] = tanB[i2] || [0, 0, 0];
-//         vec3.add(tanB[i0], tanB[i0], bitangent);
-//         vec3.add(tanB[i1], tanB[i1], bitangent);
-//         vec3.add(tanB[i2], tanB[i2], bitangent);
-//         // tanB[i0] += bitangent;
-//         // tanB[i1] += bitangent;
-//         // tanB[i2] += bitangent;
-//     }
-
-//     // (2)
-//     for (let j = 0; j < vtxCount; j++) {
-//         const n = vec3.set([], normals[j * 3], normals[j * 3 + 1], normals[j * 3 + 2]);
-//         const t0 = tanA[j];
-//         const t1 = tanB[j];
-
-//         const n1 = vec3.scale([], n, vec3.dot(n, t0));
-//         const t = vec3.sub([], t0, n1);
-//         vec3.normalize(t, t);
-//         // const t = t0 - (n * dot(n, t0));
-//         // t = normaljze(t);
-
-//         const c = vec3.cross(n, n, t0);
-//         const w = (vec3.dot(c, t1) < 0) ? -1.0 : 1.0;
-//         tangent[j * 4] = t[0];
-//         tangent[j * 4 + 1] = t[1];
-//         tangent[j * 4 + 2] = t[2];
-//         tangent[j * 4 + 3] = w;
-//     }
-//     return tangent;
-// }
+function createGPUBuffer(device, data, usage, label) {
+    data = data.data || data;
+    if (Array.isArray(data[0])) {
+        data = flatten(data);
+    }
+    const ctor = data.constructor;
+     // f32 in default
+    const size = Array.isArray(data) ? data.length * 4 : data.byteLength;
+    const buffer = device.wgpu.createBuffer({
+        label,
+        size,
+        usage,
+        mappedAtCreation: true
+    });
+    new ctor(buffer.getMappedRange()).set(data);
+    buffer.unmap();
+    buffer.itemCount = data.length;
+    buffer.itemBytes = getItemBytes(data);
+    buffer.itemType = getGPUVertexType(data); // uint8, sint8, uint16, sint16, uint32, sint32, float32
+    return buffer;
+}

@@ -340,7 +340,7 @@ class GroundPainter {
             ]
         );
         planeGeo.createTangent();
-        planeGeo.generateBuffers(this.renderer.regl);
+        planeGeo.generateBuffers(this.renderer.device);
 
         //TODO 还需要构造 tangent
         this._ground = new reshader.Mesh(planeGeo, null, { castShadow: false });

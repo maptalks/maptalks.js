@@ -54,11 +54,7 @@ class SsaoExtactShader extends QuadShader {
 
     getMeshCommand(regl, mesh) {
         if (!this.commands['ssao_extract']) {
-            this.commands['ssao_extract'] = this.createREGLCommand(
-                regl,
-                null,
-                mesh.getElements()
-            );
+            this.commands['ssao_extract'] = this.createMeshCommand(regl, mesh);
         }
         return this.commands['ssao_extract'];
     }

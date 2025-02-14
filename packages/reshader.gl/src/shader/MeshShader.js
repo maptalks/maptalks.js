@@ -1,9 +1,8 @@
-import Shader from './Shader.js';
-import InstancedMesh from '../InstancedMesh.js';
+import Shader from './Shader';
 
 class MeshShader extends Shader {
 
-    draw(regl, meshes) {
+    draw(device, meshes) {
         if (!meshes || !meshes.length) {
             return 0;
         }
@@ -18,37 +17,41 @@ class MeshShader extends Shader {
                 continue;
             }
             if (!meshes[i].geometry.getDrawCount() || !this._runFilter(meshes[i])) {
-                //此处regl有个潜在的bug:
-                //如果count为0的geometry不过滤掉，regl生成的函数中，bind的texture不会执行unbind
+                //此处device有个潜在的bug:
+                //如果count为0的geometry不过滤掉，device生成的函数中，bind的texture不会执行unbind
                 if (i === l - 1 && preCommand && props.length) {
                     preCommand(props);
                 }
                 continue;
             }
-            const command = this.getMeshCommand(regl, meshes[i]);
+
+            const v = meshes[i].getRenderProps(device);
+            this._ensureContextDefines(v);
+            v.shaderContext = this.context;
+            v.meshObject = meshes[i];
+            this.appendDescUniforms(device, v);
+
+            const command = this.getMeshCommand(device, meshes[i], v);
+            meshes[i].appendGeoAttributes(v, device, command.activeAttributes);
 
             //run command one by one, for debug
-            // const props = extend({}, this.context, meshes[i].getREGLProps());
+            // const props = extend({}, this.context, meshes[i].getRenderProps());
             // console.log(i);
             // command(props);
 
             if (props.length && preCommand !== command) {
                 //batch mode
-                preCommand(props);
+                this.run(device, command, props);
                 props.length = 0;
             }
 
-            const v = meshes[i].getREGLProps(regl, command.activeAttributes);
-            this._ensureContextDefines(v);
-            v.shaderContext = this.context;
-            this.appendDescUniforms(regl, v);
             props.push(v);
             count++;
 
             if (i < l - 1) {
                 preCommand = command;
             } else if (i === l - 1) {
-                command(props);
+                this.run(device, command, props);
             }
         }
         return count;
@@ -109,42 +112,36 @@ class MeshShader extends Shader {
         return filters(m);
     }
 
-    getMeshCommand(regl, mesh) {
+    getMeshCommand(device, mesh, uniformValues) {
         if (!this._cmdKeys) {
             this._cmdKeys = {};
         }
-        const key = this.dkey || 'default';
+        const material = mesh.getMaterial();
+        let doubleSided = false;
+        if (material) {
+            doubleSided = material.doubleSided;
+        }
+        const key = this.getShaderCommandKey(device, mesh, uniformValues, doubleSided);
         let storedKeys = this._cmdKeys[key];
         if (!storedKeys) {
             storedKeys = this._cmdKeys[key] = {};
         }
-        const meshKey = mesh.getCommandKey(regl);
+        const meshKey = mesh.getCommandKey(device);
         if (!storedKeys[meshKey]) {
-            storedKeys[meshKey] = key + '_' + mesh.getCommandKey(regl);
+            storedKeys[meshKey] = key + '_' + mesh.getCommandKey();
         }
         const dKey = storedKeys[meshKey];
         // const key = this.dkey || '';
-        // const dKey = key + '_' + mesh.getCommandKey(regl);
+        // const dKey = key + '_' + mesh.getCommandKey();
         let command = this.commands[dKey];
         if (!command) {
-            const defines = mesh.getDefines();
-            const material = mesh.getMaterial();
+
+
             const commandProps = {};
-            if (material) {
-                const doubleSided = material.doubleSided;
-                if (doubleSided && this.extraCommandProps) {
-                    commandProps.cull = { enable: false };
-                }
+            if (doubleSided && this.extraCommandProps) {
+                commandProps.cull = { enable: false };
             }
-            command = this.commands[dKey] =
-                this.createREGLCommand(
-                    regl,
-                    defines,
-                    mesh.getElements(),
-                    mesh instanceof InstancedMesh,
-                    mesh.disableVAO,
-                    commandProps
-                );
+            command = this.commands[dKey] = this.createMeshCommand(device, mesh, commandProps, uniformValues);
         }
         return command;
     }

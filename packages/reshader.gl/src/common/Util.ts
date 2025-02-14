@@ -160,6 +160,19 @@ export function isArray(arr) {
         (arr instanceof Float64Array);
 }
 
+export function getArrayCtor(arr) {
+    return Array.isArray(arr) && Array ||
+        (arr instanceof Uint8Array) && Uint8Array ||
+        (arr instanceof Int8Array) && Int8Array ||
+        (arr instanceof Uint16Array) && Uint16Array ||
+        (arr instanceof Int16Array) && Int16Array ||
+        (arr instanceof Uint32Array) && Uint32Array ||
+        (arr instanceof Int32Array) && Int32Array ||
+        (arr instanceof Uint8ClampedArray) && Uint8ClampedArray ||
+        (arr instanceof Float32Array) && Float32Array ||
+        (arr instanceof Float64Array) && Float64Array;
+}
+
 /**
  * 对两个矢量执行线性推算
  *
@@ -228,7 +241,7 @@ export function clamp(n: number, min: number, max: number) {
  */
 export function isSupportVAO(regl: Regl) {
     // return false;
-    return regl && regl.hasExtension('oes_vertex_array_object');
+    return regl && regl.hasExtension && regl.hasExtension('oes_vertex_array_object');
 }
 
 /**
@@ -486,5 +499,5 @@ export function resizeToPowerOfTwo(image: HTMLImageElement | NumberArray, width?
 }
 
 export function supportNPOT(regl: any) {
-    return regl['_gl'] instanceof WebGL2RenderingContext;
+    return !regl['_gl'] || (regl['_gl'] instanceof WebGL2RenderingContext);
 }

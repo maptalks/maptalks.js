@@ -103,15 +103,13 @@ class NativeLinePainter extends BasicPainter {
                     enable: () => {
                         return this.isEnableTileStencil(context);
                     },
-                    mask: 0xFF,
                     func: {
                         cmp: () => {
                             return this.isOnly2D() ? '=' : '<=';
                         },
                         ref: (context, props) => {
                             return props.stencilRef;
-                        },
-                        mask: 0xFF
+                        }
                     },
                     op: {
                         fail: 'keep',

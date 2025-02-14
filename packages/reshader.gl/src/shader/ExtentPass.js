@@ -17,8 +17,8 @@ class ExtentPass {
     }
 
     _init() {
-        this._maskColorFbo = this.renderer.regl.framebuffer({
-            color: this.renderer.regl.texture({
+        this._maskColorFbo = this.renderer.device.framebuffer({
+            color: this.renderer.device.texture({
                 width: 1,
                 height: 1,
                 wrap: 'clamp',
@@ -27,8 +27,8 @@ class ExtentPass {
             }),
             depth: true
         });
-        this._maskModeFbo = this.renderer.regl.framebuffer({
-            color: this.renderer.regl.texture({
+        this._maskModeFbo = this.renderer.device.framebuffer({
+            color: this.renderer.device.texture({
                 width: 1,
                 height: 1,
                 wrap: 'clamp',
@@ -57,7 +57,7 @@ class ExtentPass {
         this._maskModeShader = new MeshShader({
             vert,
             frag: maskModeExtent,
-            uniforms, 
+            uniforms,
             extraCommandProps: {
                 viewport: this._viewport,
             }
