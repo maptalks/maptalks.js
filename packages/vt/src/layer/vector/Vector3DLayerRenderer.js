@@ -1530,19 +1530,6 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         /* eslint-enable no-empty */
     }
 
-    clearCanvas() {
-        super.clearCanvas();
-        if (!this.regl) {
-            return;
-        }
-        //这里必须通过regl来clear，如果直接调用webgl context的clear，则brdf的texture会被设为0
-        this.regl.clear({
-            color: [0, 0, 0, 0],
-            depth: 1,
-            stencil: 0xFF
-        });
-    }
-
     resizeCanvas(canvasSize) {
         super.resizeCanvas(canvasSize);
         const canvas = this.canvas;
@@ -1654,8 +1641,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
     _getLayerOpacity() {
         const layerOpacity = this.layer.options['opacity'];
-        // 不在GroupGLLayer中时，MapCanvasRenderer会读取opacity并按照透明度绘制，所以layerOpacity设成1
-        return this._isInGroupGLLayer() ? (isNil(layerOpacity) ? 1 : layerOpacity) : 1;
+        return (isNil(layerOpacity) ? 1 : layerOpacity);
     }
 }
 

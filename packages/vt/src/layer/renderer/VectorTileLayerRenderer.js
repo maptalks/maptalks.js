@@ -248,20 +248,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         return !!inGroup;
     }
 
-    createContext() {
-        const inGroup = this.canvas.gl && this.canvas.gl.wrap;
-        if (inGroup) {
-            this.gl = this.canvas.gl.wrap();
-            this.regl = this.canvas.gl.regl;
-        } else {
-            const { gl, regl, attributes } = this._createREGLContext(this.canvas);
-            this.gl = gl;
-            this.regl = regl;
-            this.glOptions = attributes;
-        }
-        if (inGroup) {
-            this.canvas.pickingFBO = this.canvas.pickingFBO || this.regl.framebuffer(this.canvas.width, this.canvas.height);
-        }
+    initContext() {
+        const { regl, reglGL } = this.context;
+        this.regl = regl;
+        this.gl = reglGL;
+        this.canvas.pickingFBO = this.canvas.pickingFBO || this.regl.framebuffer(this.canvas.width, this.canvas.height);
         this.pickingFBO = this.canvas.pickingFBO || this.regl.framebuffer(this.canvas.width, this.canvas.height);
         this._debugPainter = new DebugPainter(this.regl, this.getMap());
         this._prepareWorker();
@@ -324,19 +315,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     _incrWorkerCacheIndex() {
         this._workerCacheIndex++;
-    }
-
-    clearCanvas() {
-        super.clearCanvas();
-        if (!this.regl) {
-            return;
-        }
-        //这里必须通过regl来clear，如果直接调用webgl context的clear，则brdf的texture会被设为0
-        this.regl.clear({
-            color: CLEAR_COLOR,
-            depth: 1,
-            stencil: 0
-        });
     }
 
     isDrawable() {
@@ -1611,6 +1589,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this._groundPainter.dispose();
             delete this._groundPainter;
         }
+        delete this.gl;
+        delete this.regl;
         if (super.onRemove) super.onRemove();
         this._clearPlugin();
     }
@@ -2006,8 +1986,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     _getLayerOpacity() {
         const layerOpacity = this.layer.options['opacity'];
-        // 不在GroupGLLayer中时，MapCanvasRenderer会读取opacity并按照透明度绘制，所以layerOpacity设成1
-        return this._isInGroupGLLayer() ? (isNil(layerOpacity) ? 1 : layerOpacity) : 1;
+        return (isNil(layerOpacity) ? 1 : layerOpacity);
     }
 }
 
