@@ -1,3 +1,4 @@
+import { isNumber } from "../common/Util";
 import Geometry from "../Geometry";
 import DynamicBufferPool from "./DynamicBufferPool";
 import GraphicsFramebuffer from "./GraphicsFramebuffer";
@@ -106,8 +107,16 @@ export default class GraphicsDevice {
     }
 
     // implementation of regl.framebuffer
-    framebuffer(reglFBODescriptor) {
-        // reglDesciprtor => gpu renderPassEncoder
+    framebuffer(width, height) {
+        let reglFBODescriptor;
+        if (!isNumber(width)) {
+            reglFBODescriptor = width;
+        } else {
+            if (height === undefined) {
+                height = width;
+            }
+            reglFBODescriptor = { color: true, depthStencil: true, width, height };
+        }
         return new GraphicsFramebuffer(this, reglFBODescriptor);
     }
 
