@@ -1,4 +1,4 @@
-import * as maptalks from '@maptalks/map';
+import * as maptalks from 'maptalks';
 import Measure3DTool from './Measure3DTool';
 
 export default class Distance3DTool extends Measure3DTool {

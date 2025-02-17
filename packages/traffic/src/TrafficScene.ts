@@ -1,4 +1,4 @@
-import * as maptalks from "@maptalks/map";
+import * as maptalks from "maptalks";
 import * as turf from "@turf/turf";
 //@ts-expect-error-error
 import { GLTFLayer, MultiGLTFMarker } from "@maptalks/gltf-layer";

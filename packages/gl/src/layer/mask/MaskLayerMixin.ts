@@ -1,8 +1,8 @@
-import { Coordinate, Extent } from "@maptalks/map";
+import { Coordinate, Extent } from "maptalks";
 import { mat4, vec3 } from '@maptalks/reshader.gl';
 import Mask from "./Mask";
 import { extend } from "../util/util";
-import { MixinConstructor } from "@maptalks/map";
+import { MixinConstructor } from "maptalks";
 
 const maskLayerEvents = ['shapechange', 'heightrangechange', 'flatheightchange'];
 const COORD_EXTENT = new Coordinate(0, 0);

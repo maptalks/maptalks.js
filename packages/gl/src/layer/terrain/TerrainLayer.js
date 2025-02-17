@@ -1,4 +1,4 @@
-import * as maptalks from '@maptalks/map';
+import * as maptalks from 'maptalks';
 import TerrainLayerRenderer from './TerrainLayerRenderer';
 import { getTileIdsAtLevel, getSkinTileScale, getSkinTileRes, getCascadeTileIds } from './TerrainTileUtil';
 import { extend } from '../util/util';

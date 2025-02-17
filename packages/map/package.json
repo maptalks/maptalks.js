@@ -1,5 +1,5 @@
 {
-  "name": "@maptalks/map",
+  "name": "maptalks",
   "version": "1.0.0",
   "description": "A light JavaScript library to create integrated 2D/3D maps.",
   "license": "BSD-3-Clause",

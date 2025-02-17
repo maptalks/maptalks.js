@@ -1,4 +1,4 @@
-import * as maptalks from '@maptalks/map';
+import * as maptalks from 'maptalks';
 import TerrainWorkerConnection from './TerrainWorkerConnection';
 import * as reshader from '@maptalks/reshader.gl';
 import skinVert from './glsl/terrainSkin.vert';

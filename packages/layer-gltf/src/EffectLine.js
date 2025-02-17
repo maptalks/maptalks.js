@@ -1,5 +1,5 @@
 import EffectMarker  from './EffectMarker';
-import { Util } from '@maptalks/map';
+import { Util } from 'maptalks';
 
 const DEFAULT_SYMBOL = {
     url: 'plane',

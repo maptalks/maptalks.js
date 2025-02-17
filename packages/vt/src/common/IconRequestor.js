@@ -1,4 +1,4 @@
-import { Marker, Util } from '@maptalks/map';
+import { Marker, Util } from 'maptalks';
 import LRUCache from '../packer/LRUCache';
 
 export default class IconRequestor {

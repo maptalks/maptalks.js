@@ -2,7 +2,7 @@ import { mat4 } from '@maptalks/gl';
 import { reshader } from '@maptalks/gl';
 import vert from './glsl/excavate.vert';
 import frag from './glsl/excavate.frag';
-import { Util } from '@maptalks/map';
+import { Util } from 'maptalks';
 import AnalysisPass from './AnalysisPass';
 
 const clearColor = [1.0, 0.0, 0.0, 1];

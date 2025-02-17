@@ -1,11 +1,11 @@
-import * as maptalks from '@maptalks/map';
+import * as maptalks from 'maptalks';
 import Renderer from './GroupGLLayerRenderer.js';
 import { vec3 } from '@maptalks/reshader.gl';
 import { isNil, extend } from './util/util.js';
 import TerrainLayer from './terrain/TerrainLayer';
 import RayCaster from './raycaster/RayCaster.js';
 import Mask from './mask/Mask.js';
-import { LayerJSONType } from '@maptalks/map';
+import { LayerJSONType } from 'maptalks';
 
 const options: GroupGLLayerOptions = {
     renderer : 'gl',

@@ -1,4 +1,4 @@
-import { Map } from '@maptalks/map';
+import { Map } from 'maptalks';
 import LightManager from './LightManager.js';
 
 

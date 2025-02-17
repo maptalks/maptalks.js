@@ -1,4 +1,4 @@
-import * as maptalks from '@maptalks/map';
+import * as maptalks from 'maptalks';
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import { extend, hasOwn } from '../Util';
