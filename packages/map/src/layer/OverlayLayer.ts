@@ -884,6 +884,7 @@ OverlayLayer.mergeOptions(options);
 export default OverlayLayer;
 
 export type OverlayLayerOptionsType = LayerOptionsType & {
+    drawImmediate?: boolean,
     geometryEvents?: boolean,
     geometryEventTolerance?: number,
     style?: any;
@@ -894,6 +895,7 @@ export type addGeometryFitViewOptions = {
     duration?: number,
     step?: (frame) => void
 }
+
 export type LayerIdentifyOptionsType = {
     onlyVisible?: boolean;
     tolerance?: number;

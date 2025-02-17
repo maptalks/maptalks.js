@@ -877,6 +877,8 @@ class DrawTool extends MapTool {
         let drawToolLayer: any = this._map.getLayer(drawLayerId);
         if (!drawToolLayer) {
             drawToolLayer = new DrawToolLayer(drawLayerId, {
+                'enableSimplify': false,
+                'enableAltitude': this.options['enableAltitude'],
                 'zIndex': this.options.zIndex
             });
             this._map.addLayer(drawToolLayer);

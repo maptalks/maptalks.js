@@ -116,7 +116,7 @@ const defaultChars = getDefaultCharacterSet();
 /**
  * 文本是否全部是默认字符
  * @param chars
- * @returns
+ * @returns 
  */
 function textIsDefaultChars(chars: string[]) {
     for (let i = 0, len = chars.length; i < len; i++) {
@@ -141,12 +141,12 @@ function reverseChars(chars: string[]) {
 
 /**
  * 字符的旋转角度
- * @param p1
- * @param p2
- * @param char
- * @param direction
- * @param isDefaultChars
- * @returns
+ * @param p1 
+ * @param p2 
+ * @param char 
+ * @param direction 
+ * @param isDefaultChars 
+ * @returns 
  */
 function getCharRotation(p1: Point, p2: Point, char: string, direction: string, isDefaultChars: boolean) {
     const x0 = p1.x, y0 = p1.y;
@@ -176,9 +176,9 @@ function getCharRotation(p1: Point, p2: Point, char: string, direction: string, 
 
 /**
  * 测量字符的大小
- * @param char
- * @param fontSize
- * @returns
+ * @param char 
+ * @param fontSize 
+ * @returns 
  */
 function measureCharSize(char: string, fontSize: number) {
     let w = fontSize, h = fontSize;
@@ -192,9 +192,9 @@ function measureCharSize(char: string, fontSize: number) {
 
 /**
  * 计算文本的长度
- * @param textName
- * @param fontSize
- * @returns
+ * @param textName 
+ * @param fontSize 
+ * @returns 
  */
 function measureTextLength(textName: string, fontSize: number) {
     let textLen = 0;
@@ -220,9 +220,9 @@ function getPercentPoint(segment: segmentType, dis: number) {
 /**
  * path 分割
  * https://github.com/deyihu/lineseg
- * @param points
- * @param options
- * @returns
+ * @param points 
+ * @param options 
+ * @returns 
  */
 function lineSeg(points: Array<Point>, options: any) {
     options = Object.assign({ segDistance: 1, isGeo: true }, options);
@@ -298,8 +298,8 @@ function lineSeg(points: Array<Point>, options: any) {
 
 /**
  * 文本路径方向
- * @param path
- * @returns
+ * @param path 
+ * @returns 
  */
 function textPathDirection(path: Array<charItemType>) {
     const len = path.length;
@@ -330,10 +330,10 @@ function textPathDirection(path: Array<charItemType>) {
 
 /**
  * 获取文本沿线路径的点
- * @param chunk
- * @param chars
- * @param fontSize
- * @returns
+ * @param chunk 
+ * @param chars 
+ * @param fontSize 
+ * @returns 
  */
 function getTextPath(chunk: Array<Point>, chars: string[], fontSize: number, globalCollisonIndex: CollisionIndex) {
     const total = pathDistance(chunk);
@@ -810,12 +810,11 @@ const Canvas = {
         // @ts-ignore
         ctx.canvas._drawn = true;
         try {
-            // if (isNumber(width) && isNumber(height)) {
-            //     ctx.drawImage(img, x, y, width, height);
-            // } else {
-            //     ctx.drawImage(img, x, y);
-            // }
-            ctx.drawImage(img, 0, 0, (img as any).width, (img as any).height, x, y, width, height)
+            if (isNumber(width) && isNumber(height)) {
+                ctx.drawImage(img, x, y, width, height);
+            } else {
+                ctx.drawImage(img, x, y);
+            }
         } catch (error) {
             if (console) {
                 console.warn('error when drawing image on canvas:', error);
@@ -1123,12 +1122,12 @@ const Canvas = {
     /**
      * mock gradient path
      * 利用颜色插值来模拟渐变的Path
-     * @param ctx
-     * @param points
-     * @param lineDashArray
-     * @param lineOpacity
-     * @param isRing
-     * @returns
+     * @param ctx 
+     * @param points 
+     * @param lineDashArray 
+     * @param lineOpacity 
+     * @param isRing 
+     * @returns 
      */
     _gradientPath(ctx: CanvasRenderingContext2D, points, lineDashArray, lineOpacity, isRing = false) {
         if (!isNumber(lineOpacity)) {

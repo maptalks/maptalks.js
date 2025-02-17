@@ -5,9 +5,8 @@ import Browser from '../../core/Browser';
 import Handler from '../../handler/Handler';
 import Geometry from '../Geometry';
 import DragHandler from '../../handler/Drag';
-// import VectorLayer from '../../layer/VectorLayer';
 import { ConnectorLine } from '../ConnectorLine';
-// import { ResourceCache } from '../../renderer/layer/CanvasRenderer';
+import { ResourceCache } from '../../renderer/layer/CanvasRenderer';
 import Point from '../../geo/Point';
 import Coordinate from '../../geo/Coordinate';
 
@@ -110,7 +109,7 @@ class GeometryDragHandler extends Handler {
         if (!target.options.dragShadow) {
             return;
         }
-        // this._prepareDragStageLayer();
+        this._prepareDragStageLayer();
         if (this._shadow) {
             this._shadow.remove();
         }
@@ -143,7 +142,7 @@ class GeometryDragHandler extends Handler {
         //copy connectors
         const target = this.target;
         const shadow = this._shadow;
-        // const resources = this._dragStageLayer._getRenderer().resources;
+        const resources = this._dragStageLayer._getRenderer().resources;
 
         const shadowConnectors = [];
         if (ConnectorLine._hasConnectors(target)) {
@@ -160,15 +159,15 @@ class GeometryDragHandler extends Handler {
                     conn = new targetConn.constructor(targetConn.getConnectSource(), shadow, connOptions);
                 }
                 shadowConnectors.push(conn);
-                // if (targetConn.getLayer() && targetConn.getLayer()._getRenderer()) {
-                //     resources.merge(targetConn.getLayer()._getRenderer().resources);
-                // }
+                if (targetConn.getLayer() && targetConn.getLayer()._getRenderer()) {
+                    resources.merge(targetConn.getLayer()._getRenderer().resources);
+                }
 
             }
         }
         this._shadowConnectors = shadowConnectors;
         shadowConnectors.push(shadow);
-        // this._dragStageLayer.bringToFront().addGeometry(shadowConnectors);
+        this._dragStageLayer.bringToFront().addGeometry(shadowConnectors);
     }
 
     //@internal
@@ -179,22 +178,25 @@ class GeometryDragHandler extends Handler {
     }
 
     //@internal
-    // _prepareDragStageLayer(): void {
-    //     const map = this.target.getMap(),
-    //         layer = this.target.getLayer();
-    //     this._dragStageLayer = map.getLayer(DRAG_STAGE_LAYER_ID);
-    //     if (!this._dragStageLayer) {
-    //         this._dragStageLayer = new VectorLayer(DRAG_STAGE_LAYER_ID, {
-    //             enableAltitude: layer.options['enableAltitude'],
-    //             altitudeProperty: layer.options['altitudeProperty']
-    //         });
-    //         map.addLayer(this._dragStageLayer);
-    //     }
-    //     //copy resources to avoid repeat resource loading.
-    //     const resources = new ResourceCache();
-    //     resources.merge(layer._getRenderer().resources);
-    //     this._dragStageLayer._getRenderer().resources = resources;
-    // }
+    _prepareDragStageLayer(): void {
+        const map = this.target.getMap(),
+            layer = this.target.getLayer();
+        const prevLayer = map.getLayer(DRAG_STAGE_LAYER_ID);
+        if (prevLayer) {
+            prevLayer.remove();
+        }
+
+        const layerClazz = layer.constructor;
+        this._dragStageLayer = new layerClazz(DRAG_STAGE_LAYER_ID, {
+            enableAltitude: layer.options['enableAltitude'],
+            altitudeProperty: layer.options['altitudeProperty']
+        });
+        map.addLayer(this._dragStageLayer);
+        //copy resources to avoid repeat resource loading.
+        const resources = new ResourceCache();
+        resources.merge(layer._getRenderer().resources);
+        this._dragStageLayer._getRenderer().resources = resources;
+    }
 
     //@internal
     _startDrag(param: any): void {
@@ -412,10 +414,10 @@ class GeometryDragHandler extends Handler {
             map.getLayer(DRAG_STAGE_LAYER_ID).removeGeometry(this._shadowConnectors);
             delete this._shadowConnectors;
         }
-        // if (this._dragStageLayer) {
-        //     this._dragStageLayer._getRenderer().resources = new ResourceCache();
-        //     this._dragStageLayer.remove();
-        // }
+        if (this._dragStageLayer) {
+            this._dragStageLayer._getRenderer().resources = new ResourceCache();
+            this._dragStageLayer.remove();
+        }
     }
 
     //find correct coordinate for coordOffset if geometry has altitude

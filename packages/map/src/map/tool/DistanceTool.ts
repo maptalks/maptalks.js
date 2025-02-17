@@ -318,12 +318,15 @@ class DistanceTool extends DrawTool {
         const layerId = 'distancetool_' + uid;
         const markerLayerId = 'distancetool_markers_' + uid;
         const zIndex = this.options.zIndex;
+        const enableAltitude = this.options.enableAltitude;
         if (!map.getLayer(layerId)) {
             this._measureLineLayer = new DrawToolLayer(layerId, {
-                zIndex
+                zIndex,
+                enableAltitude
             }).addTo(map);
             this._measureMarkerLayer = new DrawToolLayer(markerLayerId, {
-                zIndex
+                zIndex,
+                enableAltitude
             }).addTo(map);
         } else {
             this._measureLineLayer = map.getLayer(layerId);

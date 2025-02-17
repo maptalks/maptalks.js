@@ -33,7 +33,7 @@ export default class DrawToolLayer extends OverlayLayer {
      * @param options=null          - construct options
      * @param options.style=null    - drawToolLayer's style
      */
-    constructor(id: string, geometries?: OverlayLayerOptionsType | Array<Geometry>,  options?: DrawToolLayerOptionsType) {
+    constructor(id: string, geometries?: DrawToolLayerOptionsType | Array<Geometry>,  options?: DrawToolLayerOptionsType) {
         super(id, geometries, options);
         const depthFunc = this.options.depthFunc || 'always';
         options.sceneConfig = { depthFunc };
@@ -104,4 +104,6 @@ DrawToolLayer.mergeOptions(options);
 type DrawToolLayerOptionsType = OverlayLayerOptionsType & {
     depthFunc?: string
     sceneConfig?: any
+    enableAltitude?: boolean
+    enableSimplify?: boolean
 }

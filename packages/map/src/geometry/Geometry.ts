@@ -1912,9 +1912,13 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         //update coordinates.z
         setCoordinatesAlt(coordinates, alt);
         if (layer) {
-            // const render = layer.getRenderer();
+            const renderer = layer.getRenderer();
             //for webgllayer,pointlayer/linestringlayer/polygonlayer
-            this.setCoordinates(coordinates);
+            if (renderer && (renderer.gl || (renderer as any).device)) {
+                this.setCoordinates(coordinates);
+            } else if (renderer) {
+                this._repaint();
+            }
         }
         this._clearAltitudeCache();
         this.onPositionChanged();
