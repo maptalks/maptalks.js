@@ -4,9 +4,9 @@
 
 ## NOTICE
 
-maptalks is [upgrading to maptalks-gl](https://github.com/maptalks/maptalks.js/issues/2471), a webgl (and webgpu in near future) driven 2D/3D map engine.
+maptalks is [upgrading to maptalks-gl](https://github.com/maptalks/maptalks.js/issues/2471), a webgl and webgpu driven 2D/3D map engine.
 
-The [legacy maptalks library](https://github.com/maptalks/maptalks-canvas) will be still maintained.
+If you are looking for the old maptalks source codes, it has moved to [packages/maptalks](https://github.com/maptalks/maptalks.js/tree/master/packages/maptalks) as a submodule.
 
 ## About
 
