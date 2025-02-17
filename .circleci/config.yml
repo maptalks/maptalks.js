@@ -7,11 +7,6 @@ executors:
   node-browser-executor:
     docker:
       - image: cimg/node:20.11-browsers
-        auth:
-          # ensure you have first added these secrets
-          # visit app.circleci.com/settings/project/gh/maptalks/maptalks.js/environment-variables
-          username: $DOCKER_HUB_USER
-          password: $DOCKER_HUB_PASSWORD
 orbs:
   browser-tools: circleci/browser-tools@1.4.8
 jobs:
@@ -33,10 +28,10 @@ jobs:
       - run:
           name: Install pnpm package manager
           command: |
-            npm install --global corepack@latest
-            corepack enable
-            corepack prepare pnpm@latest-10 --activate
-            pnpm config set store-dir .pnpm-store
+            sudo npm install --global corepack@latest
+            sudo corepack enable
+            sudo corepack prepare pnpm@latest-10 --activate
+            sudo pnpm config set store-dir .pnpm-store
 
       - run: pnpm i
 
@@ -49,6 +44,6 @@ jobs:
       # run tests!
       - run: npm test
 workflows:
-  my-custom-workflow:
+  maptalks-test:
     jobs:
       - maptalks
