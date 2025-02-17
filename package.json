@@ -11,7 +11,7 @@
     "build-dev": "turbo run build-dev*",
     "lint": "turbo run lint",
     "prettier": "prettier --parser=typescript --write **/*.{js,ts,md}",
-    "test": "turbo run test",
+    "maptalks-test": "turbo run test --filter=maptalks",
     "changeset": "changeset",
     "changeset-version": "changeset version",
     "release": "pnpm build && changeset publish"
