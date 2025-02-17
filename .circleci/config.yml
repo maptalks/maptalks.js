@@ -10,7 +10,7 @@ executors:
 orbs:
   browser-tools: circleci/browser-tools@1.4.8
 jobs:
-  install:
+  maptalks-test:
     executor: node-browser-executor
 
     working_directory: ~/repo/
@@ -37,14 +37,10 @@ jobs:
           key: pnpm-packages-{{ checksum "pnpm-lock.yaml" }}
           paths:
             - .pnpm-store
-  maptalks-test:
       # run tests!
       - run: npm run maptalks-test
 
 workflows:
   maptalks:
     jobs:
-      - install
-      - maptalks-test:
-          requires:
-            - install
+      - maptalks-test
