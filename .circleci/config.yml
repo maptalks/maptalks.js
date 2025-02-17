@@ -3,20 +3,20 @@
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
 #
 version: 2.1
+executors:
+  node-browser-executor:
+    docker:
+      - image: cimg/node:20.11-browsers
+        auth:
+          # ensure you have first added these secrets
+          # visit app.circleci.com/settings/project/gh/maptalks/maptalks.js/environment-variables
+          username: $DOCKER_HUB_USER
+          password: $DOCKER_HUB_PASSWORD
 orbs:
   browser-tools: circleci/browser-tools@1.4.8
 jobs:
-  maptalks:
-    docker:
-      # specify the version you desire here
-      - image: cimg/node:20.11-browsers
-        environment:
-          CHROME_BIN: "/usr/bin/google-chrome"
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
+  build:
+    executor: node-browser-executor
 
     working_directory: ~/repo/packages/map
 
@@ -40,5 +40,7 @@ jobs:
 
       # run tests!
       - run: npm test
-
-
+workflows:
+  my-custom-workflow:
+    jobs:
+      - maptalks
