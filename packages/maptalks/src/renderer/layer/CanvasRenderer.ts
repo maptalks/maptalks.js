@@ -631,6 +631,8 @@ class CanvasRenderer extends Class {
         const map = this.getMap();
         //when clipping, layer's middleWest needs to be reset for mask's containerPoint conversion
         this.middleWest = map._containerPointToPoint(new Point(0, map.height / 2));
+        //geometry 渲染逻辑里会修改globalAlpha，这里保存一下
+        const alpha = context.globalAlpha;
         context.save();
         const dpr = map.getDevicePixelRatio();
         if (dpr !== 1) {
@@ -664,6 +666,7 @@ class CanvasRenderer extends Class {
             console.error(error);
         }
         this.middleWest = old;
+        context.globalAlpha = alpha;
         return true;
     }
 

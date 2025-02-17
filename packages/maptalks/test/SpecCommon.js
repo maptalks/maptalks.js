@@ -359,3 +359,12 @@ function coordinate2PointWidthAltitude(map, coordinate) {
     return point;
 }
 /*eslint-enable no-unused-vars */
+
+var uaParser = new UAParser();
+var uaResult = uaParser.getOS();
+function isWindows() {
+    return (uaResult.name && uaResult.name.toLowerCase().indexOf('windows') > -1)
+}
+function isLinux() {
+    return (uaResult.name && uaResult.name.toLowerCase().indexOf('linux') > -1)
+}

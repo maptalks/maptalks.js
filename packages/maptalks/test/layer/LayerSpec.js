@@ -377,6 +377,27 @@ describe('Layer.Spec', function () {
         // }, 60);
     });
 
+    it('change opacity when has mask', function (done) {
+        var layer1 = new maptalks.TileLayer('1', {
+            renderer: 'canvas',
+            urlTemplate: 'resources/tile-red-256.png'
+        }).addTo(map);
+        expect(layer1.getOpacity()).to.be.eql(1);
+        layer1.setOpacity(0.5);
+        expect(layer1.getOpacity()).to.be.eql(0.5);
+        const extent = map.getExtent();
+        const mask = new maptalks.Polygon([...extent.toArray()]);
+        layer1.setMask(mask);
+        setTimeout(() => {
+            var canvas = map.getRenderer().canvas;
+            var size = map.getSize().toPoint();
+            var context = canvas.getContext('2d');
+            var imgData = context.getImageData(Math.round(size.x / 2), Math.round(size.y / 2), 1, 1).data;
+            expect([...imgData]).to.be.eql([255, 0, 0, 128]);
+            done();
+        }, 1000);
+    });
+
     it('#getCollisionIndex', function () {
         var layer = new maptalks.TileLayer('1', { renderer:'canvas' });
         expect(layer.getCollisionIndex()).to.be.ok();
