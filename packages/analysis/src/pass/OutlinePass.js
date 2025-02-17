@@ -3,7 +3,7 @@ import quadVert from './glsl/quad.vert';
 import extentFrag from './glsl/extent.frag';
 import outlineFrag from './glsl/outline.frag';
 import sceneVert from './glsl/sceneVert.vert';
-import { Util } from '@maptalks/map';
+import { Util } from 'maptalks';
 import AnalysisPass from './AnalysisPass';
 
 export default class OutlinePass extends AnalysisPass {

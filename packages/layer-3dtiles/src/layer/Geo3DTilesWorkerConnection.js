@@ -1,4 +1,4 @@
-import * as maptalks from '@maptalks/map';
+import * as maptalks from 'maptalks';
 
 const canvas = typeof document === 'undefined' ? null : document.createElement('canvas');
 

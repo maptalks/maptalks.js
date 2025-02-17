@@ -1,4 +1,4 @@
-import * as maptalks from '@maptalks/map';
+import * as maptalks from 'maptalks';
 import { createREGL, reshader, mat4, vec3 } from '@maptalks/gl';
 import { convertToFeature, ID_PROP } from './util/convert_to_feature';
 import { extend, hasOwn, getCentiMeterScale, isNil } from '../../common/Util';

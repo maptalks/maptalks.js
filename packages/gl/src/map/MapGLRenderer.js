@@ -1,6 +1,6 @@
 import { GLContext } from '@maptalks/fusiongl';
 import createREGL from '@maptalks/regl';
-import { Map, renderer } from '@maptalks/map';
+import { Map, renderer } from 'maptalks';
 
 export default class MapGLRenderer extends renderer.MapCanvasRenderer {
     // createCanvas, createContext, getContextInstance, clearLayerCanvasContext 和 clearCanvas 方法都应该动态注入

@@ -1,4 +1,4 @@
-import { Layer } from "@maptalks/map";
+import { Layer } from "maptalks";
 import VideoLayerRenderer from "./VideoLayerRenderer";
 import VideoSurface from "./VideoSurface";
 

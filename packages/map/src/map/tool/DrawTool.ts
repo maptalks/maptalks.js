@@ -413,7 +413,7 @@ class DrawTool extends MapTool {
         const resources = getExternalResources(symbol);
         if (resources.length > 0) {
             //load external resources at first
-            this._drawToolLayer._getRenderer().loadResources(resources);
+            this._drawToolLayer.getRenderer().loadResources(resources);
         }
     }
 
@@ -877,6 +877,8 @@ class DrawTool extends MapTool {
         let drawToolLayer: any = this._map.getLayer(drawLayerId);
         if (!drawToolLayer) {
             drawToolLayer = new DrawToolLayer(drawLayerId, {
+                'enableSimplify': false,
+                'enableAltitude': this.options['enableAltitude'],
                 'zIndex': this.options.zIndex
             });
             this._map.addLayer(drawToolLayer);

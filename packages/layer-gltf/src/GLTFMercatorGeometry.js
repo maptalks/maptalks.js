@@ -1,5 +1,5 @@
 import GLTFMarker from './GLTFMarker';
-import { Coordinate, Point, projection } from '@maptalks/map';
+import { Coordinate, Point, projection } from 'maptalks';
 const COORD = new Coordinate(0, 0), POINT = new Point(0, 0), TEMP_POINT1 = new Point(0, 0), TEMP_POINT2 = new Point(0, 0);
 export default class GLTFMercatorGeometry extends GLTFMarker {
     _calSpatialScale(out) {

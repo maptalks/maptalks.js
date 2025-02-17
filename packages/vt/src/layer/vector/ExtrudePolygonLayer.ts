@@ -1,11 +1,11 @@
-import * as maptalks from "@maptalks/map";
+import * as maptalks from "maptalks";
 
 import type { LitDataConfig, LitMaterial } from "../../types";
 import { extend, isNil } from "../../common/Util";
 
 import { getVectorPacker } from "../../packer/inject";
 import { ID_PROP } from "./util/convert_to_feature";
-import type { OverlayLayerOptionsType } from "@maptalks/map";
+import type { OverlayLayerOptionsType } from "maptalks";
 import { PROP_OMBB } from "../../common/Constant";
 import { PolygonLayerRenderer } from "./PolygonLayer";
 import Vector3DLayer from "./Vector3DLayer";

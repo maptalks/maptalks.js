@@ -1,4 +1,4 @@
-import * as maptalks from '@maptalks/map';
+import * as maptalks from 'maptalks';
 import Measure3DTool from './Measure3DTool';
 
 const MEASURE_HEIGHT_NAMES = [['直线距离', '垂直高度', '水平距离'], ['spatial distance', 'vertical height', 'horizontal distance']];

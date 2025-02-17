@@ -26,7 +26,7 @@ import * as vec3 from '../../core/util/vec3';
 import { formatResourceUrl } from '../../core/ResourceProxy';
 import { Coordinate, Extent } from '../../geo';
 import { type TileLayerCanvasRenderer } from '../../renderer';
-import { Tile } from '../../renderer/layer/tilelayer/TileLayerCanvasRenderer';
+import { Tile } from '../../renderer/layer/tilelayer/TileLayerRendererable';
 import { BBOX, bboxInMask } from '../../core/util/bbox';
 
 const DEFAULT_MAXERROR = 1;

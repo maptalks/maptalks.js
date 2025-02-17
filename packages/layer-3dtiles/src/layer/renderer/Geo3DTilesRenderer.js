@@ -1,4 +1,4 @@
-import * as maptalks from '@maptalks/map';
+import * as maptalks from 'maptalks';
 import { reshader } from '@maptalks/gl';
 import { getGLTFLoaderBundle } from '@maptalks/gl/dist/transcoders.js';
 import { MaskRendererMixin } from '@maptalks/gl';

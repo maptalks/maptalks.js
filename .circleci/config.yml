@@ -3,22 +3,17 @@
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
 #
 version: 2.1
+executors:
+  node-browser-executor:
+    docker:
+      - image: cimg/node:22.14-browsers
 orbs:
   browser-tools: circleci/browser-tools@1.4.8
 jobs:
-  build:
-    docker:
-      # specify the version you desire here
-      - image: cimg/node:20.11-browsers
-        environment:
-          CHROME_BIN: "/usr/bin/google-chrome"
+  maptalks-test:
+    executor: node-browser-executor
 
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
-
-    working_directory: ~/repo
+    working_directory: ~/repo/
 
     steps:
       - browser-tools/install-chrome
@@ -26,19 +21,26 @@ jobs:
 
       # Download and cache dependencies
       - restore_cache:
+          name: Restore pnpm Package Cache
           keys:
-          - v1-dependencies-{{ checksum "package-lock.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+            - pnpm-packages-{{ checksum "pnpm-lock.yaml" }}
 
-      - run: npm install
+      - run:
+          name: Install pnpm package manager
+          command: |
+            sudo npm install --global pnpm
+
+      - run: pnpm i
 
       - save_cache:
+          name: Save pnpm Package Cache
+          key: pnpm-packages-{{ checksum "pnpm-lock.yaml" }}
           paths:
-            - node_modules
-          key: v1-dependencies-{{ checksum "package-lock.json" }}
-
+            - .pnpm-store
       # run tests!
-      - run: npm test
+      - run: npm run maptalks-test
 
-
+workflows:
+  maptalks:
+    jobs:
+      - maptalks-test

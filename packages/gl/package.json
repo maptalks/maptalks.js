@@ -33,7 +33,7 @@
   "dependencies": {
     "@maptalks/fusiongl": "workspace:*",
     "@maptalks/gltf-loader": "workspace:*",
-    "@maptalks/map": "workspace:*",
+    "maptalks": "workspace:*",
     "@maptalks/martini": "^0.4.0",
     "@maptalks/regl": "^3.4.0",
     "@maptalks/reshader.gl": "workspace:*",

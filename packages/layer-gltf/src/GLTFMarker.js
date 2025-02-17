@@ -1,4 +1,4 @@
-import { Marker, Util, Point, Extent } from '@maptalks/map';
+import { Marker, Util, Point, Extent } from 'maptalks';
 import { mat4, quat, vec3, vec4, reshader } from '@maptalks/gl';
 import { defined, coordinateToWorld, getAbsoluteValue, getGLTFAnchorsAlongLine } from './common/Util';
 import { loadFunctionTypes, hasFunctionDefinition } from '@maptalks/function-type';

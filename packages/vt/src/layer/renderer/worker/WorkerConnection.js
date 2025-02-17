@@ -1,4 +1,4 @@
-import * as maptalks from '@maptalks/map';
+import * as maptalks from 'maptalks';
 import { extend, uid, toJSON } from '../../../common/Util';
 import IconRequestor from '../../../common/IconRequestor';
 import { getVectorPacker } from '../../../packer/inject';

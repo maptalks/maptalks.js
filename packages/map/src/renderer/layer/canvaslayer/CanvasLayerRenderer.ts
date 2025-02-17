@@ -45,17 +45,6 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
         this._drawLayerOnInteracting(...args);
     }
 
-    clearCanvas() {
-        if (!this.context || !this.getMap()) {
-            return;
-        }
-        //fix #1597
-        const r = this.getMap().getDevicePixelRatio();
-        const rScale = 1 / r;
-        const w = this.canvas.width * rScale, h = this.canvas.height * rScale;
-        Canvas.clearRect(this.context, 0, 0, Math.max(w, this.canvas.width), Math.max(h, this.canvas.height));
-    }
-
     getCanvasImage() {
         const canvasImg = super.getCanvasImage();
         if (canvasImg && canvasImg.image && this.layer.options['doubleBuffer']) {

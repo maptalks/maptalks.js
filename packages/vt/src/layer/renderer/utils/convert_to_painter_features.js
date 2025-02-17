@@ -1,4 +1,4 @@
-import * as maptalks from '@maptalks/map';
+import * as maptalks from 'maptalks';
 import { KEY_IDX } from '../../../common/Constant';
 import { extend } from '../../../common/Util';
 

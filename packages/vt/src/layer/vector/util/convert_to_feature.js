@@ -1,5 +1,5 @@
 import { extend, hasOwn } from '../../../common/Util';
-import * as maptalks from '@maptalks/map';
+import * as maptalks from 'maptalks';
 import { KEY_IDX } from '../../../common/Constant';
 import { LINE_GRADIENT_PROP_KEY } from './symbols';
 import { getVectorPacker } from '../../../packer/inject';

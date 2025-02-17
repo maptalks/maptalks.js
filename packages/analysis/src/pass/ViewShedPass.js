@@ -2,7 +2,7 @@ import { mat4, quat, vec3 } from '@maptalks/gl';
 import { reshader } from '@maptalks/gl';
 import vert from './glsl/viewshed.vert';
 import frag from './glsl/viewshed.frag';
-import { Util, Point } from '@maptalks/map';
+import { Util, Point } from 'maptalks';
 import AnalysisPass from './AnalysisPass';
 
 const helperPos = [

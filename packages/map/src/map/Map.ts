@@ -26,7 +26,7 @@ import Layer from '../layer/Layer';
 import Renderable from '../renderer/Renderable';
 import SpatialReference, { type SpatialReferenceType } from './spatial-reference/SpatialReference';
 import { computeDomPosition, MOUSEMOVE_THROTTLE_TIME } from '../core/util/dom';
-import EPSG9807, { type EPSG9807ProjectionType } from '../geo/projection/Projection.EPSG9807';
+import EPSG9807, { type EPSG9807ProjectionType } from '../geo/projection/Projection.EPSG9807.js';
 import { AnimationOptionsType, EasingType } from '../core/Animation';
 import { BBOX, bboxInBBOX, getDefaultBBOX, pointsBBOX } from '../core/util/bbox';
 import { Attribution } from '../control';
@@ -34,6 +34,7 @@ import { AttributionOptionsType } from '../control/Control.Attribution';
 
 const TEMP_COORD = new Coordinate(0, 0);
 const TEMP_POINT = new Point(0, 0);
+const REDRAW_OPTIONS_PROPERTIES = ['centerCross', 'fog', 'fogColor', 'debugSky'];
 /**
  * @property {Object} options                                   - map's options, options must be updated by config method:<br> map.config('zoomAnimation', false);
  * @property {Boolean} [options.centerCross=false]              - Display a red cross in the center of map
@@ -85,7 +86,10 @@ const TEMP_POINT = new Point(0, 0);
  * @property {Boolean|Object} [options.scaleControl=false]              - display the scale control on the map if set to true or a object as the control construct option.
  * @property {Boolean|Object} [options.overviewControl=false]           - display the overview control on the map if set to true or a object as the control construct option.
  *
- * @property {String} [options.renderer=gl]                     - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
+ * @property {Boolean}        [options.fog=true]                        - whether to draw fog in far distance.
+ * @property {Number[]}       [options.fogColor=[233, 233, 233]]        - color of fog: [r, g, b]
+ *
+ * @property {String | String[]} [options.renderer=['canvas', 'gl', 'gpu']] - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
  * @property {Number} [options.devicePixelRatio=null]           - device pixel ratio to override device's default one
  * @property {Number} [options.heightFactor=1]           - the factor for height/altitude calculation,This affects the height calculation of all layers(vectortilelayer/gllayer/threelayer/3dtilelayer)
  * @property {Boolean} [options.stopRenderOnOffscreen=true]           - whether to stop map rendering when container is offscreen
@@ -141,7 +145,7 @@ const options: MapOptionsType = {
     'checkSize': true,
     'checkSizeInterval': 1000,
 
-    'renderer': 'gl',
+    'renderer': ['canvas', 'gl', 'gpu'],
 
     'cascadePitches': [10, 60],
     'renderable': true,
@@ -206,7 +210,7 @@ const options: MapOptionsType = {
  *          subdomains:['a','b','c']
  *      }),
  *      layers : [
- *          new maptalks.PointLayer('v', [new maptalks.Marker([180, 0])])
+ *          new maptalks.VectorLayer('v', [new maptalks.Marker([180, 0])])
  *      ]
  * });
  */
@@ -512,6 +516,19 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         const ref = conf['spatialReference'] || conf['view'];
         if (!isNil(ref)) {
             this._updateSpatialReference(ref, null);
+        }
+        if (this.options.renderer === 'canvas') {
+            let needUpdate = false;
+            for (let i = 0, len = REDRAW_OPTIONS_PROPERTIES.length; i < len; i++) {
+                const key = REDRAW_OPTIONS_PROPERTIES[i];
+                if (!isNil(conf[key])) {
+                    needUpdate = true;
+                    break;
+                }
+            }
+            if (!needUpdate) {
+                return this;
+            }
         }
         const renderer = this.getRenderer();
         if (renderer) {
@@ -1449,7 +1466,11 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (removed.length > 0) {
             const renderer = this.getRenderer();
             if (renderer) {
-                renderer.setToRedraw();
+                if (this.options.renderer === 'canvas') {
+                    renderer.setLayerCanvasUpdated();
+                } else {
+                    renderer.setToRedraw();
+                }
             }
             this.once('frameend', () => {
                 removed.forEach(layer => {
@@ -2081,10 +2102,19 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     //@internal
     _initRenderer() {
-        const renderer = this.options['renderer'];
-        const clazz = Map.getRendererClass(renderer) as any;
-        this._renderer = new clazz(this);
-        this._renderer.load();
+        let renderer = this.options['renderer'];
+        if (!Array.isArray(renderer)) {
+            renderer = [renderer];
+        }
+        for (let i = 0; i < renderer.length; i++) {
+            const clazz = Map.getRendererClass(renderer[i]) as any;
+            if (clazz) {
+                this._renderer = new clazz(this);
+                this._renderer.load();
+                break;
+            }
+        }
+
     }
 
     //@internal
@@ -2728,6 +2758,8 @@ Map.mergeOptions(options);
 
 export default Map;
 
+export type MapRendererType = 'canvas' | 'gl' | 'gpu';
+
 export type MapOptionsType = {
     // center: Array<number> | Coordinate;
     // zoom: number;
@@ -2754,6 +2786,8 @@ export type MapOptionsType = {
     zoomControl?: boolean;
     scaleControl?: boolean;
     overviewControl?: boolean;
+    fog?: boolean;
+    fogColor?: any; // fixme 确认类型
     devicePixelRatio?: number;
     heightFactor?: number;
     originLatitudeForAltitude?: number;
@@ -2785,7 +2819,7 @@ export type MapOptionsType = {
     fixCenterOnResize?: boolean;
     checkSize?: boolean;
     checkSizeInterval?: number;
-    renderer?: 'gl';
+    renderer?: MapRendererType | MapRendererType[];
     cascadePitches?: Array<number>;
     renderable?: boolean;
     clickTimeThreshold?: number;

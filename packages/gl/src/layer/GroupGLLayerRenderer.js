@@ -1,4 +1,4 @@
-import * as maptalks from '@maptalks/map';
+import * as maptalks from 'maptalks';
 import { vec2, vec3, mat4 } from '@maptalks/reshader.gl';
 import ShadowProcess from './shadow/ShadowProcess';
 import * as reshader from '@maptalks/reshader.gl';

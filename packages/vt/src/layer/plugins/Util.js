@@ -1,4 +1,4 @@
-import * as maptalks from '@maptalks/map';
+import * as maptalks from 'maptalks';
 import { isFunctionDefinition } from '@maptalks/function-type';
 import Color from 'color';
 

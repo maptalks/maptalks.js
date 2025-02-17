@@ -1,4 +1,4 @@
-import { Util, Geometry } from '@maptalks/map';
+import { Util, Geometry } from 'maptalks';
 import GLTFMarker from '../GLTFMarker';
 import EffectMarker from '../EffectMarker';
 

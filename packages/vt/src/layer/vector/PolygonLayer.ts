@@ -1,4 +1,4 @@
-import * as maptalks from "@maptalks/map";
+import * as maptalks from "maptalks";
 
 import { ID_PROP } from "./util/convert_to_feature";
 import { getVectorPacker } from "../../packer/inject";

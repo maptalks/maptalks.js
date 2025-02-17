@@ -1,9 +1,8 @@
-import { IS_NODE, isNumber, isFunction, requestAnimFrame, cancelAnimFrame, equalMapView, calCanvasSize, pushIn } from '../../core/util';
-import { createEl, preventSelection, computeDomPosition } from '../../core/util/dom';
+import { IS_NODE, requestAnimFrame, cancelAnimFrame, equalMapView, calCanvasSize } from '../../core/util';
+import { createEl, preventSelection, computeDomPosition, removeDomNode } from '../../core/util/dom';
 import { GlobalEvent, EVENT_DOC_DRAGEND, EVENT_DOC_VISIBILITY_CHANGE, EVENT_DPR_CHANGE, EVENT_DOC_DRAGSTART } from './../../core/GlobalEvent';
 import Browser from '../../core/Browser';
 import Point from '../../geo/Point';
-import Canvas2D from '../../core/Canvas';
 import MapRenderer from './MapRenderer';
 import Map, { type PanelDom } from '../../map/Map';
 import CollisionIndex from '../../core/CollisionIndex';
@@ -26,7 +25,7 @@ const tempCollisionIndex = new CollisionIndex();
  * @extends {renderer.MapRenderer}
  * @memberOf renderer
  */
-class MapCanvasRenderer extends MapRenderer {
+class MapGLAbstractRenderer extends MapRenderer {
     //@internal
     _containerIsCanvas: boolean;
     //@internal
@@ -40,10 +39,6 @@ class MapCanvasRenderer extends MapRenderer {
     //@internal
     _resizeEventList: ResizeObserverEntry[];
 
-    //@internal
-    _needClear: boolean;
-    //@internal
-    _canvasUpdated: boolean;
     //@internal
     _isViewChanged: WithUndef<boolean>;
     //@internal
@@ -75,7 +70,7 @@ class MapCanvasRenderer extends MapRenderer {
     //@internal
     _tops: (EditHandle | EditOutline)[];
 
-    context: CanvasRenderingContext2D;
+    context: any;
     canvas: HTMLCanvasElement;
     topLayer: HTMLCanvasElement;
     topCtx: CanvasRenderingContext2D;
@@ -110,7 +105,7 @@ class MapCanvasRenderer extends MapRenderer {
         this._handleResizeEventList(framestamp);
         //not render anything when map container is hide
         if (map.options['stopRenderOnOffscreen'] && this._containerIsOffscreen()) {
-            return true;
+            return false;
         }
         this._updateDomPosition(framestamp);
         delete this._isViewChanged;
@@ -118,18 +113,12 @@ class MapCanvasRenderer extends MapRenderer {
         this.updateMapDOM();
         map.clearCollisionIndex();
         const layers = this._getAllLayerToRender();
-        this.drawLayers(layers, framestamp);
-        const updated = this.drawLayerCanvas(layers);
+        const updated = this.drawLayers(layers, framestamp);
+        // const updated = this.drawLayerCanvas(layers);
         if (updated) {
             // when updated is false, should escape drawing tops and centerCross to keep handle's alpha
             this.drawTops();
-            this._drawCenterCross();
-            if (map.options['debugSky']) {
-                this._debugSky();
-            }
         }
-        this._needClear = false;
-        // this._drawContainerExtent();
         // CAUTION: the order to fire frameend and layerload events
         // fire frameend before layerload, reason:
         // 1. frameend is often used internally by maptalks and plugins
@@ -140,9 +129,8 @@ class MapCanvasRenderer extends MapRenderer {
         // It must be before events and frame callback, because map state may be changed in callbacks.
         this._mapview = this._getMapView();
         delete this._spatialRefChanged;
-        this._fireLayerLoadEvents();
+        this._fireLayerLoadEvents(layers);
         this.executeFrameCallbacks();
-        this._canvasUpdated = false;
         //loop ui Collides
         map.uiCollides();
         return true;
@@ -168,97 +156,42 @@ class MapCanvasRenderer extends MapRenderer {
 
     //need redraw all layer,cause by collision/crs change/view change etc...
     //@internal
-    _needRedrawAllLayers(layers: Layer[]) {
+    _checkIfNeedToRedrawLayers(layers: Layer[]) {
         if (this.isSpatialReferenceChanged()) {
             return true;
         }
-        const needRedrawLayers: Layer[] = [];
-        layers.forEach(layer => {
-            if (!layer) {
-                return;
-            }
-            //always check layer need to redraw
-            const needsRedraw = layer._toRedraw = this._checkLayerRedraw(layer);
-            if (needsRedraw) {
-                needRedrawLayers.push(layer);
-                const childLayers = layer.getLayers && layer.getLayers();
-                if (childLayers && Array.isArray(childLayers)) {
-                    pushIn(needRedrawLayers, childLayers);
-                }
-            }
-        });
-        for (let i = 0, len = needRedrawLayers.length; i < len; i++) {
-            const layer = needRedrawLayers[i];
-            const layerOptions = layer && layer.options;
-            if (layerOptions && layerOptions.collision && layerOptions.collisionScope === 'map') {
+        for (let i = 0, len = layers.length; i < len; i++) {
+            if (this._checkLayerRedraw(layers[i])) {
                 return true;
             }
-            //other condition if need
         }
         return false;
     }
 
     drawLayers(layers: Layer[], framestamp: number) {
-        const needRedrawAllLayers = this._needRedrawAllLayers(layers);
-
+        const needRedraw = this._checkIfNeedToRedrawLayers(layers);
+        if (!needRedraw && !this.map.options['forceRedrawPerFrame']) {
+            return false;
+        }
+        this.clearCanvas();
         const map = this.map,
             isInteracting = map.isInteracting(),
-            // all the visible canvas layers' ids.
-            canvasIds: string[] = [],
-            // all the updated canvas layers's ids.
-            updatedIds: string[] = [],
-            fps = map.options['fpsOnInteracting'] || 0,
-            timeLimit = fps === 0 ? 0 : 1000 / fps,
-            // time of layer drawing
-            layerLimit = this.map.options['layerCanvasLimitOnInteracting'],
             l = layers.length;
-        const baseLayer = map.getBaseLayer();
-        let t = 0;
         for (let i = 0; i < l; i++) {
             const layer = layers[i];
             if (!layer.isVisible()) {
                 continue;
             }
             const isCanvas = layer.isCanvasRender();
-            if (isCanvas) {
-                canvasIds.push(layer.getId());
-            }
             const renderer = layer._getRenderer();
             if (!renderer) {
                 continue;
             }
-            // if need to call layer's draw/drawInteracting
-            const needsRedraw = needRedrawAllLayers || layer._toRedraw;
-            if (isCanvas && renderer.isCanvasUpdated()) {
-                // don't need to call layer's draw/drawOnInteracting but need to redraw layer's updated canvas
-                if (!needsRedraw) {
-                    updatedIds.push(layer.getId());
-                }
-                this.setLayerCanvasUpdated();
+            if (isCanvas) {
+                this.clearLayerCanvasContext(layer);
             }
-            const transformMatrix = renderer.__zoomTransformMatrix;
-            delete renderer.__zoomTransformMatrix;
-            if (!needsRedraw) {
-                if (isCanvas && isInteracting) {
-                    if (map.isZooming() && !map.getPitch()) {
-                        // transform layer's current canvas when zooming
-                        renderer.prepareRender();
-                        renderer.__zoomTransformMatrix = this._zoomMatrix;
-                    } else if (map.getPitch() || map.isRotating()) {
-                        // when map is pitching or rotating, clear the layer canvas
-                        // otherwise, leave layer's canvas unchanged
-                        renderer.clearCanvas();
-                    }
-                }
-                continue;
-            }
-
             if (isInteracting && isCanvas) {
-                if (layerLimit > 0 && l - 1 - i > layerLimit && layer !== baseLayer) {
-                    layer._getRenderer().clearCanvas();
-                    continue;
-                }
-                t += this._drawCanvasLayerOnInteracting(layer, t, timeLimit, framestamp);
+                this._drawCanvasLayerOnInteracting(layer, framestamp);
             } else if (isInteracting && renderer.drawOnInteracting) {
                 // dom layers
                 if (renderer.prepareRender) {
@@ -273,32 +206,9 @@ class MapCanvasRenderer extends MapRenderer {
             } else {
                 // map is not interacting, call layer's render
                 renderer.render(framestamp);
-                //地图缩放完以后，如果下一次render需要载入资源，仍需要设置transformMatrix
-                //防止在资源载入完成之前，缺少transformMatrix导致的绘制错误
-                if (isCanvas && transformMatrix && renderer.isLoadingResource()) {
-                    renderer.__zoomTransformMatrix = transformMatrix;
-                }
-            }
-
-            if (isCanvas) {
-                updatedIds.push(layer.getId());
-                this.setLayerCanvasUpdated();
             }
         }
-        // compare:
-        // 1. previous drawn layers and current drawn layers
-        // 2. previous canvas layers and current canvas layers
-        // set map to redraw if either changed
-        const preCanvasIds = this._canvasIds || [];
-        const preUpdatedIds = this._updatedIds || [];
-        this._canvasIds = canvasIds;
-        this._updatedIds = updatedIds;
-        if (!this.isLayerCanvasUpdated()) {
-            const sep = '---';
-            if (preCanvasIds.join(sep) !== canvasIds.join(sep) || preUpdatedIds.join(sep) !== updatedIds.join(sep)) {
-                this.setLayerCanvasUpdated();
-            }
-        }
+        return true;
     }
 
     /**
@@ -307,9 +217,6 @@ class MapCanvasRenderer extends MapRenderer {
      */
     //@internal
     _checkLayerRedraw(layer: Layer): boolean {
-        if (this.isSpatialReferenceChanged()) {
-            return true;
-        }
         const map = this.map;
         const renderer = layer._getRenderer();
         if (!renderer) {
@@ -336,47 +243,23 @@ class MapCanvasRenderer extends MapRenderer {
      * @private
      */
     //@internal
-    _drawCanvasLayerOnInteracting(layer: Layer, t: number, timeLimit: number, framestamp: number): number {
-        const map = this.map,
-            renderer = layer._getRenderer(),
-            drawTime = renderer.getDrawTime(),
-            inTime = timeLimit === 0 || timeLimit > 0 && t + drawTime <= timeLimit;
+    _drawCanvasLayerOnInteracting(layer: Layer, framestamp: number): number {
+        const renderer = layer._getRenderer();
         if (renderer.mustRenderOnInteracting && renderer.mustRenderOnInteracting()) {
             renderer.render(framestamp);
-        } else if (renderer.drawOnInteracting &&
-            (layer === map.getBaseLayer() || inTime ||
-                map.isZooming() && layer.options['forceRenderOnZooming'] ||
-                map.isMoving() && layer.options['forceRenderOnMoving'] ||
-                map.isRotating() && layer.options['forceRenderOnRotating'])
-        ) {
+        } else if (renderer.drawOnInteracting) {
             // call drawOnInteracting to redraw the layer
             renderer.prepareRender();
-            renderer.prepareCanvas();
+            const canvas = renderer.prepareCanvas();
             if (renderer.checkAndDraw) {
                 // for canvas renderers
                 renderer.checkAndDraw(renderer.drawOnInteracting, this._eventParam, framestamp);
             } else {
                 renderer.drawOnInteracting(this._eventParam, framestamp);
             }
-            return drawTime;
-        } else if (map.isZooming() && !map.getPitch() && !map.isRotating()) {
-            // when:
-            // 1. layer's renderer doesn't have drawOnInteracting
-            // 2. timeLimit is exceeded
-            // then:
-            // transform layer's current canvas when zooming
-            renderer.prepareRender();
-            renderer.__zoomTransformMatrix = this._zoomMatrix;
-        } else if (map.getPitch() || map.isRotating()) {
-            // when map is pitching or rotating, clear the layer canvas
-            // otherwise, leave layer's canvas unchanged
-            renderer.clearCanvas();
+            return canvas;
         }
-        if (renderer.drawOnInteracting && !inTime) {
-            // @ts-expect-error 我也不知道怎么办，不敢乱动，可能插件里需要？
-            renderer.onSkipDrawOnInteracting(this._eventParam, framestamp);
-        }
-        return 0;
+        return null;
     }
 
     /**
@@ -385,127 +268,29 @@ class MapCanvasRenderer extends MapRenderer {
      * @private
      */
     //@internal
-    _fireLayerLoadEvents() {
-        if (this._updatedIds && this._updatedIds.length > 0) {
-            const map = this.map;
-            //firing order as FIFO, painting as FILO, so the order needs to be reversed
-            this._updatedIds.reverse().forEach(id => {
-                const layer = map.getLayer(id);
-                if (!layer) {
-                    return;
-                }
-                const renderer = layer._getRenderer();
-                if (!renderer || !renderer.isRenderComplete()) {
-                    return;
-                }
-                /**
-                 * layerload event, fired when layer is loaded.
-                 *
-                 * @event Layer#layerload
-                 * @type {Object}
-                 * @property {String} type - layerload
-                 * @property {Layer} target - layer
-                 */
-                layer.fire('layerload');
-            });
-        }
-
-    }
-
-    isLayerCanvasUpdated() {
-        return this._canvasUpdated;
-    }
-
-    setLayerCanvasUpdated() {
-        this._canvasUpdated = true;
-    }
-
-    /**
-     * Renders the layers
-     */
-    drawLayerCanvas(layers: Layer[]) {
-        const map = this.map;
-        if (!map) {
-            return false;
-        }
-        if (!this.isLayerCanvasUpdated() && !this.isViewChanged() && this._needClear === false) {
-            return false;
-        }
-        if (!this.canvas) {
-            this.createCanvas();
-        }
-
-        /**
-         * renderstart event, an event fired when map starts to render.
-         * @event Map#renderstart
-         * @type {Object}
-         * @property {String} type           - renderstart
-         * @property {Map} target            - the map fires event
-         * @property {CanvasRenderingContext2D} context  - canvas context
-         */
-        map._fireEvent('renderstart', {
-            'context': this.context
-        });
-
-        if (!this._updateCanvasSize()) {
-            this.clearCanvas();
-        }
-
-        const interacting = map.isInteracting(),
-            limit = map.options['layerCanvasLimitOnInteracting'];
-        let len = layers.length;
-
-        let baseLayerImage;
-        const images = [];
-        for (let i = 0; i < len; i++) {
-            if (!layers[i].isVisible() || !layers[i].isCanvasRender()) {
+    _fireLayerLoadEvents(layers: Layer[]) {
+        //firing order as FIFO, painting as FILO, so the order needs to be reversed
+        for (let i = layers.length - 1; i >= 0; i--) {
+            const layer = layers[i];
+            const renderer = layer._getRenderer();
+            if (!renderer || !renderer.isRenderComplete()) {
                 continue;
             }
-            const renderer = layers[i]._getRenderer();
-            if (!renderer) {
-                continue;
-            }
-            const layerImage = this._getLayerImage(layers[i]);
-            if (layerImage && layerImage['image']) {
-                if (layers[i] === map.getBaseLayer()) {
-                    baseLayerImage = [layers[i], layerImage];
-                } else {
-                    images.push([layers[i], layerImage]);
-                }
-            }
+            /**
+             * layerload event, fired when layer is loaded.
+             *
+             * @event Layer#layerload
+             * @type {Object}
+             * @property {String} type - layerload
+             * @property {Layer} target - layer
+             */
+            layer.fire('layerload');
         }
-
-        const targetWidth = this.canvas.width;
-        const targetHeight = this.canvas.height;
-        if (baseLayerImage) {
-            this._drawLayerCanvasImage(baseLayerImage[0], baseLayerImage[1], targetWidth, targetHeight);
-            this._drawFog();
-        }
-
-        len = images.length;
-        const start = interacting && limit >= 0 && len > limit ? len - limit : 0;
-        for (let i = start; i < len; i++) {
-            this._drawLayerCanvasImage(images[i][0], images[i][1], targetWidth, targetHeight);
-        }
-
-        /**
-         * renderend event, an event fired when map ends rendering.
-         * @event Map#renderend
-         * @type {Object}
-         * @property {String} type                      - renderend
-         * @property {Map} target              - the map fires event
-         * @property {CanvasRenderingContext2D} context - canvas context
-         */
-        map._fireEvent('renderend', {
-            'context': this.context
-        });
-        return true;
     }
 
     setToRedraw() {
         const layers = this._getAllLayerToRender();
         //set maprender for clear canvas
-        this._needClear = true;
         for (let i = 0, l = layers.length; i < l; i++) {
             const renderer = layers[i].getRenderer();
             if (renderer && renderer.canvas && renderer.setToRedraw) {
@@ -563,7 +348,6 @@ class MapCanvasRenderer extends MapRenderer {
         if (this._resizeObserver) {
             this._resizeObserver.disconnect();
         }
-        delete this.context;
         delete this.canvas;
         delete this.map;
         delete this._spatialRefChanged;
@@ -612,15 +396,6 @@ class MapCanvasRenderer extends MapRenderer {
         }
 
         map._trySetCursor(cursor);
-    }
-
-    //@internal
-    _getLayerImage(layer: Layer) {
-        const renderer = layer._getRenderer();
-        if (renderer.getCanvasImage) {
-            return renderer.getCanvasImage();
-        }
-        return null;
     }
 
     /**
@@ -772,176 +547,15 @@ class MapCanvasRenderer extends MapRenderer {
     }
 
     //@internal
-    _drawLayerCanvasImage(layer: Layer, layerImage: any, targetWidth?: number, targetHeight?: number) {
-        const ctx = this.context;
-        const point = layerImage['point'].round();
-        const dpr = this.map.getDevicePixelRatio();
-        if (dpr !== 1) {
-            point._multi(dpr);
-        }
-        const canvasImage = layerImage['image'];
-        const width = canvasImage.width, height = canvasImage.height;
-        if (point.x + width <= 0 || point.y + height <= 0) {
-            return;
-        }
-        //opacity of the layer image
-        let op = layer.options['opacity'];
-        if (!isNumber(op)) {
-            op = 1;
-        }
-        if (op <= 0) {
-            return;
-        }
-        let imgOp = layerImage['opacity'];
-        if (!isNumber(imgOp)) {
-            imgOp = 1;
-        }
-        if (imgOp <= 0) {
-            return;
-        }
-        const alpha = ctx.globalAlpha;
-
-        if (op < 1) {
-            ctx.globalAlpha *= op;
-        }
-        if (imgOp < 1) {
-            ctx.globalAlpha *= imgOp;
-        }
-        if (layer.options['cssFilter']) {
-            ctx.filter = layer.options['cssFilter'];
-        }
-        const renderer = layer.getRenderer();
-        const matrix = renderer.__zoomTransformMatrix;
-        const clipped = renderer.clipCanvas(this.context as any);
-        if (matrix) {
-            ctx.save();
-            ctx.setTransform(...(matrix as any));
-        }
-
-        /*let outlineColor = layer.options['debugOutline'];
-        if (outlineColor) {
-            if (outlineColor === true) {
-                outlineColor = '#0f0';
-            }
-            this.context.strokeStyle = outlineColor;
-            this.context.fillStyle = outlineColor;
-            this.context.lineWidth = 10;
-            Canvas2D.rectangle(ctx, point, layerImage.size, 1, 0);
-            ctx.fillText([layer.getId(), point.toArray().join(), layerImage.size.toArray().join(), canvasImage.width + ',' + canvasImage.height].join(' '),
-                point.x + 18, point.y + 18);
-        }*/
-
-        ctx.drawImage(canvasImage, 0, 0, width, height, point.x, point.y, targetWidth, targetHeight);
-        if (matrix) {
-            ctx.restore();
-        }
-        if (clipped) {
-            ctx.restore();
-        }
-        if (ctx.filter !== 'none') {
-            ctx.filter = 'none';
-        }
-        ctx.globalAlpha = alpha;
-    }
-
-    //@internal
-    _drawCenterCross() {
-        const cross = this.map.options['centerCross'];
-        if (cross) {
-            const ctx = this.context;
-            const p = new Point(this.canvas.width / 2, this.canvas.height / 2);
-            if (isFunction(cross)) {
-                cross(ctx, p);
-            } else {
-                Canvas2D.drawCross(this.context, p.x, p.y, 2, '#f00');
-            }
-        }
-    }
-
-    //@internal
-    _drawContainerExtent() {
-        const { cascadePitches } = this.map.options;
-        const h30 = this.map.height - this.map._getVisualHeight(cascadePitches[0]);
-        const h60 = this.map.height - this.map._getVisualHeight(cascadePitches[1]);
-
-        const extent = this.map.getContainerExtent();
-        const ctx = this.context;
-        ctx.beginPath();
-        ctx.moveTo(0, extent.ymin);
-        ctx.lineTo(extent.xmax, extent.ymin);
-        ctx.stroke();
-
-
-        ctx.beginPath();
-        ctx.moveTo(0, h30);
-        ctx.lineTo(extent.xmax, h30);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(0, h60);
-        ctx.lineTo(extent.xmax, h60);
-        ctx.stroke();
-        // console.log(extent.ymin, h30, h60);
-    }
-
-    //@internal
-    _drawFog() {
-        const map = this.map;
-        if (map.getPitch() <= map.options['maxVisualPitch'] || !map.options['fog']) {
-            return;
-        }
-        const fogThickness = 30;
-        const r = map.getDevicePixelRatio();
-        const ctx = this.context,
-            clipExtent = map.getContainerExtent();
-        let top = (map.height - map._getVisualHeight(75)) * r;
-        if (top < 0) top = 0;
-        const bottom = clipExtent.ymin * r,
-            h = Math.ceil(bottom - top),
-            color = map.options['fogColor'].join();
-        const gradient = ctx.createLinearGradient(0, top, 0, bottom + fogThickness);
-        const landscape = 1 - fogThickness / (h + fogThickness);
-        gradient.addColorStop(0, `rgba(${color}, 0)`);
-        gradient.addColorStop(0.3, `rgba(${color}, 0.3)`);
-        gradient.addColorStop(landscape, `rgba(${color}, 1)`);
-        gradient.addColorStop(1, `rgba(${color}, 0)`);
-        ctx.beginPath();
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, top, Math.ceil(clipExtent.getWidth()) * r, Math.ceil(h + fogThickness));
-    }
-
-    //@internal
-    _debugSky() {
-        const map = this.map;
-        if (!map) {
-            return this;
-        }
-        const height = map.getContainerExtent().ymin;
-        if (height <= 0) {
-            return this;
-        }
-        const ctx = this.context;
-        ctx.strokeStyle = 'red';
-        ctx.strokeRect(0, 0, map.width, height);
-        return this;
-    }
-
-    //@internal
     _getAllLayerToRender() {
         return this.map._getLayers();
     }
 
-    clearCanvas() {
-        if (!this.canvas) {
-            return;
-        }
-        Canvas2D.clearRect(this.context, 0, 0, this.canvas.width, this.canvas.height);
-    }
 
     //@internal
     _updateCanvasSize() {
         if (!this.canvas || this._containerIsCanvas) {
-            return false;
+            return;
         }
         const map = this.map,
             mapSize = map.getSize(),
@@ -953,29 +567,53 @@ class MapCanvasRenderer extends MapRenderer {
             canvas.style.width = cssWidth;
             canvas.style.height = cssHeight;
         }
-        if (width === canvas.width && height === canvas.height) {
-            return false;
+        if (width !== canvas.width || height !== canvas.height) {
+            canvas.width = width;
+            canvas.height = height;
         }
-        //retina屏支持
-
-        canvas.height = height;
-        canvas.width = width;
-        this.topLayer.width = canvas.width;
-        this.topLayer.height = canvas.height;
-        return true;
+        const topLayer = this.topLayer;
+        if (topLayer && (width !== topLayer.width || height !== topLayer.height)) {
+            topLayer.width = width;
+            topLayer.height = height;
+            topLayer.style.width = cssWidth;
+            topLayer.style.height = cssHeight;
+        }
     }
 
     createCanvas() {
+        this.canvas = createEl('canvas') as HTMLCanvasElement;
+        const panels = this.map.getPanels();
+        const canvasContainer = panels.canvasContainer;
+        canvasContainer.appendChild(this.canvas);
+        this._updateCanvasSize();
+        this.createContext();
+    }
+
+    createContext() {
+        // should be implemented by child class
+    }
+
+    clearLayerCanvasContext(_layer) {
+        // should be implemented by child class
+    }
+
+    clearCanvas() {
+        // should be implemented by child class
+    }
+
+    // canvas for tops
+    createTopCanvas() {
         this.topLayer = createEl('canvas') as HTMLCanvasElement;
+        const panels = this.map.getPanels();
+        const canvasContainer = panels.canvasContainer;
+        canvasContainer.insertBefore(this.topLayer, this.canvas);
         this.topCtx = this.topLayer.getContext('2d');
-        if (this._containerIsCanvas) {
-            this.canvas = this.map.getContainer() as HTMLCanvasElement;
-        } else {
-            this.canvas = createEl('canvas') as HTMLCanvasElement;
-            this._updateCanvasSize();
-            this.map.getPanels().canvasContainer.appendChild(this.canvas);
-        }
-        this.context = this.canvas.getContext('2d');
+    }
+
+    removeTopCanvas() {
+        removeDomNode(this.topLayer);
+        delete this.topLayer;
+        delete this.topCtx;
     }
 
     //@internal
@@ -1151,13 +789,24 @@ class MapCanvasRenderer extends MapRenderer {
     }
 
     drawTops() {
+        const tops = this.getTopElements();
+        if (tops.length) {
+            if (!this.topCtx) {
+                this.createTopCanvas();
+            }
+        } else {
+            if (this.topCtx) {
+                this.removeTopCanvas();
+            }
+            return;
+        }
         // clear topLayer
         this.topCtx.clearRect(0, 0, this.topLayer.width, this.topLayer.height);
         const collisionIndex = tempCollisionIndex;
         collisionIndex.clear();
         this.map.fire('drawtopstart');
         this.map.fire('drawtops');
-        const tops = this.getTopElements();
+
         let updated = false;
         const dpr = this.map.getDevicePixelRatio();
         const geos = [];
@@ -1189,13 +838,6 @@ class MapCanvasRenderer extends MapRenderer {
     }
 }
 
-Map.registerRenderer<typeof MapCanvasRenderer>('canvas', MapCanvasRenderer);
-
-Map.mergeOptions({
-    'fog': false,
-    'fogColor': [233, 233, 233]
-});
-
 export type MapView = {
     x: number;
     y: number;
@@ -1206,4 +848,6 @@ export type MapView = {
     height: number;
 }
 
-export default MapCanvasRenderer;
+export default MapGLAbstractRenderer;
+
+

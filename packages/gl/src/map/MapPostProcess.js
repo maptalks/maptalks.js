@@ -1,4 +1,4 @@
-import { Map, renderer } from '@maptalks/map';
+import { Map, renderer } from 'maptalks';
 import createREGL from '@maptalks/regl';
 import PostProcess from '../layer/postprocess/PostProcess';
 

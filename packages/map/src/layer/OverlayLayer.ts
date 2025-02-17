@@ -8,7 +8,7 @@ import GeoJSON from '../geometry/GeoJSON';
 import { type OverlayLayerCanvasRenderer } from '../renderer';
 import { HandlerFnResultType } from '../core/Eventable';
 
-function isGeometry(geo) {
+export function isGeometry(geo) {
     return geo && (geo instanceof Geometry);
 }
 
@@ -468,23 +468,6 @@ class OverlayLayer extends Layer {
             if (!geometries[i] || this !== geometries[i].getLayer()) continue;
             geometries[i].remove();
         }
-        /**
-         * removegeo 事件
-         *
-         * @english
-         * removegeo event.
-         *
-         * @event OverlayLayer#removegeo
-         * @type {Object}
-         * @property {String} type - removegeo
-         * @property {OverlayLayer} target - layer
-         * @property {Geometry[]} geometries - the geometries to remove
-         */
-        this.fire('removegeo', {
-            'type': 'removegeo',
-            'target': this,
-            'geometries': geometries
-        });
         return this;
     }
 
@@ -884,6 +867,7 @@ OverlayLayer.mergeOptions(options);
 export default OverlayLayer;
 
 export type OverlayLayerOptionsType = LayerOptionsType & {
+    drawImmediate?: boolean,
     geometryEvents?: boolean,
     geometryEventTolerance?: number,
     style?: any;
@@ -894,6 +878,7 @@ export type addGeometryFitViewOptions = {
     duration?: number,
     step?: (frame) => void
 }
+
 export type LayerIdentifyOptionsType = {
     onlyVisible?: boolean;
     tolerance?: number;

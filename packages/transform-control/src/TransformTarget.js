@@ -1,4 +1,4 @@
-import { Coordinate, Point } from "@maptalks/map";
+import { Coordinate, Point } from "maptalks";
 import { vec3, mat4, quat } from '@maptalks/gl';
 
 const EMPTY_VEC = [], EMPTY_QUAT = [], EMPTY_MAT = [], TEMP_POINT = new Point(0, 0), TEMP_VEC_1 = [], TEMP_VEC_2 = [], TEMP_SCALE = [], EMPTY_TRANS = [0, 0, 0];

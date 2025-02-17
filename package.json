@@ -11,7 +11,7 @@
     "build-dev": "turbo run build-dev*",
     "lint": "turbo run lint",
     "prettier": "prettier --parser=typescript --write **/*.{js,ts,md}",
-    "test": "turbo run test",
+    "maptalks-test": "pnpm --filter=maptalks run test",
     "changeset": "changeset",
     "changeset-version": "changeset version",
     "release": "pnpm build && changeset publish"
@@ -43,6 +43,6 @@
       "git add"
     ]
   },
-  "packageManager": "pnpm@9.1.2",
+  "packageManager": "pnpm@10.4.1",
   "license": "MIT"
 }

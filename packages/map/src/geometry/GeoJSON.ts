@@ -7,7 +7,8 @@ import {
     isNumber,
     extend,
     getAbsoluteURL,
-    GUID
+    GUID,
+    isFunction
 } from '../core/util';
 import Marker from './Marker';
 import LineString from './LineString';
@@ -148,6 +149,7 @@ const GeoJSON = {
      * Convert one or more GeoJSON objects to geometry
      * @param  {String|Object|Object[]} geoJSON - GeoJSON objects or GeoJSON string
      * @param  {Function} [foreachFn=undefined] - callback function for each geometry
+     * @param  {Function} [filterFn=undefined] - filter function for each geometry
      * @return {Geometry|Geometry[]} a geometry array when input is a FeatureCollection
      * @example
      * var collection = {
@@ -187,12 +189,13 @@ const GeoJSON = {
      *  // A geometry array.
      *  const geometries = GeoJSON.toGeometry(collection, geometry => { geometry.config('draggable', true); });
      */
-    toGeometry: function (geoJSON: any, foreachFn?: any): any {
+    toGeometry: function (geoJSON: any, foreachFn?: (geo: Geometry) => void, filterFn?: (geo: Geometry) => boolean): any {
         if (isString(geoJSON)) {
             geoJSON = parseJSON(geoJSON);
         }
+        let resultGeos;
         if (Array.isArray(geoJSON)) {
-            const resultGeos = [];
+            resultGeos = [];
             for (let i = 0, len = geoJSON.length; i < len; i++) {
                 const geo = GeoJSON._convert(geoJSON[i], foreachFn);
                 if (Array.isArray(geo)) {
@@ -201,10 +204,13 @@ const GeoJSON = {
                     resultGeos.push(geo);
                 }
             }
-            return resultGeos;
         } else {
-            const resultGeo = GeoJSON._convert(geoJSON, foreachFn);
-            return resultGeo;
+            resultGeos = GeoJSON._convert(geoJSON, foreachFn);
+        }
+        if (filterFn && isFunction(filterFn) && Array.isArray(resultGeos)) {
+            return resultGeos.filter(filterFn);
+        } else {
+            return resultGeos;
         }
 
     },
@@ -215,13 +221,14 @@ const GeoJSON = {
     * @param  {String|Object|Object[]} geoJSON - GeoJSON objects or GeoJSON string
     * @param  {Function} [foreachFn=undefined] - callback function for each geometry
     * @param  {Number} [countPerTime=2000] - Number of graphics converted per time
+    * @param  {Function} [filterFn=undefined] - filter function for each geometry
     * @return {Promise}
     * @example
     *  GeoJSON.toGeometryAsync(geoJSON).then(geos=>{
     *    console.log(geos);
     * })
     * */
-    toGeometryAsync(geoJSON: any, foreachFn: any, countPerTime: number = 2000): any {
+    toGeometryAsync(geoJSON: any, foreachFn?: (geo: Geometry) => void, countPerTime?: number, filterFn?: (geo: Geometry) => boolean): any {
         if (isString(geoJSON)) {
             geoJSON = parseJSON(geoJSON);
         }
@@ -235,7 +242,7 @@ const GeoJSON = {
                 const run = () => {
                     const startIndex = (page - 1) * pageSize, endIndex = (page) * pageSize;
                     const fs = features.slice(startIndex, endIndex);
-                    const geos = GeoJSON.toGeometry(fs, foreachFn);
+                    const geos = GeoJSON.toGeometry(fs, foreachFn, filterFn);
                     page++;
                     return geos;
                 };

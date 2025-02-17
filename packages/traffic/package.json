@@ -50,7 +50,7 @@
     "karma-expect": "^1.1.3",
     "karma-mocha": "^2.0.1",
     "karma-mocha-reporter": "^2.2.5",
-    "@maptalks/map": "workspace:*",
+    "maptalks": "workspace:*",
     "mocha": "^10.3.0",
     "rollup": "^4.17.2",
     "rollup-plugin-dts": "^6.1.0"

@@ -1,4 +1,4 @@
-import { Point } from '@maptalks/map';
+import { Point } from 'maptalks';
 import { vec2 } from '@maptalks/reshader.gl';
 import ClipMask from './ClipMask';
 

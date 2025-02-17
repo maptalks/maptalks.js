@@ -1,6 +1,6 @@
 import { reshader, mat4, quat, vec3, vec2 } from '@maptalks/gl';
 import partsModels from '../common/parts';
-import { Util } from '@maptalks/map';
+import { Util } from 'maptalks';
 import { defined } from '../common/Util';
 import pickingVert from './glsl/picking.vert';
 

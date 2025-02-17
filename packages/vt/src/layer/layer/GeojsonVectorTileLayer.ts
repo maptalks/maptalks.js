@@ -1,9 +1,9 @@
-import * as maptalks from "@maptalks/map";
+import * as maptalks from "maptalks";
 
 import { isNumber, isObject, isString } from "../../common/Util";
 
 import Ajax from "../../worker/util/Ajax";
-import type { ArrayExtent, Callback, LayerJSONType } from "@maptalks/map";
+import type { ArrayExtent, Callback, LayerJSONType } from "maptalks";
 import VectorTileLayer, { VectorTileLayerOptionsType } from "./VectorTileLayer";
 
 const options = {

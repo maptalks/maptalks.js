@@ -1,5 +1,5 @@
 import { reshader, mat4, vec4 } from '@maptalks/gl';
-import { Util } from '@maptalks/map';
+import { Util } from 'maptalks';
 import HeightmapPass from './pass/HeightmapPass';
 import { coordinateToWorld, altitudeToDistance } from './common/Util';
 import { ExtrudePolygonLayer } from '@maptalks/vt';

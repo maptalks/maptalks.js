@@ -1,5 +1,5 @@
 import { reshader, mat4, quat, earcut } from '@maptalks/gl';
-import { Class, Eventable, Handlerable, Polygon } from '@maptalks/map';
+import { Class, Eventable, Handlerable, Polygon } from 'maptalks';
 import ExtentPass from './pass/ExtentPass';
 import { coordinateToWorld } from './common/Util';
 

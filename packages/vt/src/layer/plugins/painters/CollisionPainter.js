@@ -1,4 +1,4 @@
-import * as maptalks from '@maptalks/map';
+import * as maptalks from 'maptalks';
 import { reshader, vec4 } from '@maptalks/gl';
 import collisionVert from './glsl/collision.vert';
 import collisionFrag from './glsl/collision.frag';

@@ -1,6 +1,6 @@
 
 import GLTFMarker from './GLTFMarker';
-import { Coordinate } from '@maptalks/map';
+import { Coordinate } from 'maptalks';
 import { mat4, vec3, quat, reshader } from '@maptalks/gl';
 import { coordinateToWorld, defined } from './common/Util';
 // The structure of MultiGLTFMarker will like below:

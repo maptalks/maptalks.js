@@ -1,4 +1,4 @@
-import { Coordinate, measurer, Util } from '@maptalks/map';
+import { Coordinate, measurer, Util } from 'maptalks';
 /**
  * Whether the object is null or undefined.
  * @param  {Object}  obj - object
