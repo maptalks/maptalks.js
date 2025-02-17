@@ -45,6 +45,6 @@ workflows:
   maptalks-test:
     jobs:
       - install
-      - maptalks-test
-        requires:
-          - install
+      - maptalks-test:
+          requires:
+            - install
