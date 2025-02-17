@@ -15,7 +15,7 @@ executors:
 orbs:
   browser-tools: circleci/browser-tools@1.4.8
 jobs:
-  build:
+  maptalks:
     executor: node-browser-executor
 
     working_directory: ~/repo/packages/map
