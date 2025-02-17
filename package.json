@@ -43,6 +43,6 @@
       "git add"
     ]
   },
-  "packageManager": "pnpm@10.4.1",
+  "packageManager": "^pnpm@10.0.0",
   "license": "MIT"
 }
