@@ -8,7 +8,7 @@ import GeoJSON from '../geometry/GeoJSON';
 import { type OverlayLayerCanvasRenderer } from '../renderer';
 import { HandlerFnResultType } from '../core/Eventable';
 
-function isGeometry(geo) {
+export function isGeometry(geo) {
     return geo && (geo instanceof Geometry);
 }
 

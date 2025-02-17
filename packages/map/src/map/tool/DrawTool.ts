@@ -413,7 +413,7 @@ class DrawTool extends MapTool {
         const resources = getExternalResources(symbol);
         if (resources.length > 0) {
             //load external resources at first
-            this._drawToolLayer._getRenderer().loadResources(resources);
+            this._drawToolLayer.getRenderer().loadResources(resources);
         }
     }
 

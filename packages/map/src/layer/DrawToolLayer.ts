@@ -1,5 +1,7 @@
+import { GEOJSON_TYPES } from "../core/Constants";
+import { pushIn } from "../core/util/util";
 import { Geometry, LineString, Marker, MultiLineString, MultiPoint, MultiPolygon, Polygon } from "../geometry/index";
-import OverlayLayer, { OverlayLayerOptionsType } from "./OverlayLayer";
+import OverlayLayer, { isGeometry, OverlayLayerOptionsType } from "./OverlayLayer";
 
 const options: DrawToolLayerOptionsType = {
     // disable renderer of DrawToolLayer
@@ -34,12 +36,19 @@ export default class DrawToolLayer extends OverlayLayer {
      * @param options.style=null    - drawToolLayer's style
      */
     constructor(id: string, geometries?: DrawToolLayerOptionsType | Array<Geometry>,  options: DrawToolLayerOptionsType = {}) {
-        super(id, geometries, options);
+        if (geometries && (!isGeometry(geometries) && !Array.isArray(geometries) && GEOJSON_TYPES.indexOf((geometries as any).type) < 0)) {
+            options = geometries;
+            geometries = null;
+        }
+        super(id, options);
         const depthFunc = this.options.depthFunc || 'always';
         options.sceneConfig = { depthFunc };
         this._markerLayer = new DrawToolLayer.markerLayerClazz(id + '_marker', options);
         this._lineLayer = new DrawToolLayer.lineLayerClazz(id + '_line', options);
         this._polygonLayer = new DrawToolLayer.polygonLayerClazz(id + '_polygon', options);
+        if (geometries) {
+            this.addGeometry(geometries as Array<Geometry>);
+        }
     }
 
     bringToFront() {
@@ -53,6 +62,7 @@ export default class DrawToolLayer extends OverlayLayer {
         if (!Array.isArray(geometries)) {
             geometries = [geometries];
         }
+        pushIn(this._geoList, geometries);
         for (let i = 0; i < geometries.length; i++) {
             if (this._markerLayer.isVectorLayer) {
                 this._markerLayer.addGeometry(geometries[i]);
@@ -73,6 +83,7 @@ export default class DrawToolLayer extends OverlayLayer {
             geometries = [geometries];
         }
         for (let i = 0; i < geometries.length; i++) {
+            this._geoList.splice(geometries[i] as any, 1);
             if (this._markerLayer.isVectorLayer) {
                 this._markerLayer.removeGeometry(geometries[i]);
                 continue;
@@ -88,6 +99,7 @@ export default class DrawToolLayer extends OverlayLayer {
     }
 
     onRemove(): void {
+        this._geoList = [];
         this._markerLayer.remove();
         this._lineLayer.remove();
         this._polygonLayer.remove();
@@ -104,6 +116,14 @@ export default class DrawToolLayer extends OverlayLayer {
         this._lineLayer.addTo(map);
         this._markerLayer.addTo(map);
         return super.onAdd();
+    }
+
+    getRenderer() {
+        return this._getRenderer();
+    }
+
+    _getRenderer() {
+        return this._markerLayer.getRenderer();
     }
 }
 
