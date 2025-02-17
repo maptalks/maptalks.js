@@ -42,7 +42,7 @@ jobs:
       - run: npm run maptalks-test
 
 workflows:
-  maptalks-test:
+  maptalks:
     jobs:
       - install
       - maptalks-test:
