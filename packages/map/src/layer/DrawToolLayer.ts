@@ -126,9 +126,9 @@ export default class DrawToolLayer extends OverlayLayer {
     onAdd(): void {
         const map = this.getMap();
         // order is important
-        this._markerLayer.addTo(map);
         this._polygonLayer.addTo(map);
         this._lineLayer.addTo(map);
+        this._markerLayer.addTo(map);
 
         this._markerLayer.on('removegeo', this._onRemoveDrawToolGeo, this);
         this._lineLayer.on('removegeo', this._onRemoveDrawToolGeo, this);
