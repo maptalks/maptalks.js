@@ -33,7 +33,7 @@ export default class DrawToolLayer extends OverlayLayer {
      * @param options=null          - construct options
      * @param options.style=null    - drawToolLayer's style
      */
-    constructor(id: string, geometries?: DrawToolLayerOptionsType | Array<Geometry>,  options?: DrawToolLayerOptionsType) {
+    constructor(id: string, geometries?: DrawToolLayerOptionsType | Array<Geometry>,  options: DrawToolLayerOptionsType = {}) {
         super(id, geometries, options);
         const depthFunc = this.options.depthFunc || 'always';
         options.sceneConfig = { depthFunc };
@@ -54,6 +54,10 @@ export default class DrawToolLayer extends OverlayLayer {
             geometries = [geometries];
         }
         for (let i = 0; i < geometries.length; i++) {
+            if (this._markerLayer.isVectorLayer) {
+                this._markerLayer.addGeometry(geometries[i]);
+                continue;
+            }
             if (geometries[i] instanceof Marker || geometries[i] instanceof MultiPoint) {
                 this._markerLayer.addGeometry(geometries[i]);
             } else if (geometries[i] instanceof LineString || geometries[i] instanceof MultiLineString) {
@@ -69,6 +73,10 @@ export default class DrawToolLayer extends OverlayLayer {
             geometries = [geometries];
         }
         for (let i = 0; i < geometries.length; i++) {
+            if (this._markerLayer.isVectorLayer) {
+                this._markerLayer.removeGeometry(geometries[i]);
+                continue;
+            }
             if (geometries[i] instanceof Marker || geometries[i] instanceof MultiPoint) {
                 this._markerLayer.removeGeometry(geometries[i]);
             } else if (geometries[i] instanceof LineString || geometries[i] instanceof MultiLineString) {

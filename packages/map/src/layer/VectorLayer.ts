@@ -11,6 +11,7 @@ import { LineString, Curve, Marker } from '../geometry';
 import PointExtent from '../geo/PointExtent';
 import { VectorLayerCanvasRenderer } from '../renderer';
 import { LayerJSONType } from './Layer';
+import DrawToolLayer from './DrawToolLayer';
 
 type VectorLayerToJSONOptions = {
     geometries: any,
@@ -398,3 +399,5 @@ export type VectorLayerOptionsType = OverlayLayerOptionsType & {
     progressiveRenderCount?: number,
     progressiveRenderDebug?: boolean
 };
+
+DrawToolLayer.setLayerClass(VectorLayer, VectorLayer, VectorLayer);
