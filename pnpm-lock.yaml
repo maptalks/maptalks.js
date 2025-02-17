@@ -92,7 +92,7 @@ importers:
         version: 2.2.5(karma@6.4.4)
       maptalks:
         specifier: workspace:*
-        version: link:../map
+        version: link:../maptalks
       mocha:
         specifier: ^10.3.0
         version: 10.4.0
@@ -150,7 +150,7 @@ importers:
         version: 0.6.0
       maptalks:
         specifier: workspace:*
-        version: link:../map
+        version: link:../maptalks
     devDependencies:
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
@@ -248,7 +248,7 @@ importers:
         version: 2.2.5(karma@6.4.4)
       maptalks:
         specifier: workspace:*
-        version: link:../map
+        version: link:../maptalks
       mocha:
         specifier: ^10.3.0
         version: 10.4.0
@@ -275,7 +275,7 @@ importers:
         version: 3.4.3
       maptalks:
         specifier: workspace:*
-        version: link:../map
+        version: link:../maptalks
       pako:
         specifier: ^2.0.4
         version: 2.1.0
@@ -415,7 +415,7 @@ importers:
         version: 2.2.5(karma@6.4.4)
       maptalks:
         specifier: workspace:*
-        version: link:../map
+        version: link:../maptalks
       mocha:
         specifier: ^10.3.0
         version: 10.4.0
@@ -479,7 +479,7 @@ importers:
         version: 2.2.5(karma@6.4.4)
       maptalks:
         specifier: workspace:*
-        version: link:../map
+        version: link:../maptalks
       mocha:
         specifier: ^10.3.0
         version: 10.4.0
@@ -487,7 +487,7 @@ importers:
         specifier: ^4.17.2
         version: 4.17.2
 
-  packages/map:
+  packages/maptalks:
     dependencies:
       '@maptalks/feature-filter':
         specifier: ^1.3.0
@@ -643,7 +643,7 @@ importers:
         version: link:../vt
       maptalks:
         specifier: workspace:*
-        version: link:../map
+        version: link:../maptalks
     devDependencies:
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
@@ -772,7 +772,7 @@ importers:
         version: 2.2.5(karma@6.4.4)
       maptalks:
         specifier: workspace:*
-        version: link:../map
+        version: link:../maptalks
       mocha:
         specifier: ^10.3.0
         version: 10.4.0
@@ -899,7 +899,7 @@ importers:
         version: 10.5.0(eslint@8.57.0)
       maptalks:
         specifier: workspace:*
-        version: link:../map
+        version: link:../maptalks
       pixelmatch:
         specifier: ^4.0.2
         version: 4.0.2
@@ -1017,7 +1017,7 @@ importers:
         version: 0.3.2
       maptalks:
         specifier: workspace:*
-        version: link:../map
+        version: link:../maptalks
       mocha:
         specifier: ^10.3.0
         version: 10.4.0
@@ -3736,6 +3736,7 @@ packages:
 
   lodash.get@4.4.2:
     resolution: {integrity: sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==}
+    deprecated: This package is deprecated. Use the optional chaining (?.) operator instead.
 
   lodash.merge@4.6.2:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
@@ -4980,7 +4981,7 @@ snapshots:
     dependencies:
       '@babel/helper-validator-identifier': 7.25.9
       js-tokens: 4.0.0
-      picocolors: 1.0.1
+      picocolors: 1.1.1
 
   '@babel/compat-data@7.26.3': {}
 
@@ -9073,7 +9074,8 @@ snapshots:
 
   pend@1.2.0: {}
 
-  picocolors@1.0.1: {}
+  picocolors@1.0.1:
+    optional: true
 
   picocolors@1.1.1: {}
 
