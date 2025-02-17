@@ -199,9 +199,10 @@ describe('Geometry.TextBox', function () {
             layer = new maptalks.VectorLayer('id', { 'drawImmediate': true });
             map.addLayer(layer);
             layer.addGeometry(vector);
-            var parser = new UAParser();
-            var result = parser.getOS();
-            if (result.name && result.name.toLowerCase().indexOf('windows') > -1) {
+
+
+            // eslint-disable-next-line no-undef
+            if (isWindows()) {
                 expect(layer).to.be.painted(100 / 2 - padding[0] - 4, 0);
             } else {
                 expect(layer).to.be.painted(100 / 2 - padding[0] - 2, 0);
@@ -251,15 +252,16 @@ describe('Geometry.TextBox', function () {
             layer = new maptalks.VectorLayer('id', { 'drawImmediate': true });
             map.addLayer(layer);
             layer.addGeometry(vector);
-            var parser = new UAParser();
+
             var offset = 8;
-            var result = parser.getOS();
-            console.log(result);
-            if (result.name) {
-                if (result.name.toLowerCase().indexOf('linux') > -1) {
-                    offset = 9;
-                }
+
+
+
+            // eslint-disable-next-line no-undef
+            if (isLinux()) {
+                offset = 9;
             }
+
 
             expect(layer).to.be.painted(0, 100 / 2 - padding[1] - offset);
             expect(layer).not.be.painted();
