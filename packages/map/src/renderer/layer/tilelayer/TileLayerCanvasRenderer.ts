@@ -98,7 +98,7 @@ export default class TileLayerCanvasRenderer extends TileLayerRenderable(CanvasR
 
     needToRedraw(): boolean {
         const map = this.getMap();
-        if (this._tileQueue.length) {
+        if (this.checkIfNeedRedraw()) {
             return true;
         }
         if (map.getPitch()) {
@@ -124,27 +124,46 @@ export default class TileLayerCanvasRenderer extends TileLayerRenderable(CanvasR
         return true;
     }
 
+    clipCanvas(context): boolean {
+        // const mask = this.layer.getMask();
+        // if (!mask) {
+        //     return this._clipByPitch(context);
+        // }
+        return super.clipCanvas(context);
+    }
+
+    clear() {
+        this.clearTileCaches();
+        super.clear();
+    }
+
+    onRemove() {
+        this.clear();
+        this.removeTileCaches();
+        super.onRemove();
+    }
+
 
     // clip canvas to avoid rough edge of tiles
     //@internal
-    _clipByPitch(ctx: CanvasRenderingContext2D): boolean {
-        const map = this.getMap();
-        if (map.getPitch() <= map.options['maxVisualPitch']) {
-            return false;
-        }
-        if (!this.layer.options['clipByPitch']) {
-            return false;
-        }
-        const clipExtent = map.getContainerExtent();
-        const r = map.getDevicePixelRatio();
-        ctx.save();
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0)';
-        ctx.beginPath();
-        ctx.rect(0, Math.ceil(clipExtent.ymin) * r, Math.ceil(clipExtent.getWidth()) * r, Math.ceil(clipExtent.getHeight()) * r);
-        ctx.stroke();
-        ctx.clip();
-        return true;
-    }
+    // _clipByPitch(ctx: CanvasRenderingContext2D): boolean {
+    //     const map = this.getMap();
+    //     if (map.getPitch() <= map.options['maxVisualPitch']) {
+    //         return false;
+    //     }
+    //     if (!this.layer.options['clipByPitch']) {
+    //         return false;
+    //     }
+    //     const clipExtent = map.getContainerExtent();
+    //     const r = map.getDevicePixelRatio();
+    //     ctx.save();
+    //     ctx.strokeStyle = 'rgba(0, 0, 0, 0)';
+    //     ctx.beginPath();
+    //     ctx.rect(0, Math.ceil(clipExtent.ymin) * r, Math.ceil(clipExtent.getWidth()) * r, Math.ceil(clipExtent.getHeight()) * r);
+    //     ctx.stroke();
+    //     ctx.clip();
+    //     return true;
+    // }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     drawTile(tileInfo: Tile['info'], tileImage: Tile['image'], parentContext?: RenderContext) {

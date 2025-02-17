@@ -551,18 +551,8 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
             this.draw(timestamp, context);
         }
 
-        needToRedraw(): boolean {
-            const map = this.getMap();
-            if (this._tileQueue.length) {
-                return true;
-            }
-            if (map.getPitch()) {
-                return super.needToRedraw();
-            }
-            if (map.isInteracting()) {
-                return true;
-            }
-            return super.needToRedraw();
+        checkIfNeedRedraw(): boolean {
+            return !!this._tileQueue.length;
         }
 
         hitDetect(): boolean {
@@ -581,30 +571,9 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
             return this.layer.options['loadingLimit'] || 0;
         }
 
-
-        clear(): void {
-            this.retireTiles(true);
-            this.tileCache.reset();
-            this.tilesInView = {};
-            this.tilesLoading = {};
-            this._tileQueue = [];
-            this._tileQueueIds.clear();
-            this._parentTiles = [];
-            this._childTiles = [];
-            super.clear();
-        }
-
         //@internal
         _isLoadingTile(tileId: TileId): boolean {
             return !!this.tilesLoading[tileId];
-        }
-
-        clipCanvas(context): boolean {
-            // const mask = this.layer.getMask();
-            // if (!mask) {
-            //     return this._clipByPitch(context);
-            // }
-            return super.clipCanvas(context);
         }
 
         loadTileQueue(tileQueue): void {
@@ -627,7 +596,6 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
         loadTile(tile: Tile['info']): Tile['image'] {
             let tileImage = {} as Tile['image'];
             // fixme: 无相关定义，是否实现？
-            // @ts-expect-error todo
             if (this.loadTileBitmap) {
                 const onLoad = (bitmap) => {
                     this.onTileLoad(bitmap, tile);
@@ -635,7 +603,6 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
                 const onError = (error, image) => {
                     this.onTileError(image, tile, error);
                 };
-                // @ts-expect-error todo
                 this.loadTileBitmap(tile['url'], tile, onLoad, onError);
             } else if (this._tileImageWorkerConn && this.loadTileImage === this.constructor.prototype.loadTileImage) {
                 this._fetchImage(tileImage, tile);
@@ -1161,12 +1128,21 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
             return Math.min(1, (now() - tileImage.loadTime) / this.layer.options['fadeDuration']);
         }
 
-        onRemove(): void {
-            this.clear();
+        clearTileCaches(): void {
+            this.retireTiles(true);
+            this.tileCache.reset();
+            this.tilesInView = {};
+            this.tilesLoading = {};
+            this._tileQueue = [];
+            this._tileQueueIds.clear();
+            this._parentTiles = [];
+            this._childTiles = [];
+        }
+
+        removeTileCaches() {
             delete this.tileCache;
             delete this._tilePlaceHolder;
             delete this._tileZoom;
-            super.onRemove();
         }
 
         markCurrent(tile: Tile, isCurrent?: boolean): void {
