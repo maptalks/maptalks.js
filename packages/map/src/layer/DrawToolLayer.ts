@@ -98,8 +98,22 @@ export default class DrawToolLayer extends OverlayLayer {
         }
     }
 
+    _onRemoveDrawToolGeo(params) {
+        const geometries = params.geometries;
+        for (let i = 0; i < geometries.length; i++) {
+            if (geometries[i]) {
+                this._geoList.splice(geometries[i] as any, 1);
+            }
+        }
+    }
+
     onRemove(): void {
         this._geoList = [];
+
+        this._markerLayer.off('removegeo', this._onRemoveDrawToolGeo, this);
+        this._lineLayer.off('removegeo', this._onRemoveDrawToolGeo, this);
+        this._polygonLayer.off('removegeo', this._onRemoveDrawToolGeo, this);
+
         this._markerLayer.remove();
         this._lineLayer.remove();
         this._polygonLayer.remove();
@@ -112,9 +126,13 @@ export default class DrawToolLayer extends OverlayLayer {
     onAdd(): void {
         const map = this.getMap();
         // order is important
+        this._markerLayer.addTo(map);
         this._polygonLayer.addTo(map);
         this._lineLayer.addTo(map);
-        this._markerLayer.addTo(map);
+
+        this._markerLayer.on('removegeo', this._onRemoveDrawToolGeo, this);
+        this._lineLayer.on('removegeo', this._onRemoveDrawToolGeo, this);
+        this._polygonLayer.on('removegeo', this._onRemoveDrawToolGeo, this);
         return super.onAdd();
     }
 
