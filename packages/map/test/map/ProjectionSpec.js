@@ -10,7 +10,7 @@ describe('Map.Projection', function () {
         container.style.height = '100px';
         document.body.appendChild(container);
         var option = {
-            zoomAnimation:false,
+            zoomAnimation: false,
             zoom: 17,
             center: center
         };
@@ -24,11 +24,11 @@ describe('Map.Projection', function () {
 
     it('customize projection', function () {
         var custom = {
-            project : function (c) {
+            project: function (c) {
                 return c.add(1, 1);
             },
 
-            unproject : function (c) {
+            unproject: function (c) {
                 return c.sub(1, 1);
             }
         };
@@ -43,10 +43,10 @@ describe('Map.Projection', function () {
                 return resolutions;
             })(),
             'fullExtent': {
-                'top'   : 100000,
-                'left'  : 0,
-                'right' : 100000,
-                'bottom' : 0
+                'top': 100000,
+                'left': 0,
+                'right': 100000,
+                'bottom': 0
             }
         });
 
@@ -71,7 +71,7 @@ describe('Map.Projection', function () {
     describe('change to EPSG:4326', function () {
         it('change to EPSG:4326', function () {
             map.setSpatialReference({
-                projection:'EPSG:4326'
+                projection: 'EPSG:4326'
             });
             expect(map.getProjection().code).to.be.eql('EPSG:4326');
             expect(map.getCenter()).to.closeTo(center);
@@ -79,7 +79,7 @@ describe('Map.Projection', function () {
 
         it('change to EPSG:4490', function () {
             map.setSpatialReference({
-                projection:'EPSG:4490'
+                projection: 'EPSG:4490'
             });
             expect(map.getProjection().code).to.be.eql('EPSG:4490');
             expect(map.getCenter()).to.closeTo(center);
@@ -89,8 +89,8 @@ describe('Map.Projection', function () {
             var newCenter = new maptalks.Coordinate(100, 0);
             map.setCenter(newCenter);
             map.config({
-                spatialReference : {
-                    projection:'EPSG:4326'
+                spatialReference: {
+                    projection: 'EPSG:4326'
                 }
             });
             expect(map.getProjection().code).to.be.eql('EPSG:4326');
@@ -101,13 +101,13 @@ describe('Map.Projection', function () {
     describe('change to IDENTITY', function () {
         it('change to IDENTITY', function () {
             map.setSpatialReference({
-                projection:'IDENTITY',
-                resolutions : [1, 10, 20],
-                fullExtent:{
-                    'top':0,
-                    'left':0,
-                    'bottom':1000000,
-                    'right':1000000
+                projection: 'IDENTITY',
+                resolutions: [1, 10, 20],
+                fullExtent: {
+                    'top': 0,
+                    'left': 0,
+                    'bottom': 1000000,
+                    'right': 1000000
                 }
             });
             expect(map.getProjection().code).to.be.eql('IDENTITY');
@@ -125,7 +125,7 @@ describe('Map.Projection', function () {
         it('fit to extent in IDENTITY projection', function () {
             // a bug reported by @1dent1ty in 2017-11-09
             map.setSpatialReference({
-                projection:'identity',
+                projection: 'identity',
                 resolutions: [
                     156543.03392804097,
                     78271.51696402048,
@@ -148,42 +148,42 @@ describe('Map.Projection', function () {
                     0.5971642834779395,
                     0.29858214173896974
                 ],
-                fullExtent : {
+                fullExtent: {
                     'top': 6378137 * Math.PI,
                     'left': -6378137 * Math.PI,
                     'bottom': -6378137 * Math.PI,
                     'right': 6378137 * Math.PI
                 }
             });
-            map.setMaxExtent(new maptalks.Extent([453136.979,4078961.066,533971.862,4145348.864]));
+            map.setMaxExtent(new maptalks.Extent([453136.979, 4078961.066, 533971.862, 4145348.864]));
             var z = map.getFitZoom(map.getMaxExtent());
             expect(z).to.be.eql(7);
         });
 
         it('rotate polygon with  IDENTITY projection, #726', function () {
             map.setSpatialReference({
-                projection:'IDENTITY',
-                resolutions : [1, 10, 20],
-                fullExtent:{
-                    'top':0,
-                    'left':0,
-                    'bottom':1000000,
-                    'right':1000000
+                projection: 'IDENTITY',
+                resolutions: [1, 10, 20],
+                fullExtent: {
+                    'top': 0,
+                    'left': 0,
+                    'bottom': 1000000,
+                    'right': 1000000
                 }
             });
 
             var vecLayer = new maptalks.VectorLayer('field').addTo(map);
-            var baseGeom = new maptalks.Polygon([[[0,0],[0,20],[20,30],[20,0]]], {
-                symbol : {
-                lineWidth : 2,
-                lineColor : '#000',
-                polygonFill : 'rgb(129, 0, 0)'
+            var baseGeom = new maptalks.Polygon([[[0, 0], [0, 20], [20, 30], [20, 0]]], {
+                symbol: {
+                    lineWidth: 2,
+                    lineColor: '#000',
+                    polygonFill: 'rgb(129, 0, 0)'
                 }
             })
             baseGeom.copy().addTo(vecLayer)
-                .translate(90,90)
+                .translate(90, 90)
                 .rotate(30).rotate(30).rotate(30);
-            var geojson = {"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[0,0],[0,20],[20,30],[20,0],[0,0]]]},"properties":null};
+            var geojson = { "type": "Feature", "geometry": { "type": "Polygon", "coordinates": [[[0, 0], [0, 20], [20, 30], [20, 0], [0, 0]]] }, "properties": null };
             expect(baseGeom.toGeoJSON()).to.be.eqlGeoJSON(geojson);
         });
     });
@@ -191,7 +191,7 @@ describe('Map.Projection', function () {
     describe('change to Baidu', function () {
         it('change to baidu', function () {
             map.setSpatialReference({
-                projection:'baidu'
+                projection: 'baidu'
             });
             map.options['minZoom'] = null;
             expect(map.getMinZoom()).to.be.eql(0);
@@ -205,6 +205,68 @@ describe('Map.Projection', function () {
             var b = baiduProj.project(new maptalks.Coordinate(-Infinity, -Infinity));
         });
     });
+
+    describe('EPSG:9807 projection', function () {
+        it('EPSG:9807 project and unproject', function () {
+            //china suzhou
+            var spatialReference = {
+                projection: {
+                    code: 'EPSG:9807',
+                    // zone: 51,
+                    // code: 'utm',
+                    falseEasting: 350000,
+                    falseNorthing: -2800000,
+                    scaleFactor: 1,
+                    centralMeridian: 120.7833333333333,
+                    latitudeOfOrigin: 0
+
+
+                },
+                resolutions: (function () {
+                    // let res = Math.pow(2, 8);
+                    const RES = 156367.78906250003;
+
+                    const resolutions = [];
+                    for (let i = 0; i <= 20; i++) {
+                        resolutions.push(RES / Math.pow(2, i));
+                    }
+                    // for (let i = 0; i < 23; i++) {
+                    //     resolutions[i] = res;
+                    //     res *= 0.5;
+                    // }
+                    return resolutions;
+                })(),
+                fullExtent: {
+                    "left": -38219.52622692019,
+                    "bottom": 545398.8815674061,
+                    "right": 882668.8582661198,
+                    "top": 913228.7641038558,
+                }
+            };
+            map.remove();
+            map = new maptalks.Map(container, {
+                "center": [120.7056647, 31.31506313], "zoom": 14.698865640099315, "pitch": 0, "bearing": 0,
+                spatialReference,
+                zoomControl: true
+            });
+            // var center = map.getCenter();
+            var projection = map.getProjection();
+
+
+            var pj0 = projection.project(map.getCenter());
+
+
+            expect(pj0.toArray()).to.be.eql([342606.8132459836, 665908.6630797521]);
+
+            // left bottom
+            var pp0 = projection.unproject(new maptalks.Coordinate([-38219.52622692019, 545398.8815674061]))
+
+
+            expect(pp0.toArray()).to.be.eql([116.75468490333797, 30.166163498493603]);
+
+        });
+    });
+
 
     describe('utm projection', function () {
         it('utm project and unproject', function () {
