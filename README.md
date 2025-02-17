@@ -129,7 +129,7 @@ or with umd bundle：
 
 ### Map
 
-* `map` home for Map class and other infrustructures.
+* `maptalks` maptalks library source codes.
 
 ### Layers
 * `gl` WebGL base layer functionality, including GroupGLLayer, terrain, post-processing and various 3D mask implementations.
@@ -138,7 +138,6 @@ or with umd bundle：
 * `layer-video` video layer (VideoLayer/VideoSurface) implementation
 
 ### Vector tiles
-* `vector-packer` Parsing of vector tile formats and organization of data structures.
 * `vt-plugin` Interface definition for the vector tile rendering plugin.
 * `vt` Vector tile layer (VectorTileLayer/GeoJSONVectorTileLayer) implementation.
 
