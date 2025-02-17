@@ -1,8 +1,8 @@
 import { isArrayHasData, pushIn } from '../../../core/util';
-import { type Geometry } from '../../../geometry';
 import CanvasRenderer from '../CanvasRenderer';
 import { Geometries } from '../../../geometry';
 import Extent from '../../../geo/Extent';
+import LayerGLRenderer from '../LayerGLRenderer';
 
 interface MapStateCacheType {
     resolution: number;
@@ -17,26 +17,16 @@ interface MapStateCacheType {
     offset: number;
 }
 
-/**
- * OverlayLayer 的父呈现器类，供 OverlayLayer 的子类继承。
- *
- * @english
- *
- * A parent renderer class for OverlayLayer to inherit by OverlayLayer's subclasses.
- * @protected
- * @memberOf renderer
- * @name OverlayLayerCanvasRenderer
- * @extends renderer.CanvasRenderer
- */
-class OverlayLayerRenderer extends CanvasRenderer {
-    //@internal
-    _geosToCheck: Geometries[];
-    //@internal
-    _resourceChecked: boolean;
-    clearImageData?(): void;
-    //@internal
-    _lastGeosToDraw: Geometry[];
-    mapStateCache: MapStateCacheType;
+const OverlayLayerIncludes = {
+    // //@internal
+    // _geosToCheck: Geometries[];
+    // //@internal
+    // _resourceChecked: boolean;
+    // clearImageData?(): void;
+    // //@internal
+    // _lastGeosToDraw: Geometry[];
+    // //@internal
+    // mapStateCache: MapStateCacheType;
 
     /**
      * @english
@@ -78,12 +68,12 @@ class OverlayLayerRenderer extends CanvasRenderer {
         this._resourceChecked = true;
         delete this._geosToCheck;
         return resources;
-    }
+    },
 
     render(...args: any[]): void {
         this.layer._sortGeometries();
         return super.render.apply(this, args);
-    }
+    },
 
     //@internal
     _addGeoToCheckRes(res: Geometries | Geometries[]) {
@@ -97,12 +87,12 @@ class OverlayLayerRenderer extends CanvasRenderer {
             this._geosToCheck = [];
         }
         pushIn<any>(this._geosToCheck, res);
-    }
+    },
 
     onGeometryAdd(geometries: Geometries | Geometries[]) {
         this._addGeoToCheckRes(geometries);
         redraw(this);
-    }
+    },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onGeometryRemove(params: any) {
         /**
@@ -123,43 +113,66 @@ class OverlayLayerRenderer extends CanvasRenderer {
             'geometries': params
         });
         redraw(this);
-    }
+    },
 
     onGeometrySymbolChange(e: { target: Geometries; }) {
         this._addGeoToCheckRes(e.target);
         redraw(this);
-    }
+    },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onGeometryShapeChange(params: any) {
         redraw(this);
-    }
+    },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onGeometryPositionChange(params: any) {
         redraw(this);
-    }
+    },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onGeometryZIndexChange(params: any) {
         redraw(this);
-    }
+    },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onGeometryShow(params: any) {
         redraw(this);
-    }
+    },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onGeometryHide(params: any) {
         redraw(this);
-    }
+    },
 
     onGeometryPropertiesChange(_: any) {
         redraw(this);
     }
 }
 
-function redraw(renderer: OverlayLayerRenderer): void {
-    if (renderer.layer.options['drawImmediate']) {
+/**
+ * OverlayLayer 的父呈现器类，供 OverlayLayer 的子类继承。
+ *
+ * @english
+ *
+ * A parent renderer class for OverlayLayer to inherit by OverlayLayer's subclasses.
+ * @protected
+ * @memberOf renderer
+ * @name OverlayLayerCanvasRenderer
+ * @extends renderer.CanvasRenderer
+ */
+class OverlayLayerCanvasRenderer extends CanvasRenderer {
+
+}
+
+OverlayLayerCanvasRenderer.include(OverlayLayerIncludes);
+
+class OverlayLayerGLRenderer extends LayerGLRenderer {
+
+}
+
+OverlayLayerGLRenderer.include(OverlayLayerIncludes);
+
+function redraw(renderer): void {
+    if (renderer instanceof OverlayLayerCanvasRenderer && renderer.layer.options['drawImmediate']) {
         renderer.render();
     }
     renderer.setToRedraw();
 }
 
-export default OverlayLayerRenderer;
+export { OverlayLayerCanvasRenderer, OverlayLayerGLRenderer };

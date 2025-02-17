@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { getExternalResources, now, getPointsResultPts, type Vector3, isNil } from '../../../core/util';
 import VectorLayer from '../../../layer/VectorLayer';
-import OverlayLayerCanvasRenderer from './OverlayLayerCanvasRenderer';
+import { OverlayLayerCanvasRenderer } from './OverlayLayerCanvasRenderer';
 import Extent from '../../../geo/Extent';
 import PointExtent from '../../../geo/PointExtent';
 import * as vec3 from '../../../core/util/vec3';
