@@ -6,7 +6,7 @@ version: 2.1
 orbs:
   browser-tools: circleci/browser-tools@1.4.8
 jobs:
-  build:
+  maptalks:
     docker:
       # specify the version you desire here
       - image: cimg/node:20.11-browsers
