@@ -22,22 +22,29 @@ jobs:
 
     steps:
       - browser-tools/install-chrome
-      - run: npm install -g pnpm
       - checkout
 
       # Download and cache dependencies
       - restore_cache:
+          name: Restore pnpm Package Cache
           keys:
-          - v1-dependencies-{{ checksum "pnpm-lock.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+            - pnpm-packages-{{ checksum "pnpm-lock.yaml" }}
+
+      - run:
+          name: Install pnpm package manager
+          command: |
+            npm install --global corepack@latest
+            corepack enable
+            corepack prepare pnpm@latest-10 --activate
+            pnpm config set store-dir .pnpm-store
 
       - run: pnpm i
 
       - save_cache:
+          name: Save pnpm Package Cache
+          key: pnpm-packages-{{ checksum "pnpm-lock.yaml" }}
           paths:
-            - node_modules
-          key: v1-dependencies-{{ checksum "pnpm-lock.json" }}
+            - .pnpm-store
 
       # run tests!
       - run: npm test
