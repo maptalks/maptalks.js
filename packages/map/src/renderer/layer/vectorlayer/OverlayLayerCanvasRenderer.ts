@@ -105,6 +105,23 @@ class OverlayLayerRenderer extends CanvasRenderer {
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onGeometryRemove(params: any) {
+        /**
+         * removegeo 事件
+         *
+         * @english
+         * removegeo event.
+         *
+         * @event OverlayLayer#removegeo
+         * @type {Object}
+         * @property {String} type - removegeo
+         * @property {OverlayLayer} target - layer
+         * @property {Geometry[]} geometries - the geometries to remove
+         */
+        this.layer.fire('removegeo', {
+            'type': 'removegeo',
+            'target': this,
+            'geometries': params
+        });
         redraw(this);
     }
 

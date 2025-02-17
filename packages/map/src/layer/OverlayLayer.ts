@@ -468,23 +468,6 @@ class OverlayLayer extends Layer {
             if (!geometries[i] || this !== geometries[i].getLayer()) continue;
             geometries[i].remove();
         }
-        /**
-         * removegeo 事件
-         *
-         * @english
-         * removegeo event.
-         *
-         * @event OverlayLayer#removegeo
-         * @type {Object}
-         * @property {String} type - removegeo
-         * @property {OverlayLayer} target - layer
-         * @property {Geometry[]} geometries - the geometries to remove
-         */
-        this.fire('removegeo', {
-            'type': 'removegeo',
-            'target': this,
-            'geometries': geometries
-        });
         return this;
     }
 
