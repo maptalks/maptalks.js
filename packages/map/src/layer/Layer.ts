@@ -139,9 +139,11 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             this._initRenderer();
             const zIndex = this.getZIndex();
             if (!isNil(zIndex)) {
-                this._renderer.setZIndex(zIndex);
-                if (!this.isCanvasRender()) {
-                    this._renderer.render();
+                if (this._renderer) {
+                    this._renderer.setZIndex(zIndex);
+                    if (!this.isCanvasRender()) {
+                        this._renderer.render();
+                    }
                 }
             }
             this.onLoadEnd();
