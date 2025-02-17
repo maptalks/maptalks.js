@@ -1,8 +1,9 @@
 import { isArrayHasData, pushIn } from '../../../core/util';
 import CanvasRenderer from '../CanvasRenderer';
-import { Geometries } from '../../../geometry';
+import { Geometries, Geometry } from '../../../geometry';
 import Extent from '../../../geo/Extent';
 import LayerGLRenderer from '../LayerGLRenderer';
+import { MixinConstructor } from '../../../core/Mixin';
 
 interface MapStateCacheType {
     resolution: number;
@@ -17,132 +18,130 @@ interface MapStateCacheType {
     offset: number;
 }
 
-const OverlayLayerIncludes = {
-    // //@internal
-    // _geosToCheck: Geometries[];
-    // //@internal
-    // _resourceChecked: boolean;
-    // clearImageData?(): void;
-    // //@internal
-    // _lastGeosToDraw: Geometry[];
-    // //@internal
-    // mapStateCache: MapStateCacheType;
+const OverlayLayerRenderable = function <T extends MixinConstructor>(Base: T) {
+    const renderable = class extends Base {
+        //@internal
+        _geosToCheck: Geometries[];
+        //@internal
+        _resourceChecked: boolean;
+        clearImageData?(): void;
+        //@internal
+        _lastGeosToDraw: Geometry[];
+        //@internal
+        mapStateCache: MapStateCacheType;
 
-    /**
-     * @english
-     * possible memory leaks:
-     * 1. if geometries' symbols with external resources change frequently,
-     * resources of old symbols will still be stored.
-     * 2. removed geometries' resources won't be removed.
-     */
-    checkResources() {
-        const geometries = this._geosToCheck || [];
-        if (!this._resourceChecked && this.layer._geoList) {
-            pushIn(geometries, this.layer._geoList);
-        }
-        if (!isArrayHasData(geometries)) {
-            return [];
-        }
-        const resources = [];
-        const cache = {};
-
-        for (let i = geometries.length - 1; i >= 0; i--) {
-            const geo = geometries[i];
-            const res = geo._getExternalResources();
-            if (!res.length) {
-                continue;
+        /**
+         * @english
+         * possible memory leaks:
+         * 1. if geometries' symbols with external resources change frequently,
+         * resources of old symbols will still be stored.
+         * 2. removed geometries' resources won't be removed.
+         */
+        checkResources() {
+            const geometries = this._geosToCheck || [];
+            if (!this._resourceChecked && (this as any).layer._geoList) {
+                pushIn(geometries, (this as any).layer._geoList);
             }
-            if (!this.resources) {
-                // @tip 解构会有一定的性能影响，对于少量数据是否可以忽略
-                resources.push(...res);
-            } else {
-                for (let i = 0; i < res.length; i++) {
-                    const url = res[i][0];
-                    if (!this.resources.isResourceLoaded(res[i]) && !cache[url]) {
-                        resources.push(res[i]);
-                        cache[url] = 1;
+            if (!isArrayHasData(geometries)) {
+                return [];
+            }
+            const resources = [];
+            const cache = {};
+
+            for (let i = geometries.length - 1; i >= 0; i--) {
+                const geo = geometries[i];
+                const res = geo._getExternalResources();
+                if (!res.length) {
+                    continue;
+                }
+                if (!(this as any).resources) {
+                    // @tip 解构会有一定的性能影响，对于少量数据是否可以忽略
+                    resources.push(...res);
+                } else {
+                    for (let i = 0; i < res.length; i++) {
+                        const url = res[i][0];
+                        if (!(this as any).resources.isResourceLoaded(res[i]) && !cache[url]) {
+                            resources.push(res[i]);
+                            cache[url] = 1;
+                        }
                     }
                 }
             }
+            this._resourceChecked = true;
+            delete this._geosToCheck;
+            return resources;
         }
-        this._resourceChecked = true;
-        delete this._geosToCheck;
-        return resources;
-    },
 
-    render(...args: any[]): void {
-        this.layer._sortGeometries();
-        return super.render.apply(this, args);
-    },
-
-    //@internal
-    _addGeoToCheckRes(res: Geometries | Geometries[]) {
-        if (!res) {
-            return;
+        //@internal
+        _addGeoToCheckRes(res: Geometries | Geometries[]) {
+            if (!res) {
+                return;
+            }
+            if (!Array.isArray(res)) {
+                res = [res];
+            }
+            if (!this._geosToCheck) {
+                this._geosToCheck = [];
+            }
+            pushIn<any>(this._geosToCheck, res);
         }
-        if (!Array.isArray(res)) {
-            res = [res];
+
+        onGeometryAdd(geometries: Geometries | Geometries[]) {
+            this._addGeoToCheckRes(geometries);
+            redraw(this);
         }
-        if (!this._geosToCheck) {
-            this._geosToCheck = [];
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        onGeometryRemove(params: any) {
+            /**
+             * removegeo 事件
+             *
+             * @english
+             * removegeo event.
+             *
+             * @event OverlayLayer#removegeo
+             * @type {Object}
+             * @property {String} type - removegeo
+             * @property {OverlayLayer} target - layer
+             * @property {Geometry[]} geometries - the geometries to remove
+             */
+            (this as any).layer.fire('removegeo', {
+                'type': 'removegeo',
+                'target': this,
+                'geometries': params
+            });
+            redraw(this);
         }
-        pushIn<any>(this._geosToCheck, res);
-    },
 
-    onGeometryAdd(geometries: Geometries | Geometries[]) {
-        this._addGeoToCheckRes(geometries);
-        redraw(this);
-    },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    onGeometryRemove(params: any) {
-        /**
-         * removegeo 事件
-         *
-         * @english
-         * removegeo event.
-         *
-         * @event OverlayLayer#removegeo
-         * @type {Object}
-         * @property {String} type - removegeo
-         * @property {OverlayLayer} target - layer
-         * @property {Geometry[]} geometries - the geometries to remove
-         */
-        this.layer.fire('removegeo', {
-            'type': 'removegeo',
-            'target': this,
-            'geometries': params
-        });
-        redraw(this);
-    },
+        onGeometrySymbolChange(e: { target: Geometries; }) {
+            this._addGeoToCheckRes(e.target);
+            redraw(this);
+        }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        onGeometryShapeChange(params: any) {
+            redraw(this);
+        }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        onGeometryPositionChange(params: any) {
+            redraw(this);
+        }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        onGeometryZIndexChange(params: any) {
+            redraw(this);
+        }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        onGeometryShow(params: any) {
+            redraw(this);
+        }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        onGeometryHide(params: any) {
+            redraw(this);
+        }
 
-    onGeometrySymbolChange(e: { target: Geometries; }) {
-        this._addGeoToCheckRes(e.target);
-        redraw(this);
-    },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    onGeometryShapeChange(params: any) {
-        redraw(this);
-    },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    onGeometryPositionChange(params: any) {
-        redraw(this);
-    },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    onGeometryZIndexChange(params: any) {
-        redraw(this);
-    },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    onGeometryShow(params: any) {
-        redraw(this);
-    },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    onGeometryHide(params: any) {
-        redraw(this);
-    },
-
-    onGeometryPropertiesChange(_: any) {
-        redraw(this);
+        onGeometryPropertiesChange(_: any) {
+            redraw(this);
+        }
     }
+    return renderable;
 }
 
 /**
@@ -156,17 +155,20 @@ const OverlayLayerIncludes = {
  * @name OverlayLayerCanvasRenderer
  * @extends renderer.CanvasRenderer
  */
-class OverlayLayerCanvasRenderer extends CanvasRenderer {
-
+class OverlayLayerCanvasRenderer extends OverlayLayerRenderable(CanvasRenderer) {
+    render(...args: any[]): void {
+        (this as any).layer._sortGeometries();
+        return super.render.apply(this, args);
+    }
 }
 
-OverlayLayerCanvasRenderer.include(OverlayLayerIncludes);
 
-class OverlayLayerGLRenderer extends LayerGLRenderer {
-
+class OverlayLayerGLRenderer extends OverlayLayerRenderable(LayerGLRenderer) {
+    render(...args: any[]): void {
+        (this as any).layer._sortGeometries();
+        return super.render.apply(this, args);
+    }
 }
-
-OverlayLayerGLRenderer.include(OverlayLayerIncludes);
 
 function redraw(renderer): void {
     if (renderer instanceof OverlayLayerCanvasRenderer && renderer.layer.options['drawImmediate']) {
