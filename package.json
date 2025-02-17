@@ -43,6 +43,5 @@
       "git add"
     ]
   },
-  "packageManager": "pnpm@9.1.2",
   "license": "MIT"
 }
