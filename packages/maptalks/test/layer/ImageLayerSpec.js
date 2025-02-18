@@ -68,15 +68,13 @@ describe('Layer.ImageLayer', function () {
             renderer: 'canvas'
         });
         layer.on('layerload', function () {
-            var parser = new UAParser();
             var alpha = 104;
-            var result = parser.getOS();
-            console.log(result);
-            if (result.name) {
-                if (result.name.toLowerCase().indexOf('linux') > -1) {
-                    alpha = 104;
-                }
+
+            // eslint-disable-next-line no-undef
+            if (isLinux()) {
+                alpha = 104;
             }
+
             var size = map.getSize();
             var ctx = layer.getRenderer().canvas.getContext('2d');
             var imageData = ctx.getImageData(size.width / 2, size.height / 2, 1, 1).data;
