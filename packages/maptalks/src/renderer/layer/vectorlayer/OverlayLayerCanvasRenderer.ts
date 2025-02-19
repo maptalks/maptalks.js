@@ -2,7 +2,7 @@ import { isArrayHasData, pushIn } from '../../../core/util';
 import CanvasRenderer from '../CanvasRenderer';
 import { Geometries, Geometry } from '../../../geometry';
 import Extent from '../../../geo/Extent';
-import LayerGLRenderer from '../LayerGLRenderer';
+import LayerAbstractRenderer from '../LayerAbstractRenderer';
 import { MixinConstructor } from '../../../core/Mixin';
 
 interface MapStateCacheType {
@@ -163,7 +163,7 @@ class OverlayLayerCanvasRenderer extends OverlayLayerRenderable(CanvasRenderer) 
 }
 
 
-class OverlayLayerGLRenderer extends OverlayLayerRenderable(LayerGLRenderer) {
+class OverlayLayerGLRenderer extends OverlayLayerRenderable(LayerAbstractRenderer) {
     render(...args: any[]): void {
         (this as any).layer._sortGeometries();
         return super.render.apply(this, args);

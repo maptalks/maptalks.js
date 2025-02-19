@@ -3,7 +3,7 @@ import PointExtent from '../../geo/PointExtent';
 import { BBOX, getDefaultBBOX, resetBBOX, setBBOX, validateBBOX } from '../../core/util/bbox';
 import Painter from './Painter';
 import Extent from '../../geo/Extent';
-import { ResourceCache } from '../layer/CanvasRenderer';
+import { ResourceCache } from '../layer/LayerAbstractRenderer';
 import { Geometries } from '../../geometry'
 
 const TEMP_EXTENT = new PointExtent();

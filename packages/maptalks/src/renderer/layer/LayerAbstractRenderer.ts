@@ -35,7 +35,7 @@ class ResourceWorkerConnection extends Actor {
  * @memberOf renderer
  * @extends Class
  */
-class LayerGLRenderer extends Class {
+class LayerAbstractRenderer extends Class {
     layer: any;
     resources: ResourceCache;
 
@@ -154,7 +154,7 @@ class LayerGLRenderer extends Class {
      * @method checkResources
      * @instance
      * @returns {Array[]} an array of resource arrays [ [url1, width, height], [url2, width, height], [url3, width, height] .. ]
-     * @memberOf renderer.LayerGLRenderer
+     * @memberOf renderer.LayerAbstractRenderer
      */
 
     /**
@@ -163,7 +163,7 @@ class LayerGLRenderer extends Class {
      * @abstract
      * @instance
      * @method draw
-     * @memberOf renderer.LayerGLRenderer
+     * @memberOf renderer.LayerAbstractRenderer
      */
 
     /**
@@ -173,7 +173,7 @@ class LayerGLRenderer extends Class {
      * @instance
      * @method drawOnInteracting
      * @param {Object} eventParam event parameters
-     * @memberOf renderer.LayerGLRenderer
+     * @memberOf renderer.LayerAbstractRenderer
      */
 
     /**
@@ -748,7 +748,7 @@ class LayerGLRenderer extends Class {
     }
 }
 
-export default LayerGLRenderer;
+export default LayerAbstractRenderer;
 
 export type ResourceUrl = string | string[]
 

@@ -6,7 +6,7 @@ import Point from '../../geo/Point';
 import PointExtent from '../../geo/PointExtent';
 import Size from '../../geo/Size';
 import { type MarkerType } from './draw'
-import { ResourceCache } from '../../renderer/layer/CanvasRenderer'
+import { ResourceCache } from '../../renderer/layer/LayerAbstractRenderer'
 
 export const DEFAULT_MARKER_SYMBOLS = {
     markerWidth: 10,

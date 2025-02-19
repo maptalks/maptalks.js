@@ -11,7 +11,7 @@ import { BBOX, getDefaultBBOX, resetBBOX, setBBOX, validateBBOX } from '../../co
 import Map from '../../map/Map'
 import { DebugSymbolizer } from './symbolizers';
 import Extent from '../../geo/Extent';
-import { ResourceCache } from '../layer/CanvasRenderer';
+import { ResourceCache } from '../layer/LayerAbstractRenderer';
 import type { WithUndef } from '../../types/typings';
 import { Geometries } from '../../geometry'
 

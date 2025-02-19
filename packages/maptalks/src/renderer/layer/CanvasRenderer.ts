@@ -5,7 +5,7 @@ import Canvas2D from '../../core/Canvas';
 import Point from '../../geo/Point';
 import { SizeLike } from '../../geo/Size';
 import { TileRenderingContext } from '../types';
-import LayerGLRenderer from './LayerGLRenderer';
+import LayerAbstractRenderer from './LayerAbstractRenderer';
 
 
 /**
@@ -17,7 +17,7 @@ import LayerGLRenderer from './LayerGLRenderer';
  * @memberOf renderer
  * @extends Class
  */
-class CanvasRenderer extends LayerGLRenderer {
+class CanvasRenderer extends LayerAbstractRenderer {
 
     gl: TileRenderingContext;
 

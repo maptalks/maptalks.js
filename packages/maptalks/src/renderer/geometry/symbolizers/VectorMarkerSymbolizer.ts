@@ -12,7 +12,7 @@ import { getDefaultVAlign, getDefaultHAlign, DEFAULT_MARKER_SYMBOLS } from '../.
 import { Geometry } from '../../../geometry';
 import Painter from '../Painter';
 import { Extent } from '../../../geo';
-import { ResourceCache } from '../../layer/CanvasRenderer';
+import { ResourceCache } from '../../layer/LayerAbstractRenderer';
 
 const MARKER_SIZE: [number, number] = [0, 0];
 const TEMP_EXTENT = new PointExtent();

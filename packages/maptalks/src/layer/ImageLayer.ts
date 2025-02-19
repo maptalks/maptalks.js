@@ -4,7 +4,7 @@ import Browser from '../core/Browser';
 import Point from '../geo/Point';
 import ImageGLRenderable from '../renderer/layer/ImageGLRenderable';
 import CanvasRenderer from '../renderer/layer/CanvasRenderer';
-import { ResourceCache } from '../renderer/layer/CanvasRenderer';
+import { ResourceCache } from '../renderer/layer/LayerAbstractRenderer';
 import Extent from '../geo/Extent';
 import Layer, { LayerOptionsType } from './Layer';
 import { PointExtent } from '../geo';
