@@ -477,53 +477,7 @@ class LayerGLRenderer extends Class {
 
     }
 
-    clipCanvas(context: CanvasRenderingContext2D) {
-        const mask = this.layer.getMask();
-        if (!mask) {
-            return false;
-        }
-        if (!this.layer.options.maskClip) {
-            return false;
-        }
-        const old = this.middleWest;
-        const map = this.getMap();
-        //when clipping, layer's middleWest needs to be reset for mask's containerPoint conversion
-        this.middleWest = map._containerPointToPoint(new Point(0, map.height / 2));
-        context.save();
-        const dpr = map.getDevicePixelRatio();
-        if (dpr !== 1) {
-            context.save();
-            // this._canvasContextScale(context, dpr);
-        }
-        // Handle MultiPolygon
-        if (mask.getGeometries) {
-            context.isMultiClip = true;
-            const masks = mask.getGeometries() || [];
-            context.beginPath();
-            masks.forEach(_mask => {
-                const painter = _mask._getMaskPainter();
-                painter.paint(null, context);
-            });
-            context.stroke();
-            context.isMultiClip = false;
-        } else {
-            context.isClip = true;
-            context.beginPath();
-            const painter = mask._getMaskPainter();
-            painter.paint(null, context);
-            context.isClip = false;
-        }
-        if (dpr !== 1) {
-            context.restore();
-        }
-        try {
-            context.clip('evenodd');
-        } catch (error) {
-            console.error(error);
-        }
-        this.middleWest = old;
-        return true;
-    }
+
 
     /**
      * Get renderer's current view extent in 2d point
