@@ -10,7 +10,7 @@ export * from './layer/vectorlayer';
 export * from './layer/canvaslayer';
 export { default as MapRenderer } from './map/MapRenderer';
 export { default as MapCanvasRenderer } from './map/MapCanvasRenderer';
-export { default as MapGLAbstractRenderer } from './map/MapGLAbstractRenderer';
+export { default as MapAbstractRenderer } from './map/MapAbstractRenderer';
 
 export { default as Renderable } from './Renderable';
 

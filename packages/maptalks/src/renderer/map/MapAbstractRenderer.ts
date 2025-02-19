@@ -25,7 +25,7 @@ const tempCollisionIndex = new CollisionIndex();
  * @extends {renderer.MapRenderer}
  * @memberOf renderer
  */
-class MapGLAbstractRenderer extends MapRenderer {
+class MapAbstractRenderer extends MapRenderer {
     //@internal
     _containerIsCanvas: boolean;
     //@internal
@@ -856,6 +856,6 @@ export type MapView = {
     height: number;
 }
 
-export default MapGLAbstractRenderer;
+export default MapAbstractRenderer;
 
 

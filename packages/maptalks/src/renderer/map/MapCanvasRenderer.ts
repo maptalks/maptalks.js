@@ -4,7 +4,7 @@ import Point from '../../geo/Point';
 import Canvas2D from '../../core/Canvas';
 import Map from '../../map/Map';
 import type { Layer } from '../../layer';
-import MapGLAbstractRenderer from './MapGLAbstractRenderer';
+import MapAbstractRenderer from './MapAbstractRenderer';
 
 /**
  * 基于 Canvas2D 的 map 渲染器
@@ -16,7 +16,7 @@ import MapGLAbstractRenderer from './MapGLAbstractRenderer';
  * @extends {renderer.MapRenderer}
  * @memberOf renderer
  */
-class MapCanvasRenderer extends MapGLAbstractRenderer {
+class MapCanvasRenderer extends MapAbstractRenderer {
 
 
     //@internal
