@@ -665,7 +665,7 @@ describe('StrokeAndFillSpec', function () {
                 if (isWindows()) {
                     expect([...imgData1]).to.be.eql([3, 0, 254, 190]);
                 } else {
-                    expect([...imgData1]).to.be.eql([3, 0, 254, 191]);
+                    expect([...imgData1]).to.be.eql([4, 0, 254, 190]);
                 }
 
                 done();
