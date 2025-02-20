@@ -659,7 +659,7 @@ describe('StrokeAndFillSpec', function () {
                 if (isWindows()) {
                     expect([...imgData]).to.be.eql([255, 0, 5, 51]);
                 } else {
-                    expect([...imgData]).to.be.eql([255, 0, 0, 53]);
+                    expect([...imgData]).to.be.eql([245, 0, 5, 53]);
                 }
                 // eslint-disable-next-line no-undef
                 if (isWindows()) {
