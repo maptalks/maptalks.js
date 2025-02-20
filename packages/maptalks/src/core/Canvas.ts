@@ -515,6 +515,10 @@ function getSegmentPercentPoint(p1: Point, p2: Point, percent: number) {
     return new Point(x1 + dx * percent, y1 + dy * percent);
 }
 
+function rgbaToCSSRGBA(r: number, g: number, b: number, a: number) {
+    return `rgba(${r}, ${g}, ${b}, ${a / 255})`;
+}
+
 const Canvas = {
     getCanvas2DContext(canvas: HTMLCanvasElement) {
         return canvas.getContext('2d', { willReadFrequently: true });
@@ -1150,7 +1154,7 @@ const Canvas = {
         let preX, preY, currentX, currentY, nextPoint;
 
         const [r, g, b, a] = colorIn.getColor(0);
-        preColor = `rgba(${r}, ${g}, ${b}, ${a})`;
+        preColor = rgbaToCSSRGBA(r, g, b, a);
 
         const firstPoint = points[0];
         preX = firstPoint.x;
@@ -1199,7 +1203,7 @@ const Canvas = {
             //segment的步数小于minStep
             if (percent <= minStep) {
                 const [r, g, b, a] = colorIn.getColor(step + percent);
-                color = `rgba(${r}, ${g}, ${b}, ${a})`;
+                color = rgbaToCSSRGBA(r, g, b, a);
                 currentX = x;
                 currentY = y;
                 drawSegment();
@@ -1210,7 +1214,7 @@ const Canvas = {
                 for (let n = 1; n <= segments; n++) {
                     const tempStep = Math.min((n * minStep), percent);
                     const [r, g, b, a] = colorIn.getColor(step + tempStep);
-                    color = `rgba(${r}, ${g}, ${b}, ${a})`;
+                    color = rgbaToCSSRGBA(r, g, b, a);
                     if (color === preColor) {
                         continue;
                     }
@@ -1277,7 +1281,7 @@ const Canvas = {
         }
 
         if (ctx.lineColorIn) {
-            this._gradientPath(ctx, points, lineDashArray, lineOpacity);
+            Canvas._gradientPath(ctx, points, lineDashArray, lineOpacity);
         } else {
             ctx.beginPath();
             ctx.moveTo(points[0].x, points[0].y);
