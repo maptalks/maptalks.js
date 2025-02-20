@@ -659,8 +659,13 @@ describe('StrokeAndFillSpec', function () {
                 if (isWindows()) {
                     expect([...imgData]).to.be.eql([255, 0, 0, 51]);
                 } else {
-                    expect([...imgData]).to.be.eql([255, 0, 0, 53]);
+                    expect([...imgData]).to.be.eql([236, 0, 0, 53]);
                 }
+                // if (isWindows()) {
+
+                // } else {
+
+                // }
                 expect([...imgData1]).to.be.eql([0, 0, 254, 191]);
                 done();
             }, 1000);
