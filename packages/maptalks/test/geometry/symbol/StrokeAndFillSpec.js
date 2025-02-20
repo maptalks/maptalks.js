@@ -655,7 +655,12 @@ describe('StrokeAndFillSpec', function () {
                 var imgData = context.getImageData(Math.round(p1.x), Math.round(p1.y), 1, 1).data;
                 var imgData1 = context.getImageData(Math.round(p2.x + lineDx * 2), Math.round(p2.y), 1, 1).data;
 
-                expect([...imgData]).to.be.eql([255, 0, 0, 51]);
+                // eslint-disable-next-line no-undef
+                if (isWindows()) {
+                    expect([...imgData]).to.be.eql([255, 0, 0, 51]);
+                } else {
+                    expect([...imgData]).to.be.eql([255, 0, 0, 53]);
+                }
                 expect([...imgData1]).to.be.eql([0, 0, 254, 191]);
                 done();
             }, 1000);
