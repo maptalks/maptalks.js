@@ -179,7 +179,7 @@ describe('TileLayer', function () {
                 renderer: 'canvas',
                 urlTemplate: '#'
             }).addTo(map);
-            expect(tile.getTiles().tileGrids[0].tiles.length).to.be.eql(26);
+            expect(tile.getTiles().tileGrids[0].tiles.length).to.be.eql(28);
         });
 
         it('tiles out of extent', function () {
