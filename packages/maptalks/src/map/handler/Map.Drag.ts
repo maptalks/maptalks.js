@@ -98,6 +98,7 @@ class MapDragHandler extends Handler {
 
     //@internal
     _onDragStart(param) {
+        this.target._dragging = true;
         this.startDragTime = now();
         if (this._mode === 'move') {
             this._moveStart(param);
@@ -117,6 +118,7 @@ class MapDragHandler extends Handler {
 
     //@internal
     _onDragEnd(param) {
+        this.target._dragging = false;
         if (this._mode === 'move') {
             this._moveEnd(param);
         } else if (this._mode === 'rotatePitch') {

@@ -137,7 +137,7 @@ declare module "./Map" {
          * @param  [originCenter=null] - optional original coordinate for caculation
          * @return          */
         altitudeToPoint(altitude: number, res?: number, originCenter?: Coordinate): number;
-        pointAtResToAltitude(point: Point, res?: number, originCenter?: Coordinate): number;
+        pointAtResToAltitude(point: number, res?: number, originCenter?: Coordinate): number;
         /**
          * Converts pixel size to geographical distance.
          *

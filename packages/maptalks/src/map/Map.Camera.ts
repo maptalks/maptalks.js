@@ -10,9 +10,17 @@ import Browser from '../core/Browser';
 
 declare module "./Map" {
     export interface Map {
+        cameraCoordinate: Coordinate;
         cameraPosition: [number, number, number];
         cameraLookAt: [number, number, number];
+        cameraNear: number;
+        camerFar: number;
+        cameraCenterDistance: number;
+        cameraZenithDistance: number;
+        cameraUp: [number, number, number];
+        cameraForward: [number, number, number];
         projViewMatrix: Matrix4;
+        infiniteProjViewMatrix: Matrix4;
         getFov(): number;
         setFov(fov: number): this;
         getBearing(): number;
@@ -24,16 +32,20 @@ declare module "./Map" {
         //@internal
         _setPitch(pitch: number): this;
         //@internal
+        _meterToGLPoint: number;
+        //@internal
         _calcMatrices(): void;
         //@internal
         _containerPointToPoint(p: Point, zoom?: number, out?: Point, height?: number): Point;
         //@internal
         _recenterOnTerrain(): void;
+        //@internal
+        _setCenterSilently(center: CoordinateLike): void;
         setCameraMovements(frameOptions: Array<MapViewType>, option?: { autoRotate: boolean });
         setCameraOrientation(params: MapViewType): this;
         setCameraPosition(coordinate: Coordinate);
         getFitZoomForCamera(cameraPosition: [number, number, number], pitch: number);
-        getFitZoomForAltitude(altitude: number);
+        getFitZoomForCameraCenterDistance(altitude: number);
         isTransforming(): boolean;
         getFrustumAltitude(): number;
         updateCenterAltitude();
@@ -52,6 +64,8 @@ declare module "./Map" {
         getContainerPointRay(from: Vector3, to: Vector3, containerPoint: Point, near?: number, far?: number);
         //@internal
         _query3DTilesInfo(containerPoint: Point);
+        //@internal
+        _queryTerrain(coordinate: Coordinate): number;
         //@internal
         _queryTerrainInfo(containerPoint: Point);
         //@internal
@@ -419,11 +433,11 @@ Map.include(/** @lends Map.prototype */{
 
         const cameraToCenterDistance = cameraToGroundDistance + centerPointZ;
 
-        const zoom = this.getFitZoomForAltitude(cameraToCenterDistance);
+        const zoom = this.getFitZoomForCameraCenterDistance(cameraToCenterDistance);
         return { zoom, cameraToGroundDistance };
     },
 
-    getFitZoomForAltitude(distance: number) {
+    getFitZoomForCameraCenterDistance(distance: number) {
         const ratio = this._getFovRatio();
         const scale = distance * ratio * 2 / (this.height || 1) * this.getGLRes();
         const resolutions = this._getResolutions();
@@ -699,11 +713,15 @@ Map.include(/** @lends Map.prototype */{
             const projMatrix = this.projMatrix || createMat4();
             mat4.perspective(projMatrix, fov, w / h, this.cameraNear, farZ);
             this.projMatrix = projMatrix;
+            const infiniteProjMatrix = this.infiniteProjMatrix || createMat4();
+            mat4.perspective(infiniteProjMatrix, fov, w / h, this.cameraNear, 1e40);
+            this.infiniteProjMatrix = infiniteProjMatrix;
 
             // view matrix
             this.viewMatrix = mat4.invert(this.viewMatrix || createMat4(), worldMatrix);
             // matrix for world point => screen point
             this.projViewMatrix = mat4.multiply(this.projViewMatrix || createMat4(), projMatrix, this.viewMatrix);
+            this.infiniteProjViewMatrix = mat4.multiply(this.infiniteProjViewMatrix || createMat4(), infiniteProjMatrix, this.viewMatrix);
             this._calcCascadeMatrixes();
             // matrix for screen point => world point
             this.projViewMatrixInverse = mat4.multiply(this.projViewMatrixInverse || createMat4(), worldMatrix, mat4.invert(m1, projMatrix));
@@ -816,7 +834,7 @@ Map.include(/** @lends Map.prototype */{
         return function () {
             const glRes = this.getGLRes();
             if (!this._meterToGLPoint) {
-                this._meterToGLPoint = this.distanceToPointAtRes(100, 0, glRes).x / 100;
+                this._meterToGLPoint = this.altitudeToPoint(100, glRes) / 100;
             }
 
             const center2D = this._prjToPointAtRes(this._prjCenter, glRes, TEMP_POINT);
@@ -950,14 +968,18 @@ Map.include(/** @lends Map.prototype */{
         this.centerAltitude = centerAltitude;
         // this._setPrjCenter(newPrjCenter);
         const newCenter = this.pointAtResToCoordinate(center2D, this.getGLRes(), TEMP_COORD);
+        this._setCenterSilently(newCenter);
+        if (isNil(queriedAltitude)) {
+            delete this.centerAltitude;
+        }
+    },
+
+    _setCenterSilently(newCenter: Coordinate) {
         this._eventSilence = true;
         this._suppressRecenter = true;
         this.setCenter(newCenter);
         delete this._suppressRecenter;
         delete this._eventSilence;
-        if (isNil(queriedAltitude)) {
-            delete this.centerAltitude;
-        }
     },
     // _adjustZoomOnTerrain() {
     //     const z = this._eventCameraZ;
@@ -1004,17 +1026,26 @@ Map.include(/** @lends Map.prototype */{
     },
 
     //@internal
-    _queryTerrainInfo(containerPoint) {
+    _queryTerrain(coord: Coordinate) {
+        return this._queryTerrainImp(coord);
+    },
+
+    //@internal
+    _queryTerrainInfo(containerPoint: Point) {
+        return this._queryTerrainImp(containerPoint);
+    },
+
+    //@internal
+    _queryTerrainImp(coord: Coordinate | Point) {
+        const isCoordinate = coord instanceof Coordinate;
+        const fnName = isCoordinate ? 'queryTerrain' : 'queryTerrainAtPoint';
         const layers = this._getLayers() || [];
         for (let i = 0; i < layers.length; i++) {
             const layer = layers[i];
-            if (containerPoint && layer && layer.queryTerrainAtPoint && layer.getTerrainLayer && layer.getTerrainLayer()) {
-                const coordinate = layer.queryTerrainAtPoint(containerPoint);
+            if (coord && layer && layer[fnName] && layer.getTerrainLayer && layer.getTerrainLayer()) {
+                const coordinate = layer[fnName](coord);
                 if (coordinate) {
-                    return {
-                        coordinate,
-                        altitude: coordinate.z
-                    };
+                    return isCoordinate ? coordinate[0] : { coordinate, altitude: coordinate.z };
                 } else {
                     break;
                 }

@@ -922,6 +922,13 @@ describe('Map.Spec', function () {
         map.containerPointToCoord(new maptalks.Point(0, 0));
     });
 
+    it('point and altitude conversion', function () {
+        const res = map.getGLRes();
+        const pointValue = map.altitudeToPoint(100, res);
+        const altitudeValue = map.pointAtResToAltitude(pointValue, res);
+        expect(altitudeValue).to.be.approx(100, 1e-2);
+    });
+
     it('#isOffScreen', function () {
         expect(map.isOffscreen([0, 0, 10, 10])).not.to.be.ok();
         expect(map.isOffscreen(new maptalks.PointExtent(0, 0, 10, 10))).not.to.be.ok();

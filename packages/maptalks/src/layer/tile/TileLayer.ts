@@ -470,7 +470,7 @@ class TileLayer extends Layer {
         const sr = this.getSpatialReference();
         const maxZoom = Math.min(z, this.getMaxZoom(), this.getMaxAvailableZoom() || Infinity);
         // @ts-ignore
-        const projectionView = map.projViewMatrix;
+        const projectionView = map.infiniteProjViewMatrix;
         const fullExtent = this._getTileFullExtent();
 
         const offset0 = this._getTileOffset(0);

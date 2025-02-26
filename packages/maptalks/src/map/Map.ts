@@ -265,6 +265,10 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     //@internal
     _moving: boolean;
     //@internal
+    _dragging: boolean;
+    //@internal
+    _cameraRestricted:boolean;
+    //@internal
     _originCenter: Coordinate;
     //@internal
     _suppressRecenter: boolean;
@@ -290,6 +294,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     static VERSION: string;
     JSON_VERSION: '1.0';
     attributionControl?: Attribution;
+
 
 
     /**
@@ -1796,6 +1801,14 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     isMoving() {
         return !!this._moving;
+    }
+
+    /**
+     * Whether the map is dragging
+     * @return {Boolean}
+     */
+    isDragging() {
+        return !!this._dragging;
     }
 
     /**
