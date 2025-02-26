@@ -1,6 +1,6 @@
 import Map from './Map';
 import Point from '../geo/Point';
-import Coordinate from '../geo/Coordinate';
+import Coordinate, { CoordinateLike } from '../geo/Coordinate';
 import * as mat4 from '../core/util/mat4';
 import { subtract, add, scale, normalize, dot, set, distance, angle, cross } from '../core/util/vec3';
 import { clamp, interpolate, isNumber, isNil, wrap, toDegree, toRadian, Matrix4, Vector3 } from '../core/util';

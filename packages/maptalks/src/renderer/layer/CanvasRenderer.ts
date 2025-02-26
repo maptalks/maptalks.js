@@ -352,7 +352,7 @@ class CanvasRenderer extends LayerAbstractRenderer {
     * onResize
     * @param  {Object} param event parameters
     */
-    onResize(param: any) {
+    onResize(_param: any) {
         delete this._extent2D;
         this.resizeCanvas();
         this.setToRedraw();
