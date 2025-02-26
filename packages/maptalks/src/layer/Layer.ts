@@ -12,6 +12,7 @@ import type { Marker, MultiPolygon, Polygon } from '../geometry';
 import { CommonProjectionType } from '../geo/projection';
 import Coordinate from '../geo/Coordinate';
 import Point from '../geo/Point';
+import { LayerIdentifyOptionsType } from './OverlayLayer';
 
 /**
  * 配置项
@@ -927,7 +928,3 @@ export type LayerJSONType = {
     layers?: Array<any>;
 }
 
-export type LayerIdentifyOptionsType = {
-    onlyVisible?: boolean;
-    tolerance?: number;
-}
