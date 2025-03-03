@@ -674,6 +674,67 @@ describe('Geometry.Marker', function () {
                 .addTo(map);
 
         });
+
+        it('#2511 vector marker with function-type getFixedExtent', function (done) {
+            map.config('zoomAnimation', false);
+            var marker = new maptalks.Marker(map.getCenter(), {
+                properties: { name: '1111' },
+                // symbol: {
+                //     markerType: "ellipse",
+                //     markerWidth: 50,
+                //     markerHeight: 50
+                // },
+                symbol: [
+                    {
+                        markerType: "ellipse",
+                        // markerWidth: 50,
+                        // markerHeight: 50,
+                        markerWidth: {
+                            stops: [
+                                [1, 10],
+                                [17, 60],
+                            ],
+                        },
+                        markerHeight: {
+                            stops: [
+                                [1, 10],
+                                [17, 60],
+                            ],
+                        },
+                        markerDy: {
+                            stops: [
+                                [1, -2],
+                                [17, -80],
+                            ],
+                        },
+                        markerFill: {
+                            type: "radial",
+                            colorStops: [
+                                [0.0, "rgba(216,115,149,0)"],
+                                [0.5, "rgba(216,115,149,0.7)"],
+                                [1.0, "rgba(216,115,149,1)"],
+                            ],
+                        },
+                        markerLineWidth: 1,
+                    },
+
+                ]
+            });
+            var layer = new maptalks.VectorLayer('id', { 'drawImmediate': true }).addTo(map);
+            layer.addGeometry([marker]);
+
+            setTimeout(() => {
+                const extent = marker._getPainter().getFixedExtent();
+                const { xmin, ymin, xmax, ymax } = extent;
+                expect(Math.floor(xmin)).to.be.eql(-31);
+                expect(Math.floor(xmax)).to.be.eql(29);
+                expect(Math.floor(ymin)).to.be.eql(-105);
+                expect(Math.floor(ymax)).to.be.eql(-46);
+                done();
+            }, 1000);
+
+
+        });
     });
 
     describe('marker rotation', function () {
