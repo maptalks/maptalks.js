@@ -101,7 +101,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         const polygonOffset = this.drawingCurrentTiles ? layerPolygonOffset : layerPolygonOffset + 1;
         gl.polygonOffset(polygonOffset, polygonOffset);
 
-        this.drawGLImage(tileImage as any, x, y, w, h, scale, opacity, debugInfo);
+        this.drawGLImage(tileImage as any, x, y, w, h, scale, opacity, map._getResolution() !== tileInfo.res, debugInfo);
         if (this.getTileFadingOpacity(tileImage) < 1) {
             this.setToRedraw();
         } else {

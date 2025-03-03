@@ -108,12 +108,12 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
          * @param debugInfo
          * @param baseColor
          */
-        drawGLImage(image: TileImageType, x: number, y: number, w: number, h: number, scale: number, opacity: number, debugInfo?: string, baseColor?: number[]) {
+        drawGLImage(image: TileImageType, x: number, y: number, w: number, h: number, scale: number, opacity: number, resized, debugInfo?: string, baseColor?: number[]) {
             if ((this.gl as any).program !== this.program) {
                 this.useProgram(this.program);
             }
             const gl = this.gl;
-            this.loadTexture(image);
+            this.loadTexture(image, resized);
             const inGroup = this.canvas.gl && this.canvas.gl.wrap;
             if (inGroup) {
                 let layerOpacity = this.layer && this.layer.options['opacity'];
@@ -417,7 +417,7 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
          * Load image into a text and bind it with WebGLContext
          * @param image
          */
-        loadTexture(image: TileImageType): TileImageTexture {
+        loadTexture(image: TileImageType, resized = false): TileImageTexture {
             const map = (this as any).getMap();
             const gl = this.gl;
             let texture = image.texture;   // Create a texture object
@@ -433,6 +433,12 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
                 } else {
                     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
                 }
+                if (resized) {
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                } else {
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                }
+
             }
             return texture;
         }

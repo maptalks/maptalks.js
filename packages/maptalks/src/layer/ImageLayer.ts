@@ -306,7 +306,8 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
 
     //@internal
     _drawImage(image: LayerImageType, extent: PointExtent, opacity: number) {
-        this.drawGLImage(image, extent.xmin, extent.ymax, extent.getWidth(), extent.getHeight(), 1, opacity);
+        const width = extent.getWidth();
+        this.drawGLImage(image, extent.xmin, extent.ymax, width, extent.getHeight(), 1, opacity, image.width !== width);
     }
 
     createContext() {
