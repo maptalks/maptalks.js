@@ -12,13 +12,11 @@ import { getDefaultVAlign, getDefaultHAlign, DEFAULT_MARKER_SYMBOLS } from '../.
 import { Geometry } from '../../../geometry';
 import Painter from '../Painter';
 import { Extent } from '../../../geo';
-import { ResourceCache } from '../../layer/CanvasRenderer';
-import { getDefaultBBOX, resetBBOX } from '../../../core/util/bbox';
+import { ResourceCache } from '../../layer/LayerAbstractRenderer';
 
 const MARKER_SIZE: [number, number] = [0, 0];
 const TEMP_EXTENT = new PointExtent();
 const DEFAULT_ANCHOR = new Point(0, 0);
-const TEMP_BBOX = getDefaultBBOX();
 
 export default class VectorMarkerSymbolizer extends PointSymbolizer {
     //@internal
@@ -68,16 +66,14 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             this.geometry.getLayer().getMask() === this.geometry ||
             this._dynamic ||
             this.geometry.getLayer().options['cacheVectorOnCanvas'] === false) {
-            //动态样式或者不缓存,function-type style, or not cache vector on canvas
-            this._drawMarkersWithDynamic(ctx, cookedPoints, resources);
+            this._drawMarkers(ctx, cookedPoints, resources);
         } else {
             this._drawMarkersWithCache(ctx, cookedPoints, resources);
         }
     }
 
-    //rename to _drawMarkersWithDynamic
     //@internal
-    _drawMarkersWithDynamic(ctx: CanvasRenderingContext2D, cookedPoints: any[], resources: ResourceCache) {
+    _drawMarkers(ctx: CanvasRenderingContext2D, cookedPoints: any[], resources: ResourceCache) {
         for (let i = cookedPoints.length - 1; i >= 0; i--) {
             let point = cookedPoints[i];
             const size = calVectorMarkerSize(MARKER_SIZE, this.style);
@@ -94,17 +90,13 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
                 this.rotations.push(rad);
             }
 
-            const bbox = this._drawVectorMarker(ctx, point, resources);
+            this._drawVectorMarker(ctx, point, resources);
             if (origin) {
                 ctx.restore();
                 this._setBBOX(ctx, extent.xmin, extent.ymin, extent.xmax, extent.ymax);
             } else {
-                if (bbox) {
-                    this._setBBOX(ctx, bbox[0], bbox[1], bbox[2], bbox[3]);
-                } else {
-                    const { x, y } = point;
-                    this._setBBOX(ctx, x, y, x + width, y + height);
-                }
+                const { x, y } = point;
+                this._setBBOX(ctx, x, y, x + width, y + height);
             }
         }
     }
@@ -211,21 +203,15 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
 
     //@internal
     _drawVectorMarker(ctx: CanvasRenderingContext2D, point: Point, resources: ResourceCache) {
-        resetBBOX(TEMP_BBOX);
-        drawVectorMarker(ctx, point, this.style, resources, TEMP_BBOX);
-        return TEMP_BBOX;
+        drawVectorMarker(ctx, point, this.style, resources);
     }
 
     getFixedExtent(): PointExtent {
-        // const isDynamic = this.isDynamicSize();
-        // const w = this.style.markerWidth;
-        // const h = this.style.markerHeight;
-        // this._fixedExtent = this._fixedExtent || new PointExtent();
-        // return getVectorMarkerFixedExtent(this._fixedExtent, this.style, isDynamic ? [128, 128 * (w === 0 ? 1 : h / w)] : null);
-
+        const isDynamic = this.isDynamicSize();
+        const w = this.style.markerWidth;
+        const h = this.style.markerHeight;
         this._fixedExtent = this._fixedExtent || new PointExtent();
-        return getVectorMarkerFixedExtent(this._fixedExtent, this.style, null);
-
+        return getVectorMarkerFixedExtent(this._fixedExtent, this.style, isDynamic ? [128, 128 * (w === 0 ? 1 : h / w)] : null);
     }
 
     translate(): any {

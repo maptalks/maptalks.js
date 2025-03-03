@@ -1,7 +1,7 @@
 import Eventable from '../../core/Eventable';
 import Class from '../../core/Class';
 import Point, { type PointJson } from '../../geo/Point';
-import { ResourceCache } from '../layer/CanvasRenderer';
+import { ResourceCache } from '../layer/LayerAbstractRenderer';
 import { drawVectorMarker } from '../../core/util/draw';
 import { isNil } from '../../core/util/';
 import { getSymbolHash } from '../../core/util';

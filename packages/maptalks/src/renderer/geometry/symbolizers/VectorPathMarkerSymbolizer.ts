@@ -3,7 +3,7 @@ import Browser from '../../../core/Browser';
 import { getMarkerPathBase64 } from '../../../core/util/resource';
 import ImageMarkerSymbolizer from './ImageMarkerSymbolizer';
 import { isPathSymbol } from '../../../core/util/marker';
-import { ResourceCache } from '../../layer/CanvasRenderer';
+import { ResourceCache } from '../../layer/LayerAbstractRenderer';
 // import { ResourceProxy } from '../../../core/ResourceProxy';
 
 export default class VectorPathMarkerSymbolizer extends ImageMarkerSymbolizer {

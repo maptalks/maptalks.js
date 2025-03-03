@@ -25,7 +25,7 @@ const tempCollisionIndex = new CollisionIndex();
  * @extends {renderer.MapRenderer}
  * @memberOf renderer
  */
-class MapGLAbstractRenderer extends MapRenderer {
+class MapAbstractRenderer extends MapRenderer {
     //@internal
     _containerIsCanvas: boolean;
     //@internal
@@ -191,7 +191,7 @@ class MapGLAbstractRenderer extends MapRenderer {
                 this.clearLayerCanvasContext(layer);
             }
             if (isInteracting && isCanvas) {
-                this._drawCanvasLayerOnInteracting(layer, framestamp);
+                this._drawCanvasLayerOnInteracting(layer, 0, 0, framestamp);
             } else if (isInteracting && renderer.drawOnInteracting) {
                 // dom layers
                 if (renderer.prepareRender) {
@@ -217,6 +217,9 @@ class MapGLAbstractRenderer extends MapRenderer {
      */
     //@internal
     _checkLayerRedraw(layer: Layer): boolean {
+        if (this.isSpatialReferenceChanged()) {
+            return true;
+        }
         const map = this.map;
         const renderer = layer._getRenderer();
         if (!renderer) {
@@ -243,7 +246,7 @@ class MapGLAbstractRenderer extends MapRenderer {
      * @private
      */
     //@internal
-    _drawCanvasLayerOnInteracting(layer: Layer, framestamp: number): number {
+    _drawCanvasLayerOnInteracting(layer: Layer, t: number, timeLimit: number, framestamp: number): number {
         const renderer = layer._getRenderer();
         if (renderer.mustRenderOnInteracting && renderer.mustRenderOnInteracting()) {
             renderer.render(framestamp);
@@ -800,6 +803,11 @@ class MapGLAbstractRenderer extends MapRenderer {
             }
             return;
         }
+        this.drawTopElements();
+    }
+
+    drawTopElements() {
+        const tops = this.getTopElements();
         // clear topLayer
         this.topCtx.clearRect(0, 0, this.topLayer.width, this.topLayer.height);
         const collisionIndex = tempCollisionIndex;
@@ -848,6 +856,6 @@ export type MapView = {
     height: number;
 }
 
-export default MapGLAbstractRenderer;
+export default MapAbstractRenderer;
 
 

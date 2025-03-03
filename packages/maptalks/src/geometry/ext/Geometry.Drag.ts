@@ -6,7 +6,7 @@ import Handler from '../../handler/Handler';
 import Geometry from '../Geometry';
 import DragHandler from '../../handler/Drag';
 import { ConnectorLine } from '../ConnectorLine';
-import { ResourceCache } from '../../renderer/layer/CanvasRenderer';
+import { ResourceCache } from '../../renderer/layer/LayerAbstractRenderer';
 import Point from '../../geo/Point';
 import Coordinate from '../../geo/Coordinate';
 

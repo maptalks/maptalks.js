@@ -1,20 +1,10 @@
-import { IS_NODE, isNumber, isFunction, requestAnimFrame, cancelAnimFrame, equalMapView, calCanvasSize, pushIn } from '../../core/util';
-import { createEl, preventSelection, computeDomPosition } from '../../core/util/dom';
-import { GlobalEvent, EVENT_DOC_DRAGEND, EVENT_DOC_VISIBILITY_CHANGE, EVENT_DPR_CHANGE, EVENT_DOC_DRAGSTART } from './../../core/GlobalEvent';
-import Browser from '../../core/Browser';
+import {  isNumber, isFunction, calCanvasSize, pushIn } from '../../core/util';
+import { createEl } from '../../core/util/dom';
 import Point from '../../geo/Point';
 import Canvas2D from '../../core/Canvas';
-import MapRenderer from './MapRenderer';
-import Map, { type PanelDom } from '../../map/Map';
-import CollisionIndex from '../../core/CollisionIndex';
-import GlobalConfig from '../../GlobalConfig';
-import type EditHandle from '../edit/EditHandle';
-import type EditOutline from '../edit/EditOutline';
+import Map from '../../map/Map';
 import type { Layer } from '../../layer';
-import type Size from '../../geo/Size';
-import type { WithUndef } from '../../types/typings';
-
-const tempCollisionIndex = new CollisionIndex();
+import MapAbstractRenderer from './MapAbstractRenderer';
 
 /**
  * 基于 Canvas2D 的 map 渲染器
@@ -26,77 +16,16 @@ const tempCollisionIndex = new CollisionIndex();
  * @extends {renderer.MapRenderer}
  * @memberOf renderer
  */
-class MapCanvasRenderer extends MapRenderer {
-    //@internal
-    _containerIsCanvas: boolean;
-    //@internal
-    _loopTime: number;
-    //@internal
-    _resizeTime: number;
-    //@internal
-    _resizeCount: number;
-    //@internal
-    _frameCycleRenderCount: number;
-    //@internal
-    _resizeEventList: ResizeObserverEntry[];
+class MapCanvasRenderer extends MapAbstractRenderer {
+
 
     //@internal
     _needClear: boolean;
     //@internal
     _canvasUpdated: boolean;
-    //@internal
-    _isViewChanged: WithUndef<boolean>;
-    //@internal
-    _spatialRefChanged: WithUndef<boolean>;
-    //@internal
-    _resizeObserver: ResizeObserver;
-    //@internal
-    _resizeInterval: number;
-    //@internal
-    _checkSizeInterval: number;
-    //@internal
-    _hitDetectFrame: number;
-    //@internal
-    _animationFrame: number;
-    //@internal
-    _mapview: MapView;
-    //@internal
-    _zoomMatrix: number[];
-    //@internal
-    _eventParam: any;
-    //@internal
-    _canvasIds: string[];
-    //@internal
-    _updatedIds: string[];
-    //@internal
-    _frameTimestamp: number;
-    //@internal
-    _checkPositionTime: number;
-    //@internal
-    _tops: (EditHandle | EditOutline)[];
-
     context: CanvasRenderingContext2D;
-    canvas: HTMLCanvasElement;
-    topLayer: HTMLCanvasElement;
-    topCtx: CanvasRenderingContext2D;
 
-    /**
-     * @param map - map for the renderer
-     */
-    constructor(map: Map) {
-        super(map);
-        //container is a <canvas> element
-        this._containerIsCanvas = !!(map.getContainer() as HTMLCanvasElement).getContext;
-        this._registerEvents();
-        this._loopTime = 0;
-        this._resizeEventList = [];
-        this._resizeTime = -Infinity;
-        this._frameCycleRenderCount = 0;
-    }
 
-    load() {
-        this.initContainer();
-    }
 
     /**
      * render layers in current frame
@@ -146,24 +75,6 @@ class MapCanvasRenderer extends MapRenderer {
         //loop ui Collides
         map.uiCollides();
         return true;
-    }
-
-    getFrameTimestamp() {
-        return this._frameTimestamp || 0;
-    }
-
-    updateMapDOM() {
-        const map = this.map;
-        // when map is zooming, container is being transformed with matrix, panel doesn't need to be moved.
-        if (map.isZooming()) {
-            return;
-        }
-        const offset = map.getViewPointFrameOffset();
-        if (offset) {
-            map.offsetPlatform(offset);
-        } else if (this.domChanged()) {
-            this.offsetPlatform(null, true);
-        }
     }
 
     //need redraw all layer,cause by collision/crs change/view change etc...
@@ -299,32 +210,9 @@ class MapCanvasRenderer extends MapRenderer {
                 this.setLayerCanvasUpdated();
             }
         }
+        return true;
     }
 
-    /**
-     * check if need to call layer's draw/drawInteracting
-     * @param layer
-     */
-    //@internal
-    _checkLayerRedraw(layer: Layer): boolean {
-        if (this.isSpatialReferenceChanged()) {
-            return true;
-        }
-        const map = this.map;
-        const renderer = layer._getRenderer();
-        if (!renderer) {
-            return false;
-        }
-        if (layer.isCanvasRender()) {
-            return renderer.testIfNeedRedraw();
-        } else {
-            if (renderer.needToRedraw && renderer.needToRedraw()) {
-                return true;
-            }
-            // dom layers, redraw it if map is interacting or state is changed
-            return map.isInteracting() || this.isViewChanged();
-        }
-    }
 
     /**
      * Draw canvas rendered layer when map is interacting
@@ -515,59 +403,11 @@ class MapCanvasRenderer extends MapRenderer {
         }
     }
 
-    updateMapSize(size: Size) {
-        if (!size || this._containerIsCanvas) {
-            return;
-        }
-        const width = size['width'] + 'px',
-            height = size['height'] + 'px';
-        const panels = this.map.getPanels();
-        panels.mapWrapper.style.width = width;
-        panels.mapWrapper.style.height = height;
-        this._updateCanvasSize();
-    }
-
-    getMainPanel() {
-        if (!this.map) {
-            return null;
-        }
-        if (this._containerIsCanvas) {
-            return this.map.getContainer();
-        }
-        if (this.map.getPanels()) {
-            return this.map.getPanels().mapWrapper;
-        }
-        return null;
-    }
-
-    toDataURL(mimeType: string, quality?: number) {
-        if (!this.canvas) {
-            return null;
-        }
-        return this.canvas.toDataURL(mimeType, quality);
-    }
 
     remove() {
-        if (Browser.webgl && typeof document !== 'undefined') {
-            GlobalEvent.off(EVENT_DPR_CHANGE, this._thisDocDPRChange, this);
-            GlobalEvent.off(EVENT_DOC_VISIBILITY_CHANGE, this._thisDocVisibilitychange, this);
-            GlobalEvent.off(EVENT_DOC_DRAGSTART, this._thisDocDragStart, this);
-            GlobalEvent.off(EVENT_DOC_DRAGEND, this._thisDocDragEnd, this);
-            // removeDomEvent(document, 'visibilitychange', this._thisDocVisibilitychange, this);
-            // removeDomEvent(document, 'dragstart', this._thisDocDragStart, this);
-            // removeDomEvent(document, 'dragend', this._thisDocDragEnd, this);
-        }
-        if (this._resizeInterval) {
-            clearInterval(this._resizeInterval);
-        }
-        if (this._resizeObserver) {
-            this._resizeObserver.disconnect();
-        }
+
         delete this.context;
-        delete this.canvas;
-        delete this.map;
-        delete this._spatialRefChanged;
-        this._cancelFrameLoop();
+        super.remove();
     }
 
     hitDetect(point: Point) {
@@ -623,153 +463,6 @@ class MapCanvasRenderer extends MapRenderer {
         return null;
     }
 
-    /**
-     * initialize container DOM of panels
-     */
-    initContainer() {
-        const panels = this.map.getPanels();
-
-        function createContainer(name: string, className: string, cssText: string, enableSelect?: boolean): PanelDom {
-            const c = createEl('div', className) as PanelDom;
-            if (cssText) {
-                c.style.cssText = cssText;
-            }
-            panels[name] = c;
-            if (!enableSelect) {
-                preventSelection(c);
-            }
-            return c;
-        }
-        const containerDOM = this.map.getContainer();
-
-        if (this._containerIsCanvas) {
-            //container is a <canvas> element.
-            return;
-        }
-
-        containerDOM.innerHTML = '';
-
-        const POSITION0 = 'position:absolute;top:0px;left:0px;';
-
-        const mapWrapper = createContainer('mapWrapper', 'maptalks-wrapper', 'position:absolute;overflow:hidden;', true),
-            mapAllLayers = createContainer('allLayers', 'maptalks-all-layers', POSITION0 + 'padding:0px;margin:0px;z-index:0;overflow:visible;', true),
-            backStatic = createContainer('backStatic', 'maptalks-back-static', POSITION0 + 'z-index:0;', true),
-            back = createContainer('back', 'maptalks-back', POSITION0 + 'z-index:1;'),
-            backLayer = createContainer('backLayer', 'maptalks-back-layer', POSITION0),
-            canvasContainer = createContainer('canvasContainer', 'maptalks-canvas-layer', POSITION0 + 'border:none;z-index:2;'),
-            frontStatic = createContainer('frontStatic', 'maptalks-front-static', POSITION0 + 'z-index:3;', true),
-            front = createContainer('front', 'maptalks-front', POSITION0 + 'z-index:4;', true),
-            frontLayer = createContainer('frontLayer', 'maptalks-front-layer', POSITION0 + 'z-index:0;'),
-            // children's zIndex in frontLayer will be set by map.addLayer, ui container's z-index is set to 10000 to make sure it's always on the top.
-            ui = createContainer('ui', 'maptalks-ui', POSITION0 + 'border:none;z-index:1;', true),
-            control = createContainer('control', 'maptalks-control', 'z-index:1', true);
-
-        containerDOM.appendChild(mapWrapper);
-
-        mapAllLayers.appendChild(backStatic);
-        back.appendChild(backLayer);
-        back.layerDOM = backLayer;
-        mapAllLayers.appendChild(back);
-        mapAllLayers.appendChild(canvasContainer);
-        front.appendChild(frontLayer);
-        front.layerDOM = frontLayer;
-        front.uiDOM = ui;
-        mapAllLayers.appendChild(frontStatic);
-        mapAllLayers.appendChild(front);
-        front.appendChild(ui);
-
-        mapWrapper.appendChild(mapAllLayers);
-        mapWrapper.appendChild(control);
-
-        this.createCanvas();
-
-        this.resetContainer();
-        const mapSize = this.map._getContainerDomSize();
-        this.updateMapSize(mapSize);
-    }
-
-    /**
-     * Is current map's state changed?
-     */
-    isViewChanged() {
-        if (this._isViewChanged !== undefined) {
-            return this._isViewChanged;
-        }
-        const previous = this._mapview;
-        const view = this._getMapView();
-        this._isViewChanged = !previous || !equalMapView(previous, view);
-        return this._isViewChanged;
-    }
-
-    //@internal
-    _recordView() {
-        const map = this.map;
-        if (!map._onViewChange || map.isInteracting() || map.isAnimating()) {
-            return;
-        }
-        if (!equalMapView(map.getView(), map._getCurrentView())) {
-            map._onViewChange(map.getView());
-        }
-    }
-
-    isSpatialReferenceChanged() {
-        return this._spatialRefChanged;
-    }
-
-    //@internal
-    _getMapView(): MapView {
-        const map = this.map;
-        const center = map._getPrjCenter();
-        return {
-            x: center.x,
-            y: center.y,
-            zoom: map.getZoom(),
-            pitch: map.getPitch(),
-            bearing: map.getBearing(),
-            width: map.width,
-            height: map.height
-        };
-    }
-
-    //@internal
-    _lockFrameRenderEnable() {
-        const { maxFPS } = this.map.options || {};
-        if (maxFPS <= 0 || GlobalConfig.maxFPS <= maxFPS) {
-            return true;
-        }
-        const count = Math.ceil(GlobalConfig.maxFPS / maxFPS);
-        return this._frameCycleRenderCount >= count;
-    }
-
-    /**
-    * Main frame loop
-    */
-    //@internal
-    _frameLoop(framestamp: number) {
-        if (!this.map) {
-            this._cancelFrameLoop();
-            return;
-        }
-        this._frameCycleRenderCount++;
-        if (this._lockFrameRenderEnable()) {
-            framestamp = framestamp || 0;
-            this._frameTimestamp = framestamp;
-            this._resizeCount = 0;
-            this.renderFrame(framestamp);
-            this._frameCycleRenderCount = 0;
-        } else if (this.map.options.debug) {
-            console.log('skip frame ing,frameCycleRenderCount:', this._frameCycleRenderCount);
-        }
-        // Keep registering ourselves for the next animation frame
-        this._animationFrame = requestAnimFrame((framestamp: number) => { this._frameLoop(framestamp); });
-    }
-
-    //@internal
-    _cancelFrameLoop() {
-        if (this._animationFrame) {
-            cancelAnimFrame(this._animationFrame);
-        }
-    }
 
     //@internal
     _drawLayerCanvasImage(layer: Layer, layerImage: any, targetWidth?: number, targetHeight?: number) {
@@ -926,11 +619,6 @@ class MapCanvasRenderer extends MapRenderer {
         return this;
     }
 
-    //@internal
-    _getAllLayerToRender() {
-        return this.map._getLayers();
-    }
-
     clearCanvas() {
         if (!this.canvas) {
             return;
@@ -978,214 +666,9 @@ class MapCanvasRenderer extends MapRenderer {
         this.context = this.canvas.getContext('2d');
     }
 
-    //@internal
-    _updateDomPosition(framestamp: number) {
-        if (this._checkPositionTime === undefined) {
-            this._checkPositionTime = -Infinity;
-        }
-        const dTime = Math.abs(framestamp - this._checkPositionTime);
-        if (dTime >= 500) {
-            // refresh map's dom position
-            computeDomPosition(this.map.getContainer());
-            this._checkPositionTime = Math.min(framestamp, this._checkPositionTime);
-        }
-        return this;
-    }
-
-    //@internal
-    _handleResizeEventList(time: number) {
-        if (!this._resizeEventList) {
-            return this;
-        }
-        const len = this._resizeEventList.length;
-        if (len === 0) {
-            return this;
-        }
-        if (this._resizeTime && time - this._resizeTime < 60) {
-            return this;
-        }
-        const contentRect = this._resizeEventList[len - 1].contentRect;
-        this.map.setContainerDomRect(contentRect);
-        this._resizeEventList = [];
-        this._checkSize();
-        this._resizeCount = this._resizeCount || 0;
-        //force render all layers,这两句代码不能颠倒，因为要先重置所有图层的size，才能正确的渲染所有图层
-        this.renderFrame((this._frameTimestamp || 0) + (++this._resizeCount) / 100);
-        this._resizeTime = time;
-        return this;
-    }
-
-    //@internal
-    _checkSize() {
-        if (!this.map) {
-            return;
-        }
-        this.map.checkSize();
-    }
-
-    //@internal
-    _setCheckSizeInterval(interval: number) {
-        // ResizeObserver priority of use
-        // https://developer.mozilla.org/zh-CN/docs/Web/API/ResizeObserver
-        if (Browser.resizeObserver) {
-            if (this._resizeObserver) {
-                this._resizeObserver.disconnect();
-            }
-            if (this.map) {
-                // eslint-disable-next-line no-unused-vars
-                this._resizeObserver = new ResizeObserver((entries) => {
-                    if (!this.map || this.map.isRemoved()) {
-                        this._resizeObserver.disconnect();
-                    } else if (entries.length) {
-                        this._resizeEventList = this._resizeEventList || [];
-                        this._resizeEventList.push(entries[0]);
-                    }
-                });
-                this._resizeObserver.observe(this.map.getContainer());
-            }
-        } else {
-            clearInterval(this._resizeInterval);
-            this._checkSizeInterval = interval;
-            this._resizeInterval = setInterval(() => {
-                if (!this.map || this.map.isRemoved()) {
-                    //is deleted
-                    clearInterval(this._resizeInterval);
-                } else {
-                    this._checkSize();
-                }
-            }, this._checkSizeInterval) as unknown as number;
-        }
-    }
-
-    //@internal
-    _registerEvents() {
-        const map = this.map;
-
-        if (map.options['checkSize'] && !IS_NODE && (typeof window !== 'undefined')) {
-            this._setCheckSizeInterval(map.options['checkSizeInterval']);
-        }
-        if (!Browser.mobile) {
-            map.on('_mousemove', this._onMapMouseMove, this);
-        }
-
-        map.on('_dragrotatestart _dragrotating _dragrotateend _movestart _moving _moveend _zoomstart', (param: any) => {
-            this._eventParam = param;
-        });
-
-        map.on('_zooming', (param: any) => {
-            if (!map.getPitch()) {
-                this._zoomMatrix = param['matrix']['container'];
-            }
-            this._eventParam = param;
-        });
-
-        map.on('_zoomend', (param: any) => {
-            this._eventParam = param;
-            delete this._zoomMatrix;
-        });
-
-        map.on('_spatialreferencechange', () => {
-            this._spatialRefChanged = true;
-        });
-
-        if (Browser.webgl && typeof document !== 'undefined') {
-            GlobalEvent.on(EVENT_DPR_CHANGE, this._thisDocDPRChange, this);
-            GlobalEvent.on(EVENT_DOC_VISIBILITY_CHANGE, this._thisDocVisibilitychange, this);
-            GlobalEvent.on(EVENT_DOC_DRAGSTART, this._thisDocDragStart, this);
-            GlobalEvent.on(EVENT_DOC_DRAGEND, this._thisDocDragEnd, this);
-
-            // addDomEvent(document, 'visibilitychange', this._thisDocVisibilitychange, this);
-            // addDomEvent(document, 'dragstart', this._thisDocDragStart, this);
-            // addDomEvent(document, 'dragend', this._thisDocDragEnd, this);
-        }
-    }
-
-    //@internal
-    _onMapMouseMove(param: any) {
-        const map = this.map;
-        if (map.isInteracting() || !map.options['hitDetect']) {
-            return;
-        }
-        if (this._hitDetectFrame) {
-            cancelAnimFrame(this._hitDetectFrame);
-        }
-        this._hitDetectFrame = requestAnimFrame(() => {
-            this.hitDetect(param['containerPoint']);
-        });
-    }
-
-    //@internal
-    _getCanvasLayers() {
-        return this.map._getLayers(layer => layer.isCanvasRender());
-    }
-
-    //----------- top elements methods -------------
-    // edit handles or edit outlines
-    addTopElement(e: EditHandle | EditOutline) {
-        if (!this._tops) {
-            this._tops = [];
-        }
-        this._tops.push(e);
-    }
-
-    removeTopElement(e: EditHandle | EditOutline) {
-        if (!this._tops) {
-            return;
-        }
-        const idx = this._tops.indexOf(e);
-        if (idx >= 0) {
-            this._tops.splice(idx, 1);
-        }
-    }
-
-    getTopElements() {
-        return this._tops || [];
-    }
-
-    sortTopElements() {
-        this._tops = this._tops.sort((top1, top2) => {
-            const zIndex1 = (top1.options || {}).zIndex || 0;
-            const zIndex2 = (top2.options || {}).zIndex || 0;
-            return zIndex2 - zIndex1;
-        });
-    }
 
     drawTops() {
-        // clear topLayer
-        this.topCtx.clearRect(0, 0, this.topLayer.width, this.topLayer.height);
-        const collisionIndex = tempCollisionIndex;
-        collisionIndex.clear();
-        this.map.fire('drawtopstart');
-        this.map.fire('drawtops');
-        const tops = this.getTopElements();
-        let updated = false;
-        const dpr = this.map.getDevicePixelRatio();
-        const geos = [];
-        for (let i = 0; i < tops.length; i++) {
-            const top = tops[i];
-            if (top.needCollision && top.needCollision()) {
-                const bbox = top.getRenderBBOX(dpr);
-                if (bbox) {
-                    if (collisionIndex.collides(bbox)) {
-                        const geometry = top.target && top.target._geometry;
-                        if (geometry && geos.indexOf(geometry) === -1) {
-                            geos.push(geometry);
-                            geometry.fire('handlecollision');
-                        }
-                        continue;
-                    } else {
-                        collisionIndex.insertBox(bbox);
-                    }
-                }
-            }
-            if (top.render(this.topCtx)) {
-                updated = true;
-            }
-        }
-        if (updated) {
-            this.context.drawImage(this.topLayer, 0, 0);
-        }
-        this.map.fire('drawtopsend');
+        super.drawTopElements();
     }
 }
 
@@ -1195,15 +678,5 @@ Map.mergeOptions({
     'fog': false,
     'fogColor': [233, 233, 233]
 });
-
-export type MapView = {
-    x: number;
-    y: number;
-    zoom: number;
-    pitch: number;
-    bearing: number;
-    width: number;
-    height: number;
-}
 
 export default MapCanvasRenderer;
