@@ -621,6 +621,58 @@ describe('StrokeAndFillSpec', function () {
 
 
         });
+
+
+        it('#2504 lineColor gradient color with alpha ', function (done) {
+
+            const c1 = map.getCenter(), c2 = c1.add(0.1, 0);
+            map.setBearing(0);
+            const lineDx = -5;
+            var line = new maptalks.LineString([c1, c2], {
+                symbol: {
+                    'lineColor': {
+                        'type': 'linear',
+                        'colorStops': [
+                            [0.00, 'rgba(255,0,0,0.1)'],
+                            [1.00, 'rgba(0,0,255,0.5)']
+                        ]
+                    },
+                    'lineWidth': 10,
+                    lineDx
+                }
+            })
+            var layer = new maptalks.VectorLayer('v').addTo(map);
+            line.addTo(layer);
+            map.fitExtent(layer.getExtent());
+            setTimeout(() => {
+                const p1 = map.coordinateToContainerPoint(c1);
+                const p2 = map.coordinateToContainerPoint(c2);
+                console.log(p1, p2);
+
+                var canvas = map.getRenderer().canvas;
+                var context = canvas.getContext('2d');
+
+                var imgData = context.getImageData(Math.round(p1.x), Math.round(p1.y), 1, 1).data;
+                var imgData1 = context.getImageData(Math.round(p2.x + lineDx * 2), Math.round(p2.y), 1, 1).data;
+
+                // eslint-disable-next-line no-undef
+                if (isWindows()) {
+                    expect([...imgData]).to.be.eql([255, 0, 5, 51]);
+                } else {
+                    expect([...imgData]).to.be.eql([245, 0, 5, 53]);
+                }
+                // eslint-disable-next-line no-undef
+                if (isWindows()) {
+                    expect([...imgData1]).to.be.eql([3, 0, 254, 190]);
+                } else {
+                    expect([...imgData1]).to.be.eql([4, 0, 254, 190]);
+                }
+
+                done();
+            }, 1000);
+
+
+        });
     });
 
 });
