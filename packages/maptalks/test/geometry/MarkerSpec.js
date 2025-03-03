@@ -730,17 +730,13 @@ describe('Geometry.Marker', function () {
                 // eslint-disable-next-line no-undef
                 if (isWindows()) {
                     expect(Math.floor(xmax)).to.be.eql(29);
+                    expect(Math.floor(ymin)).to.be.eql(-105);
+                    expect(Math.floor(ymax)).to.be.eql(-46);
                 } else {
                     expect(Math.floor(xmax)).to.be.eql(31);
-                }
-
-                // eslint-disable-next-line no-undef
-                if (isWindows()) {
-                    expect(Math.floor(ymin)).to.be.eql(-105);
-                } else {
                     expect(Math.floor(ymin)).to.be.eql(-111);
+                    expect(Math.floor(ymax)).to.be.eql(-49);
                 }
-                expect(Math.floor(ymax)).to.be.eql(-46);
                 done();
             }, 1000);
 
