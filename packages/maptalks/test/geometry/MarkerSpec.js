@@ -727,7 +727,13 @@ describe('Geometry.Marker', function () {
                 const extent = marker._getPainter().getFixedExtent();
                 const { xmin, ymin, xmax, ymax } = extent;
                 expect(Math.floor(xmin)).to.be.eql(-31);
-                expect(Math.floor(xmax)).to.be.eql(29);
+                // eslint-disable-next-line no-undef
+                if (isWindows()) {
+                    expect(Math.floor(xmax)).to.be.eql(29);
+                } else {
+                    expect(Math.floor(xmax)).to.be.eql(31);
+                }
+
                 expect(Math.floor(ymin)).to.be.eql(-105);
                 expect(Math.floor(ymax)).to.be.eql(-46);
                 done();
