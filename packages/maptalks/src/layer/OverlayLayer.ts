@@ -878,8 +878,3 @@ export type addGeometryFitViewOptions = {
     duration?: number,
     step?: (frame) => void
 }
-
-export type LayerIdentifyOptionsType = {
-    onlyVisible?: boolean;
-    tolerance?: number;
-}
