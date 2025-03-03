@@ -751,11 +751,15 @@ class Painter extends Class {
             Canvas.setHitTesting(false);
         }
         delete this._hitPoint;
-        const imgData = ctx.getImageData(0, 0, testCanvas.width, testCanvas.height).data;
-        for (let i = 3, l = imgData.length; i < l; i += 4) {
-            if (imgData[i] > 0) {
-                return true;
+        try {
+            const imgData = ctx.getImageData(0, 0, testCanvas.width, testCanvas.height).data;
+            for (let i = 3, l = imgData.length; i < l; i += 4) {
+                if (imgData[i] > 0) {
+                    return true;
+                }
             }
+        } catch (error) {
+            console.error(error);
         }
         return false;
     }
