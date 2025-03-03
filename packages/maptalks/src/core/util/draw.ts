@@ -4,6 +4,7 @@ import { isGradient } from './style';
 import { isNumber } from './common';
 import Canvas from '../Canvas';
 import { ResourceCache } from '../../renderer/layer/LayerAbstractRenderer'
+import { BBOX } from './bbox';
 
 export function drawImageMarker(ctx: CanvasRenderingContext2D, image, point, symbol) {
     let w = symbol && symbol['markerWidth'];
@@ -22,7 +23,7 @@ export function getImage(resources: ResourceCache, url: string) {
     return img || null;
 }
 
-export function drawVectorMarker(ctx: CanvasRenderingContext2D, point, symbol, resources: ResourceCache) {
+export function drawVectorMarker(ctx: CanvasRenderingContext2D, point, symbol, resources: ResourceCache, bbox?: BBOX) {
     const strokeAndFill = translateMarkerLineAndFill(symbol);
     const style = symbol,
         markerType = style['markerType'].toLowerCase(),
@@ -44,7 +45,8 @@ export function drawVectorMarker(ctx: CanvasRenderingContext2D, point, symbol, r
 
     const width = style['markerWidth'],
         height = style['markerHeight'],
-        hLineWidth = style['markerLineWidth'] / 2;
+        lineWidth = style['markerLineWidth'] || 0,
+        hLineWidth = lineWidth / 2;
     if (markerType === 'ellipse') {
         //ellipse default
         Canvas.ellipse(ctx, point, width / 2, height / 2, height / 2, lineOpacity, fillOpacity);
@@ -84,6 +86,14 @@ export function drawVectorMarker(ctx: CanvasRenderingContext2D, point, symbol, r
         ctx.lineCap = lineCap;
     } else {
         throw new Error('unsupported markerType: ' + markerType);
+    }
+    if (bbox) {
+        //record marker bbox if need
+        const { x, y } = point;
+        bbox[0] = x - width / 2 - lineWidth;
+        bbox[1] = y - height / 2 - lineWidth;
+        bbox[2] = x + width / 2 + lineWidth;
+        bbox[3] = y + height / 2 + lineWidth;
     }
     return ctx.canvas;
 }
