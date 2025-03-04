@@ -7,3 +7,4 @@ void vertexColor_update() {
     vertexColor_color = vertexColorsOfType[int(aVertexColorType)];
 }
 #endif
+//用于识别顶点颜色类型: topPolygonFill 还是 bottomPolygonFill

@@ -130,7 +130,7 @@ const depthFrag = `
 
 export default class FBORayPicking {
 
-    constructor(renderer, { vert, uniforms, defines, extraCommandProps }, fbo, map) {
+    constructor(renderer, { vert, uniforms, defines, extraCommandProps, enableStencil }, fbo, map) {
         this._renderer = renderer;
         this._fbo = fbo;
         this._map = map;
@@ -140,7 +140,16 @@ export default class FBORayPicking {
         this._defines = defines;
         this._extraCommandProps = extend({}, extraCommandProps);
         delete this._extraCommandProps.blend;
-        delete this._extraCommandProps.stencil;
+        if (enableStencil) {
+            this._extraCommandProps.stencil = {
+                enable: enableStencil,
+                mask: 0xff,
+                func: { cmp: '<', ref: 1, mask: 0xff },
+                op: { fail:'keep', zfail:'keep', zpass:'replace' }
+            };
+        } else {
+            delete this._extraCommandProps.stencil;
+        }
         this._currentMeshes = [];
         this._init();
     }
@@ -550,7 +559,7 @@ export default class FBORayPicking {
         this._renderer.regl.clear({
             color: [1, 1, 1, 1],
             depth: 1,
-            stencil: 0,
+            stencil: 255,
             framebuffer
         });
     }

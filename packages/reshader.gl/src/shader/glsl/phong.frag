@@ -90,6 +90,7 @@ varying vec3 vFragPos;
 
 #include <highlight_frag>
 #include <mask_frag>
+#include <vertex_color_frag>
 vec3 transformNormal() {
     #if defined(HAS_NORMAL_MAP)
         vec3 n = normalize(vNormal);
@@ -213,6 +214,11 @@ void main() {
         discard;
     }
     // glFragColor = vec4(shadowCoeff, shadowCoeff, shadowCoeff, 1.0);
+
+    #ifdef HAS_VERTEX_COLOR
+        glFragColor *= vertexColor_get();
+    #endif
+
     #ifdef HAS_HEATMAP
         glFragColor = heatmap_getColor(glFragColor);
     #endif
