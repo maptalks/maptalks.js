@@ -82,7 +82,7 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
         }[];
         //@internal
         _tileQueueIds: Set<LayerId>;
-        tileCache: typeof LRUCache;
+        tileCache: LRUCache;
         //@internal
         _compareTiles: any;
         //@internal

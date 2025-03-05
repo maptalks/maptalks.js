@@ -12,7 +12,7 @@ import {
     Vector3,
     Matrix4
 } from '../../core/util';
-import LRUCache, { ArrayLRUCache } from '../../core/util/LRUCache';
+import LRUCache from '../../core/util/LRUCache';
 import Browser from '../../core/Browser';
 import Size from '../../geo/Size';
 import Point from '../../geo/Point';
@@ -194,7 +194,7 @@ const ARR3: Vector3 = [0, 0, 0];
     })
  */
 class TileLayer extends Layer {
-    tileInfoCache: ArrayLRUCache;
+    tileInfoCache: LRUCache;
     //@internal
     _tileSize: Size;
     //@internal
