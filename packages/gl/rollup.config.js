@@ -135,7 +135,7 @@ module.exports = [
     },
     {
         input: 'src/layer/terrain/worker/index.js',
-        external: ['@maptalks/map'],
+        external: ['maptalks'],
         plugins: [
             nodeResolve({
                 mainFields: ['module', 'main'],
@@ -180,12 +180,12 @@ if (production) {
     module.exports.push({
         input: 'src/index.ts',
         plugins: tsPlugins.concat(plugins),
-        external : ['@maptalks/map', '@maptalks/reshader.gl', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix'],
+        external : ['maptalks', '@maptalks/reshader.gl', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix'],
         output: {
             'sourcemap': true,
             'format': 'es',
             'globals' : {
-                '@maptalks/map' : 'maptalks'
+                'maptalks' : 'maptalks'
             },
             'file': 'build/gl/gl.es.js'
         }
@@ -195,14 +195,14 @@ if (production) {
 module.exports.push({
     input: production ? 'build/index.js' : 'src/index-dev.js',
     plugins: production ? configPlugins : tsPlugins,
-    external : ['@maptalks/map'],
+    external : ['maptalks'],
     output: {
         'extend': true,
         'sourcemap': true,
         'format': 'umd',
         'name': 'maptalks',
         'globals' : {
-            '@maptalks/map' : 'maptalks'
+            'maptalks' : 'maptalks'
         },
         banner,
         outro,
@@ -218,12 +218,12 @@ if (production) {
     module.exports.push({
         input: 'src/index-dev.js',
         plugins: tsPlugins,
-        external : ['@maptalks/map', '@maptalks/reshader.gl', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix'],
+        external : ['maptalks', '@maptalks/reshader.gl', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix'],
         output: {
             'sourcemap': true,
             'format': 'es',
             'globals' : {
-                '@maptalks/map' : 'maptalks'
+                'maptalks' : 'maptalks'
             },
             banner,
             outro,

@@ -76,7 +76,7 @@ module.exports = [
     {
         input: "index.js",
         plugins: basePlugins.concat(plugins),
-        external: ["@maptalks/map", "@maptalks/gl"],
+        external: ["maptalks", "@maptalks/gl"],
         output: {
             sourcemap: true,
             format: "umd",
@@ -85,7 +85,7 @@ module.exports = [
             outro: outro,
             extend: true,
             globals: {
-                "@maptalks/map": "maptalks",
+                "maptalks": "maptalks",
                 "@maptalks/gl": "maptalks",
             },
             file: outputFile,
@@ -108,7 +108,7 @@ module.exports = [
                   ]
                 : []
         ),
-        external: ["@maptalks/map", "@maptalks/gl"],
+        external: ["maptalks", "@maptalks/gl"],
         output: {
             sourcemap: true,
             format: "es",

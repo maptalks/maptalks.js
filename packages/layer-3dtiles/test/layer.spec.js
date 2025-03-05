@@ -1,4 +1,4 @@
-const maptalks = require('@maptalks/map');
+const maptalks = require('maptalks');
 require('@maptalks/gl');
 require('@maptalks/transcoders.draco');
 require('@maptalks/transcoders.ktx2');

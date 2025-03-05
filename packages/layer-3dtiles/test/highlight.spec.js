@@ -1,4 +1,4 @@
-const maptalks = require('@maptalks/map');
+const maptalks = require('maptalks');
 const { GroupGLLayer } = require('@maptalks/gl');
 
 const { Geo3DTilesLayer } = require('../dist/maptalks.3dtiles');

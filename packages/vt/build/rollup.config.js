@@ -141,7 +141,7 @@ module.exports = [
     },
     {
         input: "src/worker/index.js",
-        external: ["@maptalks/map"],
+        external: ["maptalks"],
         plugins: [
             json(),
             nodeResolve({
@@ -171,10 +171,10 @@ module.exports = [
     },
     {
         input: "./build/index.js",
-        external: ["@maptalks/map", "@maptalks/gl"],
+        external: ["maptalks", "@maptalks/gl"],
         output: {
             globals: {
-                "@maptalks/map": "maptalks",
+                "maptalks": "maptalks",
                 "@maptalks/gl": "maptalks",
             },
             banner,
@@ -204,7 +204,7 @@ module.exports = [
         input: "./build/index.js",
         external: [
             // point-geometry中因为调用了 _开头的方法，所以不能包含在external里，否则会被错误的混淆
-            "@maptalks/map",
+            "maptalks",
             "@maptalks/gl",
             "@mapbox/vector-tile",
             "@maptalks/feature-filter",
@@ -225,7 +225,7 @@ module.exports = [
         ],
         output: {
             globals: {
-                "@maptalks/map": "maptalks",
+                "maptalks": "maptalks",
                 "@maptalks/gl": "maptalks",
             },
             banner,

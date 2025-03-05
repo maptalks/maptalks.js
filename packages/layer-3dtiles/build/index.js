@@ -1,4 +1,4 @@
-import * as maptalks from '@maptalks/map';
+import * as maptalks from 'maptalks';
 import * as maptalksgl from '@maptalks/gl';
 
 import chunk from './worker.js';

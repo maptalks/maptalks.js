@@ -44,7 +44,7 @@ const terserPlugin = terser({
         // properties: {
         //     // 'regex' : /^_/,
         //     'keep_quoted' : true,
-        //     'reserved': ['@maptalks/map', 'transcoders', 'draco'],
+        //     'reserved': ['maptalks', 'transcoders', 'draco'],
         // }
     },
     compress: {
