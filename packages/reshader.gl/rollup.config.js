@@ -111,4 +111,5 @@ module.exports = [
                 'file': pkg['types']
             }
         ]
+    }
 ];

@@ -8,11 +8,11 @@ const { TileLayerRendererable, LayerAbstractRenderer } = maptalks.renderer;
 
 const TILE_POINT = new maptalks.Point(0, 0);
 const DEFAULT_BASE_COLOR = [1, 1, 1, 1];
-const positionData = new Float32Array([
+const positionData = new Int16Array([
     0, 0, 0, -1, 1, 0, 1, -1
 ]);
 
-const texCoords = new Float32Array([
+const texCoords = new Uint16Array([
     0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0
 ]);
 

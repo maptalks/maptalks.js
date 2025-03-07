@@ -11,11 +11,11 @@ struct VertexOutput {
 
 @vertex
 fn main(
-    @location(0) aPosition : vec2f,
-    @location(1) aTexCoord : vec2f
+    @location(0) aPosition : vec2i,
+    @location(1) aTexCoord : vec2u
 ) -> VertexOutput {
     var output : VertexOutput;
-    output.Position = uniforms.projViewModelMatrix * vec4f(aPosition, 0.0, 1.0);
-    output.vTexCoord = aTexCoord;
+    output.Position = uniforms.projViewModelMatrix * vec4f(vec2f(aPosition), 0.0, 1.0);
+    output.vTexCoord = vec2f(aTexCoord);
     return output;
 }
