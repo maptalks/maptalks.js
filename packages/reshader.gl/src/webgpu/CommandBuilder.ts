@@ -28,13 +28,18 @@ export default class CommandBuilder {
     name: string;
     //@internal
     uniformValues: ShaderUniforms;
+    //@internal
+    contextDesc: Record<string, any>;
 
-    constructor(name: string, device: GraphicsDevice, vert: string, frag: string, mesh: Mesh, uniformValues: ShaderUniforms) {
+    constructor(name: string, device: GraphicsDevice,
+        vert: string, frag: string, mesh: Mesh,
+        contextDesc: Record<string, any>, uniformValues: ShaderUniforms) {
         this.name = name;
         this.device = device;
         this.vert = vert;
         this.frag = frag;
         this.mesh = mesh;
+        this.contextDesc = contextDesc;
         this.uniformValues = uniformValues;
     }
 
@@ -212,7 +217,7 @@ export default class CommandBuilder {
             if (members && members.length) {
                 for (let ii = 0; ii < members.length; ii++) {
                     const name = members[ii].name;
-                    if (!meshHasUniform(mesh, name)) {
+                    if (!meshHasUniform(mesh, name, this.contextDesc)) {
                         if (!isGlobal && ii > 0) {
                             throw new Error(ERROR_INFO + groupInfo);
                         }
@@ -223,7 +228,7 @@ export default class CommandBuilder {
                 }
             } else {
                 const name = groupInfo.name;
-                if (!meshHasUniform(mesh, name)) {
+                if (!meshHasUniform(mesh, name, this.contextDesc)) {
                     isGlobal = true;
                 }
             }
@@ -324,11 +329,11 @@ export default class CommandBuilder {
     }
 }
 
-function meshHasUniform(mesh: Mesh, name: string) {
+function meshHasUniform(mesh: Mesh, name: string, contextDesc: Record<string, any>) {
     if (name === 'modelMatrix' || name === 'positionMatrix') {
         return true;
     }
-    return mesh.hasUniform(name) || (mesh.material && mesh.material.hasUniform(name));
+    return contextDesc[name] || mesh.hasUniform(name) || (mesh.material && mesh.material.hasUniform(name));
 }
 
 function getItemSize(type) {

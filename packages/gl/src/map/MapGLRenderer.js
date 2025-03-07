@@ -1,8 +1,9 @@
 import { GLContext } from '@maptalks/fusiongl';
 import createREGL from '@maptalks/regl';
+import { GraphicsDevice } from '@maptalks/reshader.gl';
 import { Map, renderer } from 'maptalks';
 
-export default class MapGLRenderer extends renderer.MapCanvasRenderer {
+export default class MapGLRenderer extends renderer.MapAbstractRenderer {
     // createCanvas, createContext, getContextInstance, clearLayerCanvasContext 和 clearCanvas 方法都应该动态注入
 
     clearCanvas() {
@@ -67,6 +68,7 @@ export default class MapGLRenderer extends renderer.MapCanvasRenderer {
                 return new ImageData(pixels, sw, sh);
             }
         };
+        return Promise.resolve();
     }
 
     _initGL() {
@@ -92,6 +94,10 @@ export default class MapGLRenderer extends renderer.MapCanvasRenderer {
 }
 
 Map.registerRenderer('gl', MapGLRenderer);
+
+Map.mergeOptions({
+    renderer: ['gl', 'gpu']
+});
 
 function createGLContext(canvas, options, onlyWebGL1) {
     const names = onlyWebGL1 ? ['webgl', 'experimental-webgl'] : ['webgl2', 'webgl', 'experimental-webgl'];

@@ -47,8 +47,22 @@ abstract class MapRenderer extends Class {
         this._thisDocDPRChange = this._onDocDPRChange.bind(this);
     }
 
-    abstract _frameLoop(f?: number): void;
-    abstract setToRedraw(): void;
+    //@internal
+    _getAllLayerToRender() {
+        return this.map._getLayers();
+    }
+
+    setToRedraw() {
+        const layers = this._getAllLayerToRender();
+        //set maprender for clear canvas
+        for (let i = 0, l = layers.length; i < l; i++) {
+            const renderer = layers[i].getRenderer();
+            if (renderer && renderer.canvas && renderer.setToRedraw) {
+                //to fix lost webgl context
+                renderer.setToRedraw();
+            }
+        }
+    }
 
     callInNextFrame(fn: handlerQueueFn) {
         this._handlerQueue.push(fn);
@@ -131,9 +145,7 @@ abstract class MapRenderer extends Class {
         this.resetContainer();
     }
 
-    onLoad() {
-        this._frameLoop();
-    }
+
 
     //@internal
     _onDocVisibilitychange() {

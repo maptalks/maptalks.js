@@ -38,6 +38,7 @@
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "0.4.4",
+    "rimraf": "^6.0.1",
     "rollup": "^4.17.2",
     "rollup-plugin-sourcemaps": "0.6.3"
   },

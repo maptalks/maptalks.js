@@ -1,24 +1,24 @@
 import * as maptalks from 'maptalks';
-import { RenderContext, Tile } from 'maptalks';
+import { RenderContext, Tile, TileLayer } from 'maptalks';
 import * as reshader from '@maptalks/reshader.gl';
+import { WebGLConstants } from '@maptalks/reshader.gl';
 import { mat4 } from '@maptalks/reshader.gl';
 
-const { TileLayerCanvasRenderer } = maptalks.renderer;
+const { TileLayerRendererable, LayerAbstractRenderer } = maptalks.renderer;
 
-const TEXTURE_MIN_FILTER = 10241;
 const TILE_POINT = new maptalks.Point(0, 0);
 const DEFAULT_BASE_COLOR = [1, 1, 1, 1];
-const positionData = new Int8Array([
+const positionData = new Float32Array([
     0, 0, 0, -1, 1, 0, 1, -1
 ]);
 
-const texCoords = new Uint8Array([
+const texCoords = new Float32Array([
     0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0
 ]);
 
 const MESH_TO_TEST = { properties: {}};
 
-class TileLayerGLRenderer extends TileLayerCanvasRenderer {
+class TileLayerGLRenderer extends TileLayerRendererable(LayerAbstractRenderer) {
     //@internal
     _tileGeometry: reshader.Geometry;
     //@internal
@@ -30,6 +30,11 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
     //@internal
     _renderer: reshader.Renderer;
     _debugInfoCanvas: HTMLCanvasElement;
+
+    constructor(layer: TileLayer) {
+        super(layer);
+        this.init(layer);
+    }
 
     onDrawTileStart(context, parentContext: RenderContext) {
         if (!this._tileGeometry) {
@@ -48,11 +53,11 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
                     primitive: 'triangle strip'
                 }
             );
-            const { regl } = this.context as any;
-            this._tileGeometry.generateBuffers(regl);
+            const { regl, device } = this.context as any;
+            this._tileGeometry.generateBuffers(regl || device);
             this._tileMeshes = [];
             this._tileScene = new reshader.Scene(this._tileMeshes);
-            this._renderer = new reshader.Renderer(regl);
+            this._renderer = new reshader.Renderer(regl || device);
         }
         this._tileMeshes.length = 0;
         this.clearStencil(parentContext);
@@ -63,8 +68,8 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
         if (parentContext && parentContext.renderTarget) {
             fbo = parentContext.renderTarget.fbo;
         }
-        const { regl } = this.context as any;
-        regl.clear({
+        const { regl, device } = this.context as any;
+        (regl || device).clear({
             stencil: 0xFF,
             fbo
         });
@@ -132,8 +137,20 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
 
         if (mesh.properties.minFilter !== minFilter) {
             const baseColorTexture = (mesh.material.get('baseColorTexture') as any);
-            baseColorTexture.texParameteri(TEXTURE_MIN_FILTER, minFilter);
+            baseColorTexture.setMinFilter(minFilter);
             mesh.properties.minFilter = minFilter;
+        }
+        const dpr = map.getDevicePixelRatio();
+        const resized = map._getResolution() !== tileInfo.res;
+
+        let magFilter: number = WebGLConstants.GL_NEAREST;
+        if (dpr !== 1 || resized) {
+            magFilter = WebGLConstants.GL_LINEAR;
+        }
+        if (mesh.properties.magFilter !== magFilter) {
+            const baseColorTexture = (mesh.material.get('baseColorTexture') as any);
+            baseColorTexture.setMagFilter(magFilter);
+            mesh.properties.magFilter = magFilter;
         }
 
         const opacity = this.getTileOpacity(tileImage, tileInfo);
@@ -143,8 +160,8 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
         if ((this as any).getTileFadingOpacity(tileImage) < 1) {
             this.setToRedraw();
         }
-
     }
+
     _createDebugTexture(tileInfo: Tile['info'], width, height) {
         const debugInfo = this.getDebugInfo(tileInfo.id);
         const dpr = this.getMap().getDevicePixelRatio() > 1 ? 2 : 1;
@@ -171,21 +188,21 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
             width: canvas.width,
             height: canvas.height
         });
-        texture.getREGLTexture((this.context as any).regl);
+        const { device, regl } = (this.context as any);
+        texture.getREGLTexture(device || regl);
         return texture;
     }
     _getTexMinFilter() {
         const map = this.getMap();
         const zoom = map.getZoom();
         const blurTexture = map.isMoving() && map.getRenderer().isViewChanged();
-        const { gl } = this.context as any;
         let minFilter;
         if (blurTexture) {
-            minFilter = gl.LINEAR_MIPMAP_LINEAR;
+            minFilter = WebGLConstants.GL_LINEAR_MIPMAP_LINEAR;
         } else if (!map.getBearing() && !map.getPitch() && Number.isInteger(zoom)) {
-            minFilter = gl.NEAREST;
+            minFilter = WebGLConstants.GL_NEAREST;
         } else {
-            minFilter = gl.LINEAR;
+            minFilter = WebGLConstants.GL_LINEAR;
         }
         return minFilter;
     }
@@ -209,14 +226,13 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
             baseColor: DEFAULT_BASE_COLOR,
             baseColorTexture: new reshader.Texture2D({
                 data: tileImage,
-                mag: 'linear',
+                mag: 'nearest',
                 mipmap: true
             })
         };
         const material = new reshader.Material(uniforms);
         const mesh = new reshader.Mesh(this._tileGeometry, material);
-        const { gl } = this.context as any;
-        mesh.properties.minFilter = gl.NEAREST;
+        mesh.properties.minFilter = WebGLConstants.GL_NEAREST;
         const localTransform = mat4.identity([] as any);
         mat4.translate(localTransform, localTransform, [x || 0, y || 0, 0]);
         mat4.scale(localTransform, localTransform, [scale * width, scale * height, 1]);

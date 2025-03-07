@@ -25,6 +25,8 @@ const activeVarsCache = {};
 export class GLShader {
     vert: string;
     frag: string;
+    wgslVert: string;
+    wgslFrag: string;
     uid: number;
     version: number;
     //@internal
@@ -44,10 +46,12 @@ export class GLShader {
     contextKeys: string;
     name: string;
 
-    constructor({ vert, frag, uniforms, defines, extraCommandProps, name }) {
+    constructor({ vert, frag, wgslVert, wgslFrag, uniforms, defines, extraCommandProps, name }) {
         this.name = name;
         this.vert = vert;
         this.frag = frag;
+        this.wgslVert = wgslVert;
+        this.wgslFrag = wgslFrag;
         const shaderId = uid++;
         Object.defineProperty(this, 'uid', {
             enumerable: true,
@@ -119,7 +123,7 @@ export class GLShader {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    getShaderCommandKey(device, mesh, uniformValues, doubleSided) {
+    getShaderCommandKey(device, mesh, uniformValues) {
         return this.dkey || 'default';
     }
 
@@ -207,7 +211,7 @@ export class GLShader {
         return defineHeaders.join('') + source;
     }
 
-    createMeshCommand(regl, mesh, commandProps = {}) {
+    createMeshCommand(regl, mesh, commandProps = {}, uniformValues?) {
         const materialDefines = mesh.getDefines();
         const elements = mesh.getElements();
         const isInstanced = mesh instanceof InstancedMesh;
@@ -400,20 +404,20 @@ export default class GPUShader extends GLShader {
     //@internal
     _dynamicOffsets: DynamicOffsets;
 
-    getShaderCommandKey(device, mesh, renderValues, doubleSided) {
+    getShaderCommandKey(device, mesh, uniformValues) {
         if (device && device.wgpu) {
             // 获取pipeline所需要的特征变量，即任何变量发生变化后，就需要创建新的pipeline
             const fbo = this._gpuFramebuffer;
             const commandProps = this.extraCommandProps;
-            pipelineDesc.readFromREGLCommand(commandProps, mesh, renderValues, doubleSided, fbo);
+            pipelineDesc.readFromREGLCommand(commandProps, mesh, uniformValues, fbo);
             return pipelineDesc.getSignatureKey();
         } else {
             // regl
-            return super.getShaderCommandKey(device, mesh, renderValues, doubleSided);
+            return super.getShaderCommandKey(device, mesh, uniformValues);
         }
     }
 
-    createMeshCommand(device: any, mesh: Mesh, commandProps: any) {
+    createMeshCommand(device: any, mesh: Mesh, commandProps: any, uniformValues: any) {
         if (device && device.wgpu) {
             // 生成期：
             // 1. 负责对 wgsl 做预处理，生成最终执行的wgsl代码
@@ -424,7 +428,11 @@ export default class GPUShader extends GLShader {
             // preprocess vert and frag codes
             const uniformValues = this.context;
             const fbo = this._gpuFramebuffer;
-            const builder = new CommandBuilder(this.name, device, this.vert, this.frag, mesh, uniformValues);
+            const vert = this.wgslVert || this.vert;
+            const frag = this.wgslFrag || this.frag;
+            const builder = new CommandBuilder(this.name, device, vert, frag, mesh, this.contextDesc, uniformValues);
+            const pipelineDesc = new PipelineDescriptor();
+            pipelineDesc.readFromREGLCommand(commandProps, mesh, uniformValues, fbo);
             return builder.build(pipelineDesc, fbo);
         } else {
             // regl
@@ -473,12 +481,13 @@ export default class GPUShader extends GLShader {
             const meshBuffer = mesh.writeDynamicBuffer(props[i], bindGroupFormat.getMeshUniforms(), buffersPool, this._dynamicOffsets);
             const groupKey = meshBuffer.version + '-' + shaderBuffer.version;
             // 获取或者生成bind group
-            let bindGroup = this._bindGroupCache[groupKey];
+            let bindGroup = mesh.getBindGroup(groupKey);
             if (!bindGroup || (bindGroup as any).outdated) {
                 bindGroup = bindGroupFormat.createBindGroup(device, mesh, shaderUniforms, layout, shaderBuffer, meshBuffer);
                 // 缓存bind group，只要buffer没有发生变化，即可以重用
                 // TODO 可以考虑每帧开始把缓存 bind group 标记为 retire，每帧结束时把不是 current 的 bind group 销毁掉
-                this._bindGroupCache[groupKey] = bindGroup;
+                // this._bindGroupCache[groupKey] = bindGroup;
+                mesh.setBindGroup(groupKey, bindGroup);
             }
 
             // 获取 dynamicOffsets

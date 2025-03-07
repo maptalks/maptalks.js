@@ -18,16 +18,24 @@ export default class GraphicsTexture {
         this.update(this.config);
     }
 
+    // called when minFilter or magFilter changed
+    updateFilter() {
+        this._clearBindGroups();
+    }
+    _clearBindGroups() {
+        if (this._bindGroups.length) {
+            for (let i = 0; i < this._bindGroups.length; i++) {
+                (this._bindGroups[i] as any).outdated = true;
+            }
+            this._bindGroups = [];
+        }
+    }
+
     update(config) {
         const device = this.device.wgpu;
         if (this.texture) {
             this.texture.destroy();
-            if (this._bindGroups.length) {
-                for (let i = 0; i < this._bindGroups.length; i++) {
-                    (this._bindGroups[i] as any).outdated = true;
-                }
-                this._bindGroups = [];
-            }
+            this._clearBindGroups();
         }
         let texture: GPUTexture;
         {
@@ -70,8 +78,8 @@ export default class GraphicsTexture {
                     );
                 } else {
                     device.queue.copyExternalImageToTexture(
-                        { source: config.data },
-                        { texture: texture },
+                        { source: config.data, flipY: !!this.config.flipY },
+                        { texture: texture, premultipliedAlpha: true },
                         [width, height]
                     );
                 }

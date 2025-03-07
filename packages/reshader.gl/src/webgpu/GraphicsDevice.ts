@@ -24,6 +24,7 @@ export default class GraphicsDevice {
         context.configure({
             device,
             format: presentationFormat,
+            alphaMode: 'premultiplied'
         });
         this.context = context;
         // 1M for each buffer

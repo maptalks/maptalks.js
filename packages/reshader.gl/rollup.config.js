@@ -26,6 +26,25 @@ function glsl() {
     };
 }
 
+function wgsl() {
+    return {
+        transform(code, id) {
+            if (/\.wgsl$/.test(id) === false) return null;
+            let transformedCode = JSON.stringify(code.trim()
+                .replace(/\r/g, '')
+                .replace(/[ \t]*\/\/.*\n/g, '') // remove //
+                .replace(/[ \t]*\/\*[\s\S]*?\*\//g, '') // remove /* */
+                .replace(/\n{2,}/g, '\n')); // # \n+ to \n;;
+            transformedCode = `export default ${transformedCode};`;
+            return {
+                code: transformedCode,
+                map: { mappings: '' }
+            };
+        }
+    };
+}
+
+
 const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}\n * (c) 2016-${new Date().getFullYear()} maptalks.com\n */`;
 
 const plugins = [
@@ -35,6 +54,7 @@ const plugins = [
             './src/shaderlib/glsl'
         ]
     }) : glsl(),
+    wgsl(),
     nodeResolve({
         // module : true,
         // jsnext : true,
@@ -91,5 +111,4 @@ module.exports = [
                 'file': pkg['types']
             }
         ]
-    }
 ];

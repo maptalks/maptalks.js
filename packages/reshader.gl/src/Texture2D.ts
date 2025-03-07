@@ -1,10 +1,11 @@
 import parseRGBE from './common/HDR';
 import { isArray, isFunction, isPowerOfTwo, resizeToPowerOfTwo, supportNPOT } from './common/Util';
 import { default as Texture, REF_COUNT_KEY } from './AbstractTexture';
-import { getUniqueTexture } from './common/REGLHelper';
+import { getTextureMagFilter, getTextureMinFilter, getUniqueTexture } from './common/REGLHelper';
 import REGL, { Regl } from '@maptalks/regl';
 import DataUtils from './common/DataUtils';
 import { KEY_DISPOSED } from './common/Constants';
+import { MAG_FILTER, MIN_FILTER } from './common/WebGLConstants';
 
 /**
  * config properties:
@@ -67,9 +68,23 @@ export default class Texture2D extends Texture {
         this.dirty = false;
     }
 
-    texParameteri(key: number, value: number) {
-        if (this._texture) {
-            (this._texture as any).texParameteri(key, value);
+    setMinFilter(value: number) {
+        this.config.min = getTextureMinFilter(value);
+        if (this._texture && (this._texture as any).updateFilter) {
+            (this._texture as any).updateFilter();
+        }
+        if (this._texture && (this._texture as any).texParameteri) {
+            (this._texture as any).texParameteri(MIN_FILTER, value);
+        }
+    }
+
+    setMagFilter(value: number) {
+        this.config.mag = getTextureMagFilter(value);
+        if (this._texture && (this._texture as any).updateFilter) {
+            (this._texture as any).updateFilter();
+        }
+        if (this._texture && (this._texture as any).texParameteri) {
+            (this._texture as any).texParameteri(MAG_FILTER, value);
         }
     }
 

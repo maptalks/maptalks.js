@@ -2258,7 +2258,10 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     _updateMapSize(mSize: Size) {
         this.width = mSize['width'];
         this.height = mSize['height'];
-        this._getRenderer().updateMapSize(mSize);
+        const renderer = this._getRenderer();
+        if (renderer) {
+            renderer.updateMapSize(mSize);
+        }
         this._calcMatrices();
         return this;
     }

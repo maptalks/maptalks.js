@@ -121,7 +121,7 @@ class MeshShader extends Shader {
         if (material) {
             doubleSided = material.doubleSided;
         }
-        const key = this.getShaderCommandKey(device, mesh, uniformValues, doubleSided);
+        const key = this.getShaderCommandKey(device, mesh, uniformValues);
         let storedKeys = this._cmdKeys[key];
         if (!storedKeys) {
             storedKeys = this._cmdKeys[key] = {};

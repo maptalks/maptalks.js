@@ -1,6 +1,9 @@
 import MeshShader from './MeshShader.js';
 import vert from './glsl/image.vert';
 import frag from './glsl/image.frag';
+import wgslVert from './wgsl/image_vert.wgsl';
+import wgslFrag from './wgsl/image_frag.wgsl';
+
 import { mat4 } from 'gl-matrix';
 
 class ImageShader extends MeshShader {
@@ -12,6 +15,8 @@ class ImageShader extends MeshShader {
         super({
             vert,
             frag,
+            wgslVert,
+            wgslFrag,
             uniforms: [
                 {
                     name: 'projViewModelMatrix',

@@ -137,8 +137,8 @@ importers:
         specifier: ^0.4.0
         version: 0.4.0
       '@maptalks/regl':
-        specifier: ^3.4.0
-        version: 3.4.0
+        specifier: ^3.5.1
+        version: 3.5.1
       '@maptalks/reshader.gl':
         specifier: workspace:*
         version: link:../reshader.gl
@@ -654,9 +654,6 @@ importers:
       '@rollup/plugin-terser':
         specifier: 0.4.4
         version: 0.4.4(rollup@4.17.2)
-      '@rollup/plugin-typescript':
-        specifier: ^11.1.6
-        version: 11.1.6(rollup@4.17.2)(tslib@2.6.2)(typescript@5.4.5)
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -666,12 +663,6 @@ importers:
       rollup-plugin-sourcemaps:
         specifier: 0.6.3
         version: 0.6.3(@types/node@20.12.7)(rollup@4.17.2)
-      typescript:
-        specifier: ^5.4.2
-        version: 5.4.5
-      typescript-eslint:
-        specifier: ^7.18.0
-        version: 7.18.0(eslint@8.57.0)(typescript@5.4.5)
 
   packages/reshader.gl:
     dependencies:
@@ -1725,6 +1716,9 @@ packages:
 
   '@maptalks/regl@3.4.0':
     resolution: {integrity: sha512-vir0oI5PXlLfxp1/B5TOOkmQfy7qeCwnx16uALViXfwo/ZJ79OLwePYENxwGLkbEV3HxETpdTm3dDU3Et9O4kw==}
+
+  '@maptalks/regl@3.5.1':
+    resolution: {integrity: sha512-rZFE1q4zHhcmfrqEU797wBRcZWl3B1Y7TZlP6Pi/M075MNT/oavHJlZzOoHwgyvIqMnzwEZEOQ/VKS77u9Nv7g==}
 
   '@maptalks/rollup-plugin-glsl-minify@0.1.7':
     resolution: {integrity: sha512-lvm41r1ztVDKhij37I7VdXqICwvZ0g62zJA55SQvxC4vGVlJWvVCfNXOjTM0yTe1nzRryIGCURlz7VL9xgq/NA==}
@@ -5936,6 +5930,8 @@ snapshots:
   '@maptalks/martini@0.4.0': {}
 
   '@maptalks/regl@3.4.0': {}
+
+  '@maptalks/regl@3.5.1': {}
 
   '@maptalks/rollup-plugin-glsl-minify@0.1.7':
     dependencies:

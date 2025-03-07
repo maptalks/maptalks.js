@@ -22,6 +22,8 @@ import parseHDR from './common/HDR';
 const HDR = { parseHDR };
 export { HDR };
 
+export * as WebGLConstants from './common/WebGLConstants';
+
 export { default as ShaderLib } from './shaderlib/ShaderLib';
 
 export { default as Shader } from './shader/Shader';

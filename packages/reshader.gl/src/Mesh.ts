@@ -63,6 +63,8 @@ export default class Mesh {
     _bboxArr?: [vec3, vec3]
     //@internal
     _uniformDescriptors?: Set<string>
+    //@internal
+    _bindGroupCache?: Record<string, GPUBindGroup>
 
     transparent: boolean
     bloom: boolean
@@ -472,6 +474,7 @@ export default class Mesh {
     dispose() {
         delete this._geometry;
         delete this._material;
+        delete this._bindGroupCache;
         this.uniforms = null;
         if (this._meshBuffer) {
             this._meshBuffer.dispose();
@@ -559,6 +562,18 @@ export default class Mesh {
         }
         this._meshBuffer.writeBuffer(renderProps, dynamicOffsets);
         return this._meshBuffer;
+    }
+
+    getBindGroup(key) {
+        if (!this._bindGroupCache) {
+            this._bindGroupCache = {};
+        }
+        return this._bindGroupCache[key];
+    }
+
+    setBindGroup(key, bindGroup) {
+        this._bindGroupCache[key] = bindGroup;
+        return this;
     }
 }
 

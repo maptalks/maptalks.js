@@ -3,7 +3,6 @@ import { isFunction, isNil, isNumber } from '../core/util';
 import Eventable from '../core/Eventable';
 import JSONAble from '../core/JSONAble';
 import Renderable from '../renderer/Renderable';
-import CanvasRenderer from '../renderer/layer/CanvasRenderer';
 import CollisionIndex from '../core/CollisionIndex';
 import Geometry from '../geometry/Geometry';
 import Browser from '../core/Browser';
@@ -12,6 +11,7 @@ import type { Marker, MultiPolygon, Polygon } from '../geometry';
 import { CommonProjectionType } from '../geo/projection';
 import Coordinate from '../geo/Coordinate';
 import Point from '../geo/Point';
+import LayerAbstractRenderer from '../renderer/layer/LayerAbstractRenderer';
 
 /**
  * 配置项
@@ -79,7 +79,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     //@internal
     _canvas: HTMLCanvasElement;
     //@internal
-    _renderer: CanvasRenderer;
+    _renderer: any;
     //@internal
     _id: string
     //@internal
@@ -337,7 +337,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      */
     isCanvasRender(): boolean {
         const renderer = this._getRenderer();
-        return (renderer && (renderer instanceof CanvasRenderer));
+        return (renderer && (renderer instanceof LayerAbstractRenderer));
     }
 
     /**

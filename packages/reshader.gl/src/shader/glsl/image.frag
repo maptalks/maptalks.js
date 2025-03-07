@@ -23,7 +23,8 @@ void main() {
     if (glFragColor.a < alphaTest) {
         discard;
     }
+    glFragColor *= opacity;
     #if __VERSION__ == 100
-        gl_FragColor = glFragColor * opacity;
+        gl_FragColor = glFragColor;
     #endif
 }

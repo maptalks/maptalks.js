@@ -38,6 +38,9 @@ export default class DynamicBuffer {
                 for (let j = 0; j < uniform.members.length; j++) {
                     const member = uniform.members[j];
                     const value = uniformValues[member.name] as number | number[];
+                    if (value === undefined) {
+                        console.warn(`Uniform value ${member.name} is not provided`);
+                    }
                     const offset = dynamicOffset + member.offset;
                     const size = member.size;
                     this._fillValue(storage, offset, size, value);

@@ -16,7 +16,7 @@ import type { WithUndef } from '../../types/typings';
 const tempCollisionIndex = new CollisionIndex();
 
 /**
- * 基于 Canvas2D 的 map 渲染器
+ * map 渲染器的抽象类，封装了与具体渲染无关的逻辑
  *
  * @english
  * Renderer class based on HTML5 Canvas for maps.
@@ -74,6 +74,9 @@ class MapAbstractRenderer extends MapRenderer {
     canvas: HTMLCanvasElement;
     topLayer: HTMLCanvasElement;
     topCtx: CanvasRenderingContext2D;
+    ready: boolean;
+    //@internal
+    _bindFrameLoop: any;
 
     /**
      * @param map - map for the renderer
@@ -81,6 +84,7 @@ class MapAbstractRenderer extends MapRenderer {
     constructor(map: Map) {
         super(map);
         //container is a <canvas> element
+        this.ready = false;
         this._containerIsCanvas = !!(map.getContainer() as HTMLCanvasElement).getContext;
         this._registerEvents();
         this._loopTime = 0;
@@ -291,17 +295,6 @@ class MapAbstractRenderer extends MapRenderer {
         }
     }
 
-    setToRedraw() {
-        const layers = this._getAllLayerToRender();
-        //set maprender for clear canvas
-        for (let i = 0, l = layers.length; i < l; i++) {
-            const renderer = layers[i].getRenderer();
-            if (renderer && renderer.canvas && renderer.setToRedraw) {
-                //to fix lost webgl context
-                renderer.setToRedraw();
-            }
-        }
-    }
 
     updateMapSize(size: Size) {
         if (!size || this._containerIsCanvas) {
@@ -519,6 +512,10 @@ class MapAbstractRenderer extends MapRenderer {
         return this._frameCycleRenderCount >= count;
     }
 
+    onLoad() {
+        this._frameLoop(0);
+    }
+
     /**
     * Main frame loop
     */
@@ -526,6 +523,13 @@ class MapAbstractRenderer extends MapRenderer {
     _frameLoop(framestamp: number) {
         if (!this.map) {
             this._cancelFrameLoop();
+            return;
+        }
+        if (!this._bindFrameLoop) {
+            this._bindFrameLoop = this._frameLoop.bind(this);
+        }
+        if (!this.ready) {
+            this._animationFrame = requestAnimFrame(this._bindFrameLoop);
             return;
         }
         this._frameCycleRenderCount++;
@@ -536,22 +540,18 @@ class MapAbstractRenderer extends MapRenderer {
             this.renderFrame(framestamp);
             this._frameCycleRenderCount = 0;
         } else if (this.map.options.debug) {
-            console.log('skip frame ing,frameCycleRenderCount:', this._frameCycleRenderCount);
+            console.log('skip framing, frameCycleRenderCount:', this._frameCycleRenderCount);
         }
         // Keep registering ourselves for the next animation frame
-        this._animationFrame = requestAnimFrame((framestamp: number) => { this._frameLoop(framestamp); });
+        this._animationFrame = requestAnimFrame(this._bindFrameLoop);
     }
 
     //@internal
     _cancelFrameLoop() {
+        delete this._bindFrameLoop;
         if (this._animationFrame) {
             cancelAnimFrame(this._animationFrame);
         }
-    }
-
-    //@internal
-    _getAllLayerToRender() {
-        return this.map._getLayers();
     }
 
 
@@ -589,10 +589,12 @@ class MapAbstractRenderer extends MapRenderer {
         const canvasContainer = panels.canvasContainer;
         canvasContainer.appendChild(this.canvas);
         this._updateCanvasSize();
-        this.createContext();
+        this.createContext().then(() => {
+            this.ready = true;
+        });
     }
 
-    createContext() {
+    async createContext() {
         // should be implemented by child class
     }
 

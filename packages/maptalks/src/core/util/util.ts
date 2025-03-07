@@ -5,59 +5,19 @@ import Browser from '../Browser';
 import { isString, isNil } from './common';
 import Point from '../../geo/Point';
 
-// RequestAnimationFrame, inspired by Leaflet
-let requestAnimFrame: any, cancelAnimFrame: typeof clearTimeout;
+let requestAnimFrame: any, cancelAnimFrame: any;
 /* istanbul ignore next */
 (function () {
     if (IS_NODE) {
         requestAnimFrame = function (fn) {
             return setTimeout(fn, 16);
         };
-
         cancelAnimFrame = clearTimeout;
         return;
     }
 
-    let requestFn, cancelFn;
-    // slow down fps in IE9 for performance
-    const timeToCall = 1000 / 30;
-    function timeoutDefer(fn) {
-        return setTimeout(fn, timeToCall);
-    }
-
-    function getPrefixed(name: string) {
-        return window['webkit' + name] || window['moz' + name] || window['ms' + name];
-    }
-    if (typeof (window) != 'undefined') {
-        // inspired by http://paulirish.com/2011/requestanimationframe-for-smart-animating/
-
-        requestFn = window['requestAnimationFrame'] || getPrefixed('RequestAnimationFrame') || timeoutDefer;
-        cancelFn = window['cancelAnimationFrame'] || getPrefixed('CancelAnimationFrame') ||
-            getPrefixed('CancelRequestAnimationFrame') || function (id) { window.clearTimeout(id); };
-    } else {
-        requestFn = timeoutDefer;
-        cancelFn = clearTimeout;
-    }
-    /**
-     * Polyfill of RequestAnimationFrame
-     * @param  {Function} fn callback
-     * @return {Number}  request id
-     * @memberOf Util
-     */
-    requestAnimFrame = function (fn: Function): number {
-        return requestFn(fn);
-    };
-
-    /**
-     * Polyfill of cancelAnimationFrame
-     * @param id id
-     * @memberOf Util
-     */
-    cancelAnimFrame = function (id: number) {
-        if (id) {
-            cancelFn(id);
-        }
-    };
+    requestAnimFrame = requestAnimationFrame;
+    cancelAnimFrame = cancelAnimationFrame;
 })();
 export { requestAnimFrame, cancelAnimFrame };
 

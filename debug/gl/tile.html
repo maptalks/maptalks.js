@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <meta charset='UTF-8' />
+  <meta name='viewport' content='width=device-width, initial-scale=1' />
+  <title>图形样式 - 线的模式填充</title>
+  <style type='text/css'>
+    html,
+    body {
+      margin: 0px;
+      height: 100%;
+      width: 100%;
+    }
+
+    .container {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+  <link rel='stylesheet' href='/maptalks/dist/maptalks.css' />
+  <script type='text/javascript' src='/maptalks/dist/maptalks.js'></script>
+  <script type='text/javascript' src='/maptalks-work/packages/gl/dist/maptalksgl.js'></script>
+
+
+  <body>
+    <div id="map" class="container"></div>
+
+    <script>
+      const map = new maptalks.Map("map", {
+        center: [118.78586856, 32.06722135],
+        zoom: 17,
+        // forceRedrawPerFrame: true,
+        renderer: 'gpu',
+        baseLayer: new maptalks.TileLayer("base", {
+          // decodeImageInWorker: true,
+          debug: true,
+          maxAvailableZoom: 18,
+          urlTemplate : 'http://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
+          subdomains  : ['01','02','03','04'],
+          attribution: "&copy; <a href='http://osm.org'>OpenStreetMap</a> contributors, &copy; <a href='https://carto.com/'>CARTO</a>",
+        }),
+      });
+    </script>
+  </body>
+
+</html>

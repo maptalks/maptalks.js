@@ -21,7 +21,15 @@ export default class PipelineDescriptor {
     frontFace?: GPUFrontFace;
     topology?: GPUPrimitiveTopology;
 
-    readFromREGLCommand(commandProps: any, mesh, uniformValues, doubleSided, fbo: GraphicsFramebuffer) {
+    readFromREGLCommand(commandProps: any, mesh, uniformValues, fbo: GraphicsFramebuffer) {
+        if (!commandProps) {
+            commandProps = {};
+        }
+        const material = mesh.getMaterial();
+        let doubleSided = false;
+        if (material) {
+            doubleSided = material.doubleSided;
+        }
         const primitive = mesh.geometry.desc.primitive;
         this.topology = toTopology(primitive);
 
