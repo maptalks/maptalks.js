@@ -66,6 +66,7 @@ export default class Mesh {
     //@internal
     _bindGroupCache?: Record<string, GPUBindGroup>
 
+    uuid: number;
     transparent: boolean
     bloom: boolean
     ssr: boolean

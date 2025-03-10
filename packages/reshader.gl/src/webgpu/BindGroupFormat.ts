@@ -8,8 +8,12 @@ import { ShaderUniforms } from "../types/typings";
 import AbstractTexture from "../AbstractTexture";
 import GraphicsTexture from "./GraphicsTexture";
 
+let uuid = 0;
+
 export default class BindGroupFormat {
     bytes: number;
+    uuid: number;
+    name: string;
     //@internal
     alignment: number;
     //@internal
@@ -19,7 +23,9 @@ export default class BindGroupFormat {
     //@internal
     _meshUniforms: any;
 
-    constructor(bindGroupMapping, minUniformBufferOffsetAlignment) {
+    constructor(name, bindGroupMapping, minUniformBufferOffsetAlignment) {
+        this.name = name;
+        this.uuid = uuid++;
         this.groups = bindGroupMapping.groups;
         this.alignment = minUniformBufferOffsetAlignment;
         this._parse(bindGroupMapping);
@@ -68,10 +74,11 @@ export default class BindGroupFormat {
     }
 
     createBindGroup(device: GraphicsDevice, mesh: Mesh, shaderUniforms: ShaderUniforms, layout: GPUBindGroupLayout, shaderBuffer: DynamicBuffer, meshBuffer: DynamicBuffer) {
+        const label = this.name + '-' + mesh.uuid;
         if (!this.groups) {
             return device.wgpu.createBindGroup({
                 layout,
-                label: '',
+                label,
                 entries: []
             });
         }
@@ -122,7 +129,7 @@ export default class BindGroupFormat {
         }
         const bindGroup = device.wgpu.createBindGroup({
             layout,
-            label: '',
+            label,
             entries
         });
         for (let i = 0; i < textures.length; i++) {

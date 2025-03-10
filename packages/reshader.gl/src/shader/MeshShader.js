@@ -112,7 +112,7 @@ class MeshShader extends Shader {
         return filters(m);
     }
 
-    getMeshCommand(device, mesh, uniformValues) {
+    getMeshCommand(device, mesh, renderProps) {
         if (!this._cmdKeys) {
             this._cmdKeys = {};
         }
@@ -121,7 +121,7 @@ class MeshShader extends Shader {
         if (material) {
             doubleSided = material.doubleSided;
         }
-        const key = this.getShaderCommandKey(device, mesh, uniformValues);
+        const key = this.getShaderCommandKey(device, mesh, renderProps);
         let storedKeys = this._cmdKeys[key];
         if (!storedKeys) {
             storedKeys = this._cmdKeys[key] = {};
@@ -141,7 +141,7 @@ class MeshShader extends Shader {
             if (doubleSided && this.extraCommandProps) {
                 commandProps.cull = { enable: false };
             }
-            command = this.commands[dKey] = this.createMeshCommand(device, mesh, commandProps, uniformValues);
+            command = this.commands[dKey] = this.createMeshCommand(device, mesh, commandProps, renderProps);
         }
         return command;
     }

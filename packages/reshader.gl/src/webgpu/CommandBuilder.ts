@@ -62,7 +62,7 @@ export default class CommandBuilder {
         const pipeline = this._createPipeline(device, vert, vertexInfo, frag, layout, mesh, pipelineDesc, fbo);
 
         const bindGroupMapping = this._createBindGroupMapping(vertGroups, fragGroups, mesh);
-        const bindGroupFormat = new BindGroupFormat(bindGroupMapping, device.wgpu.limits.minUniformBufferOffsetAlignment);
+        const bindGroupFormat = new BindGroupFormat(this.name, bindGroupMapping, device.wgpu.limits.minUniformBufferOffsetAlignment);
         const activeAttributes = this._getActiveAttributes(vertexInfo);
 
         return {

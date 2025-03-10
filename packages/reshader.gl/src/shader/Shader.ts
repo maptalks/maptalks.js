@@ -2,7 +2,7 @@ import { extend, isString, isFunction, isNumber, isSupportVAO, hasOwn, hashCode 
 
 import ShaderLib from '../shaderlib/ShaderLib.js';
 import { KEY_DISPOSED } from '../common/Constants.js';
-import { ShaderUniforms, ShaderUniformValue } from '../types/typings';
+import { ShaderUniformValue } from '../types/typings';
 import PipelineDescriptor from '../webgpu/common/PipelineDesc';
 import InstancedMesh from '../InstancedMesh';
 import Mesh from '../Mesh';
@@ -392,8 +392,6 @@ export default class GPUShader extends GLShader {
     //@internal
     _presentationFormat: GPUTextureFormat;
     //@internal
-    _bindGroupCache: Record<string, GPUBindGroup>;
-    //@internal
     _buffers: Record<string, DynamicBuffer>;
     //@internal
     _passEncoders: Record<string, GPURenderPassEncoder>;
@@ -404,20 +402,20 @@ export default class GPUShader extends GLShader {
     //@internal
     _dynamicOffsets: DynamicOffsets;
 
-    getShaderCommandKey(device, mesh, uniformValues) {
+    getShaderCommandKey(device, mesh, renderProps) {
         if (device && device.wgpu) {
             // 获取pipeline所需要的特征变量，即任何变量发生变化后，就需要创建新的pipeline
             const fbo = this._gpuFramebuffer;
             const commandProps = this.extraCommandProps;
-            pipelineDesc.readFromREGLCommand(commandProps, mesh, uniformValues, fbo);
+            pipelineDesc.readFromREGLCommand(commandProps, mesh, renderProps, fbo);
             return pipelineDesc.getSignatureKey();
         } else {
             // regl
-            return super.getShaderCommandKey(device, mesh, uniformValues);
+            return super.getShaderCommandKey(device, mesh, renderProps);
         }
     }
 
-    createMeshCommand(device: any, mesh: Mesh, commandProps: any, uniformValues: any) {
+    createMeshCommand(device: any, mesh: Mesh, commandProps: any, renderProps: any) {
         if (device && device.wgpu) {
             // 生成期：
             // 1. 负责对 wgsl 做预处理，生成最终执行的wgsl代码
@@ -432,7 +430,8 @@ export default class GPUShader extends GLShader {
             const frag = this.wgslFrag || this.frag;
             const builder = new CommandBuilder(this.name, device, vert, frag, mesh, this.contextDesc, uniformValues);
             const pipelineDesc = new PipelineDescriptor();
-            pipelineDesc.readFromREGLCommand(commandProps, mesh, uniformValues, fbo);
+            const extraCommandProps = extend({}, this.extraCommandProps || {}, commandProps || {});
+            pipelineDesc.readFromREGLCommand(extraCommandProps, mesh, renderProps, fbo);
             return builder.build(pipelineDesc, fbo);
         } else {
             // regl
@@ -462,9 +461,6 @@ export default class GPUShader extends GLShader {
         if (!shaderBuffer) {
             shaderBuffer = this._buffers[key] = new DynamicBuffer(bindGroupFormat.getShaderUniforms(), buffersPool);
         }
-        if (!this._bindGroupCache) {
-            this._bindGroupCache = {};
-        }
 
         if (!this._dynamicOffsets) {
             this._dynamicOffsets = new DynamicOffsets();
@@ -479,14 +475,13 @@ export default class GPUShader extends GLShader {
             const mesh = props[i].meshObject as Mesh;
             // 获取mesh的dynamicBuffer
             const meshBuffer = mesh.writeDynamicBuffer(props[i], bindGroupFormat.getMeshUniforms(), buffersPool, this._dynamicOffsets);
-            const groupKey = meshBuffer.version + '-' + shaderBuffer.version;
+            const groupKey = bindGroupFormat.uuid + '-' + meshBuffer.version + '-' + shaderBuffer.version;
             // 获取或者生成bind group
             let bindGroup = mesh.getBindGroup(groupKey);
             if (!bindGroup || (bindGroup as any).outdated) {
                 bindGroup = bindGroupFormat.createBindGroup(device, mesh, shaderUniforms, layout, shaderBuffer, meshBuffer);
                 // 缓存bind group，只要buffer没有发生变化，即可以重用
                 // TODO 可以考虑每帧开始把缓存 bind group 标记为 retire，每帧结束时把不是 current 的 bind group 销毁掉
-                // this._bindGroupCache[groupKey] = bindGroup;
                 mesh.setBindGroup(groupKey, bindGroup);
             }
 
