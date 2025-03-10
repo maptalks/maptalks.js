@@ -451,8 +451,7 @@ export default class GPUShader extends GLShader {
         const passEncoder: GPURenderPassEncoder = this._getCurrentRenderPassEncoder(device);
         passEncoder.setPipeline(command.pipeline);
 
-        const { key, bindGroupFormat, pipeline, vertexInfo } = command;
-        const layout = pipeline.getBindGroupLayout(0);
+        const { key, bindGroupFormat, vertexInfo, layout } = command;
         // 1. 生成shader uniform 需要的dynamic buffer
         if (!this._buffers) {
             this._buffers = {};

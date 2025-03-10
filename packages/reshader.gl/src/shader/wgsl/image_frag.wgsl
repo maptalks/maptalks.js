@@ -15,10 +15,10 @@ struct Scene {
 
 @fragment
 fn main(
-    @location(0) vTexCoord : vec2f
+    @location(0) vTexCoord : vec2f,
 ) -> @location(0) vec4f {
     var fragColor = textureSample(baseColorTexture, baseColorTextureSampler, vTexCoord);
-    // fragColor *= scene.baseColor;
+    fragColor *= scene.baseColor;
     #if HAS_DEBUG
         var debugColor = textureSample(debugTexture, debugTextureSampler, vTexCoord);
         fragColor = vec4f(
@@ -27,8 +27,7 @@ fn main(
         );
     #endif
     if (fragColor.a < scene.alphaTest) {
-        // discard;
+        discard;
     }
-    return fragColor * 1.0;
-    // return vec4f(1.0, 0.0, 0.0, 1.0);
+    return fragColor * scene.opacity;
 }

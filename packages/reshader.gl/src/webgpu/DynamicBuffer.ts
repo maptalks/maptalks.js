@@ -3,6 +3,7 @@ import { ShaderUniformValue } from "../types/typings";
 import DynamicBufferPool, { DynamicBufferAllocation } from "./DynamicBufferPool";
 import { isArray, isFunction } from "../common/Util";
 import DynamicOffsets from "./DynamicOffsets";
+import { roundUp } from "./common/math";
 
 export default class DynamicBuffer {
     bindgroupMapping: any;
@@ -45,13 +46,13 @@ export default class DynamicBuffer {
                     const size = member.size;
                     this._fillValue(storage, offset, size, value);
                 }
-                dynamicOffset += Math.max(mapping[i].size, bufferAlignment);
+                dynamicOffset += roundUp(mapping[i].size, bufferAlignment);
             } else if (uniform.resourceType === ResourceType.Uniform) {
                 dynamicOffsets.addItem({ binding: uniform.binding, offset: dynamicOffset });
                 const value = uniformValues[uniform.name];
                 const size = isFunction(uniform.size) ? uniform.size() : uniform.size;
                 this._fillValue(storage, dynamicOffset, size, value);
-                dynamicOffset += Math.max(size, bufferAlignment);
+                dynamicOffset += roundUp(size, bufferAlignment);
             }
         }
 

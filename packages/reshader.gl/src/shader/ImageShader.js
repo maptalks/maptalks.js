@@ -13,6 +13,7 @@ class ImageShader extends MeshShader {
         config.vert = vert;
         config.frag = frag;
         super({
+            name: 'image',
             vert,
             frag,
             wgslVert,

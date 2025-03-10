@@ -7,6 +7,7 @@ import GraphicsDevice from "./GraphicsDevice";
 import { ShaderUniforms } from "../types/typings";
 import AbstractTexture from "../AbstractTexture";
 import GraphicsTexture from "./GraphicsTexture";
+import { roundUp } from "./common/math";
 
 let uuid = 0;
 
@@ -63,12 +64,12 @@ export default class BindGroupFormat {
                 let index = this._shaderUniforms.index;
                 this._shaderUniforms[index++] = uniform;
                 this._shaderUniforms.index = index;
-                this._shaderUniforms.totalSize += uniform.size;
+                this._shaderUniforms.totalSize += roundUp(uniform.size, this.alignment);;
             } else {
                 let index = this._meshUniforms.index;
                 this._meshUniforms[index++] = uniform;
                 this._meshUniforms.index = index;
-                this._meshUniforms.totalSize += uniform.size;
+                this._meshUniforms.totalSize += roundUp(uniform.size, this.alignment);
             }
         }
     }
@@ -122,7 +123,7 @@ export default class BindGroupFormat {
                         buffer: allocation.gpuBuffer,
                         // offset 永远设为0，在setBindGroup中设置dynamicOffsets
                         // offset: 0,
-                        size: Math.max(group.size, this.alignment)
+                        size: roundUp(group.size, this.alignment)
                     }
                 });
             }
