@@ -48,8 +48,18 @@ export default class CommandBuilder {
         const device = this.device;
         const defines = this.mesh.getDefines();
         //FIXME 如何在wgsl中实现defined
-        const vert = WGSLParseDefines(this.vert, defines);
-        const frag = WGSLParseDefines(this.frag, defines);
+        let vert = WGSLParseDefines(this.vert, defines);
+        let frag = WGSLParseDefines(this.frag, defines);
+
+        // dynamically assign location index with $in and $out
+        vert = parseLocationIndex(vert);
+        frag = parseLocationIndex(frag);
+
+        // dynamically assign binding index with $bi
+        const { source, index } = parseBindingIndex(vert, 0)
+        vert = source;
+        const { source: fragSource } = parseBindingIndex(frag, index)
+        frag = fragSource;
 
         const vertReflect = new WgslReflect(vert);
         const vertexInfo = this._formatBufferInfo(vertReflect, mesh);
@@ -57,7 +67,7 @@ export default class CommandBuilder {
 
         const vertGroups = vertReflect.getBindGroups();
         const fragGroups = fragReflect.getBindGroups();
-        // 生成 bind group layout
+        // generate bind group layout
         const layout = this._createBindGroupLayout(vertGroups, fragGroups, mesh, this.uniformValues);
         const pipeline = this._createPipeline(device, vert, vertexInfo, frag, layout, mesh, pipelineDesc, fbo);
 
@@ -248,11 +258,13 @@ export default class CommandBuilder {
         pipelineDesc: PipelineDescriptor, fbo: GraphicsFramebuffer): GPURenderPipeline {
         const device = graphicsDevice.wgpu;
         const vertModule = device.createShaderModule({
+            label: this.name + '-vertmodule',
             code: vert,
         });
         let fragModule;
         if (frag) {
             fragModule = device.createShaderModule({
+                label: this.name + '-fragmodule',
                 code: frag,
             });
         }
@@ -350,3 +362,19 @@ function sortByBinding(a: GPUBindGroupLayoutEntry, b: GPUBindGroupLayoutEntry): 
     return a.binding - b.binding;
 }
 
+function parseLocationIndex(code: string) {
+    let index = 0;
+    let parsedIn = code.replaceAll('$in', () => '' + index++);
+
+    index = 0;
+    let parsedOut = parsedIn.replaceAll('$out', () => '' + index++);
+
+    return parsedOut;
+}
+
+function parseBindingIndex(code: string, index: number) {
+    return {
+        source: code.replaceAll('$bi', () => '' + index++),
+        index
+    };
+}
