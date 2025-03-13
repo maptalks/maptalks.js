@@ -8,7 +8,8 @@ import {
     getImageBitMap,
     isString,
     getAbsoluteURL,
-    pushIn
+    pushIn,
+    mergeArray
 } from '../../../core/util';
 import Browser from '../../../core/Browser';
 import { default as TileLayer } from '../../../layer/tile/TileLayer';
@@ -207,11 +208,17 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
         _getTilesInCurrentFrame() {
             const map = this.getMap();
             const layer = this.layer;
+            /**
+             * record spatial reference of current frame to avoid A large number of function(getSpatialReference) calls
+             * 其他的大量的重复函数调用,也可以采用类似的策略来提高性能
+             */
+            layer._tempSr = layer.getSpatialReference();
             const terrainTileMode = layer._isPyramidMode() && layer.options['terrainTileMode'];
             let tileGrids = layer.getTiles();
             this._frameTileGrids = tileGrids;
             tileGrids = tileGrids.tileGrids;
             if (!tileGrids || !tileGrids.length) {
+                layer._tempSr = null;
                 return null;
             }
             const count = tileGrids.reduce((acc, curr) => acc + (curr && curr.tiles && curr.tiles.length || 0), 0);
@@ -250,7 +257,8 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
                 const gridTiles = tileGrid['tiles'];
                 const parents = tileGrid['parents'] || EMPTY_ARRAY;
                 const parentCount = parents.length;
-                const allTiles = isFirstRender ? gridTiles : parents.concat(gridTiles);
+                // const allTiles = isFirstRender ? gridTiles : parents.concat(gridTiles);
+                const allTiles = isFirstRender ? gridTiles : mergeArray(parents, gridTiles);
 
                 let placeholder;
                 if (allTiles.length) {
@@ -423,6 +431,7 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
             //     childTiles.length = 0;
             //     this._childTiles.length = 0;
             // }
+            layer._tempSr = null;
             return {
                 childTiles, missedTiles, parentTiles, tiles, incompleteTiles: incompleteTiles && Array.from(incompleteTiles.values()), placeholders, loading, loadingCount, tileQueue
             };
@@ -824,16 +833,17 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
         //@internal
         _findChildTiles(info: Tile['info']): Tile[] | any {
             const layer = this._getLayerOfTile(info.layer);
-            const terrainTileMode = layer && layer.options['terrainTileMode'] && layer._isPyramidMode();
+            const isPyramidMode = layer._isPyramidMode();
+            const terrainTileMode = layer && layer.options['terrainTileMode'] && isPyramidMode;
             if (!layer || !layer.options['background'] && !terrainTileMode || info.z > this.layer.getMaxZoom()) {
                 return EMPTY_ARRAY;
             }
             const map = this.getMap();
             const children = [];
-            if (layer._isPyramidMode()) {
+            if (isPyramidMode) {
                 if (!terrainTileMode) {
                     // a faster one
-                    const layer = this._getLayerOfTile(info.layer);
+                    // const layer = this._getLayerOfTile(info.layer);
                     const zoomDiff = 2;
                     const cx = info.x * 2;
                     const cy = info.y * 2;

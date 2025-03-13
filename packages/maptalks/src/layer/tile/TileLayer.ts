@@ -225,6 +225,9 @@ class TileLayer extends Layer {
     _polygonOffset: number;
     //@internal
     _renderer: TileLayerCanvasRenderer;
+    //record spatial reference in current rendering frame
+    //@internal
+    _tempSr: SpatialReference;
     options: TileLayerOptionsType;
 
     /**
@@ -320,7 +323,7 @@ class TileLayer extends Layer {
 
     //@internal
     _isPyramidMode() {
-        const sr = this.getSpatialReference();
+        const sr = this._tempSr || this.getSpatialReference();
         return !this._disablePyramid && !this._hasOwnSR && this.options['pyramidMode'] && sr && sr.isPyramid();
     }
 
@@ -357,7 +360,7 @@ class TileLayer extends Layer {
             }
             return this._rootNodes;
         }
-        const sr = this.getSpatialReference();
+        const sr = this._tempSr || this.getSpatialReference();
         const res = sr.getResolution(0);
         const tileConfig = this._getTileConfig();
         const fullExtent = sr.getFullExtent();
@@ -454,7 +457,7 @@ class TileLayer extends Layer {
         const fov0 = map._getFovZ(0);
         const error = fov0 * (diagonalZ / cameraZ);
 
-        const sr = this.getSpatialReference();
+        const sr = this._tempSr || this.getSpatialReference();
         const res = sr.getResolution(0);
 
         return error * res / map.getResolution(0);
@@ -467,7 +470,7 @@ class TileLayer extends Layer {
         if (isNaN(+z)) {
             z = this._getTileZoom(map.getZoom());
         }
-        const sr = this.getSpatialReference();
+        const sr = this._tempSr || this.getSpatialReference();
         const maxZoom = Math.min(z, this.getMaxZoom(), this.getMaxAvailableZoom() || Infinity);
         // @ts-ignore
         const projectionView = map.projViewMatrix;
@@ -519,6 +522,7 @@ class TileLayer extends Layer {
         const extent = new PointExtent();
         const tiles = [];
         const parents = [];
+        const parentRenderer = layer && layer.getRenderer();
         while (queue.length > 0) {
             const node = queue.pop();
             if (node.z === maxZoom) {
@@ -529,7 +533,7 @@ class TileLayer extends Layer {
             if (!offsets[node.z + 1]) {
                 offsets[node.z + 1] = this._getTileOffset(node.z + 1);
             }
-            this._splitNode(node, projectionView, queue, tiles, extent, maxZoom, offsets[node.z + 1], layer && layer.getRenderer(), glRes);
+            this._splitNode(node, projectionView, queue, tiles, extent, maxZoom, offsets[node.z + 1], parentRenderer, glRes);
             if (this.isParentTile(z, maxZoom, node)) {
                 parents.push(node);
             }
@@ -570,7 +574,7 @@ class TileLayer extends Layer {
         glRes: number
     ) {
         const z = node.z + 1;
-        const sr = this.getSpatialReference();
+        const sr = this._tempSr || this.getSpatialReference();
         const { idx, idy } = node;
 
         const renderer = parentRenderer || this.getRenderer();
@@ -780,7 +784,7 @@ class TileLayer extends Layer {
         }
         // const r = 1;
         const error = geometricError * r / distance * this.options['tileErrorScale'];
-        const pitch = this.getMap().getPitch();
+        const pitch = map.getPitch();
         if (pitch <= 60) {
             return error * 1.45;
         }
@@ -983,7 +987,7 @@ class TileLayer extends Layer {
 
     getMinZoom(): number {
         const minZoom = this.options['minZoom'] || 0;
-        const sr = this.getSpatialReference();
+        const sr = this._tempSr || this.getSpatialReference();
         if (sr !== this.getMap().getSpatialReference()) {
             return Math.max(minZoom, this._srMinZoom);
         }
@@ -991,7 +995,7 @@ class TileLayer extends Layer {
     }
 
     getMaxZoom(): number {
-        const sr = this.getSpatialReference();
+        const sr = this._tempSr || this.getSpatialReference();
         if (sr !== this.getMap().getSpatialReference()) {
             return Math.min(super.getMaxZoom(), this._srMaxZoom);
         }
@@ -1023,7 +1027,7 @@ class TileLayer extends Layer {
      * @returns
      **/
     getMaxAvailableZoom(): number {
-        const sr = this.getSpatialReference();
+        const sr = this._tempSr || this.getSpatialReference();
         return this.options['maxAvailableZoom'] || sr && sr.getMaxZoom();
     }
 
@@ -1080,7 +1084,7 @@ class TileLayer extends Layer {
         const tileOffsets = {
             zoom: offset
         };
-        const sr = this.getSpatialReference();
+        const sr = this._tempSr || this.getSpatialReference();
         const res = sr.getResolution(z);
         // const glScale = res / map.getGLRes();
         let glScale;
@@ -1353,6 +1357,9 @@ class TileLayer extends Layer {
     _getTileOffset(...params: number[]): TileOffsetType {
         // offset result can't be cached, as it varies with map's center.
         let offset = this.options['offset'];
+        if (!offset) {
+            return [0, 0];
+        }
         if (isFunction(offset)) {
             offset = offset.call(this, ...params);
         }
@@ -1378,7 +1385,8 @@ class TileLayer extends Layer {
         if (this._hasOwnSR) {
             const map = this.getMap();
             const mapProjection = map.getProjection();
-            const projection = this.getSpatialReference().getProjection();
+            const sr = this._tempSr || this.getSpatialReference();
+            const projection = sr.getProjection();
             return projection.project(mapProjection.unproject(pcoord, out), out);
         } else {
             return pcoord;
@@ -1389,7 +1397,7 @@ class TileLayer extends Layer {
     _unproject(pcoord: Coordinate, out: Point) {
         if (this._hasOwnSR) {
             const map = this.getMap();
-            const sr = this.getSpatialReference();
+            const sr = this._tempSr || this.getSpatialReference();
             const mapProjection = map.getProjection();
             const projection = sr.getProjection();
             return mapProjection.project(projection.unproject(pcoord, out), out);
