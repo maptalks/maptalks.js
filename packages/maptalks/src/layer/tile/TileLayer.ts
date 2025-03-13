@@ -10,7 +10,8 @@ import {
     isString,
     extend,
     Vector3,
-    Matrix4
+    Matrix4,
+    pushIn
 } from '../../core/util';
 import LRUCache from '../../core/util/LRUCache';
 import Browser from '../../core/Browser';
@@ -415,7 +416,7 @@ class TileLayer extends Layer {
         extent2d?: PointExtent,
         tileId?: string
     ): TileNodeType {
-        const map = this.getMap();
+        const map = this.map;
         const zoomOffset = this.options['zoomOffset'];
         if (!extent2d) {
             const tileConfig = this._getTileConfig();
@@ -466,7 +467,7 @@ class TileLayer extends Layer {
 
     //@internal
     _getPyramidTiles(z: number, layer: Layer): TilesType {
-        const map = this.getMap();
+        const map = this.map;
         if (isNaN(+z)) {
             z = this._getTileZoom(map.getZoom());
         }
@@ -583,11 +584,12 @@ class TileLayer extends Layer {
         const children = [];
         const res = sr.getResolution(z);
         const glScale = res / glRes;
+        if (!this.tileInfoCache) {
+            this.tileInfoCache = new LRUCache(this.options['maxCacheSize'] * 4);
+        }
         for (let i = 0; i < 4; i++) {
             const dx = (i % 2);
             const dy = (i >> 1);
-            const childIdx = (idx << 1) + dx;
-            const childIdy = (idy << 1) + dy;
 
             // const tileId = this._getTileId(childIdx, childIdy, z);
             if (!node.children) {
@@ -595,15 +597,14 @@ class TileLayer extends Layer {
             }
             let tileId = node.children[i];
             if (!tileId) {
+                const childIdx = (idx << 1) + dx;
+                const childIdy = (idy << 1) + dy;
                 tileId = this._getTileId(childIdx, childIdy, z);
                 node.children[i] = tileId;
             }
             const cached = renderer.isTileCachedOrLoading(tileId);
             let childNode = cached && cached.info;
             if (!childNode) {
-                if (!this.tileInfoCache) {
-                    this.tileInfoCache = new LRUCache(this.options['maxCacheSize'] * 4);
-                }
                 childNode = this.tileInfoCache.get(tileId);
                 if (!childNode) {
                     childNode = this._createChildNode(node, dx, dy, offset, tileId);
@@ -627,13 +628,13 @@ class TileLayer extends Layer {
         }
         if (z === maxZoom) {
             if (hasCurrentIn) {
-                queue.push(...children);
+                pushIn(queue, children);
             } else {
                 tiles.push(node);
                 gridExtent._combine(node.extent2d);
             }
         } else {
-            queue.push(...children);
+            pushIn(queue, children);
         }
 
     }
@@ -736,7 +737,7 @@ class TileLayer extends Layer {
         }
         const renderer = this.getRenderer();
         let { xmin, ymin, xmax, ymax } = node.extent2d;
-        if (node.offset && !isFunction(this.options.offset)) {
+        if (node.offset && (node.offset[0] !== 0 && node.offset[1] !== 0) && !isFunction(this.options.offset)) {
             const [x, y] = node.offset;
             xmin += x;
             xmax += x;
@@ -763,7 +764,7 @@ class TileLayer extends Layer {
     _getScreenSpaceError(node: TileNodeType, glScale: number, maxZoom: number, offset: TileOffsetType) {
         // const fovDenominator = this._fovDenominator;
         const geometricError = node.error;
-        const map = this.getMap();
+        const map = this.map;
         const { xmin, ymin, xmax, ymax } = node.extent2d;
         TILE_MIN[0] = (xmin - offset[0]) * glScale;
         TILE_MIN[1] = (ymin - offset[1]) * glScale;
@@ -878,8 +879,8 @@ class TileLayer extends Layer {
     getTileUrl(x: number, y: number, z: number): string {
         const urlTemplate = this.options['urlTemplate'];
         let domain = '';
-        if (this.options['subdomains']) {
-            const subdomains = this.options['subdomains'];
+        const subdomains = this.options['subdomains'];
+        if (subdomains) {
             if (isArrayHasData(subdomains)) {
                 const length = subdomains.length;
                 let s = (x + y) % length;

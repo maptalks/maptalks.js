@@ -207,6 +207,7 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
         //@internal
         _getTilesInCurrentFrame() {
             const map = this.getMap();
+            this._tempMap = map;
             const layer = this.layer;
             /**
              * record spatial reference of current frame to avoid A large number of function(getSpatialReference) calls
@@ -220,6 +221,7 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
             tileGrids = tileGrids.tileGrids;
             if (!tileGrids || !tileGrids.length) {
                 layer._tempSr = null;
+                this._tempMap = null;
                 return null;
             }
             const count = tileGrids.reduce((acc, curr) => acc + (curr && curr.tiles && curr.tiles.length || 0), 0);
@@ -433,6 +435,7 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
             //     this._childTiles.length = 0;
             // }
             layer._tempSr = null;
+            this._tempMap = null;
             return {
                 childTiles, missedTiles, parentTiles, tiles, incompleteTiles: incompleteTiles && Array.from(incompleteTiles.values()), placeholders, loading, loadingCount, tileQueue
             };
@@ -575,7 +578,8 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
          */
         //@internal
         _getLoadLimit(): number {
-            if (this.getMap().isInteracting()) {
+            const map = this._tempMap || this.getMap();
+            if (map.isInteracting()) {
                 return this.layer.options['loadingLimitOnInteracting'];
             }
             return this.layer.options['loadingLimit'] || 0;
@@ -839,7 +843,7 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
             if (!layer || !layer.options['background'] && !terrainTileMode || info.z > this.layer.getMaxZoom()) {
                 return EMPTY_ARRAY;
             }
-            const map = this.getMap();
+            const map = this._tempMap || this.getMap();
             const children = [];
             if (isPyramidMode) {
                 if (!terrainTileMode) {
@@ -988,13 +992,15 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
 
         //@internal
         _findChildTilesAt(children: Tile[], pmin: number, pmax: number, layer: any, childZoom: number) {
+            const sr = layer._tempSr || layer.getSpatialReference();
             const layerId = layer.getId(),
-                res = layer.getSpatialReference().getResolution(childZoom);
+                res = sr.getResolution(childZoom);
             if (!res) {
                 return;
             }
-            const dmin = layer._getTileConfig().getTileIndex(pmin, res),
-                dmax = layer._getTileConfig().getTileIndex(pmax, res);
+            const getTileConfig = layer._getTileConfig();
+            const dmin = getTileConfig.getTileIndex(pmin, res),
+                dmax = getTileConfig.getTileIndex(pmax, res);
             const sx = Math.min(dmin.idx, dmax.idx), ex = Math.max(dmin.idx, dmax.idx);
             const sy = Math.min(dmin.idy, dmax.idy), ey = Math.max(dmin.idy, dmax.idy);
             let id, tile;
@@ -1018,7 +1024,7 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
 
         //@internal
         _findParentTile(info: Tile['info'], targetDiff?: number): Tile {
-            const map = this.getMap(),
+            const map = this._tempMap || this.getMap(),
                 layer = this._getLayerOfTile(info.layer);
             if (!layer || !layer.options['background'] && !layer.options['terrainTileMode']) {
                 return null;
@@ -1233,7 +1239,7 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
 
         //@internal
         _generatePlaceHolder(res: number): HTMLCanvasElement {
-            const map = this.getMap();
+            const map = this._tempMap || this.getMap();
             const placeholder = this.layer.options['placeholder'];
             if (!placeholder || map.getPitch()) {
                 return null;
