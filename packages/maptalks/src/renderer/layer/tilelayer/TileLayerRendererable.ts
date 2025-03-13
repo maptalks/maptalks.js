@@ -210,6 +210,7 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
             const layer = this.layer;
             /**
              * record spatial reference of current frame to avoid A large number of function(getSpatialReference) calls
+             * 瓦片计算里会用到大量的 getSpatialReference 调用，这里记录当前帧的空间参考，避免重复调用
              * 其他的大量的重复函数调用,也可以采用类似的策略来提高性能
              */
             layer._tempSr = layer.getSpatialReference();
