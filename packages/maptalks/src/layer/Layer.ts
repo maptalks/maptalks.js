@@ -496,14 +496,16 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @return
      */
     isVisible(): boolean {
-        if (isNumber(this.options['opacity']) && this.options['opacity'] <= 0) {
+        const opacity = this.options['opacity'];
+        if (isNumber(opacity) && opacity <= 0) {
             return false;
         }
-        const map = this.getMap();
+        const map = this.map;
         if (map) {
             const zoom = map.getZoom();
-            if ((!isNil(this.options['maxZoom']) && this.options['maxZoom'] < zoom) ||
-                (!isNil(this.options['minZoom']) && this.options['minZoom'] > zoom)) {
+            const minZoom = this.options.minZoom, maxZoom = this.options.maxZoom;
+            if ((!isNil(maxZoom) && maxZoom < zoom) ||
+                (!isNil(minZoom) && minZoom > zoom)) {
                 return false;
             }
         }
