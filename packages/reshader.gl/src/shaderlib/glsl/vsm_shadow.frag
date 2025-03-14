@@ -47,36 +47,12 @@ float esm(vec3 projCoords, vec4 shadowTexel) {
 }
 #endif
 
-#if defined(USE_VSM)
-float vsm_shadow_chebyshevUpperBound(vec3 projCoords, vec4 shadowTexel){
-
-    vec2 moments = shadowTexel.rg;
-    float distance = projCoords.z;
-    // Surface is fully lit. as the current fragment is before the light occluder
-    if (distance >= 1.0 || distance <= moments.x)
-        return 1.0 ;
-
-    // The fragment is either in shadow or penumbra. We now use chebyshev's upperBound to check
-    // How likely this pixel is to be lit (p_max)
-    float variance = moments.y - (moments.x * moments.x);
-    variance = max(variance, 0.00002);
-
-    float d = distance - moments.x;
-    float p_max = variance / (variance + d * d);
-    return p_max;
-}
-#endif
-
 float shadow_computeShadow_coeff(sampler2D shadowMap, vec3 projCoords) {
     vec2 uv = projCoords.xy;
     vec4 shadowTexel = texture2D(shadowMap, uv);
     #if defined(USE_ESM)
         float esm_coeff = esm(projCoords, shadowTexel);
         float coeff = esm_coeff * esm_coeff;
-    #endif
-    #if defined(USE_VSM)
-        float vsm_coeff = vsm_shadow_chebyshevUpperBound(projCoords, shadowTexel);
-        float coeff = vsm_coeff;
     #endif
     return 1.0 - (1.0 - coeff) * shadow_opacity;
 }

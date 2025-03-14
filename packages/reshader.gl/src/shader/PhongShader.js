@@ -30,6 +30,7 @@ class PhongShader extends MeshShader {
             uniforms.push(...extraUniforms);
         }
         super({
+            name: 'phong',
             vert: config.vert || phongVert,
             frag: config.frag || phongFrag,
             wgslVert,

@@ -48,10 +48,6 @@ class VSMShadowPass {
         if (type === undefined || type === 'esm') {
             //默认的阴影类型
             defines['USE_ESM'] = 1;
-        } else if (type === 'vsm') {
-            defines['USE_VSM'] = 1;
-        } else if (type === 'vsm_esm') {
-            defines['USE_VSM_ESM'] = 1;
         }
         return defines;
     }
