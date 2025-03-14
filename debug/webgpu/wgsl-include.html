@@ -20,9 +20,36 @@
     </script>
 
     <script type="module">
-        import { GraphicsDevice, Renderer, MeshShader, Geometry, Mesh, Material, Scene, Texture2D, ResourceLoader } from 'reshader';
+        import {
+            GraphicsDevice, Renderer, MeshShader,
+            Geometry, Mesh, Material, Scene, Texture2D, ResourceLoader,
+            WgslShaderLib
+        } from 'reshader';
         import { cubeVertexArray, cubeVertexUV, cubeVertexCount } from 'meshes';
         import { mat4, vec3 } from 'gl-matrix';
+
+        const positionColorInclude = {
+            vert: `
+                fn computeFragPosition(position : vec4<f32>) -> vec4<f32> {
+                    return 0.5 * (position + vec4<f32>(1.0, 1.0, 1.0, 1.0));
+                }
+            `,
+
+            frag: `
+                fn computeFragColor(color : vec4f, output : VertexOutput) -> vec4f {
+                    return color * output.fragPosition;
+                }
+            `,
+
+            varyings: [
+                {
+                    name: 'fragPosition',
+                    type: 'vec4f'
+                }
+            ],
+
+            defines: ['HAS_POSITION_COLOR']
+        }
 
         //https://webgpu.github.io/webgpu-samples/?sample=texturedCube
         const vert = `
@@ -40,9 +67,10 @@
             struct VertexOutput {
                 @builtin(position) Position : vec4f,
                 @location($o) fragUV : vec2f,
-                @location($o) fragPosition: vec4f,
                 // 动态插入 WgslShaderLib 里的代码片段
             }
+
+            #include <position_color_vert>
 
             @vertex
             fn main(
@@ -51,7 +79,9 @@
                 var output : VertexOutput;
                 output.Position = uniforms.modelMatrix * input.position;
                 output.fragUV = input.uv;
-                output.fragPosition = 0.5 * (input.position + vec4(1.0, 1.0, 1.0, 1.0));
+                #ifdef HAS_POSITION_COLOR
+                    output.fragPosition = computeFragPosition(input.position);
+                #endif
                 return output;
             }
 
@@ -62,19 +92,24 @@
             @group(0) @binding($b) var myTextureSampler: sampler;
             @group(0) @binding($b) var myTexture: texture_2d<f32>;
 
-            struct FragmentInput {
+            struct VertexOutput {
                 @location($i) fragUV : vec2f,
-                @location($i) fragPosition: vec4f
             }
+
+            #include <position_color_frag>
 
             @fragment
             fn main(
-                input: FragmentInput
+                input: VertexOutput
             ) -> @location(OUTPUT_INDEX) vec4f {
                 #ifdef DEBUG
                     return vec4(1.0, 0.0, 0.0, 1.0);
                 #else
-                    return textureSample(myTexture, myTextureSampler, input.fragUV) * input.fragPosition;
+                    var color = textureSample(myTexture, myTextureSampler, input.fragUV);
+                    #ifdef HAS_POSITION_COLOR
+                        color = computeFragColor(color, input);
+                    #endif
+                    return color;
                 #endif
             }
         `;
@@ -84,6 +119,8 @@
         const context = canvas.getContext('webgpu');
         const resourceLoader = new ResourceLoader(new Uint8Array(4));
 
+
+        WgslShaderLib.register('position_color', positionColorInclude);
         const device = new GraphicsDevice(gpuDevice, context)
         const renderer = new Renderer(device);
         const shader = new MeshShader({
@@ -112,9 +149,9 @@
             }, resourceLoader)
         });
         const mesh = new Mesh(geometry, material);
-        // mesh.setDefines({
-        //     DEBUG: 1
-        // });
+        mesh.setDefines({
+            HAS_POSITION_COLOR: 1
+        });
         const scene = new Scene();
 
         function render() {

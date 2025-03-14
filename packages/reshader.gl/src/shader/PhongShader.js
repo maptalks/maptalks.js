@@ -1,6 +1,8 @@
 import { mat4, mat3 } from 'gl-matrix';
 import phongFrag from './glsl/phong.frag';
 import phongVert from './glsl/phong.vert';
+import wgslVert from './wgsl/phong_vert.wgsl';
+import wgslFrag from './wgsl/phong_frag.wgsl';
 import MeshShader from '../shader/MeshShader.js';
 
 class PhongShader extends MeshShader {
@@ -30,6 +32,8 @@ class PhongShader extends MeshShader {
         super({
             vert: config.vert || phongVert,
             frag: config.frag || phongFrag,
+            wgslVert,
+            wgslFrag,
             uniforms,
             defines: config.defines || {},
             extraCommandProps: config.extraCommandProps || {}

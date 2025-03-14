@@ -3,13 +3,23 @@
  * https://github.com/GEngine-js/GEngine/blob/e9c0e2c4a28cc6b9fec133c75958b80115e53a63/src/shader/WGSLParseDefines.ts
  * ISC License
  */
+import { extend } from "../../common/Util";
 import { ShaderDefines } from "../../types/typings";
 
+const defineConstantRexg = /\s*#define\s+(\w+)\s+(\w+)/g;
 const preprocessorSymbols = /#([^\s]*)(\s*)/gm;
 const defineRexg = /\b[0-9A-Z_&&||]+\b/g;
 const isNumeric = (n) => !isNaN(n);
-export function WGSLParseDefines(shader: string, defines: ShaderDefines): string {
+export function WGSLParseDefines(shader: string, meshDefines: ShaderDefines): string {
 	if (!shader) return undefined;
+    // extract define const in shader
+    const matches = shader.matchAll(defineConstantRexg);
+    const defines = extend({}, meshDefines);
+    for (const match of matches) {
+        defines[match[1]] = match[2];
+    }
+    // delete define const in shader
+    shader = shader.replace(/^\s+#define.*$/gm, '');
 	// parse shader inner const define
 	const notDefineConstShader = ParseDefinesConst(shader, defines);
 	// filter "&&","||",number
@@ -38,6 +48,7 @@ function ParseDefines(strings: Array<string>, values: Array<boolean | number>): 
 
 			switch (match[1]) {
 				case "if":
+                case "ifdef":
 					if (match.index + match[0].length != frag.length) {
 						throw new Error("#if must be immediately followed by a template expression (ie: ${value})");
 					}

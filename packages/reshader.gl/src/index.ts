@@ -25,6 +25,7 @@ export { HDR };
 export * as WebGLConstants from './common/WebGLConstants';
 
 export { default as ShaderLib } from './shaderlib/ShaderLib';
+export { default as WgslShaderLib } from './shaderlib/WgslShaderLib';
 
 export { default as Shader } from './shader/Shader';
 export { default as MeshShader } from './shader/MeshShader';
