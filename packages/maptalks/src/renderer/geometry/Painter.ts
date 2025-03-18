@@ -126,13 +126,21 @@ class Painter extends Class {
             return null;
         }
         resetBBOX(this.bbox);
+        let hasDirty = false;
         for (let i = this.symbolizers.length - 1; i >= 0; i--) {
             const symbolizer = this.symbolizers[i];
-            const bbox = symbolizer.bbox;
-            if (!validateBBOX(bbox)) {
+            if (symbolizer instanceof Symbolizers.DrawAltitudeSymbolizer || symbolizer instanceof Symbolizers.DebugSymbolizer) {
                 continue;
             }
+            const bbox = symbolizer.bbox;
+            if (!validateBBOX(bbox)) {
+                hasDirty = true;
+                break;
+            }
             setBBOX(this.bbox, bbox);
+        }
+        if (hasDirty) {
+            return null;
         }
         if (validateBBOX(this.bbox)) {
             return this.bbox;
