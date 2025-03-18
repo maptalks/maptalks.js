@@ -526,7 +526,7 @@ export default class GPUShader extends GLShader {
             if (isNumber(elements)) {
                 passEncoder.draw(drawCount, instanceCount, drawOffset);
             } else {
-                passEncoder.setIndexBuffer(elements.getBuffer(), elements.getFormat());
+                passEncoder.setIndexBuffer(elements, elements.itemType);
                 passEncoder.drawIndexed(drawCount, instanceCount, drawOffset);
             }
         }

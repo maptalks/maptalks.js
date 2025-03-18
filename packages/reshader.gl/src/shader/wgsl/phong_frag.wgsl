@@ -1,18 +1,17 @@
-struct MaterialUniforms {
-    baseColorFactor: vec4f,
-    materialShininess: f32,
-    environmentExposure: f32,
-    specularStrength: f32,
+struct LightUniforms {
     light0_viewDirection: vec3f,
     ambientColor: vec3f,
     light0_diffuse: vec4f,
     lightSpecular: vec3f,
-    cameraPosition: vec3f,
+    cameraPosition: vec3f
+};
+
+struct MaterialUniforms {
+    environmentExposure: f32,
+    specularStrength: f32,
+    baseColorFactor: vec4f,
+    materialShininess: f32,
     alphaTest: f32,
-#ifdef HAS_TOON
-    toons: f32,
-    specularToons: f32,
-#endif
 #ifdef HAS_EXTRUSION_OPACITY
     extrusionOpacityRange: vec2f,
 #endif
@@ -32,6 +31,7 @@ struct MaterialUniforms {
 #endif
 };
 
+@group(0) @binding($b) var<uniform> lightUniforms: LightUniforms;
 @group(0) @binding($b) var<uniform> materialUniforms: MaterialUniforms;
 
 #ifdef HAS_BASECOLOR_MAP
@@ -66,29 +66,29 @@ struct MaterialUniforms {
 #endif
 
 struct VertexOutput {
-    vNormal: vec3f,
-    vFragPos: vec3f,
-#ifdef HAS_INSTANCE_COLOR
-    vInstanceColor: vec4f,
-#endif
-#ifdef HAS_EXTRUSION_OPACITY
-    vExtrusionOpacity: f32,
-#endif
-#if defined(HAS_COLOR) || defined(HAS_COLOR0)
-    vColor: vec4f,
-#endif
-#ifdef HAS_MAP
-    vTexCoord: vec2f,
-#endif
-#ifdef HAS_AO_MAP
-    vTexCoord1: vec2f,
-#endif
-#ifdef HAS_TANGENT
-    vTangent: vec4f,
-#endif
+    @location($o)  vFragPos: vec3f,
+    @location($o) vNormal: vec3f,
+    #ifdef HAS_MAP
+        @location($o) vTexCoord: vec2f,
+    #ifdef HAS_I3S_UVREGION
+        @location($o) vUvRegion: vec4f,
+    #endif
+    #ifdef HAS_AO_MAP
+        @location($o) vTexCoord1: vec2f,
+    #endif
+    #endif
+    #ifdef HAS_COLOR || HAS_COLOR0
+        @location($o) vColor: vec4f,
+    #endif
+    #if HAS_EXTRUSION_OPACITY
+        @location($o) vExtrusionOpacity: f32,
+    #endif
+    #ifdef HAS_TANGENT
+        @location($o) vTangent: vec4f,
+    #endif
 };
 
-#if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
+#if HAS_SHADOWING && !HAS_BLOOM
 #include <vsm_shadow_frag>
 #endif
 #include <highlight_frag>
@@ -115,9 +115,9 @@ fn transformNormal(vertexOutput: VertexOutput) -> vec3f {
 fn getBaseColor(vertexOutput: VertexOutput) -> vec4f {
 #ifdef HAS_BASECOLOR_MAP
     return textureSample(baseColorTexture, baseColorTextureSampler, computeTexCoord(vertexOutput.vTexCoord));
-#elif defined(HAS_DIFFUSE_MAP)
+#elif HAS_DIFFUSE_MAP
     return textureSample(diffuseTexture, diffuseTextureSampler, computeTexCoord(vertexOutput.vTexCoord));
-#elif defined(SHADING_MODEL_SPECULAR_GLOSSINESS)
+#elif SHADING_MODEL_SPECULAR_GLOSSINESS
     return materialUniforms.diffuseFactor;
 #else
     return materialUniforms.baseColorFactor;
@@ -127,7 +127,7 @@ fn getBaseColor(vertexOutput: VertexOutput) -> vec4f {
 fn getSpecularColor(vertexOutput: VertexOutput) -> vec3f {
 #ifdef HAS_SPECULARGLOSSINESS_MAP
     return textureSample(specularGlossinessTexture, specularGlossinessTextureSampler, computeTexCoord(vertexOutput.vTexCoord)).rgb;
-#elif defined(SHADING_MODEL_SPECULAR_GLOSSINESS)
+#elif SHADING_MODEL_SPECULAR_GLOSSINESS
     return materialUniforms.specularFactor;
 #else
     return vec3f(1.0);
@@ -135,10 +135,10 @@ fn getSpecularColor(vertexOutput: VertexOutput) -> vec3f {
 }
 
 @fragment
-fn main(vertexOutput: VertexOutput) -> vec4f {
+fn main(vertexOutput: VertexOutput) ->  @location(0) vec4f {
     // 环境光
     let baseColor = getBaseColor(vertexOutput);
-    var ambient = materialUniforms.environmentExposure * materialUniforms.ambientColor * baseColor.rgb;
+    var ambient = materialUniforms.environmentExposure * lightUniforms.ambientColor * baseColor.rgb;
 
 #ifdef HAS_INSTANCE_COLOR
     ambient *= vertexOutput.vInstanceColor.rgb;
@@ -146,17 +146,14 @@ fn main(vertexOutput: VertexOutput) -> vec4f {
 
     // 漫反射光
     let norm = transformNormal(vertexOutput);
-    let lightDir = normalize(-materialUniforms.light0_viewDirection);
+    let lightDir = normalize(-lightUniforms.light0_viewDirection);
     var diff = max(dot(norm, lightDir), 0.0);
-#ifdef HAS_TOON
-    let toon = floor(diff * materialUniforms.toons);
-    diff = toon / materialUniforms.toons;
-#endif
-    var diffuse = materialUniforms.light0_diffuse.rgb * diff * baseColor.rgb;
 
-#if defined(HAS_COLOR) || defined(HAS_COLOR0)
+    var diffuse = lightUniforms.light0_diffuse.rgb * diff * baseColor.rgb;
+
+#if HAS_COLOR || HAS_COLOR0
     var color = vertexOutput.vColor.rgb;
-#elif defined(IS_LINE_EXTRUSION)
+#elif IS_LINE_EXTRUSION
     var color = materialUniforms.lineColor.rgb;
 #else
     var color = materialUniforms.polygonFill.rgb;
@@ -168,21 +165,18 @@ fn main(vertexOutput: VertexOutput) -> vec4f {
     diffuse *= color.rgb;
 
     // 镜面反射光
-    let viewDir = normalize(materialUniforms.cameraPosition - vertexOutput.vFragPos);
+    let viewDir = normalize(lightUniforms.cameraPosition - vertexOutput.vFragPos);
     let halfwayDir = normalize(lightDir + viewDir);
     var spec = pow(max(dot(norm, halfwayDir), 0.0), materialUniforms.materialShininess);
-#ifdef HAS_TOON
-    let specToon = floor(spec * materialUniforms.specularToons);
-    spec = specToon / materialUniforms.specularToons;
-#endif
-    var specular = materialUniforms.specularStrength * materialUniforms.lightSpecular * spec * getSpecularColor(vertexOutput);
+
+    var specular = materialUniforms.specularStrength * lightUniforms.lightSpecular * spec * getSpecularColor(vertexOutput);
 
 #ifdef HAS_OCCLUSION_MAP
     let ao = textureSample(occlusionTexture, occlusionTextureSampler, computeTexCoord(vertexOutput.vTexCoord1)).r;
     ambient *= ao;
 #endif
 
-#if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
+#if HAS_SHADOWING && !HAS_BLOOM
     let shadowCoeff = shadow_computeShadow();
     diffuse = shadow_blend(diffuse, shadowCoeff).rgb;
     specular = shadow_blend(specular, shadowCoeff).rgb;
@@ -202,9 +196,9 @@ fn main(vertexOutput: VertexOutput) -> vec4f {
     var fragColor = vec4f(result, materialUniforms.polygonOpacity * baseColor.a);
 #endif
 
-#if defined(HAS_COLOR) || defined(HAS_COLOR0)
+#if HAS_COLOR || HAS_COLOR0
     let colorAlpha = vertexOutput.vColor.a;
-#elif defined(IS_LINE_EXTRUSION)
+#elif IS_LINE_EXTRUSION
     let colorAlpha = materialUniforms.lineColor.a;
 #else
     let colorAlpha = materialUniforms.polygonFill.a;
@@ -231,7 +225,7 @@ fn main(vertexOutput: VertexOutput) -> vec4f {
     fragColor = heatmap_getColor(fragColor);
 #endif
 
-    fragColor = highlight_blendColor(fragColor);
+    fragColor = highlight_blendColor(fragColor, vertexOutput);
 
 #ifdef HAS_LAYER_OPACITY
     fragColor *= materialUniforms.layerOpacity;

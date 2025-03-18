@@ -7,6 +7,7 @@ import GraphicsTexture from "./GraphicsTexture";
 export default class GraphicsDevice {
     wgpu: GPUDevice;
     context: GPUCanvasContext;
+    gltfManager?: any;
     //@internal
     commandBuffers: GPUCommandBuffer[] = [];
     //@internal

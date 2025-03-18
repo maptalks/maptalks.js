@@ -3,10 +3,12 @@ import instance from './wgsl/instance';
 import invert_matrix from './wgsl/invert_matrix';
 import line_extrusion from './wgsl/line_extrusion';
 import mask from './wgsl/mask';
-import output from './wgsl/output';
+import get_output from './wgsl/output';
 import skin from './wgsl/skin';
 import vertex_color from './wgsl/vertex_color';
 import vsm_shadow from './wgsl/vsm_shadow';
+import draco_decode from './wgsl/draco_decode';
+import highlight from './wgsl/highlight';
 
 //Shader Chunks for includes
 const ShaderChunk = {
@@ -14,10 +16,12 @@ const ShaderChunk = {
     invert_matrix,
     line_extrusion,
     mask,
-    output,
+    get_output,
     skin,
     vertex_color,
-    vsm_shadow
+    vsm_shadow,
+    draco_decode,
+    highlight
 };
 /* eslint-enable camelcase */
 

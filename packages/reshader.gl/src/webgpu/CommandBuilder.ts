@@ -344,7 +344,9 @@ export default class CommandBuilder {
 }
 
 function meshHasUniform(mesh: Mesh, name: string, contextDesc: Record<string, any>) {
-    if (name === 'modelMatrix' || name === 'positionMatrix') {
+    if (name === 'modelMatrix' || name === 'positionMatrix' ||
+        name === 'polygonFill' || name === 'polygonOpacity' ||
+        name === 'lineColor' || name === 'lineOpacity') {
         return true;
     }
     return contextDesc[name] || mesh.hasUniform(name) || (mesh.material && mesh.material.hasUniform(name));

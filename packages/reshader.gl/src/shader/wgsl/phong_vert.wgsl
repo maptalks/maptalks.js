@@ -32,7 +32,7 @@ struct VertexInput {
 };
 
 struct VertexOutput {
-    @builtin(position) Position : vec4f,
+    @builtin(position) position : vec4f,
     @location($o) vFragPos: vec3f,
     @location($o) vNormal: vec3f,
 #ifdef HAS_MAP
@@ -47,7 +47,7 @@ struct VertexOutput {
 #ifdef HAS_COLOR || HAS_COLOR0
     @location($o) vColor: vec4f,
 #endif
-#ifdef HAS_EXTRUSION_OPACITY
+#if HAS_EXTRUSION_OPACITY
     @location($o) vExtrusionOpacity: f32,
 #endif
 #ifdef HAS_TANGENT
@@ -58,11 +58,14 @@ struct VertexOutput {
 
 struct MatrixUniforms {
     projMatrix: mat4x4f,
+    projViewMatrix: mat4x4f,
+};
+
+struct ModelUniforms {
     modelNormalMatrix: mat3x3f,
     modelViewMatrix: mat4x4f,
     modelMatrix: mat4x4f,
     positionMatrix: mat4x4f,
-    projViewMatrix: mat4x4f,
 };
 
 struct UvUniforms {
@@ -76,6 +79,7 @@ struct JitterUniforms {
 };
 
 @group(0) @binding($b) var<uniform> uniforms: MatrixUniforms;
+@group(0) @binding($b) var<uniform> modelUniforms: ModelUniforms;
 @group(0) @binding($b) var<uniform> uvUniforms: UvUniforms;
 @group(0) @binding($b) var<uniform> jitterUniforms: JitterUniforms;
 
@@ -88,53 +92,54 @@ struct JitterUniforms {
 #endif
 #include <vertex_color_vert>
 
-fn toTangentFrame(q: vec4f) -> vec3f {
+fn toTangentFrame1(q: vec4f) -> vec3f {
     return vec3f(0.0, 0.0, 1.0) +
            vec3f(2.0, -2.0, -2.0) * q.x * q.zwx +
            vec3f(2.0, 2.0, -2.0) * q.y * q.wzy;
 }
 
 fn toTangentFrame(q: vec4f, n: ptr<function, vec3f>, t: ptr<function, vec3f>) {
-    *n = toTangentFrame(q);
+    *n = toTangentFrame1(q);
     *t = vec3f(1.0, 0.0, 0.0) +
          vec3f(-2.0, 2.0, -2.0) * q.y * q.yxw +
          vec3f(-2.0, 2.0, 2.0) * q.z * q.zwx;
 }
 
 @vertex
-fn main(vertexInput: VertexInput, vertexOutput: VertexOutput) {
-#ifdef IS_LINE_EXTRUSION
-    let localPosition = getPosition(getLineExtrudePosition(vertexInput.aPosition));
+fn main(vertexInput: VertexInput) -> VertexOutput {
+    var vertexOutput : VertexOutput;
+#if IS_LINE_EXTRUSION
+    let localPosition = getPosition(getLineExtrudePosition(vertexInput.aPosition, vertexInput), vertexInput);
 #else
-    let localPosition = getPosition(vertexInput.aPosition);
+    let localPosition = getPosition(vertexInput.aPosition, vertexInput);
 #endif
-    let localPositionMatrix = getPositionMatrix();
+    let localPositionMatrix = getPositionMatrix(vertexOutput, modelUniforms.positionMatrix);
 
-    vertexOutput.vFragPos = (uniforms.modelMatrix * localPositionMatrix * localPosition).xyz;
+    vertexOutput.vFragPos = (modelUniforms.modelMatrix * localPositionMatrix * localPosition).xyz;
 
-#if defined(HAS_NORMAL) || defined(HAS_TANGENT)
-    let localNormalMatrix = uniforms.modelNormalMatrix * mat3x3f(localPositionMatrix);
+#if HAS_NORMAL || HAS_TANGENT
+    let localNormalMatrix = modelUniforms.modelNormalMatrix * mat3x3f(localPositionMatrix[0].xyz, localPositionMatrix[1].xyz, localPositionMatrix[2].xyz);
     var Normal: vec3f;
-#if defined(HAS_TANGENT)
+#if HAS_TANGENT
     var t: vec3f;
     toTangentFrame(vertexInput.aTangent, Normal, t);
     vertexOutput.vTangent = vec4f(localNormalMatrix * t, vertexInput.aTangent.w);
 #else
     Normal = decode_getNormal(vertexInput.aNormal);
 #endif
-    let localNormal = appendMorphNormal(Normal);
+    let localNormal = appendMorphNormal(Normal, vertexInput);
     vertexOutput.vNormal = normalize(localNormalMatrix * localNormal);
 #else
     vertexOutput.vNormal = vec3f(0.0);
 #endif
 
     var jitteredProjection = uniforms.projMatrix;
-    jitteredProjection[2].xy += jitterUniforms.halton.xy / jitterUniforms.outSize.xy;
+    // jitteredProjection[2].xy += jitterUniforms.halton.xy / jitterUniforms.outSize.xy;
 
 #ifdef HAS_MASK_EXTENT
-    vertexOutput.gl_Position = jitteredProjection * getMaskPosition(localPositionMatrix * localPosition, uniforms.modelMatrix);
+    vertexOutput.position = jitteredProjection * getMaskPosition(localPositionMatrix * localPosition, uniforms.modelMatrix);
 #else
-    vertexOutput.gl_Position = jitteredProjection * uniforms.modelViewMatrix * localPositionMatrix * localPosition;
+    vertexOutput.position = jitteredProjection * modelUniforms.modelViewMatrix * localPositionMatrix * localPosition;
 #endif
 
 #ifdef HAS_MAP
@@ -151,9 +156,9 @@ fn main(vertexInput: VertexInput, vertexOutput: VertexOutput) {
     vertexOutput.vExtrusionOpacity = vertexInput.aExtrusionOpacity;
 #endif
 
-#if defined(HAS_COLOR)
+#if HAS_COLOR
     vertexOutput.vColor = vertexInput.aColor / 255.0;
-#elif defined(HAS_COLOR0)
+#elif HAS_COLOR0
 #if COLOR0_SIZE == 3
     vertexOutput.vColor = vec4f(vertexInput.aColor0 / 255.0, 1.0);
 #else
@@ -161,7 +166,7 @@ fn main(vertexInput: VertexInput, vertexOutput: VertexOutput) {
 #endif
 #endif
 
-#if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
+#if HAS_SHADOWING && !HAS_BLOOM
     shadow_computeShadowPars(localPositionMatrix * localPosition);
 #endif
 
@@ -169,10 +174,10 @@ fn main(vertexInput: VertexInput, vertexOutput: VertexOutput) {
     vertexOutput.vUvRegion = vertexInput.uvRegion / 65535.0;
 #endif
 
-    highlight_setVarying();
+    highlight_setVarying(vertexInput, vertexOutput);
 
 #ifdef HAS_VERTEX_COLOR
-    vertexColor_update();
+    vertexColor_update(vertexInput, vertexOutput);
 #endif
     return vertexOutput;
 }
