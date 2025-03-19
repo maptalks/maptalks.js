@@ -33,7 +33,7 @@ class TileLayerGLRenderer extends TileLayerRendererable(LayerAbstractRenderer) {
 
     constructor(layer: TileLayer) {
         super(layer);
-        this.init(layer);
+        this.init();
     }
 
     onDrawTileStart(context, parentContext: RenderContext) {

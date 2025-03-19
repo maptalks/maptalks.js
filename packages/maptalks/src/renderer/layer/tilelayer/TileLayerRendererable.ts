@@ -108,18 +108,18 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
         avgMinAltitude: number;
         avgMaxAltitude: number;
 
-        init(layer) {
+        init() {
             this.tilesInView = {};
             this.tilesLoading = {};
             this._parentTiles = [];
             this._childTiles = [];
             this._tileQueue = [];
             this._tileQueueIds = new Set();
-            const tileSize = layer.getTileSize().width;
-            this.tileCache = new LRUCache(layer.options['maxCacheSize'] * tileSize / 512 * tileSize / 512, (tile: Tile) => {
+            const tileSize = this.layer.getTileSize().width;
+            this.tileCache = new LRUCache(this.layer.options['maxCacheSize'] * tileSize / 512 * tileSize / 512, (tile: Tile) => {
                 this.deleteTile(tile);
             });
-            if (Browser.decodeImageInWorker && this.layer.options['decodeImageInWorker'] && (layer.options['renderer'] === 'gl' || !Browser.safari && !Browser.iosWeixin)) {
+            if (Browser.decodeImageInWorker && this.layer.options['decodeImageInWorker'] && (this.layer.options['renderer'] === 'gl' || !Browser.safari && !Browser.iosWeixin)) {
                 this._tileImageWorkerConn = new TileWorkerConnection();
             }
             this._compareTiles = compareTiles.bind(this);
