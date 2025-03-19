@@ -67,8 +67,8 @@
         const device = new GraphicsDevice(gpuDevice, context)
         const renderer = new Renderer(device);
         const shader = new MeshShader({
-            vert,
-            frag,
+            wgslVert: vert,
+            wgslFrag: frag,
             name: 'cube',
             extraCommandProps: {
                 cull: {

@@ -131,12 +131,12 @@
                 let oneOverShadowDepthTextureSize = 1.0 / shadowDepthTextureSize;
                 for (var y = -1; y <= 1; y++) {
                     for (var x = -1; x <= 1; x++) {
-                    let offset = vec2f(vec2(x, y)) * oneOverShadowDepthTextureSize;
+                        let offset = vec2f(vec2(x, y)) * oneOverShadowDepthTextureSize;
 
-                    visibility += textureSampleCompare(
-                        shadowMap, shadowMapSampler,
-                        input.shadowPos.xy + offset, input.shadowPos.z - 0.0007
-                    );
+                        visibility += textureSampleCompare(
+                            shadowMap, shadowMapSampler,
+                            input.shadowPos.xy + offset, input.shadowPos.z - 0.0007
+                        );
                     }
                 }
                 visibility /= 9.0;
@@ -156,7 +156,7 @@
         const device = new GraphicsDevice(gpuDevice, context)
         const renderer = new Renderer(device);
         const shadowShader = new MeshShader({
-            vert: vertShadow,
+            wgslVert: vertShadow,
             // frag: fragShadow,
             name: 'shadow',
             extraCommandProps: {
@@ -170,8 +170,8 @@
             }
         });
         const shader = new MeshShader({
-            vert,
-            frag,
+            wgslVert: vert,
+            wgslFrag: frag,
             name: 'cube',
             extraCommandProps: {
                 depth: {
