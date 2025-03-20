@@ -18,7 +18,10 @@ const texCoords = new Uint16Array([
 
 const MESH_TO_TEST = { properties: {}};
 
-class TileLayerGLRenderer extends TileLayerRendererable(LayerAbstractRenderer) {
+
+const DEBUG_POINT = new maptalks.Point(20, 20);
+
+class TileLayerGLRenderer2 extends TileLayerRendererable(LayerAbstractRenderer) {
     //@internal
     _tileGeometry: reshader.Geometry;
     //@internal
@@ -328,8 +331,76 @@ class TileLayerGLRenderer extends TileLayerRendererable(LayerAbstractRenderer) {
             }
         }
     }
+
+    renderTerrainSkin(regl, terrainLayer, skinImages) {
+        const tileSize = this.layer.getTileSize().width;
+        const debug = terrainLayer.options['debug'];
+        for (let i = 0; i < skinImages.length; i++) {
+            const { tile, texture } = skinImages[i];
+            if (!tile.image) {
+                continue;
+            }
+            const canvas = document.createElement('canvas');
+            skinImages[i].canvas = canvas;
+            canvas.width = tileSize;
+            canvas.height = tileSize;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(tile.image, 0, 0);
+            if (debug) {
+                const { x, y, z } = tile.info;
+                drawDebug(ctx, `${x}/${y}/${z}`, 'yellow', 1, 0, 0, tileSize, tileSize, -18);
+            }
+            texture({
+                data: canvas,
+                width: tileSize,
+                height: tileSize,
+                flipY: true,
+                min: 'linear mipmap linear',
+                mag: 'linear'
+            });
+        }
+    }
+
+    createTerrainTexture(regl) {
+        const tileSize = this.layer.getTileSize().width;
+        const config = {
+            width: tileSize,
+            height: tileSize,
+            flipY: true,
+            min: 'linear mipmap linear',
+            mag: 'linear',
+            depthStencil: false,
+            depth: false,
+            stencil: false
+        };
+        return regl.texture(config);
+    }
+
+    deleteTerrainTexture(texture) {
+        texture.destroy();
+    }
 }
 
-maptalks.TileLayer.registerRenderer<typeof TileLayerGLRenderer>('gl', TileLayerGLRenderer);
+maptalks.TileLayer.registerRenderer<typeof TileLayerGLRenderer2>('gl', TileLayerGLRenderer2);
 
-export default TileLayerGLRenderer;
+export default TileLayerGLRenderer2;
+
+
+function drawDebug(ctx, debugInfo, color, lineWidth, left, top, width, height, textOffsetY = 0) {
+    ctx.font = '20px monospace';
+    ctx.fillStyle = color;
+    DEBUG_POINT.y = height - 30;
+    ctx.globalAlpha = 1;
+    ctx.fillText(debugInfo, DEBUG_POINT.x + left, DEBUG_POINT.y + top + textOffsetY);
+    ctx.globalAlpha = 0.6;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lineWidth;
+    ctx.beginPath();
+    ctx.moveTo(left, top);
+    ctx.lineTo(left + width, top);
+    ctx.lineTo(left + width, top + height);
+    ctx.lineTo(left, top + height);
+    ctx.lineTo(left, top);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+}
