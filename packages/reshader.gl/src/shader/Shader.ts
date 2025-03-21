@@ -1,6 +1,7 @@
 import { extend, isString, isFunction, isNumber, isSupportVAO, hasOwn, hashCode } from '../common/Util.js';
 
 import ShaderLib from '../shaderlib/ShaderLib.js';
+import WgslShaderLib from '../shaderlib/WgslShaderLib';
 import { KEY_DISPOSED } from '../common/Constants.js';
 import { ShaderUniformValue } from '../types/typings';
 import PipelineDescriptor from '../webgpu/common/PipelineDesc';
@@ -369,7 +370,9 @@ export class GLShader {
 
 
     _compileSource() {
-        this.vert = ShaderLib.compile(this.vert);
+        if (this.vert) {
+            this.vert = ShaderLib.compile(this.vert);
+        }
         if (this.frag) {
             this.frag = ShaderLib.compile(this.frag);
         }
@@ -426,8 +429,9 @@ export default class GPUShader extends GLShader {
             // preprocess vert and frag codes
             const uniformValues = this.context;
             const fbo = this._gpuFramebuffer;
-            const vert = this.wgslVert || this.vert;
-            const frag = this.wgslFrag || this.frag;
+            // 不同于glsl，因为不支持预处理指令，wgsl需要在创建command时编译源代码
+            const { vert, frag } = this._compileWGSLSource(mesh.defines);
+
             const builder = new CommandBuilder(this.name, device, vert, frag, mesh, this.contextDesc, uniformValues);
             const pipelineDesc = new PipelineDescriptor();
             const extraCommandProps = extend({}, this.extraCommandProps || {}, commandProps || {});
@@ -437,6 +441,15 @@ export default class GPUShader extends GLShader {
             // regl
             return super.createMeshCommand(device, mesh, commandProps);
         }
+    }
+
+    _compileWGSLSource(defines) {
+        const vert = WgslShaderLib.compile(this.wgslVert, defines);
+        let frag;
+        if (this.wgslFrag) {
+            frag = WgslShaderLib.compile(this.wgslFrag, defines);
+        }
+        return { vert, frag };
     }
 
     run(deviceOrRegl: any, command, props) {
@@ -513,7 +526,7 @@ export default class GPUShader extends GLShader {
             if (isNumber(elements)) {
                 passEncoder.draw(drawCount, instanceCount, drawOffset);
             } else {
-                passEncoder.setIndexBuffer(elements.getBuffer(), elements.getFormat());
+                passEncoder.setIndexBuffer(elements, elements.itemType);
                 passEncoder.drawIndexed(drawCount, instanceCount, drawOffset);
             }
         }

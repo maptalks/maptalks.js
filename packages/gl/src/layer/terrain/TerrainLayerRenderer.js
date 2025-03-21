@@ -3,6 +3,8 @@ import TerrainWorkerConnection from './TerrainWorkerConnection';
 import * as reshader from '@maptalks/reshader.gl';
 import skinVert from './glsl/terrainSkin.vert';
 import skinFrag from './glsl/terrainSkin.frag';
+import skinWgslVert from './wgsl/terrain_skin_vert.wgsl';
+import skinWgslFrag from './wgsl/terrain_skin_frag.wgsl';
 import { getCascadeTileIds, getSkinTileScale, getSkinTileRes, createEmtpyTerrainHeights, EMPTY_TERRAIN_GEO } from './TerrainTileUtil';
 import { createMartiniData } from './util/martini';
 import { isNil, extend, pushIn } from '../util/util';
@@ -11,18 +13,20 @@ import TerrainLitPainter from './TerrainLitPainter';
 import MaskRendererMixin from '../mask/MaskRendererMixin';
 import LRUPool from './LRUPool';
 
+const { TileLayerRendererable, LayerAbstractRenderer } = maptalks.renderer;
+
 const POINT0 = new maptalks.Point(0, 0);
 const POINT1 = new maptalks.Point(0, 0);
 const TEMP_EXTENT = new maptalks.PointExtent(0, 0, 0, 0);
 const TEMP_POINT = new maptalks.Point(0, 0);
-
-const DEBUG_POINT = new maptalks.Point(20, 20);
 
 const TERRAIN_CLEAR = {
     color: [0, 0, 0, 0],
     depth: 1,
     stencil: 0
 };
+
+const SKIN_LEVEL_LIMIT = 1;
 
 function terrainExaggeration(terrainData, exaggeration = 1) {
     if (isNil(exaggeration) || !terrainData || !terrainData.mesh || exaggeration === 1) {
@@ -39,7 +43,12 @@ function terrainExaggeration(terrainData, exaggeration = 1) {
 
 
 
-class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayerCanvasRenderer) {
+class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(LayerAbstractRenderer)) {
+
+    constructor(...args) {
+        super(...args);
+        this.init();
+    }
 
     isDrawable() {
         return true;
@@ -1340,11 +1349,12 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
 
     initContext() {
         super.initContext();
-        const { regl } = this.context;
+        const { regl, device } = this.context;
         this.regl = regl;
+        this.device = device;
 
-        this.renderer = new reshader.Renderer(this.regl);
-        this.layer.fire('contextcreate', { regl: this.regl });
+        this.renderer = new reshader.Renderer(regl || device);
+        this.layer.fire('contextcreate', { regl, device });
     }
 
     _createPainter() {
@@ -1382,6 +1392,8 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         this._skinShader = new reshader.MeshShader({
             vert: skinVert,
             frag: skinFrag,
+            wgslVert: skinWgslVert,
+            wgslFrag: skinWgslFrag,
             extraCommandProps: {
                 cull: {
                     enable: false
@@ -1455,59 +1467,6 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
 
 export default TerrainLayerRenderer;
 
-const SKIN_LEVEL_LIMIT = 1;
-
-maptalks.renderer.TileLayerCanvasRenderer.include({
-    renderTerrainSkin(regl, terrainLayer, skinImages) {
-        const tileSize = this.layer.getTileSize().width;
-        const debug = terrainLayer.options['debug'];
-        for (let i = 0; i < skinImages.length; i++) {
-            const { tile, texture } = skinImages[i];
-            if (!tile.image) {
-                continue;
-            }
-            const canvas = document.createElement('canvas');
-            skinImages[i].canvas = canvas;
-            canvas.width = tileSize;
-            canvas.height = tileSize;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(tile.image, 0, 0);
-            if (debug) {
-                const { x, y, z } = tile.info;
-                drawDebug(ctx, `${x}/${y}/${z}`, 'yellow', 1, 0, 0, tileSize, tileSize, -18);
-            }
-            texture({
-                data: canvas,
-                width: tileSize,
-                height: tileSize,
-                flipY: true,
-                min: 'linear mipmap linear',
-                mag: 'linear'
-            });
-        }
-    },
-
-    createTerrainTexture(regl) {
-        const tileSize = this.layer.getTileSize().width;
-        const config = {
-            width: tileSize,
-            height: tileSize,
-            flipY: true,
-            min: 'linear mipmap linear',
-            mag: 'linear',
-            depthStencil: false,
-            depth: false,
-            stencil: false
-        };
-        return regl.texture(config);
-    },
-
-    deleteTerrainTexture(texture) {
-        texture.destroy();
-    }
-});
-
-
 // function drawTileImage(ctx, extent, terrainOffset, tile, res, debug) {
 //     const scale = tile.info.res / res;
 //     const { info, image } = tile;
@@ -1526,25 +1485,6 @@ maptalks.renderer.TileLayerCanvasRenderer.include({
 //         drawDebug(ctx, `${x}/${y}/${z}`, 'yellow', 1, left + dx, top + dy, width, height, -18);
 //     }
 // }
-
-function drawDebug(ctx, debugInfo, color, lineWidth, left, top, width, height, textOffsetY = 0) {
-    ctx.font = '20px monospace';
-    ctx.fillStyle = color;
-    DEBUG_POINT.y = height - 30;
-    ctx.globalAlpha = 1;
-    ctx.fillText(debugInfo, DEBUG_POINT.x + left, DEBUG_POINT.y + top + textOffsetY);
-    ctx.globalAlpha = 0.6;
-    ctx.strokeStyle = color;
-    ctx.lineWidth = lineWidth;
-    ctx.beginPath();
-    ctx.moveTo(left, top);
-    ctx.lineTo(left + width, top);
-    ctx.lineTo(left + width, top + height);
-    ctx.lineTo(left, top + height);
-    ctx.lineTo(left, top);
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-}
 
 function computeSkinDimension(terrainTileInfo, tile, terrainTileSize) {
     const { res, extent2d: terrainExtent, offset: terrainOffset } = terrainTileInfo;

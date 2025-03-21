@@ -13,14 +13,18 @@ struct Scene {
     @group(0) @binding(5) var debugTexture: texture_2d<f32>;
 #endif
 
+struct VertexOutput {
+    @location(0) vTexCoord : vec2f,
+};
+
 @fragment
 fn main(
-    @location(0) vTexCoord : vec2f,
+    input : VertexOutput,
 ) -> @location(0) vec4f {
-    var fragColor = textureSample(baseColorTexture, baseColorTextureSampler, vTexCoord);
+    var fragColor = textureSample(baseColorTexture, baseColorTextureSampler, input.vTexCoord);
     fragColor *= scene.baseColor;
     #if HAS_DEBUG
-        var debugColor = textureSample(debugTexture, debugTextureSampler, vTexCoord);
+        var debugColor = textureSample(debugTexture, debugTextureSampler, input.vTexCoord);
         fragColor = vec4f(
             debugColor.rgb + fragColor.rgb * (1.0 - debugColor.a),
             debugColor.a + fragColor.a * (1.0 - debugColor.a)

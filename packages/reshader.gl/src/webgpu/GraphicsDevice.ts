@@ -7,6 +7,7 @@ import GraphicsTexture from "./GraphicsTexture";
 export default class GraphicsDevice {
     wgpu: GPUDevice;
     context: GPUCanvasContext;
+    gltfManager?: any;
     //@internal
     commandBuffers: GPUCommandBuffer[] = [];
     //@internal
@@ -104,7 +105,7 @@ export default class GraphicsDevice {
 
     // implementation of regl.buffer
     buffer(options) {
-        return Geometry.createBuffer(this.wgpu, options, options.name);
+        return Geometry.createBuffer(this, options, options.name);
     }
 
     // implementation of regl.framebuffer

@@ -48,13 +48,18 @@ export default class CollectionPainter extends Class {
             return null;
         }
         resetBBOX(this.bbox);
+        let hasDirty = false;
         this._eachPainter((painter: Painter) => {
             const bbox = painter.getRenderBBOX();
             if (!validateBBOX(bbox)) {
+                hasDirty = true;
                 return;
             }
             setBBOX(this.bbox, bbox);
         });
+        if (hasDirty) {
+            return null;
+        }
         if (validateBBOX(this.bbox)) {
             return this.bbox;
         }

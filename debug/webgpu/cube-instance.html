@@ -24,7 +24,7 @@
         import { cubeVertexArray, cubeVertexColors, cubeVertexCount } from 'meshes';
         import { mat4, vec3 } from 'gl-matrix';
         //https://webgpu.github.io/webgpu-samples/?sample=instancedCube
-        const vert = `
+        const wgslVert = `
             struct Uniforms {
                 modelMatrix : mat4x4f,
             }
@@ -54,7 +54,7 @@
                 return output;
             }
         `;
-        const frag = `
+        const wgslFrag = `
             @fragment
             fn main(
                 @location(0) fragPosition: vec4f
@@ -70,8 +70,8 @@
         const device = new GraphicsDevice(gpuDevice, context)
         const renderer = new Renderer(device);
         const shader = new MeshShader({
-            vert,
-            frag,
+            wgslVert,
+            wgslFrag,
             name: 'cube-instance',
             extraCommandProps: {
                 cull: {

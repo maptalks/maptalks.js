@@ -56,6 +56,10 @@ export default class Geometry {
 
     static createElementBuffer(device: any, elements: any): any {
         if (device.wgpu) {
+            if (Array.isArray(elements)) {
+                const ctor = findElementConstructor(elements);
+                elements = new ctor(elements);
+            }
             return createGPUBuffer(device, elements, GPUBufferUsage.INDEX, 'index buffer');
         } else {
             // regl
@@ -406,7 +410,13 @@ export default class Geometry {
             }
             if (!this.desc.static && !this.elements.destroy) {
                 const elements = this.elements;
-                this.indices = new Uint16Array(elements.length);
+                let ctor;
+                if (Array.isArray(this.elements)) {
+                    ctor = findElementConstructor(this.elements);
+                } else {
+                    ctor = this.elements.constructor;
+                }
+                this.indices = new ctor(elements.length);
                 for (let i = 0; i < elements.length; i++) {
                     this.indices[i] = elements[i];
                 }
@@ -1165,3 +1175,18 @@ function createGPUBuffer(device, data, usage, label) {
     buffer.itemType = getGPUVertexType(data); // uint8, sint8, uint16, sint16, uint32, sint32, float32
     return buffer;
 }
+function findElementConstructor(data: number[]): any {
+    let max = -Infinity;
+    for (let i = 0; i < data.length; i++) {
+        if (data[i] > max) {
+            max = data[i];
+        }
+    }
+    return getIndexArrayType(max);
+}
+
+function getIndexArrayType(max) {
+    if (max < 65536) return Uint16Array;
+    return Uint32Array;
+}
+

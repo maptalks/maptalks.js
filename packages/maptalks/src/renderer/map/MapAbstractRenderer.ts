@@ -415,6 +415,7 @@ class MapAbstractRenderer extends MapRenderer {
 
         if (this._containerIsCanvas) {
             //container is a <canvas> element.
+            this.createCanvas();
             return;
         }
 
@@ -584,11 +585,15 @@ class MapAbstractRenderer extends MapRenderer {
     }
 
     createCanvas() {
-        this.canvas = createEl('canvas') as HTMLCanvasElement;
-        const panels = this.map.getPanels();
-        const canvasContainer = panels.canvasContainer;
-        canvasContainer.appendChild(this.canvas);
-        this._updateCanvasSize();
+        if (this._containerIsCanvas) {
+            this.canvas = this.map.getContainer() as HTMLCanvasElement;
+        } else {
+            this.canvas = createEl('canvas') as HTMLCanvasElement;
+            const panels = this.map.getPanels();
+            const canvasContainer = panels.canvasContainer;
+            canvasContainer.appendChild(this.canvas);
+            this._updateCanvasSize();
+        }
         this.createContext().then(() => {
             this.ready = true;
         });

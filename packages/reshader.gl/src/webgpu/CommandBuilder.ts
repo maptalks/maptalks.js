@@ -344,7 +344,9 @@ export default class CommandBuilder {
 }
 
 function meshHasUniform(mesh: Mesh, name: string, contextDesc: Record<string, any>) {
-    if (name === 'modelMatrix' || name === 'positionMatrix') {
+    if (name === 'modelMatrix' || name === 'positionMatrix' ||
+        name === 'polygonFill' || name === 'polygonOpacity' ||
+        name === 'lineColor' || name === 'lineOpacity') {
         return true;
     }
     return contextDesc[name] || mesh.hasUniform(name) || (mesh.material && mesh.material.hasUniform(name));
@@ -364,17 +366,17 @@ function sortByBinding(a: GPUBindGroupLayoutEntry, b: GPUBindGroupLayoutEntry): 
 
 function parseLocationIndex(code: string) {
     let index = 0;
-    let parsedIn = code.replaceAll('$in', () => '' + index++);
+    let parsedIn = code.replaceAll('$i', () => '' + index++);
 
     index = 0;
-    let parsedOut = parsedIn.replaceAll('$out', () => '' + index++);
+    let parsedOut = parsedIn.replaceAll('$o', () => '' + index++);
 
     return parsedOut;
 }
 
 function parseBindingIndex(code: string, index: number) {
     return {
-        source: code.replaceAll('$bi', () => '' + index++),
+        source: code.replaceAll('$b', () => '' + index++),
         index
     };
 }

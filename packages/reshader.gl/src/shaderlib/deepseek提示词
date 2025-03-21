@@ -1,0 +1,2 @@
+// ds提示词:
+// 请把下面的glsl代码片段转换为wgsl，假设wgsl支持glsl中的预处理器指令; 假设wgsl支持#include预处理指令，用来引入外部代码片段; 除texture_2d和sampler以外的uniform变量尽量放到一个struct中, 给这个struct和对应的uniform变量起一个不易重复的名字; sampler变量名命名为对应的texture_2d变量名加上Sampler; 数据类型采用更简单的写法，例如vec3<f32>简写为vec3f; 函数中出现的未定义变量名，假设来自一个名为uniforms的全局变量; 假设函数中用到的varying变量来自一个struct参数vertexOutput; 假设函数中用到的attribute变量都来自一个struct参数:

@@ -17,7 +17,7 @@ export default class TileLayerCanvasRenderer extends TileLayerRenderable(CanvasR
      */
     constructor(layer: TileLayer) {
         super(layer);
-        this.init(layer);
+        this.init();
     }
 
     _drawTiles(tiles, parentTiles, childTiles, placeholders, parentContext, missedTiles, incompleteTiles) {

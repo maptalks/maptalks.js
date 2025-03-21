@@ -81,7 +81,10 @@ export default class PipelineDescriptor {
             }
 
             if (stencilProps.func) {
-                const stencilCmp = stencilProps.func.cmp;
+                let stencilCmp = stencilProps.func.cmp;
+                if (!stencilCmp) {
+                    stencilCmp = 'always';
+                }
                 const stencilFunc = isFunction(stencilCmp) && stencilCmp(null, uniformValues) || stencilCmp;
                 stencilFrontCompare = toGPUCompareFunction(stencilFunc);
             }

@@ -3,19 +3,29 @@
  * https://github.com/GEngine-js/GEngine/blob/e9c0e2c4a28cc6b9fec133c75958b80115e53a63/src/shader/WGSLParseDefines.ts
  * ISC License
  */
+import { extend } from "../../common/Util";
 import { ShaderDefines } from "../../types/typings";
 
+const defineConstantRexg = /\s*#define\s+(\w+)\s+(\w+)/g;
 const preprocessorSymbols = /#([^\s]*)(\s*)/gm;
-const defineRexg = /\b[0-9A-Z_&&||]+\b/g;
+const defineRexg = /\b[0-9A-Z][0-9A-Z_&&\| ]+\b/g;
 const isNumeric = (n) => !isNaN(n);
-export function WGSLParseDefines(shader: string, defines: ShaderDefines): string {
+export function WGSLParseDefines(shader: string, meshDefines: ShaderDefines): string {
 	if (!shader) return undefined;
+    // extract define const in shader
+    const matches = shader.matchAll(defineConstantRexg);
+    const defines = extend({}, meshDefines);
+    for (const match of matches) {
+        defines[match[1]] = match[2];
+    }
+    // delete define const in shader
+    shader = shader.replace(/^\s+#define.*$/gm, '');
 	// parse shader inner const define
 	const notDefineConstShader = ParseDefinesConst(shader, defines);
 	// filter "&&","||",number
 	const rexgDefines = notDefineConstShader
 		.match(defineRexg)
-		?.filter((define) => !["&&", "||", "_"].includes(define) && !isNumeric(define) && define != "");
+        ?.filter((define) => !isNumeric(define) && define != "");
 	// normallize defines
 	const normalizeDefines = getNormalizeDefines(rexgDefines, defines);
 	// split Shader
@@ -38,6 +48,7 @@ function ParseDefines(strings: Array<string>, values: Array<boolean | number>): 
 
 			switch (match[1]) {
 				case "if":
+                case "ifdef":
 					if (match.index + match[0].length != frag.length) {
 						throw new Error("#if must be immediately followed by a template expression (ie: ${value})");
 					}
@@ -117,10 +128,10 @@ function getNormalizeDefines(rexgDefines: Array<string>, defines: any) {
 	return rexgDefines?.map?.((define) => {
 		if (define?.includes("&&") || define?.includes("||")) {
 			if (define.includes("&&")) {
-				const splitDefines = define.split("&&");
+				const splitDefines = define.split("&&").map(key => key.trim());
 				return getAndDefineValue(splitDefines, defines);
 			}
-			const splitDefines = define.split("||");
+			const splitDefines = define.split("||").map(key => key.trim());
 			return !getOrDefineValue(splitDefines, defines);
 		}
 		return defines[define];
@@ -128,12 +139,20 @@ function getNormalizeDefines(rexgDefines: Array<string>, defines: any) {
 }
 function getAndDefineValue(splitDefines: Array<string>, defines: ShaderDefines): boolean {
 	let total = 0;
-	splitDefines?.forEach?.((defineKey) => (total += Number(defines[defineKey]) > 1 ? 1 : Number(defines[defineKey])));
+	splitDefines?.forEach?.((defineKey) => (total += Number(defines[defineKey] || 0) > 1 ? 1 : Number(defines[defineKey] || 0)));
 	return total === splitDefines.length;
 }
 function getOrDefineValue(splitDefines: Array<string>, defines: ShaderDefines): boolean {
 	let total = 0;
-	splitDefines?.forEach?.((defineKey) => (total += Number(defines[defineKey]) > 1 ? 1 : Number(defines[defineKey])));
+	splitDefines?.forEach?.((defineKey) => {
+        let value;
+        if (defineKey.startsWith('!')) {
+            value = !defines[defineKey];
+        } else {
+            value = defines[defineKey];
+        }
+        return (total += !!value ? 1 : 0);
+    });
 	return total === 0;
 }
 function splitShaderStrsByDefine(shader: string, defines: Array<string>): Array<string> {
