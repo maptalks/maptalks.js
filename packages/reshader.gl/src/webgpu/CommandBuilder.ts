@@ -53,20 +53,31 @@ export default class CommandBuilder {
 
         // dynamically assign location index with $in and $out
         vert = parseLocationIndex(vert);
-        frag = parseLocationIndex(frag);
+        if (frag) {
+            frag = parseLocationIndex(frag);
+        }
 
         // dynamically assign binding index with $bi
         const { source, index } = parseBindingIndex(vert, 0)
         vert = source;
-        const { source: fragSource } = parseBindingIndex(frag, index)
-        frag = fragSource;
+        if (frag) {
+            const { source: fragSource } = parseBindingIndex(frag, index)
+            frag = fragSource;
+        }
+
 
         const vertReflect = new WgslReflect(vert);
         const vertexInfo = this._formatBufferInfo(vertReflect, mesh);
-        const fragReflect = new WgslReflect(frag);
+        let fragReflect;
+        if (frag) {
+            fragReflect = new WgslReflect(frag);
+        }
 
         const vertGroups = vertReflect.getBindGroups();
-        const fragGroups = fragReflect.getBindGroups();
+        let fragGroups = [];
+        if (fragReflect) {
+            fragGroups = fragReflect.getBindGroups();
+        }
         // generate bind group layout
         const layout = this._createBindGroupLayout(vertGroups, fragGroups, mesh, this.uniformValues);
         const pipeline = this._createPipeline(device, vert, vertexInfo, frag, layout, mesh, pipelineDesc, fbo);
@@ -293,6 +304,10 @@ export default class CommandBuilder {
                 cullMode: pipelineDesc.cullMode
             }
         };
+        const sampleCount = fbo && fbo.colorTexture && fbo.colorTexture.config.sampleCount;
+        if (sampleCount) {
+            pipelineOptions.multisample = { count: sampleCount };
+        }
         const depthEnabled = !fbo || !!fbo.depthTexture;
 
         if (depthEnabled) {
@@ -306,11 +321,12 @@ export default class CommandBuilder {
             };
         }
         if (fragModule) {
+            const fboPresentationFormat = fbo && fbo.colorTexture && fbo.colorTexture.gpuFormat.format;
             pipelineOptions.fragment = {
                 module: fragModule,
                 targets: [
                     {
-                        format: this._presentationFormat,
+                        format: fboPresentationFormat || this._presentationFormat,
                     }
                 ],
             };
@@ -336,7 +352,7 @@ export default class CommandBuilder {
                         dstFactor: pipelineDesc.blendAlphaDst,
                         operation: 'add'
                     }
-                };
+                }
             }
         }
         return device.createRenderPipeline(pipelineOptions);

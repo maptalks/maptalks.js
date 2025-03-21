@@ -8,6 +8,8 @@ import WeatherPainter from './weather/WeatherPainter';
 import PostProcess from './postprocess/PostProcess.js';
 import AnalysisPainter from '../analysis/AnalysisPainter.js';
 
+const { LayerAbstractRenderer } = maptalks.renderer;
+
 const EMPTY_COLOR = [0, 0, 0, 0];
 const DEFAULT_LIGHT_DIRECTION = [1, 1, -1];
 
@@ -21,7 +23,7 @@ const noSsrFilter = m => !m.ssr;
 const SSR_STATIC = 1;
 const SSR_IN_ONE_FRAME = 2;
 
-class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
+class GroupGLLayerRenderer extends LayerAbstractRenderer {
 
     setToRedraw() {
         this.setRetireFrames();
@@ -264,7 +266,9 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             const outlineTex = this.regl.texture({
                 width: width,
                 height: height,
-                format: 'rgba4'
+                format: 'rgba4',
+                // needed by webgpu
+                sampleCount: 4
             });
             fbo = this._outlineFBO = this.regl.framebuffer({
                 width: width,
@@ -354,6 +358,10 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     _isUseMultiSample() {
+        if (this.device) {
+            // in webgpu, multisample is set in device.createPipeline, doesn't need further more setup.
+            return false;
+        }
         const regl = this.regl;
         const isWebGL2 = regl.limits['version'].indexOf('WebGL 2.0') === 0;
         return isWebGL2 && this.layer.options.antialias;
@@ -472,43 +480,35 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
     initContext() {
         super.initContext();
+        if (!this.context) {
+            return;
+        }
+        this.forEachRenderer(renderer => {
+            if (renderer.canvas) {
+                renderer.initContext();
+            }
+        });
         const layer = this.layer;
-        const { regl, gl, reglGL } = this.context;
+        const { regl, gl, reglGL, device } = this.context;
+        this.device = device;
         this.regl = regl;
         this.reglGL = reglGL;
         this.gl = gl;
         this._jitter = [0, 0];
-        this._groundPainter = new GroundPainter(this.regl, this.layer);
-        this._envPainter = new EnvironmentPainter(this.regl, this.layer);
+        const graphics = regl || device;
+        this._groundPainter = new GroundPainter(graphics, this.layer);
+        this._envPainter = new EnvironmentPainter(graphics, this.layer);
         const weatherConfig = this.layer.getWeatherConfig();
-        this._weatherPainter = new WeatherPainter(this.regl, layer, weatherConfig);
-        this._analysisPainter = new AnalysisPainter(this.regl, layer);
+        this._weatherPainter = new WeatherPainter(graphics, layer, weatherConfig);
+        this._analysisPainter = new AnalysisPainter(graphics, layer);
 
         const sceneConfig =  this.layer._getSceneConfig() || {};
         const config = sceneConfig && sceneConfig.postProcess;
         const ratio = config && config.antialias && config.antialias.jitterRatio || 0.2;
         this._jitGetter = new reshader.Jitter(ratio);
-        this._postProcessor = new PostProcess(this.regl, this.layer, this._jitGetter);
+        this._postProcessor = new PostProcess(graphics, this.layer, this._jitGetter);
 
-        this._shadowProcess = new ShadowProcess(this.regl, this.layer);
-    }
-
-    _initGL() {
-        const layer = this.layer;
-        const gl = this.gl;
-        const extensions = layer.options['extensions'];
-        if (extensions) {
-            extensions.forEach(ext => {
-                gl.getExtension(ext);
-            });
-        }
-        const optionalExtensions = layer.options['optionalExtensions'];
-        if (optionalExtensions) {
-            optionalExtensions.forEach(ext => {
-                gl.getExtension(ext);
-            });
-        }
-        this.gl.clearColor(0.0, 0.0, 0.0, 0.0);
+        this._shadowProcess = new ShadowProcess(graphics, this.layer);
     }
 
     clearContext() {
@@ -586,13 +586,6 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
     }
 
-    getCanvasImage() {
-        this.forEachRenderer(renderer => {
-            renderer.getCanvasImage();
-        });
-        return super.getCanvasImage();
-    }
-
     _getLayers() {
         return this.layer._getLayers();
     }
@@ -635,7 +628,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         if (fbo) {
             config['framebuffer'] = fbo;
         }
-        this.regl.clear(config);
+        (this.regl || this.device).clear(config);
     }
 
     onRemove() {
@@ -671,6 +664,10 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         delete this.gl;
         delete this.regl;
         super.onRemove();
+    }
+
+    hitDetect(point) {
+        return false;
     }
 
     _destroyFramebuffers() {
@@ -1134,7 +1131,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
     _createSimpleFBOInfo(forceTexture, width, height) {
         width = width || this.canvas.width, height = height || this.canvas.height;
-        const regl = this.regl;
+        const regl = this.regl || this.device;
         const useMultiSamples = this._isUseMultiSample();
         let color;
         if (!forceTexture && useMultiSamples) {
@@ -1151,7 +1148,9 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 mag: 'nearest',
                 type,
                 width,
-                height
+                height,
+                // needed by webgpu
+                sampleCount: 4
             });
         }
         const fboInfo = {
@@ -1170,10 +1169,10 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         let { width, height } = this.canvas;
         width = width || 1;
         height = height || 1;
-        const regl = this.regl;
+        const regl = this.regl || this.device;
         const fboInfo = this._createSimpleFBOInfo();
         const useMultiSamples = this._isUseMultiSample();
-        const enableDepthTex = regl.hasExtension('WEBGL_depth_texture');
+        const enableDepthTex = !this.regl || regl.hasExtension('WEBGL_depth_texture');
         if (useMultiSamples) {
             const renderbuffer = depthTex || regl.renderbuffer({
                 width,

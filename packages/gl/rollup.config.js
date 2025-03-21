@@ -24,6 +24,26 @@ function glsl() {
     };
 }
 
+function wgsl() {
+    return {
+        transform(code, id) {
+            if (/\.wgsl$/.test(id) === false) return null;
+            let transformedCode = JSON.stringify(code.trim()
+                // .replace(/(^\s*)|(\s*$)/gm, '')
+                .replace(/\r/g, '')
+                .replace(/[ \t]*\/\/.*\n/g, '') // remove //
+                .replace(/[ \t]*\/\*[\s\S]*?\*\//g, '') // remove /* */
+                .replace(/\n{2,}/g, '\n')); // # \n+ to \n;;
+            transformedCode = `export default ${transformedCode};`;
+            return {
+                code: transformedCode,
+                map: { mappings: '' }
+            };
+        }
+    };
+}
+
+
 const production = process.env.BUILD === 'production';
 const outputFile = pkg.main;
 const plugins = production ? [terser({
@@ -45,6 +65,7 @@ const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}
 const outro = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg.version}');`;
 const configPlugins = [
     glsl(),
+    wgsl(),
     nodeResolve({
         // mainFields: ''
         // module : true,
@@ -209,7 +230,7 @@ module.exports.push({
         'file': outputFile
     },
     watch: {
-        include: ['src/**/*.js', 'src/**/*.ts', 'src/**/*.glsl',  'src/**/*.vert',  'src/**/*.frag',
+        include: ['src/**/*.js', 'src/**/*.ts', 'src/**/*.glsl',  'src/**/*.wgsl', 'src/**/*.vert',  'src/**/*.frag',
             '../reshader.gl/dist/*.es.js', 'build/worker.js', 'build/gltf-loader-bundle.js']
     }
 });

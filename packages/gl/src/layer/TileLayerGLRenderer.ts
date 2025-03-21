@@ -350,14 +350,22 @@ class TileLayerGLRenderer2 extends TileLayerRendererable(LayerAbstractRenderer) 
                 const { x, y, z } = tile.info;
                 drawDebug(ctx, `${x}/${y}/${z}`, 'yellow', 1, 0, 0, tileSize, tileSize, -18);
             }
-            texture({
+            const config = {
                 data: canvas,
                 width: tileSize,
                 height: tileSize,
                 flipY: true,
                 min: 'linear mipmap linear',
                 mag: 'linear'
-            });
+            };
+            if (texture.update) {
+                //webgpu
+                texture.update(config);
+            } else {
+                //webgl
+                texture(config);
+            }
+
         }
     }
 

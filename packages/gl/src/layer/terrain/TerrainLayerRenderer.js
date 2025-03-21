@@ -504,7 +504,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                     tile: extend({}, tiles[i]),
                     layer: skinLayer,
                     refs: new Set(),
-                    texture: renderer.createTerrainTexture(this.regl)
+                    texture: renderer.createTerrainTexture(this.regl || this.device)
                 };
                 this._saveCachedSkinImage(tileId, cached);
             }
@@ -581,7 +581,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
 
         } else {
             TERRAIN_CLEAR.framebuffer = tileImage.skin;
-            this.regl.clear(TERRAIN_CLEAR);
+            (this.regl || this.device).clear(TERRAIN_CLEAR);
         }
         this._initSkinShader();
         const enableDebug = this.layer.options.debug;
@@ -677,7 +677,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         ctx.lineTo(0, 0);
         ctx.stroke();
 
-        return this.regl.texture({
+        return (this.regl || this.device).texture({
             data: canvas,
             flipY: true,
             mag: 'linear',
@@ -690,7 +690,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         // 乘以2是为了瓦片（缩放时）被放大后保持清晰度
         const width = tileSize * 2;
         const height = tileSize * 2;
-        const regl = this.regl;
+        const regl = this.regl || this.device;
         const colorsTexture = tileInfo.colorsTexture;
         let color;
         if (colorsTexture && colorsTexture instanceof Uint8Array) {
@@ -1390,6 +1390,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
 
         const tileSize = this.layer.getTileSize().width;
         this._skinShader = new reshader.MeshShader({
+            name: 'terrain-skin',
             vert: skinVert,
             frag: skinFrag,
             wgslVert: skinWgslVert,
@@ -1415,7 +1416,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             }
         });
 
-        const aPosition = new Int8Array([
+        const aPosition = new Int16Array([
             -1, -1,
             1, 1,
             -1, 1,
@@ -1427,7 +1428,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         this._skinGeometry = this._skinGeometry || new reshader.Geometry({
             aPosition
         }, 0, 6, { positionSize: 2 });
-        this._skinGeometry.generateBuffers(this.regl);
+        this._skinGeometry.generateBuffers(this.regl || this.device);
         this._skinScene = this._skinScene || new reshader.Scene();
     }
 

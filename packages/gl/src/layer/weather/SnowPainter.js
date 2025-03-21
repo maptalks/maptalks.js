@@ -150,7 +150,7 @@ class SnowPainter {
         );
         geometry.generateBuffers(this._regl);
         const material = new reshader.Material({
-            perlinTexture: this._regl.texture({ with: 2, height: 2 })
+            perlinTexture: this._regl.texture({ width: 2, height: 2 })
         });
         const mesh = new reshader.Mesh(geometry, material);
         return mesh;

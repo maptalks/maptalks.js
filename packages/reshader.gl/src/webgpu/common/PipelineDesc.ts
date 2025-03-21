@@ -34,7 +34,7 @@ export default class PipelineDescriptor {
         this.topology = toTopology(primitive);
 
         const depthEnabled = !fbo || !!fbo.depthTexture;
-        const stencilEnabled = !fbo || fbo.depthTexture.gpuFormat.isDepthStencil;
+        const stencilEnabled = !fbo || fbo.depthTexture && fbo.depthTexture.gpuFormat.isDepthStencil;
 
         let depthBias, depthBiasSlopeScale;
         if (depthEnabled && commandProps.polygonOffset && isEnable(commandProps.polygonOffset.enable, uniformValues)) {
@@ -97,30 +97,31 @@ export default class PipelineDescriptor {
         const blendProps = commandProps.blend;
         if (blendProps && isEnable(blendProps.enable, uniformValues)) {
             if (blendProps.func) {
-                if (blendProps.src) {
-                    const blendSrc = isFunction(blendProps.src) && blendProps.src(null, uniformValues) || blendProps.src;
+                const blendFunc = blendProps.func;
+                if (blendFunc.src) {
+                    const blendSrc = isFunction(blendFunc.src) && blendFunc.src(null, uniformValues) || blendFunc.src;
                     blendAlphaSrc = toGPUBlendFactor(blendSrc);
                     blendColorSrc = blendAlphaSrc;
                 }
-                if (blendProps.dst) {
-                    const blendDst = isFunction(blendProps.dst) && blendProps.dst(null, uniformValues) || blendProps.dst;
+                if (blendFunc.dst) {
+                    const blendDst = isFunction(blendFunc.dst) && blendFunc.dst(null, uniformValues) || blendFunc.dst;
                     blendAlphaDst = toGPUBlendFactor(blendDst);
                     blendColorDst = blendAlphaDst;
                 }
-                if (blendProps.srcAlpha) {
-                    const blendSrcAlpha = isFunction(blendProps.srcAlpha) && blendProps.srcAlpha(null, uniformValues) || blendProps.srcAlpha;
+                if (blendFunc.srcAlpha) {
+                    const blendSrcAlpha = isFunction(blendFunc.srcAlpha) && blendFunc.srcAlpha(null, uniformValues) || blendFunc.srcAlpha;
                     blendAlphaSrc = toGPUBlendFactor(blendSrcAlpha);
                 }
-                if (blendProps.srcRGB) {
-                    const blendSrcRGB = isFunction(blendProps.srcRGB) && blendProps.srcRGB(null, uniformValues) || blendProps.srcRGB;
+                if (blendFunc.srcRGB) {
+                    const blendSrcRGB = isFunction(blendFunc.srcRGB) && blendFunc.srcRGB(null, uniformValues) || blendFunc.srcRGB;
                     blendColorSrc = toGPUBlendFactor(blendSrcRGB);
                 }
-                if (blendProps.dstAlpha) {
-                    const blendDstAlpha = isFunction(blendProps.dstAlpha) && blendProps.dstAlpha(null, uniformValues) || blendProps.dstAlpha;
+                if (blendFunc.dstAlpha) {
+                    const blendDstAlpha = isFunction(blendFunc.dstAlpha) && blendFunc.dstAlpha(null, uniformValues) || blendFunc.dstAlpha;
                     blendAlphaDst = toGPUBlendFactor(blendDstAlpha);
                 }
-                if (blendProps.dstRGB) {
-                    const blendDstRGB = isFunction(blendProps.dstRGB) && blendProps.dstRGB(null, uniformValues) || blendProps.dstRGB;
+                if (blendFunc.dstRGB) {
+                    const blendDstRGB = isFunction(blendFunc.dstRGB) && blendFunc.dstRGB(null, uniformValues) || blendFunc.dstRGB;
                     blendColorDst = toGPUBlendFactor(blendDstRGB);
                 }
             }

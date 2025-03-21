@@ -159,8 +159,7 @@ class MapAbstractRenderer extends MapRenderer {
     }
 
     //need redraw all layer,cause by collision/crs change/view change etc...
-    //@internal
-    _checkIfNeedToRedrawLayers(layers: Layer[]) {
+    checkIfNeedToRedrawLayers(layers: Layer[]) {
         if (this.isSpatialReferenceChanged()) {
             return true;
         }
@@ -173,7 +172,7 @@ class MapAbstractRenderer extends MapRenderer {
     }
 
     drawLayers(layers: Layer[], framestamp: number) {
-        const needRedraw = this._checkIfNeedToRedrawLayers(layers);
+        const needRedraw = this.checkIfNeedToRedrawLayers(layers);
         if (!needRedraw && !this.map.options['forceRedrawPerFrame']) {
             return false;
         }

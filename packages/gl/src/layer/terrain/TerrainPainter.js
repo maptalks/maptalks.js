@@ -7,18 +7,22 @@ import { EMPTY_TERRAIN_GEO } from './TerrainTileUtil.js';
 import vert from './glsl/terrain.vert';
 import frag from './glsl/terrain.frag';
 
+import wgslVert from './wgsl/terrain_vert.wgsl';
+import wgslFrag from './wgsl/terrain_frag.wgsl';
+
 const V3 = [];
 const SCALE3 = [];
 
 class TerrainPainter {
     constructor(layer) {
         this.layer = layer;
-        this.regl = layer.getRenderer().regl;
-        this.renderer = new reshader.Renderer(this.regl);
+        const renderer = layer.getRenderer();
+        this.graphics = renderer.regl || renderer.device;
+        this.renderer = new reshader.Renderer(this.graphics);
         this._leafScene = new reshader.Scene();
         const pixels = new Uint8Array(16);
         pixels.fill(255);
-        this._emptyTileTexture = this.regl.texture({
+        this._emptyTileTexture = this.graphics.texture({
             width: 2,
             height: 2,
             data: pixels
@@ -54,20 +58,25 @@ class TerrainPainter {
             mesh.geometry.updateData('aPosition', positions);
             mesh.geometry.updateData('aTexCoord', texcoords);
             mesh.geometry.setElements(triangles);
+            mesh.geometry.generateBuffers(this.graphics);
         } else {
-            const geo = empty ? this._emptyTerrainGeometry : new reshader.Geometry({
-                aPosition: positions,
-                aTexCoord: texcoords
-            },
-            triangles,
-            0);
+            const geo = empty ?
+                this._emptyTerrainGeometry :
+                new reshader.Geometry({
+                    aPosition: positions,
+                    aTexCoord: texcoords
+                },
+                triangles,
+                0);
+            if (geo !== this._emptyTerrainGeometry) {
+                geo.generateBuffers(this.graphics);
+            }
             if (mesh) {
                 mesh.geometry = geo;
             } else {
                 mesh = new reshader.Mesh(geo, null, {
                     disableVAO: true
                 });
-                geo.generateBuffers(this.regl);
             }
         }
         if (!mesh.uniforms.skin) {
@@ -194,8 +203,11 @@ class TerrainPainter {
         const uniformDeclares = [];
         ContextUtil.fillIncludes(defines, uniformDeclares, context);
         this.shader = new reshader.MeshShader({
+            name: 'terrain-mesh',
             vert,
             frag,
+            wgslVert,
+            wgslFrag,
             uniforms: uniformDeclares.concat([
                 {
                     name: 'modelViewMatrix',
@@ -322,7 +334,7 @@ class TerrainPainter {
         },
         triangles,
         0);
-        this._emptyTerrainGeometry.generateBuffers(this.regl);
+        this._emptyTerrainGeometry.generateBuffers(this.graphics);
     }
 }
 

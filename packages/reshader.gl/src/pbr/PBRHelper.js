@@ -1,3 +1,4 @@
+import createREGL from '@maptalks/regl';
 import { renderToCube } from '../common/RenderHelper.js';
 import DataUtils from '../common/DataUtils';
 
@@ -13,6 +14,22 @@ import coefficients from './SH.js';
 import skyboxRawFrag from '../skybox/skybox.frag';
 import ShaderLib from '../shaderlib/ShaderLib.js';
 
+let defaultRegl;
+function getDefaultREGL() {
+    if (!defaultRegl) {
+        const canvas = document.createElement('canvas');
+        // use webgl 2 as default regl
+        const gl = canvas.getContext('webgl2');
+        defaultRegl = createREGL({
+            gl
+        });
+        defaultRegl.on('lost', () => {
+            defaultRegl.destroy();
+            defaultRegl = null;
+        });
+    }
+    return defaultRegl;
+}
 
 const skyboxFrag = ShaderLib.compile(skyboxRawFrag);
 // import irradianceFS from './glsl/helper/irradiance_convolution.frag';
@@ -30,6 +47,7 @@ const skyboxFrag = ShaderLib.compile(skyboxRawFrag);
  * @param config - config
  */
 export function createIBLMaps(regl, config = {}) {
+    regl = getREGL(regl);
     // config values
 
     const envTexture = config.envTexture;
@@ -388,7 +406,12 @@ const quadTexcoords = new Int8Array([
     1.0, 0.0,
 ]);
 
+function getREGL(regl) {
+    return regl.vao && regl || getDefaultREGL();
+}
+
 export function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
+    regl = getREGL(regl);
     size = size || 256;
     sampleSize = sampleSize || 1024;
     roughnessLevels = roughnessLevels || 256;

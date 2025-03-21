@@ -18,6 +18,14 @@ export default class GraphicsTexture {
         this.update(this.config);
     }
 
+    get width() {
+        return this.texture && this.texture.width || this.config && this.config.width;
+    }
+
+    get height() {
+        return this.texture && this.texture.width || this.config && this.config.height;
+    }
+
     // called when minFilter or magFilter changed
     updateFilter() {
         this._clearBindGroups();
@@ -59,11 +67,16 @@ export default class GraphicsTexture {
                 :
                 GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT;
 
-            texture = device.createTexture({
+            const options = {
                 size: [width, height, 1],
                 format,
                 usage
-            });
+            } as GPUTextureDescriptor;
+            if (config.sampleCount) {
+                options.sampleCount = config.sampleCount;
+            }
+            texture = device.createTexture(options);
+
             if (config.data) {
                 if (isArray(config.data)) {
                     let data =config.data;
@@ -73,7 +86,9 @@ export default class GraphicsTexture {
                     device.queue.writeTexture(
                         { texture: texture },
                         data.buffer,
-                        {},
+                        {
+                            bytesPerRow: width * this.gpuFormat.bytesPerTexel
+                        },
                         [width, height]
                     );
                 } else {
