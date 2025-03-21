@@ -123,8 +123,8 @@ function ParseDefines(strings: Array<string>, values: Array<boolean | number>): 
 function ParseDefinesConst(sourceShader: string, defines: ShaderDefines) {
 	if (!defines) return sourceShader;
 	let result = sourceShader;
-	const constDefineKeys = Object.keys(defines)?.filter?.((key) => key != key.toUpperCase());
-	constDefineKeys?.forEach?.((key: string) => {
+    const keys = Object.keys(defines);
+	keys?.forEach?.((key: string) => {
 		result = result.replaceAll(key, defines[key] + '');
 	});
 	return result;
