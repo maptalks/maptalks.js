@@ -228,7 +228,7 @@ class TileLayer extends Layer {
     _renderer: TileLayerCanvasRenderer;
     //record spatial reference in current rendering frame
     //@internal
-    _tempSr: SpatialReference;
+    _spatialRef: SpatialReference;
     options: TileLayerOptionsType;
 
     /**
@@ -324,7 +324,7 @@ class TileLayer extends Layer {
 
     //@internal
     _isPyramidMode() {
-        const sr = this._tempSr || this.getSpatialReference();
+        const sr = this._spatialRef || this.getSpatialReference();
         return !this._disablePyramid && !this._hasOwnSR && this.options['pyramidMode'] && sr && sr.isPyramid();
     }
 
@@ -361,7 +361,7 @@ class TileLayer extends Layer {
             }
             return this._rootNodes;
         }
-        const sr = this._tempSr || this.getSpatialReference();
+        const sr = this._spatialRef || this.getSpatialReference();
         const res = sr.getResolution(0);
         const tileConfig = this._getTileConfig();
         const fullExtent = sr.getFullExtent();
@@ -458,7 +458,7 @@ class TileLayer extends Layer {
         const fov0 = map._getFovZ(0);
         const error = fov0 * (diagonalZ / cameraZ);
 
-        const sr = this._tempSr || this.getSpatialReference();
+        const sr = this._spatialRef || this.getSpatialReference();
         const res = sr.getResolution(0);
 
         return error * res / map.getResolution(0);
@@ -471,7 +471,7 @@ class TileLayer extends Layer {
         if (isNaN(+z)) {
             z = this._getTileZoom(map.getZoom());
         }
-        const sr = this._tempSr || this.getSpatialReference();
+        const sr = this._spatialRef || this.getSpatialReference();
         const maxZoom = Math.min(z, this.getMaxZoom(), this.getMaxAvailableZoom() || Infinity);
         // @ts-ignore
         const projectionView = map.projViewMatrix;
@@ -575,7 +575,7 @@ class TileLayer extends Layer {
         glRes: number
     ) {
         const z = node.z + 1;
-        const sr = this._tempSr || this.getSpatialReference();
+        const sr = this._spatialRef || this.getSpatialReference();
         const { idx, idy } = node;
 
         const renderer = parentRenderer || this.getRenderer();
@@ -988,7 +988,7 @@ class TileLayer extends Layer {
 
     getMinZoom(): number {
         const minZoom = this.options['minZoom'] || 0;
-        const sr = this._tempSr || this.getSpatialReference();
+        const sr = this._spatialRef || this.getSpatialReference();
         if (sr !== this.getMap().getSpatialReference()) {
             return Math.max(minZoom, this._srMinZoom);
         }
@@ -996,7 +996,7 @@ class TileLayer extends Layer {
     }
 
     getMaxZoom(): number {
-        const sr = this._tempSr || this.getSpatialReference();
+        const sr = this._spatialRef || this.getSpatialReference();
         if (sr !== this.getMap().getSpatialReference()) {
             return Math.min(super.getMaxZoom(), this._srMaxZoom);
         }
@@ -1028,7 +1028,7 @@ class TileLayer extends Layer {
      * @returns
      **/
     getMaxAvailableZoom(): number {
-        const sr = this._tempSr || this.getSpatialReference();
+        const sr = this._spatialRef || this.getSpatialReference();
         return this.options['maxAvailableZoom'] || sr && sr.getMaxZoom();
     }
 
@@ -1085,7 +1085,7 @@ class TileLayer extends Layer {
         const tileOffsets = {
             zoom: offset
         };
-        const sr = this._tempSr || this.getSpatialReference();
+        const sr = this._spatialRef || this.getSpatialReference();
         const res = sr.getResolution(z);
         // const glScale = res / map.getGLRes();
         let glScale;
@@ -1386,7 +1386,7 @@ class TileLayer extends Layer {
         if (this._hasOwnSR) {
             const map = this.getMap();
             const mapProjection = map.getProjection();
-            const sr = this._tempSr || this.getSpatialReference();
+            const sr = this._spatialRef || this.getSpatialReference();
             const projection = sr.getProjection();
             return projection.project(mapProjection.unproject(pcoord, out), out);
         } else {
@@ -1398,7 +1398,7 @@ class TileLayer extends Layer {
     _unproject(pcoord: Coordinate, out: Point) {
         if (this._hasOwnSR) {
             const map = this.getMap();
-            const sr = this._tempSr || this.getSpatialReference();
+            const sr = this._spatialRef || this.getSpatialReference();
             const mapProjection = map.getProjection();
             const projection = sr.getProjection();
             return mapProjection.project(projection.unproject(pcoord, out), out);
