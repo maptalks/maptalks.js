@@ -8,7 +8,8 @@ import {
     getImageBitMap,
     isString,
     getAbsoluteURL,
-    pushIn
+    pushIn,
+    mergeArray
 } from '../../../core/util';
 import Browser from '../../../core/Browser';
 import { default as TileLayer } from '../../../layer/tile/TileLayer';
@@ -206,12 +207,21 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
         //@internal
         _getTilesInCurrentFrame() {
             const map = this.getMap();
+            this.map = map;
             const layer = this.layer;
+            /**
+             * record spatial reference of current frame to avoid A large number of function(getSpatialReference) calls
+             * 瓦片计算里会用到大量的 getSpatialReference 调用，这里记录当前帧的空间参考，避免重复调用
+             * 其他的大量的重复函数调用,也可以采用类似的策略来提高性能
+             */
+            layer._spatialRef = layer.getSpatialReference();
             const terrainTileMode = layer._isPyramidMode() && layer.options['terrainTileMode'];
             let tileGrids = layer.getTiles();
             this._frameTileGrids = tileGrids;
             tileGrids = tileGrids.tileGrids;
             if (!tileGrids || !tileGrids.length) {
+                layer._spatialRef = null;
+                this.map = null;
                 return null;
             }
             const count = tileGrids.reduce((acc, curr) => acc + (curr && curr.tiles && curr.tiles.length || 0), 0);
@@ -250,7 +260,8 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
                 const gridTiles = tileGrid['tiles'];
                 const parents = tileGrid['parents'] || EMPTY_ARRAY;
                 const parentCount = parents.length;
-                const allTiles = isFirstRender ? gridTiles : parents.concat(gridTiles);
+                // const allTiles = isFirstRender ? gridTiles : parents.concat(gridTiles);
+                const allTiles = isFirstRender ? gridTiles : mergeArray(parents, gridTiles);
 
                 let placeholder;
                 if (allTiles.length) {
@@ -423,6 +434,8 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
             //     childTiles.length = 0;
             //     this._childTiles.length = 0;
             // }
+            layer._spatialRef = null;
+            this.map = null;
             return {
                 childTiles, missedTiles, parentTiles, tiles, incompleteTiles: incompleteTiles && Array.from(incompleteTiles.values()), placeholders, loading, loadingCount, tileQueue
             };
@@ -565,7 +578,8 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
          */
         //@internal
         _getLoadLimit(): number {
-            if (this.getMap().isInteracting()) {
+            const map = this.map || this.getMap();
+            if (map.isInteracting()) {
                 return this.layer.options['loadingLimitOnInteracting'];
             }
             return this.layer.options['loadingLimit'] || 0;
@@ -824,16 +838,17 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
         //@internal
         _findChildTiles(info: Tile['info']): Tile[] | any {
             const layer = this._getLayerOfTile(info.layer);
-            const terrainTileMode = layer && layer.options['terrainTileMode'] && layer._isPyramidMode();
+            const isPyramidMode = layer._isPyramidMode();
+            const terrainTileMode = layer && layer.options['terrainTileMode'] && isPyramidMode;
             if (!layer || !layer.options['background'] && !terrainTileMode || info.z > this.layer.getMaxZoom()) {
                 return EMPTY_ARRAY;
             }
-            const map = this.getMap();
+            const map = this.map || this.getMap();
             const children = [];
-            if (layer._isPyramidMode()) {
+            if (isPyramidMode) {
                 if (!terrainTileMode) {
                     // a faster one
-                    const layer = this._getLayerOfTile(info.layer);
+                    // const layer = this._getLayerOfTile(info.layer);
                     const zoomDiff = 2;
                     const cx = info.x * 2;
                     const cy = info.y * 2;
@@ -977,13 +992,15 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
 
         //@internal
         _findChildTilesAt(children: Tile[], pmin: number, pmax: number, layer: any, childZoom: number) {
+            const sr = layer._spatialRef || layer.getSpatialReference();
             const layerId = layer.getId(),
-                res = layer.getSpatialReference().getResolution(childZoom);
+                res = sr.getResolution(childZoom);
             if (!res) {
                 return;
             }
-            const dmin = layer._getTileConfig().getTileIndex(pmin, res),
-                dmax = layer._getTileConfig().getTileIndex(pmax, res);
+            const getTileConfig = layer._getTileConfig();
+            const dmin = getTileConfig.getTileIndex(pmin, res),
+                dmax = getTileConfig.getTileIndex(pmax, res);
             const sx = Math.min(dmin.idx, dmax.idx), ex = Math.max(dmin.idx, dmax.idx);
             const sy = Math.min(dmin.idy, dmax.idy), ey = Math.max(dmin.idy, dmax.idy);
             let id, tile;
@@ -1007,7 +1024,7 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
 
         //@internal
         _findParentTile(info: Tile['info'], targetDiff?: number): Tile {
-            const map = this.getMap(),
+            const map = this.map || this.getMap(),
                 layer = this._getLayerOfTile(info.layer);
             if (!layer || !layer.options['background'] && !layer.options['terrainTileMode']) {
                 return null;
@@ -1222,7 +1239,7 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
 
         //@internal
         _generatePlaceHolder(res: number): HTMLCanvasElement {
-            const map = this.getMap();
+            const map = this.map || this.getMap();
             const placeholder = this.layer.options['placeholder'];
             if (!placeholder || map.getPitch()) {
                 return null;

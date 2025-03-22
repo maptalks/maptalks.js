@@ -83,6 +83,21 @@ export function pushIn<T extends Array<any>>(...args: T[]) {
     return dest.length;
 }
 
+
+export function mergeArray<T extends Array<any>>(...args: T[]) {
+    const dest = [];
+    let idx = -1;
+    for (let i = 0; i < args.length; i++) {
+        const src = args[i];
+        if (src && src.length) {
+            for (let ii = 0, ll = src.length; ii < ll; ii++) {
+                dest[++idx] = src[ii];
+            }
+        }
+    }
+    return dest;
+}
+
 export function removeFromArray<T>(obj: T, array: T[]) {
     const i = array.indexOf(obj);
     if (i > -1) {
