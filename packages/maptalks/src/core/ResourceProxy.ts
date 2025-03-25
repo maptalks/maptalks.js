@@ -405,7 +405,14 @@ export function formatResourceUrl(path: string) {
 
 
 
-const parser = new DOMParser();
+let parser: DOMParser;
+
+function getDomParse() {
+    if (!parser) {
+        parser = new DOMParser();
+    }
+    return parser;
+}
 
 function getAttr(attributes: NamedNodeMap, key: string) {
     if (!attributes) {
@@ -415,7 +422,7 @@ function getAttr(attributes: NamedNodeMap, key: string) {
 }
 
 export function parseSVG(str: string) {
-    const xmlDoc = parser.parseFromString(str, 'text/xml');
+    const xmlDoc = getDomParse().parseFromString(str, 'text/xml');
     const root = xmlDoc.querySelector('svg');
     if (!root) {
         return null;
