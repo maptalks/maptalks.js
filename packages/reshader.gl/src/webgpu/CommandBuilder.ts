@@ -404,6 +404,9 @@ function parseBindingIndex(code: string, index: number) {
 }
 
 function removeComment(str) {
+    if (!str) {
+        return str;
+    }
     return str.replace(/[ \t]*\/\/.*\n/g, '') // remove //
         .replace(/[ \t]*\/\*[\s\S]*?\*\//g, ''); // remove /* */
 }

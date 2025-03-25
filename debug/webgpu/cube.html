@@ -39,11 +39,11 @@
 
             @vertex
             fn main(
-                @location(0) position : vec4f,
+                @location(0) aPosition : vec4f,
             ) -> VertexOutput {
                 var output : VertexOutput;
-                output.Position = cameraProjViewMatrix * uniforms.modelMatrix * position;
-                output.fragPosition = 0.5 * (position + vec4(1.0, 1.0, 1.0, 1.0));
+                output.Position = cameraProjViewMatrix * uniforms.modelMatrix * aPosition;
+                output.fragPosition = 0.5 * (aPosition + vec4(1.0, 1.0, 1.0, 1.0));
                 return output;
             }
         `;
@@ -82,6 +82,7 @@
         const geometry = new Geometry({
             position: cubeVertexArray
         }, cubeVertexCount, 0, {
+            positionSize: 4,
             positionAttribute: 'position'
         });
         geometry.generateBuffers(device);

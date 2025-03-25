@@ -37,7 +37,7 @@
 
             @vertex
             fn main(
-                @location(0) position : vec4f,
+                @location(0) aPosition : vec4f,
                 @location(1) instance_vectorA : vec4f,
                 @location(2) instance_vectorB : vec4f,
                 @location(3) instance_vectorC : vec4f
@@ -49,8 +49,8 @@
                     instance_vectorA.z, instance_vectorB.z, instance_vectorC.z, 0.0,
                     instance_vectorA.w, instance_vectorB.w, instance_vectorC.w, 1.0
                 );
-                output.Position = uniforms.modelMatrix * instanceMatrix * position;
-                output.fragPosition = 0.5 * (position + vec4(1.0));
+                output.Position = uniforms.modelMatrix * instanceMatrix * aPosition;
+                output.fragPosition = 0.5 * (aPosition + vec4(1.0));
                 return output;
             }
         `;
@@ -83,7 +83,8 @@
         const geometry = new Geometry({
             position: cubeVertexArray
         }, cubeVertexCount, 0, {
-            positionAttribute: 'position'
+            positionAttribute: 'position',
+            positionSize: 4
         });
         geometry.generateBuffers(device);
 

@@ -59,8 +59,8 @@
             @binding($b) @group(0) var<uniform> uniforms : Uniforms;
 
             struct VertexInput {
-                @location($i) position : vec4f,
-                @location($i) uv : vec2f,
+                @location($i) aPosition : vec4f,
+                @location($i) aTexCoord : vec2f,
                 // 动态插入 WgslShaderLib 里的代码片段
             }
 
@@ -77,10 +77,10 @@
                 input : VertexInput
             ) -> VertexOutput {
                 var output : VertexOutput;
-                output.Position = uniforms.modelMatrix * input.position;
-                output.fragUV = input.uv;
+                output.Position = uniforms.modelMatrix * input.aPosition;
+                output.fragUV = input.aTexCoord;
                 #ifdef HAS_POSITION_COLOR
-                    output.fragPosition = computeFragPosition(input.position);
+                    output.fragPosition = computeFragPosition(input.aPosition);
                 #endif
                 return output;
             }
@@ -139,6 +139,7 @@
             uv: cubeVertexUV
         }, cubeVertexCount, 0, {
             positionAttribute: 'position',
+            positionSize: 4,
             uv0Attribute: 'uv'
         });
         geometry.generateBuffers(device);

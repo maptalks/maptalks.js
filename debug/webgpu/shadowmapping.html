@@ -43,9 +43,9 @@
 
             @vertex
             fn main(
-                @location(0) position: vec4f
+                @location(0) aPosition: vec4f
             ) -> @builtin(position) vec4f {
-                return scene.lightViewProjMatrix * model.modelMatrix * position;
+                return scene.lightViewProjMatrix * model.modelMatrix * aPosition;
             }
 
         `;
@@ -80,12 +80,12 @@
 
             @vertex
             fn main(
-                @location(0) position: vec4f
+                @location(0) aPosition: vec4f
             ) -> VertexOutput {
                 var output : VertexOutput;
 
                 // XY is in (-1, 1) space, Z is in (0, 1) space
-                let posFromLight = scene.lightViewProjMatrix * model.modelMatrix * position;
+                let posFromLight = scene.lightViewProjMatrix * model.modelMatrix * aPosition;
 
                 // Convert XY to (0, 1)
                 // Y is flipped because texture coords are Y-down.
@@ -94,7 +94,7 @@
                     posFromLight.z
                 );
 
-                output.Position = scene.cameraViewProjMatrix * model.modelMatrix * position;
+                output.Position = scene.cameraViewProjMatrix * model.modelMatrix * aPosition;
                 output.fragPos = output.Position.xyz;
                 return output;
             }
