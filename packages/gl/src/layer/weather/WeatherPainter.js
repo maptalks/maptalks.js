@@ -36,7 +36,7 @@ class WeatherPainter {
             }),
             depth: true
         });
-        this.EMPTY_TEXTURE = this._regl.texture({ with: 2, height: 2 });
+        this.EMPTY_TEXTURE = this._regl.texture({ width: 2, height: 2 });
         this._rainPainter = new RainPainter(this._regl, this._layer);
         this._rainRipplesPass = new reshader.RainRipplesPass(this._regl, viewport);
         this._snowPainter = new SnowPainter(this._regl, this._layer);

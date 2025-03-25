@@ -330,7 +330,7 @@ export default class FBORayPicking {
         const { px, py, width, height } = this._getParams(x, y, tolerance, fbo);
         const pixels = new Uint8Array(4 * width * height);
 
-        const regl = this._renderer.regl;
+        const regl = this._renderer.device;
         const data = regl.read({
             data: pixels,
             x: px,
@@ -477,7 +477,7 @@ export default class FBORayPicking {
     }
 
     _getPickingId(x, y, width, height, pixels, meshes, uniforms) {
-        const regl = this._renderer.regl;
+        const regl = this._renderer.device;
         const fbo1 = this._getFBO1();
         this._clearFbo(fbo1);
         this._scene1.setMeshes(meshes);
@@ -497,7 +497,7 @@ export default class FBORayPicking {
     }
 
     _pickDepth(x, y, width, height, pixels, meshes, uniforms) {
-        const regl = this._renderer.regl;
+        const regl = this._renderer.device;
         const fbo1 = this._getFBO1();
         //second render to find depth value of point
 
@@ -556,7 +556,7 @@ export default class FBORayPicking {
     }
 
     _clearFbo(framebuffer) {
-        this._renderer.regl.clear({
+        this._renderer.device.clear({
             color: [1, 1, 1, 1],
             depth: 1,
             stencil: 255,
@@ -572,7 +572,7 @@ export default class FBORayPicking {
     }
 
     _getFBO1() {
-        const regl = this._renderer.regl;
+        const regl = this._renderer.device;
         const fbo = this._fbo;
         if (!this._fbo1) {
             this._fbo1 = regl.framebuffer(fbo.width, fbo.height);

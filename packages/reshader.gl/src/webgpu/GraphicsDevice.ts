@@ -146,6 +146,9 @@ export default class GraphicsDevice {
         }
         const device = this.wgpu;
         const colorTexture = framebuffer.colorTexture;
+        if (!colorTexture) {
+            return;
+        }
         const { bytesPerTexel } = colorTexture.gpuFormat;
         let bytesPerRow = options.width * bytesPerTexel;
 		bytesPerRow = Math.ceil( bytesPerRow / 256 ) * 256; // Align to 256 bytes

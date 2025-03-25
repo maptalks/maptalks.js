@@ -48,6 +48,8 @@
             }
         `;
         const frag = `
+            #define VERTEX_COLOR vec4f(1.0, 0.0, 0.0, 1.0)
+
             @fragment
             fn main(
                 @location(0) fragPosition: vec4f
@@ -86,8 +88,8 @@
 
         const mesh = new Mesh(geometry);
         mesh.setDefines({
-            'VERTEX_COLOR': 'vec4(1.0, 0.0, 0.0, 1.0)',
-            // 'USE_VERTEX_COLOR': 1
+
+            'USE_VERTEX_COLOR': 1
         });
         const scene = new Scene();
 

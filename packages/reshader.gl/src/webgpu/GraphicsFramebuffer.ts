@@ -1,3 +1,4 @@
+import { isNil } from '../common/Util';
 import GraphicsDevice from './GraphicsDevice';
 import GraphicsTexture from './GraphicsTexture';
 
@@ -31,12 +32,31 @@ export default class GraphicsFramebuffer {
         this._update();
     }
 
+    get color() {
+        return [this.colorTexture];
+    }
+
+    resize(width, height) {
+        //TODO implement GraphicsFramebuffer resize
+    }
+
     _update() {
         let color = this.options.colors && this.options.colors[0] || this.options.color;
-        const { width, height } = this.options;
+        let width, height;
+        if (color) {
+            width = color.width;
+            height = color.height;
+        }
+        if (!isNil(this.options.width)) {
+            width = this.options.width;
+        }
+        if (!isNil(this.options.height)) {
+            height = this.options.height;
+        }
         this.width = width;
         this.height = height;
         if (color && !(color instanceof GraphicsTexture)) {
+            color.sampleCount = 4;
             color = new GraphicsTexture(this.device, color);
         }
         let depth = this.options.depth;
@@ -70,7 +90,7 @@ export default class GraphicsFramebuffer {
         };
         if (color !== null) {
             this._renderPass.colorAttachments[0] = {
-                    view: this.colorTexture && this.colorTexture.getView(), // Assigned later
+                view: this.colorTexture && this.colorTexture.getView(), // Assigned later
                 clearValue: [0, 0, 0, 0],
                 loadOp: 'load',
                 storeOp: 'store',

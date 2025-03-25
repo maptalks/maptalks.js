@@ -89,7 +89,7 @@ export function toTextureFormat(format: string, type: string): GPUTexFormat {
 
     if (type === 'uint8') {
         if (format === 'rgba') {
-            return { format: 'rgba8unorm', bytesPerTexel: 1, isDepthStencil: false };
+            return { format: 'rgba8unorm', bytesPerTexel: 4, isDepthStencil: false };
         } else {
             //TODO 各种压缩纹理的类型
         }
@@ -98,5 +98,5 @@ export function toTextureFormat(format: string, type: string): GPUTexFormat {
     } else if (type === 'float') {
         return { format: 'r32float', bytesPerTexel: 4, isDepthStencil: false };
     }
-    return { format: 'rgba8unorm', bytesPerTexel: 1, isDepthStencil: false };
+    return { format: 'rgba8unorm', bytesPerTexel: 4, isDepthStencil: false };
 }

@@ -3,31 +3,35 @@
  * https://github.com/GEngine-js/GEngine/blob/e9c0e2c4a28cc6b9fec133c75958b80115e53a63/src/shader/WGSLParseDefines.ts
  * ISC License
  */
-import { extend } from "../../common/Util";
 import { ShaderDefines } from "../../types/typings";
 
-const defineConstantRexg = /\s*#define\s+(\w+)\s+(\w+)/g;
+const defineConstantRexg = /\s*#define\s+(\w+)\s+([^\n]+)/g;
 const preprocessorSymbols = /#([^\s]*)(\s*)/gm;
-const defineRexg = /\b[0-9A-Z][0-9A-Z_&&\| ]+\b/g;
+const usedDefineRexg = /#[^\s]*\s*\b[0-9A-Z][0-9A-Z_&&\|! ]+\b/g;
 const isNumeric = (n) => !isNaN(n);
 export function WGSLParseDefines(shader: string, meshDefines: ShaderDefines): string {
 	if (!shader) return undefined;
     // extract define const in shader
     const matches = shader.matchAll(defineConstantRexg);
-    const defines = extend({}, meshDefines);
+    const defineConsts = {};
     for (const match of matches) {
-        defines[match[1]] = match[2];
+        defineConsts[match[1]] = match[2];
     }
     // delete define const in shader
-    shader = shader.replace(/^\s+#define.*$/gm, '');
+    shader = shader.replace(/#define.*$/gm, '');
 	// parse shader inner const define
-	const notDefineConstShader = ParseDefinesConst(shader, defines);
+	const notDefineConstShader = ParseDefinesConst(shader, defineConsts);
 	// filter "&&","||",number
 	const rexgDefines = notDefineConstShader
-		.match(defineRexg)
-        ?.filter((define) => !isNumeric(define) && define != "");
+		.match(usedDefineRexg)
+        ?.filter((define) => !isNumeric(define) && define != "")
+        .map((define) => {
+            const firstSpace = define.indexOf(' ');
+            // remove #foo
+            return define.substring(firstSpace).trim();
+        });
 	// normallize defines
-	const normalizeDefines = getNormalizeDefines(rexgDefines, defines);
+	const normalizeDefines = getNormalizeDefines(rexgDefines, meshDefines);
 	// split Shader
 	const shaderStrs = splitShaderStrsByDefine(notDefineConstShader, rexgDefines);
 	// parse conditional macro definition
@@ -118,9 +122,10 @@ function ParseDefines(strings: Array<string>, values: Array<boolean | number>): 
 function ParseDefinesConst(sourceShader: string, defines: ShaderDefines) {
 	if (!defines) return sourceShader;
 	let result = sourceShader;
-	const constDefineKeys = Object.keys(defines)?.filter?.((key) => key != key.toUpperCase());
-	constDefineKeys?.forEach?.((key: string) => {
-		result = result.replaceAll(key, defines[key] + '');
+    const keys = Object.keys(defines);
+	keys?.forEach?.((key: string) => {
+        const regex = new RegExp('\\b' + key + '\\b', "g");
+		result = result.replace(regex, defines[key] + '');
 	});
 	return result;
 }

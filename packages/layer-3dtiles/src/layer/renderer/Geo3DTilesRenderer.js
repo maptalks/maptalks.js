@@ -31,7 +31,7 @@ let TileCacheRefCount = 0;
 
 
 
-export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.renderer.CanvasRenderer) {
+export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.renderer.LayerAbstractRenderer) {
 
     constructor(layer) {
         super(layer);
@@ -661,16 +661,18 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
     initContext() {
         super.initContext();
         const layer = this.layer;
-        const { regl, reglGL } = this.context;
+        const { regl, reglGL, device } = this.context;
         this.regl = regl;
+        this.device = device;
         this.gl = reglGL;
+        const graphics = regl || device;
         this.prepareWorker();
-        this.canvas.pickingFBO = this.canvas.pickingFBO || regl.framebuffer(this.canvas.width, this.canvas.height);
-        this.pickingFBO = this.canvas.pickingFBO || regl.framebuffer(this.canvas.width, this.canvas.height);
-        this.painter = new TileMeshPainter(regl, layer);
+        this.canvas.pickingFBO = this.canvas.pickingFBO || graphics.framebuffer(this.canvas.width, this.canvas.height);
+        this.pickingFBO = this.canvas.pickingFBO || graphics.framebuffer(this.canvas.width, this.canvas.height);
+        this.painter = new TileMeshPainter(graphics, layer);
 
         this.layer._resumeHighlights();
-        this.layer.fire('contextcreate', { regl });
+        this.layer.fire('contextcreate', { regl, device });
     }
 
     prepareWorker() {
@@ -912,6 +914,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         if (this.pickingFBO && (pickingFBO.width !== width || pickingFBO.height !== height)) {
             pickingFBO.resize(width, height);
         }
+        //TODO webgpu不支持sync read
         return this.painter.pick(x, y, options && options.tolerance);
     }
 

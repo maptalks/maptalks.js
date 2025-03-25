@@ -60,7 +60,7 @@ export default class Geometry {
                 const ctor = findElementConstructor(elements);
                 elements = new ctor(elements);
             }
-            return createGPUBuffer(device, elements, GPUBufferUsage.INDEX, 'index buffer');
+            return createGPUBuffer(device, elements, GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST, 'index buffer');
         } else {
             // regl
             return device.elements(elements);
@@ -69,7 +69,7 @@ export default class Geometry {
 
     static createBuffer(device: any, data: any, name?: string) {
         if (device.wgpu) {
-            return createGPUBuffer(device, data, GPUBufferUsage.VERTEX, name);
+            return createGPUBuffer(device, data, GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST, name);
         } else {
             // regl
             return device.buffer(data);
@@ -516,7 +516,7 @@ export default class Geometry {
      * @param {Number[] | Object} data - data to update
      * @returns this
      */
-    updateData(name: string, data: AttributeData): this {
+    updateData(name: string, data: AttributeData) {
         const buf = this.data[name];
         if (!buf) {
             return this;
@@ -532,7 +532,12 @@ export default class Geometry {
         }
         this.getVertexCount();
         if (buffer) {
-            buffer.buffer(data);
+            if (buffer.buffer.mapState) {
+                //webgpu buffer
+                buffer.buffer = this._updateGPUBuffer(buffer.buffer, data);
+            } else {
+                buffer.buffer(data);
+            }
             this.data[name] = buffer;
         }
         this._prepareData(false);
@@ -541,6 +546,22 @@ export default class Geometry {
         }
         delete this._reglData;
         return this;
+    }
+
+    _updateGPUBuffer(buffer : GPUBuffer, data : AttributeData) {
+        if (Array.isArray(data)) {
+            data = new Float32Array(data);
+        }
+        const device = (buffer as any).device;
+        const size = data.buffer.byteLength;
+        if (size > buffer.size) {
+            const newBuffer = createGPUBuffer(device, data, buffer.usage, buffer.label);
+            delete (buffer as any).device;
+            buffer.destroy();
+            return newBuffer;
+        }
+        device.wgpu.queue.writeBuffer(buffer, 0, data.buffer, 0, data.buffer.byteLength);
+        return buffer;
     }
 
     updateSubData(name: string, data: AttributeData, offset: number): this {
@@ -595,7 +616,16 @@ export default class Geometry {
         if (elements && elements.destroy) {
             this.elements = elements;
         } else if ((e as any).destroy) {
-            this.elements = (e as any)(elements);
+            if (e.mapState) {
+                //webgpu
+                if (Array.isArray(elements)) {
+                    const ctor = findElementConstructor(elements);
+                    elements = new ctor(elements);
+                }
+                this.elements = this._updateGPUBuffer(e, elements);
+            } else {
+                this.elements = (e as any)(elements);
+            }
         } else {
             this.elements = elements;
         }
@@ -1168,6 +1198,7 @@ function createGPUBuffer(device, data, usage, label) {
         usage,
         mappedAtCreation: true
     });
+    buffer.device = device;
     new ctor(buffer.getMappedRange()).set(data);
     buffer.unmap();
     buffer.itemCount = data.length;
