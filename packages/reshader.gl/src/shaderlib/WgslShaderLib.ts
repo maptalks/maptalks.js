@@ -9,6 +9,7 @@ import vertex_color from './wgsl/vertex_color';
 import vsm_shadow from './wgsl/vsm_shadow';
 import draco_decode from './wgsl/draco_decode';
 import highlight from './wgsl/highlight';
+import compute_texcoord from './wgsl/compute_texcoord';
 
 //Shader Chunks for includes
 const ShaderChunk = {
@@ -21,7 +22,8 @@ const ShaderChunk = {
     vertex_color,
     vsm_shadow,
     draco_decode,
-    highlight
+    highlight,
+    compute_texcoord
 };
 /* eslint-enable camelcase */
 

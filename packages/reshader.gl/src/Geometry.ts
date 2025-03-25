@@ -4,10 +4,11 @@ import { isNumber, extend, isArray, isSupportVAO, hasOwn, getBufferSize, isInStr
 import BoundingBox from './BoundingBox';
 import { KEY_DISPOSED } from './common/Constants';
 import { getGLTFLoaderBundle } from './common/GLTFBundle'
-import { ActiveAttributes, AttributeData, GeometryDesc, NumberArray } from './types/typings';
+import { ActiveAttributes, AttributeData, GeometryDesc, NumberArray, TypedArray } from './types/typings';
 import REGL from '@maptalks/regl';
 import { flatten } from 'earcut';
 import { getGPUVertexType, getFormatFromGLTFAccessor, getItemBytesFromGLTFAccessor } from './webgpu/common/Types';
+import { roundUp } from './webgpu/common/math';
 
 const EMPTY_VAO_BUFFER = [];
 
@@ -45,6 +46,16 @@ const DEFAULT_DESC: GeometryDesc = {
     'textureCoordMatrixAttribute': 'aTextureCoordMatrix'
 };
 
+function getSemantic(desc: GeometryDesc) {
+    const semantic = {};
+    for (const p in DEFAULT_DESC) {
+        if (p.endsWith('Attribute')) {
+            semantic[desc[p]] = DEFAULT_DESC[p];
+        }
+    }
+    return semantic;
+}
+
 let UID = 1;
 function GUID() {
     return UID++;
@@ -76,9 +87,28 @@ export default class Geometry {
         }
     }
 
+    static padGPUBufferAlignment(array:TypedArray, vertexCount: number): TypedArray {
+        const itemBytes = array.byteLength / vertexCount;
+        if (itemBytes % 4 === 0) {
+            return array;
+        }
+        const itemSize = array.length / vertexCount;
+        // 无法对齐时，itemSize 一定是1或者3，补位成2或者4就能对齐了
+        const ctor = array.constructor as any;
+        const newItemSize = itemSize + 1;
+        const newArray = new ctor(newItemSize * vertexCount);
+        for (let i = 0; i < vertexCount; i++) {
+            for (let ii = 0; ii < itemSize; ii++) {
+                newArray[i * newItemSize + ii] = array[i * itemSize + ii];
+            }
+        }
+        return newArray;
+    }
+
     data: Record<string, AttributeData>
     elements: any
     desc: GeometryDesc
+    semantic: Record<string, string>
     count: number
     properties: any
     indices: NumberArray
@@ -112,6 +142,7 @@ export default class Geometry {
 
         this.elements = elements;
         this.desc = extend({}, DEFAULT_DESC, desc);
+        this.semantic = getSemantic(this.desc);
         const pos = this._getPosAttribute();
         this.data[this.desc.positionAttribute] = pos;
         if (!count) {
@@ -345,6 +376,7 @@ export default class Geometry {
     }
 
     generateBuffers(device: any) {
+        const isWebGPU = !!device.wgpu;
         //generate regl buffers beforehand to avoid repeated bufferData
         //提前处理addBuffer插入的arraybuffer
         const allocatedBuffers = this._buffers;
@@ -365,6 +397,8 @@ export default class Geometry {
             }
             if (Array.isArray(data[key])) {
                 data[key] = new Float32Array(data[key]);
+            } else if (isWebGPU && isArray(data[key])) {
+                data[key] = Geometry.padGPUBufferAlignment(data[key] as TypedArray, vertexCount);
             }
             //如果调用过addBuffer，buffer有可能是ArrayBuffer
             if (data[key].buffer !== undefined && !(data[key].buffer instanceof ArrayBuffer)) {
@@ -963,7 +997,12 @@ export default class Geometry {
         if (this.elements) {
             const elements = this.elements;
             if (elements.destroy) {
-                size += elements['_elements'].buffer.byteLength;
+                if (elements['_elements']) {
+                    //regl
+                    size += elements['_elements'].buffer.byteLength;
+                } else {
+                    size += elements.size;
+                }
             } else if (elements.BYTES_PER_ELEMENT) {
                 size += elements.length * elements.BYTES_PER_ELEMENT;
             } else if (elements.length) {
@@ -1043,9 +1082,11 @@ export default class Geometry {
             if (!attr) {
                 continue;
             }
-            const info = vertexInfo[p];
+            const infoName = this.semantic[p] || p;
+            const info = vertexInfo[infoName];
             const accessorName = attr.accessorName;
             const byteStride = attr.byteStride;
+            let stridePadding = 0;
             if (byteStride && accessorName) {
                 // a GLTF accessor style attribute
                 const format = getFormatFromGLTFAccessor(attr.componentType, attr.itemSize);
@@ -1191,7 +1232,10 @@ function createGPUBuffer(device, data, usage, label) {
     }
     const ctor = data.constructor;
      // f32 in default
-    const size = Array.isArray(data) ? data.length * 4 : data.byteLength;
+    const byteLength = Array.isArray(data) ? data.length * 4 : data.byteLength;
+    // mappedAtCreation requires size is a multiplier of 4
+    // https://github.com/gpuweb/gpuweb/issues/5105
+    const size = roundUp(byteLength, 4);
     const buffer = device.wgpu.createBuffer({
         label,
         size,
@@ -1220,4 +1264,3 @@ function getIndexArrayType(max) {
     if (max < 65536) return Uint16Array;
     return Uint32Array;
 }
-

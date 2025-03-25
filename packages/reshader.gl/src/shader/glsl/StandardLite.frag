@@ -33,7 +33,7 @@ uniform float envRotationCos;
 uniform float rgbmRange;
 
 #if defined(HAS_MAP)
-    #include <computeTexcoord_frag>
+    #include <compute_texcoord_frag>
 #endif
 #ifdef HAS_BASECOLOR_MAP
     uniform sampler2D baseColorTexture;

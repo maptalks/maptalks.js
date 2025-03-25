@@ -1,8 +1,16 @@
 // ds魔法 请把下面的glsl代码转为wgsl，要求保留#开头的宏处理语句内的代码，变量名维持不变，非texture_2d和sampler类型的uniform变量放到一个struct中：
 struct VertexInput {
+#if HAS_DRACO_POSITION || HAS_COMPRESSED_INT16_POSITION
+    @location($i) aPosition: vec4i,
+#else
     @location($i) aPosition: vec3f,
+#endif
 #ifdef HAS_MAP
-    @location($i) aTexCoord: vec2f,
+    #if HAS_DRACO_TEXCOORD || HAS_COMPRESSED_INT16_TEXCOORD_0
+        @location($i) aTexCoord: vec2i,
+    #else
+        @location($i) aTexCoord: vec2f,
+    #endif
 #ifdef HAS_I3S_UVREGION
     @location($i) uvRegion: vec4f,
 #endif
@@ -109,9 +117,9 @@ fn toTangentFrame(q: vec4f, n: ptr<function, vec3f>, t: ptr<function, vec3f>) {
 fn main(vertexInput: VertexInput) -> VertexOutput {
     var vertexOutput : VertexOutput;
 #if IS_LINE_EXTRUSION
-    let localPosition = getPosition(getLineExtrudePosition(vertexInput.aPosition, vertexInput), vertexInput);
+    let localPosition = getPosition(getLineExtrudePosition(vec3f(vertexInput.aPosition.xyz), vertexInput), vertexInput);
 #else
-    let localPosition = getPosition(vertexInput.aPosition, vertexInput);
+    let localPosition = getPosition(vec3f(vertexInput.aPosition.xyz), vertexInput);
 #endif
     let localPositionMatrix = getPositionMatrix(vertexOutput, modelUniforms.positionMatrix);
 
@@ -143,12 +151,12 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
 #endif
 
 #ifdef HAS_MAP
-    let decodedTexCoord = decode_getTexcoord(vertexInput.aTexCoord);
+    let decodedTexCoord = decode_getTexcoord(vec2f(vertexInput.aTexCoord));
     vertexOutput.vTexCoord = decodedTexCoord * uvUniforms.uvScale + uvUniforms.uvOffset;
 #endif
 
 #ifdef HAS_AO_MAP
-    let decodedTexCoord1 = decode_getTexcoord(vertexInput.aTexCoord1);
+    let decodedTexCoord1 = decode_getTexcoord(vec2f(vertexInput.aTexCoord1));
     vertexOutput.vTexCoord1 = decodedTexCoord1 * uvUniforms.uvScale + uvUniforms.uvOffset;
 #endif
 

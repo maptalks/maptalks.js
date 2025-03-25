@@ -153,7 +153,7 @@
         const canvas = document.getElementById('canvas');
         const context = canvas.getContext('webgpu');
 
-        const device = new GraphicsDevice(gpuDevice, context)
+        const device = new GraphicsDevice(gpuDevice, context, adapter);
         const renderer = new Renderer(device);
         const shadowShader = new MeshShader({
             wgslVert: vertShadow,

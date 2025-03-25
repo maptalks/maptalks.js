@@ -1,15 +1,16 @@
 import { GraphicsDevice } from '@maptalks/reshader.gl';
 import { Layer, Map, renderer } from 'maptalks';
 
+let gpuAdapter;
 let gpuDevice;
 
 async function initGPUDevice() {
     if (gpuDevice) {
         return gpuDevice;
     }
-    const adapter = await navigator.gpu?.requestAdapter();
-    gpuDevice = await adapter?.requestDevice();
-    return gpuDevice;
+    gpuAdapter = await navigator.gpu?.requestAdapter();
+    gpuDevice = await gpuAdapter?.requestDevice();
+    return { gpuDevice, gpuAdapter };
 }
 
 export default class MapGPURenderer extends renderer.MapAbstractRenderer {
@@ -46,14 +47,17 @@ export default class MapGPURenderer extends renderer.MapAbstractRenderer {
         renderer.clearContext();
     }
 
+    isWebGPU() {
+        return true;
+    }
+
     async createContext() {
-        this.gpuDevice = await initGPUDevice();
+        const { gpuDevice, gpuAdapter } = await initGPUDevice();
         const context = this.canvas.getContext('webgpu');
-        this.device = new GraphicsDevice(this.gpuDevice, context);
+        this.device = new GraphicsDevice(gpuDevice, context, gpuAdapter);
 
         this.context = {
             context,
-            gpuDevice: this.gpuDevice,
             device: this.device,
             getImageData: (sx, sy, sw, sh) => {
                 const pixels = new Uint8ClampedArray(sw * sh * 4);

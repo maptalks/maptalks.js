@@ -1363,6 +1363,10 @@ export default class TileMeshPainter {
         const khrTechniquesWebgl = gltf.extensions && gltf.extensions['KHR_techniques_webgl'];
         const service =  this._layer._getNodeService(node._rootIdx);
         if (khrTechniquesWebgl && matInfo.extensions && matInfo.extensions['KHR_techniques_webgl']) {
+            const isWebGPU = this.getMap().getRenderer().isWebGPU();
+            if (isWebGPU) {
+                throw new Error('3dtiles with KHR_techniques_webgl extension is not supported in webgpu');
+            }
             // s3m.vert 和 s3m.frag 是用webgl 2写的，所以是s3m时，要开启webgl2
             const khrMesh = this._createTechniqueMesh(gltfMesh, gltf, isI3DM, isS3M);
             material = khrMesh.material;
@@ -1446,11 +1450,33 @@ export default class TileMeshPainter {
 
             }
         }
+        const isWebGPU = this.getMap().getRenderer().isWebGPU();
         const attrs = {};
+        let positionSize = 0;
         for (const p in attributes) {
-            const buffer = getUniqueREGLBuffer(this._regl, attributes[p], { dimension: attributes[p].itemSize, name: p });
             // 优先采用 attributeSemantics中定义的属性
             const name = attributeSemantics[p] || p;
+            const isPosition = name === attributeSemantics['POSITION'];
+            if (isPosition) {
+                positionSize = attributes[p].itemSize;
+            }
+            if (isWebGPU) {
+                const array = attributes[p].array;
+                const newArray = reshader.Geometry.padGPUBufferAlignment(attributes[p].array, attributes[p].count);
+                if (array !== newArray) {
+                    if (isPosition) {
+                        positionSize += 1;
+                    }
+                    attributes[p].array = newArray;
+                    attributes[p].byteLength = newArray.byteLength;
+                    attributes[p].itemSize += 1;
+                    const type = attributes[p].type;
+                    attributes[p].type = type.substring(0, type.length - 1) + attributes[p].itemSize;
+                    //TODO attributes[p].byteStride 可能不为0
+                }
+            }
+            const buffer = getUniqueREGLBuffer(this._regl, attributes[p], { dimension: attributes[p].itemSize, name: p });
+
             attrs[name] = extend({}, attributes[p]);
             attrs[name].buffer = buffer;
             delete attrs[name].array;
@@ -1466,6 +1492,7 @@ export default class TileMeshPainter {
             0,
             {
                 // static: true,
+                positionSize,
                 positionAttribute: attributeSemantics['POSITION'],
                 normalAttribute: attributeSemantics['NORMAL'],
                 uv0Attribute: attributeSemantics['TEXCOORD_0'],
@@ -1875,9 +1902,9 @@ export default class TileMeshPainter {
         }
         // matInfo.alphaTest = 0.1;
         if (service.unlit || material.extensions && material.extensions['KHR_materials_unlit']) {
-            matInfo.ambientColor = [1, 1, 1];
-            matInfo['light0_diffuse'] = [0, 0, 0, 0];
-            matInfo['lightSpecular'] = [0, 0, 0];
+            // matInfo.ambientColor = [1, 1, 1];
+            // matInfo['light0_diffuse'] = [0, 0, 0, 0];
+            // matInfo['lightSpecular'] = [0, 0, 0];
             const material = new reshader.PhongMaterial(matInfo);
             material.unlit = service.unlit === undefined || !!service.unlit;
             return material;

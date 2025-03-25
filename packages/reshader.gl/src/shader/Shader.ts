@@ -508,11 +508,11 @@ export default class GPUShader extends GLShader {
             }
             for (const name in vertexInfo) {
                 const vertex = vertexInfo[name];
-                let vertexBuffer = mesh.geometry.getBuffer(name);
+                let vertexBuffer = mesh.geometry.getBuffer(vertex.geoAttrName || name);
                 if (!vertexBuffer && instancedMesh) {
                     vertexBuffer = instancedMesh.getInstancedBuffer(name);
                 }
-                passEncoder.setVertexBuffer(vertex.location, vertexBuffer);
+                passEncoder.setVertexBuffer(vertex.location, vertexBuffer, 0, vertexBuffer.byteLength);
             }
 
             const elements = mesh.getElements();

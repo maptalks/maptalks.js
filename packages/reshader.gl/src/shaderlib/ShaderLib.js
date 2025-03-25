@@ -29,7 +29,7 @@ import highlight_frag from './glsl/highlight.frag';
 import mask_vert from './glsl/mask.vert';
 import mask_frag from './glsl/mask.frag';
 
-import computeTexcoord_frag from './glsl/compute_texcoord.frag';
+import compute_texcoord_frag from './glsl/compute_texcoord.frag';
 import terrain_normal_frag from './glsl/terrain_normal.frag';
 import vertex_color_vert from './glsl/vertex_color.vert';
 import vertex_color_frag from './glsl/vertex_color.frag';
@@ -139,7 +139,7 @@ const ShaderChunk = {
     mask_vert,
     mask_frag,
 
-    computeTexcoord_frag,
+    compute_texcoord_frag,
 
     terrain_normal_frag,
 

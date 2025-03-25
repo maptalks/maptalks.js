@@ -48,8 +48,10 @@ export default class CommandBuilder {
         const device = this.device;
         const defines = this.mesh.getDefines();
         //FIXME 如何在wgsl中实现defined
-        let vert = WGSLParseDefines(this.vert, defines);
-        let frag = WGSLParseDefines(this.frag, defines);
+        let vert = removeComment(this.vert);
+        let frag = removeComment(this.frag);
+        vert = WGSLParseDefines(vert, defines);
+        frag = WGSLParseDefines(frag, defines);
 
         // dynamically assign location index with $in and $out
         vert = parseLocationIndex(vert);
@@ -187,18 +189,22 @@ export default class CommandBuilder {
     _formatBufferInfo(vertReflect: any, mesh: Mesh) {
         const vertEntryFuncion = vertReflect.entry.vertex[0];
         const inputs = vertEntryFuncion.inputs;
-        const inputMapping = {};
+        const inputMapping = {} as any;
         for (let i = 0; i < inputs.length; i++) {
             const name = inputs[i].name;
             inputMapping[name] = inputs[i];
         }
         const vertexInfo = {};
         const data = mesh.geometry.data;
+        const semantic = mesh.geometry.semantic;
         for (const name in data) {
-            if (inputMapping[name]) {
-                vertexInfo[name] = {
-                    location: inputMapping[name].location,
-                    itemSize: getItemSize(inputMapping[name].type)
+            const attr = semantic[name] || name;
+            const info = inputMapping[attr];
+            if (info) {
+                vertexInfo[attr] = {
+                    location: info.location,
+                    geoAttrName: name,
+                    itemSize: getItemSize(info.type)
                 };
             }
         }
@@ -395,4 +401,9 @@ function parseBindingIndex(code: string, index: number) {
         source: code.replaceAll('$b', () => '' + index++),
         index
     };
+}
+
+function removeComment(str) {
+    return str.replace(/[ \t]*\/\/.*\n/g, '') // remove //
+        .replace(/[ \t]*\/\*[\s\S]*?\*\//g, ''); // remove /* */
 }

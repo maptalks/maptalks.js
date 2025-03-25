@@ -3,7 +3,10 @@ struct LightUniforms {
     ambientColor: vec3f,
     light0_diffuse: vec4f,
     lightSpecular: vec3f,
-    cameraPosition: vec3f
+    cameraPosition: vec3f,
+    #ifdef HAS_LAYER_OPACITY
+        layerOpacity: f32,
+    #endif
 };
 
 struct MaterialUniforms {
@@ -18,9 +21,6 @@ struct MaterialUniforms {
 #ifdef SHADING_MODEL_SPECULAR_GLOSSINESS
     diffuseFactor: vec4f,
     specularFactor: vec3f,
-#endif
-#ifdef HAS_LAYER_OPACITY
-    layerOpacity: f32,
 #endif
 #ifdef IS_LINE_EXTRUSION
     lineColor: vec4f,
@@ -94,11 +94,14 @@ struct VertexOutput {
 #include <highlight_frag>
 #include <mask_frag>
 #include <vertex_color_frag>
+#ifdef HAS_MAP
+    #include <compute_texcoord_frag>
+#endif
 
 fn transformNormal(vertexOutput: VertexOutput) -> vec3f {
 #ifdef HAS_NORMAL_MAP
     let n = normalize(vertexOutput.vNormal);
-    let normal = textureSample(normalTexture, normalTextureSampler, computeTexCoord(vertexOutput.vTexCoord)).xyz * 2.0 - 1.0;
+    let normal = textureSample(normalTexture, normalTextureSampler, computeTexCoord(vertexOutput)).xyz * 2.0 - 1.0;
 #ifdef HAS_TANGENT
     let t = normalize(vertexOutput.vTangent.xyz);
     let b = normalize(cross(n, t) * sign(vertexOutput.vTangent.w));
@@ -114,9 +117,9 @@ fn transformNormal(vertexOutput: VertexOutput) -> vec3f {
 
 fn getBaseColor(vertexOutput: VertexOutput) -> vec4f {
 #ifdef HAS_BASECOLOR_MAP
-    return textureSample(baseColorTexture, baseColorTextureSampler, computeTexCoord(vertexOutput.vTexCoord));
+    return textureSample(baseColorTexture, baseColorTextureSampler, computeTexCoord(vertexOutput));
 #elif HAS_DIFFUSE_MAP
-    return textureSample(diffuseTexture, diffuseTextureSampler, computeTexCoord(vertexOutput.vTexCoord));
+    return textureSample(diffuseTexture, diffuseTextureSampler, computeTexCoord(vertexOutput));
 #elif SHADING_MODEL_SPECULAR_GLOSSINESS
     return materialUniforms.diffuseFactor;
 #else
@@ -126,7 +129,7 @@ fn getBaseColor(vertexOutput: VertexOutput) -> vec4f {
 
 fn getSpecularColor(vertexOutput: VertexOutput) -> vec3f {
 #ifdef HAS_SPECULARGLOSSINESS_MAP
-    return textureSample(specularGlossinessTexture, specularGlossinessTextureSampler, computeTexCoord(vertexOutput.vTexCoord)).rgb;
+    return textureSample(specularGlossinessTexture, specularGlossinessTextureSampler, computeTexCoord(vertexOutput)).rgb;
 #elif SHADING_MODEL_SPECULAR_GLOSSINESS
     return materialUniforms.specularFactor;
 #else
@@ -138,7 +141,12 @@ fn getSpecularColor(vertexOutput: VertexOutput) -> vec3f {
 fn main(vertexOutput: VertexOutput) ->  @location(0) vec4f {
     // 环境光
     let baseColor = getBaseColor(vertexOutput);
-    var ambient = materialUniforms.environmentExposure * lightUniforms.ambientColor * baseColor.rgb;
+#ifdef SHADING_MODEL_UNLIT
+    let ambientColor = vec3f(1.0);
+#else
+    let ambientColor = lightUniforms.ambientColor;
+#endif
+    var ambient = materialUniforms.environmentExposure * ambientColor * baseColor.rgb;
 
 #ifdef HAS_INSTANCE_COLOR
     ambient *= vertexOutput.vInstanceColor.rgb;
@@ -148,8 +156,12 @@ fn main(vertexOutput: VertexOutput) ->  @location(0) vec4f {
     let norm = transformNormal(vertexOutput);
     let lightDir = normalize(-lightUniforms.light0_viewDirection);
     var diff = max(dot(norm, lightDir), 0.0);
-
-    var diffuse = lightUniforms.light0_diffuse.rgb * diff * baseColor.rgb;
+#ifdef SHADING_MODEL_UNLIT
+    let lightDiffuse = vec3f(0.0);
+#else
+    let lightDiffuse = lightUniforms.light0_diffuse.rgb;
+#endif
+    var diffuse = lightDiffuse * diff * baseColor.rgb;
 
 #if HAS_COLOR || HAS_COLOR0
     var color = vertexOutput.vColor.rgb;
@@ -168,11 +180,15 @@ fn main(vertexOutput: VertexOutput) ->  @location(0) vec4f {
     let viewDir = normalize(lightUniforms.cameraPosition - vertexOutput.vFragPos);
     let halfwayDir = normalize(lightDir + viewDir);
     var spec = pow(max(dot(norm, halfwayDir), 0.0), materialUniforms.materialShininess);
-
-    var specular = materialUniforms.specularStrength * lightUniforms.lightSpecular * spec * getSpecularColor(vertexOutput);
+#ifdef SHADING_MODEL_UNLIT
+    let lightSpecular = vec3f(0.0);
+#else
+    let lightSpecular = lightUniforms.lightSpecular;
+#endif
+    var specular = materialUniforms.specularStrength * lightSpecular * spec * getSpecularColor(vertexOutput);
 
 #ifdef HAS_OCCLUSION_MAP
-    let ao = textureSample(occlusionTexture, occlusionTextureSampler, computeTexCoord(vertexOutput.vTexCoord1)).r;
+    let ao = textureSample(occlusionTexture, occlusionTextureSampler, computeTexCoord(vertexOutput1)).r;
     ambient *= ao;
 #endif
 
@@ -186,7 +202,7 @@ fn main(vertexOutput: VertexOutput) ->  @location(0) vec4f {
     var result = ambient + diffuse + specular;
 
 #ifdef HAS_EMISSIVE_MAP
-    let emit = textureSample(emissiveTexture, emissiveTextureSampler, computeTexCoord(vertexOutput.vTexCoord)).rgb;
+    let emit = textureSample(emissiveTexture, emissiveTextureSampler, computeTexCoord(vertexOutput)).rgb;
     result += emit;
 #endif
 
@@ -228,12 +244,11 @@ fn main(vertexOutput: VertexOutput) ->  @location(0) vec4f {
     fragColor = highlight_blendColor(fragColor, vertexOutput);
 
 #ifdef HAS_LAYER_OPACITY
-    fragColor *= materialUniforms.layerOpacity;
+    fragColor *= lightUniforms.layerOpacity;
 #endif
 
 #ifdef HAS_MASK_EXTENT
     fragColor = setMask(fragColor);
 #endif
-
     return fragColor;
 }

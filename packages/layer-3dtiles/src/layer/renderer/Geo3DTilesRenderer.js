@@ -392,7 +392,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
     _loadTileContent(url, arraybuffer, tile) {
         let supportedFormats = this._supportedFormats;
         if (!supportedFormats) {
-            supportedFormats = reshader.Util.getSupportedFormats(this.gl.gl || this.gl);
+            supportedFormats = reshader.Util.getSupportedFormats(this.gl || this.device);
             this._supportedFormats = supportedFormats;
         }
 
@@ -406,7 +406,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         if (isI3SMesh(url)) {
             const nodeCache = this._i3sNodeCache[tile._rootIdx];
             params.projection = nodeCache.projection;
-            params.i3sInfo = getI3SNodeInfo(url, nodeCache, this.regl, this.layer.options['enableI3SCompressedGeometry'], this.layer.options['forceI3SCompressedGeometry']);
+            params.i3sInfo = getI3SNodeInfo(url, nodeCache, this.regl || this.device, this.layer.options['enableI3SCompressedGeometry'], this.layer.options['forceI3SCompressedGeometry']);
             if (!params.i3sInfo) {
                 this.onTileError({ status: 404 }, tile, url);
                 return;
@@ -678,7 +678,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
     prepareWorker() {
         const map = this.getMap();
         if (!this.workerConn) {
-            this.workerConn = new Geo3DTilesWorkerConnection('@maptalks/3dtiles', map.id, reshader.Util.supportNPOT(this.regl));
+            this.workerConn = new Geo3DTilesWorkerConnection('@maptalks/3dtiles', map.id, reshader.Util.supportNPOT(this.regl || this.device));
         }
         const workerConn = this.workerConn;
         //setTimeout in case layer's style is set to layer after layer's creating.

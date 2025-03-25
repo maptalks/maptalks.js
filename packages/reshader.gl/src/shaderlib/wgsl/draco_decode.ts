@@ -86,7 +86,7 @@ const vert = /* wgsl */`
     // 压缩属性解码函数
     #ifdef HAS_COMPRESSED_INT16
     fn int16ToFloat32(value: f32, range: vec2f) -> f32 {
-        let v = select(-(65536.0 - value) / 32768.0, value / 32767.0, value >= 32768.0);
+        let v = select(value / 32767.0, -(65536.0 - value) / 32768.0, value >= 32768.0);
         return (v + 1.0) * (range.y - range.x) / 2.0 + range.x;
     }
     #endif
@@ -115,10 +115,12 @@ const vert = /* wgsl */`
     fn decode_getTexcoord(aTexCoord: vec2f) -> vec2f {
         var texcoord = aTexCoord;
     // if HAS_COMPRESSED_INT16 && (HAS_COMPRESSED_INT16_TEXCOORD_0 || HAS_COMPRESSED_INT16_TEXCOORD_1)
-    #if HAS_COMPRESSED_INT16 && HAS_COMPRESSED_INT16_TEXCOORD_1
-        let x = int16ToFloat32(aTexCoord.x, dracoUniforms.compressedTexcoordRange_0);
-        let y = int16ToFloat32(aTexCoord.y, dracoUniforms.compressedTexcoordRange_0);
-        texcoord = vec2f(x, y);
+    #if HAS_COMPRESSED_INT16
+        #if HAS_COMPRESSED_INT16_TEXCOORD_0 || HAS_COMPRESSED_INT16_TEXCOORD_1
+            let x = int16ToFloat32(aTexCoord.x, dracoUniforms.compressedTexcoordRange_0);
+            let y = int16ToFloat32(aTexCoord.y, dracoUniforms.compressedTexcoordRange_0);
+            texcoord = vec2f(x, y);
+        #endif
     #endif
     #ifdef HAS_DRACO_TEXCOORD
         return decodeDracoTexcoord(texcoord);

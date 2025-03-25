@@ -124,7 +124,7 @@ uniform vec4 light0_diffuse;
 varying vec3 vModelVertex;
 varying vec4 vViewVertex;
 #if defined(HAS_MAP)
-    #include <computeTexcoord_frag>
+    #include <compute_texcoord_frag>
 #endif
 
 varying vec3 vModelNormal;

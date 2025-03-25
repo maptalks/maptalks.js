@@ -1,6 +1,7 @@
 import { getGLTFLoaderBundle } from './GLTFBundle'
 import REGL, { Regl } from '@maptalks/regl';
 import { AttributeBufferData, AttributeType, NumberArray, TypedArray } from '../types/typings';
+import GraphicsDevice from '../webgpu/GraphicsDevice';
 
 /**
  * 对象是否是字符串
@@ -239,7 +240,10 @@ export function clamp(n: number, min: number, max: number) {
  * @param regl regl context
  * @returns
  */
-export function isSupportVAO(regl: Regl) {
+export function isSupportVAO(regl: any) {
+    if (regl.wgpu) {
+        return false;
+    }
     // return false;
     return regl && regl.hasExtension && regl.hasExtension('oes_vertex_array_object');
 }
@@ -276,7 +280,14 @@ export function getBufferSize(buffer: AttributeBufferData | AttributeType): numb
         // FLOAT32 in default
         return (buffer as number[]).length * 4;
     }else if ((buffer as AttributeBufferData).buffer && (buffer as AttributeBufferData).buffer.destroy) {
-        return (buffer as AttributeBufferData).buffer['_buffer'].byteLength;
+        const reglBuffer = (buffer as any).buffer['_buffer'];
+        if (reglBuffer) {
+            // regl
+            return reglBuffer.byteLength;
+        } else {
+            // webgpu
+            return (buffer as any).buffer.size;
+        }
     }
     return 0;
 }
@@ -373,15 +384,26 @@ export function isInterleaved(dataObj) {
  * @param gl
  * @returns
  */
-export function getSupportedFormats(gl: WebGL2RenderingContext | WebGLRenderingContext) {
-    return {
-        'etc': !!gl.getExtension('WEBGL_compressed_texture_etc'),
-        'etc1': !!gl.getExtension('WEBGL_compressed_texture_etc1'),
-        's3tc': !!gl.getExtension('WEBGL_compressed_texture_s3tc'),
-        'pvrtc': !!gl.getExtension('WEBGL_compressed_texture_pvrtc'),
-        'astc': !!gl.getExtension('WEBGL_compressed_texture_astc'),
-        'bc7': !!gl.getExtension('EXT_texture_compression_bptc'),
+export function getSupportedFormats(gl: WebGL2RenderingContext | WebGLRenderingContext | GraphicsDevice) {
+    const webgl = (gl as any).getExtension && gl as (WebGL2RenderingContext | WebGLRenderingContext);
+    const webgpu = !webgl && (gl as GraphicsDevice).wgpu;
+    const prefixWebGL = 'WEBGL_compressed_texture_';
+    const prefixWebGPU = 'texture-compression-';
+    const formats = {
+        'etc': webgl ? !!webgl.getExtension(prefixWebGL + 'etc') : !!webgpu.features.has(prefixWebGPU + 'etc2'),
+        'etc1': webgl ? !!webgl.getExtension(prefixWebGL + 'etc1') : !!webgpu.features.has(prefixWebGPU + 'etc2'),
+        's3tc': webgl ? !!webgl.getExtension(prefixWebGL + 's3tc') : !!webgpu.features.has(prefixWebGPU + 'bc'),
+        'pvrtc': webgl ? !!webgl.getExtension(prefixWebGL + 'pvrtc') : false,
+        'astc': webgl ? !!webgl.getExtension(prefixWebGL + 'astc') : !!webgpu.features.has(prefixWebGPU + 'astc'),
+        'bc7': webgl ? !!webgl.getExtension('EXT_texture_compression_bptc') : !!webgpu.features.has(prefixWebGPU + 'bc'),
     };
+    formats[prefixWebGL + 'etc'] = formats['etc'];
+    formats[prefixWebGL + 'etc1'] = formats['etc1'];
+    formats[prefixWebGL + 's3tc'] = formats['s3tc'];
+    formats[prefixWebGL + 'pvrtc'] = formats['pvrtc'];
+    formats[prefixWebGL + 'astc'] = formats['astc'];
+    formats[prefixWebGL + 'bc7'] = formats['bc7'];
+    return formats;
 }
 
 /**
@@ -499,5 +521,8 @@ export function resizeToPowerOfTwo(image: HTMLImageElement | NumberArray, width?
 }
 
 export function supportNPOT(regl: any) {
+    if (regl.wgpu) {
+        return true;
+    }
     return !regl['_gl'] || (regl['_gl'] instanceof WebGL2RenderingContext);
 }

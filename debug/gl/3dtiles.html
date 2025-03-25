@@ -32,14 +32,16 @@
         center: [108.95965, 34.2189],
         zoom: 18,
         bearing: 0,
-        pitch: 45
+        pitch: 45,
+        renderer: 'gpu'
       });
       /**start**/
       const layer = new maptalks.Geo3DTilesLayer("3dtiles", {
         services: [{
           url: "http://resource.dvgis.cn/data/3dtiles/dayanta/tileset.json",
           maximumScreenSpaceError: 16.0,
-          heightOffset: -400
+          heightOffset: -400,
+          shader: 'phong'
         }]
       });
       layer.once("loadtileset", (e) => {

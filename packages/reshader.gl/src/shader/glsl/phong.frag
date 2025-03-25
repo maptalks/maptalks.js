@@ -23,7 +23,7 @@ uniform float alphaTest;
 #endif
 
 #ifdef HAS_MAP
-    #include <computeTexcoord_frag>
+    #include <compute_texcoord_frag>
 #endif
 varying vec3 vNormal;
 varying vec3 vFragPos;
@@ -134,7 +134,12 @@ vec3 getSpecularColor() {
 void main() {
     //环境光
     vec4 baseColor = getBaseColor();
-    vec3 ambient = environmentExposure * ambientColor * baseColor.rgb;
+#ifdef SHADING_MODEL_UNLIT
+    vec3 ambientLight = vec3(1.0);
+#else
+    vec3 ambientLight = ambientColor;
+#endif
+    vec3 ambient = environmentExposure * ambientLight * baseColor.rgb;
 
     #ifdef HAS_INSTANCE_COLOR
         ambient *= vInstanceColor.rgb;
@@ -148,7 +153,12 @@ void main() {
         float toon = floor(diff * toons);
         diff = toon / toons;
     #endif
-    vec3 diffuse = light0_diffuse.rgb * diff * baseColor.rgb;
+#ifdef SHADING_MODEL_UNLIT
+    vec3 lightDiffuse = vec3(0.0);
+#else
+    vec3 lightDiffuse = light0_diffuse.rgb;
+#endif
+    vec3 diffuse = lightDiffuse * diff * baseColor.rgb;
     #if defined(HAS_COLOR) || defined(HAS_COLOR0)
         vec3 color = vColor.rgb;
     #elif defined(IS_LINE_EXTRUSION)
@@ -171,7 +181,14 @@ void main() {
         float specToon = floor(spec * specularToons);
         spec = specToon / specularToons;
     #endif
-    vec3 specular = specularStrength * lightSpecular * spec * getSpecularColor();
+
+#ifdef SHADING_MODEL_UNLIT
+    vec3 lightSpecularColor = vec3(0.0);
+#else
+    vec3 lightSpecularColor = lightSpecular;
+#endif
+
+    vec3 specular = specularStrength * lightSpecularColor * spec * getSpecularColor();
     #ifdef HAS_OCCLUSION_MAP
         float ao = texture2D(occlusionTexture, computeTexCoord(vTexCoord1)).r;
         ambient *= ao;

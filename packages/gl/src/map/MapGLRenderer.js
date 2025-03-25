@@ -91,6 +91,10 @@ export default class MapGLRenderer extends renderer.MapAbstractRenderer {
     getContextInstance() {
         return this.gl.wrap();
     }
+
+    isWebGPU() {
+        return false;
+    }
 }
 
 Map.registerRenderer('gl', MapGLRenderer);

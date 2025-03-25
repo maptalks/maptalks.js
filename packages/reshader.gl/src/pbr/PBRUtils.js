@@ -173,5 +173,8 @@ export function disposeIBLTextures(iblTexes) {
 
 
 export function isSupported(regl) {
+    if (regl.wgpu) {
+        return true;
+    }
     return regl.hasExtension('EXT_shader_texture_lod');
 }

@@ -74,7 +74,7 @@ fn getPosition(aPosition: vec3f, vertexInput: VertexInput) -> vec4f {
         morphUniforms.morphWeights2[2] * vertexInput.POSITION6 +
         morphUniforms.morphWeights2[3] * vertexInput.POSITION7, 1.0);
 #else
-    let POSITION = vec4f(position, 1.0);
+    var POSITION = vec4f(position, 1.0);
 #endif
 #ifdef HAS_TERRAIN_ALTITUDE
     POSITION.z += vertexInput.aTerrainAltitude * 100.0;

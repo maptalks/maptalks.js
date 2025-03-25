@@ -1,4 +1,4 @@
-import { isNumber } from "../common/Util";
+import { getSupportedFormats, isNumber } from "../common/Util";
 import Geometry from "../Geometry";
 import DynamicBufferPool from "./DynamicBufferPool";
 import GraphicsFramebuffer from "./GraphicsFramebuffer";
@@ -7,6 +7,7 @@ import GraphicsTexture from "./GraphicsTexture";
 export default class GraphicsDevice {
     wgpu: GPUDevice;
     context: GPUCanvasContext;
+    adapter: GPUAdapter;
     gltfManager?: any;
     //@internal
     commandBuffers: GPUCommandBuffer[] = [];
@@ -18,9 +19,11 @@ export default class GraphicsDevice {
     _defaultFramebuffer: GraphicsFramebuffer;
     //@internal
     _readTargets: Record<number, GPUBuffer> = {};
+    _supportedFormats: any;
 
-    constructor(device: GPUDevice, context: GPUCanvasContext) {
+    constructor(device: GPUDevice, context: GPUCanvasContext, adapter: GPUAdapter) {
         this.wgpu = device;
+        this.adapter = adapter;
         const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
         context.configure({
             device,
@@ -36,6 +39,18 @@ export default class GraphicsDevice {
             bufferSize,
             limits.minUniformBufferOffsetAlignment,
         );
+    }
+
+    // mock of regl's hasExtension
+    hasExtension(extension) {
+        if (!this._supportedFormats) {
+            this._supportedFormats = getSupportedFormats(this.adapter);
+        }
+        if (this._supportedFormats[extension]) {
+            return true;
+        }
+        //TODO 这里可能存在webgl支持，但webgpu不支持的扩展
+        return true;
     }
 
     getCommandEncoder(): GPUCommandEncoder {
@@ -124,6 +139,12 @@ export default class GraphicsDevice {
 
     // implementation of regl.texture
     texture(config) {
+        if (isNumber(config)) {
+            config = {
+                width: config,
+                height: config
+            };
+        }
         return new GraphicsTexture(this, config);
     }
 
@@ -135,7 +156,12 @@ export default class GraphicsDevice {
 
 
     // implementation of regl.read
-    async read(options) {
+    read(options) {
+        // https://github.com/tensorflow/tfjs/pull/7576/files
+        // 可以参考tf.js实现同步读取数据。
+        // 1. 将数据绘制到一个OffscreenCanvas
+        // 2. 将OffscreenCanvas绘制到一个canvas 2d上
+        // 3. 从canvas 2d上读取数据
         const framebuffer = options.framebuffer || this._defaultFramebuffer;
         let { width, height } = options;
         if (!width) {
@@ -180,13 +206,13 @@ export default class GraphicsDevice {
 			}
 		);
 
-		const typedArrayType = options.data.constructor;
-		device.queue.submit([encoder.finish()]);
-		await readBuffer.mapAsync(GPUMapMode.READ);
-		const buffer = readBuffer.getMappedRange();
-		const result = new typedArrayType(buffer);
-        options.data.set(result);
-        readBuffer.unmap();
+		// const typedArrayType = options.data.constructor;
+		// device.queue.submit([encoder.finish()]);
+		// await readBuffer.mapAsync(GPUMapMode.READ);
+		// const buffer = readBuffer.getMappedRange();
+		// const result = new typedArrayType(buffer);
+        // options.data.set(result);
+        // readBuffer.unmap();
     }
 
     destroy() {

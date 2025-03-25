@@ -38,6 +38,9 @@ class PhongMaterial extends Material {
     appendDefines(defines: ShaderDefines, geometry: Geometry) {
         super.appendDefines(defines, geometry);
         const uniforms = this.uniforms;
+        if (this.unlit) {
+            defines['SHADING_MODEL_UNLIT'] = 1;
+        }
         if (uniforms['extrusionOpacity']) {
             defines['HAS_EXTRUSION_OPACITY'] = 1;
         }

@@ -56,7 +56,12 @@ export default class GraphicsFramebuffer {
         this.width = width;
         this.height = height;
         if (color && !(color instanceof GraphicsTexture)) {
-            color.sampleCount = 4;
+            if (color === true) {
+                color = {
+                    width,
+                    height
+                };
+            }
             color = new GraphicsTexture(this.device, color);
         }
         let depth = this.options.depth;
