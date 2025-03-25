@@ -4,31 +4,45 @@ const path = require('path');
 const packages = [
     {
         name: 'maptalks',
-        umdPath: '../maptalks/dist/maptalks.js'
+        umdPath: '../maptalks/dist/maptalks.js',
+        //exclude some variables
+        exclude: []
     },
     {
         name: '@maptalks/gl',
-        umdPath: '../gl/dist/maptalksgl.js'
+        umdPath: '../gl/dist/maptalksgl.js',
+        //exclude some variables
+        exclude: []
     },
     {
         name: '@maptalks/vt',
-        umdPath: '../vt/dist/maptalks.vt.js'
+        umdPath: '../vt/dist/maptalks.vt.js',
+        //exclude some variables
+        exclude: []
     },
     {
         name: '@maptalks/3dtiles',
-        umdPath: '../layer-3dtiles/dist/maptalks.3dtiles.js'
+        umdPath: '../layer-3dtiles/dist/maptalks.3dtiles.js',
+        //exclude some variables
+        exclude: []
     },
     {
         name: '@maptalks/gltf-layer',
-        umdPath: '../layer-gltf/dist/maptalks.gltf.js'
+        umdPath: '../layer-gltf/dist/maptalks.gltf.js',
+        //exclude some variables
+        exclude: []
     },
     {
         name: '@maptalks/transform-control',
-        umdPath: '../transform-control/dist/transform-control.js'
+        umdPath: '../transform-control/dist/transform-control.js',
+        //exclude some variables
+        exclude: []
     },
     {
         name: '@maptalks/video-layer',
-        umdPath: '../layer-video/dist/maptalks.video.js'
+        umdPath: '../layer-video/dist/maptalks.video.js',
+        //exclude some variables
+        exclude: []
     }
 ];
 
@@ -36,9 +50,11 @@ let code = ``;
 
 //generate index.js code
 packages.forEach(item => {
-    const { name, umdPath } = item;
+    const { name, umdPath, exclude } = item;
     const namespace = require(umdPath);
-    const keys = Object.keys(namespace);
+    const keys = Object.keys(namespace).filter(key => {
+        return !(exclude || []).includes(key);
+    });
     const exportStr = keys.join(', ');
     code += `export { ${exportStr} } from '${name}';\n`;
 });
