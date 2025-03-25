@@ -406,7 +406,7 @@ export function formatResourceUrl(path: string) {
 
 
 let parser: DOMParser;
-
+//for Compatible with Node.js
 function getDomParse() {
     if (!parser) {
         parser = new DOMParser();
