@@ -921,7 +921,7 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
     }
 
     _startFrame(timestamp, filter) {
-        const isRenderingTerrain = !!this._terrainLayer;
+        const isRenderingTerrain = this._isRenderingTerrain();
         const useDefault = this.layer.isDefaultRender() && this._layerPlugins;
         const parentContext = this._parentContext;
         const plugins = this._getAllPlugins();
@@ -961,7 +961,7 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
         const cameraPosition = this.getMap().cameraPosition;
         const plugins = this._getAllPlugins();
         // terrain skin的相关数据已经在renderTerrainSkin中绘制，这里就不再绘制
-        const isRenderingTerrain = !!this._terrainLayer;
+        const isRenderingTerrain = this._isRenderingTerrain();
         const isFinalRender = !parentContext.timestamp || parentContext.isFinalRender;
 
         // maptalks/issues#202, finalRender后不再更新collision，以免后处理（如bloom）阶段继续更新collision造成bug
@@ -1093,7 +1093,7 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
     }
 
     _getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp) {
-        const isRenderingTerrain = !!this._terrainLayer;
+        const isRenderingTerrain = this._isRenderingTerrain();
         const isRenderingTerrainSkin = isRenderingTerrain && plugin && terrainSkinFilter(plugin);
         const regl = this.regl;
         const gl = this.gl;
@@ -1342,7 +1342,7 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
 
     drawTile(tileInfo, tileData, filter) {
         if (!tileData.cache) return;
-        const isRenderingTerrain = !!this._terrainLayer;
+        const isRenderingTerrain = this._isRenderingTerrain();
         const tileCache = tileData.cache;
         const tilePoint = TILE_POINT.set(tileInfo.extent2d.xmin, tileInfo.extent2d.ymax);
         const extent = tileInfo.extent || this._receivedTileExtent || 8192;
@@ -1414,7 +1414,7 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
         if (!tileCache) {
             tileCache = tileData.cache = {};
         }
-        const isRenderingTerrain = !!this._terrainLayer;
+        const isRenderingTerrain = this._isRenderingTerrain();
         const tilePoint = TILE_POINT.set(tileInfo.extent2d.xmin, tileInfo.extent2d.ymax);
         const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tilePoint, tileInfo.z, tileData.extent);
         const tileTranslationMatrix = tileInfo.tileTranslationMatrix = tileInfo.tileTranslationMatrix || this.calculateTileTranslationMatrix(tilePoint, tileInfo.z);
@@ -1991,6 +1991,10 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
     _getLayerOpacity() {
         const layerOpacity = this.layer.options['opacity'];
         return (isNil(layerOpacity) ? 1 : layerOpacity);
+    }
+
+    _isRenderingTerrain() {
+        return !!this._terrainLayer && this.layer.options['awareOfTerrain'];
     }
 }
 
