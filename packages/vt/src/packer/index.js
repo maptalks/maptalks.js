@@ -1,5 +1,5 @@
 export { default as VectorPack } from './pack/VectorPack';
-export { default as PointPack } from './pack/PointPack';
+export { default as PointPack, TEXT_MAX_ANGLE } from './pack/PointPack';
 export { default as LinePack } from './pack/LinePack';
 export { default as LineExtrusionPack } from './pack/LineExtrusionPack';
 export { default as NativeLinePack } from './pack/NativeLinePack';

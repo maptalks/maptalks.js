@@ -8,7 +8,7 @@ import mergeLineFeatures from './util/merge_line_features';
 import { isFunctionDefinition } from '@maptalks/function-type';
 import { normalizeColor } from '../style/Util';
 
-const TEXT_MAX_ANGLE = 80;
+export const TEXT_MAX_ANGLE = 80;
 
 const DEFAULT_SPACING = 250;
 const DEFAULT_UNIFORMS = {

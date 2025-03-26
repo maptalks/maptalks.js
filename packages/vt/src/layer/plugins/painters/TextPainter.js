@@ -18,7 +18,7 @@ import { getCentiMeterScale } from '../../../common/Util';
 import { INVALID_PROJECTED_ANCHOR, INVALID_ALTITUDE } from '../../../common/Constant';
 import { getVectorPacker } from '../../../packer/inject';
 
-const { TextUtil, PackUtil, FilterUtil } = getVectorPacker();
+const { TextUtil, PackUtil, FilterUtil, TEXT_MAX_ANGLE } = getVectorPacker();
 
 const shaderFilter0 = function (mesh) {
     const renderer = this.layer.getRenderer();
@@ -846,7 +846,10 @@ export default class TextPainter extends CollisionPainter {
     _updateNormal(mesh, textSize, line, firstChrIdx, lastChrIdx, projectedAnchor, anchor, scale, planeMatrix) {
         const onlyOne = lastChrIdx - firstChrIdx <= 3;
         const map = this.getMap();
-        const normal = onlyOne ? 0 : getLabelNormal.call(this, FIRST_CHAROFFSET, LAST_CHAROFFSET, mesh, textSize, line, firstChrIdx, lastChrIdx, projectedAnchor, anchor, scale, map.width / map.height, planeMatrix);
+        const symbol = this.getSymbol(mesh.geometry.properties.symbolIndex);
+        const normal = onlyOne ? 0 : getLabelNormal.call(this, FIRST_CHAROFFSET, LAST_CHAROFFSET, mesh,
+            textSize, line, firstChrIdx, lastChrIdx, projectedAnchor,
+            anchor, scale, map.width / map.height, planeMatrix, symbol['textMaxAngle'] || TEXT_MAX_ANGLE);
 
         return normal;
     }

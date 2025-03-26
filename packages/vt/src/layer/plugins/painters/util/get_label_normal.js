@@ -3,7 +3,9 @@ import { getCharOffset } from './get_char_offset';
 
 const FIRST_POINT = [], LAST_POINT = [];
 
-export function getLabelNormal(firstCharOffset, lastCharOffset, mesh, textSize, line, firstChrIdx, lastChrIdx, projectedAnchor, anchor, scale, aspectRatio, planeMatrix) {
+export function getLabelNormal(firstCharOffset, lastCharOffset, mesh,
+    textSize, line, firstChrIdx, lastChrIdx, projectedAnchor,
+    anchor, scale, aspectRatio, planeMatrix, textMaxAngle) {
     const { aVertical } = mesh.geometry.properties;
     const isVertical = aVertical[firstChrIdx];
 
@@ -18,7 +20,8 @@ export function getLabelNormal(firstCharOffset, lastCharOffset, mesh, textSize, 
     }
     vec3.copy(firstCharOffset, offset);
     offset = getCharOffset.call(this, LAST_POINT, mesh, textSize, line, lastChrIdx, projectedAnchor, anchor, scale, false);
-    if (!offset) {
+    textMaxAngle = Math.PI * textMaxAngle / 180;
+    if (!offset || Math.abs(offset[2]) > textMaxAngle) {
         return null;
     }
     vec3.copy(lastCharOffset, offset);
