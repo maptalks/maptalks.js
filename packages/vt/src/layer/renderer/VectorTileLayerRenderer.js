@@ -10,6 +10,8 @@ import { isFunctionDefinition } from '@maptalks/function-type';
 import { meterToPoint } from '../plugins/Util';
 import { getVectorPacker } from '../../packer/inject';
 
+const { TileLayerRendererable, LayerAbstractRenderer } = maptalks.renderer;
+
 const { FilterUtil } = getVectorPacker();
 
 // const DEFAULT_PLUGIN_ORDERS = ['native-point', 'native-line', 'fill'];
@@ -31,7 +33,7 @@ const terrainVectorFilter = plugin => {
     return plugin.isTerrainVector();
 }
 
-class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
+class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRenderer) {
 
     supportRenderMode() {
         return true;
@@ -45,6 +47,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this._requestingMVT = {};
         this._plugins = {};
         this._featurePlugins = {};
+        this.init();
     }
 
     getTileLevelValue(tileInfo, currentTileZoom) {
@@ -249,19 +252,20 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     initContext() {
-        const { regl, reglGL } = this.context;
+        super.initContext();
+        const { regl, device, reglGL } = this.context;
+        const graphics = regl || device;
         this.regl = regl;
         this.gl = reglGL;
-        this.canvas.pickingFBO = this.canvas.pickingFBO || this.regl.framebuffer(this.canvas.width, this.canvas.height);
-        this.pickingFBO = this.canvas.pickingFBO || this.regl.framebuffer(this.canvas.width, this.canvas.height);
-        this._debugPainter = new DebugPainter(this.regl, this.getMap());
-        this._prepareWorker();
-        this._groundPainter = new GroundPainter(this.regl, this.layer);
+        this.device = device;
 
-        if (!this.consumeTile) {
-            const version = this.getMap().VERSION;
-            throw new Error(`Incompatible version of maptalks: ${version}, upgrade maptalks >= v1.0.0-rc.14`);
-        }
+
+        this.canvas.pickingFBO = this.canvas.pickingFBO || graphics.framebuffer(this.canvas.width, this.canvas.height);
+        this.pickingFBO = this.canvas.pickingFBO || graphics.framebuffer(this.canvas.width, this.canvas.height);
+        this._debugPainter = new DebugPainter(graphics, this.getMap());
+        this._prepareWorker();
+        this._groundPainter = new GroundPainter(graphics, this.layer);
+        this.layer.fire('contextcreate', { regl, device });
     }
 
     _createREGLContext(canvas) {
@@ -1401,7 +1405,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (tileData && tileData.style === this._styleCounter) {
             this._retirePrevTile(tileInfo);
         }
-        this.setCanvasUpdated();
     }
 
     _createOneTile(tileInfo, tileData) {

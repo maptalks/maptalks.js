@@ -3,6 +3,8 @@ import BasicPainter from './BasicPainter';
 import { vec2, reshader, mat4 } from '@maptalks/gl';
 import vert from './glsl/fill.vert';
 import frag from './glsl/fill.frag';
+import wgslVert from './wgsl/fill_vert.wgsl';
+import wgslFrag from './wgsl/fill_frag.wgsl';
 import pickingVert from './glsl/fill.picking.vert';
 import { isNumber, isNil, setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar, meterToPoint } from '../Util';
 import { prepareFnTypeData } from './util/fn_type_util';
@@ -632,6 +634,7 @@ class FillPainter extends BasicPainter {
 
         this.shader = new reshader.MeshShader({
             vert, frag,
+            wgslVert, wgslFrag,
             uniforms,
             defines,
             extraCommandProps
