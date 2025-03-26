@@ -57,6 +57,7 @@ struct VertexOutput {
 
 struct ModelUniforms {
     projViewModelMatrix: mat4x4f,
+    positionMatrix: mat4x4f,
 #ifndef IS_VT
     modelMatrix: mat4x4f,
 #endif
@@ -157,7 +158,7 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
     let myPosition = unpackVTPosition();
     let localVertex = vec4f(myPosition, 1.0);
     var out: VertexOutput;
-    var position = uniforms.projViewModelMatrix * localVertex;
+    var position = uniforms.projViewModelMatrix * uniforms.positionMatrix * localVertex;
     out.position = position;
 
     #ifdef HAS_PATTERN
