@@ -754,4 +754,35 @@ describe('MultiGLTFMarker', () => {
             }, 100);
         });
     });
+
+    it('multigltfmarker draggable', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        new maptalks.GroupGLLayer('group', [gltflayer],  { sceneConfig }).addTo(map);
+        const importData = initInstanceDataInArray(100);
+        const multigltfmarker = new maptalks.MultiGLTFMarker(importData, {
+            draggable: true,
+            symbol: {
+                url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
+            }
+        }).addTo(gltflayer);
+        map.setPitch(45);
+        multigltfmarker.once('load', () => {
+            setTimeout(function() {
+                const center = multigltfmarker.getCenter();
+                const dragCenter = center.add(0.001, 0.001);
+                multigltfmarker.setCoordinates(dragCenter);
+                checkColor();
+            }, 100);
+        });
+        function checkColor() {
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixelMatch([148, 148, 148, 255], pixel)).to.be.eql(true);
+                done();
+            }, 100);
+        }
+    });
 });
