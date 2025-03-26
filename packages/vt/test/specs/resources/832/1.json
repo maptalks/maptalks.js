@@ -1,0 +1,105 @@
+[
+  
+    {
+        "batchName": "Polygon-Style",
+        "renderPlugin": {
+            "type": "fill",
+            "dataConfig": {
+                "type": "fill",
+                "only2D": true,
+                "order": [
+                    [
+                        "==",
+                        "tag",
+                        "building-model"
+                    ],
+                    [
+                        "==",
+                        "tag",
+                        "education-regions"
+                    ],
+                    [
+                        "==",
+                        "tag",
+                        "residential-regions"
+                    ]
+                  
+                   
+                ]
+            },
+            "sceneConfig": {}
+        },
+        "filter": [
+            "any",
+           
+            [
+                "all",
+                [
+                    "==",
+                    "$layer",
+                    "physical-geography"
+                ],
+                [
+                    "==",
+                    "$type",
+                    "Polygon"
+                ],
+                [
+                    "==",
+                    "tag",
+                    "residential-regions"
+                ]
+            ],
+            [
+                "all",
+                [
+                    "==",
+                    "$layer",
+                    "building-model"
+                ],
+                [
+                    "==",
+                    "$type",
+                    "Polygon"
+                ]
+            ],
+            [
+                "all",
+                [
+                    "==",
+                    "tag",
+                    "education-regions"
+                ],
+                [
+                    "==",
+                    "$type",
+                    "Polygon"
+                ]
+            ]
+        ],
+        "symbol": {
+            "visible": true,
+            "polygonFill": {
+                "type": "categorical",
+                "property": "tag",
+                "default": "pink",
+                "stops": [
+            
+                    [
+                        "education-regions",
+                        "#274EBFff"
+                    ],
+                 
+                   
+                    [
+                        "building-model",
+                        "#E71E1Eff"
+                    ]
+                   
+                  
+                ]
+            }
+        }
+    }
+   
+]

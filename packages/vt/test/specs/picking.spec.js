@@ -1609,4 +1609,24 @@ describe('picking specs', () => {
         });
         layer.addTo(map);
     });
+
+    it('should enable stencil in VectorTileLayer FillPainter pick, maptalks/issues#832', done => {
+        map = new maptalks.Map(container, {
+            center: [121.52861644,31.23331691],
+            zoom: 19
+        });
+        const layer = new VectorTileLayer('vt', {
+            urlTemplate: 'http://localhost:4398/832/{z}/{x}/{y}.mvt',
+            pickingGeometry: true,
+            style: "http://localhost:4398/832/1.json",
+            features: true
+        });
+        layer.addTo(map);
+
+        setTimeout(() => {
+            const picked = layer.identifyAtPoint(new maptalks.Point(map.width / 2, map.height / 2));
+            assert(picked[0].data.feature.properties.displaytext === '冰厂田幼儿园');
+            done();
+        }, 1000);
+    });
 });

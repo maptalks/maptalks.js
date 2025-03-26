@@ -595,6 +595,7 @@ class FillPainter extends BasicPainter {
 
         if (this.pickingFBO) {
             const projViewModelMatrix = [];
+            const isVectorTile = this.layer instanceof maptalks.TileLayer;
             this.picking = [new reshader.FBORayPicking(
                 this.renderer,
                 {
@@ -609,7 +610,10 @@ class FillPainter extends BasicPainter {
                             }
                         }
                     ],
-                    extraCommandProps
+                    extraCommandProps,
+                    enableStencil: () => {
+                        return isVectorTile && this.isOnly2D();
+                    }
                 },
                 this.pickingFBO,
                 this.getMap()
