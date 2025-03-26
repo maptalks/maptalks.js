@@ -66,7 +66,7 @@ export default class GLTFLineString extends MultiGLTFMarker {
     _generateData(from, to) {
         const items = [];
         const map = this.getMap();
-        if (!map) {
+        if (!map || !this.isLoaded()) {
             return items;
         }
         const dist = map.getProjection().measureLenBetween(from, to);

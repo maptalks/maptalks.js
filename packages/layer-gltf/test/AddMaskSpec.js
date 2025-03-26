@@ -722,5 +722,36 @@ describe('setMask', () => {
             done();
         });
         gltflayer.setMask(mask);
-    })
+    });
+
+    it('overlap mask(#836)', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFGeometry(center, {
+            symbol: {
+                url: url4,
+                scaleX: 60,
+                scaleY: 60,
+                scaleZ: 60
+            }
+        }).addTo(gltflayer);
+        marker.once('load', () => {
+            setTimeout(function() {
+                const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixelMatch([133, 7, 7, 255], pixel1)).to.be.eql(true);
+                const pixel2 = pickPixel(map, map.width / 2 + 100, map.height / 2, 1, 1);
+                expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
+                done();
+            }, 100);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const coords1 = [[center.x - 0.0001, center.y + 0.0001], [center.x + 0.0001, center.y + 0.0001], [center.x + 0.0001, center.y - 0.0001], [center.x - 0.0001, center.y - 0.0001]];
+        const coords2 = [[center.x - 0.0002, center.y + 0.0002], [center.x + 0.0002, center.y + 0.0002], [center.x + 0.0002, center.y - 0.0002], [center.x - 0.0002, center.y - 0.0002]];
+        const mask1 = new maptalks.ColorMask(coords1, {
+            symbol: symbol1
+        });
+        const mask2 = new maptalks.ColorMask(coords2, {
+            symbol: symbol2
+        });
+        gltflayer.setMask([mask2, mask1]);
+    });
 });

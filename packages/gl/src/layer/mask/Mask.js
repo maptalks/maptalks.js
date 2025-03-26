@@ -55,11 +55,13 @@ export default class Mask extends Polygon {
         }
         const centerPos = coordinateToWorld(map, this.getCenter());
         const pos = [];
+        const idx = this.getLayer().getMasks().indexOf(this);
+        const heightOffset = idx * 0.01;
         const len = this.getMode() === 'video' ? 4 : data.vertices.length / dimension;
         for (let i = 0; i < len; i++) {
             pos.push(data.vertices[i * dimension] - centerPos[0]);
             pos.push(data.vertices[i * dimension + 1] - centerPos[1]);
-            pos.push(0);
+            pos.push(heightOffset);
         }
         const triangles = earcut(pos, data.holes, 3);
         const geometry = new reshader.Geometry({
