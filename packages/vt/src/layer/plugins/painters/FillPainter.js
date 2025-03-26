@@ -267,6 +267,7 @@ class FillPainter extends BasicPainter {
         }
 
         mesh.setDefines(defines);
+        mesh.positionMatrix = this.getAltitudeOffsetMatrix();
         mesh.setLocalTransform(transform);
         mesh.properties.symbolIndex = symbolIndex;
         return mesh;
