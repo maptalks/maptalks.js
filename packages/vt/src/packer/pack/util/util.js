@@ -23,10 +23,10 @@ export function calculateSignedArea(ring) {
         p1 = ring[i];
         p2 = ring[j];
         if (p1.x !== undefined) {
-            if (p1.z || p2.z) {
-                // 三维的面永远认为是外环，目前不支持带空洞的三维面
-                return 1;
-            }
+            // if (p1.z || p2.z) {
+            //     // 三维的面永远认为是外环，目前不支持带空洞的三维面
+            //     return 1;
+            // }
             sum += (p2.x - p1.x) * (p1.y + p2.y);
         } else {
             if (p1[2] || p2[2]) {
