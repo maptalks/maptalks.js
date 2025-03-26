@@ -119,7 +119,8 @@ export default class VectorPack {
     needAltitudeAttribute() {
         // 只有当positionType为Int16Array时，才适用默认的packPosition逻辑
         // 如果positionType是Float32时，就必须添加aAltitude属性
-        return this.options['forceAltitudeAttribute'] || this.maxPosZ >= ALTITUDE_LIMIT || this.options.positionType === Float32Array;
+        const maxZValue = Math.max(Math.abs(this.maxPosZ), Math.abs(this.minPosZ));
+        return this.options['forceAltitudeAttribute'] || maxZValue >= ALTITUDE_LIMIT || this.options.positionType === Float32Array;
     }
 
     getPositionFormat() {
@@ -227,18 +228,24 @@ export default class VectorPack {
         }
 
         this.maxPosZ = 0;
+        this.minPosZ = 0;
         if (!this.options['forceAltitudeAttribute']) {
             const isLinePlacement = this.symbolDef['textPlacement'] === 'line';
-            let maxZ = 0;
+            let maxZ = -Infinity;
+            let minZ = Infinity;
             let hasMapPitchAlign = false;
             const { textPitchAlignmentFn } = this._fnTypes;
             if (!textPitchAlignmentFn && isLinePlacement && this.symbolDef['textPitchAlignment'] === 'map') {
                 hasMapPitchAlign = true;
             }
+            const MINMAX = [];
             for (let i = 0; i < checked.length; i++) {
-                const altitude = getMaxAltitude(checked[i] && checked[i].geometry);
-                if (altitude > maxZ) {
-                    maxZ = altitude;
+                const [minAltitude, maxAltitude]  = getMaxAltitude(MINMAX, checked[i] && checked[i].geometry);
+                if (maxAltitude > maxZ) {
+                    maxZ = maxAltitude;
+                }
+                if (minAltitude < minZ) {
+                    minZ = minAltitude;
                 }
                 if (isLinePlacement && !hasMapPitchAlign && textPitchAlignmentFn && checked[i].properties) {
                     const pitchAlign = textPitchAlignmentFn(null, checked[i].properties);
@@ -248,7 +255,8 @@ export default class VectorPack {
                 }
             }
             this.hasMapPitchAlign = hasMapPitchAlign;
-            this.maxPosZ = maxZ;
+            this.maxPosZ = maxZ === -Infinity ? 0 : maxZ;
+            this.minPosZ = minZ === Infinity ? 0 : minZ;
         }
 
         const orders = this.options.order;
@@ -413,6 +421,8 @@ export default class VectorPack {
         if (!pack) {
             return null;
         }
+        this.properties.minAltitude = this.minPosZ / 100;
+        this.properties.maxAltitude = this.maxPosZ / 100;
         pack.properties = this.properties;
         if (this.empty) {
             pack.empty = true;
@@ -584,7 +594,7 @@ export default class VectorPack {
         const result = {
             data: arrays,
             isIdUnique,
-            is2D: this.maxPosZ === 0,
+            is2D: this.maxPosZ === 0 && this.minPosZ === 0,
             // format,
             indices: this.hasElements() ? elements : null,
             positionSize,
@@ -706,31 +716,44 @@ function serializeAtlas(atlas) {
     };
 }
 
-function getMaxAltitude(geometry) {
+function getMaxAltitude(out, geometry) {
     if (!geometry) {
         return 0;
     }
-    let altitude = 0;
+    let maxAltitude = -Infinity;
+    let minAltitude = Infinity;
+    const minMax = [];
     if (Array.isArray(geometry)) {
         for (let i = 0; i < geometry.length; i++) {
             if (Array.isArray(geometry[i])) {
-                const alt = getMaxAltitude(geometry[i]);
-                if (alt > altitude) {
-                    altitude = alt;
+                const [min, max] = getMaxAltitude(minMax, geometry[i]);
+                if (max > maxAltitude) {
+                    maxAltitude = max;
+                }
+                if (min < minAltitude) {
+                    minAltitude = min;
                 }
             } else {
                 const alt = Math.abs(geometry[i].z || 0);
-                if (alt > altitude) {
-                    altitude = alt;
+                if (alt > maxAltitude) {
+                    maxAltitude = alt;
+                }
+                if (alt < minAltitude) {
+                    minAltitude = alt;
                 }
             }
         }
     } else {
         const alt = Math.abs(geometry.z || 0);
-        if (alt > altitude) {
-            altitude = alt;
+        if (alt > maxAltitude) {
+            maxAltitude = alt;
+        }
+        if (alt < minAltitude) {
+            minAltitude = alt;
         }
     }
-    return altitude;
+    out[0] = minAltitude;
+    out[1] = maxAltitude;
+    return out;
 }
 

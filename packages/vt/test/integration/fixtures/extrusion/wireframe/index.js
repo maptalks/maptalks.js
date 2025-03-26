@@ -28,7 +28,8 @@ const plugin = {
         type: '3d-wireframe',
         altitudeProperty: 'levels',
         altitudeScale: 5,
-        defaultAltitude: 0
+        defaultAltitude: 0,
+        altitudeOffset: 0.00001
     },
     sceneConfig: {
     },

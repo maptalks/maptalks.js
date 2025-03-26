@@ -15,7 +15,8 @@ export default class LineExtrusionPack extends LinePack {
 
     getFormat() {
         const { lineColorFn, lineWidthFn } = this._fnTypes;
-        const positionCTOR = this.maxPosZ >= Math.pow(2, 15) ? Float32Array : Int16Array;
+        const maxZValue = Math.max(Math.abs(this.maxPosZ), Math.abs(this.minPosZ));
+        const positionCTOR = maxZValue >= Math.pow(2, 15) ? Float32Array : Int16Array;
         const format = [
             {
                 type: positionCTOR,

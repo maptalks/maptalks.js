@@ -29,6 +29,7 @@ const plugin = {
         'altitudeScale': 1,
         'defaultAltitude': 20,
         'topThickness': 2,
+        'altitudeOffset': 0.00001,
         'top': true,
         'side': true
     },

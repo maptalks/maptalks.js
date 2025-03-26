@@ -375,8 +375,14 @@ export default class BaseLayerWorker {
                 if (tileData.data.ref !== undefined) {
                     return;
                 }
-                tileData.data.type = pluginConfigs[pluginIndexes[i].idx].renderPlugin.dataConfig.type;
-                tileData.data.filter = pluginConfigs[pluginIndexes[i].idx].filter.def;
+                const pluginConfig = pluginConfigs[pluginIndexes[i].idx];
+                const dataConfig = pluginConfig.renderPlugin.dataConfig;
+                tileData.data.type = dataConfig.type;
+                tileData.data.filter = pluginConfig.filter.def;
+                if (dataConfig.altitudeOffset) {
+                    tileData.data.properties.minAltitude += dataConfig.altitudeOffset;
+                    tileData.data.properties.maxAltitude += dataConfig.altitudeOffset;
+                }
 
                 if (tileData.buffers && tileData.buffers.length) {
                     for (let i = 0; i < tileData.buffers.length; i++) {

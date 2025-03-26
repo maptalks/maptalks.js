@@ -74,8 +74,8 @@ export default function (features, dataConfig, extent, uvOrigin, textureSize, re
     const indices = ArrayPool.createTypedArray(faces.indices, ctor);
     delete faces.indices;
     buffers.push(indices.buffer, faces.pickingIds.buffer);
-
-    const posArrayType = positionType || PackUtil.getPosArrayType(Math.max(512, faces.maxAltitude));
+    const maxAltitudeValue = Math.max(Math.abs(faces.maxAltitude), Math.abs(faces.minAltitude));
+    const posArrayType = positionType || PackUtil.getPosArrayType(Math.max(512, maxAltitudeValue));
     faces.vertices = ArrayPool.createTypedArray(faces.vertices, posArrayType);
 
     const normalArr = tangent ? arrayPool.getProxy() : new Float32Array(vertexCount * 3);
@@ -146,7 +146,8 @@ export default function (features, dataConfig, extent, uvOrigin, textureSize, re
             },
             indices,
             properties: {
-                maxAltitude: faces.maxAltitude,
+                maxAltitude: faces.maxAltitude / 100,
+                minAltitude: faces.minAltitude / 100,
                 hasNegativeHeight: faces.hasNegativeHeight
             },
             dynamicAttributes: fnTypes.dynamicAttributes,

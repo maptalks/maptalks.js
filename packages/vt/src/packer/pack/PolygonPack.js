@@ -201,7 +201,7 @@ export default class PolygonPack extends VectorPack {
 
             for (let ii = 0; ii < polygon.length; ii++) {
                 let ring = polygon[ii];
-                if (this.options.EXTENT !== Infinity && this.maxPosZ === 0) {
+                if (this.options.EXTENT !== Infinity && this.maxPosZ === 0 && this.minPosZ === 0) {
                     ring = clipPolygon(ring, BOUNDS);
                 }
                 if (ring.length === 0) {

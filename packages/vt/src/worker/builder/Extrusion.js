@@ -139,7 +139,8 @@ export function buildExtrudeFaces(
         return offset;
     }
 
-    let maxAltitude = 0;
+    let maxAltitude = -Infinity;
+    let minAltitude = Infinity;
     let offset = 0;
     const BOUNDS = [-1, -1, EXTENT + 1, EXTENT + 1];
 
@@ -172,8 +173,12 @@ export function buildExtrudeFaces(
         const { altitude, height } = PackUtil.getFeaAltitudeAndHeight(feature, altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty);
         if (height < 0) {
             hasNegativeHeight = true;
+            minAltitude = Math.min(altitude, minAltitude);
+            maxAltitude = Math.max(altitude - height, maxAltitude);
+        } else {
+            maxAltitude = Math.max(altitude, maxAltitude);
+            minAltitude = Math.min(altitude - height, minAltitude);
         }
-        maxAltitude = Math.max(Math.abs(altitude), maxAltitude);
 
         const verticeCount = vertices.getLength();
 
@@ -256,7 +261,8 @@ export function buildExtrudeFaces(
 
     const data = {
         hasNegativeHeight,
-        maxAltitude,
+        maxAltitude: maxAltitude === -Infinity ? 0 : maxAltitude,
+        minAltitude: minAltitude === Infinity ? 0 : minAltitude,
         vertices: vertices,        // vertexes
         verticeTypes,
         indices,                                    // indices for drawElements
