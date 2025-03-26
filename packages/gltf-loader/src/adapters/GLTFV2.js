@@ -68,6 +68,8 @@ export default class V2 extends GLTFAdapter {
         let source = texture.source;
         if (texture.extensions && texture.extensions['EXT_texture_webp']) {
             source = texture.extensions['EXT_texture_webp'].source;
+        } else if (texture.extensions && texture.extensions['KHR_texture_basisu']) {
+            source = texture.extensions['KHR_texture_basisu'].source;
         }
         if (!defined(source)) {
             return null;

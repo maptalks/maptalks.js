@@ -577,7 +577,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         if (!this.layer.options['onlyCacheNoContentTileWhenError'] || err && !maptalks.Util.isNoContentHttpCode(err.status)) {
             this._addErrorToCache(node, err);
         }
-        this.setToRedraw();
+        // this.setToRedraw();
         /**
          * tileerror event, fired when tile loading has error.
          *
