@@ -67,7 +67,8 @@ const style = [
             textFill: '#000',
             // textPitchAlignment: 'map',
             mergeOnProperty: ['step', ['zoom'], 'ref', 5, 'ref'],
-            textPlacement: 'line'
+            textPlacement: 'line',
+            textMaxAngle: 190
         }
     }
 ];

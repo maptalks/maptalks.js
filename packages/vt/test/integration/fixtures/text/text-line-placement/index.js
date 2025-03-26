@@ -51,7 +51,8 @@ const style = [
             textSize: 18,
             textFill: '#000',
             // textPitchAlignment: 'map',
-            textPlacement: 'line'
+            textPlacement: 'line',
+            textMaxAngle: 190
         }
     }
 ];

@@ -52,7 +52,8 @@ const style = [
             textSize: 18,
             textFill: '#000',
             textPitchAlignment: 'viewport',
-            textPlacement: 'line'
+            textPlacement: 'line',
+            textMaxAngle: 190
         }
     }
 ];
