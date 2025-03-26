@@ -7,6 +7,7 @@
 #endif
 
 uniform mat4 projViewModelMatrix;
+uniform mat4 positionMatrix;
 
 #include <fbo_picking_vert>
 
@@ -14,7 +15,7 @@ uniform mat4 projViewModelMatrix;
 
 void main() {
     vec3 myPosition = unpackVTPosition();
-    gl_Position = projViewModelMatrix * vec4(myPosition, 1.);
+    gl_Position = projViewModelMatrix * positionMatrix * vec4(myPosition, 1.);
 
     fbo_picking_setData(gl_Position.w, true);
 }

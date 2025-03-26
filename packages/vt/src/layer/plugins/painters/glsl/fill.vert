@@ -17,6 +17,7 @@
 #endif
 
 uniform mat4 projViewModelMatrix;
+uniform mat4 positionMatrix;
 #ifndef IS_VT
     uniform mat4 modelMatrix;
 #endif
@@ -144,7 +145,7 @@ uniform mat4 projViewModelMatrix;
 void main() {
     vec3 myPosition = unpackVTPosition();
     vec4 localVertex = vec4(myPosition, 1.);
-    gl_Position = projViewModelMatrix * localVertex;
+    gl_Position = projViewModelMatrix * positionMatrix * localVertex;
 
     // #ifndef ENABLE_TILE_STENCIL
     //     vPosition = aPosition.xy;

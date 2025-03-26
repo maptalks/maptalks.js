@@ -8,6 +8,7 @@
 #endif
 
 uniform mat4 projViewModelMatrix;
+uniform mat4 positionMatrix;
 
 #ifndef PICKING_MODE
     #if defined(HAS_COLOR)
@@ -22,7 +23,7 @@ uniform mat4 projViewModelMatrix;
 
 void main() {
     vec3 position = unpackVTPosition();
-    gl_Position = projViewModelMatrix * vec4(position, 1.0);
+    gl_Position = projViewModelMatrix * positionMatrix * vec4(position, 1.0);
 
     #ifndef PICKING_MODE
         #if defined(HAS_COLOR)

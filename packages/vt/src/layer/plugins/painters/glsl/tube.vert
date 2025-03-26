@@ -5,6 +5,7 @@
 #define MAX_LINE_DISTANCE 65535.0
 
 uniform mat4 projViewModelMatrix;
+uniform mat4 positionMatrix;
 
 // lineWidth转成本地坐标，lineWidth单位是厘米
 uniform vec2 centiMeterToLocal;
@@ -97,7 +98,7 @@ void main() {
     // localVertex.z单位本身就是厘米，所以无需转换
     localVertex.z += tubeNormal.z * halfwidth;
     gl_Position = projViewModelMatrix * localVertex;
-    // gl_Position = projViewModelMatrix * vec4(position, 1.0);
+    // gl_Position = projViewModelMatrix * positionMatrix * vec4(position, 1.0);
 
     #ifdef PICKING_MODE
         fbo_picking_setData(gl_Position.w, true);
