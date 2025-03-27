@@ -11,7 +11,7 @@ import GraphicsFramebuffer from "./GraphicsFramebuffer";
 import Texture2D from "../Texture2D";
 import GraphicsTexture from "./GraphicsTexture";
 
-const ERROR_INFO = 'global uniform and mesh owned uniform can not be in the same struct';
+const ERROR_INFO = 'global uniform and mesh owned uniform can not be in the same struct:';
 
 export default class CommandBuilder {
     //@internal
@@ -248,11 +248,11 @@ export default class CommandBuilder {
                     const name = members[ii].name;
                     if (!meshHasUniform(mesh, name, this.contextDesc)) {
                         if (!isGlobal && ii > 0) {
-                            throw new Error(ERROR_INFO + groupInfo);
+                            throw new Error(ERROR_INFO + name + '(' + groupInfo.name + ')');
                         }
                         isGlobal = true;
                     } else if (isGlobal) {
-                        throw new Error(ERROR_INFO + groupInfo);
+                        throw new Error(ERROR_INFO + name + '(' + groupInfo.name + ')');
                     }
                 }
             } else {

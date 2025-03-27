@@ -29,6 +29,7 @@
         center: [-73.98795379493208, 40.72100197835064],
         zoom: 19,
         bearing: -69,
+        renderer: 'gpu'
       });
 
       /**start**/
@@ -53,47 +54,28 @@
               polygonPatternFile: "./resources/grass.png",
             },
           },
-          {
-            filter: ["all", ["==", "$layer", "building"],
-              ["==", "$type", "Polygon"]
-            ],
-            renderPlugin: {
-              dataConfig: {
-                type: "line",
-              },
-              sceneConfig: {},
-              type: "line",
-            },
-            symbol: {
-              lineColor: [0.73, 0.73, 0.73, 1],
-              lineWidth: 2,
-            },
-          },
+          // {
+          //   filter: ["all", ["==", "$layer", "building"],
+          //     ["==", "$type", "Polygon"]
+          //   ],
+          //   renderPlugin: {
+          //     dataConfig: {
+          //       type: "line",
+          //     },
+          //     sceneConfig: {},
+          //     type: "line",
+          //   },
+          //   symbol: {
+          //     lineColor: [0.73, 0.73, 0.73, 1],
+          //     lineWidth: 2,
+          //   },
+          // },
         ],
       };
       vt.setStyle(style);
       /**end**/
 
-      const groupLayer = new maptalks.GroupGLLayer("group", [vt], {
-        sceneConfig: {
-          environment: {
-            enable: true,
-            mode: 1,
-            level: 0,
-            brightness: 0,
-          },
-          ground: {
-            enable: true,
-            renderPlugin: {
-              type: "fill",
-            },
-            symbol: {
-              polygonFill: [0.3294117, 0.3294117, 0.3294117, 1],
-              polygonOpacity: 1,
-            },
-          },
-        },
-      });
+      const groupLayer = new maptalks.GroupGLLayer("group", [vt]);
       groupLayer.addTo(map);
     </script>
   </body>

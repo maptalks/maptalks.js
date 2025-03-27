@@ -1084,6 +1084,9 @@ export default class Geometry {
             }
             const infoName = this.semantic[p] || p;
             const info = vertexInfo[infoName];
+            if (!info) {
+                continue;
+            }
             const accessorName = attr.accessorName;
             const byteStride = attr.byteStride;
             let stridePadding = 0;

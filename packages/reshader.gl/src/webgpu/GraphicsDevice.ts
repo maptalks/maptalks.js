@@ -44,7 +44,7 @@ export default class GraphicsDevice {
     // mock of regl's hasExtension
     hasExtension(extension) {
         if (!this._supportedFormats) {
-            this._supportedFormats = getSupportedFormats(this.adapter);
+            this._supportedFormats = getSupportedFormats(this.wgpu);
         }
         if (this._supportedFormats[extension]) {
             return true;

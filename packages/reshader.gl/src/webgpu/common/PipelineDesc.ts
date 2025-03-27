@@ -42,10 +42,18 @@ export default class PipelineDescriptor {
             depthBiasSlopeScale = 0;
             const offsetProps = commandProps.polygonOffset.offset;
             if (offsetProps && !isNil(offsetProps.units)) {
-                depthBias = isFunction(offsetProps.units) && offsetProps.units(null, uniformValues) || offsetProps.units;
+                if (isFunction(offsetProps.units)) {
+                    depthBias = offsetProps.units(null, uniformValues);
+                } else {
+                    depthBias = offsetProps.units;
+                }
             }
             if (offsetProps && !isNil(offsetProps.factor)) {
-                depthBiasSlopeScale = isFunction(offsetProps.factor) && offsetProps.factor(null, uniformValues) || offsetProps.factor;
+                if (isFunction(offsetProps.factor)) {
+                    depthBiasSlopeScale = offsetProps.factor(null, uniformValues);
+                } else {
+                    depthBiasSlopeScale = offsetProps.factor;
+                }
             }
         }
         this.depthBias = depthBias;
@@ -63,10 +71,12 @@ export default class PipelineDescriptor {
 
             depthWriteEnable = true;
             if (!isNil(depthProps.mask)) {
-                const maskFunc = isFunction(depthProps.mask) && depthProps.mask(null, uniformValues) || depthProps.mask;
-                depthWriteEnable = !!maskFunc;
+                if (isFunction(depthProps.mask)) {
+                    depthWriteEnable = depthProps.mask(null, uniformValues);
+                } else {
+                    depthWriteEnable = !!depthProps.mask;
+                }
             }
-
             //TODO where is depth range?
         }
         this.depthCompare = depthCompare;
@@ -78,6 +88,7 @@ export default class PipelineDescriptor {
             if (stencilProps.op) {
                 // 目前还没遇到op是函数的情况，所以可以直接读取
                 stencilFrontPassOp = stencilProps.op.zpass;
+                stencilFrontPassOp = isFunction(stencilFrontPassOp) && stencilFrontPassOp(null, uniformValues) || stencilFrontPassOp;
             }
 
             if (stencilProps.func) {

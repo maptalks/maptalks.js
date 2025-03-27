@@ -638,6 +638,7 @@ class FillPainter extends BasicPainter {
 
 
         this.shader = new reshader.MeshShader({
+            name: 'vt-fill',
             vert, frag,
             wgslVert, wgslFrag,
             uniforms,

@@ -22,15 +22,20 @@ struct FragmentUniforms {
     #ifndef HAS_OPACITY
         polygonOpacity: f32,
     #endif
+    tileExtent: f32,
 }
 
 struct ShaderUniforms {
     layerOpacity: f32,
-    tileExtent: f32,
+
 }
 
 @group(0) @binding($b) var<uniform> fragmentUniforms: FragmentUniforms;
 @group(0) @binding($b) var<uniform> uniforms: ShaderUniforms;
+#if HAS_PATTERN
+    @group(0) @binding($b) var polygonPatternFile: texture_2d<f32>;
+    @group(0) @binding($b) var polygonPatternFileSampler: sampler;
+#endif
 
 struct VertexOutput {
 #ifdef HAS_PATTERN
@@ -66,7 +71,7 @@ struct VertexOutput {
             let myUVOffset = fragmentUniforms.uvOffset;
         #endif
 
-        let uv = mod(vertexOutput.vTexCoord * myUVScale + myUVOffset, 1.0);
+        let uv = (vertexOutput.vTexCoord * myUVScale + myUVOffset) % 1.0;
         let uvStart = vertexOutput.vTexInfo.xy;
         let uvSize = vertexOutput.vTexInfo.zw;
         return (uvStart + uv * uvSize) / fragmentUniforms.atlasSize;
@@ -93,9 +98,10 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
     #endif
 
     #ifdef HAS_PATTERN
+        let uv = computeUV(vertexOutput);
+        var texColor = textureSample(polygonPatternFile, polygonPatternFileSampler, uv);
         if (vertexOutput.vTexInfo.z * vertexOutput.vTexInfo.w > 1.0) {
-            let uv = computeUV(vertexOutput);
-            color = textureSample(polygonPatternFile, polygonPatternFileSampler, uv);
+            color = texColor;
         }
     #endif
 
@@ -107,12 +113,12 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
 
     outputColor *= uniforms.layerOpacity;
 
-    #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
+    #if HAS_SHADOWING && !HAS_BLOOM
         let shadowCoeff = shadow_computeShadow();
         outputColor.rgb = shadow_blend(outputColor.rgb, shadowCoeff);
     #endif
 
-    outputColor = highlight_blendColor(outputColor);
+    outputColor = highlight_blendColor(outputColor, vertexOutput);
 
     // if (fragmentUniforms.blendSrcIsOne == 1.0) {
     //     outputColor *= outputColor.a;

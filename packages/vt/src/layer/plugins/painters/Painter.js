@@ -41,7 +41,7 @@ class Painter {
         this._is2D = true;
         this.regl = regl;
         this.layer = layer;
-        this.canvas = regl['_gl'].canvas;
+        this.canvas = (regl['_gl'] || regl.context).canvas;
         this.sceneConfig = sceneConfig || {};
         this.dataConfig = dataConfig || {};
         //插件的序号，也是style的序号

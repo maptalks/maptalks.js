@@ -16,22 +16,22 @@ const vert = /* wgsl */`
 
 const frag = /* wgsl */`
     // 高亮颜色混合函数
-    fn highlight_blendColor(color: vec4f, input: VertexOutput) -> vec4f {
+    fn highlight_blendColor(color: vec4f, output: VertexOutput) -> vec4f {
         var outColor: vec4f = color;
 
         // 如果有高亮颜色
         #if HAS_HIGHLIGHT_COLOR
-            outColor.rgb = outColor.rgb * (1.0 - input.vHighlightColor.a) + input.vHighlightColor.rgb * input.vHighlightColor.a;
+            outColor.rgb = outColor.rgb * (1.0 - output.vHighlightColor.a) + output.vHighlightColor.rgb * output.vHighlightColor.a;
             #if HAS_HIGHLIGHT_COLOR_POINT
             #else
             // 如果没有高亮颜色点
-                outColor.a = outColor.a * (1.0 - input.vHighlightColor.a) + input.vHighlightColor.a;
+                outColor.a = outColor.a * (1.0 - output.vHighlightColor.a) + output.vHighlightColor.a;
             #endif
         #endif
 
             // 如果有高亮透明度
         #if HAS_HIGHLIGHT_OPACITY
-            outColor *= input.vHighlightOpacity;
+            outColor *= output.vHighlightOpacity;
         #endif
 
         return outColor;

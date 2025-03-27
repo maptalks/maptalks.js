@@ -934,7 +934,7 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
             if (!visible) {
                 return;
             }
-            const regl = this.regl;
+            const regl = this.regl || this.device;
             const gl = this.gl;
             const symbol = useDefault ? plugin.defaultSymbol : plugin.style && plugin.style.symbol;
             const context = {
@@ -1020,7 +1020,7 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
             if (isRenderingTerrain && !terrainVectorFilter(plugin)) {
                 return;
             }
-            this.regl.clear({
+            (this.regl || this.device).clear({
                 stencil: 0xFF,
                 framebuffer: targetFBO
             });
@@ -1096,7 +1096,7 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
     _getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp) {
         const isRenderingTerrain = this._isRenderingTerrain();
         const isRenderingTerrainSkin = isRenderingTerrain && plugin && terrainSkinFilter(plugin);
-        const regl = this.regl;
+        const regl = this.regl || this.device;
         const gl = this.gl;
         const context = {
             regl,
@@ -1134,7 +1134,7 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
         const tileZoom = this.getCurrentTileZoom();
         let stencilRenderer = this._stencilRenderer;
         if (!stencilRenderer) {
-            stencilRenderer = this._stencilRenderer = new TileStencilRenderer(this.regl, this.canvas, this.getMap());
+            stencilRenderer = this._stencilRenderer = new TileStencilRenderer(this.regl || this.device, this.canvas, this.getMap());
         }
         stencilRenderer.start();
         const { tiles } = this._stencilTiles;
@@ -1328,7 +1328,7 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
             }
             for (let i = 0; i < skinImages.length; i++) {
                 const texture = skinImages[i].texture;
-                this.regl.clear({
+                (this.regl || this.device).clear({
                     stencil: 0xFF,
                     framebuffer: texture
                 });
@@ -1369,7 +1369,7 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
                 return;
             }
             const isRenderingTerrainSkin = isRenderingTerrain && terrainSkinFilter(plugin);
-            const regl = this.regl;
+            const regl = this.regl || this.device;
             const gl = this.gl;
             const context = {
                 regl,
@@ -1434,7 +1434,7 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
                 return;
             }
             const isRenderingTerrainSkin = isRenderingTerrain && terrainSkinFilter(plugin);
-            const regl = this.regl;
+            const regl = this.regl || this.device;
             const gl = this.gl;
             if (!tileCache[idx]) {
                 tileCache[idx] = {};

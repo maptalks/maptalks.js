@@ -384,9 +384,9 @@ export function isInterleaved(dataObj) {
  * @param gl
  * @returns
  */
-export function getSupportedFormats(gl: WebGL2RenderingContext | WebGLRenderingContext | GraphicsDevice) {
+export function getSupportedFormats(gl: WebGL2RenderingContext | WebGLRenderingContext | GPUDevice) {
     const webgl = (gl as any).getExtension && gl as (WebGL2RenderingContext | WebGLRenderingContext);
-    const webgpu = !webgl && (gl as GraphicsDevice).wgpu;
+    const webgpu = !webgl && (gl as GPUDevice);
     const prefixWebGL = 'WEBGL_compressed_texture_';
     const prefixWebGPU = 'texture-compression-';
     const formats = {

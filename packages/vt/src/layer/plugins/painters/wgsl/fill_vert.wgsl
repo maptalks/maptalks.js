@@ -1,10 +1,10 @@
 #define SHADER_NAME FILL
 struct VertexInput {
 #ifdef HAS_ALTITUDE
-    @location($i) aPosition: vec2f,
+    @location($i) aPosition: vec2i,
     @location($i) aAltitude: f32,
 #else
-    @location($i) aPosition: vec3f,
+    @location($i) aPosition: vec4i,
 #endif
 #ifdef HAS_COLOR
     @location($i) aColor: vec4f,
@@ -14,9 +14,9 @@ struct VertexInput {
 #endif
 #ifdef HAS_PATTERN
     #ifdef HAS_TEX_COORD
-        @location($i) aTexInfo: vec4f,
+        @location($i) aTexCoord: vec2f,
     #endif
-    @location($i) aTexCoord: vec2f,
+    @location($i) aTexInfo: vec4u,
 #endif
 #ifdef HAS_UV_SCALE
     @location($i) aUVScale: vec2f,
@@ -58,7 +58,8 @@ struct VertexOutput {
 struct ModelUniforms {
     projViewModelMatrix: mat4x4f,
     positionMatrix: mat4x4f,
-#ifndef IS_VT
+#ifdef IS_VT
+#else
     modelMatrix: mat4x4f,
 #endif
 #ifdef HAS_PATTERN
@@ -133,7 +134,7 @@ struct Uniforms {
                 myPatternWidth = aPatternWidth;
             #endif
             let originOffset = origin * vec2f(1.0, -1.0) / myPatternWidth;
-            return mod(originOffset, 1.0) + computeUV(localVertex.xy * uniforms.tileScale / uniforms.tileRatio, myPatternWidth);
+            return (originOffset % 1.0) + computeUV(localVertex.xy * uniforms.tileScale / uniforms.tileRatio, myPatternWidth);
         #else
             var myPatternWidth = patternSize;
             #ifdef HAS_PATTERN_WIDTH
@@ -155,15 +156,16 @@ struct Uniforms {
 
 @vertex
 fn main(vertexInput: VertexInput) -> VertexOutput {
-    let myPosition = unpackVTPosition();
+    let myPosition = unpackVTPosition(vertexInput);
     let localVertex = vec4f(myPosition, 1.0);
     var out: VertexOutput;
     var position = uniforms.projViewModelMatrix * uniforms.positionMatrix * localVertex;
     out.position = position;
 
     #ifdef HAS_PATTERN
-        let patternSize = vertexInput.aTexInfo.zw + 1.0;
-        out.vTexInfo = vec4f(vertexInput.aTexInfo.xy, patternSize);
+        let aTexInfo: vec4f = vec4f(vertexInput.aTexInfo);
+        let patternSize = aTexInfo.zw + 1.0;
+        out.vTexInfo = vec4f(aTexInfo.xy, patternSize);
         #ifdef HAS_TEX_COORD
             if (vertexInput.aTexCoord.x == INVALID_TEX_COORD) {
                 out.vTexCoord = computeTexCoord(localVertex, patternSize);
@@ -186,7 +188,7 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
         out.vColor = vertexInput.aColor / 255.0;
     #endif
 
-    highlight_setVarying();
+    highlight_setVarying(vertexInput, out);
 
     #ifdef HAS_OPACITY
         out.vOpacity = vertexInput.aOpacity / 255.0;

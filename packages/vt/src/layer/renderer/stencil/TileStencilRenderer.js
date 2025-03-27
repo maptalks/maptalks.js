@@ -1,6 +1,6 @@
 import { reshader, mat4, vec3 } from '@maptalks/gl';
 
-const vertices = new Uint8Array([
+const vertices = new Uint16Array([
     0, 0,
     0, 1,
     1, 0,
@@ -25,6 +25,23 @@ const frag = `
 void main()
 {
     gl_FragColor = vec4(1.0, 0.0, 0.0, 0.1);
+}
+`;
+
+const wgslVert = `
+@group(0) @binding(0) var<uniform> projViewModelMatrix : mat4x4f;
+@vertex
+fn main(
+    @location(0) aPosition : vec2u
+    ) -> @builtin(position) vec4f {
+    return projViewModelMatrix * vec4f(vec2f(aPosition), 0.0, 1.0);
+}
+`;
+
+const wgslFrag = `
+@fragment
+fn main() -> @location(0) vec4f {
+  return vec4(1.0, 0.0, 0.0, 0.1);
 }
 `;
 
@@ -124,8 +141,11 @@ export default class TileStencilRenderer {
             colorMask: [false, false, false, false],
         };
         this._shader = new reshader.MeshShader({
+            name: 'tile-stencil',
             vert,
             frag,
+            wgslVert,
+            wgslFrag,
             uniforms: [
                 {
                     name: 'projViewModelMatrix',

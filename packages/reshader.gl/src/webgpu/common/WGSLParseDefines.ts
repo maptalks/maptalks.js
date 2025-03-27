@@ -9,8 +9,11 @@ const defineConstantRexg = /\s*#define\s+(\w+)\s+([^\n]+)/g;
 const preprocessorSymbols = /#([^\s]*)(\s*)/gm;
 const usedDefineRexg = /#[^\s]*\s*\b[0-9A-Z][0-9A-Z_&&\|! ]+\b/g;
 const isNumeric = (n) => !isNaN(n);
-export function WGSLParseDefines(shader: string, meshDefines: ShaderDefines): string {
-	if (!shader) return undefined;
+export function WGSLParseDefines(
+    shader: string,
+    meshDefines: ShaderDefines,
+): string {
+    if (!shader) return undefined;
     // extract define const in shader
     const matches = shader.matchAll(defineConstantRexg);
     const defineConsts = {};
@@ -18,157 +21,222 @@ export function WGSLParseDefines(shader: string, meshDefines: ShaderDefines): st
         defineConsts[match[1]] = match[2];
     }
     // delete define const in shader
-    shader = shader.replace(/#define.*$/gm, '');
-	// parse shader inner const define
-	const notDefineConstShader = ParseDefinesConst(shader, defineConsts);
-	// filter "&&","||",number
-	const rexgDefines = notDefineConstShader
-		.match(usedDefineRexg)
+    shader = shader.replace(/#define.*$/gm, "");
+    // parse shader inner const define
+    const notDefineConstShader = ParseDefinesConst(shader, defineConsts);
+    // filter "&&","||",number
+    const rexgDefines = notDefineConstShader
+        .match(usedDefineRexg)
         ?.filter((define) => !isNumeric(define) && define != "")
         .map((define) => {
-            const firstSpace = define.indexOf(' ');
+            const firstSpace = define.indexOf(" ");
             // remove #foo
             return define.substring(firstSpace).trim();
         });
-	// normallize defines
-	const normalizeDefines = getNormalizeDefines(rexgDefines, meshDefines);
-	// split Shader
-	const shaderStrs = splitShaderStrsByDefine(notDefineConstShader, rexgDefines);
-	// parse conditional macro definition
-	return shaderStrs.length > 0 ? ParseDefines(shaderStrs, normalizeDefines) : notDefineConstShader;
+    // normallize defines
+    const normalizeDefines = getNormalizeDefines(rexgDefines, meshDefines);
+    // split Shader
+    const shaderStrs = splitShaderStrsByDefine(
+        notDefineConstShader,
+        rexgDefines,
+    );
+    // parse conditional macro definition
+    return shaderStrs.length > 0
+        ? ParseDefines(shaderStrs, normalizeDefines)
+        : notDefineConstShader;
 }
-function ParseDefines(strings: Array<string>, values: Array<boolean | number>): string {
-	const stateStack = [];
-	let state = { frag: "", elseIsValid: false, expression: true };
-	let depth = 1;
-	for (let i = 0; i < strings.length; ++i) {
-		const frag = strings[i];
-		const matchedSymbols = frag.matchAll(preprocessorSymbols);
 
-		let lastIndex = 0;
-		let valueConsumed = false;
-		for (const match of matchedSymbols) {
-			state.frag += frag.substring(lastIndex, match.index);
+class ConditionalState {
+    elseIsValid = true;
+    branches = [];
 
-			switch (match[1]) {
-				case "if":
+    constructor(initialExpression) {
+        this.pushBranch("if", initialExpression);
+    }
+
+    pushBranch(token, expression) {
+        if (!this.elseIsValid) {
+            throw new Error(`#${token} not preceeded by an #if or #elif`);
+        }
+        this.elseIsValid = token === "if" || token === "elif";
+        this.branches.push({
+            expression: !!expression,
+            string: "",
+        });
+    }
+
+    appendStringToCurrentBranch(...strings) {
+        for (const string of strings) {
+            this.branches[this.branches.length - 1].string += string;
+        }
+    }
+
+    resolve() {
+        for (const branch of this.branches) {
+            if (branch.expression) {
+                return branch.string;
+            }
+        }
+
+        return "";
+    }
+}
+
+function ParseDefines(
+    strings: Array<string>,
+    values: Array<boolean | number>,
+): string {
+    const stateStack = [];
+    let state = new ConditionalState(true);
+    state.elseIsValid = false;
+    let depth = 1;
+
+    const assertTemplateFollows = (match, string) => {
+        if (match.index + match[0].length != string.length) {
+            throw new Error(
+                `#${match[1]} must be immediately followed by a template expression (ie: \${value})`,
+            );
+        }
+    };
+
+    for (let i = 0; i < strings.length; ++i) {
+        const string = strings[i];
+        const matchedSymbols = string.matchAll(preprocessorSymbols);
+
+        let lastIndex = 0;
+        let valueConsumed = false;
+
+        for (const match of matchedSymbols) {
+            state.appendStringToCurrentBranch(
+                string.substring(lastIndex, match.index),
+            );
+
+            switch (match[1]) {
+                case "if":
                 case "ifdef":
-					if (match.index + match[0].length != frag.length) {
-						throw new Error("#if must be immediately followed by a template expression (ie: ${value})");
-					}
-					valueConsumed = true;
-					stateStack.push(state);
-					depth++;
-					state = { frag: "", elseIsValid: true, expression: !!values[i] };
-					break;
-				case "elif":
-					if (match.index + match[0].length != frag.length) {
-						throw new Error("#elif must be immediately followed by a template expression (ie: ${value})");
-					} else if (!state.elseIsValid) {
-						throw new Error("#elif not preceeded by an #if or #elif");
-					}
-					valueConsumed = true;
-					if (state.expression && stateStack.length != depth) {
-						stateStack.push(state);
-					}
-					state = { frag: "", elseIsValid: true, expression: !!values[i] };
-					break;
-				case "else":
-					if (!state.elseIsValid) {
-						throw new Error("#else not preceeded by an #if or #elif");
-					}
-					if (state.expression && stateStack.length != depth) {
-						stateStack.push(state);
-					}
-					state = { frag: match[2], elseIsValid: false, expression: true };
-					break;
-				case "endif":
-					if (!stateStack.length) {
-						throw new Error("#endif not preceeded by an #if");
-					}
-					// eslint-disable-next-line no-case-declarations
-					const branchState = stateStack.length == depth ? stateStack.pop() : state;
-					state = stateStack.pop();
-					depth--;
-					if (branchState.expression) {
-						state.frag += branchState.frag;
-					}
-					state.frag += match[2];
-					break;
-				default:
-					// Unknown preprocessor symbol. Emit it back into the output frag unchanged.
-					state.frag += match[0];
-					break;
-			}
+                case "ifndef":
+                    assertTemplateFollows(match, string);
 
-			lastIndex = match.index + match[0].length;
-		}
+                    valueConsumed = true;
+                    stateStack.push(state);
+                    const value = match[1] === 'ifndef' ? !values[i] : !!values[i];
+                    state = new ConditionalState(value);
+                    break;
+                case "elif":
+                    assertTemplateFollows(match, string);
 
-		// If the frag didn't end on one of the preprocessor symbols append the rest of it here.
-		if (lastIndex != frag.length) {
-			state.frag += frag.substring(lastIndex, frag.length);
-		}
+                    valueConsumed = true;
+                    state.pushBranch(match[1], values[i]);
+                    break;
+                case "else":
+                    state.pushBranch(match[1], true);
+                    state.appendStringToCurrentBranch(match[2]);
+                    break;
+                case "endif":
+                    if (!stateStack.length) {
+                        throw new Error(`#${match[1]} not preceeded by an #if`);
+                    }
 
-		// If the next value wasn't consumed by the preprocessor symbol, append it here.
-		if (!valueConsumed && values.length > i) {
-			state.frag += values[i];
-		}
-	}
-	if (stateStack.length) {
-		throw new Error("Mismatched #if/#endif count");
-	}
-	return state.frag;
+                    const result = state.resolve();
+
+                    state = stateStack.pop();
+                    state.appendStringToCurrentBranch(result, match[2]);
+                    break;
+                default:
+                    // Unknown preprocessor symbol. Emit it back into the output string unchanged.
+                    state.appendStringToCurrentBranch(match[0]);
+                    break;
+            }
+
+            lastIndex = match.index + match[0].length;
+        }
+
+        // If the string didn't end on one of the preprocessor symbols append the rest of it here.
+        if (lastIndex != string.length) {
+            state.appendStringToCurrentBranch(
+                string.substring(lastIndex, string.length),
+            );
+        }
+
+        // If the next value wasn't consumed by the preprocessor symbol, append it here.
+        if (!valueConsumed && values.length > i) {
+            state.appendStringToCurrentBranch(values[i]);
+        }
+    }
+
+    if (stateStack.length) {
+        throw new Error("Mismatched #if/#endif count");
+    }
+
+    return state.resolve();
 }
 function ParseDefinesConst(sourceShader: string, defines: ShaderDefines) {
-	if (!defines) return sourceShader;
-	let result = sourceShader;
+    if (!defines) return sourceShader;
+    let result = sourceShader;
     const keys = Object.keys(defines);
-	keys?.forEach?.((key: string) => {
-        const regex = new RegExp('\\b' + key + '\\b', "g");
-		result = result.replace(regex, defines[key] + '');
-	});
-	return result;
+    keys?.forEach?.((key: string) => {
+        const regex = new RegExp("\\b" + key + "\\b", "g");
+        result = result.replace(regex, defines[key] + "");
+    });
+    return result;
 }
 function getNormalizeDefines(rexgDefines: Array<string>, defines: any) {
-	return rexgDefines?.map?.((define) => {
-		if (define?.includes("&&") || define?.includes("||")) {
-			if (define.includes("&&")) {
-				const splitDefines = define.split("&&").map(key => key.trim());
-				return getAndDefineValue(splitDefines, defines);
-			}
-			const splitDefines = define.split("||").map(key => key.trim());
-			return !getOrDefineValue(splitDefines, defines);
-		}
-		return defines[define];
-	});
+    return rexgDefines?.map?.((define) => {
+        if (define?.includes("&&") || define?.includes("||")) {
+            if (define.includes("&&")) {
+                const splitDefines = define
+                    .split("&&")
+                    .map((key) => key.trim());
+                return getAndDefineValue(splitDefines, defines);
+            }
+            const splitDefines = define.split("||").map((key) => key.trim());
+            return !getOrDefineValue(splitDefines, defines);
+        }
+        return defines[define];
+    });
 }
-function getAndDefineValue(splitDefines: Array<string>, defines: ShaderDefines): boolean {
-	let total = 0;
-	splitDefines?.forEach?.((defineKey) => (total += Number(defines[defineKey] || 0) > 1 ? 1 : Number(defines[defineKey] || 0)));
-	return total === splitDefines.length;
+function getAndDefineValue(
+    splitDefines: Array<string>,
+    defines: ShaderDefines,
+): boolean {
+    let total = 0;
+    splitDefines?.forEach?.(
+        (defineKey) =>
+            (total +=
+                Number(defines[defineKey] || 0) > 1
+                    ? 1
+                    : Number(defines[defineKey] || 0)),
+    );
+    return total === splitDefines.length;
 }
-function getOrDefineValue(splitDefines: Array<string>, defines: ShaderDefines): boolean {
-	let total = 0;
-	splitDefines?.forEach?.((defineKey) => {
+function getOrDefineValue(
+    splitDefines: Array<string>,
+    defines: ShaderDefines,
+): boolean {
+    let total = 0;
+    splitDefines?.forEach?.((defineKey) => {
         let value;
-        if (defineKey.startsWith('!')) {
+        if (defineKey.startsWith("!")) {
             value = !defines[defineKey];
         } else {
             value = defines[defineKey];
         }
         return (total += !!value ? 1 : 0);
     });
-	return total === 0;
+    return total === 0;
 }
-function splitShaderStrsByDefine(shader: string, defines: Array<string>): Array<string> {
-	let currentShaderStr = shader;
-	const shaderStrs =
-		defines?.map((define) => {
-			const length = currentShaderStr.indexOf(define);
-			const sliceStr = currentShaderStr.slice(0, length);
-			currentShaderStr = currentShaderStr.slice(length + define.length);
-			return sliceStr;
-		}) || [];
-	if (shaderStrs?.length) shaderStrs.push(currentShaderStr);
-	return shaderStrs;
+function splitShaderStrsByDefine(
+    shader: string,
+    defines: Array<string>,
+): Array<string> {
+    let currentShaderStr = shader;
+    const shaderStrs =
+        defines?.map((define) => {
+            const length = currentShaderStr.indexOf(define);
+            const sliceStr = currentShaderStr.slice(0, length);
+            currentShaderStr = currentShaderStr.slice(length + define.length);
+            return sliceStr;
+        }) || [];
+    if (shaderStrs?.length) shaderStrs.push(currentShaderStr);
+    return shaderStrs;
 }
