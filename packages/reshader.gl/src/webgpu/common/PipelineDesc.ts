@@ -20,6 +20,7 @@ export default class PipelineDescriptor {
     cullMode?: GPUCullMode;
     frontFace?: GPUFrontFace;
     topology?: GPUPrimitiveTopology;
+    writeMask?: number;
 
     readFromREGLCommand(commandProps: any, mesh, uniformValues, fbo: GraphicsFramebuffer) {
         if (!commandProps) {
@@ -156,6 +157,27 @@ export default class PipelineDescriptor {
 
         // frontFace不存在函数的情况，所以可以直接读取
         this.frontFace = commandProps.frontFace;
+
+        let colorMask = commandProps.colorMask;
+        if (colorMask) {
+            if (isFunction(colorMask)) {
+                colorMask = colorMask(null, uniformValues);
+            }
+            let writeMask = 0;
+            if (colorMask[0]) {
+                writeMask |= GPUColorWrite.RED;
+            }
+            if (colorMask[1]) {
+                writeMask |= GPUColorWrite.GREEN;
+            }
+            if (colorMask[2]) {
+                writeMask |= GPUColorWrite.BLUE;
+            }
+            if (colorMask[3]) {
+                writeMask |= GPUColorWrite.ALPHA;
+            }
+            this.writeMask = writeMask;
+        }
 
         //TODO mesh中buffer的组织方式也需要考虑进来
     }

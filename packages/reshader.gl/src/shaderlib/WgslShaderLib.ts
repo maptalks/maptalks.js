@@ -10,6 +10,7 @@ import vsm_shadow from './wgsl/vsm_shadow';
 import draco_decode from './wgsl/draco_decode';
 import highlight from './wgsl/highlight';
 import compute_texcoord from './wgsl/compute_texcoord';
+import fbo_picking from './wgsl/fbo_picking';
 
 //Shader Chunks for includes
 const ShaderChunk = {
@@ -23,7 +24,8 @@ const ShaderChunk = {
     vsm_shadow,
     draco_decode,
     highlight,
-    compute_texcoord
+    compute_texcoord,
+    fbo_picking
 };
 /* eslint-enable camelcase */
 

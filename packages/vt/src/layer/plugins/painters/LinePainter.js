@@ -5,6 +5,8 @@ import { reshader } from '@maptalks/gl';
 import { vec2, mat4 } from '@maptalks/gl';
 import vert from './glsl/line.vert';
 import frag from './glsl/line.frag';
+import wgslVert from './wgsl/line_vert.wgsl';
+import wgslFrag from './wgsl/line_frag.wgsl';
 import pickingVert from './glsl/line.vert';
 import { setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar, isNil } from '../Util';
 import { prepareFnTypeData, isFnTypeSymbol } from './util/fn_type_util';
@@ -491,7 +493,9 @@ class LinePainter extends BasicPainter {
 
 
         this.shader = new reshader.MeshShader({
+            name: 'vt-line',
             vert, frag,
+            wgslVert, wgslFrag,
             uniforms,
             defines,
             extraCommandProps: this.getExtraCommandProps(context)

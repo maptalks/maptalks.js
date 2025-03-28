@@ -10,6 +10,7 @@ import { WGSLParseDefines } from "./common/WGSLParseDefines";
 import GraphicsFramebuffer from "./GraphicsFramebuffer";
 import Texture2D from "../Texture2D";
 import GraphicsTexture from "./GraphicsTexture";
+import { isNil } from "../common/Util";
 
 const ERROR_INFO = 'global uniform and mesh owned uniform can not be in the same struct:';
 
@@ -328,11 +329,13 @@ export default class CommandBuilder {
         }
         if (fragModule) {
             const fboPresentationFormat = fbo && fbo.colorTexture && fbo.colorTexture.gpuFormat.format;
+            const writeMask = pipelineDesc.writeMask;
             pipelineOptions.fragment = {
                 module: fragModule,
                 targets: [
                     {
                         format: fboPresentationFormat || this._presentationFormat,
+                        writeMask: isNil(writeMask) ? GPUColorWrite.ALL : writeMask
                     }
                 ],
             };

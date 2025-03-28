@@ -38,7 +38,8 @@
       });
 
       const style = {
-        style: [{
+        style: [
+          {
             filter: ["all", ["==", "$layer", "building"],
               ["==", "$type", "Polygon"]
             ],
@@ -54,22 +55,22 @@
               polygonPatternFile: "./resources/grass.png",
             },
           },
-          // {
-          //   filter: ["all", ["==", "$layer", "building"],
-          //     ["==", "$type", "Polygon"]
-          //   ],
-          //   renderPlugin: {
-          //     dataConfig: {
-          //       type: "line",
-          //     },
-          //     sceneConfig: {},
-          //     type: "line",
-          //   },
-          //   symbol: {
-          //     lineColor: [0.73, 0.73, 0.73, 1],
-          //     lineWidth: 2,
-          //   },
-          // },
+          {
+            filter: ["all", ["==", "$layer", "building"],
+              ["==", "$type", "Polygon"]
+            ],
+            renderPlugin: {
+              dataConfig: {
+                type: "line",
+              },
+              sceneConfig: {},
+              type: "line",
+            },
+            symbol: {
+              lineColor: [0.73, 0.73, 0.73, 1],
+              lineWidth: 2,
+            },
+          },
         ],
       };
       vt.setStyle(style);
