@@ -3,6 +3,8 @@ import { setUniformFromSymbol, createColorSetter } from '../Util';
 import BasicPainter from './BasicPainter';
 import vert from './glsl/native-line.vert';
 import frag from './glsl/native-line.frag';
+import wgslVert from './wgsl/native-line_vert.wgsl';
+import wgslFrag from './wgsl/native-line_frag.wgsl';
 import pickingVert from './glsl/native-line.vert';
 import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
 
@@ -93,8 +95,11 @@ class NativeLinePainter extends BasicPainter {
         ];
         const depthRange = this.sceneConfig.depthRange;
         const config = {
+            name: 'vt-native-line',
             vert,
             frag,
+            wgslVert,
+            wgslFrag,
             uniforms,
             defines: null,
             extraCommandProps: {

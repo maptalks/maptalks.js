@@ -12,7 +12,8 @@ import Texture2D from "../Texture2D";
 import GraphicsTexture from "./GraphicsTexture";
 import { isNil } from "../common/Util";
 
-const ERROR_INFO = 'global uniform and mesh owned uniform can not be in the same struct:';
+const GLOBAL_IN_MESH_ERROR = 'Found a global uniform in mesh struct:';
+const MESH_IN_GLOBAL_ERROR = 'Found a mesh uniform in global struct:';
 
 export default class CommandBuilder {
     //@internal
@@ -51,8 +52,18 @@ export default class CommandBuilder {
         //FIXME 如何在wgsl中实现defined
         let vert = removeComment(this.vert);
         let frag = removeComment(this.frag);
-        vert = WGSLParseDefines(vert, defines);
-        frag = WGSLParseDefines(frag, defines);
+        try {
+            vert = WGSLParseDefines(vert, defines);
+        } catch (error) {
+            error.message = this.name + '(vert):' + error.message;
+            throw error;
+        }
+        try {
+            frag = WGSLParseDefines(frag, defines);
+        } catch (error) {
+            error.message = this.name + '(frag):' + error.message;
+            throw error;
+        }
 
         // dynamically assign location index with $in and $out
         vert = parseLocationIndex(vert);
@@ -249,11 +260,11 @@ export default class CommandBuilder {
                     const name = members[ii].name;
                     if (!meshHasUniform(mesh, name, this.contextDesc)) {
                         if (!isGlobal && ii > 0) {
-                            throw new Error(ERROR_INFO + name + '(' + groupInfo.name + ')');
+                            throw new Error(GLOBAL_IN_MESH_ERROR + name + '(' + groupInfo.name + ')');
                         }
                         isGlobal = true;
                     } else if (isGlobal) {
-                        throw new Error(ERROR_INFO + name + '(' + groupInfo.name + ')');
+                        throw new Error(MESH_IN_GLOBAL_ERROR + name + '(' + groupInfo.name + ')');
                     }
                 }
             } else {
