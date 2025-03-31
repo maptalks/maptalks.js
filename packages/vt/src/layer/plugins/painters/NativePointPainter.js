@@ -3,6 +3,8 @@ import { reshader, mat4 } from '@maptalks/gl';
 import BasicPainter from './BasicPainter';
 import vert from './glsl/native-point.vert';
 import frag from './glsl/native-point.frag';
+import wgslVert from './wgsl/native-point_vert.wgsl';
+import wgslFrag from './wgsl/native-point_frag.wgsl';
 import pickingVert from './glsl/native-point.vert';
 import { setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar } from '../Util';
 import { isFunctionDefinition, piecewiseConstant } from '@maptalks/function-type';
@@ -17,6 +19,9 @@ const DEFAULT_UNIFORMS = {
 class NativePointPainter extends BasicPainter {
 
     getPrimitive() {
+        if (this.isWebGPU()) {
+            return 'triangles'
+        }
         return 'points';
     }
 
@@ -39,7 +44,9 @@ class NativePointPainter extends BasicPainter {
             const symbolDef = this.getSymbolDef(symbolIndex);
             const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
             prepareFnTypeData(geometry, symbolDef, fnTypeConfig, this.layer);
-            geometry.generateBuffers(this.regl);
+            if (!this.isWebGPU()) {
+                geometry.generateBuffers(this.regl);
+            }
         }
 
         const uniforms = {};
@@ -62,10 +69,32 @@ class NativePointPainter extends BasicPainter {
             }
             return defines;
         };
-        const mesh = new reshader.Mesh(geometry, material, {
+        const meshOptions = {
             castShadow: false,
             picking: true
-        });
+        };
+        let mesh;
+        if (this.isWebGPU()) {
+            const { aPosition, aAltitude } = geometry.data;
+            const position = new Int16Array([
+                -1, -1,
+                 1, -1,
+                -1,  1,
+                -1,  1,
+                 1, -1,
+                 1,  1
+            ]);
+            const geo = new reshader.Geometry({
+                aPosition: position
+            }, 6, 0, { positionSize: 2 });
+            geo.generateBuffers(this.regl);
+            mesh = new reshader.InstancedMesh({
+                instancePosition: aPosition, instanceAltitude: aAltitude,
+            }, geometry.getVertexCount(), geo, material, meshOptions);
+            mesh.generateInstancedBuffers(this.regl);
+        } else {
+            mesh = new reshader.Mesh(geometry, material, meshOptions);
+        }
         const defines = {};
         if (mesh.geometry.data.aAltitude) {
             defines['HAS_ALTITUDE'] = 1;
@@ -124,8 +153,11 @@ class NativePointPainter extends BasicPainter {
         const projViewModelMatrix = [];
         // const stencil = this.isOnly2D();
         const config = {
+            name: 'vt-native-point',
             vert,
             frag,
+            wgslVert,
+            wgslFrag,
             uniforms: [
                 {
                     name: 'projViewModelMatrix',
@@ -204,7 +236,8 @@ class NativePointPainter extends BasicPainter {
     getUniformValues(map) {
         const projViewMatrix = map.projViewMatrix;
         return {
-            projViewMatrix
+            projViewMatrix,
+            resolution: [this.canvas.width, this.canvas.height]
         };
     }
 }

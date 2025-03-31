@@ -7,7 +7,7 @@ struct VertexInput {
 #endif
 #ifndef PICKING_MODE
     #if HAS_COLOR
-        @location($i) aColor: vec4f,
+        @location($i) aColor: vec4u,
     #endif
 #endif
 }

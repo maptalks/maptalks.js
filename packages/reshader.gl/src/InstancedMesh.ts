@@ -1,4 +1,4 @@
-import { extend, isSupportVAO, getBufferSize, hasOwn } from './common/Util.js';
+import { extend, isSupportVAO, getBufferSize, hasOwn, isArray } from './common/Util.js';
 import Mesh from './Mesh.js';
 import { KEY_DISPOSED } from './common/Constants';
 import REGL, { BufferOptions, Regl } from '@maptalks/regl';
@@ -147,11 +147,18 @@ export default class InstancedMesh extends Mesh {
     }
 
     generateInstancedBuffers(device: any) {
+        const isWebGPU = !!device && device.wgpu;
         const data = this.instancedData;
+        const instanceCount = this.instanceCount;
         const buffers: Record<string, AttributeBufferData> = {};
         for (const key in data) {
             if (!data[key]) {
                 continue;
+            }
+            if (Array.isArray(data[key])) {
+                data[key] = new Float32Array(data[key]);
+            } else if (isWebGPU && isArray(data[key])) {
+                data[key] = Geometry.padGPUBufferAlignment(data[key], instanceCount);
             }
             const attrBuf = (data[key] as AttributeBufferData);
             if (attrBuf.buffer !== undefined && attrBuf.buffer.destroy) {

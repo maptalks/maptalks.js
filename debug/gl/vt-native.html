@@ -52,25 +52,25 @@
             },
             symbol: {
               lineColor: '#000',
-              lineOpacity: 0.7
+              lineOpacity: 1
             },
           },
-        //   {
-        //     filter: ["all", ["==", "$layer", "building"],
-        //       ["==", "$type", "Polygon"]
-        //     ],
-        //     renderPlugin: {
-        //       dataConfig: {
-        //         type: "line",
-        //       },
-        //       sceneConfig: {},
-        //       type: "line",
-        //     },
-        //     symbol: {
-        //       lineColor: [0.73, 0.73, 0.73, 1],
-        //       lineWidth: 2,
-        //     },
-        //   },
+          {
+            filter: ["all", ["==", "$layer", "building"],
+              ["==", "$type", "Polygon"]
+            ],
+            renderPlugin: {
+              dataConfig: {
+                type: "native-point",
+              },
+              sceneConfig: {},
+              type: "native-point",
+            },
+            symbol: {
+              markerSize: 30,
+              markerFill: '#f00'
+            },
+          },
         ],
       };
       vt.setStyle(style);

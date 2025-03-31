@@ -69,6 +69,10 @@ class Painter {
         this._invisibleWhenCreated = this.symbolDef.map(s => !!(s && s.visible === false));
     }
 
+    isWebGPU() {
+        return !this.regl['_gl'];
+    }
+
     hasMesh() {
         const meshes = this.scene && this.scene.getMeshes();
         return this.isVisible() && meshes && !!meshes.length;
