@@ -25,6 +25,10 @@ export default class GraphicsFramebuffer {
     stencilLoadOp: GPULoadOp;
     //@internal
     stencilClearValue: number;
+    //@internal
+    _ownColor: boolean;
+    //@internal
+    _ownDepthTexture: boolean;
 
     constructor(device, options) {
         this.device = device;
@@ -62,14 +66,17 @@ export default class GraphicsFramebuffer {
                     height
                 };
             }
+            this._ownColor = true;
             color = new GraphicsTexture(this.device, color);
         }
         let depth = this.options.depth;
         if (depth) {
             if (depth === true) {
+                this._ownDepthTexture = true;
                 depth = new GraphicsTexture(this.device, { width, height, format: 'depth' });
             } else {
                 if (!(depth instanceof GraphicsTexture)) {
+                    this._ownDepthTexture = true;
                     depth = new GraphicsTexture(this.device, depth);
                 }
             }
@@ -78,11 +85,13 @@ export default class GraphicsFramebuffer {
         const depthStencil = this.options.depthStencil;
         if (depthStencil) {
             if (depthStencil === true) {
+                this._ownDepthTexture = true;
                 depth = new GraphicsTexture(this.device, { width, height, format: 'depth stencil' });
             } else {
                 if (depthStencil instanceof GraphicsTexture) {
                     depth = depthStencil;
                 } else {
+                    this._ownDepthTexture = true;
                     depth = new GraphicsTexture(this.device, depthStencil);
                 }
             }
@@ -162,13 +171,14 @@ export default class GraphicsFramebuffer {
     }
 
     destroy() {
-        if (this.colorTexture) {
+        if (this._ownColor && this.colorTexture) {
             this.colorTexture.destroy();
             delete this.colorTexture;
         }
-        if (this.depthTexture) {
+        if (this._ownDepthTexture && this.depthTexture) {
             this.depthTexture.destroy();
             delete this.depthTexture;
+            delete this._ownDepthTexture;
         }
     }
 }

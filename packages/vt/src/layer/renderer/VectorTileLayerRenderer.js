@@ -1234,7 +1234,7 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
             this._terrainDepthStencil = regl.texture({
                 width,
                 height,
-                format: 'depth24 stencil8'
+                format: 'depth stencil'
             });
         }
         const fboInfo = {
