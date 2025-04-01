@@ -9,8 +9,8 @@ import PointSymbolizer from './PointSymbolizer';
 import { replaceVariable, describeText, getFont } from '../../../core/util/strings';
 import { Geometry } from '../../../geometry';
 import Painter from '../Painter';
-import { ResourceCache } from '../..';
 import { clipLine } from '../../../core/util/path';
+import { ResourceCache } from '../../../core/ResourceCacheManager';
 
 const TEMP_EXTENT = new PointExtent();
 
