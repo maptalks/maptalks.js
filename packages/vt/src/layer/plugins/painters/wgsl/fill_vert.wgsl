@@ -188,7 +188,9 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
         out.vColor = vertexInput.aColor / 255.0;
     #endif
 
-    highlight_setVarying(vertexInput, out);
+    #if HAS_HIGHLIGHT_COLOR || HAS_HIGHLIGHT_OPACITY
+        highlight_setVarying(vertexInput, out);
+    #endif
 
     #ifdef HAS_OPACITY
         out.vOpacity = vertexInput.aOpacity / 255.0;

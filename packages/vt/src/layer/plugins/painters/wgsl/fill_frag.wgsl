@@ -36,25 +36,26 @@ struct ShaderUniforms {
     @group(0) @binding($b) var polygonPatternFile: texture_2d<f32>;
     @group(0) @binding($b) var polygonPatternFileSampler: sampler;
 #endif
-
-struct VertexOutput {
-#ifdef HAS_PATTERN
-    @location($i) vTexCoord: vec2f,
-    @location($i) vTexInfo: vec4f,
+#ifdef HAS_PATTERN || HAS_COLOR || HAS_OPACITY || HAS_UV_SCALE || HAS_UV_OFFSET || HAS_HIGHLIGHT_COLOR || HAS_HIGHLIGHT_OPACITY
+    struct VertexOutput {
+    #ifdef HAS_PATTERN
+        @location($i) vTexCoord: vec2f,
+        @location($i) vTexInfo: vec4f,
+    #endif
+    #ifdef HAS_COLOR
+        @location($i) vColor: vec4f,
+    #endif
+    #ifdef HAS_OPACITY
+        @location($i) vOpacity: f32,
+    #endif
+    #ifdef HAS_UV_SCALE
+        @location($i) vUVScale: vec2f,
+    #endif
+    #ifdef HAS_UV_OFFSET
+        @location($i) vUVOffset: vec2f,
+    #endif
+    }
 #endif
-#ifdef HAS_COLOR
-    @location($i) vColor: vec4f,
-#endif
-#ifdef HAS_OPACITY
-    @location($i) vOpacity: f32,
-#endif
-#ifdef HAS_UV_SCALE
-    @location($i) vUVScale: vec2f,
-#endif
-#ifdef HAS_UV_OFFSET
-    @location($i) vUVOffset: vec2f,
-#endif
-}
 
 #include <highlight_frag>
 
@@ -79,7 +80,11 @@ struct VertexOutput {
 #endif
 
 @fragment
-fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
+fn main(
+    #ifdef HAS_PATTERN || HAS_COLOR || HAS_OPACITY || HAS_UV_SCALE || HAS_UV_OFFSET || HAS_HIGHLIGHT_COLOR || HAS_HIGHLIGHT_OPACITY
+    vertexOutput: VertexOutput
+    #endif
+) -> @location(0) vec4f {
     // #ifndef ENABLE_TILE_STENCIL
     //     let clipExtent = fragmentUniforms.tileExtent;
     //     let clip = sign(clipExtent - min(clipExtent, abs(vertexOutput.vPosition.x))) *
@@ -118,7 +123,9 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
         outputColor.rgb = shadow_blend(outputColor.rgb, shadowCoeff);
     #endif
 
-    outputColor = highlight_blendColor(outputColor, vertexOutput);
+    #if HAS_HIGHLIGHT_COLOR || HAS_HIGHLIGHT_OPACITY
+        outputColor = highlight_blendColor(outputColor, vertexOutput);
+    #endif
 
     // if (fragmentUniforms.blendSrcIsOne == 1.0) {
     //     outputColor *= outputColor.a;

@@ -38,22 +38,28 @@ export default class PipelineDescriptor {
         const stencilEnabled = !fbo || fbo.depthTexture && fbo.depthTexture.gpuFormat.isDepthStencil;
 
         let depthBias, depthBiasSlopeScale;
+        // depthBias
         if (depthEnabled && commandProps.polygonOffset && isEnable(commandProps.polygonOffset.enable, uniformValues)) {
-            depthBias = 0;
-            depthBiasSlopeScale = 0;
-            const offsetProps = commandProps.polygonOffset.offset;
-            if (offsetProps && !isNil(offsetProps.units)) {
-                if (isFunction(offsetProps.units)) {
-                    depthBias = offsetProps.units(null, uniformValues);
-                } else {
-                    depthBias = offsetProps.units;
+            if (!this.topology.startsWith('triangle')) {
+                // depthBias for line and point primitive must be 0
+                // https://github.com/gpuweb/gpuweb/issues/4729
+                depthBias = 0;
+                depthBiasSlopeScale = 0;
+            } else {
+                const offsetProps = commandProps.polygonOffset.offset;
+                if (offsetProps && !isNil(offsetProps.units)) {
+                    if (isFunction(offsetProps.units)) {
+                        depthBias = offsetProps.units(null, uniformValues);
+                    } else {
+                        depthBias = offsetProps.units;
+                    }
                 }
-            }
-            if (offsetProps && !isNil(offsetProps.factor)) {
-                if (isFunction(offsetProps.factor)) {
-                    depthBiasSlopeScale = offsetProps.factor(null, uniformValues);
-                } else {
-                    depthBiasSlopeScale = offsetProps.factor;
+                if (offsetProps && !isNil(offsetProps.factor)) {
+                    if (isFunction(offsetProps.factor)) {
+                        depthBiasSlopeScale = offsetProps.factor(null, uniformValues);
+                    } else {
+                        depthBiasSlopeScale = offsetProps.factor;
+                    }
                 }
             }
         }

@@ -523,11 +523,11 @@ export default class GPUShader extends GLShader {
                 const instancedMesh = mesh as InstancedMesh;
                 instanceCount = instancedMesh.instanceCount;
             }
-            if (isNumber(elements)) {
-                passEncoder.draw(drawCount, instanceCount, drawOffset);
-            } else {
+            if (mesh.geometry.isIndexedElements()) {
                 passEncoder.setIndexBuffer(elements, elements.itemType);
                 passEncoder.drawIndexed(drawCount, instanceCount, drawOffset);
+            } else {
+                passEncoder.draw(drawCount, instanceCount, drawOffset);
             }
         }
         passEncoder.end();

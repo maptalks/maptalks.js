@@ -65,5 +65,8 @@ const varyings = [
 ];
 
 export default {
+    defines: (defines) => {
+        return defines['HAS_HIGHLIGHT_OPACITY'] || defines['HAS_HIGHLIGHT_COLOR'];
+    },
     vert, frag, attributes, varyings
 };

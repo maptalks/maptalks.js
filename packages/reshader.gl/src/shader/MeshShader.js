@@ -12,7 +12,7 @@ class MeshShader extends Shader {
         for (let i = 0, l = meshes.length; i < l; i++) {
             if (!meshes[i].isValid()) {
                 if (i === l - 1 && preCommand && props.length) {
-                    preCommand(props);
+                    this.run(device, preCommand, props);
                 }
                 continue;
             }
@@ -20,7 +20,7 @@ class MeshShader extends Shader {
                 //此处device有个潜在的bug:
                 //如果count为0的geometry不过滤掉，device生成的函数中，bind的texture不会执行unbind
                 if (i === l - 1 && preCommand && props.length) {
-                    preCommand(props);
+                    this.run(device, preCommand, props);
                 }
                 continue;
             }
@@ -41,7 +41,7 @@ class MeshShader extends Shader {
 
             if (props.length && preCommand !== command) {
                 //batch mode
-                this.run(device, command, props);
+                this.run(device, preCommand, props);
                 props.length = 0;
             }
 
