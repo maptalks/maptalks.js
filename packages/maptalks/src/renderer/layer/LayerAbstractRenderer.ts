@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
-import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn, getImageBitMap, isImageBitMap } from '../../core/util';
+import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, getImageBitMap, isImageBitMap } from '../../core/util';
 import Class from '../../core/Class';
 import Browser from '../../core/Browser';
 import Canvas2D from '../../core/Canvas';
@@ -11,6 +11,7 @@ import { imageFetchWorkerKey } from '../../core/worker/CoreWorkers';
 import { registerWorkerAdapter } from '../../core/worker/Worker';
 import { formatResourceUrl } from '../../core/ResourceProxy';
 import { TileRenderingCanvas, ImageType } from '../types';
+import { getResouceCacheInstance, ResourceCache } from '../../core/ResourceCacheManager';
 
 const EMPTY_ARRAY = [];
 class ResourceWorkerConnection extends Actor {
@@ -102,7 +103,7 @@ class LayerAbstractRenderer extends Class {
         }
         if (!this.resources) {
             /* eslint-disable no-use-before-define */
-            this.resources = new ResourceCache();
+            this.resources = getResouceCacheInstance();
             /* eslint-enable no-use-before-define */
         }
         this.checkAndDraw(this._tryToDraw, framestamp);
@@ -390,10 +391,17 @@ class LayerAbstractRenderer extends Class {
             const cache = {};
             for (let i = resourceUrls.length - 1; i >= 0; i--) {
                 const url = resourceUrls[i];
-                if (!url || !url.length || cache[url.join('-')]) {
+                if (!url || !url.length) {
                     continue;
                 }
-                cache[url.join('-')] = 1;
+                const key = url.join('-');
+                //Exclude ImageBitmap
+                if (!isImageBitMap(url[0])) {
+                    if (cache[key]) {
+                        continue;
+                    }
+                    cache[key] = 1;
+                }
                 if (!resources.isResourceLoaded(url, true)) {
                     //closure it to preserve url's value
                     promises.push(new Promise(this._promiseResource(url)));
@@ -750,129 +758,6 @@ class LayerAbstractRenderer extends Class {
 
 export default LayerAbstractRenderer;
 
-export type ResourceUrl = string | string[]
-
-export class ResourceCache {
-    resources: any;
-
-    //@internal
-    _errors: any;
-
-    constructor() {
-        this.resources = {};
-        this._errors = {};
-    }
-
-    addResource(url: [string, number | string, number | string], img) {
-        this.resources[url[0]] = {
-            image: img,
-            width: +url[1],
-            height: +url[2],
-            refCnt: 0
-        };
-        if (img && img.width && img.height && !img.close && Browser.imageBitMap && !Browser.safari && !Browser.iosWeixin) {
-            if (img.src && isSVG(img.src)) {
-                return;
-            }
-            createImageBitmap(img).then(imageBitmap => {
-                if (!this.resources[url[0]]) {
-                    //removed
-                    return;
-                }
-                this.resources[url[0]].image = imageBitmap;
-            });
-        }
-    }
-
-    isResourceLoaded(url: ResourceUrl, checkSVG?: boolean) {
-        if (!url) {
-            return false;
-        }
-        const imgUrl = this._getImgUrl(url);
-        if (this._errors[imgUrl]) {
-            return true;
-        }
-        const img = this.resources[imgUrl];
-        if (!img) {
-            return false;
-        }
-        if (checkSVG && isSVG(url[0]) && (+url[1] > img.width || +url[2] > img.height)) {
-            return false;
-        }
-        return true;
-    }
-
-    login(url: string) {
-        const res = this.resources[url];
-        if (res) {
-            res.refCnt++;
-        }
-    }
-
-    logout(url: string) {
-        const res = this.resources[url];
-        if (res && res.refCnt-- <= 0) {
-            if (res.image && res.image.close) {
-                res.image.close();
-            }
-            delete this.resources[url];
-        }
-    }
-
-    getImage(url: ResourceUrl) {
-        const imgUrl = this._getImgUrl(url);
-        if (!this.isResourceLoaded(url) || this._errors[imgUrl]) {
-            return null;
-        }
-        return this.resources[imgUrl].image;
-    }
-
-    markErrorResource(url: ResourceUrl) {
-        this._errors[this._getImgUrl(url)] = 1;
-    }
-
-    merge(res: any) {
-        if (!res) {
-            return this;
-        }
-        for (const p in res.resources) {
-            const img = res.resources[p];
-            this.addResource([p, img.width, img.height], img.image);
-        }
-        return this;
-    }
-
-    forEach(fn: Function) {
-        if (!this.resources) {
-            return this;
-        }
-        for (const p in this.resources) {
-            if (hasOwn(this.resources, p)) {
-                fn(p, this.resources[p]);
-            }
-        }
-        return this;
-    }
-
-    //@internal
-    _getImgUrl(url: ResourceUrl) {
-        if (!Array.isArray(url)) {
-            return url;
-        }
-        return url[0];
-    }
-
-    remove() {
-        for (const p in this.resources) {
-            const res = this.resources[p];
-            if (res && res.image && res.image.close) {
-                // close bitmap
-                res.image.close();
-            }
-        }
-        this.resources = {};
-    }
-}
 
 const workerSource = `
 function (exports) {
