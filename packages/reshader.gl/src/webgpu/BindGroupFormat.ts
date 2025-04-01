@@ -8,6 +8,7 @@ import { ShaderUniforms } from "../types/typings";
 import AbstractTexture from "../AbstractTexture";
 import GraphicsTexture from "./GraphicsTexture";
 import { roundUp } from "./common/math";
+import GraphicsFramebuffer from "./GraphicsFramebuffer";
 
 let uuid = 0;
 
@@ -95,8 +96,11 @@ export default class BindGroupFormat {
             if (group.resourceType === ResourceType.Sampler) {
                 // we assume sampler's name always be [textureName]Sampler
                 const textureName = name.substring(0, name.length - 7);
-                const texture = shaderUniforms && shaderUniforms[textureName] || (mesh.getUniform(textureName) || mesh.material && mesh.material.getUniform(textureName)) as Texture2D;
+                let texture = shaderUniforms && shaderUniforms[textureName] || (mesh.getUniform(textureName) || mesh.material && mesh.material.getUniform(textureName)) as Texture2D;
                 //TODO texture是否存在
+                if (texture instanceof GraphicsFramebuffer) {
+                    texture = texture.colorTexture;
+                }
                 const { min, mag, wrapS, wrapT, compare } = (texture as Texture2D).config;
                 const filters = toGPUSampler(min, mag, wrapS, wrapT, compare);
                 const sampler = device.wgpu.createSampler(filters);
@@ -107,8 +111,11 @@ export default class BindGroupFormat {
             } else if (group.resourceType === ResourceType.Texture) {
                 const texture = shaderUniforms && shaderUniforms[name] || (mesh.getUniform(name) || mesh.material && mesh.material.getUniform(name)) as Texture2D;
                 let graphicsTexture = texture;
-                if (texture instanceof AbstractTexture) {
+                if (graphicsTexture instanceof AbstractTexture) {
                     graphicsTexture = (texture as AbstractTexture).getREGLTexture(device);
+                }
+                if (graphicsTexture instanceof GraphicsFramebuffer) {
+                    graphicsTexture = graphicsTexture.colorTexture;
                 }
                 textures.push(graphicsTexture);
                 entries.push({

@@ -401,7 +401,7 @@ export default class Geometry {
                 continue;
             }
             if (Array.isArray(data[key])) {
-                data[key] = new Float32Array(data[key]);
+                data[key] = new Float32Array(data[key] as number[]);
             } else if (isWebGPU && isArray(data[key])) {
                 data[key] = Geometry.padGPUBufferAlignment(data[key] as TypedArray, vertexCount);
             }

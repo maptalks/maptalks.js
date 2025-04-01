@@ -2,7 +2,7 @@ import { extend, isSupportVAO, getBufferSize, hasOwn, isArray } from './common/U
 import Mesh from './Mesh.js';
 import { KEY_DISPOSED } from './common/Constants';
 import REGL, { BufferOptions, Regl } from '@maptalks/regl';
-import { ActiveAttributes, AttributeBufferData, InstancedAttribute, MeshOptions, NumberArray } from './types/typings';
+import { ActiveAttributes, AttributeBufferData, InstancedAttribute, MeshOptions, NumberArray, TypedArray } from './types/typings';
 import Material from './Material';
 import Geometry, { getAttrBufferDescriptor } from './Geometry';
 
@@ -156,9 +156,9 @@ export default class InstancedMesh extends Mesh {
                 continue;
             }
             if (Array.isArray(data[key])) {
-                data[key] = new Float32Array(data[key]);
+                data[key] = new Float32Array(data[key] as number[]);
             } else if (isWebGPU && isArray(data[key])) {
-                data[key] = Geometry.padGPUBufferAlignment(data[key], instanceCount);
+                data[key] = Geometry.padGPUBufferAlignment(data[key] as TypedArray, instanceCount);
             }
             const attrBuf = (data[key] as AttributeBufferData);
             if (attrBuf.buffer !== undefined && attrBuf.buffer.destroy) {

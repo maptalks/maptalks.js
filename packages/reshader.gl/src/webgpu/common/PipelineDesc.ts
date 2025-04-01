@@ -21,6 +21,7 @@ export default class PipelineDescriptor {
     frontFace?: GPUFrontFace;
     topology?: GPUPrimitiveTopology;
     writeMask?: number;
+    functionProps?: any[];
 
     readFromREGLCommand(commandProps: any, mesh, uniformValues, fbo: GraphicsFramebuffer) {
         if (!commandProps) {
@@ -37,6 +38,9 @@ export default class PipelineDescriptor {
         const depthEnabled = !fbo || !!fbo.depthTexture;
         const stencilEnabled = !fbo || fbo.depthTexture && fbo.depthTexture.gpuFormat.isDepthStencil;
 
+        // 保存函数类型的command prop，用于在getShaderCommandKey中检查缓存的command key是否失效
+        this.functionProps = [];
+
         let depthBias, depthBiasSlopeScale;
         // depthBias
         if (depthEnabled && commandProps.polygonOffset && isEnable(commandProps.polygonOffset.enable, uniformValues)) {
@@ -50,6 +54,7 @@ export default class PipelineDescriptor {
                 if (offsetProps && !isNil(offsetProps.units)) {
                     if (isFunction(offsetProps.units)) {
                         depthBias = offsetProps.units(null, uniformValues);
+                        this.functionProps.push({ func: offsetProps.units, v: depthBias });
                     } else {
                         depthBias = offsetProps.units;
                     }
@@ -57,6 +62,7 @@ export default class PipelineDescriptor {
                 if (offsetProps && !isNil(offsetProps.factor)) {
                     if (isFunction(offsetProps.factor)) {
                         depthBiasSlopeScale = offsetProps.factor(null, uniformValues);
+                        this.functionProps.push({ func: offsetProps.factor, v: depthBiasSlopeScale });
                     } else {
                         depthBiasSlopeScale = offsetProps.factor;
                     }
@@ -72,7 +78,11 @@ export default class PipelineDescriptor {
         if (depthEnabled && depthProps && isEnable(depthProps.enable, uniformValues)) {
             depthCompare = 'less';
             if (depthProps.func) {
-                const depthFunc = isFunction(depthProps.func) && depthProps.func(null, uniformValues) || depthProps.func;
+                let depthFunc = depthProps.func;
+                if (isFunction(depthProps.func)) {
+                    depthFunc = depthFunc(null, uniformValues);
+                    this.functionProps.push({ func: depthProps.func, v: depthFunc });
+                }
                 depthCompare = toGPUCompareFunction(depthFunc);
             }
 
@@ -80,6 +90,7 @@ export default class PipelineDescriptor {
             if (!isNil(depthProps.mask)) {
                 if (isFunction(depthProps.mask)) {
                     depthWriteEnable = depthProps.mask(null, uniformValues);
+                    this.functionProps.push({ func: depthProps.mask, v: depthWriteEnable });
                 } else {
                     depthWriteEnable = !!depthProps.mask;
                 }
@@ -95,7 +106,10 @@ export default class PipelineDescriptor {
             if (stencilProps.op) {
                 // 目前还没遇到op是函数的情况，所以可以直接读取
                 stencilFrontPassOp = stencilProps.op.zpass;
-                stencilFrontPassOp = isFunction(stencilFrontPassOp) && stencilFrontPassOp(null, uniformValues) || stencilFrontPassOp;
+                if (isFunction(stencilFrontPassOp)) {
+                    stencilFrontPassOp = stencilFrontPassOp(null, uniformValues);
+                    this.functionProps.push({ func: stencilProps.op.zpass, v: stencilFrontPassOp });
+                }
             }
 
             if (stencilProps.func) {
@@ -103,7 +117,11 @@ export default class PipelineDescriptor {
                 if (!stencilCmp) {
                     stencilCmp = 'always';
                 }
-                const stencilFunc = isFunction(stencilCmp) && stencilCmp(null, uniformValues) || stencilCmp;
+                let stencilFunc = stencilCmp;
+                if (isFunction(stencilFunc)) {
+                    stencilFunc = stencilCmp(null, uniformValues);
+                    this.functionProps.push({ func: stencilCmp, v: stencilFunc });
+                }
                 stencilFrontCompare = toGPUCompareFunction(stencilFunc);
             }
         }
@@ -117,29 +135,53 @@ export default class PipelineDescriptor {
             if (blendProps.func) {
                 const blendFunc = blendProps.func;
                 if (blendFunc.src) {
-                    const blendSrc = isFunction(blendFunc.src) && blendFunc.src(null, uniformValues) || blendFunc.src;
+                    let blendSrc = blendFunc.src;
+                    if (isFunction(blendFunc.src)) {
+                        blendSrc = blendFunc.src(null, uniformValues);
+                        this.functionProps.push({ func: blendFunc.src, v: blendSrc });
+                    }
                     blendAlphaSrc = toGPUBlendFactor(blendSrc);
                     blendColorSrc = blendAlphaSrc;
                 }
                 if (blendFunc.dst) {
-                    const blendDst = isFunction(blendFunc.dst) && blendFunc.dst(null, uniformValues) || blendFunc.dst;
+                    let blendDst = blendFunc.dst;
+                    if (isFunction(blendFunc.dst)) {
+                        blendDst = blendFunc.dst(null, uniformValues);
+                        this.functionProps.push({ func: blendFunc.dst, v: blendDst });
+                    }
                     blendAlphaDst = toGPUBlendFactor(blendDst);
                     blendColorDst = blendAlphaDst;
                 }
                 if (blendFunc.srcAlpha) {
-                    const blendSrcAlpha = isFunction(blendFunc.srcAlpha) && blendFunc.srcAlpha(null, uniformValues) || blendFunc.srcAlpha;
+                    let blendSrcAlpha = blendFunc.srcAlpha;
+                    if (isFunction(blendFunc.srcAlpha)) {
+                        blendSrcAlpha = blendFunc.srcAlpha(null, uniformValues) ||
+                        this.functionProps.push({ func: blendFunc.srcAlpha, v: blendSrcAlpha });
+                    }
                     blendAlphaSrc = toGPUBlendFactor(blendSrcAlpha);
                 }
                 if (blendFunc.srcRGB) {
-                    const blendSrcRGB = isFunction(blendFunc.srcRGB) && blendFunc.srcRGB(null, uniformValues) || blendFunc.srcRGB;
+                    let blendSrcRGB = blendFunc.srcRGB;
+                    if (isFunction(blendFunc.srcRGB)) {
+                        blendSrcRGB = blendFunc.srcRGB(null, uniformValues) ||
+                        this.functionProps.push({ func: blendFunc.srcRGB, v: blendSrcRGB });
+                    }
                     blendColorSrc = toGPUBlendFactor(blendSrcRGB);
                 }
                 if (blendFunc.dstAlpha) {
-                    const blendDstAlpha = isFunction(blendFunc.dstAlpha) && blendFunc.dstAlpha(null, uniformValues) || blendFunc.dstAlpha;
+                    let blendDstAlpha = blendFunc.dstAlpha;
+                    if (isFunction(blendFunc.dstAlpha)) {
+                        blendDstAlpha = blendFunc.dstAlpha(null, uniformValues) ||
+                        this.functionProps.push({ func: blendFunc.dstAlpha, v: blendDstAlpha });
+                    }
                     blendAlphaDst = toGPUBlendFactor(blendDstAlpha);
                 }
                 if (blendFunc.dstRGB) {
-                    const blendDstRGB = isFunction(blendFunc.dstRGB) && blendFunc.dstRGB(null, uniformValues) || blendFunc.dstRGB;
+                    let blendDstRGB = blendFunc.dstRGB;
+                    if (isFunction(blendFunc.dstRGB)) {
+                        blendDstRGB = blendFunc.dstRGB(null, uniformValues) ||
+                        this.functionProps.push({ func: blendFunc.dstRGB, v: blendDstRGB });
+                    }
                     blendColorDst = toGPUBlendFactor(blendDstRGB);
                 }
             }
@@ -155,7 +197,11 @@ export default class PipelineDescriptor {
             if (cullProps && isEnable(cullProps.enable, uniformValues)) {
                 cullMode = 'back';
                 if (cullProps.face) {
-                    cullMode = isFunction(cullProps.face) && cullProps.face(null, uniformValues) || cullProps.face;
+                    cullMode = cullProps.face;
+                    if (isFunction(cullProps.face)) {
+                        cullMode = cullProps.face(null, uniformValues) ||
+                        this.functionProps.push({ func: cullProps.face, v: cullMode });
+                    }
                 }
             }
         }
@@ -168,6 +214,7 @@ export default class PipelineDescriptor {
         if (colorMask) {
             if (isFunction(colorMask)) {
                 colorMask = colorMask(null, uniformValues);
+                this.functionProps.push({ func: commandProps.colorMask, v: colorMask });
             }
             let writeMask = 0;
             if (colorMask[0]) {
@@ -188,11 +235,19 @@ export default class PipelineDescriptor {
         //TODO mesh中buffer的组织方式也需要考虑进来
     }
 
+    generateValuesKey(values) {
+        return values.map((v) => { return Array.isArray(v) ? v.join() : v; }).join('-');
+    }
+
+    getFnValuesKey() {
+        return this.generateValuesKey(this.functionProps.map(item => item.v));
+    }
+
     getSignatureKey() {
         return (this.depthBias || 0) + '-' + (this.depthBiasSlopeScale || 0) + '-' + (this.depthCompare || 0) + '-' + (this.depthWriteEnabled || 0) +
             (this.stencilFrontCompare || 0) + '-' + (this.stencilFrontPassOp || 0) +
             (this.blendAlphaSrc || 0) + '-' + (this.blendAlphaDst || 0) + '-' + (this.blendColorSrc || 0) + '-' + (this.blendColorDst || 0) +
-            (this.cullMode || 0) + '-' + (this.frontFace || 0) + '-' + (this.topology || 0);
+            (this.cullMode || 0) + '-' + (this.frontFace || 0) + '-' + (this.topology || 0) + '-' + (this.writeMask || 0);
     }
 }
 

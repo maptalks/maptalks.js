@@ -408,10 +408,28 @@ export default class GPUShader extends GLShader {
     getShaderCommandKey(device, mesh, renderProps) {
         if (device && device.wgpu) {
             // 获取pipeline所需要的特征变量，即任何变量发生变化后，就需要创建新的pipeline
+            const fnValues = mesh.getShaderFnValues(this.uid);
+            if (fnValues) {
+                const { funcs, key, commandKey } = fnValues;
+                if (!funcs.length) {
+                    return commandKey;
+                }
+                const values = funcs.map(func => func(null, renderProps));
+                const currentKey = pipelineDesc.generateValuesKey(values);
+                if (currentKey === key) {
+                    return commandKey;
+                }
+            }
             const fbo = this._gpuFramebuffer;
             const commandProps = this.extraCommandProps;
             pipelineDesc.readFromREGLCommand(commandProps, mesh, renderProps, fbo);
-            return pipelineDesc.getSignatureKey();
+            const commandKey = pipelineDesc.getSignatureKey();
+            mesh.setShaderFnValues(this.uid, {
+                funcs: pipelineDesc.functionProps.map(item => item.func),
+                key: pipelineDesc.getFnValuesKey(),
+                commandKey
+            })
+            return commandKey;
         } else {
             // regl
             return super.getShaderCommandKey(device, mesh, renderProps);
@@ -493,7 +511,6 @@ export default class GPUShader extends GLShader {
             if (!bindGroup || (bindGroup as any).outdated) {
                 bindGroup = bindGroupFormat.createBindGroup(device, mesh, shaderUniforms, layout, shaderBuffer, meshBuffer);
                 // 缓存bind group，只要buffer没有发生变化，即可以重用
-                // TODO 可以考虑每帧开始把缓存 bind group 标记为 retire，每帧结束时把不是 current 的 bind group 销毁掉
                 mesh.setBindGroup(groupKey, bindGroup);
             }
 
@@ -519,8 +536,7 @@ export default class GPUShader extends GLShader {
             const drawOffset = mesh.geometry.getDrawOffset();
             const drawCount = mesh.geometry.getDrawCount();
             let instanceCount = 1;
-            if (mesh instanceof InstancedMesh) {
-                const instancedMesh = mesh as InstancedMesh;
+            if (instancedMesh) {
                 instanceCount = instancedMesh.instanceCount;
             }
             if (mesh.geometry.isIndexedElements()) {

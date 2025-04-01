@@ -374,7 +374,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             }
         }
         // render terrain skin of skin layer
-        renderer.renderTerrainSkin(this.regl, this.layer, layerSkinImages);
+        renderer.renderTerrainSkin(this.regl || this.device, this.layer, layerSkinImages);
     }
 
     _prepareChildTerrainSkin(skinIndex, terrainTileInfo, tileImage, skinImagesToDel) {

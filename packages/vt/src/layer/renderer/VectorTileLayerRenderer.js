@@ -1231,7 +1231,7 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
             height
         });
         if (!this._terrainDepthStencil) {
-            this._terrainDepthStencil = regl.renderbuffer({
+            this._terrainDepthStencil = regl.texture({
                 width,
                 height,
                 format: 'depth24 stencil8'

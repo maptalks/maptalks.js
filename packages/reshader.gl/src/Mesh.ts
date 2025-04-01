@@ -65,6 +65,8 @@ export default class Mesh {
     _uniformDescriptors?: Set<string>
     //@internal
     _bindGroupCache?: Record<string, GPUBindGroup>
+    //@internal
+    _commandKeyCache?: Record<number, GPUBindGroup>
 
     uuid: number;
     transparent: boolean
@@ -476,6 +478,7 @@ export default class Mesh {
         delete this._geometry;
         delete this._material;
         delete this._bindGroupCache;
+        delete this._commandKeyCache;
         this.uniforms = null;
         if (this._meshBuffer) {
             this._meshBuffer.dispose();
@@ -574,6 +577,21 @@ export default class Mesh {
 
     setBindGroup(key, bindGroup) {
         this._bindGroupCache[key] = bindGroup;
+        return this;
+    }
+
+    getShaderFnValues(shaderUID: number) {
+        if (!this._commandKeyCache) {
+            return null;
+        }
+        return this._commandKeyCache[shaderUID];
+    }
+
+    setShaderFnValues(shaderUID: number, fnValues: any) {
+        if (!this._commandKeyCache) {
+            this._commandKeyCache = {};
+        }
+        this._commandKeyCache[shaderUID] = fnValues;
         return this;
     }
 }

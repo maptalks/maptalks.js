@@ -246,7 +246,8 @@ fn main(input: VertexOutput) -> @location(0) vec4f {
     );
 
     fragColor *= perspectiveAlpha;
-
+    #if HAS_HIGHLIGHT_COLOR || HAS_HIGHLIGHT_OPACITY
     fragColor = highlight_blendColor(fragColor, input);
+    #endif
     return fragColor;
 }
