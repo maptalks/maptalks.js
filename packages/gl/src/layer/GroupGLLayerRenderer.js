@@ -291,7 +291,7 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
             } else {
                 this.regl.clear({
                     color: [0, 0, 0, 0],
-                    fbo: blitFBO
+                    framebuffer: blitFBO
                 });
             }
             blitFBO.blit(fbo);
@@ -338,7 +338,7 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
         this.regl.clear({
             color: [0, 0, 0, 0],
             depth: 1,
-            fbo: this._blitDepthFBO
+            framebuffer: this._blitDepthFBO
         });
         this._blitDepthFBO.blit(this._targetFBO, 0x00000100, 'nearest');
         return this._blitDepthFBO.depthStencil;

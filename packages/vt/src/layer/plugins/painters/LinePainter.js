@@ -449,7 +449,10 @@ class LinePainter extends BasicPainter {
             this.picking = [new reshader.FBORayPicking(
                 this.renderer,
                 {
-                    vert: '#define PICKING_MODE 1\n' + pickingVert,
+                    name: 'line-picking',
+                    vert: pickingVert,
+                    wgslVert: wgslVert,
+                    defines: { 'PICKING_MODE': 1 },
                     uniforms: [
                         {
                             name: 'projViewModelMatrix',

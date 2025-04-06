@@ -3,9 +3,11 @@ import { mat4, vec3 } from 'gl-matrix';
 import BoundingBox from './BoundingBox.js';
 import Geometry from './Geometry';
 import Material from './Material';
-import { ActiveAttributes, MatrixFunction, MeshOptions, ShaderDefines, ShaderUniformValue, ShaderUniforms } from './types/typings';
+import { MatrixFunction, MeshOptions, ShaderDefines, ShaderUniformValue, ShaderUniforms } from './types/typings';
 import DynamicBuffer from './webgpu/DynamicBuffer';
 import DynamicOffsets from './webgpu/DynamicOffsets';
+import BindGroupFormat from './webgpu/BindGroupFormat';
+import DynamicBufferPool from './webgpu/DynamicBufferPool';
 
 const tempMat4: mat4 = new Array(16) as mat4;
 
@@ -481,7 +483,10 @@ export default class Mesh {
         delete this._commandKeyCache;
         this.uniforms = null;
         if (this._meshBuffer) {
-            this._meshBuffer.dispose();
+            for (const key in this._meshBuffer) {
+                this._meshBuffer[key].dispose();
+            }
+
             delete this._meshBuffer;
         }
         return this;
@@ -558,14 +563,18 @@ export default class Mesh {
         return this.localTransform;
     }
 
-    _meshBuffer: DynamicBuffer;
+    _meshBuffer: Record<string, DynamicBuffer>;
     // 实现webgpu相关的逻辑
-    writeDynamicBuffer(renderProps, bindGroupMapping, pool, dynamicOffsets: DynamicOffsets) {
+    writeDynamicBuffer(commandUID: number, renderProps, bindGroupMapping: BindGroupFormat, pool: DynamicBufferPool, dynamicOffsets: DynamicOffsets) {
         if (!this._meshBuffer) {
-            this._meshBuffer = new DynamicBuffer(bindGroupMapping, pool);
+            this._meshBuffer = {};
         }
-        this._meshBuffer.writeBuffer(renderProps, dynamicOffsets);
-        return this._meshBuffer;
+        let meshBuffer = this._meshBuffer[commandUID];
+        if (!meshBuffer) {
+            meshBuffer = this._meshBuffer[commandUID] = new DynamicBuffer(bindGroupMapping, pool);
+        }
+        meshBuffer.writeBuffer(renderProps, dynamicOffsets);
+        return meshBuffer;
     }
 
     getBindGroup(key) {

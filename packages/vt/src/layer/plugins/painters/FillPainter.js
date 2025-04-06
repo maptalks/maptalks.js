@@ -6,6 +6,7 @@ import frag from './glsl/fill.frag';
 import wgslVert from './wgsl/fill_vert.wgsl';
 import wgslFrag from './wgsl/fill_frag.wgsl';
 import pickingVert from './glsl/fill.picking.vert';
+import pickingWgsl from './wgsl/fill_picking_vert.wgsl';
 import { isNumber, isNil, setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar, meterToPoint } from '../Util';
 import { prepareFnTypeData } from './util/fn_type_util';
 import { createAtlasTexture } from './util/atlas_util';
@@ -599,7 +600,10 @@ class FillPainter extends BasicPainter {
             this.picking = [new reshader.FBORayPicking(
                 this.renderer,
                 {
+                    name: 'fill-picking',
                     vert: pickingVert,
+                    wgslVert: pickingWgsl,
+                    defines: { 'PICKING_MODE': 1 },
                     uniforms: [
                         {
                             name: 'projViewModelMatrix',

@@ -4,6 +4,8 @@ import DynamicBufferPool from "./DynamicBufferPool";
 import GraphicsFramebuffer from "./GraphicsFramebuffer";
 import GraphicsTexture from "./GraphicsTexture";
 
+let uid = 0;
+
 export default class GraphicsDevice {
     wgpu: GPUDevice;
     context: GPUCanvasContext;
@@ -73,7 +75,7 @@ export default class GraphicsDevice {
         }
     }
 
-    _getDefaultFramebuffer() {
+    getDefaultFramebuffer() {
         let fbo = this._defaultFramebuffer;
         if (!fbo) {
             const canvas = this.context.canvas;
@@ -82,19 +84,14 @@ export default class GraphicsDevice {
                 height: canvas.height,
                 depthStencil: true
             });
+            (fbo as any).uid = uid++;
         }
         return fbo;
     }
 
     getRenderPassEncoder(fbo: GraphicsFramebuffer) {
-        fbo = fbo || this._getDefaultFramebuffer();
+        fbo = fbo || this.getDefaultFramebuffer();
         const desc = fbo.getRenderPassDescriptor();
-        if (fbo === this._defaultFramebuffer) {
-            desc.colorAttachments[0].view = this.context
-                .getCurrentTexture()
-                .createView();
-            desc.colorAttachments[0].view.label = 'default canvas view';
-        }
         const commandEncoder = this.getCommandEncoder();
         return commandEncoder.beginRenderPass(desc);
     }
@@ -150,7 +147,7 @@ export default class GraphicsDevice {
 
     // implementation of regl.clear
     clear(options) {
-        const fbo = options.fbo || this._getDefaultFramebuffer();
+        const fbo = options.framebuffer || this.getDefaultFramebuffer();
         fbo.setClearOptions(options);
     }
 
@@ -158,6 +155,7 @@ export default class GraphicsDevice {
     // implementation of regl.read
     read(options) {
         // https://github.com/tensorflow/tfjs/pull/7576/files
+        // https://github.com/tensorflow/tfjs/blob/master/tfjs-backend-webgpu/src/backend_webgpu.ts#L379
         // 可以参考tf.js实现同步读取数据。
         // 1. 将数据绘制到一个OffscreenCanvas
         // 2. 将OffscreenCanvas绘制到一个canvas 2d上
@@ -175,36 +173,83 @@ export default class GraphicsDevice {
         if (!colorTexture) {
             return;
         }
-        const { bytesPerTexel } = colorTexture.gpuFormat;
-        let bytesPerRow = options.width * bytesPerTexel;
-		bytesPerRow = Math.ceil( bytesPerRow / 256 ) * 256; // Align to 256 bytes
-        const encoder = device.createCommandEncoder();
 
-        const bufferSize = width * height * bytesPerTexel;
-        let readBuffer = this._readTargets[bufferSize];
-        if (!readBuffer) {
-            readBuffer = device.createBuffer(
-                {
-                    size: width * height * bytesPerTexel,
-                    usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ
+        const origin = { x: options.x, y: framebuffer.height - options.y, z: 0 };
+        const alphaModes: GPUCanvasAlphaMode[] = ['opaque', 'premultiplied'];
+        const data = options.pixels || new Uint8Array(width * height * 4);
+        const stagingDeviceStorage: OffscreenCanvas[] =
+            alphaModes.map(_ => new OffscreenCanvas(width, height));
+          // TODO: use rgba8unorm format when this format is supported on Mac.
+          // https://bugs.chromium.org/p/chromium/issues/detail?id=1298618
+        stagingDeviceStorage.map((storage, index) => {
+            const context = storage.getContext('webgpu');
+            context.configure({
+                device,
+                format: 'rgba8unorm',
+                usage: GPUTextureUsage.COPY_DST,
+                alphaMode: alphaModes[index]
+            });
+            return context.getCurrentTexture()
+        }).map((storageTexture, index) => {
+            const encoder = device.createCommandEncoder();
+            encoder.copyTextureToTexture({ texture: colorTexture.texture, origin }, { texture: storageTexture }, { width, height });
+            // encoder.copyTextureToTexture({ texture: colorTexture.texture }, { texture: storageTexture }, { width, height });
+            this.wgpu.queue.submit([encoder.finish()]);
+            // const stagingHostStorage = new OffscreenCanvas(width, height);
+            const stagingHostStorage = document.getElementById('DEBUG') as any;
+            stagingHostStorage.width = width;
+            stagingHostStorage.height = height;
+            const hostContext = stagingHostStorage.getContext('2d', {
+                willReadFrequently: true,
+            });
+            // hostContext.clearRect(0, 0, width, height);
+            hostContext.drawImage(stagingDeviceStorage[index], 0, 0);
+            const stagingValues = hostContext.getImageData(0, 0, width, height).data;;
+            const alphaMode = alphaModes[index];
+            for (let k = 0; k < data.length; k += 4) {
+                if (alphaMode === 'premultiplied') {
+                  data[k + 3] = stagingValues[k + 3];
+                } else {
+                //   const value = stagingValues[k];
+                  data[k] = stagingValues[k];
+                  data[k + 1] = stagingValues[k + 1];
+                  data[k + 2] = stagingValues[k + 2];
                 }
-            );
-        }
+              }
+        });
+        return data;
 
-		encoder.copyTextureToBuffer(
-			{
-				texture: colorTexture.texture,
-				origin: { x: options.x, y: options.y, z: 0 },
-			},
-			{
-				buffer: readBuffer,
-				bytesPerRow: bytesPerRow
-			},
-			{
-				width,
-				height
-			}
-		);
+
+        // const { bytesPerTexel } = colorTexture.gpuFormat;
+        // let bytesPerRow = options.width * bytesPerTexel;
+		// bytesPerRow = Math.ceil( bytesPerRow / 256 ) * 256; // Align to 256 bytes
+        // const encoder = device.createCommandEncoder();
+
+        // const bufferSize = width * height * bytesPerTexel;
+        // let readBuffer = this._readTargets[bufferSize];
+        // if (!readBuffer) {
+        //     readBuffer = device.createBuffer(
+        //         {
+        //             size: width * height * bytesPerTexel,
+        //             usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ
+        //         }
+        //     );
+        // }
+
+		// encoder.copyTextureToBuffer(
+		// 	{
+		// 		texture: colorTexture.texture,
+		// 		origin: { x: options.x, y: options.y, z: 0 },
+		// 	},
+		// 	{
+		// 		buffer: readBuffer,
+		// 		bytesPerRow: bytesPerRow
+		// 	},
+		// 	{
+		// 		width,
+		// 		height
+		// 	}
+		// );
 
 		// const typedArrayType = options.data.constructor;
 		// device.queue.submit([encoder.finish()]);

@@ -545,7 +545,7 @@ export default class VectorPack {
         if (this.hasElements() && !elements.getLength()) {
             return null;
         }
-        const isVector3D = !!this.options.center;
+        const isVector3D = !!this.options.center || this.options.isWebGPU;
         // maptalks/issues#541, Vector3D 时，因为数据会频繁修改，无法预知最终数量，aPickingId的类型固定为Float32Array，以适用所有情况
         const ArrType = isVector3D ? Float32Array : getUnsignedArrayType(maxFeaIndex);
         feaIdxValues = ArrayPool.createTypedArray(feaIdxValues, ArrType);

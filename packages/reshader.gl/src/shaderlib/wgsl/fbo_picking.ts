@@ -21,18 +21,9 @@ const vert = /*wgsl*/`
     }
     @group(0) @binding($b) var<uniform> pickingUniforms: PickingUniforms;
 #endif
-
-struct PickingVertexOutput {
-    #ifdef ENABLE_PICKING
-        vPickingId: f32,
-        vFbo_picking_viewZ: f32,
-        vFbo_picking_visible: f32,
-    #endif
-    vFbo_picking_fragDepth: f32,
-}
 #endif
 
-fn fbo_picking_setData(input: VertexInput, output: VertexOutput, viewPosZ: f32, visible: bool) {
+fn fbo_picking_setData(input: VertexInput, output: ptr<function, VertexOutput>, viewPosZ: f32, visible: bool) {
     #ifdef ENABLE_PICKING
     #if HAS_PICKING_ID == 1
        output.vPickingId = input.aPickingId;
@@ -47,11 +38,12 @@ fn fbo_picking_setData(input: VertexInput, output: VertexOutput, viewPosZ: f32, 
 `;
 
 export default {
-    defines: ['PICKING_MODE'],
     vert,
     attributes: [
         {
-            defines: ['HAS_PICKING_ID == 1'],
+            defines: (defines) => {
+                return defines.HAS_PICKING_ID === 1;
+            },
             name: 'aPickingId',
             type: 'f32'
         }

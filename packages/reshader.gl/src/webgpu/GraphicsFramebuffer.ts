@@ -129,6 +129,11 @@ export default class GraphicsFramebuffer {
     getRenderPassDescriptor() {
         const colorAttachment = this._renderPass.colorAttachments[0];
         const depthStencilAttachment = this._renderPass.depthStencilAttachment;
+        if (!this.colorTexture) {
+            // a default texture view
+            colorAttachment.view = this.device.context.getCurrentTexture().createView();
+            colorAttachment.view.label = 'default canvas view';
+        }
         if (colorAttachment) {
             colorAttachment.loadOp = this.colorLoadOp || 'load';
             colorAttachment.clearValue = this.colorClearValue || [0, 0, 0, 0];

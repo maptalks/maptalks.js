@@ -4,13 +4,13 @@ import Mesh from '../Mesh';
 import { ResourceType } from 'wgsl_reflect';
 import GraphicsDevice from './GraphicsDevice';
 import PipelineDescriptor from './common/PipelineDesc';
-import { ActiveAttributes, ShaderUniforms } from '../types/typings';
+import { ActiveAttributes, ShaderDefines, ShaderUniforms } from '../types/typings';
 import InstancedMesh from '../InstancedMesh';
 import { WGSLParseDefines } from "./common/WGSLParseDefines";
 import GraphicsFramebuffer from "./GraphicsFramebuffer";
 import Texture2D from "../Texture2D";
 import GraphicsTexture from "./GraphicsTexture";
-import { isNil } from "../common/Util";
+import { extend, isNil } from "../common/Util";
 
 const GLOBAL_IN_MESH_ERROR = 'Found a global uniform in mesh struct:';
 const MESH_IN_GLOBAL_ERROR = 'Found a mesh uniform in global struct:';
@@ -32,23 +32,27 @@ export default class CommandBuilder {
     uniformValues: ShaderUniforms;
     //@internal
     contextDesc: Record<string, any>;
+    //@internal
+    defines: ShaderDefines;
 
     constructor(name: string, device: GraphicsDevice,
         vert: string, frag: string, mesh: Mesh,
-        contextDesc: Record<string, any>, uniformValues: ShaderUniforms) {
+        contextDesc: Record<string, any>, defines: ShaderDefines,
+        uniformValues: ShaderUniforms) {
         this.name = name;
         this.device = device;
         this.vert = vert;
         this.frag = frag;
         this.mesh = mesh;
         this.contextDesc = contextDesc;
+        this.defines = defines;
         this.uniformValues = uniformValues;
     }
 
     build(pipelineDesc: PipelineDescriptor, fbo: GraphicsFramebuffer) {
         const mesh = this.mesh;
         const device = this.device;
-        const defines = this.mesh.getDefines();
+        const defines = this.defines;
         //FIXME 如何在wgsl中实现defined
         let vert = removeComment(this.vert);
         let frag = removeComment(this.frag);
@@ -102,6 +106,7 @@ export default class CommandBuilder {
         const activeAttributes = this._getActiveAttributes(vertexInfo);
 
         return {
+            uid: -1,
             layout,
             pipeline,
             vertexInfo,

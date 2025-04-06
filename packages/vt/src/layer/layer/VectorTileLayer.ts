@@ -377,6 +377,7 @@ class VectorTileLayer extends maptalks.TileLayer {
    * @return worker options
    */
   getWorkerOptions(): Record<string, any> {
+    const isWebGPU = this.getMap().getRenderer().isWebGPU();
     return {
       debug: (this.options as any)["debug"],
       debugTile: (this.options as any)["debugTile"],
@@ -394,6 +395,7 @@ class VectorTileLayer extends maptalks.TileLayer {
       workerGlyph:
         (this.options as any)["workerGlyph"] && !this.getURLModifier(),
       featureIdProperty: (this.options as any)["featureIdProperty"],
+      isWebGPU
     };
   }
 

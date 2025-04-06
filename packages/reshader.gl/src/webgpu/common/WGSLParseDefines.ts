@@ -7,7 +7,7 @@ import { ShaderDefines } from "../../types/typings";
 
 const defineConstantRexg = /\s*#define\s+(\w+)\s+([^\n]+)/g;
 const preprocessorSymbols = /#([^\s]*)(\s*)/gm;
-const usedDefineRexg = /#[^\s]*\s*\b[0-9A-Z][0-9A-Z_&&\|! ]+\b/g;
+const usedDefineRexg = /#[^\s]*\s*\b[0-9A-Z][0-9A-Z_&&\|=! ]+\b/g;
 const isNumeric = (n) => !isNaN(n);
 export function WGSLParseDefines(
     shader: string,
@@ -192,7 +192,7 @@ function getNormalizeDefines(rexgDefines: Array<string>, defines: any) {
             const splitDefines = define.split("||").map((key) => key.trim());
             return !getOrDefineValue(splitDefines, defines);
         }
-        return defines[define];
+        return getDefineValue(defines, define);
     });
 }
 function getAndDefineValue(
@@ -203,11 +203,27 @@ function getAndDefineValue(
     splitDefines?.forEach?.(
         (defineKey) =>
             (total +=
-                Number(defines[defineKey] || 0) > 1
+                Number(getDefineValue(defines, defineKey) || 0) > 1
                     ? 1
-                    : Number(defines[defineKey] || 0)),
+                    : Number(getDefineValue(defines, defineKey) || 0)),
     );
     return total === splitDefines.length;
+}
+function getDefineValue(defines, defineKey) {
+    if (defineKey && defineKey.startsWith && defineKey.startsWith("!")) {
+        return !defines[defineKey];
+    } else if (defineKey && defineKey.includes && (defineKey.includes("==") || defineKey.includes("!="))) {
+        // 解析 FOO == 1 或者 FOO != 1 形式的define
+        const isEqual = defineKey.includes("==");
+        const parts = defineKey.split(isEqual ? "==" : "!=").map(key => key.trim());
+        if (isEqual) {
+            return defines[parts[0]] === +parts[1];
+        } else {
+            return defines[parts[0]] !== +parts[1];
+        }
+    } else {
+        return defines[defineKey];
+    }
 }
 function getOrDefineValue(
     splitDefines: Array<string>,
@@ -216,11 +232,7 @@ function getOrDefineValue(
     let total = 0;
     splitDefines?.forEach?.((defineKey) => {
         let value;
-        if (defineKey.startsWith("!")) {
-            value = !defines[defineKey];
-        } else {
-            value = defines[defineKey];
-        }
+        value = getDefineValue(defines, defineKey);
         return (total += !!value ? 1 : 0);
     });
     return total === 0;

@@ -262,7 +262,12 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
 
 
         this.canvas.pickingFBO = this.canvas.pickingFBO || graphics.framebuffer(this.canvas.width, this.canvas.height);
-        this.pickingFBO = this.canvas.pickingFBO || graphics.framebuffer(this.canvas.width, this.canvas.height);
+        this.pickingFBO = this.canvas.pickingFBO || graphics.framebuffer({
+            color: true,
+            depthStencil: true,
+            width: this.canvas.width,
+            height: this.canvas.height
+        });
         this._debugPainter = new DebugPainter(graphics, this.getMap());
         this._prepareWorker();
         this._groundPainter = new GroundPainter(graphics, this.layer);

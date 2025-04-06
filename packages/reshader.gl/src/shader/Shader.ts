@@ -448,13 +448,16 @@ export default class GPUShader extends GLShader {
             const uniformValues = this.context;
             const fbo = this._gpuFramebuffer;
             // 不同于glsl，因为不支持预处理指令，wgsl需要在创建command时编译源代码
-            const { vert, frag } = this._compileWGSLSource(mesh.defines);
+            const defines = extend({}, this.shaderDefines || {}, mesh.getDefines());
+            const { vert, frag } = this._compileWGSLSource(defines);
 
-            const builder = new CommandBuilder(this.name, device, vert, frag, mesh, this.contextDesc, uniformValues);
+            const builder = new CommandBuilder(this.name, device, vert, frag, mesh, this.contextDesc, defines, uniformValues);
             const pipelineDesc = new PipelineDescriptor();
             const extraCommandProps = extend({}, this.extraCommandProps || {}, commandProps || {});
             pipelineDesc.readFromREGLCommand(extraCommandProps, mesh, renderProps, fbo);
-            return builder.build(pipelineDesc, fbo);
+            const command = builder.build(pipelineDesc, fbo);
+            command.uid = this.uid;
+            return command;
         } else {
             // regl
             return super.createMeshCommand(device, mesh, commandProps);
@@ -482,14 +485,14 @@ export default class GPUShader extends GLShader {
         const passEncoder: GPURenderPassEncoder = this._getCurrentRenderPassEncoder(device);
         passEncoder.setPipeline(command.pipeline);
 
-        const { key, bindGroupFormat, vertexInfo, layout } = command;
+        const { uid, bindGroupFormat, vertexInfo, layout } = command;
         // 1. 生成shader uniform 需要的dynamic buffer
         if (!this._buffers) {
             this._buffers = {};
         }
-        let shaderBuffer = this._buffers[key] as DynamicBuffer;
+        let shaderBuffer = this._buffers[uid] as DynamicBuffer;
         if (!shaderBuffer) {
-            shaderBuffer = this._buffers[key] = new DynamicBuffer(bindGroupFormat.getShaderUniforms(), buffersPool);
+            shaderBuffer = this._buffers[uid] = new DynamicBuffer(bindGroupFormat.getShaderUniforms(), buffersPool);
         }
 
         if (!this._dynamicOffsets) {
@@ -504,7 +507,7 @@ export default class GPUShader extends GLShader {
             this._dynamicOffsets.reset();
             const mesh = props[i].meshObject as Mesh;
             // 获取mesh的dynamicBuffer
-            const meshBuffer = mesh.writeDynamicBuffer(props[i], bindGroupFormat.getMeshUniforms(), buffersPool, this._dynamicOffsets);
+            const meshBuffer = mesh.writeDynamicBuffer(uid, props[i], bindGroupFormat.getMeshUniforms(), buffersPool, this._dynamicOffsets);
             const groupKey = bindGroupFormat.uuid + '-' + meshBuffer.version + '-' + shaderBuffer.version;
             // 获取或者生成bind group
             let bindGroup = mesh.getBindGroup(groupKey);

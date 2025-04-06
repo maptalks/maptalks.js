@@ -11,6 +11,7 @@ import draco_decode from './wgsl/draco_decode';
 import highlight from './wgsl/highlight';
 import compute_texcoord from './wgsl/compute_texcoord';
 import fbo_picking from './wgsl/fbo_picking';
+import common_pack_float from './wgsl/common_pack_float';
 
 //Shader Chunks for includes
 const ShaderChunk = {
@@ -25,7 +26,8 @@ const ShaderChunk = {
     draco_decode,
     highlight,
     compute_texcoord,
-    fbo_picking
+    fbo_picking,
+    common_pack_float
 };
 /* eslint-enable camelcase */
 
