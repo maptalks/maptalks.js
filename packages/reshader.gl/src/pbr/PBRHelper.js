@@ -18,9 +18,20 @@ let defaultRegl;
 function getDefaultREGL() {
     if (!defaultRegl) {
         const canvas = document.createElement('canvas');
-        // use webgl 2 as default regl
-        const gl = canvas.getContext('webgl2');
+        const gl = canvas.getContext('webgl');
         defaultRegl = createREGL({
+            optionalExtensions: [
+                'OES_texture_half_float',
+                'OES_texture_half_float_linear',
+                'OES_texture_float',
+                'OES_texture_float_linear',
+            ],
+            attributes: {
+                alpha: true,
+                depth: true,
+                stencil: true,
+                preserveDrawingBuffer: true,
+            },
             gl
         });
         defaultRegl.on('lost', () => {
@@ -430,17 +441,17 @@ export function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
     const quadBuf = regl.buffer({ data: quadVertices, name: 'aPosition' });
     const quadTexBuf = regl.buffer({ data: quadTexcoords, name: 'aTexCoord' });
     const fbo = regl.framebuffer({
-        radius : size,
+        radius: size,
         colorType: 'uint8',
         colorFormat: 'rgba',
-        min : 'linear',
-        mag : 'linear'
+        min: 'linear',
+        mag: 'linear'
     });
     // const FSIZE = Float32Array.BYTES_PER_ELEMENT;
     const drawLUT = regl({
-        frag : dfgFS,
-        vert : dfgVS,
-        attributes : {
+        frag: dfgFS,
+        vert: dfgVS,
+        attributes: {
             'aPosition' : {
                 buffer : quadBuf,
                 // stride : 5 * FSIZE,
@@ -453,17 +464,17 @@ export function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
                 // size : 2,
             }
         },
-        uniforms : {
+        uniforms: {
             'distributionMap' : distributionMap
         },
-        framebuffer : fbo,
-        viewport : {
-            x : 0,
-            y : 0,
-            width : size,
-            height : size
+        framebuffer: fbo,
+        viewport: {
+            x: 0,
+            y: 0,
+            width: size,
+            height: size
         },
-        count : quadVertices.length / 3,
+        count: quadVertices.length / 3,
         primitive: 'triangle strip'
     });
     drawLUT();
