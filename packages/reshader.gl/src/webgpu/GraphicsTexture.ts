@@ -23,7 +23,7 @@ export default class GraphicsTexture {
     }
 
     get height() {
-        return this.texture && this.texture.width || this.config && this.config.height;
+        return this.texture && this.texture.height || this.config && this.config.height;
     }
 
     // called when minFilter or magFilter changed
@@ -37,6 +37,12 @@ export default class GraphicsTexture {
             }
             this._bindGroups = [];
         }
+    }
+
+    resize(width, height) {
+        this.config.width = width;
+        this.config.height = height;
+        this.update(this.config);
     }
 
     update(config) {
