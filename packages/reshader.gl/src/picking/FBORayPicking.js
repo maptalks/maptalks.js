@@ -482,7 +482,6 @@ export default class FBORayPicking {
         let pickingIds = [];
         for (let i = 0; i < data.length; i += 4) {
             const { pickingId, meshId } = this._packData(data.subarray(i, i + 4), shader);
-            console.log(pickingId, meshId);
             meshIds.push(meshId);
             pickingIds.push(pickingId);
         }

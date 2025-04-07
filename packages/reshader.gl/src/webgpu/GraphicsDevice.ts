@@ -173,7 +173,7 @@ export default class GraphicsDevice {
         if (!colorTexture) {
             return;
         }
-
+        this.submit();
         const origin = { x: options.x, y: framebuffer.height - options.y, z: 0 };
         const alphaModes: GPUCanvasAlphaMode[] = ['opaque', 'premultiplied'];
         const data = options.pixels || new Uint8Array(width * height * 4);
@@ -185,35 +185,29 @@ export default class GraphicsDevice {
             const context = storage.getContext('webgpu');
             context.configure({
                 device,
-                format: 'rgba8unorm',
+                format: 'bgra8unorm',
                 usage: GPUTextureUsage.COPY_DST,
                 alphaMode: alphaModes[index]
             });
-            return context.getCurrentTexture()
+            return context.getCurrentTexture();
         }).map((storageTexture, index) => {
             const encoder = device.createCommandEncoder();
             encoder.copyTextureToTexture({ texture: colorTexture.texture, origin }, { texture: storageTexture }, { width, height });
-            // encoder.copyTextureToTexture({ texture: colorTexture.texture }, { texture: storageTexture }, { width, height });
             this.wgpu.queue.submit([encoder.finish()]);
-            // const stagingHostStorage = new OffscreenCanvas(width, height);
-            const stagingHostStorage = document.getElementById('DEBUG') as any;
-            stagingHostStorage.width = width;
-            stagingHostStorage.height = height;
-            const hostContext = stagingHostStorage.getContext('2d', {
+            const stagingHostStorage = new OffscreenCanvas(width, height);
+            const ctx = stagingHostStorage.getContext('2d', {
                 willReadFrequently: true,
             });
-            // hostContext.clearRect(0, 0, width, height);
-            hostContext.drawImage(stagingDeviceStorage[index], 0, 0);
-            const stagingValues = hostContext.getImageData(0, 0, width, height).data;;
+            ctx.drawImage(stagingDeviceStorage[index], 0, 0);
+            const stagingValues = ctx.getImageData(0, 0, width, height).data;;
             const alphaMode = alphaModes[index];
             for (let k = 0; k < data.length; k += 4) {
                 if (alphaMode === 'premultiplied') {
-                  data[k + 3] = stagingValues[k + 3];
+                    data[k + 3] = stagingValues[k + 3];
                 } else {
-                //   const value = stagingValues[k];
-                  data[k] = stagingValues[k];
-                  data[k + 1] = stagingValues[k + 1];
-                  data[k + 2] = stagingValues[k + 2];
+                    data[k] = stagingValues[k];
+                    data[k + 1] = stagingValues[k + 1];
+                    data[k + 2] = stagingValues[k + 2];
                 }
               }
         });

@@ -46,10 +46,14 @@ export default class GraphicsFramebuffer {
 
     _update() {
         let color = this.options.colors && this.options.colors[0] || this.options.color;
+        let colorFormat = this.options.colorFormat;
+        let colorType = this.options.colorType;
         let width, height;
         if (color) {
             width = color.width;
             height = color.height;
+        } else if (colorFormat || colorType) {
+            color = true;
         }
         if (!isNil(this.options.width)) {
             width = this.options.width;
@@ -65,6 +69,18 @@ export default class GraphicsFramebuffer {
                     width,
                     height
                 };
+            }
+            if (!color.width) {
+                color.width = width;
+            }
+            if (!color.height) {
+                color.height = height;
+            }
+            if (!color.format) {
+                color.format = colorFormat || 'rgba';
+            }
+            if (!color.type) {
+                color.type = colorType || 'uint8';
             }
             this._ownColor = true;
             color = new GraphicsTexture(this.device, color);

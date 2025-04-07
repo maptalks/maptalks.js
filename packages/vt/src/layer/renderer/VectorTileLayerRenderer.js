@@ -260,14 +260,15 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
         this.gl = reglGL;
         this.device = device;
 
-
-        this.canvas.pickingFBO = this.canvas.pickingFBO || graphics.framebuffer(this.canvas.width, this.canvas.height);
-        this.pickingFBO = this.canvas.pickingFBO || graphics.framebuffer({
-            color: true,
+        const isWebGPU = !!device;
+        const fboOptions = {
+            colorFormat: isWebGPU ? 'bgra8unorm' : 'rgba',
             depthStencil: true,
             width: this.canvas.width,
             height: this.canvas.height
-        });
+        };
+        this.canvas.pickingFBO = this.canvas.pickingFBO || graphics.framebuffer(fboOptions);
+        this.pickingFBO = this.canvas.pickingFBO;
         this._debugPainter = new DebugPainter(graphics, this.getMap());
         this._prepareWorker();
         this._groundPainter = new GroundPainter(graphics, this.layer);
