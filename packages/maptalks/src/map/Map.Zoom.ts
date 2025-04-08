@@ -114,7 +114,7 @@ Map.include(/** @lends Map.prototype */{
             scale = fromRes / res / startScale,
             startPoint = this._startZoomCoord && this.prjToContainerPoint(this._startZoomCoord, this._startZoomVal);
         const offset = this.getViewPoint();
-        if (!this.isRotating() && startPoint && !startPoint.equals(origin) && scale !== 1) {
+        if (!this.isRotating() && startPoint && origin && !startPoint.equals(origin) && scale !== 1) {
             const pitch = this.getPitch();
             // coordinate at origin changed, usually by map.setCenter
             // add origin offset
