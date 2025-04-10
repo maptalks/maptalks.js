@@ -1,6 +1,6 @@
 /** @namespace renderer */
 
-export { ResourceCache } from './layer/LayerAbstractRenderer';
+export { ResourceCache } from './../core/ResourceCacheManager';
 export { default as CanvasRenderer } from './layer/CanvasRenderer';
 export { default as LayerAbstractRenderer } from './layer/LayerAbstractRenderer';
 export { default as ImageGLRenderable } from './layer/ImageGLRenderable';

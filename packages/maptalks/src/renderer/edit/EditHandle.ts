@@ -1,7 +1,6 @@
 import Eventable from '../../core/Eventable';
 import Class from '../../core/Class';
 import Point, { type PointJson } from '../../geo/Point';
-import { ResourceCache } from '../layer/LayerAbstractRenderer';
 import { drawVectorMarker } from '../../core/util/draw';
 import { isNil } from '../../core/util/';
 import { getSymbolHash } from '../../core/util';
@@ -10,8 +9,9 @@ import DragHandler from '../../handler/Drag';
 import { BBOX, bufferBBOX, getDefaultBBOX } from '../../core/util/bbox';
 import type Map from '../../map/Map';
 import type GeometryEditor from '../../geometry/editor/GeometryEditor';
+import { getResouceCacheInstance } from '../../core/ResourceCacheManager';
 
-const resources = new ResourceCache();
+const resources = getResouceCacheInstance();
 let prevX, prevY;
 
 type EventParams = any;

@@ -1,4 +1,4 @@
-import { ResourceCache } from '../..';
+import { ResourceCache } from '../../../core/ResourceCacheManager';
 import { getValueOrDefault } from '../../../core/util';
 import { isGradient as checkGradient } from '../../../core/util/style';
 import Coordinate from '../../../geo/Coordinate';
