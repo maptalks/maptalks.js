@@ -1,6 +1,7 @@
 const { nodeResolve: resolve } = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
 const terser = require('@rollup/plugin-terser');
+const typescript = require("@rollup/plugin-typescript");
 const replace = require('@rollup/plugin-replace');
 const pkg = require('./package.json');
 
@@ -114,6 +115,7 @@ module.exports = [
         plugins: [
             resolve({}),
             commonjs(),
+            typescript(),
             replace({
                 // 'this.exports = this.exports || {}': '',
                 '(function (exports) {': 'function (exports) {',
@@ -149,6 +151,7 @@ module.exports = [
                 // https://github.com/mapbox/mapbox-gl-js/pull/6956
                 ignoreGlobal: true
             }),
+            typescript(),
             glsl()
         ].concat(plugins),
         external: ['maptalks', '@maptalks/gl'],
@@ -193,6 +196,7 @@ if (production) {
                     // https://github.com/mapbox/mapbox-gl-js/pull/6956
                     ignoreGlobal: true
                 }),
+                typescript(),
                 glsl()
             ].concat(plugins),
             output: {
