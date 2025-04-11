@@ -121,7 +121,7 @@ class Class {
     }
 
     setOptions(options: ClassOptions) {
-        console.warn('setOptions(options) It is a private method and deprecated, please use _setOptions(options) instead.');
+        console.warn('setOptions(options) It is a private method and deprecated, please use _setOptions(options) instead. If you want to update options, please use config(options) instead.');
         return this._setOptions(options);
     }
 
