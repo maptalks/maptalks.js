@@ -65,7 +65,7 @@ const Menuable = {
         this._menuOptions = options;
 
         if (this._menu) {
-            this._menu.setOptions(options);
+            this._menu._setOptions(options);
         } else {
             this.on('contextmenu', this._defaultOpenMenu, this);
         }
