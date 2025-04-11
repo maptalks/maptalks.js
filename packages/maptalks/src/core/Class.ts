@@ -57,10 +57,10 @@ class Class {
      * @param options - options to set
      */
     constructor(options?: ClassOptions) {
-        if (!this || !this.setOptions) {
+        if (!this || !this._setOptions) {
             throw new Error('Class instance is being created without "new" operator.');
         }
-        this.setOptions(options);
+        this._setOptions(options);
         this.callInitHooks();
         this._isUpdatingOptions = false;
     }
@@ -107,7 +107,7 @@ class Class {
      * Merges options with the default options of the object.
      * @param options - options to set
      */
-    setOptions(options: ClassOptions) {
+    _setOptions(options: ClassOptions) {
         if (!this.hasOwnProperty('options') || isNil(this.options)) {
             this.options = this.options ? Object.create(this.options) : {};
         }
@@ -118,6 +118,11 @@ class Class {
             this.options[i] = options[i];
         }
         return this;
+    }
+
+    setOptions(options: ClassOptions) {
+        console.warn('setOptions(options) It is a private method and deprecated, please use _setOptions(options) instead.');
+        return this._setOptions(options);
     }
 
     /**

@@ -68,7 +68,7 @@ class WMSTileLayer extends TileLayer {
             wmsExcludeParams = extend({}, this.options);
         }
         this.wmsParams = extend({} as WMSTileLayerOptionsType, defaultWmsParams);
-        this.setOptions(options);
+        this._setOptions(options);
         this.setZIndex(options.zIndex);
         if (!Browser.proxy) {
             this._optionsHook(options);

@@ -1331,7 +1331,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         delete opts['symbol'];
         delete opts['id'];
         delete opts['properties'];
-        this.setOptions(opts);
+        this._setOptions(opts);
         if (symbol) {
             this.setSymbol(symbol);
         }
