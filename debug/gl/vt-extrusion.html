@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+  <meta charset='UTF-8' />
+  <meta name='viewport' content='width=device-width, initial-scale=1' />
+  <title>vt-fill</title>
+  <style type='text/css'>
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0px;
+    }
+
+    .container {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+  <link rel="stylesheet" href="/maptalks/dist/maptalks.css">
+  <script type="text/javascript" src="/maptalks/dist/maptalks.js"></script>
+  <script type="text/javascript" src="/maptalks-work/packages/gl/dist/maptalksgl.js"></script>
+  <script type="text/javascript" src="/maptalks-work/packages/vt/dist/maptalks.vt.js"></script>
+
+  <body>
+    <canvas id="DEBUG" width="1" height="1"></canvas>
+    <div id="map" class="container"></div>
+
+    <script>
+      const map = new maptalks.Map("map", {
+        center: [-73.98795379493208, 40.72100197835064],
+        zoom: 19,
+        bearing: -69,
+        renderer: 'gpu'
+      });
+
+      /**start**/
+      const vt = new maptalks.VectorTileLayer("vt", {
+        features: true,
+        urlTemplate: "http://tile.maptalks.com/test/planet-single/{z}/{x}/{y}.mvt",
+      });
+
+      const style = {
+        style: [
+          {
+            filter: ["all", ["==", "$layer", "building"],
+              ["==", "$type", "Polygon"]
+            ],
+            renderPlugin: {
+                type: "lit",
+                dataConfig: {
+                    type: "3d-extrusion",
+                    altitudeProperty: "height",
+                    minHeightProperty: "min_height",
+                    altitudeScale: 1,
+                    defaultAltitude: 10,
+                    topThickness: 0,
+                    top: true,
+                    side: true
+                },
+                sceneConfig: {}
+                },
+                symbol: {
+                    material: {
+                        baseColorFactor: [1, 1, 1, 1],
+                        roughnessFactor: 1,
+                        metallicFactor: 1
+                    }
+                }
+          }
+        ],
+      };
+      vt.setStyle(style);
+      /**end**/
+
+      // const groupLayer = new maptalks.GroupGLLayer("group", [vt]);
+      // groupLayer.addTo(map);
+      vt.addTo(map);
+
+      map.on('click', e => {
+        const hits = vt.identify(e.coordinate);
+        if (hits.length) {
+          console.log(hits[0].data.feature.properties);
+        }
+      });
+    </script>
+  </body>
+
+</html>

@@ -166,7 +166,7 @@ fn transformTexcoord(uv: vec2f) -> vec2f {
     #ifdef HAS_RANDOM_TEX
         let origin = uniforms.uvOrigin;
         let texCoord = decodedTexCoord * uniforms.uvScale + uniforms.uvOffset;
-        return mod(origin, 1.0) + texCoord;
+        return (origin % 1.0) + texCoord;
     #else
         let origin = uniforms.uvOrigin;
         let texCoord = decodedTexCoord * uniforms.uvScale;
@@ -174,7 +174,7 @@ fn transformTexcoord(uv: vec2f) -> vec2f {
             origin = rotateUV(origin, uniforms.uvRotation);
             texCoord = rotateUV(texCoord, uniforms.uvRotation);
         }
-        return mod(origin, 1.0) + texCoord + uniforms.uvOffset;
+        return (origin % 1.0) + texCoord + uniforms.uvOffset;
     #endif
 }
 #endif

@@ -36,9 +36,9 @@ struct SceneUniforms {
     metallicFactor: f32,
     normalMapFactor: f32,
     specularF0: f32,
-    emitMultiplicative: i32,
-    normalMapFlipY: i32,
-    outputSRGB: i32,
+    emitMultiplicative: f32,
+    normalMapFlipY: f32,
+    outputSRGB: f32,
     contrast: f32,
 
     hsv: vec3f,
@@ -414,9 +414,9 @@ fn initMaterial(vertexOutput: VertexOutput) -> MaterialUniforms {
     let patternWidth = ceil(uvSize.x * vertexOutput.vPatternHeight / uvSize.y);
     let plusGapWidth = patternWidth * (1.0 + myGap);
     let animSpeed = myAnimSpeed / uniforms.animSpeedScale;
-    linesofar += mod(uniforms.currentTime * -animSpeed * 0.2, plusGapWidth);
-    let patternx = mod(linesofar / plusGapWidth, 1.0);
-    let patterny = mod(uniforms.flipY * vertexOutput.vNormalY, 1.0);
+    linesofar += (uniforms.currentTime * -animSpeed * 0.2) % plusGapWidth;
+    let patternx = (linesofar / plusGapWidth) % 1.0;
+    let patterny = (uniforms.flipY * vertexOutput.vNormalY) % 1.0;
     uv = computeUV(vec2(patternx * (1.0 + myGap) * uniforms.uvScale[0], patterny * uniforms.uvScale[1]));
     let patternColor = textureSample(linePatternFile, linePatternFileSampler, uv);
     let inGap = clamp(sign(1.0 / (1.0 + myGap) - patternx) + 0.000001, 0.0, 1.0);
@@ -476,7 +476,7 @@ fn initMaterial(vertexOutput: VertexOutput) -> MaterialUniforms {
 
     materialUniforms.emit = uniforms.emissiveFactor;
 #if HAS_EMISSIVE_MAP
-    if (uniforms.emitMultiplicative == 1) {
+    if (uniforms.emitMultiplicative == 1.0) {
         materialUniforms.emit *= sRGBToLinear(textureSample(emissiveTexture, emissiveTextureSampler, uv).rgb);
     } else {
         materialUniforms.emit += sRGBToLinear(textureSample(emissiveTexture, emissiveTextureSampler, uv).rgb);
@@ -494,7 +494,7 @@ fn initMaterial(vertexOutput: VertexOutput) -> MaterialUniforms {
 
 #if HAS_NORMAL_MAP && HAS_TANGENT
     var nmap = textureSample(normalTexture, normalTextureSampler, uv).xyz * 2.0 - 1.0;
-    nmap.y = uniforms.normalMapFlipY == 1 ? -nmap.y : nmap.y;
+    nmap.y = select(nmap.y, -namp.y, uniforms.normalMapFlipY == 1.0);
     materialUniforms.normal = nmap;
 #else
     materialUniforms.normal = normalize(vertexOutput.vModelNormal);
@@ -502,7 +502,7 @@ fn initMaterial(vertexOutput: VertexOutput) -> MaterialUniforms {
 
 #if HAS_TERRAIN_NORMAL && HAS_TANGENT
     var nmap = convertTerrainHeightToNormalMap(uv);
-    nmap.y = uniforms.normalMapFlipY == 1 ? -nmap.y : nmap.y;
+    nmap.y = select(nmap.y, -namp.y, uniforms.normalMapFlipY == 1.0);
     materialUniforms.normal = nmap;
 #endif
 
@@ -620,8 +620,8 @@ fn normalFiltering(roughness: f32, worldNormal: vec3f) -> f32 {
         let z = fetchDepth(sampleUV.xy);
         let depth = linearizeDepth(z);
         let sampleDepth = -1.0 / sampleUV.z;
-        *startSteps = depth > sampleDepth ? *startSteps : steps;
-        *endSteps = depth > sampleDepth ? steps : *endSteps;
+        *startSteps = select(steps, *startSteps, depth > sampleDepth);
+        *endSteps = select(*endSteps, steps, depth > sampleDepth);
         return steps;
     }
 
@@ -654,7 +654,7 @@ fn normalFiltering(roughness: f32, worldNormal: vec3f) -> f32 {
             depthDiff *= clamp(sign(abs(depthDiff) - rayLen * invNumSteps * invNumSteps), 0.0, 1.0);
             hit = abs(depthDiff + depthTolerance) < depthTolerance;
             let timeLerp = clamp(diffSampleW.x / (diffSampleW.x - depthDiff), 0.0, 1.0);
-            let hitTime = hit ? (diffSampleW.y + timeLerp * invNumSteps - invNumSteps) : 1.0;
+            let hitTime = select(1.0, (diffSampleW.y + timeLerp * invNumSteps - invNumSteps), hit);
             diffSampleW.z = min(diffSampleW.z, hitTime);
             diffSampleW.x = depthDiff;
             if (hit) {
@@ -701,7 +701,7 @@ fn normalFiltering(roughness: f32, worldNormal: vec3f) -> f32 {
         var result = vec4f(0.0);
         var rough4 = roughness * roughness;
         rough4 = rough4 * rough4;
-        let upVector = abs(normal.z) < 0.999 ? vec3f(0.0, 0.0, 1.0) : vec3f(1.0, 0.0, 0.0);
+        let upVector = select(vec3f(1.0, 0.0, 0.0), vec3f(0.0, 0.0, 1.0), abs(normal.z) < 0.999);
         let tangentX = normalize(cross(upVector, normal));
         let tangentY = cross(normal, tangentX);
         var maskSsr = shaderUniforms.ssrFactor * clamp(-4.0 * dot(eyeVector, normal) + 3.8, 0.0, 1.0);
@@ -719,7 +719,7 @@ fn normalFiltering(roughness: f32, worldNormal: vec3f) -> f32 {
                 result += fetchColorInRay(resRay, maskSsr, specularEnvironment, specularColor, roughness);
             }
         }
-        return result.w > 0.0 ? result.rgb / result.w : specularEnvironment;
+        return select(specularEnvironment, result.rgb / result.w, result.w > 0.0);
     }
 #endif
 
@@ -829,7 +829,7 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
     diffuse += materialEmit;
 
     var frag = specular + diffuse;
-    if (uniforms.outputSRGB == 1) {
+    if (uniforms.outputSRGB == 1.0) {
         frag = linearTosRGB(frag);
     }
 
