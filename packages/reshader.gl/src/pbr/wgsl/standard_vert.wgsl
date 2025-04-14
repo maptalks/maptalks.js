@@ -238,7 +238,11 @@ fn main(input: VertexInput) -> VertexOutput {
         #endif
 
         #if HAS_TANGENT || HAS_NORMAL
-            let positionNormalMatrix = mat3x3f(localPositionMatrix[0].xyz, localPositionMatrix[1].xyz, localPositionMatrix[2].xyz);
+            let positionNormalMatrix = mat3x3f(
+                localPositionMatrix[0].xyz,
+                localPositionMatrix[1].xyz,
+                localPositionMatrix[2].xyz
+            );
             let normalMatrix = uniforms.modelNormalMatrix * positionNormalMatrix;
             #if HAS_TANGENT
                 let tangentFrame = toTangentFrameWithTangent(input.aTangent);
@@ -246,13 +250,13 @@ fn main(input: VertexInput) -> VertexOutput {
                 let t = tangentFrame.t;
                 output.vModelTangent = vec4f(normalMatrix * t, input.aTangent.w);
             #else
-                Normal = decode_getNormal(input.aNormal.xyz);
+                Normal = decode_getNormal(vec3f(input.aNormal.xyz));
             #endif
             let localNormal = Normal;
             output.vModelNormal = normalMatrix * localNormal;
         #else
-            Normal = vec3f(0.0);
-            output.vModelNormal = vec3f(0.0);
+            Normal = vec3f(0);
+            output.vModelNormal = vec3f(0);
         #endif
 
         #if HAS_TANGENT

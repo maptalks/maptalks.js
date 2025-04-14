@@ -38,7 +38,8 @@ export function getIndexArrayType(max) {
 
 export function getPosArrayType(max) {
     max = Math.abs(max);
-    if (max < 128) return Int8Array;
+    // webgpu中会因为Type不同生成新的command，所以取消Int8Array
+    // if (max < 128) return Int8Array;
     if (max < 65536 / 2) return Int16Array;
     // https://stackoverflow.com/questions/3793838/which-is-the-first-integer-that-an-ieee-754-float-is-incapable-of-representing-e
     if (max < Math.pow(2, 24)) return Float32Array;
@@ -47,7 +48,8 @@ export function getPosArrayType(max) {
 }
 
 export function getUnsignedArrayType(max) {
-    if (max < 256) return Uint8Array;
+    // webgpu中会因为Type不同生成新的shader，所以取消Uint8Array
+    // if (max < 256) return Uint8Array;
     if (max < 65536) return Uint16Array;
     return Float32Array;
 }

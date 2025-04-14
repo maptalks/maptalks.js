@@ -1083,10 +1083,20 @@ export default class Geometry {
     }
 
     getBufferDescriptor(vertexInfo) {
+        const attrInfos = [];
+        for (const p in vertexInfo) {
+            const info = vertexInfo[p];
+            attrInfos[info.location] = info;
+        }
         const data = this.data;
         const bufferDesc = [];
         const bufferMapping = {};
-        for (const p in data) {
+        // bufferDesc的顺序需要和wgsl中的location对应
+        for (let i = 0; i < attrInfos.length; i++) {
+            if (!attrInfos[i]) {
+                continue;
+            }
+            const p = attrInfos[i].geoAttrName;
             const attr = data[p];
             if (!attr) {
                 continue;
@@ -1098,7 +1108,6 @@ export default class Geometry {
             }
             const accessorName = attr.accessorName;
             const byteStride = attr.byteStride;
-            let stridePadding = 0;
             if (byteStride && accessorName) {
                 // a GLTF accessor style attribute
                 const format = getFormatFromGLTFAccessor(attr.componentType, attr.itemSize);
@@ -1121,11 +1130,11 @@ export default class Geometry {
                         ]
                     }
                     bufferMapping[accessorName] = desc;
-                    bufferDesc.push(desc);
+                    bufferDesc[i] = desc;
                 }
             } else {
                 const desc = getAttrBufferDescriptor(attr, info);
-                bufferDesc.push(desc);
+                bufferDesc[i] = desc;
             }
         }
         return bufferDesc;
