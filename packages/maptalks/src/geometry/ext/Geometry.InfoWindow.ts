@@ -45,7 +45,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
         }
         this._infoWinOptions = extend({}, options);
         if (this._infoWindow) {
-            this._infoWindow.setOptions(options);
+            this._infoWindow._setOptions(options);
         } else if (this.getMap()) {
             this._bindInfoWindow();
         }
