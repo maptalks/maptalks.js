@@ -1759,6 +1759,13 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             return this;
         }
         this._fireEvent('removestart');
+        //remove animation when map removed
+        const animationPlayerList = [this._animPlayer, this._mapAnimPlayer];
+        animationPlayerList.forEach(player => {
+            if (player && player.finish) {
+                this._stopAnim(player);
+            }
+        });
         this._removeDomEvents();
         this._clearHandlers();
         this.removeBaseLayer();

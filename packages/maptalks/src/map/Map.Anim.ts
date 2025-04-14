@@ -9,6 +9,8 @@ declare module "./Map" {
     interface Map {
         //@internal
         _mapAnimPlayer: Player;
+        //@internal
+        _animPlayer: Player;
         isRotating(): boolean;
         //@internal
         _animateTo(view: MapViewType, options?: MapAnimationOptionsType, step?: (frame) => void): Player;
