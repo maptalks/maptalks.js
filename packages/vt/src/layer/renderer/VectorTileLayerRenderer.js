@@ -247,11 +247,6 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
         return false;
     }
 
-    _isInGroupGLLayer() {
-        const inGroup = this.canvas && this.canvas.gl && this.canvas.gl.wrap;
-        return !!inGroup;
-    }
-
     initContext() {
         super.initContext();
         const { regl, device, reglGL } = this.context;
@@ -273,40 +268,6 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
         this._prepareWorker();
         this._groundPainter = new GroundPainter(graphics, this.layer);
         this.layer.fire('contextcreate', { regl, device });
-    }
-
-    _createREGLContext(canvas) {
-        const layer = this.layer;
-
-        const attributes = layer.options.glOptions || {
-            alpha: true,
-            depth: true,
-            antialias: this.layer.options['antialias']
-            // premultipliedAlpha : false
-        };
-        attributes.preserveDrawingBuffer = true;
-        attributes.stencil = true;
-        // this.glOptions = attributes;
-        const gl = this._createGLContext(canvas, attributes);
-        // this.gl.getParameter(this.gl.MAX_VERTEX_UNIFORM_VECTORS));
-        const regl = createREGL({
-            gl,
-            attributes,
-            extensions: [
-                'ANGLE_instanced_arrays',
-                'OES_element_index_uint',
-                'OES_standard_derivatives'
-            ],
-            optionalExtensions: layer.options['glExtensions'] ||
-                [
-                    'OES_vertex_array_object',
-                    'OES_texture_half_float', 'OES_texture_half_float_linear',
-                    'OES_texture_float', 'OES_texture_float_linear',
-                    'WEBGL_draw_buffers', 'EXT_shader_texture_lod',
-                    'EXT_frag_depth'
-                ]
-        });
-        return { gl, attributes, regl };
     }
 
     _prepareWorker() {

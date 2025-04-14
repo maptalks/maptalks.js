@@ -145,24 +145,7 @@ const vert = /* wgsl */`
     }
 `;
 
-const attributes = [
-    {
-        defines: ['HAS_TANGENT'],
-        name: 'aTangent',
-        type: 'vec4f'
-    },
-    {
-        defines: ['HAS_NORMAL'],
-        name: 'aNormal',
-        type: 'vec3f'
-    },
-    {
-        defines: ['HAS_NORMAL', 'HAS_DRACO_NORMAL'],
-        name: 'aNormal',
-        type: 'vec2f'
-    }
-];
 
 export default {
-    vert, attributes
+    vert
 };

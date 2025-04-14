@@ -1455,11 +1455,6 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         }
     }
 
-    _isInGroupGLLayer() {
-        const inGroup = this.canvas && this.canvas.gl && this.canvas.gl.wrap;
-        return !!inGroup;
-    }
-
     _defineSymbolBloom(symbol, keys) {
         for (let i = 0; i < keys.length; i++) {
             symbol[keys[i]] = this.layer.options['enableBloom'];

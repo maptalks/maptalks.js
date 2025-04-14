@@ -231,7 +231,7 @@ module.exports.push({
     },
     watch: {
         include: ['src/**/*.js', 'src/**/*.ts', 'src/**/*.glsl',  'src/**/*.wgsl', 'src/**/*.vert',  'src/**/*.frag',
-            '../reshader.gl/dist/*.es.js', 'build/worker.js', 'build/gltf-loader-bundle.js']
+            '../reshader.gl/dist/reshadergl.es.js', 'build/worker.js', 'build/gltf-loader-bundle.js']
     }
 });
 

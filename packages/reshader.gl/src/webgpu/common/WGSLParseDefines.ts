@@ -23,7 +23,7 @@ export function WGSLParseDefines(
     // delete define const in shader
     shader = shader.replace(/#define.*$/gm, "");
     // parse shader inner const define
-    const notDefineConstShader = ParseDefinesConst(shader, defineConsts);
+    let notDefineConstShader = ParseDefinesConst(shader, defineConsts);
     // filter "&&","||",number
     const rexgDefines = notDefineConstShader
         .match(usedDefineRexg)
@@ -34,7 +34,9 @@ export function WGSLParseDefines(
             return define.substring(firstSpace).trim();
         });
     // normallize defines
-    const normalizeDefines = getNormalizeDefines(rexgDefines, meshDefines);
+    const { normalizeDefines, constValues } = getNormalizeDefines(rexgDefines, meshDefines);
+    // const define defined by mesh
+    notDefineConstShader = ParseDefinesConst(notDefineConstShader, constValues);
     // split Shader
     const shaderStrs = splitShaderStrsByDefine(
         notDefineConstShader,
@@ -181,58 +183,79 @@ function ParseDefinesConst(sourceShader: string, defines: ShaderDefines) {
     return result;
 }
 function getNormalizeDefines(rexgDefines: Array<string>, defines: any) {
-    return rexgDefines?.map?.((define) => {
+    const usedDefines = new Set<string>();
+    const normalizeDefines = rexgDefines?.map?.((define) => {
         if (define?.includes("&&") || define?.includes("||")) {
             if (define.includes("&&")) {
                 const splitDefines = define
                     .split("&&")
                     .map((key) => key.trim());
-                return getAndDefineValue(splitDefines, defines);
+                return getAndDefineValue(splitDefines, defines, usedDefines);
             }
             const splitDefines = define.split("||").map((key) => key.trim());
-            return !getOrDefineValue(splitDefines, defines);
+            return !getOrDefineValue(splitDefines, defines, usedDefines);
         }
-        return getDefineValue(defines, define);
+        return getDefineValue(defines, define, usedDefines);
     });
+    const constValues = {};
+    for (const p in defines) {
+        if (!usedDefines.has(p)) {
+            constValues[p] = defines[p];
+        }
+    }
+    return { normalizeDefines, constValues };
 }
 function getAndDefineValue(
     splitDefines: Array<string>,
     defines: ShaderDefines,
+    usedDefines: Set<string>
 ): boolean {
     let total = 0;
     splitDefines?.forEach?.(
         (defineKey) =>
             (total +=
-                Number(getDefineValue(defines, defineKey) || 0) > 1
+                Number(getDefineValue(defines, defineKey, usedDefines) || 0) > 1
                     ? 1
-                    : Number(getDefineValue(defines, defineKey) || 0)),
+                    : Number(getDefineValue(defines, defineKey, usedDefines) || 0)),
     );
     return total === splitDefines.length;
 }
-function getDefineValue(defines, defineKey) {
+function getDefineValue(defines, defineKey, usedDefines) {
     if (defineKey && defineKey.startsWith && defineKey.startsWith("!")) {
+        defineKey = defineKey.substring(1);
+        if (usedDefines) {
+            usedDefines.add(defineKey);
+        }
         return !defines[defineKey];
     } else if (defineKey && defineKey.includes && (defineKey.includes("==") || defineKey.includes("!="))) {
         // 解析 FOO == 1 或者 FOO != 1 形式的define
         const isEqual = defineKey.includes("==");
         const parts = defineKey.split(isEqual ? "==" : "!=").map(key => key.trim());
+
+        if (usedDefines) {
+            usedDefines.add(parts[0]);
+        }
         if (isEqual) {
             return defines[parts[0]] === +parts[1];
         } else {
             return defines[parts[0]] !== +parts[1];
         }
     } else {
+        if (usedDefines) {
+            usedDefines.add(defineKey);
+        }
         return defines[defineKey];
     }
 }
 function getOrDefineValue(
     splitDefines: Array<string>,
     defines: ShaderDefines,
+    usedDefines: Set<string>
 ): boolean {
     let total = 0;
     splitDefines?.forEach?.((defineKey) => {
         let value;
-        value = getDefineValue(defines, defineKey);
+        value = getDefineValue(defines, defineKey, usedDefines);
         return (total += !!value ? 1 : 0);
     });
     return total === 0;

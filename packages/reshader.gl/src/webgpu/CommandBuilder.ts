@@ -243,12 +243,12 @@ export default class CommandBuilder {
         const mapping = {};
         // 解析vertInfo和fragInfo，生成一个 bindGroupMapping，用于mesh在运行时，生成bindGroup
         // mapping 中包含 uniform 变量名对应的 group index 和 binding index
-        this._parseGroupMapping(mapping, vertGroups[0], mesh);
-        this._parseGroupMapping(mapping, fragGroups[0], mesh);
+        this._parseGroupMapping(mapping, vertGroups[0], mesh, 'vert');
+        this._parseGroupMapping(mapping, fragGroups[0], mesh, 'frag');
         return mapping;
     }
 
-    _parseGroupMapping(mapping, groupReflect, mesh) {
+    _parseGroupMapping(mapping, groupReflect, mesh, shaderType) {
         if (!groupReflect) {
             return;
         }
@@ -265,11 +265,11 @@ export default class CommandBuilder {
                     const name = members[ii].name;
                     if (!meshHasUniform(mesh, name, this.contextDesc)) {
                         if (!isGlobal && ii > 0) {
-                            throw new Error(GLOBAL_IN_MESH_ERROR + name + '(' + groupInfo.name + ')');
+                            throw new Error(GLOBAL_IN_MESH_ERROR + name + '(' + groupInfo.name + ') in ' + this.name + '_' + shaderType);
                         }
                         isGlobal = true;
                     } else if (isGlobal) {
-                        throw new Error(MESH_IN_GLOBAL_ERROR + name + '(' + groupInfo.name + ')');
+                        throw new Error(MESH_IN_GLOBAL_ERROR + name + '(' + groupInfo.name + ') in ' + this.name + '_' + shaderType);
                     }
                 }
             } else {

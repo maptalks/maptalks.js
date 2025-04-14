@@ -325,7 +325,7 @@ fn main(input: VertexInput) -> VertexOutput {
         highlight_setVarying(input, output);
     #endif
 #else
-    fbo_picking_setData(input, output, projDistance, true);
+    fbo_picking_setData(input, &output, projDistance, true);
 #endif
 
     return output;

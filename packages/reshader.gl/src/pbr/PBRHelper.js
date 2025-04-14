@@ -13,6 +13,7 @@ import dfgVS from './glsl/helper/dfg.vert';
 import coefficients from './SH.js';
 import skyboxRawFrag from '../skybox/skybox.frag';
 import ShaderLib from '../shaderlib/ShaderLib.js';
+import GraphicsTexture from '../webgpu/GraphicsTexture.js';
 
 let defaultRegl;
 function getDefaultREGL() {
@@ -421,8 +422,8 @@ function getREGL(regl) {
     return regl.vao && regl || getDefaultREGL();
 }
 
-export function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
-    regl = getREGL(regl);
+export function generateDFGLUT(device, size, sampleSize, roughnessLevels) {
+    const regl = getREGL(device);
     size = size || 256;
     sampleSize = sampleSize || 1024;
     roughnessLevels = roughnessLevels || 256;
@@ -478,6 +479,18 @@ export function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
         primitive: 'triangle strip'
     });
     drawLUT();
+
+    if (device.wgpu) {
+        //webgpu
+        const pixels = regl.read({
+            framebuffer: fbo
+        });
+        return new GraphicsTexture(device, {
+            data: pixels,
+            width: fbo.width,
+            height: fbo.height
+        });
+    }
 
     drawLUT.destroy();
     quadBuf.destroy();

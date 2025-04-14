@@ -84,7 +84,7 @@ export const cubeVertexColors = new Float32Array([
     0, 1, 0, 1
 ]);
 
-export const cubeVertexUV = new Float32Array([
+export const cubeVertexUV = new Int16Array([
     0, 1,
     1, 1,
     1, 0,

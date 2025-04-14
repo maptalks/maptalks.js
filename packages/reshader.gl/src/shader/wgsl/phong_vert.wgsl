@@ -182,10 +182,12 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
     vertexOutput.vUvRegion = vertexInput.uvRegion / 65535.0;
 #endif
 
-    highlight_setVarying(vertexInput, vertexOutput);
+#if HAS_HIGHLIGHT_OPACITY || HAS_HIGHLIGHT_COLOR
+    highlight_setVarying(vertexInput, &vertexOutput);
+#endif
 
 #ifdef HAS_VERTEX_COLOR
-    vertexColor_update(vertexInput, vertexOutput);
+    vertexColor_update(vertexInput, &vertexOutput);
 #endif
     return vertexOutput;
 }

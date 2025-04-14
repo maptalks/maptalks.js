@@ -1,6 +1,8 @@
 import { mat3, mat4 } from 'gl-matrix';
 import vert from './glsl/standard.vert';
 import frag from './glsl/standard.frag';
+import wgslVert from './wgsl/standard_vert.wgsl';
+import wgslFrag from './wgsl/standard_frag.wgsl';
 import MeshShader from '../shader/MeshShader.js';
 import { extend } from '../common/Util';
 
@@ -94,9 +96,14 @@ class StandardShader extends MeshShader {
         }
         const vertSource = config.vert || vert;
         const fragSource = config.frag || frag;
+        const wgslVertSource = config.wgslVert || wgslVert;
+        const wgslFragSource = config.wgslFrag || wgslFrag;
         super({
+            name: 'standard',
             vert: vertSource,
             frag: fragSource,
+            wgslVert: wgslVertSource,
+            wgslFrag: wgslFragSource,
             uniforms,
             extraCommandProps,
             defines

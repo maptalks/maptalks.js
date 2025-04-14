@@ -78,6 +78,8 @@ const varyings = [
 ];
 
 export default {
-    defines: ['HAS_SHADOWING'],
+    defines: (defines) => {
+        return defines['HAS_SHADOWING'] && !defines['HAS_BLOOM'];
+    },
     vert, frag, varyings
 }

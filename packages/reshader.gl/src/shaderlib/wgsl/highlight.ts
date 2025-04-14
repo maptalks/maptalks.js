@@ -1,7 +1,7 @@
 const vert = /* wgsl */`
 
     // 顶点着色器函数
-    fn highlight_setVarying(input: VertexInput, output: VertexOutput) {
+    fn highlight_setVarying(input: VertexInput, output: ptr<function, VertexOutput>) {
         // 如果有高亮颜色
     #if HAS_HIGHLIGHT_COLOR
         output.vHighlightColor = input.aHighlightColor / 255.0;

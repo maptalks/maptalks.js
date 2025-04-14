@@ -71,6 +71,14 @@ class StandardMaterial extends Material {
         // if (uniforms['HAS_TONE_MAPPING']) {
         //     defines['HAS_TONE_MAPPING'] = 1;
         // }
+        const position = geometry.data[geometry.desc.positionAttribute];
+        if (position.buffer && position.buffer.itemType  && position.buffer.itemType.startsWith('sint')) {
+            defines['POSITION_IS_INT'] = 1;
+        }
+        const normal = geometry.data[geometry.desc.normalAttribute];
+        if (normal && normal.buffer && normal.buffer.itemType && normal.buffer.itemType.startsWith('sint')) {
+            defines['NORMAL_IS_INT'] = 1;
+        }
         if (uniforms['GAMMA_CORRECT_INPUT']) {
             defines['GAMMA_CORRECT_INPUT'] = 1;
         }

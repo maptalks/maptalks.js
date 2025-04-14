@@ -48,7 +48,7 @@ fn main(
             out.vColor = vertexInputWithColor.aColor / 255.0;
         #endif
     #else
-        fbo_picking_setData(out.position.w, true);
+        fbo_picking_setData(vertexInput, &out, out.position.w, true);
     #endif
 
     return out;

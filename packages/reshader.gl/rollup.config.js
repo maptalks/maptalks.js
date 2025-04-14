@@ -85,31 +85,16 @@ if (production) {
     }));
 }
 
-module.exports = [
-    {
-        input: 'src/index.ts',
-        external : production ? ['gl-matrix', '@maptalks/gltf-loader', '@maptalks/tbn-packer'] : [],
-        plugins : plugins,
-        output: [
-            {
-                'sourcemap': true,
-                'format': 'es',
-                'banner': banner,
-                'file': pkg.module
-            }
-        ]
-    },
-    {
-        input: 'dist/index.d.ts',
-        plugins: [dts()],
-        output: [
-            {
-                'sourcemap': false,
-                'format': 'es',
-                'name': 'maptalks',
-                banner,
-                'file': pkg['types']
-            }
-        ]
-    }
-];
+module.exports = {
+    input: 'src/index.ts',
+    external : production ? ['gl-matrix', '@maptalks/gltf-loader', '@maptalks/tbn-packer'] : [],
+    plugins : plugins,
+    output: [
+        {
+            'sourcemap': true,
+            'format': 'es',
+            'banner': banner,
+            'file': pkg.module
+        }
+    ]
+};

@@ -12,6 +12,11 @@ import highlight from './wgsl/highlight';
 import compute_texcoord from './wgsl/compute_texcoord';
 import fbo_picking from './wgsl/fbo_picking';
 import common_pack_float from './wgsl/common_pack_float';
+import excavate from './wgsl/excavate';
+import hsv from './wgsl/hsv';
+import srgb from './wgsl/srgb';
+import snow from './wgsl/snow';
+import terrain_normal from './wgsl/terrain_normal';
 
 //Shader Chunks for includes
 const ShaderChunk = {
@@ -27,7 +32,12 @@ const ShaderChunk = {
     highlight,
     compute_texcoord,
     fbo_picking,
-    common_pack_float
+    common_pack_float,
+    excavate,
+    hsv,
+    srgb,
+    snow,
+    terrain_normal
 };
 /* eslint-enable camelcase */
 

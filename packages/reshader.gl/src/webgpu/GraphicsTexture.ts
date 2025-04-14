@@ -40,6 +40,9 @@ export default class GraphicsTexture {
     }
 
     resize(width, height) {
+        if (this.texture && this.texture.width === width && this.texture.height === height) {
+            return;
+        }
         this.config.width = width;
         this.config.height = height;
         this.update(this.config);

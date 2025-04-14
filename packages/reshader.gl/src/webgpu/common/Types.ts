@@ -36,6 +36,6 @@ export function getFormatFromGLTFAccessor(componentType, itemSize) {
     }
 }
 
-export function getItemBytesFromGLTFAccessor(componentType) {
+export function getBytesPerElementFromGLTFAccessor(componentType) {
     return component_ctors[componentType].bytes;
 }
