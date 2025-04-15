@@ -628,13 +628,13 @@ class MapAbstractRenderer extends MapRenderer {
     //@internal
     _updateDomPosition(framestamp: number) {
         if (this._checkPositionTime === undefined) {
-            this._checkPositionTime = -Infinity;
+            this._checkPositionTime = 0;
         }
         const dTime = Math.abs(framestamp - this._checkPositionTime);
         if (dTime >= 500) {
             // refresh map's dom position
             computeDomPosition(this.map.getContainer());
-            this._checkPositionTime = Math.min(framestamp, this._checkPositionTime);
+            this._checkPositionTime = framestamp;
         }
         return this;
     }
