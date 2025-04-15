@@ -156,7 +156,7 @@ class CanvasRenderer extends LayerAbstractRenderer {
         if (!this.context) {
             return;
         }
-        const dpr = this.getMap().getDevicePixelRatio();
+        const dpr = this.mapDPR || this.getMap().getDevicePixelRatio();
         this.context.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
@@ -170,7 +170,7 @@ class CanvasRenderer extends LayerAbstractRenderer {
             return;
         }
         const size = canvasSize || this.getMap().getSize();
-        const r = this.getMap().getDevicePixelRatio();
+        const r = this.mapDPR || this.getMap().getDevicePixelRatio();
         const { width, height, cssWidth, cssHeight } = calCanvasSize(size, r);
         // width/height不变并不意味着 css width/height 不变
         if (this.layer._canvas && (canvas.style.width !== cssWidth || canvas.style.height !== cssHeight)) {
@@ -200,7 +200,7 @@ class CanvasRenderer extends LayerAbstractRenderer {
             return;
         }
         //fix #1597
-        const r = this.getMap().getDevicePixelRatio();
+        const r = this.mapDPR || this.getMap().getDevicePixelRatio();
         const rScale = 1 / r;
         const w = this.canvas.width * rScale, h = this.canvas.height * rScale;
         Canvas2D.clearRect(this.context, 0, 0, Math.max(w, this.canvas.width), Math.max(h, this.canvas.height));
@@ -287,7 +287,7 @@ class CanvasRenderer extends LayerAbstractRenderer {
         //geometry 渲染逻辑里会修改globalAlpha，这里保存一下
         const alpha = context.globalAlpha;
         context.save();
-        const dpr = map.getDevicePixelRatio();
+        const dpr = this.mapDPR || map.getDevicePixelRatio();
         if (dpr !== 1) {
             context.save();
             this._canvasContextScale(context, dpr);

@@ -210,7 +210,7 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
             //draw debug info
             let canvas = this._debugInfoCanvas;
             if (!canvas) {
-                const dpr = (this as any).getMap().getDevicePixelRatio() > 1 ? 2 : 1;
+                const dpr = (this as any).mapDPR || (this as any).getMap().getDevicePixelRatio() > 1 ? 2 : 1;
                 canvas = this._debugInfoCanvas = document.createElement('canvas');
                 canvas.width = 256 * dpr;
                 canvas.height = 32 * dpr;
@@ -428,7 +428,7 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
             const genMipmap = this.layer.options['mipmapTexture'];
             if (genMipmap) {
                 const map = (this as any).getMap();
-                const dpr = map.getDevicePixelRatio();
+                const dpr = (this as any).mapDPR || map.getDevicePixelRatio();
                 if (map.isMoving() && map.getRenderer().isViewChanged()) {
                     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
                 } else {
