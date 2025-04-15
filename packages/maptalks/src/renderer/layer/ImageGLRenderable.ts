@@ -126,6 +126,7 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
             v3[1] = y || 0;
             v3[2] = 0;
             const layer = this.layer;
+            const map = this.getMap();
             if (layer) {
                 const { altitude } = layer.options;
                 const altIsNumber = isNumber(altitude);
@@ -134,19 +135,16 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
                 }
                 //update _layerAlt cache
                 if (this._layerAltitude !== altitude && altIsNumber) {
-                    const map = layer.getMap();
-                    if (map) {
-                        const z = map.altitudeToPoint(altitude, map.getGLRes());
-                        this._layerAltitude = altitude;
-                        this._layerAlt = z;
-                    }
+                    const z = map.altitudeToPoint(altitude, map.getGLRes());
+                    this._layerAltitude = altitude;
+                    this._layerAlt = z;
                 }
             }
             v3[2] = this._layerAlt || 0;
             const uMatrix = mat4.identity(arr16);
             mat4.translate(uMatrix, uMatrix, v3);
             mat4.scale(uMatrix, uMatrix, [scale, scale, 1]);
-            mat4.multiply(uMatrix, this.getMap().projViewMatrix, uMatrix);
+            mat4.multiply(uMatrix, map.projViewMatrix, uMatrix);
             gl.uniformMatrix4fv(this.program['u_matrix'], false, uMatrix);
             gl.uniform1f(this.program['u_opacity'], opacity);
             gl.uniform1f(this.program['u_debug_line'], 0);
