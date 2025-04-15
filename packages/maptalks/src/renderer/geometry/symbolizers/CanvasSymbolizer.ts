@@ -2,7 +2,7 @@ import { isArrayHasData, isNumber } from '../../../core/util';
 import { loadGeoSymbol, isFunctionDefinition, interpolated, } from '../../../core/mapbox';
 import Symbolizer from './Symbolizer';
 import Canvas from '../../../core/Canvas';
-import { ResourceCache } from '../../layer/LayerAbstractRenderer';
+import { ResourceCache } from '../../../core/ResourceCacheManager';
 
 /**
  *所有基于 HTML5 Canvas2D 的symbolizer类
