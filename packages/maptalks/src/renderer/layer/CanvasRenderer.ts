@@ -156,7 +156,7 @@ class CanvasRenderer extends LayerAbstractRenderer {
         if (!this.context) {
             return;
         }
-        const dpr = this.mapDPR || this.getMap().getDevicePixelRatio();
+        const dpr = this.getMap().getDevicePixelRatio();
         this.context.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
@@ -170,7 +170,7 @@ class CanvasRenderer extends LayerAbstractRenderer {
             return;
         }
         const size = canvasSize || this.getMap().getSize();
-        const r = this.mapDPR || this.getMap().getDevicePixelRatio();
+        const r = this.getMap().getDevicePixelRatio();
         const { width, height, cssWidth, cssHeight } = calCanvasSize(size, r);
         // width/height不变并不意味着 css width/height 不变
         if (this.layer._canvas && (canvas.style.width !== cssWidth || canvas.style.height !== cssHeight)) {
