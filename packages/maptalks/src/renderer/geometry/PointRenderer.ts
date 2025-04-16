@@ -6,7 +6,7 @@ import Rectangle from '../../geometry/Rectangle';
 import LineString from '../../geometry/LineString';
 import Polygon from '../../geometry/Polygon';
 import Point from '../../geo/Point';
-import {WithNull} from "../../types/typings";
+import { WithNull } from "../../types/typings";
 
 // 有中心点的图形的共同方法
 const CenterPointRenderer = {
@@ -19,7 +19,7 @@ const CenterPointRenderer = {
 export type CenterPointRendererType = typeof CenterPointRenderer;
 
 declare module '../../geometry/Marker' {
-    interface Marker extends CenterPointRendererType {}
+    interface Marker extends CenterPointRendererType { }
 }
 
 /**
@@ -131,6 +131,23 @@ const PolyRenderer = {
             points = l ? [curretPoint] : [];
             const previous = l > 1 ? l - 2 : l - 1;
             rotations = l ? [[coords[previous] ? map._prjToPointAtRes(coords[previous], glRes) : curretPoint, curretPoint]] : [];
+        } else if (placement === 'vertex-firstlast') {
+            points = [];
+            rotations = [];
+            const coords = this._getPrjCoordinates();
+            const l = coords.length;
+            if (l) {
+                //first
+                const point0 = map._prjToPointAtRes(coords[0], glRes)
+                points = [point0];
+                if (l > 1) {
+                    rotations = [[point0, map._prjToPointAtRes(coords[1], glRes)]];
+                    const point1 = map._prjToPointAtRes(coords[l - 1], glRes);
+                    points.push(point1);
+                    const previous = l > 1 ? l - 2 : l - 1;
+                    rotations.push([map._prjToPointAtRes(coords[previous], glRes), point1]);
+                }
+            }
         } else {
             const center = this.getCenter();
             if (!center) {
