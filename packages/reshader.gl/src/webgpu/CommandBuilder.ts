@@ -219,8 +219,8 @@ export default class CommandBuilder {
             const info = inputMapping[attr];
             if (info) {
                 vertexInfo[attr] = {
-                    location: info.location,
                     geoAttrName: name,
+                    location: info.location,
                     itemSize: getItemSize(info.type)
                 };
             }
@@ -230,6 +230,7 @@ export default class CommandBuilder {
             for (const name in data) {
                 if (inputMapping[name]) {
                     vertexInfo[name] = {
+                        geoAttrName: name,
                         location: inputMapping[name].location,
                         itemSize: getItemSize(inputMapping[name].type)
                     };
@@ -309,7 +310,12 @@ export default class CommandBuilder {
         const buffers = mesh.geometry.getBufferDescriptor(vertInfo);
         if (mesh instanceof InstancedMesh) {
             const instanceBuffers = (mesh as InstancedMesh).getBufferDescriptor(vertInfo);
-            buffers.push(...instanceBuffers);
+            for (let i = 0; i < instanceBuffers.length; i++) {
+                if (!instanceBuffers[i]) {
+                    continue;
+                }
+                buffers[i] = instanceBuffers[i];
+            }
         }
         const pipelineLayout = device.createPipelineLayout({
             label: this.name + '-pipelinelayout',

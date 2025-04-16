@@ -218,9 +218,18 @@ export default class InstancedMesh extends Mesh {
     }
 
     getBufferDescriptor(vertexInfo) {
+        const attrInfos = [];
+        for (const p in vertexInfo) {
+            const info = vertexInfo[p];
+            attrInfos[info.location] = info;
+        }
         const data = this.instancedData;
         const bufferDesc = [];
-        for (const p in data) {
+        for (let i = 0; i < attrInfos.length; i++) {
+            if (!attrInfos[i]) {
+                continue;
+            }
+            const p = attrInfos[i].geoAttrName;
             const attr = data[p];
             if (!attr) {
                 continue;
@@ -228,7 +237,7 @@ export default class InstancedMesh extends Mesh {
             const info = vertexInfo[p];
             const desc = getAttrBufferDescriptor(attr, info);
             desc.stepMode = 'instance';
-            bufferDesc.push(desc);
+            bufferDesc[i] = desc;
         }
         return bufferDesc;
     }

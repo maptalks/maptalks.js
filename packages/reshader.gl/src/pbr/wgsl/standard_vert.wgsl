@@ -98,7 +98,8 @@ struct VertexOutput {
         @location($o) vTangentViewPos: vec3f,
         @location($o) vTangentFragPos: vec3f,
     #endif
-};
+}
+
 
 struct ShaderUniforms {
     cameraPosition: vec3f,
@@ -185,6 +186,7 @@ fn transposeMat3(inMat: mat3x3f) -> mat3x3f {
         vec3f(i0.z, i1.z, i2.z)
     );
 }
+
 
 @vertex
 fn main(input: VertexInput) -> VertexOutput {

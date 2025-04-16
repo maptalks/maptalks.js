@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+  <meta charset='UTF-8' />
+  <meta name='viewport' content='width=device-width, initial-scale=1' />
+  <title>vt-gltf-lit</title>
+  <style type='text/css'>
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0px;
+    }
+
+    .container {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+  <link rel="stylesheet" href="/maptalks/dist/maptalks.css">
+  <script type="text/javascript" src="/maptalks/dist/maptalks.js"></script>
+  <script type="text/javascript" src="/maptalks-work/packages/gl/dist/maptalksgl.js"></script>
+  <script type="text/javascript" src="/maptalks-work/packages/vt/dist/maptalks.vt.js"></script>
+  <!-- <script type="text/javascript" src="https://unpkg.com/maptalks-gl/dist/maptalks-gl.js"></script> -->
+  <!-- <script type="text/javascript" src="/maptalks/dist/maptalks.js"></script>
+  <script type="text/javascript" src="/gl/packages/gl/dist/maptalksgl.js"></script>
+  <script type="text/javascript" src="/gl/packages/vt/dist/maptalks.vt.js"></script> -->
+
+  <body>
+    <div id="map" class="container"></div>
+
+    <script>
+      const map = new maptalks.Map("map", {
+        center: [-73.98795379493208, 40.72100197835064],
+        zoom: 19,
+        bearing: -69,
+        renderer: 'gpu'
+      });
+
+      /**start**/
+      const vt = new maptalks.VectorTileLayer("vt", {
+        urlTemplate: "http://tile.maptalks.com/test/planet-single/{z}/{x}/{y}.mvt",
+      });
+
+      const style = {
+        style: [{
+            filter: ["all",
+                ["==", "$layer", "building"],
+                ["==", "$type", "Polygon"]
+            ],
+            renderPlugin: {
+                type: "gltf-lit",
+                dataConfig: {
+                    type: "native-point"
+                },
+                sceneConfig: {
+                    gltfAnimation: {
+                        "enable": true
+                    }
+                }
+            },
+            symbol: {
+                url: "./resources/alien.gltf",
+                scaleX: 30,
+                scaleY: 30,
+                scaleZ: 30
+            }
+        }]
+      };
+      vt.setStyle(style);
+      /**end**/
+
+      const groupLayer = new maptalks.GroupGLLayer("group", [vt]);
+      groupLayer.addTo(map);
+    </script>
+  </body>
+
+</html>

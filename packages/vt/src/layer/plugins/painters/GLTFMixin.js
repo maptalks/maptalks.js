@@ -3,6 +3,8 @@ import { setUniformFromSymbol, createColorSetter, isNumber, extend } from '../Ut
 import { getCentiMeterScale, isNil } from '../../../common/Util';
 import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 import { getVectorPacker } from '../../../packer/inject';
+import pickingVert from './glsl/mesh-picking.vert';
+import pickingWGSLVert from './wgsl/mesh-picking.wgsl';
 
 const { PackUtil } = getVectorPacker();
 
@@ -20,24 +22,6 @@ const DEFAULT_MARKER_FILL = [1, 1, 1, 1];
 const TEMP_MATRIX = [];
 
 const Y_TO_Z = [1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1];
-
-const pickingVert = `
-    attribute vec3 aPosition;
-    uniform mat4 projViewModelMatrix;
-    uniform mat4 modelMatrix;
-    uniform mat4 positionMatrix;
-    //引入fbo picking的vert相关函数
-    #include <fbo_picking_vert>
-    #include <get_output>
-    void main()
-    {
-        mat4 localPositionMatrix = getPositionMatrix();
-        vec4 localPosition = getPosition(aPosition);
-
-        gl_Position = projViewModelMatrix * localPositionMatrix * localPosition;
-        //传入gl_Position的depth值
-        fbo_picking_setData(gl_Position.w, true);
-    }`;
 // TODO 缺少 updateSymbol 的支持
 const GLTFMixin = Base =>
 
@@ -48,7 +32,7 @@ const GLTFMixin = Base =>
             this.scene.sortFunction = this.sortByCommandKey;
             const fetchOptions = sceneConfig.fetchOptions || {};
             fetchOptions.referrer = window && window.location.href;
-            this._gltfManager = new reshader.GLTFManager(regl, {
+            this._gltfManager = regl.gltfManager = regl.gltfManager || new reshader.GLTFManager(regl, {
                 fetchOptions,
                 urlModifier: (url) => {
                     const modifier = layer.getURLModifier();
@@ -515,7 +499,7 @@ const GLTFMixin = Base =>
                 setInstanceData('instance_vectorA', i, mat, 0);
                 setInstanceData('instance_vectorB', i, mat, 1);
                 setInstanceData('instance_vectorC', i, mat, 2);
-                instanceData['aPickingId'][i] = i;
+                instanceData['aPickingId'][i] = aPickingId[i];
             }
             vec3.set(position, cx, cy, cz);
             return position;
@@ -711,6 +695,10 @@ const GLTFMixin = Base =>
 
         getPickingVert() {
             return pickingVert;
+        }
+
+        getWGSLPickingVert() {
+            return pickingWGSLVert;
         }
 
         deleteMesh(meshes) {

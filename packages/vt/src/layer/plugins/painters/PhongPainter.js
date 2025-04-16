@@ -3,6 +3,8 @@ import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import { extend, hasOwn } from '../Util';
 import MeshPainter from './MeshPainter';
+import pickingVert from './glsl/mesh-picking.vert';
+import pickingWGSLVert from './wgsl/mesh-picking.wgsl';
 
 class PhongPainter extends MeshPainter {
 
@@ -70,6 +72,7 @@ class PhongPainter extends MeshPainter {
 
         const pickingConfig = {
             vert: this.getPickingVert(),
+            wgslVert: this.getPickingWGSLVert(),
             uniforms: [
                 'projViewMatrix',
                 'modelMatrix',
@@ -196,34 +199,11 @@ class PhongPainter extends MeshPainter {
     }
 
     getPickingVert() {
-        // return `
-        //     attribute vec3 aPosition;
-        //     uniform mat4 projViewModelMatrix;
-        //     #include <fbo_picking_vert>
-        //     void main() {
-        //         vec4 pos = vec4(aPosition, 1.0);
-        //         gl_Position = projViewModelMatrix * pos;
-        //         fbo_picking_setData(gl_Position.w, true);
-        //     }
-        // `;
-        return `
-            attribute vec3 aPosition;
-            uniform mat4 projViewModelMatrix;
-            uniform mat4 modelMatrix;
-            uniform mat4 positionMatrix;
-            //引入fbo picking的vert相关函数
-            #include <fbo_picking_vert>
-            #include <get_output>
-            void main()
-            {
-                mat4 localPositionMatrix = getPositionMatrix();
-                vec4 localPosition = getPosition(aPosition);
+        return pickingVert;
+    }
 
-                gl_Position = projViewModelMatrix * localPositionMatrix * localPosition;
-                //传入gl_Position的depth值
-                fbo_picking_setData(gl_Position.w, true);
-            }
-        `;
+    getPickingWGSLVert() {
+        return pickingWGSLVert;
     }
 
     _getLightUniformValues() {

@@ -4,6 +4,7 @@ import { getVectorPacker } from '../../../packer/inject';
 import { isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
 import { extend, copyJSON, isNil, hasOwn } from '../Util';
 import outlineFrag from './glsl/outline.frag';
+import outlineWGSLFrag from './wgsl/outline_frag.wgsl';
 import { updateOneGeometryFnTypeAttrib } from './util/fn_type_util';
 import { inTerrainTile } from './util/line_offset';
 import deepEuqal from 'fast-deep-equal';
@@ -1098,6 +1099,7 @@ class Painter {
         this._outlineShaders = [];
         for (let i = 0; i < this.picking.length; i++) {
             const pickingVert = this.picking[i].getPickingVert();
+            const wgslPickingVert = this.picking[i].getPickingWGSLVert();
             const defines = {
                 'ENABLE_PICKING': 1,
                 'HAS_PICKING_ID': 1
@@ -1109,6 +1111,8 @@ class Painter {
             this._outlineShaders[i] = new reshader.MeshShader({
                 vert: pickingVert,
                 frag: outlineFrag,
+                wgslVert: wgslPickingVert,
+                wgslFrag: outlineWGSLFrag,
                 uniforms,
                 defines,
                 extraCommandProps: {

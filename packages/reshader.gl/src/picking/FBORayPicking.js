@@ -780,6 +780,10 @@ export default class FBORayPicking {
         return this._vert;
     }
 
+    getWGSLPickingVert() {
+        return this._wgslVert;
+    }
+
     getUniformDeclares() {
         return this._uniforms;
     }

@@ -1255,9 +1255,12 @@ function createGPUBuffer(device, data, usage, label) {
     if (Array.isArray(data[0])) {
         data = flatten(data);
     }
+    if (Array.isArray(data)) {
+        data = new Float32Array(data);
+    }
     const ctor = data.constructor;
      // f32 in default
-    const byteLength = Array.isArray(data) ? data.length * 4 : data.byteLength;
+    const byteLength = data.byteLength;
     // mappedAtCreation requires size is a multiplier of 4
     // https://github.com/gpuweb/gpuweb/issues/5105
     const size = roundUp(byteLength, 4);

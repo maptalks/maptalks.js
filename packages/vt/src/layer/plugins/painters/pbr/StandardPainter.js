@@ -2,6 +2,8 @@ import * as maptalks from 'maptalks';
 import { reshader, mat4 } from '@maptalks/gl';
 import { extend, hasOwn, isNil } from '../../Util';
 import MeshPainter from '../MeshPainter';
+import pickingVert from './glsl/mesh-picking.vert';
+import pickingWGSLVert from './wgsl/mesh-picking.wgsl';
 
 const { getPBRUniforms } = reshader.pbr.PBRUtils;
 
@@ -154,28 +156,8 @@ class StandardPainter extends MeshPainter {
         this._createShader(context);
 
         const pickingConfig = {
-            vert: `
-                #include <gl2_vert>
-                attribute vec3 aPosition;
-                uniform mat4 projViewModelMatrix;
-                uniform mat4 positionMatrix;
-                //引入fbo picking的vert相关函数
-                #include <line_extrusion_vert>
-                #include <get_output>
-                #include <fbo_picking_vert>
-                void main() {
-                    mat4 localPositionMatrix = getPositionMatrix();
-                    #ifdef IS_LINE_EXTRUSION
-                        vec3 linePosition = getLineExtrudePosition(aPosition);
-                        vec4 localVertex = getPosition(linePosition);
-                    #else
-                        vec4 localVertex = getPosition(aPosition);
-                    #endif
-
-                    gl_Position = projViewModelMatrix * localPositionMatrix * localVertex;
-                    fbo_picking_setData(gl_Position.w, true);
-                }
-            `,
+            vert: pickingVert,
+            wgslVert: pickingWGSLVert,
             uniforms: [
                 {
                     name: 'projViewModelMatrix',
