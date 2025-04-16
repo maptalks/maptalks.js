@@ -38,13 +38,13 @@
 attribute float aTerrainAltitude;
 #endif
 
-mat4 getPositionMatrix(input: VertexInput) {
+mat4 getPositionMatrix() {
     mat4 worldMatrix;
     #ifdef HAS_INSTANCE
         #ifdef HAS_INSTANCE_COLOR
             vInstanceColor = instance_getInstanceColor();
         #endif
-        mat4 attributeMatrix = instance_getAttributeMatrix(input);
+        mat4 attributeMatrix = instance_getAttributeMatrix();
         #ifdef HAS_SKIN
             if (skinAnimation == 1) {
                 worldMatrix = attributeMatrix * positionMatrix * skin_getSkinMatrix();
