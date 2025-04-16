@@ -2,7 +2,7 @@
   uniform sampler2D heightmap;
   uniform float excavateHeight;
   varying vec2 vCoordinateTexcoord;
-  varying float vHeight;
+  varying float vExcavateHeight;
   const vec2 range = vec2(-100.0, 1000.0);
   float decodeHeight(const in vec4 pack) {
       return pack.r + pack.g / 255.0;
@@ -14,7 +14,7 @@
       if(realHeight < range.x || realHeight > range.y) {
           realHeight = 0.0;
       }
-      if(vHeight > realHeight) {
+      if(vExcavateHeight > realHeight) {
           discard;
       }
       return fragColor;

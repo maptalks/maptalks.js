@@ -279,8 +279,8 @@ void main() {
         #endif
 
         #ifdef HAS_EXCAVATE_ANALYSIS
-          vCoordinateTexcoord = getCoordinateTexcoord();
-          vHeight = getWorldHeight();
+          vCoordinateTexcoord = getCoordinateTexcoord(position);
+          vExcavateHeight = getWorldHeight(position);
         #endif
     //#ifdef PICKING_MODE的endif
     #endif

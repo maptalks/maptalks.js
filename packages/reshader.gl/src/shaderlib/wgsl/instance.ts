@@ -2,12 +2,17 @@ const vert = /* wgsl */`
 @group(0) @binding($b) var<uniform> terrainAltitudeScale: f32;
 
 // 获取实例属性矩阵函数
-fn instance_getAttributeMatrix(instance_vectorA: vec4f, instance_vectorB: vec4f, instance_vectorC: vec4f) -> mat4x4f {
+fn instance_getAttributeMatrix(
+    input: VertexInput
+) -> mat4x4f {
+    let vectorA = input.instance_vectorA;
+    let vectorB = input.instance_vectorB;
+    let vectorC = input.instance_vectorC;
     var mat = mat4x4f(
-        instance_vectorA.x, instance_vectorB.x, instance_vectorC.x, 0.0,
-        instance_vectorA.y, instance_vectorB.y, instance_vectorC.y, 0.0,
-        instance_vectorA.z, instance_vectorB.z, instance_vectorC.z, 0.0,
-        instance_vectorA.w, instance_vectorB.w, instance_vectorC.w, 1.0
+        vectorA.x, vectorB.x, vectorC.x, 0.0,
+        vectorA.y, vectorB.y, vectorC.y, 0.0,
+        vectorA.z, vectorB.z, vectorC.z, 0.0,
+        vectorA.w, vectorB.w, vectorC.w, 1.0
     );
 
 #ifdef HAS_INSTANCE_TERRAIN_ALTITUDE

@@ -6,24 +6,13 @@ struct ExcavateUniforms {
 
 @group(0) @binding($b) var<uniform> excavateUniforms: ExcavateUniforms;
 
-struct VertexAttributes {
-    @location(0) aPosition: vec3f
-};
-
-struct VertexOutput {
-    @builtin(position) position: vec4f,
-    vCoordinateTexcoord: vec2f,
-    vHeight: f32
-};
-
-fn getWorldHeight(vertex: VertexInput) -> f32 {
-    let wPosition = uniforms.modelMatrix * getPosition(vertex.aPosition);
+fn getWorldHeight(localPosition: vec4f, modelMatrix: mat4x4f) -> f32 {
+    let wPosition = uniforms.modelMatrix * localPosition;
     return wPosition.z;
 }
 
-fn getCoordinateTexcoord(vertex: VertexInput) -> vec2f {
-    let localPositionMatrix = getPositionMatrix();
-    let wPosition = uniforms.modelMatrix * localPositionMatrix * getPosition(vertex.aPosition);
+fn getCoordinateTexcoord(localPosition: vec4f, modelMatrix: mat4x4f) -> vec2f {
+    let wPosition = modelMatrix * localPositionMatrix;
     let x = (wPosition.x - excavateUniforms.excavateExtent.x) /
            (excavateUniforms.excavateExtent.z - excavateUniforms.excavateExtent.x);
     let y = (wPosition.y - excavateUniforms.excavateExtent.y) /
@@ -60,7 +49,7 @@ fn excavateColor(fragColor: vec4f, vertexOutput: VertexOutput) -> vec4f {
         realHeight >= excavateUniforms.heightRange.x && realHeight <= excavateUniforms.heightRange.y
     );
 
-    if (vertexOutput.vHeight > validHeight) {
+    if (vertexOutput.vExcavateHeight > validHeight) {
         discard;
     }
     return fragColor;
@@ -78,7 +67,7 @@ export default {
             type: 'vec2f'
         },
         {
-            name: 'vHeight',
+            name: 'vExcavateHeight',
             type: 'f32'
         }
     ]

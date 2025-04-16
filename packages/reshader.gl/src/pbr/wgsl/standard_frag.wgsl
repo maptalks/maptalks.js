@@ -185,10 +185,6 @@ struct VertexOutput {
         @location($i) vTangentFragPos: vec3f,
     #endif
 
-    #ifdef HAS_EXCAVATE_ANALYSIS
-        @location($i) vCoordinateTexcoord: vec2f,
-        @location($i) vHeight: f32,
-    #endif
 };
 
 fn getMaterialAlbedo() -> vec3f {

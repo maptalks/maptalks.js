@@ -98,11 +98,6 @@ struct VertexOutput {
         @location($o) vTangentViewPos: vec3f,
         @location($o) vTangentFragPos: vec3f,
     #endif
-
-    #ifdef HAS_EXCAVATE_ANALYSIS
-        @location($o) vCoordinateTexcoord: vec2f,
-        @location($o) vHeight: f32,
-    #endif
 };
 
 struct ShaderUniforms {
@@ -195,7 +190,7 @@ fn transposeMat3(inMat: mat3x3f) -> mat3x3f {
 fn main(input: VertexInput) -> VertexOutput {
     var output: VertexOutput;
 
-    let localPositionMatrix = getPositionMatrix(output, uniforms.positionMatrix);
+    let localPositionMatrix = getPositionMatrix(input, output, uniforms.positionMatrix);
 
     #ifdef IS_LINE_EXTRUSION
         let linePosition = getLineExtrudePosition(vec3f(input.aPosition.xyz), input);
@@ -309,8 +304,8 @@ fn main(input: VertexInput) -> VertexOutput {
         #endif
 
         #ifdef HAS_EXCAVATE_ANALYSIS
-            output.vCoordinateTexcoord = getCoordinateTexcoord();
-            output.vHeight = getWorldHeight();
+            output.vCoordinateTexcoord = getCoordinateTexcoord(position, uniforms.modelMatrix);
+            output.vExcavateHeight = getWorldHeight(position, uniforms.modelMatrix);
         #endif
     #endif
 
