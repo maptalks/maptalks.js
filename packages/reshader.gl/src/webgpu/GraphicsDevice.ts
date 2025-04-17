@@ -161,22 +161,42 @@ export default class GraphicsDevice {
         // 2. 将OffscreenCanvas绘制到一个canvas 2d上
         // 3. 从canvas 2d上读取数据
         const framebuffer = options.framebuffer || this._defaultFramebuffer;
+        const fboWidth = framebuffer.width;
+        const fboHeight = framebuffer.height;
         let { width, height } = options;
         if (!width) {
-            width = framebuffer.width;
+            width = fboWidth;
         }
         if (!height) {
-            height = framebuffer.height;
+            height = fboHeight;
         }
         const device = this.wgpu;
-        const colorTexture = framebuffer.colorTexture;
-        if (!colorTexture) {
-            return;
-        }
         this.submit();
-        const origin = { x: options.x, y: framebuffer.height - options.y, z: 0 };
-        const alphaModes: GPUCanvasAlphaMode[] = ['opaque', 'premultiplied'];
+        const origin = { x: options.x, y: fboHeight - options.y, z: 0 };
+        if (origin.x + width > fboWidth) {
+            origin.x = fboWidth - width;
+        }
+        if (origin.y + height > fboHeight) {
+            origin.y = fboHeight - height;
+        }
         const data = options.pixels || new Uint8Array(width * height * 4);
+        if (framebuffer === this._defaultFramebuffer) {
+            // read default framebuffer
+            const stagingHostStorage = new OffscreenCanvas(width, height);
+            const ctx = stagingHostStorage.getContext('2d', {
+                willReadFrequently: true,
+            });
+            ctx.drawImage(this.context.canvas, origin.x, origin.y, width, height, 0, 0, width, height);
+            const stagingValues = ctx.getImageData(0, 0, width, height).data;;
+            for (let k = 0; k < data.length; k += 4) {
+                data[k] = stagingValues[k];
+                data[k + 1] = stagingValues[k + 1];
+                data[k + 2] = stagingValues[k + 2];
+                data[k + 3] = stagingValues[k + 3];
+            }
+            return data;
+        }
+        const alphaModes: GPUCanvasAlphaMode[] = ['opaque', 'premultiplied'];
         const stagingDeviceStorage: OffscreenCanvas[] =
             alphaModes.map(_ => new OffscreenCanvas(width, height));
           // TODO: use rgba8unorm format when this format is supported on Mac.
@@ -192,14 +212,14 @@ export default class GraphicsDevice {
             return context.getCurrentTexture();
         }).map((storageTexture, index) => {
             const encoder = device.createCommandEncoder();
-            encoder.copyTextureToTexture({ texture: colorTexture.texture, origin }, { texture: storageTexture }, { width, height });
+            encoder.copyTextureToTexture({ texture: framebuffer.colorTexture.texture, origin }, { texture: storageTexture }, { width, height });
             this.wgpu.queue.submit([encoder.finish()]);
             const stagingHostStorage = new OffscreenCanvas(width, height);
             const ctx = stagingHostStorage.getContext('2d', {
                 willReadFrequently: true,
             });
             ctx.drawImage(stagingDeviceStorage[index], 0, 0);
-            const stagingValues = ctx.getImageData(0, 0, width, height).data;;
+            const stagingValues = ctx.getImageData(0, 0, width, height).data;
             const alphaMode = alphaModes[index];
             for (let k = 0; k < data.length; k += 4) {
                 if (alphaMode === 'premultiplied') {
@@ -209,7 +229,7 @@ export default class GraphicsDevice {
                     data[k + 1] = stagingValues[k + 1];
                     data[k + 2] = stagingValues[k + 2];
                 }
-              }
+            }
         });
         return data;
 
