@@ -2,8 +2,9 @@ import * as maptalks from 'maptalks';
 import { reshader, mat4 } from '@maptalks/gl';
 import { extend, hasOwn, isNil } from '../../Util';
 import MeshPainter from '../MeshPainter';
-import pickingVert from './glsl/mesh-picking.vert';
-import pickingWGSLVert from './wgsl/mesh-picking.wgsl';
+
+const pickingVert = reshader.ShaderLib.get('mesh_picking_vert');
+const pickingWGSLVert = reshader.WgslShaderLib.get('mesh_picking').vert;
 
 const { getPBRUniforms } = reshader.pbr.PBRUtils;
 
@@ -238,6 +239,11 @@ class StandardPainter extends MeshPainter {
                 #if __VERSION__ == 100
                     gl_FragColor = glFragColor;
                 #endif
+            }
+        `;
+        config.wgslFrag = `
+            fn main() -> @location(0) vec4f {
+                return vec4f(0);
             }
         `;
         this._updateDepthShader = new reshader.pbr.StandardShader(config);

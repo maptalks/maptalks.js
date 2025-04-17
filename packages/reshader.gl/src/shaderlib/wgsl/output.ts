@@ -31,7 +31,7 @@ const vert = /* wgsl */`
     @group(0) @binding($b) var<uniform> altitudeUniforms: AltitudeUniforms;
 #endif
 
-fn getPositionMatrix(input: VertexInput, vertexOutput: VertexOutput, positionMatrix: mat4x4f) -> mat4x4f {
+fn getPositionMatrix(input: VertexInput, vertexOutput: ptr<function, VertexOutput>, positionMatrix: mat4x4f) -> mat4x4f {
     var worldMatrix: mat4x4f;
 #ifdef HAS_INSTANCE
     let attributeMatrix = instance_getAttributeMatrix(input);

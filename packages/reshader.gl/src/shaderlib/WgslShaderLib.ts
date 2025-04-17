@@ -17,6 +17,7 @@ import hsv from './wgsl/hsv';
 import srgb from './wgsl/srgb';
 import snow from './wgsl/snow';
 import terrain_normal from './wgsl/terrain_normal';
+import mesh_picking from './wgsl/mesh_picking';
 
 //Shader Chunks for includes
 const ShaderChunk = {
@@ -37,7 +38,8 @@ const ShaderChunk = {
     hsv,
     srgb,
     snow,
-    terrain_normal
+    terrain_normal,
+    mesh_picking
 };
 /* eslint-enable camelcase */
 
@@ -57,6 +59,10 @@ export default {
         return new SourceCompiler(source, defines).compile();
         // return parseIncludes(source);
 
+    },
+
+    get(name) {
+        return ShaderChunk[name];
     }
 };
 

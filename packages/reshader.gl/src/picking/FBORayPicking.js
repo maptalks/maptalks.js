@@ -258,7 +258,7 @@ export default class FBORayPicking {
         this._fbo = fbo;
         this._map = map;
         this._clearFbo(fbo);
-        this._name = name;
+        this._name = name || 'fboraypicking';
         this._vert = vert;
         this._wgslVert = wgslVert;
         this._uniforms = uniforms;

@@ -192,7 +192,7 @@ fn transposeMat3(inMat: mat3x3f) -> mat3x3f {
 fn main(input: VertexInput) -> VertexOutput {
     var output: VertexOutput;
 
-    let localPositionMatrix = getPositionMatrix(input, output, uniforms.positionMatrix);
+    let localPositionMatrix = getPositionMatrix(input, &output, uniforms.positionMatrix);
 
     #ifdef IS_LINE_EXTRUSION
         let linePosition = getLineExtrudePosition(vec3f(input.aPosition.xyz), input);

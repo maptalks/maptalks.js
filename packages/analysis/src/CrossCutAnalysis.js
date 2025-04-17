@@ -2,11 +2,13 @@ import Analysis from './Analysis';
 import * as maptalks from 'maptalks';
 import { reshader, mat4 } from '@maptalks/gl';
 import CrossCutPass from './pass/CrossCutPass';
-import pickingVert from './pass/glsl/picking.vert';
 import along from '@turf/along';
 import { lineString  } from '@turf/helpers';
 import buffer from '@turf/buffer';
 import distance from '@turf/distance';
+
+const pickingVert = reshader.ShaderLib.get('mesh_picking_vert');
+const pickingWGSLVert = reshader.WgslShaderLib.get('mesh_picking').vert;
 
 const DEFAULT_WATER_COLOR = [0.8451, 0.2588, 0.4863];
 const pvMatrix = [], pMatrix = [], vMatrix = [];
@@ -94,6 +96,7 @@ export default class CrossCutAnalysis extends Analysis {
             pickRenderer,
             {
                 vert : pickingVert,
+                wgslVert: pickingWGSLVert,
                 uniforms : [
                     {
                         name : 'projViewModelMatrix',

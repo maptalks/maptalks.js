@@ -31,8 +31,8 @@ fn fbo_picking_setData(input: VertexInput, output: ptr<function, VertexOutput>, 
         output.vPickingId = pickingUniforms.uPickingId;
     #endif
         output.vFbo_picking_viewZ = viewPosZ;
+        output.vFbo_picking_visible = select(0.0, 1.0, visible);
     #endif
-    output.vFbo_picking_visible = select(0.0, 1.0, visible);
     output.vFbo_picking_fragDepth = viewPosZ + 1.0;
 }
 `;

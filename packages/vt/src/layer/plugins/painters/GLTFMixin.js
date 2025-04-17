@@ -3,8 +3,9 @@ import { setUniformFromSymbol, createColorSetter, isNumber, extend } from '../Ut
 import { getCentiMeterScale, isNil } from '../../../common/Util';
 import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 import { getVectorPacker } from '../../../packer/inject';
-import pickingVert from './glsl/mesh-picking.vert';
-import pickingWGSLVert from './wgsl/mesh-picking.wgsl';
+
+const pickingVert = reshader.ShaderLib.get('mesh_picking_vert');
+const pickingWGSLVert = reshader.WgslShaderLib.get('mesh_picking').vert;
 
 const { PackUtil } = getVectorPacker();
 

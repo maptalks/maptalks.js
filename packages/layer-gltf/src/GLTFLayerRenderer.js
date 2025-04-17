@@ -1,18 +1,20 @@
 import * as maptalks from 'maptalks';
 import { defined } from './common/Util';
-import { createREGL, mat4, vec2, reshader, MaskRendererMixin } from '@maptalks/gl';
+import { mat4, vec2, reshader, MaskRendererMixin } from '@maptalks/gl';
 import { intersectsBox } from 'frustum-intersects';
 import SHADER_MAP from './common/ShaderMap';
-import pickingVert from './common/glsl/picking.vert';
 import sceneVert from './common/glsl/sceneVert.vert';
 import extentFrag from './common/glsl/extent.frag';
 import GLTFWorkerConnection from './common/GLTFWorkerConnection';
 import { loadGLTF } from './worker/';
 import MultiGLTFMarker from './MultiGLTFMarker';
 
+const pickingVert = reshader.ShaderLib.get('mesh_picking_vert');
+const pickingWGSLVert = reshader.WgslShaderLib.get('mesh_picking').vert;
+
 const uniformDeclares = [], tempBBox = [];
 const pointLineModes = ['points', 'lines', 'line strip', 'line loop'];
-class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayerCanvasRenderer) {
+class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayerGLRenderer) {
 
     constructor(layer) {
         super(layer);
@@ -149,7 +151,7 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
     }
 
     _setRenderMeshes(marker, timestamp) {
-        const meshes = marker.getMeshes(this._gltfManager, this.regl, timestamp);
+        const meshes = marker.getMeshes(this._gltfManager, this.regl || this.device, timestamp);
         const shader = marker.getShader();
         if (meshes.length) {
             this._renderMarkerList.push(marker);
@@ -278,54 +280,38 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
         return false;
     }
 
-    createContext() {
-        const inGroup = this.canvas.gl && this.canvas.gl.wrap;
-        if (inGroup) {
-            this.gl = this.canvas.gl.wrap();
-            this.regl = this.canvas.gl.regl;
-        } else {
-            const layer = this.layer;
-            const attributes = layer.options.glOptions || {
-                alpha: true,
-                depth: true,
-                //antialias: true,
-                stencil : true
-            };
-            this.glOptions = attributes;
-            this.gl = this.gl || this._createGLContext(this.canvas, attributes);
-            this.regl = createREGL({
-                gl : this.gl,
-                optionalExtensions : [
-                    'ANGLE_instanced_arrays',
-                    'OES_element_index_uint',
-                    'OES_standard_derivatives',
-                    'OES_vertex_array_object',
-                    'OES_texture_half_float', 'OES_texture_half_float_linear',
-                    'OES_texture_float', 'OES_texture_float_linear',
-                    'WEBGL_depth_texture', 'EXT_shader_texture_lod',
-                    'WEBGL_compressed_texture_s3tc'
-                ]
-            });
-        }
-        if (inGroup) {
-            this.canvas.pickingFBO = this.canvas.pickingFBO || this.regl.framebuffer(this.canvas.width, this.canvas.height);
-        }
-        this.pickingFBO = this.canvas.pickingFBO || this.regl.framebuffer(this.canvas.width, this.canvas.height);
-        this._gltfManager = this.regl.gltfManager = this.regl.gltfManager || this._createGLTFManager();
+    initContext() {
+        super.initContext();
+        const { regl, device, reglGL } = this.context;
+        const graphics = regl || device;
+        this.regl = regl;
+        this.gl = reglGL;
+        this.device = device;
+
+        const isWebGPU = !!device;
+        const fboOptions = {
+            colorFormat: isWebGPU ? 'bgra8unorm' : 'rgba',
+            depthStencil: true,
+            width: this.canvas.width,
+            height: this.canvas.height
+        };
+        this.canvas.pickingFBO = this.canvas.pickingFBO || graphics.framebuffer(fboOptions);
+        this.pickingFBO = this.canvas.pickingFBO;
+        this._gltfManager = graphics.gltfManager = graphics.gltfManager || this._createGLTFManager();
         // this._loginMarkerList();
         this._initRenderer();
         //检查是否有mesh、geometry未generate buffer过
         if (this._noBuffersMeshes) {
             this._noBuffersMeshes.forEach(mesh => {
-                mesh.generateInstancedBuffers(this.regl);
+                mesh.generateInstancedBuffers(this.regl || this.device);
             });
         }
         if (this._noBuffersGeometries) {
             this._noBuffersGeometries.forEach(geometry => {
-                geometry.generateBuffers(this.regl);
+                geometry.generateBuffers(this.regl || this.device);
             });
         }
-        this.layer.fire('contextcreate', { regl: this.regl });
+        this.layer.fire('contextcreate', { regl: this.regl, device: this.device });
     }
 
     getGLTFManager() {
@@ -333,12 +319,12 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
     }
 
     _createGLTFManager() {
-        return new reshader.GLTFManager(this.regl);
+        return new reshader.GLTFManager(this.regl || this.device);
     }
 
     _initRenderer() {
         const map = this.layer.getMap();
-        const renderer = new reshader.Renderer(this.regl);
+        const renderer = new reshader.Renderer(this.regl || this.device);
         this.renderer = renderer;
         this._uniforms = {
             'projMatrix': map.projMatrix,
@@ -348,18 +334,28 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
             'cameraPosition' : map.cameraPosition,
             'altitudeScale': 1
         };
-        reshader.pbr.PBRUtils.loginIBLResOnCanvas(this.canvas, this.regl, map);
-
+        reshader.pbr.PBRUtils.loginIBLResOnCanvas(this.canvas, this.regl || this.device, map);
+        const projViewModelMatrix = [];
+        const modelViewMatrix = [];
         this._picking = new reshader.FBORayPicking(
             renderer,
             {
+                name: 'gltf-picking',
                 vert : pickingVert,
+                wgslVert: pickingWGSLVert,
                 uniforms : [
+                    {
+                        name : 'projViewModelMatrix',
+                        type : 'function',
+                        fn : function (context, props) {
+                            return mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
+                        }
+                    },
                     {
                         name : 'modelViewMatrix',
                         type : 'function',
                         fn : function (context, props) {
-                            return mat4.multiply([], props['viewMatrix'], props['modelMatrix']);
+                            return mat4.multiply(modelViewMatrix, props['viewMatrix'], props['modelMatrix']);
                         }
                     }
                 ]

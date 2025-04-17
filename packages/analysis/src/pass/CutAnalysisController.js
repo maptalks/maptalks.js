@@ -2,7 +2,9 @@ import { reshader, mat4, quat, vec3, vec2 } from '@maptalks/gl';
 import partsModels from '../common/parts';
 import { Util } from 'maptalks';
 import { defined } from '../common/Util';
-import pickingVert from './glsl/picking.vert';
+
+const pickingVert = reshader.ShaderLib.get('mesh_picking_vert');
+const pickingWGSLVert = reshader.WgslShaderLib.get('mesh_picking').vert;
 
 const eyePosition = [0, 100000, 0];
 const lookPosition = [0, 0, 0];
@@ -475,6 +477,7 @@ export default class CutAnalysisController {
             this.renderer,
             {
                 vert : pickingVert,
+                wgslVert: pickingWGSLVert,
                 uniforms : [
                     {
                         name : 'projViewModelMatrix',

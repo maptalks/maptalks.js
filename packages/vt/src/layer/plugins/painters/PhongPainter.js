@@ -3,8 +3,9 @@ import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import { extend, hasOwn } from '../Util';
 import MeshPainter from './MeshPainter';
-import pickingVert from './glsl/mesh-picking.vert';
-import pickingWGSLVert from './wgsl/mesh-picking.wgsl';
+
+const pickingVert = reshader.ShaderLib.get('mesh_picking_vert');
+const pickingWGSLVert = reshader.WgslShaderLib.get('mesh_picking').vert;
 
 class PhongPainter extends MeshPainter {
 
