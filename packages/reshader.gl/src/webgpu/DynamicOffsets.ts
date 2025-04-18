@@ -12,23 +12,33 @@ export default class DynamicOffsets {
 
     reset() {
         this.index = 0;
-        this.items.length = 0;
-        this.offsets.length = 0;
     }
 
-    addItem(item) {
-        this.items[this.index++] = item;
+    addItem(binding, offset) {
+        const index = this.index++;
+        const obj = this.items[index];
+        if (!obj) {
+            this.items[index] = { binding, offset };
+        } else {
+            obj.binding = binding;
+            obj.offset = offset;
+        }
     }
 
     addItems(items: any[]) {
         for (let i = 0; i < items.length; i++) {
-            this.addItem(items[i]);
+            this.addItem(items[i].binding, items[i].offset);
         }
     }
 
+    getItems() {
+        return this.items.slice(0, this.index);
+    }
+
     getDynamicOffsets() {
-        const items = this.items;
+        const items = this.getItems();
         items.sort((a, b) => a.binding - b.binding);
+        this.offsets.length = items.length;
         for (let i = 0; i < items.length; i++) {
             this.offsets[i] = items[i].offset;
         }

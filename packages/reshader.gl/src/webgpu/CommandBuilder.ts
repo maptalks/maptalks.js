@@ -398,7 +398,7 @@ function meshHasUniform(mesh: Mesh, name: string, contextDesc: Record<string, an
         name === 'lineColor' || name === 'lineOpacity') {
         return true;
     }
-    return contextDesc[name] || mesh.hasUniform(name) || (mesh.material && mesh.material.hasUniform(name));
+    return contextDesc[name] && !contextDesc[name].global || mesh.hasUniform(name) || (mesh.material && mesh.material.hasUniform(name));
 }
 
 function getItemSize(type) {

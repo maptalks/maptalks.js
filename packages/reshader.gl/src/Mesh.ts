@@ -88,6 +88,13 @@ export default class Mesh {
         this._version = 0;
         this._geometry = geometry;
         this._material = material;
+        // this._bindedOnMaterialUpdate = (...args) => {
+        //     return this._OnMaterialUpdate.call(this, ...args);
+        // };
+        // if (material) {
+        //     material.on('set', this._bindedOnMaterialUpdate);
+        // }
+
         // this.config = config;
         this.transparent = !!config.transparent;
         this.bloom = !!config.bloom;
@@ -112,6 +119,13 @@ export default class Mesh {
 
     set material(v: Material) {
         if (this._material !== v) {
+            // if (this._material) {
+            //     this._material.off('set', this._bindedOnMaterialUpdate);
+            // }
+            // if (v) {
+            //     v.on('set', this._bindedOnMaterialUpdate);
+            // }
+
             this.setMaterial(v);
         }
     }
@@ -221,18 +235,28 @@ export default class Mesh {
     }
 
     setUniform(k: string, v: ShaderUniformValue) {
+        if (this.uniforms[k] === v) {
+            return this;
+        }
         this._updateUniformState(k);
         this.uniforms[k] = v;
+        // this._updateGPUUniformFormat(k, v);
         return this;
     }
 
     setFunctionUniform(k: string, fn: () => ShaderUniformValue): this {
-      this._updateUniformState(k);
-      Object.defineProperty(this.uniforms, k, {
-        enumerable: true,
-        get: fn
-      });
-      return this;
+        // if (!Object.getOwnPropertyDescriptor(this.uniforms, k)) {
+        //     if (this._meshUniformFormats) {
+        //         this._meshUniformFormats = {};
+        //     }
+        // }
+
+        this._updateUniformState(k);
+        Object.defineProperty(this.uniforms, k, {
+            enumerable: true,
+            get: fn
+        });
+        return this;
     }
 
     hasFunctionUniform(k: string): boolean {
@@ -478,6 +502,10 @@ export default class Mesh {
 
     dispose() {
         delete this._geometry;
+        // if (this._material) {
+        //     this._material.off('set', this._bindedOnMaterialUpdate);
+        // }
+
         delete this._material;
         delete this._bindGroupCache;
         delete this._commandKeyCache;
@@ -573,6 +601,9 @@ export default class Mesh {
         if (!meshBuffer) {
             meshBuffer = this._meshBuffer[commandUID] = new DynamicBuffer(bindGroupMapping, pool);
         }
+
+        // this.setGPUUniformFormat(commandUID, bindGroupMapping);
+        // meshBuffer.writeMeshBuffer(renderProps, dynamicOffsets, commandUID, this);
         meshBuffer.writeBuffer(renderProps, dynamicOffsets);
         return meshBuffer;
     }
@@ -603,6 +634,144 @@ export default class Mesh {
         this._commandKeyCache[shaderUID] = fnValues;
         return this;
     }
+
+
+    // getGPUUniformFormat(commandUID: number, name: string) {
+    //     const format = this._meshUniformFormats[commandUID][name];
+    //     return format;
+    // }
+
+    // setGPUUniformFormat(commandUID: number, uniformFormats: any) {
+    //     if (!this._meshUniformFormats) {
+    //         this._meshUniformFormats = {
+    //         };
+    //     }
+    //     if (!this._meshUniformFormats[commandUID]) {
+    //         this._fillGPUUniformValues(commandUID, uniformFormats);
+    //     }
+    // }
+
+    // _updateGPUUniformFormat(k: string, v: ShaderUniformValue) {
+    //     if (!this._meshUniformFormats) {
+    //         return;
+    //     }
+    //     if (v && ((v as any).dispose || (v as any).destroy)) {
+    //         // ignore textures
+    //         return;
+    //     }
+    //     for (const commandID in this._meshUniformFormats) {
+    //         const format = this._meshUniformFormats[commandID];
+    //         for (const p in format) {
+    //             const uniform = format[p];
+    //             uniform.alloc = null;
+    //             if (uniform.members) {
+    //                 const member = uniform.members[k];
+    //                 if (!member) {
+    //                     break;
+    //                 }
+    //                 const { type, offset, size } = uniform.members[k];
+    //                 this._fillGPUValue(type, uniform.view, offset, size, v);
+    //             } else if (p === k) {
+    //                 const { type, offset, size } = uniform;
+    //                 this._fillGPUValue(type, uniform.view, offset, size, v);
+    //             }
+    //         }
+    //     }
+    // }
+
+    // _OnMaterialUpdate(e) {
+    //     const { k, v } = e;
+    //     this._updateGPUUniformFormat(k, v);
+    // }
+
+    // _fillGPUUniformValues(commandUID: number, uniformFormats) {
+    //     const format = {};
+    //     for (let i = 0; i < uniformFormats.length; i++) {
+    //         const uniform = uniformFormats[i];
+    //         const size = uniform.size;
+    //         const buffer = new ArrayBuffer(size);
+    //         const key = uniform.group + '-' + uniform.binding;
+    //         format[key] = { buffer, data: new Float32Array(buffer), outsideUniforms: [] };
+    //         const outsideUniforms = format[key].outsideUniforms;
+    //         const members = uniform.members;
+    //         if (members) {
+    //             format[key].members = {};
+    //             for (let j = 0; j < members.length; j++) {
+    //                 const member = members[j];
+    //                 const { type, offset, size } = member;
+    //                 const descriptor = Object.getOwnPropertyDescriptor(this.uniforms, member.name);
+    //                 const isFnUniform = !!descriptor;
+    //                 if (isFnUniform) {
+    //                     outsideUniforms.push({
+    //                         name: member.name,
+    //                         type, offset, size
+    //                     });
+    //                     continue;
+    //                 }
+    //                 let value = this.getUniform(member.name);
+    //                 if (value === undefined) {
+    //                     value = this.material && this.material.get(member.name);
+    //                 }
+    //                 if (value === undefined) {
+    //                     outsideUniforms.push({
+    //                         name: member.name,
+    //                         type, offset, size
+    //                     });
+    //                     continue;
+    //                 }
+    //                 format[key].members[member.name] = { type, offset, size };
+    //                 this._fillGPUValue(member.type, buffer, offset, size, value);
+    //             }
+    //         } else {
+    //             const { type, offset, size } = uniform;
+    //             const descriptor = Object.getOwnPropertyDescriptor(this.uniforms, uniform.name);
+    //             const isFnUniform = !!descriptor;
+    //             if (isFnUniform) {
+    //                 outsideUniforms.push({
+    //                     name: uniform.name,
+    //                     type, offset, size
+    //                 });
+    //                 continue;
+    //             }
+    //             const value = this.getUniform(uniform.name);
+    //             if (value === undefined) {
+    //                 outsideUniforms.push({
+    //                     name: uniform.name,
+    //                     type, offset, size
+    //                 });
+    //                 continue;
+    //             }
+    //             format[key].type = type;
+    //             format[key].offset = offset;
+    //             format[key].size = size;
+    //             this._fillGPUValue(type, buffer, offset, size, value);
+    //         }
+    //     }
+    //     this._meshUniformFormats[commandUID] = format;
+    // }
+
+    // _fillGPUValue(type, buffer, offset, size, value) {
+    //         // we always use f32 in WGSL
+    //     const view = new Float32Array(buffer, offset, size / 4);
+    //     if (isArray(value)) {
+    //         const padding = isPaddingType(type);
+    //         // 需要padding的类型参考:
+    //         // https://github.com/greggman/webgpu-utils/blob/dev/src/wgsl-types.ts
+    //         // wgsl 1.0中只会隔3个字节，pad一个字节
+    //         for (let i = 0; i < value.length; i++) {
+    //             if (padding) {
+    //                 const col = Math.floor(i / 3);
+    //                 const row = i % 3;
+    //                 view[col * 4 + row] = value[i];
+    //             } else {
+    //                 view[i] = value[i];
+    //             }
+    //         }
+    //     } else {
+    //         view[0] = value;
+    //     }
+    // }
+
 }
 
 

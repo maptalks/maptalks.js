@@ -84,6 +84,7 @@ class StandardShader extends MeshShader {
             {
                 name: 'environmentTransform',
                 type: 'function',
+                global: true,
                 fn: (_, props) => {
                     const orientation = props['environmentOrientation'] || 0;
                     return mat3.fromRotation(environmentTransform, Math.PI * orientation / 180);

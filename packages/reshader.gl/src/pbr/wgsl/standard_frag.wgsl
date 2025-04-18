@@ -45,7 +45,6 @@ struct SceneUniforms {
     specularAAVariance: f32,
     specularAAThreshold: f32,
 
-    environmentTransform: mat3x3f,
     #if HAS_SSR
         invProjMatrix: mat4x4f,
         outputFovInfo: array<vec4f, 2>,
@@ -72,6 +71,7 @@ struct ShaderUniforms {
     cameraPosition: vec3f,
     cameraNearFar: vec2f,
     environmentExposure: f32,
+    environmentTransform: mat3x3f,
 
     light0_viewDirection: vec3f,
     light0_diffuse: vec4f,

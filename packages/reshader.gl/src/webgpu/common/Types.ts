@@ -39,3 +39,18 @@ export function getFormatFromGLTFAccessor(componentType, itemSize) {
 export function getBytesPerElementFromGLTFAccessor(componentType) {
     return component_ctors[componentType].bytes;
 }
+
+const PADDING_TYPES = {
+    mat2x3f: { pad: [3, 1] },
+    mat2x3h: { pad: [3, 1] },
+    mat3x3f: { pad: [3, 1] },
+    mat3x3h: { pad: [3, 1] },
+    mat4x3f: { pad: [3, 1] },
+    mat4x3h: { pad: [3, 1] },
+    mat3x4f: { pad: [3, 1] },
+    mat3x4h: { pad: [3, 1] },
+};
+
+export function isPaddingType(type) {
+    return PADDING_TYPES[type.name];
+}

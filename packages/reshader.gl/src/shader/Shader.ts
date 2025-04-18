@@ -404,6 +404,8 @@ export default class GPUShader extends GLShader {
     _gpuFramebuffer: GraphicsFramebuffer;
     //@internal
     _dynamicOffsets: DynamicOffsets;
+    //@internal
+    _shaderDynamicOffsets: DynamicOffsets;
 
     getShaderCommandKey(device, mesh, renderProps) {
         if (device && device.wgpu) {
@@ -478,6 +480,9 @@ export default class GPUShader extends GLShader {
             // regl command
             return super.run(deviceOrRegl, command, props);
         }
+        if (!props || !props.length) {
+            return;
+        }
         const shaderUniforms = this.context;
         const device = deviceOrRegl as GraphicsDevice;
         this.isGPU = true;
@@ -498,10 +503,13 @@ export default class GPUShader extends GLShader {
         if (!this._dynamicOffsets) {
             this._dynamicOffsets = new DynamicOffsets();
         }
-        this._dynamicOffsets.reset();
+        if (!this._shaderDynamicOffsets) {
+            this._shaderDynamicOffsets = new DynamicOffsets();
+        }
+        this._shaderDynamicOffsets.reset();
         // 向buffer中填入shader uniform值
-        shaderBuffer.writeBuffer(shaderUniforms, this._dynamicOffsets);
-        const shaderDynamicOffsets = this._dynamicOffsets.items.slice();
+        shaderBuffer.writeBuffer(props[0], this._shaderDynamicOffsets);
+        const shaderDynamicOffsets = this._shaderDynamicOffsets.getItems();
 
         for (let i = 0; i < props.length; i++) {
             this._dynamicOffsets.reset();
@@ -512,7 +520,7 @@ export default class GPUShader extends GLShader {
             // 获取或者生成bind group
             let bindGroup = mesh.getBindGroup(groupKey);
             if (!bindGroup || (bindGroup as any).outdated) {
-                bindGroup = bindGroupFormat.createBindGroup(device, mesh, shaderUniforms, layout, shaderBuffer, meshBuffer);
+                bindGroup = bindGroupFormat.createBindGroup(device, mesh, props[i], layout, shaderBuffer, meshBuffer);
                 // 缓存bind group，只要buffer没有发生变化，即可以重用
                 mesh.setBindGroup(groupKey, bindGroup);
             }

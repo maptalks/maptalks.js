@@ -30,7 +30,7 @@ const GLTFMixin = Base =>
         constructor(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig) {
             super(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig);
             this._ready = false;
-            this.scene.sortFunction = this.sortByCommandKey;
+            // this.scene.sortFunction = this.sortByCommandKey;
             const fetchOptions = sceneConfig.fetchOptions || {};
             fetchOptions.referrer = window && window.location.href;
             this._gltfManager = regl.gltfManager = regl.gltfManager || new reshader.GLTFManager(regl, {

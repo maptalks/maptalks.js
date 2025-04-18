@@ -38,7 +38,9 @@ export type GeometryElements = { array: NumberArray }
 export type AttributeKey = { key: string }
 export type ActiveAttributes = { name: string, type: number }[] & AttributeKey
 
-export type ShaderUniformValue = number | boolean | string | NumberArray | null | AbstractTexture | Texture | GraphicsTexture
+export type ShaderUniformValue = number | boolean | string | NumberArray | null | ShaderUniformTexture
+
+export type ShaderUniformTexture = AbstractTexture | Texture | GraphicsTexture
 
 export type ShaderUniforms = {
     meshConfig?: MeshOptions,
