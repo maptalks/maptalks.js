@@ -757,7 +757,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (!map) {
             return this;
         }
-        const dpr = map.getDevicePixelRatio() || 1;
+        const dpr = this.mapDPR || map.getDevicePixelRatio() || 1;
         const rScale = 1 / dpr;
         this._canvasContextScale(context, rScale);
         context.drawImage(snapshotCanvas, 0, 0);

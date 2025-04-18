@@ -7,7 +7,7 @@ import { SizeLike } from '../../../geo/Size';
 
 const TILE_POINT = new Point(0, 0);
 
-const MESH_TO_TEST = { properties: {}};
+const MESH_TO_TEST = { properties: {} };
 
 /**
  * 基于 HTML5 WebGL 的 TileLayers 渲染器
@@ -93,7 +93,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         const opacity = this.getTileOpacity(tileImage, tileInfo);
         let debugInfo = null;
         if (this.layer.options['debug']) {
-            debugInfo =  this.getDebugInfo(tileInfo.id);
+            debugInfo = this.getDebugInfo(tileInfo.id);
         }
         const gl = this.gl;
         gl.stencilFunc(gl.LEQUAL, Math.abs(this.getCurrentTileZoom() - tileInfo.z), 0xFF);
@@ -116,7 +116,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         }
     }
 
-    loadTileImage(tileImage: HTMLImageElement, url: string) {
+    loadTileImage(tileImage: HTMLImageElement, url: string, tile: Tile['info']): void {
         // image must set cors in webgl
         const crossOrigin = this.layer.options['crossOrigin'];
         tileImage.crossOrigin = crossOrigin !== null ? crossOrigin : '';
