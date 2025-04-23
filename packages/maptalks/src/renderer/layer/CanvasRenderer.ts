@@ -138,7 +138,8 @@ class CanvasRenderer extends LayerAbstractRenderer {
         if (this.gl && this.gl.canvas === this.canvas || this.context) {
             return;
         }
-        this.context = Canvas2D.getCanvas2DContext(this.canvas);
+        //disable willReadFrequently for render performance
+        this.context = Canvas2D.getCanvas2DSimpleContext(this.canvas);
         if (!this.context) {
             return;
         }
@@ -357,6 +358,7 @@ class CanvasRenderer extends LayerAbstractRenderer {
         this.resizeCanvas();
         this.setToRedraw();
     }
+
 
 }
 
