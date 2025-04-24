@@ -7,7 +7,7 @@ import skinWgslVert from './wgsl/terrain_skin_vert.wgsl';
 import skinWgslFrag from './wgsl/terrain_skin_frag.wgsl';
 import { getCascadeTileIds, getSkinTileScale, getSkinTileRes, createEmtpyTerrainHeights, EMPTY_TERRAIN_GEO } from './TerrainTileUtil';
 import { createMartiniData } from './util/martini';
-import { isNil, extend, pushIn } from '../util/util';
+import { isNil, extend, pushIn, isFunction } from '../util/util';
 import TerrainPainter from './TerrainPainter';
 import TerrainLitPainter from './TerrainLitPainter';
 import MaskRendererMixin from '../mask/MaskRendererMixin';
@@ -927,35 +927,60 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             cesiumIonTokenURL: layerOptions.cesiumIonTokenURL,
             error: error,
             colors: layerOptions.colors,
-            tileSize: tileSize ? [tileSize.width, tileSize.height] : [256, 256]
+            tileSize: tileSize ? [tileSize.width, tileSize.height] : [256, 256],
+            command: 'loadTile'
         };
-        this.workerConn.fetchTerrain(terrainUrl, options, (err, resource) => {
-            if (this._parentRequests) {
-                const reqKey = getParentRequestKey(tile.x, tile.y);
-                const childTiles = this._parentRequests[reqKey];
-                if (childTiles && childTiles.size) {
-                    this.tileCache.add(tile.id, { info: tile, image: terrainData });
-                    for (const tile of childTiles) {
-                        this.removeTileLoading(tile);
+
+        const fetchTerrain = () => {
+            this.workerConn.fetchTerrain(terrainUrl, options, (err, resource) => {
+                if (this._parentRequests) {
+                    const reqKey = getParentRequestKey(tile.x, tile.y);
+                    const childTiles = this._parentRequests[reqKey];
+                    if (childTiles && childTiles.size) {
+                        this.tileCache.add(tile.id, { info: tile, image: terrainData });
+                        for (const tile of childTiles) {
+                            this.removeTileLoading(tile);
+                        }
                     }
+                    delete this._parentRequests[reqKey];
                 }
-                delete this._parentRequests[reqKey];
-            }
-            if (err) {
-                if (err.canceled) {
+                if (err) {
+                    fetchError(err);
                     return;
                 }
-                console.warn(err);
-                this.onTileError(terrainData, tile);
+                maptalks.Util.extend(terrainData, resource);
+                terrainExaggeration(terrainData, this.layer.options.exaggeration);
+
+                // this.consumeTile(terrainData, tile);
+                tile.colorsTexture = terrainData.colorsTexture;
+                this.onTileLoad(terrainData, tile);
+            });
+        };
+        const fetchError = (err) => {
+            if (err && err.canceled) {
                 return;
             }
-            maptalks.Util.extend(terrainData, resource);
-            terrainExaggeration(terrainData, this.layer.options.exaggeration);
+            console.warn(err);
+            this.onTileError(terrainData, tile);
+            return;
+        }
+        if (this.loadTileBitmap && isFunction(this.loadTileBitmap)) {
+            this.loadTileBitmap(terrainUrl, tile, (err, bitmap) => {
+                if (err) {
+                    fetchError(err);
+                    return;
+                }
+                if (bitmap && bitmap instanceof ImageBitmap) {
+                    options.tileImage = bitmap;
+                    fetchTerrain();
+                } else {
+                    fetchError(new Error('bitmap is not ImageBitmap'));
+                }
+            }, options);
+        } else {
+            fetchTerrain();
+        }
 
-            // this.consumeTile(terrainData, tile);
-            tile.colorsTexture = terrainData.colorsTexture;
-            this.onTileLoad(terrainData, tile);
-        });
         return terrainData;
     }
 
@@ -1092,6 +1117,18 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
     abortTileLoading(tileImage, tileInfo) {
         const layer = this.layer;
         const maxAvailableZoom = layer.options.maxAvailableZoom && (layer.options.maxAvailableZoom - layer.options.zoomOffset);
+
+        const abortTile = (url, tile) => {
+            if (this.loadTileBitmap && isFunction(this.loadTileBitmap)) {
+                this.loadTileBitmap(url, tile, () => {
+
+                }, {
+                    command: 'abortTile'
+                })
+            } else if (this.workerConn) {
+                this.workerConn.abortTerrain(url);
+            }
+        }
         if (tileInfo) {
             if (maxAvailableZoom && tileInfo.z > maxAvailableZoom) {
                 const { requests, key } = this._getParentTileRequest(tileInfo);
@@ -1100,16 +1137,12 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                     if (!requests.size) {
                         // 中止 maxAvailableZoom 瓦片的请求
                         delete this._parentRequests[key];
-                        if (this.workerConn) {
-                            this.workerConn.abortTerrain(requests.url);
-                        }
+                        abortTile(requests.url, tileInfo);
                     }
                 }
             } else {
                 if (tileInfo && tileInfo.url) {
-                    if (this.workerConn) {
-                        this.workerConn.abortTerrain(tileInfo.url);
-                    }
+                    abortTile(tileInfo.url, tileInfo);
                 }
             }
         }
