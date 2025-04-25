@@ -534,7 +534,7 @@ const Canvas = {
         return TEMP_LAYER_CANVAS;
     },
 
-    getCanvas2DSimpleContext(canvas: HTMLCanvasElement) {
+    getCanvas2DPerformanceContext(canvas: HTMLCanvasElement) {
         return canvas.getContext('2d', {});
     },
     getCanvas2DContext(canvas: HTMLCanvasElement) {

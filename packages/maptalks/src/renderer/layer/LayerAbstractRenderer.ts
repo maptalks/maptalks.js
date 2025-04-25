@@ -333,7 +333,7 @@ class LayerAbstractRenderer extends Class {
     }
 
     /**
-     * 渲染结果区域截图
+     * 渲染结果区域截图,主要用于事件检测处理
      * @param x 
      * @param y 
      * @param width 
