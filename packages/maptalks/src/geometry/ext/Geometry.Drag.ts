@@ -6,9 +6,9 @@ import Handler from '../../handler/Handler';
 import Geometry from '../Geometry';
 import DragHandler from '../../handler/Drag';
 import { ConnectorLine } from '../ConnectorLine';
-import { ResourceCache } from '../../renderer/layer/LayerAbstractRenderer';
 import Point from '../../geo/Point';
 import Coordinate from '../../geo/Coordinate';
+import { getResouceCacheInstance } from '../../core/ResourceCacheManager';
 
 const DRAG_STAGE_LAYER_ID = INTERNAL_LAYER_PREFIX + '_drag_stage';
 
@@ -193,7 +193,7 @@ class GeometryDragHandler extends Handler {
         });
         map.addLayer(this._dragStageLayer);
         //copy resources to avoid repeat resource loading.
-        const resources = new ResourceCache();
+        const resources = getResouceCacheInstance();
         resources.merge(layer._getRenderer().resources);
         this._dragStageLayer._getRenderer().resources = resources;
     }
@@ -415,7 +415,7 @@ class GeometryDragHandler extends Handler {
             delete this._shadowConnectors;
         }
         if (this._dragStageLayer) {
-            this._dragStageLayer._getRenderer().resources = new ResourceCache();
+            this._dragStageLayer._getRenderer().resources = getResouceCacheInstance();
             this._dragStageLayer.remove();
         }
     }

@@ -8,7 +8,7 @@ import Canvas from '../../../core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
 import { Geometry } from '../../../geometry';
 import Painter from '../Painter';
-import { ResourceCache } from '../../layer/LayerAbstractRenderer';
+import { ResourceCache } from '../../../core/ResourceCacheManager';
 const TEMP_SIZE = new Size(1, 1);
 const TEMP_EXTENT = new PointExtent();
 
