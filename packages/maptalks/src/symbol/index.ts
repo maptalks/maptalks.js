@@ -61,7 +61,7 @@ export type MarkerCommonSymbol = {
     markerDy?: SymbolNumberType;
     markerHorizontalAlignment?: 'left' | 'middle' | 'right';
     markerVerticalAlignment?: 'top' | 'middle' | 'bottom';
-    markerPlacement?: 'point' | 'vertex' | 'line' | 'vertex-first' | 'vertex-last';
+    markerPlacement?: 'center' | 'point' | 'vertex' | 'line' | 'vertex-first' | 'vertex-last' | 'vertex-firstlast';
     markerRotation?: number;
 }
 
