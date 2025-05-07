@@ -71,6 +71,7 @@ class LayerAbstractRenderer extends Class {
     _errorThrown: boolean;
     //@internal
     __zoomTransformMatrix: number[];
+    mapDPR?: number;
 
     drawOnInteracting?(...args: any[]): void;
     checkResources?(): any[];
@@ -342,7 +343,7 @@ class LayerAbstractRenderer extends Class {
             return false;
         }
         const map = this.getMap();
-        const r = map.getDevicePixelRatio();
+        const r = this.mapDPR || map.getDevicePixelRatio();
         const size = map.getSize();
         if (point.x < 0 || point.x > size['width'] * r || point.y < 0 || point.y > size['height'] * r) {
             return false;
@@ -642,12 +643,16 @@ class LayerAbstractRenderer extends Class {
 
     //@internal
     _drawAndRecord(framestamp: number) {
-        if (!this.getMap()) {
+        const map = this.getMap();
+        if (!map) {
             return;
         }
         const painted = this._painted;
         this._painted = true;
         let t = now();
+
+        this.mapDPR = map.getDevicePixelRatio();
+
         this.draw(framestamp);
         t = now() - t;
         //reduce some time in the first draw

@@ -167,15 +167,18 @@ export default class TileLayerCanvasRenderer extends TileLayerRenderable(CanvasR
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     drawTile(tileInfo: Tile['info'], tileImage: Tile['image'], parentContext?: RenderContext) {
-        if (!tileImage || !this.getMap()) {
+        if (!tileImage) {
+            return;
+        }
+        const map = this.getMap();
+        if (!map) {
             return;
         }
         const { extent2d, offset } = tileInfo;
         const point = TILE_POINT.set(extent2d.xmin - offset[0], extent2d.ymax - offset[1]),
             tileZoom = tileInfo.z,
             tileId = tileInfo.id;
-        const map = this.getMap(),
-            zoom = map.getZoom(),
+        const zoom = map.getZoom(),
             ctx = this.context,
             cp = map._pointAtResToContainerPoint(point, tileInfo.res, 0, TEMP_POINT),
             bearing = map.getBearing(),

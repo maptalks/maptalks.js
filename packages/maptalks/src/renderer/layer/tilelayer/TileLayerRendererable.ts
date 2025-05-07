@@ -632,7 +632,7 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
                 (tileImage as any).onload = this.onTileLoad.bind(this, tileImage, tile);
                 (tileImage as any).onerror = this.onTileError.bind(this, tileImage, tile);
 
-                this.loadTileImage(tileImage, tile['url']);
+                this.loadTileImage(tileImage, tile['url'], tile);
             }
             return tileImage;
         }
@@ -659,7 +659,7 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
             }
         }
 
-        loadTileImage(tileImage, url: string) {
+        loadTileImage(tileImage, url: string, tile: Tile['info']) {
             const crossOrigin = this.layer.options['crossOrigin'];
             if (!isNil(crossOrigin)) {
                 tileImage.crossOrigin = crossOrigin;
