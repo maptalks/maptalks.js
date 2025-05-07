@@ -335,6 +335,29 @@ class LayerAbstractRenderer extends Class {
     }
 
     /**
+     * 渲染结果区域截图,主要用于事件检测处理
+     * @param x 
+     * @param y 
+     * @param width 
+     * @param height 
+     * @returns 
+     */
+    screenshotRenderResult(x: number, y: number, width: number, height: number): CanvasRenderingContext2D | null {
+        if (this.canvas) {
+            const tempCanvas = Canvas2D.getTempCanvas();
+            tempCanvas.width = width;
+            tempCanvas.height = height;
+            //open willReadFrequently for getImageData Performance
+            const context = Canvas2D.getCanvas2DContext(tempCanvas);
+            context.clearRect(0, 0, width, height);
+            context.drawImage(this.canvas, x, y, width, height, 0, 0, width, height);
+            return context;
+        } else {
+            console.warn('not find layer canvas for screenshotRenderResult,the layerId:', this.layer.getId());
+        }
+    }
+
+    /**
      * Detect if there is anything painted on the given point
      * @param point containerPoint
      */
@@ -348,17 +371,20 @@ class LayerAbstractRenderer extends Class {
         if (point.x < 0 || point.x > size['width'] * r || point.y < 0 || point.y > size['height'] * r) {
             return false;
         }
+        const x = Math.round(r * point.x), y = Math.round(r * point.y);
         const imageData = this.getImageData && this.getImageData();
         if (imageData) {
-            const x = Math.round(r * point.x), y = Math.round(r * point.y);
             const idx = y * imageData.width * 4 + x * 4;
             //索引下标从0开始需要-1
             return imageData.data[idx + 3] > 0;
         }
         try {
-            const imgData = this.context.getImageData(r * point.x, r * point.y, 1, 1).data;
-            if (imgData[3] > 0) {
-                return true;
+            const ctx = this.screenshotRenderResult(x, y, 2, 2);
+            if (ctx) {
+                const imgData = ctx.getImageData(x, y, 1, 1).data;
+                if (imgData[3] > 0) {
+                    return true;
+                }
             }
         } catch (error) {
             if (!this._errorThrown) {
@@ -759,6 +785,7 @@ class LayerAbstractRenderer extends Class {
         }
         this.resources.addResource(url, img);
     }
+
 }
 
 export default LayerAbstractRenderer;

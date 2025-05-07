@@ -519,7 +519,24 @@ function rgbaToCSSRGBA(r: number, g: number, b: number, a: number) {
     return `rgba(${r}, ${g}, ${b}, ${a / 255})`;
 }
 
+let TEMP_LAYER_CANVAS: HTMLCanvasElement;
+
 const Canvas = {
+
+    /**
+     * 临时canvas,用于图层的事件使用,主要用于getImageData
+     * @returns 
+     */
+    getTempCanvas() {
+        if (!TEMP_LAYER_CANVAS) {
+            TEMP_LAYER_CANVAS = Canvas.createCanvas(1, 1);
+        }
+        return TEMP_LAYER_CANVAS;
+    },
+
+    getCanvas2DPerformanceContext(canvas: HTMLCanvasElement) {
+        return canvas.getContext('2d', {});
+    },
     getCanvas2DContext(canvas: HTMLCanvasElement) {
         return canvas.getContext('2d', { willReadFrequently: true });
     },
