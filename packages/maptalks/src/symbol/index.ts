@@ -40,7 +40,7 @@ export type FunctionTypeColor_Interpolate = {
 
 export type SymbolBooleanType = boolean | FunctionTypeIdentity | FunctionTypeInterval | FunctionTypeCategorical;
 export type SymbolNumberType = number | FunctionTypeExponential | FunctionTypeIdentity | FunctionTypeInterval | FunctionTypeCategorical;
-export type SymbolColorType = string | Array<number> | FunctionTypeColor_Interpolate;
+export type SymbolColorType = string | Array<number> | FunctionTypeColor_Interpolate | FunctionTypeIdentity | FunctionTypeInterval | FunctionTypeCategorical;
 
 
 
