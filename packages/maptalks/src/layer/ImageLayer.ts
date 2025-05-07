@@ -4,10 +4,10 @@ import Browser from '../core/Browser';
 import Point from '../geo/Point';
 import ImageGLRenderable from '../renderer/layer/ImageGLRenderable';
 import CanvasRenderer from '../renderer/layer/CanvasRenderer';
-import { ResourceCache } from '../renderer/layer/LayerAbstractRenderer';
 import Extent from '../geo/Extent';
 import Layer, { LayerOptionsType } from './Layer';
 import { PointExtent } from '../geo';
+import { getResouceCacheInstance } from '../core/ResourceCacheManager';
 
 
 /**
@@ -152,7 +152,7 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
         let urls = layer._imageData.map(img => [img.url, null, null]);
         if (this.resources) {
             const unloaded = [];
-            const resources = new ResourceCache();
+            const resources = getResouceCacheInstance();
             urls.forEach(url => {
                 if (this.resources.isResourceLoaded(url)) {
                     const img = this.resources.getImage(url);

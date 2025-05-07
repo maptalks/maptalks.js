@@ -3,8 +3,8 @@ import PointExtent from '../../geo/PointExtent';
 import { isGradient } from './style';
 import { isNumber } from './common';
 import Canvas from '../Canvas';
-import { ResourceCache } from '../../renderer/layer/LayerAbstractRenderer'
 import { BBOX } from './bbox';
+import { ResourceCache } from '../ResourceCacheManager';
 
 export function drawImageMarker(ctx: CanvasRenderingContext2D, image, point, symbol) {
     let w = symbol && symbol['markerWidth'];
