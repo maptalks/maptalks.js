@@ -9,7 +9,7 @@ let workerId;
 let BITMAP_CANVAS = null;
 let BITMAP_CTX = null;
 const TEMP_RGB = [0, 0, 0];
-const DEFAULT_TILESIZE= [256, 256];
+const DEFAULT_TILESIZE = [256, 256];
 
 function checkBitMapCanvas() {
     try {
@@ -449,7 +449,14 @@ function generateMapboxTerrain(buffer) {
 }
 
 function loadTerrain(params, cb) {
-    const { url, origin, type, accessToken, terrainWidth, error } = params;
+    const { url, origin, type, accessToken, terrainWidth, error, tileImage } = params;
+    //custom loadTileImage and return mapbox terrain rgb data
+    if(tileImage&&tileImage.close){
+        const imageData = bitmapToImageData(tileImage);
+        const terrainData = mapboxBitMapToHeights(imageData, terrainWidth);
+        triangulateTerrain(error, terrainData, terrainWidth, tileImage, true, cb);
+        return;
+    }
     const headers = params.headers || requestHeaders[type];
     if (type === 'tianditu') {
         fetchTerrain(url, headers, type, terrainWidth, error, cb);

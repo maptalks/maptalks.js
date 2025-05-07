@@ -17,6 +17,7 @@ export default class TerrainWorkerConnection extends maptalks.worker.Actor {
 
     fetchTerrain(url, options, cb) {
         url = this.checkUrl(url);
+        const tileImage = options.tileImage;
         const data = {
             actorId: this.actorId,
             mapId: this.mapId,
@@ -30,10 +31,15 @@ export default class TerrainWorkerConnection extends maptalks.worker.Actor {
                 cesiumIonTokenURL: options.cesiumIonTokenURL,
                 error: options.error,
                 colors: options.colors,
-                tileSize: options.tileSize
+                tileSize: options.tileSize,
+                tileImage
             }
         };
-        this.send(data, null, (err, data) => {
+        const buffers = [];
+        if (tileImage) {
+            buffers.push(tileImage);
+        }
+        this.send(data, buffers, (err, data) => {
             if (err) {
                 cb(err);
                 return;
