@@ -16,8 +16,13 @@ let requestAnimFrame: any, cancelAnimFrame: any;
         return;
     }
 
-    requestAnimFrame = requestAnimationFrame;
-    cancelAnimFrame = cancelAnimationFrame;
+    //why? package bundle tool will Object.freeze(exports)
+    requestAnimFrame = function (callback: FrameRequestCallback): number {
+        return requestAnimationFrame(callback);
+    }
+    cancelAnimFrame = function (handle: number) {
+        return cancelAnimationFrame(handle);
+    }
 })();
 export { requestAnimFrame, cancelAnimFrame };
 
