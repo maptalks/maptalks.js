@@ -97,6 +97,7 @@ const REDRAW_OPTIONS_PROPERTIES = ['centerCross', 'fog', 'fogColor', 'debugSky']
  * @property {Number} [options.mousemoveThrottleTime=48]         - mousemove event interval time(ms)
  * @property {Number} [options.maxFPS=0]         - 0 means no frame is locked, otherwise the frame is locked
  * @property {Number} [options.cameraFarUndergroundInMeter=2000]      - camera far distance from underground in meter
+ * @property {Boolean} [options.queryTerrainInMapEvents=true]         - whether to query terrain in map's event
  * @memberOf Map
  * @instance
  */

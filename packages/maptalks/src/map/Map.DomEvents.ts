@@ -403,11 +403,10 @@ Map.include(/** @lends Map.prototype */ {
     }(),
 
     //@internal
-    _wrapTerrainData(/* eventParam: MapEventDataType */) {
-        return;
-        // if (eventParam.containerPoint && !eventParam.terrain) {
-        //     eventParam.terrain = this._queryTerrainInfo(eventParam.containerPoint);
-        // }
+    _wrapTerrainData(eventParam: MapEventDataType) {
+        if (this.options['queryTerrainInMapEvents'] && eventParam.containerPoint && !eventParam.terrain) {
+            eventParam.terrain = this._queryTerrainInfo(eventParam.containerPoint);
+        }
     },
 
     //@internal
@@ -514,6 +513,10 @@ Map.include(/** @lends Map.prototype */ {
 });
 
 Map.addOnLoadHook('_registerDomEvents');
+
+Map.mergeOptions({
+    'queryTerrainInMapEvents': true
+});
 
 function isRotatingMap(map) {
     if (!map._domMouseDownView) {
