@@ -259,8 +259,8 @@ importers:
   packages/layer-3dtiles:
     dependencies:
       '@maptalks/function-type':
-        specifier: ^1.4.0
-        version: 1.4.0
+        specifier: ^1.4.1
+        version: 1.4.1
       '@maptalks/tbn-packer':
         specifier: ^1.4.5
         version: 1.4.5
@@ -353,8 +353,8 @@ importers:
         specifier: ^1.3.0
         version: 1.3.0
       '@maptalks/function-type':
-        specifier: ^1.4.0
-        version: 1.4.0
+        specifier: ^1.4.1
+        version: 1.4.1
       frustum-intersects:
         specifier: ^0.2.4
         version: 0.2.4
@@ -493,8 +493,8 @@ importers:
         specifier: ^1.3.0
         version: 1.3.0
       '@maptalks/function-type':
-        specifier: ^1.4.0
-        version: 1.4.0
+        specifier: ^1.4.1
+        version: 1.4.1
       colorin:
         specifier: ^0.6.0
         version: 0.6.0
@@ -925,8 +925,8 @@ importers:
         specifier: ^1.3.0
         version: 1.3.0
       '@maptalks/function-type':
-        specifier: ^1.4.0
-        version: 1.4.0
+        specifier: ^1.4.1
+        version: 1.4.1
       '@maptalks/geojson-bbox':
         specifier: ^1.0.4
         version: 1.0.5
@@ -1699,8 +1699,8 @@ packages:
   '@maptalks/feature-filter@1.3.0':
     resolution: {integrity: sha512-O6GcFzPuCbz6bO4TNBnmP8VunS0GexTzZ4m36A4HbYQICY1cplpFgntX2fyB/TY3cZrFRGoeMePBeMZFMOOhcQ==}
 
-  '@maptalks/function-type@1.4.0':
-    resolution: {integrity: sha512-T6Ss+EyBdMhTMoD8z4KVyX9NVGQ/pu2asBcAP1T6Bzl+fgnmGZu8T2meO8MfBDyvqjqgQhAb+/RAYtSMQLeVEg==}
+  '@maptalks/function-type@1.4.1':
+    resolution: {integrity: sha512-Z78FdI8mZ4vdcBqxlMDV6HP6WE/njZ9PhlM5JwbURxW1DnQK7R1GP+fubkGJPP6hVSv0Y52/dK8cZE/HuXVZ3A==}
 
   '@maptalks/geojson-bbox@1.0.5':
     resolution: {integrity: sha512-DLeXOssDHx1cWTMhAh3ZDSEv2mMEaEbYeX/4DrGzUMpYAzQHV86BGFymLvhyZ/K08vVImzeQ882aPiRWm0OXGQ==}
@@ -5913,7 +5913,7 @@ snapshots:
 
   '@maptalks/feature-filter@1.3.0': {}
 
-  '@maptalks/function-type@1.4.0':
+  '@maptalks/function-type@1.4.1':
     dependencies:
       colorin: 0.5.0
 
