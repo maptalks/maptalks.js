@@ -1,7 +1,7 @@
 import Browser from './Browser';
-import { isSVG, isImageBitMap, isString, hasOwn } from './util';
+import { isSVG, isImageBitMap, isString, hasOwn, isNumber } from './util';
 
-type ResourceUrl = string | string[];
+type ResourceUrl = string | string[] | number;
 
 type ResourceCacheItem = {
     image: ImageBitmap;
@@ -133,6 +133,8 @@ class ResourceCacheMap {
         if (Array.isArray(url)) {
             imgUrl = url[0];
         } else if (isString(url)) {
+            imgUrl = url;
+        } else if (isNumber(url)) {
             imgUrl = url;
         }
         if (!imgUrl) {
