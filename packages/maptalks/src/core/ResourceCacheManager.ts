@@ -132,13 +132,8 @@ class ResourceCacheMap {
         let imgUrl;
         if (Array.isArray(url)) {
             imgUrl = url[0];
-        } else if (isString(url)) {
+        } else {
             imgUrl = url;
-        } else if (isNumber(url)) {
-            imgUrl = url;
-        }
-        if (!imgUrl) {
-            console.error(`get url key error,the url is:`, url);
         }
         return imgUrl;
     }
