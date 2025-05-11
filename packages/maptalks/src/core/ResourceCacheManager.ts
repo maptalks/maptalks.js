@@ -1,5 +1,5 @@
 import Browser from './Browser';
-import { isSVG, isImageBitMap, isString, hasOwn, isNumber } from './util';
+import { isSVG, isImageBitMap, hasOwn } from './util';
 
 type ResourceUrl = string | string[];
 
