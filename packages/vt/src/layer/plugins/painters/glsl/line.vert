@@ -215,22 +215,22 @@ void main() {
 
     // #284 解决倾斜大时的锯齿问题
     // 改为实时增加outset来解决，避免因为只调整xy而产生错误的深度值
-    if (isRenderingTerrain == 0.0) {
-        float limit = min(AA_CLIP_LIMIT / canvasSize.x, AA_CLIP_LIMIT / canvasSize.y);
-        float pixelDelta = distance(gl_Position.xy / gl_Position.w, vertex.xy / vertex.w) - limit;
-        // * lineWidth 为了解决lineWidth为0时的绘制错误， #295
-        //TODO linePack中 needExtraVertex为true时，一些不应该做抗锯齿计算的点，会出现抗锯齿
-        if (pixelDelta * myLineWidth < 0.0) {
-            // 绘制端点和原位置的间距太小，会产生锯齿，通过增加 dist 减少锯齿
-            float pixelScale = -pixelDelta / limit;
-            float aaWidth = pixelScale * pixelScale * pixelScale * pixelScale * AA_LINE_WIDTH;
-            dist += aaWidth * extrude;
-            outset += aaWidth / 6.0;
-            // 用新的dist计算新的端点位置
-            localVertex = vec4(position + vec3(dist, 0.0) * tileRatio / resScale, 1.0);
-            gl_Position = projViewModelMatrix * positionMatrix * localVertex;
-        }    
-    }
+    // if (isRenderingTerrain == 0.0) {
+    //     float limit = min(AA_CLIP_LIMIT / canvasSize.x, AA_CLIP_LIMIT / canvasSize.y);
+    //     float pixelDelta = distance(gl_Position.xy / gl_Position.w, vertex.xy / vertex.w) - limit;
+    //     // * lineWidth 为了解决lineWidth为0时的绘制错误， #295
+    //     //TODO linePack中 needExtraVertex为true时，一些不应该做抗锯齿计算的点，会出现抗锯齿
+    //     if (pixelDelta * myLineWidth < 0.0) {
+    //         // 绘制端点和原位置的间距太小，会产生锯齿，通过增加 dist 减少锯齿
+    //         float pixelScale = -pixelDelta / limit;
+    //         float aaWidth = pixelScale * pixelScale * pixelScale * pixelScale * AA_LINE_WIDTH;
+    //         dist += aaWidth * extrude;
+    //         outset += aaWidth / 6.0;
+    //         // 用新的dist计算新的端点位置
+    //         localVertex = vec4(position + vec3(dist, 0.0) * tileRatio / resScale, 1.0);
+    //         gl_Position = projViewModelMatrix * positionMatrix * localVertex;
+    //     }
+    // }
 
     #ifdef HAS_LINE_DX
         float myLineDx = aLineDxDy[0];
