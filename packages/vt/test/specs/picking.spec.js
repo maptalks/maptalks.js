@@ -20,7 +20,8 @@ const DEFAULT_VIEW = {
     center: [0, 0],
     zoom: 6,
     pitch: 0,
-    bearing: 0
+    bearing: 0,
+    devicePixelRatio: 1
 };
 const ICON_PATH = 'file://' + path.resolve(__dirname, '../integration/resources/plane-min.png');
 describe('picking specs', () => {
@@ -42,6 +43,9 @@ describe('picking specs', () => {
     });
 
     const runner = (options, coord, expected, ignoreSymbol, done) => {
+        if (options.view) {
+            options.view.devicePixelRatio = 1;
+        }
         map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
         options.tileStackDepth = 0;
         options.loadingLimit = 0;
@@ -1082,7 +1086,7 @@ describe('picking specs', () => {
             layer.once('canvasisdirty', () => {
                 const hit = layer.identify([13.41720, 52.52952])[0];
                 const expectedFeature = { "type": "Feature", "geometry": { "type": "Polygon","coordinates": [[[13.417135053741617,52.52956625878565],[13.417226248848124,52.52956625878565],[13.417226248848124,52.52946625878565],[13.417135053741617,52.52946625878565],[13.417135053741617,52.52956625878565]]] },"properties": { "type": 1, "color": "#f00", "foo": "bar", "foo1": "bar1" },"id": 0,"layer": 0 };
-                assert.deepEqual(hit.coordinate, [13.417199426757994, 52.52951893867434, 7.081154552807229e-10]);
+                assert.deepEqual(hit.coordinate, [13.417198660412561, 52.52952080350727, 7.081154552807229e-10]);
                 assert.deepEqual(expectedFeature, hit.data.feature);
                 done();
             });
@@ -1130,6 +1134,7 @@ describe('picking specs', () => {
                         'id': 0,
                         'layer': 0
                     },
+                    "nodeIndex": 1
                 },
                 'point': [702.48068, 702.48068, 279.81348],
                 'coordinate': [0.4823552013840498, 0.48234950372197244, 16384.240119431175],
@@ -1522,7 +1527,8 @@ describe('picking specs', () => {
         loadingLimit: 0,
         view: {
             center: [0.5, 0.5],
-            zoom: 8
+            zoom: 8,
+            devicePixelRatio: 1
         }
     };
 
@@ -1587,7 +1593,8 @@ describe('picking specs', () => {
     it('should return geographic coordinates in pick', done => {
         map = new maptalks.Map(container, {
             center: [0, 0],
-            zoom: 5
+            zoom: 5,
+            devicePixelRatio: 1
         });
         const layer = new VectorTileLayer('vt', {
             urlTemplate: 'http://localhost:4398/vt/{z}/{x}/{y}.mvt',
@@ -1613,7 +1620,8 @@ describe('picking specs', () => {
     it('should enable stencil in VectorTileLayer FillPainter pick, maptalks/issues#832', done => {
         map = new maptalks.Map(container, {
             center: [121.52861644,31.23331691],
-            zoom: 19
+            zoom: 19,
+            devicePixelRatio: 1
         });
         const layer = new VectorTileLayer('vt', {
             urlTemplate: 'http://localhost:4398/832/{z}/{x}/{y}.mvt',

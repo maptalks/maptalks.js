@@ -206,7 +206,7 @@ export const TEXT_SYMBOL = {
     },
     textHaloOpacity: {
         type: 'identity',
-        default: 1,
+        default: 255,
         property: '_symbol_textHaloOpacity'
     },
     textDx: {

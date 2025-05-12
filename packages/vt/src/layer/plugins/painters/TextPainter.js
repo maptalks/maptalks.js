@@ -461,7 +461,7 @@ export default class TextPainter extends CollisionPainter {
         // this._counter++;
 
         const uniforms = mesh.material.uniforms;
-        const isPitchWithMap = uniforms['pitchWithMap'] === 1;
+        const isPitchWithMap = uniforms['textPitchWithMap'] === 1;
 
         const allElements = geometryProps.elements;
 
@@ -542,8 +542,7 @@ export default class TextPainter extends CollisionPainter {
         const map = this.getMap();
         const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.properties.tileVectorTransform);
         const { collideIds, aCount, features, elements } = mesh.geometry.properties;
-        const ids = collideIds;
-        if (!ids) {
+        if (!collideIds) {
             return;
         }
         const enableUniquePlacement = this.isEnableUniquePlacement();
@@ -555,12 +554,12 @@ export default class TextPainter extends CollisionPainter {
         let index = 0;
 
         let idx = elements[0];
-        let start = 0, current = ids[idx];
+        let start = 0, current = collideIds[idx];
         //每个文字有6个element
         for (let i = 0; i <= elements.length; i += BOX_ELEMENT_COUNT) {
             idx = elements[i];
             //pickingId发生变化，新的feature出现
-            if (ids[idx] !== current || i === elements.length) {
+            if (collideIds[idx] !== current || i === elements.length) {
                 const feature = features[current] && features[current].feature;
                 if (enableUniquePlacement && this.isMeshUniquePlaced(mesh) && feature && !feature.label) {
                     const properties = feature.properties || {};
@@ -582,7 +581,7 @@ export default class TextPainter extends CollisionPainter {
                     meshBox[0].boxCount = charCount;
                     fn.call(this, mesh, meshBox, matrix, index++);
                 }
-                current = ids[idx];
+                current = collideIds[idx];
                 start = i;
             }
         }
@@ -593,7 +592,7 @@ export default class TextPainter extends CollisionPainter {
         const renderer = this.layer.getRenderer();
 
         const uniforms = mesh.material.uniforms;
-        const isPitchWithMap = uniforms['pitchWithMap'] === 1;
+        const isPitchWithMap = uniforms['textPitchWithMap'] === 1;
         const terrainHelper = !isPitchWithMap && renderer.getTerrainHelper && renderer.getTerrainHelper();
 
         const enableCollision = this.isEnableCollision();
@@ -777,7 +776,7 @@ export default class TextPainter extends CollisionPainter {
                 rotation -= Math.PI / 2;
             }
 
-            const shapeMatrix = getShapeMatrix(MAT2, rotation, 0, uniforms['rotateWithMap'], uniforms['pitchWithMap']);
+            const shapeMatrix = getShapeMatrix(MAT2, rotation, 0, uniforms['textRotateWithMap'], uniforms['textPitchWithMap']);
 
             const is3DPitchText = aOffset.length > aShape.length;
             let rotMatrix;

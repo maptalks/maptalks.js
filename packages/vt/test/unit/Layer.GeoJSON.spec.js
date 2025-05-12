@@ -21,7 +21,8 @@ describe('GeoJSONVectorTileLayer', () => {
         document.body.appendChild(container);
         map = new maptalks.Map(container, {
             center: [114.25814, 30.58595],
-            zoom: 19
+            zoom: 19,
+            devicePixelRatio: 1
         });
     });
 

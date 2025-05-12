@@ -1,9 +1,10 @@
 import { reshader } from '@maptalks/gl';
 import { interpolated, piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
-import { setUniformFromSymbol, wrap, fillArray } from '../../Util';
+import { extend, setUniformFromSymbol, wrap, fillArray } from '../../Util';
 import { DEFAULT_MARKER_WIDTH, DEFAULT_MARKER_HEIGHT, GLYPH_SIZE, DEFAULT_ICON_ALPHA_TEST } from '../Constant';
 import { createAtlasTexture, getDefaultMarkerSize } from './atlas_util';
-import { prepareFnTypeData, PREFIX } from './fn_type_util';
+import { prepareFnTypeData, PREFIX, isFnTypeSymbol } from './fn_type_util';
+import { prepareTextGeometry, initTextUniforms, initTextMeshDefines } from './create_text_painter';
 // import { getIconBox } from './get_icon_box';
 
 export const BOX_ELEMENT_COUNT = 6;
@@ -11,21 +12,27 @@ export const BOX_VERTEX_COUNT = 4; //每个box有四个顶点数据
 const U8 = new Uint16Array(1);
 const I8 = new Int8Array(1);
 
-export function createMarkerMesh(regl, geometry, transform, symbolDef, symbol, fnTypeConfig, enableCollision, visibleInCollision) {
+export function createMarkerMesh(
+    regl,
+    geometry,
+    transform,
+    symbolDef,
+    symbol,
+    fnTypeConfig,
+    enableCollision,
+    visibleInCollision,
+    enableUniquePlacement
+) {
     if (geometry.isDisposed() || geometry.data.aPosition.length === 0) {
         return null;
     }
-    const iconAtlas = geometry.properties.iconAtlas;
-    if (!iconAtlas && !geometry.properties.isEmpty) {
+    const hasIcon = !!geometry.properties.iconAtlas;
+    const glyphAtlas = geometry.properties.glyphAtlas;
+    const hasText = !!glyphAtlas;
+    if (!hasIcon && !hasText && !geometry.properties.isEmpty) {
         return null;
     }
-    // const symbol = this.getSymbol();
-    // geometry.properties.symbol = symbol;
-    const uniforms = {
-        flipY: 0,
-        tileResolution: geometry.properties.tileResolution,
-        tileRatio: geometry.properties.tileRatio
-    };
+
 
     //!geometry.properties.aShape 以避免重复创建collision数据
     if (!geometry.properties.aShape) {
@@ -54,8 +61,112 @@ export function createMarkerMesh(regl, geometry, transform, symbolDef, symbol, f
         geometry.properties.elements = geometry.elements;
         geometry.properties.visElemts = new geometry.elements.constructor(geometry.elements.length);
     }
+    if (hasText) {
+        prepareTextGeometry.call(this, geometry, symbolDef, fnTypeConfig.text, enableCollision, visibleInCollision, enableUniquePlacement);
+    }
 
+    geometry.properties.memorySize = geometry.getMemorySize();
+    // console.log('data', geometry.data);
+    geometry.generateBuffers(regl, { excludeElementsInVAO: true });
 
+    // const symbol = this.getSymbol();
+    // geometry.properties.symbol = symbol;
+    const uniforms = {
+        flipY: 0,
+        tileResolution: geometry.properties.tileResolution,
+        tileRatio: geometry.properties.tileRatio
+    };
+    setMeshUniforms.call(this, uniforms, regl, geometry, symbol);
+    initTextUniforms.call(this, uniforms, regl, geometry, symbol);
+    uniforms.isHalo = 0;
+
+    const meshes = [];
+    const meshConfig = {
+        // 必须关闭VAO，否则对vao中elements的更新会导致halo绘制出错
+        disableVAO: true,
+        transparent: true,
+        castShadow: false,
+        picking: true
+    };
+    let haloMesh;
+    if (hasText) {
+        const uniforms1 = extend({}, uniforms);
+        uniforms1.isHalo = 1;
+        const material = new reshader.Material(uniforms1);
+        haloMesh = new reshader.Mesh(geometry, material, meshConfig);
+        haloMesh.properties.isHalo = 1;
+        haloMesh.setUniform('alphaTest', DEFAULT_ICON_ALPHA_TEST);
+        haloMesh.setLocalTransform(transform);
+        // meshes.push(haloMesh);
+    }
+
+    const material = new reshader.Material(uniforms);
+    const mesh = new reshader.Mesh(geometry, material, meshConfig);
+    const defines = {
+        'HAS_HALO_ATTR': 1
+    };
+    if (enableCollision) {
+        defines['ENABLE_COLLISION'] = 1;
+    }
+
+    initMeshDefines.call(this, geometry, defines);
+    if (haloMesh) {
+        const haloDefines = extend({}, defines);
+        initTextMeshDefines.call(this, defines, haloMesh);
+        haloMesh.setDefines(haloDefines);
+    }
+    if (hasText) {
+        initTextMeshDefines.call(this, defines, mesh);
+    }
+    mesh.setDefines(defines);
+    mesh.setUniform('alphaTest', DEFAULT_ICON_ALPHA_TEST);
+    mesh.setLocalTransform(transform);
+    mesh.properties.symbolIndex = geometry.properties.symbolIndex;
+    if (haloMesh) {
+        // mesh.properties.haloMesh = haloMesh;
+    }
+    meshes.push(mesh);
+    return meshes;
+}
+
+export function prepareDxDy(geometry) {
+    const { aMarkerDx, aMarkerDy, aTextDx, aTextDy } = geometry.data;
+    const dxdy = (aTextDx || aTextDy || aMarkerDx || aMarkerDy);
+    if (dxdy) {
+        const aDxDy = new dxdy.constructor(dxdy.length * 4);
+        for (let i = 0; i < aDxDy.length; i += 4) {
+            const idx = i / 4;
+            if (aMarkerDx) {
+                aDxDy[i] = aMarkerDx[idx];
+            }
+            if (aMarkerDy) {
+                aDxDy[i + 1] = aMarkerDy[idx];
+            }
+            if (aTextDx) {
+                aDxDy[i + 2] = aTextDx[idx];
+            }
+            if (aTextDy) {
+                aDxDy[i + 3] = aTextDy[idx];
+            }
+        }
+        geometry.data.aDxDy = aDxDy;
+        geometry.properties.aDxDy = aDxDy.slice();
+        if (aMarkerDx) {
+            geometry.properties.aMarkerDx = aMarkerDx;
+        }
+        if (aMarkerDy) {
+            geometry.properties.aMarkerDy = aMarkerDy;
+        }
+        if (aTextDx) {
+            geometry.properties.aTextDx = aTextDx;
+        }
+        if (aTextDy) {
+            geometry.properties.aTextDy = aTextDy;
+        }
+    }
+}
+
+function setMeshUniforms(uniforms, regl, geometry, symbol) {
     const [ defaultMarkerWidth, defaultMarkerHeight ] = getDefaultMarkerSize(geometry);
     setUniformFromSymbol(uniforms, 'markerOpacity', symbol, 'markerOpacity', 1);
     setUniformFromSymbol(uniforms, 'markerPerspectiveRatio', symbol, 'markerPerspectiveRatio', symbol.markerTextFit ? 0 : 1);
@@ -64,24 +175,15 @@ export function createMarkerMesh(regl, geometry, transform, symbolDef, symbol, f
     setUniformFromSymbol(uniforms, 'markerDx', symbol, 'markerDx', 0);
     setUniformFromSymbol(uniforms, 'markerDy', symbol, 'markerDy', 0);
     setUniformFromSymbol(uniforms, 'markerRotation', symbol, 'markerRotation', 0, v => v * Math.PI / 180);
-    setUniformFromSymbol(uniforms, 'pitchWithMap', symbol, 'markerPitchAlignment', 0, v => v === 'map' ? 1 : 0);
-    setUniformFromSymbol(uniforms, 'rotateWithMap', symbol, 'markerRotationAlignment', 0, v => v === 'map' ? 1 : 0);
+    setUniformFromSymbol(uniforms, 'markerPitchWithMap', symbol, 'markerPitchAlignment', 0, v => v === 'map' ? 1 : 0);
+    setUniformFromSymbol(uniforms, 'markerRotateWithMap', symbol, 'markerRotationAlignment', 0, v => v === 'map' ? 1 : 0);
 
-    uniforms['iconTex'] = iconAtlas ? createAtlasTexture(regl, iconAtlas, false) : null;
-    uniforms['texSize'] = iconAtlas ? [iconAtlas.width, iconAtlas.height] : [0, 0];
-    geometry.generateBuffers(regl, { excludeElementsInVAO: true });
-    const material = new reshader.Material(uniforms);
-    const mesh = new reshader.Mesh(geometry, material, {
-        // 必须关闭VAO，否则对vao中elements的更新会导致halo绘制出错
-        disableVAO: true,
-        transparent: true,
-        castShadow: false,
-        picking: true
-    });
-    const defines = {};
-    if (enableCollision) {
-        defines['ENABLE_COLLISION'] = 1;
-    }
+    const iconAtlas = geometry.properties.iconAtlas;
+    uniforms['iconTex'] = iconAtlas ? createAtlasTexture(regl, iconAtlas, false) : this._emptyTexture;
+    uniforms['iconTexSize'] = iconAtlas ? [iconAtlas.width, iconAtlas.height] : [0, 0];
+}
+
+function initMeshDefines(geometry, defines) {
     if (geometry.data.aMarkerWidth) {
         defines['HAS_MARKER_WIDTH'] = 1;
     }
@@ -91,32 +193,43 @@ export function createMarkerMesh(regl, geometry, transform, symbolDef, symbol, f
     if (geometry.data.aColorOpacity) {
         defines['HAS_OPACITY'] = 1;
     }
-    if (geometry.data.aMarkerDx) {
+    const symbolDef = this.getSymbolDef(geometry.properties.symbolIndex);
+    if (isFnTypeSymbol(symbolDef.markerDx)) {
         defines['HAS_MARKER_DX'] = 1;
     }
-    if (geometry.data.aMarkerDy) {
+    if (isFnTypeSymbol(symbolDef.markerDy)) {
         defines['HAS_MARKER_DY'] = 1;
     }
-    if (geometry.data.aPitchAlign) {
-        defines['HAS_PITCH_ALIGN'] = 1;
+    if (isFnTypeSymbol(symbolDef.textDx)) {
+        defines['HAS_TEXT_DX'] = 1;
     }
-    if (geometry.data.aRotationAlign) {
-        defines['HAS_ROTATION_ALIGN'] = 1;
+    if (isFnTypeSymbol(symbolDef.textDy)) {
+        defines['HAS_TEXT_DY'] = 1;
     }
-    if (geometry.data.aRotation) {
-        defines['HAS_ROTATION'] = 1;
+    if (isFnTypeSymbol(symbolDef.markerPitchAlignment)) {
+        defines['HAS_MARKER_PITCH_ALIGN'] = 1;
     }
-    if (geometry.data.aPadOffsetX) {
+    if (isFnTypeSymbol(symbolDef.textPitchAlignment)) {
+        defines['HAS_TEXT_PITCH_ALIGN'] = 1;
+    }
+    if (isFnTypeSymbol(symbolDef.markerRotationAlignment)) {
+        defines['HAS_MARKER_ROTATION_ALIGN'] = 1;
+    }
+    if (isFnTypeSymbol(symbolDef.textRotationAlignment)) {
+        defines['HAS_TEXT_ROTATION_ALIGN'] = 1;
+    }
+    if (isFnTypeSymbol(symbolDef.markerRotation)) {
+        defines['HAS_MARKER_ROTATION'] = 1;
+    }
+    if (isFnTypeSymbol(symbolDef.textRotation)) {
+        defines['HAS_TEXT_ROTATION'] = 1;
+    }
+    if (geometry.data.aPadOffset) {
         defines['HAS_PAD_OFFSET'] = 1;
     }
     if (geometry.data.aAltitude) {
         defines['HAS_ALTITUDE'] = 1;
     }
-    mesh.setDefines(defines);
-    mesh.setUniform('alphaTest', DEFAULT_ICON_ALPHA_TEST);
-    mesh.setLocalTransform(transform);
-    mesh.properties.symbolIndex = geometry.properties.symbolIndex;
-    return mesh;
 }
 
 export function prepareMarkerGeometry(iconGeometry, symbolDef, iconFnTypeConfig, layer) {
@@ -126,6 +239,7 @@ export function prepareMarkerGeometry(iconGeometry, symbolDef, iconFnTypeConfig,
 
 function prepareIconGeometry(iconGeometry) {
     const { aMarkerWidth, aMarkerHeight, aMarkerDx, aMarkerDy, aPitchAlign, aRotationAlign, aRotation, aOverlap } = iconGeometry.data;
+
     if (aMarkerWidth) {
         //for collision
         const keyName = (PREFIX + 'aMarkerWidth').trim();
@@ -176,10 +290,16 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
     const markerOpacityFn = interpolated(symbolDef['markerOpacity']);
     const markerTextFitFn = interpolated(symbolDef['markerTextFit']);
     const markerPitchAlignmentFn = piecewiseConstant(symbolDef['markerPitchAlignment']);
+    const textPitchAlignmentFn = piecewiseConstant(symbolDef['textPitchAlignment']);
     const markerRotationAlignmentFn = piecewiseConstant(symbolDef['markerRotationAlignment']);
+    const textRotationAlignmentFn =  piecewiseConstant(symbolDef['textRotationAlignment']);
     const markerRotationFn = interpolated(symbolDef['markerRotation']);
+    const textRotationFn = interpolated(symbolDef['textRotation']);
     const markerAllowOverlapFn = piecewiseConstant(symbolDef['markerAllowOverlapFn']);
     const markerIgnorePlacementFn = piecewiseConstant(symbolDef['markerIgnorePlacement']);
+    const textOpacityFn = interpolated(symbolDef['textOpacity']);
+    const textDxFn = interpolated(symbolDef['textDx']);
+    const textDyFn = interpolated(symbolDef['textDy']);
     const u8 = new Int16Array(1);
     const u16 = new Uint16Array(1);
     return [
@@ -226,35 +346,86 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
                 return u8[0];
             }
         },
+        // markerDx, markerDy, textDx, textDy 集中在 aDxDy中是因为attributes数量会超过限制
         {
-            attrName: 'aMarkerDx',
+            attrName: 'aDxDy',
             symbolName: 'markerDx',
-            type: Uint8Array,
-            width: 1,
+            type: Int8Array,
+            width: 4,
+            index: 0,
             define: 'HAS_MARKER_DX',
-            evaluate: (properties, geometry) => {
+            evaluate: (properties, geometry, arr, index) => {
                 let x = markerDxFn(map.getZoom(), properties);
                 if (isFunctionDefinition(x)) {
                     x = this.evaluateInFnTypeConfig(x, geometry, map, properties);
                 }
-
+                const { aMarkerDx } = geometry.properties;
+                if (aMarkerDx) {
+                    aMarkerDx[index / 4] = x;
+                }
                 // const x = markerDxFn(map.getZoom(), properties);
                 u8[0] = x;
                 return u8[0];
             }
         },
         {
-            attrName: 'aMarkerDy',
+            attrName: 'aDxDy',
             symbolName: 'markerDy',
-            type: Uint8Array,
-            width: 1,
+            type: Int8Array,
+            width: 4,
+            index: 1,
             define: 'HAS_MARKER_DY',
-            evaluate: (properties, geometry) => {
+            evaluate: (properties, geometry, arr, index) => {
                 let x = markerDyFn(map.getZoom(), properties);
                 if (isFunctionDefinition(x)) {
                     x = this.evaluateInFnTypeConfig(x, geometry, map, properties);
                 }
-
+                const { aMarkerDy } = geometry.properties;
+                if (aMarkerDy) {
+                    aMarkerDy[Math.floor(index / 4)] = x;
+                }
+                u8[0] = x;
+                return u8[0];
+            }
+        },
+        {
+            attrName: 'aDxDy',
+            symbolName: 'textDx',
+            type: Int8Array,
+            width: 4,
+            index: 2,
+            define: 'HAS_TEXT_DX',
+            evaluate: (properties, geometry, arr, index) => {
+                let x = textDxFn(map.getZoom(), properties);
+                if (isFunctionDefinition(x)) {
+                    x = this.evaluateInFnTypeConfig(x, geometry, map, properties);
+                }
+                const { aTextDx } = geometry.properties;
+                if (aTextDx) {
+                    aTextDx[Math.floor(index / 4)] = x;
+                }
+                // const x = markerDxFn(map.getZoom(), properties);
+                u8[0] = x;
+                return u8[0];
+            }
+        },
+        {
+            attrName: 'aDxDy',
+            symbolName: 'textDy',
+            type: Int8Array,
+            width: 4,
+            index: 3,
+            define: 'HAS_TEXT_DY',
+            evaluate: (properties, geometry, arr, index) => {
+                let x = textDyFn(map.getZoom(), properties);
+                if (isFunctionDefinition(x)) {
+                    x = this.evaluateInFnTypeConfig(x, geometry, map, properties);
+                }
+                const { aTextDy } = geometry.properties;
+                if (aTextDy) {
+                    aTextDy[Math.floor(index / 4)] = x;
+                }
+                // const x = markerDxFn(map.getZoom(), properties);
                 u8[0] = x;
                 return u8[0];
             }
@@ -263,12 +434,35 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             attrName: 'aColorOpacity',
             symbolName: 'markerOpacity',
             type: Uint8Array,
-            width: 1,
+            width: 2,
+            index: 0,
             define: 'HAS_OPACITY',
             evaluate: (properties, geometry) => {
-                let opacity = markerOpacityFn(map.getZoom(), properties);
-                if (isFunctionDefinition(opacity)) {
-                    opacity = this.evaluateInFnTypeConfig(opacity, geometry, map, properties);
+                let opacity = 1;
+                if (markerOpacityFn) {
+                    opacity = markerOpacityFn(map.getZoom(), properties);
+                    if (isFunctionDefinition(opacity)) {
+                        opacity = this.evaluateInFnTypeConfig(opacity, geometry, map, properties);
+                    }
+                }
+                u8[0] = opacity * 255;
+                return u8[0];
+            }
+        },
+        {
+            attrName: 'aColorOpacity',
+            symbolName: 'textOpacity',
+            type: Uint8Array,
+            width: 2,
+            index: 1,
+            define: 'HAS_OPACITY',
+            evaluate: (properties, geometry) => {
+                let opacity = 1;
+                if (textOpacityFn) {
+                    opacity = textOpacityFn(map.getZoom(), properties);
+                    if (isFunctionDefinition(opacity)) {
+                        opacity = this.evaluateInFnTypeConfig(opacity, geometry, map, properties);
+                    }
                 }
                 u8[0] = opacity * 255;
                 return u8[0];
@@ -278,7 +472,8 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             attrName: 'aPitchAlign',
             symbolName: 'markerPitchAlignment',
             type: Uint8Array,
-            width: 1,
+            width: 2,
+            index: 0,
             define: 'HAS_PITCH_ALIGN',
             evaluate: properties => {
                 const y = +(markerPitchAlignmentFn(map.getZoom(), properties) === 'map');
@@ -286,13 +481,38 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             }
         },
         {
+            attrName: 'aPitchAlign',
+            symbolName: 'textPitchAlignment',
+            type: Uint8Array,
+            width: 2,
+            index: 1,
+            define: 'HAS_PITCH_ALIGN',
+            evaluate: properties => {
+                const y = +(textPitchAlignmentFn(map.getZoom(), properties) === 'map');
+                return y;
+            }
+        },
+        {
             attrName: 'aRotationAlign',
             symbolName: 'markerRotationAlignment',
             type: Uint8Array,
-            width: 1,
-            define: 'HAS_ROTATION_ALIGN',
+            width: 2,
+            index: 0,
+            define: 'HAS_MARKER_ROTATION_ALIGN',
             evaluate: properties => {
                 const y = +(markerRotationAlignmentFn(map.getZoom(), properties) === 'map');
+                return y;
+            }
+        },
+        {
+            attrName: 'aRotationAlign',
+            symbolName: 'textRotationAlignment',
+            type: Uint8Array,
+            width: 2,
+            index: 1,
+            define: 'HAS_TEXT_ROTATION_ALIGN',
+            evaluate: properties => {
+                const y = +(textRotationAlignmentFn(map.getZoom(), properties) === 'map');
                 return y;
             }
         },
@@ -300,10 +520,24 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             attrName: 'aRotation',
             symbolName: 'markerRotation',
             type: Uint16Array,
-            width: 1,
-            define: 'HAS_ROTATION',
+            width: 2,
+            index: 0,
+            define: 'HAS_MARKER_ROTATION',
             evaluate: properties => {
                 const y = wrap(markerRotationFn(map.getZoom(), properties), 0, 360) * Math.PI / 180;
+                u16[0] = y * 9362;
+                return u16[0];
+            }
+        },
+        {
+            attrName: 'aRotation',
+            symbolName: 'textRotation',
+            type: Uint16Array,
+            width: 2,
+            index: 1,
+            define: 'HAS_TEXT_ROTATION',
+            evaluate: properties => {
+                const y = wrap(textRotationFn(map.getZoom(), properties), 0, 360) * Math.PI / 180;
                 u16[0] = y * 9362;
                 return u16[0];
             }
@@ -340,12 +574,19 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
     ];
 }
 
-export function prepareLabelIndex(map, iconGeometry, textGeometry, markerTextFit) {
-    if (!textGeometry || !markerTextFit || markerTextFit === 'none') {
+export function prepareLabelIndex(map, iconGeometry, markerTextFit) {
+    if (!iconGeometry || !markerTextFit || markerTextFit === 'none') {
         return;
     }
 
-    const labelIndex = buildLabelIndex(iconGeometry, textGeometry, markerTextFit);
+    const { iconAtlas, glyphAtlas } = iconGeometry.properties;
+    if (!iconAtlas || !glyphAtlas) {
+        return;
+    }
+
+    prepareElements(iconGeometry);
+
+    const labelIndex = buildLabelIndex(iconGeometry, markerTextFit);
     if (!iconGeometry.getElements().length) {
         return;
     }
@@ -354,45 +595,60 @@ export function prepareLabelIndex(map, iconGeometry, textGeometry, markerTextFit
     }
     iconGeometry.properties.labelIndex = labelIndex;
     const hasTextFit = labelIndex.length && markerTextFit && markerTextFit !== 'none';
-    if (hasTextFit && textGeometry) {
-        const labelShape = buildLabelShape(iconGeometry, textGeometry);
+    if (hasTextFit) {
+        const labelShape = buildLabelShape(iconGeometry);
         if (labelShape.length) {
             iconGeometry.properties.labelShape = labelShape;
-            fillTextFitData.call(this, map, iconGeometry, textGeometry);
+            fillTextFitData.call(this, map, iconGeometry);
         }
     }
 }
 
+function prepareElements(iconGeometry) {
+    if (iconGeometry.properties.iconElements) {
+        return;
+    }
+    const iconElements = [];
+    const textElements = [];
+    const elements = iconGeometry.elements;
+    const aType = iconGeometry.properties.aType;
+
+    for (let i = 0; i < elements.length; i++) {
+        const index = elements[i];
+        if (aType[index] === 0) {
+            iconElements.push(index);
+        } else {
+            textElements.push(index);
+        }
+    }
+    iconGeometry.properties.iconElements = new elements.constructor(iconElements);
+    iconGeometry.properties.textElements = new elements.constructor(textElements);
+}
+
 // labelIndex中存的是icon对应的label在textGeometry.element中的start和end
-function buildLabelIndex(iconGeometry, textGeometry, markerTextFit) {
+function buildLabelIndex(iconGeometry, markerTextFit) {
     let markerTextFitFn = iconGeometry.properties.textFitFn;
     if (isFunctionDefinition(markerTextFit)) {
         markerTextFitFn = iconGeometry.properties.textFitFn = piecewiseConstant(markerTextFit);
     }
     const isTextFit = markerTextFit !== 'none';
     const labelIndex = [];
-    const iconElements = iconGeometry.getElements();
-    const iconIds = iconGeometry.data.aPickingId;
+    const iconElements = iconGeometry.properties.iconElements;
+    const aPickingId = iconGeometry.data.aPickingId;
 
-    let textElements, textIds, textCounts;
-    if (textGeometry) {
-        textElements = textGeometry.getElements();
-        textIds = textGeometry.data.aPickingId;
-        textCounts = textGeometry.data.aCount;
-    }
+    const textElements = iconGeometry.properties.textElements;
+    const textIds = iconGeometry.data.aPickingId;
+    const textCounts = iconGeometry.properties.aCount;
 
     const features = iconGeometry.properties.features;
 
     let currentLabel;
-    if (textGeometry) {
-        let textId = textElements[0];
-        currentLabel = {
-            pickingId: textIds[textId],
-            start: 0,
-            end: textCounts[textId] * BOX_ELEMENT_COUNT
-        };
-    }
-
+    let textId = textElements[0];
+    currentLabel = {
+        pickingId: textIds[textId],
+        start: 0,
+        end: textCounts[textId] * BOX_ELEMENT_COUNT
+    };
     let labelVisitEnd = false;
     let hasLabel = false;
     let count = 0;
@@ -400,7 +656,7 @@ function buildLabelIndex(iconGeometry, textGeometry, markerTextFit) {
     //遍历所有的icon，当icon和aPickingId和text的相同时，则认为是同一个icon + text，并记录它的序号
     for (let i = 0; i < iconElements.length; i += BOX_ELEMENT_COUNT) {
         const idx = iconElements[i];
-        const pickingId = iconIds[idx];
+        const pickingId = aPickingId[idx];
         if (!labelVisitEnd && currentLabel) {
             //label的pickingId比icon的小，说明当前文字没有icon，则往前找到下一个label pickingId比当前icon大的label
             while (currentLabel.pickingId < pickingId && currentLabel.end < textElements.length) {
@@ -468,10 +724,10 @@ function buildLabelIndex(iconGeometry, textGeometry, markerTextFit) {
     return labelIndex;
 }
 
-function buildLabelShape(iconGeometry, textGeometry) {
+function buildLabelShape(iconGeometry) {
     const labelShape = [];
     const labelIndex = iconGeometry.properties.labelIndex;
-    const { aShape } = textGeometry.data;
+    const { aShape } = iconGeometry.data;
     let hasValue = false;
     for (let i = 0; i < labelIndex.length; i++) {
         const [start, end] = labelIndex[i];
@@ -480,7 +736,7 @@ function buildLabelShape(iconGeometry, textGeometry) {
         } else {
             hasValue = true;
             let minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
-            const elements = textGeometry.elements;
+            const elements = iconGeometry.properties.textElements;
             for (let ii = start; ii < end; ii++) {
                 const idx = elements[ii];
                 const x = aShape[idx * 2];
@@ -523,7 +779,7 @@ function fillTextFitData(map, iconGeometry) {
             markerTextFitFn = iconGeometry.properties.textFitFn = interpolated(symbolDef['markerTextFit']);
         }
         const { features } = iconGeometry.properties;
-        const elements = iconGeometry.properties.elements || iconGeometry.elements;
+        const elements = iconGeometry.properties.iconElements;
         const { aPickingId } = iconGeometry.data;
         const fitWidthIcons = [];
         const fitHeightIcons = [];
@@ -619,7 +875,7 @@ function fillTextFitData(map, iconGeometry) {
         }
     }
 
-    const textSymbolDef = this.getSymbolDef(iconGeometry.properties.textGeo.properties.symbolIndex);
+    const textSymbolDef = this.getSymbolDef(iconGeometry.properties.symbolIndex);
     const textFitFn = interpolated(textSymbolDef['textSize']);
 
     updateMarkerFitSize.call(this, map, iconGeometry);
@@ -631,11 +887,12 @@ function fillTextFitData(map, iconGeometry) {
 
 const DEFAULT_PADDING = [0, 0, 0, 0];
 export function updateMarkerFitSize(map, iconGeometry) {
-    const textGeometry = iconGeometry.properties.textGeo;
-    if (!textGeometry) {
+    const textGeometry = iconGeometry;
+    const textProps = textGeometry.properties;
+    if (!textProps.glyphAtlas || !textProps.textElements || !textProps.textElements.length) {
         return;
     }
-    const textProps = textGeometry.properties;
+
     const props = iconGeometry.properties;
     if (props.isFitConstant || !props.labelShape || !props.labelShape.length) {
         return;
@@ -643,7 +900,7 @@ export function updateMarkerFitSize(map, iconGeometry) {
     // const { symbolDef: markerSymbol } = props;
     // const { symbolDef } = textProps;
     const markerSymbol = this.getSymbolDef(iconGeometry.properties.symbolIndex);
-    const symbolDef = this.getSymbolDef(textGeometry.properties.symbolIndex);
+    const symbolDef = markerSymbol;
 
     const textSizeDef = symbolDef['textSize'];
     let textSizeFn;
@@ -668,7 +925,7 @@ export function updateMarkerFitSize(map, iconGeometry) {
     const { fitIcons, fitWidthIcons, fitHeightIcons } = props;
     const { aMarkerWidth, aMarkerHeight, labelShape } = props;
 
-    const elements = props.elements || iconGeometry.elements;
+    const elements = iconGeometry.properties.iconElements;
     const { features, aPickingId } = props;
     const fn = (idx, iconIndex, hasWidth, hasHeight) => {
         const minx = labelShape[iconIndex * 4];
@@ -695,13 +952,11 @@ export function updateMarkerFitSize(map, iconGeometry) {
             fitPadding = fn(zoom, properties);
         }
         fitPadding = fitPadding || DEFAULT_PADDING;
-        let aPadOffsetX, aPadOffsetY;
+        let aPadOffset;
         if (fitPadding[0] !== fitPadding[2] || fitPadding[1] !== fitPadding[3]) {
-            aPadOffsetX = props.aPadOffsetX;
-            aPadOffsetY = props.aPadOffsetY;
-            if (!aPadOffsetX) {
-                aPadOffsetX = props.aPadOffsetX = new Int8Array(aMarkerWidth.length);
-                aPadOffsetY = props.aPadOffsetY = new Int8Array(aMarkerWidth.length);
+            aPadOffset = props.aPadOffset;
+            if (!aPadOffset) {
+                aPadOffset = props.aPadOffset = new Int8Array(aMarkerWidth.length * 2);
             }
         }
         // delete properties['$layer'];
@@ -714,12 +969,14 @@ export function updateMarkerFitSize(map, iconGeometry) {
                 fillArray(aMarkerWidth, U8[0], idx, idx + BOX_VERTEX_COUNT);
                 aMarkerWidth.dirty = true;
             }
-            if (aPadOffsetX) {
+            if (aPadOffset) {
                 const offset = (fitPadding[1] + fitPadding[3]) / 2 - fitPadding[3];
                 I8[0] = offset;
-                if (aPadOffsetX[idx] !== I8[0]) {
-                    fillArray(aPadOffsetX, offset, idx, idx + BOX_VERTEX_COUNT);
-                    aPadOffsetX.dirty = true;
+                if (aPadOffset[idx * 2] !== I8[0]) {
+                    for (let i = idx; i < idx + BOX_VERTEX_COUNT; i++) {
+                        aPadOffset[i * 2] = offset;
+                    }
+                    aPadOffset.dirty = true;
                 }
             }
         }
@@ -730,12 +987,14 @@ export function updateMarkerFitSize(map, iconGeometry) {
                 fillArray(aMarkerHeight, U8[0], idx, idx + BOX_VERTEX_COUNT);
                 aMarkerHeight.dirty = true;
             }
-            if (aPadOffsetY) {
+            if (aPadOffset) {
                 const offset = fitPadding[0] - (fitPadding[0] + fitPadding[2]) / 2;
                 I8[0] = offset;
-                if (aPadOffsetY[idx] !== I8[0]) {
-                    fillArray(aPadOffsetY, offset, idx, idx + BOX_VERTEX_COUNT);
-                    aPadOffsetY.dirty = true;
+                if (aPadOffset[idx * 2 + 1] !== I8[0]) {
+                    for (let i = idx; i < idx + BOX_VERTEX_COUNT; i++) {
+                        aPadOffset[i * 2 + 1] = offset;
+                    }
+                    aPadOffset.dirty = true;
                 }
             }
         }
@@ -772,9 +1031,8 @@ export function updateMarkerFitSize(map, iconGeometry) {
             }
         }
     }
-    const { aPadOffsetX, aPadOffsetY } = props;
-    if (aPadOffsetX) {
-        iconGeometry.data.aPadOffsetX = aPadOffsetX;
-        iconGeometry.data.aPadOffsetY = aPadOffsetY;
+    const { aPadOffset } = props;
+    if (aPadOffset) {
+        iconGeometry.data.aPadOffset = aPadOffset;
     }
 }

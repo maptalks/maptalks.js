@@ -36,17 +36,17 @@ attribute float aColorOpacity;
 #if defined(HAS_PITCH_ALIGN)
     attribute float aPitchAlign;
 #else
-    uniform float pitchWithMap;
+    uniform float textPitchWithMap;
 #endif
 
-#if defined(HAS_ROTATION_ALIGN)
+#if defined(HAS_TEXT_ROTATION_ALIGN)
     attribute float aRotationAlign;
 #else
-    uniform float rotateWithMap;
+    uniform float textRotateWithMap;
 #endif
 
 uniform float flipY;
-#if defined(HAS_ROTATION)
+#if defined(HAS_TEXT_ROTATION)
     attribute float aRotation;
 #else
     uniform float textRotation;
@@ -57,7 +57,7 @@ uniform mat4 positionMatrix;
 uniform mat4 projViewModelMatrix;
 uniform float textPerspectiveRatio;
 
-uniform vec2 texSize;
+uniform vec2 glyphTexSize;
 uniform vec2 canvasSize;
 uniform float glyphSize;
 uniform float mapPitch;
@@ -72,7 +72,7 @@ uniform float isRenderingTerrain;
 #ifndef PICKING_MODE
     varying vec2 vTexCoord;
     varying float vGammaScale;
-    varying float vSize;
+    varying float vTextSize;
     varying float vOpacity;
 
     #ifdef HAS_TEXT_FILL
@@ -85,13 +85,9 @@ uniform float isRenderingTerrain;
         varying vec4 vTextHaloFill;
     #endif
 
-    #ifdef HAS_TEXT_HALO_RADIUS
-        attribute float aTextHaloRadius;
-        varying float vTextHaloRadius;
-    #endif
-    #ifdef HAS_TEXT_HALO_OPACITY
-        attribute float aTextHaloOpacity;
-        varying float vTextHaloOpacity;
+    #if defined(HAS_TEXT_HALO_RADIUS) || defined(HAS_TEXT_HALO_OPACITY)
+        attribute vec2 aTextHalo;
+        varying vec2 vTextHalo;
     #endif
 
     #include <highlight_vert>
@@ -123,19 +119,13 @@ void main() {
     #if defined(HAS_PITCH_ALIGN)
         float isPitchWithMap = aPitchAlign;
     #else
-        float isPitchWithMap = pitchWithMap;
+        float isPitchWithMap = textPitchWithMap;
     #endif
     #if defined(HAS_ROTATION_ALIGN)
         float isRotateWithMap = aRotationAlign;
     #else
-        float isRotateWithMap = rotateWithMap;
+        float isRotateWithMap = textRotateWithMap;
     #endif
-
-    vec2 shape = aShape / 10.0;
-    if (isPitchWithMap == 1.0 && flipY == 0.0) {
-        shape = shape * vec2(1.0, -1.0);
-    }
-    vec2 texCoord = aTexCoord;
 
     gl_Position = projViewModelMatrix * positionMatrix * vec4(position, 1.0);
     float projDistance = gl_Position.w;
@@ -154,8 +144,8 @@ void main() {
             0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
             4.0);
     }
-    
-    #ifdef HAS_ROTATION
+
+    #ifdef HAS_TEXT_ROTATION
         float rotation = -aRotation / 9362.0 - mapRotation * isRotateWithMap;
     #else
         float rotation = -textRotation - mapRotation * isRotateWithMap;
@@ -172,7 +162,14 @@ void main() {
     float angleCos = cos(rotation);
 
     mat2 shapeMatrix = mat2(angleCos, -1.0 * angleSin, angleSin, angleCos);
+
+    vec2 shape = aShape.xy / 10.0;
+    if (isPitchWithMap == 1.0 && flipY == 0.0) {
+        shape = shape * vec2(1.0, -1.0);
+    }
+    vec2 texCoord = aTexCoord;
     shape = shapeMatrix * (shape / glyphSize * myTextSize);
+
 
     float cameraScale;
     if (isRenderingTerrain == 1.0) {
@@ -180,7 +177,7 @@ void main() {
     } else {
         cameraScale = projDistance / cameraToCenterDistance;
     }
-    
+
     if (isPitchWithMap == 0.0) {
         vec2 offset = shape * 2.0 / canvasSize;
         gl_Position.xy += offset * perspectiveRatio * projDistance;
@@ -191,7 +188,7 @@ void main() {
         } else {
             offsetScale = tileRatio / zoomScale * cameraScale * perspectiveRatio;
         }
-        
+
         vec2 offset = shape;
         //乘以cameraScale可以抵消相机近大远小的透视效果
         gl_Position = projViewModelMatrix * positionMatrix * vec4(position + vec3(offset, 0.0) * offsetScale, 1.0);
@@ -208,10 +205,10 @@ void main() {
         } else {
             vGammaScale = cameraScale + mapPitch / 4.0;
         }
-        vTexCoord = texCoord / texSize;
+        vTexCoord = texCoord / glyphTexSize;
         vGammaScale = clamp(vGammaScale, 0.0, 1.0);
 
-        vSize = myTextSize;
+        vTextSize = myTextSize;
         #ifdef ENABLE_COLLISION
             vOpacity = aOpacity / 255.0;
         #else
@@ -230,12 +227,8 @@ void main() {
             vTextHaloFill = aTextHaloFill / 255.0;
         #endif
 
-        #ifdef HAS_TEXT_HALO_RADIUS
-            vTextHaloRadius = aTextHaloRadius;
-        #endif
-
-        #ifdef HAS_TEXT_HALO_OPACITY
-            vTextHaloOpacity = aTextHaloOpacity;
+        #if defined(HAS_TEXT_HALO_RADIUS) || defined(HAS_TEXT_HALO_OPACITY)
+            vTextHalo = aTextHalo;
         #endif
 
         highlight_setVarying();

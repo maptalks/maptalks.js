@@ -28,8 +28,8 @@ const style = [
             textFaceName: '微软雅黑',
             textSize: {
                 stops: [
-                    [1, 10],
-                    [10, 20]
+                    [1, 15],
+                    [10, 30]
                 ]
             }
         }

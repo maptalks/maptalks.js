@@ -11,6 +11,7 @@ const DEFAULT_VIEW = {
     zoom: 6,
     pitch: 0,
     bearing: 0,
+    devicePixelRatio: 1,
     lights: {
         ambient: {
             color: [0.1, 0.1, 0.1]

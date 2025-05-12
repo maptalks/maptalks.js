@@ -9,6 +9,7 @@ const DEFAULT_VIEW = {
     pitch: 0,
     bearing: 0,
     attribution: false,
+    devicePixelRatio: 1,
     lights: {
         ambient: {
             color: [0.1, 0.1, 0.1]
@@ -111,6 +112,7 @@ describe('layer related specs', () => {
         map = new maptalks.Map(container, {
             center: [0, 0],
             zoom: 3,
+            devicePixelRatio: 1,
             spatialReference: {
                 projection: 'EPSG:4326'
             }

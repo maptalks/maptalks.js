@@ -9,7 +9,8 @@ const DEFAULT_VIEW = {
     center: [0, 0],
     zoom: 6,
     pitch: 0,
-    bearing: 0
+    bearing: 0,
+    devicePixelRatio: 1
 };
 
 describe('priviledged specs', () => {

@@ -51,8 +51,10 @@ function prepareAttr(geometry, symbolDef, config, layer) {
         //     arr.buffer.destroy();
         // }
         // delete geometry.data[attrName];
-        geometry.deleteData(attrName);
-        removeFnTypePropArrs(geometry, attrName);
+        if (config.index === undefined) {
+            geometry.deleteData(attrName);
+            removeFnTypePropArrs(geometry, attrName);
+        }
         return null;
     }
     if (isFnTypeSymbol(symbolDef[symbolName])) {
@@ -101,7 +103,10 @@ function createZoomFnTypeIndexData(geometry, symbolDef, config) {
     const hasZoomIdentity = isIdentityFn && StyleUtil.checkIfIdentityZoomDependent(symbolName, symbolDef[symbolName].property, geoProps.features);
     if (!hasZoomIdentity && !stopValues.length) {
         //说明stops中没有function-type类型
-        removeFnTypePropArrs(geometry, attrName);
+        if (config.index === undefined) {
+            // config 中定义了 index，说明和其他属性共享，不能删除
+            removeFnTypePropArrs(geometry, attrName);
+        }
         return;
     }
 
@@ -109,12 +114,18 @@ function createZoomFnTypeIndexData(geometry, symbolDef, config) {
     const aIndex = createFnTypeFeatureIndex(features, aPickingId, symbolDef[symbolName].property, stopValues, hasZoomIdentity);
     if (!aIndex.length) {
         //说明瓦片中没有 function-type 中涉及的 feature
-        removeFnTypePropArrs(geometry, attrName);
+        if (config.index === undefined) {
+            removeFnTypePropArrs(geometry, attrName);
+        }
+        return;
+    }
+
+    geoProps[aIndexPropName] = aIndex;
+    if (geoProps[attrPropName]) {
+        // 当多个 symbolName 共享同一个 attribute 时，array无需再次创建
         return;
     }
     const arr = geometry.data[attrName];
-
-    geoProps[aIndexPropName] = aIndex;
     geoProps[attrPropName] = arr.BYTES_PER_ELEMENT ? new arr.constructor(arr) : new config.type(arr.length);
 
 }
@@ -277,14 +288,14 @@ function getFnTypePropertyStopValues(stops) {
  * @param {Function} evaluate
  */
 function updateFnTypeAttrib(geometry, aIndex, config, layer) {
-    const { attrName, evaluate } = config;
+    const { attrName, evaluate, index, width } = config;
     const { aPickingId, features } = geometry.properties;
     let arr;
     if (aIndex) {
         //二级stops存在与zoom有关的fn-type
         const attrProp = (PREFIX + attrName).trim();
         arr = geometry.properties[attrProp];
-        const len = arr.length / aPickingId.length;
+        const len = width;
         const l = aIndex.length;
         for (let i = 0; i < l; i += 2) {
             const start = aIndex[i];
@@ -293,7 +304,7 @@ function updateFnTypeAttrib(geometry, aIndex, config, layer) {
             if (!feature || !feature.feature) {
                 continue;
             }
-            evaluateAndUpdate(arr, feature, evaluate, start, end, len, geometry, layer);
+            evaluateAndUpdate(arr, feature, evaluate, start, end, len, index, geometry, layer);
         }
     } else {
         //存在fn-type，但symbol更新过，要重新计算arr里的值
@@ -318,7 +329,7 @@ function updateFnTypeAttrib(geometry, aIndex, config, layer) {
             }
             let feature = features[aPickingId[start]];
             if (feature && feature.feature) {
-                evaluateAndUpdate(arr, feature, evaluate, start, i === l - 1 ? l : i, len, geometry, layer);
+                evaluateAndUpdate(arr, feature, evaluate, start, i === l - 1 ? l : i, len, index, geometry, layer);
                 start = i;
             }
         }
@@ -330,7 +341,7 @@ function updateFnTypeAttrib(geometry, aIndex, config, layer) {
 }
 
 const SOURCE = {};
-function evaluateAndUpdate(arr, feature, evaluate, start, end, len, geometry, layer) {
+function evaluateAndUpdate(arr, feature, evaluate, start, end, len, valueIndex, geometry, layer) {
     feature = feature.feature;
     const properties = feature.properties || {};
     if (properties['$layer'] === undefined) {
@@ -367,9 +378,21 @@ function evaluateAndUpdate(arr, feature, evaluate, start, end, len, geometry, la
             }
             arr.dirty = true;
         }
-    } else if (arr[start] !== value) {
-        fillArray(arr, value, start, end);
-        arr.dirty = true;
+    } else {
+        // len > 1 且返回value不是array，则valueIndex必然不为undefined，例如IconPainter里的aDxDy
+        if (len > 1) {
+            for (let i = start * len; i < end * len; i += len) {
+                if (arr[i + valueIndex] !== value) {
+                    arr[i + valueIndex] = value;
+                    arr.dirty = true;
+                }
+            }
+        } else {
+            if (arr[start] !== value) {
+                fillArray(arr, value, start, end);
+                arr.dirty = true;
+            }
+        }
     }
 }
 

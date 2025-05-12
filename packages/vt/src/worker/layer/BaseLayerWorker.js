@@ -550,26 +550,32 @@ export default class BaseLayerWorker {
             options = extend(options, {
                 requestor: this.fetchIconGlyphs.bind(this),
                 //把 altitude 转为瓦片坐标
-                altitudeToTileScale: zScale * extent / this.options['tileSize'] / glScale
+                altitudeToTileScale: zScale * extent / this.options['tileSize'] / glScale,
+                pluginType: pluginConfig.renderPlugin.type
             });
-            // 如果同时定义了 marker 属性和text属性，textPlacement， textSpacing会被markerPlacement，markerSpacing代替
-            const symbols = PointPack.splitPointSymbol(symbol);
-            const fnTypes = VectorPack.genFnTypes(symbols[0]);
-            if (PointPack.needMerge(symbols[0], fnTypes, zoom)) {
-                features = PointPack.mergeLineFeatures(features, symbols[0], fnTypes, zoom);
+            let symbols = symbol;
+            if (!Array.isArray(symbol)) {
+                symbols = [symbol];
             }
-            return Promise.all(symbols.map((symbol, index) => {
-                if (index === 0) {
-                    options.fnTypes = fnTypes;
-                } else {
-                    delete options.fnTypes;
+            symbols = symbols.map((symbol, index) => {
+                if (symbol) {
+                    symbol.index = { index };
+                    symbol.isIconText = ifIsIconText(symbol);
                 }
-                return new PointPack(features, symbol, options).load(tileRatio);
+                return symbol;
+            }).filter(symbol => !!symbol);
+            return Promise.all(symbols.map((symbol) => {
+                const fnTypes = VectorPack.genFnTypes(symbol);
+                let packFeatures = features;
+                if (PointPack.needMerge(symbol, fnTypes, zoom)) {
+                    packFeatures = PointPack.mergeLineFeatures(features, symbol, fnTypes, zoom);
+                }
+                return new PointPack(packFeatures, symbol, options).load(tileRatio);
             }));
         } else if (type === 'native-point') {
             const altitudeToTileScale = zScale * extent / this.options['tileSize'] / glScale;
             options.altitudeToTileScale = altitudeToTileScale;
-            return parseSymbolAndGenPromises(features, symbol, options, NativePointPack, extent / tileSize);
+            return parseSymbolAndGenPromises(features, symbol, options, NativePointPack, tileRatio);
         } else if (type === 'line') {
             options = extend(options, {
                 requestor: this.fetchIconGlyphs.bind(this),
@@ -1051,4 +1057,10 @@ function getFnTypeProps(symbol, props, i) {
 
     }
     return props[i];
+}
+
+function ifIsIconText(symbol) {
+    // 如果symbol中没有marker，只有text时，则iconText为true
+    // isIconText 主要用在 getAnchors 和各种判断是否是沿线文字的判断逻辑中
+    return symbol.markerType || symbol.markerFile;
 }

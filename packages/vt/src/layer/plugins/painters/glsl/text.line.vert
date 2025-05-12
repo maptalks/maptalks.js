@@ -38,7 +38,7 @@ attribute float aColorOpacity;
 #if defined(HAS_PITCH_ALIGN)
     attribute float aPitchAlign;
 #else
-    uniform float pitchWithMap;
+    uniform float textPitchWithMap;
 #endif
 
 uniform float zoomScale;
@@ -47,7 +47,7 @@ uniform mat4 projViewModelMatrix;
 uniform float textPerspectiveRatio;
 uniform float mapPitch;
 
-uniform vec2 texSize;
+uniform vec2 glyphTexSize;
 uniform vec2 canvasSize;
 uniform float tileRatio; //EXTENT / tileSize
 
@@ -59,7 +59,7 @@ uniform float textPitchFilter;
 #ifndef PICKING_MODE
     varying vec2 vTexCoord;
     varying float vGammaScale;
-    varying float vSize;
+    varying float vTextSize;
     varying float vOpacity;
 
 
@@ -73,15 +73,11 @@ uniform float textPitchFilter;
         varying vec4 vTextHaloFill;
     #endif
 
-    #ifdef HAS_TEXT_HALO_RADIUS
-        attribute float aTextHaloRadius;
-        varying float vTextHaloRadius;
+    #if defined(HAS_TEXT_HALO_RADIUS) || defined(HAS_TEXT_HALO_OPACITY)
+        attribute vec2 aTextHalo;
+        varying vec2 vTextHalo;
     #endif
 
-    #ifdef HAS_TEXT_HALO_OPACITY
-        attribute float aTextHaloOpacity;
-        varying float vTextHaloOpacity;
-    #endif
 
     #include <highlight_vert>
 #else
@@ -110,7 +106,7 @@ void main() {
     #ifdef HAS_PITCH_ALIGN
         float isPitchWithMap = aPitchAlign;
     #else
-        float isPitchWithMap = pitchWithMap;
+        float isPitchWithMap = textPitchWithMap;
     #endif
     gl_Position = projViewModelMatrix * vec4(position, 1.0);
     float projDistance = gl_Position.w;
@@ -176,8 +172,8 @@ void main() {
             vGammaScale = mix(1.0, cameraScale, textPerspectiveRatio);
         }
         vGammaScale = clamp(vGammaScale, 0.0, 1.0);
-        vTexCoord = texCoord / texSize;
-        vSize = myTextSize;
+        vTexCoord = texCoord / glyphTexSize;
+        vTextSize = myTextSize;
         #ifdef ENABLE_COLLISION
             vOpacity = aOpacity / 255.0;
         #else
@@ -195,12 +191,8 @@ void main() {
             vTextHaloFill = aTextHaloFill / 255.0;
         #endif
 
-        #ifdef HAS_TEXT_HALO_RADIUS
-            vTextHaloRadius = aTextHaloRadius;
-        #endif
-
-        #ifdef HAS_TEXT_HALO_OPACITY
-            vTextHaloOpacity = aTextHaloOpacity;
+        #if defined(HAS_TEXT_HALO_RADIUS) || defined(HAS_TEXT_HALO_OPACITY)
+            vTextHalo = aTextHalo;
         #endif
 
         highlight_setVarying();

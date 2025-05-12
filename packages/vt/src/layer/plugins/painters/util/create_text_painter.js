@@ -1,7 +1,14 @@
 import { mat4, vec4, reshader } from '@maptalks/gl';
-import { setUniformFromSymbol, createColorSetter, wrap, toUint8ColorInGlobalVar, isIconText } from '../../Util';
+import {
+    setUniformFromSymbol,
+    createColorSetter,
+    wrap,
+    toUint8ColorInGlobalVar,
+    isIconText,
+    extend
+} from '../../Util';
 import { DEFAULT_ICON_ALPHA_TEST } from '../Constant';
-import { prepareFnTypeData, PREFIX } from './fn_type_util';
+import { prepareFnTypeData, PREFIX, isFnTypeSymbol } from './fn_type_util';
 import { isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
 import Color from 'color';
 import { getAnchor, getLabelBox } from './get_label_box';
@@ -9,6 +16,10 @@ import { projectPoint } from './projection';
 import { getLabelContent } from './get_label_content';
 import { createAtlasTexture } from './atlas_util';
 import { INVALID_PROJECTED_ANCHOR } from '../../../../common/Constant';
+
+import text_render_frag from '../includes/text_render.frag';
+
+reshader.ShaderLib.register('text_render_frag', text_render_frag);
 
 const GAMMA_SCALE = 1;
 const BOX_ELEMENT_COUNT = 6;
@@ -47,63 +58,12 @@ export function createTextMesh(regl, geometry, transform, symbolDef, symbol, fnT
     if (symbolDef['textSize'] === 0 || symbolDef['textOpacity'] === 0) {
         return meshes;
     }
-    prepareFnTypeData(geometry, symbolDef, fnTypeConfig, this.layer);
 
 
     //避免重复创建属性数据
-    if (!geometry.properties.aCount) {
-        prepareGeometry.call(this, geometry, enableCollision || enableUniquePlacement, visibleInCollision);
-        const { aTextSize, aTextDx, aTextDy, aPitchAlign, aRotationAlign, aRotation, aOverlap, aAltitude } = geometry.data;
-        if (aTextSize) {
-            //for collision
-            const keyName = (PREFIX + 'aTextSize').trim();
-            geometry.properties.aTextSize = geometry.properties[keyName] || new aTextSize.constructor(aTextSize);
-        }
-        if (aTextDx) {
-            //for collision
-            const keyName = (PREFIX + 'aTextDx').trim();
-            geometry.properties.aTextDx = geometry.properties[keyName] || new aTextDx.constructor(aTextDx);
-        }
-        if (aTextDy) {
-            //for collision
-            const keyName = (PREFIX + 'aTextDy').trim();
-            geometry.properties.aTextDy = geometry.properties[keyName] || new aTextDy.constructor(aTextDy);
-        }
-        if (aPitchAlign) {
-            //for collision
-            const keyName = (PREFIX + 'aPitchAlign').trim();
-            geometry.properties.aPitchAlign = geometry.properties[keyName] || new aPitchAlign.constructor(aPitchAlign);
-        }
-        if (aRotationAlign) {
-            //for collision
-            const keyName = (PREFIX + 'aRotationAlign').trim();
-            geometry.properties.aRotationAlign = geometry.properties[keyName] || new aRotationAlign.constructor(aRotationAlign);
-        }
-        if (aRotation) {
-            //for collision
-            const keyName = (PREFIX + 'aRotation').trim();
-            geometry.properties.aRotation = geometry.properties[keyName] || new aRotation.constructor(aRotation);
-        }
-        if (aOverlap) {
-            //for collision
-            const keyName = (PREFIX + 'aOverlap').trim();
-            geometry.properties.aOverlap = geometry.properties[keyName] || new aOverlap.constructor(aOverlap);
-        }
-        if (aAltitude) {
-            const keyName = (PREFIX + 'aAltitude').trim();
-            geometry.properties.aAltitude = geometry.properties[keyName] || new aAltitude.constructor(aAltitude);
-        }
-    }
+    prepareTextGeometry.call(this, geometry, symbolDef, fnTypeConfig, enableCollision, visibleInCollision, enableUniquePlacement);
 
-    const glyphTexture = createAtlasTexture(regl, glyphAtlas, false);
-    const uniforms = {
-        flipY: 0,
-        tileResolution: geometry.properties.tileResolution,
-        tileRatio: geometry.properties.tileRatio,
-        texture: glyphTexture,
-        texSize: [glyphAtlas.width, glyphAtlas.height]
-    };
-    setMeshUniforms(geometry, uniforms, symbol);
+    const uniforms = initTextUniforms.call(this, {}, regl, geometry, symbol);
 
     let transparent = false;
     if (symbol['textOpacity'] < 1) {
@@ -135,114 +95,213 @@ export function createTextMesh(regl, geometry, transform, symbolDef, symbol, fnT
     meshes.push(mesh);
 
     if (uniforms['isHalo']) {
-        const uniforms1 = {
-            flipY: 0,
-            tileResolution: geometry.properties.tileResolution,
-            tileRatio: geometry.properties.tileRatio,
-            texture: glyphTexture,
-            texSize: [glyphAtlas.width, glyphAtlas.height],
-            isHalo: 0
-        };
-        setMeshUniforms(geometry, uniforms1, symbol);
-        const material = new reshader.Material(uniforms1, DEFAULT_UNIFORMS);
-        const textMesh = new reshader.Mesh(geometry, material, {
-            // 必须关闭VAO，否则对vao中elements的更新会导致halo绘制出错
-            disableVAO: true,
-            transparent,
-            castShadow: false,
-            picking: true
-        });
-        textMesh.setUniform('alphaTest', DEFAULT_ICON_ALPHA_TEST);
+        //TODO 需要在IconPainter中初始化halo的mesh
+        const textMesh = createHaloTextMesh.call(this, geometry, symbol, uniforms.glyphTex, glyphAtlas, enableCollision, transform);
         textMesh.properties.haloMesh = mesh;
-        // isLabelCollides 中，计算碰撞盒时需要
-        Object.defineProperty(textMesh.properties, 'textSize',  {
-            enumerable: true,
-            get: function () {
-                return uniforms1['textSize'];
-            }
-        });
-        if (enableCollision) {
-            textMesh.setDefines({
-                'ENABLE_COLLISION': 1
-            });
-        }
-        textMesh.setLocalTransform(transform);
         meshes.push(textMesh);
     }
 
-    meshes.forEach(mesh => {
-        const defines = mesh.defines || {};
-        if (geometry.data.aTextFill) {
-            defines['HAS_TEXT_FILL'] = 1;
-        }
-        if (geometry.data.aTextSize) {
-            defines['HAS_TEXT_SIZE'] = 1;
-        }
-        if (geometry.data.aColorOpacity) {
-            defines['HAS_OPACITY'] = 1;
-        }
-        if (geometry.data.aTextHaloFill && mesh.material.uniforms.isHalo) {
-            defines['HAS_TEXT_HALO_FILL'] = 1;
-        }
-        if (geometry.data.aTextHaloRadius && mesh.material.uniforms.isHalo) {
-            defines['HAS_TEXT_HALO_RADIUS'] = 1;
-        }
-        if (geometry.data.aTextHaloOpacity && mesh.material.uniforms.isHalo) {
-            defines['HAS_TEXT_HALO_OPACITY'] = 1;
-        }
-        if (geometry.data.aTextDx) {
-            defines['HAS_TEXT_DX'] = 1;
-        }
-        if (geometry.data.aTextDy) {
-            defines['HAS_TEXT_DY'] = 1;
-        }
-        if (geometry.data.aPitchAlign) {
-            defines['HAS_PITCH_ALIGN'] = 1;
-        }
-        if (geometry.data.aRotationAlign) {
-            defines['HAS_ROTATION_ALIGN'] = 1;
-        }
-        if (geometry.data.aRotation) {
-            defines['HAS_ROTATION'] = 1;
-        }
-        if (geometry.data.aAltitude) {
-            defines['HAS_ALTITUDE'] = 1;
-        }
-        if (geometry.properties.aOffset && geometry.properties.aShape && geometry.properties.aOffset.length !== geometry.properties.aShape.length) {
-            defines['HAS_OFFSET_Z'] = 1;
-        }
-        mesh.setDefines(defines);
-        mesh.properties.symbolIndex = geometry.properties.symbolIndex;
+    meshes.forEach(m => {
+        const defines = m.defines || {};
+        initTextMeshDefines.call(this, defines, m);
+        m.setDefines(defines);
+        m.properties.symbolIndex = geometry.properties.symbolIndex;
     });
 
     return meshes;
 }
 
+export function createHaloTextMesh(
+    geometry,
+    symbol,
+    glyphTexture,
+    glyphAtlas,
+    enableCollision,
+    transform
+) {
+    let transparent = false;
+    if (symbol['textOpacity'] < 1) {
+        transparent = true;
+    }
+    const uniforms1 = {
+        flipY: 0,
+        tileResolution: geometry.properties.tileResolution,
+        tileRatio: geometry.properties.tileRatio,
+        glyphTex: glyphTexture,
+        glyphTexSize: [glyphAtlas.width, glyphAtlas.height],
+        isHalo: 0
+    };
+    setMeshUniforms(geometry, uniforms1, symbol);
+    const material = new reshader.Material(uniforms1, DEFAULT_UNIFORMS);
+    const textMesh = new reshader.Mesh(geometry, material, {
+        // 必须关闭VAO，否则对vao中elements的更新会导致halo绘制出错
+        disableVAO: true,
+        transparent,
+        castShadow: false,
+        picking: true
+    });
+    textMesh.setUniform('alphaTest', DEFAULT_ICON_ALPHA_TEST);
+
+    // isLabelCollides 中，计算碰撞盒时需要
+    Object.defineProperty(textMesh.properties, 'textSize',  {
+        enumerable: true,
+        get: function () {
+            return uniforms1['textSize'];
+        }
+    });
+    if (enableCollision) {
+        textMesh.setDefines({
+            'ENABLE_COLLISION': 1
+        });
+    }
+    textMesh.setLocalTransform(transform);
+    return textMesh;
+}
+
+export function prepareTextGeometry(
+    geometry,
+    symbolDef,
+    fnTypeConfig,
+    enableCollision,
+    visibleInCollision,
+    enableUniquePlacement
+) {
+    prepareFnTypeData(geometry, symbolDef, fnTypeConfig, this.layer);
+    const geoProps = geometry.properties;
+    if (!geoProps.textInitialized) {
+        prepareGeometry.call(this, geometry, enableCollision || enableUniquePlacement, visibleInCollision);
+        geoProps.textInitialized = true;
+        const { aTextSize, aTextDx, aTextDy, aPitchAlign, aRotationAlign, aRotation, aOverlap, aAltitude } = geometry.data;
+        if (aTextSize) {
+            //for collision
+            const keyName = (PREFIX + 'aTextSize').trim();
+            geoProps.aTextSize = geoProps[keyName] || new aTextSize.constructor(aTextSize);
+        }
+        if (aTextDx) {
+            //for collision
+            const keyName = (PREFIX + 'aTextDx').trim();
+            geoProps.aTextDx = geoProps[keyName] || new aTextDx.constructor(aTextDx);
+        }
+        if (aTextDy) {
+            //for collision
+            const keyName = (PREFIX + 'aTextDy').trim();
+            geoProps.aTextDy = geoProps[keyName] || new aTextDy.constructor(aTextDy);
+        }
+
+        if (aPitchAlign) {
+            //for collision
+            const keyName = (PREFIX + 'aPitchAlign').trim();
+            geoProps.aPitchAlign = geoProps[keyName] || new aPitchAlign.constructor(aPitchAlign);
+        }
+        if (aRotationAlign) {
+            //for collision
+            const keyName = (PREFIX + 'aRotationAlign').trim();
+            geoProps.aRotationAlign = geoProps[keyName] || new aRotationAlign.constructor(aRotationAlign);
+        }
+        if (aRotation) {
+            //for collision
+            const keyName = (PREFIX + 'aRotation').trim();
+            geoProps.aRotation = geoProps[keyName] || new aRotation.constructor(aRotation);
+        }
+        if (aOverlap) {
+            //for collision
+            const keyName = (PREFIX + 'aOverlap').trim();
+            geoProps.aOverlap = geoProps[keyName] || new aOverlap.constructor(aOverlap);
+        }
+        if (aAltitude) {
+            const keyName = (PREFIX + 'aAltitude').trim();
+            geoProps.aAltitude = geoProps[keyName] || new aAltitude.constructor(aAltitude);
+        }
+    }
+}
+
+export function initTextUniforms(uniforms, regl, geometry, symbol) {
+    const glyphAtlas = geometry.properties.glyphAtlas;
+    const glyphTexture = glyphAtlas && createAtlasTexture(regl, glyphAtlas, false);
+    uniforms = uniforms || {};
+    extend(uniforms, {
+        flipY: 0,
+        tileResolution: geometry.properties.tileResolution,
+        tileRatio: geometry.properties.tileRatio,
+        glyphTex: glyphTexture || this._emptyTexture,
+        glyphTexSize: [glyphAtlas && glyphAtlas.width || 0, glyphAtlas && glyphAtlas.height || 0]
+    });
+    setMeshUniforms(geometry, uniforms, symbol);
+    return uniforms;
+}
+
+export function initTextMeshDefines(defines, mesh) {
+    const geometry = mesh.geometry;
+    if (geometry.data.aTextFill) {
+        defines['HAS_TEXT_FILL'] = 1;
+    }
+    if (geometry.data.aTextSize) {
+        defines['HAS_TEXT_SIZE'] = 1;
+    }
+    if (geometry.data.aColorOpacity) {
+        defines['HAS_OPACITY'] = 1;
+    }
+    if (geometry.data.aTextHaloFill && mesh.material.uniforms.isHalo) {
+        defines['HAS_TEXT_HALO_FILL'] = 1;
+    }
+    const symbolDef = this.getSymbolDef(geometry.properties.symbolIndex);
+    if (isFnTypeSymbol(symbolDef.textHaloRadius) && mesh.material.uniforms.isHalo) {
+        defines['HAS_TEXT_HALO_RADIUS'] = 1;
+    }
+    if (isFnTypeSymbol(symbolDef.textHaloOpacity) && mesh.material.uniforms.isHalo) {
+        defines['HAS_TEXT_HALO_OPACITY'] = 1;
+    }
+    if (isFnTypeSymbol(symbolDef.textDx)) {
+        defines['HAS_TEXT_DX'] = 1;
+    }
+    if (isFnTypeSymbol(symbolDef.textDy)) {
+        defines['HAS_TEXT_DY'] = 1;
+    }
+    if (geometry.data.aPitchAlign) {
+        defines['HAS_PITCH_ALIGN'] = 1;
+    }
+    if (isFnTypeSymbol(symbolDef.textRotationAlignment)) {
+        defines['HAS_TEXT_ROTATION_ALIGN'] = 1;
+    }
+    if (geometry.data.aRotation) {
+        defines['HAS_TEXT_ROTATION'] = 1;
+    }
+    if (geometry.data.aAltitude) {
+        defines['HAS_ALTITUDE'] = 1;
+    }
+    if (geometry.properties.aOffset && geometry.properties.aShape && geometry.properties.aOffset.length !== geometry.properties.aShape.length) {
+        defines['HAS_OFFSET_Z'] = 1;
+    }
+}
+
 function prepareGeometry(geometry, enableCollision, visibleInCollision) {
-    const symbol = this.getSymbol(geometry.properties.symbolIndex);
-    const isLinePlacement = geometry.properties.textPlacement === 'line' && !isIconText(symbol);
+    const geoProps = geometry.properties;
+    const symbol = this.getSymbol(geoProps.symbolIndex);
+    const isLinePlacement = geoProps.textPlacement === 'line' && !isIconText(symbol);
     const { aPosition, aShape } = geometry.data;
     const vertexCount = aPosition.length / geometry.desc.positionSize;
-    geometry.properties.aPickingId = geometry.data.aPickingId;
-    geometry.properties.aCount = geometry.data.aCount;
-    delete geometry.data.aCount;
+    geoProps.aPickingId = geometry.data.aPickingId;
+    if (!geoProps.aCount) {
+        geoProps.aCount = geometry.data.aCount;
+        delete geometry.data.aCount;
+    }
 
     if ((enableCollision || isLinePlacement)) {
-        geometry.properties.aAnchor = aPosition;
-        geometry.properties.aShape = aShape;
+        geoProps.aAnchor = aPosition;
+        geoProps.aShape = aShape;
     }
-    if (!geometry.properties.visElemts) {
-        geometry.properties.elements = geometry.elements;
-        geometry.properties.visElemts = new geometry.elements.constructor(geometry.elements.length);
+    if (!geoProps.visElemts) {
+        geoProps.elements = geometry.elements;
+        geoProps.visElemts = new geometry.elements.constructor(geometry.elements.length);
     }
 
     if (isLinePlacement) {
         const { aVertical, aSegment, aGlyphOffset, aPitchRotation } = geometry.data;
         const is3DPitchText = !!aPitchRotation;
-        geometry.properties.aGlyphOffset = aGlyphOffset;
-        geometry.properties.aPitchRotation = aPitchRotation;
-        geometry.properties.aSegment = aSegment;
-        geometry.properties.aVertical = aVertical;
+        geoProps.aGlyphOffset = aGlyphOffset;
+        geoProps.aPitchRotation = aPitchRotation;
+        geoProps.aSegment = aSegment;
+        geoProps.aVertical = aVertical;
 
         delete geometry.data.aSegment;
         delete geometry.data.aVertical;
@@ -254,7 +313,7 @@ function prepareGeometry(geometry, enableCollision, visibleInCollision) {
             usage: 'dynamic',
             data: new Int16Array(offsetLength)
         };
-        geometry.properties.aOffset = new Int16Array(offsetLength);
+        geoProps.aOffset = new Int16Array(offsetLength);
     }
 
     if (enableCollision) {
@@ -262,16 +321,16 @@ function prepareGeometry(geometry, enableCollision, visibleInCollision) {
             usage: 'dynamic',
             data: new Uint8Array(vertexCount)
         };
-        geometry.properties.aOpacity = new Uint8Array(vertexCount);
+        geoProps.aOpacity = new Uint8Array(vertexCount);
         if (visibleInCollision) {
-            geometry.properties.aOpacity.fill(255, 0);
+            geoProps.aOpacity.fill(255, 0);
             geometry.data.aOpacity.data.fill(255, 0);
         }
 
-        const { aTextHaloRadius } = geometry.data;
-        if (aTextHaloRadius && !geometry.properties.aTextHaloRadius) {
-            const keyName = (PREFIX + 'aTextHaloRadius').trim();
-            geometry.properties.aTextHaloRadius = geometry.properties[keyName] || new aTextHaloRadius.constructor(aTextHaloRadius);
+        const { aTextHalo } = geometry.data;
+        if (aTextHalo && !geoProps.aTextHalo) {
+            const keyName = (PREFIX + 'aTextHalo').trim();
+            geoProps.aTextHalo = geoProps[keyName] || new aTextHalo.constructor(aTextHalo);
         }
     }
 }
@@ -295,15 +354,15 @@ function setMeshUniforms(geometry, uniforms, symbol) {
     setUniformFromSymbol(uniforms, 'textPerspectiveRatio', symbol, 'textPerspectiveRatio', DEFAULT_UNIFORMS['textPerspectiveRatio'], v => {
         return geometry.properties.textPlacement === 'line' ? 1 : v;
     });
-    setUniformFromSymbol(uniforms, 'rotateWithMap', symbol, 'textRotationAlignment', DEFAULT_UNIFORMS['textRotationAlignment'], v => +(v === 'map'));
-    setUniformFromSymbol(uniforms, 'pitchWithMap', symbol, 'textPitchAlignment', DEFAULT_UNIFORMS['textPitchAlignment'], v => +(v === 'map'));
+    setUniformFromSymbol(uniforms, 'textRotateWithMap', symbol, 'textRotationAlignment', DEFAULT_UNIFORMS['textRotationAlignment'], v => +(v === 'map'));
+    setUniformFromSymbol(uniforms, 'textPitchWithMap', symbol, 'textPitchAlignment', DEFAULT_UNIFORMS['textPitchAlignment'], v => +(v === 'map'));
     setUniformFromSymbol(uniforms, 'textSize', symbol, 'textSize', DEFAULT_UNIFORMS['textSize']);
     setUniformFromSymbol(uniforms, 'textDx', symbol, 'textDx', DEFAULT_UNIFORMS['textDx']);
     setUniformFromSymbol(uniforms, 'textDy', symbol, 'textDy', DEFAULT_UNIFORMS['textDy']);
     setUniformFromSymbol(uniforms, 'textRotation', symbol, 'textRotation', DEFAULT_UNIFORMS['textRotation'], v => v * Math.PI / 180);
 }
 
-export function createTextShader(canvas, sceneConfig) {
+export function createTextShader(canvas) {
     const viewport = {
         x: 0,
         y: 0,
@@ -337,33 +396,39 @@ export function createTextShader(canvas, sceneConfig) {
         viewport,
         stencil: { //fix #94, intel显卡的崩溃和blending关系比较大，开启stencil来避免blending
             enable: true,
+            mask: 0xFF,
             func: {
                 //halo的stencil ref更大，允许文字填充在halo上绘制
                 cmp: '<=', //renderer.isEnableWorkAround('win-intel-gpu-crash') ? '<' : '<=',
                 ref: (context, props) => {
                     return props.stencilRef;
-                }
+                },
+                mask: 0xFF
             },
             op: {
                 fail: 'keep',
                 zfail: 'keep',
                 zpass: 'replace'
-            }
+            },
+            // opBack: {
+            //     fail: 'keep',
+            //     zfail: 'keep',
+            //     zpass: 'replace'
+            // }
         },
         blend: {
             enable: true,
-            func: {
-                // src: 'src alpha',
-                // dst: 'one minus src alpha'
-                src: 'one',
-                dst: 'one minus src alpha'
-            },
+            func: this.getBlendFunc(),
             equation: 'add'
         },
         depth: {
             enable: true,
-            range: sceneConfig.depthRange || [0, 1],
-            func: sceneConfig.depthFunc || 'always',
+            range: () => {
+                return this.sceneConfig.depthRange || [0, 1];
+            },
+            func: () => {
+                return this.sceneConfig.depthFunc || 'always';
+            },
             mask: false
         },
         polygonOffset: {
@@ -450,11 +515,12 @@ export function getTextFnTypeConfig(map, symbolDef) {
             }
         },
         {
-            attrName: 'aTextHaloRadius',
+            attrName: 'aTextHalo',
             symbolName: 'textHaloRadius',
             define: 'HAS_TEXT_HALO_RADIUS',
             type: Uint8Array,
-            width: 1,
+            index: 0,
+            width: 2,
             evaluate: properties => {
                 const radius = textHaloRadiusFn(map.getZoom(), properties);
                 u8[0] = radius;
@@ -462,14 +528,15 @@ export function getTextFnTypeConfig(map, symbolDef) {
             }
         },
         {
-            attrName: 'aTextHaloOpacity',
+            attrName: 'aTextHalo',
             symbolName: 'textHaloOpacity',
             define: 'HAS_TEXT_HALO_OPACITY',
             type: Uint8Array,
-            width: 1,
+            index: 1,
+            width: 2,
             evaluate: properties => {
-                const radius = textHaloOpacityFn(map.getZoom(), properties);
-                u8[0] = radius;
+                const opacity = textHaloOpacityFn(map.getZoom(), properties);
+                u8[0] = opacity * 255;
                 return u8[0];
             }
         },
@@ -545,7 +612,7 @@ export function getTextFnTypeConfig(map, symbolDef) {
             symbolName: 'textRotation',
             type: Uint16Array,
             width: 1,
-            define: 'HAS_ROTATION',
+            define: 'HAS_TEXT_ROTATION',
             evaluate: properties => {
                 const y = wrap(textRotationFn(map.getZoom(), properties), 0, 360) * Math.PI / 180;
                 u16[0] = y * 9362;
@@ -593,12 +660,12 @@ export function isLabelCollides(hasCollides, mesh, elements, boxCount, start, en
     const geoProps = mesh.geometry.properties;
     const symbol = this.getSymbol(geoProps.symbolIndex);
     const isLinePlacement = geoProps.textPlacement === 'line' && !isIconText(symbol);
-    const { aTextSize, aTextHaloRadius, aShape } = geoProps;
-    let textSize = (aTextSize ? aTextSize[elements[start]] : mesh.properties.textSize);
+    const { aTextSize, aTextHalo, aShape } = geoProps;
+    let textSize = (aTextSize ? aTextSize[elements[start]] : symbol.textSize);
     if (textSize === null || textSize === undefined) {
         textSize = DEFAULT_UNIFORMS['textSize'];
     }
-    const haloRadius = aTextHaloRadius ? aTextHaloRadius[elements[start]] : mesh.properties.textHaloRadius;
+    const haloRadius = aTextHalo ? aTextHalo[elements[start] * 2] : mesh.properties.textHaloRadius;
 
     const anchor = getAnchor(ANCHOR, mesh, elements[start]);
     const { aProjectedAnchor } = mesh.geometry.properties;
@@ -621,7 +688,7 @@ export function isLabelCollides(hasCollides, mesh, elements, boxCount, start, en
     //2, 将每个box在collision index中测试
     //   2.1 如果不冲突，则显示label
     //   2.2 如果冲突，则隐藏label
-    if (!isLinePlacement && mesh.material.uniforms['rotateWithMap'] !== 1 && !symbol['textRotation']) {
+    if (!isLinePlacement && mesh.material.uniforms['textRotateWithMap'] !== 1 && !symbol['textRotation']) {
         // 既没有沿线绘制，也没有随地图旋转时，文字本身也没有旋转时，只需为每行文字生成一个box即可
         // 遍历文字的aShape.y，发生变化时，说明新行开始，用第一个字的tl和最后一个字的br生成box
         let firstChrIdx = elements[start];

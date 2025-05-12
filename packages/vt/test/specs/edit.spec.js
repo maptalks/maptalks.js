@@ -10,6 +10,7 @@ const DEFAULT_VIEW = {
     pitch: 0,
     bearing: 0,
     attribution: false,
+    devicePixelRatio: 1,
     lights: {
         ambient: {
             color: [0.1, 0.1, 0.1]

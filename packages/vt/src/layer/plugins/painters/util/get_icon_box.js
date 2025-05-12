@@ -51,8 +51,8 @@ export function getIconBox(out, mesh, i, matrix, map) {
     const { aShape, aMarkerDx, aMarkerDy, aMarkerWidth, aMarkerHeight, aPitchAlign, aRotationAlign, aRotation } = geoProps;
     const markerDx = aMarkerDx ? aMarkerDx[i] : symbol['markerDx'];
     const markerDy = aMarkerDy ? aMarkerDy[i] : symbol['markerDy'];
-    const pitchWithMap = aPitchAlign ? aPitchAlign[i] : uniforms['pitchWithMap'];
-    const rotateWithMap = aRotationAlign ? aRotationAlign[i] : uniforms['rotateWithMap'];
+    const pitchWithMap = aPitchAlign ? aPitchAlign[i * 2] : uniforms['markerPitchWithMap'];
+    const rotateWithMap = aRotationAlign ? aRotationAlign[i * 2] : uniforms['markerRotateWithMap'];
     const dxdy = vec2.set(DXDY, markerDx || 0, -(markerDy || 0));
 
     let tl = vec2.set(V2_0, aShape[i * 2] / 10, aShape[i * 2 + 1] / 10),
@@ -81,7 +81,14 @@ export function getIconBox(out, mesh, i, matrix, map) {
     vec2.mul(bl, bl, sizeScale);
     vec2.mul(br, br, sizeScale);
 
-    const rotation = -(aRotation ? aRotation[i] / 9362 : -(symbol['markerRotation'] || 0) * Math.PI / 180);
+    let boxRotation;
+    if (aRotation) {
+        boxRotation = aRotation[i * 2] / 9362;
+    } else {
+        boxRotation = -(symbol['markerRotation'] || 0) * Math.PI / 180;
+    }
+
+    const rotation = -boxRotation;
 
     //1. 获得shape的tl, tr, bl, 和br
     //2. 计算旋转矩阵: shapeMatrix

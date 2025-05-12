@@ -2,6 +2,7 @@ import { getGLTFLoaderBundle } from './GLTFBundle'
 import REGL, { Regl } from '@maptalks/regl';
 import { AttributeBufferData, AttributeType, NumberArray, TypedArray } from '../types/typings';
 import GraphicsDevice from '../webgpu/GraphicsDevice';
+import GraphicsTexture from '../webgpu/GraphicsTexture';
 
 /**
  * 对象是否是字符串
@@ -525,4 +526,14 @@ export function supportNPOT(regl: any) {
         return true;
     }
     return !regl['_gl'] || (regl['_gl'] instanceof WebGL2RenderingContext);
+}
+
+export function isTextureDestroyed(texture) {
+    if (texture instanceof GraphicsTexture) {
+        return !texture.texture;
+    }
+    if (texture['_texture']) {
+        return !texture['_texture'].texture;
+    }
+    return true;
 }

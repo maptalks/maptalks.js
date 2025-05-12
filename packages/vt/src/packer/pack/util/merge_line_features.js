@@ -10,7 +10,7 @@ export default function mergeLineFeatures(features, symbolDef, fnTypes, zoom) {
         const result = [];
         for (let i = 0; i < merging.length; i++) {
             if (!merging[i].property) {
-                result.push(features);
+                result.push(merging[i].features);
             } else {
                 result.push(mergeLines(merging[i].features, merging[i].property));
             }

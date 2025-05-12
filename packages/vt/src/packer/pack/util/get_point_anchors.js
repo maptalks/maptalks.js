@@ -5,9 +5,9 @@ import classifyRings from './classify_rings';
 import findPoleOfInaccessibility from './find_pole_of_inaccessibility';
 
 export function getPointAnchors(point, lineVertex, textMaxAngle, shape, scale, EXTENT, placement, spacing, is3DPitchText, altitudeToTileScale) {
-    const { feature, size, symbol } = point;
-    const glyphSize = size ? 24 : 0;
-    const fontScale = size ? size[0] / glyphSize : 1;
+    const { feature, iconSize, textSize, symbol } = point;
+    const glyphSize = (iconSize || textSize) ? 24 : 0;
+    const fontScale = textSize ? textSize[0] / glyphSize : 1;
     const textBoxScale = scale * fontScale;
     if (placement === 'line') {
         const anchors = [];

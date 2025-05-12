@@ -689,12 +689,10 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             markerWidthType: Uint16Array,
             markerHeightType: Uint16Array
         };
-        const textOptions = extend({}, markerOptions);
         markerOptions.allowEmptyPack = 1;
 
-        const symbols = PointPack.splitPointSymbol(this._markerSymbol);
-        return symbols.map((symbol, idx) => {
-            return new PointPack(idx === 0 ? markerFeatures : textFeatures, symbol, idx === 0 ? markerOptions : textOptions).load();
+        return [this._markerSymbol].map((symbol, idx) => {
+            return new PointPack(idx === 0 ? markerFeatures : textFeatures, symbol, markerOptions).load();
         });
     }
 
@@ -1435,7 +1433,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this._markerSymbol = markerSymbol;
         const sceneConfig = extend({}, ICON_PAINTER_SCENECONFIG, this.layer.options.sceneConfig || {});
         this._markerPainter = new IconPainter(this.regl, this.layer, markerSymbol, sceneConfig, 0);
-        this._markerPainter.setTextShaderDefines({
+        this._markerPainter.setShaderDefines({
             'REVERSE_MAP_ROTATION_ON_PITCH': 1
         });
 

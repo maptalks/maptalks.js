@@ -5,6 +5,7 @@ import collisionFrag from './glsl/collision.frag';
 import BasicPainter from './BasicPainter';
 import { clamp, isNil, getUniqueIds } from '../Util';
 import CollisionGroup from './CollisionGroup';
+import { isFnTypeSymbol } from './util/fn_type_util';
 // import { getLabelContent } from './util/get_label_content';
 
 
@@ -357,8 +358,11 @@ export default class CollisionPainter extends BasicPainter {
         if (visible) {
             const opacity = UINT8[0] = fadingOpacity * 255;
             for (let i = 0; i < l; i++) {
-                const { mesh, allElements, start, end, boxIndex } = meshBoxes[i];
-                this.setCollisionOpacity(mesh, allElements, opacity, start, end, boxIndex);
+                const { mesh, allElements, start, boxStart, end, boxIndex } = meshBoxes[i];
+                // boxStart 中是box的start，因为icon plugin数据中，text前面有halo，text的开始用来计算collide，而halo的开始用来显示
+                // 但text plugin数据中，则不存在boxStart
+                const startIndex = boxStart === undefined ? start : boxStart;
+                this.setCollisionOpacity(mesh, allElements, opacity, startIndex, end, boxIndex);
             }
         }
         // if (getLabelContent(mesh, allElements[start]) === '会稽山') {
@@ -1128,10 +1132,12 @@ export default class CollisionPainter extends BasicPainter {
         if (!mesh || !mesh.geometry) {
             return true;
         }
-        if (!mesh.geometry.properties.glyphAtlas || !mesh.material.get('isHalo') || mesh.geometry.data.aTextHaloRadius && mesh.geometry.properties.hasHalo) {
+        const symbolDef = this.getSymbolDef(mesh.geometry.properties.symbolIndex);
+        const hasHaloRadius = isFnTypeSymbol(symbolDef.textHaloRadius);
+        if (!mesh.geometry.properties.glyphAtlas || !mesh.material.get('isHalo') || hasHaloRadius && mesh.geometry.properties.hasHalo) {
             return false;
         }
-        if (mesh.geometry.data.aTextHaloRadius && !mesh.geometry.properties.hasHalo) {
+        if (hasHaloRadius && !mesh.geometry.properties.hasHalo) {
             return true;
         }
         const symbol = this.getSymbol(mesh.geometry.properties.symbolIndex);

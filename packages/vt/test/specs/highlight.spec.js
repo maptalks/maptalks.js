@@ -1,3 +1,4 @@
+const path = require('path');
 const assert = require('assert');
 const { readPixel } = require('../common/Util');
 const maptalks = require('maptalks');
@@ -11,6 +12,7 @@ const DEFAULT_VIEW = {
     pitch: 0,
     bearing: 0,
     attribution: false,
+    devicePixelRatio: 1,
     lights: {
         ambient: {
             color: [0.1, 0.1, 0.1]
@@ -90,6 +92,66 @@ describe('highlight specs', () => {
 
     afterEach(() => {
         map.remove();
+    });
+
+    it('should can highlight gltf-lit', done => {
+        const scale = Math.pow(2, 15);
+        const options = {
+            data: point,
+            style: [{
+                name: 'gltf-point',
+                renderPlugin: {
+                    type: 'gltf-lit',
+                    dataConfig: {
+                        type: 'native-point'
+                    }
+                },
+                symbol: {
+                    url: 'file://' + path.resolve(__dirname, './resources/gltf/Box.glb'),
+                    scaleX: scale,
+                    scaleY: scale,
+                    scaleZ: scale,
+                    polygonOpacity: 1
+                }
+            }],
+            pickingGeometry: true,
+            pickingPoint: true
+        };
+        const layer = new GeoJSONVectorTileLayer('gvt', options);
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                bloom: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        group.once('layerload', () => {
+            const highlights = [{
+                plugin: ['gltf-point'],
+                id: 0,
+                name: "highlightgltf",
+                color: [0, 1, 0, 1],
+                opacity: 0.5,
+                nodeIndex: 1
+            }];
+            layer.highlight(highlights);
+            setTimeout(() => {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                assert(pixel[1] > 100);
+                assert(pixel[3] < 160);
+                layer.cancelHighlight(["highlightgltf"]);
+                setTimeout(() => {
+                    const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                    //变成高亮的绿色，但只高亮了文字绘制的部分，所以颜色
+                    assert(pixel[1] < 10);
+                    assert(pixel[3] === 255);
+                    done();
+                }, 200);
+            }, 200);
+        });
+        group.addTo(map);
     });
 
     it('should can cancel highlight text, maptalks/issues#562', done => {

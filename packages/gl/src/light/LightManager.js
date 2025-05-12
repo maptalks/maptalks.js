@@ -63,7 +63,14 @@ class LightManager {
                 depth: false,
                 stencil: false,
                 alpha: false
-            }
+            },
+            optionalExtensions: [
+                'OES_standard_derivatives',
+                'OES_texture_half_float',
+                'OES_texture_half_float_linear',
+                'OES_texture_float',
+                'OES_texture_float_linear',
+            ]
         });
         regl._temp = true;
         return regl;
