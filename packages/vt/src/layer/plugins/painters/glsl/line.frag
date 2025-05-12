@@ -103,7 +103,7 @@ float dashAntialias(float dashMod, float dashWidth) {
 varying vec3 vVertex;
 uniform vec3 cameraPosition;
 uniform float cameraToCenterDistance;
-
+uniform float fogFactor;
 void main() {
     #ifndef ENABLE_TILE_STENCIL
     //当position的x, y超出tileExtent时，丢弃该片元
@@ -238,4 +238,10 @@ void main() {
     gl_FragColor *= perspectiveAlpha;
 
     gl_FragColor = highlight_blendColor(gl_FragColor);
+    if (fogFactor > 0.0) {
+        vec3 dir = vec3(vVertex[0] - cameraPosition[0], vVertex[1] - cameraPosition[1], vVertex[2] - cameraPosition[2]);
+        float fog_dist = length(dir);
+        float fog_alpha = clamp(1.0 - (fog_dist * 1.2) / fogFactor, 0.0, 1.0);
+        gl_FragColor *= fog_alpha;
+    }
 }

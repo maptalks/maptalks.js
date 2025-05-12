@@ -1,6 +1,6 @@
 import { Coordinate, Polygon, Point } from "maptalks";
 import * as reshader from '@maptalks/reshader.gl';
-import { mat4, quat } from '@maptalks/reshader.gl';
+import { mat4, quat} from '@maptalks/reshader.gl';
 import { earcut } from '@maptalks/reshader.gl';
 import { coordinateToWorld, normalizeColor, isNumber } from "../util/util";
 
@@ -41,7 +41,43 @@ export default class Mask extends Polygon {
         return this._mesh;
     }
 
+    setCoordinates(coordinates) {
+        super.setCoordinates(coordinates);
+        const layer = this.getLayer();
+        if (layer) {
+            delete layer['_maskProjViewMatrix'];
+            delete layer['_maskExtentInWorld'];
+        }
+        if (!this._mesh) {
+            return this;
+        }
+        const pos = this._createPOSITION();
+        const geometry = this._mesh.geometry;
+        geometry.updateData('POSITION', pos);
+        this._setLocalTransform(this._mesh);
+    }
+
     _createGeometry(regl) {
+        const geojson = this.toGeoJSON();
+        const data = earcut.flatten(geojson.geometry.coordinates);
+        const dimension = data.dimensions;
+        const pos = this._createPOSITION();
+        const triangles = earcut(pos, data.holes, 3);
+        const geometry = new reshader.Geometry({
+            POSITION: pos,
+            TEXCOORD: this._createTexcoords(data.vertices, dimension)
+        },
+            triangles,
+            0,
+            {
+                positionAttribute: 'POSITION',
+                uv0Attribute: 'TEXCOORD'
+            });
+        geometry.generateBuffers(regl);
+        return geometry;
+    }
+
+    _createPOSITION() {
         const map = this.getMap();
         const geojson = this.toGeoJSON();
         const data = earcut.flatten(geojson.geometry.coordinates);
@@ -63,19 +99,7 @@ export default class Mask extends Polygon {
             pos.push(data.vertices[i * dimension + 1] - centerPos[1]);
             pos.push(heightOffset);
         }
-        const triangles = earcut(pos, data.holes, 3);
-        const geometry = new reshader.Geometry({
-            POSITION: pos,
-            TEXCOORD: this._createTexcoords(data.vertices, dimension)
-        },
-            triangles,
-            0,
-            {
-                positionAttribute: 'POSITION',
-                uv0Attribute: 'TEXCOORD'
-            });
-        geometry.generateBuffers(regl);
-        return geometry;
+        return pos;
     }
 
     _createTexcoords(vertices, dimension) {
@@ -124,6 +148,7 @@ export default class Mask extends Polygon {
         const mMatrix = mat4.fromRotationTranslationScale(mesh.localTransform, quat.identity(QUAT), centerPos, SCALE);
         mesh.localTransform = mMatrix;
     }
+
 
     _dispose() {
         if (!this._mesh) {

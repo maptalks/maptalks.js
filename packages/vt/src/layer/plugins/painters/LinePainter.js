@@ -5,8 +5,6 @@ import { reshader } from '@maptalks/gl';
 import { vec2, mat4 } from '@maptalks/gl';
 import vert from './glsl/line.vert';
 import frag from './glsl/line.frag';
-import wgslVert from './wgsl/line_vert.wgsl';
-import wgslFrag from './wgsl/line_frag.wgsl';
 import pickingVert from './glsl/line.vert';
 import { setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar, isNil } from '../Util';
 import { prepareFnTypeData, isFnTypeSymbol } from './util/fn_type_util';
@@ -106,7 +104,8 @@ class LinePainter extends BasicPainter {
         const uniforms = {
             tileResolution: geometry.properties.tileResolution,
             tileRatio: geometry.properties.tileRatio,
-            tileExtent: geometry.properties.tileExtent
+            tileExtent: geometry.properties.tileExtent,
+            fogFactor: this.layer.options.fogFactor || 0
         };
         this.setLineUniforms(symbol, uniforms);
 
@@ -449,10 +448,7 @@ class LinePainter extends BasicPainter {
             this.picking = [new reshader.FBORayPicking(
                 this.renderer,
                 {
-                    name: 'line-picking',
-                    vert: pickingVert,
-                    wgslVert: wgslVert,
-                    defines: { 'PICKING_MODE': 1 },
+                    vert: '#define PICKING_MODE 1\n' + pickingVert,
                     uniforms: [
                         {
                             name: 'projViewModelMatrix',
@@ -496,9 +492,7 @@ class LinePainter extends BasicPainter {
 
 
         this.shader = new reshader.MeshShader({
-            name: 'vt-line',
             vert, frag,
-            wgslVert, wgslFrag,
             uniforms,
             defines,
             extraCommandProps: this.getExtraCommandProps(context)
@@ -536,6 +530,7 @@ class LinePainter extends BasicPainter {
                 enable: () => {
                     return this.isEnableTileStencil(context);
                 },
+                mask: 0xff,
                 func: {
                     cmp: () => {
                         return '<=';
