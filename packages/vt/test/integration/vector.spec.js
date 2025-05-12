@@ -25,6 +25,9 @@ const DEFAULT_VIEW = {
 describe('vector 3d integration specs', () => {
     let map, container;
     before(() => {
+        // const iconDebug = document.createElement('canvas');
+        // iconDebug.id = 'MAPTALKS_ICON_DEBUG';
+        // document.body.appendChild(iconDebug);
         container = document.createElement('div');
         container.style.width = '128px';
         container.style.height = '128px';
@@ -45,6 +48,7 @@ describe('vector 3d integration specs', () => {
             const count = style.renderingCount || 1;
             container.style.width = (style.containerWidth || 128) + 'px';
             container.style.height = (style.containerHeight || 128) + 'px';
+            options.devicePixelRatio = 1;
             map = new maptalks.Map(container, options);
             const layer = new Layer('vector', style.data, style.options);
             let counter = 0;
@@ -67,7 +71,7 @@ describe('vector 3d integration specs', () => {
                         const diffPath = dir + 'diff.png';
                         writeImageData(diffPath, result.diffImage, result.width, result.height);
                         const actualPath = dir + 'actual.png';
-                        writeImageData(actualPath, canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
+                        writeImageData(actualPath, canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
                     }
                     assert(result.diffCount === 0);
                     done();
@@ -151,12 +155,12 @@ const canvas = document.createElement('canvas');
 function writeImageData(path, arr, width, height) {
     canvas.width = width;
     canvas.height = height;
-    const imageData = canvas.getContext('2d').getImageData(0, 0, width, height);
+    const imageData = canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, width, height);
 
     for (let i = 0; i < arr.length; i++) {
         imageData.data[i] = arr[i];
     }
-    canvas.getContext('2d').putImageData(imageData, 0, 0);
+    canvas.getContext('2d', { willReadFrequently: true }).putImageData(imageData, 0, 0);
     const dataURL = canvas.toDataURL();
     const base64Data = dataURL.replace(/^data:image\/png;base64,/, '');
     fs.writeFileSync(path, base64Data, 'base64');

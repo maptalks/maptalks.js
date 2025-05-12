@@ -124,7 +124,7 @@ export default class IconRequestor {
                     const canvas = sprite.canvas;
                     const width = canvas.width;
                     const height = canvas.height;
-                    const data = canvas.getContext('2d').getImageData(0, 0, width, height).data;
+                    const data = canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, width, height).data;
                     images[url] = { data: { data: new Uint8ClampedArray(data), width, height }, url };
                     buffers.push(images[url].data.data.buffer);
                     this._addCache(url, data, width, height);

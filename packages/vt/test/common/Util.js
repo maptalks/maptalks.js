@@ -1,6 +1,6 @@
 const { match, writeImageData } = require('../integration/util');
 const canvas = document.createElement('canvas');
-const ctx = canvas.getContext('2d');
+const ctx = canvas.getContext('2d', { willReadFrequently: true });
 const assert = require('assert');
 
 function readPixel(target, x, y) {
@@ -28,7 +28,7 @@ function compareExpected(canvas, { expectedPath, expectedDiffCount }, done) {
             const diffPath = dir + 'diff.png';
             writeImageData(diffPath, result.diffImage, result.width, result.height);
             const actualPath = dir + 'actual.png';
-            writeImageData(actualPath, canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
+            writeImageData(actualPath, canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
         }
         assert(result.diffCount <= expectedDiffCount);
         if (done) {

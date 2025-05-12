@@ -30,6 +30,9 @@ const DEFAULT_VIEW = {
 describe('vector tile integration specs', () => {
     let map, container, server;
     before(done => {
+        // const iconDebug = document.createElement('canvas');
+        // iconDebug.id = 'MAPTALKS_ICON_DEBUG';
+        // document.body.appendChild(iconDebug);
         container = document.createElement('div');
         container.style.width = '128px';
         container.style.height = '128px';
@@ -57,6 +60,7 @@ describe('vector tile integration specs', () => {
             }
             const eventName = style.eventName || 'layerload';
             const limit = style.renderingCount || 1;
+            options.devicePixelRatio = 1;
             map = new maptalks.Map(container, options);
             style.debugCollision = true;
             style.tileLimitPerFrame = 0;
@@ -103,7 +107,7 @@ describe('vector tile integration specs', () => {
                             const diffPath = dir + 'diff.png';
                             writeImageData(diffPath, result.diffImage, result.width, result.height);
                             const actualPath = dir + 'actual.png';
-                            writeImageData(actualPath, canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
+                            writeImageData(actualPath, canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
                         }
                         // console.log(JSON.stringify(map.getView()));
                         assert(result.diffCount <= (style.diffCount || 0));
@@ -139,6 +143,7 @@ describe('vector tile integration specs', () => {
             if (!options.lights) {
                 options.lights = DEFAULT_VIEW.lights;
             }
+            options.devicePixelRatio = 1;
             map = new maptalks.Map(container, options);
             style.debugCollision = true;
             style.features = 0;
@@ -179,7 +184,7 @@ describe('vector tile integration specs', () => {
                             const diffPath = dir + 'diff.png';
                             writeImageData(diffPath, result.diffImage, result.width, result.height);
                             const actualPath = dir + 'actual.png';
-                            writeImageData(actualPath, canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
+                            writeImageData(actualPath, canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
                         }
                         assert(result.diffCount <= diffCount);
                         if (!finished) {
