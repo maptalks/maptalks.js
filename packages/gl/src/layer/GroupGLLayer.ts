@@ -41,7 +41,7 @@ const options: GroupGLLayerOptions = {
 };
 
 //
-const emptyMethod = () => {};
+const emptyMethod = () => { return; };
 const EMPTY_COORD0 = new maptalks.Coordinate(0, 0);
 const TEMP_VEC3: vec3 = [0, 0, 0];
 const coord0: [number, number, number] = [0, 0, 0], coord1: [number, number, number] = [0, 0, 0];
