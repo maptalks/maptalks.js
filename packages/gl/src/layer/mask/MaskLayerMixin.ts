@@ -7,7 +7,7 @@ import { MixinConstructor } from "maptalks";
 const maskLayerEvents = ['shapechange', 'heightrangechange', 'flatheightchange'];
 const COORD_EXTENT = new Coordinate(0, 0);
 const EXTENT_MIN: vec3 = [0, 0, 0], EXTENT_MAX: vec3 = [0, 0, 0];
-
+const EMPTY_MAT4 = mat4.identity([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 function clearMasks() {
     if (!this['_maskList']) {
         return this;
@@ -31,18 +31,6 @@ function normalizeHeight(minHeight, maxHeight) {
     return { ratio, minHeight: min };
 }
 
-function getProjViewMatrixInOrtho(extent) {
-    const map = this.getMap();
-    const preView = map.getView();
-    const zoom = map.getFitZoom(extent);
-    const center = extent.getCenter();
-    map.setView({ center, zoom, pitch: 0, bearing: 0 });
-    const mapExtent = map.getExtent();
-    const pvMatrix = mat4.copy([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], map.projViewMatrix);
-    map.setView(preView);
-    return { mapExtent, projViewMatrix: pvMatrix };
-}
-
 function hasVisibleMask() {
     for (let i = 0; i < this['_maskList'].length; i++) {
         if (this['_maskList'][i].isVisible()) {
@@ -55,7 +43,7 @@ function hasVisibleMask() {
 export default function <T extends MixinConstructor>(Base: T) {
     return class MaskLayerMixin extends Base {
         //@internal
-        _maskProjViewMatrix: number[];
+        _maskProjViewMatrix: mat4;
         //@internal
         _maskExtentInWorld: [number, number, number, number];
 
@@ -167,9 +155,9 @@ export default function <T extends MixinConstructor>(Base: T) {
             super['remove']();
         }
 
-        updateMask(extent): { projViewMatrix: number[], extentInWorld: [number, number, number, number]} {
+        updateMask(extent): { projViewMatrix: mat4, extentInWorld: [number, number, number, number]} {
             const map = this['getMap']();
-            const { projViewMatrix, mapExtent } = getProjViewMatrixInOrtho.call(this, extent);
+            const { projViewMatrix, mapExtent } = this.getProjViewMatrixInOrtho(extent);
             COORD_EXTENT.x = mapExtent.xmin;
             COORD_EXTENT.y = mapExtent.ymin;
             const extentPointMin = coordinateToWorld(EXTENT_MIN, COORD_EXTENT, map);
@@ -178,6 +166,18 @@ export default function <T extends MixinConstructor>(Base: T) {
             const extentPointMax = coordinateToWorld(EXTENT_MAX, COORD_EXTENT, map);
             const extentInWorld = [extentPointMin[0], extentPointMin[1], extentPointMax[0], extentPointMax[1]] as [number, number, number, number];
             return { projViewMatrix, extentInWorld };
+        }
+
+        getProjViewMatrixInOrtho(extent) {
+            const map = this['getMap']();
+            const preView = map.getView();
+            const zoom = map.getFitZoom(extent);
+            const center = extent.getCenter();
+            map.setView({ center, zoom, pitch: 0, bearing: 0 });
+            const mapExtent = map.getExtent();
+            const pvMatrix = mat4.copy(EMPTY_MAT4, map.projViewMatrix);
+            map.setView(preView);
+            return { mapExtent, projViewMatrix: pvMatrix };
         }
 
         updateMaskExtent(type: string) {
