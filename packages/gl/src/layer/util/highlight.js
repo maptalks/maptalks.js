@@ -102,7 +102,8 @@ export function highlightMesh(regl, mesh, highlighted, timestamp, feaIdIndiceMap
     if (timestamp === highlightTimestamp) {
         return;
     }
-    const vertexCount = mesh.geometry.getVertexCount();
+    const isInstanced = mesh instanceof reshader.InstancedMesh;
+    const vertexCount = isInstanced ? mesh.instanceCount : mesh.geometry.getVertexCount();
     let { aHighlightColor, aHighlightOpacity } = mesh.geometry.properties;
     if (aHighlightColor) {
         aHighlightColor.fill(0);
@@ -119,7 +120,10 @@ export function highlightMesh(regl, mesh, highlighted, timestamp, feaIdIndiceMap
         if (feaIdIndiceMap.has(id)) {
             // update attribute data
             const highlightedData = highlighted.get(id);
-            const { color, bloom, visible } = highlightedData;
+            const { color, bloom, visible, nodeIndex } = highlightedData;
+            if (!isNil(nodeIndex) && nodeIndex !== mesh.properties.nodeIndex) {
+                continue;
+            }
             let { opacity } = highlightedData;
             let normalizedColor;
             if (color) {
@@ -170,31 +174,54 @@ export function highlightMesh(regl, mesh, highlighted, timestamp, feaIdIndiceMap
         }
     }
 
+
+    const geometry = mesh.geometry;
     const defines = mesh.defines;
     if (hasColor) {
-        if (!mesh.geometry.data.aHighlightColor) {
-            mesh.geometry.data.aHighlightColor = aHighlightColor;
-            mesh.geometry.generateBuffers(regl);
+        if (isInstanced) {
+            mesh.updateInstancedData('aHighlightColor', aHighlightColor);
+            mesh.generateInstancedBuffers(regl);
         } else {
-            mesh.geometry.updateData('aHighlightColor', aHighlightColor);
+            if (!geometry.data.aHighlightColor) {
+                geometry.data.aHighlightColor = aHighlightColor;
+                geometry.generateBuffers(regl);
+            } else {
+                geometry.updateData('aHighlightColor', aHighlightColor);
+            }
+            geometry.properties.aHighlightColor = aHighlightColor;
         }
-        mesh.geometry.properties.aHighlightColor = aHighlightColor;
         defines['HAS_HIGHLIGHT_COLOR'] = 1;
     } else if (defines['HAS_HIGHLIGHT_COLOR']) {
-        mesh.geometry.updateData('aHighlightColor', aHighlightColor);
+        if (isInstanced) {
+            mesh.updateInstancedData('aHighlightColor', aHighlightColor);
+            mesh.generateInstancedBuffers(regl);
+        } else {
+            geometry.updateData('aHighlightColor', aHighlightColor);
+        }
         delete defines['HAS_HIGHLIGHT_COLOR'];
     }
     if (hasOpacity) {
-        if (!mesh.geometry.data.aHighlightOpacity) {
-            mesh.geometry.data.aHighlightOpacity = aHighlightOpacity;
-            mesh.geometry.generateBuffers(regl);
+        if (isInstanced) {
+            mesh.updateInstancedData('aHighlightOpacity', aHighlightOpacity);
+            mesh.generateInstancedBuffers(regl);
         } else {
-            mesh.geometry.updateData('aHighlightOpacity', aHighlightOpacity);
+            if (!geometry.data.aHighlightOpacity) {
+                geometry.data.aHighlightOpacity = aHighlightOpacity;
+                geometry.generateBuffers(regl);
+            } else {
+                geometry.updateData('aHighlightOpacity', aHighlightOpacity);
+            }
+            geometry.properties.aHighlightOpacity = aHighlightOpacity;
         }
-        mesh.geometry.properties.aHighlightOpacity = aHighlightOpacity;
+
         defines['HAS_HIGHLIGHT_OPACITY'] = 1;
     } else if (defines['HAS_HIGHLIGHT_OPACITY']) {
-        mesh.geometry.updateData('aHighlightOpacity', aHighlightOpacity);
+        if (isInstanced) {
+            mesh.updateInstancedData('aHighlightOpacity', aHighlightOpacity);
+            mesh.generateInstancedBuffers(regl);
+        } else {
+            geometry.updateData('aHighlightOpacity', aHighlightOpacity);
+        }
         delete defines['HAS_HIGHLIGHT_OPACITY'];
     }
     if (invisibleIds && invisibleIds.size > 0) {
@@ -205,20 +232,20 @@ export function highlightMesh(regl, mesh, highlighted, timestamp, feaIdIndiceMap
             }
             pushIn(elements, value);
         });
-        mesh.geometry.properties.hasInvisible = true;
+        geometry.properties.hasInvisible = true;
         saveOldElements(mesh, elements);
         const info = {
             data: elements,
-            // type: mesh.geometry.getElementsType(elements),
-            primitive: mesh.geometry.getPrimitive()
+            // type: geometry.getElementsType(elements),
+            primitive: geometry.getPrimitive()
         };
-        if (mesh.geometry.elements !== mesh.geometry.properties.oldElementsBeforeHighlight && mesh.geometry.elements.destroy) {
-            mesh.geometry.deleteElements();
+        if (geometry.elements !== geometry.properties.oldElementsBeforeHighlight && geometry.elements.destroy) {
+            geometry.deleteElements();
         }
         elements = regl.elements(info);
-        mesh.geometry.setElements(elements);
-        mesh.geometry.generateBuffers(regl);
-    } else if (mesh.geometry.properties.hasInvisible) {
+        geometry.setElements(elements);
+        geometry.generateBuffers(regl);
+    } else if (geometry.properties.hasInvisible) {
         restoreOldElements(mesh);
     }
     mesh.setDefines(defines);
@@ -227,7 +254,7 @@ export function highlightMesh(regl, mesh, highlighted, timestamp, feaIdIndiceMap
     let hlBloomMesh = mesh.properties.hlBloomMesh;
     if (hlElements && hlElements.length) {
         if (!hlBloomMesh) {
-            const geo = new reshader.Geometry(mesh.geometry.data, hlElements, 0, mesh.geometry.desc);
+            const geo = new reshader.Geometry(geometry.data, hlElements, 0, geometry.desc);
             geo.generateBuffers(regl);
             const material = mesh.material;
             hlBloomMesh = new reshader.Mesh(geo, material, mesh.config);
@@ -248,7 +275,7 @@ export function highlightMesh(regl, mesh, highlighted, timestamp, feaIdIndiceMap
             hlBloomMesh.setLocalTransform(localTransform);
             hlBloomMesh.setPositionMatrix(positionMatrix);
             extend(hlBloomMesh.properties, mesh.properties);
-            extend(geo.properties, mesh.geometry.properties);
+            extend(geo.properties, geometry.properties);
             hlBloomMesh.setDefines(defines);
             hlBloomMesh.bloom = 1;
         } else {

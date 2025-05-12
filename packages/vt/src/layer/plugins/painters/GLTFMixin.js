@@ -105,6 +105,8 @@ const GLTFMixin = Base =>
                 instanceData.aTerrainAltitude = geometry.data.aTerrainAltitude;
             }
             const instanceBuffers = {};
+            const instancePickingId = instanceData.aPickingId;
+            const pickingIdIndiceMap = generatePickingIndiceIndex(instancePickingId);
             //所有mesh共享一个 instance buffer，以节省内存
             for (const p in instanceData) {
                 instanceBuffers[p] = {
@@ -240,6 +242,9 @@ const GLTFMixin = Base =>
                     }
                     defines['HAS_LAYER_OPACITY'] = 1;
                     extend(mesh.properties, geometry.properties);
+                    mesh.properties.aPickingId = instancePickingId;
+                    mesh.properties.nodeIndex = nodeIndex;
+                    mesh.properties.pickingIdIndiceMap = pickingIdIndiceMap;
                     mesh.setDefines(defines);
                     mesh.properties.symbolIndex = {
                         index: i
@@ -341,6 +346,7 @@ const GLTFMixin = Base =>
                     this._updateAnimation(meshes[i], symbolIndex, timestamp);
                 }
                 meshes[i].setUniform('skinAnimation', +isAnimated);
+                this._highlightMesh(meshes[i]);
             }
             this.scene.addMesh(meshes);
             return this;
@@ -760,3 +766,18 @@ export default GLTFMixin;
 // function getFitExtent(map, fitSize) {
 //     return fitSize * map.getGLScale();
 // }
+
+function generatePickingIndiceIndex(aPickingId) {
+    const pickingIdIndiceMap = new Map();
+    for (let i = 0; i < aPickingId.length; i++) {
+        const id = aPickingId[i];
+        let index = pickingIdIndiceMap.get(id);
+        if (!index) {
+            // pickingIdIndiceMap[id] = [];
+            index = [];
+            pickingIdIndiceMap.set(id, index);
+        }
+        index.push(i);
+    }
+    return pickingIdIndiceMap;
+}

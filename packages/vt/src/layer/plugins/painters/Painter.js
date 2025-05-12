@@ -630,6 +630,9 @@ class Painter {
                 coordinate: picked.coordinate,
                 plugin: this.pluginIndex,
             };
+            if (!isNil(mesh.properties.nodeIndex)) {
+                result.data.nodeIndex = mesh.properties.nodeIndex;
+            }
             // const idMap = mesh.geometry.properties.feaPickingIdMap;
             // if (idMap) {
             //     result.featureId = idMap[pickingId];
@@ -1224,7 +1227,8 @@ class Painter {
         if (mesh && mesh.properties.isHalo) {
             return;
         }
-        const { pickingIdIndiceMap } = mesh.geometry.properties;
+        const properties = mesh instanceof reshader.InstancedMesh ? mesh.properties : mesh.geometry.properties;
+        const { pickingIdIndiceMap } =  properties;
         const highlights = this._highlighted ? convertHighlights(mesh, this.layer, this._highlighted) : null;
         HighlightUtil.highlightMesh(this.regl, mesh, highlights, this._highlightTimestamp, pickingIdIndiceMap);
     }
@@ -1429,7 +1433,8 @@ function hashCode(s) {
 // * 如果highlight输入的是filter函数，则转换成过滤后数据的pickingId
 // 转换后gl中的highlightMesh方法只需要考虑id相关逻辑
 function convertHighlights(mesh, layer, inputHighlights) {
-    const { aPickingId, feaIdPickingMap, features } = mesh.geometry.properties;
+    const properties = mesh instanceof reshader.InstancedMesh ? mesh.properties : mesh.geometry.properties;
+    const { aPickingId, feaIdPickingMap, features } = properties;
     const highlights = new Map();
     const names = inputHighlights.keys();
     for (const name of names) {
