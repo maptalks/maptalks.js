@@ -72,6 +72,7 @@ export default class NativePointPack extends VectorPack {
         const placement = this.symbol['markerPlacement'] || 'point';
         const hasRotation = this.symbol.markerRotationAlignment === 'line';
         const anchors = this._getAnchors(point, spacing, placement, hasRotation);
+        const needAltitudeAttribute = this.needAltitudeAttribute();
         for (let ii = 0; ii < anchors.length; ii++) {
             const point = anchors[ii];
 
@@ -99,7 +100,12 @@ export default class NativePointPack extends VectorPack {
                 data.aColor[index++] = feaColor[3];
                 data.aColor.currentIndex = index;
             }
-            const max = Math.max(Math.abs(point.x), Math.abs(point.y));
+            let max;
+            if (needAltitudeAttribute) {
+                max = Math.max(Math.abs(point.x), Math.abs(point.y));
+            } else {
+                max = Math.max(Math.abs(point.x), Math.abs(point.y), Math.abs(point.z));
+            }
             if (max > this.maxPos) {
                 this.maxPos = max;
             }
