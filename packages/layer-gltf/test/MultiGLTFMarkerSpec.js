@@ -785,4 +785,45 @@ describe('MultiGLTFMarker', () => {
             }, 100);
         }
     });
+
+    it('addData should update pickingId(#issues/861)', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
+        const importData = initInstanceData0();
+        const multigltfmarker1 = new maptalks.MultiGLTFMarker(importData, {
+            symbol: {
+                url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
+            }
+        }).addTo(gltflayer);
+        multigltfmarker1.addData({
+            coordinates: center.add(-0.005, -0.005)
+        });
+        new maptalks.MultiGLTFMarker([{
+            coordinates: [0, 0, 0]
+        }], {
+            symbol: {
+                url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
+            }
+        }).addTo(gltflayer);
+        multigltfmarker1.on('load', () => {
+            const count = multigltfmarker1.getCount();
+            expect(count).to.be.equal(101);
+            setTimeout(function() {
+                const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixelMatch([143, 143, 143, 255], pixel1)).to.be.eql(true);
+                const pixel2 = pickPixel(map, map.width / 2, map.height / 2 - 50, 1, 1);
+                expect(pixelMatch([129, 129, 129, 255], pixel2)).to.be.eql(true);
+                const pixel3 = pickPixel(map, map.width / 2 + 50, map.height / 2 - 50, 1, 1);
+                expect(pixelMatch([129, 129, 129, 255], pixel3)).to.be.eql(true);
+                const pixel4 = pickPixel(map, map.width / 2 + 50, map.height / 2, 1, 1);
+                expect(pixelMatch([143, 143, 143, 255], pixel4)).to.be.eql(true);
+                done();
+            }, 100);
+        });
+    });
 });

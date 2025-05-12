@@ -86,6 +86,10 @@ export default class MultiGLTFMarker extends GLTFMarker {
             this._data = [];
         }
         this._data.push(item);
+        const layer = this.getLayer();
+        if (layer) {
+            layer._updateMarkerMap();
+        }
         this._dirty = true;
         return this;
     }
