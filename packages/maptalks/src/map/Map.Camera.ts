@@ -53,8 +53,6 @@ declare module "./Map" {
         //@internal
         _query3DTilesInfo(containerPoint: Point);
         //@internal
-        _queryTerrainInfo(containerPoint: Point);
-        //@internal
         queryPrjCoordAtContainerPoint(containerPoint: Point);
     }
 }
