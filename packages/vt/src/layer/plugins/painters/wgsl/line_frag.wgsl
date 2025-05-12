@@ -30,6 +30,7 @@ struct ShaderUniforms {
     currentTime: f32,
     cameraPosition: vec3f,
     cameraToCenterDistance: f32,
+    fogFactor: f32
 }
 
 @group(0) @binding($b) var<uniform> uniforms: LineFragmentUniforms;
@@ -238,9 +239,9 @@ fn main(input: VertexOutput) -> @location(0) vec4f {
         let shadowCoeff = shadow_computeShadow();
         fragColor.rgb = shadow_blend(fragColor.rgb, shadowCoeff);
     #endif
-
+    let cameraPosition = shaderUniforms.cameraPosition;
     let perspectiveAlpha = select(
-        clamp(shaderUniforms.cameraToCenterDistance * 1.5 / distance(input.vVertex, shaderUniforms.cameraPosition), 0.0, 1.0),
+        clamp(shaderUniforms.cameraToCenterDistance * 1.5 / distance(input.vVertex, cameraPosition), 0.0, 1.0),
         1.0,
         shaderUniforms.isRenderingTerrain == 1.0
     );
@@ -249,5 +250,11 @@ fn main(input: VertexOutput) -> @location(0) vec4f {
     #if HAS_HIGHLIGHT_COLOR || HAS_HIGHLIGHT_OPACITY
     fragColor = highlight_blendColor(fragColor, input);
     #endif
+    if (shaderUniforms.fogFactor > 0.0) {
+        let dir = vec3f(input.vVertex.x - cameraPosition.x, input.vVertex.y - cameraPosition.y, input.vVertex.z - cameraPosition.z);
+        let fog_dist = length(dir);
+        let fog_alpha = clamp(1.0 - (fog_dist * 1.2) / shaderUniforms.fogFactor, 0.0, 1.0);
+        fragColor *= fog_alpha;
+    }
     return fragColor;
 }
