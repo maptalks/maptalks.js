@@ -81,7 +81,7 @@ class UIComponent extends Eventable(Class) {
     //@internal
     _coordinate: Coordinate;
     //@internal
-    _onlyUpdatePostion: boolean;
+    _onlyUpdatePosition: boolean;
     //@internal
     _mapEventsOn: boolean;
     //@internal
@@ -268,13 +268,13 @@ class UIComponent extends Eventable(Class) {
          * @property {String} type - showstart
          * @property {ui.UIComponent} target - UIComponent
          */
-        if (!this._onlyUpdatePostion) {
+        if (!this._onlyUpdatePosition) {
             this.fire('showstart');
         }
         const container = this._getUIContainer();
         this._coordinate = coordinate;
         //only update postion not remove dom
-        if (!this._onlyUpdatePostion) {
+        if (!this._onlyUpdatePosition) {
             //when single will off map events
             this._removePrevDOM();
         }
@@ -282,7 +282,7 @@ class UIComponent extends Eventable(Class) {
             this._switchMapEvents('on');
         }
         let dom: HTMLElement;
-        if (!this._onlyUpdatePostion) {
+        if (!this._onlyUpdatePosition) {
             dom = this.__uiDOM = this.buildOn();
         } else {
             dom = this.__uiDOM;
@@ -299,14 +299,14 @@ class UIComponent extends Eventable(Class) {
              * @property {String} type - showend
              * @property {ui.UIComponent} target - UIComponent
              */
-            if (!this._onlyUpdatePostion) {
+            if (!this._onlyUpdatePosition) {
                 this.fire('showend');
             }
             this._collides();
             this.setZIndex(zIndex);
             return this;
         }
-        if (!this._onlyUpdatePostion) {
+        if (!this._onlyUpdatePosition) {
             this._measureSize(dom);
         }
 
@@ -319,7 +319,7 @@ class UIComponent extends Eventable(Class) {
 
         dom.style[TRANSITION as string] = null;
 
-        if (!this._onlyUpdatePostion) {
+        if (!this._onlyUpdatePosition) {
             container.appendChild(dom);
         }
 
@@ -371,7 +371,7 @@ class UIComponent extends Eventable(Class) {
                 dom.style[TRANSFORM] = this._toCSSTranslate(this._pos) + ' scale(1)';
             }
         }
-        if (!this._onlyUpdatePostion) {
+        if (!this._onlyUpdatePosition) {
             this.fire('showend');
         }
         this._collides();
@@ -867,7 +867,7 @@ class UIComponent extends Eventable(Class) {
 
     onGeometryPositionChange(param) {
         if (this._owner && this.isVisible()) {
-            this._onlyUpdatePostion = true;
+            this._onlyUpdatePosition = true;
             const target = param.target;
             const center = target.getCenter();
             if (target._getAltitude) {
@@ -877,7 +877,7 @@ class UIComponent extends Eventable(Class) {
                 }
             }
             this.show(center);
-            this._onlyUpdatePostion = false;
+            this._onlyUpdatePosition = false;
         }
     }
 
