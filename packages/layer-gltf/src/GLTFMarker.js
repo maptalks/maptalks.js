@@ -170,9 +170,9 @@ export default class GLTFMarker extends Marker {
                 return meshes;
             }
             let needUpdateMatrix = this.isAnimated() ||
-            (this._getMarkerPixelHeight() && map.isZooming()) ||
-            this._dirtyMarkerBBox ||
-            (this.getGLTFMarkerType() === 'multigltfmarker' && this._dirty);
+                (this._getMarkerPixelHeight() && map.isZooming()) ||
+                this._dirtyMarkerBBox ||
+                (this.getGLTFMarkerType() === 'multigltfmarker' && this._dirty);
             if (!needUpdateMatrix) {
                 const trsMatrix = this._modelMatrix;
                 mat4.copy(TEMP_MAT, trsMatrix);
@@ -314,7 +314,7 @@ export default class GLTFMarker extends Marker {
         }
         const markerUniforms = this.getUniforms();
         //此处涉及到材质的更新，比较耗费性能，对于不需要更新材质的操作尽量不去更新
-        if (markerUniforms  && this.isDirty() && this._isUniformsDirty()) {
+        if (markerUniforms && this.isDirty() && this._isUniformsDirty()) {
             for (const u in markerUniforms) {
                 mesh.setUniform(u, markerUniforms[u]);
             }
@@ -399,7 +399,7 @@ export default class GLTFMarker extends Marker {
         //updateTRSMatrx方法更新
         this._updateTRSMatrix();
         const modelMatrix = this.getModelMatrix();
-        const {nodeMatrixMap, skinMap } = this._updateAnimation(timestamp);
+        const { nodeMatrixMap, skinMap } = this._updateAnimation(timestamp);
         this._calSpatialScale(TEMP_SCALE);
         let zOffset = 0;
         meshes.forEach((mesh) => {
@@ -420,12 +420,12 @@ export default class GLTFMarker extends Marker {
             const gltfBBox = mesh.geometry.boundingBox;
             const meshBox = gltfBBox.copy(TEMP_BBOX);
             meshBox.transform(mesh.positionMatrix, mesh.localTransform);
-            const offset =  this._calAnchorTranslation(meshBox);
+            const offset = this._calAnchorTranslation(meshBox);
             if (Math.abs(offset) > Math.abs(zOffset)) {
                 zOffset = offset;
             }
             if (isAnimated) {
-                const skin  = skinMap[nodeIndex];
+                const skin = skinMap[nodeIndex];
                 if (skin) {
                     mesh.material.set('skinAnimation', 1);
                     mesh.material.set('jointTextureSize', skin.jointTextureSize);
@@ -543,7 +543,7 @@ export default class GLTFMarker extends Marker {
         const pointZ = map.altitudeToPoint(boxHeight, map.getGLRes());
         const heightInPoint = pixelHeight * map.getGLScale();
         const ratio = heightInPoint / pointZ;
-        return vec3.set(out, ratio , ratio , ratio);
+        return vec3.set(out, ratio, ratio, ratio);
     }
 
     getCurrentPixelHeight() {
@@ -592,7 +592,7 @@ export default class GLTFMarker extends Marker {
                 console.warn('animation specified does not exist!');
             }
         }
-        return {nodeMatrixMap, skinMap};
+        return { nodeMatrixMap, skinMap };
     }
 
     _createMeshes(data, gltfManager, regl) {
@@ -614,7 +614,7 @@ export default class GLTFMarker extends Marker {
         //如果gltfResource可重复使用，则直接创建mesh，否则，需要解析gltf结构
         if (gltfResource && gltfResource.resources) {
             if (!gltfResource.resources.length) {
-                this['_fireEvent']('modelerror', { url, info: 'there are no geomtries in the gltf model'});
+                this['_fireEvent']('modelerror', { url, info: 'there are no geomtries in the gltf model' });
                 return;
             }
             this.gltfPack = gltfResource.gltfPack;
@@ -698,12 +698,12 @@ export default class GLTFMarker extends Marker {
         const geometry = new reshader.Geometry({
             POSITION: BOX_POS
         },
-        BOX_INDEX,
-        0,
-        {
-            primitive : 'lines',
-            positionAttribute: 'POSITION'
-        });
+            BOX_INDEX,
+            0,
+            {
+                primitive: 'lines',
+                positionAttribute: 'POSITION'
+            });
         geometry.generateBuffers(this.regl);
         const mesh = new reshader.Mesh(geometry, new reshader.Material({ lineColor: this._bboxLineColor || BBOX_LINECOLOR, lineOpacity: this._bboxLineOpacity || BBOX_LINEOPACITY }));
         this._bboxMesh = mesh;
@@ -1011,11 +1011,14 @@ export default class GLTFMarker extends Marker {
 
     show() {
         super.updateSymbol({ visible: true });
+        super.show();
         return this;
     }
 
     hide() {
         super.updateSymbol({ visible: false });
+        super.hide();
+        return this;
     }
 
     setBloom(bloom) {
@@ -1093,6 +1096,9 @@ export default class GLTFMarker extends Marker {
     }
 
     isVisible() {
+        if (!super.isVisible()) {
+            return false;
+        }
         const symbol = this['_getInternalSymbol']();
         if (symbol && defined(symbol.visible)) {
             return symbol.visible;
@@ -1479,7 +1485,7 @@ export default class GLTFMarker extends Marker {
 
         const symbol = this.getSymbol();
         if (symbol) {
-            json.options['symbol'] =  JSON.parse(JSON.stringify(symbol));
+            json.options['symbol'] = JSON.parse(JSON.stringify(symbol));
         }
         return json;
     }
