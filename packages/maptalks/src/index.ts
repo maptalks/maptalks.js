@@ -8,11 +8,12 @@ import * as DomUtil from './core/util/dom';
 import * as StringUtil from './core/util/strings';
 import * as MapboxUtil from './core/mapbox';
 import * as BBOXUtil from './core/util/bbox';
+import { getResouceCacheInstance } from './core/ResourceCacheManager';
 /** @namespace math */
 export * as math from './core/math';
 
 import * as MicroTask from './core/MicroTask';
-export { Util, DomUtil, StringUtil, MapboxUtil, MicroTask, BBOXUtil };
+export { Util, DomUtil, StringUtil, MapboxUtil, MicroTask, BBOXUtil, getResouceCacheInstance };
 
 export { default as LRUCache } from './core/util/LRUCache';
 export { default as Ajax } from './core/Ajax';
