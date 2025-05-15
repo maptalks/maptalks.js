@@ -125,7 +125,7 @@ export function createGLContext(canvas, options, onlyWebGL1) {
     for (let i = 0; i < names.length; ++i) {
         try {
             gl = canvas.getContext(names[i], options);
-        } catch (e) {}
+        } catch (e) { }
         if (gl) {
             break;
         }
@@ -135,4 +135,27 @@ export function createGLContext(canvas, options, onlyWebGL1) {
     }
     return gl;
     /* eslint-enable no-empty */
+}
+
+export function isClockwise(ring) {
+    let sum = 0;
+    let i = 1;
+    let prev;
+    let cur;
+    ring = ring.map(c => {
+        return Array.isArray(c) ? c : c.toArray();
+    })
+    const first = ring[0], last = ring[ring.length - 1];
+    if (first[0] !== last[0] || first[1] !== last[1]) {
+        ring.push([...first]);
+    }
+    const len = ring.length;
+
+    while (i < len) {
+        prev = cur || ring[0];
+        cur = ring[i];
+        sum += (cur[0] - prev[0]) * (cur[1] + prev[1]);
+        i++;
+    }
+    return sum > 0;
 }
