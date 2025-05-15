@@ -174,7 +174,7 @@ describe('ResourceProxy.Spec', function () {
         })
     });
 
-    it('ResourceCacheManager cache key is number', function (done) {
+    it('#2550 ResourceCacheManager cache key is number', function (done) {
         const resourceCache = maptalks.getResouceCacheInstance();
         const image = new Image();
         image.onload = () => {
