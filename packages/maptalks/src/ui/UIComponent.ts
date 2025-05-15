@@ -81,7 +81,7 @@ class UIComponent extends Eventable(Class) {
     //@internal
     _coordinate: Coordinate;
     //@internal
-    _showBySymbolChange: boolean;
+    _onlyUpdatePostion: boolean;
     //@internal
     _mapEventsOn: boolean;
     //@internal
@@ -268,17 +268,25 @@ class UIComponent extends Eventable(Class) {
          * @property {String} type - showstart
          * @property {ui.UIComponent} target - UIComponent
          */
-        if (!this._showBySymbolChange) {
+        if (!this._onlyUpdatePostion) {
             this.fire('showstart');
         }
         const container = this._getUIContainer();
         this._coordinate = coordinate;
-        //when single will off map events
-        this._removePrevDOM();
+        //only update postion not remove dom
+        if (!this._onlyUpdatePostion) {
+            //when single will off map events
+            this._removePrevDOM();
+        }
         if (!this._mapEventsOn) {
             this._switchMapEvents('on');
         }
-        const dom = this.__uiDOM = this.buildOn();
+        let dom: HTMLElement;
+        if (!this._onlyUpdatePostion) {
+            dom = this.__uiDOM = this.buildOn();
+        } else {
+            dom = this.__uiDOM;
+        }
         dom['eventsPropagation'] = this.options['eventsPropagation'];
         this._observerDomSize(dom);
         const zIndex = this.options.zIndex;
@@ -291,15 +299,16 @@ class UIComponent extends Eventable(Class) {
              * @property {String} type - showend
              * @property {ui.UIComponent} target - UIComponent
              */
-            if (!this._showBySymbolChange) {
+            if (!this._onlyUpdatePostion) {
                 this.fire('showend');
             }
             this._collides();
             this.setZIndex(zIndex);
             return this;
         }
-
-        this._measureSize(dom);
+        if (!this._onlyUpdatePostion) {
+            this._measureSize(dom);
+        }
 
         if (this._singleton()) {
             (dom as any)._uiComponent = this;
@@ -310,8 +319,9 @@ class UIComponent extends Eventable(Class) {
 
         dom.style[TRANSITION as string] = null;
 
-        container.appendChild(dom);
-
+        if (!this._onlyUpdatePostion) {
+            container.appendChild(dom);
+        }
 
         const anim = this._getAnimation();
 
@@ -361,7 +371,7 @@ class UIComponent extends Eventable(Class) {
                 dom.style[TRANSFORM] = this._toCSSTranslate(this._pos) + ' scale(1)';
             }
         }
-        if (!this._showBySymbolChange) {
+        if (!this._onlyUpdatePostion) {
             this.fire('showend');
         }
         this._collides();
@@ -857,7 +867,7 @@ class UIComponent extends Eventable(Class) {
 
     onGeometryPositionChange(param) {
         if (this._owner && this.isVisible()) {
-            this._showBySymbolChange = true;
+            this._onlyUpdatePostion = true;
             const target = param.target;
             const center = target.getCenter();
             if (target._getAltitude) {
@@ -867,7 +877,7 @@ class UIComponent extends Eventable(Class) {
                 }
             }
             this.show(center);
-            delete this._showBySymbolChange;
+            this._onlyUpdatePostion = false;
         }
     }
 
@@ -1037,12 +1047,32 @@ class UIComponent extends Eventable(Class) {
     //@internal
     _onDomMouseover() {
         this._configMapPreventWheelScroll(false);
+        /**
+           * mouseover event.
+           *
+           * @event ui.UIComponent#mouseover
+           * @type {Object}
+           * @property {String} type - mouseover
+           * @property {ui.UIComponent} target - UIComponent
+           */
+
+        this.fire('mouseover');
     }
 
     // eslint-disable-next-line no-unused-vars
     //@internal
     _onDomMouseout() {
         this._configMapPreventWheelScroll(true);
+        /**
+        * mouseout event.
+        *
+        * @event ui.UIComponent#mouseout
+        * @type {Object}
+        * @property {String} type - mouseout
+        * @property {ui.UIComponent} target - UIComponent
+        */
+
+        this.fire('mouseout');
     }
 }
 
