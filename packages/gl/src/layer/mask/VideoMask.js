@@ -1,10 +1,24 @@
 import * as reshader from '@maptalks/reshader.gl';
 import Mask from './Mask';
+import { isClockwise } from '../util/util';
 
 export default class VideoMask extends Mask {
     constructor(coordinates, options) {
         super(coordinates, options);
         this._mode = 'video';
+    }
+
+    _correctCoordinates(coordinates) {
+        if (coordinates && Array.isArray(coordinates)) {
+            let coords = coordinates.map(c => {
+                return c;
+            })
+            if (!isClockwise(coords)) {
+                coords = coords.reverse();
+            }
+            return coords;
+        }
+        return coordinates;
     }
 
     play() {
