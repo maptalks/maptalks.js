@@ -1,5 +1,5 @@
 import Browser from './Browser';
-import { isSVG, isImageBitMap, isString, hasOwn } from './util';
+import { isSVG, isImageBitMap, hasOwn } from './util';
 
 type ResourceUrl = string | string[];
 
@@ -127,18 +127,12 @@ class ResourceCacheMap {
     //@internal
     _getImgUrl(url: ResourceUrl) {
         if (isImageBitMap(url)) {
-            return url;
+            return url as unknown as ImageBitmap;
         }
-        let imgUrl;
-        if (Array.isArray(url)) {
-            imgUrl = url[0];
-        } else if (isString(url)) {
-            imgUrl = url;
+        if (!Array.isArray(url)) {
+            return url as string;
         }
-        if (!imgUrl) {
-            console.error(`get url key error,the url is:`, url);
-        }
-        return imgUrl;
+        return url[0] as string;
     }
 
     remove() {

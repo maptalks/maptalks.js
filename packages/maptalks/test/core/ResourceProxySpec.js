@@ -110,6 +110,7 @@ describe('ResourceProxy.Spec', function () {
 
     it('load svgs', function (done) {
         ResourceProxy.loadSvgs(hostUrl + '/svgs.json').then(function (result) {
+            console.log(result);
             layer.clear();
             new maptalks.Marker(map.getCenter(), {
                 symbol: {
@@ -171,6 +172,17 @@ describe('ResourceProxy.Spec', function () {
                 done();
             }, 200);
         })
+    });
+
+    it('#2550 ResourceCacheManager cache key is number', function (done) {
+        const resourceCache = maptalks.getResouceCacheInstance();
+        const image = new Image();
+        image.onload = () => {
+            resourceCache.addResource(1, image);
+            expect(resourceCache.getImage(1)).to.be.ok();
+            done();
+        };
+        image.src = `${hostUrl}/arrow.png`;
     });
 
 
