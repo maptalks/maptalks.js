@@ -260,9 +260,11 @@ class UIMarker extends Handlerable(UIComponent) {
          */
         this.fire('positionchange');
         if (this.isVisible()) {
+            this._onlyUpdatePosition = true;
             this._coordinate = this._markerCoord;
             this._setPosition();
             this._collides();
+            this._onlyUpdatePosition = false;
         }
         return this;
     }
