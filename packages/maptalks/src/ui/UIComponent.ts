@@ -281,6 +281,7 @@ class UIComponent extends Eventable(Class) {
             //when single will off map events
             this._removePrevDOM();
         }
+        //bind map events
         if (!this._mapEventsOn) {
             this._switchMapEvents('on');
         }
@@ -468,6 +469,7 @@ class UIComponent extends Eventable(Class) {
             map._removeUI(this);
         }
         this.hide();
+        //remove map bind events
         this._switchEvents('off');
         if (this.onRemove) {
             this.onRemove();
