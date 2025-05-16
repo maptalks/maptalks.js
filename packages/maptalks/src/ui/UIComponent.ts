@@ -259,9 +259,6 @@ class UIComponent extends Eventable(Class) {
         }
 
         const visible = this.isVisible();
-        if (visible) {
-            this._onlyUpdatePosition = true;
-        }
 
         /**
          * showstart event.
