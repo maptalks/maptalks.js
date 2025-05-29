@@ -1,6 +1,6 @@
 import { Coordinate, Polygon, Point } from "maptalks";
 import * as reshader from '@maptalks/reshader.gl';
-import { mat4, quat} from '@maptalks/reshader.gl';
+import { mat4, quat } from '@maptalks/reshader.gl';
 import { earcut } from '@maptalks/reshader.gl';
 import { coordinateToWorld, normalizeColor, isNumber } from "../util/util";
 
@@ -42,7 +42,8 @@ export default class Mask extends Polygon {
     }
 
     setCoordinates(coordinates) {
-        super.setCoordinates(coordinates);
+        const coords = this._correctCoordinates ? this._correctCoordinates(coordinates) : coordinates;
+        super.setCoordinates(coords);
         const layer = this.getLayer();
         if (layer) {
             delete layer['_maskProjViewMatrix'];
