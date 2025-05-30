@@ -402,8 +402,11 @@ Map.include(/** @lends Map.prototype */{
         this._calcMatrices();
     },
 
-    getFitZoomForCamera(cameraPosition, pitch) {
-        const z = Array.isArray(cameraPosition) ? cameraPosition[2] : cameraPosition.z;
+    getFitZoomForCamera(cameraPosition: Array<number> | Coordinate, pitch: number) {
+        if (!isNumber(pitch)) {
+            pitch = 0;
+        }
+        const z = Array.isArray(cameraPosition) ? cameraPosition[2] || 0 : cameraPosition.z || 0;
         const cameraAltitude = z * this._meterToGLPoint;
 
         const centerAltitude = this.centerAltitude || 0;
@@ -641,8 +644,8 @@ Map.include(/** @lends Map.prototype */{
         const cp = [0, 0, 0],
             coord0 = [0, 0, 0, 1],
             coord1 = [0, 0, 0, 1];
-        return function (from: Vector3, to: Vector3, containerPoint: Point, near:number = 0, far:number = 1) {
-        const w2 = this.width / 2 || 1,
+        return function (from: Vector3, to: Vector3, containerPoint: Point, near: number = 0, far: number = 1) {
+            const w2 = this.width / 2 || 1,
                 h2 = this.height / 2 || 1;
             const p = containerPoint;
             set(cp as Vector3, (p.x - w2) / w2, (h2 - p.y) / h2, 0);
