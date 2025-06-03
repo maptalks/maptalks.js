@@ -117,6 +117,7 @@ function createMap() {
         mousemoveThrottleTime: -1,
         center,
         zoom: 17,
+        devicePixelRatio: 1,
         lights: lightConfig
     });
     return map;

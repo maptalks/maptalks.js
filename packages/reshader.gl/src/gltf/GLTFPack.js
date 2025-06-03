@@ -1,4 +1,4 @@
-import { mat4 } from 'gl-matrix';
+import { vec3, mat4 } from 'gl-matrix';
 import { defined, isNumber, isInterleaved, extend } from '../common/Util';
 import Skin from './Skin';
 import TRS from './TRS';
@@ -12,6 +12,7 @@ import Texture from '../Texture2D';
 let timespan = 0;
 
 const MAT4 = [];
+const TEMP_VEC = [];
 
 export default class GLTFPack {
 
@@ -462,6 +463,100 @@ export default class GLTFPack {
             wrapT: getTextureWrap(sampler.wrapT) || 'repeat'
         });
     }
+
+    /**
+     *
+     * @param map
+     * @param from
+     * @param to
+     * @param dist
+     * @param rotationZ 模型绕Z轴旋转角度，弧度
+     * @param rotationXY 模型绕Z轴与线段的交叉轴的旋转角度，弧度
+     * @param gltfScale
+     * @param projectionScale
+     * @param options
+     * @returns
+     */
+    arrangeAlongLine(from, to, xyDist, gltfScale, projectionScale, options) {
+        const items = [];
+        const rotationZ = this._getRotationZ(from, to);
+        // cm to mi
+        const zDist = (from.z || 0) - (to.z || 0);
+        const rotationXY = this._getRotationXY(xyDist, zDist);
+        let boxWidth = this._calBoxWidth(gltfScale, options);
+        boxWidth /= projectionScale;
+        const distance = Math.sqrt(xyDist * xyDist + zDist * zDist);
+        const times = Math.floor(distance / boxWidth);
+        //取余缩放
+        if (times >= 1) {
+            for (let i = 1; i <= times; i++) {
+                const t = boxWidth * (i - 0.5) / distance;
+                const item = {
+                    coordinates: interpolate(from, to, t),
+                    t,
+                    scale: [1, 1, 1],
+                    rotation: [0, 0, rotationZ],
+                    rotationZ,
+                    rotationXY
+                }
+                items.push(item);
+            }
+            //尾巴
+            if (options['scaleVertex']) {
+                const t = (boxWidth * times + (distance - boxWidth * times) / 2) / distance;
+                const scale = (distance - boxWidth * times) / boxWidth;
+                const item = {
+                    coordinates: interpolate(from, to, t),
+                    t,
+                    scale: [scale, 1, 1],
+                    rotation: [0, 0, rotationZ],
+                    rotationZ,
+                    rotationXY
+                }
+                items.push(item);
+            }
+        } else if (options['scaleVertex']) {
+            const scale = distance / boxWidth;
+            const item = {
+                coordinates: interpolate(from, to, 0.5),
+                t: 0.5,
+                scale: [scale, 1, 1],
+                rotation: [0, 0, rotationZ],
+                rotationZ,
+                rotationXY
+            }
+            items.push(item);
+        }
+        return items;
+    }
+
+    calModelHeightScale(out, modelHeight) {
+        const bbox = this.getGLTFBBox();
+        const fitScale = modelHeight / (Math.abs(bbox.max[1] - bbox.min[1]));//YZ轴做了翻转，所以需要用y方向来算高度比例
+        return vec3.set(out, fitScale, fitScale, fitScale);
+    }
+
+    _calBoxWidth(scale, options) {
+        const gltfmodelBBox = this.getGLTFBBox();
+        const direction = options.direction || 0;
+        const boxExtent = vec3.sub(TEMP_VEC, gltfmodelBBox.max, gltfmodelBBox.min);
+        vec3.multiply(boxExtent, boxExtent, scale);
+        const gapLength = options['gapLength'];
+        return boxExtent[direction] + gapLength;
+    }
+
+    _getRotationZ(from, to) {
+        const degree = computeDegree(
+            to.x, to.y,
+            from.x, from.y
+        );
+        return degree / Math.PI * 180;
+    }
+
+    _getRotationXY(xyDist, zDist) {
+        const rotation = Math.atan(zDist / xyDist) * 180 / Math.PI;
+        return rotation;
+    }
 }
 
 function createGeometry(primitive, regl, hasAOMap) {
@@ -489,7 +584,7 @@ function createGeometry(primitive, regl, hasAOMap) {
         // 把原有的array赋给attr，用于计算 bbox、buildUniqueVertex
         attrs[name] = extend({}, attributes[name]);
         if (regl) {
-            attrs[name].buffer = getUniqueREGLBuffer(regl, attributes[name], { dimension: attributes[name].itemSize, name });
+            attrs[name].buffer = getUniqueREGLBuffer(regl, attributes[name], { dimension: attributes[name].itemSize });
         }
     }
 
@@ -541,4 +636,23 @@ function numericalSort(a, b) {
 
 function absNumericalSort(a, b) {
     return Math.abs(b[1]) - Math.abs(a[1]);
+}
+
+function computeDegree(x0, y0, x1, y1) {
+    const dx = x1 - x0;
+    const dy = y1 - y0;
+    return Math.atan2(dy, dx);
+}
+
+function interpolate(from, to, t) {
+    const x = lerp(from.x, to.x, t);
+    const y = lerp(from.y, to.y, t);
+    const z1 = from.z || 0;
+    const z2 = to.z || 0;
+    const z = lerp(z1, z2, t);
+    return new from.constructor(x, y, z);
+}
+
+function lerp(a, b, t) {
+    return a + t * (b - a);
 }
