@@ -104,7 +104,7 @@ export default class NativePointPack extends VectorPack {
             if (needAltitudeAttribute) {
                 max = Math.max(Math.abs(point.x), Math.abs(point.y));
             } else {
-                max = Math.max(Math.abs(point.x), Math.abs(point.y), Math.abs(point.z));
+                max = Math.max(Math.abs(point.x), Math.abs(point.y), Math.abs(point.z || 0));
             }
             if (max > this.maxPos) {
                 this.maxPos = max;

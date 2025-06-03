@@ -37,7 +37,7 @@ function prepareAttr(geometry, symbolDef, config, layer) {
     const { attrName, symbolName, related } = config;
     let arr = geometry.data[attrName];
     if (!arr) {
-        if (!isFnTypeSymbol(symbolDef[symbolName])) {
+        if (!isFnTypeSymbol(symbolDef[symbolName]) || !checkIfValidFnType(symbolName, geometry)) {
             return null;
         } else {
             //symbol是fn-type，但arr不存在，则创建
@@ -189,7 +189,7 @@ export function updateOneGeometryFnTypeAttrib(regl, layer, symbolDef, configs, m
         //     delete geometry.data[attrName];
         // }
         // debugger
-        const arr = prepareAttr(geometry, symbolDef, config);
+        const arr = prepareAttr(geometry, symbolDef, config, layer);
         const define = config.define;
         if (!arr) {
             //原有的arr和define要删除
@@ -411,4 +411,13 @@ function hasRelatedFnTypeSymbol(related, symbolDef) {
         }
     }
     return false;
+}
+
+function checkIfValidFnType(symbolName, geometry) {
+    if (symbolName.startsWith('marker') && !geometry.properties.iconAtlas) {
+        return false;
+    } else if (symbolName.startsWith('text') && !geometry.properties.glyphAtlas) {
+        return false;
+    }
+    return true;
 }
