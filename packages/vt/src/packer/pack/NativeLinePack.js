@@ -137,13 +137,19 @@ export default class NativeLinePack extends VectorPack {
     }
 
     addLineVertex(data, point) {
+        const needAltitudeAttribute = this.needAltitudeAttribute();
         this.fillPosition(
             data,
             point.x,
             point.y,
             point.z || 0
         );
-        this.maxPos = Math.max(this.maxPos, Math.abs(point.x), Math.abs(point.y));
+        if (needAltitudeAttribute) {
+            this.maxPos = Math.max(this.maxPos, Math.abs(point.x), Math.abs(point.y));
+        } else {
+            this.maxPos = Math.max(this.maxPos, Math.abs(point.x), Math.abs(point.y), Math.abs(point.z || 0));
+        }
+
     }
 
     addElements(e1, e2) {

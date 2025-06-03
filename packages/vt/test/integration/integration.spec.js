@@ -10,6 +10,7 @@ const startServer = require('../specs/server.js');
 const PORT = 4398;
 
 const GENERATE_MODE = false; //(process.env.BUILD || remote.getGlobal('process').env.BUILD) === 'fixtures';
+const DEBUGGING = false;
 
 const DEFAULT_VIEW = {
     center: [0, 0],
@@ -45,7 +46,9 @@ describe('vector tile integration specs', () => {
     });
 
     afterEach(() => {
-        map.remove();
+        if (!DEBUGGING) {
+            map.remove();
+        }
     });
 
     const runner = (p, style) => {
@@ -94,6 +97,10 @@ describe('vector tile integration specs', () => {
                         done();
                     }
                 } else if (!ended && count >= limit) {
+                    if (DEBUGGING) {
+                        ended = true;
+                        done();
+                    }
                     //比对测试
                     match(canvas, expectedPath, (err, result) => {
                         if (err) {
