@@ -54,7 +54,13 @@ export function createMarkerMesh(
         }
 
         geometry.properties.aAnchor = aPosition;
-        geometry.properties.aShape = aShape;
+        const length = aShape.length / 4;
+        const aShapeData = new aShape.constructor(length * 2);
+        for (let i = 0; i < length; i++) {
+            aShapeData[i * 2] = aShape[i * 4];
+            aShapeData[i * 2 + 1] = aShape[i * 4 + 1];
+        }
+        geometry.properties.aShape = aShapeData;
     }
     if (!geometry.properties.visElemts) {
         //保存elements，隐藏icon时，从elements中删除icon的索引数据
@@ -739,8 +745,8 @@ function buildLabelShape(iconGeometry) {
             const elements = iconGeometry.properties.textElements;
             for (let ii = start; ii < end; ii++) {
                 const idx = elements[ii];
-                const x = aShape[idx * 2];
-                const y = aShape[idx * 2 + 1];
+                const x = aShape[idx * 4];
+                const y = aShape[idx * 4 + 1];
                 if (x < minx) {
                     minx = x;
                 }

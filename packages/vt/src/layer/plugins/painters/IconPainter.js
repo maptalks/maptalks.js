@@ -5,6 +5,8 @@ import { reshader } from '@maptalks/gl';
 import { vec2, mat4 } from '@maptalks/gl';
 import vert from './glsl/marker.vert';
 import frag from './glsl/marker.frag';
+import wgslVert from './wgsl/marker_vert.wgsl';
+import wgslFrag from './wgsl/marker_frag.wgsl';
 import pickingVert from './glsl/marker.vert';
 import { getIconBox } from './util/get_icon_box';
 import { isNil, isIconText, getUniqueIds } from '../Util';
@@ -137,22 +139,19 @@ class IconPainter extends CollisionPainter {
 
     }
 
-    _prepareRequiredProps(geometry) {
-        const { aCount, aTexCoord } = geometry.data;
+        _prepareRequiredProps(geometry) {
+        const { aCount, aShape } = geometry.data;
         geometry.properties.aCount = aCount;
         delete geometry.data.aCount;
         // aType = 顶点的类型：0 为 marker， 1 为 text
-        const length = aTexCoord.length / 4;
+        const length = aShape.length / 4;
         const aType = new Uint8Array(length);
-        for (let i = 0; i < length; i++) {
-            aType[i] = aTexCoord[i * 4 + 2];
-        }
-        geometry.properties.aType = aType;
-
         const aHalo = new Uint8Array(length);
         for (let i = 0; i < length; i++) {
-            aHalo[i] = aTexCoord[i * 4 + 3];
+            aType[i] = aShape[i * 4 + 2] % 2;
+            aHalo[i] = aShape[i * 4 + 3] % 2;
         }
+        geometry.properties.aType = aType;
         geometry.properties.aHalo = aHalo;
         prepareDxDy.call(this, geometry);
     }
@@ -724,7 +723,9 @@ class IconPainter extends CollisionPainter {
         };
         const defines = this._shaderDefines || {};
         this.shader = new reshader.MeshShader({
+            name: 'marker',
             vert, frag,
+            wgslVert, wgslFrag,
             uniforms: [
                 {
                     name: 'projViewModelMatrix',
@@ -750,7 +751,10 @@ class IconPainter extends CollisionPainter {
             const markerPicking = new reshader.FBORayPicking(
                 this.renderer,
                 {
-                    vert: '#define PICKING_MODE 1\n' + pickingVert,
+                    name: 'marker-picking',
+                    vert: pickingVert,
+                    wgslVert,
+                    defines: { 'PICKING_MODE': 1 },
                     uniforms: [
                         {
                             name: 'projViewModelMatrix',

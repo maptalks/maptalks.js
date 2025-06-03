@@ -8,8 +8,7 @@
     attribute vec3 aPosition;
 #endif
 
-attribute vec2 aShape;
-attribute vec2 aTexCoord;
+attribute vec4 aShape;
 #ifdef ENABLE_COLLISION
 attribute float aOpacity;
 #endif
@@ -167,7 +166,7 @@ void main() {
     if (isPitchWithMap == 1.0 && flipY == 0.0) {
         shape = shape * vec2(1.0, -1.0);
     }
-    vec2 texCoord = aTexCoord;
+    vec2 texCoord = aShape.zw;
     shape = shapeMatrix * (shape / glyphSize * myTextSize);
 
 

@@ -9,8 +9,7 @@
     attribute vec3 aPosition;
 #endif
 
-attribute vec2 aShape;
-attribute vec4 aTexCoord;
+attribute vec4 aShape;
 //uint8
 #ifdef ENABLE_COLLISION
     attribute float aOpacity;
@@ -177,7 +176,7 @@ void main() {
     #else
         float myMarkerDy = markerDy;
     #endif
-    float isText = aTexCoord.z;
+    float isText = mod(aShape.z, 2.0);
     float isPitchWithMap;
     if (isText > 0.5) {
         #ifdef HAS_TEXT_PITCH_ALIGN
@@ -255,7 +254,7 @@ void main() {
 
     mat2 shapeMatrix = mat2(angleCos, -1.0 * angleSin, angleSin, angleCos);
 
-    vec2 shape = (aShape / 10.0);
+    vec2 shape = (aShape.xy / 10.0);
     if (isPitchWithMap == 1.0 && flipY == 0.0) {
         shape *= vec2(1.0, -1.0);
     }
@@ -321,13 +320,14 @@ void main() {
         }
         vGammaScale = clamp(vGammaScale, 0.0, 1.0);
 
+        vec2 texCoord = floor(aShape.zw / 2.0);
         if (isText > 0.5) {
-            vTexCoord = aTexCoord.xy / glyphTexSize;
+            vTexCoord = texCoord / glyphTexSize;
         } else {
-            vTexCoord = aTexCoord.xy / iconTexSize;
+            vTexCoord = texCoord / iconTexSize;
         }
 
-        vHalo = aTexCoord.w;
+        vHalo = mod(aShape.w, 2.0);
         vTextSize = myTextSize;
         #ifdef ENABLE_COLLISION
             vOpacity = aOpacity / 255.0;
