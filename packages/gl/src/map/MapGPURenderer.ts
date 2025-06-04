@@ -9,7 +9,11 @@ async function initGPUDevice() {
         return gpuDevice;
     }
     gpuAdapter = await navigator.gpu?.requestAdapter();
-    gpuDevice = await gpuAdapter?.requestDevice();
+    gpuDevice = await gpuAdapter?.requestDevice({
+        // requiredLimits: {
+        //     maxVertexBuffers: 16
+        // }
+    });
     return { gpuDevice, gpuAdapter };
 }
 

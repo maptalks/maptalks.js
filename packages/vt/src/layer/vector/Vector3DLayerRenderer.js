@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { createREGL, reshader, mat4, vec3 } from '@maptalks/gl';
+import { mat4, vec3 } from '@maptalks/gl';
 import { convertToFeature, ID_PROP } from './util/convert_to_feature';
 import { extend, hasOwn, getCentiMeterScale, isNil } from '../../common/Util';
 import IconRequestor from '../../common/IconRequestor';
@@ -10,6 +10,8 @@ import { isFunctionDefinition, loadFunctionTypes } from '@maptalks/function-type
 import convertToPainterFeatures from '../renderer/utils/convert_to_painter_features';
 import { ICON_PAINTER_SCENECONFIG } from '../core/Constant';
 import { getVectorPacker } from '../../packer/inject';
+
+const { LayerAbstractRenderer } = maptalks.renderer;
 
 const { SYMBOLS_NEED_REBUILD_IN_VECTOR, GlyphRequestor, PointPack, LinePack, StyledPoint, VectorPack, StyledVector } = getVectorPacker();
 
@@ -53,7 +55,7 @@ const KEY_IDX_NAME = (KEY_IDX + '').trim();
 let EMPTY_POSITION = new Float32Array(1);
 const EMPTY_ARRAY = [];
 
-class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
+class Vector3DLayerRenderer extends LayerAbstractRenderer {
     constructor(...args) {
         super(...args);
         this.features = {};
@@ -487,7 +489,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
     _isEnableWorkAround(key) {
         if (key === 'win-intel-gpu-crash') {
-            return this.layer.options['workarounds']['win-intel-gpu-crash'] && isWinIntelGPU(this.gl);
+            return this.gl && this.layer.options['workarounds']['win-intel-gpu-crash'] && isWinIntelGPU(this.gl);
         }
         return false;
     }
@@ -1411,19 +1413,28 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         redraw(this);
     }
 
-    createContext() {
-        const inGroup = this.canvas.gl && this.canvas.gl.wrap;
-        if (inGroup) {
-            this.gl = this.canvas.gl.wrap();
-            this.regl = this.canvas.gl.regl;
-        } else {
-            this._createREGLContext();
-        }
-        if (inGroup) {
-            this.canvas.pickingFBO = this.canvas.pickingFBO || this.regl.framebuffer(this.canvas.width, this.canvas.height);
-        }
+    initContext() {
+        super.initContext();
+        const { regl, device, reglGL } = this.context;
+        const graphics = regl || device;
+        this.regl = regl;
+        this.gl = reglGL;
+        this.device = device;
+
+        const isWebGPU = !!device;
+        const fboOptions = {
+            colorFormat: isWebGPU ? 'bgra8unorm' : 'rgba',
+            depthStencil: true,
+            width: this.canvas.width,
+            height: this.canvas.height
+        };
+        this.canvas.pickingFBO = this.canvas.pickingFBO || graphics.framebuffer(fboOptions);
+        this.pickingFBO = this.canvas.pickingFBO;
         this.prepareRequestors();
-        this.pickingFBO = this.canvas.pickingFBO || this.regl.framebuffer(this.canvas.width, this.canvas.height);
+        this._initPainters();
+    }
+
+    _initPainters() {
         this.painter = this.createPainter();
         const IconPainter = Vector3DLayer.get3DPainterClass('icon');
         let bloomSymbols = IconPainter.getBloomSymbol();
@@ -1432,7 +1443,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this._defineSymbolBloom(markerSymbol, bloomSymbols);
         this._markerSymbol = markerSymbol;
         const sceneConfig = extend({}, ICON_PAINTER_SCENECONFIG, this.layer.options.sceneConfig || {});
-        this._markerPainter = new IconPainter(this.regl, this.layer, markerSymbol, sceneConfig, 0);
+        this._markerPainter = new IconPainter(this.regl || this.device, this.layer, markerSymbol, sceneConfig, 0);
         this._markerPainter.setShaderDefines({
             'REVERSE_MAP_ROTATION_ON_PITCH': 1
         });
@@ -1446,7 +1457,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         if (lineSceneConfig.depthMask === undefined) {
             lineSceneConfig.depthMask = true;
         }
-        this._linePainter = new LinePainter(this.regl, this.layer, lineSymbol, lineSceneConfig, 0);
+        this._linePainter = new LinePainter(this.regl || this.device, this.layer, lineSymbol, lineSceneConfig, 0);
 
         if (this.layer.getGeometries()) {
             this.onGeometryAdd(this.layer.getGeometries());
@@ -1483,44 +1494,6 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
     createPainter() {
 
-    }
-
-    _createREGLContext() {
-        const layer = this.layer;
-
-        const attributes = layer.options.glOptions || {
-            alpha: true,
-            depth: true,
-            stencil: true,
-            antialias: false
-            // premultipliedAlpha : false
-        };
-        attributes.preserveDrawingBuffer = true;
-        attributes.stencil = true;
-        this.glOptions = attributes;
-        this.gl = this.gl || this._createGLContext(this.canvas, attributes);
-        this.regl = createREGL({
-            gl: this.gl,
-            attributes,
-            extensions: reshader.Constants['WEBGL_EXTENSIONS'],
-            optionalExtensions: reshader.Constants['WEBGL_OPTIONAL_EXTENSIONS']
-        });
-    }
-
-    _createGLContext(canvas, options) {
-        const names = ['webgl', 'experimental-webgl'];
-        let context = null;
-        /* eslint-disable no-empty */
-        for (let i = 0; i < names.length; ++i) {
-            try {
-                context = canvas.getContext(names[i], options);
-            } catch (e) { }
-            if (context) {
-                break;
-            }
-        }
-        return context;
-        /* eslint-enable no-empty */
     }
 
     resizeCanvas(canvasSize) {

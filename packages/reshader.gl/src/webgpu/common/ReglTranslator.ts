@@ -85,6 +85,8 @@ export function toTextureFormat(format: string, type: string): GPUTexFormat {
         return { format: 'depth24plus-stencil8', bytesPerTexel: 4, isDepthStencil: true};
     } else if (format === 'depth') {
         return { format: 'depth24plus', bytesPerTexel: 4, isDepthStencil: false };
+    } else if (format === 'alpha') {
+        return { format: 'r8unorm', bytesPerTexel: 1, isDepthStencil: false}
     }
 
     if (type === 'uint8') {

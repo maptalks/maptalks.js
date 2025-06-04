@@ -226,21 +226,21 @@ fn main(input: VertexInput) -> VertexOutput {
     output.position = uniforms.projViewModelMatrix * uniforms.positionMatrix * localVertex;
 
     // #284 解决倾斜大时的锯齿问题
-    if (shaderUniforms.isRenderingTerrain == 0.0) {
-        let limit = min(AA_CLIP_LIMIT / shaderUniforms.canvasSize.x, AA_CLIP_LIMIT / shaderUniforms.canvasSize.y);
-        let pixelDelta = distance(output.position.xy / output.position.w, vertex.xy / vertex.w) - limit;
-        // * lineWidth 为了解决lineWidth为0时的绘制错误， #295
-        if (pixelDelta * myLineWidth < 0.0) {
-            // 绘制端点和原位置的间距太小，会产生锯齿，通过增加 dist 减少锯齿
-            let pixelScale = -pixelDelta / limit;
-            let aaWidth = pixelScale * pixelScale * pixelScale * pixelScale * AA_LINE_WIDTH;
-            dist += aaWidth * extrude;
-            outset += aaWidth / 6.0;
-            // 用新的dist计算新的端点位置
-            localVertex = vec4f(position + vec3f(dist, 0.0) * uniforms.tileRatio / resScale, 1.0);
-            output.position = uniforms.projViewModelMatrix * uniforms.positionMatrix * localVertex;
-        }
-    }
+    // if (shaderUniforms.isRenderingTerrain == 0.0) {
+    //     let limit = min(AA_CLIP_LIMIT / shaderUniforms.canvasSize.x, AA_CLIP_LIMIT / shaderUniforms.canvasSize.y);
+    //     let pixelDelta = distance(output.position.xy / output.position.w, vertex.xy / vertex.w) - limit;
+    //     // * lineWidth 为了解决lineWidth为0时的绘制错误， #295
+    //     if (pixelDelta * myLineWidth < 0.0) {
+    //         // 绘制端点和原位置的间距太小，会产生锯齿，通过增加 dist 减少锯齿
+    //         let pixelScale = -pixelDelta / limit;
+    //         let aaWidth = pixelScale * pixelScale * pixelScale * pixelScale * AA_LINE_WIDTH;
+    //         dist += aaWidth * extrude;
+    //         outset += aaWidth / 6.0;
+    //         // 用新的dist计算新的端点位置
+    //         localVertex = vec4f(position + vec3f(dist, 0.0) * uniforms.tileRatio / resScale, 1.0);
+    //         output.position = uniforms.projViewModelMatrix * uniforms.positionMatrix * localVertex;
+    //     }
+    // }
 
 #ifdef HAS_LINE_DX
     let myLineDx = input.aLineDxDy[0];
