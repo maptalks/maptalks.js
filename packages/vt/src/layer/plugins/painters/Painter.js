@@ -461,7 +461,12 @@ class Painter {
             this._currentTimestamp = context.timestamp;
             const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
             updateOneGeometryFnTypeAttrib(this.regl, this.layer, symbolDef, fnTypeConfig, meshes[i], z);
+            this.limitMeshDefines(meshes[i]);
         }
+    }
+
+    limitMeshDefines(mesh) {
+        return mesh;
     }
 
     paint(context) {

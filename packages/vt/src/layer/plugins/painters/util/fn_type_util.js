@@ -4,7 +4,6 @@ import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 import { isObjectEmpty } from './is_obj_empty';
 import deepEqual from 'fast-deep-equal';
 import { getVectorPacker } from '../../../../packer/inject';
-import { limitDefinesByDevice } from './limit_defines';
 
 const { StyleUtil } = getVectorPacker();
 
@@ -218,7 +217,6 @@ export function updateOneGeometryFnTypeAttrib(regl, layer, symbolDef, configs, m
         }
     }
     let defines = mesh.defines;
-    defines = limitDefinesByDevice(regl, defines);
     mesh.setDefines(defines);
     geometry._fnDataZoom = z;
 }

@@ -48,10 +48,10 @@ struct ShaderUniforms {
     #ifdef HAS_OPACITY
         @location($i) vOpacity: f32,
     #endif
-    #ifdef HAS_UV_SCALE
+    #ifdef HAS_PATTERN && HAS_UV_SCALE
         @location($i) vUVScale: vec2f,
     #endif
-    #ifdef HAS_UV_OFFSET
+    #ifdef HAS_PATTERN && HAS_UV_OFFSET
         @location($i) vUVOffset: vec2f,
     #endif
     }

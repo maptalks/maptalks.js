@@ -317,10 +317,7 @@ export default class Mesh {
     setDefines(defines: ShaderDefines) {
         const bak = this._bakDefines;
         this._defines = defines;
-        this.dirtyDefines = this.dirtyDefines || !!bak !== !!defines || !equalDefine(bak, defines);
-        if (this.dirtyDefines) {
-            this._bakDefines = extend({}, defines);
-        }
+        this.dirtyDefines = !!bak !== !!defines || !equalDefine(bak, defines);
         return this;
     }
 
@@ -330,6 +327,7 @@ export default class Mesh {
 
     //@internal
     _getDefinesKey(): string {
+        this._bakDefines = extend({}, this._defines);
         this.dirtyDefines = false;
         return this._createDefinesKey(this.getDefines());
     }

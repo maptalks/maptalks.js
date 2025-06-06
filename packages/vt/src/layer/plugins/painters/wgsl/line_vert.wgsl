@@ -35,7 +35,7 @@ struct ShaderUniforms {
 
 struct VertexInput {
 #ifdef HAS_ALTITUDE
-    @location($i) aPosition: vec2i,
+    @location($i) aPosition: POSITION_TYPE,
     @location($i) aAltitude: f32,
 #else
     @location($i) aPosition: vec4i,
@@ -44,15 +44,15 @@ struct VertexInput {
 @location($i) aExtrude: vec4i,
 
 #if HAS_PATTERN || HAS_DASHARRAY || HAS_GRADIENT || HAS_TRAIL
-    @location($i) aLinesofar: f32,
+    @location($i) aLinesofar: LINESOFAR_TYPE,
 #endif
 
 #ifdef HAS_STROKE_WIDTH
-    @location($i) aLineStrokeWidth: f32,
+    @location($i) aLineStrokeWidth: u32,
 #endif
 
 #if HAS_LINE_DX || HAS_LINE_DY
-    @location($i) aLineDxDy: vec2f,
+    @location($i) aLineDxDy: vec2i,
 #endif
 
 #ifdef USE_LINE_OFFSET
@@ -60,43 +60,43 @@ struct VertexInput {
 #endif
 
 #ifdef HAS_LINE_WIDTH
-    @location($i) aLineWidth: f32,
+    @location($i) aLineWidth: u32,
 #endif
 
 #ifndef PICKING_MODE
     #ifndef HAS_GRADIENT
         #ifdef HAS_COLOR
-            @location($i) aColor: vec4f,
+            @location($i) aColor: vec4u,
         #endif
 
         #ifdef HAS_PATTERN
             #if HAS_PATTERN_ANIM || HAS_PATTERN_GAP
-                @location($i) aLinePattern: vec2f,
+                @location($i) aLinePattern: vec2i,
             #endif
-                @location($i) aTexInfo: vec4f,
+                @location($i) aTexInfo: vec4u,
         #endif
 
         #ifdef HAS_DASHARRAY
             #ifdef HAS_DASHARRAY_ATTR
-                @location($i) aDasharray: vec4f,
+                @location($i) aDasharray: vec4u,
             #endif
 
             #ifdef HAS_DASHARRAY_COLOR
-                @location($i) aDashColor: vec4f,
+                @location($i) aDashColor: vec4u,
             #endif
         #endif
     #endif
 
     #ifdef HAS_STROKE_COLOR
-        @location($i) aStrokeColor: vec4f,
+        @location($i) aStrokeColor: vec4u,
     #endif
 
     #ifdef HAS_OPACITY
-        @location($i) aOpacity: f32,
+        @location($i) aOpacity: u32,
     #endif
 
     #ifdef HAS_GRADIENT
-        @location($i) aGradIndex: f32,
+        @location($i) aGradIndex: u32,
     #endif
 #endif
 };
@@ -191,14 +191,14 @@ fn main(input: VertexInput) -> VertexOutput {
     }
 
 #ifdef HAS_STROKE_WIDTH
-    let strokeWidth = input.aLineStrokeWidth / 2.0 * shaderUniforms.layerScale;
+    let strokeWidth = f32(input.aLineStrokeWidth) / 2.0 * shaderUniforms.layerScale;
 #else
     let strokeWidth = uniforms.lineStrokeWidth;
 #endif
 
 #ifdef HAS_LINE_WIDTH
     //除以2.0是为了解决 #190
-    let myLineWidth = input.aLineWidth / 2.0 * shaderUniforms.layerScale;
+    let myLineWidth = f32(input.aLineWidth) / 2.0 * shaderUniforms.layerScale;
 #else
     let myLineWidth = uniforms.lineWidth * shaderUniforms.layerScale;
 #endif
@@ -243,12 +243,12 @@ fn main(input: VertexInput) -> VertexOutput {
     // }
 
 #ifdef HAS_LINE_DX
-    let myLineDx = input.aLineDxDy[0];
+    let myLineDx = f32(input.aLineDxDy.x);
 #else
     let myLineDx = uniforms.lineDx;
 #endif
 #ifdef HAS_LINE_DY
-    let myLineDy = input.aLineDxDy[1];
+    let myLineDy = f32(input.aLineDxDy.y);
 #else
     let myLineDy = uniforms.lineDy;
 #endif
@@ -275,7 +275,7 @@ fn main(input: VertexInput) -> VertexOutput {
     #if HAS_PATTERN || HAS_DASHARRAY || HAS_GRADIENT
         #ifdef HAS_GRADIENT
             output.vLinesofar = input.aLinesofar / MAX_LINE_DISTANCE;
-            output.vGradIndex = input.aGradIndex;
+            output.vGradIndex = f32(input.aGradIndex);
         #else
             // /resScale * tileRatio 是为了把像素宽度转换为瓦片内的值域(即tile extent 8192或4096)
             let linesofar = input.aLinesofar - halfwidth * input.aExtrude.z / EXTRUDE_SCALE / resScale * uniforms.tileRatio;
@@ -285,37 +285,37 @@ fn main(input: VertexInput) -> VertexOutput {
 
     #ifndef HAS_GRADIENT
         #ifdef HAS_COLOR
-            output.vColor = input.aColor;
+            output.vColor = vec4f(input.aColor);
         #endif
 
         #ifdef HAS_DASHARRAY
             #ifdef HAS_DASHARRAY_ATTR
-                output.vDasharray = input.aDasharray;
+                output.vDasharray = vec4f(input.aDasharray);
             #endif
 
             #ifdef HAS_DASHARRAY_COLOR
-                output.vDashColor = input.aDashColor / 255.0;
+                output.vDashColor = vec4f(input.aDashColor) / 255.0;
             #endif
         #endif
 
         #ifdef HAS_PATTERN
-            output.vTexInfo = vec4f(input.aTexInfo.xy, input.aTexInfo.zw + 1.0);
+            output.vTexInfo = vec4f(vec2f(input.aTexInfo.xy), vec2f(input.aTexInfo.zw) + 1.0);
             #ifdef HAS_PATTERN_ANIM
-                output.vLinePatternAnimSpeed = input.aLinePattern[0] / 127.0;
+                output.vLinePatternAnimSpeed = f32(input.aLinePattern.x) / 127.0;
             #endif
 
             #ifdef HAS_PATTERN_GAP
-                output.vLinePatternGap = input.aLinePattern[1] / 10.0;
+                output.vLinePatternGap = f32(input.aLinePattern.y) / 10.0;
             #endif
         #endif
     #endif
 
     #ifdef HAS_STROKE_COLOR
-        output.vStrokeColor = input.aStrokeColor;
+        output.vStrokeColor = vec4f(input.aStrokeColor);
     #endif
 
     #ifdef HAS_OPACITY
-        output.vOpacity = input.aOpacity / 255.0;
+        output.vOpacity = f32(input.aOpacity) / 255.0;
     #endif
 
     #if HAS_SHADOWING && !HAS_BLOOM

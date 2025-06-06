@@ -219,13 +219,13 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
     let mapRotation = shaderUniforms.mapRotation;
     if (isText > 0.5) {
 #ifdef HAS_TEXT_ROTATION
-        rotation = -vertexInput.aRotation.y / 9362.0 - mapRotation * isRotateWithMap;
+        rotation = -f32(vertexInput.aRotation.y) / 9362.0 - mapRotation * isRotateWithMap;
 #else
         rotation = -uniforms.textRotation - mapRotation * isRotateWithMap;
 #endif
     } else {
 #ifdef HAS_MARKER_ROTATION
-        rotation = -vertexInput.aRotation.x / 9362.0 - mapRotation * isRotateWithMap;
+        rotation = -f32(vertexInput.aRotation.x) / 9362.0 - mapRotation * isRotateWithMap;
 #else
         rotation = -uniforms.markerRotation - mapRotation * isRotateWithMap;
 #endif

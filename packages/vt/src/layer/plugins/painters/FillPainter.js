@@ -14,6 +14,7 @@ import { isFunctionDefinition, piecewiseConstant, interpolated } from '@maptalks
 import Color from 'color';
 import { isObjectEmpty } from './util/is_obj_empty';
 import { getVectorPacker } from '../../../packer/inject';
+import { limitPolygonDefinesByDevice } from './util/limit_defines';
 
 const { INVALID_TEX_COORD } = getVectorPacker();
 
@@ -640,15 +641,24 @@ class FillPainter extends BasicPainter {
         const defines = {};
         this.fillIncludes(defines, uniforms, context);
 
-
+        const isVectorTile = this.layer instanceof maptalks.TileLayer;
+        const TYPE_CONSTS = `#define POSITION_TYPE ${isVectorTile ? 'vec2i' : 'vec2f'}
+`;
         this.shader = new reshader.MeshShader({
             name: 'vt-fill',
             vert, frag,
-            wgslVert, wgslFrag,
+            wgslVert: TYPE_CONSTS + wgslVert,
+            wgslFrag,
             uniforms,
             defines,
             extraCommandProps
         });
+    }
+
+    limitMeshDefines(mesh) {
+        let defines = mesh.defines;
+        defines = limitPolygonDefinesByDevice(this.regl, defines);
+        mesh.setDefines(defines);
     }
 
     getUniformValues(map, context) {

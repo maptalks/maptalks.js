@@ -1,58 +1,60 @@
 #define SHADER_NAME FILL
 struct VertexInput {
 #ifdef HAS_ALTITUDE
-    @location($i) aPosition: vec2i,
+    @location($i) aPosition: POSITION_TYPE,
     @location($i) aAltitude: f32,
 #else
     @location($i) aPosition: vec4i,
 #endif
 #ifdef HAS_COLOR
-    @location($i) aColor: vec4f,
+    @location($i) aColor: vec4u,
 #endif
 #ifdef HAS_OPACITY
-    @location($i) aOpacity: f32,
+    @location($i) aOpacity: u32,
 #endif
 #ifdef HAS_PATTERN
     #ifdef HAS_TEX_COORD
         @location($i) aTexCoord: vec2f,
     #endif
     @location($i) aTexInfo: vec4u,
+    #ifdef HAS_UV_SCALE
+        @location($i) aUVScale: vec2u,
+    #endif
+    #ifdef HAS_UV_OFFSET
+        @location($i) aUVOffset: vec2u,
+    #endif
+    #ifdef HAS_PATTERN_WIDTH
+        @location($i) aPatternWidth: vec2f,
+    #endif
+    #ifdef HAS_PATTERN_ORIGIN
+        @location($i) aPatternOrigin: vec2f,
+    #endif
+    #ifdef HAS_PATTERN_OFFSET
+        @location($i) aPatternOffset: vec2f,
+    #endif
 #endif
-#ifdef HAS_UV_SCALE
-    @location($i) aUVScale: vec2f,
-#endif
-#ifdef HAS_UV_OFFSET
-    @location($i) aUVOffset: vec2f,
-#endif
-#ifdef HAS_PATTERN_WIDTH
-    @location($i) aPatternWidth: vec2f,
-#endif
-#ifdef HAS_PATTERN_ORIGIN
-    @location($i) aPatternOrigin: vec2f,
-#endif
-#ifdef HAS_PATTERN_OFFSET
-    @location($i) aPatternOffset: vec2f,
-#endif
+
 }
 
 struct VertexOutput {
     @builtin(position) position : vec4f,
-#ifdef HAS_PATTERN
-    @location($o) vTexCoord: vec2f,
-    @location($o) vTexInfo: vec4f,
-#endif
 #ifdef HAS_COLOR
     @location($o) vColor: vec4f,
 #endif
 #ifdef HAS_OPACITY
     @location($o) vOpacity: f32,
 #endif
-#ifdef HAS_UV_SCALE
-    @location($o) vUVScale: vec2f,
+#ifdef HAS_PATTERN
+    @location($o) vTexCoord: vec2f,
+    @location($o) vTexInfo: vec4f,
+    #ifdef HAS_UV_SCALE
+        @location($o) vUVScale: vec2f,
+    #endif
+    #ifdef HAS_UV_OFFSET
+        @location($o) vUVOffset: vec2f,
+    #endif
 #endif
-#ifdef HAS_UV_OFFSET
-    @location($o) vUVOffset: vec2f,
-#endif
+
 }
 
 struct ModelUniforms {
@@ -177,15 +179,15 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
         #endif
 
         #ifdef HAS_UV_SCALE
-            out.vUVScale = vertexInput.aUVScale / 255.0;
+            out.vUVScale = vec2f(vertexInput.aUVScale) / 255.0;
         #endif
         #ifdef HAS_UV_OFFSET
-            out.vUVOffset = vertexInput.aUVOffset / 255.0;
+            out.vUVOffset = vec2f(vertexInput.aUVOffset) / 255.0;
         #endif
     #endif
 
     #ifdef HAS_COLOR
-        out.vColor = vertexInput.aColor / 255.0;
+        out.vColor = vec4f(vertexInput.aColor) / 255.0;
     #endif
 
     #if HAS_HIGHLIGHT_COLOR || HAS_HIGHLIGHT_OPACITY
@@ -193,7 +195,7 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
     #endif
 
     #ifdef HAS_OPACITY
-        out.vOpacity = vertexInput.aOpacity / 255.0;
+        out.vOpacity = f32(vertexInput.aOpacity) / 255.0;
     #endif
 
     #if HAS_SHADOWING && !HAS_BLOOM

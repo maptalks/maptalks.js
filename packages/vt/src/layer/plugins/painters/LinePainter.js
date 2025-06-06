@@ -12,6 +12,7 @@ import { setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar, isNil
 import { prepareFnTypeData, isFnTypeSymbol } from './util/fn_type_util';
 import { createAtlasTexture } from './util/atlas_util';
 import { isFunctionDefinition, piecewiseConstant, interpolated } from '@maptalks/function-type';
+import { limitLineDefinesByDevice } from './util/limit_defines';
 
 const IDENTITY_ARR = mat4.identity([]);
 const TEMP_CANVAS_SIZE = [];
@@ -446,12 +447,16 @@ class LinePainter extends BasicPainter {
         this.createShader(context);
 
         if (this.pickingFBO) {
+            const isVectorTile = this.layer instanceof maptalks.TileLayer;
+            const TYPE_CONSTS = `#define POSITION_TYPE ${isVectorTile ? 'vec2i' : 'vec2f'}
+#define LINESOFAR_TYPE ${isVectorTile ? 'u32' : 'f32'}
+`;
             this.picking = [new reshader.FBORayPicking(
                 this.renderer,
                 {
                     name: 'line-picking',
                     vert: pickingVert,
-                    wgslVert: wgslVert,
+                    wgslVert: TYPE_CONSTS + wgslVert,
                     defines: { 'PICKING_MODE': 1 },
                     uniforms: [
                         {
@@ -493,12 +498,16 @@ class LinePainter extends BasicPainter {
             }
         );
 
-
-
+        const isVectorTile = this.layer instanceof maptalks.TileLayer;
+        const TYPE_CONSTS = `#define POSITION_TYPE ${isVectorTile ? 'vec2i' : 'vec2f'}
+#define LINESOFAR_TYPE ${isVectorTile ? 'u32' : 'f32'}
+`;
         this.shader = new reshader.MeshShader({
             name: 'vt-line',
-            vert, frag,
-            wgslVert, wgslFrag,
+            vert,
+            frag,
+            wgslVert: TYPE_CONSTS + wgslVert,
+            wgslFrag,
             uniforms,
             defines,
             extraCommandProps: this.getExtraCommandProps(context)
@@ -566,6 +575,12 @@ class LinePainter extends BasicPainter {
                 offset: this.getPolygonOffset()
             }
         };
+    }
+
+    limitMeshDefines(mesh) {
+        let defines = mesh.defines;
+        defines = limitLineDefinesByDevice(this.regl, defines);
+        mesh.setDefines(defines);
     }
 
 

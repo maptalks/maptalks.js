@@ -123,3 +123,5 @@ export {
 export { default as GraphicsDevice } from './webgpu/GraphicsDevice';
 export { default as GraphicsTexture } from './webgpu/GraphicsTexture';
 export { default as GraphicsFramebuffer } from './webgpu/GraphicsFramebuffer';
+
+export * as WGSLParseDefines from './webgpu/common/WGSLParseDefines';

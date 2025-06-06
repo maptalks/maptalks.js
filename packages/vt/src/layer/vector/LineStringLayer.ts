@@ -74,7 +74,7 @@ class LineStringLayerRenderer extends Vector3DLayerRenderer {
       sceneConfig.depthMask = true;
     }
     const painter = new LineGradientPainter(
-      this.regl,
+      this.device || this.regl,
       this.layer,
       this.painterSymbol,
       sceneConfig,

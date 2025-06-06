@@ -181,7 +181,7 @@ export class PolygonLayerRenderer extends Vector3DLayerRenderer {
     const painterSymbol = (this.painterSymbol = extend({}, SYMBOL));
     this._defineSymbolBloom(painterSymbol, FillPainter.getBloomSymbol());
     const painter = new FillPainter(
-      this.regl,
+      this.regl || this.device,
       this.layer,
       painterSymbol,
       this.layer.options.sceneConfig,

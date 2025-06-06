@@ -121,6 +121,7 @@ function ParseDefines(
 
                     valueConsumed = true;
                     stateStack.push(state);
+                    // eslint-disable-next-line no-case-declarations
                     const value = match[1] === 'ifndef' ? !values[i] : !!values[i];
                     state = new ConditionalState(value);
                     break;
@@ -139,6 +140,7 @@ function ParseDefines(
                         throw new Error(`#${match[1]} not preceeded by an #if`);
                     }
 
+                    // eslint-disable-next-line no-case-declarations
                     const result = state.resolve();
 
                     state = stateStack.pop();
@@ -185,17 +187,7 @@ function ParseDefinesConst(sourceShader: string, defines: ShaderDefines) {
 function getNormalizeDefines(rexgDefines: Array<string>, defines: any) {
     const usedDefines = new Set<string>();
     const normalizeDefines = rexgDefines?.map?.((define) => {
-        if (define?.includes("&&") || define?.includes("||")) {
-            if (define.includes("&&")) {
-                const splitDefines = define
-                    .split("&&")
-                    .map((key) => key.trim());
-                return getAndDefineValue(splitDefines, defines, usedDefines);
-            }
-            const splitDefines = define.split("||").map((key) => key.trim());
-            return !getOrDefineValue(splitDefines, defines, usedDefines);
-        }
-        return getDefineValue(defines, define, usedDefines);
+        return getDefineConditionValue(define, defines, usedDefines);
     });
     const constValues = {};
     for (const p in defines) {
@@ -205,6 +197,21 @@ function getNormalizeDefines(rexgDefines: Array<string>, defines: any) {
     }
     return { normalizeDefines, constValues };
 }
+
+export function getDefineConditionValue(define, defines, usedDefines) {
+    if (define?.includes("&&") || define?.includes("||")) {
+        if (define.includes("&&")) {
+            const splitDefines = define
+                .split("&&")
+                .map((key) => key.trim());
+            return getAndDefineValue(splitDefines, defines, usedDefines);
+        }
+        const splitDefines = define.split("||").map((key) => key.trim());
+        return !getOrDefineValue(splitDefines, defines, usedDefines);
+    }
+    return getDefineValue(defines, define, usedDefines);
+}
+
 function getAndDefineValue(
     splitDefines: Array<string>,
     defines: ShaderDefines,
@@ -254,9 +261,8 @@ function getOrDefineValue(
 ): boolean {
     let total = 0;
     splitDefines?.forEach?.((defineKey) => {
-        let value;
-        value = getDefineValue(defines, defineKey, usedDefines);
-        return (total += !!value ? 1 : 0);
+        const value = getDefineValue(defines, defineKey, usedDefines);
+        return (total += value ? 1 : 0);
     });
     return total === 0;
 }

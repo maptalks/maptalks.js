@@ -5,7 +5,7 @@ import { DEFAULT_MARKER_WIDTH, DEFAULT_MARKER_HEIGHT, GLYPH_SIZE, DEFAULT_ICON_A
 import { createAtlasTexture, getDefaultMarkerSize } from './atlas_util';
 import { prepareFnTypeData, PREFIX, isFnTypeSymbol } from './fn_type_util';
 import { prepareTextGeometry, initTextUniforms, initTextMeshDefines } from './create_text_painter';
-import { limitDefinesByDevice } from './limit_defines';
+import { limitMarkerDefinesByDevice } from './limit_defines';
 // import { getIconBox } from './get_icon_box';
 
 export const BOX_ELEMENT_COUNT = 6;
@@ -125,7 +125,7 @@ export function createMarkerMesh(
     if (hasText) {
         initTextMeshDefines.call(this, defines, mesh);
     }
-    defines = limitDefinesByDevice(regl, defines);
+    defines = limitMarkerDefinesByDevice(regl, defines);
     mesh.setDefines(defines);
     mesh.setUniform('alphaTest', DEFAULT_ICON_ALPHA_TEST);
     mesh.setLocalTransform(transform);

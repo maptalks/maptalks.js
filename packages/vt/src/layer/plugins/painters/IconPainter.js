@@ -16,6 +16,7 @@ import CollisionGroup from './CollisionGroup';
 import { updateOneGeometryFnTypeAttrib } from './util/fn_type_util';
 import { GLYPH_SIZE, ICON_SIZE } from './Constant';
 import { createMarkerMesh, getMarkerFnTypeConfig, prepareMarkerGeometry, prepareDxDy, prepareLabelIndex, updateMarkerFitSize, BOX_VERTEX_COUNT, BOX_ELEMENT_COUNT } from './util/create_marker_painter';
+import { limitMarkerDefinesByDevice } from './util/limit_defines';
 import { getVectorPacker } from '../../../packer/inject';
 import { INVALID_ALTITUDE } from '../../../common/Constant';
 
@@ -350,6 +351,12 @@ class IconPainter extends CollisionPainter {
             }
         }
         super.addMesh(...arguments);
+    }
+
+    limitMeshDefines(mesh) {
+        let defines = mesh.defines;
+        defines = limitMarkerDefinesByDevice(this.regl, defines);
+        mesh.setDefines(defines);
     }
 
     updateCollision(context) {
