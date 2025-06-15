@@ -483,6 +483,71 @@ describe('#GeometryCollection', function () {
         })
         layer.addGeometry(polygons)
     });
+
+    it('#2565 multi geometry setproperties', function () {
+        let properties = {
+            name: 1
+        }
+        const geojson = {
+            type: 'Feature',
+            properties: properties,
+            geometry: {
+                type: 'MultiPoint',
+                coordinates: [
+                    [0, 0],
+                    [1, 1]
+                ]
+            }
+        }
+        const multipoint = maptalks.GeoJSON.toGeometry(geojson);
+        expect(multipoint).to.be.ok();
+        expect(multipoint.getProperties()).to.be.eql(properties);
+        properties = {
+            name: 2,
+            age: 18
+        }
+        multipoint.setProperties(properties);
+        expect(multipoint.getProperties()).to.be.eql(properties);
+        multipoint.forEach(point => {
+            expect(point.getProperties()).to.be.eql(properties);
+        });
+
+        const point = new maptalks.Marker([0, 0], {
+            properties: {
+                name: 1
+            }
+        });
+        const line = new maptalks.LineString([[1, 1], [2, 2]], {
+            properties: {
+                name: 2
+            }
+        });
+
+        const geoCollection = new maptalks.GeometryCollection([point, line]);
+        expect(geoCollection).to.be.ok();
+        geoCollection.forEach((geo, index) => {
+            if (index === 0) {
+                expect(geo.getProperties()).to.be.eql({ name: 1 });
+            } else {
+                expect(geo.getProperties()).to.be.eql({ name: 2 });
+            }
+        });
+
+        properties = {
+            age: 18
+        }
+
+        geoCollection.setProperties(properties);
+        expect(geoCollection.getProperties()).to.be.eql(properties);
+        geoCollection.forEach((geo, index) => {
+            if (index === 0) {
+                expect(geo.getProperties()).to.be.eql({ name: 1, ...properties });
+            } else {
+                expect(geo.getProperties()).to.be.eql({ name: 2, ...properties });
+            }
+        });
+
+    });
 });
 
 function genPoints() {
