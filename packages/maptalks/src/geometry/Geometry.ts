@@ -378,9 +378,19 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     setProperties(properties: { [key: string]: any }): this {
         const old = this.properties;
         this.properties = isObject(properties) ? extend({}, properties) : properties;
+        const children = this.getGeometries ? this.getGeometries() : [];
+        children.forEach(child => {
+            const subPro = child.getProperties ? child.getProperties() || {} : {};
+            const mergePro = extend(subPro, properties || {});
+            if (child.setProperties) {
+                child.setProperties(mergePro);
+            }
+        });
+
         //such as altitude update
         this._clearAltitudeCache();
         this._repaint();
+
         /**
          * propertieschange event, thrown when geometry's properties is changed.
          *
