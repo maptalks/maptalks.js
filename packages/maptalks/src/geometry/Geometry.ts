@@ -380,8 +380,8 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         this.properties = isObject(properties) ? extend({}, properties) : properties;
         const children = this.getGeometries ? this.getGeometries() : [];
         children.forEach(child => {
-            const subPro = child.getProperties ? child.getProperties() : {};
-            const mergePro = extend(subPro, properties);
+            const subPro = child.getProperties ? child.getProperties() || {} : {};
+            const mergePro = extend(subPro, properties || {});
             if (child.setProperties) {
                 child.setProperties(mergePro);
             }
