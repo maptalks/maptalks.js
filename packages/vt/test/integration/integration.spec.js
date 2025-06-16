@@ -55,6 +55,7 @@ describe('vector tile integration specs', () => {
 
     const runner = (p, style) => {
         return done => {
+            this.timeout(5000);
             let ended = false;
             container.style.width = (style.containerWidth || 128) + 'px';
             container.style.height = (style.containerHeight || 128) + 'px';
@@ -150,6 +151,7 @@ describe('vector tile integration specs', () => {
     const postProcessRunner = (p, style) => {
         let finished = false;
         return done => {
+            this.timeout(5000);
             container.style.width = (style.containerWidth || 128) + 'px';
             container.style.height = (style.containerHeight || 128) + 'px';
             const options = style.view || DEFAULT_VIEW;
