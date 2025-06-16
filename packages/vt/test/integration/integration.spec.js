@@ -55,7 +55,6 @@ describe('vector tile integration specs', () => {
 
     const runner = (p, style) => {
         return done => {
-            this.timeout(5000);
             let ended = false;
             container.style.width = (style.containerWidth || 128) + 'px';
             container.style.height = (style.containerHeight || 128) + 'px';
@@ -151,7 +150,6 @@ describe('vector tile integration specs', () => {
     const postProcessRunner = (p, style) => {
         let finished = false;
         return done => {
-            this.timeout(5000);
             container.style.width = (style.containerWidth || 128) + 'px';
             container.style.height = (style.containerHeight || 128) + 'px';
             const options = style.view || DEFAULT_VIEW;
@@ -243,7 +241,7 @@ describe('vector tile integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'post-process'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it(p, postProcessRunner(p, specs[p]));
+                it(p, postProcessRunner(p, specs[p])).timeout(5000);;
             }
         }
     });
@@ -253,7 +251,7 @@ describe('vector tile integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'icon'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it(p, runner(p, specs[p]));
+                it(p, runner(p, specs[p])).timeout(5000);;
             }
         }
     });
@@ -262,7 +260,7 @@ describe('vector tile integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'text'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it(p, runner(p, specs[p]));
+                it(p, runner(p, specs[p])).timeout(5000);;
             }
         }
     });
@@ -271,7 +269,7 @@ describe('vector tile integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'line'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it(p, runner(p, specs[p]));
+                it(p, runner(p, specs[p])).timeout(5000);;
             }
         }
     });
@@ -280,7 +278,7 @@ describe('vector tile integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'polygon'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it(p, runner(p, specs[p]));
+                it(p, runner(p, specs[p])).timeout(5000);;
             }
         }
     });
@@ -289,7 +287,7 @@ describe('vector tile integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'native-point'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it(p, runner(p, specs[p]));
+                it(p, runner(p, specs[p])).timeout(5000);;
             }
         }
     });
@@ -298,7 +296,7 @@ describe('vector tile integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'native-line'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it(p, runner(p, specs[p]));
+                it(p, runner(p, specs[p])).timeout(5000);;
             }
         }
     });
@@ -307,7 +305,7 @@ describe('vector tile integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'heatmap'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it(p, runner(p, specs[p]));
+                it(p, runner(p, specs[p])).timeout(5000);;
             }
         }
     });
@@ -316,7 +314,7 @@ describe('vector tile integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'default'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it(p, runner(p, specs[p]));
+                it(p, runner(p, specs[p])).timeout(5000);;
             }
         }
     });
@@ -325,7 +323,7 @@ describe('vector tile integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'extrusion'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it(p, runner(p, specs[p]));
+                it(p, runner(p, specs[p])).timeout(5000);;
             }
         }
     });
@@ -334,7 +332,7 @@ describe('vector tile integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'gltf'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it(p, runner(p, specs[p]));
+                it(p, runner(p, specs[p])).timeout(5000);;
             }
         }
     });
@@ -343,7 +341,7 @@ describe('vector tile integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'feature-style'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it(p, runner(p, specs[p]));
+                it(p, runner(p, specs[p])).timeout(5000);;
             }
         }
     });
@@ -352,7 +350,7 @@ describe('vector tile integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'tube'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it(p, runner(p, specs[p]));
+                it(p, runner(p, specs[p])).timeout(5000);;
             }
         }
     });
@@ -361,7 +359,7 @@ describe('vector tile integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'projections'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it(p, runner(p, specs[p]));
+                it(p, runner(p, specs[p])).timeout(5000);;
             }
         }
     });
@@ -370,7 +368,7 @@ describe('vector tile integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'water'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it(p, runner(p, specs[p]));
+                it(p, runner(p, specs[p])).timeout(5000);;
             }
         }
     });
@@ -388,7 +386,7 @@ describe('vector tile integration specs', () => {
                         zoom: 12
                     };
                 }
-                it(p, runner(p, specs[p]));
+                it(p, runner(p, specs[p])).timeout(5000);;
             }
         }
     });
@@ -406,7 +404,7 @@ describe('vector tile integration specs', () => {
                 specs[p].opacity = 0.5;
                 specs[p].groupSceneConfig = {};
                 // 图层加在GroupGLLayer上的透明度测试
-                it(p, runner(p, specs[p]));
+                it(p, runner(p, specs[p])).timeout(5000);;
             }
         }
     });
@@ -426,7 +424,7 @@ describe('vector tile integration specs', () => {
                 }
                 specs[p].opacity = 0.5;
                 // 图层直接加在map上的透明度测试
-                it(p, runner(p, specs[p]));
+                it(p, runner(p, specs[p])).timeout(5000);
             }
         }
     });
