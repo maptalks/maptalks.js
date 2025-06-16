@@ -18,9 +18,10 @@
     "dev": "rollup -w -c build/rollup.config.js",
     "build": "npm run clean && npm run lint && rollup --environment BUILD:production -c build/rollup.config.js",
     "build-dev": "rollup -c build/rollup.config.js",
-    "test": "electron-mocha --main ../ignore-gpu-blacklist.js --show-window --renderer ./test/**/*.spec.js -g \"pbr-extrusion-altitudeOffset\"",
+    "run-test": "electron-mocha --main ../ignore-gpu-blacklist.js --show-window --renderer ./test/**/*.spec.js -g \"pbr-extrusion-altitudeOffset\"",
+    "test": "npm run run-test",
     "tdd": "electron-mocha --main ../ignore-gpu-blacklist.js --interactive --renderer ./test/**/*.spec.js -g",
-    "pretest": "npm run build",
+    "pretest": "cd ../gl && npm run build && cd ../vt/ && npm run build",
     "preversion": "npm run pretest"
   },
   "dependencies": {
