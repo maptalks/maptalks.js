@@ -518,18 +518,18 @@ export default class FBORayPicking {
         const coords = [];
         if (meshIds.length && options['returnPoint']) {
             const { viewMatrix, projMatrix } = options;
-            // const depths = this._pickDepth(px, py, width, height, pixels, pickedMeshes, uniforms);
-            // for (let i = 0; i < depths.length; i++) {
-            //     if (depths[i] && meshIds[i] != null) {
-            //         const point = this._getWorldPos(x, y, depths[i], viewMatrix, projMatrix);
-            //         const coord = this._convertPickPoint(point);
-            //         points.push(point);
-            //         coords.push(coord);
-            //     } else {
-            //         points.push(null);
-            //         coords.push(null);
-            //     }
-            // }
+            const depths = this._pickDepth(px, py, width, height, pixels, pickedMeshes, uniforms);
+            for (let i = 0; i < depths.length; i++) {
+                if (depths[i] && meshIds[i] != null) {
+                    const point = this._getWorldPos(x, y, depths[i], viewMatrix, projMatrix);
+                    const coord = this._convertPickPoint(point);
+                    points.push(point);
+                    coords.push(coord);
+                } else {
+                    points.push(null);
+                    coords.push(null);
+                }
+            }
         }
         return { meshIds, pickingIds, coords, points, width, height };
     }

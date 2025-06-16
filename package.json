@@ -12,6 +12,7 @@
     "lint": "turbo run lint",
     "prettier": "prettier --parser=typescript --write **/*.{js,ts,md}",
     "maptalks-test": "pnpm --filter=maptalks run test",
+    "vt-test": "pnpm --filter=@maptalks/vt run test",
     "changeset": "changeset",
     "changeset-version": "changeset version",
     "release": "pnpm build && changeset publish"
