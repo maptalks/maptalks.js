@@ -666,7 +666,7 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
         super.onRemove();
     }
 
-    hitDetect(point) {
+    hitDetect(/* point */) {
         return false;
     }
 

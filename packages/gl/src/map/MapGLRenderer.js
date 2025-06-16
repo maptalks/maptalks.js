@@ -1,6 +1,5 @@
 import { GLContext } from '@maptalks/fusiongl';
 import createREGL from '@maptalks/regl';
-import { GraphicsDevice } from '@maptalks/reshader.gl';
 import { Map, renderer } from 'maptalks';
 
 export default class MapGLRenderer extends renderer.MapAbstractRenderer {

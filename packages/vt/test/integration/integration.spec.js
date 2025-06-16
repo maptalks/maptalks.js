@@ -28,6 +28,8 @@ const DEFAULT_VIEW = {
     }
 };
 
+const TEST_CANVAS = document.createElement('canvas');
+
 describe('vector tile integration specs', () => {
     let map, container, server;
     before(done => {
@@ -114,10 +116,15 @@ describe('vector tile integration specs', () => {
                             const diffPath = dir + 'diff.png';
                             writeImageData(diffPath, result.diffImage, result.width, result.height);
                             const actualPath = dir + 'actual.png';
-                            writeImageData(actualPath, canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
+                            const dataCanvas = TEST_CANVAS;
+                            dataCanvas.width = canvas.width;
+                            dataCanvas.height = canvas.height;
+                            const ctx = dataCanvas.getContext('2d', { willReadFrequently: true });
+                            ctx.drawImage(canvas, 0, 0);
+                            writeImageData(actualPath, ctx.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
                         }
                         // console.log(JSON.stringify(map.getView()));
-                        assert(result.diffCount <= (style.diffCount || 0));
+                        assert(result.diffCount <= (style.diffCount || 0), result.diffCount);
                         ended = true;
                         done();
                     });
