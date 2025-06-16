@@ -10,7 +10,7 @@ executors:
 orbs:
   browser-tools: circleci/browser-tools@1.4.8
 jobs:
-  install:
+  install-dep:
     executor: node-browser-executor
 
     working_directory: ~/repo/
@@ -53,10 +53,10 @@ jobs:
 workflows:
   maptalks:
     jobs:
-      - install
+      - install-dep
       - maptalks-test:
         requires:
-          - install
+          - install-dep
       - vt-test:
         requires:
-          - install
+          - install-dep
