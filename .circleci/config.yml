@@ -41,6 +41,7 @@ jobs:
 
   vt-test:
     executor: node-browser-executor
+    working_directory: ~/repo/
     steps:
       - attach_workspace:
           at: .
