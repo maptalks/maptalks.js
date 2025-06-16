@@ -10,7 +10,7 @@ import { PROP_OMBB } from "../../common/Constant";
 import { PolygonLayerRenderer } from "./PolygonLayer";
 import Vector3DLayer from "./Vector3DLayer";
 import { build3DExtrusion } from "../../worker/builder/";
-import computeOMBB from "../../worker/builder/ombb.js";
+import computeOMBB from "../../worker/builder/Ombb";
 import { fromJSON } from "./util/from_json";
 import { meterToPoint } from "../plugins/Util";
 

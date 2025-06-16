@@ -63,7 +63,7 @@ jobs:
           key: pnpm-packages-{{ checksum "pnpm-lock.yaml" }}
           paths:
             - .pnpm-store
-      - run: pnpm vt-test
+      - run: pnpm build && pnpm vt-test
 
 workflows:
   maptalks:
