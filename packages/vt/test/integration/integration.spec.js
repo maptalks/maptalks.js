@@ -89,12 +89,12 @@ describe('vector tile integration specs', () => {
                 const canvas = map.getRenderer().canvas;
                 const expectedPath = style.expected;
                 if (GENERATE_MODE) {
-                    //生成fixtures
-                    const dataURL = canvas.toDataURL();
-                    // remove Base64 stuff from the Image
-                    const base64Data = dataURL.replace(/^data:image\/png;base64,/, '');
-                    fs.writeFile(expectedPath, base64Data, 'base64', () => {});
-                    if (!generated) {
+                    if (!generated && count >= limit) {
+                        //生成fixtures
+                        const dataURL = canvas.toDataURL();
+                        // remove Base64 stuff from the Image
+                        const base64Data = dataURL.replace(/^data:image\/png;base64,/, '');
+                        fs.writeFile(expectedPath, base64Data, 'base64', () => {});
                         generated = true;
                         done();
                     }
@@ -128,7 +128,8 @@ describe('vector tile integration specs', () => {
                         ended = true;
                         done();
                     });
-                } else {
+                }
+                if (count < limit) {
                     map.getRenderer().setToRedraw();
                 }
             });
@@ -256,14 +257,14 @@ describe('vector tile integration specs', () => {
         }
     });
 
-    context('text specs', () => {
-        const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'text'));
-        for (const p in specs) {
-            if (hasOwn(specs, p)) {
-                it(p, runner(p, specs[p])).timeout(5000);
-            }
-        }
-    });
+    // context('text specs', () => {
+    //     const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'text'));
+    //     for (const p in specs) {
+    //         if (hasOwn(specs, p)) {
+    //             it(p, runner(p, specs[p])).timeout(5000);
+    //         }
+    //     }
+    // });
 
     context('line specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'line'));

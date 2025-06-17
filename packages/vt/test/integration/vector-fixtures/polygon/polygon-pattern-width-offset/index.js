@@ -23,10 +23,10 @@ module.exports = {
                     filter: ['==', 'type', 0],
                     symbol: {
                         polygonPatternFile: '{$root}/avatar.jpg',
+                        polygonPatternFileWidth: 8000,
                         uvOffsetInMeter: true,
                         uvOffset: [4000, 4000],
                         polygonPatternFileOrigin: [0, 0],
-                        polygonPatternFileWidth: 8000,
                         polygonOpacity: 1
                     }
                 }

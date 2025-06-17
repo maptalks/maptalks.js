@@ -1,11 +1,15 @@
 const maptalks = require('maptalks');
 const assert = require('assert');
 const path = require('path');
+const fs = require('fs');
 const { match, readSpecs, writeImageData, hasOwn } = require('./util');
 const { GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.js');
 const { GroupGLLayer } = require('@maptalks/gl');
 const startServer = require('../specs/server.js');
 const PORT = 4398;
+
+const GENERATE_MODE = false;
+const TEST_CANVAS = document.createElement('canvas');
 
 const DEFAULT_VIEW = {
     center: [91.14478,29.658272],
@@ -81,6 +85,7 @@ describe('vector tile on terrain integration specs', () => {
 
             const terrainLayer = group.getTerrainLayer();
             let count = 0;
+            let generated = false;
             let ended = false;
             terrainLayer.on('terrainreadyandrender', () => {
                 count++;
@@ -88,6 +93,18 @@ describe('vector tile on terrain integration specs', () => {
                 const expectedPath = style.expected;
                 if (!ended && count >= limit) {
                     ended = true;
+                    if (GENERATE_MODE) {
+                        if (!generated) {
+                            //生成fixtures
+                            const dataURL = canvas.toDataURL();
+                            // remove Base64 stuff from the Image
+                            const base64Data = dataURL.replace(/^data:image\/png;base64,/, '');
+                            fs.writeFile(expectedPath, base64Data, 'base64', () => {});
+                            generated = true;
+                            done();
+                        }
+                        return;
+                    }
                     //比对测试
                     match(canvas, expectedPath, (err, result) => {
                         if (err) {
@@ -100,7 +117,12 @@ describe('vector tile on terrain integration specs', () => {
                             const diffPath = dir + 'diff.png';
                             writeImageData(diffPath, result.diffImage, result.width, result.height);
                             const actualPath = dir + 'actual.png';
-                            writeImageData(actualPath, canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
+                            const dataCanvas = TEST_CANVAS;
+                            dataCanvas.width = canvas.width;
+                            dataCanvas.height = canvas.height;
+                            const ctx = dataCanvas.getContext('2d', { willReadFrequently: true });
+                            ctx.drawImage(canvas, 0, 0);
+                            writeImageData(actualPath, ctx.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
                         }
                         // console.log(JSON.stringify(map.getView()));
                         assert(result.diffCount === 0);

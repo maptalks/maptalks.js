@@ -98,7 +98,7 @@ class BloomPass {
     }
 
     _createColorTex(curTex, w, h, dataType) {
-        const regl = this._renderer.regl;
+        const regl = this._renderer.device;
         const type = dataType;
         const width = w || curTex.width, height = h || curTex.height;
         const color = regl.texture({
@@ -112,7 +112,7 @@ class BloomPass {
     }
 
     _createBlurFBO(tex) {
-        const regl = this._renderer.regl;
+        const regl = this._renderer.device;
         return regl.framebuffer({
             width: tex.width,
             height: tex.height,
