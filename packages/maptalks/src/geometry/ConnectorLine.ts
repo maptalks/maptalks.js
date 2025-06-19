@@ -156,7 +156,9 @@ const Connectable = function <T extends MixinConstructor>(Base: T) {
                 delete this._connSource;
             }
             if (this._connTarget) {
-                removeFromArray(this, this._connTarget.__connectors as Array<any>);
+                if (this._connTarget.__connectors) {
+                    removeFromArray(this, this._connTarget.__connectors as Array<any>);
+                }
                 this._connTarget.off('dragging positionchange', this._updateCoordinates, this)
                     .off('remove', this.onRemove, this);
                 this._connTarget.off('show', this._showConnect, this).off('hide', this.hide, this);
