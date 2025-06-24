@@ -167,7 +167,7 @@ export default class TileLayerCanvasRenderer extends TileLayerRenderable(CanvasR
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     drawTile(tileInfo: Tile['info'], tileImage: Tile['image'], parentContext?: RenderContext) {
-        if (!tileImage) {
+        if (!this._validateTileImage(tileImage)) {
             return;
         }
         const map = this.getMap();

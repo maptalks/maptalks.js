@@ -65,6 +65,9 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
     }
 
     drawTile(tileInfo: Tile['info'], tileImage: Tile['image'], parentContext: RenderContext): void {
+        if (!this._validateTileImage(tileImage)) {
+            return;
+        }
         if (parentContext && parentContext.sceneFilter) {
             if (!parentContext.sceneFilter(MESH_TO_TEST)) {
                 return;
