@@ -249,6 +249,17 @@ class UIMarker extends Handlerable(UIComponent) {
      * @fires UIMarker#positionchange
      */
     setCoordinates(coordinates: Coordinate) {
+        if (!coordinates) {
+            return this;
+        }
+        if (!(coordinates instanceof Coordinate)) {
+            try {
+                coordinates = new Coordinate(coordinates);
+            } catch (error) {
+                console.error(error);
+                return this;
+            }
+        }
         this._markerCoord = coordinates;
         /**
          * positionchange event.

@@ -815,8 +815,8 @@ function (exports) {
             .then(bitmap => {
                 cb(null, {data:bitmap});
             }).catch(err => {
-                console.warn('error when loading tile:', url);
-                console.warn(err);
+                console.error('error when loading tile:', url);
+                console.error(err);
                 cb(err);
             });
     }
