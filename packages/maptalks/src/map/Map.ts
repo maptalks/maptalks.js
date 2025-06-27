@@ -94,6 +94,7 @@ const REDRAW_OPTIONS_PROPERTIES = ['centerCross', 'fog', 'fogColor', 'debugSky']
  * @property {Number} [options.heightFactor=1]           - the factor for height/altitude calculation,This affects the height calculation of all layers(vectortilelayer/gllayer/threelayer/3dtilelayer)
  * @property {Boolean} [options.stopRenderOnOffscreen=true]           - whether to stop map rendering when container is offscreen
  * @property {Boolean} [options.originLatitudeForAltitude=40]         - default latitude for map.altitudeToPoint method
+ * @property {Boolean} [options.mousemoveThrottleEnable=true]          - enable map mousemove event throttling
  * @property {Number} [options.mousemoveThrottleTime=48]         - mousemove event interval time(ms)
  * @property {Number} [options.maxFPS=0]         - 0 means no frame is locked, otherwise the frame is locked
  * @property {Number} [options.cameraFarUndergroundInMeter=2000]      - camera far distance from underground in meter
@@ -161,6 +162,7 @@ const options: MapOptionsType = {
 
     'switchDragButton': false,
     'mousemoveThrottleTime': MOUSEMOVE_THROTTLE_TIME,
+    'mousemoveThrottleEnable': true,
     'maxFPS': 0,
     'debug': false,
     'cameraFarUndergroundInMeter': 2000,
@@ -2840,6 +2842,7 @@ export type MapOptionsType = {
     supportPluginEvent?: boolean;
     switchDragButton?: boolean;
     mousemoveThrottleTime?: number;
+    mousemoveThrottleEnable?: boolean;
     maxFPS?: number;
     debug?: boolean;
     spatialReference?: SpatialReferenceType,

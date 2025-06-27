@@ -265,7 +265,7 @@ Map.include(/** @lends Map.prototype */ {
         }
         const clickTimeThreshold = this.options['clickTimeThreshold'];
         const type = e.type;
-        if (isMoveEvent(type) && !GlobalConfig.isTest && isMousemoveEventBlocked(this, this.options['mousemoveThrottleTime'])) {
+        if (isMoveEvent(type) && !GlobalConfig.isTest && this.options['mousemoveThrottleEnable'] && isMousemoveEventBlocked(this, this.options['mousemoveThrottleTime'])) {
             return;
         }
         const isMouseDown = type === 'mousedown' || (type === 'touchstart' && (!(e as TouchEvent).touches || (e as TouchEvent).touches.length === 1));
@@ -471,16 +471,24 @@ Map.include(/** @lends Map.prototype */ {
             return;
         }
         this._wrapTerrainData(eventParam);
+        
+        const mousemoveHandler = () => {
+            if (eventParam.domEvent && eventParam.domEvent._cancelBubble) {
+                // Always trigger _moumove _touchmove event
+                // for hit test etc
+                this._fireEvent('_' + type, eventParam);
+                return;
+            }
+            this._fireEvent(type, eventParam);
+        };
         if (isMoveEvent(type)) {
-            this.getRenderer().callInNextFrame(() => {
-                if (eventParam.domEvent && eventParam.domEvent._cancelBubble) {
-                    // Always trigger _moumove _touchmove event
-                    // for hit test etc
-                    this._fireEvent('_' + type, eventParam);
-                    return;
-                }
-                this._fireEvent(type, eventParam);
-            });
+            if (!this.options['mousemoveThrottleEnable']) {
+                mousemoveHandler();
+            } else {
+                this.getRenderer().callInNextFrame(() => {
+                    mousemoveHandler();
+                });
+            }
         } else {
             this._fireEvent(type, eventParam);
         }
