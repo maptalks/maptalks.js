@@ -287,10 +287,13 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     cameraCenterDistance: number;
     //@internal
     _limitMaxExtenting: boolean;
+    //@internal
+    _terrainLayer: any;
     options: MapOptionsType;
     static VERSION: string;
     JSON_VERSION: '1.0';
     attributionControl?: Attribution;
+
 
 
     /**
@@ -1278,6 +1281,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
 
         this._baseLayer = baseLayer;
         baseLayer._bindMap(this, -1);
+        this._findTerrainLayer();
 
         function onbaseLayerload() {
             /**
@@ -1390,18 +1394,21 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             this._layerCache = {};
         }
         const mapLayers = this._layers;
+        let hasTerrainLayer = false;
         for (let i = 0, len = layers.length; i < len; i++) {
-            const layer = layers[i];
+            const layer = layers[i] as any;
             const id = layer.getId();
             if (isNil(id)) {
                 throw new Error('Invalid id for the layer: ' + id);
             }
-
             if (layer.getMap() === this) {
                 continue;
             }
             if (this._layerCache[id]) {
                 throw new Error('Duplicate layer id in the map: ' + id);
+            }
+            if (layer.queryTerrainAtPoint && layer.getTerrainLayer && layer.getTerrainLayer()) {
+                hasTerrainLayer = true;
             }
             this._layerCache[id] = layer;
             layer._bindMap(this);
@@ -1412,6 +1419,9 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
 
         this._sortLayersByZIndex();
+        if (hasTerrainLayer) {
+            this._findTerrainLayer();
+        }
 
         /**
          * addlayer event, fired when adding layers.
@@ -1442,6 +1452,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             return this.removeLayer([layers]);
         }
         const removed = [];
+        let terrainRemoved = false;
         for (let i = 0, len = layers.length; i < len; i++) {
             let layer = layers[i];
             if (!(layer instanceof Layer)) {
@@ -1454,6 +1465,9 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             if (!map || (map as any) !== this) {
                 continue;
             }
+            if (layer === this._terrainLayer) {
+                terrainRemoved = true;
+            }
             removed.push(layer);
             this._removeLayer(layer, this._layers);
             if (this._loaded) {
@@ -1463,6 +1477,9 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             if (this._layerCache) {
                 delete this._layerCache[id];
             }
+        }
+        if (terrainRemoved) {
+            this._findTerrainLayer();
         }
         if (removed.length > 0) {
             const renderer = this.getRenderer();
@@ -1492,6 +1509,23 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             'layers': layers
         });
         return this;
+    }
+
+    _findTerrainLayer() {
+        this._terrainLayer = null;
+        const baseLayer = this._baseLayer as any;
+        if (baseLayer && baseLayer.queryTerrainAtPoint && baseLayer.getTerrainLayer && baseLayer.getTerrainLayer()) {
+            this._terrainLayer = baseLayer;
+            return;
+        }
+        const layers = this._getLayers() || [];
+        for (let i = 0; i < layers.length; i++) {
+            const layer = layers[i];
+            if (layer && layer.queryTerrainAtPoint && layer.getTerrainLayer && layer.getTerrainLayer()) {
+                this._terrainLayer = layer;
+                break;
+            }
+        }
     }
 
     /**

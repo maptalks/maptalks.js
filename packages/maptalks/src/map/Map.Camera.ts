@@ -450,7 +450,7 @@ Map.include(/** @lends Map.prototype */{
      * @private
      */
     isTransforming() {
-        return !!(this._pitch || this._angle);
+        return !!(this._pitch || this._angle || this._terrainLayer);
     },
 
     getFrustumAltitude() {
@@ -1006,19 +1006,13 @@ Map.include(/** @lends Map.prototype */{
 
     //@internal
     _queryTerrainInfo(containerPoint) {
-        const layers = this._getLayers() || [];
-        for (let i = 0; i < layers.length; i++) {
-            const layer = layers[i];
-            if (containerPoint && layer && layer.queryTerrainAtPoint && layer.getTerrainLayer && layer.getTerrainLayer()) {
-                const coordinate = layer.queryTerrainAtPoint(containerPoint);
-                if (coordinate) {
-                    return {
-                        coordinate,
-                        altitude: coordinate.z
-                    };
-                } else {
-                    break;
-                }
+        if (containerPoint && this._terrainLayer) {
+            const coordinate = this._terrainLayer.queryTerrainAtPoint(containerPoint);
+            if (coordinate) {
+                return {
+                    coordinate,
+                    altitude: coordinate.z
+                };
             }
         }
         return null;
