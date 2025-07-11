@@ -610,7 +610,7 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
         loadTile(tile: Tile['info']): Tile['image'] {
             let tileImage = {} as Tile['image'];
             // fixme: 无相关定义，是否实现？
-            if (this.loadTileBitmap) {
+            if (this.loadTileBitmap && isFunction(this.loadTileBitmap)) {
                 const onLoad = (bitmap) => {
                     this.onTileLoad(bitmap, tile);
                 };
@@ -676,6 +676,14 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
                 tileImage.onload = falseFn;
                 tileImage.onerror = falseFn;
                 tileImage.src = emptyImageUrl;
+            }
+            if (this.loadTileBitmap && isFunction(this.loadTileBitmap)) {
+                const url = tileInfo.url;
+                this.loadTileBitmap(url, tileInfo, () => {
+
+                }, {
+                    command: 'abortTile'
+                })
             }
         }
 
