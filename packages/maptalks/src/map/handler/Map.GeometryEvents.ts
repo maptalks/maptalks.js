@@ -211,7 +211,7 @@ class MapGeometryEventsHandler extends Handler {
         }
         let oneMoreEvent = null;
         const eventType = type || domEvent.type;
-        if (isMoveEvent(eventType) && !GlobalConfig.isTest && isMousemoveEventBlocked(this, map.options['mousemoveThrottleTime'])) {
+        if (isMoveEvent(eventType) && !GlobalConfig.isTest && map.options['mousemoveThrottleEnable'] && isMousemoveEventBlocked(this, map.options['mousemoveThrottleTime'])) {
             stopPropagation(domEvent);
             return;
         }
