@@ -1,5 +1,5 @@
 import { extend, isNil } from '../core/util';
-import { withInEllipse } from '../core/util/path';
+import { pointsToCoordinates, withInEllipse } from '../core/util/path';
 import Coordinate from '../geo/Coordinate';
 import Extent from '../geo/Extent';
 import Point from '../geo/Point';
@@ -14,7 +14,8 @@ import Polygon, { PolygonOptionsType, RingCoordinates, RingsCoordinates } from '
  * @instance
  */
 const options: CircleOptionsType = {
-    'numberOfShellPoints': 60
+    'numberOfShellPoints': 60,
+    'ignoreProjection': false
 };
 
 /**
@@ -93,6 +94,10 @@ export class Circle extends CenterMixin(Polygon) {
             radius = this.getRadius();
         const shell = [];
         let rad, dx, dy;
+        const options = this.options as CircleOptionsType;
+        const ignoreProjection = options.ignoreProjection;
+        const map = this.getMap();
+
         for (let i = 0, len = numberOfPoints - 1; i < len; i++) {
             rad = (360 * i / len) * Math.PI / 180;
             dx = radius * Math.cos(rad);
@@ -100,6 +105,26 @@ export class Circle extends CenterMixin(Polygon) {
             const vertex = measurer.locate(center, dx, dy);
             vertex.z = center.z;
             shell.push(vertex);
+            if (ignoreProjection) {
+                break;
+            }
+        }
+        if (ignoreProjection && map) {
+            const glRes = map.getGLRes();
+            const pt = map.coordToPointAtRes(center, glRes);
+            const p1 = map.coordToPointAtRes(shell[0], glRes);
+            const r = pt.distanceTo(p1);
+            const pts: Point[] = [];
+            for (let i = 0, len = numberOfPoints - 1; i < len; i++) {
+                rad = (360 * i / len) * Math.PI / 180;
+                const x = Math.cos(rad) * r + pt.x;
+                const y = Math.sin(rad) * r + pt.y;
+                const p = new Point(x, y);
+                pts[i] = p;
+            }
+            const ring = pointsToCoordinates(map, pts, glRes, center.z);
+            ring.push(ring[0].copy());
+            return ring;
         }
         shell.push(shell[0]);
         return shell;
@@ -221,4 +246,5 @@ export default Circle;
 
 export type CircleOptionsType = PolygonOptionsType & {
     numberOfShellPoints?: number;
+    ignoreProjection?: boolean;
 }

@@ -301,3 +301,15 @@ export function getMinMaxAltitude(altitude: number | number[] | number[][]): [nu
     return [min, max];
 }
 
+export function pointsToCoordinates(map, points: Point[], glRes: number, altitude: number): Coordinate[] {
+    const ring = [];
+    for (let i = 0, len = points.length; i < len; i++) {
+        const pt = points[i];
+        const c = map.pointAtResToCoordinate(pt, glRes);
+        c.z = altitude;
+        ring[i] = c;
+    }
+    // ring.push(ring[0].copy());
+    return ring;
+}
+
