@@ -197,7 +197,7 @@ describe('Map.Event', function () {
 
     });
 
-    it.only('events with terrain info', function (done) {
+    it('events with terrain info', function (done) {
         // mimic a terrain layer
         const terrainLayer = new maptalks.TileLayer('tile', {
             urlTemplate: '#',
