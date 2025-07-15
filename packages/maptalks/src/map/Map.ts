@@ -1496,6 +1496,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this;
     }
 
+    //@internal
     _findTerrainLayer() {
         if (isTerrainLayer(this._baseLayer)) {
             return this._baseLayer;
