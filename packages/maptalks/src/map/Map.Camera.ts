@@ -1006,8 +1006,12 @@ Map.include(/** @lends Map.prototype */{
 
     //@internal
     _queryTerrainInfo(containerPoint) {
-        if (containerPoint && this._terrainLayer) {
-            const coordinate = this._terrainLayer.queryTerrainAtPoint(containerPoint);
+        if (containerPoint) {
+            const terrainLayer = this._findTerrainLayer();
+            if (!terrainLayer) {
+                return null;
+            }
+            const coordinate = terrainLayer.queryTerrainAtPoint(containerPoint);
             if (coordinate) {
                 return {
                     coordinate,
