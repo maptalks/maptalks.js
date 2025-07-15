@@ -1,5 +1,5 @@
 import { extend, isNil } from '../core/util';
-import { pointsToCoordinates, withInEllipse } from '../core/util/path';
+import { getEllipseGLSize, pointsToCoordinates, withInEllipse } from '../core/util/path';
 import Coordinate from '../geo/Coordinate';
 import Extent from '../geo/Extent';
 import Point from '../geo/Point';
@@ -98,27 +98,15 @@ export class Circle extends CenterMixin(Polygon) {
         const ignoreProjection = options.ignoreProjection;
         const map = this.getMap();
 
-        for (let i = 0, len = numberOfPoints - 1; i < len; i++) {
-            rad = (360 * i / len) * Math.PI / 180;
-            dx = radius * Math.cos(rad);
-            dy = radius * Math.sin(rad);
-            const vertex = measurer.locate(center, dx, dy);
-            vertex.z = center.z;
-            shell.push(vertex);
-            if (ignoreProjection) {
-                break;
-            }
-        }
         if (ignoreProjection && map) {
             const glRes = map.getGLRes();
-            const pt = map.coordToPointAtRes(center, glRes);
-            const p1 = map.coordToPointAtRes(shell[0], glRes);
-            const r = pt.distanceTo(p1);
+            const { glWidth, glHeight, glCenter } = getEllipseGLSize(center, measurer, map, radius, radius);
+            const r = Math.max(glWidth, glHeight);
             const pts: Point[] = [];
             for (let i = 0, len = numberOfPoints - 1; i < len; i++) {
                 rad = (360 * i / len) * Math.PI / 180;
-                const x = Math.cos(rad) * r + pt.x;
-                const y = Math.sin(rad) * r + pt.y;
+                const x = Math.cos(rad) * r + glCenter.x;
+                const y = Math.sin(rad) * r + glCenter.y;
                 const p = new Point(x, y);
                 pts[i] = p;
             }
@@ -126,6 +114,15 @@ export class Circle extends CenterMixin(Polygon) {
             ring.push(ring[0].copy());
             return ring;
         }
+        for (let i = 0, len = numberOfPoints - 1; i < len; i++) {
+            rad = (360 * i / len) * Math.PI / 180;
+            dx = radius * Math.cos(rad);
+            dy = radius * Math.sin(rad);
+            const vertex = measurer.locate(center, dx, dy);
+            vertex.z = center.z;
+            shell.push(vertex);
+        }
+
         shell.push(shell[0]);
         return shell;
     }

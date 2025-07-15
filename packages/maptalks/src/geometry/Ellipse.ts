@@ -1,5 +1,5 @@
 import { extend, isNil, pushIn } from '../core/util';
-import { pointsToCoordinates, withInEllipse } from '../core/util/path';
+import { getEllipseGLSize, pointsToCoordinates, withInEllipse } from '../core/util/path';
 import Coordinate from '../geo/Coordinate';
 import CenterMixin from './CenterMixin';
 import Polygon, { PolygonOptionsType, RingCoordinates, RingsCoordinates } from './Polygon';
@@ -188,14 +188,11 @@ export class Ellipse extends CenterMixin(Polygon) {
         const map = this.getMap();
         if (ignoreProjection && map) {
             const glRes = map.getGLRes();
-            const pt = map.coordToPointAtRes(center, glRes);
-            const c1 = measurer.locate(center, width / 2, 0);
-
-            const p1 = map.coordToPointAtRes(c1, glRes);
+            const { glWidth, glHeight, glCenter } = getEllipseGLSize(center, measurer, map, width / 2, height / 2);
             //gl width
-            const w = p1.distanceTo(pt) * 2;
-            //gl width 高度计算直接利用和宽度的比即可,不用去measurer计算,因为相同的长度，由于投影的影响横轴和纵轴计算结果是不同的
-            const h = w * height / width;
+            const w = glWidth * 2;
+            //gl width 
+            const h = glHeight * 2;
             const s = Math.pow(w / 2, 2) * Math.pow(h / 2, 2),
                 sx = Math.pow(w / 2, 2),
                 sy = Math.pow(h / 2, 2);
@@ -211,7 +208,7 @@ export class Ellipse extends CenterMixin(Polygon) {
                 if (deg > 180 && deg < 360) {
                     dy *= -1;
                 }
-                const p = pt.copy();
+                const p = glCenter.copy();
                 p.x += dx;
                 p.y += dy;
                 pts[i] = p;

@@ -1,5 +1,5 @@
 import { extend, isNil } from '../core/util';
-import { pointsToCoordinates } from '../core/util/path';
+import { getEllipseGLSize, pointsToCoordinates } from '../core/util/path';
 import Coordinate from '../geo/Coordinate';
 import Extent from '../geo/Extent';
 import Point from '../geo/Point';
@@ -141,17 +141,15 @@ export class Sector extends Circle {
         const map = this.getMap();
         if (ignoreProjection && map) {
             const glRes = map.getGLRes();
-            const pt = map.coordToPointAtRes(center, glRes);
-            const c1 = measurer.locate(center, radius, 0);
-            const p1 = map.coordToPointAtRes(c1, glRes);
-            const r = pt.distanceTo(p1);
+            const { glWidth, glHeight, glCenter } = getEllipseGLSize(center, measurer, map, radius, radius);
+            const r = Math.max(glWidth, glHeight);
             const pts: Point[] = [];
             for (let i = 0; i < numberOfPoints; i++) {
                 rad = (angle * i / (numberOfPoints - 1) + startAngle) * Math.PI / 180;
                 dx = radius * Math.cos(rad);
                 dy = radius * Math.sin(rad);
-                const x = Math.cos(rad) * r + pt.x;
-                const y = Math.sin(rad) * r + pt.y;
+                const x = Math.cos(rad) * r + glCenter.x;
+                const y = Math.sin(rad) * r + glCenter.y;
                 const p = new Point(x, y);
                 pts[i] = p;
             }
