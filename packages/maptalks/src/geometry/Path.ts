@@ -193,6 +193,7 @@ export class Path extends Geometry {
             this._animLenSoFar += segLen;
         }
         this._animIdx = i - 1;
+        //is end
         if (this._animIdx >= l - 1) {
             this.setCoordinates(coordinates);
             return coordinates[coordinates.length - 1];
@@ -211,9 +212,12 @@ export class Path extends Geometry {
 
         const c1 = coordinates[idx], c2 = coordinates[idx + 1];
         const cx = c1.x + (c2.x - c1.x) * r,
-            cy = c1.y + (c2.y - c1.y) * r;
+            cy = c1.y + (c2.y - c1.y) * r,
+            cz = (c1.z || 0) + ((c2.z || 0) - (c1.z || 0)) * r;
         this._tempCoord.x = cx;
         this._tempCoord.y = cy;
+        this._tempCoord.z = cz;
+
         // const targetCoord = projection.unproject(lastCoord, this._tempCoord);
         const targetCoord = this._tempCoord;
         const isPolygon = !!this.getShell;
