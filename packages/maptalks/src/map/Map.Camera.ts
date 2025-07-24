@@ -914,7 +914,7 @@ Map.include(/** @lends Map.prototype */{
             // remains previous center altitude if queried altitude is null
             queriedAltitude = this.centerAltitude;
         }
-        const centerAltitude = queriedAltitude || 0;
+        const centerAltitude = queriedAltitude > 0 && queriedAltitude || 0;
         const pitch = this.getPitch() * RADIAN;
         const bearing = this.getBearing() * RADIAN;
         const altDist = (centerAltitude - this.centerAltitude) * this._meterToGLPoint;

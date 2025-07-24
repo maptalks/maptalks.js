@@ -372,15 +372,12 @@ Map.include(/** @lends Map.prototype */{
                 this._altitudeOriginDirty = false;
             }
             const p = this.distanceToPointAtRes(altitude, altitude, res, originCenter || DEFAULT_CENTER, POINT);
-            if (altitude < 0 && p.x > 0) {
-                p.x = -p.x;
-            }
             const heightFactor = this.options['heightFactor'];
             if (heightFactor && heightFactor !== 1) {
                 p.x *= heightFactor;
                 p.y *= heightFactor;
             }
-            return p.x;
+            return p.x * Math.sign(altitude);
         };
     }(),
 
@@ -388,7 +385,7 @@ Map.include(/** @lends Map.prototype */{
         const DEFAULT_CENTER = new Coordinate(0, 40);
         return function (point = 0, res, originCenter) {
             const altitude = this.pointAtResToDistance(point, 0, res, originCenter || DEFAULT_CENTER);
-            return altitude;
+            return altitude * Math.sign(point);
         };
     }(),
 
