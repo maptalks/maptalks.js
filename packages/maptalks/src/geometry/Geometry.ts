@@ -496,9 +496,26 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             return this;
         }
         let s = this._getSymbol();
+        const propsIsArray = Array.isArray(props);
+        if (!s) {
+            //generate defalut empty symbol
+            s = {};
+            if (propsIsArray) {
+                s = props.map(() => { return {} });
+            }
+        }
+        if (!Array.isArray(s) && propsIsArray) {
+            //only read first element of props
+            props = props[0] || {};
+        }
         if (Array.isArray(s)) {
-            if (!Array.isArray(props)) {
-                throw new Error('Parameter of updateSymbol is not an array.');
+            if (!propsIsArray) {
+                //auto generate array symbol
+                props = [props];
+                while (props.length < s.length) {
+                    props.push({});
+                }
+                // throw new Error('Parameter of updateSymbol is not an array.');
             }
             for (let i = 0; i < props.length; i++) {
                 if (isTextSymbol(props[i])) {
@@ -509,7 +526,10 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
                 }
             }
         } else if (Array.isArray(props)) {
-            throw new Error('Geometry\'s symbol is not an array to update.');
+            // throw new Error('Geometry\'s symbol is object but the update symbol is array.');
+            console.error('Geometry\'s symbol is object but the update symbol is array.');
+            console.error('Geometry\'s symbol and update symbol:', s, props);
+            return this;
         } else {
             if (isTextSymbol(s)) {
                 delete this._textDesc;
