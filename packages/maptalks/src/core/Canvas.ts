@@ -1307,6 +1307,43 @@ const Canvas = {
         Canvas._stroke(ctx, lineOpacity);
     },
 
+    roundRect(ctx: CanvasRenderingContext2D, points: Array<Point>, lineOpacity?: number, fillOpacity?: number) {
+        //canvas not support roundRect https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D/roundRect
+        if (!Browser.roundRect) {
+            return;
+        }
+        let minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
+        for (let i = 0, len = points.length; i < len; i++) {
+            const p = points[i];
+            const { x, y } = p;
+            minx = Math.min(minx, x);
+            miny = Math.min(miny, y);
+            maxx = Math.max(maxx, x);
+            maxy = Math.max(maxy, y);
+
+        }
+        const width = Math.max(maxx - minx), height = Math.abs(maxy - miny);
+        if (width * height <= 0) {
+            return;
+        }
+        const min = Math.min(width, height);
+        ctx.roundRect(minx, miny, width, height, min / 4);
+
+        let globalAlpha = ctx.globalAlpha;
+        if (isNumber(fillOpacity) && fillOpacity < 1) {
+            ctx.globalAlpha = 1;
+            ctx.globalAlpha *= fillOpacity;
+        }
+        ctx.fill();
+        ctx.globalAlpha = globalAlpha;
+        if (isNumber(lineOpacity) && lineOpacity < 1) {
+            ctx.globalAlpha = 1;
+            ctx.globalAlpha *= lineOpacity;
+        }
+        ctx.stroke();
+        ctx.globalAlpha = globalAlpha;
+    },
+
     //@internal
     _multiClip(ctx, points) {
         if (!points || points.length === 0) return;

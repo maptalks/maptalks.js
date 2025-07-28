@@ -36,6 +36,7 @@ type BrowserType = {
     ie10: boolean;
     webgl: boolean;
     imageBitMap: boolean;
+    roundRect: boolean;
     resizeObserver: boolean;
     btoa: boolean;
     decodeImageInWorker: boolean;
@@ -83,7 +84,8 @@ if (!IS_NODE) {
         resizeObserver = typeof window !== 'undefined' && isFunction(window.ResizeObserver),
         btoa = typeof window !== 'undefined' && isFunction(window.btoa),
         proxy = typeof window !== 'undefined' && isFunction(window.Proxy),
-        requestIdleCallback = typeof window !== 'undefined' && isFunction(window.requestIdleCallback);
+        requestIdleCallback = typeof window !== 'undefined' && isFunction(window.requestIdleCallback),
+        roundRect = typeof CanvasRenderingContext2D !== 'undefined' && isFunction(CanvasRenderingContext2D.prototype.roundRect);
 
 
     let chromeVersion: any = 0;
@@ -122,7 +124,7 @@ if (!IS_NODE) {
     try {
 
         const opts = Object.defineProperty({}, 'passive', {
-            get: function() {
+            get: function () {
                 supportsPassive = true;
             }
         });
@@ -175,6 +177,7 @@ if (!IS_NODE) {
 
         webgl: webgl,
         imageBitMap,
+        roundRect,
         resizeObserver,
         btoa,
         decodeImageInWorker,
@@ -204,5 +207,8 @@ if (!IS_NODE) {
         //     // }
         // }
     };
+    if (!Browser.roundRect) {
+        console.warn('current env the canvas not support roundRect');
+    }
 }
 export default Browser;
