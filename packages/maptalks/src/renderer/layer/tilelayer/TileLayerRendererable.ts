@@ -270,6 +270,7 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
 
                 for (let j = 0, l = allTiles.length; j < l; j++) {
                     const tile = allTiles[j];
+                    layer._debugTile(tile, '_getTilesInCurrentFrame');
                     const tileId = tile.id;
                     const isParentTile = !isFirstRender && j < parentCount;
                     //load tile in cache at first if it has.

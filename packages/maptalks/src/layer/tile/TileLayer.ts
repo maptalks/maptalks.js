@@ -534,12 +534,11 @@ class TileLayer extends Layer {
             if (!offsets[node.z + 1]) {
                 offsets[node.z + 1] = this._getTileOffset(node.z + 1);
             }
-            this._splitNode(node, projectionView, queue, tiles, extent, maxZoom, offsets[node.z + 1], parentRenderer, glRes);
-            if (this.isParentTile(z, maxZoom, node)) {
-                parents.push(node);
-            }
+            this._splitNode(node, projectionView, queue, tiles, parents, z, extent, maxZoom, offsets[node.z + 1], parentRenderer, glRes);
         }
         parents.sort(sortingTiles);
+        this._debugTile(tiles, '_getPyramidTiles');
+
         return {
             tileGrids: [
                 {
@@ -555,11 +554,10 @@ class TileLayer extends Layer {
         } as TilesType;
     }
 
-    isParentTile(z: number, maxZoom: number, tile: TileNodeType) {
-        const stackMinZoom = Math.max(this.getMinZoom(), z - this.options['tileStackStartDepth']);
-        const stackMaxZoom = Math.min(maxZoom, stackMinZoom + this.options['tileStackDepth']);
-        return tile.z >= stackMinZoom && tile.z < stackMaxZoom;
-
+    isParentTile(currentTileZoom: number, maxZoom: number, tile: TileNodeType) {
+        const stackMinZoom = Math.max(this.getMinZoom(), currentTileZoom - this.options['tileStackStartDepth']);
+        const stackMaxZoom = stackMinZoom + this.options['tileStackDepth'];
+        return tile.z >= stackMinZoom && tile.z < stackMaxZoom && tile.z < maxZoom;
     }
 
     //@internal
@@ -568,12 +566,15 @@ class TileLayer extends Layer {
         projectionView: Matrix4,
         queue: TileNodeType[],
         tiles: TileNodeType[],
+        parents: TileNodeType[],
+        currentTileZoom: number,
         gridExtent: PointExtent,
         maxZoom: number,
         offset: TileOffsetType,
         parentRenderer: any,
         glRes: number
     ) {
+
         const z = node.z + 1;
         const sr = this._spatialRef || this.getSpatialReference();
         const { idx, idy } = node;
@@ -614,11 +615,11 @@ class TileLayer extends Layer {
             childNode.offset[0] = offset[0];
             childNode.offset[1] = offset[1];
             const visible = this._isTileVisible(childNode, projectionView, glScale, maxZoom, offset);
-            if (visible === 1) {
+            if (visible === TileVisibility.VISIBLE) {
                 hasCurrentIn = true;
-            } else if (visible === -1) {
+            } else if (visible === TileVisibility.OUT_OF_FRUSTUM) {
                 continue;
-            } else if (visible === 0 && z !== maxZoom) {
+            } else if (visible === TileVisibility.SCREEN_ERROR_TOO_SMALL && z !== maxZoom) {
                 // 任意子瓦片的error低于maxError，则添加父级瓦片，不再遍历子瓦片
                 tiles.push(node);
                 gridExtent._combine(node.extent2d);
@@ -635,6 +636,9 @@ class TileLayer extends Layer {
             }
         } else {
             pushIn(queue, children);
+        }
+        if (this.isParentTile(currentTileZoom, maxZoom, node)) {
+            parents.push(node);
         }
 
     }
@@ -677,10 +681,10 @@ class TileLayer extends Layer {
     //@internal
     _isTileVisible(node: TileNodeType, projectionView: Matrix4, glScale: number, maxZoom: number, offset: TileOffsetType) {
         if (node.z === 0) {
-            return 1;
+            return TileVisibility.VISIBLE;
         }
         if (!this._isTileInFrustum(node, projectionView, glScale, offset)/* || this._isTileTooSmall(node, projectionView, glScale, maxZoom, offset)*/) {
-            return -1;
+            return TileVisibility.OUT_OF_FRUSTUM;
         }
         let maxError = this.options['maxError'];
         if (isNil(maxError)) {
@@ -688,7 +692,7 @@ class TileLayer extends Layer {
         }
         const error = this._getScreenSpaceError(node, glScale, maxZoom, offset);
 
-        return error >= maxError ? 1 : 0;
+        return error >= maxError ? TileVisibility.VISIBLE : TileVisibility.SCREEN_ERROR_TOO_SMALL;
     }
 
     // _isTileTooSmall(node, projectionView, glScale, maxZoom, offset) {
@@ -1603,6 +1607,32 @@ class TileLayer extends Layer {
         }
         return bboxInMask(tileBBOX, this._maskGeoJSON);
     }
+
+    //@internal
+    _debugTile(tile: TileNodeType | TileNodeType[], name?: string, debugOn?: boolean) {
+        if (this.options['debugTile']) {
+            if (Array.isArray(tile)) {
+                for (let i = 0; i < tile.length; i++) {
+                    if (!tile[i]) {
+                        continue;
+                    }
+                    this._debugTile(tile[i], name + ' at ' + i, debugOn);
+                }
+                return;
+            }
+            if (!tile) {
+                return;
+            }
+            const { x, y, z } = this.options['debugTile'];
+            if (tile.x === x && tile.y === y && tile.z === z) {
+                console.log(`Debug Tile Found in TileLayer.${name}:`, tile);
+                if (debugOn) {
+                    // eslint-disable-next-line no-debugger
+                    debugger
+                }
+            }
+        }
+    }
 }
 
 TileLayer.registerJSONType('TileLayer');
@@ -1723,3 +1753,9 @@ export type TileLayerOptionsType = LayerOptionsType & {
     currentTilesFirst?: boolean;
     tileErrorScale?: number;
 };
+
+enum TileVisibility {
+    OUT_OF_FRUSTUM,
+    SCREEN_ERROR_TOO_SMALL,
+    VISIBLE
+}
