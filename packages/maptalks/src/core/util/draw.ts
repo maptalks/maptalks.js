@@ -57,17 +57,23 @@ export function drawVectorMarker(ctx: CanvasRenderingContext2D, point, symbol, r
         //线类型
         Canvas.path(ctx, vectorArray.slice(0, 2), lineOpacity);
         Canvas.path(ctx, vectorArray.slice(2, 4), lineOpacity);
-    } else if (markerType === 'diamond' || markerType === 'bar' || markerType === 'square' || markerType === 'rectangle' || markerType === 'triangle') {
+    } else if (markerType === 'diamond' || markerType === 'bar' || markerType === 'square' || markerType === 'rectangle' || markerType === 'triangle' || markerType === 'roundrectangle') {
         if (markerType === 'bar') {
             point = point.add(0, -hLineWidth);
-        } else if (markerType === 'rectangle') {
+        } else if (markerType === 'rectangle' || markerType === 'roundrectangle') {
             point = point.add(hLineWidth, hLineWidth);
         }
         for (let j = vectorArray.length - 1; j >= 0; j--) {
             vectorArray[j]._add(point);
         }
-        //面类型
-        Canvas.polygon(ctx, vectorArray, lineOpacity, fillOpacity);
+
+        if (markerType === 'roundrectangle') {
+            //round rectangle, draw the corners
+            Canvas.roundRect(ctx, vectorArray, lineOpacity, fillOpacity);
+        } else {
+            //面类型
+            Canvas.polygon(ctx, vectorArray, lineOpacity, fillOpacity);
+        }
     } else if (markerType === 'pin') {
         point = point.add(0, -hLineWidth);
         for (let j = vectorArray.length - 1; j >= 0; j--) {
@@ -140,7 +146,7 @@ export function translateMarkerLineAndFill<T extends Partial<TemplateSymbol>>(s:
     return result;
 }
 
-export type MarkerType = 'triangle' | 'cross' | 'diamond' | 'square' | 'rectangle' | 'x' | 'bar' | 'pin' | 'pie'
+export type MarkerType = 'triangle' | 'cross' | 'diamond' | 'square' | 'rectangle' | 'roundrectangle' | 'x' | 'bar' | 'pin' | 'pie'
 
 export function getVectorMarkerPoints(markerType: MarkerType, width: number, height: number) {
     //half height and half width
@@ -172,7 +178,7 @@ export function getVectorMarkerPoints(markerType: MarkerType, width: number, hei
         v2 = new Point((left + hw), (top - hh));
         v3 = new Point((left - hw), (top - hh));
         return [v0, v1, v2, v3];
-    } else if (markerType === 'rectangle') {
+    } else if (markerType === 'rectangle' || markerType === 'roundrectangle') {
         v0 = new Point(left, top);
         v1 = v0.add(width, 0);
         v2 = v0.add(width, height);
