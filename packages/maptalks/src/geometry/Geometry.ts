@@ -499,10 +499,10 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         const propsIsArray = Array.isArray(props);
         if (!s) {
             //generate defalut empty symbol
-            s = {};
-            if (propsIsArray) {
-                s = props.map(() => { return {} });
-            }
+            s = this._getInternalSymbol() || {};
+            // if (propsIsArray) {
+            //     s = props.map(() => { return {} });
+            // }
         }
         if (!Array.isArray(s) && propsIsArray) {
             //only read first element of props
