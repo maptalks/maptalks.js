@@ -1329,7 +1329,7 @@ const Canvas = {
         const min = Math.min(width, height);
         ctx.roundRect(minx, miny, width, height, min / 4);
 
-        let globalAlpha = ctx.globalAlpha;
+        const globalAlpha = ctx.globalAlpha;
         if (isNumber(fillOpacity) && fillOpacity < 1) {
             ctx.globalAlpha = 1;
             ctx.globalAlpha *= fillOpacity;
