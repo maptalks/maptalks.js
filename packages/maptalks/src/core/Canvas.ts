@@ -1320,9 +1320,8 @@ const Canvas = {
             miny = Math.min(miny, y);
             maxx = Math.max(maxx, x);
             maxy = Math.max(maxy, y);
-
         }
-        const width = Math.max(maxx - minx), height = Math.abs(maxy - miny);
+        const width = Math.abs(maxx - minx), height = Math.abs(maxy - miny);
         if (width * height <= 0) {
             return;
         }
