@@ -17,7 +17,7 @@ const TEMP_COORD6 = new Coordinate(0, 0);
 const TEMP_COORD7 = new Coordinate(0, 0);
 const MINMAX = [];
 /* eslint-disable prefer-const */
-let TEMP_EXTENT;
+let TEMP_EXTENT: Extent;
 /* eslint-enable prefer-const */
 const TEMP_COMBINE = [];
 
@@ -36,9 +36,9 @@ export type JsonExtent = {
 export type ExtentLike = Extent | JsonExtent | ArrayExtent;
 
 export interface Constructable<T> {
-    new(p1?: WithNull<ExtentLike>, p?: Projection) : T;
-    new(p1: PositionType, p2: PositionType, p?: Projection) : T;
-    new(p1: number, p2: number, p3: number, p4: number, p?: Projection) : T;
+    new(p1?: WithNull<ExtentLike>, p?: Projection): T;
+    new(p1: PositionType, p2: PositionType, p?: Projection): T;
+    new(p1: number, p2: number, p3: number, p4: number, p?: Projection): T;
 }
 
 /**
@@ -570,6 +570,8 @@ class Extent {
         if ((extent as PositionType).x !== undefined) {
             TEMP_EXTENT.xmin = TEMP_EXTENT.xmax = (extent as PositionType).x;
             TEMP_EXTENT.ymin = TEMP_EXTENT.ymax = (extent as PositionType).y;
+            //always transform coordinates to prj
+            TEMP_EXTENT._dirty = true;
             extent = TEMP_EXTENT;
         }
         this._project(extent as (Extent | PointExtent));
