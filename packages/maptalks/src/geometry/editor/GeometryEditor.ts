@@ -154,7 +154,8 @@ const options: GeometryEditOptionsType = {
     'collision': false,
     'collisionBufferSize': 0,
     'vertexZIndex': 0,
-    'newVertexZIndex': 0
+    'newVertexZIndex': 0,
+    'shadowDraggable': false
 };
 
 /**
@@ -285,7 +286,7 @@ class GeometryEditor extends Eventable(Class) {
             shadow._setEventTarget(geometry);
             //drag shadow by center handle instead.
             shadow.setId(null).config({
-                'draggable': false
+                'draggable': this.options.shadowDraggable
             });
 
             this._shadow = shadow;
@@ -1553,13 +1554,13 @@ class GeometryEditor extends Eventable(Class) {
         if (!this._history || this._historyPointer === this._history.length - 1) {
             return true;
         }
-        return false; 
+        return false;
     }
     _isundoEdit(): boolean {
         if (!this._history || this._historyPointer === 0) {
             return true;
         }
-        return false; 
+        return false;
     }
 
 }
