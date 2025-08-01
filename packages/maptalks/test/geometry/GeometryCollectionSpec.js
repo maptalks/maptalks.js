@@ -548,7 +548,47 @@ describe('#GeometryCollection', function () {
         });
 
     });
+
+
+    it('#2593 collection getExent error when geometry add to layer', function (done) {
+
+        const offset = 0.00001;
+        const polygon = new maptalks.Polygon([[
+            [-offset, -offset],
+            [-offset, offset],
+            [offset, offset],
+            [offset, -offset]
+
+        ]]);
+        const extent = polygon.getExtent();
+        expect(extent.xmin).to.be.equal(-offset);
+        expect(extent.ymin).to.be.equal(-offset);
+        expect(extent.xmax).to.be.equal(offset);
+        expect(extent.ymax).to.be.equal(offset);
+        polygon.addTo(layer);
+
+        function toFixed(num) {
+            const str = num.toFixed(5);
+            return parseFloat(str);
+        }
+        setTimeout(() => {
+            const collection = new maptalks.GeometryCollection([polygon]);
+            const extent1 = collection.getExtent();
+            expect(toFixed(extent1.xmin)).to.be.equal(-offset);
+            expect(toFixed(extent1.ymin)).to.be.equal(-offset);
+            expect(toFixed(extent1.xmax)).to.be.equal(offset);
+            expect(toFixed(extent1.ymax)).to.be.equal(offset);
+      
+            done();
+
+        }, 100);
+
+
+
+
+    });
 });
+
 
 function genPoints() {
     return [
