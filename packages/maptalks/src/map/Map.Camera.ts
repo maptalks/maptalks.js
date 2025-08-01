@@ -817,7 +817,7 @@ Map.include(/** @lends Map.prototype */{
         return function () {
             const glRes = this.getGLRes();
             if (!this._meterToGLPoint) {
-                this._meterToGLPoint = this.distanceToPointAtRes(100, 0, glRes).x / 100;
+                this._meterToGLPoint = this.altitudeToPoint(100, glRes) / 100;
             }
 
             const center2D = this._prjToPointAtRes(this._prjCenter, glRes, TEMP_POINT);
