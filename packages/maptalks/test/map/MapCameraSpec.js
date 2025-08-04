@@ -530,7 +530,49 @@ describe('Map.Camera', function () {
             expect(map.getPitch()).to.be.eql(0);
             expect(map.getBearing()).to.be.eql(0);
             expect(map.getZoom()).to.be.within(14, 15);
-        })
+        });
+
+        it('map.lookAt', function () {
+            const view = map.getView();
+            const cameraPosition = map.cameraPosition.slice();
+            const pitch = map.getPitch();
+            const bearing = map.getBearing();
+
+            map.lookAt(view);
+
+            expect(map.cameraPosition).to.be.closeTo(cameraPosition);
+            expect(map.getPitch()).to.be.eql(pitch);
+            expect(map.getBearing()).to.be.eql(bearing);
+        });
+
+        it('map.lookAt with distance', function () {
+            const view = map.getView();
+            let distance = map.cameraToCenterDistance;
+
+            // compute meter distance in XYZ against map.cameraToCenterDistance
+            const glRes = map.getGLRes();
+            const radBearing = map.getBearing() * Math.PI / 180;
+            const radPitch = map.getPitch() * Math.PI / 180;
+            let distZ = distance * Math.sin(radPitch);
+            let xyDist = Math.sin(radPitch) * distance;
+            const distX = xyDist * Math.sin(radBearing);
+            const distY = xyDist * Math.cos(radBearing);
+            distZ = distZ / map._meterToGLPoint;
+            xyDist = map.pointAtResToDistance(distX, distY, glRes);
+            distance = Math.sqrt(xyDist * xyDist + distZ * distZ);
+
+            const cameraPosition = map.cameraPosition.slice();
+            const pitch = map.getPitch();
+            const bearing = map.getBearing();
+
+            view.distance = map.pointAtResToAltitude(distance, map.getGLRes());
+            map.lookAt(view);
+
+            expect(map.cameraPosition).to.be.closeTo(cameraPosition);
+            expect(map.cameraPosition[2]).to.be.eql(cameraPosition[2]);
+            expect(map.getPitch()).to.be.eql(pitch);
+            expect(map.getBearing()).to.be.eql(bearing);
+        });
     });
 
     describe('containsPoint when pitching', function () {

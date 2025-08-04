@@ -342,6 +342,58 @@ Map.include(/** @lends Map.prototype */{
         }, frame);
     },
 
+
+    /**
+     * Look at the given coordinates.
+     * @param {Coordinate} coordinates - coordinates to look at
+     * @returns {Map} this
+     */
+    lookAt(params) {
+        let { coordinates, bearing, pitch, distance } = params;
+        coordinates = params.center || coordinates;
+        if (Array.isArray(coordinates)) {
+            coordinates = new Coordinate(coordinates as any);
+        }
+        if (!coordinates.z && !distance) {
+            return this.setCenter(coordinates)
+        }
+        const glRes = this.getGLRes();
+        bearing = isNil(bearing) ? this.getBearing(): bearing;
+        pitch = isNil(pitch) ? this.getPitch() : pitch;
+        const radPitch = pitch * RADIAN;
+        const radBearing = bearing * RADIAN;
+        if (distance) {
+            let distZ = distance * Math.sin(radPitch);
+            let xyDist = Math.sin(radPitch) * distance;
+            const distX = xyDist * Math.sin(radBearing);
+            const distY = xyDist * Math.cos(radBearing);
+            distZ = distZ * this._meterToGLPoint;
+            xyDist = this.distanceToPointAtRes(distX, distY, glRes);
+            distance = Math.sqrt(xyDist * xyDist + distZ * distZ);
+        }
+        const point = this.coordToPointAtRes(coordinates, glRes);
+        point.z = 0;
+        if (coordinates.z) {
+            point.z = coordinates.z * this._meterToGLPoint;
+        }
+
+        const cameraToTargetDistance = distance || this.cameraToGroundDistance || this.cameraToCenterDistance;
+        const xyDistance = Math.sin(radPitch) * cameraToTargetDistance;
+        const cz = cameraToTargetDistance * Math.cos(radPitch);
+        const cx = point.x - xyDistance * Math.sin(radBearing);
+        const cy = point.y - xyDistance * Math.cos(radBearing);
+        const cameraPosition = [cx, cy, cz + point.z];
+        const cameraPoint = new Point(cameraPosition as Vector3);
+        const cameraCoord = this.pointAtResToCoord(cameraPoint, glRes);
+        const cameraAltitude = cameraPoint.z / this._meterToGLPoint;
+        cameraCoord.z = cameraAltitude;
+        return this.setCameraOrientation({
+            position: cameraCoord.toArray(),
+            bearing,
+            pitch
+        });
+    },
+
     /**
      * Set camera's orientation
      * @param {Object}   options - options
@@ -400,6 +452,7 @@ Map.include(/** @lends Map.prototype */{
         this._angle = -angle(BEARING as any, SOUTH as any);
         this._zoomLevel = this.getFitZoomForCamera(coordinate, this._pitch).zoom;
         this._calcMatrices();
+        return this;
     },
 
     getFitZoomForCamera(cameraPosition: Array<number> | Coordinate, pitch: number) {
@@ -426,22 +479,8 @@ Map.include(/** @lends Map.prototype */{
 
     getFitZoomForAltitude(distance: number) {
         const ratio = this._getFovRatio();
-        const scale = distance * ratio * 2 / (this.height || 1) * this.getGLRes();
-        const resolutions = this._getResolutions();
-        let z = 0;
-        for (z; z < resolutions.length - 1; z++) {
-            if (resolutions[z] === scale) {
-                return z;
-            } else if (resolutions[z + 1] === scale) {
-                return z + 1;
-            } else if (scale < resolutions[z] && scale > resolutions[z + 1]) {
-                z = (scale - resolutions[z]) / (resolutions[z + 1] - resolutions[z]) + z;
-                return z - 1;
-            } else {
-                continue;
-            }
-        }
-        return z;
+        const res = distance * ratio * 2 / (this.height || 1) * this.getGLRes();
+        return this.getZoomFromRes(res);
     },
 
     /**
@@ -835,6 +874,7 @@ Map.include(/** @lends Map.prototype */{
             const cameraToCenterDistance = this._getFovZ();
             const cameraZenithDistance = this.cameraZenithDistance === undefined ? cameraToCenterDistance : this.cameraZenithDistance;
             const cameraToGroundDistance = cameraZenithDistance - centerPointZ;
+            this.cameraToGroundDistance = cameraToGroundDistance;
             const cz = cameraToGroundDistance * Math.cos(pitch);
             // and [dist] away from map's center on XY plane to tilt the scene.
             const dist = Math.sin(pitch) * cameraToGroundDistance;
