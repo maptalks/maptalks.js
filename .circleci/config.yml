@@ -37,7 +37,7 @@ jobs:
           key: pnpm-packages-{{ checksum "pnpm-lock.yaml" }}
           paths:
             - .pnpm-store
-      # - run: pnpm maptalks-test
+      - run: pnpm maptalks-test
 
   vt-test:
     executor: node-browser-executor
