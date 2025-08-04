@@ -906,7 +906,7 @@ Map.include(/** @lends Map.prototype */{
 
     //@internal
     _recenterOnTerrain() {
-        if (this.centerAltitude === undefined || this._centerZ !== undefined) {
+        if (this.centerAltitude === undefined) {
             return;
         }
         let queriedAltitude = this._queryTerrainByProjCoord(this._prjCenter);
