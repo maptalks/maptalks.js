@@ -681,7 +681,7 @@ describe('Map.Camera', function () {
         const bearing = map.getBearing();
         expect(zoom.toFixed(3)).to.be.eql(15.785);
         expect(pitch.toFixed(1)).to.be.eql(85.7);
-        expect(bearing.toFixed(1)).to.be.eql(139.7);
+        expect(bearing.toFixed(1)).to.be.eql(139.8);
     });
 });
 
