@@ -679,7 +679,7 @@ describe('Map.Camera', function () {
         const zoom = map.getZoom();
         const pitch = map.getPitch();
         const bearing = map.getBearing();
-        expect(zoom).to.be.closeTo(15.785120211421539);
+        expect(zoom.toFixed(3)).to.be.eql(15.785);
         expect(pitch).to.be.eql(85.66674613721689);
         expect(bearing).to.be.eql(139.747292388995);
     });
