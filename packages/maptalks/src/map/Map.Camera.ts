@@ -368,7 +368,7 @@ Map.include(/** @lends Map.prototype */{
             const distX = xyDist * Math.sin(radBearing);
             const distY = xyDist * Math.cos(radBearing);
             distZ = distZ * this._meterToGLPoint;
-            xyDist = this.distanceToPointAtRes(distX, distY, glRes);
+            xyDist = this.distanceToPointAtRes(distX, distY, glRes).mag();
             distance = Math.sqrt(xyDist * xyDist + distZ * distZ);
         }
         const point = this.coordToPointAtRes(coordinates, glRes);
