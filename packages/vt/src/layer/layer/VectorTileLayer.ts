@@ -493,13 +493,13 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
   }
 
-  queryTerrainTiles(tileInfo: object) {
+  queryTerrainTiles(tileInfo: any) {
     const renderer = this.getRenderer();
     const terrainHelper = renderer && (renderer as any).getTerrainHelper();
     if (!renderer || !terrainHelper) {
       return null;
     }
-    return terrainHelper.getTerrainTiles(tileInfo);
+    return terrainHelper.getTerrainTiles(this, tileInfo);
   }
 
   //@internal

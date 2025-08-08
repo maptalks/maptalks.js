@@ -7,6 +7,7 @@ import MaskLayerMixin from '../mask/MaskLayerMixin';
 const COORD0 = new maptalks.Coordinate(0, 0);
 const TEMP_POINT = new maptalks.Coordinate(0, 0);
 const POINT0 = new maptalks.Point(0, 0);
+const POINT1 = new maptalks.Point(0, 0);
 const EMPTY_ARRAY = [];
 
 const options = {
@@ -358,10 +359,12 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
         renderer._queryTileMesh(tile, cb);
     }
 
-    getTerrainTiles(tileInfo) {
+    // get terrain tiles against tileInfo of the given layer
+    getTerrainTiles(layer, tileInfo) {
         const { x, y, z, res, offset } = tileInfo;
         const tileSize = tileInfo.extent2d.getWidth();
         const tc = this['_getTileConfig']();
+        const layerTC = layer['_getTileConfig']();
         const sr = this.getSpatialReference();
         const { res: terrainRes, zoom } = getSkinTileRes(sr, z, res);
 
@@ -373,7 +376,7 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
             nw = tileInfo.nw = this.getMap().pointAtResToCoord(tileInfo.extent2d.getMin(POINT0), tileInfo.res);
         }
 
-        const terrainTiles = getCascadeTileIds(this, x, y, zoom, nw, offset, tc.tileSystem.scale.y, scale, 1)[0];
+        const terrainTiles = getCascadeTileIds(this, x, y, zoom, nw, offset, layerTC.tileSystem.scale.y, scale, 1)[0];
         for (let i = 0; i < terrainTiles.length; i++) {
             const { x: tx, y: ty } = terrainTiles[i];
             const nw = tc.getTilePointNW(tx, ty, terrainRes, POINT0);

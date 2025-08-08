@@ -10,20 +10,33 @@ export function getCascadeTileIds(layer, x, y, z, center, offset, terrainTileSca
 }
 
 const EMPTY_ARRAY = [];
-export function getTileIdsAtLevel(layer, x, y, z, center, offset, terrainTileScaleY, scale, level) {
-    z -= level;
-    if (z <= 0) {
+/**
+ * 通过 layerA 的x，y 编号，计算 layerB 在 zoom 级别上的所有瓦片id
+ * @param {*} layerB
+ * @param {*} ax layerA瓦片的x方向编号
+ * @param {*} ay layerA瓦片的y方向编号
+ * @param {*} bz layerB瓦片的zoom级别
+ * @param {*} aNW layerA瓦片的northwest
+ * @param {*} offset
+ * @param {*} aScaleY layerA 的 tileSystem.scale.y
+ * @param {*} scale layerA 和 layerB 编号的scale
+ * @param {*} level
+ * @returns
+ */
+export function getTileIdsAtLevel(layerB, ax, ay, bz, aNW, offset, aScaleY, scale, level) {
+    bz -= level;
+    if (bz <= 0) {
         return EMPTY_ARRAY;
     }
     // 这里假设 tile offset 还在tileSize范围内，而不是跨越或超过1整张瓦片的那种偏移方式
-    const tileSize = layer.getTileSize().width;
-    const layerOffset = layer['_getTileOffset'](z, center);
+    const tileSize = layerB.getTileSize().width;
+    const layerOffset = layerB['_getTileOffset'](bz, aNW);
     const tileOffsetX = offset[0] - layerOffset[0];
     const tileOffsetY = layerOffset[1] - offset[1];
-    const tileConfig = layer['_getTileConfig']();
-    const sr = layer.getSpatialReference();
-    const tileRes = sr.getResolution(z);
-    const tileYScale = tileConfig.tileSystem.scale.y;
+    const tileConfig = layerB['_getTileConfig']();
+    const sr = layerB.getSpatialReference();
+    const tileRes = sr.getResolution(bz);
+    const layerTileYScale = tileConfig.tileSystem.scale.y;
 
     const delta = 1E-7;
     scale = scale / Math.pow(2, level);
@@ -42,10 +55,10 @@ export function getTileIdsAtLevel(layer, x, y, z, center, offset, terrainTileSca
         yEnd += Math.ceil(-tileOffsetY / tileSize - delta);
     }
     if (xStart === 0 && yStart === 0 && xEnd <= 1 && yEnd <= 1) {
-        const tx = Math.floor(x * scale);
-        let ty = Math.floor(y * scale);
+        const tx = Math.floor(ax * scale);
+        let ty = Math.floor(ay * scale);
         const skinY = ty;
-        if (tileYScale !== terrainTileScaleY) {
+        if (layerTileYScale !== aScaleY) {
             ty = getReverseY(tileConfig, ty, tileRes);
         }
         return [
@@ -53,30 +66,30 @@ export function getTileIdsAtLevel(layer, x, y, z, center, offset, terrainTileSca
                 x: tx,
                 y: ty,
                 skinY,
-                z,
+                z: bz,
                 offset: layerOffset,
                 tileSize,
-                id: layer['_getTileId'](tx, ty, z)
+                id: layerB['_getTileId'](tx, ty, bz)
             }
         ];
     }
     const result = [];
     for (let i = xStart; i < xEnd; i++) {
         for (let j = yStart; j < yEnd; j++) {
-            const tx = x * scale + i;
-            let ty = y * scale + j;
+            const tx = ax * scale + i;
+            let ty = ay * scale + j;
             const skinY = ty;
-            if (tileYScale !== terrainTileScaleY) {
+            if (layerTileYScale !== aScaleY) {
                 ty = getReverseY(tileConfig, ty, tileRes);
             }
             result.push({
                 x: tx,
                 y: ty,
                 skinY,
-                z,
+                z: bz,
                 offset: layerOffset,
                 tileSize,
-                id: layer['_getTileId'](tx, ty, z)
+                id: layerB['_getTileId'](tx, ty, bz)
             });
         }
     }
