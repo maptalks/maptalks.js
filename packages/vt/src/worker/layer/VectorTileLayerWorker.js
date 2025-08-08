@@ -10,6 +10,8 @@ const ALTITUDE_ERRORS = {
     'MISSING_ALTITUDE_ELEMENT': 2,
 };
 
+const textDecode = new TextDecoder('utf-8');
+
 export default class VectorTileLayerWorker extends LayerWorker {
     constructor(id, options, uploader, cache, loadings, callback) {
         super(id, options, uploader, cache, loadings);
@@ -68,6 +70,8 @@ export default class VectorTileLayerWorker extends LayerWorker {
         try {
             tile = new VectorTile(new pbf(data));
         } catch (err) {
+            const content = textDecode.decode(data);
+            err.message += '\n' + url + '\n' + content;
             cb(err.message, [], []);
             return;
         }

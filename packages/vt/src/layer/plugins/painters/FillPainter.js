@@ -537,8 +537,8 @@ class FillPainter extends BasicPainter {
         const extraCommandProps = {
             viewport,
             stencil: {
-                enable: () => {
-                    return this.isEnableTileStencil(context);
+                enable: (_, props) => {
+                    return props.geometryProperties.is2D && this.isEnableTileStencil(context);
                 },
                 func: {
                     cmp: () => {
