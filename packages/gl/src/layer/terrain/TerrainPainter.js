@@ -1,4 +1,4 @@
-import  { extend, hasOwn } from '../util/util';
+import  { extend, hasOwn, isNil } from '../util/util';
 import * as ContextUtil from '../util/context';
 import { vec3, mat4 } from '@maptalks/reshader.gl';
 import * as reshader from '@maptalks/reshader.gl';
@@ -97,10 +97,18 @@ class TerrainPainter {
     }
 
     _getPositionMatrix(out) {
-        const heightScale = this._getPointZ(100) / 100;
+        const heightScale = this._getHeightScale();
         const positionMatrix = mat4.identity(out);
         mat4.scale(positionMatrix, positionMatrix, [1, 1, heightScale]);
         return positionMatrix;
+    }
+
+    _getHeightScale() {
+        let exaggeration = this.layer.options.exaggeration;
+        if (isNil(exaggeration)) {
+            exaggeration = 1;
+        }
+        return this._getPointZ(100) / 100 * exaggeration;
     }
 
     _getLocalTransform(out, tileInfo, terrainWidth) {

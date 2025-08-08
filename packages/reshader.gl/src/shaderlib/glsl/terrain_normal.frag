@@ -2,8 +2,8 @@
     uniform sampler2D terrainHeightTexture;
     uniform vec2 terrainHeightMapResolution;
     uniform vec2 terrainResolution;
-    uniform float terrainHeightScale;
-    uniform float terrainTileResolution;
+    // uniform float terrainHeightScale;
+    // uniform float terrainTileResolution;
     uniform vec4 terrainUnpackFactors;
 
     // queried pixels:

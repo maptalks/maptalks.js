@@ -110,7 +110,7 @@ class TerrainLitPainter extends TerrainPainter {
         defines['HAS_TERRAIN_NORMAL'] = 1;
         defines['HAS_MAP'] = 1;
         mesh.defines = defines;
-        mesh.setUniform('terrainTileResolution', tileInfo.res);
+        // mesh.setUniform('terrainTileResolution', tileInfo.res);
         this.prepareMesh(mesh, tileInfo, terrainImage);
         return mesh;
     }
@@ -144,7 +144,7 @@ class TerrainLitPainter extends TerrainPainter {
         const tileSize = this.layer.getTileSize().width;
         const renderer = this.layer.getRenderer();
         const maskUniforms = renderer.getMaskUniforms();
-        const terrainHeightScale = this._getPointZ(100) / 100;
+        // const terrainHeightScale = this._getHeightScale();
         extend(uniforms, {
             viewMatrix: map.viewMatrix,
             projMatrix: map.projMatrix,
@@ -153,7 +153,7 @@ class TerrainLitPainter extends TerrainPainter {
             polygonFill: [1, 1, 1, 1],
             terrainHeightMapResolution: [tileSize, tileSize],
             terrainResolution: [canvas.width, canvas.height],
-            terrainHeightScale,
+            // terrainHeightScale,
             terrainUnpackFactors: [6553.6, 25.6, 0.1, 10000.0]
         });
         extend(uniforms, maskUniforms);

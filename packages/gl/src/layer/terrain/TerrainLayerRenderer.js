@@ -28,21 +28,6 @@ const TERRAIN_CLEAR = {
 
 const SKIN_LEVEL_LIMIT = 1;
 
-function terrainExaggeration(terrainData, exaggeration = 1) {
-    if (isNil(exaggeration) || !terrainData || !terrainData.mesh || exaggeration === 1) {
-        return;
-    }
-    const positions = terrainData.mesh.positions;
-    if (!positions) {
-        return;
-    }
-    for (let i = 0, len = positions.length; i < len; i += 3) {
-        positions[i + 2] *= exaggeration;
-    }
-}
-
-
-
 class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(LayerAbstractRenderer)) {
 
     constructor(...args) {
@@ -116,7 +101,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         while (parentTile && parentTile.image && (parentTile.image.sourceZoom === -1 || parentTile.image.originalError)) {
             parentTile = this.findParentTile(parentTile.info);
         }
-        const res = (parentTile && parentTile.info || tile).res;
+        const res = tile.res;
         const error = this.getMap().pointAtResToDistance(1, 1, res);
         const heights = parentTile && parentTile.image && parentTile.image.data && this._clipParentTerrain(parentTile, tile);
         const sourceZoom = heights && parentTile.image.sourceZoom !== -1 ? parentTile.info.z : -1;
@@ -126,7 +111,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             return { data: createEmtpyTerrainHeights(minAltitude || 0, 5), minAltitude, mesh: EMPTY_TERRAIN_GEO, sourceZoom };
         }
         const terrainWidth = heights.width;
-        const mesh = createMartiniData(error, heights.data, terrainWidth, true);
+        const mesh = createMartiniData(error / 2, heights.data, terrainWidth, true);
 
         return { data: heights, mesh, sourceZoom };
     }
@@ -955,7 +940,6 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                     return;
                 }
                 maptalks.Util.extend(terrainData, resource);
-                terrainExaggeration(terrainData, this.layer.options.exaggeration);
 
                 // this.consumeTile(terrainData, tile);
                 tile.colorsTexture = terrainData.colorsTexture;

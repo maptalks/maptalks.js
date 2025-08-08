@@ -254,7 +254,9 @@ function generateCesiumTerrain(buffer) {
 
     const triangleCount = view.getUint32(pos, true);
     pos += Uint32Array.BYTES_PER_ELEMENT;
-    const indices = vertexCount > 65536 ? new Uint32Array(buffer, pos, triangleCount * triangleElements) : new Uint16Array(buffer, pos, triangleCount * triangleElements);
+    const indices = vertexCount > 65536 ?
+        new Uint32Array(buffer, pos, triangleCount * triangleElements) :
+        new Uint16Array(buffer, pos, triangleCount * triangleElements);
 
     let highest = 0;
     const length = indices.length;
@@ -451,7 +453,7 @@ function generateMapboxTerrain(buffer) {
 function loadTerrain(params, cb) {
     const { url, origin, type, accessToken, terrainWidth, error, tileImage } = params;
     //custom loadTileImage and return mapbox terrain rgb data
-    if(tileImage&&tileImage.close){
+    if (tileImage && tileImage.close) {
         const imageData = bitmapToImageData(tileImage);
         const terrainData = mapboxBitMapToHeights(imageData, terrainWidth);
         triangulateTerrain(error, terrainData, terrainWidth, tileImage, true, cb);
@@ -586,7 +588,7 @@ function heights2RGBImage(terrainData) {
 
 
 function triangulateTerrain(error, terrainData, terrainWidth, imageBitmap, hasSkirts, cb) {
-    const mesh = createMartiniData(error, terrainData.data, terrainWidth, hasSkirts);
+    const mesh = createMartiniData(error / 2, terrainData.data, terrainWidth, hasSkirts);
     const transferables = [mesh.positions.buffer, mesh.texcoords.buffer, mesh.triangles.buffer];
     //tdt,cesium terrain etc
     if (!imageBitmap) {
