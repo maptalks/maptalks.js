@@ -3,8 +3,9 @@ import { mat4, vec3 } from '@maptalks/reshader.gl';
 import Mask from "./Mask";
 import { extend } from "../util/util";
 import { MixinConstructor } from "maptalks";
+import { intersectsBox } from 'frustum-intersects';
 
-const maskLayerEvents = ['shapechange', 'heightrangechange', 'flatheightchange'];
+// const maskLayerEvents = ['shapechange', 'heightrangechange', 'flatheightchange'];
 const COORD_EXTENT = new Coordinate(0, 0);
 const EXTENT_MIN: vec3 = [0, 0, 0], EXTENT_MAX: vec3 = [0, 0, 0];
 const EMPTY_MAT4 = mat4.identity([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
@@ -16,7 +17,7 @@ function clearMasks() {
         mask.remove();
     });
     this['_maskList'] = [];
-    this.updateMaskExtent('shapechange');
+    this.updateMaskExtent();
     return this;
 }
 
@@ -63,7 +64,7 @@ export default function <T extends MixinConstructor>(Base: T) {
                     this['_maskList'].splice(index, 1);
                 }
             }
-            this.updateMaskExtent('shapechange');
+            this.updateMaskExtent();
             this['fire']('removemask', { masks });
             return this;
         }
@@ -86,14 +87,14 @@ export default function <T extends MixinConstructor>(Base: T) {
                     mask._updateCoordinates();
                 }
             });
-            this.updateMaskExtent('shapechange');
+            this.updateMaskExtent();
             this['fire']('setmask', { masks });
             return this;
         }
 
         onAdd() {
             super['onAdd']();
-            this.updateMaskExtent('shapechange');
+            this.updateMaskExtent();
         }
 
         getMasks() {
@@ -109,8 +110,8 @@ export default function <T extends MixinConstructor>(Base: T) {
             if (type === 'shapechange' && param['target'] instanceof Mask) {
                 param['target'].clearMesh();
             }
-            if (param['target'] instanceof Mask && maskLayerEvents.indexOf(type) > -1) {
-                this.updateMaskExtent(type);
+            if (param['target'] instanceof Mask) {
+                this.updateMaskExtent();
             }
             if (super['onGeometryEvent']) {
                 super['onGeometryEvent'](param);
@@ -137,7 +138,7 @@ export default function <T extends MixinConstructor>(Base: T) {
                 const hits = [];
                 for (let i = 0; i < masks.length; i++) {
                     const maskMode = masks[i].getMode();
-                    if (masks[i].containsPoint(coordinate) && (maskMode === 'color' || maskMode === 'video')) {
+                    if (masks[i].containsPoint(coordinate) && (maskMode === 'color' || maskMode === 'texture')) {
                         hits.push(masks[i]);
                     }
                 }
@@ -180,7 +181,7 @@ export default function <T extends MixinConstructor>(Base: T) {
             return { mapExtent, projViewMatrix: pvMatrix };
         }
 
-        updateMaskExtent(type: string) {
+        updateMaskExtent() {
             if (!this['_maskList']) {
                 return;
             }
@@ -203,11 +204,9 @@ export default function <T extends MixinConstructor>(Base: T) {
                 return;
             }
             const { extent, ratio, minHeight } = maskExtent;
-            if (type || !this._maskProjViewMatrix || !this._maskExtentInWorld) {
-                const { projViewMatrix, extentInWorld } = this.updateMask(extent);
-                this._maskProjViewMatrix = projViewMatrix;
-                this._maskExtentInWorld = extentInWorld;
-            }
+            const { projViewMatrix, extentInWorld } = this.updateMask(extent);
+            this._maskProjViewMatrix = projViewMatrix;
+            this._maskExtentInWorld = extentInWorld;
             if (renderer) {
                 renderer.setMask(this._maskExtentInWorld, this._maskProjViewMatrix, ratio, minHeight);
             } else {
@@ -221,15 +220,21 @@ export default function <T extends MixinConstructor>(Base: T) {
             let xmin = Infinity, ymin = Infinity, xmax = -Infinity, ymax = -Infinity, maxheight = -Infinity, minheight = Infinity;
             let hasMaskInExtent = false;
             const map = this['getMap']();
-            const mapExtent = map.getExtent();
             for (let i = 0; i < this['_maskList'].length; i++) {
                 const mask = this['_maskList'][i];
                 if (!mask.isVisible()) {
                     continue;
                 }
                 const extent = mask.getExtent();
-                if (!extent || !mapExtent.intersects(extent)) {
+                if (!extent) {
                     continue;
+                }
+                //不在视野范围内的mask不参与运算，以免造成extent的增大，从而降低采样的精度
+                if (mask._mesh && mask.getBBox) {
+                    const bbox = mask.getBBox();
+                    if (!intersectsBox(map.projViewMatrix, bbox)) {
+                        continue;
+                    }
                 }
                 hasMaskInExtent = true;
                 if (extent.xmin < xmin) {

@@ -122,13 +122,15 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
     }
 
     remove() {
-        if (!this.map || !this.container || !this.layerRenderer) {
+        if (!this.map) {
             return;
         }
         this._removeEvents();
         this.TransformHelper.dispose();
-        this.layerRenderer.setToRedraw();
         this._helperlayer.remove();
+        if (this.layerRenderer) {
+            this.layerRenderer.setToRedraw();
+        }
         delete this._helper;
         delete this._helperlayer;
         delete this.map;
@@ -215,7 +217,7 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
             this.firstDownPoint = null;
             this._resetScale();
             this._needRefreshPicking = true;
-            this.fire('transformend', { action: this._task, type: 'transformend' });
+            this.fire('transformend', { action: this._task, type: 'transformend', transformtarget: this._target.getTargets() });
         }
         this.mouseAction = 'moving';
         if (this._mode !== 'xyzScale') {

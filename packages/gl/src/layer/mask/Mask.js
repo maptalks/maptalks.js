@@ -5,7 +5,7 @@ import { earcut } from '@maptalks/reshader.gl';
 import { coordinateToWorld, normalizeColor, isNumber } from "../util/util";
 
 const MASK_MODES = {
-    'clip-inside': 0.1, 'clip-outside': 0.2, 'flat-inside': 0.3, 'flat-outside': 0.4, 'color': 0.5, 'video': 0.6, 'elevate': 0.7
+    'clip-inside': 0.1, 'clip-outside': 0.2, 'flat-inside': 0.3, 'flat-outside': 0.4, 'color': 0.5, 'texture': 0.6, 'elevate': 0.7
 };
 const QUAT = [], SCALE = [1, 1, 1];
 const DEFAULT_SYMBOL = {
@@ -31,7 +31,7 @@ export default class Mask extends Polygon {
     }
 
     getMesh(regl, ratio, minHeight) {
-        if (!this.isVisible()) {
+        if (!this.isVisible() || !this.getLayer()) {
             return null;
         }
         if (!this._mesh) {
@@ -51,21 +51,33 @@ export default class Mask extends Polygon {
         if (!this._mesh) {
             return this;
         }
-        const pos = this._createPOSITION();
+        const mode = this.getMode();
+        const geojson = this.toGeoJSON();
+        geojson.geometry.coordinates[0].reverse();
+        const data = earcut.flatten(geojson.geometry.coordinates);
+        const { positions, uvs, triangles } =  mode === 'texture' ? this._createBilinearPOSITON(data) : this._createPOSITION(data);
         const geometry = this._mesh.geometry;
-        geometry.updateData('POSITION', pos);
+        geometry.updateData('POSITION', positions);
+        geometry.updateData('TEXCOORD', uvs);
+        geometry.setElements(triangles);
         this._setLocalTransform(this._mesh);
+        if (this._copyMesh) {
+            const positionWithHeight = this._createPOSITION(earcut.flatten(geojson.geometry.coordinates), true).positions;
+            this._copyMesh.geometry.updateData('POSITION', positionWithHeight);
+            this._setLocalTransform(this._copyMesh);
+        }
     }
 
     _createGeometry(regl) {
+        const mode = this.getMode();
         const geojson = this.toGeoJSON();
+        geojson.geometry.coordinates[0].reverse();
         const data = earcut.flatten(geojson.geometry.coordinates);
-        const dimension = data.dimensions;
-        const pos = this._createPOSITION();
-        const triangles = earcut(pos, data.holes, 3);
+        const { positions, uvs, triangles } =  mode === 'texture' ? this._createBilinearPOSITON(data) : this._createPOSITION(data);
+        const positionWithHeight = this._createPOSITION(earcut.flatten(geojson.geometry.coordinates), true).positions;
         const geometry = new reshader.Geometry({
-            POSITION: pos,
-            TEXCOORD: this._createTexcoords(data.vertices, dimension)
+            POSITION: positions,
+            TEXCOORD: uvs
         },
             triangles,
             0,
@@ -74,13 +86,22 @@ export default class Mask extends Polygon {
                 uv0Attribute: 'TEXCOORD'
             });
         geometry.generateBuffers(regl);
-        return geometry;
+        const copyGeometry = new reshader.Geometry({
+            POSITION: positionWithHeight,
+            TEXCOORD: uvs
+        },
+            triangles,
+            0,
+            {
+                positionAttribute: 'POSITION',
+                uv0Attribute: 'TEXCOORD'
+            });
+        copyGeometry.generateBuffers(regl);
+        return mode === 'texture' ? { geometry, copyGeometry } : geometry;
     }
 
-    _createPOSITION() {
+    _createPOSITION(data, hasHeight) {
         const map = this.getMap();
-        const geojson = this.toGeoJSON();
-        const data = earcut.flatten(geojson.geometry.coordinates);
         const dimension = data.dimensions;
         for (let ii = 0; ii < data.vertices.length; ii += dimension) {
             TEMP_COORD.x = data.vertices[ii];
@@ -93,17 +114,19 @@ export default class Mask extends Polygon {
         const pos = [];
         const idx = this.getLayer().getMasks().indexOf(this);
         const heightOffset = idx * 0.01;
-        const len = this.getMode() === 'video' ? 4 : data.vertices.length / dimension;
+        const len = this.getMode() === 'texture' ? 4 : data.vertices.length / dimension;
         for (let i = 0; i < len; i++) {
             pos.push(data.vertices[i * dimension] - centerPos[0]);
             pos.push(data.vertices[i * dimension + 1] - centerPos[1]);
-            pos.push(heightOffset);
+            pos.push(heightOffset + hasHeight ? map.altitudeToPoint(data.vertices[i * dimension + 2], map.getGLRes()) : 0);
         }
-        return pos;
+        const uvs = this._createTexcoords(data.vertices, dimension);
+        const indices = earcut(pos, data.holes, 3);
+        return { positions: pos, uvs, triangles: indices };
     }
 
     _createTexcoords(vertices, dimension) {
-        const texcoords = [0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0];
+        const texcoords = [0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0];
         if (this.hasHoles()) {
             const count = vertices.length / dimension * 2;
             for (let i = texcoords.length / 2 - 1; i < count; i += 2) {
@@ -111,6 +134,68 @@ export default class Mask extends Polygon {
             }
         }
         return texcoords;
+    }
+
+    _createBilinearPOSITON(data) {
+        const rows = 20;
+        const cols = 20;
+        const dimension = data.dimensions;
+        const positions = [];
+        const uvs = [];
+        const indices = [];
+        const map = this.getMap();
+        for (let ii = 0; ii < data.vertices.length; ii += dimension) {
+            TEMP_COORD.x = data.vertices[ii];
+            TEMP_COORD.y = data.vertices[ii + 1];
+            const point = coordinateToWorld(map, TEMP_COORD);
+            data.vertices[ii] = point[0];
+            data.vertices[ii + 1] = point[1];
+        }
+        const centerPos = coordinateToWorld(this.getMap(), this.getCenter());
+        const vertices = {};
+        vertices['a'] = { x: data.vertices[0 * dimension] - centerPos[0], y: data.vertices[0 * dimension + 1] - centerPos[1] };
+        vertices['b'] = { x: data.vertices[1 * dimension] - centerPos[0], y: data.vertices[1 * dimension + 1] - centerPos[1] };
+        vertices['c'] = { x: data.vertices[2 * dimension] - centerPos[0], y: data.vertices[2 * dimension + 1] - centerPos[1] };
+        vertices['d'] = { x: data.vertices[3 * dimension] - centerPos[0], y: data.vertices[3 * dimension + 1] - centerPos[1] };
+        this._positions = [];
+        for (let i = 0; i < 4; i++) {
+            this._positions.push(data.vertices[i * dimension] - centerPos[0]);
+            this._positions.push(data.vertices[i * dimension + 1] - centerPos[1]);
+            this._positions.push(0);
+        }
+        // 生成顶点
+        for(let i = 0; i <= rows; i++) {
+            for(let j = 0; j <= cols; j++) {
+                const u = j / cols;
+                const v = i / rows;
+
+                // 双线性插值计算实际位置
+                const x = (1 - u) * (1 - v) * vertices.a.x +
+                            u * (1 - v) * vertices.b.x +
+                            u * v * vertices.c.x +
+                            (1 - u) * v * vertices.d.x;
+
+                const y = (1 - u) * (1 - v) * vertices.a.y +
+                            u * (1 - v) * vertices.b.y +
+                            u * v * vertices.c.y +
+                            (1 - u) * v * vertices.d.y;
+
+                positions.push(x, y, 0);
+                uvs.push(u, 1 - v); // 注意v坐标翻转
+            }
+        }
+        for(let i = 0; i < rows; i++) {
+            for(let j = 0; j < cols; j++) {
+                const a = i * (cols + 1) + j;
+                const b = a + 1;
+                const c = (i + 1) * (cols + 1) + j;
+                const d = c + 1;
+
+                indices.push(a, b, d);
+                indices.push(a, d, c);
+            }
+        }
+        return { positions, uvs, triangles: indices };
     }
 
     clearMesh() {
@@ -129,10 +214,7 @@ export default class Mask extends Polygon {
         const symbol = this.getSymbol();
         const { polygonFill, polygonOpacity } = symbol || DEFAULT_SYMBOL;
         const maskColor = normalizeColor([], polygonFill);
-        maskColor[0] /= 255;
-        maskColor[1] /= 255;
-        maskColor[2] /= 255;
-        maskColor[3] = isNumber(polygonOpacity) ? polygonOpacity : DEFAULT_SYMBOL.polygonOpacity;
+        maskColor[3] = isNumber(polygonOpacity) ? polygonOpacity : (this.getMode() === 'texture' ? 1 : DEFAULT_SYMBOL.polygonOpacity);
         return maskColor;
     }
 
@@ -160,8 +242,13 @@ export default class Mask extends Polygon {
         if (this._mesh.geometry) {
             this._mesh.geometry.dispose();
         }
+        if (this._copyMesh && this._copyMesh.geometry) {
+            this._copyMesh.geometry.dispose();
+            this._copyMesh.dispose();
+        }
         this._mesh.dispose();
         delete this._mesh;
+        delete this._copyMesh;
     }
 
     containsPoint(coordinate) {

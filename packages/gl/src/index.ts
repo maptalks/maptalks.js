@@ -23,6 +23,7 @@ import FlatInsideMask from './layer/mask/FlatInsideMask';
 import FlatOutsideMask from './layer/mask/FlatOutsideMask';
 import ColorMask from './layer/mask/ColorMask';
 import VideoMask from './layer/mask/VideoMask';
+import ImageMask from './layer/mask/ImageMask';
 import ElevateMask from './layer/mask/ElevateMask';
 import BoxInsideClipMask from './layer/mask/BoxInsideClipMask';
 import BoxOutsideClipMask from './layer/mask/BoxOutsideClipMask';

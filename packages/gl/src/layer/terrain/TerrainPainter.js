@@ -167,6 +167,9 @@ class TerrainPainter {
         const fbo = this._getRenderFBO(context);
         this.shader.filter = context && context.sceneFilter;
         ContextUtil.setIncludeUniformValues(uniforms, context);
+        this._leafScene.getMeshes().forEach((mesh) => {
+            this._updateMaskDefines(mesh);
+        });
         renderCount += this.renderer.render(this.shader, uniforms, this._leafScene, fbo);
         return renderCount;
     }

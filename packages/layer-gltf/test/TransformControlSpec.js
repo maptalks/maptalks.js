@@ -572,4 +572,29 @@ describe('transform-control', () => {
             }, 100);
         }, 100);
     });
+
+    it('transform remove', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        new maptalks.GLTFGeometry(center,
+            {
+                id:'gltfmarker1',
+                symbol: {
+                    scaleX: 2 / 3,
+                    scaleY: 2 / 3,
+                    scaleZ: 2 / 3
+                }
+            }
+        ).addTo(gltflayer);
+        new maptalks.GroupGLLayer('group', [],  { sceneConfig }).addTo(map);
+        const transformControl = new maptalks.TransformControl();
+        transformControl.addTo(map);
+        setTimeout(function () {
+            transformControl.remove();
+            done();
+        }, 100);
+        setTimeout(function () {
+            const newTransformControl = new maptalks.TransformControl();
+            newTransformControl.addTo(map);
+        }, 200);
+    });
 });
