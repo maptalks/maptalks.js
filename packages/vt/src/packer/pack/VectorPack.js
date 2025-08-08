@@ -201,7 +201,7 @@ export default class VectorPack {
             while (Array.isArray(g)) {
                 g = g[0];
             }
-            if (!isNil(g.x)) {
+            if (g && !isNil(g.x)) {
                 //a converted one
                 checked = features;
             }
