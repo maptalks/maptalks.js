@@ -38,7 +38,8 @@
     "@maptalks/regl": "^3.5.1",
     "@maptalks/reshader.gl": "workspace:*",
     "color": "^3.0.0",
-    "colorin": "^0.6.0"
+    "colorin": "^0.6.0",
+    "frustum-intersects": "^0.2.4"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",

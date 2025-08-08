@@ -154,6 +154,9 @@ importers:
       colorin:
         specifier: ^0.6.0
         version: 0.6.0
+      frustum-intersects:
+        specifier: ^0.2.4
+        version: 0.2.4
       maptalks:
         specifier: workspace:*
         version: link:../maptalks
