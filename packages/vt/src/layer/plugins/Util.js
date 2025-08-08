@@ -60,7 +60,42 @@ export const TYPE_BYTES = {
 };
 
 export function copyJSON(json) {
-    return JSON.parse(JSON.stringify(json));
+    const copied = JSON.parse(JSON.stringify(json));
+    if (Array.isArray(json)) {
+        for (let i = 0; i < json.length; i++) {
+            if (!copied[i]) {
+                continue;
+            }
+            const { symbol } = copied[i];
+            if (!symbol) {
+                continue;
+            }
+            const oldSymbol = json[i].symbol;
+            for (const p in oldSymbol) {
+                if (!symbol[p]) {
+                    symbol[p] = oldSymbol[p];
+                }
+            }
+        }
+    } else {
+        if (json.style) {
+            const copiedStyle = copyJSON(json.style);
+            copied.style = copiedStyle;
+            return copied;
+        }
+        if (json.symbol) {
+            const copiedSymbol = copyJSON(json.symbol);
+            copied.symbol = copiedSymbol;
+            return copied;
+        }
+        // symbol itself
+        for (const p in json) {
+            if (!copied[p]) {
+                copied[p] = json[p];
+            }
+        }
+    }
+    return copied;
 }
 
 export function setUniformFromSymbol(uniforms, name, symbol, key, defaultValue, fn) {

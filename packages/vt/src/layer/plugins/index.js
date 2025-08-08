@@ -24,6 +24,7 @@ import GLTFPhongPainter from './painters/GLTFPhongPainter';
 import GLTFStandardPainter from './painters/GLTFStandardPainter';
 import HeatmapPainter from './painters/HeatmapPainter';
 import WaterPainter from './painters/WaterPainter';
+import BillBoardPainter from './painters/BillBoardPainter';
 
 const FillPlugin = createPainterPlugin('fill', FillPainter);
 FillPlugin.registerAt(VectorTileLayer);
@@ -84,6 +85,9 @@ HeatmapPlugin.registerAt(VectorTileLayer);
 const WaterPlugin = createPainterPlugin('water', WaterPainter);
 WaterPlugin.registerAt(VectorTileLayer);
 
+const BillBoardPlugin = createPainterPlugin('billboard', BillBoardPainter);
+BillBoardPlugin.registerAt(VectorTileLayer);
+
 Vector3DLayer.registerPainter('lit', StandardPainter);
 Vector3DLayer.registerPainter('icon', IconPainter);
 Vector3DLayer.registerPainter('fill', FillPainter);
@@ -91,6 +95,7 @@ Vector3DLayer.registerPainter('line', LinePainter);
 Vector3DLayer.registerPainter('line-gradient', LineGradientPainter);
 Vector3DLayer.registerPainter('water', WaterPainter);
 Vector3DLayer.registerPainter('tube', TubePainter);
+Vector3DLayer.registerPainter('billboard', BillBoardPainter);
 
 export {
     LinePlugin,
@@ -104,6 +109,7 @@ export {
     // PBRPlugin,
     PhongPlugin,
     WireframePlugin,
+    BillBoardPlugin,
 
     LinePainter,
     FillPainter,
@@ -116,6 +122,7 @@ export {
     // PBRPainter,
     PhongPainter,
     WireframePainter,
+    BillBoardPainter,
 
     //pbr plugins
     LitPlugin,

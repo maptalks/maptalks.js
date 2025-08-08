@@ -650,7 +650,7 @@ class Painter {
     _convertProxyFeature(data) {
         const feature = data && data.feature;
         if (!feature || !feature.customProps) {
-            return data;
+            return data || {};
         }
         const result = extend({}, data);
         result.feature = extend({}, data.feature);

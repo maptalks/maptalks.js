@@ -20,6 +20,7 @@ import VectorTileLayerRenderer from "../renderer/VectorTileLayerRenderer";
 import { isFunctionDefinition } from "@maptalks/function-type";
 import { LayerIdentifyOptionsType } from "maptalks";
 import { PositionArray, TileLayerOptionsType } from "maptalks";
+import { copyJSON } from "../plugins/Util";
 
 const { PackUtil } = getVectorPacker();
 
@@ -526,7 +527,9 @@ class VectorTileLayer extends maptalks.TileLayer {
     } else if (style.renderPlugin) {
       style = { style: [style] };
     }
-    style = JSON.parse(JSON.stringify(style));
+
+    style = copyJSON(style);
+
     style = uncompress(style);
     this._originFeatureStyle = style["featureStyle"] || [];
     this._featureStyle = parseFeatureStyle(style["featureStyle"]);

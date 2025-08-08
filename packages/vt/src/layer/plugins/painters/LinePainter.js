@@ -396,6 +396,7 @@ class LinePainter extends BasicPainter {
                 symbolName: 'lineDx',
                 type: Int8Array,
                 width: 2,
+                index: 0,
                 define: 'HAS_LINE_DX',
                 evaluate: properties => {
                     const lineDx = aLineDxFn(map.getZoom(), properties);
@@ -408,6 +409,7 @@ class LinePainter extends BasicPainter {
                 symbolName: 'lineDy',
                 type: Int8Array,
                 width: 2,
+                index: 1,
                 define: 'HAS_LINE_DY',
                 evaluate: properties => {
                     const lineDy = aLineDyFn(map.getZoom(), properties);
