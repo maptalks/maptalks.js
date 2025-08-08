@@ -214,19 +214,22 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
 
     _drawTiles(tiles, parentTiles, childTiles, placeholders, context, missedTiles, incompleteTiles) {
         const skinImagesToDel = [];
-
+        this._newTerrainTileCounter = 0;
+        const skinCount = this.layer.getSkinCount();
+        const visitedSkinTiles = new Set();
+        if (incompleteTiles && incompleteTiles.length) {
+            pushIn(missedTiles, incompleteTiles.map(t => t.info));
+            for (let i = 0; i < skinCount; i++) {
+                this._renderChildTerrainSkin(i, incompleteTiles, visitedSkinTiles, skinImagesToDel);
+            }
+        }
         //TODO tiles中如果存在empty瓦片，且sourceZoom精度不够的，可以重新切分精度更高的数据
         const tempTiles = this._getTempTilesForMissed(missedTiles, skinImagesToDel);
         pushIn(tiles, tempTiles);
 
         // this._tempTilesPool.shrink();
-        this._newTerrainTileCounter = 0;
-        const skinCount = this.layer.getSkinCount();
-        const visitedSkinTiles = new Set();
+
         // 集中对每个SkinLayer调用renderTerrainSkin，减少 program 的切换开销
-        for (let i = 0; i < skinCount; i++) {
-            this._renderChildTerrainSkin(i, incompleteTiles, visitedSkinTiles, skinImagesToDel);
-        }
         this._debugTile(tiles, 'drawTiles');
         for (let i = 0; i < skinCount; i++) {
             this._renderChildTerrainSkin(i, tiles, visitedSkinTiles, skinImagesToDel);
