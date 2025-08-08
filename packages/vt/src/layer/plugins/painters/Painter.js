@@ -637,6 +637,9 @@ class Painter {
                 plugin: this.pluginIndex,
             };
             if (!isNil(mesh.properties.nodeIndex)) {
+                if (!result.data) {
+                    result.data = {};
+                }
                 result.data.nodeIndex = mesh.properties.nodeIndex;
             }
             // const idMap = mesh.geometry.properties.feaPickingIdMap;
@@ -651,7 +654,7 @@ class Painter {
     _convertProxyFeature(data) {
         const feature = data && data.feature;
         if (!feature || !feature.customProps) {
-            return data || {};
+            return data;
         }
         const result = extend({}, data);
         result.feature = extend({}, data.feature);

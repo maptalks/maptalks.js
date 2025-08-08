@@ -618,6 +618,19 @@ class VectorTileLayer extends maptalks.TileLayer {
   }
 
   //@internal
+  _convertTileFeatuers(data) {
+    for (let i = 0, len = data.length; i < len; i++) {
+      const item = data[i];
+      if (!item) {
+        continue;
+      }
+      const features = item.features || [];
+      this._convertFeatures(features);
+    }
+    return data;
+  }
+
+  //@internal
   _convertFeatures(features) {
     if (!features || !features.length) {
       return;
@@ -644,6 +657,22 @@ class VectorTileLayer extends maptalks.TileLayer {
   }
 
   /**
+   * 获取当前屏幕中瓦片上的features。
+   *
+   * @english
+   * Get rendered features of layer
+   * @return rendered features
+   */
+  getCurrentRenderedFeatures() {
+    const renderer: any = this.getRenderer();
+    if (!renderer) {
+      return [];
+    }
+    const data = renderer.getCurrentRenderedFeatures() || [];
+    return this._convertTileFeatuers(data);
+  }
+
+  /**
    * 获取已经渲染的features。
    *
    * @english
@@ -656,15 +685,7 @@ class VectorTileLayer extends maptalks.TileLayer {
       return [];
     }
     const data = renderer.getRenderedFeatures() || [];
-    for (let i = 0, len = data.length; i < len; i++) {
-      const item = data[i];
-      if (!item) {
-        continue;
-      }
-      const features = item.features || [];
-      this._convertFeatures(features);
-    }
-    return data;
+    return this._convertTileFeatuers(data);
   }
 
   getRenderedFeaturesAsync(options: AsyncFeatureQueryOptions = {}) {

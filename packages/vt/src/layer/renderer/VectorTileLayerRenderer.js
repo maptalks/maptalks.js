@@ -575,8 +575,17 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
     }
 
     getRenderedFeatures() {
-        const renderedFeatures = [];
         const keys = this.tileCache.keys();
+        return this._getFeaturesByKeys(keys);
+    }
+
+    getCurrentRenderedFeatures() {
+        const keys = this._vtCurrentTiles && Object.keys(this._vtCurrentTiles);
+        return this._getFeaturesByKeys(keys);
+    }
+
+    _getFeaturesByKeys(keys) {
+        const renderedFeatures = [];
         for (let i = 0; i < keys.length; i++) {
             const cache = this.tileCache.get(keys[i]);
             if (!cache || !cache.info || !cache.image) {
