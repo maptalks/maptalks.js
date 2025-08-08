@@ -653,7 +653,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         canvas.width = tileSize;
         canvas.height = tileSize;
         const ctx = canvas.getContext('2d');
-        ctx.font = '20px monospace';
+        ctx.font = '60px monospace';
 
         const color = this.layer.options['debugOutline'];
         ctx.fillStyle = color;
