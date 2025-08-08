@@ -487,6 +487,13 @@ export default class GLTFPack {
         boxWidth /= projectionScale;
         const distance = Math.sqrt(xyDist * xyDist + zDist * zDist);
         const times = Math.floor(distance / boxWidth);
+        let scaleIndex = (options.direction || 0);
+        // scale的scaleIndex已经是Y_UP后的模型，所以和direction不同
+        if (scaleIndex === 1) {
+            scaleIndex = 2;
+        } else if (scaleIndex === 2) {
+            scaleIndex = 1;
+        }
         //取余缩放
         if (times >= 1) {
             for (let i = 1; i <= times; i++) {
@@ -505,10 +512,12 @@ export default class GLTFPack {
             if (options['scaleVertex']) {
                 const t = (boxWidth * times + (distance - boxWidth * times) / 2) / distance;
                 const scale = (distance - boxWidth * times) / boxWidth;
+                const itemScale = [1, 1, 1];
+                itemScale[scaleIndex] = scale;
                 const item = {
                     coordinates: interpolate(from, to, t),
                     t,
-                    scale: [scale, 1, 1],
+                    scale: itemScale,
                     rotation: [0, 0, rotationZ],
                     rotationZ,
                     rotationXY
@@ -517,10 +526,12 @@ export default class GLTFPack {
             }
         } else if (options['scaleVertex']) {
             const scale = distance / boxWidth;
+            const itemScale = [1, 1, 1];
+            itemScale[scaleIndex] = scale;
             const item = {
                 coordinates: interpolate(from, to, 0.5),
                 t: 0.5,
-                scale: [scale, 1, 1],
+                scale: itemScale,
                 rotation: [0, 0, rotationZ],
                 rotationZ,
                 rotationXY

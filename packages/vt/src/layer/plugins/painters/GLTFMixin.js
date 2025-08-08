@@ -15,6 +15,7 @@ const TEMP_V3_0 = [];
 const TEMP_V3_1 = [];
 const TEMP_V3_2 = [];
 const TEMP_SCALE = [];
+const TEMP_SCALE_MAT = [];
 const Q4 = [];
 const DEFAULT_TRANSLATION = [0, 0, 0];
 const DEFAULT_ROTATION = [0, 0, 0];
@@ -96,7 +97,7 @@ const GLTFMixin = Base =>
             if (this.dataConfig.type === 'native-line') {
                 this._arrangeAlongLine(0, geometry, tilePoint);
             }
-            const { aPosition, aPickingId, aXYRotation, aZRotation, aAltitude } = geometry.data;
+            const { aPosition } = geometry.data;
             let count = aPosition.length / positionSize;
             const instanceData = {
                 'instance_vectorA': new Float32Array(count * 4),
@@ -293,6 +294,7 @@ const GLTFMixin = Base =>
             const newPickingId = [];
             const newRotationZ = [];
             const newRotationXY = [];
+            const newScaleXYZ = [];
             const vertex0 = [];
             const vertex1 = [];
             const tileSize = this.layer.getTileSize().width;
@@ -339,14 +341,15 @@ const GLTFMixin = Base =>
                     newPickingId.push(pickingId);
                     newRotationZ.push(-item.rotationZ * Math.PI / 180);
                     newRotationXY.push(item.rotationXY * Math.PI / 180);
-
+                    newScaleXYZ.push(...item.scale);
                 }
             }
             geometry.data = {
                 aPosition: new aPosition.constructor(newPosition),
                 aPickingId: new aPickingId.constructor(newPickingId),
                 aZRotation: newRotationZ,
-                aXYRotation: newRotationXY
+                aXYRotation: newRotationXY,
+                aScaleXYZ: newScaleXYZ
             };
             if (aAltitude) {
                 geometry.data.aAltitude = new aAltitude.constructor(newAltitude);
@@ -506,14 +509,14 @@ const GLTFMixin = Base =>
             return !!(symbol && symbol.animation && this._gltfPack[index] && this._gltfPack[index][0] && this._gltfPack[index][0].hasSkinAnimation());
         }
 
-        _updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, tileZoom, aPosition, aAltitude, aXYRotation, aZRotation, positionSize, aPickingId, features) {
+        _updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, tileZoom, geometryData, positionSize, features) {
             function setInstanceData(name, idx, matrix, col) {
                 instanceData[name][idx * 4] = matrix[col];
                 instanceData[name][idx * 4 + 1] = matrix[col + 4];
                 instanceData[name][idx * 4 + 2] = matrix[col + 8];
                 instanceData[name][idx * 4 + 3] = matrix[col + 12];
             }
-
+            const { aPosition, aPickingId, aXYRotation, aZRotation, aAltitude, aScaleXYZ } = geometryData;
             const count = aPosition.length / positionSize;
             const tileSize = this.layer.getTileSize().width;
             const tileScale = tileSize / tileExtent * this.layer.getRenderer().getTileGLScale(tileZoom);
@@ -582,16 +585,27 @@ const GLTFMixin = Base =>
                     (vertex[2] + altitudeOffset) * zScale - cz
                 );
 
+                const aScale = vec3.set(TEMP_SCALE, 1, 1, 1);
+                if (aScaleXYZ) {
+                    vec3.set(aScale, aScaleXYZ[i * 3], aScaleXYZ[i * 3 + 1], aScaleXYZ[i * 3 + 2]);
+                    mat4.fromScaling(TEMP_SCALE_MAT, aScale);
+                }
                 const xyRotation = aXYRotation && aXYRotation[i] || 0;
                 const zRotation = aZRotation && aZRotation[i] || 0;
                 if (!xyRotation && !zRotation) {
                     mat4.fromTranslation(mat, pos);
+                    if (aScaleXYZ) {
+                        mat4.multiply(mat, mat, TEMP_SCALE_MAT);
+                    }
                 } else {
                     // const quaterion = quat.fromEuler([], xRotation * 180 / Math.PI, yRotation * 180 / Math.PI, zRotation * 180 / Math.PI);
                     mat4.fromRotation(mat, zRotation, zAxis);
                     const v = vec3.set(V3, Math.cos(zRotation), Math.sin(zRotation), 0);
                     const axis = vec3.rotateZ(v, v, rotateOrigin, 90 * Math.PI / 180);
                     mat4.rotate(mat, mat, xyRotation, axis);
+                    if (aScaleXYZ) {
+                        mat4.multiply(mat, mat, TEMP_SCALE_MAT);
+                    }
                     const tMat = mat4.fromTranslation(TEMP_MATRIX, pos);
                     mat4.multiply(mat, tMat, mat);
                 }
