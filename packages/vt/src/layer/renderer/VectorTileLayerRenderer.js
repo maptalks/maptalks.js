@@ -1452,7 +1452,7 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
             if (!plugin) {
                 return;
             }
-            const visible = this._isVisible(plugin);
+            const visible = plugin.isVisible();
             if (!visible) {
                 return;
             }
