@@ -248,6 +248,37 @@ describe('picking specs', () => {
             const expected = 1;
             runner(options, coord, expected, true, done);
         });
+        it('should turn off picking by sceneConfig.interactive', done => {
+            const options = {
+                data: data.point,
+                style: [{
+                    renderPlugin: {
+                        type: 'icon',
+                        dataConfig: {
+                            type: 'point'
+                        },
+                        sceneConfig: {
+                            collision: true,
+                            fading: false,
+                            picking: false
+                        }
+                    },
+                    symbol: {
+                        markerFile: ICON_PATH
+                    }
+                }],
+                loadingLimit: 0,
+                view: {
+                    center: [0, 0],
+                    zoom: 6,
+                    pitch: 60,
+                    bearing: 90
+                }
+            };
+            const coord = [0.5, 0.5];
+            const expected = 0;
+            runner(options, coord, expected, true, done);
+        });
         it('should pick a icon with rotation alignment', done => {
             const options = {
                 data: data.point,
