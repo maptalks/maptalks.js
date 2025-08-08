@@ -14,8 +14,7 @@ export default class EffectMarker extends GLTFMarker {
     }
 
     isAnimated() {
-        const symbol = this._getInternalSymbol();
-        return symbol && symbol.animation;
+        return true;
     }
 
     setTexture(url) {
@@ -92,7 +91,7 @@ export default class EffectMarker extends GLTFMarker {
         } else if (type === 'sequence') {
             index = loop ? Math.floor(time * 0.01 * animaSpeed) % (width * height) : Math.floor(time * 0.01);
         }
-        const u = Number(index % width);
+        const u = Math.floor(index % width);
         const v = Math.floor(index / width);
         const texture = this._getTextureFromLayer(time);
         if (this['_getSymbol']()) {

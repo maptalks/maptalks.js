@@ -1,11 +1,11 @@
 import GLTFLayerRenderer from './GLTFLayerRenderer';
-import { reshader } from '@maptalks/gl';
+import { reshader, MaskRendererMixin } from '@maptalks/gl';
 
 const DEFAUL_TEXTURE = new reshader.Texture2D({
     url: undefined,
     mag: 'linear'
 });
-class EffectLayerRenderer extends GLTFLayerRenderer {
+class EffectLayerRenderer extends MaskRendererMixin(GLTFLayerRenderer) {
 
     constructor(layer) {
         super(layer);

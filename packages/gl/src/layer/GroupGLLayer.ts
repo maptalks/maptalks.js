@@ -131,6 +131,11 @@ export default class GroupGLLayer extends maptalks.Layer {
         return sceneConfig.weather;
     }
 
+    getScanEffectConfig(): ScanEffect {
+        const sceneConfig = this._getSceneConfig();
+        return sceneConfig.postProcess && sceneConfig.postProcess.scanEffect;
+    }
+
     /**
      * Add a new Layer.
      * @param layer - new layer
@@ -875,6 +880,18 @@ export type SceneWeather = {
     }
 }
 
+export type ScanEffectItem = {
+    center: maptalks.Coordinate,
+    radius: number,
+    speed: number,
+    color: number[]//normal rgb
+}
+
+export type ScanEffect = {
+    enable?: boolean,
+    effects: ScanEffectItem[]
+}
+
 export type SceneShadow = {
     enable?: boolean,
     type?: 'esm',
@@ -914,7 +931,8 @@ export type ScenePostProcess = {
         outlineFactor?: number,
         outlineWidth?: number,
         outlineColor?: number[]
-    }
+    },
+    scanEffect?: ScanEffect
 }
 
 export type GroupGLLayerSceneConfig = {

@@ -417,7 +417,37 @@ describe('bug', () => {
             setTimeout(function() {
                 const infoWindowStyle = gltfMarker.getInfoWindow().__uiDOM.style;
                 expect(infoWindowStyle.display).not.to.be.eql('none');
-                expect(infoWindowStyle.cssText).to.be.eql('width: auto; bottom: 0px; position: absolute; left: 0px; transform: translate3d(114.5px, 137.887px, 0px) scale(1); transform-origin: 81.5px bottom; z-index: 0;');
+                expect(infoWindowStyle.cssText).to.be.eql('width: auto; bottom: 0px; position: absolute; left: 0px; transform: translate3d(116px, 138px, 0px) scale(1); transform-origin: 79.8438px bottom; z-index: 0;');
+                done();
+            }, 100);
+        });
+    });
+
+    it('set infoWindow for gltfmarker which has altitude(issues/880)', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
+        center.z = 10;
+        map.setPitch(45);
+        const gltfMarker = new maptalks.GLTFGeometry(center, {
+            symbol: {
+                scaleX: 10,
+                scaleY: 10,
+                scaleZ: 10,
+                url: url1
+            }
+        }).addTo(gltflayer);
+        gltflayer.on('modelload', () => {
+            gltfMarker.setInfoWindow({
+                'title': 'GLTFMarker\'s InfoWindow',
+                'content': 'Click on marker to open.',
+                'autoOpenOn': 'click',
+                'autoCloseOn': 'click',
+                'autoPan': false
+            });
+            gltfMarker.openInfoWindow();
+            setTimeout(function() {
+                const infoWindowStyle = gltfMarker.getInfoWindow().__uiDOM.style;
+                expect(infoWindowStyle.display).not.to.be.eql('none');
+                expect(infoWindowStyle.cssText).to.be.eql('width: auto; bottom: 0px; position: absolute; left: 0px; transform: translate3d(116px, 108px, 0px) scale(1); transform-origin: 79.8438px bottom; z-index: 0;');
                 done();
             }, 100);
         });

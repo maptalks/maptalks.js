@@ -7,6 +7,7 @@ import EnvironmentPainter from './EnvironmentPainter';
 import WeatherPainter from './weather/WeatherPainter';
 import PostProcess from './postprocess/PostProcess.js';
 import AnalysisPainter from '../analysis/AnalysisPainter.js';
+import ScanEffectPainter from './effect/ScanEffectPainter.js';
 
 const { LayerAbstractRenderer } = maptalks.renderer;
 
@@ -391,6 +392,9 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
         if (this._weatherPainter && this._weatherPainter.isEnable()) {
             return true;
         }
+        if (this.isEnableScanEffect()) {
+            return true;
+        }
         const terrainLayer = this.layer.getTerrainLayer();
         if (terrainLayer) {
             const renderer = terrainLayer.getRenderer();
@@ -501,6 +505,7 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
         const weatherConfig = this.layer.getWeatherConfig();
         this._weatherPainter = new WeatherPainter(graphics, layer, weatherConfig);
         this._analysisPainter = new AnalysisPainter(graphics, layer);
+        this._scanEffectPainter = new ScanEffectPainter(graphics, layer);
 
         const sceneConfig =  this.layer._getSceneConfig() || {};
         const config = sceneConfig && sceneConfig.postProcess;
@@ -1098,6 +1103,22 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
         return this._weatherPainter.paint(tex, meshes, weatherConfig);
     }
 
+    _renderScanEffect(tex) {
+        let meshes = [];
+        this.forEachRenderer((renderer, layer) => {
+            if (!renderer.getAnalysisMeshes || !layer.isVisible()) {
+                return;
+            }
+            const renderMeshes = renderer.getAnalysisMeshes();
+            meshes = meshes.concat(renderMeshes);
+        });
+        if (this._groundPainter) {
+            const groundMesh = this._groundPainter.getRenderMeshes();
+            meshes = meshes.concat(groundMesh);
+        }
+        return this._scanEffectPainter.paint(tex, meshes);
+    }
+
     getGroundMesh() {
         if (this._groundPainter) {
             const groundMesh = this._groundPainter.getRenderMeshes();
@@ -1268,7 +1289,8 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
         // const enableAntialias = +!!(config.antialias && config.antialias.enable);
         const enableAnalysis = this._analysisPainter._hasAnalysis();
         const enableWeather = this._weatherPainter._hasWeather();
-        const hasPost = /* enableSSAO ||  */enableBloom || enableSSR || enableAnalysis || enableWeather;
+        const enableScanEffect = this.isEnableScanEffect();
+        const hasPost = /*enableSSAO || */enableBloom || enableSSR || enableAnalysis || enableWeather || enableScanEffect;
 
         let postFBO = this._postFBO;
         if (hasPost) {
@@ -1354,6 +1376,9 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
                 this._needUpdateSSR = false;
             }
         }
+        if (this._scanEffectPainter && this.isEnableScanEffect()) {
+            tex = this._renderScanEffect(tex);
+        }
         if (this._analysisPainter) {
             tex = this._renderAnalysis(tex);
         }
@@ -1365,6 +1390,12 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
             this._postProcessor.renderFBOToScreen(tex, +!!(config.sharpen && config.sharpen.enable), sharpFactor, map.getDevicePixelRatio());
         }
         this.layer.fire('postprocessend');
+    }
+
+    isEnableScanEffect() {
+        const sceneConfig =  this.layer._getSceneConfig();
+        const config = sceneConfig && sceneConfig.postProcess && sceneConfig.postProcess.scanEffect;
+        return config && config.enable && config.effects.length;
     }
 }
 

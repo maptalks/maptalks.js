@@ -50,11 +50,13 @@ export { default as WaterShader } from './water/WaterShader';
 export { default as CopyShader } from './shader/CopyShader';
 export { default as EdgeShader } from './shader/EdgeShader';
 export { default as StandardLiteShader } from './shader/StandardLiteShader';
+export { default as ScanEffectShader } from './shader/effect/EffectShader';
 
 export { default as FogPass } from './weather/fog/FogPass';
 export { default as FogShader } from './weather/fog/FogShader';
 export { default as RainRipplesPass } from './weather/rain/RainRipplesPass';
 export { default as ExtentPass } from './shader/ExtentPass';
+export { default as ScanEffectPass } from './shader/effect/ScanEffectPass';
 
 import * as GLTFHelper  from './GLTFHelper';
 export { GLTFHelper };

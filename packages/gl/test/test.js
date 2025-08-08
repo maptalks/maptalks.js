@@ -23,6 +23,7 @@ describe('gl tests', () => {
         it('support css color in ground', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
+                devicePixelRatio: 1,
                 zoom: 12
             });
             const sceneConfig = {
@@ -58,6 +59,7 @@ describe('gl tests', () => {
         it('support imageLayer in post process', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
+                devicePixelRatio: 1,
                 zoom: 12
             });
             const sceneConfig = {
@@ -84,7 +86,7 @@ describe('gl tests', () => {
                 const pixel = ctx.getImageData(canvas.width / 2 + 10, canvas.height / 2 - 10, 1, 1);
                 expect(pixel).to.be.eql({ data: { '0': 0, '1': 255, '2': 0, '3': 255 } });
                 done();
-            }, 500)
+            }, 700)
             group.addTo(map);
         });
 
@@ -94,6 +96,7 @@ describe('gl tests', () => {
         it('support tilelayer in post process, maptalks/issues#148', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
+                devicePixelRatio: 1,
                 zoom: 12
             });
             const sceneConfig = {
@@ -127,6 +130,7 @@ describe('gl tests', () => {
         it('support tilelayer layerload event, maptalks/issues#445', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
+                devicePixelRatio: 1,
                 zoom: 12
             });
             const sceneConfig = {
@@ -156,6 +160,7 @@ describe('gl tests', () => {
         it('support tilelayer in post process (taa off), maptalks/issues#148', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
+                devicePixelRatio: 1,
                 zoom: 12
             });
             const sceneConfig = {
@@ -189,6 +194,7 @@ describe('gl tests', () => {
         it('tilelayer order in GroupGLLayer, maptalks/issues#300', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
+                devicePixelRatio: 1,
                 zoom: 12
             });
             const sceneConfig = {
@@ -225,6 +231,7 @@ describe('gl tests', () => {
         it('add skinLayers, maptalks/issues#469', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
+                devicePixelRatio: 1,
                 zoom: 12
             });
             const sceneConfig = {
@@ -263,6 +270,7 @@ describe('gl tests', () => {
         it('tilelayer hide in GroupGLLayer, maptalks/issues#758', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
+                devicePixelRatio: 1,
                 zoom: 12
             });
             const sceneConfig = {
@@ -281,7 +289,7 @@ describe('gl tests', () => {
                 const canvas = map.getRenderer().canvas;
                 const ctx = canvas.getContext('2d');
                 const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
-                expect(pixel).to.be.eql({ data: { '0': 128, '1': 132, '2': 133, '3': 255 } });
+                expect(pixel).to.be.eql({ data: { '0': 0, '1': 0, '2': 0, '3': 0 } });
                 done();
 
             });
@@ -296,6 +304,7 @@ describe('gl tests', () => {
         it('layer.remove, maptalks/issues#435', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
+                devicePixelRatio: 1,
                 zoom: 12
             });
             const sceneConfig = {
@@ -338,6 +347,7 @@ describe('gl tests', () => {
         it('remove and add again, fix maptalks/issues#256', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
+                devicePixelRatio: 1,
                 zoom: 12
             });
             const sceneConfig = {
@@ -371,6 +381,7 @@ describe('gl tests', () => {
         it('GroupGLLayer.clearLayers(), maptalks/issues#416', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
+                devicePixelRatio: 1,
                 zoom: 12
             });
             const sceneConfig = {
@@ -414,7 +425,8 @@ describe('gl tests', () => {
         it('GroupGLLayer.queryTerrain', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
-                zoom: 12
+                zoom: 12,
+                devicePixelRatio: 1
             });
             const skinLayers = [
                 new maptalks.TileLayer('base', {
@@ -454,7 +466,8 @@ describe('gl tests', () => {
         it('remove and add skinLayers', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
-                zoom: 12
+                zoom: 12,
+                devicePixelRatio: 1
             });
             const skinLayers = [
                 new maptalks.TileLayer('base', {
@@ -467,7 +480,8 @@ describe('gl tests', () => {
                 tileSize: 512,
                 spatialReference: 'preset-vt-3857',
                 urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
-                tileStackDepth: 0
+                tileStackDepth: 0,
+                requireSkuToken: false
             }
             const group = new maptalks.GroupGLLayer('group', skinLayers, {
                 terrain
@@ -475,20 +489,21 @@ describe('gl tests', () => {
             const canvas = map.getRenderer().canvas;
             const ctx = canvas.getContext('2d');
             let count = 0;
+            const baseCount = 1;
             group.once('terrainlayercreated', () => {
                 const terrainLayer = group.getTerrainLayer();
                 terrainLayer.once('terrainreadyandrender', () => {
                     group.on('layerload', () => {
                         count++;
-                        if (count === 1) {
+                        if (count === baseCount) {
                             const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
                             expect(pixel).to.be.eql({ data: { '0': 0, '1': 255, '2': 0, '3': 255 } });
                             group.removeLayer('base');
-                        } else if (count === 4) {
+                        } else if (count === baseCount + 2) {
                             const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
                             expect(pixel).to.be.eql({ data: { '0': 0, '1': 0, '2': 0, '3': 0 } });
                             group.addLayer(skinLayers[0]);
-                        } else if (count === 5) {
+                        } else if (count === baseCount + 3) {
                             const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
                             expect(pixel).to.be.eql({ data: { '0': 0, '1': 255, '2': 0, '3': 255 } });
                             done();
@@ -503,7 +518,8 @@ describe('gl tests', () => {
         it('remove and add childLayer again, maptalks/issues#555', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
-                zoom: 12
+                zoom: 12,
+                devicePixelRatio: 1
             });
             const terrain = {
                 fadeAnimation: false,
@@ -549,7 +565,8 @@ describe('gl tests', () => {
         it('terrain layer with 256 skin layer', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
-                zoom: 12
+                zoom: 12,
+                devicePixelRatio: 1
             });
             const skinLayers = [
                 new maptalks.TileLayer('base', {
@@ -585,7 +602,8 @@ describe('gl tests', () => {
         it('terrain layer with opacity', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
-                zoom: 12
+                zoom: 12,
+                devicePixelRatio: 1
             });
             const skinLayers = [
                 new maptalks.TileLayer('base', {
@@ -622,7 +640,8 @@ describe('gl tests', () => {
         it('GroupGLLayer.setTerrain', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
-                zoom: 12
+                zoom: 12,
+                devicePixelRatio: 1
             });
             const skinLayers = [
                 new maptalks.TileLayer('base', {
@@ -656,7 +675,8 @@ describe('gl tests', () => {
         it('GroupGLLayer with skinLayers', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
-                zoom: 12
+                zoom: 12,
+                devicePixelRatio: 1
             });
             const skinLayers = [
                 new maptalks.TileLayer('base', {
@@ -673,7 +693,8 @@ describe('gl tests', () => {
         it('GroupGLLayer set null terrain', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
-                zoom: 12
+                zoom: 12,
+                devicePixelRatio: 1
             });
             const skinLayers = [
                 new maptalks.TileLayer('base', {
@@ -744,7 +765,8 @@ describe('gl tests', () => {
         it('terrain with lit shader', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
-                zoom: 12
+                zoom: 12,
+                devicePixelRatio: 1
             });
             const terrain = {
                 fadeAnimation: false,
@@ -787,7 +809,8 @@ describe('gl tests', () => {
         it('update terrain material by setTerrain', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
-                zoom: 12
+                zoom: 12,
+                devicePixelRatio: 1
             });
             const terrain = {
                 fadeAnimation: false,
@@ -829,7 +852,8 @@ describe('gl tests', () => {
         it('update terrain material by updateTerrainMaterial', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
-                zoom: 12
+                zoom: 12,
+                devicePixelRatio: 1
             });
             const terrain = {
                 fadeAnimation: false,
@@ -872,7 +896,8 @@ describe('gl tests', () => {
         it('terrain with invalid terrain tiles', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
-                zoom: 12
+                zoom: 12,
+                devicePixelRatio: 1
             });
             const skinLayers = [
                 new maptalks.TileLayer('base', {
@@ -912,7 +937,8 @@ describe('gl tests', () => {
         it('switch shader for terrain', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
-                zoom: 12
+                zoom: 12,
+                devicePixelRatio: 1
             });
             const skinLayers = [
                 new maptalks.TileLayer('base', {
@@ -958,7 +984,8 @@ describe('gl tests', () => {
                 spatialReference: {
                     projection: 'EPSG:4326'
                 },
-                zoom: 12
+                zoom: 12,
+                devicePixelRatio: 1
             });
             const skinLayers = [
                 new maptalks.TileLayer('base', {
@@ -1020,7 +1047,8 @@ describe('gl tests', () => {
                 spatialReference: {
                     projection: 'EPSG:4326'
                 },
-                zoom: 11
+                zoom: 11,
+                devicePixelRatio: 1
             });
             const skinLayers = [
                 new maptalks.TileLayer('base', {
@@ -1059,7 +1087,8 @@ describe('gl tests', () => {
                 spatialReference: {
                     projection: 'EPSG:4326'
                 },
-                zoom: 14
+                zoom: 14,
+                devicePixelRatio: 1
             });
             const skinLayers = [
                 new maptalks.TileLayer('base', {
@@ -1095,7 +1124,8 @@ describe('gl tests', () => {
         it('terrain with offset skin at zoom 12', done => {
             map = new maptalks.Map(container, {
                 center: [94.50812103, 29.45595163],
-                zoom: 14
+                zoom: 14,
+                devicePixelRatio: 1
             });
             const targetCoord = new maptalks.Coordinate(0, 0);
             const POINT0 = new maptalks.Coordinate(0, 0);
@@ -1140,7 +1170,8 @@ describe('gl tests', () => {
             map = new maptalks.Map(container, {
                 center: [94.50812103, 29.45595163],
                 spatialReference: { projection: 'EPSG:4326' },
-                zoom: 14
+                zoom: 14,
+                devicePixelRatio: 1
             });
             const skinLayers = [
                 new maptalks.TileLayer('base', {
@@ -1174,7 +1205,8 @@ describe('gl tests', () => {
         it('512 terrain with offset skin at zoom 12', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
-                zoom: 12
+                zoom: 12,
+                devicePixelRatio: 1
             });
             const targetCoord = new maptalks.Coordinate(0, 0);
             const POINT0 = new maptalks.Coordinate(0, 0);
@@ -1217,6 +1249,56 @@ describe('gl tests', () => {
             group.addTo(map);
         });
 
+        it('skin tileLayer with maxAvailableZoom', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12,
+                bearing: 0,
+                devicePixelRatio: 1
+            });
+            const tilelayer = new maptalks.TileLayer('tile', {
+                urlTemplate: '/fixtures/tiles/tile-red-256.png',
+                maxAvailableZoom: 10
+            });
+            const group = new maptalks.GroupGLLayer('group', [tilelayer], {
+                terrain: {
+                    type: 'mapbox',
+                    urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
+                    tileLimitPerFrame: 0,
+                    loadingLimit: 0,
+                    requireSkuToken: false,
+                    fadeAnimation: false
+                }
+            });
+
+            group.addTo(map);
+            const terrainLayer = group.getTerrainLayer();
+            let count = 0;
+            let ended = false;
+            const limit = 6;
+            terrainLayer.on('terrainreadyandrender', () => {
+                if (ended) {
+                    return;
+                }
+                count++;
+                const canvas = map.getRenderer().canvas;
+                if (count >= limit) {
+                    const { width, height } = canvas;
+                    const testCanvas = document.createElement('canvas');
+                    testCanvas.width = width;
+                    testCanvas.height = height;
+                    const ctx = testCanvas.getContext('2d', { willReadFrequently: true });
+                    ctx.drawImage(canvas, 0, 0);
+                    const pixel = ctx.getImageData(width / 2, height / 2, 1, 1).data;
+                    expect(pixel).to.be.eql({ '0': 255, '1': 0, '2': 0, '3': 255 });
+                    ended = true;
+                    done();
+                } else {
+                    map.getRenderer().setToRedraw();
+                }
+            });
+        });
+
         it('GroupGLLayer.queryTerrainAtPoint', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
@@ -1247,7 +1329,7 @@ describe('gl tests', () => {
                                 return;
                             }
                             hit = true;
-                            expect(pickCoord.toArray()).to.be.eql([ 91.07367661817864, 29.751498692202283, 4328.393288386729 ]);
+                            expect(pickCoord.toArray()).to.be.eql([ 91.07358621310483, 29.751869233789108, 4319.602410412992 ]);
                             done();
                         }
                     });
@@ -1396,6 +1478,7 @@ describe('gl tests', () => {
         it('support only ambient, maptalks/issues#360', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
+                devicePixelRatio: 1,
                 zoom: 12,
                 lights: {
                     ambient: {
@@ -1446,6 +1529,7 @@ describe('gl tests', () => {
         it('support ambient with urlModifier', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
+                devicePixelRatio: 1,
                 zoom: 12,
                 lights: {
                     ambient: {
@@ -1505,6 +1589,7 @@ describe('gl tests', () => {
         it('support lit ground with urlModifier', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
+                devicePixelRatio: 1,
                 zoom: 12
             });
             const sceneConfig = {
@@ -1552,6 +1637,7 @@ describe('gl tests', () => {
         it('support fill ground with urlModifier', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
+                devicePixelRatio: 1,
                 zoom: 12
             });
             const sceneConfig = {
@@ -1596,6 +1682,7 @@ describe('gl tests', () => {
         it('support skybox with 6 images', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
+                devicePixelRatio: 1,
                 zoom: 12
             });
             const lights = {
@@ -1668,6 +1755,7 @@ describe('gl tests', () => {
         it('support skybox with 6 images with urlModifier', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
+                devicePixelRatio: 1,
                 zoom: 12
             });
             const lights = {
@@ -1746,6 +1834,7 @@ describe('gl tests', () => {
         it('support skybox with 6 images with negative and positive directions', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
+                devicePixelRatio: 1,
                 zoom: 12
             });
             const lights = {
@@ -1821,6 +1910,7 @@ describe('gl tests', () => {
         it('ClipInsideMask', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
+                devicePixelRatio: 1,
                 zoom: 12
             });
             const skinLayers = [
@@ -1859,6 +1949,7 @@ describe('gl tests', () => {
         it('ClipOutsideMask', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
+                devicePixelRatio: 1,
                 zoom: 12
             });
             const skinLayers = [
@@ -1897,6 +1988,7 @@ describe('gl tests', () => {
         it('FlatInsideMask', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
+                devicePixelRatio: 1,
                 zoom: 12
             });
             map.setPitch(45);
@@ -1938,6 +2030,7 @@ describe('gl tests', () => {
         it('FlatOutsideMask', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
+                devicePixelRatio: 1,
                 zoom: 12
             });
             map.setPitch(45);
@@ -1980,6 +2073,7 @@ describe('gl tests', () => {
         it('ColorMask', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
+                devicePixelRatio: 1,
                 zoom: 12
             });
             map.setPitch(20);
@@ -2026,6 +2120,7 @@ describe('gl tests', () => {
         it('terrain suppot floodAnalysis', (done) => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
+                devicePixelRatio: 1,
                 zoom: 12
             });
             map.setPitch(20);
@@ -2077,6 +2172,160 @@ describe('gl tests', () => {
             group.addTo(map);
             floodAnalysis.addTo(group);
         })
+    });
+
+    context('scan effect', () => {
+        it('add scan effect in sceneConfig', (done) => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                devicePixelRatio: 1,
+                zoom: 12,
+                lights: {
+                    ambient: {
+                        hsv: [0, 0, -0.298],
+                        orientation: 0
+                    }
+                }
+            });
+            const center = map.getCenter();
+            const sceneConfig = {
+                environment: {
+                    enable: true,
+                    mode: 1,
+                    level: 3,
+                    brightness: 0.489
+                },
+                postProcess: {
+                    enable: true,
+                    ssr: {
+                        enable: true
+                    },
+                    "scanEffect": {
+                        "enable": true,
+                        effects: [{
+                            center: center,
+                            radius: 6000,
+                            speed: 1.5,
+                            color: [0.4667, 0.8800, 0.3804]
+                        }]
+                    }
+                }
+            };
+            map.setPitch(45);
+            const skinLayers = [
+                new maptalks.TileLayer('base', {
+                    urlTemplate: '/fixtures/google-256/{z}/{x}/{y}.jpg'
+                })
+            ];
+            const terrain = {
+                fadeAnimation: false,
+                type: 'mapbox',
+                tileSize: 512,
+                spatialReference: 'preset-vt-3857',
+                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
+                tileStackDepth: 0
+            };
+            const group = new maptalks.GroupGLLayer('group', skinLayers, { terrain, sceneConfig });
+            group.once('terrainlayercreated', () => {
+                const terrainLayer = group.getTerrainLayer();
+                terrainLayer.once('terrainreadyandrender', () => {
+                    group.once('layerload', () => {
+                        setTimeout(() => {
+                            const canvas = map.getRenderer().canvas;
+                            const ctx = canvas.getContext('2d');
+                            const pixel = ctx.getImageData(canvas.width / 2, 158, 1, 1).data;
+                            expect(Math.abs(pixel[1] - 250) < 10).to.be.eql(true);
+                            expect(Math.abs(pixel[2] - 250) < 10).to.be.eql(true);
+                            done();
+                        }, 100);
+                    });
+                });
+            });
+            group.addTo(map);
+        });
+
+        it('update scan effect', (done) => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                devicePixelRatio: 1,
+                zoom: 12,
+                lights: {
+                    ambient: {
+                        hsv: [0, 0, -0.298],
+                        orientation: 0
+                    }
+                }
+            });
+            const center = map.getCenter();
+            const sceneConfig = {
+                environment: {
+                    enable: true,
+                    mode: 1,
+                    level: 3,
+                    brightness: 0.489
+                },
+                postProcess: {
+                    enable: true,
+                    ssr: {
+                        enable: true
+                    },
+                    "scanEffect": {
+                        "enable": true,
+                        effects: [{
+                            center: center,
+                            radius: 6000,
+                            speed: 1.5,
+                            color: [0.4667, 0.8800, 0.3804]
+                        }]
+                    }
+                }
+            };
+            map.setPitch(45);
+            const skinLayers = [
+                new maptalks.TileLayer('base', {
+                    urlTemplate: '/fixtures/google-256/{z}/{x}/{y}.jpg'
+                })
+            ];
+            const terrain = {
+                fadeAnimation: false,
+                type: 'mapbox',
+                tileSize: 512,
+                spatialReference: 'preset-vt-3857',
+                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
+                tileStackDepth: 0
+            };
+            const group = new maptalks.GroupGLLayer('group', skinLayers, { terrain, sceneConfig });
+            function updateScanEffect() {
+                const effect = {
+                    center: center.add(0, -0.06),
+                    radius: 3000,
+                    speed: 2,
+                    color: [0.8, 0.5, 0.4]
+                };
+                const sceneConfig = group.getSceneConfig();
+                sceneConfig.postProcess.scanEffect.effects.push(effect);
+                group.setSceneConfig(sceneConfig);
+            }
+            updateScanEffect();
+            group.once('terrainlayercreated', () => {
+                const terrainLayer = group.getTerrainLayer();
+                terrainLayer.once('terrainreadyandrender', () => {
+                    group.once('layerload', () => {
+                        setTimeout(() => {
+                            const canvas = map.getRenderer().canvas;
+                            const ctx = canvas.getContext('2d');
+                            const pixel1 = ctx.getImageData(canvas.width / 2, 325, 1, 1).data;
+                            const pixel2 = ctx.getImageData(canvas.width / 2, 158, 1, 1).data;
+                            expect(Math.abs(pixel1[0] - pixel1[2]) < 10).to.be.eql(true);
+                            expect(Math.abs(pixel2[1] - 250) < 10).to.be.eql(true);
+                            expect(Math.abs(pixel2[2] - 250) < 10).to.be.eql(true);
+                            done();
+                        }, 100);
+                    });
+                });
+            });
+            group.addTo(map);
+        });
     });
 });
 
