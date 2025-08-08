@@ -524,7 +524,7 @@ class LinePainter extends BasicPainter {
         return isEnableStencil;
     }
 
-    getExtraCommandProps(context) {
+    getExtraCommandProps() {
         const canvas = this.canvas;
         const viewport = {
             x: (_, props) => {
@@ -544,8 +544,8 @@ class LinePainter extends BasicPainter {
         return {
             viewport,
             stencil: {
-                enable: () => {
-                    return this.isEnableTileStencil(context);
+                enable: (_, props) => {
+                    return this.isEnableTileStencil(props.painterContext);
                 },
                 func: {
                     cmp: () => {

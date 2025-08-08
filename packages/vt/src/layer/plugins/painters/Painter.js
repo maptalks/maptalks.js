@@ -531,6 +531,7 @@ class Painter {
         this._setLayerUniforms(uniforms);
 
         this.scene.setMeshes(renderMeshes);
+        uniforms.painterContext = context;
         this._drawCount += this.renderer.render(shader, uniforms, this.scene, this.getRenderFBO(context));
         this.scene.setMeshes(meshes);
     }
