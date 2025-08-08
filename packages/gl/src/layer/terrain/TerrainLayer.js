@@ -7,7 +7,6 @@ import MaskLayerMixin from '../mask/MaskLayerMixin';
 const COORD0 = new maptalks.Coordinate(0, 0);
 const TEMP_POINT = new maptalks.Coordinate(0, 0);
 const POINT0 = new maptalks.Point(0, 0);
-const POINT1 = new maptalks.Point(0, 0);
 const EMPTY_ARRAY = [];
 
 const options = {
