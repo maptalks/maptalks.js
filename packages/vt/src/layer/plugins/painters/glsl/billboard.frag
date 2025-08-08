@@ -1,18 +1,22 @@
 #define SHADER_NAME BILL_BOARD
 precision mediump float;
+#include <gl2_frag>
 
-uniform sampler2D texture;
+uniform sampler2D billTexture;
 uniform vec2 textureSize;
 
 varying vec2 vTexCoord;
 
 void main() {
-    gl_FragColor = texture2D(texture, vTexCoord / textureSize);
+    glFragColor = texture2D(billTexture, vTexCoord / textureSize);
 
     #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
         float shadowCoeff = shadow_computeShadow();
-        gl_FragColor.rgb = shadow_blend(gl_FragColor.rgb, shadowCoeff);
+        glFragColor.rgb = shadow_blend(glFragColor.rgb, shadowCoeff);
     #endif
-    // gl_FragColor = vec4(vTexCoord / textureSize, 0.0, 1.0);
-    // gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    // glFragColor = vec4(vTexCoord / textureSize, 0.0, 1.0);
+    // glFragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    #if __VERSION__ == 100
+        gl_FragColor = glFragColor;
+    #endif
 }

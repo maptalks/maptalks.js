@@ -5,7 +5,6 @@
 #endif
 precision mediump float;
 #include <gl2_frag>
-precision mediump float;
 uniform sampler2D perlinTexture;
 varying vec2 vTexCoord;
 void main() {

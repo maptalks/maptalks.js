@@ -10,7 +10,6 @@
     #define texture2DGradEXT textureGrad
     #define texture2DProjGradEXT textureProjGrad
     #define textureCubeGradEXT textureGrad
-    #define texture2D texture
     out vec4 glFragColor;
 #else
     vec4 glFragColor;
