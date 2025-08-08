@@ -43,6 +43,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         if (tile.image && !tile.image.reset) {
             return tile;
         }
+        this._debugTile(tileInfo, 'getTempTileOnLoading');
         const tempTerrain = this._createTerrainFromParent(tileInfo);
         tempTerrain.temp = true;
         if (!tile.image) {
@@ -138,6 +139,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
     }
 
     consumeTile(tileImage, tileInfo) {
+        this._debugTile(tileInfo, 'consumeTile');
         if (tileImage.empty && !tileImage.mesh) {
             const parentTile = this.findParentTile(tileInfo);
             if (!parentTile || parentTile.image && parentTile.image.empty) {
@@ -204,12 +206,13 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         if (!this.drawingCurrentTiles && !this.drawingChildTiles) {
             return;
         }
+        this._debugTile(tileInfo, 'drawTile');
         let opacity = this.drawingCurrentTiles ? this.getTileOpacity(tileImage) : 1;
         opacity *= (this.layer.options.opacity || 1);
         this._painter.addTerrainImage(tileInfo, tileImage, opacity);
     }
 
-    _drawTiles(tiles, parentTiles, childTiles, placeholders, context, missedTiles/* , incompleteTiles */) {
+    _drawTiles(tiles, parentTiles, childTiles, placeholders, context, missedTiles, incompleteTiles) {
         const skinImagesToDel = [];
 
         //TODO tiles中如果存在empty瓦片，且sourceZoom精度不够的，可以重新切分精度更高的数据
@@ -221,9 +224,10 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         const skinCount = this.layer.getSkinCount();
         const visitedSkinTiles = new Set();
         // 集中对每个SkinLayer调用renderTerrainSkin，减少 program 的切换开销
-        // for (let i = 0; i < skinCount; i++) {
-        //     this._renderChildTerrainSkin(i, incompleteTiles, visitedSkinTiles, skinImagesToDel);
-        // }
+        for (let i = 0; i < skinCount; i++) {
+            this._renderChildTerrainSkin(i, incompleteTiles, visitedSkinTiles, skinImagesToDel);
+        }
+        this._debugTile(tiles, 'drawTiles');
         for (let i = 0; i < skinCount; i++) {
             this._renderChildTerrainSkin(i, tiles, visitedSkinTiles, skinImagesToDel);
         }
@@ -258,6 +262,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
 
         for (let i = 0; i < missedTiles.length; i++) {
             const tileInfo = missedTiles[i];
+            this._debugTile(tileInfo, 'getTempTilesForMissed');
             let tile;
             if (pool.has(tileInfo.id)) {
                 tile = pool.getAndRemove(tileInfo.id);
@@ -347,6 +352,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         const layerSkinImages = [];
         for (let i = 0; i < terrainTiles.length; i++) {
             const { info, image } = terrainTiles[i];
+            this._debugTile(info, 'renderChildTerrainSkin');
             if (this._prepareChildTerrainSkin(skinIndex, info, image, skinImagesToDel)) {
                 const skinImages = terrainTiles[i].image.skinImages[skinIndex];
                 for (let j = 0; j < skinImages.length; j++) {
@@ -559,6 +565,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         if (!terrainTileInfo || !map || !tileImage) {
             return;
         }
+        this._debugTile(terrainTileInfo, '_renderTerrainMeshSkin');
         const skinImages = tileImage.skinImages;
         // if (!skinImages) {
         //     return;
@@ -1490,6 +1497,35 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             return this._painter._leafScene.getMeshes();
         }
         return [];
+    }
+
+    _debugTile(tileInfo, name, debugOn) {
+        if (this.layer.options['debugTile']) {
+            if (Array.isArray(tileInfo)) {
+                for (let i = 0; i < tileInfo.length; i++) {
+                    if (!tileInfo[i]) {
+                        continue;
+                    }
+                    this._debugTile(tileInfo[i], name + ' at ' + i, debugOn);
+                }
+                return;
+            }
+            if (!tileInfo) {
+                return;
+            }
+            const { x, y, z } = this.layer.options['debugTile'];
+            const { info } = tileInfo;
+            if (info) {
+                tileInfo = info;
+            }
+            if (x === tileInfo.x && y === tileInfo.y && z === tileInfo.z) {
+                console.log(`Found debug tile in TerrainLayerRenderer.${name}:`, tileInfo);
+                if (debugOn) {
+                    // eslint-disable-next-line no-debugger
+                    debugger
+                }
+            }
+        }
     }
 }
 
