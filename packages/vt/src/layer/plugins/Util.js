@@ -77,7 +77,7 @@ export function copyJSON(json) {
                 }
             }
         }
-    } else {
+    } else if (json) {
         if (json.style) {
             const copiedStyle = copyJSON(json.style);
             copied.style = copiedStyle;

@@ -6,9 +6,6 @@ const { match, readSpecs, hasOwn } = require('./util');
 const { PointLayer, LineStringLayer, PolygonLayer, ExtrudePolygonLayer } = require('../../dist/maptalks.vt.js');
 const { GroupGLLayer } = require('@maptalks/gl');
 
-const GENERATE_MODE = false;
-const TEST_CANVAS = document.createElement('canvas');
-
 const DEFAULT_VIEW = {
     center: [0, 0],
     zoom: 6,
@@ -74,17 +71,9 @@ describe('vector 3d integration specs', () => {
                         const diffPath = dir + 'diff.png';
                         writeImageData(diffPath, result.diffImage, result.width, result.height);
                         const actualPath = dir + 'actual.png';
-                        const dataCanvas = TEST_CANVAS;
-                        dataCanvas.width = canvas.width;
-                        dataCanvas.height = canvas.height;
-                        const ctx = dataCanvas.getContext('2d', { willReadFrequently: true });
-                        ctx.drawImage(canvas, 0, 0);
-                        writeImageData(GENERATE_MODE ? expectedPath : actualPath, ctx.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
+                        writeImageData(actualPath, canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
                     }
-                    if (!GENERATE_MODE) {
-                        assert(result.diffCount === 0);
-                    }
-
+                    assert(result.diffCount === 0);
                     done();
                 });
             });
@@ -111,10 +100,7 @@ describe('vector 3d integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'vector-fixtures', 'icon'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                if (p.indexOf('text') >= 0) {
-                    continue;
-                }
-                it('icon-' + p, runner(p, PointLayer, specs[p])).timeout(5000);
+                it('icon-' + p, runner(p, PointLayer, specs[p]));
             }
         }
     });
@@ -123,7 +109,7 @@ describe('vector 3d integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'vector-fixtures', 'line'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it('line-' + p, runner(p, LineStringLayer, specs[p])).timeout(5000);
+                it('line-' + p, runner(p, LineStringLayer, specs[p]));
             }
         }
     });
@@ -132,7 +118,7 @@ describe('vector 3d integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'vector-fixtures', 'polygon'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it('polygon-' + p, runner(p, PolygonLayer, specs[p])).timeout(5000);
+                it('polygon-' + p, runner(p, PolygonLayer, specs[p]));
             }
         }
     });
@@ -141,7 +127,7 @@ describe('vector 3d integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'vector-fixtures', 'extrude'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it('extrude-' + p, runner(p, ExtrudePolygonLayer, specs[p])).timeout(5000);
+                it('extrude-' + p, runner(p, ExtrudePolygonLayer, specs[p]));
             }
         }
     });
@@ -159,7 +145,7 @@ describe('vector 3d integration specs', () => {
                 if (specs[p].options.altitude === undefined) {
                     specs[p].options.altitude = 80000;
                 }
-                it('options-' + p, runner(p, getLayerClazz(specs[p].layerClass), specs[p])).timeout(5000);
+                it('options-' + p, runner(p, getLayerClazz(specs[p].layerClass), specs[p]));
             }
         }
     });
