@@ -453,15 +453,15 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
         const needWarning = this.getMap().getProjection().isSphere();
         let invalid = false;
         if (coordinates[0] > 180 || coordinates[0] < -180) {
-            invalid = true;
             if (needWarning && !warned) {
+                invalid = true;
                 warned = true;
                 console.warn(`Layer(${this.layer.getId()}) has invalid longitude value: ${coordinates[0]}`);
             }
         }
         if (coordinates[1] > 90 || coordinates[1] < -90) {
-            invalid = true;
             if (needWarning && !warned) {
+                invalid = true;
                 warned = true;
                 console.warn(`Layer(${this.layer.getId()}) has invalid latitude value: ${coordinates[1]}`);
             }
