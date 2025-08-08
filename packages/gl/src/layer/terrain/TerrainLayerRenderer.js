@@ -142,7 +142,8 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                     continue;
                 }
                 const id = this.layer.getTileId(idx + i, idy + j, z);
-                const info = this.layer.tileInfoCache.get(id);
+                const tileInfoCache = this.layer.tileInfoCache;
+                const info = tileInfoCache && tileInfoCache.get(id);
                 if (info && info.minAltitude) {
                     return info.minAltitude;
                 }
@@ -425,15 +426,20 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         }
         const tileSize = this.layer.getTileSize().width;
         // const zoom = this.getCurrentTileZoom();
-        const { res: myRes, zoom } = getSkinTileRes(sr, z, res);
+        let { res: myRes, zoom } = getSkinTileRes(sr, z, res);
 
         const myTileSize = skinLayer.getTileSize().width;
 
-        const scale = getSkinTileScale(myRes, myTileSize, res, tileSize);
+        let scale = getSkinTileScale(myRes, myTileSize, res, tileSize);
 
         let skinTileIds = tileImage.skinTileIds[skinIndex];
         if (!skinTileIds) {
             const terrainTileScaleY = this.layer['_getTileConfig']().tileSystem.scale.y;
+            const maxAvailableZoom = skinLayer.options.maxAvailableZoom;
+            if (!isNil(maxAvailableZoom) && maxAvailableZoom >= 0 && zoom > maxAvailableZoom) {
+                scale *= Math.pow(2, maxAvailableZoom - zoom);
+                zoom = maxAvailableZoom;
+            }
             skinTileIds = tileImage.skinTileIds[skinIndex] = getCascadeTileIds(skinLayer, x, y, zoom, nw, offset, terrainTileScaleY, scale, SKIN_LEVEL_LIMIT);
         }
         const level0 = skinTileIds['0'];

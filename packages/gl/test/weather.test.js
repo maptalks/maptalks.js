@@ -10,7 +10,8 @@ describe('weather tests', () => {
         map = new maptalks.Map(container, {
             center: [0, 0],
             pitch: 70,
-            zoom: 12
+            zoom: 12,
+            devicePixelRatio: 1
         });
     });
 
