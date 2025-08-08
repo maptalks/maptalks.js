@@ -1,7 +1,7 @@
 import * as maptalks from 'maptalks';
 import TerrainLayerRenderer from './TerrainLayerRenderer';
 import { getTileIdsAtLevel, getSkinTileScale, getSkinTileRes, getCascadeTileIds } from './TerrainTileUtil';
-import { extend } from '../util/util';
+import { isNil, extend } from '../util/util';
 import MaskLayerMixin from '../mask/MaskLayerMixin';
 
 const COORD0 = new maptalks.Coordinate(0, 0);
@@ -156,6 +156,14 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
         }
         const token = [TOKEN_VERSION, SKU_ID, sessionRandomizer].join('');
         return token;
+    }
+
+    _getExaggeration() {
+        let exaggeration = this.options.exaggeration;
+        if (isNil(exaggeration)) {
+            exaggeration = 1;
+        }
+        return exaggeration;
     }
 
     setSkinLayers(skinLayers) {

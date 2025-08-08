@@ -1163,7 +1163,11 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             const scale = terrainRes / res;
             const x = worldPos.x - extent2d.xmin * scale;
             const y = extent2d.ymax * scale - worldPos.y;
-            const altitude = this._queryAltitudeInHeights(terrainData.image.data, x / (extent2d.getWidth() * scale), y / (extent2d.getHeight() * scale));
+            let altitude = this._queryAltitudeInHeights(terrainData.image.data, x / (extent2d.getWidth() * scale), y / (extent2d.getHeight() * scale));
+            const exaggeration = this.layer._getExaggeration();
+            if (exaggeration !== 0) {
+                altitude = altitude * exaggeration;
+            }
             out[0] = altitude;
             out[1] = altitude === null ? 0 : +(terrainData.info.z === tileIndex.z);
         } else {

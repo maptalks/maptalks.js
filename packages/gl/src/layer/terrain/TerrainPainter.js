@@ -145,6 +145,7 @@ class TerrainPainter {
         mesh.properties.terrainWidth = terrainWidth;
         mesh.castShadow = false;
         if (!hasOwn(mesh.uniforms, 'minAltitude')) {
+            // for empty terrain
             Object.defineProperty(mesh.uniforms, 'minAltitude', {
                 enumerable: true,
                 get: () => {
