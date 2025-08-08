@@ -227,6 +227,28 @@ export default class VectorPack {
             }
         }
 
+        if (this.options.altitudeProperty) {
+            for (let i = 0; i < checked.length; i++) {
+                const feature = checked[i];
+                if (!feature || !feature.geometry || feature.type !== 1 && feature.type !== 4) {
+                    continue;
+                }
+                const altitude = this.getAltitude(feature.properties);
+                if (!altitude) {
+                    continue;
+                }
+                for (let j = 0; j < feature.geometry.length; j++) {
+                    const points = feature.geometry[j];
+                    if (!points || !points.length) {
+                        continue;
+                    }
+                    for (let k = 0; k < points.length; k++) {
+                        points[k].z += altitude;
+                    }
+                }
+            }
+        }
+
         this.maxPosZ = 0;
         this.minPosZ = 0;
         if (!this.options['forceAltitudeAttribute']) {
