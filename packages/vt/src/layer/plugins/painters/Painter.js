@@ -241,10 +241,10 @@ class Painter {
                 const geo = this.createGeometry(glData[i], features, i);
                 if (geo && geo.geometry) {
                     const props = geo.geometry.properties;
-                    const { pickingIdMap, idPickingMap, hasFeaIds } = this._getIdMap(glData[i]);
+                    const { feaIdToPickingIdMap, pickingIdToFeaIdMap, hasFeaIds } = this._getIdMap(glData[i]);
                     if (hasFeaIds) {
-                        props.feaIdPickingMap = pickingIdMap;
-                        props.feaPickingIdMap = idPickingMap;
+                        props.feaIdPickingMap = feaIdToPickingIdMap;
+                        props.feaPickingIdMap = pickingIdToFeaIdMap;
                     }
 
                     props.symbolIndex = geo.symbolIndex;
@@ -280,23 +280,23 @@ class Painter {
             }
         }
         const feaIds = glData.featureIds;
-        const idPickingMap = {};
-        const pickingIdMap = {};
+        const pickingIdToFeaIdMap = {};
+        const feaIdToPickingIdMap = {};
         const hasFeaIds = feaIds && feaIds.length;
         if (hasFeaIds) {
             for (let i = 0; i < feaIds.length; i++) {
                 const pickingId = glData.data.aPickingId[i];
-                if (idPickingMap[pickingId] !== undefined) {
+                if (pickingIdToFeaIdMap[pickingId] !== undefined) {
                     continue;
                 }
-                idPickingMap[pickingId] = feaIds[i];
-                if (!pickingIdMap[feaIds[i]]) {
-                    pickingIdMap[feaIds[i]] = [];
+                pickingIdToFeaIdMap[pickingId] = feaIds[i];
+                if (!feaIdToPickingIdMap[feaIds[i]]) {
+                    feaIdToPickingIdMap[feaIds[i]] = [];
                 }
-                pickingIdMap[feaIds[i]].push(glData.data.aPickingId[i]);
+                feaIdToPickingIdMap[feaIds[i]].push(glData.data.aPickingId[i]);
             }
         }
-        return { hasFeaIds, idPickingMap, pickingIdMap };
+        return { hasFeaIds, pickingIdToFeaIdMap, feaIdToPickingIdMap };
     }
 
     createGeometry(/* glData, features */) {

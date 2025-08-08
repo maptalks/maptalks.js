@@ -65,6 +65,7 @@ describe('vector tile integration specs', () => {
             }
             const eventName = style.eventName || 'layerload';
             const limit = style.renderingCount || 1;
+            const timeout = style.timeout || 0;
             options.devicePixelRatio = 1;
             map = new maptalks.Map(container, options);
             style.features = true;
@@ -85,8 +86,10 @@ describe('vector tile integration specs', () => {
             const layer = new (style.ctor || GeoJSONVectorTileLayer)('gvt', style);
             let generated = false;
             let count = 0;
+            const time = performance.now();
             layer.on(eventName, () => {
                 count++;
+                const checked = timeout > 0 ? (performance.now() - time) >= timeout : count >= limit;
                 const canvas = map.getRenderer().canvas;
                 const expectedPath = style.expected;
                 if (GENERATE_MODE) {
@@ -99,12 +102,7 @@ describe('vector tile integration specs', () => {
                         generated = true;
                         done();
                     }
-                } else if (!ended && count >= limit) {
-                    if (DEBUGGING) {
-                        ended = true;
-                        done();
-                        return;
-                    }
+                } else if (!ended && checked) {
                     //比对测试
                     match(canvas, expectedPath, (err, result) => {
                         if (err) {
@@ -125,7 +123,6 @@ describe('vector tile integration specs', () => {
                             ctx.drawImage(canvas, 0, 0);
                             writeImageData(actualPath, ctx.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
                         }
-                        // console.log(JSON.stringify(map.getView()));
                         assert(result.diffCount <= (style.diffCount || 0), result.diffCount);
                         ended = true;
                         done();
