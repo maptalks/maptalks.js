@@ -1335,6 +1335,9 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
             if (!tileCache[idx]) {
                 return;
             }
+            if (this.drawingParentTiles && !plugin.painter.shouldDrawParentTile()) {
+                return;
+            }
             const isRenderingTerrainSkin = isRenderingTerrain && terrainSkinFilter(plugin);
             const regl = this.regl || this.device;
             const gl = this.gl;

@@ -871,6 +871,10 @@ const GLTFMixin = Base =>
             const eluerQuat = quat.fromEuler(Q4, rotation[0], rotation[1], rotation[2]);
             return mat4.fromRotationTranslationScale(out, eluerQuat, translation, scale);
         }
+
+        shouldDrawParentTile() {
+            return false;
+        }
     };
 
 export default GLTFMixin;
