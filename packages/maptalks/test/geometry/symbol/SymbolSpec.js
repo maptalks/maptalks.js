@@ -496,4 +496,68 @@ describe('SymbolSpec', function () {
         }, 200);
 
     });
+
+    describe('#2599 symbol with lineStrokeColor and lineStrokeWidth', function () {
+        it('line with lineStrokeColor', function (done) {
+
+            const symbol = {
+                lineColor: 'black',
+                lineWidth: 4,
+                lineStrokeWidth: 4,
+                lineStrokeColor: 'red'
+            };
+            layer = new maptalks.VectorLayer('layer').addTo(map);
+
+            const c1 = map.getCenter();
+            const c2 = c1.add(0.1, 0);
+            // eslint-disable-next-line no-unused-vars
+            var line = new maptalks.LineString([c1, c2], {
+                symbol
+
+            }).addTo(layer);
+
+            setTimeout(() => {
+                expect(layer).to.be.painted(0, 0);
+                expect(layer).to.be.painted(0, -3);
+                expect(layer).to.be.painted(0, 3);
+                layer.remove();
+                done();
+
+            }, 200);
+
+        });
+        it('polygon line with lineStrokeColor', function (done) {
+
+            const symbol = {
+                lineColor: 'black',
+                lineWidth: 4,
+                lineStrokeWidth: 4,
+                lineStrokeColor: 'red'
+            };
+            layer = new maptalks.VectorLayer('layer').addTo(map);
+
+            const c1 = map.getCenter();
+            const c2 = c1.add(0.1, 0);
+            const c3 = c1.add(0.1, -0.1);
+            const c4 = c1.add(0, -0.1);
+            // eslint-disable-next-line no-unused-vars
+            var line = new maptalks.Polygon([[c1, c2, c3, c4]], {
+                symbol
+
+            }).addTo(layer);
+
+            setTimeout(() => {
+                expect(layer).to.be.painted(0, 0);
+                expect(layer).to.be.painted(0, -3);
+                expect(layer).to.be.painted(0, 3);
+                layer.remove();
+                done();
+
+            }, 200);
+
+        });
+
+    });
+
+
 });
