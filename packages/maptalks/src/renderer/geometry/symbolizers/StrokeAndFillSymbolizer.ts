@@ -189,6 +189,8 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
             linePatternDx: getValueOrDefault(s['linePatternDx'], 0),
             linePatternDy: getValueOrDefault(s['linePatternDy'], 0),
             lineGradientProperty: getValueOrDefault(s['lineGradientProperty'], null),
+            lineStrokeColor: getValueOrDefault(s['lineStrokeColor'], null),
+            lineStrokeWidth: getValueOrDefault(s['lineStrokeWidth'], null),
         };
         if (result['lineWidth'] === 0) {
             result['lineOpacity'] = 0;

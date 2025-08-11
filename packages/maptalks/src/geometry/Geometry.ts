@@ -664,7 +664,9 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             this._fixedExtent = new PointExtent();
         }
         const symbol = this._sizeSymbol;
-        const t = (symbol && symbol['lineWidth'] || 1) / 2;
+        let t = (symbol && symbol['lineWidth'] || 1) / 2;
+        const border = (symbol && symbol['lineStrokeWidth'] || 0);
+        t += border;
         this._fixedExtent.set(-t, -t, t, t);
         const dx = (symbol && symbol['lineDx']) || 0;
         this._fixedExtent._add([dx, 0]);
