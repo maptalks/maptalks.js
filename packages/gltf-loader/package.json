@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/gltf-loader",
-  "version": "0.101.1",
+  "version": "0.102.8",
   "description": "",
   "module": "dist/gltf-loader.es.js",
   "scripts": {

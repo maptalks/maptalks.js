@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/reshader.gl",
-  "version": "0.103.1",
+  "version": "0.107.4",
   "description": "A shader centric WebGL engine based on regl",
   "module": "dist/reshadergl.es.js",
   "scripts": {
@@ -13,14 +13,15 @@
   },
   "files": [
     "dist/reshadergl.es.js.map",
-    "dist/reshadergl.es.js"
+    "dist/reshadergl.es.js",
+    "dist/reshadergl.d.ts"
   ],
   "keywords": [
     "webgl"
   ],
   "author": "fuzhenn",
   "license": "UNLICENSED",
-  "types": "dist/index.d.ts",
+  "types": "dist/reshadergl.d.ts",
   "dependencies": {
     "@maptalks/regl": "^3.4.0",
     "@maptalks/tbn-packer": "^1.4.5",
