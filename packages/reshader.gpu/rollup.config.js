@@ -30,8 +30,14 @@ function wgsl() {
     return {
         transform(code, id) {
             if (/\.wgsl$/.test(id) === false) return null;
+            let transformedCode = JSON.stringify(code.trim()
+                .replace(/\r/g, '')
+                .replace(/[ \t]*\/\/.*\n/g, '') // remove //
+                .replace(/[ \t]*\/\*[\s\S]*?\*\//g, '') // remove /* */
+                .replace(/\n{2,}/g, '\n')); // # \n+ to \n;;
+            transformedCode = `export default ${transformedCode};`;
             return {
-                code: `export default '';`,
+                code: transformedCode,
                 map: { mappings: '' }
             };
         }
@@ -45,7 +51,7 @@ const plugins = [
     // glsl(),
     production ? glslMinify({
         commons: [
-            './src/shaderlib/glsl'
+            '../reshader.gl/src/shaderlib/glsl'
         ]
     }) : glsl(),
     wgsl(),
@@ -79,34 +85,16 @@ if (production) {
     }));
 }
 
-module.exports = [
-    {
-        input: 'src/index.ts',
-        external : ['gl-matrix', '@maptalks/gltf-loader', '@maptalks/tbn-packer'],
-        plugins : plugins,
-        output: [
-            {
-                'sourcemap': true,
-                'format': 'es',
-                'banner': banner,
-                'file': pkg.module
-            }
-        ]
-    }
-];
-
-module.exports.push(
-{
-    input: 'dist/index.d.ts',
-    plugins: [dts()],
+module.exports = {
+    input: '../reshader.gl/src/index.ts',
+    external : production ? ['gl-matrix', '@maptalks/gltf-loader', '@maptalks/tbn-packer'] : [],
+    plugins : plugins,
     output: [
         {
-            'sourcemap': false,
+            'sourcemap': true,
             'format': 'es',
-            'name': 'maptalks',
-            banner,
-            'file': pkg['types']
+            'banner': banner,
+            'file': pkg.module
         }
     ]
-}
-);
+};
