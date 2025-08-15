@@ -139,14 +139,14 @@ export default class Material extends Eventable(Base) {
         return this.get(k);
     }
 
-    set(k: string, v: ShaderUniformValue): this {
+    set(k: string, v: ShaderUniformValue, isDispose = true): this {
         if (this.get(k) === v) {
             return this;
         }
         const dirty = isNil(this.uniforms[k]) && !isNil(v) ||
             !isNil(this.uniforms[k]) && isNil(v);
 
-        if (this.uniforms[k] && this.isTexture(k)) {
+        if (this.uniforms[k] && this.isTexture(k) && isDispose) {
             (this.uniforms[k] as AbstractTexture).dispose();
         }
         if (!isNil(v)) {

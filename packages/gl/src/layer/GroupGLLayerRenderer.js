@@ -359,7 +359,7 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
     }
 
     _isUseMultiSample() {
-        if (this.device) {
+        if (this.device && this.device.wgpu) {
             // in webgpu, multisample is set in device.createPipeline, doesn't need further more setup.
             return false;
         }
@@ -494,7 +494,7 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
         });
         const layer = this.layer;
         const { regl, gl, reglGL, device } = this.context;
-        this.device = device;
+        this.device = device || regl;
         this.regl = regl;
         this.reglGL = reglGL;
         this.gl = gl;
@@ -633,7 +633,7 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
         if (fbo) {
             config['framebuffer'] = fbo;
         }
-        (this.regl || this.device).clear(config);
+        this.device.clear(config);
     }
 
     onRemove() {
@@ -1152,7 +1152,7 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
 
     _createSimpleFBOInfo(forceTexture, width, height) {
         width = width || this.canvas.width, height = height || this.canvas.height;
-        const regl = this.regl || this.device;
+        const regl = this.device;
         const useMultiSamples = this._isUseMultiSample();
         let color;
         if (!forceTexture && useMultiSamples) {
@@ -1190,7 +1190,7 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
         let { width, height } = this.canvas;
         width = width || 1;
         height = height || 1;
-        const regl = this.regl || this.device;
+        const regl = this.device;
         const fboInfo = this._createSimpleFBOInfo();
         const useMultiSamples = this._isUseMultiSample();
         const enableDepthTex = !this.regl || regl.hasExtension('WEBGL_depth_texture');

@@ -55,6 +55,15 @@ export default class Texture2D extends Texture {
         this._update();
     }
 
+    setConfig(config) {
+        const data = config.data;
+        config.image = data;
+        config.width = config.width || data.width;
+        config.height = config.height || data.height;
+        this.config = config;
+        this.dirty = !!this._texture;
+    }
+
     //@internal
     _update() {
         if (this._texture && !this._texture[KEY_DISPOSED]) {

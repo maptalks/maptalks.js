@@ -41,7 +41,7 @@ class TerrainLitPainter extends TerrainPainter {
 
     createIBLTextures() {
         const canvas = this.getMap().getRenderer().canvas;
-        loginIBLResOnCanvas(canvas, this.regl, this.getMap());
+        loginIBLResOnCanvas(canvas, this.graphics, this.getMap());
         this.layer.fire('iblupdated');
     }
 
@@ -83,11 +83,11 @@ class TerrainLitPainter extends TerrainPainter {
         geo.createTangent();
         delete geo.data.aNormal;
 
-        geo.generateBuffers(this.regl);
+        geo.generateBuffers(this.graphics);
 
         let terrainHeightTexture;
         if (heightTexture) {
-            terrainHeightTexture = this.regl.texture({
+            terrainHeightTexture = this.graphics.texture({
                 width: heightTexture.width,
                 height: heightTexture.height,
                 data: heightTexture,

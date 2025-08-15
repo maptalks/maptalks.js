@@ -14,7 +14,6 @@ import {
 import Browser from '../../../core/Browser';
 import { default as TileLayer } from '../../../layer/tile/TileLayer';
 import WMSTileLayer from '../../../layer/tile/WMSTileLayer';
-import LayerAbstractRenderer from '../LayerAbstractRenderer';
 import Point from '../../../geo/Point';
 import Extent from '../../../geo/Extent';
 import LRUCache from '../../../core/util/LRUCache';

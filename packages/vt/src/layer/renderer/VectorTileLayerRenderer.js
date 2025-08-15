@@ -253,7 +253,7 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
         const graphics = regl || device;
         this.regl = regl;
         this.gl = reglGL;
-        this.device = device;
+        this.device = device || regl;
 
         const isWebGPU = !!device;
         const fboOptions = {
@@ -996,7 +996,7 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
             if (isRenderingTerrain && !terrainVectorFilter(plugin)) {
                 return;
             }
-            (this.regl || this.device).clear({
+            this.device.clear({
                 stencil: 0xFF,
                 framebuffer: targetFBO
             });
@@ -1304,7 +1304,7 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
             }
             for (let i = 0; i < skinImages.length; i++) {
                 const texture = skinImages[i].texture;
-                (this.regl || this.device).clear({
+                this.device.clear({
                     stencil: 0xFF,
                     framebuffer: texture
                 });
