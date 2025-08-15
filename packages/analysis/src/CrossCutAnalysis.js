@@ -83,15 +83,15 @@ export default class CrossCutAnalysis extends Analysis {
         };
         this._prepareRenderOptions(renderer);
         this._setPickingFBO(renderer);
-        const crosscutRenderer = new reshader.Renderer(renderer.regl);
+        const crosscutRenderer = new reshader.Renderer(renderer.device);
         this._pass = this._pass || new CrossCutPass(crosscutRenderer, viewport);
         this.layer.addAnalysis(this);
     }
 
     _setPickingFBO(renderer) {
         const map = this.layer.getMap();
-        this.pickingFBO = renderer.canvas.pickingFBO || renderer.regl.framebuffer(renderer.canvas.width, renderer.canvas.height);
-        const pickRenderer = new reshader.Renderer(renderer.regl);
+        this.pickingFBO = renderer.canvas.pickingFBO || renderer.device.framebuffer(renderer.canvas.width, renderer.canvas.height);
+        const pickRenderer = new reshader.Renderer(renderer.device);
         this._picking = new reshader.FBORayPicking(
             pickRenderer,
             {

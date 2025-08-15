@@ -472,7 +472,7 @@ export default class CutAnalysisController {
     }
 
     _prepareRenderContext() {
-        this.pickingFBO = this.renderer.regl.framebuffer(this.renderer.canvas.width, this.renderer.canvas.height);
+        this.pickingFBO = this.renderer.device.framebuffer(this.renderer.canvas.width, this.renderer.canvas.height);
         this._picking = new reshader.FBORayPicking(
             this.renderer,
             {

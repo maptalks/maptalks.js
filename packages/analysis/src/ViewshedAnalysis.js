@@ -44,7 +44,7 @@ export default class ViewshedAnalysis extends Analysis {
             }
         };
         this._prepareRenderOptions();
-        const viewshedRenderer = new reshader.Renderer(renderer.regl);
+        const viewshedRenderer = new reshader.Renderer(renderer.device);
         this._pass = new ViewshedPass(viewshedRenderer, viewport) || this._pass;
         this.layer.addAnalysis(this);
         renderer.setToRedraw();

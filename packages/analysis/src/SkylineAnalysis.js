@@ -30,14 +30,14 @@ export default class SkylineAnalysis extends Analysis {
             }
         };
         this._prepareRenderOptions();
-        this.renderer = new reshader.Renderer(renderer.regl);
+        this.renderer = new reshader.Renderer(renderer.device);
         this._pass = new OutlinePass(this.renderer, viewport) || this._pass;
         this.layer.addAnalysis(this);
-        this._ground = this._createGround(renderer.regl);
+        this._ground = this._createGround(renderer.device);
     }
 
     renderAnalysis(meshes) {
-        this._ground = this._ground || this._createGround(this.renderer.regl);
+        this._ground = this._ground || this._createGround(this.renderer.device);
         const map = this.layer.getMap();
         this._transformGround(map);
         const uniforms = {};

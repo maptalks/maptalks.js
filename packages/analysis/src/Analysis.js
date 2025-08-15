@@ -26,11 +26,11 @@ export default class Analysis extends Eventable(Handlerable(Class)) {
     _setAnalysisPass() {
         const renderer = this.layer.getRenderer();
         if (renderer) {
-            this.regl = renderer.regl;
+            this.regl = renderer.device;
             this._setPass(renderer);
         } else {
             this.layer.once('renderercreate', e => {
-                this.regl = e.renderer.regl;
+                this.regl = e.renderer.device;
                 this._setPass(e.renderer);
             }, this);
         }
@@ -107,7 +107,7 @@ export default class Analysis extends Eventable(Handlerable(Class)) {
         fbo = fbo.meshesMap ? fbo.meshesMap : fbo;
         const renderer = this.layer.getRenderer();
         if (fbo && renderer) {
-            const regl = renderer.regl;
+            const regl = renderer.device;
             const width = fbo.width, height = fbo.height;
             const data = new Uint8Array(4 * width * height);
             regl.read({
