@@ -15,6 +15,7 @@ import { getDefaultBBOX, pointsBBOX } from '../../core/util/bbox';
 import Extent from '../../geo/Extent';
 
 const EDIT_STAGE_LAYER_PREFIX = INTERNAL_LAYER_PREFIX + '_edit_stage_';
+const SHADOW_DRAG_EVENTS = 'dragend dragstart';
 
 type GeometryEvents = {
     'symbolchange': any,
@@ -176,7 +177,7 @@ class GeometryEditor extends Eventable(Class) {
     //@internal
     _shadowLayer: any
     //@internal
-    _shadow: any
+    _shadow?: Geometry;
     //@internal
     _geometryDraggble: boolean
     //@internal
@@ -346,6 +347,7 @@ class GeometryEditor extends Eventable(Class) {
         }
         this._geometry.config('draggable', this._geometryDraggble);
         if (this._shadow) {
+            this._shadow.off(SHADOW_DRAG_EVENTS, this._shadowDragEvent, this);
             delete this._shadow;
             delete this._geometryDraggble;
             this._geometry.show();
@@ -407,7 +409,7 @@ class GeometryEditor extends Eventable(Class) {
 
     //@internal
     _onMarkerDragEnd(): void {
-        this._update('setCoordinates', this._shadow.getCoordinates().toArray());
+        this._update('setCoordinates', (this._shadow as Marker).getCoordinates().toArray());
     }
 
     /**
@@ -451,13 +453,30 @@ class GeometryEditor extends Eventable(Class) {
         return outline;
     }
 
+    _shadowDragEvent(e) {
+        const type = e.type;
+        if (type === 'dragend') {
+            //update Geometry coordinates by shadow
+            this._updateCoordFromShadow();
+        }
+    }
+
 
     //@internal
     _createCenterHandle(): void {
         const map = this.getMap();
         const symbol = this.options['centerHandleSymbol'];
         let shadow;
+
+        if (this._shadow) {
+            this._shadow.off(SHADOW_DRAG_EVENTS, this._shadowDragEvent, this);
+        }
+
+
         // const cointainerPoint = map.coordToContainerPoint(this._geometry.getCenter());
+        if (this.options.shadowDraggable && this._shadow) {
+            this._shadow.on(SHADOW_DRAG_EVENTS, this._shadowDragEvent, this);
+        }
         const cointainerPoint = coordinatesToContainerPoint(map, this._geometry._getEditCenter());
         const handle = this.createHandle(cointainerPoint, {
             ignoreCollision: true,
