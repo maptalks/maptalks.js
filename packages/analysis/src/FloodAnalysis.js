@@ -18,7 +18,7 @@ export default class FloodAnalysis extends Analysis {
         this._renderOptions['waterOpacity'] = this.options.waterOpacity;
         this._renderOptions['waterColor'] = this.options.waterColor;
         this._renderOptions['extent'] = VEC4;
-        this._renderOptions['extentMap'] = renderer.regl.texture({width: 2, height: 2});
+        this._renderOptions['extentMap'] = renderer.device.texture({width: 2, height: 2});
         this._renderOptions['hasExtent'] = 0;
         this._renderOptions['type'] = 1.0;
         if (this.options.boundary) {
@@ -43,7 +43,7 @@ export default class FloodAnalysis extends Analysis {
             }
         };
         this._prepareRenderOptions(renderer);
-        const floodRenderer = new reshader.Renderer(renderer.regl);
+        const floodRenderer = new reshader.Renderer(renderer.device);
         this._pass = this._pass || new FloodPass(floodRenderer, viewport);
         this.layer.addAnalysis(this);
     }

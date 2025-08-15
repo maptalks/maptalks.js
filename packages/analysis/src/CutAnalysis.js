@@ -49,7 +49,7 @@ export default class CutAnalysis extends Analysis {
                 return renderer.canvas ? renderer.canvas.height : 1;
             }
         };
-        const cutRenderer = new reshader.Renderer(renderer.regl);
+        const cutRenderer = new reshader.Renderer(renderer.device);
         cutRenderer.canvas = renderer.canvas;
         cutRenderer.parentRenderer = renderer;
         this._prepareRenderOptions();

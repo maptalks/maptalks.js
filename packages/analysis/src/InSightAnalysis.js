@@ -159,7 +159,7 @@ export default class InSightAnalysis extends Analysis {
             }
         };
         this._prepareRenderOptions();
-        const insightRenderer = new reshader.Renderer(renderer.regl);
+        const insightRenderer = new reshader.Renderer(renderer.device);
         this._pass = this._pass || new InSightPass(insightRenderer, viewport);
         this.layer.addAnalysis(this);
         renderer.setToRedraw();

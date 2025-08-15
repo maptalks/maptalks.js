@@ -9,8 +9,8 @@ const EMPTY_COLOR = [0, 0, 0, 1], modelViewMatrix = [], projViewModelMatrix = []
 export default class HeightmapPass extends AnalysisPass {
 
     _init() {
-        this._fbo = this.renderer.regl.framebuffer({
-            color: this.renderer.regl.texture({
+        this._fbo = this.renderer.device.framebuffer({
+            color: this.renderer.device.texture({
                 width: 1,
                 height: 1,
                 wrap: 'clamp',

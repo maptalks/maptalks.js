@@ -18,8 +18,8 @@ const phongUniforms = {
 export default class CutPass extends AnalysisPass {
 
     _init() {
-        this._meshesFBO = this.renderer.regl.framebuffer({
-            color: this.renderer.regl.texture({
+        this._meshesFBO = this.renderer.device.framebuffer({
+            color: this.renderer.device.texture({
                 width: 1,
                 height: 1,
                 wrap: 'clamp',
@@ -102,8 +102,8 @@ export default class CutPass extends AnalysisPass {
                 }
             }
         });
-        this._fbo = this.renderer.regl.framebuffer({
-            color: this.renderer.regl.texture({
+        this._fbo = this.renderer.device.framebuffer({
+            color: this.renderer.device.texture({
                 width: 1,
                 height: 1,
                 wrap: 'clamp',

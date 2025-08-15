@@ -6,14 +6,14 @@ const RESOLUTION = 2048;
 export default class AnalysisPass {
     constructor(renderer, viewport) {
         this.renderer = renderer;
-        this.regl = renderer.regl;
+        this.regl = renderer.device;
         this._viewport = viewport;
         this._init();
     }
 
     _init() {
-        this._depthFBO = this.renderer.regl.framebuffer({
-            color: this.renderer.regl.texture({
+        this._depthFBO = this.renderer.device.framebuffer({
+            color: this.renderer.device.texture({
                 width: RESOLUTION,
                 height: RESOLUTION,
                 wrap: 'clamp',
