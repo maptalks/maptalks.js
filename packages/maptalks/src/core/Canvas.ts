@@ -592,6 +592,20 @@ const Canvas = {
         }
         const strokePattern = style['linePatternFile'];
         let strokeColor = style['lineColor'] || DEFAULT_STROKE_COLOR;
+        //prepare for line border
+        let lineStrokeColor = style['lineStrokeColor'];
+        const lineStrokeWidth = style['lineStrokeWidth'];
+        ctx.lineStrokeColor = null;
+        ctx.lineStrokeWidth = null;
+        if (lineStrokeColor) {
+            if (Array.isArray(lineStrokeColor)) {
+                lineStrokeColor = Canvas.normalizeColorToRGBA(lineStrokeColor);
+            }
+            ctx.lineStrokeColor = lineStrokeColor;
+        }
+        if (lineStrokeWidth && lineStrokeWidth > 0) {
+            ctx.lineStrokeWidth = lineStrokeWidth;
+        }
         if (testing) {
             ctx.strokeStyle = '#000';
         } else if (strokePattern && resources) {
@@ -1110,6 +1124,30 @@ const Canvas = {
         if (strokeOpacity === 0) {
             return;
         }
+
+        const drawLineBorder = () => {
+            if (ctx.lineStrokeColor && ctx.lineStrokeWidth && ctx.lineStrokeWidth > 0) {
+                const lineStrokeColor = ctx.lineStrokeColor;
+                const lineStrokeWidth = ctx.lineStrokeWidth;
+                //cache context state
+                const alpha = ctx.globalAlpha;
+                const strokeStyle = ctx.strokeStyle;
+                const lineWidth = ctx.lineWidth;
+
+                if (isNumber(strokeOpacity) && strokeOpacity < 1) {
+                    ctx.globalAlpha = 1;
+                    ctx.globalAlpha *= strokeOpacity;
+                }
+                ctx.lineWidth = lineWidth + lineStrokeWidth * 2;
+                ctx.strokeStyle = lineStrokeColor;
+                ctx.stroke();
+                //restore context state
+                ctx.lineWidth = lineWidth;
+                ctx.strokeStyle = strokeStyle;
+                ctx.globalAlpha = alpha;
+            }
+        }
+        drawLineBorder();
         const offset = ctx.strokeStyle && ctx.strokeStyle['linePatternOffset'];
         const dx = offset ? offset[0] : 0,
             dy = offset ? offset[1] : 0;
@@ -1989,6 +2027,8 @@ function copyProperties(ctx: CanvasRenderingContext2D, savedCtx) {
     ctx.shadowOffsetY = savedCtx.shadowOffsetY;
     ctx.strokeStyle = savedCtx.strokeStyle;
     ctx.lineColorIn = savedCtx.lineColorIn;
+    ctx.lineStrokeColor = savedCtx.lineStrokeColor;
+    ctx.lineStrokeWidth = savedCtx.lineStrokeWidth;
 }
 
 function setLineDash(ctx: CanvasRenderingContext2D, lineDashArray: number[]) {

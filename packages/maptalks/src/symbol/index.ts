@@ -129,6 +129,8 @@ export type LineSymbol = {
     lineDx?: SymbolNumberType;
     lineDy?: SymbolNumberType;
     lineGradientProperty?: string;
+    lineStrokeColor?: SymbolColorType;
+    lineStrokeWidth?: SymbolNumberType;
 }
 
 export type FillSymbol = {

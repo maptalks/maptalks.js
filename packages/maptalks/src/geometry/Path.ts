@@ -451,19 +451,25 @@ export class Path extends Geometry {
     //@internal
     _hitTestTolerance(): number {
         const symbol = this._getInternalSymbol();
-        let w;
+        let w, border = 0;
         if (Array.isArray(symbol)) {
             w = 0;
+
             for (let i = 0; i < symbol.length; i++) {
                 if (isNumber(symbol[i]['lineWidth'])) {
                     if (symbol[i]['lineWidth'] > w) {
                         w = symbol[i]['lineWidth'];
                     }
                 }
+                if (isNumber(symbol[i]['lineStrokeWidth'])) {
+                    border = Math.max(border, symbol[i]['lineStrokeWidth']);
+                }
             }
         } else {
             w = symbol['lineWidth'];
+            border = symbol['lineStrokeWidth'] || 0;
         }
+        w += border * 2;
         return super._hitTestTolerance() + (isNumber(w) ? w / 2 : 1.5);
     }
 
