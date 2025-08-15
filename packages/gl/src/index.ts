@@ -1,5 +1,4 @@
 import GroupGLLayer from './layer/GroupGLLayer';
-import './layer/TileLayerGLRenderer';
 import GroundPainter from './layer/GroundPainter';
 import './light/MapLights';
 import './map/MapPostProcess';
@@ -11,7 +10,8 @@ export { GroupGLLayer, GroundPainter, HighlightUtil, ContextUtil };
 
 import './layer/TileLayerGLRenderer';
 import './map/MapGLRenderer';
-import './map/MapGPURenderer';
+import './layer/ImageLayerGLRenderer';
+// import './map/MapGPURenderer';
 
 export { default as HeatmapProcess } from './layer/HeatmapProcess';
 export { GLContext } from '@maptalks/fusiongl';

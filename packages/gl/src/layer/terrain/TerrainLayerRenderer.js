@@ -369,7 +369,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             }
         }
         // render terrain skin of skin layer
-        renderer.renderTerrainSkin(this.regl || this.device, this.layer, layerSkinImages);
+        renderer.renderTerrainSkin(this.device, this.layer, layerSkinImages);
     }
 
     _prepareChildTerrainSkin(skinIndex, terrainTileInfo, tileImage, skinImagesToDel) {
@@ -504,7 +504,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                     tile: extend({}, tiles[i]),
                     layer: skinLayer,
                     refs: new Set(),
-                    texture: renderer.createTerrainTexture(this.regl || this.device)
+                    texture: renderer.createTerrainTexture(this.device)
                 };
                 this._saveCachedSkinImage(tileId, cached);
             }
@@ -582,7 +582,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
 
         } else {
             TERRAIN_CLEAR.framebuffer = tileImage.skin;
-            (this.regl || this.device).clear(TERRAIN_CLEAR);
+            this.device.clear(TERRAIN_CLEAR);
         }
         this._initSkinShader();
         const enableDebug = this.layer.options.debug;
@@ -678,7 +678,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         ctx.lineTo(0, 0);
         ctx.stroke();
 
-        return (this.regl || this.device).texture({
+        return this.device.texture({
             data: canvas,
             flipY: true,
             mag: 'linear',
@@ -691,7 +691,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         // 乘以2是为了瓦片（缩放时）被放大后保持清晰度
         const width = tileSize * 2;
         const height = tileSize * 2;
-        const regl = this.regl || this.device;
+        const regl = this.device;
         const colorsTexture = tileInfo.colorsTexture;
         let color;
         if (colorsTexture && colorsTexture instanceof Uint8Array) {
@@ -1321,6 +1321,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
 
     clear() {
         this.clearTempResources();
+        this.clearTileCaches();
         return super.clear();
     }
 
@@ -1388,7 +1389,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         super.initContext();
         const { regl, device } = this.context;
         this.regl = regl;
-        this.device = device;
+        this.device = device || regl;
 
         this.renderer = new reshader.Renderer(regl || device);
         this.layer.fire('contextcreate', { regl, device });
@@ -1465,7 +1466,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         this._skinGeometry = this._skinGeometry || new reshader.Geometry({
             aPosition
         }, 0, 6, { positionSize: 2 });
-        this._skinGeometry.generateBuffers(this.regl || this.device);
+        this._skinGeometry.generateBuffers(this.device);
         this._skinScene = this._skinScene || new reshader.Scene();
     }
 

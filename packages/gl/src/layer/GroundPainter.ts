@@ -1,23 +1,50 @@
 import { vec2, mat4 } from '@maptalks/reshader.gl';
+import { pbr } from '@maptalks/reshader.gl';
 import * as reshader from '@maptalks/reshader.gl';
-import fillVert from './glsl/fill.vert';
-import fillFrag from './glsl/fill.frag';
+import { fillVert, fillFrag } from './glsl/fill.js';
 import ShadowProcess from './shadow/ShadowProcess';
 import { extend, getGroundTransform, hasOwn, normalizeColor } from './util/util.js';
 import { computeUVUniforms } from './util/uvUniforms.js';
 
-const { getIBLResOnCanvas, logoutIBLResOnCanvas, getPBRUniforms, loginIBLResOnCanvas } = reshader.pbr.PBRUtils;
+const { getIBLResOnCanvas, logoutIBLResOnCanvas, getPBRUniforms, loginIBLResOnCanvas } = pbr.PBRUtils;
 
 const DEFAULT_TEX_OFFSET = [0, 0];
 const DEFAULT_TEX_SCALE = [1, 1];
 
-const ARR2_1 = [];
-const ARR2_2 = [];
-const ARR2_3 = [];
-const ARR2_4 = [];
-const ARR2_5 = [];
+const ARR2_1 = [] as any;
+const ARR2_2 = [] as any;
+const ARR2_3 = [] as any;
+const ARR2_4 = [] as any;
+const ARR2_5 = [] as any;
 
 class GroundPainter {
+    //@internal
+    _regl: any;
+    renderer: reshader.Renderer;
+    //@internal
+    _layer: any;
+    //@internal
+    _loader: reshader.ResourceLoader;
+    //@internal
+    _bindOnMaterialComplete: (...args: any[]) => any;
+    //@internal
+    _fillShader: any;
+    //@internal
+    _ground: any;
+    //@internal
+    material: any;
+    //@internal
+    _polygonFill: number[];
+    //@internal
+    _polygonOpacity: number;
+    //@internal
+    _polygonPatternFile: any;
+    //@internal
+    _standardShader: any;
+    //@internal
+    _loadingMaterial: any;
+    //@internal
+    _groundScene: reshader.Scene;
     static getGroundTransform(out, map) {
         return getGroundTransform(out, map);
     }
@@ -26,7 +53,7 @@ class GroundPainter {
         this._regl = regl;
         this.renderer = new reshader.Renderer(regl);
         this._layer = layer;
-        this._loader = new reshader.ResourceLoader();
+        this._loader = new reshader.ResourceLoader(null);
         this._bindOnMaterialComplete = (...args) => {
             return this._onMaterialComplete.call(this, ...args);
         }
@@ -239,9 +266,9 @@ class GroundPainter {
 
     _init() {
         //fill shader
-        const extraCommandProps = this._getExtraCommandProps();
+        const extraCommandProps = this._getExtraCommandProps() as any;
         const fillUniforms = ShadowProcess.getUniformDeclares();
-        const projViewModelMatrix = [];
+        const projViewModelMatrix = [] as any;
         fillUniforms.push(
             {
                 name: 'projViewModelMatrix',
@@ -252,10 +279,14 @@ class GroundPainter {
             }
         );
         this._fillShader = new reshader.MeshShader({
+            name: 'ground-fill',
             vert: fillVert,
             frag: fillFrag,
+            wgslFrag: null,
+            wgslVert: null,
             uniforms: fillUniforms,
-            extraCommandProps
+            extraCommandProps,
+            defines: {}
         });
         //standard shader
         const uniforms = ShadowProcess.getUniformDeclares();
@@ -485,7 +516,7 @@ class GroundPainter {
             this.material = this._loadingMaterial;
             delete this._loadingMaterial;
         }
-        this.setToRedraw(true);
+        this.setToRedraw();
     }
 
     _createPatternTexture(image) {

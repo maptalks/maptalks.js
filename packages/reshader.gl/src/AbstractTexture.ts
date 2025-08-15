@@ -159,7 +159,7 @@ class AbstractTexture extends Eventable(Base) {
             this.resLoader.disposeRes(this.config.url);
         }
         if (this.config && (this.config.data instanceof ImageBitmap)) {
-            this.config.data.close()
+            this.config.data.close();
             this.config.data = [];
         }
         if (this._texture && !this._texture[KEY_DISPOSED]) {

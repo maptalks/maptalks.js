@@ -43,9 +43,9 @@ export default class DrawToolLayer extends OverlayLayer {
         super(id, options);
         const depthFunc = this.options.depthFunc || 'always';
         options.sceneConfig = { depthFunc };
-        this._markerLayer = new DrawToolLayer.markerLayerClazz(id + '_marker', options);
-        this._lineLayer = new DrawToolLayer.lineLayerClazz(id + '_line', options);
-        this._polygonLayer = new DrawToolLayer.polygonLayerClazz(id + '_polygon', options);
+        this._markerLayer = new DrawToolLayer.markerLayerClazz(id + '_____________marker', options);
+        this._lineLayer = new DrawToolLayer.lineLayerClazz(id + '_____________line', options);
+        this._polygonLayer = new DrawToolLayer.polygonLayerClazz(id + '_____________polygon', options);
         if (geometries) {
             this.addGeometry(geometries as Array<Geometry>);
         }
