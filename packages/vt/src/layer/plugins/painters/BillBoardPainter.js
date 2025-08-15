@@ -16,7 +16,16 @@ const TILE_POINT = new maptalks.Point(0, 0);
 
 const sizeOut = [];
 const OUT_QUAT = [];
-const canvas = document.createElement('canvas');
+// const canvas = document.createElement('canvas');
+
+let TEMP_CANVAS;
+
+function getCanvas() {
+    if (!TEMP_CANVAS) {
+        TEMP_CANVAS = document.createElement('canvas');
+    }
+    return TEMP_CANVAS;
+}
 
 export default class BillBoardPainter extends BasicPainter {
 
@@ -388,6 +397,7 @@ export default class BillBoardPainter extends BasicPainter {
         const count = oldPickingId.length;
         const pack = new ShelfPack(0, 0, { autoResize: true });
 
+        const canvas = getCanvas();
         const ctx = canvas.getContext('2d');
         pack.pack(bins, { inPlace: true });
         const limit = this.sceneConfig.textureLimit || 1024;
