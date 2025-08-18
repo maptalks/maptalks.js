@@ -670,6 +670,10 @@ class MapCanvasRenderer extends MapAbstractRenderer {
     drawTops() {
         super.drawTopElements();
     }
+
+    isWebGPU() {
+        return false;
+    }
 }
 
 Map.registerRenderer<typeof MapCanvasRenderer>('canvas', MapCanvasRenderer);

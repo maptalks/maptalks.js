@@ -1,12 +1,13 @@
 import GroupGLLayer from './layer/GroupGLLayer';
 import GroundPainter from './layer/GroundPainter';
+import CanvasCompatible from './layer/CanvasCompatible';
 import './light/MapLights';
 import './map/MapPostProcess';
 import './map/MapGLRenderer';
 
 import * as HighlightUtil from './layer/util/highlight';
 import * as ContextUtil from './layer/util/context';
-export { GroupGLLayer, GroundPainter, HighlightUtil, ContextUtil };
+export { GroupGLLayer, GroundPainter, CanvasCompatible, HighlightUtil, ContextUtil };
 
 import './layer/TileLayerGLRenderer';
 import './map/MapGLRenderer';

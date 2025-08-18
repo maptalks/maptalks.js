@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { mat4, vec3, GroundPainter } from '@maptalks/gl';
+import { mat4, vec3, GroundPainter, CanvasCompatible } from '@maptalks/gl';
 import WorkerConnection from './worker/WorkerConnection';
 import { EMPTY_VECTOR_TILE } from '../core/Constant';
 import DebugPainter from './utils/DebugPainter';
@@ -34,7 +34,7 @@ const terrainVectorFilter = plugin => {
     return plugin.isTerrainVector();
 }
 
-class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRenderer) {
+class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(LayerAbstractRenderer)) {
 
     supportRenderMode() {
         return true;
