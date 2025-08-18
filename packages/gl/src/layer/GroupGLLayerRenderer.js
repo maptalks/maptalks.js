@@ -8,6 +8,7 @@ import WeatherPainter from './weather/WeatherPainter';
 import PostProcess from './postprocess/PostProcess.js';
 import AnalysisPainter from '../analysis/AnalysisPainter.js';
 import ScanEffectPainter from './effect/ScanEffectPainter.js';
+import CanvasCompatible from './CanvasCompatible';
 
 const { LayerAbstractRenderer } = maptalks.renderer;
 
@@ -24,7 +25,7 @@ const noSsrFilter = m => !m.ssr;
 const SSR_STATIC = 1;
 const SSR_IN_ONE_FRAME = 2;
 
-class GroupGLLayerRenderer extends LayerAbstractRenderer {
+class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
 
     setToRedraw() {
         this.setRetireFrames();

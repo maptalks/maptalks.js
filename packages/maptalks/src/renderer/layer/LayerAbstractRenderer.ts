@@ -442,8 +442,8 @@ class LayerAbstractRenderer extends Class {
      * @return {PointExtent} mask's extent of current zoom's 2d point.
      */
     prepareCanvas(): any {
-        const map = this.getMap();
-        const { canvas: mapCanvas, context: mapContext } = map.getRenderer();
+        const parent = this.layer.parent;
+        const { canvas: mapCanvas, context: mapContext } = parent.getRenderer();
         const isMapCanvasRenderer = mapContext instanceof CanvasRenderingContext2D;
         if (!this.context) {
             if (isMapCanvasRenderer) {
@@ -502,7 +502,7 @@ class LayerAbstractRenderer extends Class {
     }
 
     createContext() {
-
+        throw new Error('createContext not implemented');
     }
 
 

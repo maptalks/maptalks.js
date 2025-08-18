@@ -285,10 +285,10 @@ export default class GroupGLLayer extends maptalks.Layer {
 
     //@internal
     _prepareLayer(layer: maptalks.Layer) {
-        const map = (this as any).getMap();
+        const renderer = (this as any).getRenderer();
         this._layerMap[layer.getId()] = layer;
-        layer['_canvas'] = (this as any).getRenderer().canvas;
-        layer['_bindMap'](map);
+        layer['_canvas'] = renderer.canvas;
+        layer['_bindMap'](this);
         // layer.on('setstyle updatesymbol', this._onChildLayerStyleChanged, this);
         layer.remove = () => {
             this.removeLayer(layer);
