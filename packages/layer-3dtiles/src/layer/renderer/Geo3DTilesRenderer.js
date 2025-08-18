@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { reshader } from '@maptalks/gl';
+import { reshader, CanvasCompatible } from '@maptalks/gl';
 import { getGLTFLoaderBundle } from '@maptalks/gl/dist/transcoders.js';
 import { MaskRendererMixin } from '@maptalks/gl';
 import Geo3DTilesWorkerConnection from '../Geo3DTilesWorkerConnection';
@@ -31,7 +31,7 @@ let TileCacheRefCount = 0;
 
 
 
-export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.renderer.LayerAbstractRenderer) {
+export default class Geo3DTilesRenderer extends MaskRendererMixin(CanvasCompatible(maptalks.renderer.LayerAbstractRenderer)) {
 
     constructor(layer) {
         super(layer);
