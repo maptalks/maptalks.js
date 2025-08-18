@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-
 import Canvas2D from '../../core/Canvas';
-import { SizeLike } from '../../geo/Size';
 import { TileRenderingContext } from '../types';
 import LayerAbstractRenderer from './LayerAbstractRenderer';
 
@@ -29,18 +27,6 @@ class CanvasRenderer extends LayerAbstractRenderer {
             return !(!map.getPitch() && map.isMoving() && !map.isZooming() && !map.isRotating() && !this.layer.options['forceRenderOnMoving']);
         }
         return false;
-    }
-
-    resizeCanvas(canvasSize?: SizeLike): void {
-        super.resizeCanvas(canvasSize);
-        if (!this.context) {
-            return;
-        }
-        const r = this.getMap().getDevicePixelRatio();
-        this.context.dpr = 1;
-        if (r !== 1) {
-            this._canvasContextScale(this.context, r);
-        }
     }
 
     createContext(): void {

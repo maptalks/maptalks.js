@@ -892,6 +892,12 @@ class LayerAbstractRenderer extends Class {
         //retina support
         canvas.height = height;
         canvas.width = width;
+        if (this.context) {
+            this.context.dpr = 1;
+        }
+        if (r !== 1 && this.context) {
+            this._canvasContextScale(this.context, r);
+        }
     }
 
     /**
@@ -952,6 +958,9 @@ class LayerAbstractRenderer extends Class {
 
     //@internal
     _canvasContextScale(context: CanvasRenderingContext2D, dpr: number) {
+        if (!context.scale) {
+            return this;
+        }
         context.scale(dpr, dpr);
         context.dpr = dpr;
         return this;
