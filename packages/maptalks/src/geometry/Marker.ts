@@ -54,7 +54,7 @@ const options: MarkerOptionsType = {
  * });
  */
 export class Marker extends CenterMixin(Geometry) {
-    isPoint: boolean;
+    isPoint: boolean = true;
     //@internal  Has it already collided
     _collided: boolean;
     /**
@@ -65,7 +65,6 @@ export class Marker extends CenterMixin(Geometry) {
         super(options);
         this.type = 'Point';
         //for subclass,Quickly determine whether a Geometry is a point
-        this.isPoint = true;
         if (coordinates) {
             this.setCoordinates(coordinates);
         }

@@ -233,7 +233,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     _center: Coordinate;
     //@internal
     _mapViewPoint: Point;
-    isMap: boolean;
+    isMap: boolean = true;
     //@internal
     _containerDOM: HTMLDivElement | HTMLCanvasElement;
     //@internal
@@ -370,8 +370,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         this.setMaxExtent(opts['maxExtent']);
 
         this._Load();
-        this.proxyOptions();
-        this.isMap = true;
+        this.proxyOptions()
     }
 
     /**
