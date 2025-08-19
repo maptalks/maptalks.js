@@ -757,6 +757,7 @@ class GLTFLayerRenderer extends MaskRendererMixin(CanvasCompatible(maptalks.rend
             {
                 'projMatrix': map.projMatrix,
                 'viewMatrix': map.viewMatrix,
+                'projViewMatrix': map.projViewMatrix,
                 'pointSize': this.layer.options['pointSize'] || 1.0
             },
             {
