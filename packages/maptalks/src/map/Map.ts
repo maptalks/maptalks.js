@@ -327,6 +327,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         const layers = opts['layers'];
         delete opts['layers'];
         super(opts);
+        this.isMap = true;
 
         /**
          * @property {String}  - Version of library
@@ -371,7 +372,6 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
 
         this._Load();
         this.proxyOptions();
-        this.isMap = true;
     }
 
     /**
