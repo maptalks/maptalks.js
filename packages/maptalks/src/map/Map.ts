@@ -2134,7 +2134,9 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
                 break;
             }
         }
-
+        if (!this._renderer) {
+            throw new Error('Invalid map.options.renderer: ' + this.options['renderer']);
+        }
     }
 
     //@internal
