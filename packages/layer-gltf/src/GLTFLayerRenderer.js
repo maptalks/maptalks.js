@@ -1,6 +1,6 @@
 import * as maptalks from 'maptalks';
 import { defined } from './common/Util';
-import { mat4, vec2, reshader, MaskRendererMixin } from '@maptalks/gl';
+import { mat4, vec2, reshader, MaskRendererMixin, CanvasCompatible } from '@maptalks/gl';
 import { intersectsBox } from 'frustum-intersects';
 import SHADER_MAP from './common/ShaderMap';
 import sceneVert from './common/glsl/sceneVert.vert';
@@ -14,7 +14,7 @@ const pickingWGSLVert = reshader.WgslShaderLib.get('mesh_picking').vert;
 
 const uniformDeclares = [], tempBBox = [];
 const pointLineModes = ['points', 'lines', 'line strip', 'line loop'];
-class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayerGLRenderer) {
+class GLTFLayerRenderer extends MaskRendererMixin(CanvasCompatible(maptalks.renderer.OverlayLayerGLRenderer)) {
 
     constructor(layer) {
         super(layer);
@@ -151,7 +151,7 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
     }
 
     _setRenderMeshes(marker, timestamp) {
-        const meshes = marker.getMeshes(this._gltfManager, this.regl || this.device, timestamp);
+        const meshes = marker.getMeshes(this._gltfManager, this.regl, timestamp);
         const shader = marker.getShader();
         if (meshes.length) {
             this._renderMarkerList.push(marker);
@@ -284,9 +284,9 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
         super.initContext();
         const { regl, device, reglGL } = this.context;
         const graphics = regl || device;
-        this.regl = regl;
+        this.regl = regl || device;
         this.gl = reglGL;
-        this.device = device;
+        this.device = regl || device;
 
         const isWebGPU = !!device;
         const fboOptions = {
@@ -303,15 +303,15 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
         //检查是否有mesh、geometry未generate buffer过
         if (this._noBuffersMeshes) {
             this._noBuffersMeshes.forEach(mesh => {
-                mesh.generateInstancedBuffers(this.regl || this.device);
+                mesh.generateInstancedBuffers(this.regl);
             });
         }
         if (this._noBuffersGeometries) {
             this._noBuffersGeometries.forEach(geometry => {
-                geometry.generateBuffers(this.regl || this.device);
+                geometry.generateBuffers(this.regl);
             });
         }
-        this.layer.fire('contextcreate', { regl: this.regl, device: this.device });
+        this.layer.fire('contextcreate', { regl, device });
     }
 
     getGLTFManager() {
@@ -319,12 +319,12 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
     }
 
     _createGLTFManager() {
-        return new reshader.GLTFManager(this.regl || this.device);
+        return new reshader.GLTFManager(this.regl);
     }
 
     _initRenderer() {
         const map = this.layer.getMap();
-        const renderer = new reshader.Renderer(this.regl || this.device);
+        const renderer = new reshader.Renderer(this.regl);
         this.renderer = renderer;
         this._uniforms = {
             'projMatrix': map.projMatrix,
@@ -334,7 +334,7 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
             'cameraPosition' : map.cameraPosition,
             'altitudeScale': 1
         };
-        reshader.pbr.PBRUtils.loginIBLResOnCanvas(this.canvas, this.regl || this.device, map);
+        reshader.pbr.PBRUtils.loginIBLResOnCanvas(this.canvas, this.regl, map);
         const projViewModelMatrix = [];
         const modelViewMatrix = [];
         this._picking = new reshader.FBORayPicking(
@@ -757,6 +757,7 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
             {
                 'projMatrix': map.projMatrix,
                 'viewMatrix': map.viewMatrix,
+                'projViewMatrix': map.projViewMatrix,
                 'pointSize': this.layer.options['pointSize'] || 1.0
             },
             {

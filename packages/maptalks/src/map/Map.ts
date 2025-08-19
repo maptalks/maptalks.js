@@ -233,7 +233,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     _center: Coordinate;
     //@internal
     _mapViewPoint: Point;
-    isMap: boolean;
+    isMap: boolean = true;
     //@internal
     _containerDOM: HTMLDivElement | HTMLCanvasElement;
     //@internal
@@ -371,7 +371,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         this.setMaxExtent(opts['maxExtent']);
 
         this._Load();
-        this.proxyOptions();
+        this.proxyOptions()
     }
 
     /**
@@ -2134,7 +2134,9 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
                 break;
             }
         }
-
+        if (!this._renderer) {
+            throw new Error('Invalid map.options.renderer: ' + this.options['renderer']);
+        }
     }
 
     //@internal
