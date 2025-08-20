@@ -997,14 +997,16 @@ class UIComponent extends Eventable(Class) {
     onConfig(config: Record<string, any>) {
         let collisionStateChange = false;
         if (config) {
-            COLLISION_STATES.forEach(key => {
+            for (let i = 0, len = COLLISION_STATES.length; i < len; i++) {
+                const key = COLLISION_STATES[i];
                 if (key in config) {
                     collisionStateChange = true;
+                    break;
                 }
-
-            });
+            }
         }
         this._updatePosition();
+        //https://github.com/maptalks/maptalks.js/issues/2609
         if (collisionStateChange) {
             this._collides();
             const map = this.getMap();
