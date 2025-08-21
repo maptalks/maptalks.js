@@ -2,6 +2,7 @@
 
 precision mediump float;
 uniform sampler2D skin;
+uniform sampler2D flatMask;
 uniform float polygonOpacity;
 varying vec2 vUv;
 #include <mask_frag>
@@ -12,6 +13,8 @@ void main() {
     vec2 uv = vec2(vUv);
     uv.y = 1.0 - uv.y;
     vec4 color = texture2D(skin, uv);
+    vec4 maskColor = texture2D(flatMask, uv);
+    color = mix(color, maskColor, 0.5);
     #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
         float shadowCoeff = shadow_computeShadow();
         color.rgb = shadow_blend(color.rgb, shadowCoeff).rgb;
