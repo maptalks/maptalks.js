@@ -166,7 +166,8 @@ const options: TileLayerOptionsType = {
     'depthMask': true,
     'currentTilesFirst': true,
     'forceRenderOnMoving': true,
-    'tileErrorScale': 1
+    'tileErrorScale': 1,
+    'detectRetina': false
 };
 
 const URL_PATTERN = /\{ *([\w_]+) *\}/g;
@@ -184,6 +185,30 @@ const TILE_BOX = [[0, 0, 0], [0, 0, 0]];
 const TILE_MIN = [0, 0, 0];
 const TILE_MAX = [0, 0, 0];
 const ARR3: Vector3 = [0, 0, 0];
+
+const RetinaScales = [0.25, 0.5, 1, 2, 4];
+
+function getRetinaScale(dpr: number, reverse?: boolean) {
+    if (reverse) {
+        for (let i = RetinaScales.length - 1; i >= 0; i--) {
+            const retinaScale = RetinaScales[i];
+            if (reverse) {
+                if (dpr >= retinaScale) {
+                    return retinaScale
+                }
+            }
+        }
+    } else {
+        for (let i = 0, len = RetinaScales.length; i < len; i++) {
+            const retinaScale = RetinaScales[i];
+            if (dpr <= retinaScale) {
+                return retinaScale
+            }
+        }
+    }
+
+    return null;
+}
 
 /**
  * A layer used to display tiled map services, such as [google maps](http://maps.google.com), [open street maps](http://www.osm.org)
@@ -238,6 +263,8 @@ class TileLayer extends Layer {
      */
     constructor(id: string, options?: TileLayerOptionsType) {
         super(id, options);
+        //record original zoomOffset
+        this.options._zoomOffset = this.options['zoomOffset'];
     }
 
     /**
@@ -286,6 +313,27 @@ class TileLayer extends Layer {
             size = [size, size];
         }
         this._tileSize = new Size(size);
+        if (!this.options.detectRetina) {
+            return this._tileSize;
+        }
+        const map = this.getMap();
+        if (map) {
+            const dpr = map.getDevicePixelRatio();
+            if (Math.abs(dpr - 1) > 0) {
+                const scale = getRetinaScale(dpr, dpr < 1);
+                if (scale && scale !== 1) {
+                    const [width, height] = size;
+                    const w = Math.floor(width / scale), h = Math.floor(height / scale);
+                    let offset = Math.max(width, w) / Math.min(width, w) / 2;
+                    if (dpr < 1) {
+                        offset = -offset;
+
+                    }
+                    this.options.zoomOffset = this.options._zoomOffset + offset;
+                    this._tileSize = new Size(w, h);
+                }
+            }
+        }
         return this._tileSize;
     }
 
@@ -1752,6 +1800,8 @@ export type TileLayerOptionsType = LayerOptionsType & {
     mipmapTexture?: boolean;
     currentTilesFirst?: boolean;
     tileErrorScale?: number;
+    detectRetina?: boolean;
+    _zoomOffset?: number;
 };
 
 enum TileVisibility {
