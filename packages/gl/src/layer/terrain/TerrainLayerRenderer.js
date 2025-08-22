@@ -588,24 +588,25 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
     }
 
 
-    _renderTerrainMeshSkin(terrainTileInfo, tileImage) {
+    _renderTerrainMeshSkin(terrainTileInfo, terrainTileImage) {
         // render a terrain tile's skin
         const map = this.getMap();
-        if (!terrainTileInfo || !map || !tileImage) {
+        if (!terrainTileInfo || !map || !terrainTileImage) {
             return;
         }
         this._debugTile(terrainTileInfo, '_renderTerrainMeshSkin');
         // if (!skinImages) {
         //     return;
         // }
-        const needRefreshSkins = this._needRefreshTerrainSkins(tileImage.renderedZoom);
-        if (tileImage.rendered && !needRefreshSkins) {
+        const needRefreshSkins = this._needRefreshTerrainSkins(terrainTileImage.renderedZoom);
+        if (terrainTileImage.rendered && !needRefreshSkins) {
             return;
         }
-        if (!tileImage.skin) {
-            tileImage.skin = this._createTerrainTexture(terrainTileInfo, tileImage);
+        if (!terrainTileImage.skin) {
+            terrainTileImage.skin = this._createTerrainTexture(terrainTileInfo, terrainTileImage);
+            this._prepareMask(terrainTileInfo, terrainTileImage);
         } else {
-            TERRAIN_CLEAR.framebuffer = tileImage.skin;
+            TERRAIN_CLEAR.framebuffer = terrainTileImage.skin;
             this.device.clear(TERRAIN_CLEAR);
         }
         this._initSkinShader();
@@ -614,7 +615,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         const debugMeshes = enableDebug && [];
 
         const tileSize = this.layer.getTileSize().width;
-        const skinImages = tileImage.skinImages;
+        const skinImages = terrainTileImage.skinImages;
         if (skinImages) {
             for (let i = 0; i < skinImages.length; i++) {
                 const layerSkinImages = skinImages[i];
@@ -647,11 +648,11 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             }
         }
         if (enableDebug) {
-            const debugMesh = tileImage.skinDebugMesh || new reshader.Mesh(this._skinGeometry);
+            const debugMesh = terrainTileImage.skinDebugMesh || new reshader.Mesh(this._skinGeometry);
             debugMesh.setUniform('tileSize', tileSize);
-            const debugTexture = tileImage.debugTexture || this._createDebugTexture(terrainTileInfo, tileSize, tileImage.temp);
-            tileImage.debugTexture = debugTexture;
-            tileImage.skinDebugMesh = debugMesh;
+            const debugTexture = terrainTileImage.debugTexture || this._createDebugTexture(terrainTileInfo, tileSize, terrainTileImage.temp);
+            terrainTileImage.debugTexture = debugTexture;
+            terrainTileImage.skinDebugMesh = debugMesh;
             debugMesh.setUniform('opacity', 1);
             debugMesh.setUniform('skinTexture', debugTexture);
             debugMesh.setUniform('skinDim', [0, 0, 1]);
@@ -661,9 +662,9 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         if (meshes.length) {
             this._skinScene.setMeshes(meshes);
             try {
-                this.renderer.render(this._skinShader, null, this._skinScene, tileImage.skin);
+                this.renderer.render(this._skinShader, null, this._skinScene, terrainTileImage.skin);
             } catch (err) {
-                console.error(tileImage);
+                console.error(terrainTileImage);
                 throw err;
             }
 
@@ -671,11 +672,11 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
 
         if (debugMeshes && debugMeshes.length && this.layer.options.debug) {
             this._skinScene.setMeshes(debugMeshes);
-            this.renderer.render(this._skinShader, null, this._skinScene, tileImage.skin);
+            this.renderer.render(this._skinShader, null, this._skinScene, terrainTileImage.skin);
         }
 
-        tileImage.rendered = this._isSkinReady(tileImage);
-        tileImage.renderedZoom = map.getZoom();
+        terrainTileImage.rendered = this._isSkinReady(terrainTileImage);
+        terrainTileImage.renderedZoom = map.getZoom();
     }
 
     _createDebugTexture(tileInfo, tileSize, isTemp) {
