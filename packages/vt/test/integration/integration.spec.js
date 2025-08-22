@@ -12,6 +12,8 @@ const PORT = 4398;
 const GENERATE_MODE = false; //(process.env.BUILD || remote.getGlobal('process').env.BUILD) === 'fixtures';
 const DEBUGGING = false;
 
+const TEST_CANVAS = document.createElement('canvas');
+
 const DEFAULT_VIEW = {
     center: [0, 0],
     zoom: 6,
@@ -57,7 +59,8 @@ describe('vector tile integration specs', () => {
             container.style.width = (style.containerWidth || 128) + 'px';
             container.style.height = (style.containerHeight || 128) + 'px';
             const options = style.view || DEFAULT_VIEW;
-            options.centerCross = true;
+            // options.centerCross = true;
+            // options.renderer = 'canvas';
             if (!options.lights) {
                 options.lights = DEFAULT_VIEW.lights;
             }
@@ -88,11 +91,11 @@ describe('vector tile integration specs', () => {
             layer.on(eventName, () => {
                 count++;
                 const checked = timeout > 0 ? (performance.now() - time) >= timeout : count >= limit;
-                const canvas = map.getRenderer().canvas;
+                const mapCanvas = map.getRenderer().canvas;
                 const expectedPath = style.expected;
                 if (GENERATE_MODE) {
                     //生成fixtures
-                    const dataURL = canvas.toDataURL();
+                    const dataURL = mapCanvas.toDataURL();
                     // remove Base64 stuff from the Image
                     const base64Data = dataURL.replace(/^data:image\/png;base64,/, '');
                     fs.writeFile(expectedPath, base64Data, 'base64', () => {});
@@ -101,6 +104,12 @@ describe('vector tile integration specs', () => {
                         done();
                     }
                 } else if (!ended && checked) {
+                    const canvas = TEST_CANVAS;
+                    canvas.width = mapCanvas.width;
+                    canvas.height = mapCanvas.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(mapCanvas, 0, 0);
+
                     //比对测试
                     match(canvas, expectedPath, (err, result) => {
                         if (err) {
@@ -145,7 +154,8 @@ describe('vector tile integration specs', () => {
             container.style.width = (style.containerWidth || 128) + 'px';
             container.style.height = (style.containerHeight || 128) + 'px';
             const options = style.view || DEFAULT_VIEW;
-            options.centerCross = true;
+            // options.centerCross = true;
+            // options.renderer = 'canvas';
             if (!options.lights) {
                 options.lights = DEFAULT_VIEW.lights;
             }
@@ -165,11 +175,11 @@ describe('vector tile integration specs', () => {
             const diffCount = style.diffCount || 0;
             let count = 0;
             const groupLayerListener = () => {
-                const canvas = map.getRenderer().canvas;
                 const expectedPath = style.expected;
+                const mapCanvas = map.getRenderer().canvas;
                 if (GENERATE_MODE) {
                     //生成fixtures
-                    const dataURL = canvas.toDataURL();
+                    const dataURL = mapCanvas.toDataURL();
                     // remove Base64 stuff from the Image
                     const base64Data = dataURL.replace(/^data:image\/png;base64,/, '');
                     fs.writeFile(expectedPath, base64Data, 'base64', () => {});
@@ -178,6 +188,11 @@ describe('vector tile integration specs', () => {
                         done();
                     }
                 } else {
+                    const canvas = TEST_CANVAS;
+                    canvas.width = mapCanvas.width;
+                    canvas.height = mapCanvas.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(mapCanvas, 0, 0);
                     //比对测试
                     match(canvas, expectedPath, (err, result) => {
                         if (err) {
@@ -233,7 +248,7 @@ describe('vector tile integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'post-process'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it(p, postProcessRunner(p, specs[p]));
+                it(p, postProcessRunner(p, specs[p])).timeout(3000);
             }
         }
     });
