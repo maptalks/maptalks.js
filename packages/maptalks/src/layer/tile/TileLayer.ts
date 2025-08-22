@@ -192,10 +192,8 @@ function getRetinaScale(dpr: number, reverse?: boolean) {
     if (reverse) {
         for (let i = RetinaScales.length - 1; i >= 0; i--) {
             const retinaScale = RetinaScales[i];
-            if (reverse) {
-                if (dpr >= retinaScale) {
-                    return retinaScale
-                }
+            if (dpr >= retinaScale) {
+                return retinaScale
             }
         }
     } else {
