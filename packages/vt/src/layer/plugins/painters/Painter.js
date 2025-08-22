@@ -167,6 +167,10 @@ class Painter {
         return this.layer.options.awareOfTerrain;
     }
 
+    isTerrainMask() {
+        return false;
+    }
+
     isTerrainVector() {
         return false;
     }

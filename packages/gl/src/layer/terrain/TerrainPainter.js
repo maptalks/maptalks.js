@@ -83,6 +83,10 @@ class TerrainPainter {
             const emptyTexture = this.getEmptyTexture();
             mesh.setUniform('skin', emptyTexture);
         }
+        if (!mesh.uniforms.flatMask) {
+            const emptyTexture = this.getEmptyTexture();
+            mesh.setUniform('flatMask', emptyTexture);
+        }
 
         mesh.setUniform('heightTexture', heightTexture);
         this.prepareMesh(mesh, tileInfo, terrainImage);
@@ -159,6 +163,7 @@ class TerrainPainter {
         const mesh = tileImage.terrainMesh;
         if (mesh && mesh.geometry && tileImage.skin) {
             mesh.setUniform('skin', tileImage.skin.color[0]);
+            mesh.setUniform('flatMask', tileImage.mask.color[0])
             mesh.setUniform('polygonOpacity', 1.0);
             // const { skirtOffset, skirtCount } = mesh.properties;
             // mesh.geometry.setDrawOffset(skirtOffset);

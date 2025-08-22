@@ -1071,7 +1071,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
 
     _getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp) {
         const isRenderingTerrain = this._isRenderingTerrain();
-        const isRenderingTerrainSkin = isRenderingTerrain && plugin && terrainSkinFilter(plugin);
+        const isRenderingTerrainSkin = isRenderingTerrain && plugin && terrainSkinFilter(plugin);;
         const regl = this.regl || this.device;
         const gl = this.gl;
         const context = {
@@ -1238,13 +1238,16 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
     }
 
     renderTerrainSkin(terrainRegl, terrainLayer, skinImages) {
+        this.isRenderingTerrainSkin = true;
         const timestamp = this._currentTimestamp;
         const parentContext = this._parentContext;
         const tileSize = this.layer.getTileSize().width;
         this._startFrame(timestamp);
         for (let i = 0; i < skinImages.length; i++) {
-            const texture = skinImages[i].texture;
+            const skinImage = skinImages[i];
+            const texture = skinImage.texture;
             this._parentContext = {
+                terrainMaskFBO: skinImage.terrainMaskFBO,
                 renderTarget: {
                     fbo: texture
                 }
@@ -1253,10 +1256,11 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             terrainRegl.clear(TERRAIN_CLEAR);
             this._parentContext.viewport = getTileViewport(tileSize);
             // 如果矢量瓦片的目标绘制尺寸过大，拉伸后会过于失真，还不如不去绘制
-            this._drawTerrainTile(skinImages[i].tile, texture);
+            this._drawTerrainTile(skinImage.tile);
         }
         this._endTerrainFrame(skinImages);
         this._parentContext = parentContext;
+        this.isRenderingTerrainSkin = false;
     }
 
     _drawTerrainTile(tile) {
@@ -1334,6 +1338,11 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
 
         const plugins = this._getFramePlugins(tileData);
 
+        // isRenderingTerrain为true，但isRenderingTerrainSkin为false，说明是 terrainVector 的绘制阶段
+        if (!filter && isRenderingTerrain && !this.isRenderingTerrainSkin) {
+            filter = terrainVectorFilter;
+        }
+
         plugins.forEach((plugin, idx) => {
             if (!plugin || filter && !filter(plugin)) {
                 return;
@@ -1372,6 +1381,11 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             if (isRenderingTerrainSkin && parentContext && parentContext.renderTarget) {
                 // 渲染 terrain skin 时，每个瓦片需要绘制到各自的renderTarget里（terrain texture）
                 context.renderTarget = parentContext.renderTarget;
+                if (plugin.isTerrainMask()) {
+                    context.renderTarget = {
+                        fbo: parentContext.terrainMaskFBO
+                    }
+                }
             }
             const status = plugin.paintTile(context);
             if (!this._needRetire && (status.retire || status.redraw) && plugin.supportRenderMode('taa')) {
@@ -1570,6 +1584,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             delete this._debugPainter;
         }
         if (this._terrainDepthStencil) {
+            this._terrainDepthStencil.colorTex.destroy();
             this._terrainDepthStencil.destroy();
             delete this._terrainDepthStencil;
         }

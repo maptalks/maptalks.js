@@ -392,6 +392,12 @@ function createPainterPlugin(type, Painter) {
             return this.painter.isTerrainVector();
         },
 
+        isTerrainMask: function () {
+            if (!this.painter) {
+                return false;
+            }
+            return this.painter.isTerrainMask();
+        },
 
         _generateColorArray: function (features, featureIndexes, indices, vertices, positionSize = 3) {
             if (!vertices || !features || !featureIndexes.length) {

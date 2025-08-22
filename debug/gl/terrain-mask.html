@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+  <meta charset='UTF-8' />
+  <meta name='viewport' content='width=device-width, initial-scale=1' />
+  <title>地形 - 加载地形</title>
+  <style type='text/css'>
+    html,
+    body {
+      margin: 0px;
+      height: 100%;
+      width: 100%;
+    }
+
+    .container {
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+    }
+  </style>
+  <script type='text/javascript' src='http://localhost/maptalks/dist/maptalks.js'></script>
+  <script type='text/javascript' src='http://localhost/maptalksgl/dist/maptalksgl.js'></script>
+  <script type='text/javascript' src='http://localhost/gl/packages/vt/dist/maptalks.vt.js'></script>
+
+  <body>
+
+    <div id="map" class="container"></div>
+
+    <script>
+      const map = new maptalks.Map("map", {
+        "center": [94.56550453,29.43827635,3274.199951171875],
+        "zoom": 13,
+        "pitch": 10,
+        "bearing": 0,
+        queryTerrainInMapEvents: false
+      });
+
+      // const token =
+      //   "pk.eyJ1IjoibWFwYm94LWdsLWpzIiwiYSI6ImNram9ybGI1ajExYjQyeGxlemppb2pwYjIifQ.LGy5UGNIsXUZdYMvfYRiAQ";
+      const token =
+        "pk.eyJ1IjoiemhlbmZ1IiwiYSI6ImNsajhheDl6ODB6OHgzZm9yeWppbzdtOWkifQ.8EYAg9HAmng0GobDdBAUhw";
+
+      /**start**/
+      const layers = [
+        new maptalks.TileLayer("base", {
+          maxAvailableZoom: 20,
+          urlTemplate: "http://webst{s}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}",
+          subdomains: ["01", "02", "03", "04"],
+          attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
+        })
+      ];
+
+      const terrain = {
+        debug: true,
+        type: "mapbox",
+        urlTemplate: `https://{s}.tiles.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.pngraw?access_token=${token}`,
+        subdomains: ["a", "b", "c", "d"]
+      };
+
+      const data = {
+        type: "FeatureCollection",
+        features: [
+            {
+                type: "Feature",
+                geometry: {
+                    type: "Polygon",
+                    coordinates: [
+                        [
+                            [94.50812103, 29.45095163, 3000],
+                            [94.59012103, 29.45095163, 3000],
+                            [94.59012103, 29.40095163, 3000],
+                            [94.50812103, 29.40095163, 3000],
+                            [94.50812103, 29.45095163, 3000]
+                        ]
+                    ]
+                },
+                properties: {
+                    id: 1
+                }
+            }
+        ]
+      }
+
+      const style = [
+        {
+            filter: true,
+            renderPlugin: {
+              dataConfig: {
+                type: "fill",
+              },
+              sceneConfig: {},
+              type: "fill",
+            },
+            symbol: {
+              polygonFill: [1, 0, 0, 0.5]
+            },
+        },
+        {
+            filter: true,
+            renderPlugin: {
+              dataConfig: {
+                type: "fill",
+              },
+              sceneConfig: {},
+              type: "terrain-flat-mask",
+            },
+            symbol: {
+            }
+        }
+      ]
+
+      const vt = new maptalks.GeoJSONVectorTileLayer('vt', {
+        data,
+        style
+      });
+      layers.push(vt);
+
+      const group = new maptalks.GroupGLLayer("group", layers, {
+        terrain
+      });
+      group.addTo(map);
+
+      /**end**/
+
+    </script>
+  </body>
+
+</html>

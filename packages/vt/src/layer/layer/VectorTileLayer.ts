@@ -104,6 +104,8 @@ const defaultOptions: VectorTileLayerOptionsType = {
 class VectorTileLayer extends maptalks.TileLayer {
   VERSION: string;
   ready: boolean;
+  isVectorTileLayer: boolean = true;
+  hasTerrainMask: boolean = true;
 
   //@internal
   _polygonOffset: number;
