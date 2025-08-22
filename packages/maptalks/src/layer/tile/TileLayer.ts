@@ -252,6 +252,8 @@ class TileLayer extends Layer {
     //record spatial reference in current rendering frame
     //@internal
     _spatialRef: SpatialReference;
+    //@internal
+    _zoomOffset: number;
     options: TileLayerOptionsType;
 
     /**
@@ -262,7 +264,7 @@ class TileLayer extends Layer {
     constructor(id: string, options?: TileLayerOptionsType) {
         super(id, options);
         //record original zoomOffset
-        this.options._zoomOffset = this.options['zoomOffset'];
+        this._zoomOffset = this.options['zoomOffset'] || 0;
     }
 
     /**
@@ -327,7 +329,7 @@ class TileLayer extends Layer {
                         offset = -offset;
 
                     }
-                    this.options.zoomOffset = this.options._zoomOffset + offset;
+                    this.options.zoomOffset = this._zoomOffset + offset;
                     this._tileSize = new Size(w, h);
                 }
             }
@@ -1799,7 +1801,6 @@ export type TileLayerOptionsType = LayerOptionsType & {
     currentTilesFirst?: boolean;
     tileErrorScale?: number;
     detectRetina?: boolean;
-    _zoomOffset?: number;
 };
 
 enum TileVisibility {
