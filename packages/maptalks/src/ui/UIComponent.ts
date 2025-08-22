@@ -62,6 +62,8 @@ const options: UIComponentOptionsType = {
     'zIndex': 0
 };
 
+const COLLISION_STATES = ['collision', 'collisionBufferSize', 'collisionWeight', 'collisionFadeIn']
+
 /**
  * @classdesc
  * Base class for all the UI component classes, a UI component is a HTMLElement positioned with geographic coordinate. <br>
@@ -992,8 +994,26 @@ class UIComponent extends Eventable(Class) {
         return false;
     }
 
-    onConfig() {
+    onConfig(config: Record<string, any>) {
+        let collisionStateChange = false;
+        if (config) {
+            for (let i = 0, len = COLLISION_STATES.length; i < len; i++) {
+                const key = COLLISION_STATES[i];
+                if (key in config) {
+                    collisionStateChange = true;
+                    break;
+                }
+            }
+        }
         this._updatePosition();
+        //https://github.com/maptalks/maptalks.js/issues/2609
+        if (collisionStateChange) {
+            this._collides();
+            const map = this.getMap();
+            if (map && map._sortUI) {
+                map._sortUI();
+            }
+        }
         return this;
     }
 

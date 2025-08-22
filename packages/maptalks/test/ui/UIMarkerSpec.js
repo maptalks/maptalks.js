@@ -266,4 +266,33 @@ describe('UI.UIMarker', function () {
         }
         done();
     });
+
+    it('#2607 collision should update when collision state change', function (done) {
+        var marker1 = new maptalks.ui.UIMarker(map.getCenter(), {
+            content: '<div id="uimarker" class="text-marker" style="width:100px;height:40px;background:black;color:white;text-align:center;">maptalks</div>',
+            verticalAlignment: 'top',
+            collision: true
+        }).addTo(map);
+        var marker2 = new maptalks.ui.UIMarker(map.getCenter(), {
+            content: '<div id="uimarker" class="text-marker" style="width:100px;height:40px;background:black;color:white;text-align:center;">maptalks</div>',
+            verticalAlignment: 'top',
+            collision: true
+        }).addTo(map);
+
+        setTimeout(() => {
+            expect(marker1.getDOM().style.visibility).to.be.equal('visible');
+            expect(marker2.getDOM().style.visibility).to.be.equal('hidden');
+            marker2.config({
+                collision: false
+            });
+            setTimeout(() => {
+                expect(marker1.getDOM().style.visibility).to.be.equal('visible');
+                expect(marker2.getDOM().style.visibility).to.be.equal('visible');
+                done();
+            }, 100);
+        }, 100);
+
+
+
+    });
 });
