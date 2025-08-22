@@ -1071,7 +1071,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
 
     _getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp) {
         const isRenderingTerrain = this._isRenderingTerrain();
-        const isRenderingTerrainSkin = isRenderingTerrain && plugin && terrainSkinFilter(plugin);;
+        const isRenderingTerrainSkin = isRenderingTerrain && plugin && terrainSkinFilter(plugin);
         const regl = this.regl || this.device;
         const gl = this.gl;
         const context = {
