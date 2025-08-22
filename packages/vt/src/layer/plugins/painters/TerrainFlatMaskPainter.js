@@ -38,6 +38,13 @@ class TerrainFlatMaskPainter extends BasicPainter {
         mesh.positionMatrix = this.getAltitudeOffsetMatrix();
         mesh.setLocalTransform(transform);
         mesh.properties.symbolIndex = symbolIndex;
+
+        const defines = {};
+        if (geometry.data.aAltitude) {
+            defines['HAS_ALTITUDE'] = 1;
+        }
+        mesh.setDefines(defines);
+
         return mesh;
     }
 

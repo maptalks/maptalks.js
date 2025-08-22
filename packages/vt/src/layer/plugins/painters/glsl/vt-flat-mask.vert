@@ -17,7 +17,8 @@ varying float vAltitude;
 void main() {
     vec3 myPosition = unpackVTPosition();
     vec4 localVertex = positionMatrix * vec4(myPosition, 1.);
-    vAltitude = localVertex.z;
-    // localVertex.z = 0.0;
+    // centimeter -> meter
+    vAltitude = localVertex.z / 100.0;
+    localVertex.z = 0.0;
     gl_Position = projViewModelMatrix * localVertex;
 }

@@ -720,6 +720,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             min: 'linear',
             mag: 'linear',
             type: 'uint8',
+            format: 'rgba',
             width,
             height
         });
