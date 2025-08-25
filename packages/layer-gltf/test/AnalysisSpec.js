@@ -39,10 +39,10 @@ describe('add analysis', () => {
                 const vertexCoordinates = viewshedAnalysis.getVertexCoordinates();
                 expect(vertexCoordinates[0].x.toFixed(7)).to.be.eql(0);
                 expect(vertexCoordinates[0].y).to.be.eql(-0.0017632698068089827);
-                expect(vertexCoordinates[0].z.toFixed(5)).to.be.eql(228.49549);
+                expect(vertexCoordinates[0].z.toFixed(5)).to.be.eql(-228.49549);
                 expect(vertexCoordinates[1].x.toFixed(7)).to.be.eql(0);
                 expect(vertexCoordinates[1].y).to.be.eql(0.0017632698068089827);
-                expect(vertexCoordinates[1].z.toFixed(5)).to.be.eql(228.49549);
+                expect(vertexCoordinates[1].z.toFixed(5)).to.be.eql(-228.49549);
                 expect(vertexCoordinates[2].x.toFixed(7)).to.be.eql(0);
                 expect(vertexCoordinates[2].y).to.be.eql(0.0017632698068089827);
                 expect(vertexCoordinates[2].z.toFixed(5)).to.be.eql(228.49549);

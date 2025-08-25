@@ -1,4 +1,4 @@
-import { mat4, quat, vec3, vec2, reshader } from '@maptalks/gl';
+import { mat4, quat, vec3, vec2, reshader, GroupGLLayer } from '@maptalks/gl';
 import { Handlerable, Eventable, Class, Point, Coordinate, INTERNAL_LAYER_PREFIX } from 'maptalks';
 import TransformHelper from './helper/TransformHelper';
 import { calFixedScale, getTranslationPoint } from './common/Util';
@@ -99,7 +99,12 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
         }
         this.addToMapCount++;
         this.map = map;
-        this._helperlayer.addTo(this.map);
+        const gllayer = map.getLayers(layer => layer instanceof GroupGLLayer)[0];
+        if (gllayer) {
+            this._helperlayer.addTo(gllayer);
+        } else {
+            this._helperlayer.addTo(this.map);
+        }
         this.container = map.getContainer();
         map.on('dom:mousemove', this._mouseMoveHandle, this);
         map.on('dom:mousedown', this._mousedownHandle, this);

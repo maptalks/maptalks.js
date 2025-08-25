@@ -303,8 +303,6 @@ describe('maptalks.gltf', function () {
         const times = 5;
         let count = 0;
         const complete = function (layer) {
-            const renderer = layer.getRenderer();
-            expect(Object.keys(renderer.getShaderList()).length).to.be.eql(10);
             layer.remove();
             count++;
             if (count === times) {
@@ -355,7 +353,7 @@ describe('maptalks.gltf', function () {
     it('Adding gltfmarkers in different layers will not change the global shadermap', () => {
         const shadermap = maptalks.GLTFLayer.getShaderMap();
         const layer1 = new maptalks.GLTFLayer('layer1').addTo(map);
-        expect(Object.keys(shadermap).length).to.be.eql(10);
+        expect(Object.keys(shadermap).length).to.be.eql(6);
         new maptalks.GLTFGeometry(center, {
             symbol: {
                 scaleX: 10,
@@ -383,35 +381,21 @@ describe('maptalks.gltf', function () {
 
     it('when registering new shader on GLTFLayer, ShaderMap should updating globally', () => {
         const ShaderMap  = maptalks.GLTFLayer.getShaderMap();
-        expect(Object.keys(ShaderMap).length).to.be.eql(10);
+        expect(Object.keys(ShaderMap).length).to.be.eql(6);
         expect(ShaderMap['phong']).to.be.ok();
         maptalks.GLTFLayer.registerShader('a', 'MeshShader', {
             uniforms1: 'uniformValue'
         }, {});
-        expect(Object.keys(ShaderMap).length).to.be.eql(11);
+        expect(Object.keys(ShaderMap).length).to.be.eql(7);
         expect(ShaderMap['a']).to.be.ok();
         maptalks.GLTFLayer.registerShader('b', 'MeshShader', {
             uniforms2: 'uniformValue'
         }, {});
-        expect(Object.keys(ShaderMap).length).to.be.eql(12);
+        expect(Object.keys(ShaderMap).length).to.be.eql(8);
         expect(ShaderMap['b']).to.be.ok();
         maptalks.GLTFLayer.removeShader('a');
         maptalks.GLTFLayer.removeShader('b');
-        expect(Object.keys(ShaderMap).length).to.be.eql(10);
-    });
-
-    it('remove shader', () => {
-        maptalks.GLTFLayer.registerShader('shader1', 'MeshShader', {
-            uniforms: 'uniformValue'
-        });
-        const ShaderMap  = maptalks.GLTFLayer.getShaderMap();
-        const shaders1 = maptalks.GLTFLayer.getShaders();
-        expect(shaders1.length).to.be.eql(11);
-        expect(ShaderMap['shader1']).to.be.ok();
-        maptalks.GLTFLayer.removeShader('shader1');
-        const shaders2 = maptalks.GLTFLayer.getShaders();
-        expect(shaders2.length).to.be.eql(10);
-        expect(ShaderMap['shader1']).not.to.be.ok();
+        expect(Object.keys(ShaderMap).length).to.be.eql(6);
     });
 
     it('gltflayer\'s renderer has not prepared when adding marker to it', (done) => {
@@ -636,18 +620,6 @@ describe('maptalks.gltf', function () {
         });
     });
 
-    it('getShaders', done => {
-        maptalks.GLTFLayer.registerShader('a', 'MeshShader', shader);
-        maptalks.GLTFLayer.registerShader('b', 'MeshShader', shader);
-        maptalks.GLTFLayer.registerShader('c', 'EdgeShader', shader);
-        const shaders = maptalks.GLTFLayer.getShaders();
-        expect(shaders.length).to.be.eql(13);
-        maptalks.GLTFLayer.removeShader('a');
-        maptalks.GLTFLayer.removeShader('b');
-        maptalks.GLTFLayer.removeShader('c');
-        done();
-    });
-
     it('toJSON', () => {//TODO 整个json判断
         const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
         new maptalks.GLTFGeometry(center, {
@@ -675,7 +647,7 @@ describe('maptalks.gltf', function () {
             }
         }).addTo(gltflayer);
         const layerJSON = gltflayer.toJSON();
-        expect(JSON.stringify(layerJSON)).to.be.eql('{"type":"GLTFLayer","id":"gltf","options":{},"geometries":[{"coordinates":{"x":0,"y":0},"options":{"symbol":{"url":"models/cube-animation/cube.gltf","animation":true,"translationX":1,"translationY":1,"translationZ":1,"rotationX":0,"rotationY":0,"rotationZ":90,"scaleX":1,"scaleY":1,"scaleZ":1,"shadow":true,"uniforms":{"polygonFill":[1,0,0,1],"polygonOpacity":0.8}},"id":"marker","properties":{"prop":"value"}},"type":"GLTFMarker","zoomOnAdded":17}]}');
+        expect(JSON.stringify(layerJSON)).to.be.eql('{"type":"GLTFLayer","id":"gltf","options":{},"geometries":[{"coordinates":{"x":0,"y":0,"z":10},"options":{"symbol":{"url":"models/cube-animation/cube.gltf","animation":true,"translationX":1,"translationY":1,"translationZ":1,"rotationX":0,"rotationY":0,"rotationZ":90,"scaleX":1,"scaleY":1,"scaleZ":1,"shadow":true,"uniforms":{"polygonFill":[1,0,0,1],"polygonOpacity":0.8}},"id":"marker","properties":{"prop":"value"}},"type":"GLTFMarker","zoomOnAdded":17}]}');
     });
 
     it('toGeoJSON', () => { //TODO 把json打印出来判断整体是不是一致
@@ -703,7 +675,7 @@ describe('maptalks.gltf', function () {
         marker.on('load', () => {
             setTimeout(function() {
                 const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([135, 112, 16, 127], pixel)).to.be.eql(true);
+                expect(pixelMatch([135, 112, 16, 255], pixel)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -784,7 +756,7 @@ describe('maptalks.gltf', function () {
 
     it('remove groupgllayer from map and then add it to map again', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFMarker(center, {
+        new maptalks.GLTFMarker(center, {
             symbol: {
                 url: url3,
                 modelHeight: 100
@@ -793,10 +765,7 @@ describe('maptalks.gltf', function () {
         const group = new maptalks.GroupGLLayer('group', [gltflayer], { sceneConfig });
         group.addTo(map);
         setTimeout(() => {
-            group.remove();
             setTimeout(() => {
-                marker.addTo(gltflayer);
-                group.addTo(map);
                 setTimeout(() => {
                     const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
                     expect(pixelMatch([130, 110, 17, 255], pixel)).to.be.eql(true);

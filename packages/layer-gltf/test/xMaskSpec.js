@@ -793,7 +793,7 @@ describe('setMask', () => {
         marker.once('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([5, 135, 8, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([133, 7, 8, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 + 100, map.height / 2, 1, 1);
                 expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
                 done();

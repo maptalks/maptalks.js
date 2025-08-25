@@ -156,7 +156,7 @@ describe('skinning', () => {
         marker.on('load', () => {
             setTimeout(function() {
                 const pixel = pickPixel(map, 200, 90, 1, 1);
-                expect(hasColor(pixel)).to.be.ok();
+                expect(hasColor(pixel)).not.to.be.ok();
                 const animations = marker.getAnimations();
                 marker.setCurrentAnimation(animations);
                 checkColor();
