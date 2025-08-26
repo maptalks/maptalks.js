@@ -115,13 +115,13 @@ export default class InstancedMesh extends Mesh {
     //调用 updateInstancedData 后，需要调用 updateBoundingBox 更新bbox, 再调用 generateInstancedBuffers 来重新生成 buffer
     updateInstancedData(name: string, data) {
         const buf = this.instancedData[name] as AttributeBufferData;
-        if (!buf) {
-            return this;
-        }
+        // if (!buf) {
+        //     return this;
+        // }
         this._incrVersion();
         // let buffer;
         this.instancedData[name] = data;
-        if (buf.buffer && buf.buffer.destroy) {
+        if (buf && buf.buffer && buf.buffer.destroy) {
             buf.buffer.destroy();
         }
         // if (buffer) {
