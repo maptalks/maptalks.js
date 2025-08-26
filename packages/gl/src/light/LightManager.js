@@ -34,7 +34,9 @@ class LightManager {
             this._initAmbientResources();
             return;
         } else if (this._iblMaps) {
-            if (config.ambient.prefilterCubeSize !== oldConfig.ambient && oldConfig.ambient.prefilterCubeSize) {
+            const oldResource = oldConfig.ambient && oldConfig.ambient.resource;
+            const resource = config.ambient.resource;
+            if (resource && resource.prefilterCubeSize !== oldResource && oldResource.prefilterCubeSize) {
                 this._onHDRLoaded();
             }
             ambientUpdate = true;
