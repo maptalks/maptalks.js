@@ -1584,7 +1584,6 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             delete this._debugPainter;
         }
         if (this._terrainDepthStencil) {
-            this._terrainDepthStencil.colorTex.destroy();
             this._terrainDepthStencil.destroy();
             delete this._terrainDepthStencil;
         }

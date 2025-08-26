@@ -845,7 +845,7 @@ class MapAbstractRenderer extends MapRenderer {
                 updated = true;
             }
         }
-        if (updated) {
+        if (updated && this.context && this.context.drawImage) {
             this.context.drawImage(this.topLayer, 0, 0);
         }
         this.map.fire('drawtopsend');
