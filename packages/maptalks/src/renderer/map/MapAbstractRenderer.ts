@@ -211,6 +211,17 @@ class MapAbstractRenderer extends MapRenderer {
                 renderer.render(framestamp);
             }
         }
+        /**
+         * renderend event, an event fired when map ends rendering.
+         * @event Map#renderend
+         * @type {Object}
+         * @property {String} type                      - renderend
+         * @property {Map} target              - the map fires event
+         * @property {CanvasRenderingContext2D} context - canvas context
+         */
+        map._fireEvent('renderend', {
+            'context': this.context
+        });
         return true;
     }
 

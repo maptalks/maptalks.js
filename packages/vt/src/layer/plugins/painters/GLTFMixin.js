@@ -816,7 +816,7 @@ const GLTFMixin = Base =>
             return pickingVert;
         }
 
-        getWGSLPickingVert() {
+        getPickingWGSLVert() {
             return pickingWGSLVert;
         }
 

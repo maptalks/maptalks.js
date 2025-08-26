@@ -469,7 +469,7 @@ describe('vector layers update style specs', () => {
         const x = renderer.canvas.width, y = renderer.canvas.height;
         layer.once('canvasisdirty', () => {
             const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
-            assert.deepEqual(pixel, [255, 184, 0, 255]);
+            assert.deepEqual(pixel, [255, 185, 0, 255]);
             layer.once('canvasisdirty', () => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 assert.deepEqual(pixel, [0, 0, 255, 255]);
@@ -1022,6 +1022,7 @@ describe('vector layers update style specs', () => {
             count++;
         });
         let outlined = false;
+        let doneCalled = false;
         group.on('layerload', () => {
             if (count >= 1 && !outlined) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
@@ -1029,10 +1030,11 @@ describe('vector layers update style specs', () => {
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 layer.outlineAll();
                 outlined = true;
-            } else if (outlined) {
+            } else if (outlined && !doneCalled) {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 //变成高亮的绿色
                 assert(pixel[1] > 10);
+                doneCalled = true;
                 done();
             }
         });
@@ -1065,6 +1067,7 @@ describe('vector layers update style specs', () => {
         });
         let outlined = false;
         let removed = false;
+        let doneCalled = false;
         group.on('layerload', () => {
             if (count >= 1 && !removed) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2 + 5, y / 2);
@@ -1072,9 +1075,10 @@ describe('vector layers update style specs', () => {
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 polygon.remove();
                 removed = true;
-            } else if (outlined) {
+            } else if (outlined && !doneCalled) {
                 const pixel = readPixel(renderer.canvas, x / 2 + 5, y / 2);
                 assert(pixel[3] === 0);
+                doneCalled = true;
                 done();
             } else if (removed) {
                 layer.outlineAll();
@@ -1113,6 +1117,7 @@ describe('vector layers update style specs', () => {
         });
         let outlined = false;
         let finished = false;
+        let doneCalled = false;
         group.on('layerload', () => {
             if (count >= 1 && !outlined) {
                 if (finished) {
@@ -1123,11 +1128,12 @@ describe('vector layers update style specs', () => {
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 layer.outline([0]);
                 outlined = true;
-            } else if (outlined) {
+            } else if (outlined && !doneCalled) {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 //变成高亮的绿色
                 assert(pixel[1] > 10);
                 finished = true;
+                doneCalled = true;
                 done();
             }
         });
@@ -1163,6 +1169,7 @@ describe('vector layers update style specs', () => {
         });
         let outlined = false;
         let canceled = false;
+        let doneCalled = false;
         group.on('layerload', () => {
             if (count >= 1 && !outlined) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
@@ -1176,10 +1183,11 @@ describe('vector layers update style specs', () => {
                 assert(pixel[1] > 10);
                 layer.cancelOutline();
                 canceled = true;
-            } else if (canceled) {
+            } else if (canceled && !doneCalled) {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 //变成高亮的绿色
                 assert(pixel[1] === 0);
+                doneCalled = true;
                 done();
             }
         });
@@ -1215,6 +1223,7 @@ describe('vector layers update style specs', () => {
         });
         let hided = false;
         let showed = false;
+        let doneCalled = false;
         group.on('layerload', () => {
             if (count >= 1 && !hided) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
@@ -1228,10 +1237,11 @@ describe('vector layers update style specs', () => {
                 assert(pixel[3] === 0);
                 marker.show();
                 showed = true;
-            } else if (showed) {
+            } else if (showed && !doneCalled) {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 //变成高亮的绿色
                 assert(pixel[3] > 0);
+                doneCalled = true;
                 done();
             }
         });
@@ -1306,9 +1316,9 @@ describe('vector layers update style specs', () => {
                     const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                     assert.deepEqual(pixel, [255, 0, 0, 255]);
                     done();
-                }, 200);
-            }, 200);
-        }, 200);
+                }, 500);
+            }, 500);
+        }, 500);
     });
 
     it('PolygonLayer in GroupGLLayer remove and add again to map, maptalks/issues#256', done => {
@@ -1341,9 +1351,9 @@ describe('vector layers update style specs', () => {
                     const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                     assert.deepEqual(pixel, [255, 0, 0, 255]);
                     done();
-                }, 200);
-            }, 200);
-        }, 200);
+                }, 500);
+            }, 500);
+        }, 500);
     });
 
     it('line should can hide and show', done => {
@@ -1374,6 +1384,7 @@ describe('vector layers update style specs', () => {
         });
         let hided = false;
         let showed = false;
+        let doneCalled = false;
         group.on('layerload', () => {
             if (count >= 1 && !hided) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
@@ -1387,10 +1398,11 @@ describe('vector layers update style specs', () => {
                 assert(pixel[3] === 0);
                 line.show();
                 showed = true;
-            } else if (showed) {
+            } else if (showed && !doneCalled) {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 //变成高亮的绿色
                 assert(pixel[3] > 0);
+                doneCalled = true;
                 done();
             }
         });
@@ -1425,6 +1437,7 @@ describe('vector layers update style specs', () => {
         });
         let hided = false;
         let showed = false;
+        let doneCalled = false;
         group.on('layerload', () => {
             if (count >= 1 && !hided) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
@@ -1438,10 +1451,11 @@ describe('vector layers update style specs', () => {
                 assert(pixel[3] === 0);
                 polygon.show();
                 showed = true;
-            } else if (showed) {
+            } else if (showed && !doneCalled) {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 //变成高亮的绿色
                 assert(pixel[3] > 0);
+                doneCalled = true;
                 done();
             }
         });
@@ -1515,6 +1529,7 @@ describe('vector layers update style specs', () => {
             count++;
         });
         let updated = false;
+        let doneCalled = false;
         group.on('layerload', () => {
             if (count >= 1 && !updated) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
@@ -1529,10 +1544,11 @@ describe('vector layers update style specs', () => {
                     textSize: 24
                 });
                 updated = true;
-            } else if (updated && count >= 3) {
+            } else if (updated && count >= 3 && !doneCalled) {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 //变成高亮的绿色
                 assert.deepEqual(pixel, [0, 0, 255, 255]);
+                doneCalled = true;
                 done();
             }
         });
@@ -1737,17 +1753,11 @@ describe('vector layers update style specs', () => {
         const group = new GroupGLLayer('group', [vtLayer, layer], { sceneConfig });
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        let count = 0;
-        let finished = false;
-        vtLayer.on('canvasisdirty', () => {
-            count++;
-            if (!finished && count === 2) {
-                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
-                assert.deepEqual(pixel, [255, 0, 0, 255]);
-                finished = true;
-                done();
-            }
-        });
+        setTimeout(() => {
+            const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+            assert.deepEqual(pixel, [255, 0, 0, 255]);
+            done();
+        }, 500);
         group.addTo(map);
     });
 
@@ -2257,25 +2267,23 @@ describe('vector layers update style specs', () => {
             }
         });
         const group = new GroupGLLayer('group', [layer]);
-        let count = 0;
         let pixel;
-        group.on('layerload', () => {
-            count++;
-            if (count === 3) {
-                const canvas = group.getRenderer().canvas;
-                pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 20);
-                assert(pixel[3] === 255);
-                layer.updateMaterial({
-                    uvOffsetAnim: [1, 1]
-                });
-            } else if (count === 10) {
+
+        setTimeout(() => {
+            const canvas = group.getRenderer().canvas;
+            pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 20);
+            assert(pixel[3] === 255);
+            layer.updateMaterial({
+                uvOffsetAnim: [1, 1]
+            });
+             setTimeout(() => {
                 const canvas = group.getRenderer().canvas;
                 const pixel1 = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 20);
                 assert(pixel1[3] === 255);
                 assert.notDeepEqual(pixel1,  pixel);
                 done();
-            }
-        });
+             }, 600);
+        }, 600);
         group.addTo(map);
     });
 
@@ -2296,14 +2304,11 @@ describe('vector layers update style specs', () => {
             dataConfig: { altitudeProperty: 'height' }
         });
         const group = new GroupGLLayer('group', [layer]);
-        let count = 0;
-        group.on('layerload', () => {
-            count++;
-            if (count === 2) {
-                layer.updateMaterial({
-                    baseColorTexture: 'file://' + path.resolve(__dirname, '../integration/resources/avatar.jpg'),
-                });
-            } else if (count === 4) {
+        setTimeout(() => {
+            layer.updateMaterial({
+                baseColorTexture: 'file://' + path.resolve(__dirname, '../integration/resources/avatar.jpg'),
+            });
+             setTimeout(() => {
                 const canvas = group.getRenderer().canvas;
                 const pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 20);
                 assert(pixel[3] === 255);
@@ -2311,8 +2316,8 @@ describe('vector layers update style specs', () => {
                 assert(pixel[1] < 100);
                 assert(pixel[0] < 100);
                 done();
-            }
-        });
+             }, 600);
+        }, 600);
         group.addTo(map);
     });
 

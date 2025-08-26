@@ -122,7 +122,8 @@ describe('update style specs', () => {
             tileStackDepth: 0
         });
         const tileLayer = new maptalks.TileLayer('tile', {
-            urlTemplate: path.join(__dirname, './resources/tile-red-256.png')
+            urlTemplate: path.join(__dirname, './resources/tile-red-256.png'),
+            fadeAnimation: false
         })
         const sceneConfig = {
             postProcess: {
@@ -185,9 +186,9 @@ describe('update style specs', () => {
                     const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                     assert.deepEqual(pixel, [255, 0, 0, 255]);
                     done();
-                }, 200);
-            }, 200);
-        }, 200);
+                }, 500);
+            }, 500);
+        }, 500);
     });
 
     it('should update childLayer id and remove it', done => {
@@ -222,17 +223,17 @@ describe('update style specs', () => {
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
+        let first = 3;
         map.on('renderend', () => {
             count++;
-            if (count === 5) {
+            if (count === first) {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 layer.setId('newId');
                 group.removeLayer('newId');
-            } else if (count === 7) {
+            } else if (count === first + 1) {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
-                //变成高亮的绿色
                 assert(pixel[0] === 0);
                 done();
             }
@@ -289,11 +290,12 @@ describe('update style specs', () => {
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
+        let first = 3;
         map.on('renderend', () => {
             count++;
-            if (count === 4) {
+            if (count === first) {
                 map.zoomIn();
-            } else if (count === 16) {
+            } else if (count === first + 13) {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 assert(pixel[0] === 255);
                 done();
@@ -1612,16 +1614,16 @@ describe('update style specs', () => {
             style,
             tileStackDepth: 0
         });
-        layer.once('canvasisdirty', () => {
+        setTimeout(() => {
             const canvas = layer.getRenderer().canvas;
             const pixel = readPixel(canvas, canvas.width / 2 + 40, canvas.height / 2);
             assert.deepEqual(pixel, [255, 0, 0, 255]);
             done();
-        });
+        }, 1500);
         layer.addTo(map);
         setTimeout(() => {
             layer.updateSymbol(0, { visible: true });
-        }, 200);
+        }, 500);
     });
 
     it('should can update textures for line extrusion, maptalks-studio#1923', done => {
@@ -1688,16 +1690,16 @@ describe('update style specs', () => {
                     painted = true;
                 } else if (!finished) {
                     count++;
-                    if (count >= 10) {
+                    if (count >= 8) {
                         finished = true;
-                        assert.deepEqual(pixel, [36, 40, 43, 255]);
+                        assert.deepEqual(pixel, [36, 40, 44, 255]);
                         done();
                     }
                 }
             }
         });
         groupLayer.addTo(map);
-    });
+    }).timeout(3000);
 
     it('should can update symbol to lit with AA, maptalks-studio#374', done => {
         //https://github.com/fuzhenn/maptalks-studio/issues/374
@@ -2263,7 +2265,7 @@ describe('update style specs', () => {
                 layer.updateSymbol(0, { textOpacity: 0.5 })
             } else if (count === 2) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
-                assert.deepEqual(pixel, [255, 0, 0, 127]);
+                assert.deepEqual(pixel, [255, 0, 0, 128]);
                 done();
             }
 

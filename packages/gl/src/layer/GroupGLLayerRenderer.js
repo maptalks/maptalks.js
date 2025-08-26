@@ -639,8 +639,10 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
 
     onRemove() {
         //regl framebuffer for picking created by children layers
-        if (this.canvas.pickingFBO && this.canvas.pickingFBO.destroy) {
-            this.canvas.pickingFBO.destroy();
+        const pickingFBO = this.canvas.pickingFBO;
+        if (pickingFBO && pickingFBO.destroy && !pickingFBO['___disposed']) {
+            pickingFBO['___disposed'] = true;
+            pickingFBO.destroy();
         }
         this._destroyFramebuffers();
         if (this._groundPainter) {
