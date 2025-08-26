@@ -22,6 +22,8 @@ const DEFAULT_VIEW = {
     }
 };
 
+const TEST_CANVAS = document.createElement('canvas');
+
 describe('vector 3d integration specs', () => {
     let map, container;
     before(() => {
@@ -57,7 +59,13 @@ describe('vector 3d integration specs', () => {
                 if (counter < count || counter > count) {
                     return;
                 }
-                const canvas = map.getRenderer().canvas;
+                const mapCanvas = map.getRenderer().canvas;
+                // const canvas = map.getRenderer().canvas;
+                const canvas = TEST_CANVAS;
+                canvas.width = mapCanvas.width;
+                canvas.height = mapCanvas.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(mapCanvas, 0, 0);
                 const expectedPath = style.expected;
                 //比对测试
                 match(canvas, expectedPath, (err, result) => {
