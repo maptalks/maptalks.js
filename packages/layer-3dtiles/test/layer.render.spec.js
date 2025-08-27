@@ -50,6 +50,7 @@ describe('render specs', () => {
         const option = {
             zoom: 20,
             center: center || [0, 0],
+            devicePixelRatio: 1
             // centerCross: true
             // baseLayer: new maptalks.TileLayer('base', {
             //     urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
@@ -2179,6 +2180,7 @@ describe('render specs', () => {
                 ambient: {
                   resource: {
                     url: `http://localhost:${PORT}/integration/fixtures/${resPath}/env3.hdr`,
+                    prefilterCubeSize: 64
                   },
                   exposure: 1,
                   hsv: [0, 0, 0],

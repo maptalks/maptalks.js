@@ -23,7 +23,8 @@ describe('highlight and showOnly specs', () => {
     function createMap(center) {
         const option = {
             zoom: 20,
-            center: center || [0, 0]
+            center: center || [0, 0],
+            devicePixelRatio: 1
         };
         map = new maptalks.Map(container, option);
     }
@@ -179,7 +180,7 @@ describe('highlight and showOnly specs', () => {
             color: '#ff0',
             bloom: 1
         };
-        runner(done, layer, { renderCount: 1, highlights, offset: [10, 0], expected: new Uint8ClampedArray([75, 75, 0, 56]) });
+        runner(done, layer, { renderCount: 1, highlights, offset: [10, 0], expected: new Uint8ClampedArray([74, 74, 0, 55]) });
     });
 
     it('cancelHighlight', done => {

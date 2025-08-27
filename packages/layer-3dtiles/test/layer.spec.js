@@ -22,7 +22,8 @@ describe('3dtiles layer', () => {
     function createMap(center) {
         const option = {
             zoom: 17,
-            center: center || [0, 0]
+            center: center || [0, 0],
+            devicePixelRatio: 1
         };
         map = new maptalks.Map(container, option);
     }

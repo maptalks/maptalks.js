@@ -23,7 +23,7 @@ describe('3dtiles identify specs', () => {
         const option = {
             zoom: 17,
             center: center || [0, 0],
-            centerCross: true
+            devicePixelRatio: 1
         };
         map = new maptalks.Map(container, option);
 

@@ -23,7 +23,7 @@
   "license": "UNLICENSED",
   "types": "dist/reshadergl.d.ts",
   "dependencies": {
-    "@maptalks/regl": "^3.4.0",
+    "@maptalks/regl": "^3.6.0",
     "@maptalks/tbn-packer": "^1.4.5",
     "@webgpu/types": "0.1.52",
     "earcut": "^3.0.1",
