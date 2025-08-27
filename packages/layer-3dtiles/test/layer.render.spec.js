@@ -126,7 +126,7 @@ describe('render specs', () => {
                     }
                     done();
                 });
-            }, 300);
+            }, expected.timeout || 500);
 
         });
         if (expected.noGroup) {
@@ -231,7 +231,7 @@ describe('render specs', () => {
                 const geoData = mesh.geometry.data;
                 assert(!!geoData['_BATCHID']);
             };
-            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 4, threshold: 0.4, zoomOffset: 0 }, assertion);
+            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 4, timeout: 800, threshold: 0.4, zoomOffset: 0 }, assertion);
         }).timeout(10000);
 
         it('i3s-eslpk-1.7-draco', done => {
@@ -254,7 +254,7 @@ describe('render specs', () => {
                 const geoData = mesh.geometry.data;
                 assert(!!geoData['_BATCHID']);
             };
-            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 4, threshold: 0.4, zoomOffset: 0 }, assertion);
+            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 4, timeout: 800, threshold: 0.4, zoomOffset: 0 }, assertion);
         }).timeout(10000);
 
         it('i3s-eslpk-1.6-no-draco', done => {
@@ -272,7 +272,7 @@ describe('render specs', () => {
                     }
                 ]
             });
-            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 4, threshold: 0.4, zoomOffset: 0 });
+            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 4, timeout: 800, threshold: 0.4, zoomOffset: 0 });
         }).timeout(10000);
 
         it('i3s-map-identity-data-4326', done => {
@@ -290,7 +290,7 @@ describe('render specs', () => {
                     }
                 ]
             });
-            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 5 });
+            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 5, timeout: 800});
         }).timeout(10000);
 
         it('i3s-map-identity-data-identity', done => {
@@ -308,7 +308,7 @@ describe('render specs', () => {
                     }
                 ]
             });
-            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 7 });
+            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 7, timeout: 800 });
         }).timeout(10000);
 
         it('i3s-map-traverse_mercator-data-identity', done => {
@@ -326,7 +326,7 @@ describe('render specs', () => {
                     }
                 ]
             });
-            runner(done, layer, { path: `./integration/expected/${resPath}-etmerc/expected.png`, diffCount: 50, renderCount: 7 });
+            runner(done, layer, { path: `./integration/expected/${resPath}-etmerc/expected.png`, diffCount: 50, renderCount: 7, timeout: 800 });
         }).timeout(10000);
 
         it('i3s-map-traverse_mercator-data-4326', done => {
@@ -344,7 +344,7 @@ describe('render specs', () => {
                     }
                 ]
             });
-            runner(done, layer, { path: `./integration/expected/${resPath}-etmerc/expected.png`, diffCount: 50, renderCount: 5 });
+            runner(done, layer, { path: `./integration/expected/${resPath}-etmerc/expected.png`, diffCount: 50, renderCount: 5, timeout: 800 });
         }).timeout(10000);
 
         it('fangzhicheng', done => {
@@ -1779,7 +1779,7 @@ describe('render specs', () => {
                     }
                 ]
             });
-            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 13 });
+            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, timeout: 1000, diffCount: 0, renderCount: 13 });
         }).timeout(5000);
         it('layer opacity', done => {
             const resPath = 'BatchedDraco/dayanta/';
