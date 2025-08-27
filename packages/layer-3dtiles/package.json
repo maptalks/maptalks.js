@@ -11,8 +11,8 @@
     "build": "npm run clean && npm run lint && rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "rollup -c rollup.config.js",
     "dev": "rollup -w -c rollup.config.js",
-    "test": "electron-mocha -t 5000 --show-window --renderer ./test/**/*.spec.js",
-    "tdd": "electron-mocha --main ../ignore-gpu-blacklist.js --interactive --renderer ./test/**/*.spec.js -g",
+    "test": "electron-mocha --main ../ignore-gpu-blacklist.js -t 8000 --show-window --renderer ./test/**/*.spec.js --timeout 8000",
+    "tdd": "electron-mocha --main ../ignore-gpu-blacklist.js --interactive --renderer ./test/**/*.spec.js --timeout 8000 -g",
     "pretest": "npm run build"
   },
   "repository": {

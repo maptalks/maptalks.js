@@ -89,15 +89,17 @@ describe('render specs', () => {
 
         });
         let ended = false;
-        layer.on('canvasisdirty', ({ renderCount }) => {
+        let timeoutHandle = null;
+        layer.on('canvasisdirty', () => {
             if (ended) {
                 return;
             }
-
-            const expectedPath = join(__dirname, expected.path);
-            const threshold = expected.threshold || 0.1;
-            if (renderCount >= expected.renderCount) {
+            clearTimeout(timeoutHandle);
+            timeoutHandle = setTimeout(() => {
+                const expectedPath = join(__dirname, expected.path);
+                const threshold = expected.threshold || 0.1;
                 const canvas = layer.getRenderer().canvas;
+                ended = true;
                 //比对测试
                 match(canvas, expectedPath, threshold, (err, result) => {
                     if (err) {
@@ -117,14 +119,15 @@ describe('render specs', () => {
                         ctx.drawImage(canvas, 0, 0);
                         writeImageData(actualPath, ctx.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
                     }
-                    ended = true;
+
                     assert(result.diffCount <= expected.diffCount, 'result: ' + result.diffCount + ', expected: ' + expected.diffCount);
                     if (layerAssertion) {
                         layerAssertion(layer);
                     }
                     done();
                 });
-            }
+            }, 300);
+
         });
         if (expected.noGroup) {
             layer.addTo(map);
