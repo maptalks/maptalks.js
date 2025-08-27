@@ -1853,8 +1853,8 @@ describe('render specs', () => {
                     setTimeout(() => {
                         runner(done, layer, { path: `./integration/expected/${resPath}/removeGroupgllayer/expected-add.png`, diffCount: 0, renderCount: 1, noGroup: false, noAddToMap: true });
                         group.addTo(map);
-                    }, 200);
-                }, 200);
+                    }, 1000);
+                }, 1000);
             }, layer, { path: `./integration/expected/${resPath}/removeGroupgllayer/expected.png`, diffCount: 0, renderCount: 1, noGroup: false });
         });
 
