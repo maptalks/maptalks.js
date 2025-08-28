@@ -234,7 +234,7 @@ describe('render specs', () => {
             runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 4, timeout: 800, threshold: 0.4, zoomOffset: 0 }, assertion);
         }).timeout(10000);
 
-        it('i3s-eslpk-1.7-draco', done => {
+        it('ciskip i3s-eslpk-1.7-draco', done => {
             // 必须要放到第一个来运行测试，否则会失败，原因未知
             const resPath = 'I3S/eslpk';
             const layer = new Geo3DTilesLayer('3d-tiles', {
@@ -1910,7 +1910,7 @@ describe('render specs', () => {
             }, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 5 });
         });
 
-        it('gltf content', done => {
+        it('ciskip gltf content', done => {
             const resPath = 'Cesium3DTiles/GltfContent/gltf';
             const layer = new Geo3DTilesLayer('3d-tiles', {
                 services : [
