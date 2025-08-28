@@ -167,12 +167,6 @@ export class Sector extends Circle {
         return Circle.prototype._computePrjExtent.apply(this, arguments);
     }
 
-    // @internal
-    _containsPoint(point: Point, tolerance?: number) {
-        return Geometry.prototype._containsPoint.call(this, point, tolerance);
-
-    }
-
     // //@internal
     // _containsPoint(point: Point, tolerance?: number) {
     //     const map = this.getMap();
@@ -201,6 +195,11 @@ export class Sector extends Circle {
     //     }
     //     return pp.distanceTo(pc) <= (size.width / 2 + t) && between;
     // }
+
+    // @internal
+    _containsPoint(point: Point, tolerance?: number) {
+        return Geometry.prototype._containsPoint.call(this, point, tolerance);
+    }
 
     //@internal
     _computeGeodesicLength() {
