@@ -56,6 +56,7 @@ describe('highlight and showOnly specs', () => {
             }
 
         });
+        let hited = false;
         let counter = 0;
 
         function readPixel(offset) {
@@ -65,74 +66,45 @@ describe('highlight and showOnly specs', () => {
             const y = canvas.height / 2 + (offset && offset[1] || 0);
             return map.getRenderer().context.getImageData(x, y, 1 ,1);
         }
+        let counterLimit = 1;
 
-        const executor = () => {
-            if (counter === 1) {
-                if (options.afterExe) {
-                    options.afterExe();
-                } else {
-                    const color = readPixel(options.offset);
-                    assert.deepEqual(color.data, options.expected);
-                    done();
-                    return;
-                }
-            } else if (counter === 0) {
-                if (options.onPainted) {
-                    options.onPainted();
-                }
-                if (options.highlights) {
-                    layer.highlight(options.highlights);
-                } else if (options.showOnlys) {
-                    layer.showOnly(options.showOnlys);
-                }
-            } else if (options.afterExe && counter === 3) {
-                done();
-                return;
+        layer.on('canvasisdirty', ({ renderCount }) => {
+            if (!hited && renderCount === options.renderCount) {
+                hited = true;
+
+
+                map.on('frameend', () => {
+                    if (counter === counterLimit) {
+                        if (options.afterExe) {
+                            options.afterExe();
+                        } else {
+                            const color = readPixel(options.offset);
+                            if (color.data[3] === 0 && options.expected[3] !== 0) {
+                                counterLimit++;
+                            } else {
+                                assert.deepEqual(color.data, options.expected);
+                                done();
+                            }
+
+                        }
+                    } else if (counter === 0) {
+                        if (options.onPainted) {
+                            options.onPainted();
+                        }
+                        if (options.highlights) {
+                            layer.highlight(options.highlights);
+                        } else if (options.showOnlys) {
+                            layer.showOnly(options.showOnlys);
+                        }
+                    } else if (options.afterExe && counter === counterLimit + 2) {
+                        done();
+                    }
+
+                    counter++;
+                    layer.getRenderer().setToRedraw();
+                });
             }
-
-            counter++;
-            layer.getRenderer().setToRedraw();
-            setTimeout(() => {
-                executor();
-            }, 1000);
-        };
-
-        setTimeout(() => {
-            executor();
-        }, 1000);
-
-        // layer.on('canvasisdirty', ({ renderCount }) => {
-        //     if (!hited && renderCount === options.renderCount) {
-        //         hited = true;
-
-
-        //         map.on('frameend', () => {
-        //             if (counter === 1) {
-        //                 if (options.afterExe) {
-        //                     options.afterExe();
-        //                 } else {
-        //                     const color = readPixel(options.offset);
-        //                     assert.deepEqual(color.data, options.expected);
-        //                     done();
-        //                 }
-        //             } else if (counter === 0) {
-        //                 if (options.onPainted) {
-        //                     options.onPainted();
-        //                 }
-        //                 if (options.highlights) {
-        //                     layer.highlight(options.highlights);
-        //                 } else if (options.showOnlys) {
-        //                     layer.showOnly(options.showOnlys);
-        //                 }
-        //             } else if (options.afterExe && counter === 3) {
-        //                 done();
-        //             }
-
-        //             counter++;
-        //             layer.getRenderer().setToRedraw();
-        //         })
-        //     }
-        // });
+        });
         const sceneConfig = {
             postProcess: {
                 enable: true,
