@@ -499,12 +499,29 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(CanvasCompatib
     }
 
     _onMeshCreated(data, tile, err, mesh) {
+        this._enableLayerOpacity(mesh);
         if (err) {
             this.onTileError(err, tile);
         } else {
             const size = this._getMeshSize(mesh);
             tile.memorySize = size;
             this.onTileLoad(data, tile);
+        }
+    }
+
+    _enableLayerOpacity(mesh) {
+        if (Array.isArray(mesh)) {
+            for (let i = 0; i < mesh.length; i++) {
+                if (mesh[i]) {
+                    const defines = mesh[i].defines;
+                    defines['HAS_LAYER_OPACITY'] = 1;
+                    mesh[i].setDefines(defines);
+                }
+            }
+        } else if (mesh) {
+            const defines = mesh.defines;
+            defines['HAS_LAYER_OPACITY'] = 1;
+            mesh.setDefines(defines);
         }
     }
 

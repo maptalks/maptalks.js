@@ -493,12 +493,15 @@ class MapCanvasRenderer extends MapAbstractRenderer {
         }
         const alpha = ctx.globalAlpha;
 
-        if (op < 1) {
-            ctx.globalAlpha *= op;
+        if (layer.options.renderer === 'canvas') {
+            if (op < 1) {
+                ctx.globalAlpha *= op;
+            }
+            if (imgOp < 1) {
+                ctx.globalAlpha *= imgOp;
+            }
         }
-        if (imgOp < 1) {
-            ctx.globalAlpha *= imgOp;
-        }
+
         if (layer.options['cssFilter']) {
             ctx.filter = layer.options['cssFilter'];
         }
@@ -671,9 +674,6 @@ class MapCanvasRenderer extends MapAbstractRenderer {
         super.drawTopElements();
     }
 
-    isWebGPU() {
-        return false;
-    }
 }
 
 Map.registerRenderer<typeof MapCanvasRenderer>('canvas', MapCanvasRenderer);

@@ -1283,7 +1283,6 @@ export default class TileMeshPainter {
             defines['HAS_WEB3D_quantized_attributes_TEXCOORD'] = 1;
         }
         defines['HAS_MIN_ALTITUDE'] = 1;
-        defines['HAS_LAYER_OPACITY'] = 1;
         this._setCompressedInt16Defines(defines, gltfMesh.compressed_int16_params);
         const compressDefines = gltfMesh.compressDefines;
         extend(defines, compressDefines);
@@ -1783,10 +1782,13 @@ export default class TileMeshPainter {
         const directionalLight = lightManager && lightManager.getDirectionalLight() || {};
         const lightDir = directionalLight.direction || [1, 1, -1];
         const pointOpacity = options && options.pointOpacity || 1;
+        let layerOpacity = this._layer.options['opacity'];
+        layerOpacity = isNil(layerOpacity) ? 1 : layerOpacity;
         return {
             projViewMatrix : map.projViewMatrix,
             pointOpacity,
-            lightDir: vec3.normalize(LIGHT_DIR, lightDir)
+            lightDir: vec3.normalize(LIGHT_DIR, lightDir),
+            layerOpacity
         };
     }
 
@@ -1799,8 +1801,8 @@ export default class TileMeshPainter {
         const renderer = this._layer.getRenderer();
         const maskUniforms = renderer.getMaskUniforms();
         uniforms.minAltitude = layer.options.altitude || 0;
-        const inGroup = renderer.canvas.gl && renderer.canvas.gl.wrap;
-        const layerOpacity = inGroup ? (layer.options.opacity || 0) : 1;
+        let layerOpacity = layer.options['opacity'];
+        layerOpacity = isNil(layerOpacity) ? 1 : layerOpacity;
         uniforms.layerOpacity = layerOpacity;
         extend(uniforms, {
             czm_lightDirectionEC: uniforms['light0_viewDirection'],

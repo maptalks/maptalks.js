@@ -861,6 +861,10 @@ class MapAbstractRenderer extends MapRenderer {
         }
         this.map.fire('drawtopsend');
     }
+
+    isWebGPU() {
+        return false;
+    }
 }
 
 export type MapView = {

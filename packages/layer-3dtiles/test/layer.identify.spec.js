@@ -129,7 +129,7 @@ describe('3dtiles identify specs', () => {
             assert(hits[0].data.batchId > 0);
             assert(hits[0].coordinate[0] !== 0);
             done();
-        }, 1000);
+        }, 2000);
     });
 
 

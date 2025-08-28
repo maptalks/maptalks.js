@@ -4,6 +4,7 @@ import { RenderContext, Tile } from './TileLayerRendererable';
 import ImageGLRenderable from '../ImageGLRenderable';
 import Point from '../../../geo/Point';
 import { SizeLike } from '../../../geo/Size';
+import { isNil } from '../../../core/util/common';
 
 const TILE_POINT = new Point(0, 0);
 
@@ -93,7 +94,9 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         const point = TILE_POINT.set(extent2d.xmin - offset[0], tileInfo.extent2d.ymax - offset[1]);
         const x = point.x * scale,
             y = point.y * scale;
-        const opacity = this.getTileOpacity(tileImage, tileInfo);
+        let layerOpacity = this.layer.options['opacity'];
+        layerOpacity = isNil(layerOpacity) ? 1 : layerOpacity;
+        const opacity = this.getTileOpacity(tileImage, tileInfo) * layerOpacity;
         let debugInfo = null;
         if (this.layer.options['debug']) {
             debugInfo = this.getDebugInfo(tileInfo.id);
