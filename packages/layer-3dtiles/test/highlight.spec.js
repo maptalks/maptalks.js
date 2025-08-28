@@ -120,7 +120,7 @@ describe('highlight and showOnly specs', () => {
         group.addTo(map);
     };
 
-    it('highlight color', done => {
+    it('ciskip highlight color', done => {
         const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
         const layer = new Geo3DTilesLayer('3d-tiles', {
             services : [
