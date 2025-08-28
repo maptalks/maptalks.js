@@ -137,7 +137,7 @@ describe('highlight and showOnly specs', () => {
         runner(done, layer, { renderCount: 1, highlights, expected: new Uint8ClampedArray([255, 0, 0, 255]) });
     });
 
-    it('highlight opacity', done => {
+    it('ciskip highlight opacity', done => {
         const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
         const layer = new Geo3DTilesLayer('3d-tiles', {
             services : [

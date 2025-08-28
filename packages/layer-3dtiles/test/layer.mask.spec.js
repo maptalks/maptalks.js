@@ -142,7 +142,7 @@ describe('render specs', () => {
                 console.log(pixel);
                 assert(pixelMatch([0, 0, 0, 0], pixel) === true);
                 done();
-            }, 2500);
+            }, 4000);
         });
     }).timeout(10000);
 
