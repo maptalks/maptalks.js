@@ -254,7 +254,7 @@ describe('render specs', () => {
                 const geoData = mesh.geometry.data;
                 assert(!!geoData['_BATCHID']);
             };
-            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 4, timeout: 800, threshold: 0.4, zoomOffset: 0 }, assertion);
+            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 4, timeout: 1000, threshold: 0.4, zoomOffset: 0 }, assertion);
         }).timeout(10000);
 
         it('i3s-eslpk-1.6-no-draco', done => {

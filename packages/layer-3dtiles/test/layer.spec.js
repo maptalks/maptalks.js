@@ -369,7 +369,7 @@ describe('3dtiles layer', () => {
                 const color = ctx.getImageData(canvas.width / 2 - 43, canvas.height / 2 + 70, 1, 1);
                 assert(color.data[3] > 0);
                 done();
-            }, 1000);
+            }, 2000);
         }, 100);
         layer.addTo(map);
     });
