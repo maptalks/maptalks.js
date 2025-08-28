@@ -128,7 +128,7 @@ describe('highlight and showOnly specs', () => {
             id: 0,
             color: '#f00'
         };
-        runner(done, layer, { renderCount: 1, highlights, expected: new Uint8ClampedArray([255, 0, 0, 255]) });
+        runner(done, layer, { renderCount: 1, highlights, timeout: 1000, expected: new Uint8ClampedArray([255, 0, 0, 255]) });
     });
 
     it('highlight opacity', done => {
