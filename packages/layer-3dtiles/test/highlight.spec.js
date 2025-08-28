@@ -79,6 +79,10 @@ describe('highlight and showOnly specs', () => {
                             options.afterExe();
                         } else {
                             const color = readPixel(options.offset);
+                            if (options.expected === true) {
+                                done();
+                                return;
+                            }
                             if (color.data[3] === 0 && options.expected[3] !== 0) {
                                 counterLimit++;
                             } else {
@@ -120,7 +124,25 @@ describe('highlight and showOnly specs', () => {
         group.addTo(map);
     };
 
-    it('ciskip highlight color', done => {
+    // ci 上似乎需要先垫一个测试用例，才会正常运行
+    it('highlight test start', done => {
+        const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
+        const layer = new Geo3DTilesLayer('3d-tiles', {
+            services : [
+                {
+                    url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                    shader: 'pbr'
+                }
+            ]
+        });
+        const highlights = {
+            id: 0,
+            color: '#f00'
+        };
+        runner(done, layer, { renderCount: 1, highlights, expected: true });
+    });
+
+    it('highlight color', done => {
         const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
         const layer = new Geo3DTilesLayer('3d-tiles', {
             services : [
@@ -137,7 +159,7 @@ describe('highlight and showOnly specs', () => {
         runner(done, layer, { renderCount: 1, highlights, expected: new Uint8ClampedArray([255, 0, 0, 255]) });
     });
 
-    it('ciskip highlight opacity', done => {
+    it('highlight opacity', done => {
         const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
         const layer = new Geo3DTilesLayer('3d-tiles', {
             services : [
