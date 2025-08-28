@@ -128,7 +128,7 @@ describe('render specs', () => {
         });
     }).timeout(10000);
 
-    it('clip inside mask', done => {
+    it('ciskip-browser clip inside mask', done => {
         const layer = add3DTilesLayer();
         layer.once('loadtileset', () => {
             const extent = layer.getExtent(0);
