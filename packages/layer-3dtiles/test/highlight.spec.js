@@ -56,7 +56,6 @@ describe('highlight and showOnly specs', () => {
             }
 
         });
-        let hited = false;
         let counter = 0;
 
         function readPixel(offset) {
@@ -67,38 +66,73 @@ describe('highlight and showOnly specs', () => {
             return map.getRenderer().context.getImageData(x, y, 1 ,1);
         }
 
-        layer.on('canvasisdirty', ({ renderCount }) => {
-            if (!hited && renderCount === options.renderCount) {
-                hited = true;
-
-
-                map.on('frameend', () => {
-                    if (counter === 1) {
-                        if (options.afterExe) {
-                            options.afterExe();
-                        } else {
-                            const color = readPixel(options.offset);
-                            assert.deepEqual(color.data, options.expected);
-                            done();
-                        }
-                    } else if (counter === 0) {
-                        if (options.onPainted) {
-                            options.onPainted();
-                        }
-                        if (options.highlights) {
-                            layer.highlight(options.highlights);
-                        } else if (options.showOnlys) {
-                            layer.showOnly(options.showOnlys);
-                        }
-                    } else if (options.afterExe && counter === 3) {
-                        done();
-                    }
-
-                    counter++;
-                    layer.getRenderer().setToRedraw();
-                })
+        const executor = () => {
+            if (counter === 1) {
+                if (options.afterExe) {
+                    options.afterExe();
+                } else {
+                    const color = readPixel(options.offset);
+                    assert.deepEqual(color.data, options.expected);
+                    done();
+                    return;
+                }
+            } else if (counter === 0) {
+                if (options.onPainted) {
+                    options.onPainted();
+                }
+                if (options.highlights) {
+                    layer.highlight(options.highlights);
+                } else if (options.showOnlys) {
+                    layer.showOnly(options.showOnlys);
+                }
+            } else if (options.afterExe && counter === 3) {
+                done();
+                return;
             }
-        });
+
+            counter++;
+            layer.getRenderer().setToRedraw();
+            setTimeout(() => {
+                executor();
+            }, 1000);
+        };
+
+        setTimeout(() => {
+            executor();
+        }, 1000);
+
+        // layer.on('canvasisdirty', ({ renderCount }) => {
+        //     if (!hited && renderCount === options.renderCount) {
+        //         hited = true;
+
+
+        //         map.on('frameend', () => {
+        //             if (counter === 1) {
+        //                 if (options.afterExe) {
+        //                     options.afterExe();
+        //                 } else {
+        //                     const color = readPixel(options.offset);
+        //                     assert.deepEqual(color.data, options.expected);
+        //                     done();
+        //                 }
+        //             } else if (counter === 0) {
+        //                 if (options.onPainted) {
+        //                     options.onPainted();
+        //                 }
+        //                 if (options.highlights) {
+        //                     layer.highlight(options.highlights);
+        //                 } else if (options.showOnlys) {
+        //                     layer.showOnly(options.showOnlys);
+        //                 }
+        //             } else if (options.afterExe && counter === 3) {
+        //                 done();
+        //             }
+
+        //             counter++;
+        //             layer.getRenderer().setToRedraw();
+        //         })
+        //     }
+        // });
         const sceneConfig = {
             postProcess: {
                 enable: true,
@@ -128,7 +162,7 @@ describe('highlight and showOnly specs', () => {
             id: 0,
             color: '#f00'
         };
-        runner(done, layer, { renderCount: 1, highlights, timeout: 1000, expected: new Uint8ClampedArray([255, 0, 0, 255]) });
+        runner(done, layer, { renderCount: 1, highlights, expected: new Uint8ClampedArray([255, 0, 0, 255]) });
     });
 
     it('highlight opacity', done => {

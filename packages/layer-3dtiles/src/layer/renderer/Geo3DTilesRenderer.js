@@ -513,15 +513,23 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(CanvasCompatib
         if (Array.isArray(mesh)) {
             for (let i = 0; i < mesh.length; i++) {
                 if (mesh[i]) {
-                    const defines = mesh[i].defines || {};
-                    defines['HAS_LAYER_OPACITY'] = 1;
-                    mesh[i].setDefines(defines);
+                    if (Array.isArray(mesh[i])) {
+                        this._enableLayerOpacity(mesh[i]);
+                    } else {
+                        const defines = mesh[i].defines || {};
+                        defines['HAS_LAYER_OPACITY'] = 1;
+                        mesh[i].setDefines(defines);
+                    }
                 }
             }
         } else if (mesh) {
-            const defines = mesh.defines || {};
-            defines['HAS_LAYER_OPACITY'] = 1;
-            mesh.setDefines(defines);
+            if (Array.isArray(mesh)) {
+                this._enableLayerOpacity(mesh);
+            } else {
+                const defines = mesh.defines || {};
+                defines['HAS_LAYER_OPACITY'] = 1;
+                mesh.setDefines(defines);
+            }
         }
     }
 

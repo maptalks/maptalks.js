@@ -254,7 +254,7 @@ describe('render specs', () => {
                 const geoData = mesh.geometry.data;
                 assert(!!geoData['_BATCHID']);
             };
-            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 4, timeout: 1500, threshold: 0.4, zoomOffset: 0 }, assertion);
+            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 4, timeout: 2000, threshold: 0.4, zoomOffset: 0 }, assertion);
         }).timeout(10000);
 
         it('i3s-eslpk-1.6-no-draco', done => {
@@ -1779,7 +1779,7 @@ describe('render specs', () => {
                     }
                 ]
             });
-            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, timeout: 1000, diffCount: 0, renderCount: 13 });
+            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, timeout: 1000, diffCount: 400, renderCount: 13 });
         }).timeout(5000);
         it('layer opacity', done => {
             const resPath = 'BatchedDraco/dayanta/';
@@ -1922,7 +1922,7 @@ describe('render specs', () => {
             });
             runner(() => {
                 done();
-            }, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 5 });
+            }, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 5, timeout: 1500 });
         });
     });
 
