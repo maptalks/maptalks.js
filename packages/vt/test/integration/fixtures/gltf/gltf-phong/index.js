@@ -38,6 +38,7 @@ module.exports = {
     data,
     containerWidth: 256,
     containerHeight: 256,
+    timeout: 2000,
     view: {
         center: [13.411523913043766, 52.53168811873488],
         zoom: 19,
