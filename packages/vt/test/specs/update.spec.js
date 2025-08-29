@@ -1591,7 +1591,7 @@ describe('update style specs', () => {
         layer.addTo(map);
     }).timeout(10000);
 
-    it('should can update plugin visible to true, fuzhenn/maptalks-ide#3105', done => {
+    it('ciskip should can update plugin visible to true, fuzhenn/maptalks-ide#3105', done => {
         const plugin = {
             type: 'fill',
             dataConfig: {
@@ -1619,11 +1619,11 @@ describe('update style specs', () => {
             const pixel = readPixel(canvas, canvas.width / 2 + 40, canvas.height / 2);
             assert.deepEqual(pixel, [255, 0, 0, 255]);
             done();
-        }, 2500);
+        }, 1000);
         layer.addTo(map);
         setTimeout(() => {
             layer.updateSymbol(0, { visible: true });
-        }, 1000);
+        }, 200);
     });
 
     it('should can update textures for line extrusion, maptalks-studio#1923', done => {

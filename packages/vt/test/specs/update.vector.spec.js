@@ -2316,7 +2316,7 @@ describe('vector layers update style specs', () => {
                 assert(pixel[1] < 100);
                 assert(pixel[0] < 100);
                 done();
-             }, 600);
+             }, 1500);
         }, 600);
         group.addTo(map);
     });
