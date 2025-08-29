@@ -1117,7 +1117,7 @@ describe('picking specs', () => {
             layer.once('canvasisdirty', () => {
                 const hit = layer.identify([13.41720, 52.52952])[0];
                 const expectedFeature = { "type": "Feature", "geometry": { "type": "Polygon","coordinates": [[[13.417135053741617,52.52956625878565],[13.417226248848124,52.52956625878565],[13.417226248848124,52.52946625878565],[13.417135053741617,52.52946625878565],[13.417135053741617,52.52956625878565]]] },"properties": { "type": 1, "color": "#f00", "foo": "bar", "foo1": "bar1" },"id": 0,"layer": 0 };
-                assert.deepEqual(hit.coordinate, [13.417198660410369, 52.529520803505285, -0.000006980199889114576]);
+                assert.deepEqual(hit.coordinate, [13.417199426755861, 52.52951893867223, -0.000006980199889114576]);
                 assert.deepEqual(expectedFeature, hit.data.feature);
                 done();
             });

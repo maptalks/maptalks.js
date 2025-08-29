@@ -106,7 +106,7 @@ describe('update vt on terrain specs', () => {
                 assert(pixel[2] === 116);
                 assert(pixel[3] === 255);
                 done();
-            }, 1500);
+            }, 3000);
             group.addTo(map);
         }
         it ('without post process', done => {

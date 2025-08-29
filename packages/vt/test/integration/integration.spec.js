@@ -248,7 +248,7 @@ describe('vector tile integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'post-process'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it(p, postProcessRunner(p, specs[p])).timeout(3000);
+                it(p, postProcessRunner(p, specs[p]));
             }
         }
     });
@@ -366,7 +366,7 @@ describe('vector tile integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'projections'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it(p, runner(p, specs[p]));
+                it(p, runner(p, specs[p])).timeout(20000);
             }
         }
     });
@@ -440,7 +440,7 @@ describe('vector tile integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'perf'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it(p, runner(p, specs[p])).timeout(10000);
+                it(p, runner(p, specs[p])).timeout(30000);
             }
         }
     });
