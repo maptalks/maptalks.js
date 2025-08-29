@@ -125,7 +125,7 @@ describe('highlight and showOnly specs', () => {
     };
 
     // ci 上似乎需要先垫一个测试用例，才会正常运行
-    it('highlight test start', done => {
+    it('highlight test start for CI, can be ignored if failed.', done => {
         const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
         const layer = new Geo3DTilesLayer('3d-tiles', {
             services : [
