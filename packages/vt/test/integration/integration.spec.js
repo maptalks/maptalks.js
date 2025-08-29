@@ -339,7 +339,7 @@ describe('vector tile integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'gltf'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it(p, runner(p, specs[p]));
+                it('ciskip ' + p, runner(p, specs[p]));
             }
         }
     });

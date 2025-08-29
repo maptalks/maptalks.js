@@ -35,8 +35,7 @@ const style = [
 module.exports = {
     style,
     data,
-    renderingCount: 6,
-    timeout: 2000,
+    renderingCount: 7,
     view: {
         center: [13.411523913043766, 52.53168811873488],
         zoom: 19
