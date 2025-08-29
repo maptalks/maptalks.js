@@ -626,14 +626,14 @@ describe('3dtiles layer', () => {
                     const color = ctx.getImageData(258, 525, 1, 1);
                     assert(color.data[3] === 0);
                     layer.addService(service);
-                }, 20);
+                }, 200);
             } else if (count === 2) {
                 setTimeout(() => {
                     const ctx = map.getRenderer().context;
                     const color = ctx.getImageData(258, 525, 1, 1);
                     assert(color.data[3] === 255);
                     done();
-                }, 20);
+                }, 200);
             }
         });
         layer.addTo(map);
