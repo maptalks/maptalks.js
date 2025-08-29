@@ -52,6 +52,10 @@ class ExtentPass {
             uniforms,
             extraCommandProps: {
                 viewport: this._viewport,
+                depth : {
+                    enable : true,
+                    func : 'lequal'
+                }
             }
         });
         this._maskModeShader = new MeshShader({
