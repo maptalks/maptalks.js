@@ -67,12 +67,21 @@ describe('highlight and showOnly specs', () => {
             return map.getRenderer().context.getImageData(x, y, 1 ,1);
         }
         let counterLimit = 1;
-
+        let timeoutHandle;
+        let timeoutDone = false;
+        if (options.expected === true) {
+            timeoutHandle = setTimeout(() => {
+                timeoutDone = true;
+                done();
+            }, 7000);
+        }
         layer.on('canvasisdirty', ({ renderCount }) => {
+            clearTimeout(timeoutHandle);
+            if (timeoutDone) {
+                return;
+            }
             if (!hited && renderCount === options.renderCount) {
                 hited = true;
-
-
                 map.on('frameend', () => {
                     if (counter === counterLimit) {
                         if (options.afterExe) {

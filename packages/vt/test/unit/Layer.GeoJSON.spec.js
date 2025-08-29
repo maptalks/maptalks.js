@@ -156,18 +156,13 @@ describe('GeoJSONVectorTileLayer', () => {
         const groupLayer = new GroupGLLayer('group', [layer]);
         const json = groupLayer.toJSON();
         const layer2 = maptalks.Layer.fromJSON(json);
-        let count = 0;
-        layer2.on('layerload', e => {
-            count++;
-            if (count === 1) {
-                assert.ok(e);
-                const data = layer2.getLayers()[0].getData();
-                assert.ok(data.type === 'FeatureCollection');
-                assert.ok(data.features.length === points.features.length);
-                assert.ok(data.features.length === points.features.length);
-                done();
-            }
-        });
+        setTimeout(() => {
+            const data = layer2.getLayers()[0].getData();
+            assert.ok(data.type === 'FeatureCollection');
+            assert.ok(data.features.length === points.features.length);
+            assert.ok(data.features.length === points.features.length);
+            done();
+        }, 1500);
         layer2.addTo(map);
     });
 

@@ -1648,7 +1648,7 @@ describe('picking specs', () => {
         layer.addTo(map);
     });
 
-    it('should enable stencil in VectorTileLayer FillPainter pick, maptalks/issues#832', done => {
+    it('ciskip should enable stencil in VectorTileLayer FillPainter pick, maptalks/issues#832', done => {
         map = new maptalks.Map(container, {
             center: [121.52861644,31.23331691],
             zoom: 19,

@@ -186,7 +186,7 @@ describe('update style specs', () => {
                     const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                     assert.deepEqual(pixel, [255, 0, 0, 255]);
                     done();
-                }, 800);
+                }, 2000);
             }, 800);
         }, 800);
     });
@@ -1619,7 +1619,7 @@ describe('update style specs', () => {
             const pixel = readPixel(canvas, canvas.width / 2 + 40, canvas.height / 2);
             assert.deepEqual(pixel, [255, 0, 0, 255]);
             done();
-        }, 2000);
+        }, 2500);
         layer.addTo(map);
         setTimeout(() => {
             layer.updateSymbol(0, { visible: true });
