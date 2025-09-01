@@ -535,6 +535,7 @@ describe('vector layers symbol update specs', () => {
         const renderer = map.getRenderer();
         const x = renderer.canvas.width / 2, y = renderer.canvas.height / 2;
         let partialUpdate = false;
+        let doneCalled = false;
         layer.on('partialupdate', () => {
             partialUpdate = true;
         });
@@ -556,7 +557,7 @@ describe('vector layers symbol update specs', () => {
                     }
                 ]);
                 updated = true;
-            } else if (updated && count >= 3) {
+            } else if (updated && count >= 3 && !doneCalled) {
                 const pixel = readPixel(renderer.canvas, x, y + 6);
                 //中心点往外40，能读到像素了
                 assert.deepEqual(pixel, [0, 0, 255, 255]);
@@ -564,6 +565,7 @@ describe('vector layers symbol update specs', () => {
                 //中心点往外40，能读到像素了
                 assert.deepEqual(pixel1, [0, 255, 0, 255]);
                 assert(partialUpdate);
+                doneCalled = true;
                 done();
             }
         });
