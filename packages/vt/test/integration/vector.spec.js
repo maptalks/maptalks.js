@@ -43,7 +43,7 @@ describe('vector 3d integration specs', () => {
     const runner = (p, Layer, style) => {
         return done => {
             const options = style.view || DEFAULT_VIEW;
-            options.centerCross = true;
+            // options.centerCross = true;
             if (!options.lights) {
                 options.lights = DEFAULT_VIEW.lights;
             }
@@ -93,7 +93,10 @@ describe('vector 3d integration specs', () => {
                     clearTimeout(timeoutHandle);
                     timeoutHandle = setTimeout(doneFn, 500);
                 } else {
-                    doneFn();
+                    map.once('renderend', () => {
+                        doneFn();
+                    });
+
                 }
             });
             if (style.options && style.options.enableBloom) {
