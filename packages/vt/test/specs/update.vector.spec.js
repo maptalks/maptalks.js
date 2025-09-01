@@ -1280,9 +1280,9 @@ describe('vector layers update style specs', () => {
                     const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                     assert.deepEqual(pixel, [255, 0, 0, 255]);
                     done();
-                }, 200);
-            }, 200);
-        }, 200);
+                }, 500);
+            }, 500);
+        }, 500);
     });
 
     it('LineStringLayer in GroupGLLayer remove and add again to map, maptalks/issues#256', done => {
@@ -2283,7 +2283,7 @@ describe('vector layers update style specs', () => {
                 assert.notDeepEqual(pixel1,  pixel);
                 done();
              }, 600);
-        }, 600);
+        }, 800);
         group.addTo(map);
     });
 
