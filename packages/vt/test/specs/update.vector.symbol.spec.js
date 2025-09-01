@@ -833,6 +833,7 @@ describe('vector layers symbol update specs', () => {
             count++;
         });
         let updated = false;
+        let doneCalled = false;
         group.on('layerload', () => {
             if (count >= 1 && !updated) {
                 const pixel = readPixel(layer.getRenderer().canvas, x + 40, y);
@@ -841,10 +842,11 @@ describe('vector layers symbol update specs', () => {
                     polygonFill: '#0f0'
                 });
                 updated = true;
-            } else if (updated && count === 3) {
+            } else if (updated && count === 3 && !doneCalled) {
                 const pixel = readPixel(layer.getRenderer().canvas, x + 40, y);
                 assert.deepEqual(pixel, [0, 255, 0, 255]);
                 assert(partialUpdate);
+                doneCalled = true;
                 done();
             }
         });
@@ -885,6 +887,7 @@ describe('vector layers symbol update specs', () => {
             count++;
         });
         let updated = false;
+        let doneCalled = false;
         group.on('layerload', () => {
             if (count >= 1 && !updated) {
                 const pixel = readPixel(layer.getRenderer().canvas, x, y + 40);
@@ -893,10 +896,11 @@ describe('vector layers symbol update specs', () => {
                     lineColor: '#0f0'
                 });
                 updated = true;
-            } else if (updated && count === 3) {
+            } else if (updated && count === 3 && !doneCalled) {
                 const pixel = readPixel(layer.getRenderer().canvas, x, y + 40);
                 assert.deepEqual(pixel, [0, 255, 0, 255]);
                 assert(partialUpdate);
+                doneCalled = true;
                 done();
             }
         });
@@ -940,6 +944,7 @@ describe('vector layers symbol update specs', () => {
             count++;
         });
         let updated = false;
+        let doneCalled = false;
         group.on('layerload', () => {
             if (count >= 1 && !updated) {
                 const pixel = readPixel(layer.getRenderer().canvas, x, y);
@@ -948,10 +953,11 @@ describe('vector layers symbol update specs', () => {
                     markerOpacity: 0.5
                 });
                 updated = true;
-            } else if (updated && count === 3) {
+            } else if (updated && count === 3 && !doneCalled) {
                 const pixel = readPixel(layer.getRenderer().canvas, x, y);
                 assert.deepEqual(pixel, [255, 0, 0, 127]);
                 assert(partialUpdate);
+                doneCalled = true;
                 done();
             }
         });
