@@ -647,6 +647,7 @@ describe('vector layers symbol update specs', () => {
             count++;
         });
         let updated = false;
+        let doneCalled = false;
         group.on('layerload', () => {
             if (count >= 1 && !updated) {
                 const pixel = readPixel(renderer.canvas, x, y);
@@ -656,11 +657,12 @@ describe('vector layers symbol update specs', () => {
                     polygonFill: '#0f0'
                 });
                 updated = true;
-            } else if (updated && count >= 3) {
+            } else if (updated && count >= 3 && !doneCalled) {
                 const pixel = readPixel(renderer.canvas, x, y);
                 //中心点往外40，能读到像素了
                 assert.deepEqual(pixel, [0, 255, 0, 255]);
                 assert(partialUpdate);
+                doneCalled = true;
                 done();
             }
         });

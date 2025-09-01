@@ -98,6 +98,7 @@ describe('lights specs', () => {
             count++;
         });
         let renderCount = 0;
+        let doneCalled = false;
         groupLayer.on('layerload', () => {
             if (count > 0) {
                 renderCount++;
@@ -105,9 +106,10 @@ describe('lights specs', () => {
                 const x = renderer.canvas.width;
                 const y = renderer.canvas.height;
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
-                if (count === 2 && renderCount >= 2) {
+                if (count === 2 && renderCount >= 2 && !doneCalled) {
                     //第一次更新环境光的颜色
                     assert.deepEqual(pixel, [161, 0, 110, 255]);
+                    doneCalled = true;
                     done();
                 } else if (count === 1 && renderCount >= 2) {
                     //更新环境光后的颜色
