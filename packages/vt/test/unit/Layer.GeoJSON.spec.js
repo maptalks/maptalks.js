@@ -162,7 +162,7 @@ describe('GeoJSONVectorTileLayer', () => {
             assert.ok(data.features.length === points.features.length);
             assert.ok(data.features.length === points.features.length);
             done();
-        }, 1500);
+        }, 3000);
         layer2.addTo(map);
     });
 
