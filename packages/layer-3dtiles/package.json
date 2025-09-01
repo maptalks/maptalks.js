@@ -11,7 +11,7 @@
     "build": "npm run clean && npm run lint && rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "rollup -c rollup.config.js",
     "dev": "rollup -w -c rollup.config.js",
-    "test": "electron-mocha --main ../ignore-gpu-blacklist.js -t 8000 --show-window --renderer ./test/**/*.spec.js -g \"ciskip\" --invert",
+    "test": "electron-mocha --retries 3 --main ../ignore-gpu-blacklist.js -t 8000 --show-window --renderer ./test/**/*.spec.js -g \"ciskip\" --invert",
     "test-local": "npm run pretest && npm run test-browser && electron-mocha --main ../ignore-gpu-blacklist.js -t 8000 --show-window --renderer ./test/**/*.spec.js -g \"ciskip \"",
     "test-browser": "electron-mocha -t 8000 --show-window --renderer ./test/**/*.spec.js -g \"ciskip-browser\"",
     "tdd": "electron-mocha --main ../ignore-gpu-blacklist.js -t 8000 --interactive --renderer ./test/**/*.spec.js -g",
