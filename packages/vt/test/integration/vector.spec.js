@@ -24,6 +24,10 @@ const DEFAULT_VIEW = {
 
 const TEST_CANVAS = document.createElement('canvas');
 
+maptalks.Map.mergeOptions({
+    renderer: ['gl', 'gpu']
+});
+
 describe('vector 3d integration specs', () => {
     let map, layer, container;
     before(() => {

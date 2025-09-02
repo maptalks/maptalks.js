@@ -30,6 +30,11 @@ const DEFAULT_VIEW = {
     }
 };
 
+maptalks.Map.mergeOptions({
+    renderer: ['gl', 'gpu']
+});
+
+
 describe('vector tile integration specs', () => {
     let map, container, server;
     before(done => {
