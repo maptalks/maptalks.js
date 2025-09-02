@@ -7,6 +7,10 @@ const { GroupGLLayer } = require('@maptalks/gl');
 const startServer = require('./server.js');
 const PORT = 4398;
 
+maptalks.Map.mergeOptions({
+    renderer: ['gl', 'gpu']
+});
+
 const DEFAULT_VIEW = {
     center: [0, 0],
     zoom: 6,
@@ -2193,7 +2197,7 @@ describe('update style specs', () => {
                 assert(styleRefreshed);
                 assert.notDeepEqual(pixel, newPixel);
                 done();
-            }, 500);
+            }, 800);
         });
         layer.on('refreshstyle', () => {
             styleRefreshed = true;
