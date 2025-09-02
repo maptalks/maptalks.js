@@ -27,9 +27,10 @@ describe('Spec of Masks', function () {
         container.style.height = '150px';
         document.body.appendChild(container);
         var option = {
-            centerCross: true,
+            // centerCross: true,
             zoom: 17,
-            center: center
+            center: center,
+            devicePixelRatio: 1
         };
         map = new maptalks.Map(container, option);
         context.map = map;

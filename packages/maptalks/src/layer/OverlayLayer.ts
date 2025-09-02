@@ -471,11 +471,6 @@ class OverlayLayer extends Layer {
         return this;
     }
 
-    remove() {
-        this.clear();
-        return super.remove();
-    }
-
     /**
      * 清除 layer
      *

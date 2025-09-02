@@ -25,7 +25,7 @@ const DEFAULT_VIEW = {
 const TEST_CANVAS = document.createElement('canvas');
 
 describe('vector 3d integration specs', () => {
-    let map, container;
+    let map, layer, container;
     before(() => {
         // const iconDebug = document.createElement('canvas');
         // iconDebug.id = 'MAPTALKS_ICON_DEBUG';
@@ -37,6 +37,7 @@ describe('vector 3d integration specs', () => {
     });
 
     afterEach(() => {
+        layer.clear();
         map.remove();
     });
 
@@ -53,7 +54,7 @@ describe('vector 3d integration specs', () => {
             options.devicePixelRatio = 1;
             const enableBloom = style.options && style.options.enableBloom;
             map = new maptalks.Map(container, options);
-            const layer = new Layer('vector', style.data, style.options);
+            layer = new Layer('vector', style.data, style.options);
             let timeoutHandle;
             let counter = 0;
             layer.on('canvasisdirty', () => {
