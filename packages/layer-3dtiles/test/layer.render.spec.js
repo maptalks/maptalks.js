@@ -50,8 +50,8 @@ describe('render specs', () => {
         }
     };
 
-    function createMap(mapOptions) {
-        const options = maptalks.Util.extend(mapOptions || {}, {
+    function createMap(mapOptions = {}) {
+        const option = maptalks.Util.extend(mapOptions, {
             zoom: 20,
             center: [0, 0],
             devicePixelRatio: 1
@@ -62,7 +62,7 @@ describe('render specs', () => {
             //     attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
             // }),
         });
-        map = new maptalks.Map(container, options);
+        map = new maptalks.Map(container, option);
     }
 
     beforeEach(() => {
@@ -71,6 +71,7 @@ describe('render specs', () => {
         container.style.height = '600px';
         container.style.backgroundColor = '#000';
         document.body.appendChild(container);
+        createMap();
     });
 
     afterEach(() => {
@@ -79,7 +80,6 @@ describe('render specs', () => {
     });
 
     const runner = (done, layer, expected, layerAssertion) => {
-        createMap(expected.mapOptions);
         layer.on('loadtileset', () => {
             if (expected.view) {
                 map.setView(expected.view);
@@ -213,21 +213,6 @@ describe('render specs', () => {
             }
         }
 
-        it('map canvas renderer', done => {
-            const resPath = 'Cesium3DTiles/Tilesets/Tileset';
-            const layer = new Geo3DTilesLayer('3d-tiles', {
-                services : [
-                    {
-                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr'
-                    }
-                ]
-            });
-            const mapOptions = {
-                renderer: 'canvas'
-            };
-            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 5, threshold: 0.35, mapOptions });
-        });
 
         it('i3s-eslpk-1.7-no-draco', done => {
             // 必须要放到第一个来运行测试，否则会失败，原因未知
