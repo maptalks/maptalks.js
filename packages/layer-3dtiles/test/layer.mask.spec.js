@@ -26,6 +26,12 @@ function pixelMatch(expectedValue, pixelValue, diff) {
     }
     return true;
 }
+
+maptalks.Map.mergeOptions({
+    renderer: ['gl', 'gpu']
+});
+
+
 describe('render specs', () => {
     let server;
     before(done => {

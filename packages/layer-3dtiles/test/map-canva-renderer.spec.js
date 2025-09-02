@@ -11,9 +11,6 @@ const PORT = 39887;
 
 const TARGET_CANVAS = document.createElement('canvas');
 
-maptalks.Map.mergeOptions({
-    renderer: 'canvas'
-});
 
 describe('render specs', () => {
     let server;
@@ -30,7 +27,8 @@ describe('render specs', () => {
         const option = maptalks.Util.extend({
             zoom: 20,
             center: [0, 0],
-            devicePixelRatio: 1
+            devicePixelRatio: 1,
+            renderer: 'canvas'
         });
         map = new maptalks.Map(container, option);
     }

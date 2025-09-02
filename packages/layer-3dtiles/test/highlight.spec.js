@@ -7,6 +7,9 @@ const startServer = require('./server.js');
 
 const PORT = 39887;
 
+maptalks.Map.mergeOptions({
+    renderer: ['gl', 'gpu']
+});
 
 describe('highlight and showOnly specs', () => {
     let server;
