@@ -1702,6 +1702,7 @@ describe('vector layers update style specs', () => {
             count++;
         });
         let updated = false;
+        let doneCalled = false;
         group.on('layerload', () => {
             if (count >= 1 && !updated) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
@@ -1711,11 +1712,12 @@ describe('vector layers update style specs', () => {
                     textFill: [1, 1, 0, 1],
                 });
                 updated = true;
-            } else if (updated && count >= 3) {
+            } else if (updated && count >= 3 && !doneCalled) {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 const pixel1 = readPixel(renderer.canvas, x / 2, y / 2 + 10);
                 assert.deepEqual(pixel, [255, 255, 0, 255]);
                 assert.deepEqual(pixel1, [0, 0, 255, 255]);
+                doneCalled = true;
                 done();
             }
         });
