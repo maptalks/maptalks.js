@@ -108,14 +108,20 @@ class GroundPainter {
         uniforms['offsetFactor'] = context.offsetFactor;
         uniforms['offsetUnits'] = context.offsetUnits;
         const fbo = context && context.renderTarget && context.renderTarget.fbo;
-        this._layer.getRenderer().setToRedraw();
+        const renderer = this._layer.getRenderer();
         if (shader === this._fillShader) {
             //如果是drawSSR阶段不绘制fill ground，fuzhenn/maptalks-studio#461
             this.renderer.render(shader, uniforms, this._groundScene, fbo);
+            if (renderer.setCanvasUpdated) {
+                renderer.setCanvasUpdated();
+            }
             return true;
         }
         shader.filter = context.sceneFilter;
         this.renderer.render(shader, uniforms, this._groundScene, fbo);
+        if (renderer.setCanvasUpdated) {
+            renderer.setCanvasUpdated();
+        }
         return true;
     }
 

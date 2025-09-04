@@ -340,8 +340,9 @@ export default class BillBoardPainter extends BasicPainter {
         }
 
         quat.fromEuler(OUT_QUAT, rotationX, rotationY, -rotationZ);
+        const startIndex = i * 6;
         for (let j = 0; j < 6; j++) {
-            aQuat.set(OUT_QUAT, (i + j) * 4);
+            aQuat.set(OUT_QUAT, (startIndex + j) * 4);
         }
 
     }
@@ -363,32 +364,35 @@ export default class BillBoardPainter extends BasicPainter {
         // 左下
         sizeOut[0] = -hw;
         sizeOut[1] = -hh;
-        aExtrude.set(sizeOut, i * 2);
+
+        const startIndex = i * 12;
+
+        aExtrude.set(sizeOut, startIndex);
 
         // 右上
         sizeOut[0] = hw;
         sizeOut[1] = hh;
-        aExtrude.set(sizeOut, i * 2 + 2);
+        aExtrude.set(sizeOut, startIndex + 2);
 
         // 左上
         sizeOut[0] = -hw;
         sizeOut[1] = hh;
-        aExtrude.set(sizeOut, i * 2 + 4);
+        aExtrude.set(sizeOut, startIndex + 4);
 
         // 左下
         sizeOut[0] = -hw;
         sizeOut[1] = -hh;
-        aExtrude.set(sizeOut, i * 2 + 6);
+        aExtrude.set(sizeOut, startIndex + 6);
 
         // 右下
         sizeOut[0] = hw;
         sizeOut[1] = -hh;
-        aExtrude.set(sizeOut, i * 2 + 8);
+        aExtrude.set(sizeOut, startIndex + 8);
 
         // 右上
         sizeOut[0] = hw;
         sizeOut[1] = hh;
-        aExtrude.set(sizeOut, i * 2 + 10);
+        aExtrude.set(sizeOut, startIndex + 10);
     }
 
     _fillFnTextureData(aTexCoord, geometry, bins) {
@@ -440,35 +444,37 @@ export default class BillBoardPainter extends BasicPainter {
         const top = Math.floor(y * ratio);
         const bottom = Math.floor((y + h) * ratio);
 
+        const startIndex = i * 12;
+
         // 左下
         sizeOut[0] = left;
         sizeOut[1] = bottom;
-        aTexCoord.set(sizeOut, i * 2);
+        aTexCoord.set(sizeOut, startIndex);
 
         // 右上
         sizeOut[0] = right;
         sizeOut[1] = top;
-        aTexCoord.set(sizeOut, i * 2 + 2);
+        aTexCoord.set(sizeOut, startIndex + 2);
 
         // 左上
         sizeOut[0] = left;
         sizeOut[1] = top;
-        aTexCoord.set(sizeOut, i * 2 + 4);
+        aTexCoord.set(sizeOut, startIndex + 4);
 
         // 左下
         sizeOut[0] = left;
         sizeOut[1] = bottom;
-        aTexCoord.set(sizeOut, i * 2 + 6);
+        aTexCoord.set(sizeOut, startIndex + 6);
 
         // 右下
         sizeOut[0] = right;
         sizeOut[1] = bottom;
-        aTexCoord.set(sizeOut, i * 2 + 8);
+        aTexCoord.set(sizeOut, startIndex + 8);
 
         // 右上
         sizeOut[0] = right;
         sizeOut[1] = top;
-        aTexCoord.set(sizeOut, i * 2 + 10);
+        aTexCoord.set(sizeOut, startIndex + 10);
     }
 
     init() {
