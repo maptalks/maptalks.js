@@ -1,3 +1,4 @@
+import { Geometry } from './Geometry';
 import { extend, isNil } from '../core/util';
 import Coordinate from '../geo/Coordinate';
 import Extent from '../geo/Extent';
@@ -166,33 +167,38 @@ export class Sector extends Circle {
         return Circle.prototype._computePrjExtent.apply(this, arguments);
     }
 
-    //@internal
+    // //@internal
+    // _containsPoint(point: Point, tolerance?: number) {
+    //     const map = this.getMap();
+    //     if (map.isTransforming()) {
+    //         return super._containsPoint(point, tolerance);
+    //     }
+    //     const center = map._pointToContainerPoint(this._getCenter2DPoint()),
+    //         t = this._hitTestTolerance() + (tolerance || 0),
+    //         size = this.getSize(),
+    //         pc = center,
+    //         pp = point,
+    //         x = pp.x - pc.x,
+    //         y = pc.y - pp.y,
+    //         atan2 = Math.atan2(y, x),
+    //         // [0.0, 360.0)
+    //         angle = atan2 < 0 ? (atan2 + 2 * Math.PI) * 360 / (2 * Math.PI) :
+    //             atan2 * 360 / (2 * Math.PI);
+    //     const [startAngle, endAngle] = this._correctAngles();
+    //     const sAngle = startAngle % 360,
+    //         eAngle = endAngle % 360;
+    //     let between = false;
+    //     if (sAngle > eAngle) {
+    //         between = !(angle > eAngle && angle < sAngle);
+    //     } else {
+    //         between = (angle >= sAngle && angle <= eAngle);
+    //     }
+    //     return pp.distanceTo(pc) <= (size.width / 2 + t) && between;
+    // }
+
+    // @internal
     _containsPoint(point: Point, tolerance?: number) {
-        const map = this.getMap();
-        if (map.isTransforming()) {
-            return super._containsPoint(point, tolerance);
-        }
-        const center = map._pointToContainerPoint(this._getCenter2DPoint()),
-            t = this._hitTestTolerance() + (tolerance || 0),
-            size = this.getSize(),
-            pc = center,
-            pp = point,
-            x = pp.x - pc.x,
-            y = pc.y - pp.y,
-            atan2 = Math.atan2(y, x),
-            // [0.0, 360.0)
-            angle = atan2 < 0 ? (atan2 + 2 * Math.PI) * 360 / (2 * Math.PI) :
-                atan2 * 360 / (2 * Math.PI);
-        const [startAngle, endAngle] = this._correctAngles();
-        const sAngle = startAngle % 360,
-            eAngle = endAngle % 360;
-        let between = false;
-        if (sAngle > eAngle) {
-            between = !(angle > eAngle && angle < sAngle);
-        } else {
-            between = (angle >= sAngle && angle <= eAngle);
-        }
-        return pp.distanceTo(pc) <= (size.width / 2 + t) && between;
+        return Geometry.prototype._containsPoint.call(this, point, tolerance);
     }
 
     //@internal
