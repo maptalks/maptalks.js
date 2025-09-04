@@ -296,11 +296,16 @@ class TerrainPainter {
         const projViewMatrix = map.projViewMatrix;
         const renderer = this.layer.getRenderer();
         const maskUniforms = renderer.getMaskUniforms();
+        let layerOpacity = this.layer.options['opacity'];
+        if (isNil(layerOpacity)) {
+            layerOpacity = 1;
+        }
         const uniforms = {
             viewMatrix: map.viewMatrix,
             projMatrix: map.projMatrix,
             projViewMatrix,
-            heightScale: 1
+            heightScale: 1,
+            layerOpacity
         };
         extend(uniforms, maskUniforms);
         return uniforms;

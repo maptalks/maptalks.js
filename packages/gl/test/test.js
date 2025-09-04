@@ -616,7 +616,7 @@ describe('gl tests', () => {
                     group.once('layerload', () => {
                         const canvas = map.getRenderer().canvas;
                         const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2);
-                        expect(pixel).to.be.eql({ data: { '0': 138, '1': 142, '2': 143, '3': 255 } });
+                        expect(pixel).to.be.eql({ data: { '0': 139, '1': 143, '2': 145, '3': 127 } });
                         done();
                     });
                 });
@@ -986,10 +986,12 @@ describe('gl tests', () => {
                 const terrainLayer = group.getTerrainLayer();
                 terrainLayer.once('terrainreadyandrender', () => {
                     group.once('layerload', () => {
-                        const canvas = map.getRenderer().canvas;
-                        const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2);
-                        expect(pixel).to.be.eql({ data: { '0': 91, '1': 93, '2': 96, '3': 255 } });
-                        done();
+                        setTimeout(() => {
+                            const canvas = map.getRenderer().canvas;
+                            const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2);
+                            expect(pixel).to.be.eql({ data: { '0': 91, '1': 93, '2': 96, '3': 255 } });
+                            done();
+                        }, 500);
                     });
                 });
             });
