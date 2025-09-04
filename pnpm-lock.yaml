@@ -143,8 +143,8 @@ importers:
         specifier: ^0.4.0
         version: 0.4.0
       '@maptalks/regl':
-        specifier: ^3.5.1
-        version: 3.5.1
+        specifier: ^3.6.0
+        version: 3.6.0
       '@maptalks/reshader.gl':
         specifier: workspace:*
         version: link:../reshader.gl
@@ -277,8 +277,8 @@ importers:
         specifier: ^0.4.0
         version: 0.4.0
       '@maptalks/regl':
-        specifier: ^3.4.0
-        version: 3.5.1
+        specifier: ^3.6.0
+        version: 3.6.0
       '@maptalks/reshader.gpu':
         specifier: workspace:*
         version: link:../reshader.gpu
@@ -761,8 +761,8 @@ importers:
   packages/reshader.gl:
     dependencies:
       '@maptalks/regl':
-        specifier: ^3.4.0
-        version: 3.4.0
+        specifier: ^3.6.0
+        version: 3.6.0
       '@maptalks/tbn-packer':
         specifier: ^1.4.5
         version: 1.4.5
@@ -822,8 +822,8 @@ importers:
   packages/reshader.gpu:
     dependencies:
       '@maptalks/regl':
-        specifier: ^3.4.0
-        version: 3.5.1
+        specifier: ^3.6.0
+        version: 3.6.0
       '@maptalks/tbn-packer':
         specifier: ^1.4.5
         version: 1.4.5
@@ -1875,11 +1875,8 @@ packages:
   '@maptalks/martini@0.4.0':
     resolution: {integrity: sha512-h7yiE8FXaBhTncygKDOt24VNqvSwzK/nPVu7irr33jdp+1dmvKPWLyp40EUxecs9DOHMr/clbRD3sBJbtU9KnA==}
 
-  '@maptalks/regl@3.4.0':
-    resolution: {integrity: sha512-vir0oI5PXlLfxp1/B5TOOkmQfy7qeCwnx16uALViXfwo/ZJ79OLwePYENxwGLkbEV3HxETpdTm3dDU3Et9O4kw==}
-
-  '@maptalks/regl@3.5.1':
-    resolution: {integrity: sha512-rZFE1q4zHhcmfrqEU797wBRcZWl3B1Y7TZlP6Pi/M075MNT/oavHJlZzOoHwgyvIqMnzwEZEOQ/VKS77u9Nv7g==}
+  '@maptalks/regl@3.6.0':
+    resolution: {integrity: sha512-CQJZtEkTolL0QDUbaunNpxEFWQT2nQGCN85uKbTxg1vczjyQHA6s9DnQBwGFeFMLAWQbDy2qh/nu8Q6gNdcL+A==}
 
   '@maptalks/rollup-plugin-glsl-minify@0.1.7':
     resolution: {integrity: sha512-lvm41r1ztVDKhij37I7VdXqICwvZ0g62zJA55SQvxC4vGVlJWvVCfNXOjTM0yTe1nzRryIGCURlz7VL9xgq/NA==}
@@ -6255,9 +6252,7 @@ snapshots:
 
   '@maptalks/martini@0.4.0': {}
 
-  '@maptalks/regl@3.4.0': {}
-
-  '@maptalks/regl@3.5.1': {}
+  '@maptalks/regl@3.6.0': {}
 
   '@maptalks/rollup-plugin-glsl-minify@0.1.7':
     dependencies:

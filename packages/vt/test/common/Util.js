@@ -12,6 +12,13 @@ function readPixel(target, x, y) {
     return [pixel[0], pixel[1], pixel[2], pixel[3]];
 }
 
+function readCanvasPixels(target) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    canvas.width = target.width;
+    canvas.height = target.height;
+    ctx.drawImage(target, 0, 0);
+    return ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+}
 
 function compareExpected(canvas, { expectedPath, expectedDiffCount }, done) {
     match(canvas, expectedPath, (err, result) => {
@@ -28,7 +35,7 @@ function compareExpected(canvas, { expectedPath, expectedDiffCount }, done) {
             const diffPath = dir + 'diff.png';
             writeImageData(diffPath, result.diffImage, result.width, result.height);
             const actualPath = dir + 'actual.png';
-            writeImageData(actualPath, canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
+            writeImageData(actualPath, readCanvasPixels(canvas), canvas.width, canvas.height);
         }
         assert(result.diffCount <= expectedDiffCount);
         if (done) {

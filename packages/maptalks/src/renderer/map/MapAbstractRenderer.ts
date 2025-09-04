@@ -211,6 +211,17 @@ class MapAbstractRenderer extends MapRenderer {
                 renderer.render(framestamp);
             }
         }
+        /**
+         * renderend event, an event fired when map ends rendering.
+         * @event Map#renderend
+         * @type {Object}
+         * @property {String} type                      - renderend
+         * @property {Map} target              - the map fires event
+         * @property {CanvasRenderingContext2D} context - canvas context
+         */
+        map._fireEvent('renderend', {
+            'context': this.context
+        });
         return true;
     }
 
@@ -845,10 +856,14 @@ class MapAbstractRenderer extends MapRenderer {
                 updated = true;
             }
         }
-        if (updated) {
+        if (updated && this.context && this.context.drawImage) {
             this.context.drawImage(this.topLayer, 0, 0);
         }
         this.map.fire('drawtopsend');
+    }
+
+    isWebGPU() {
+        return false;
     }
 }
 

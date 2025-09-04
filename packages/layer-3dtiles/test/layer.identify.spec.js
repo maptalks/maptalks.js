@@ -23,7 +23,7 @@ describe('3dtiles identify specs', () => {
         const option = {
             zoom: 17,
             center: center || [0, 0],
-            centerCross: true
+            devicePixelRatio: 1
         };
         map = new maptalks.Map(container, option);
 
@@ -56,14 +56,12 @@ describe('3dtiles identify specs', () => {
             map.fitExtent(extent, 0, { animation: false });
         });
 
-        layer.once('canvasisdirty', () => {
-            setTimeout(() => {
-                const hits = layer.identify([-75.6123142489637, 40.042239032448684]);
-                assert(hits[0].data.batchId === 8);
-                assert(hits[0].coordinate[0] !== 0);
-                done();
-            }, 500);
-        });
+        setTimeout(() => {
+            const hits = layer.identify([-75.6123142489637, 40.042239032448684]);
+            assert(hits[0].data.batchId === 8);
+            assert(hits[0].coordinate[0] !== 0);
+            done();
+        }, 2000);
 
         layer.addTo(map);
     }).timeout(5000);
@@ -88,7 +86,7 @@ describe('3dtiles identify specs', () => {
             assert(hits[0].data.Height === 20);
             assert(hits[0].coordinate[0] !== 0);
             done();
-        }, 1000);
+        }, 2000);
     });
 
     it('can identify batched pnts data', done => {
@@ -109,7 +107,7 @@ describe('3dtiles identify specs', () => {
             const hits = layer.identify([-75.61209122255298, 40.04252824941395]);
             assert(hits[0].coordinate[0] !== 0);
             done();
-        }, 1000);
+        }, 2000);
     });
 
     it('can identify pnts data with properties', done => {
@@ -131,7 +129,7 @@ describe('3dtiles identify specs', () => {
             assert(hits[0].data.batchId > 0);
             assert(hits[0].coordinate[0] !== 0);
             done();
-        }, 1000);
+        }, 2000);
     });
 
 

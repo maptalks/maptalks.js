@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { mat4, vec3 } from '@maptalks/gl';
+import { mat4, vec3, CanvasCompatible } from '@maptalks/gl';
 import { convertToFeature, ID_PROP } from './util/convert_to_feature';
 import { extend, hasOwn, getCentiMeterScale, isNil } from '../../common/Util';
 import IconRequestor from '../../common/IconRequestor';
@@ -55,7 +55,7 @@ const KEY_IDX_NAME = (KEY_IDX + '').trim();
 let EMPTY_POSITION = new Float32Array(1);
 const EMPTY_ARRAY = [];
 
-class Vector3DLayerRenderer extends LayerAbstractRenderer {
+class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
     constructor(...args) {
         super(...args);
         this.features = {};

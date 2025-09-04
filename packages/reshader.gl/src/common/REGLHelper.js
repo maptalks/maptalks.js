@@ -35,8 +35,8 @@ const materialFormats = {
     0x8c92: 'rgb atc',
     0x8C93: 'rgba atc explicit alpha',
     0x87EE: 'rgba atc interpolated alpha',
-    0x8D64: 'rgb etc1'
-
+    0x8D64: 'rgb etc1',
+    0x9274: 'rgb etc2'
 };
 export function getMaterialFormat(format) {
     return materialFormats[format];

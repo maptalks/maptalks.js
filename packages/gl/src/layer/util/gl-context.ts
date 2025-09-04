@@ -28,7 +28,7 @@ export function createWebGLContext(canvas: HTMLCanvasElement, preserveDrawingBuf
         reglGL: reglGL,
         regl,
         getImageData: (sx, sy, sw, sh) => {
-            const pixels = new Uint8ClampedArray(sw * sh * 4);
+            const pixels = new Uint8Array(sw * sh * 4);
             (regl as any).read({
                 x: sx,
                 y: canvas.height - sy,
@@ -36,7 +36,7 @@ export function createWebGLContext(canvas: HTMLCanvasElement, preserveDrawingBuf
                 height: sh,
                 data: pixels
             });
-            return new ImageData(pixels, sw, sh);
+            return new ImageData(new Uint8ClampedArray(pixels.buffer), sw, sh);
         }
     };
     return {

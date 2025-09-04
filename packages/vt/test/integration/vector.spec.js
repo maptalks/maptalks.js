@@ -22,8 +22,14 @@ const DEFAULT_VIEW = {
     }
 };
 
+const TEST_CANVAS = document.createElement('canvas');
+
+maptalks.Map.mergeOptions({
+    renderer: ['gl', 'gpu']
+});
+
 describe('vector 3d integration specs', () => {
-    let map, container;
+    let map, layer, container;
     before(() => {
         // const iconDebug = document.createElement('canvas');
         // iconDebug.id = 'MAPTALKS_ICON_DEBUG';
@@ -35,13 +41,14 @@ describe('vector 3d integration specs', () => {
     });
 
     afterEach(() => {
+        layer.clear();
         map.remove();
     });
 
     const runner = (p, Layer, style) => {
         return done => {
             const options = style.view || DEFAULT_VIEW;
-            options.centerCross = true;
+            // options.centerCross = true;
             if (!options.lights) {
                 options.lights = DEFAULT_VIEW.lights;
             }
@@ -49,33 +56,53 @@ describe('vector 3d integration specs', () => {
             container.style.width = (style.containerWidth || 128) + 'px';
             container.style.height = (style.containerHeight || 128) + 'px';
             options.devicePixelRatio = 1;
+            const enableBloom = style.options && style.options.enableBloom;
             map = new maptalks.Map(container, options);
-            const layer = new Layer('vector', style.data, style.options);
+            layer = new Layer('vector', style.data, style.options);
+            let timeoutHandle;
             let counter = 0;
             layer.on('canvasisdirty', () => {
                 counter++;
-                if (counter < count || counter > count) {
+                if (!enableBloom && counter < count || counter > count) {
                     return;
                 }
-                const canvas = map.getRenderer().canvas;
-                const expectedPath = style.expected;
-                //比对测试
-                match(canvas, expectedPath, (err, result) => {
-                    if (err) {
-                        done(err);
-                        return;
-                    }
-                    if (result.diffCount > 0) {
-                        //保存差异图片
-                        const dir = expectedPath.substring(0, expectedPath.length - 'expected.png'.length);
-                        const diffPath = dir + 'diff.png';
-                        writeImageData(diffPath, result.diffImage, result.width, result.height);
-                        const actualPath = dir + 'actual.png';
-                        writeImageData(actualPath, canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
-                    }
-                    assert(result.diffCount === 0);
-                    done();
-                });
+
+                const doneFn = () => {
+                    const mapCanvas = map.getRenderer().canvas;
+                    // const canvas = map.getRenderer().canvas;
+                    const canvas = TEST_CANVAS;
+                    canvas.width = mapCanvas.width;
+                    canvas.height = mapCanvas.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(mapCanvas, 0, 0);
+                    const expectedPath = style.expected;
+                    //比对测试
+                    match(canvas, expectedPath, (err, result) => {
+                        if (err) {
+                            done(err);
+                            return;
+                        }
+                        if (result.diffCount > 0) {
+                            //保存差异图片
+                            const dir = expectedPath.substring(0, expectedPath.length - 'expected.png'.length);
+                            const diffPath = dir + 'diff.png';
+                            writeImageData(diffPath, result.diffImage, result.width, result.height);
+                            const actualPath = dir + 'actual.png';
+                            writeImageData(actualPath, canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
+                        }
+                        assert(result.diffCount === 0);
+                        done();
+                    });
+                };
+                if (enableBloom) {
+                    clearTimeout(timeoutHandle);
+                    timeoutHandle = setTimeout(doneFn, 500);
+                } else {
+                    map.once('renderend', () => {
+                        doneFn();
+                    });
+
+                }
             });
             if (style.options && style.options.enableBloom) {
                 const sceneConfig = {

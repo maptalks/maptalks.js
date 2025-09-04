@@ -492,10 +492,10 @@ export default class Geometry {
             const arr = this.data[key].data || this.data[key].array || this.data[key];
             if (Array.isArray(arr)) {
                 this._color0Size = arr.length / this._vertexCount;
-            } else if (arr && arr.count) {
-                this._color0Size = arr.count / this._vertexCount;
             } else if (this.data[key].buffer && this.data[key].buffer.destroy) {
                 this._color0Size = this.data[key].buffer['_buffer'].dimension;
+            } else if (arr && arr.itemSize) {
+                this._color0Size = arr.itemSize;
             }
         }
         return this._vertexCount;

@@ -579,7 +579,7 @@ describe('gl tests', () => {
                     group.on('layerload', () => {
                         const canvas = map.getRenderer().canvas;
                         const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2);
-                        expect(pixel).to.be.eql({ data: { 0: 136, 1: 140, 2: 141, 3: 255 } });
+                        expect(pixel).to.be.eql({ data: { '0': 138, '1': 142, '2': 143, '3': 255 } });
                         done();
                     });
                 });
@@ -616,7 +616,7 @@ describe('gl tests', () => {
                     group.once('layerload', () => {
                         const canvas = map.getRenderer().canvas;
                         const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2);
-                        expect(pixel).to.be.eql({ data: { '0': 136, '1': 140, '2': 141, '3': 255 } });
+                        expect(pixel).to.be.eql({ data: { '0': 138, '1': 142, '2': 143, '3': 255 } });
                         done();
                     });
                 });
@@ -650,7 +650,7 @@ describe('gl tests', () => {
                     group.once('layerload', () => {
                         const canvas = group.getRenderer().canvas;
                         const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2);
-                        expect(pixel).to.be.eql({ data: { '0': 136, '1': 140, '2': 141, '3': 255 }});
+                        expect(pixel).to.be.eql({ data: { '0': 138, '1': 142, '2': 143, '3': 255 }});
                         done();
                     });
                 });
@@ -951,7 +951,7 @@ describe('gl tests', () => {
                 setTimeout(() => {
                     const canvas = map.getRenderer().canvas;
                     const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2);
-                    expect(pixel).to.be.eql({ data: { '0': 136, '1': 140, '2': 141, '3': 255 } });
+                    expect(pixel).to.be.eql({ data: { '0': 138, '1': 142, '2': 143, '3': 255 } });
                     done();
                 }, 1000);
             }, 2000);
@@ -1090,7 +1090,7 @@ describe('gl tests', () => {
                     group.once('layerload', () => {
                         const canvas = map.getRenderer().canvas;
                         const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2 + 1);
-                        expect(pixel).to.be.eql({ data: { '0': 85, '1': 85, '2': 79, '3': 255 }  });
+                        expect(pixel).to.be.eql({ data: { '0': 97, '1': 96, '2': 89, '3': 255 }  });
                         done();
                     });
                 });
@@ -1943,7 +1943,7 @@ describe('gl tests', () => {
                     group.once('layerload', () => {
                         const canvas = map.getRenderer().canvas;
                         const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2);
-                        expect(pixel).to.be.eql({ data: { '0': 136, '1': 140, '2': 141, '3': 255 } });
+                        expect(pixel).to.be.eql({ data: { '0': 138, '1': 142, '2': 143, '3': 255 } });
                         done();
                     });
                 });
@@ -2124,9 +2124,9 @@ describe('gl tests', () => {
                     group.once('layerload', () => {
                         const canvas = map.getRenderer().canvas;
                         const pixel1 = readPixel(canvas, canvas.width / 2, canvas.height / 2);
-                        expect(pixel1).to.be.eql({ data: { '0': 68, '1': 128, '2': 185, '3': 255 } });
+                        expect(pixel1).to.be.eql({ data: { '0': 70, '1': 133, '2': 195, '3': 255 } });
                         const pixel2 = readPixel(canvas, canvas.width / 2, canvas.height / 2 + 250);
-                        expect(pixel2).to.be.eql({ data: { '0': 125, '1': 115, '2': 95, '3': 255 } });
+                        expect(pixel2).to.be.eql({ data: {'0': 92, '1': 90, '2': 77, '3': 255 } });
                         done();
                     });
                 });

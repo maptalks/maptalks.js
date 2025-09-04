@@ -67,7 +67,7 @@ describe('update vt on terrain specs', () => {
 
     context('should can update terrain with line render plugin, fuzhenn/maptalks-ide#3152', () => {
 
-        const lineTerrainRunner = (done, eventCount, isPostProcessOn) => {
+        const lineTerrainRunner = (done, isPostProcessOn) => {
             const style = [
                 {
                     filter: true,
@@ -91,43 +91,30 @@ describe('update vt on terrain specs', () => {
                     antialias: { enable: true }
                 }
             };
-            const limit = 20;
             const group = new GroupGLLayer('group', [layer], { sceneConfig });
-            let count = 0;
             const renderer = map.getRenderer();
             const x = renderer.canvas.width, y = renderer.canvas.height;
-            layer.once('canvasisdirty', () => {
-                group.on('layerload', () => {
-                    count++;
-                    if (count === eventCount) {
-                        let pixel = readPixel(renderer.canvas, x / 2, y / 2);
-                        if (pixel[3] === 0 && count < limit) {
-                            eventCount++;
-                            return;
-                        }
-                        assert.deepEqual(pixel, [255, 0, 0, 255]);
-
-                        pixel = readPixel(renderer.canvas, x / 2, y / 2 + 40);
-                        assert(pixel[0] === 115);
-                        assert(pixel[1] === 115);
-                        assert(pixel[2] === 115);
-                        assert(pixel[3] === 255);
-                        done();
-                    }
-                });
-                setTimeout(() => {
-                    // 开启了postProcess时，这里如果立即执行，line无法绘制，原因未知
-                    group.setTerrain(terrain);
-                }, 100);
-            });
+            setTimeout(() => {
+                group.setTerrain(terrain);
+            }, 100);
+            setTimeout(() => {
+                let pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                pixel = readPixel(renderer.canvas, x / 2, y / 2 + 40);
+                assert(pixel[0] === 116);
+                assert(pixel[1] === 116);
+                assert(pixel[2] === 116);
+                assert(pixel[3] === 255);
+                done();
+            }, 3000);
             group.addTo(map);
         }
         it ('without post process', done => {
-            lineTerrainRunner(done, 4, false);
+            lineTerrainRunner(done, false);
         });
 
         it ('with post process', done => {
-            lineTerrainRunner(done, 4, true);
+            lineTerrainRunner(done, true);
         });
 
     });

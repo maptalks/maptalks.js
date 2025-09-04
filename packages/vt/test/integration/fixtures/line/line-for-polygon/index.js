@@ -32,7 +32,7 @@ const style = {
         {
             filter: true,
             renderPlugin: {
-                type: 'text',
+                type: 'icon',
                 dataConfig: {
                     type: 'point'
                 },
@@ -40,8 +40,9 @@ const style = {
                 }
             },
             symbol: {
-                textName: 'hello',
-                textSize: 20
+                markerType: 'ellipse',
+                markerWidth: 10,
+                markerHeight: 10
             }
         }
     ]

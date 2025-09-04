@@ -1071,7 +1071,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
 
     _getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp) {
         const isRenderingTerrain = this._isRenderingTerrain();
-        const isRenderingTerrainSkin = isRenderingTerrain && plugin && terrainSkinFilter(plugin);;
+        const isRenderingTerrainSkin = isRenderingTerrain && plugin && terrainSkinFilter(plugin);
         const regl = this.regl || this.device;
         const gl = this.gl;
         const context = {
@@ -1584,7 +1584,6 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             delete this._debugPainter;
         }
         if (this._terrainDepthStencil) {
-            this._terrainDepthStencil.colorTex.destroy();
             this._terrainDepthStencil.destroy();
             delete this._terrainDepthStencil;
         }

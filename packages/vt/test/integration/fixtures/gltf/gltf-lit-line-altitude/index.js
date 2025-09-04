@@ -79,5 +79,5 @@ module.exports = {
         pitch: 80
     },
     containerWidth: 1024,
-    containerHeight: 1024
+    containerHeight: 1024,
 };
