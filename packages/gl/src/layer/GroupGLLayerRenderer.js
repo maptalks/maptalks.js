@@ -118,7 +118,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         drawContext.hasSSRGround = !!(ssrMode && groundConfig && groundConfig.enable && groundConfig.symbol && groundConfig.symbol.ssr);
         fGL.resetDrawCalls();
         // this._renderInMode(enableTAA ? 'fxaaBeforeTaa' : 'fxaa', this._targetFBO, methodName, args);
-        this._renderInMode('default', this._targetFBO, methodName, args);
+        this._renderInMode('default', this._targetFBO, methodName, args, true);
         // this._fxaaDrawCount = fGL.getDrawCalls();
 
         // 重用上一帧的深度纹理，先绘制ssr图形

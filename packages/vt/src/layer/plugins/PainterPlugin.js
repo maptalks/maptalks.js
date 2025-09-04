@@ -99,6 +99,7 @@ function createPainterPlugin(type, Painter) {
             const {
                 tileCache,
                 tileData,
+                tileInfo
             } = context;
             let retire = false;
             const painter = this.painter;
@@ -114,6 +115,9 @@ function createPainterPlugin(type, Painter) {
                     return { retire };
                 }
                 const data = glData;
+                for (let i = 0; i < glData.length; i++) {
+                    data[i].tileInfo = tileInfo;
+                }
                 // 目前只有native-line和wireframe会用到
                 if (this.painter.colorSymbol && !isObjectEmpty(features)) {
                     for (let i = 0; i < glData.length; i++) {

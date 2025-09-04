@@ -145,13 +145,12 @@ class TileLayerGLRenderer2 extends TexturePoolable(CanvasCompatible(TileLayerRen
         updateFilter(mesh, map, tileInfo.res);
 
         let opacity = this.getTileOpacity(tileImage, tileInfo);
-        if (map.getRenderer().canvas === this.canvas) {
-            let layerOpacity = this.layer.options['opacity'];
-            if (isNil(layerOpacity)) {
-                layerOpacity = 1;
-            }
-            opacity *= layerOpacity;
+        let layerOpacity = this.layer.options['opacity'];
+        if (isNil(layerOpacity)) {
+            layerOpacity = 1;
         }
+        opacity *= layerOpacity;
+
 
         mesh.material.set('opacity', opacity);
         mesh.setUniform('isCurrentTiles', +!!this.drawingCurrentTiles);
