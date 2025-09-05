@@ -31,6 +31,11 @@ const vert = /* wgsl */`
     @group(0) @binding($b) var<uniform> altitudeUniforms: AltitudeUniforms;
 #endif
 
+#ifdef HAS_TERRAIN_FLAT_MASK
+    @group(0) @binding($b) var flatMask: texture_2d<f32>;
+    @group(0) @binding($b) var flatMaskSampler: sampler;
+#endif
+
 fn getPositionMatrix(input: VertexInput, vertexOutput: ptr<function, VertexOutput>, positionMatrix: mat4x4f) -> mat4x4f {
     var worldMatrix: mat4x4f;
 #ifdef HAS_INSTANCE
@@ -78,6 +83,15 @@ fn getPosition(inputPosition: vec3f, vertexInput: VertexInput) -> vec4f {
     #endif
     #ifdef HAS_TERRAIN_ALTITUDE
         outputPosition.z += vertexInput.aTerrainAltitude * 100.0;
+    #endif
+    #ifdef HAS_TERRAIN_FLAT_MASK
+        var uv = aTexCoord;
+        uv.y = 1.0 - uv.y;
+        let encodedHeight = textureSample(flatMask, flatMaskSampler, uv);
+        if (length(encodedHeight) < 2.0) {
+            float maskHeight = decodeFloat32(encodedHeight);
+            outputPosition.z = min(outputPosition.z, maskHeight);
+        }
     #endif
     #ifdef HAS_MIN_ALTITUDE
         outputPosition.z += altitudeUniforms.minAltitude * 100.0;

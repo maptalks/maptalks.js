@@ -1291,6 +1291,9 @@ class VectorTileLayer extends maptalks.TileLayer {
       ) {
         throw new Error(`Invalid filter at ${i} : ${JSON.stringify(filter)}`);
       }
+      if (!styles[i].symbol) {
+        styles[i].symbol = {};
+      }
       //TODO 如果定义了renderPlugin就必须定义symbol
     }
   }

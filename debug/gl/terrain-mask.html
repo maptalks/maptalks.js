@@ -31,6 +31,7 @@
         "zoom": 13,
         "pitch": 10,
         "bearing": 0,
+        renderer: 'gl',
         queryTerrainInMapEvents: false
       });
 
@@ -51,6 +52,7 @@
 
       const terrain = {
         debug: true,
+        shader: 'lit',
         type: "mapbox",
         urlTemplate: `https://{s}.tiles.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.pngraw?access_token=${token}`,
         subdomains: ["a", "b", "c", "d"]
@@ -65,11 +67,11 @@
                     type: "Polygon",
                     coordinates: [
                         [
-                            [94.50812103, 29.45095163, 3000],
-                            [94.59012103, 29.45095163, 3000],
-                            [94.59012103, 29.40095163, 3000],
-                            [94.50812103, 29.40095163, 3000],
-                            [94.50812103, 29.45095163, 3000]
+                            [94.50812103, 29.45095163, 0],
+                            [94.59012103, 29.45095163, 0],
+                            [94.59012103, 29.40095163, 0],
+                            [94.50812103, 29.40095163, 0],
+                            [94.50812103, 29.45095163, 0]
                         ]
                     ]
                 },
@@ -99,11 +101,10 @@
             renderPlugin: {
               dataConfig: {
                 type: "fill",
+                altitudeOffset: 3000
               },
               sceneConfig: {},
               type: "terrain-flat-mask",
-            },
-            symbol: {
             }
         }
       ]

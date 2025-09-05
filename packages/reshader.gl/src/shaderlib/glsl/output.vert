@@ -69,7 +69,11 @@ mat4 getPositionMatrix() {
 }
 
 #ifdef HAS_MIN_ALTITUDE
-uniform float minAltitude;
+    uniform float minAltitude;
+#endif
+
+#ifdef HAS_TERRAIN_FLAT_MASK
+    uniform sampler2D flatMask;
 #endif
 
 vec4 getPosition(vec3 aPosition) {
@@ -83,6 +87,15 @@ vec4 getPosition(vec3 aPosition) {
     #endif
     #ifdef HAS_TERRAIN_ALTITUDE
         POSITION.z += aTerrainAltitude * 100.0;
+    #endif
+    #ifdef HAS_TERRAIN_FLAT_MASK
+        vec2 uv = aTexCoord;
+        uv.y = 1.0 - uv.y;
+        vec4 encodedHeight = texture2D(flatMask, uv);
+        if (length(encodedHeight) < 2.0) {
+            float maskHeight = decodeFloat32(encodedHeight);
+            POSITION.z = min(POSITION.z, maskHeight);
+        }
     #endif
     #ifdef HAS_MIN_ALTITUDE
         POSITION.z += minAltitude * 100.0;
