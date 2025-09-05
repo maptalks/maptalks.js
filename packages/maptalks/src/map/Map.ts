@@ -2000,9 +2000,9 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             }
         }
 
-        if (this._containerDOM.childNodes && this._containerDOM.childNodes.length > 0) {
-            //@ts-expect-error I don't know either
-            if (this._containerDOM.childNodes[0].className === 'maptalks-wrapper') {
+        if(this._containerDOM?.childNodes?.length > 0) {
+            const firstChild = this._containerDOM.childNodes[0];
+            if (firstChild instanceof HTMLElement && firstChild.classList.contains('maptalks-wrapper')) {
                 throw new Error('Container is already loaded with another map instance, use map.remove() to clear it.');
             }
         }
