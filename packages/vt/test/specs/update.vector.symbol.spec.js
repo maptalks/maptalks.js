@@ -73,6 +73,7 @@ describe('vector layers symbol update specs', () => {
             count++;
         });
         let updated = false;
+        let doneCalled = false;
         group.on('layerload', () => {
             if (count >= 1 && !updated) {
                 const pixel = readPixel(layer.getRenderer().canvas, x + 20, y);
@@ -83,11 +84,12 @@ describe('vector layers symbol update specs', () => {
                     markerHeight: 60
                 });
                 updated = true;
-            } else if (updated && count >= 4) {
+            } else if (updated && count >= 4 && !doneCalled) {
                 const pixel = readPixel(renderer.canvas, x + 20, y);
                 //中心点往外40，能读到像素了
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 assert(!partialUpdate);
+                doneCalled = true;
                 done();
             }
         });
@@ -123,6 +125,7 @@ describe('vector layers symbol update specs', () => {
         });
         let updated = false;
         let partialUpdate = false;
+        let doneCalled = false;
         layer.on('partialupdate', () => {
             partialUpdate = true;
         });
@@ -151,12 +154,13 @@ describe('vector layers symbol update specs', () => {
                     },
                 ]);
                 updated = true;
-            } else if (updated && count >= 3) {
+            } else if (updated && count >= 3 && !doneCalled) {
                 const pixel = readPixel(renderer.canvas, x + 20, y);
                 assert.deepEqual(pixel, [0, 255, 0, 255]);
                 const pixel1 = readPixel(renderer.canvas, x, y);
                 assert.deepEqual(pixel1, [255, 0, 0, 255]);
                 assert(!partialUpdate);
+                doneCalled = true;
                 done();
             }
         });
