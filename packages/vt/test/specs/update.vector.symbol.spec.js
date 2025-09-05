@@ -273,6 +273,7 @@ describe('vector layers symbol update specs', () => {
         layer.on('partialupdate', () => {
             partialUpdate = true;
         });
+        let doneCalled = false;
         group.on('layerload', () => {
             if (count >= 1 && !updated) {
                 const pixel = readPixel(renderer.canvas, x + 38, y);
@@ -283,12 +284,13 @@ describe('vector layers symbol update specs', () => {
                     }
                 ]);
                 updated = true;
-            } else if (updated && count >= 4) {
+            } else if (updated && count >= 4 && !doneCalled) {
                 const pixel = readPixel(renderer.canvas, x + 37, y);
                 assert.deepEqual(pixel, [0, 255, 0, 255]);
                 const pixel1 = readPixel(renderer.canvas, x, y);
                 assert.deepEqual(pixel1, [255, 0, 0, 255]);
                 assert(!partialUpdate);
+                doneCalled = true;
                 done();
             }
         });
