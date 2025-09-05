@@ -53,6 +53,7 @@ describe('vector tile on terrain integration specs', () => {
                 options.lights = DEFAULT_VIEW.lights;
             }
             options.devicePixelRatio = 1;
+            options.renderer = 'canvas';
 
             const limit = style.renderingCount || 6;
             map = new maptalks.Map(container, options);
