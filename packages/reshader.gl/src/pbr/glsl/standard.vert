@@ -4,7 +4,7 @@ precision highp float;
 
 attribute vec3 aPosition;
 
-#if defined(HAS_NORMAL) || defined(HAS_TERRAIN_FLAT_MASK)
+#if defined(HAS_MAP) || defined(HAS_TERRAIN_FLAT_MASK)
     attribute vec2 aTexCoord;
     #include <common_pack_float>
 #endif
