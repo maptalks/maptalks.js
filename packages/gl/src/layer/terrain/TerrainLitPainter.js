@@ -105,11 +105,16 @@ class TerrainLitPainter extends TerrainPainter {
         const material = new reshader.pbr.StandardMaterial(matInfo);
         const mesh = new reshader.Mesh(geo, material);
         mesh.properties.matVer = this._matVer;
+        if (!mesh.uniforms.flatMask) {
+            const emptyTexture = this.getEmptyTexture();
+            mesh.setUniform('flatMask', emptyTexture);
+        }
         const defines = mesh.defines;
         defines['HAS_UV_FLIP'] = 1;
         defines['HAS_TERRAIN_NORMAL'] = 1;
         defines['HAS_MAP'] = 1;
         defines['HAS_LAYER_OPACITY'] = 1;
+        defines['HAS_TERRAIN_FLAT_MASK'] = 1;
         mesh.defines = defines;
         // mesh.setUniform('terrainTileResolution', tileInfo.res);
         this.prepareMesh(mesh, tileInfo, terrainImage);
@@ -126,7 +131,10 @@ class TerrainLitPainter extends TerrainPainter {
                 mesh.properties.matVer = this._matVer;
             }
             if (tileImage.skin) {
-                mesh.material.set('skinTexture', tileImage.skin);
+                mesh.material.set('skinTexture', tileImage.skin.color[0]);
+            }
+            if (tileImage.mask) {
+                mesh.setUniform('flatMask', tileImage.mask.color[0]);
             }
             mesh.setUniform('polygonOpacity', 1.0);
             // const { skirtOffset, skirtCount } = mesh.properties;

@@ -4,8 +4,13 @@ precision highp float;
 
 attribute vec3 aPosition;
 
-#if defined(HAS_MAP)
+#if defined(HAS_NORMAL) || defined(HAS_TERRAIN_FLAT_MASK)
     attribute vec2 aTexCoord;
+    #include <common_pack_float>
+#endif
+
+#if defined(HAS_MAP)
+
     uniform vec2 uvOrigin;
     uniform vec2 uvScale;
     uniform vec2 uvOffset;

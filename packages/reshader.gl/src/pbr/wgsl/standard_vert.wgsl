@@ -8,6 +8,7 @@
     #include <fbo_picking_vert>
 #endif
 #include <excavate_vert>
+#include <common_pack_float>
 
 struct VertexInput {
     #ifdef POSITION_IS_INT
@@ -16,8 +17,11 @@ struct VertexInput {
         @location($i) aPosition: vec3f,
     #endif
 
-    #if HAS_MAP
+    #if HAS_MAP || HAS_TERRAIN_FLAT_MASK
         @location($i) aTexCoord: vec2f,
+    #endif
+    #if HAS_MAP
+
         #ifdef HAS_I3S_UVREGION
             @location($i) uvRegion: vec4f,
         #endif

@@ -23,6 +23,8 @@ const DEFAULT_VIEW = {
     }
 };
 
+const TEST_CANVAS = document.createElement('canvas');
+
 describe('vector tile on terrain integration specs', () => {
     let map, container, server;
     const containerSize = 128;
@@ -76,18 +78,29 @@ describe('vector tile on terrain integration specs', () => {
                 fadeAnimation: false
                 // shader: 'lit'
             };
+            if (style.lit) {
+                terrain.shader = 'lit';
+            }
             const group = new GroupGLLayer('group', [layer], { terrain });
             group.addTo(map);
+
 
             const terrainLayer = group.getTerrainLayer();
             let count = 0;
             let ended = false;
             terrainLayer.on('terrainreadyandrender', () => {
                 count++;
-                const canvas = map.getRenderer().canvas;
+                const mapCanvas = map.getRenderer().canvas;
                 const expectedPath = style.expected;
                 if (!ended && count >= limit) {
                     ended = true;
+
+                    const canvas = TEST_CANVAS;
+                    canvas.width = mapCanvas.width;
+                    canvas.height = mapCanvas.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(mapCanvas, 0, 0);
+
                     //比对测试
                     match(canvas, expectedPath, (err, result) => {
                         if (err) {
