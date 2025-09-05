@@ -1,5 +1,20 @@
 # @maptalks/vt
 
+## 0.108.0
+
+### Minor Changes
+
+- - implement terrain-flat-mask rendre plugin in VectorLayer
+  - sync codes with maptalks/gl-layers
+  - webgl layers' compatibility fixes with MapCanvasRenderer
+  - bug fixes in maptalks
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.109.0
+  - @maptalks/vt-plugin@0.100.0
+
 ## 0.103.2
 
 ### Patch Changes

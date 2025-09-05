@@ -1,5 +1,20 @@
 # @maptalks/transform-control
 
+## 0.106.0
+
+### Minor Changes
+
+- - implement terrain-flat-mask rendre plugin in VectorLayer
+  - sync codes with maptalks/gl-layers
+  - webgl layers' compatibility fixes with MapCanvasRenderer
+  - bug fixes in maptalks
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.109.0
+  - @maptalks/gltf-layer@0.106.0
+
 ## 0.104.1
 
 ### Patch Changes
