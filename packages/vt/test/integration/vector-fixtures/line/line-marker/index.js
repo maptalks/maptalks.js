@@ -1,9 +1,8 @@
 const maptalks = require('maptalks');
-const path = require('path');
 
 const line = new maptalks.LineString([[0, 0], [1, 0]], {
     symbol: {
-        markerFile: 'file://' + path.resolve(__dirname, '../../../resources/plane-min.png'),
+        markerType: 'ellipse',
         markerVerticalAlignment: 'middle',
         markerWidth: 30,
         markerHeight: 30,
@@ -16,7 +15,7 @@ const line = new maptalks.LineString([[0, 0], [1, 0]], {
 
 module.exports = {
     data: [line],
-    renderingCount: 2,
+    renderingCount: 1,
     view: {
         center: [0, 0],
         zoom: 6
