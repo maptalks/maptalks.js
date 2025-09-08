@@ -32,7 +32,7 @@ export function createImageMesh(geometry, image, extent2d, offset, scale, unifor
     uniforms = extend(uniforms || {}, {
         opacity: 1,
         debugLine: 0,
-        alphaTest: 1,
+        alphaTest: 0,
         baseColor: DEFAULT_BASE_COLOR,
         baseColorTexture: texture
     });
