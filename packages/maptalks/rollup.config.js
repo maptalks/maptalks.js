@@ -5,12 +5,15 @@ const commonjs = require('@rollup/plugin-commonjs'),
     typescript = require('@rollup/plugin-typescript'),
     terser = require('@rollup/plugin-terser');
 const pkg = require('./package.json');
+// eslint-disable-next-line no-unused-vars
 const { dts } = require("rollup-plugin-dts");
+const copy = require('rollup-plugin-copy');
 
 const testing = process.env.BUILD === 'test';
 const dev = process.env.BUILD === 'dev';
 
 const isDebug = testing || dev;
+// eslint-disable-next-line no-unused-vars
 const plugins = testing ?
     [
         // ['istanbul', {
@@ -26,6 +29,11 @@ const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}
 const outro = `typeof console !== 'undefined' && console.log && console.log('${pkg.name} v${pkg.version}');`;
 
 const rollupPlugins = [
+    copy({
+        targets: [
+            { src: 'assets/*', dest: 'dist' },
+        ]
+    }),
     json(),
     resolve({
         module: true,
@@ -34,7 +42,7 @@ const rollupPlugins = [
     }),
     commonjs(),
     typescript({
-         sourceMap: true
+        sourceMap: true
     }),
     babel({
         extensions: [".ts"],
