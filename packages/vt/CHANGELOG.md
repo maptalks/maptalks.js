@@ -1,5 +1,12 @@
 # @maptalks/vt
 
+## 0.108.1
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.109.1
+
 ## 0.108.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @maptalks/fusiongl
 
+## 0.10.1
+
+### Patch Changes
+
+- fix: fix LayerAbstractRenderer resizeCanvas and compatibility with ThreeLayer
+
 ## 0.10.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # maptalks
 
+## 1.4.3
+
+### Patch Changes
+
+- fix: fix LayerAbstractRenderer resizeCanvas and compatibility with ThreeLayer
+
 ## 1.4.2
 
 ### Patch Changes

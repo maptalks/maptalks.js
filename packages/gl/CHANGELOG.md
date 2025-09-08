@@ -1,5 +1,15 @@
 # @maptalks/gl
 
+## 0.109.1
+
+### Patch Changes
+
+- fix: fix LayerAbstractRenderer resizeCanvas and compatibility with ThreeLayer
+- Updated dependencies
+  - @maptalks/fusiongl@0.10.1
+  - maptalks@1.4.3
+  - @maptalks/gltf-loader@0.103.0
+
 ## 0.109.0
 
 ### Minor Changes
