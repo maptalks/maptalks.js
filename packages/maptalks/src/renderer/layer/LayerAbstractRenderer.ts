@@ -455,6 +455,7 @@ class LayerAbstractRenderer extends Class {
             this.initContext();
         } else if (isMapCanvasRenderer) {
             this.clearContext();
+            this.resizeCanvas();
         }
         this.prepareContext();
         delete this._maskExtent;

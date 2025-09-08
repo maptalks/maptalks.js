@@ -499,6 +499,8 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         this.regl = regl;
         this.reglGL = reglGL;
         this.gl = gl;
+        // 为老的webgl插件提供兼容性
+        this.canvas.gl = this.gl;
         this._jitter = [0, 0];
         const graphics = regl || device;
         this._groundPainter = new GroundPainter(graphics, this.layer);
