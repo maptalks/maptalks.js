@@ -225,7 +225,7 @@ class TileLayer extends Layer {
     //@internal
     _polygonOffset: number;
     //@internal
-    _renderer: TileLayerCanvasRenderer;
+    _renderer: any;
     //record spatial reference in current rendering frame
     //@internal
     _spatialRef: SpatialReference;

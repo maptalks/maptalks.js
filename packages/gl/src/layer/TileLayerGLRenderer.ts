@@ -370,6 +370,11 @@ class TileLayerGLRenderer2 extends TexturePoolable(CanvasCompatible(TileLayerRen
     deleteTerrainTexture(texture) {
         texture.destroy();
     }
+
+    clear() {
+        this.clearTileCaches();
+        super.clear();
+    }
 }
 
 maptalks.TileLayer.registerRenderer<typeof TileLayerGLRenderer2>('gl', TileLayerGLRenderer2);

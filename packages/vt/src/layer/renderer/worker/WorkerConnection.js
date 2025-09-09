@@ -193,6 +193,16 @@ export default class WorkerConnection extends maptalks.worker.Actor {
         this.send(data, null, cb, this._dedicatedVTWorkers[layerId]);
     }
 
+    clearData(cb) {
+        const layerId = this._workerLayerId;
+        const data = {
+            mapId: this._mapId,
+            layerId,
+            command: 'clearData'
+        };
+        this.send(data, null, cb, this._dedicatedVTWorkers[layerId]);
+    }
+
     _getTileKey(tileInfo) {
         return tileInfo.id;
     }

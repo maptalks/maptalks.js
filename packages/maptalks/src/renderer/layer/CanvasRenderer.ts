@@ -75,6 +75,11 @@ class CanvasRenderer extends LayerAbstractRenderer {
         Canvas2D.clearRect(this.context, 0, 0, Math.max(w, this.canvas.width), Math.max(h, this.canvas.height));
     }
 
+    clear() {
+        this.clearCanvas();
+        this.setToRedraw();
+    }
+
     /**
      * @english
      * Prepare the canvas for rendering. <br>
