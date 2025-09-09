@@ -74,6 +74,10 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
     clear() {
         this.clearTileCaches();
         super.clear();
+        if (!this._workerConn) {
+            this.layer.fire('clear');
+            return;
+        }
         this._workersyncing = true;
         this._workerConn.clearData(() => {
             this._workersyncing = false;
