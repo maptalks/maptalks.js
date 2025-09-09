@@ -107,12 +107,14 @@ const options: MapOptionsType = {
     'maxPitch': 80,
     'centerCross': false,
 
+    'zoomable': true,
     'zoomInCenter': false,
     'zoomOrigin': null,
     'zoomAnimation': (function () {
         return !IS_NODE;
     })(),
     'zoomAnimationDuration': 330,
+    'tileBackgroundLimitPerFrame': 3,
 
     'panAnimation': (function () {
         return !IS_NODE;
@@ -125,7 +127,7 @@ const options: MapOptionsType = {
         return !IS_NODE;
     })(),
 
-    'zoomable': true,
+
     'enableInfoWindow': true,
 
     'hitDetect': (function () {
@@ -2822,15 +2824,18 @@ export type MapOptionsType = {
     maxVisualPitch?: number;
     maxPitch?: number;
     centerCross?: boolean;
+
+    zoomable?: boolean;
     zoomInCenter?: boolean;
     zoomOrigin?: Array<number>;
     zoomAnimation?: boolean;
     zoomAnimationDuration?: number;
+    tileBackgroundLimitPerFrame?: number;
     panAnimation?: boolean;
     panAnimationDuration?: number;
     rotateAnimation?: boolean;
     rotateAnimationDuration?: number;
-    zoomable?: boolean;
+
     enableInfoWindow?: boolean;
     hitDetect?: boolean;
     hitDetectLimit?: number;
