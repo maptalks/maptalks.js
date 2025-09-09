@@ -1,5 +1,14 @@
 # @maptalks/gl
 
+## 0.109.2
+
+### Patch Changes
+
+- fix bugs in maptalks/vt/gl
+- Updated dependencies
+  - maptalks@1.4.4
+  - @maptalks/gltf-loader@0.103.0
+
 ## 0.109.1
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @maptalks/3dtiles
 
+## 0.106.2
+
+### Patch Changes
+
+- Updated dependencies
+  - maptalks@1.4.4
+
 ## 0.106.1
 
 ### Patch Changes

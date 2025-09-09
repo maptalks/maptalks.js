@@ -1,5 +1,11 @@
 # maptalks
 
+## 1.4.4
+
+### Patch Changes
+
+- fix bugs in maptalks/vt/gl
+
 ## 1.4.3
 
 ### Patch Changes
