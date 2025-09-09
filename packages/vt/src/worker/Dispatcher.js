@@ -118,6 +118,14 @@ export default class Dispatcher {
         }
     }
 
+    clearData({ mapId, layerId },callback) {
+        const layer = this._getLayerById(mapId, layerId);
+        if (layer) {
+            layer.clearData(callback);
+            this._resetCache();
+        }
+    }
+
     /**
      * Receive response from main thread and call callback
      * @param {Object} data

@@ -2074,6 +2074,37 @@ describe('update style specs', () => {
         layer.addTo(map);
     });
 
+    it('should can clear GeoJSONVectorTileLayer', done => {
+        const points = {
+            type: 'FeatureCollection',
+            features: [
+                { type: 'Feature', geometry: { type: 'Point', coordinates: [0, 0] }, properties: { type: 1 } }
+            ]
+        };
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: points,
+            style: [
+                {
+                    renderPlugin: { type: 'native-point', dataConfig: { type: 'native-point' }, sceneConfig: { foo: 1 } },
+                    symbol: { markerType: 'square', markerSize: 20, markerFill: '#f00' }
+                }
+            ]
+        });
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        layer.once('canvasisdirty', () => {
+            const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+            assert.deepStrictEqual(pixel, [255, 0, 0, 255]);
+            layer.clear();
+        });
+        layer.once('clear', () => {
+            const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+            assert.deepStrictEqual(pixel, [0, 0, 0, 0]);
+            done();
+        });
+        layer.addTo(map);
+    });
+
     it('can load null tile ref data', done => {
         // 多symbol style，第二个symbol因为geometry和第一个symbol相同，会用ref引用第一个geometry，这个测试是为了测试第一个geometry为null时的空指针异常
         const lines = {

@@ -19,6 +19,10 @@ export default class VectorTileLayerWorker extends LayerWorker {
         callback();
     }
 
+    clearData() {
+        this._abortRequests();
+    }
+
     /**
      * Load a tile, paint and return gl directives
      * @param {Object} tileInfo  - tileInfo, url, xyz, res, extent, etc
@@ -150,6 +154,10 @@ export default class VectorTileLayerWorker extends LayerWorker {
 
     onRemove() {
         super.onRemove();
+        this._abortRequests();
+    }
+
+    _abortRequests() {
         for (const url in this.requests) {
             const xhr = this.requests[url];
             if (xhr && xhr.abort) {

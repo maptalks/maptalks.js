@@ -282,7 +282,8 @@ class LayerAbstractRenderer extends Class {
      * Clear canvas
      */
     clear(): void {
-        this.clearCanvas();
+        this.clearContext();
+        this.setToRedraw();
     }
 
     /**
@@ -829,7 +830,7 @@ class LayerAbstractRenderer extends Class {
     }
 
     clearCanvas() {
-
+        this.clearContext();
     }
 
     /**

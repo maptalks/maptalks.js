@@ -71,6 +71,19 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         return this._styleCounter;
     }
 
+    clear() {
+        this.clearTileCaches();
+        super.clear();
+        this._workersyncing = true;
+        this._workerConn.clearData(() => {
+            this._workersyncing = false;
+            this._needRetire = true;
+            this.setToRedraw();
+
+            this.layer.fire('clear');
+        });
+    }
+
     setStyle() {
         if (this._groundPainter) {
             this._groundPainter.update();
