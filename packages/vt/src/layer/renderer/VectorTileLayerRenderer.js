@@ -71,11 +71,10 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         return this._styleCounter;
     }
 
-    clear() {
-        this.clearTileCaches();
-        super.clear();
+    clearData() {
+        this.clear();
         if (!this._workerConn) {
-            this.layer.fire('clear');
+            this.layer.fire('cleardata');
             return;
         }
         this._workersyncing = true;
@@ -84,8 +83,13 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             this._needRetire = true;
             this.setToRedraw();
 
-            this.layer.fire('clear');
+            this.layer.fire('cleardata');
         });
+    }
+
+    clear() {
+        this.clearTileCaches();
+        super.clear();
     }
 
     setStyle() {

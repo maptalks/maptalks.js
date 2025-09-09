@@ -1829,6 +1829,14 @@ class VectorTileLayer extends maptalks.TileLayer {
     super.onRemove();
   }
 
+  clear() {
+    const renderer = this.getRenderer();
+    if (renderer) {
+        renderer.clearData();
+    }
+    return super.clear();
+  }
+
   static fromJSON(layerJSON: object) {
     if (!layerJSON || layerJSON["type"] !== "VectorTileLayer") {
       return null;
