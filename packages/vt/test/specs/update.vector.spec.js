@@ -2104,15 +2104,11 @@ describe('vector layers update style specs', () => {
         const layer = new LineStringLayer('lines', [line]);
         const polygonLayer = new PolygonLayer('polygons', [polygon]);
         const group = new GroupGLLayer('group', [layer, polygonLayer]);
-        let count = 0;
         const canvas = map.getRenderer().canvas;
-        group.on('layerload', () => {
-            count++;
-            if (count === 1) {
-                const expectedPath = path.join(__dirname, 'fixtures', 'line-altitude', 'expected.png');
-                compareExpected(canvas, { expectedPath }, done);
-            }
-        });
+        setTimeout(() => {
+            const expectedPath = path.join(__dirname, 'fixtures', 'line-altitude', 'expected.png');
+            compareExpected(canvas, { expectedPath }, done);
+        }, 500);
         group.addTo(map);
     });
 
