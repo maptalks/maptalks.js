@@ -1356,6 +1356,44 @@ describe('vector layers update style specs', () => {
         }, 500);
     });
 
+    it('PolygonLayer in GroupGLLayer can outline polygon', done => {
+        const polygon = new maptalks.Polygon(
+            [[[-1, 1], [1, 1], [1, -1], [-1, -1], [-1, 1]]],
+            {
+                id: 'foo',
+                symbol: {
+                    lineColor: "#e5e5e5",
+                    lineWidth: 1,
+                    polygonFill: '#0ff'
+                }
+            });
+        const layer = new PolygonLayer('vector', polygon);
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                outline: {
+                    enable: true,
+                    outlineFactor: 0.3,
+                    highlightFactor: 0.2,
+                    outlineWidth: 1,
+                    outlineColor: [1,0,0]
+                }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        group.addTo(map);
+        setTimeout(() => {
+            layer.outline(['foo']);
+            setTimeout(() => {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                assert(pixel[0] > 10);
+                done();
+            }, 500);
+        }, 500);
+    });
+
     it('line should can hide and show', done => {
         const line = new maptalks.LineString([[-1, 0], [1, 0]]);
         const layer = new LineStringLayer('vector', line, {
@@ -2066,15 +2104,11 @@ describe('vector layers update style specs', () => {
         const layer = new LineStringLayer('lines', [line]);
         const polygonLayer = new PolygonLayer('polygons', [polygon]);
         const group = new GroupGLLayer('group', [layer, polygonLayer]);
-        let count = 0;
         const canvas = map.getRenderer().canvas;
-        group.on('layerload', () => {
-            count++;
-            if (count === 1) {
-                const expectedPath = path.join(__dirname, 'fixtures', 'line-altitude', 'expected.png');
-                compareExpected(canvas, { expectedPath }, done);
-            }
-        });
+        setTimeout(() => {
+            const expectedPath = path.join(__dirname, 'fixtures', 'line-altitude', 'expected.png');
+            compareExpected(canvas, { expectedPath }, done);
+        }, 500);
         group.addTo(map);
     });
 
