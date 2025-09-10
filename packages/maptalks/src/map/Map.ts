@@ -2002,7 +2002,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             }
         }
 
-        if(this._containerDOM?.childNodes?.length > 0) {
+        if (this._containerDOM?.childNodes?.length > 0) {
             const firstChild = this._containerDOM.childNodes[0];
             if (firstChild instanceof HTMLElement && firstChild.classList.contains('maptalks-wrapper')) {
                 throw new Error('Container is already loaded with another map instance, use map.remove() to clear it.');
@@ -2806,6 +2806,7 @@ export type MapOptionsType = {
     touchZoomRotate?: boolean;
     doubleClickZoom?: boolean;
     scrollWheelZoom?: boolean;
+    scrollWheelZoomAlwaysOnCenter?: boolean;
     geometryEvents?: boolean;
     control?: boolean;
     attribution?: boolean | AttributionOptionsType;
@@ -2906,6 +2907,7 @@ export type MapViewType = {
     pitch?: number;
     bearing?: number;
     height?: number;
+    around?: Array<number> | Coordinate;
 }
 
 export type MapFitType = {
@@ -2922,7 +2924,7 @@ export type MapDataURLType = {
     save?: boolean;
 }
 
-export type MapAnimationOptionsType = AnimationOptionsType & { counterclockwise?: boolean }
+export type MapAnimationOptionsType = AnimationOptionsType & { counterclockwise?: boolean, continueOnViewChanged?: boolean, wheelZoom?: boolean }
 
 export type MapIdentifyOptionsType = {
     tolerance?: number;

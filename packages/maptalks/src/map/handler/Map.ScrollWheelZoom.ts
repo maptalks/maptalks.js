@@ -1,5 +1,6 @@
 import { isNil, isNumber } from '../../core/util';
 import { addDomEvent, removeDomEvent, getEventContainerPoint, preventDefault, stopPropagation } from '../../core/util/dom';
+import { Point } from '../../geo';
 import Handler from '../../handler/Handler';
 import Map from '../Map';
 
@@ -17,6 +18,7 @@ const wheelZoomRate = 1 / 450;
 const maxScalePerFrame = 2;
 
 class MapScrollWheelZoomHandler extends Handler {
+
     //@internal
     _thisScrollZoom: () => void
     //@internal
@@ -46,7 +48,9 @@ class MapScrollWheelZoomHandler extends Handler {
     //@internal
     _lastWheelEvent: any
     //@internal
-    _scrollTime: number
+    _scrollTime: number;
+
+    target: Map;
 
     constructor(target) {
         super(target);
@@ -94,7 +98,15 @@ class MapScrollWheelZoomHandler extends Handler {
             return false;
         }
         const container = map.getContainer();
-        const origin = map._checkZoomOrigin(getEventContainerPoint(evt, container));
+        let origin: Point;
+        // scrollWheel always on map center 
+        // https://github.com/maptalks/maptalks.js/issues/2627
+        if (map.options.scrollWheelZoomAlwaysOnCenter) {
+            origin = map.getSize().getCenter();
+        } else {
+            origin = map._checkZoomOrigin(getEventContainerPoint(evt, container));
+        }
+
         if (map.options['seamlessZoom']) {
             if (!this._zooming) {
                 this._trackPadSuspect = 0;

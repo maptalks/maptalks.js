@@ -178,6 +178,10 @@ class Size {
         return new Point(this['width'], this['height']);
     }
 
+    getCenter(): Point {
+        return new Point(this.width / 2, this.height / 2);
+    }
+
     /**
      * 将 `Size` 对象转换为数组
      * @english
