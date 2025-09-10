@@ -1,5 +1,18 @@
 # maptalks-gl
 
+## 0.113.3
+
+### Patch Changes
+
+- Fix shader compilation failure in PolygonLayer.outline (#2630)
+- Updated dependencies
+  - @maptalks/vt@0.108.3
+  - @maptalks/gl@0.109.3
+  - @maptalks/gltf-layer@0.106.0
+  - @maptalks/3dtiles@0.106.2
+  - @maptalks/video-layer@0.103.0
+  - @maptalks/transform-control@0.106.3
+
 ## 0.113.2
 
 ### Patch Changes

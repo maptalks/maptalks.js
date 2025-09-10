@@ -1,5 +1,12 @@
 # @maptalks/vt
 
+## 0.108.3
+
+### Patch Changes
+
+- Fix shader compilation failure in PolygonLayer.outline (#2630)
+  - @maptalks/gl@0.109.3
+
 ## 0.108.2
 
 ### Patch Changes

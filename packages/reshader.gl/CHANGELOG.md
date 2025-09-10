@@ -1,5 +1,11 @@
 # @maptalks/reshader.gl
 
+## 0.108.1
+
+### Patch Changes
+
+- Fix shader compilation failure in PolygonLayer.outline (#2630)
+
 ## 0.108.0
 
 ### Minor Changes
