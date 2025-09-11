@@ -212,7 +212,7 @@ if (production) {
 }
 
 module.exports.push({
-    input: production ? 'build/index.js' : 'src/index-dev.ts',
+    input: production ? 'build/index.js' : 'src/index-dev.js',
     plugins: production ? configPlugins : tsPlugins,
     external : ['maptalks'],
     output: {
