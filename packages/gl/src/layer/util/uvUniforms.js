@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { vec2 } from '@maptalks/reshader.gl';
+import { vec2 } from 'gl-matrix';
 
 const DEFAULT_TEX_OFFSET = [0, 0];
 const COORD0 = new maptalks.Coordinate(0, 0);

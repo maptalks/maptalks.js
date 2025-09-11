@@ -12,7 +12,7 @@ import { MAG_FILTER, MIN_FILTER } from './common/WebGLConstants';
  * https://github.com/regl-project/regl/blob/gh-pages/API.md#textures
  */
 export default class Texture2D extends Texture {
-    _version: number = 0;
+    _version = 0;
 
     get version() {
         return this._version;

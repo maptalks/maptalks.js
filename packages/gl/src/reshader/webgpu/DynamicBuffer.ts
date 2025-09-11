@@ -11,7 +11,7 @@ export default class DynamicBuffer {
     dynamicOffsets: number[];
     pool: DynamicBufferPool;
     allocation: DynamicBufferAllocation;
-    version: number = 0;
+    version = 0;
 
     constructor(bindgroupMapping, pool: DynamicBufferPool) {
         this.bindgroupMapping = bindgroupMapping;

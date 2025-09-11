@@ -1,5 +1,5 @@
 // import QuadShader from '../shader/QuadShader.js';
-import * as reshader from '@maptalks/reshader.gl';
+import * as reshader from '../reshader';
 import vert from './glsl/quad.vert';
 import frag from './glsl/analysis.frag';
 

@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import * as reshader from '@maptalks/reshader.gl';
+import * as reshader from '../reshader';
 
 const TexturePoolable = function <T extends maptalks.MixinConstructor>(Base: T) {
     const poolable = class extends Base {

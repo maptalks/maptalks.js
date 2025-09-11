@@ -1,6 +1,6 @@
 import * as maptalks from 'maptalks';
 import Renderer from './GroupGLLayerRenderer';
-import { vec3 } from '@maptalks/reshader.gl';
+import { vec3 } from 'gl-matrix';
 import { isNil, extend } from './util/util';
 import TerrainLayer from './terrain/TerrainLayer';
 import RayCaster from './raycaster/RayCaster';

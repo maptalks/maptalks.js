@@ -1,4 +1,4 @@
-import * as reshader from '@maptalks/reshader.gl';
+import * as reshader from '../../reshader';
 import TerrainPainter from './TerrainPainter';
 import  { extend, isNil } from '../util/util';
 import * as ContextUtil from '../util/context';

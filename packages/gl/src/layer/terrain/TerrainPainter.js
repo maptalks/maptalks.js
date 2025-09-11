@@ -1,7 +1,7 @@
 import  { extend, hasOwn, isNil } from '../util/util';
 import * as ContextUtil from '../util/context';
-import { vec3, mat4 } from '@maptalks/reshader.gl';
-import * as reshader from '@maptalks/reshader.gl';
+import { vec3, mat4 } from 'gl-matrix';
+import * as reshader from '../../reshader';
 import { EMPTY_TERRAIN_GEO } from './TerrainTileUtil.js';
 
 import vert from './glsl/terrain.vert';

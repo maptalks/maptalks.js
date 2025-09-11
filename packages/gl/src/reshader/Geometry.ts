@@ -92,12 +92,12 @@ export default class Geometry {
         if (itemBytes % 4 === 0) {
             return array;
         }
-        let ctor = array.constructor as any;
+        const ctor = array.constructor as any;
         const itemSize = array.length / vertexCount;
         const bytesPerElement = itemBytes / itemSize;
         // 无法对齐时，itemSize 一定是1或者3，补位成2或者4就能对齐了
 
-        const newItemSize = ensureAlignment(itemSize, bytesPerElement);;
+        const newItemSize = ensureAlignment(itemSize, bytesPerElement);
         const newArray = new ctor(newItemSize * vertexCount);
         for (let i = 0; i < vertexCount; i++) {
             for (let ii = 0; ii < itemSize; ii++) {

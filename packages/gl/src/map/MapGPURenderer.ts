@@ -1,4 +1,4 @@
-import { GraphicsDevice } from '@maptalks/reshader.gl';
+import { GraphicsDevice } from '../reshader';
 import { Layer, Map, renderer } from 'maptalks';
 
 let gpuAdapter;

@@ -7,6 +7,7 @@ import { ShaderDefines } from "../../types/typings";
 
 const defineConstantRexg = /\s*#define\s+(\w+)\s+([^\n]+)/g;
 const preprocessorSymbols = /#([^\s]*)(\s*)/gm;
+// eslint-disable-next-line no-useless-escape
 const usedDefineRexg = /#[^\s]*\s*\b[0-9A-Z][0-9A-Z_&&\|=! ]+\b/g;
 const isNumeric = (n) => !isNaN(n);
 export function WGSLParseDefines(
@@ -91,7 +92,7 @@ function ParseDefines(
     const stateStack = [];
     let state = new ConditionalState(true);
     state.elseIsValid = false;
-    let depth = 1;
+    // let depth = 1;
 
     const assertTemplateFollows = (match, string) => {
         if (match.index + match[0].length != string.length) {

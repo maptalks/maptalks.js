@@ -1,6 +1,6 @@
-import { vec2, mat4 } from '@maptalks/reshader.gl';
-import { pbr } from '@maptalks/reshader.gl';
-import * as reshader from '@maptalks/reshader.gl';
+import { vec2, mat4 } from 'gl-matrix';
+import { pbr } from '../reshader';
+import * as reshader from '../reshader';
 import { fillVert, fillFrag } from './glsl/fill.js';
 import ShadowProcess from './shadow/ShadowProcess';
 import { extend, getGroundTransform, hasOwn, normalizeColor } from './util/util.js';
