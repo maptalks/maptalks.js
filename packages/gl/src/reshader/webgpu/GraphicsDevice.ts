@@ -187,7 +187,7 @@ export default class GraphicsDevice {
                 willReadFrequently: true,
             });
             ctx.drawImage(this.context.canvas, origin.x, origin.y, width, height, 0, 0, width, height);
-            const stagingValues = ctx.getImageData(0, 0, width, height).data;;
+            const stagingValues = ctx.getImageData(0, 0, width, height).data;
             for (let k = 0; k < data.length; k += 4) {
                 data[k] = stagingValues[k];
                 data[k + 1] = stagingValues[k + 1];
@@ -198,7 +198,7 @@ export default class GraphicsDevice {
         }
         const alphaModes: GPUCanvasAlphaMode[] = ['opaque', 'premultiplied'];
         const stagingDeviceStorage: OffscreenCanvas[] =
-            alphaModes.map(_ => new OffscreenCanvas(width, height));
+            alphaModes.map(() => new OffscreenCanvas(width, height));
           // TODO: use rgba8unorm format when this format is supported on Mac.
           // https://bugs.chromium.org/p/chromium/issues/detail?id=1298618
         stagingDeviceStorage.map((storage, index) => {

@@ -66,8 +66,8 @@ export default class GraphicsFramebuffer {
 
     _update() {
         let color = this.options.colors && this.options.colors[0] || this.options.color;
-        let colorFormat = this.options.colorFormat;
-        let colorType = this.options.colorType;
+        const colorFormat = this.options.colorFormat;
+        const colorType = this.options.colorType;
         let width, height;
         if (color) {
             width = color.width;

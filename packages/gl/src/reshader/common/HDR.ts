@@ -1,5 +1,5 @@
 /* eslint-disable no-var */
-import { clamp } from './Util.js';
+// import { clamp } from './Util.js';
 
 const toChar = String.fromCharCode;
 
@@ -20,18 +20,18 @@ function rgbe2float(rgbe: number[], buffer: number[], offset: number, exposure: 
     return buffer;
 }
 
-function encodeRGBM(buffer: number[], offset: number, range: number) {
-    const r = buffer[offset] / range;
-    const g = buffer[offset + 1] / range;
-    const b = buffer[offset + 2] / range;
-    let a = clamp(Math.max(Math.max(r, g), Math.max(b, 1E-6)), 0, 1);
-    a = Math.ceil(a * 255) / 255;
+// function encodeRGBM(buffer: number[], offset: number, range: number) {
+//     const r = buffer[offset] / range;
+//     const g = buffer[offset + 1] / range;
+//     const b = buffer[offset + 2] / range;
+//     let a = clamp(Math.max(Math.max(r, g), Math.max(b, 1E-6)), 0, 1);
+//     a = Math.ceil(a * 255) / 255;
 
-    buffer[offset] = Math.min(255, r / a * 255);
-    buffer[offset + 1] = Math.min(255, g / a * 255);
-    buffer[offset + 2] = Math.min(255, b / a * 255);
-    buffer[offset + 3] = Math.min(255, a * 255);
-}
+//     buffer[offset] = Math.min(255, r / a * 255);
+//     buffer[offset + 1] = Math.min(255, g / a * 255);
+//     buffer[offset + 2] = Math.min(255, b / a * 255);
+//     buffer[offset + 3] = Math.min(255, a * 255);
+// }
 
 function uint82string(array: Uint8Array, offset: number, size: number) {
     let str = '';

@@ -1,5 +1,5 @@
 import createREGL from '@maptalks/regl';
-import * as reshader from '@maptalks/reshader.gl';
+import * as reshader from '../reshader';
 
 const PREFILTER_CUBE_SIZE = 512;
 

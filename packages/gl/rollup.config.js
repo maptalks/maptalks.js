@@ -3,6 +3,7 @@ const commonjs = require('@rollup/plugin-commonjs');
 const replace = require('@rollup/plugin-replace');
 const terser = require('@rollup/plugin-terser');
 const typescript = require('@rollup/plugin-typescript');
+const glslMinify = require('@maptalks/rollup-plugin-glsl-minify');
 const { dts } = require("rollup-plugin-dts");
 const pkg = require('./package.json');
 
@@ -56,7 +57,11 @@ const plugins = production ? [terser({
 const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}\n * (c) 2016-${new Date().getFullYear()} maptalks.com\n */`;
 const outro = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg.version}');`;
 const configPlugins = [
-    glsl(),
+    production ? glslMinify({
+        commons: [
+            './src/reshader/shaderlib/glsl'
+        ]
+    }) : glsl(),
     wgsl(),
     nodeResolve({
         // mainFields: ''
@@ -114,6 +119,8 @@ var getGlobal = function () {
   if (typeof window !== "undefined") { return window; }
   if (typeof global !== "undefined") { return global; }
 };`
+
+const externalPackages = ['maptalks', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix', '@maptalks/gltf-loader', '@maptalks/tbn-packer'];
 
 
 module.exports = [
@@ -192,7 +199,7 @@ if (production) {
     module.exports.push({
         input: 'src/index.ts',
         plugins: tsPlugins.concat(plugins),
-        external : ['maptalks', '@maptalks/reshader.gl', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix'],
+        external : externalPackages,
         output: {
             'sourcemap': true,
             'format': 'es',
@@ -205,7 +212,7 @@ if (production) {
 }
 
 module.exports.push({
-    input: production ? 'build/index.js' : 'src/index-dev.js',
+    input: production ? 'build/index.js' : 'src/index-dev.ts',
     plugins: production ? configPlugins : tsPlugins,
     external : ['maptalks'],
     output: {
@@ -230,7 +237,7 @@ if (production) {
     module.exports.push({
         input: 'src/index-dev.js',
         plugins: tsPlugins,
-        external : ['maptalks', '@maptalks/reshader.gl', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix'],
+        external : externalPackages,
         output: {
             'sourcemap': true,
             'format': 'es',

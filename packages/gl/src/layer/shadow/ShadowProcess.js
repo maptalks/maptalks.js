@@ -1,5 +1,5 @@
-import { mat4, vec3 } from '@maptalks/reshader.gl';
-import * as reshader from '@maptalks/reshader.gl';
+import { mat4, vec3 } from 'gl-matrix';
+import * as reshader from '../../reshader';
 import  { getGroundTransform, isNil } from '../util/util';
 
 const EMPTY_HALTON = [0, 0];

@@ -1,7 +1,7 @@
 import * as maptalks from 'maptalks';
-import { vec2, vec3, mat4 } from '@maptalks/reshader.gl';
+import { vec2, vec3, mat4 } from 'gl-matrix';
 import ShadowProcess from './shadow/ShadowProcess';
-import * as reshader from '@maptalks/reshader.gl';
+import * as reshader from '../reshader';
 import GroundPainter from './GroundPainter';
 import EnvironmentPainter from './EnvironmentPainter';
 import WeatherPainter from './weather/WeatherPainter';

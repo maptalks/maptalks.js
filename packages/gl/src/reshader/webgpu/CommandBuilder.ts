@@ -10,7 +10,7 @@ import { WGSLParseDefines } from "./common/WGSLParseDefines";
 import GraphicsFramebuffer from "./GraphicsFramebuffer";
 import Texture2D from "../Texture2D";
 import GraphicsTexture from "./GraphicsTexture";
-import { extend, isNil } from "../common/Util";
+import { isNil } from "../common/Util";
 
 const GLOBAL_IN_MESH_ERROR = 'Found a global uniform in mesh struct:';
 const MESH_IN_GLOBAL_ERROR = 'Found a mesh uniform in global struct:';
@@ -103,7 +103,7 @@ export default class CommandBuilder {
         const bindGroupMapping = this._createBindGroupMapping(vertGroups, fragGroups, mesh);
         const alignment = device.wgpu.limits.minUniformBufferOffsetAlignment;
         const bindGroupFormat = new BindGroupFormat(this.name, bindGroupMapping, alignment);
-        const activeAttributes = this._getActiveAttributes(vertexInfo);
+        const activeAttributes = this._getActiveAttributes(/* vertexInfo */);
 
         return {
             uid: -1,
@@ -116,7 +116,7 @@ export default class CommandBuilder {
         };
     }
 
-    _getActiveAttributes(vertexInfo): ActiveAttributes {
+    _getActiveAttributes(/* vertexInfo */): ActiveAttributes {
         //TODO
         const attributes = [{ name: 'position', type: 1 }];
         (attributes as any).key = attributes.map(attr => attr.name).join();
@@ -412,20 +412,23 @@ function getItemSize(type) {
 function sortByBinding(a: GPUBindGroupLayoutEntry, b: GPUBindGroupLayoutEntry): number {
     return a.binding - b.binding;
 }
+let locIndex = 0;
+const indexAutoInc = () => '' + locIndex++;
 
-function parseLocationIndex(code: string) {
-    let index = 0;
-    let parsedIn = code.replaceAll('$i', () => '' + index++);
+function parseLocationIndex(code: any) {
+    locIndex = 0;
+    const parsedIn = code.replaceAll('$i', indexAutoInc);
 
-    index = 0;
-    let parsedOut = parsedIn.replaceAll('$o', () => '' + index++);
+    locIndex = 0;
+    const parsedOut = parsedIn.replaceAll('$o', indexAutoInc);
 
     return parsedOut;
 }
 
-function parseBindingIndex(code: string, index: number) {
+function parseBindingIndex(code: any, index: number) {
+    locIndex = index;
     return {
-        source: code.replaceAll('$b', () => '' + index++),
+        source: code.replaceAll('$b', indexAutoInc),
         index
     };
 }

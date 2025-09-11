@@ -1,4 +1,4 @@
-import * as reshader from '@maptalks/reshader.gl';
+import * as reshader from '../../reshader';
 // import { vec2, mat3 } from 'gl-matrix';
 import * as maptalks from 'maptalks';
 

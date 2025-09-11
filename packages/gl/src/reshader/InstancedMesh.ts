@@ -2,7 +2,7 @@ import { extend, isSupportVAO, getBufferSize, hasOwn, isArray } from './common/U
 import Mesh from './Mesh.js';
 import { KEY_DISPOSED } from './common/Constants';
 import REGL, { BufferOptions, Regl } from '@maptalks/regl';
-import { ActiveAttributes, AttributeBufferData, InstancedAttribute, MeshOptions, NumberArray, TypedArray } from './types/typings';
+import { AttributeBufferData, InstancedAttribute, MeshOptions, NumberArray, TypedArray } from './types/typings';
 import Material from './Material';
 import Geometry, { getAttrBufferDescriptor } from './Geometry';
 

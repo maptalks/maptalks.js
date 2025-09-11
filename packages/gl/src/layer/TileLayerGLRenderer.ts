@@ -1,6 +1,6 @@
 import * as maptalks from 'maptalks';
 import { RenderContext, Tile, TileLayer } from 'maptalks';
-import * as reshader from '@maptalks/reshader.gl';
+import * as reshader from '../reshader';
 import TexturePoolable from './TexturePoolable';
 import { createImageMesh, updateFilter } from './util/imageMesh';
 import { isNil } from './util/util';

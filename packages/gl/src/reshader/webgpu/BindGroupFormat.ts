@@ -65,7 +65,7 @@ export default class BindGroupFormat {
                 let index = this._shaderUniforms.index;
                 this._shaderUniforms[index++] = uniform;
                 this._shaderUniforms.index = index;
-                this._shaderUniforms.totalSize += roundUp(uniform.size, this.alignment);;
+                this._shaderUniforms.totalSize += roundUp(uniform.size, this.alignment);
             } else {
                 let index = this._meshUniforms.index;
                 this._meshUniforms[index++] = uniform;

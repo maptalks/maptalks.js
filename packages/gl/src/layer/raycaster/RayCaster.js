@@ -1,4 +1,4 @@
-import { vec3, vec4, mat4 } from '@maptalks/reshader.gl';
+import { vec3, vec4, mat4 } from 'gl-matrix';
 import { Coordinate, Point, Util } from 'maptalks';
 import * as maptalks from 'maptalks';
 

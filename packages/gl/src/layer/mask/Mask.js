@@ -1,7 +1,7 @@
 import { Coordinate, Polygon, Point } from "maptalks";
-import * as reshader from '@maptalks/reshader.gl';
-import { mat4, quat} from '@maptalks/reshader.gl';
-import { earcut } from '@maptalks/reshader.gl';
+import * as reshader from '../../reshader';
+import { mat4, quat} from 'gl-matrix';
+import earcut from 'earcut';
 import { coordinateToWorld, normalizeColor, isNumber } from "../util/util";
 
 const MASK_MODES = {

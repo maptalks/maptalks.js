@@ -212,7 +212,8 @@ export class GLShader {
         return defineHeaders.join('') + source;
     }
 
-    createMeshCommand(regl, mesh, commandProps = {}, uniformValues?) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    createMeshCommand(regl, mesh, commandProps = {}, _uniformValues?) {
         const materialDefines = mesh.getDefines();
         const elements = mesh.getElements();
         const isInstanced = mesh instanceof InstancedMesh;
@@ -483,7 +484,7 @@ export default class GPUShader extends GLShader {
         if (!props || !props.length) {
             return;
         }
-        const shaderUniforms = this.context;
+        // const shaderUniforms = this.context;
         const device = deviceOrRegl as GraphicsDevice;
         this.isGPU = true;
         const buffersPool = device.dynamicBufferPool;

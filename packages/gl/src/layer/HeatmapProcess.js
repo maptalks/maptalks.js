@@ -1,8 +1,8 @@
 //参考:
 //  * https://blog.mapbox.com/introducing-heatmaps-in-mapbox-gl-js-71355ada9e6c
 //  * https://codepen.io/fuzhenn/pen/vYOgQwX
-// import { mat4, vec3 } from '@maptalks/reshader.gl';
-import * as reshader from '@maptalks/reshader.gl';
+// import { mat4, vec3 } from 'gl-matrix';
+import * as reshader from '../reshader';
 import GroundPainter from './GroundPainter';
 import { extend } from './util/util';
 
