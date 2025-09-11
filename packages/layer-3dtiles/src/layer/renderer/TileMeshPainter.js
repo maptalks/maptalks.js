@@ -1814,6 +1814,9 @@ export default class TileMeshPainter {
             polygonFill: [1, 1, 1, 1],
             polygonOpacity: 1
         });
+        if (!uniforms.ambientColor) {
+            uniforms.ambientColor = [0.2, 0.2, 0.2];
+        }
         extend(uniforms, maskUniforms);
         return uniforms;
     }
