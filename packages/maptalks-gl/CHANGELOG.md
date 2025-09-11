@@ -1,5 +1,18 @@
 # maptalks-gl
 
+## 0.113.4
+
+### Patch Changes
+
+- merge reshader.gl into gl and fix default ambientColor in 3dtiles layer
+- Updated dependencies
+  - @maptalks/gl@0.109.4
+  - @maptalks/3dtiles@0.106.3
+  - @maptalks/gltf-layer@0.106.0
+  - @maptalks/video-layer@0.103.0
+  - @maptalks/transform-control@0.106.4
+  - @maptalks/vt@0.108.4
+
 ## 0.113.3
 
 ### Patch Changes

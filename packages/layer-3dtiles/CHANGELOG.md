@@ -1,5 +1,11 @@
 # @maptalks/3dtiles
 
+## 0.106.3
+
+### Patch Changes
+
+- merge reshader.gl into gl and fix default ambientColor in 3dtiles layer
+
 ## 0.106.2
 
 ### Patch Changes
