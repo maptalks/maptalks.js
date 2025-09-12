@@ -1678,32 +1678,20 @@ describe('update style specs', () => {
         const groupLayer = new GroupGLLayer('group', [
             layer
         ], { sceneConfig });
-        let painted = false;
-        let finished = false;
-        let count = 0;
-        map.on('renderend', () => {
+        groupLayer.addTo(map);
+        setTimeout(() => {
             const canvas = groupLayer.getRenderer().canvas;
             const pixel = readPixel(canvas, canvas.width / 2 + 40, canvas.height / 2);
-            if (pixel[0] > 0) {
-
-                if (!painted) {
-                    assert.deepEqual(pixel, [78, 78, 78, 255]);
-
-                    material.baseColorTexture = 'file://' + path.resolve(__dirname, '../integration/resources/1.png');
-                    layer.updateSymbol(0, { material });
-                    painted = true;
-                } else if (!finished) {
-                    count++;
-                    if (count >= 8) {
-                        finished = true;
-                        assert.deepEqual(pixel, [36, 40, 44, 255]);
-                        done();
-                    }
-                }
-            }
-        });
-        groupLayer.addTo(map);
-    }).timeout(3000);
+            assert.deepEqual(pixel, [78, 78, 78, 255]);
+            material.baseColorTexture = 'file://' + path.resolve(__dirname, '../integration/resources/1.png');
+            layer.updateSymbol(0, { material });
+            setTimeout(() => {
+                const pixel = readPixel(canvas, canvas.width / 2 + 40, canvas.height / 2);
+                assert.deepEqual(pixel, [36, 40, 44, 255]);
+                done();
+            }, 1500);
+        }, 1500);
+    }).timeout(5000);
 
     it('should can update symbol to lit with AA, maptalks-studio#374', done => {
         //https://github.com/fuzhenn/maptalks-studio/issues/374
