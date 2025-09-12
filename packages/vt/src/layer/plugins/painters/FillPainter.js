@@ -498,7 +498,8 @@ class FillPainter extends BasicPainter {
     paint(context) {
         if (this.isShadowIncludeChanged(context)) {
             this.shader.dispose();
-            this._createShader(context);
+            const extraCommandProps = this._getExtraCommandProps();
+            this._createShader(context, extraCommandProps);
         }
         super.paint(context);
     }
@@ -514,7 +515,7 @@ class FillPainter extends BasicPainter {
         return isEnableStencil && (isVectorTile || isTileLayer && this.isOnly2D());
     }
 
-    init(context) {
+    _getExtraCommandProps() {
         const regl = this.regl;
         const canvas = this.canvas;
         const viewport = {
@@ -593,6 +594,11 @@ class FillPainter extends BasicPainter {
                 offset: this.getPolygonOffset()
             }
         };
+        return extraCommandProps;
+    }
+
+    init(context) {
+        const extraCommandProps = this._getExtraCommandProps();
         this._createShader(context, extraCommandProps);
 
         if (this.pickingFBO) {
