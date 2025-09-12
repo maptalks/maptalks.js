@@ -1,5 +1,11 @@
 # maptalks
 
+## 1.4.5
+
+### Patch Changes
+
+- Fix some bugs
+
 ## 1.4.4
 
 ### Patch Changes

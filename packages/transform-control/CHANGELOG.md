@@ -1,5 +1,12 @@
 # @maptalks/transform-control
 
+## 0.106.5
+
+### Patch Changes
+
+- @maptalks/gl@0.109.5
+- @maptalks/gltf-layer@0.106.0
+
 ## 0.106.4
 
 ### Patch Changes
