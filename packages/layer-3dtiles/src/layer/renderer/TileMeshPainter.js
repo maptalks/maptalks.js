@@ -1491,7 +1491,7 @@ export default class TileMeshPainter {
         }
         // 补上缺失的_BATHCID属性，解决macos下 vertex buffer not big enough 报错
         const pickingIdAttribute = attributeSemantics['_BATCHID'];
-        if (!attrs[pickingIdAttribute]) {
+        if (!attrs[pickingIdAttribute] && !isI3DM) {
             const pickingData = new Uint8Array(vertexCount);
             attrs[pickingIdAttribute] = pickingData;
         }
