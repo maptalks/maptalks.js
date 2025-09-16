@@ -1,5 +1,6 @@
 const maptalks = require('maptalks');
 require('@maptalks/gl');
+const { GroupGLLayer } = require('@maptalks/gl');
 require('@maptalks/transcoders.draco');
 require('@maptalks/transcoders.ktx2');
 require('@maptalks/transcoders.crn');
@@ -41,6 +42,33 @@ describe('3dtiles identify specs', () => {
         map.remove();
         document.body.innerHTML = '';
     });
+
+    it('can identify b3dm data in MacOS, maptalks/issues#470', done => {
+        globalThis['MAPTALKS_DISABLE_VAO'] = true;
+        const resPath = 'BatchedDraco/dayanta/';
+        const layer = new Geo3DTilesLayer('3d-tiles', {
+            services : [
+                {
+                    url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                    shader: 'phong',
+                    heightOffset: -420
+                }
+            ]
+        });
+        const group = new GroupGLLayer('group', [layer]);
+        group.addTo(map);
+        layer.once('loadtileset', () => {
+            const extent = layer.getExtent(0);
+            map.fitExtent(extent, 0, { animation: false });
+            setTimeout(function() {
+                const point = new maptalks.Point(255, 497);
+                const hits = layer.identifyAtPoint(point);
+                assert(hits[0].data.batchId === 0);
+                globalThis['MAPTALKS_DISABLE_VAO'] = false;
+                done();
+            }, 1500);
+        });
+    }).timeout(5000);
 
     it('can identify b3dm data', done => {
         const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';

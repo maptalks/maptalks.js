@@ -18,6 +18,20 @@ export function getMaterialType(type) {
 }
 
 
+export function getArrayType(array) {
+    if (array instanceof Uint8Array) {
+        return 'uint8';
+    } else if (array instanceof Int8Array) {
+        return 'int8';
+    } else if (array instanceof Uint16Array) {
+        return 'uint16';
+    } else if (array instanceof Int16Array) {
+        return 'int16';
+    } else {
+        return 'float';
+    }
+}
+
 const materialFormats = {
     0x1906: 'alpha',
     0x1907: 'rgb',
@@ -100,6 +114,9 @@ export function getUniqueREGLBuffer(regl, data, options) {
             extend(info, options);
         }
         info.data = array;
+        if (!info.type) {
+            info.type = getArrayType(array);
+        }
         buffer = regl.buffer(info);
         // console.log(count++, (array.byteLength / 1024 / 1024).toFixed(1));
         arrayBuffer[BUFFER_KEY][byteOffset] = buffer;

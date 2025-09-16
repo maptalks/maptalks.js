@@ -1,5 +1,4 @@
 #define SHADER_NAME depth_vert
-precision highp float;
 
 attribute vec3 aPosition;
 #include <line_extrusion_vert>
