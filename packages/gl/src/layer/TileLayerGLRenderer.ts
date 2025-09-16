@@ -296,7 +296,7 @@ class TileLayerGLRenderer2 extends TexturePoolable(CanvasCompatible(TileLayerRen
             blend: {
                 enable: true,
                 func: {
-                    src: 1,
+                    src: 'src alpha',
                     dst: 'one minus src alpha'
                 },
                 equation: 'add'

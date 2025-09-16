@@ -372,7 +372,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                     if (!visitedSkinTiles.has(tileId)) {
                         if (!cleared && skinImages[j].layer.hasTerrainMask) {
                             //FIXME 潜在bug： 如果skinLayers中有多个 hasTerrainMask 的图层，其中一个clearMask并更新mask后，其他的terrainMask图层并没有更新mask
-                            this._clearMask(image);
+                            this._clearMask(image.mask);
                             cleared = true;
                         }
                         skinImages[j].terrainMaskFBO = image.mask;
@@ -393,8 +393,8 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         }
     }
 
-    _clearMask(tileImage) {
-        TERRAIN_MASK_CLEAR.framebuffer = tileImage.mask;
+    _clearMask(maskFBO) {
+        TERRAIN_MASK_CLEAR.framebuffer = maskFBO;
         this.device.clear(TERRAIN_MASK_CLEAR);
     }
 
@@ -744,6 +744,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         fboInfo.depthStencil = this._terrainMaskDepthStencil;
         const texture = regl.framebuffer(fboInfo)
         texture.colorTex = color;
+        this._clearMask(texture);
         // 单独创建的 color 必须要手动destroy回收，光destroy framebuffer，color是不会销毁的
         return texture;
     }
