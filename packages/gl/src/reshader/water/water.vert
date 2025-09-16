@@ -1,5 +1,3 @@
-precision highp float;
-precision highp sampler2D;
 const float PI = 3.141592653589793;
 uniform mat4 projMatrix;
 uniform mat4 viewMatrix;

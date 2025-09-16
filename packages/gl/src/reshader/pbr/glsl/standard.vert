@@ -1,6 +1,5 @@
 #include <gl2_vert>
 #define SHADER_NAME PBR
-precision highp float;
 
 attribute vec3 aPosition;
 

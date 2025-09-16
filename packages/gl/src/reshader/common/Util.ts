@@ -241,6 +241,9 @@ export function clamp(n: number, min: number, max: number) {
  * @returns
  */
 export function isSupportVAO(regl: any) {
+    if (globalThis['MAPTALKS_DISABLE_VAO']) {
+        return false;
+    }
     if (regl.wgpu) {
         return false;
     }
