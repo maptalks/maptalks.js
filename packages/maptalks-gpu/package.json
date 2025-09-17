@@ -1,11 +1,11 @@
 {
-  "name": "maptalks-gl",
+  "name": "maptalks-gpu",
   "version": "0.113.6",
   "description": "All-in-one package for maptalks webgl layers",
   "module": "index.js",
-  "main": "dist/maptalks-gl.js",
-  "unpkg": "dist/maptalks-gl.js",
-  "jsdelivr": "dist/maptalks-gl.js",
+  "main": "dist/maptalks-gpu.js",
+  "unpkg": "dist/maptalks-gpu.js",
+  "jsdelivr": "dist/maptalks-gpu.js",
   "types": "index.d.ts",
   "scripts": {
     "clean": "rimraf dist",
@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@maptalks/3dtiles": "workspace:*",
-    "@maptalks/gl": "workspace:*",
+    "@maptalks/gpu": "workspace:*",
     "@maptalks/gltf-layer": "workspace:*",
     "@maptalks/transform-control": "workspace:*",
     "@maptalks/video-layer": "workspace:*",

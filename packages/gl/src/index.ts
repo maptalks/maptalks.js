@@ -12,7 +12,7 @@ export { GroupGLLayer, GroundPainter, CanvasCompatible, HighlightUtil, ContextUt
 import './layer/TileLayerGLRenderer';
 import './map/MapGLRenderer';
 import './layer/ImageLayerGLRenderer';
-// import './map/MapGPURenderer';
+import './map/MapGPURenderer';
 
 export { default as HeatmapProcess } from './layer/HeatmapProcess';
 export { GLContext } from '@maptalks/fusiongl';

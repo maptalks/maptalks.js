@@ -1,6 +1,6 @@
 import transcoders, { registerGLTFLoaderBundle } from './transcoders';
 export { transcoders };
-import { gltfLoaderExport } from  '../build/gltf-loader-bundle.js';
+import { gltfLoaderExport } from  '../build/dist/gltf-loader-bundle.js';
 registerGLTFLoaderBundle(gltfLoaderExport);
 
 import createREGL from '@maptalks/regl';
@@ -15,5 +15,5 @@ export { createREGL };
 export * from './index.ts';
 
 import * as maptalks from 'maptalks';
-import chunk from '../build/worker.js';
+import chunk from '../build/dist/worker.js';
 maptalks.registerWorkerAdapter('@maptalks/terrain', chunk);

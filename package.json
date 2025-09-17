@@ -6,6 +6,7 @@
   "scripts": {
     "clean": "turbo run clean",
     "dev": "turbo run dev",
+    "build-gpu": "turbo run build --filter=maptalks-gpu",
     "build": "turbo run build --filter=maptalks-gl",
     "build-all": "turbo run build",
     "build-dev": "turbo run build-dev*",

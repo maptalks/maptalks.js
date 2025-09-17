@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2021", "DOM"],
+    "outDir": "./dist/",
+    "rootDir": "../gl/src",
+    "baseUrl": "../gl",
+    "types": ["@webgpu/types"]
+  },
+  "include": [
+    "../gl/src/**/*.ts",
+    "../gl/src/types/*.d.ts",
+  ]
+}

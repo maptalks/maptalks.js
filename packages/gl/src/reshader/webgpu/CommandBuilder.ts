@@ -68,7 +68,6 @@ export default class CommandBuilder {
             error.message = this.name + '(frag):' + error.message;
             throw error;
         }
-
         // dynamically assign location index with $in and $out
         vert = parseLocationIndex(vert);
         if (frag) {
@@ -429,7 +428,7 @@ function parseBindingIndex(code: any, index: number) {
     locIndex = index;
     return {
         source: code.replaceAll('$b', indexAutoInc),
-        index
+        index: locIndex
     };
 }
 
