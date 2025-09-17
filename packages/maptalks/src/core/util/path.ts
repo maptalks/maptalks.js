@@ -301,3 +301,113 @@ export function getMinMaxAltitude(altitude: number | number[] | number[][]): [nu
     return [min, max];
 }
 
+/**
+ * point left segment
+ * @param p 
+ * @param p1 
+ * @param p2 
+ * @returns 
+ */
+export function pointLeftSegment(p: Point, p1: Point, p2: Point) {
+    const x1 = p1.x, y1 = p1.y;
+    const x2 = p2.x, y2 = p2.y;
+    const x = p.x, y = p.y;
+    return (y1 - y2) * x + (x2 - x1) * y + x1 * y2 - x2 * y1 > 0;
+}
+
+function pointRightSegment(p: Point, p1: Point, p2: Point) {
+    return !pointLeftSegment(p, p1, p2);
+}
+
+/**
+ * 
+ * LT--------------------RT
+ *   \                  /
+ *    \                /
+ *     \              /
+ *      LB-----------RB
+ *        camera behind
+ *
+ * Points within a convex quadrilateral
+ * @param point 
+ * @param p1 
+ * @param p2 
+ * @param p3 
+ * @param p4 
+ * @returns 
+ */
+export function pointInQuadrilateral(p: Point, LT: Point, RT: Point, RB: Point, LB: Point) {
+    //LT-RT
+    const a = pointRightSegment(p, LT, RT);
+    //RT-RB
+    const b = pointRightSegment(p, RT, RB);
+    //RB-LB
+    const c = pointRightSegment(p, RB, LB);
+    //LB-LT
+    const d = pointRightSegment(p, LB, LT);
+    return a && b && c && d;
+}
+
+
+/**
+ * 直线和直线的交点
+ * Intersection of two line segments
+ * @param p1 
+ * @param p2 
+ * @param p3 
+ * @param p4 
+ * @returns 
+ */
+export function lineIntersection(p1: Point, p2: Point, p3: Point, p4: Point): Point | null {
+    const dx1 = p2.x - p1.x, dy1 = p2.y - p1.y;
+    const dx2 = p4.x - p3.x, dy2 = p4.y - p3.y;
+    if (dx1 === 0 && dx2 === 0) {
+        return null;
+    }
+    if (dy1 === 0 && dy2 === 0) {
+        return null;
+    }
+
+    const k1 = dy1 / dx1;
+    const k2 = dy2 / dx2;
+
+    if (k1 === k2) {
+        return null;
+    }
+
+    const b1 = p1.y - k1 * p1.x;
+    const b2 = p3.y - k2 * p3.x;
+
+    let x, y;
+
+    if (dx1 === 0) {
+        x = p1.x;
+        y = k2 * x + b2;
+    } else if (dx2 === 0) {
+        x = p3.x;
+        y = k1 * x + b1;
+    } else if (dy1 === 0) {
+        y = p1.y;
+        x = (y - b2) / k2;
+    } else if (dy2 === 0) {
+        y = p3.y;
+        x = (y - b1) / k1;
+    } else {
+        x = (b2 - b1) / (k1 - k2);
+        y = k1 * x + b1;
+    }
+    return new Point(x, y);
+}
+
+export function altitudesHasData(altitudes: number | Array<number>) {
+    if (isNumber(altitudes)) {
+        return altitudes !== 0;
+    } else if (Array.isArray(altitudes) && altitudes.length > 0) {
+        for (let i = 0, len = altitudes.length; i < len; i++) {
+            if (isNumber(altitudes[i]) && altitudes[i] !== 0) {
+                return true;
+            }
+        }
+    }
+    return false;
+};

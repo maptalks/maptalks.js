@@ -1,5 +1,5 @@
 import { isNumber, sign, pushIn, isDashLine, getPointsResultPts } from '../../core/util';
-import { clipPolygon, clipLine, getMinMaxAltitude } from '../../core/util/path';
+import { clipPolygon, clipLine, getMinMaxAltitude, pointInQuadrilateral, pointLeftSegment, lineIntersection, altitudesHasData } from '../../core/util/path';
 import Class from '../../core/Class';
 import Size from '../../geo/Size';
 import Point from '../../geo/Point';
@@ -328,10 +328,59 @@ class Painter extends Class {
         const symbolizers = this.symbolizers;
 
         const enableClip = geometry.options.enableClip;
+        const strictClip = geometry.options.strictClip;
 
         function pointsContainerPoints(viewPoints = [], alts = []) {
-            let pts = getPointsResultPts(viewPoints, ptkey);
-            pts = map._pointsAtResToContainerPoints(viewPoints, glRes, alts, pts);
+
+
+            let filterPoints = viewPoints;
+            if (strictClip && map._currentViewGLInfo && viewPoints.length > 1 && !altitudesHasData(alts)) {
+                filterPoints = [];
+                const { lt, rt, rb, lb, RB, LB } = map._currentViewGLInfo;
+                for (let i = 0, len = viewPoints.length; i < len; i++) {
+                    const point = viewPoints[i];
+                    //是否在相机背后
+                    const needLimit = (!pointInQuadrilateral(point, lt, rt, rb, lb)) && pointLeftSegment(point, RB, LB);
+                    if (!needLimit) {
+                        filterPoints.push(point);
+                        continue;
+                    }
+                    const pre = viewPoints[i - 1] || viewPoints[1];
+                    const next = viewPoints[i + 1] || viewPoints[len - 2];
+                    if (!pre || !next) {
+                        filterPoints.push(point);
+                        continue;
+                    }
+                    //相邻的点是否在相机背后
+                    const a = pointLeftSegment(pre, RB, LB);
+                    const b = pointLeftSegment(next, RB, LB);
+                    if (a && b) {
+                        filterPoints.push(point);
+                        continue;
+                    }
+
+                    let hasCross = false;
+                    if (!a) {
+                        const cross = lineIntersection(pre, point, RB, LB);
+                        if (cross) {
+                            filterPoints.push(cross);
+                            hasCross = true;
+                        }
+                    }
+                    if (!b) {
+                        const cross = lineIntersection(next, point, RB, LB);
+                        if (cross) {
+                            filterPoints.push(cross);
+                            hasCross = true;
+                        }
+                    }
+                    if (!hasCross) {
+                        filterPoints.push(point);
+                    }
+                }
+            }
+            let pts = getPointsResultPts(filterPoints, ptkey);
+            pts = map._pointsAtResToContainerPoints(filterPoints, glRes, alts, pts);
             for (let i = 0, len = pts.length; i < len; i++) {
                 const p = pts[i];
                 p._sub(containerOffset);
@@ -463,27 +512,13 @@ class Painter extends Class {
     //@internal
     _clip(points: Point[], altitude?: number) {
         // linestring polygon clip
-        if (isNumber(altitude) && altitude !== 0) {
+        if (altitudesHasData(altitude)) {
             return {
                 points,
                 altitude
             };
         }
-        if (Array.isArray(altitude)) {
-            let hasAltitude = false;
-            for (let i = 0, len = altitude.length; i < len; i++) {
-                if (altitude[i] !== 0) {
-                    hasAltitude = true;
-                    break;
-                }
-            }
-            if (hasAltitude) {
-                return {
-                    points,
-                    altitude
-                };
-            }
-        }
+
         const map = this.getMap(),
             geometry = this.geometry;
         let lineWidth = this.getSymbol()['lineWidth'];

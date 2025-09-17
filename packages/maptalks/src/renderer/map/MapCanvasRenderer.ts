@@ -1,4 +1,4 @@
-import {  isNumber, isFunction, calCanvasSize, pushIn } from '../../core/util';
+import { isNumber, isFunction, calCanvasSize, pushIn } from '../../core/util';
 import { createEl } from '../../core/util/dom';
 import Point from '../../geo/Point';
 import Canvas2D from '../../core/Canvas';
@@ -32,6 +32,7 @@ class MapCanvasRenderer extends MapAbstractRenderer {
      * @returns return false to cease frame loop
      */
     renderFrame(framestamp: number): boolean {
+        this._updateMapCurrentViewGLInfo();
         const map = this.map;
         if (!map || !map.options['renderable']) {
             return false;
