@@ -280,6 +280,106 @@ importers:
         specifier: ^4.17.2
         version: 4.17.2
 
+  packages/gpu:
+    dependencies:
+      '@maptalks/fusiongl':
+        specifier: workspace:*
+        version: link:../fusion.gl
+      '@maptalks/gltf-loader':
+        specifier: workspace:*
+        version: link:../gltf-loader
+      '@maptalks/martini':
+        specifier: ^0.4.0
+        version: 0.4.0
+      '@maptalks/regl':
+        specifier: ^3.6.0
+        version: 3.6.0
+      '@maptalks/tbn-packer':
+        specifier: ^1.4.5
+        version: 1.4.5
+      '@webgpu/types':
+        specifier: 0.1.52
+        version: 0.1.52
+      color:
+        specifier: ^3.0.0
+        version: 3.2.1
+      colorin:
+        specifier: ^0.6.0
+        version: 0.6.0
+      earcut:
+        specifier: ^3.0.1
+        version: 3.0.1
+      frustum-intersects:
+        specifier: ^0.2.4
+        version: 0.2.4
+      gl-matrix:
+        specifier: ^3.4.0
+        version: 3.4.3
+      maptalks:
+        specifier: workspace:*
+        version: link:../maptalks
+      wgsl_reflect:
+        specifier: ^1.0.16
+        version: 1.0.16
+    devDependencies:
+      '@maptalks/rollup-plugin-glsl-minify':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@rollup/plugin-commonjs':
+        specifier: ^25.0.7
+        version: 25.0.7(rollup@4.17.2)
+      '@rollup/plugin-node-resolve':
+        specifier: ^15.2.3
+        version: 15.2.3(rollup@4.17.2)
+      '@rollup/plugin-terser':
+        specifier: 0.4.4
+        version: 0.4.4(rollup@4.17.2)
+      '@rollup/plugin-typescript':
+        specifier: ^11.1.6
+        version: 11.1.6(rollup@4.17.2)(tslib@2.6.2)(typescript@5.4.5)
+      eslint:
+        specifier: ^8.57.0
+        version: 8.57.0
+      eslint-plugin-mocha:
+        specifier: ^10.5.0
+        version: 10.5.0(eslint@8.57.0)
+      expect.js:
+        specifier: ^0.3.1
+        version: 0.3.1
+      karma:
+        specifier: ^6.4.4
+        version: 6.4.4
+      karma-chrome-launcher:
+        specifier: ^3.1.1
+        version: 3.2.0
+      karma-mocha:
+        specifier: ^2.0.1
+        version: 2.0.1
+      karma-mocha-reporter:
+        specifier: ^2.2.5
+        version: 2.2.5(karma@6.4.4)
+      mocha:
+        specifier: ^10.3.0
+        version: 10.4.0
+      pixelmatch:
+        specifier: ^4.0.2
+        version: 4.0.2
+      rollup:
+        specifier: ^4.17.2
+        version: 4.17.2
+      rollup-plugin-dts:
+        specifier: ^6.1.0
+        version: 6.1.1(rollup@4.17.2)(typescript@5.4.5)
+      tslib:
+        specifier: ^2.6.2
+        version: 2.6.2
+      typescript:
+        specifier: ^5.4.2
+        version: 5.4.5
+      typescript-eslint:
+        specifier: ^8.34.0
+        version: 8.34.0(eslint@8.57.0)(typescript@5.4.5)
+
   packages/layer-3dtiles:
     dependencies:
       '@maptalks/function-type':
