@@ -7,4 +7,4 @@ export {
 } from 'gl-matrix';
 export { createREGL };
 
-export type * from './gl/dist/index.d.ts';
+export type * from './dist/gl/dist/index.d.ts';

@@ -145,7 +145,7 @@ module.exports = [
             name: "exports",
             globals: ["exports"],
             extend: true,
-            file: "build/gltf-loader-bundle.js"
+            file: "build/dist/gltf-loader-bundle.js"
             // footer: ``
         },
         watch: {
@@ -175,7 +175,7 @@ module.exports = [
             name: 'exports',
             globals: ['exports'],
             extend: true,
-            file: 'build/worker.js',
+            file: 'build/dist/worker.js',
             banner: `export default `,
             // footer: ``
         },
@@ -206,7 +206,7 @@ if (production) {
             'globals' : {
                 'maptalks' : 'maptalks'
             },
-            'file': 'build/gl/gl.es.js'
+            'file': 'build/dist/gl/gl.es.js'
         }
     });
 }
@@ -229,7 +229,7 @@ module.exports.push({
     },
     watch: {
         include: ['src/**/*.js', 'src/**/*.ts', 'src/**/*.glsl',  'src/**/*.wgsl', 'src/**/*.vert',  'src/**/*.frag',
-            '../reshader.gl/dist/reshadergl.es.js', 'build/worker.js', 'build/gltf-loader-bundle.js']
+            'build/dist/**/*.js']
     }
 });
 
