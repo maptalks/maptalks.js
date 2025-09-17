@@ -374,7 +374,7 @@ export function lineIntersection(p1: Point, p2: Point, p3: Point, p4: Point): Po
     const k2 = dy2 / dx2;
 
     //Parallel lines
-    if (k1 === k2) {
+    if (Math.abs(k1) === Math.abs(k2)) {
         return null;
     }
 
