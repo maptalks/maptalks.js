@@ -351,7 +351,7 @@ export function pointInQuadrilateral(p: Point, LT: Point, RT: Point, RB: Point, 
 
 /**
  * 直线和直线的交点
- * Intersection of two line segments
+ * Intersection of two line
  * @param p1 
  * @param p2 
  * @param p3 
@@ -361,9 +361,11 @@ export function pointInQuadrilateral(p: Point, LT: Point, RT: Point, RB: Point, 
 export function lineIntersection(p1: Point, p2: Point, p3: Point, p4: Point): Point | null {
     const dx1 = p2.x - p1.x, dy1 = p2.y - p1.y;
     const dx2 = p4.x - p3.x, dy2 = p4.y - p3.y;
+    //vertical
     if (dx1 === 0 && dx2 === 0) {
         return null;
     }
+    //horizontal
     if (dy1 === 0 && dy2 === 0) {
         return null;
     }
@@ -371,6 +373,7 @@ export function lineIntersection(p1: Point, p2: Point, p3: Point, p4: Point): Po
     const k1 = dy1 / dx1;
     const k2 = dy2 / dx2;
 
+    //Parallel lines
     if (k1 === k2) {
         return null;
     }
@@ -399,6 +402,11 @@ export function lineIntersection(p1: Point, p2: Point, p3: Point, p4: Point): Po
     return new Point(x, y);
 }
 
+/**
+ *  Does it contain altitude values
+ * @param altitudes 
+ * @returns 
+ */
 export function altitudesHasData(altitudes: number | Array<number>) {
     if (isNumber(altitudes)) {
         return altitudes !== 0;
