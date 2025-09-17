@@ -282,7 +282,8 @@ class Painter extends Class {
             points = params[0];
 
         const mapExtent = containerExtent;
-        const cPoints = this._pointContainerPoints(points, dx, dy, ignoreAltitude, disableClip || this._hitPoint && !mapExtent.contains(this._hitPoint), null, ptkey);
+        const isPolygon = !!geometry.getHoles;
+        const cPoints = this._pointContainerPoints(points, dx, dy, ignoreAltitude, disableClip || this._hitPoint && !mapExtent.contains(this._hitPoint), null, ptkey, isPolygon);
         if (!cPoints) {
             return null;
         }
@@ -302,7 +303,7 @@ class Painter extends Class {
     }
 
     //@internal
-    _pointContainerPoints(points, dx, dy, ignoreAltitude, disableClip, pointPlacement, ptkey = '_pt') {
+    _pointContainerPoints(points, dx: number, dy: number, ignoreAltitude: boolean, disableClip: boolean, pointPlacement: string, ptkey = '_pt', isPolygon?: boolean) {
         if (this._aboveCamera()) {
             return null;
         }
@@ -331,8 +332,6 @@ class Painter extends Class {
         const strictClip = geometry.options.strictClip;
 
         function pointsContainerPoints(viewPoints = [], alts = []) {
-
-
             let filterPoints = viewPoints;
             if (strictClip && map._currentViewGLInfo && viewPoints.length > 1 && !altitudesHasData(alts)) {
                 filterPoints = [];
@@ -345,8 +344,9 @@ class Painter extends Class {
                         filterPoints.push(point);
                         continue;
                     }
-                    const pre = viewPoints[i - 1] || viewPoints[1];
-                    const next = viewPoints[i + 1] || viewPoints[len - 2];
+                    //isPolygon 最后一个顶点需要首尾链接
+                    const pre = viewPoints[i - 1] || (isPolygon ? viewPoints[len - 1] : viewPoints[1]);
+                    const next = viewPoints[i + 1] || (isPolygon ? viewPoints[0] : viewPoints[len - 2]);
                     if (!pre || !next) {
                         filterPoints.push(point);
                         continue;
