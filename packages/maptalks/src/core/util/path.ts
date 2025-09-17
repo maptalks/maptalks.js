@@ -418,4 +418,4 @@ export function altitudesHasData(altitudes: number | Array<number>) {
         }
     }
     return false;
-};
+}
