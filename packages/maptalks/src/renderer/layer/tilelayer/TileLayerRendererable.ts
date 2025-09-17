@@ -137,7 +137,9 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
             }
             const mask2DExtent = this.prepareCanvas();
             if (mask2DExtent) {
-                if (!mask2DExtent.intersects(this.canvasExtent2D)) {
+                const layer = this.layer || {};
+                const layerParent = layer.parent || {};
+                if (layerParent.isMap && !mask2DExtent.intersects(this.canvasExtent2D)) {
                     this.completeRender();
                     return;
                 }
