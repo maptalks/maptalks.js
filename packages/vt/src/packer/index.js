@@ -47,7 +47,6 @@ const SYMBOLS_NEED_REBUILD = {
 
 // 只有vt图层，需要重建mesh的symbol属性
 const SYMBOLS_NEED_REBUILD_IN_VT = {
-    'visible': 1,
 
     'textHorizontalAlignment': 1,
     'textVerticalAlignment': 1,

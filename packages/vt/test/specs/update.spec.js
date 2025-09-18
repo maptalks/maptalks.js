@@ -1690,7 +1690,7 @@ describe('update style specs', () => {
                 assert.deepEqual(pixel, [36, 40, 44, 255]);
                 done();
             }, 1500);
-        }, 1500);
+        }, 2000);
     }).timeout(5000);
 
     it('should can update symbol to lit with AA, maptalks-studio#374', done => {
