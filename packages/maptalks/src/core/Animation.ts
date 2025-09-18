@@ -568,7 +568,7 @@ const Animation = {
      * @param  {Function} step  - callback function for animation steps
      * @return {Player} player
      */
-    animate(styles, options, step: AnimationCallback, target?: any) {
+    animate(styles, options: AnimationOptionsType, step: AnimationCallback, target?: any) {
         if (!options) {
             options = {};
         }
@@ -595,6 +595,7 @@ export type AnimationOptionsType = {
     duration?: number;
     easing?: EasingType;
     repeat?: boolean;
+    framer?: any;
 }
 
 type AnimationOptionsPrivateType = {
