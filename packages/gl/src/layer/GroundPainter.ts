@@ -467,10 +467,7 @@ class GroundPainter {
     }
 
     _updateMaterial() {
-        const materialConfig = this.getSymbol() && this.getSymbol().material;
-        if (!materialConfig) {
-            return;
-        }
+        const materialConfig = this.getSymbol() && this.getSymbol().material || {};
         const material = {};
         let hasTexture = false;
         const ground = this._layer.getGroundConfig();
