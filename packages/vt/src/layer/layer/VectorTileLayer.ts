@@ -2014,7 +2014,7 @@ export type VectorTileLayerOptionsType = {
 
   altitudePropertyName?: string,
   disableAltitudeWarning?: boolean,
-  loadTileErrorLog?: true,
+  loadTileErrorLog?: boolean,
   loadTileErrorLogIgnoreCodes?: Array<number>;
 } & TileLayerOptionsType;
 
