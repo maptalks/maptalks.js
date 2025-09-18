@@ -308,11 +308,6 @@ export default class BaseLayerWorker {
             }
             // type = 0 是普通 style， type = 1 是 feature style
             const targetData = pluginConfig.type === 0 ? data : featureData;
-            if (pluginConfig.symbol && pluginConfig.symbol.visible === false) {
-                //数据不存在，则在data中添加个占位的null，不然renderer中featureData与data，对应的plugin会不正确
-                targetData[typeIndex] = null;
-                continue;
-            }
             getFnTypeProps(pluginConfig.symbol, fnTypeProps, i);
             hasFnTypeProps = hasFnTypeProps || fnTypeProps[i] && fnTypeProps[i].size > 0;
 

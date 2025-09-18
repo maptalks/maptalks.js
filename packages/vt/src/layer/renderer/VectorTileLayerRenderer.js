@@ -97,22 +97,31 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             this._groundPainter.update();
         }
         if (this._workerConn) {
-            this._styleCounter++;
-            this._preservePrevTiles();
-            const style = this.layer._getComputedStyle();
-            style.styleCounter = this._styleCounter;
-            this._workersyncing = true;
-            this._workerConn.updateStyle(style, err => {
-                this._workersyncing = false;
-                if (err) throw new Error(err);
-                this._needRetire = true;
-                // this.clear();
-                // this._clearPlugin();
-                this._initPlugins();
-                this.setToRedraw();
+            if (this._workerUpdateTimeout) {
+                clearTimeout(this._workerUpdateTimeout);
+            }
+            this._workerUpdateTimeout = setTimeout(() => {
+                if (!this.layer) {
+                    // layer is removed from map
+                    return;
+                }
+                this._styleCounter++;
+                this._preservePrevTiles();
+                const style = this.layer._getComputedStyle();
+                style.styleCounter = this._styleCounter;
+                this._workersyncing = true;
+                this._workerConn.updateStyle(style, err => {
+                    this._workersyncing = false;
+                    if (err) throw new Error(err);
+                    this._needRetire = true;
+                    // this.clear();
+                    // this._clearPlugin();
+                    this._initPlugins();
+                    this.setToRedraw();
 
-                this.layer.fire('refreshstyle');
-            });
+                    this.layer.fire('refreshstyle');
+                });
+            }, 10);
         } else {
             this._initPlugins();
         }
@@ -1481,7 +1490,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             const status = plugin.createTile(context);
             if (tileCache[idx].geometry) {
                 //插件数据以及经转化为geometry，可以删除原始数据以节省内存
-                tileData.data[idx] = 1;
+                tileData.data[idx] = 'geometry created';
             }
             if (!this._needRetire && status.retire && plugin.supportRenderMode('taa')) {
                 this._needRetire = true;

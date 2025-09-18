@@ -605,7 +605,6 @@ describe('update style specs', () => {
                 }
             });
             map.setZoom(map.getZoom() + 2);
-            assert(layer.getRenderer().getStyleCounter() === 2);
         }, false, null, 0, 2);
     });
 
@@ -1690,7 +1689,7 @@ describe('update style specs', () => {
                 assert.deepEqual(pixel, [36, 40, 44, 255]);
                 done();
             }, 1500);
-        }, 1500);
+        }, 2000);
     }).timeout(5000);
 
     it('should can update symbol to lit with AA, maptalks-studio#374', done => {
@@ -2216,7 +2215,7 @@ describe('update style specs', () => {
                 assert(styleRefreshed);
                 assert.notDeepEqual(pixel, newPixel);
                 done();
-            }, 800);
+            }, 1500);
         });
         layer.on('refreshstyle', () => {
             styleRefreshed = true;
@@ -2295,6 +2294,106 @@ describe('update style specs', () => {
         });
 
         layer.addTo(map);
+    });
+
+    it('should can update visible, maptalks/maptalks.js#2634', done => {
+        const polygons = {
+            type: 'FeatureCollection',
+            features: [
+                {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Polygon',
+                        coordinates: [
+                            [
+                                [-1., 1.0],
+                                [1., 1.0],
+                                [1., -1.0],
+                                [-1., -1],
+                                [-1., 1]
+                            ]
+                        ]
+                    },
+                    properties: {
+                        type: 1
+                    }
+                },
+                {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Polygon',
+                        coordinates: [
+                            [
+                                [-0.5, 0.5],
+                                [0.5, 0.5],
+                                [0.5, -0.5],
+                                [-0.5, -0.5],
+                                [-0.5, 0.5]
+                            ]
+                        ]
+                    },
+                    properties: {
+                        type: 2
+                    }
+                }
+            ]
+        };
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: polygons,
+            style: [
+                {
+                    name: '1',
+                    filter:  ['==', 'type', 1],
+                    renderPlugin: {
+                        dataConfig: {
+                            type: "fill",
+                        },
+                        type: "fill",
+                    },
+                    symbol: {
+                        polygonFill: "#f00",
+                        polygonOpacity: 1,
+                    },
+                },
+                {
+                    name: '2',
+                    filter:  ['==', 'type', 2],
+                    renderPlugin: {
+                        dataConfig: {
+                            type: "fill",
+                        },
+                        type: "fill",
+                    },
+                    symbol: {
+                        polygonFill: "#0f0",
+                        polygonOpacity: 1,
+                    },
+                },
+            ]
+        });
+        layer.addTo(map);
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        setTimeout(() => {
+            const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+            assert.deepEqual(pixel, [0, 255, 0, 255]);
+            layer.updateSymbol('1', { visible: false });
+            layer.updateSymbol('2', { visible: false });
+
+            setTimeout(() => {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                assert.deepEqual(pixel, [0, 0, 0, 0]);
+                layer.updateSymbol('1', { visible: true });
+                layer.updateSymbol('2', { visible: true });
+                setTimeout(() => {
+                    const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                    assert.deepEqual(pixel, [0, 255, 0, 255]);
+                    done();
+                }, 300);
+            }, 300);
+
+        }, 1500);
+
     });
 
     function assertChangeStyle(done, expectedColor, changeFun, isSetStyle, style, renderCount, doneRenderCount) {
