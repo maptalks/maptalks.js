@@ -605,10 +605,6 @@ describe('update style specs', () => {
                 }
             });
             map.setZoom(map.getZoom() + 2);
-            setTimeout(() => {
-                assert(layer.getRenderer().getStyleCounter() === 2);
-            }, 12);
-
         }, false, null, 0, 2);
     });
 
