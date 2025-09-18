@@ -79,7 +79,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
             return;
         }
 
-        const player: any = Animation.animate(stylesToAnimate, options, frame => {
+        const player: any = Animation.animate(stylesToAnimate, options as AnimationOptionsType, frame => {
             if (map && map.isRemoved()) {
                 player.finish();
                 return;

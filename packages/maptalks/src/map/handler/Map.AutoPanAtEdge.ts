@@ -1,11 +1,11 @@
-import Handler from '../../handler/Handler';
 import Map from '../Map';
 import { type Event } from './CommonType'
+import MapBaseHandler from './MapBaseHandler';
 
 // Edge Detection Distance(Units are pixels).
 const PANOFFSET = 30;
 
-class MapAutoPanAtEdgeHandler extends Handler {
+class MapAutoPanAtEdgeHandler extends MapBaseHandler {
     addHooks() {
         if (!this.target) {
             return;

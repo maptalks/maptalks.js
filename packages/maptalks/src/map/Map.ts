@@ -2906,6 +2906,7 @@ export type MapViewType = {
     pitch?: number;
     bearing?: number;
     height?: number;
+    around?: Point;
 }
 
 export type MapFitType = {
@@ -2922,7 +2923,7 @@ export type MapDataURLType = {
     save?: boolean;
 }
 
-export type MapAnimationOptionsType = AnimationOptionsType & { counterclockwise?: boolean }
+export type MapAnimationOptionsType = AnimationOptionsType & { counterclockwise?: boolean, continueOnViewChanged?: boolean, wheelZoom?: boolean }
 
 export type MapIdentifyOptionsType = {
     tolerance?: number;
