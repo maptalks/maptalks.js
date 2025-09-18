@@ -1,7 +1,7 @@
 const data = {
     type: 'FeatureCollection',
     features: [
-        { type: 'Feature', geometry: { type: 'Point', coordinates: [40, 40] }, properties: { text: 'hello' } }
+        { type: 'Feature', geometry: { type: 'Point', coordinates: [40, 40] }, properties: { boardColor: '#0f0' } }
     ]
 };
 
@@ -24,19 +24,18 @@ const style = [
             // context 是每个billboard的独立上下文对象
             // properties 是feature的属性对象
             'source': (context, properties) => {
-                const text = properties.text;
-                let { canvas, preText } = context;
+                const boardColor = properties.boardColor;
+                let { canvas, preBoardColor } = context;
                 const now = performance.now();
                 if (!updated && ((now - time) >= limit)) {
-                    preText = null;
+                    preBoardColor = null;
                     needRefresh = true;
                 }
-                if (text === preText) {
+                if (boardColor === preBoardColor) {
                     return {
                         redraw: false
                     };
                 }
-                const color = needRefresh ? '#f00' : '#0f0';
                 if (!canvas) {
                     canvas = document.createElement('canvas');
                     document.body.appendChild(canvas);
@@ -44,14 +43,9 @@ const style = [
                     canvas.height = 128;
                 }
                 const ctx = canvas.getContext('2d');
-                ctx.fillStyle = color;
+                ctx.fillStyle = boardColor;
                 ctx.fillRect(0, 0, 256, 128);
-                ctx.fillStyle = '#fff';
-                ctx.font = '64px Arial';
-                ctx.textAlign = 'left';
-                ctx.textBaseline = 'hanging';
-                ctx.fillText(text, 80, 64);
-                context.preText = text;
+                context.preBoardColor = boardColor;
                 context.canvas = canvas;
                 if (needRefresh) {
                     updated = true;

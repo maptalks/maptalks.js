@@ -3,8 +3,6 @@ import { include } from "../Utils";
 
 const nonNaNArray = [];
 
-let warned = false;
-
 include(GLContext.prototype, {
     bindAttribLocation(program, index, name) {
         return this._gl.bindAttribLocation(program, index, name);
@@ -134,10 +132,7 @@ include(GLContext.prototype, {
     },
     uniformMatrix4fv(location, transpose, value) {
         if (!location) {
-            if (!warned) {
-                console.warn('UniformLocation invalid, null value encountered in browser:', navigator.userAgent);
-                warned = true;
-            }
+            console.warn('UniformLocation invalid, null value encountered in browser:', navigator.userAgent);
             return;
         }
         value = this._checkMatrix4fvNaN(value);

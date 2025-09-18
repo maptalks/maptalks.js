@@ -6,6 +6,7 @@
   "scripts": {
     "clean": "turbo run clean",
     "dev": "turbo run dev",
+    "build-gpu": "turbo run build --filter=maptalks-gpu",
     "build": "turbo run build --filter=maptalks-gl",
     "build-all": "turbo run build",
     "build-dev": "turbo run build-dev*",
@@ -13,6 +14,7 @@
     "prettier": "prettier --parser=typescript --write **/*.{js,ts,md}",
     "maptalks-test": "pnpm --filter=maptalks run test",
     "vt-test": "pnpm --filter=@maptalks/vt run test",
+    "3dtiles-test": "pnpm --filter=@maptalks/3dtiles run test",
     "changeset": "changeset",
     "changeset-version": "changeset version",
     "release": "pnpm build && changeset publish"

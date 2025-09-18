@@ -1,5 +1,52 @@
 # @maptalks/3dtiles
 
+## 0.106.5
+
+### Patch Changes
+
+- some bug fixes related with terrain and 3dtiles
+
+## 0.106.4
+
+### Patch Changes
+
+- Updated dependencies
+  - maptalks@1.4.5
+
+## 0.106.3
+
+### Patch Changes
+
+- merge reshader.gl into gl and fix default ambientColor in 3dtiles layer
+
+## 0.106.2
+
+### Patch Changes
+
+- Updated dependencies
+  - maptalks@1.4.4
+
+## 0.106.1
+
+### Patch Changes
+
+- Updated dependencies
+  - maptalks@1.4.3
+
+## 0.106.0
+
+### Minor Changes
+
+- - implement terrain-flat-mask rendre plugin in VectorLayer
+  - sync codes with maptalks/gl-layers
+  - webgl layers' compatibility fixes with MapCanvasRenderer
+  - bug fixes in maptalks
+
+### Patch Changes
+
+- Updated dependencies
+  - maptalks@1.4.2
+
 ## 0.104.1
 
 ### Patch Changes

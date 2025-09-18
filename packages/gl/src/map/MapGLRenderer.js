@@ -66,6 +66,6 @@ export default class MapGLRenderer extends renderer.MapAbstractRenderer {
 
 Map.registerRenderer('gl', MapGLRenderer);
 
-Map.mergeOptions({
-    renderer: ['gl', 'gpu']
-});
+// Map.mergeOptions({
+//     renderer: ['gl', 'gpu']
+// });

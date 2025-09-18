@@ -1,5 +1,63 @@
 # @maptalks/vt
 
+## 0.108.6
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.109.6
+
+## 0.108.5
+
+### Patch Changes
+
+- Fix some bugs
+  - @maptalks/gl@0.109.5
+
+## 0.108.4
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.109.4
+
+## 0.108.3
+
+### Patch Changes
+
+- Fix shader compilation failure in PolygonLayer.outline (#2630)
+  - @maptalks/gl@0.109.3
+
+## 0.108.2
+
+### Patch Changes
+
+- fix bugs in maptalks/vt/gl
+- Updated dependencies
+  - @maptalks/gl@0.109.2
+
+## 0.108.1
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.109.1
+
+## 0.108.0
+
+### Minor Changes
+
+- - implement terrain-flat-mask rendre plugin in VectorLayer
+  - sync codes with maptalks/gl-layers
+  - webgl layers' compatibility fixes with MapCanvasRenderer
+  - bug fixes in maptalks
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.109.0
+  - @maptalks/vt-plugin@0.100.0
+
 ## 0.103.2
 
 ### Patch Changes

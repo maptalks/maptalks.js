@@ -167,6 +167,10 @@ class Painter {
         return this.layer.options.awareOfTerrain;
     }
 
+    isTerrainMask() {
+        return false;
+    }
+
     isTerrainVector() {
         return false;
     }
@@ -1113,6 +1117,7 @@ class Painter {
             const pickingVert = this.picking[i].getPickingVert();
             const wgslPickingVert = this.picking[i].getPickingWGSLVert();
             const defines = {
+                'PICKING_MODE': 1,
                 'ENABLE_PICKING': 1,
                 'HAS_PICKING_ID': 1
             };

@@ -1,6 +1,7 @@
 import * as maptalks from 'maptalks';
 import { reshader, vec3, vec4, mat3, mat4, quat, HighlightUtil, ContextUtil } from '@maptalks/gl';
 import { iterateMesh, iterateBufferData, getItemAtBufferData, setInstanceData, } from '../../common/GLTFHelpers';
+import pickingVert from './glsl/picking.vert';
 import pntsVert from './glsl/pnts.vert';
 import pntsFrag from './glsl/pnts.frag';
 import { isFunction, isNil, extend, setColumn3, flatArr, isNumber, normalizeColor, pushIn } from '../../common/Util';
@@ -10,7 +11,9 @@ import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 // import { getKHR_techniques } from './s3m/S3MTechnique';
 
 
-const { getTextureMagFilter, getTextureMinFilter, getTextureWrap, getMaterialType, getMaterialFormat, getPrimitive, getUniqueREGLBuffer } = reshader.REGLHelper;
+const { getTextureMagFilter, getTextureMinFilter,
+    getTextureWrap, getMaterialType, getMaterialFormat,
+    getPrimitive, getUniqueREGLBuffer, getArrayType } = reshader.REGLHelper;
 
 const Y_TO_Z = [1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1];
 const X_TO_Z = [0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 1];
@@ -1283,7 +1286,6 @@ export default class TileMeshPainter {
             defines['HAS_WEB3D_quantized_attributes_TEXCOORD'] = 1;
         }
         defines['HAS_MIN_ALTITUDE'] = 1;
-        defines['HAS_LAYER_OPACITY'] = 1;
         this._setCompressedInt16Defines(defines, gltfMesh.compressed_int16_params);
         const compressDefines = gltfMesh.compressDefines;
         extend(defines, compressDefines);
@@ -1453,6 +1455,7 @@ export default class TileMeshPainter {
         const isWebGPU = this.getMap().getRenderer().isWebGPU();
         const attrs = {};
         let positionSize = 0;
+        let vertexCount = 0;
         for (const p in attributes) {
             // 优先采用 attributeSemantics中定义的属性
             const name = attributeSemantics[p] || p;
@@ -1479,10 +1482,18 @@ export default class TileMeshPainter {
 
             attrs[name] = extend({}, attributes[p]);
             attrs[name].buffer = buffer;
+            attrs[name].type = getArrayType(attrs[name].array);
             delete attrs[name].array;
             if (name === attributeSemantics['POSITION']) {
                 attrs[name].array = attributes[p].array;
+                vertexCount = attributes[p].array.length / 3;
             }
+        }
+        // 补上缺失的_BATHCID属性，解决macos下 vertex buffer not big enough 报错
+        const pickingIdAttribute = attributeSemantics['_BATCHID'];
+        if (!attrs[pickingIdAttribute] && !isI3DM) {
+            const pickingData = new Uint8Array(vertexCount);
+            attrs[pickingIdAttribute] = pickingData;
         }
         // createColorArray(attrs);
         const indices = gltfMesh.indices ? (gltfMesh.indices.array ? gltfMesh.indices.array.slice() : gltfMesh.indices) : null;
@@ -1680,7 +1691,7 @@ export default class TileMeshPainter {
         this.picking = new reshader.FBORayPicking(
             this._renderer,
             {
-                vert: this._standardShader.vert,
+                vert: pickingVert,
                 extraCommandProps,
                 uniforms: this._standardShader.uniforms,
                 defines: {
@@ -1783,10 +1794,13 @@ export default class TileMeshPainter {
         const directionalLight = lightManager && lightManager.getDirectionalLight() || {};
         const lightDir = directionalLight.direction || [1, 1, -1];
         const pointOpacity = options && options.pointOpacity || 1;
+        let layerOpacity = this._layer.options['opacity'];
+        layerOpacity = isNil(layerOpacity) ? 1 : layerOpacity;
         return {
             projViewMatrix : map.projViewMatrix,
             pointOpacity,
-            lightDir: vec3.normalize(LIGHT_DIR, lightDir)
+            lightDir: vec3.normalize(LIGHT_DIR, lightDir),
+            layerOpacity
         };
     }
 
@@ -1799,8 +1813,8 @@ export default class TileMeshPainter {
         const renderer = this._layer.getRenderer();
         const maskUniforms = renderer.getMaskUniforms();
         uniforms.minAltitude = layer.options.altitude || 0;
-        const inGroup = renderer.canvas.gl && renderer.canvas.gl.wrap;
-        const layerOpacity = inGroup ? (layer.options.opacity || 0) : 1;
+        let layerOpacity = layer.options['opacity'];
+        layerOpacity = isNil(layerOpacity) ? 1 : layerOpacity;
         uniforms.layerOpacity = layerOpacity;
         extend(uniforms, {
             czm_lightDirectionEC: uniforms['light0_viewDirection'],
@@ -1812,6 +1826,9 @@ export default class TileMeshPainter {
             polygonFill: [1, 1, 1, 1],
             polygonOpacity: 1
         });
+        if (!uniforms.ambientColor) {
+            uniforms.ambientColor = [0.2, 0.2, 0.2];
+        }
         extend(uniforms, maskUniforms);
         return uniforms;
     }

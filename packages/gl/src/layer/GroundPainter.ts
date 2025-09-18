@@ -1,6 +1,6 @@
-import { vec2, mat4 } from '@maptalks/reshader.gl';
-import { pbr } from '@maptalks/reshader.gl';
-import * as reshader from '@maptalks/reshader.gl';
+import { vec2, mat4 } from 'gl-matrix';
+import { pbr } from '../reshader';
+import * as reshader from '../reshader';
 import { fillVert, fillFrag } from './glsl/fill.js';
 import ShadowProcess from './shadow/ShadowProcess';
 import { extend, getGroundTransform, hasOwn, normalizeColor } from './util/util.js';
@@ -108,14 +108,20 @@ class GroundPainter {
         uniforms['offsetFactor'] = context.offsetFactor;
         uniforms['offsetUnits'] = context.offsetUnits;
         const fbo = context && context.renderTarget && context.renderTarget.fbo;
-        this._layer.getRenderer().setToRedraw();
+        const renderer = this._layer.getRenderer();
         if (shader === this._fillShader) {
             //如果是drawSSR阶段不绘制fill ground，fuzhenn/maptalks-studio#461
             this.renderer.render(shader, uniforms, this._groundScene, fbo);
+            if (renderer.setCanvasUpdated) {
+                renderer.setCanvasUpdated();
+            }
             return true;
         }
         shader.filter = context.sceneFilter;
         this.renderer.render(shader, uniforms, this._groundScene, fbo);
+        if (renderer.setCanvasUpdated) {
+            renderer.setCanvasUpdated();
+        }
         return true;
     }
 
@@ -461,10 +467,7 @@ class GroundPainter {
     }
 
     _updateMaterial() {
-        const materialConfig = this.getSymbol() && this.getSymbol().material;
-        if (!materialConfig) {
-            return;
-        }
+        const materialConfig = this.getSymbol() && this.getSymbol().material || {};
         const material = {};
         let hasTexture = false;
         const ground = this._layer.getGroundConfig();

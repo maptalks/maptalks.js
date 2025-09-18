@@ -1,5 +1,5 @@
-import * as reshader from '@maptalks/reshader.gl';
-import { mat3, vec3 } from '@maptalks/reshader.gl';
+import * as reshader from '../reshader';
+import { mat3, vec3 } from 'gl-matrix';
 import { isNumber } from './util/util.js';
 
 const { createIBLTextures, disposeIBLTextures } = reshader.pbr.PBRUtils;

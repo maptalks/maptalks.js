@@ -283,6 +283,7 @@ function prepareGeometry(geometry, enableCollision, visibleInCollision) {
         delete geometry.data.aCount;
     }
 
+
     if ((enableCollision || isLinePlacement)) {
         let aShapeData = aShape;
         if (aShape.length === vertexCount * 4) {
@@ -313,7 +314,7 @@ function prepareGeometry(geometry, enableCollision, visibleInCollision) {
         delete geometry.data.aGlyphOffset;
         delete geometry.data.aPitchRotation;
 
-        const offsetLength = vertexCount / 2 * (is3DPitchText ? 3 : 2);
+        const offsetLength = vertexCount * (is3DPitchText ? 3 : 2);
         geometry.data.aOffset = {
             usage: 'dynamic',
             data: new Int16Array(offsetLength)

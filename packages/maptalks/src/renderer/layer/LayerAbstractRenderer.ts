@@ -282,7 +282,8 @@ class LayerAbstractRenderer extends Class {
      * Clear canvas
      */
     clear(): void {
-        this.clearCanvas();
+        this.clearContext();
+        this.setToRedraw();
     }
 
     /**
@@ -455,6 +456,7 @@ class LayerAbstractRenderer extends Class {
             this.initContext();
         } else if (isMapCanvasRenderer) {
             this.clearContext();
+            this.resizeCanvas();
         }
         this.prepareContext();
         delete this._maskExtent;
@@ -828,7 +830,7 @@ class LayerAbstractRenderer extends Class {
     }
 
     clearCanvas() {
-
+        this.clearContext();
     }
 
     /**

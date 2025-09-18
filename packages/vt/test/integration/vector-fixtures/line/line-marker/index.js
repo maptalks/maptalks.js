@@ -1,9 +1,8 @@
 const maptalks = require('maptalks');
-const path = require('path');
 
 const line = new maptalks.LineString([[0, 0], [1, 0]], {
     symbol: {
-        markerFile: 'file://' + path.resolve(__dirname, '../../../resources/plane-min.png'),
+        markerType: 'ellipse',
         markerVerticalAlignment: 'middle',
         markerWidth: 30,
         markerHeight: 30,

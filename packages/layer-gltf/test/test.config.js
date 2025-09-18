@@ -86,6 +86,7 @@ const lightConfig = {
 };
 
 const MAX_ZOOM = 25;
+const TARGET_CANVAS = document.createElement('canvas');
 const identitySpatialReference = {
     projection: 'identity',
     coordType: {
@@ -123,6 +124,23 @@ function createMap() {
     return map;
 }
 
+function createCanvasMap() {
+    const container = document.createElement('div');
+    container.style.width = '400px';
+    container.style.height = '300px';
+    container.style.backgroundColor = '#000';
+    document.body.appendChild(container);
+    const map = new maptalks.Map(container, {
+        mousemoveThrottleTime: -1,
+        center,
+        zoom: 17,
+        devicePixelRatio: 1,
+        lights: lightConfig,
+        renderer: 'canvas'
+    });
+    return map;
+}
+
 function removeMap(map) {
     const mapRenderer = map.getRenderer();
     mapRenderer._resizeObserver.disconnect();
@@ -134,7 +152,10 @@ function pickPixel(map, x, y, width, height) {
     const px = x || map.width / 2, py = y || map.height / 2;
     const w = width || 1, h = height || 1;
     const canvas = map.getRenderer().canvas;
-    const ctx = canvas.getContext("2d");
+    TARGET_CANVAS.width = canvas.width;
+    TARGET_CANVAS.height = canvas.height;
+    const ctx = TARGET_CANVAS.getContext('2d');
+    ctx.drawImage(canvas, 0, 0);
     const pixel = ctx.getImageData(px, py, w, h).data;
     return pixel;
 }

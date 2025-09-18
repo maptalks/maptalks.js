@@ -1,4 +1,4 @@
-import * as reshader from '@maptalks/reshader.gl';
+import * as reshader from '../../reshader';
 import { extend } from '../util/util';
 
 function renderExtentMap(extent, projViewMatrix, ratio, minHeight) {

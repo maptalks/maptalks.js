@@ -1,7 +1,7 @@
 import * as maptalks from 'maptalks';
-import * as reshader from '@maptalks/reshader.gl';
-import { WebGLConstants } from '@maptalks/reshader.gl';
-import { mat4 } from '@maptalks/reshader.gl';
+import * as reshader from '../../reshader';
+import { WebGLConstants } from '../../reshader';
+import { mat4 } from 'gl-matrix';
 import { extend } from './util';
 
 const TILE_POINT = new maptalks.Point(0, 0);
@@ -32,7 +32,7 @@ export function createImageMesh(geometry, image, extent2d, offset, scale, unifor
     uniforms = extend(uniforms || {}, {
         opacity: 1,
         debugLine: 0,
-        alphaTest: 1,
+        alphaTest: 0,
         baseColor: DEFAULT_BASE_COLOR,
         baseColorTexture: texture
     });

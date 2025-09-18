@@ -1,5 +1,5 @@
-import * as reshader from '@maptalks/reshader.gl';
-import { vec2 } from '@maptalks/reshader.gl';
+import * as reshader from '../../reshader';
+import { vec2 } from 'gl-matrix';
 
 const RESOLUTION = [];
 const bloomFilter = m => !!m.bloom;

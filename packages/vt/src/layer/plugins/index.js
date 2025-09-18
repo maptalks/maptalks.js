@@ -25,6 +25,7 @@ import GLTFStandardPainter from './painters/GLTFStandardPainter';
 import HeatmapPainter from './painters/HeatmapPainter';
 import WaterPainter from './painters/WaterPainter';
 import BillBoardPainter from './painters/BillBoardPainter';
+import TerrainFlatMaskPainter from './painters/TerrainFlatMaskPainter';
 
 const FillPlugin = createPainterPlugin('fill', FillPainter);
 FillPlugin.registerAt(VectorTileLayer);
@@ -88,6 +89,9 @@ WaterPlugin.registerAt(VectorTileLayer);
 const BillBoardPlugin = createPainterPlugin('billboard', BillBoardPainter);
 BillBoardPlugin.registerAt(VectorTileLayer);
 
+const TerrainFlatMaskPlugin = createPainterPlugin('terrain-flat-mask', TerrainFlatMaskPainter);
+TerrainFlatMaskPlugin.registerAt(VectorTileLayer);
+
 Vector3DLayer.registerPainter('lit', StandardPainter);
 Vector3DLayer.registerPainter('icon', IconPainter);
 Vector3DLayer.registerPainter('fill', FillPainter);
@@ -110,6 +114,7 @@ export {
     PhongPlugin,
     WireframePlugin,
     BillBoardPlugin,
+    TerrainFlatMaskPlugin,
 
     LinePainter,
     FillPainter,
@@ -123,6 +128,7 @@ export {
     PhongPainter,
     WireframePainter,
     BillBoardPainter,
+    TerrainFlatMaskPainter,
 
     //pbr plugins
     LitPlugin,

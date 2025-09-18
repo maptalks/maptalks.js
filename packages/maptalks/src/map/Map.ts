@@ -107,12 +107,14 @@ const options: MapOptionsType = {
     'maxPitch': 80,
     'centerCross': false,
 
+    'zoomable': true,
     'zoomInCenter': false,
     'zoomOrigin': null,
     'zoomAnimation': (function () {
         return !IS_NODE;
     })(),
     'zoomAnimationDuration': 330,
+    'tileBackgroundLimitPerFrame': 3,
 
     'panAnimation': (function () {
         return !IS_NODE;
@@ -125,7 +127,7 @@ const options: MapOptionsType = {
         return !IS_NODE;
     })(),
 
-    'zoomable': true,
+
     'enableInfoWindow': true,
 
     'hitDetect': (function () {
@@ -2000,9 +2002,9 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             }
         }
 
-        if (this._containerDOM.childNodes && this._containerDOM.childNodes.length > 0) {
-            //@ts-expect-error I don't know either
-            if (this._containerDOM.childNodes[0].className === 'maptalks-wrapper') {
+        if(this._containerDOM?.childNodes?.length > 0) {
+            const firstChild = this._containerDOM.childNodes[0];
+            if (firstChild instanceof HTMLElement && firstChild.classList.contains('maptalks-wrapper')) {
                 throw new Error('Container is already loaded with another map instance, use map.remove() to clear it.');
             }
         }
@@ -2822,15 +2824,18 @@ export type MapOptionsType = {
     maxVisualPitch?: number;
     maxPitch?: number;
     centerCross?: boolean;
+
+    zoomable?: boolean;
     zoomInCenter?: boolean;
     zoomOrigin?: Array<number>;
     zoomAnimation?: boolean;
     zoomAnimationDuration?: number;
+    tileBackgroundLimitPerFrame?: number;
     panAnimation?: boolean;
     panAnimationDuration?: number;
     rotateAnimation?: boolean;
     rotateAnimationDuration?: number;
-    zoomable?: boolean;
+
     enableInfoWindow?: boolean;
     hitDetect?: boolean;
     hitDetectLimit?: number;

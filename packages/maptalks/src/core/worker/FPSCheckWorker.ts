@@ -4,10 +4,10 @@ export const CHECK_FPS_WORKER_KEY = 'check_browser_max_fps';
 const CHECK_FPS_WORKER_CODE = `function (exports) {
     exports.initialize = function () {};
     function now(){
-        return  new Date().getTime();
+        return new Date().getTime();
     }
     function checkFPS(cb) {
-        if (!requestAnimationFrame) {
+        if (typeof(requestAnimationFrame) === 'undefined') {
             cb(-1);
             return;
         }
@@ -33,7 +33,7 @@ const CHECK_FPS_WORKER_CODE = `function (exports) {
     //recive message
     exports.onmessage = function (msg, postResponse) {
         checkFPS((fps) => {
-            if (fps < -1) {
+            if (fps <= -1) {
                 postResponse('check fps fail');
             } else {
                 postResponse(null, { fps });

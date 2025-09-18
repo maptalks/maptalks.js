@@ -1,6 +1,6 @@
-import * as reshader from '@maptalks/reshader.gl';
+import * as reshader from '../../reshader';
 import TerrainPainter from './TerrainPainter';
-import  { extend } from '../util/util';
+import  { extend, isNil } from '../util/util';
 import * as ContextUtil from '../util/context';
 
 const { getIBLResOnCanvas, getPBRUniforms, loginIBLResOnCanvas, logoutIBLResOnCanvas } = reshader.pbr.PBRUtils;
@@ -105,10 +105,16 @@ class TerrainLitPainter extends TerrainPainter {
         const material = new reshader.pbr.StandardMaterial(matInfo);
         const mesh = new reshader.Mesh(geo, material);
         mesh.properties.matVer = this._matVer;
+        if (!mesh.uniforms.flatMask) {
+            const emptyTexture = this.getEmptyTexture();
+            mesh.setUniform('flatMask', emptyTexture);
+        }
         const defines = mesh.defines;
         defines['HAS_UV_FLIP'] = 1;
         defines['HAS_TERRAIN_NORMAL'] = 1;
         defines['HAS_MAP'] = 1;
+        defines['HAS_LAYER_OPACITY'] = 1;
+        defines['HAS_TERRAIN_FLAT_MASK'] = 1;
         mesh.defines = defines;
         // mesh.setUniform('terrainTileResolution', tileInfo.res);
         this.prepareMesh(mesh, tileInfo, terrainImage);
@@ -125,7 +131,10 @@ class TerrainLitPainter extends TerrainPainter {
                 mesh.properties.matVer = this._matVer;
             }
             if (tileImage.skin) {
-                mesh.material.set('skinTexture', tileImage.skin);
+                mesh.material.set('skinTexture', tileImage.skin.color[0]);
+            }
+            if (tileImage.mask) {
+                mesh.setUniform('flatMask', tileImage.mask.color[0]);
             }
             mesh.setUniform('polygonOpacity', 1.0);
             // const { skirtOffset, skirtCount } = mesh.properties;
@@ -145,6 +154,10 @@ class TerrainLitPainter extends TerrainPainter {
         const renderer = this.layer.getRenderer();
         const maskUniforms = renderer.getMaskUniforms();
         // const terrainHeightScale = this._getHeightScale();
+        let layerOpacity = this.layer.options['opacity'];
+        if (isNil(layerOpacity)) {
+            layerOpacity = 1;
+        }
         extend(uniforms, {
             viewMatrix: map.viewMatrix,
             projMatrix: map.projMatrix,
@@ -154,7 +167,8 @@ class TerrainLitPainter extends TerrainPainter {
             terrainHeightMapResolution: [tileSize, tileSize],
             terrainResolution: [canvas.width, canvas.height],
             // terrainHeightScale,
-            terrainUnpackFactors: [6553.6, 25.6, 0.1, 10000.0]
+            terrainUnpackFactors: [6553.6, 25.6, 0.1, 10000.0],
+            layerOpacity
         });
         extend(uniforms, maskUniforms);
         return uniforms;

@@ -264,13 +264,17 @@ class FPSCheckActor extends Actor {
     }
 }
 
+let fpsChecked = false;
 function checkFPS(cb: Function) {
     if (!actor) {
         actor = new FPSCheckActor();
     }
     actor.send({}, [], (err, data) => {
         if (err) {
-            console.error(err);
+            if (!fpsChecked) {
+                console.error(err);
+                fpsChecked = true;
+            }
             cb();
         } else {
             cb(data.fps as number);

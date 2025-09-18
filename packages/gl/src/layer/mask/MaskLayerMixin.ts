@@ -1,5 +1,5 @@
 import { Coordinate, Extent } from "maptalks";
-import { mat4, vec3 } from '@maptalks/reshader.gl';
+import { mat4, vec3 } from 'gl-matrix';
 import Mask from "./Mask";
 import { extend } from "../util/util";
 import { MixinConstructor } from "maptalks";

@@ -1548,7 +1548,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             return this._painter;
         }
         const layer = this.getLayer();
-        if (!this._painter && layer) {
+        if (layer) {
             if (GEOMETRY_COLLECTION_TYPES.indexOf(this.type) !== -1) {
                 //@ts-expect-error todo 待vectorlayer ts完善
                 if (layer.constructor.getCollectionPainterClass) {

@@ -1,5 +1,14 @@
 # @maptalks/video-layer
 
+## 0.103.0
+
+### Minor Changes
+
+- - implement terrain-flat-mask rendre plugin in VectorLayer
+  - sync codes with maptalks/gl-layers
+  - webgl layers' compatibility fixes with MapCanvasRenderer
+  - bug fixes in maptalks
+
 ## 0.101.1
 
 ### Patch Changes

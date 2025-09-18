@@ -106,7 +106,7 @@ const GLTFMixin = Base =>
                 // 'instance_color': [],
                 'aPickingId': []
             };
-            const instanceCenter = this._updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, geometry.properties.z, aPosition, aAltitude, aXYRotation, aZRotation, positionSize, aPickingId, features);
+            const instanceCenter = this._updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, geometry.properties.z, geometry.data, positionSize, features);
             if (geometry.data.aTerrainAltitude) {
                 instanceData.aTerrainAltitude = geometry.data.aTerrainAltitude;
             }
@@ -816,7 +816,7 @@ const GLTFMixin = Base =>
             return pickingVert;
         }
 
-        getWGSLPickingVert() {
+        getPickingWGSLVert() {
             return pickingWGSLVert;
         }
 

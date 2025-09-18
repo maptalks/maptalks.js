@@ -1,7 +1,7 @@
 import * as maptalks from 'maptalks';
-import { vec2, vec3, mat4 } from '@maptalks/reshader.gl';
+import { vec2, vec3, mat4 } from 'gl-matrix';
 import ShadowProcess from './shadow/ShadowProcess';
-import * as reshader from '@maptalks/reshader.gl';
+import * as reshader from '../reshader';
 import GroundPainter from './GroundPainter';
 import EnvironmentPainter from './EnvironmentPainter';
 import WeatherPainter from './weather/WeatherPainter';
@@ -118,7 +118,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         drawContext.hasSSRGround = !!(ssrMode && groundConfig && groundConfig.enable && groundConfig.symbol && groundConfig.symbol.ssr);
         fGL.resetDrawCalls();
         // this._renderInMode(enableTAA ? 'fxaaBeforeTaa' : 'fxaa', this._targetFBO, methodName, args);
-        this._renderInMode('default', this._targetFBO, methodName, args);
+        this._renderInMode('default', this._targetFBO, methodName, args, true);
         // this._fxaaDrawCount = fGL.getDrawCalls();
 
         // 重用上一帧的深度纹理，先绘制ssr图形
@@ -499,6 +499,8 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         this.regl = regl;
         this.reglGL = reglGL;
         this.gl = gl;
+        // 为老的webgl插件提供兼容性
+        this.canvas.gl = this.gl;
         this._jitter = [0, 0];
         const graphics = regl || device;
         this._groundPainter = new GroundPainter(graphics, this.layer);
@@ -639,8 +641,10 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
 
     onRemove() {
         //regl framebuffer for picking created by children layers
-        if (this.canvas.pickingFBO && this.canvas.pickingFBO.destroy) {
-            this.canvas.pickingFBO.destroy();
+        const pickingFBO = this.canvas.pickingFBO;
+        if (pickingFBO && pickingFBO.destroy && !pickingFBO['___disposed']) {
+            pickingFBO['___disposed'] = true;
+            pickingFBO.destroy();
         }
         this._destroyFramebuffers();
         if (this._groundPainter) {

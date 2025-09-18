@@ -1,6 +1,6 @@
 import * as maptalks from 'maptalks';
 import TerrainWorkerConnection from './TerrainWorkerConnection';
-import * as reshader from '@maptalks/reshader.gl';
+import * as reshader from '../../reshader';
 import skinVert from './glsl/terrainSkin.vert';
 import skinFrag from './glsl/terrainSkin.frag';
 import skinWgslVert from './wgsl/terrain_skin_vert.wgsl';
@@ -23,6 +23,12 @@ const TEMP_POINT = new maptalks.Point(0, 0);
 const TERRAIN_CLEAR = {
     color: [0, 0, 0, 0],
     depth: 1,
+    stencil: 0
+};
+
+const TERRAIN_MASK_CLEAR = {
+    color: [1, 1, 1, 1],
+    depth: 0,
     stencil: 0
 };
 
@@ -226,7 +232,6 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         //TODO tiles中如果存在empty瓦片，且sourceZoom精度不够的，可以重新切分精度更高的数据
         const tempTiles = this._getTempTilesForMissed(missedTiles, skinImagesToDel);
         pushIn(tiles, tempTiles);
-
         // this._tempTilesPool.shrink();
 
         // 集中对每个SkinLayer调用renderTerrainSkin，减少 program 的切换开销
@@ -355,13 +360,22 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         const layerSkinImages = [];
         for (let i = 0; i < terrainTiles.length; i++) {
             const { info, image } = terrainTiles[i];
+            this._prepareMask(info, image);
             this._debugTile(info, 'renderChildTerrainSkin');
+            let cleared = false;
             if (this._prepareChildTerrainSkin(skinIndex, info, image, skinImagesToDel)) {
-                const skinImages = terrainTiles[i].image.skinImages[skinIndex];
+                const skinImages = image.skinImages[skinIndex];
                 for (let j = 0; j < skinImages.length; j++) {
                     const tileId = skinImages[j].tile.info.id;
+
                     // 检查是否存在重复的瓦片，重复的瓦片只需要绘制一次
                     if (!visitedSkinTiles.has(tileId)) {
+                        if (!cleared && skinImages[j].layer.hasTerrainMask) {
+                            //FIXME 潜在bug： 如果skinLayers中有多个 hasTerrainMask 的图层，其中一个clearMask并更新mask后，其他的terrainMask图层并没有更新mask
+                            this._clearMask(image.mask);
+                            cleared = true;
+                        }
+                        skinImages[j].terrainMaskFBO = image.mask;
                         layerSkinImages.push(skinImages[j]);
                         visitedSkinTiles.add(tileId);
                     }
@@ -372,13 +386,25 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         renderer.renderTerrainSkin(this.device, this.layer, layerSkinImages);
     }
 
-    _prepareChildTerrainSkin(skinIndex, terrainTileInfo, tileImage, skinImagesToDel) {
+    _prepareMask(terrainTileInfo, tileImage) {
+        if (!tileImage.mask) {
+            tileImage.mask = this._createTerrainMaskTexture(terrainTileInfo, tileImage);
+            tileImage.mask.id = terrainTileInfo.id;
+        }
+    }
+
+    _clearMask(maskFBO) {
+        TERRAIN_MASK_CLEAR.framebuffer = maskFBO;
+        this.device.clear(TERRAIN_MASK_CLEAR);
+    }
+
+    _prepareChildTerrainSkin(skinIndex, terrainTileInfo, terrainTileImage, skinImagesToDel) {
         const map = this.getMap();
-        delete tileImage.path;
-        if (!terrainTileInfo || !map || !tileImage) {
+        delete terrainTileImage.path;
+        if (!terrainTileInfo || !map || !terrainTileImage) {
             return false;
         }
-        const mesh = tileImage.terrainMesh;
+        const mesh = terrainTileImage.terrainMesh;
         if (!mesh) {
             return false;
         }
@@ -387,28 +413,28 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         if (!renderer) {
             return false;
         }
-        if (!tileImage.skinImages) {
+        if (!terrainTileImage.skinImages) {
             // if (map.isInteracting()) {
             //     const limit = this.layer.options['newTerrainTileRenderLimitPerFrameOnInteracting'];
             //     if (limit > 0 && this._newTerrainTileCounter > limit) {
             //         return false;
             //     }
             // }
-            tileImage.skinImages = [];
+            terrainTileImage.skinImages = [];
         }
-        if (!tileImage.skinStatus) {
-            tileImage.skinStatus = [];
+        if (!terrainTileImage.skinStatus) {
+            terrainTileImage.skinStatus = [];
         }
-        if (!tileImage.skinTileIds) {
-            tileImage.skinTileIds = [];
+        if (!terrainTileImage.skinTileIds) {
+            terrainTileImage.skinTileIds = [];
         }
 
         const isAnimating = renderer.isAnimating && renderer.isAnimating();
 
-        const status = tileImage.skinStatus[skinIndex];
+        const status = terrainTileImage.skinStatus[skinIndex];
 
         const isLayerAskToRefresh = renderer.needToRefreshTerrainTileOnZooming && renderer.needToRefreshTerrainTileOnZooming();
-        const needRefreshTerrainTile = isAnimating || isLayerAskToRefresh && tileImage.renderedZoom !== map.getZoom();
+        const needRefreshTerrainTile = isAnimating || isLayerAskToRefresh && terrainTileImage.renderedZoom !== map.getZoom();
         if (status && !needRefreshTerrainTile) {
             return false;
         }
@@ -426,7 +452,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
 
         let scale = getSkinTileScale(myRes, myTileSize, res, tileSize);
 
-        let skinTileIds = tileImage.skinTileIds[skinIndex];
+        let skinTileIds = terrainTileImage.skinTileIds[skinIndex];
         if (!skinTileIds) {
             const terrainTileScaleY = this.layer['_getTileConfig']().tileSystem.scale.y;
             const maxAvailableZoom = skinLayer.options.maxAvailableZoom;
@@ -434,7 +460,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                 scale *= Math.pow(2, maxAvailableZoom - zoom);
                 zoom = maxAvailableZoom;
             }
-            skinTileIds = tileImage.skinTileIds[skinIndex] = getCascadeTileIds(skinLayer, x, y, zoom, nw, offset, terrainTileScaleY, scale, SKIN_LEVEL_LIMIT);
+            skinTileIds = terrainTileImage.skinTileIds[skinIndex] = getCascadeTileIds(skinLayer, x, y, zoom, nw, offset, terrainTileScaleY, scale, SKIN_LEVEL_LIMIT);
         }
         const level0 = skinTileIds['0'];
         let complete = true;
@@ -459,7 +485,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             tiles.push(cachedTile);
         }
 
-        const skinImages = tileImage.skinImages[skinIndex] || [];
+        const skinImages = terrainTileImage.skinImages[skinIndex] || [];
         skinImages.currentSkins = skinImages.currentSkins || new Set();
         const prevSkins = new Set();
         let skinImageRetired = false;
@@ -473,12 +499,12 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         }
         if (!tiles.length) {
             skinImages.currentSkins.clear();
-            tileImage.skinImages[skinIndex] = [];
-            // this._clearPrevSkinImages(terrainTileInfo, tileImage, prevSkins, null, skinImagesToDel);
+            terrainTileImage.skinImages[skinIndex] = [];
+            // this._clearPrevSkinImages(terrainTileInfo, terrainTileImage, prevSkins, null, skinImagesToDel);
             return false;
         }
 
-        const ids = tiles.length ? tiles.map(t => t.info.id).join() : tiles[0].info.id;
+        const ids = tiles.map(t => t.info.id).join();
         if (!needRefreshTerrainTile && !skinImageRetired && skinImages.tileIds === ids) {
             return false;
         }
@@ -489,7 +515,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         skinImages.length = 0;
         const currentSkins = skinImages.currentSkins;
         let refKey = terrainTileInfo.id;
-        if (tileImage.temp) {
+        if (terrainTileImage.temp) {
             refKey += '-temp';
         }
 
@@ -513,21 +539,21 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             updated = true;
         }
 
-        this._clearPrevSkinImages(terrainTileInfo, tileImage, prevSkins, currentSkins, skinImagesToDel);
+        this._clearPrevSkinImages(terrainTileInfo, terrainTileImage, prevSkins, currentSkins, skinImagesToDel);
 
         // }
         if (updated) {
             this._newTerrainTileCounter++;
         }
-        tileImage.skinImages[skinIndex] = skinImages;
+        terrainTileImage.skinImages[skinIndex] = skinImages;
 
         skinLayer.fire('renderterrainskin', { tile: terrainTileInfo, skinTiles: tiles });
         if (complete) {
-            tileImage.skinStatus[skinIndex] = 1;
+            terrainTileImage.skinStatus[skinIndex] = 1;
             // save some memory
             // if (!needRefresh) {
-            //     tileImage.skinTileIds = [];
-            //     tileImage.skinImages[skinIndex] = null;
+            //     terrainTileImage.skinTileIds = [];
+            //     terrainTileImage.skinImages[skinIndex] = null;
             // }
         }
         return true;
@@ -562,26 +588,25 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
     }
 
 
-    _renderTerrainMeshSkin(terrainTileInfo, tileImage) {
+    _renderTerrainMeshSkin(terrainTileInfo, terrainTileImage) {
         // render a terrain tile's skin
         const map = this.getMap();
-        if (!terrainTileInfo || !map || !tileImage) {
+        if (!terrainTileInfo || !map || !terrainTileImage) {
             return;
         }
         this._debugTile(terrainTileInfo, '_renderTerrainMeshSkin');
-        const skinImages = tileImage.skinImages;
         // if (!skinImages) {
         //     return;
         // }
-        const needRefreshSkins = this._needRefreshTerrainSkins(tileImage.renderedZoom);
-        if (tileImage.rendered && !needRefreshSkins) {
+        const needRefreshSkins = this._needRefreshTerrainSkins(terrainTileImage.renderedZoom);
+        if (terrainTileImage.rendered && !needRefreshSkins) {
             return;
         }
-        if (!tileImage.skin) {
-            tileImage.skin = this._createTerrainTexture(terrainTileInfo, tileImage);
-
+        if (!terrainTileImage.skin) {
+            terrainTileImage.skin = this._createTerrainTexture(terrainTileInfo, terrainTileImage);
+            this._prepareMask(terrainTileInfo, terrainTileImage);
         } else {
-            TERRAIN_CLEAR.framebuffer = tileImage.skin;
+            TERRAIN_CLEAR.framebuffer = terrainTileImage.skin;
             this.device.clear(TERRAIN_CLEAR);
         }
         this._initSkinShader();
@@ -590,6 +615,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         const debugMeshes = enableDebug && [];
 
         const tileSize = this.layer.getTileSize().width;
+        const skinImages = terrainTileImage.skinImages;
         if (skinImages) {
             for (let i = 0; i < skinImages.length; i++) {
                 const layerSkinImages = skinImages[i];
@@ -622,11 +648,11 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             }
         }
         if (enableDebug) {
-            const debugMesh = tileImage.skinDebugMesh || new reshader.Mesh(this._skinGeometry);
+            const debugMesh = terrainTileImage.skinDebugMesh || new reshader.Mesh(this._skinGeometry);
             debugMesh.setUniform('tileSize', tileSize);
-            const debugTexture = tileImage.debugTexture || this._createDebugTexture(terrainTileInfo, tileSize, tileImage.temp);
-            tileImage.debugTexture = debugTexture;
-            tileImage.skinDebugMesh = debugMesh;
+            const debugTexture = terrainTileImage.debugTexture || this._createDebugTexture(terrainTileInfo, tileSize, terrainTileImage.temp);
+            terrainTileImage.debugTexture = debugTexture;
+            terrainTileImage.skinDebugMesh = debugMesh;
             debugMesh.setUniform('opacity', 1);
             debugMesh.setUniform('skinTexture', debugTexture);
             debugMesh.setUniform('skinDim', [0, 0, 1]);
@@ -636,9 +662,9 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         if (meshes.length) {
             this._skinScene.setMeshes(meshes);
             try {
-                this.renderer.render(this._skinShader, null, this._skinScene, tileImage.skin);
+                this.renderer.render(this._skinShader, null, this._skinScene, terrainTileImage.skin);
             } catch (err) {
-                console.error(tileImage);
+                console.error(terrainTileImage);
                 throw err;
             }
 
@@ -646,11 +672,11 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
 
         if (debugMeshes && debugMeshes.length && this.layer.options.debug) {
             this._skinScene.setMeshes(debugMeshes);
-            this.renderer.render(this._skinShader, null, this._skinScene, tileImage.skin);
+            this.renderer.render(this._skinShader, null, this._skinScene, terrainTileImage.skin);
         }
 
-        tileImage.rendered = this._isSkinReady(tileImage);
-        tileImage.renderedZoom = map.getZoom();
+        terrainTileImage.rendered = this._isSkinReady(terrainTileImage);
+        terrainTileImage.renderedZoom = map.getZoom();
     }
 
     _createDebugTexture(tileInfo, tileSize, isTemp) {
@@ -684,6 +710,43 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             mag: 'linear',
             min: 'linear'
         });
+    }
+
+    _createTerrainMaskTexture() {
+        const regl = this.device;
+        const tileSize = this.layer.getTileSize().width;
+        const width = tileSize * 2;
+        const height = tileSize * 2;
+        const color = regl.texture({
+            min: 'linear',
+            mag: 'linear',
+            type: 'uint8',
+            format: 'rgba',
+            width,
+            height
+        });
+        if (!this._terrainMaskDepthStencil) {
+            this._terrainMaskDepthStencil = regl.texture({
+                width,
+                height,
+                format: 'depth stencil'
+            });
+        }
+        const fboInfo = {
+            width,
+            height,
+            colors: [color],
+            // stencil: true,
+            // colorCount,
+            colorFormat: 'rgba',
+            ignoreStatusCheck: true
+        };
+        fboInfo.depthStencil = this._terrainMaskDepthStencil;
+        const texture = regl.framebuffer(fboInfo)
+        texture.colorTex = color;
+        this._clearMask(texture);
+        // 单独创建的 color 必须要手动destroy回收，光destroy framebuffer，color是不会销毁的
+        return texture;
     }
 
     _createTerrainTexture(tileInfo/*, tileImage*/) {
@@ -1004,6 +1067,12 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             skin.colorTex.destroy();
             delete skin.colorTex;
         }
+        const mask = image.mask;
+        if (mask) {
+            mask.destroy();
+            mask.colorTex.destroy();
+            delete mask.colorTex;
+        }
         if (image.debugTexture) {
             image.debugTexture.destroy();
             delete image.debugTexture;
@@ -1043,6 +1112,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         }
         delete image.skinImages;
         delete image.skin;
+        delete image.mask;
         delete image.skinStatus;
         delete image.skinTileIds;
         delete image.terrainMesh;
@@ -1356,6 +1426,13 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         if (this._skinGeometry) {
             this._skinGeometry.dispose();
             delete this._skinGeometry;
+        }
+        if (this._terrainMaskDepthStencil) {
+            if (this._terrainMaskDepthStencil.colorTex) {
+                this._terrainMaskDepthStencil.colorTex.destroy();
+            }
+            this._terrainMaskDepthStencil.destroy();
+            delete this._terrainMaskDepthStencil;
         }
         delete this._parentRequests;
         super.onRemove();

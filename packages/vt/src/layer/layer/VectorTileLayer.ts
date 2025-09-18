@@ -88,7 +88,9 @@ const defaultOptions: VectorTileLayerOptionsType = {
   tileStackDepth: 2,
 
   altitudePropertyName: null,
-  disableAltitudeWarning: false
+  disableAltitudeWarning: false,
+  loadTileErrorLog: true,
+  loadTileErrorLogIgnoreCodes: [404, 204]
 };
 
 /**
@@ -104,6 +106,8 @@ const defaultOptions: VectorTileLayerOptionsType = {
 class VectorTileLayer extends maptalks.TileLayer {
   VERSION: string;
   ready: boolean;
+  isVectorTileLayer: boolean = true;
+  hasTerrainMask: boolean = true;
 
   //@internal
   _polygonOffset: number;
@@ -345,12 +349,12 @@ class VectorTileLayer extends maptalks.TileLayer {
   }
 
   forceReload(): this {
-      // expire cached tiles in worker
-      const renderer = this.getRenderer() as any;
-      if (renderer) {
-        renderer._incrWorkerCacheIndex();
-      }
-      return super.forceReload();
+    // expire cached tiles in worker
+    const renderer = this.getRenderer() as any;
+    if (renderer) {
+      renderer._incrWorkerCacheIndex();
+    }
+    return super.forceReload();
   }
 
   onWorkerReady() { }
@@ -1289,6 +1293,9 @@ class VectorTileLayer extends maptalks.TileLayer {
       ) {
         throw new Error(`Invalid filter at ${i} : ${JSON.stringify(filter)}`);
       }
+      if (!styles[i].symbol) {
+        styles[i].symbol = {};
+      }
       //TODO 如果定义了renderPlugin就必须定义symbol
     }
   }
@@ -1824,6 +1831,14 @@ class VectorTileLayer extends maptalks.TileLayer {
     super.onRemove();
   }
 
+  clear() {
+    const renderer = this.getRenderer();
+    if (renderer) {
+      renderer.clearData();
+    }
+    return super.clear();
+  }
+
   static fromJSON(layerJSON: object) {
     if (!layerJSON || layerJSON["type"] !== "VectorTileLayer") {
       return null;
@@ -1998,7 +2013,9 @@ export type VectorTileLayerOptionsType = {
   style?: any,
 
   altitudePropertyName?: string,
-  disableAltitudeWarning?: boolean
+  disableAltitudeWarning?: boolean,
+  loadTileErrorLog?: boolean,
+  loadTileErrorLogIgnoreCodes?: Array<number>;
 } & TileLayerOptionsType;
 
 export type AsyncFeatureQueryOptions = {

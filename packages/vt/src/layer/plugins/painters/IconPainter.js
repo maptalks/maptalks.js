@@ -759,7 +759,7 @@ class IconPainter extends CollisionPainter {
                 this.renderer,
                 {
                     name: 'marker-picking',
-                    vert: pickingVert,
+                    vert: '#define PICKING_MODE 1\n' + pickingVert,
                     wgslVert,
                     defines: { 'PICKING_MODE': 1 },
                     uniforms: [

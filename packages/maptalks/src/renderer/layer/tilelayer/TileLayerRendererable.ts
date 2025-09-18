@@ -137,7 +137,9 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
             }
             const mask2DExtent = this.prepareCanvas();
             if (mask2DExtent) {
-                if (!mask2DExtent.intersects(this.canvasExtent2D)) {
+                const layer = this.layer || {};
+                const layerParent = layer.parent || {};
+                if (layerParent.isMap && !mask2DExtent.intersects(this.canvasExtent2D)) {
                     this.completeRender();
                     return;
                 }
@@ -471,14 +473,25 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
                 this._childTiles.sort(this._compareTiles);
             }
 
+            const map = this.getMap();
+            const mapCanvas = map.getRenderer().canvas;
             let drawBackground = true;
-            const backgroundTimestamp = this.canvas._parentTileTimestamp;
+            let frameTileState = mapCanvas._frameTileState;
+            if (!frameTileState) {
+                frameTileState = mapCanvas._frameTileState = { timestamp: 0, count: 0 };
+            }
             if (this.layer.constructor === TileLayer || this.layer.constructor === WMSTileLayer) {
+
                 // background tiles are only painted once for TileLayer and WMSTileLayer per frame.
-                if (this._renderTimestamp === backgroundTimestamp) {
+                if (this._renderTimestamp === frameTileState.timestamp && frameTileState.count > map.options['tileBackgroundLimitPerFrame']) {
                     drawBackground = false;
                 } else {
-                    this.canvas._parentTileTimestamp = this._renderTimestamp;
+                    if (this._renderTimestamp !== frameTileState.timestamp) {
+                        frameTileState.timestamp = this._renderTimestamp;
+                        frameTileState.count = 1;
+                    } else {
+                        frameTileState.count++;
+                    }
                 }
             }
 

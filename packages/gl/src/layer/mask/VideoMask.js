@@ -1,4 +1,4 @@
-import * as reshader from '@maptalks/reshader.gl';
+import * as reshader from '../../reshader';
 import Mask from './Mask';
 
 export default class VideoMask extends Mask {

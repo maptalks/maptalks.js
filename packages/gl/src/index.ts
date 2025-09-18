@@ -12,7 +12,7 @@ export { GroupGLLayer, GroundPainter, CanvasCompatible, HighlightUtil, ContextUt
 import './layer/TileLayerGLRenderer';
 import './map/MapGLRenderer';
 import './layer/ImageLayerGLRenderer';
-// import './map/MapGPURenderer';
+import './map/MapGPURenderer';
 
 export { default as HeatmapProcess } from './layer/HeatmapProcess';
 export { GLContext } from '@maptalks/fusiongl';
@@ -39,10 +39,13 @@ import Area3DTool from './analysis/Area3DTool';
 import Height3DTool from './analysis/Height3DTool';
 export { Distance3DTool, Measure3DTool, Area3DTool, Height3DTool };
 
-import { earcut } from '@maptalks/reshader.gl';
+import earcut from 'earcut';
 export { earcut };
 
 export { default as color } from 'color';
+
+import * as reshader from './reshader';
+export { reshader };
 
 // if (typeof window !== 'undefined') {
 //     // append GroupGLLayer on maptalks manually

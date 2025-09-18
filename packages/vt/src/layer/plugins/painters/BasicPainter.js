@@ -1,11 +1,24 @@
 import Painter from './Painter';
 import { reshader } from '@maptalks/gl';
-import { extend } from '../Util';
+import { extend, isNil } from '../Util';
 import { isObjectEmpty } from './util/is_obj_empty';
 
 export default class BasicPainter extends Painter {
 
     createGeometry(glData, features) {
+        const debugTileData = this.layer.options['debugTileData'];
+        if (debugTileData && !isNil(debugTileData.x)) {
+            const { x, y, z } = glData.tileInfo;
+            if (debugTileData.x === x && debugTileData.y === y && debugTileData.z === z) {
+                console.log('glData', {
+                    'layerId': this.layer.getId(),
+                    x,
+                    y,
+                    z,
+                    glData
+                });
+            }
+        }
         if (!glData.data) {
             return {
                 geometry: null,

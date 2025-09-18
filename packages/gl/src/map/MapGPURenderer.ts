@@ -1,4 +1,4 @@
-import { GraphicsDevice } from '@maptalks/reshader.gl';
+import { GraphicsDevice } from '../reshader';
 import { Layer, Map, renderer } from 'maptalks';
 
 let gpuAdapter;
@@ -64,7 +64,7 @@ export default class MapGPURenderer extends renderer.MapAbstractRenderer {
             context,
             device: this.device,
             getImageData: (sx, sy, sw, sh) => {
-                const pixels = new Uint8ClampedArray(sw * sh * 4);
+                const pixels = new Uint8Array(sw * sh * 4);
                 const canvas = this.canvas;
                 this.device.read({
                     x: sx,
@@ -73,7 +73,7 @@ export default class MapGPURenderer extends renderer.MapAbstractRenderer {
                     height: sh,
                     data: pixels
                 });
-                return new ImageData(pixels, sw, sh);
+                return new ImageData(new Uint8ClampedArray(pixels.buffer), sw, sh);
             }
         };
     }

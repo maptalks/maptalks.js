@@ -1,6 +1,6 @@
 import * as maptalks from 'maptalks';
 import { RenderContext, Tile, TileLayer } from 'maptalks';
-import * as reshader from '@maptalks/reshader.gl';
+import * as reshader from '../reshader';
 import TexturePoolable from './TexturePoolable';
 import { createImageMesh, updateFilter } from './util/imageMesh';
 import { isNil } from './util/util';
@@ -145,13 +145,12 @@ class TileLayerGLRenderer2 extends TexturePoolable(CanvasCompatible(TileLayerRen
         updateFilter(mesh, map, tileInfo.res);
 
         let opacity = this.getTileOpacity(tileImage, tileInfo);
-        if (map.getRenderer().canvas === this.canvas) {
-            let layerOpacity = this.layer.options['opacity'];
-            if (isNil(layerOpacity)) {
-                layerOpacity = 1;
-            }
-            opacity *= layerOpacity;
+        let layerOpacity = this.layer.options['opacity'];
+        if (isNil(layerOpacity)) {
+            layerOpacity = 1;
         }
+        opacity *= layerOpacity;
+
 
         mesh.material.set('opacity', opacity);
         mesh.setUniform('isCurrentTiles', +!!this.drawingCurrentTiles);
@@ -297,7 +296,7 @@ class TileLayerGLRenderer2 extends TexturePoolable(CanvasCompatible(TileLayerRen
             blend: {
                 enable: true,
                 func: {
-                    src: 1,
+                    src: 'src alpha',
                     dst: 'one minus src alpha'
                 },
                 equation: 'add'
@@ -370,6 +369,11 @@ class TileLayerGLRenderer2 extends TexturePoolable(CanvasCompatible(TileLayerRen
 
     deleteTerrainTexture(texture) {
         texture.destroy();
+    }
+
+    clear() {
+        this.clearTileCaches();
+        super.clear();
     }
 }
 

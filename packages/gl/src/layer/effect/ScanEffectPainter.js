@@ -1,4 +1,4 @@
-import * as reshader from '@maptalks/reshader.gl';
+import * as reshader from '../../reshader';
 // import { vec2, mat3 } from 'gl-matrix';
 import * as maptalks from 'maptalks';
 
@@ -36,7 +36,7 @@ class ScanEffectPainter {
             }),
             depth: true
         });
-        this.EMPTY_TEXTURE = this._regl.texture({ with: 2, height: 2 });
+        this.EMPTY_TEXTURE = this._regl.texture({ width: 2, height: 2 });
         this._shader = new reshader.ScanEffectShader();
         this._pass = new reshader.ScanEffectPass(this._regl, viewport, this._layer);
         this._shader.version = 300;

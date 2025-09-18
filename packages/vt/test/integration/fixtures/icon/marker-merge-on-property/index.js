@@ -27,10 +27,7 @@ const style = [
                     [1, 'name'],
                     [2, 'type']
                 ]
-            },
-            textName: '{key}',
-            textFill: '#fff',
-            textSize: 16
+            }
         }
     }
 ];

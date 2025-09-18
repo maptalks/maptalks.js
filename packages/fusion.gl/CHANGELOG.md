@@ -1,5 +1,20 @@
 # @maptalks/fusiongl
 
+## 0.10.1
+
+### Patch Changes
+
+- fix: fix LayerAbstractRenderer resizeCanvas and compatibility with ThreeLayer
+
+## 0.10.0
+
+### Minor Changes
+
+- - implement terrain-flat-mask rendre plugin in VectorLayer
+  - sync codes with maptalks/gl-layers
+  - webgl layers' compatibility fixes with MapCanvasRenderer
+  - bug fixes in maptalks
+
 ## 0.9.1
 
 ### Patch Changes

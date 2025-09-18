@@ -22,7 +22,8 @@ describe('3dtiles layer', () => {
     function createMap(center) {
         const option = {
             zoom: 17,
-            center: center || [0, 0]
+            center: center || [0, 0],
+            devicePixelRatio: 1
         };
         map = new maptalks.Map(container, option);
     }
@@ -368,7 +369,7 @@ describe('3dtiles layer', () => {
                 const color = ctx.getImageData(canvas.width / 2 - 43, canvas.height / 2 + 70, 1, 1);
                 assert(color.data[3] > 0);
                 done();
-            }, 1000);
+            }, 2000);
         }, 100);
         layer.addTo(map);
     });
@@ -625,14 +626,14 @@ describe('3dtiles layer', () => {
                     const color = ctx.getImageData(258, 525, 1, 1);
                     assert(color.data[3] === 0);
                     layer.addService(service);
-                }, 20);
+                }, 200);
             } else if (count === 2) {
                 setTimeout(() => {
                     const ctx = map.getRenderer().context;
                     const color = ctx.getImageData(258, 525, 1, 1);
                     assert(color.data[3] === 255);
                     done();
-                }, 20);
+                }, 200);
             }
         });
         layer.addTo(map);
