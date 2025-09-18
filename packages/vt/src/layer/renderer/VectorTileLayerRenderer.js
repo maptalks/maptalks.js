@@ -537,6 +537,8 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             const referrer = window && window.location.href;
             const altitudePropertyName = this.layer.options['altitudePropertyName'];
             const disableAltitudeWarning = this.layer.options['disableAltitudeWarning'];
+            const loadTileErrorLog = this.layer.options.loadTileErrorLog;
+            const loadTileErrorLogIgnoreCodes = this.layer.options.loadTileErrorLogIgnoreCodes;
             const loadTileOpitons = {
                 tileInfo: {
                     res: tileInfo.res,
@@ -549,6 +551,8 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 },
                 glScale,
                 disableAltitudeWarning,
+                loadTileErrorLog,
+                loadTileErrorLogIgnoreCodes,
                 altitudePropertyName,
                 zScale: this._zScale,
                 centimeterToPoint,
