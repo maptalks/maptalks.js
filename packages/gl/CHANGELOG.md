@@ -1,5 +1,11 @@
 # @maptalks/gl
 
+## 0.109.6
+
+### Patch Changes
+
+- some bug fixes related with terrain and 3dtiles
+
 ## 0.109.5
 
 ### Patch Changes

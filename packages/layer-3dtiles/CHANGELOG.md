@@ -1,5 +1,11 @@
 # @maptalks/3dtiles
 
+## 0.106.5
+
+### Patch Changes
+
+- some bug fixes related with terrain and 3dtiles
+
 ## 0.106.4
 
 ### Patch Changes

@@ -29,13 +29,20 @@ function wgsl() {
     return {
         transform(code, id) {
             if (/\.wgsl$/.test(id) === false) return null;
+            let transformedCode = JSON.stringify(code.trim()
+                // .replace(/(^\s*)|(\s*$)/gm, '')
+                .replace(/\r/g, '')
+                .replace(/[ \t]*\/\/.*\n/g, '') // remove //
+                .replace(/[ \t]*\/\*[\s\S]*?\*\//g, '') // remove /* */
+                .replace(/\n{2,}/g, '\n')); // # \n+ to \n;;
+            transformedCode = `export default ${transformedCode};`;
             return {
-                code: `export default '';`,
-                map: { mappings: '' }
+                code: transformedCode
             };
         }
     };
 }
+
 
 const production = process.env.BUILD === 'production';
 const outputFile = pkg.main;
@@ -59,7 +66,7 @@ const outro = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg
 const configPlugins = [
     production ? glslMinify({
         commons: [
-            './src/reshader/shaderlib/glsl'
+            '../gl/src/reshader/shaderlib/glsl'
         ]
     }) : glsl(),
     wgsl(),
@@ -122,10 +129,9 @@ var getGlobal = function () {
 
 const externalPackages = ['maptalks', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix', '@maptalks/gltf-loader', '@maptalks/tbn-packer'];
 
-
 module.exports = [
     {
-        input: "build/gltf-loader-index.js",
+        input: "../gl/build/gltf-loader-index.js",
         plugins: [
             nodeResolve(),
             commonjs(),
@@ -145,7 +151,7 @@ module.exports = [
             name: "exports",
             globals: ["exports"],
             extend: true,
-            file: "build/dist/gltf-loader-bundle.js"
+            file: "../gl/build/dist/gltf-loader-bundle.js"
             // footer: ``
         },
         watch: {
@@ -153,7 +159,7 @@ module.exports = [
         }
     },
     {
-        input: 'src/layer/terrain/worker/index.js',
+        input: '../gl/src/layer/terrain/worker/index.js',
         external: ['maptalks'],
         plugins: [
             nodeResolve({
@@ -175,16 +181,16 @@ module.exports = [
             name: 'exports',
             globals: ['exports'],
             extend: true,
-            file: 'build/dist/worker.js',
+            file: '../gl/build/dist/worker.js',
             banner: `export default `,
             // footer: ``
         },
         watch: {
-            include: ['src/layer/terrain/worker/*.js', 'src/layer/terrain/util/*.js']
+            include: ['../gl/src/layer/terrain/worker/*.js', '../gl/src/layer/terrain/util/*.js']
         }
     },
     {
-        input: 'src/transcoders.js',
+        input: '../gl/src/transcoders.js',
         plugins: plugins,
         output: {
             'sourcemap': false,
@@ -197,7 +203,7 @@ module.exports = [
 
 if (production) {
     module.exports.push({
-        input: 'src/index.ts',
+        input: '../gl/src/index.ts',
         plugins: tsPlugins.concat(plugins),
         external : externalPackages,
         output: {
@@ -206,14 +212,14 @@ if (production) {
             'globals' : {
                 'maptalks' : 'maptalks'
             },
-            'file': 'build/dist/gl/gl.es.js'
+            'file': 'build/dist/gpu/gpu.es.js'
         }
     });
 }
 
 module.exports.push({
-    input: production ? 'build/index.js' : 'src/index-dev.js',
-    plugins: production ? configPlugins : tsPlugins,
+    input: production ? 'build/index.js' : '../gl/src/index-dev.js',
+    plugins: (production ? configPlugins : tsPlugins),
     external : ['maptalks'],
     output: {
         'extend': true,
@@ -228,14 +234,19 @@ module.exports.push({
         'file': outputFile
     },
     watch: {
-        include: ['src/**/*.js', 'src/**/*.ts', 'src/**/*.glsl',  'src/**/*.wgsl', 'src/**/*.vert',  'src/**/*.frag',
-            'build/dist/**/*.js']
+        include: [
+            '../gl/src/**/*.js', '../gl/src/**/*.ts',
+            '../gl/src/**/*.glsl', '../gl/src/**/*.wgsl',
+            '../gl/src/**/*.vert',  '../gl/src/**/*.frag',
+            '../gl/build/dist/worker.js',
+            '../gl/build/dist/gltf-loader-bundle.js'
+        ]
     }
 });
 
 if (production) {
     module.exports.push({
-        input: 'src/index-dev.js',
+        input: '../gl/src/index-dev.js',
         plugins: tsPlugins,
         external : externalPackages,
         output: {

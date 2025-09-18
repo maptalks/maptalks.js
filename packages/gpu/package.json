@@ -1,33 +1,28 @@
 {
-  "name": "@maptalks/gl",
+  "name": "@maptalks/gpu",
   "version": "0.109.6",
   "description": "WebGL infrastrcture for maptalks",
-  "main": "dist/maptalksgl.js",
-  "module": "dist/maptalksgl.es.js",
+  "main": "dist/maptalksgpu.js",
+  "module": "dist/maptalksgpu.es.js",
   "scripts": {
     "clean": "rimraf dist && rimraf ./build/dist",
-    "build": "npm run clean && npm run lint && rollup --environment BUILD:production -c rollup.config.js",
+    "build": "npm run clean && rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "rollup -c rollup.config.js",
-    "dev": "rollup -w -c rollup.config.js",
-    "test": "cd ../layer-gltf && npm run build && cd ../gl && karma start --single-run",
-    "tdd": "karma start --no-single-run",
-    "lint": "eslint \"src/**/*.{js,jsx,mjs,ts,tsx}\"",
-    "pretest": "cd ../analysis && npm run build",
-    "preversion": "npm test"
+    "dev": "rollup -w -c rollup.config.js"
   },
   "files": [
-    "dist/maptalksgl.js",
-    "dist/maptalksgl.js.map",
-    "dist/maptalksgl.es.js",
-    "dist/maptalksgl.es.js.map",
-    "dist/maptalksgl.d.ts",
+    "dist/maptalksgpu.js",
+    "dist/maptalksgpu.js.map",
+    "dist/maptalksgpu.es.js",
+    "dist/maptalksgpu.es.js.map",
+    "dist/maptalksgpu.d.ts",
     "dist/transcoders.js"
   ],
   "keywords": [
     "webgl",
     "maptalks"
   ],
-  "types": "dist/maptalksgl.d.ts",
+  "types": "dist/maptalksgpu.d.ts",
   "author": "fuzhenn",
   "license": "UNLICENSED",
   "dependencies": {

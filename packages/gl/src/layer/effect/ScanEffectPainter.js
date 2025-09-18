@@ -36,7 +36,7 @@ class ScanEffectPainter {
             }),
             depth: true
         });
-        this.EMPTY_TEXTURE = this._regl.texture({ with: 2, height: 2 });
+        this.EMPTY_TEXTURE = this._regl.texture({ width: 2, height: 2 });
         this._shader = new reshader.ScanEffectShader();
         this._pass = new reshader.ScanEffectPass(this._regl, viewport, this._layer);
         this._shader.version = 300;
