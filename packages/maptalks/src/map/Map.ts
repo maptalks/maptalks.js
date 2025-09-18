@@ -289,6 +289,8 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     cameraCenterDistance: number;
     //@internal
     _limitMaxExtenting: boolean;
+    //@internal
+    _currentViewGLInfo: any;
     options: MapOptionsType;
     static VERSION: string;
     JSON_VERSION: '1.0';
@@ -2002,7 +2004,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             }
         }
 
-        if(this._containerDOM?.childNodes?.length > 0) {
+        if (this._containerDOM?.childNodes?.length > 0) {
             const firstChild = this._containerDOM.childNodes[0];
             if (firstChild instanceof HTMLElement && firstChild.classList.contains('maptalks-wrapper')) {
                 throw new Error('Container is already loaded with another map instance, use map.remove() to clear it.');

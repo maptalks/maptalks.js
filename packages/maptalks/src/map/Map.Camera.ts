@@ -6,6 +6,7 @@ import { subtract, add, scale, normalize, dot, set, distance, angle, cross } fro
 import { clamp, interpolate, isNumber, isNil, wrap, toDegree, toRadian, Matrix4, Vector3 } from '../core/util';
 import { applyMatrix, matrixToQuaternion, quaternionToMatrix, lookAt, setPosition } from '../core/util/math';
 import Browser from '../core/Browser';
+import { altitudesHasData } from '../core/util/path';
 
 
 declare module "./Map" {
@@ -64,18 +65,6 @@ const TEMP_COORD = new Coordinate(0, 0);
 const TEMP_POINT = new Point(0, 0);
 const SOUTH = [0, -1, 0], BEARING = [];
 
-const altitudesHasData = (altitudes) => {
-    if (isNumber(altitudes)) {
-        return altitudes !== 0;
-    } else if (Array.isArray(altitudes) && altitudes.length > 0) {
-        for (let i = 0, len = altitudes.length; i < len; i++) {
-            if (isNumber(altitudes[i]) && altitudes[i] !== 0) {
-                return true;
-            }
-        }
-    }
-    return false;
-};
 
 /*!
  * contains code from mapbox-gl-js
