@@ -1249,6 +1249,7 @@ class GeometryEditor extends Eventable(Class) {
         }
 
         let pauseRefresh = false;
+        let isSplitSegment = false;
         function createNewVertexHandle(index: number, ringIndex: number = 0, ringCoordinates: Array<Coordinate>): any {
             let vertexCoordinates = ringCoordinates || getVertexCoordinates(ringIndex);
             let nextVertex;
@@ -1257,7 +1258,12 @@ class GeometryEditor extends Eventable(Class) {
             } else {
                 nextVertex = vertexCoordinates[index + 1];
             }
-            const vertex = vertexCoordinates[index].add(nextVertex).multi(1 / 2);
+
+            let vertex = vertexCoordinates[index].add(nextVertex).multi(1 / 2);
+            //add two "new vertex" handles
+            if (isSplitSegment) {
+                vertex = coordinatesToContainerPoint(map, vertex);
+            }
             const handle = me.createHandle(vertex, {
                 'symbol': me.options['newVertexHandleSymbol'],
                 'cursor': 'pointer',
@@ -1292,7 +1298,9 @@ class GeometryEditor extends Eventable(Class) {
                     handle.opacity = 1;
 
                     //add two "new vertex" handles
+                    isSplitSegment = true;
                     newVertexHandles[ringIndex].splice(vertexIndex, 0, createNewVertexHandle.call(me, vertexIndex, ringIndex), createNewVertexHandle.call(me, vertexIndex + 1, ringIndex));
+                    isSplitSegment = false;
                     pauseRefresh = true;
                 },
                 onMove: function (): void {
