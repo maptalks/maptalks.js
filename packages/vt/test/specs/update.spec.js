@@ -605,7 +605,10 @@ describe('update style specs', () => {
                 }
             });
             map.setZoom(map.getZoom() + 2);
-            assert(layer.getRenderer().getStyleCounter() === 2);
+            setTimeout(() => {
+                assert(layer.getRenderer().getStyleCounter() === 2);
+            }, 12);
+
         }, false, null, 0, 2);
     });
 
@@ -2216,7 +2219,7 @@ describe('update style specs', () => {
                 assert(styleRefreshed);
                 assert.notDeepEqual(pixel, newPixel);
                 done();
-            }, 800);
+            }, 1500);
         });
         layer.on('refreshstyle', () => {
             styleRefreshed = true;

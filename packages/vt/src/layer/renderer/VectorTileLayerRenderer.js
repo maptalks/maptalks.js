@@ -101,6 +101,10 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 clearTimeout(this._workerUpdateTimeout);
             }
             this._workerUpdateTimeout = setTimeout(() => {
+                if (!this.layer) {
+                    // layer is removed from map
+                    return;
+                }
                 this._styleCounter++;
                 this._preservePrevTiles();
                 const style = this.layer._getComputedStyle();
