@@ -88,7 +88,9 @@ const defaultOptions: VectorTileLayerOptionsType = {
   tileStackDepth: 2,
 
   altitudePropertyName: null,
-  disableAltitudeWarning: false
+  disableAltitudeWarning: false,
+  loadTileErrorLog: true,
+  loadTileErrorLogIgnoreCodes: [404, 204]
 };
 
 /**
@@ -347,12 +349,12 @@ class VectorTileLayer extends maptalks.TileLayer {
   }
 
   forceReload(): this {
-      // expire cached tiles in worker
-      const renderer = this.getRenderer() as any;
-      if (renderer) {
-        renderer._incrWorkerCacheIndex();
-      }
-      return super.forceReload();
+    // expire cached tiles in worker
+    const renderer = this.getRenderer() as any;
+    if (renderer) {
+      renderer._incrWorkerCacheIndex();
+    }
+    return super.forceReload();
   }
 
   onWorkerReady() { }
@@ -1832,7 +1834,7 @@ class VectorTileLayer extends maptalks.TileLayer {
   clear() {
     const renderer = this.getRenderer();
     if (renderer) {
-        renderer.clearData();
+      renderer.clearData();
     }
     return super.clear();
   }
@@ -2011,7 +2013,9 @@ export type VectorTileLayerOptionsType = {
   style?: any,
 
   altitudePropertyName?: string,
-  disableAltitudeWarning?: boolean
+  disableAltitudeWarning?: boolean,
+  loadTileErrorLog?: boolean,
+  loadTileErrorLogIgnoreCodes?: Array<number>;
 } & TileLayerOptionsType;
 
 export type AsyncFeatureQueryOptions = {

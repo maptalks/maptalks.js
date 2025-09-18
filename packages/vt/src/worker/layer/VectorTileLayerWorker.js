@@ -48,6 +48,7 @@ export default class VectorTileLayerWorker extends LayerWorker {
             }, 1);
         }
         fetchOptions.referrer = context.referrer;
+        fetchOptions.errorLog = context.loadTileErrorLog;
         return Ajax.getArrayBuffer(url, fetchOptions, (err, response) => {
             if (!this._cache) {
                 // removed
