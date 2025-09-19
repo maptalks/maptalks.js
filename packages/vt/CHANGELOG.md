@@ -1,5 +1,16 @@
 # @maptalks/vt
 
+## 0.109.0
+
+### Minor Changes
+
+- add gpu and maptalks-gpu packages and fix some bugs
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.110.0
+
 ## 0.108.6
 
 ### Patch Changes

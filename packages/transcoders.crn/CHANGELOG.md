@@ -1,5 +1,11 @@
 # @maptalks/transcoders.crn
 
+## 0.114.0
+
+### Minor Changes
+
+- add gpu and maptalks-gpu packages and fix some bugs
+
 ## 0.102.0
 
 ### Minor Changes

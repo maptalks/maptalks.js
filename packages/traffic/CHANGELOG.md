@@ -1,5 +1,12 @@
 # @maptalks/traffic
 
+## 0.103.1
+
+### Patch Changes
+
+- add gpu and maptalks-gpu packages and fix some bugs
+  - @maptalks/gltf-layer@0.106.0
+
 ## 0.103.0
 
 ### Minor Changes

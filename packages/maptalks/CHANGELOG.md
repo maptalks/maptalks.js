@@ -1,5 +1,11 @@
 # maptalks
 
+## 1.4.6
+
+### Patch Changes
+
+- add gpu and maptalks-gpu packages and fix some bugs
+
 ## 1.4.5
 
 ### Patch Changes
