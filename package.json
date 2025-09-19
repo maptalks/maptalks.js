@@ -6,8 +6,9 @@
   "scripts": {
     "clean": "turbo run clean",
     "dev": "turbo run dev",
+    "build-gl": "turbo run build --filter=maptalks-gl",
     "build-gpu": "turbo run build --filter=maptalks-gpu",
-    "build": "turbo run build --filter=maptalks-gl",
+    "build": "turbo run build --filter=maptalks-gl --filter=maptalks-gpu",
     "build-all": "turbo run build",
     "build-dev": "turbo run build-dev*",
     "lint": "turbo run lint",
