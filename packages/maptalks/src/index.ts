@@ -93,7 +93,13 @@ Util.checkMTKVersion(version);
 
 //export types for external usage
 export type { MixinConstructor } from './core/Mixin';
-export type { LayerJSONType } from './layer/Layer';
+export type { LayerJSONType, LayerIdentifyOptionsType } from './layer/Layer';
 export type { LayerImageType } from './layer/ImageLayer';
 export type { WithNull, WithUndef, Optional, Requireal } from './types/typings';
 export type { RenderContext, Tile } from './renderer/layer/tilelayer/TileLayerRendererable';
+export type { ArrayExtent } from './geo/Extent';
+export type { PositionArray } from './geo/Position';
+export type { Callback } from './core/Ajax';
+export type { TileLayerOptionsType } from './layer/tile/TileLayer';
+export type { OverlayLayerOptionsType } from './layer/OverlayLayer';
+export type { FillSymbol, LineSymbol, TextSymbol, MarkerCommonSymbol } from './symbol/index';
