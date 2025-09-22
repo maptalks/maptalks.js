@@ -90,3 +90,10 @@ const worker = {
 export { worker };
 
 Util.checkMTKVersion(version);
+
+//export types for external usage
+export type { MixinConstructor } from './core/Mixin';
+export type { LayerJSONType } from './layer/Layer';
+export type { LayerImageType } from './layer/ImageLayer';
+export type { WithNull, WithUndef, Optional, Requireal } from './types/typings';
+export type { RenderContext, Tile } from './renderer/layer/tilelayer/TileLayerRendererable';

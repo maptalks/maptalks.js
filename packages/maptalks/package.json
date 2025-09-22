@@ -47,7 +47,7 @@
     "tdd": "karma start build/karma.config.js --no-single-run",
     "version": " npm run build"
   },
-  "types": "dist/maptalks.d.ts",
+  "types": "dist/index.d.ts",
   "unpkg": "dist/maptalks.min.js",
   "jsdelivr": "dist/maptalks.min.js",
   "module": "dist/maptalks.es.js",
