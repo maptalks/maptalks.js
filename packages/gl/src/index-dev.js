@@ -16,6 +16,6 @@ export * from './index.ts';
 
 import * as maptalks from 'maptalks';
 import chunk from '../build/dist/worker.js';
-import linghWorkerChunk from '../build/dist/LightWorker.js';
+import lightWorkerChunk from '../build/dist/LightWorker.js';
 maptalks.registerWorkerAdapter('@maptalks/terrain', chunk);
-maptalks.registerWorkerAdapter('maplight', linghWorkerChunk);
+maptalks.registerWorkerAdapter('maplight', lightWorkerChunk);
