@@ -16,18 +16,13 @@ function projectEnvironmentMapCPU(params, callback) {
     const buffers = cubePixels.map(face => {
         return face.buffer;
     });
-    const updateTime = Util.now();
     getWorkerActor().send({
         cubePixels: buffers,
         width,
         height,
-        updateTime
     }, buffers, (err, data) => {
         if (err) {
             console.error(err);
-            return;
-        }
-        if (data.updateTime !== updateTime) {
             return;
         }
         callback(data.shList);
@@ -42,6 +37,7 @@ class LightManager {
     constructor(map) {
         this._map = map;
         this._loader = new reshader.ResourceLoader();
+        this.updateTime = Util.now();
     }
 
     getDirectionalLight() {
@@ -206,11 +202,13 @@ class LightManager {
     }
 
     _createIBLMaps(envTexture) {
+        this.updateTime = Util.now();
         return new Promise((resolve) => {
             const config = this._config.ambient.resource;
             const cubeSize = config.prefilterCubeSize || PREFILTER_CUBE_SIZE;
             const regl = this._tryToGetREGLContext(this._map);
             reshader.pbr.PBRHelper.createIBLMaps(regl, {
+                updateTime: this.updateTime,
                 envTexture: Array.isArray(envTexture) ? envTexture : envTexture.getREGLTexture(regl),
                 ignoreSH: !!config['sh'],
                 envCubeSize: cubeSize,
@@ -219,6 +217,10 @@ class LightManager {
                 format: 'array',
                 projectEnvironmentMapCPU
             }).then((maps) => {
+                //单位时间内多次更新，永远使用最新的
+                if (maps.updateTime !== this.updateTime) {
+                    return;
+                }
                 // hdr.dispose();
                 if (config['sh']) {
                     maps.sh = config['sh'];

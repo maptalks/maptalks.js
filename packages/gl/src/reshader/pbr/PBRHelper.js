@@ -64,6 +64,7 @@ export function createIBLMaps(regl, config = {}) {
     if (projectEnvironmentMapCPU) {
         return new Promise((resolve) => {
             _createIBLMaps(regl, config, (maps) => {
+                maps.updateTime = config.updateTime;
                 resolve(maps);
             });
         });
