@@ -18,4 +18,6 @@ export * from './dist/gl/gl.es.js';
 
 import * as maptalks from 'maptalks';
 import chunk from './dist/worker.js';
+import linghWorkerChunk from './dist/LightWorker.js';
 maptalks.registerWorkerAdapter('@maptalks/terrain', chunk);
+maptalks.registerWorkerAdapter('maplight', linghWorkerChunk);
