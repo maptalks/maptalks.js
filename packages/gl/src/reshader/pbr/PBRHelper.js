@@ -59,19 +59,17 @@ const skyboxFrag = ShaderLib.compile(skyboxRawFrag);
  * @param config - config
  */
 export function createIBLMaps(regl, config = {}) {
-    const { projectEnvironmentMapCPU } = config || {};
-    //异步,耗时逻辑在worker中执行
-    if (projectEnvironmentMapCPU) {
-        return new Promise((resolve) => {
-            _createIBLMaps(regl, config, (maps) => {
-                maps.updateTime = config.updateTime;
-                resolve(maps);
-            });
-        });
-    }
-    //原来的逻辑，兼容其他的地方的调用
     return _createIBLMaps(regl, config);
 
+}
+
+export function createIBLMapsAsync(regl, config = {}) {
+    return new Promise((resolve) => {
+        _createIBLMaps(regl, config, (maps) => {
+            maps.updateTime = config.updateTime;
+            resolve(maps);
+        });
+    });
 }
 
 function _createIBLMaps(regl, config = {}, callback) {
@@ -124,8 +122,9 @@ function _createIBLMaps(regl, config = {}, callback) {
         // }
         // const lod = regl.hasExtension('EXT_shader_texture_lod') ? '1.0' : undefined;
         const faces = getEnvmapPixels(regl, prefilterMap, size, false, config.environmentExposure, true);
-        if (config.projectEnvironmentMapCPU) {
-            config.projectEnvironmentMapCPU({ cubePixels: faces, width: size, height: size }, (shList) => {
+        const { projectEnvironmentMapCPU, asynchronous } = config;
+        if (projectEnvironmentMapCPU && asynchronous) {
+            projectEnvironmentMapCPU({ cubePixels: faces, width: size, height: size }, (shList) => {
                 const flatten = [];
                 for (let i = 0; i < shList.length; i++) {
                     flatten.push(...shList[i]);
@@ -175,9 +174,11 @@ function _createIBLMaps(regl, config = {}, callback) {
 
         return maps;
     }
+    if (callback) {
+        callback(createMap());
+        return;
+    }
     return createMap();
-
-
 }
 
 function createSkybox(regl, cubemap, size) {

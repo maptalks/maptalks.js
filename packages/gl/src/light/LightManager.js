@@ -207,8 +207,10 @@ class LightManager {
             const config = this._config.ambient.resource;
             const cubeSize = config.prefilterCubeSize || PREFILTER_CUBE_SIZE;
             const regl = this._tryToGetREGLContext(this._map);
-            reshader.pbr.PBRHelper.createIBLMaps(regl, {
+            let asynchronous = config.asynchronous;
+            reshader.pbr.PBRHelper.createIBLMapsAsync(regl, {
                 updateTime: this.updateTime,
+                asynchronous,
                 envTexture: Array.isArray(envTexture) ? envTexture : envTexture.getREGLTexture(regl),
                 ignoreSH: !!config['sh'],
                 envCubeSize: cubeSize,
