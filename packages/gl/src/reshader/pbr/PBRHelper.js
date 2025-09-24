@@ -59,6 +59,20 @@ const skyboxFrag = ShaderLib.compile(skyboxRawFrag);
  * @param config - config
  */
 export function createIBLMaps(regl, config = {}) {
+    return _createIBLMaps(regl, config);
+
+}
+
+export function createIBLMapsAsync(regl, config = {}) {
+    return new Promise((resolve) => {
+        _createIBLMaps(regl, config, (maps) => {
+            maps.updateTime = config.updateTime;
+            resolve(maps);
+        });
+    });
+}
+
+function _createIBLMaps(regl, config = {}, callback) {
     regl = getREGL(regl);
     // config values
 
@@ -107,55 +121,74 @@ export function createIBLMaps(regl, config = {}) {
         // cube.destroy();
         // }
         // const lod = regl.hasExtension('EXT_shader_texture_lod') ? '1.0' : undefined;
-        const faces = getEnvmapPixels(regl, prefilterMap, size, false, config.environmentExposure, true);
-        sh = coefficients(faces, size, size);
-        const flatten = [];
-        for (let i = 0; i < sh.length; i++) {
-            flatten.push(...sh[i]);
+        const flat = (shList) => {
+            const flatten = [];
+            for (let i = 0; i < shList.length; i++) {
+                flatten.push(...shList[i]);
+            }
+            return flatten;
         }
-        sh = flatten;
+        const faces = getEnvmapPixels(regl, prefilterMap, size, false, config.environmentExposure, true);
+        const { projectEnvironmentMapCPU } = config;
+        if (projectEnvironmentMapCPU) {
+            projectEnvironmentMapCPU({ cubePixels: faces, width: size, height: size }, (shList) => {
+                sh = flat(shList);
+                callback(createMap());
+            });
+            return;
+        }
+        sh = coefficients(faces, size, size);
+
+        sh = flat(sh);
         // cubeMap.destroy();
     }
 
     // const irradianceMap = createIrradianceCube(regl, envMap, irradianceCubeSize);
 
-    const maps = {
-        envMap,
-        isHDR,
-        prefilterMap,
-        // dfgLUT
-    };
-
-    if (sh) {
-        maps['sh'] = sh;
-    }
-
-    if (config.format === 'array') {
-        maps['envMap'] = {
-            width: envMap.width,
-            height: envMap.height,
-            faces: getEnvmapPixels(regl, envMap, envCubeSize, isHDR)
+    function createMap() {
+        const maps = {
+            envMap,
+            isHDR,
+            prefilterMap,
+            // dfgLUT
         };
-        maps['prefilterMap'] = {
-            width: prefilterMap.width,
-            height: prefilterMap.height,
-            faces: prefilterMipmap
-        };
-        envMap.destroy();
-        prefilterMap.destroy();
-    }
 
-    return maps;
+        if (sh) {
+            maps['sh'] = sh;
+        }
+
+        if (config.format === 'array') {
+            maps['envMap'] = {
+                width: envMap.width,
+                height: envMap.height,
+                faces: getEnvmapPixels(regl, envMap, envCubeSize, isHDR)
+            };
+            maps['prefilterMap'] = {
+                width: prefilterMap.width,
+                height: prefilterMap.height,
+                faces: prefilterMipmap
+            };
+            envMap.destroy();
+            prefilterMap.destroy();
+        }
+
+        return maps;
+    }
+    if (callback) {
+        callback(createMap());
+        return;
+    }
+    return createMap();
 }
 
 function createSkybox(regl, cubemap, size) {
     const drawCube = regl({
-        frag : skyboxFrag,
-        vert : cubemapVS,
-        attributes : {
-            'aPosition' : cubeData.vertices
+        frag: skyboxFrag,
+        vert: cubemapVS,
+        attributes: {
+            'aPosition': cubeData.vertices
         },
-        uniforms : {
+        uniforms: {
             'hsv': [0, 0, 0],
             'projMatrix': regl.context('projMatrix'),
             'viewMatrix': regl.context('viewMatrix'),
@@ -165,7 +198,7 @@ function createSkybox(regl, cubemap, size) {
             'environmentExposure': 1,
             'backgroundIntensity': 1
         },
-        elements : cubeData.indices
+        elements: cubeData.indices
     });
     const color = regl.cube({
         width: size,
@@ -194,33 +227,33 @@ function createSkybox(regl, cubemap, size) {
 
 function getEnvmapPixels(regl, cubemap, envCubeSize, isHDR, environmentExposure = 1, encodeRGBM = false) {
     const drawCube = regl({
-        frag : (encodeRGBM ? '#define ENCODE_RGBM\n' : '') + cubemapFS,
-        vert : cubemapVS,
-        attributes : {
-            'aPosition' : cubeData.vertices
+        frag: (encodeRGBM ? '#define ENCODE_RGBM\n' : '') + cubemapFS,
+        vert: cubemapVS,
+        attributes: {
+            'aPosition': cubeData.vertices
         },
-        uniforms : {
-            'projMatrix' : regl.context('projMatrix'),
-            'viewMatrix' :  regl.context('viewMatrix'),
-            'cubeMap' : cubemap,
+        uniforms: {
+            'projMatrix': regl.context('projMatrix'),
+            'viewMatrix': regl.context('viewMatrix'),
+            'cubeMap': cubemap,
             'exposure': environmentExposure
         },
-        elements : cubeData.indices
+        elements: cubeData.indices
     });
     const faces = [];
     const color = regl.texture({
-        radius : envCubeSize,
-        min : 'linear',
-        mag : 'linear',
+        radius: envCubeSize,
+        min: 'linear',
+        mag: 'linear',
         type: isHDR ? 'float' : 'uint8',
         format: 'rgba'
     });
     const tmpFBO = regl.framebuffer({
-        radius : envCubeSize,
+        radius: envCubeSize,
         color
     });
     renderToCube(regl, tmpFBO, drawCube, {
-        size : envCubeSize
+        size: envCubeSize
     }, function (/* context, props, batchId */) {
         const pixels = regl.read();
         if (isHDR) {
@@ -252,16 +285,16 @@ function createEquirectangularMapCube(regl, texture, size) {
     size = size || 512;
     const drawCube = regl({
         frag: equirectangularMapFS,
-        vert : cubemapVS,
-        attributes : {
-            'aPosition' : cubeData.vertices
+        vert: cubemapVS,
+        attributes: {
+            'aPosition': cubeData.vertices
         },
-        uniforms : {
-            'projMatrix' : regl.context('projMatrix'),
-            'viewMatrix' :  regl.context('viewMatrix'),
-            'equirectangularMap' : texture
+        uniforms: {
+            'projMatrix': regl.context('projMatrix'),
+            'viewMatrix': regl.context('viewMatrix'),
+            'equirectangularMap': texture
         },
-        elements : cubeData.indices
+        elements: cubeData.indices
     });
 
     const color = regl.cube({
@@ -298,21 +331,21 @@ function createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLev
     });
 
     const drawCube = regl({
-        frag : prefilterFS,
-        vert : cubemapVS,
-        attributes : {
-            'aPosition' : cubeData.vertices
+        frag: prefilterFS,
+        vert: cubemapVS,
+        attributes: {
+            'aPosition': cubeData.vertices
         },
-        uniforms : {
-            'projMatrix' : regl.context('projMatrix'),
-            'viewMatrix' :  regl.context('viewMatrix'),
-            'environmentMap' : fromCubeMap,
-            'distributionMap' : distributionMap,
-            'roughness' : regl.prop('roughness'),
+        uniforms: {
+            'projMatrix': regl.context('projMatrix'),
+            'viewMatrix': regl.context('viewMatrix'),
+            'environmentMap': fromCubeMap,
+            'distributionMap': distributionMap,
+            'roughness': regl.prop('roughness'),
             'resolution': SIZE
         },
-        elements : cubeData.indices,
-        viewport : {
+        elements: cubeData.indices,
+        viewport: {
             x: 0,
             y: 0,
             width: regl.prop('size'),
@@ -322,9 +355,9 @@ function createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLev
     let size = SIZE;
 
     const color = regl.texture({
-        radius : SIZE,
-        min : 'linear',
-        mag : 'linear',
+        radius: SIZE,
+        min: 'linear',
+        mag: 'linear',
         type: isHDR ? 'float' : 'uint8'
     });
     const tmpFBO = regl.framebuffer({
@@ -342,7 +375,7 @@ function createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLev
         //分别绘制六个方向，读取fbo的pixel，作为某个方向的mipmap级别数据
         renderToCube(regl, tmpFBO, drawCube, {
             roughness: roughness,
-            size : size
+            size: size
         }, function (/* context, props, batchId */) {
             const pixels = regl.read({ framebuffer: tmpFBO });
             let data = pixels;
@@ -356,7 +389,7 @@ function createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLev
             if (!mipmap[faceId]) {
                 //regl要求的cube face的mipmap数据格式
                 mipmap[faceId] = {
-                    mipmap : []
+                    mipmap: []
                 };
             }
             mipmap[faceId].mipmap.push(data);
@@ -393,11 +426,11 @@ function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevel
     const mipmap = createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLevels, isHDR);
     // debugger
     const prefilterMap = regl.cube({
-        radius : SIZE,
-        min : 'linear',
-        mag : 'linear',
-        type:  isHDR ? 'float16' : 'uint8',
-        faces : mipmap,
+        radius: SIZE,
+        min: 'linear',
+        mag: 'linear',
+        type: isHDR ? 'float16' : 'uint8',
+        faces: mipmap,
         format: 'rgba'
     });
     // mipmapCube.destroy();
@@ -406,9 +439,9 @@ function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevel
 
 const quadVertices = new Int8Array([
     // positions     // texture Coords
-    -1.0,  1.0, 0.0,
+    -1.0, 1.0, 0.0,
     -1.0, -1.0, 0.0,
-    1.0,  1.0, 0.0,
+    1.0, 1.0, 0.0,
     1.0, -1.0, 0.0,
 ]);
 const quadTexcoords = new Int8Array([
@@ -432,11 +465,11 @@ export function generateDFGLUT(device, size, sampleSize, roughnessLevels) {
 
     // const type = regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
     const distributionMap = regl.texture({
-        data : distro,
-        width : roughnessLevels,
-        height : sampleSize,
-        min : 'nearest',
-        mag : 'nearest'
+        data: distro,
+        width: roughnessLevels,
+        height: sampleSize,
+        min: 'nearest',
+        mag: 'nearest'
     });
 
     const quadBuf = regl.buffer({ data: quadVertices, name: 'aPosition' });
@@ -453,20 +486,20 @@ export function generateDFGLUT(device, size, sampleSize, roughnessLevels) {
         frag: dfgFS,
         vert: dfgVS,
         attributes: {
-            'aPosition' : {
-                buffer : quadBuf,
+            'aPosition': {
+                buffer: quadBuf,
                 // stride : 5 * FSIZE,
                 // size : 3
             },
-            'aTexCoord' : {
-                buffer : quadTexBuf,
+            'aTexCoord': {
+                buffer: quadTexBuf,
                 // offset : 3 * FSIZE,
                 // stride : 5 * FSIZE,
                 // size : 2,
             }
         },
         uniforms: {
-            'distributionMap' : distributionMap
+            'distributionMap': distributionMap
         },
         framebuffer: fbo,
         viewport: {

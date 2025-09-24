@@ -183,6 +183,37 @@ module.exports = [
             include: ['src/layer/terrain/worker/*.js', 'src/layer/terrain/util/*.js']
         }
     },
+        {
+        input: 'src/light/LightWorker.js',
+        external: ['maptalks'],
+        plugins: [
+            nodeResolve({
+                mainFields: ['module', 'main'],
+            }),
+            commonjs(),
+            replace({
+                // 'this.exports = this.exports || {}': '',
+                '(function (exports) {': 'function (exports) {',
+                '})(this.exports = this.exports || {});': '}',
+                'Object.defineProperty(exports, \'__esModule\', { value: true });': '',
+                preventAssignment: false,
+                delimiters: ['', '']
+            }),
+        ].concat(pluginsWorker).concat([transformBackQuote()]),
+        output: {
+            strict: false,
+            format: 'iife',
+            name: 'exports',
+            globals: ['exports'],
+            extend: true,
+            file: 'build/dist/LightWorker.js',
+            banner: `export default `,
+            // footer: ``
+        },
+        watch: {
+            include: ['src/light/LightWorker.js']
+        }
+    },
     {
         input: 'src/transcoders.js',
         plugins: plugins,
