@@ -207,7 +207,7 @@ class LightManager {
             const config = this._config.ambient.resource;
             const cubeSize = config.prefilterCubeSize || PREFILTER_CUBE_SIZE;
             const regl = this._tryToGetREGLContext(this._map);
-            let asynchronous = config.asynchronous;
+            const asynchronous = config.asynchronous;
             reshader.pbr.PBRHelper.createIBLMapsAsync(regl, {
                 updateTime: this.updateTime,
                 asynchronous,
@@ -217,7 +217,7 @@ class LightManager {
                 prefilterCubeSize: cubeSize,
                 environmentExposure: this._config.ambient.exposure,
                 format: 'array',
-                projectEnvironmentMapCPU
+                projectEnvironmentMapCPU: asynchronous ? projectEnvironmentMapCPU : null
             }).then((maps) => {
                 //单位时间内多次更新，永远使用最新的
                 if (maps.updateTime !== this.updateTime) {

@@ -121,25 +121,25 @@ function _createIBLMaps(regl, config = {}, callback) {
         // cube.destroy();
         // }
         // const lod = regl.hasExtension('EXT_shader_texture_lod') ? '1.0' : undefined;
+        const flat = (shList) => {
+            const flatten = [];
+            for (let i = 0; i < shList.length; i++) {
+                flatten.push(...shList[i]);
+            }
+            return flatten;
+        }
         const faces = getEnvmapPixels(regl, prefilterMap, size, false, config.environmentExposure, true);
-        const { projectEnvironmentMapCPU, asynchronous } = config;
-        if (projectEnvironmentMapCPU && asynchronous) {
+        const { projectEnvironmentMapCPU } = config;
+        if (projectEnvironmentMapCPU) {
             projectEnvironmentMapCPU({ cubePixels: faces, width: size, height: size }, (shList) => {
-                const flatten = [];
-                for (let i = 0; i < shList.length; i++) {
-                    flatten.push(...shList[i]);
-                }
-                sh = flatten;
+                sh = flat(shList);
                 callback(createMap());
             });
             return;
         }
         sh = coefficients(faces, size, size);
-        const flatten = [];
-        for (let i = 0; i < sh.length; i++) {
-            flatten.push(...sh[i]);
-        }
-        sh = flatten;
+
+        sh = flat(sh);
         // cubeMap.destroy();
     }
 
