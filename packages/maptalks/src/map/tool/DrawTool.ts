@@ -151,9 +151,21 @@ class DrawTool extends MapTool {
      * @param name      DrawTool mode name
      * @return          mode actions
      */
-    static getRegisterMode(name: string): any {
+    static getRegisterMode(name: string): modeActionType | undefined {
         return registeredMode[name.toLowerCase()];
     }
+
+    /**
+     * 获取all mode actions
+     *
+     * @english
+     * Get all mode actions
+     * @return          mode actions
+     */
+    static getAllRegisterMode(): Record<string, modeActionType> {
+        return Object.assign({}, registeredMode);
+    }
+
 
     /**
      * 实例化DrawTool工具
@@ -438,7 +450,7 @@ class DrawTool extends MapTool {
         if (Array.isArray(action)) {
             for (let i = 0; i < action.length; i++) {
                 //@internal
-        _events[action[i]] = this._events[action[i]];
+                _events[action[i]] = this._events[action[i]];
             }
             return _events;
         }
@@ -455,7 +467,7 @@ class DrawTool extends MapTool {
      */
     //@internal
     _mouseDownHandler(event: any) {
-        if(!event?.coordinate) {
+        if (!event?.coordinate) {
             return
         }
         this._createGeometry(event);
@@ -471,7 +483,7 @@ class DrawTool extends MapTool {
      */
     //@internal
     _mouseUpHandler(event: any) {
-        if(!event?.coordinate) {
+        if (!event?.coordinate) {
             return
         }
         this.endDraw(event);
@@ -487,7 +499,7 @@ class DrawTool extends MapTool {
      */
     //@internal
     _clickHandler(event: any) {
-        if(!event?.coordinate) {
+        if (!event?.coordinate) {
             return
         }
         if (!this.options.interactive) {
@@ -644,7 +656,7 @@ class DrawTool extends MapTool {
      */
     //@internal
     _mouseMoveHandler(event) {
-        if(!event?.coordinate) {
+        if (!event?.coordinate) {
             return
         }
         if (!this.options.interactive) {
@@ -717,7 +729,7 @@ class DrawTool extends MapTool {
      */
     //@internal
     _doubleClickHandler(event) {
-        if(!event?.coordinate) {
+        if (!event?.coordinate) {
             return
         }
         if (!this.options.interactive) {
