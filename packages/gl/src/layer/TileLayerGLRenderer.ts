@@ -291,12 +291,15 @@ class TileLayerGLRenderer2 extends TexturePoolable(CanvasCompatible(TileLayerRen
             },
             depth: {
                 enable: true,
-                func: '<='
+                func: '<=',
+                mask: () => {
+                    return !!this.layer.options['depthMask'];
+                }
             },
             blend: {
                 enable: true,
                 func: {
-                    src: 'src alpha',
+                    src: 1,
                     dst: 'one minus src alpha'
                 },
                 equation: 'add'
