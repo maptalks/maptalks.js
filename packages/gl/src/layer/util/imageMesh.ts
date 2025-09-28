@@ -19,7 +19,8 @@ export function createImageMesh(geometry, image, extent2d, offset, scale, unifor
     const config = {
         data: image,
         mag: 'nearest',
-        mipmap: true
+        mipmap: true,
+        premultiplyAlpha: true
     };
     let texture = this.getTexture();
     if (!texture) {

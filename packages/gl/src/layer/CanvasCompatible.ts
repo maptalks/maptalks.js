@@ -14,6 +14,8 @@ const canvasCompatible = function <T extends maptalks.MixinConstructor>(Base: T)
             this.regl = regl;
             this.reglGL = reglGL;
             this.context = context;
+            this.context.device = regl;
+            this.device = this.regl;
         }
 
         // clear context in MapCanvasRenderer

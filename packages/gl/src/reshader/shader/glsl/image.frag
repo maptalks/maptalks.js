@@ -14,7 +14,7 @@ uniform float alphaTest;
 varying vec2 vTexCoord;
 
 void main() {
-    vec4 glFragColor = texture2D(baseColorTexture, vTexCoord);
+    glFragColor = texture2D(baseColorTexture, vTexCoord);
     glFragColor *= baseColor;
     #ifdef HAS_DEBUG
         vec4 debugColor = texture2D(debugTexture, vTexCoord);
