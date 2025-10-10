@@ -276,14 +276,14 @@ class Player {
                 setTimeout(this._run.bind(this), this.startTime - t);
             }
         } else if (this.playState === 'running') {
+            this.currentTime = elapsed;
+            if (onFrame) {
+                onFrame(frame);
+            }
             this._framer(() => {
                 if (this.playState !== 'running') {
                     // this._run();
                     return;
-                }
-                this.currentTime = elapsed;
-                if (onFrame) {
-                    onFrame(frame);
                 }
                 this._run();
             });
