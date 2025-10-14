@@ -6,6 +6,10 @@ import type { WithUndef } from '../../types/typings';
 import type Map from '../../map/Map';
 
 type handlerQueueFn = () => void
+type Container = HTMLDivElement | HTMLCanvasElement;
+type ContainerWithWhenResize = Container & {
+  _resizeObserver: ResizeObserver;
+};
 
 /**
  * 所有地图渲染器的基类。
@@ -18,6 +22,11 @@ type handlerQueueFn = () => void
  */
 abstract class MapRenderer extends Class {
     map: Map;
+
+     //@internal
+    _containerClientWidth: number;
+     //@internal
+    _containerClientHeight: number;
 
     //@internal
     _handlerQueue: handlerQueueFn[];
@@ -195,11 +204,21 @@ abstract class MapRenderer extends Class {
 
     //@internal
     _containerIsOffscreen() {
-        const container = this.map.getContainer();
-        if (!container || !container.style || container.style.display === 'none') {
+        const container = this.map.getContainer() as ContainerWithWhenResize;
+        if (!container) return true;
+        if (!container._resizeObserver) {
+          const observer = new ResizeObserver(entries => {
+            const { clientWidth, clientHeight } = entries[0].target;
+            this._containerClientWidth = clientWidth;
+            this._containerClientHeight = clientHeight;
+          });
+          observer.observe(container);
+          container._resizeObserver = observer;
+        }
+        if (!container.style || container.style.display === 'none') {
             return true;
         }
-        const minSize = Math.min(container.clientWidth, container.clientHeight);
+        const minSize = Math.min(this._containerClientWidth, this._containerClientHeight);
         return minSize <= 0;
     }
 }
