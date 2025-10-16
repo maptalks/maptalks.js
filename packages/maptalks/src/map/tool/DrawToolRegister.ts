@@ -70,15 +70,20 @@ const circleHooks: modeActionType = {
         // const center = projection.unproject(prjCoord[0]);
         const center = queryTerrainCoordinates(projection, prjCoord[0], mapEvent);
         const circle: Circle = new Circle(center as Coordinate, 0);
+        (circle as any)._firstClick = prjCoord[0];
         // circle._setPrjCoordinates(prjCoord[0]);
         return circle;
     },
     'update': function (projection, prjPath, geometry, mapEvent) {
+        let center = geometry.getCenter();
+        if (geometry._firstClick) {
+            center = queryTerrainCoordinates(projection, geometry._firstClick, mapEvent);
+        }
         const map = geometry.getMap();
         const prjCoord = Array.isArray(prjPath) ? prjPath[prjPath.length - 1] : prjPath;
         // const nextCoord = projection.unproject(prjCoord);
         const nextCoord = queryTerrainCoordinates(projection, prjCoord, mapEvent);
-        const radius = map.computeLength(geometry.getCenter(), nextCoord);
+        const radius = map.computeLength(center, nextCoord);
         geometry.setRadius(radius);
     },
     'generate': function (geometry) {
