@@ -317,7 +317,13 @@ export default class GLTFMarker extends Marker {
         //此处涉及到材质的更新，比较耗费性能，对于不需要更新材质的操作尽量不去更新
         if (markerUniforms  && this.isDirty() && this._isUniformsDirty()) {
             for (const u in markerUniforms) {
-                mesh.setUniform(u, markerUniforms[u]);
+                if (this._uniformNodeIndex && defined(this._uniformNodeIndex[u])) {
+                    if (Number(mesh.properties.nodeIndex) === this._uniformNodeIndex[u]) {
+                        mesh.setUniform(u, markerUniforms[u]);
+                    }
+                } else {
+                    mesh.setUniform(u, markerUniforms[u]);
+                }
             }
         }
         if (this._isTransparent()) {
@@ -1136,11 +1142,13 @@ export default class GLTFMarker extends Marker {
         return symbol && symbol.uniforms;
     }
 
-    setUniform(key, value) {
+    setUniform(key, value, nodeIndex) {
         const uniforms = this.getUniforms() || {};
         uniforms[key] = value;
         super.updateSymbol({ uniforms });
         this._uniformDirty = true;
+        this._uniformNodeIndex = this._uniformNodeIndex || {};
+        this._uniformNodeIndex[key] = nodeIndex;
         return this;
     }
 
