@@ -525,7 +525,8 @@ export default class BaseLayerWorker {
             zoom,
             debugIndex,
             features: this.options.features,
-            isWebGPU: this.options.isWebGPU
+            isWebGPU: this.options.isWebGPU,
+            isWebGL1: this.options.isWebGL1
         });
         if (type === '3d-extrusion') {
             const t = hasTexture(symbol);

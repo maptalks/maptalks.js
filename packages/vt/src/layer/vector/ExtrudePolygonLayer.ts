@@ -216,7 +216,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
       return;
     }
     this.painter.updateDataConfig(dataConfig, old);
-    this._markRebuild();
+    this.markRebuild();
   }
 
   updateBloom(enableBloom: boolean) {

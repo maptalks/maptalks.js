@@ -76,6 +76,10 @@ class LayerAbstractRenderer extends Class {
     _canvasUpdated: boolean;
 
     mapDPR?: number;
+    gl: WebGLRenderingContext | WebGL2RenderingContext;
+    reglGL: WebGLRenderingContext | WebGL2RenderingContext;
+    regl: any;
+    device: any;
 
     drawOnInteracting?(...args: any[]): void;
     checkResources?(): any[];
@@ -452,6 +456,11 @@ class LayerAbstractRenderer extends Class {
             } else {
                 this.canvas = mapCanvas;
                 this.context = mapContext;
+                const { gl, regl, reglGL, device } = mapContext;
+                this.gl = gl;
+                this.regl = regl;
+                this.reglGL = reglGL;
+                this.device = device;
             }
             this.initContext();
         } else if (isMapCanvasRenderer) {
@@ -829,6 +838,7 @@ class LayerAbstractRenderer extends Class {
         };
     }
 
+    // Only for MapCanvasRenderer
     clearCanvas() {
         this.clearContext();
     }

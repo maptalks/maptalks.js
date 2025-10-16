@@ -285,7 +285,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         this.gl = reglGL;
         this.device = device || regl;
 
-        const isWebGPU = !!device;
+        const isWebGPU = !!this.device.wpu;
         const fboOptions = {
             colorFormat: isWebGPU ? 'bgra8unorm' : 'rgba',
             depthStencil: true,

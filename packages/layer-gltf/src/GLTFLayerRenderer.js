@@ -288,7 +288,7 @@ class GLTFLayerRenderer extends MaskRendererMixin(CanvasCompatible(maptalks.rend
         this.gl = reglGL;
         this.device = regl || device;
 
-        const isWebGPU = !!device;
+        const isWebGPU = !!this.device.wpu;
         const fboOptions = {
             colorFormat: isWebGPU ? 'bgra8unorm' : 'rgba',
             depthStencil: true,

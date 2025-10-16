@@ -401,7 +401,7 @@ export default class VectorPack {
                             const { width, height, data } = icon.data;
                             icon.data = new RGBAImage({ width, height }, data);
                         }
-                        this.iconAtlas = new IconAtlas(icons);
+                        this.iconAtlas = new IconAtlas(icons, { nonPowerOfTwo: !this.options.isWebGL1 });
                     }
                     if (glyphs && Object.keys(glyphs).length) {
                         for (const font in glyphs) {

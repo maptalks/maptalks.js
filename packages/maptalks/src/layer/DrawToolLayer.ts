@@ -10,11 +10,8 @@ const options: DrawToolLayerOptionsType = {
 
 export default class DrawToolLayer extends OverlayLayer {
     options: DrawToolLayerOptionsType;
-    //@internal
     static markerLayerClazz: any;
-    //@internal
     static lineLayerClazz: any;
-    //@internal
     static polygonLayerClazz: any;
     //@internal
     _markerLayer: any;
@@ -23,7 +20,6 @@ export default class DrawToolLayer extends OverlayLayer {
     //@internal
     _polygonLayer: any;
 
-    //@internal
     static setLayerClass(markerLayerClass, lineLayerClass, polygonLayerClass) {
         DrawToolLayer.markerLayerClazz = markerLayerClass;
         DrawToolLayer.lineLayerClazz = lineLayerClass;
