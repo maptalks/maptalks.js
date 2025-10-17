@@ -174,6 +174,7 @@ GLTFLayer.mergeOptions(options);
 GLTFLayer.registerJSONType('GLTFLayer');
 
 GLTFLayer.registerRenderer('gl', GLTFLayerRenderer);
+GLTFLayer.registerRenderer('gpu', GLTFLayerRenderer);
 
 function getPhongShader() {
     const shader = {

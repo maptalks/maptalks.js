@@ -190,3 +190,4 @@ VideoLayer.mergeOptions(options);
 VideoLayer.registerJSONType("VideoLayer");
 
 VideoLayer.registerRenderer("gl", VideoLayerRenderer);
+VideoLayer.registerRenderer("gpu", VideoLayerRenderer);

@@ -40,3 +40,4 @@ export default class ExcavateAnalysis extends ExtrudePolygonLayer {
 }
 
 ExcavateAnalysis.registerRenderer('gl', ExcavateRenderer);
+ExcavateAnalysis.registerRenderer('gpu', ExcavateRenderer);

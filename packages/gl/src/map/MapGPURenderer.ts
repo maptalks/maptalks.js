@@ -51,6 +51,10 @@ export default class MapGPURenderer extends renderer.MapAbstractRenderer {
         // renderer.clearContext();
     }
 
+    isWebGL() {
+        return false;
+    }
+
     isWebGPU() {
         return true;
     }

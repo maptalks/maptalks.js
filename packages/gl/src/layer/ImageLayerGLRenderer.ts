@@ -158,3 +158,4 @@ class ImageLayerGLRenderer2 extends TexturePoolable(CanvasCompatible(ImageLayerR
 export default ImageLayerGLRenderer2;
 
 maptalks.ImageLayer.registerRenderer('gl', ImageLayerGLRenderer2);
+maptalks.ImageLayer.registerRenderer('gpu', ImageLayerGLRenderer2);

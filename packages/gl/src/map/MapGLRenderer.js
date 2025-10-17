@@ -60,6 +60,10 @@ export default class MapGLRenderer extends renderer.MapAbstractRenderer {
         return this.gl.wrap();
     }
 
+    isWebGL() {
+        return true;
+    }
+
     isWebGPU() {
         return false;
     }

@@ -793,6 +793,7 @@ export default class GroupGLLayer extends maptalks.Layer {
 (GroupGLLayer as any).registerJSONType('GroupGLLayer');
 
 (GroupGLLayer as any).registerRenderer('gl', Renderer);
+(GroupGLLayer as any).registerRenderer('gpu', Renderer);
 (GroupGLLayer as any).registerRenderer('canvas', null);
 
 function empty() { return }

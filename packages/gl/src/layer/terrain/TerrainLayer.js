@@ -470,3 +470,4 @@ TerrainLayer.mergeOptions(options);
 TerrainLayer.registerJSONType('TerrainLayer');
 
 TerrainLayer.registerRenderer('gl', TerrainLayerRenderer);
+TerrainLayer.registerRenderer('gpu', TerrainLayerRenderer);

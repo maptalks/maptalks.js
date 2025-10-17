@@ -1889,6 +1889,7 @@ VectorTileLayer.registerJSONType("VectorTileLayer");
 VectorTileLayer.mergeOptions(defaultOptions);
 
 VectorTileLayer.registerRenderer("gl", VectorTileLayerRenderer);
+VectorTileLayer.registerRenderer("gpu", VectorTileLayerRenderer);
 VectorTileLayer.registerRenderer("canvas", null);
 
 export default VectorTileLayer;

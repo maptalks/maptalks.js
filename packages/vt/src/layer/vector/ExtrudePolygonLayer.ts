@@ -515,6 +515,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
 }
 
 ExtrudePolygonLayer.registerRenderer("gl", ExtrudePolygonLayerRenderer);
+ExtrudePolygonLayer.registerRenderer("gpu", ExtrudePolygonLayerRenderer);
 ExtrudePolygonLayer.registerRenderer("canvas", null);
 
 export default ExtrudePolygonLayer;

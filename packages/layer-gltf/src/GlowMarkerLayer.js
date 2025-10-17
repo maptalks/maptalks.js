@@ -20,6 +20,7 @@ GlowMarkerLayer.mergeOptions(options);
 GlowMarkerLayer.registerJSONType('GlowMarkerLayer');
 
 GlowMarkerLayer.registerRenderer('gl', GLTFLayerRenderer);
+GlowMarkerLayer.registerRenderer('gpu', GLTFLayerRenderer);
 
 function getGlowMarkerShader() {
     const vert = `

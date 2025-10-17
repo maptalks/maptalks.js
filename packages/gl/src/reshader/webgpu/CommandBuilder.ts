@@ -361,7 +361,7 @@ export default class CommandBuilder {
                 ],
             };
         }
-        if (pipelineDesc.stencilFrontCompare) {
+        if (pipelineOptions.depthStencil && pipelineDesc.stencilFrontCompare) {
             pipelineOptions.depthStencil.stencilBack =
             pipelineOptions.depthStencil.stencilFront = {
                 compare: pipelineDesc.stencilFrontCompare,
