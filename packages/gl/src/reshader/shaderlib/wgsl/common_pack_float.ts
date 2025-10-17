@@ -79,22 +79,20 @@ fn encodeFloat32(f: f32) -> vec4f {
     Exponent = floor(log2(F) + 127.0) + floor(log2(Mantissa));
     var rgba = vec4(0.0);
     rgba[0] = 128.0 * Sign  + floor(Exponent*exp2(-1.0));
-    rgba[1] = 128.0 * mod(Exponent,2.0) + mod(floor(Mantissa*128.0),128.0);
-    rgba[2] = floor(mod(floor(Mantissa*exp2(23.0 -8.0)),exp2(8.0)));
-    rgba[3] = floor(exp2(23.0)*mod(Mantissa,exp2(-15.0)));
+    rgba[1] = 128.0 * (Exponent % 2.0) + (floor(Mantissa*128.0) % 128.0);
+    rgba[2] = floor((floor(Mantissa*exp2(23.0 -8.0)) % exp2(8.0)));
+    rgba[3] = floor(exp2(23.0)*(Mantissa % exp2(-15.0)));
     return rgba / 255.0;
 }
 
-fn decodeFloat32(rgba: vec4f) -> f32 {
-    rgba *= 255.0;
+fn decodeFloat32(inputRgba: vec4f) -> f32 {
+    var rgba = inputRgba * 255.0;
     var Sign = 1.0 - step(128.0,rgba[0])*2.0;
-    var Exponent = 2.0 * mod(rgba[0],128.0) + step(128.0,rgba[1]) - 127.0;
-    var Mantissa = mod(rgba[1],128.0)*65536.0 + rgba[2]*256.0 +rgba[3] + float(0x800000);
+    var Exponent = 2.0 * (rgba[0] % 128.0) + step(128.0,rgba[1]) - 127.0;
+    var Mantissa = (rgba[1] % 128.0)*65536.0 + rgba[2]*256.0 +rgba[3] + 0x800000;
     var Result =  Sign * exp2(Exponent) * (Mantissa * exp2(-23.0 ));
     return Result;
 }
-
-
 `;
 
 const frag = vert;
