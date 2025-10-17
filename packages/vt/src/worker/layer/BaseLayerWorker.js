@@ -166,6 +166,9 @@ export default class BaseLayerWorker {
 
     onRemove() {
         this.loadings = {};
+        if (this._cache) {
+            this._cache.reset();
+        }
         delete this._cache;
         this.requests = {};
     }
