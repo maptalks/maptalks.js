@@ -14,16 +14,16 @@ export default class MapGLRenderer extends renderer.MapAbstractRenderer {
         });
     }
 
-    clearLayerCanvasContext() {
+    clearLayerCanvasContext(layer) {
         if (!this.regl) {
             return;
         }
-        // const renderer = layer.getRenderer();
         this.regl.clear({
             depth: 1,
             stencil: 0
         });
-        // renderer.clearContext();
+        const renderer = layer.getRenderer();
+        renderer.clearContext();
     }
 
     createContext() {

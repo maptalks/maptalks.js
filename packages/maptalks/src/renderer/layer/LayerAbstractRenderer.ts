@@ -28,6 +28,17 @@ class ResourceWorkerConnection extends Actor {
     }
 }
 
+const GL_CLEAR = {
+    depth: 1,
+    stencil: 0
+};
+
+const CANVAS_CLEAR = {
+    color: [0, 0, 0, 0],
+    depth: 1,
+    stencil: 0
+};
+
 /**
  * 在 HTMLCanvasElement 上渲染图层的基类
  * @english
@@ -509,7 +520,14 @@ class LayerAbstractRenderer extends Class {
     }
 
     clearContext() {
-
+        if (this.device) {
+            const mapRenderer = this.getMap().getRenderer();
+            if (mapRenderer.isWebGL() || mapRenderer.isWebGPU()) {
+                this.device.clear(GL_CLEAR);
+            } else {
+                this.device.clear(CANVAS_CLEAR);
+            }
+        }
     }
 
     createContext() {
