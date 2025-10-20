@@ -2068,4 +2068,29 @@ describe('bug', () => {
         const vLayer = new maptalks.VectorLayer('v', { enableAltitude: true }).addTo(map);
         new maptalks.Marker([0, 0, 100]).addTo(vLayer);
     });
+    
+    it('set uniform for specific nodeIndex(#issues/886)', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFGeometry(center, {
+            symbol: {
+                scaleX: 50,
+                scaleY: 50,
+                scaleZ: 50,
+                url: url2,
+                uniforms: {
+                    polygonFill: [1, 1, 1, 1],
+                    polygonOpacity: 1
+                }
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            marker.setUniform('polygonFill', [1, 0, 0, 1], 1);
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixelMatch([168, 3, 3, 255], pixel)).to.be.eql(true);
+                done();
+            }, 100);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
 });

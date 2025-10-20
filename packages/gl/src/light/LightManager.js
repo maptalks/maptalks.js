@@ -138,10 +138,14 @@ class LightManager {
                 envUrls = [nx, px, nz, pz, py, ny];
             }
             count = envUrls.length;
+            const crossOrigin = resource.crossOrigin;
             for (let i = 0; i < count; i++) {
                 const img = new Image();
                 img.onload = onload;
                 img.onerror = onerror;
+                if (!Util.isNil(crossOrigin)) {
+                    img.crossOrigin = crossOrigin;
+                }
                 img.src = urlModifier && urlModifier(envUrls[i]) || envUrls[i];
                 images[i] = img;
             }

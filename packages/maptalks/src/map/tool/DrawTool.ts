@@ -151,9 +151,21 @@ class DrawTool extends MapTool {
      * @param name      DrawTool mode name
      * @return          mode actions
      */
-    static getRegisterMode(name: string): any {
+    static getRegisterMode(name: string): modeActionType | undefined {
         return registeredMode[name.toLowerCase()];
     }
+
+    /**
+     * 获取all mode actions
+     *
+     * @english
+     * Get all mode actions
+     * @return          mode actions
+     */
+    static getAllRegisterMode(): Record<string, modeActionType> {
+        return Object.assign({}, registeredMode);
+    }
+
 
     /**
      * 实例化DrawTool工具
@@ -438,7 +450,7 @@ class DrawTool extends MapTool {
         if (Array.isArray(action)) {
             for (let i = 0; i < action.length; i++) {
                 //@internal
-        _events[action[i]] = this._events[action[i]];
+                _events[action[i]] = this._events[action[i]];
             }
             return _events;
         }
@@ -455,7 +467,7 @@ class DrawTool extends MapTool {
      */
     //@internal
     _mouseDownHandler(event: any) {
-        if(!event?.coordinate) {
+        if (!event?.coordinate) {
             return
         }
         this._createGeometry(event);
@@ -471,11 +483,20 @@ class DrawTool extends MapTool {
      */
     //@internal
     _mouseUpHandler(event: any) {
-        if(!event?.coordinate) {
+        if (!event?.coordinate) {
             return
         }
         this.endDraw(event);
     }
+
+    _copyMapEventOnSnapTo(mapEvent, prjCoord) {
+        const map = this.getMap();
+        if (!map) {
+            return mapEvent;
+        }
+        return Object.assign({}, mapEvent, { containerPoint: map.prjToContainerPoint(prjCoord) })
+    }
+
 
     /**
      * 监听mouse first click点击事件
@@ -487,7 +508,7 @@ class DrawTool extends MapTool {
      */
     //@internal
     _clickHandler(event: any) {
-        if(!event?.coordinate) {
+        if (!event?.coordinate) {
             return
         }
         if (!this.options.interactive) {
@@ -514,9 +535,11 @@ class DrawTool extends MapTool {
             }
             //for snap effect
             const snapTo = this._geometry.snapTo;
+            let copyEvent;
             if (snapTo && isFunction(snapTo)) {
                 const snapResult = this._getSnapResult(snapTo, event.containerPoint);
                 prjCoord = snapResult.prjCoord;
+                copyEvent = this._copyMapEventOnSnapTo(event, prjCoord);
                 this._clickCoords = this._clickCoords.concat(snapResult.effectedVertex);
                 // ensure snap won't trigger again when dblclick
                 if (this._clickCoords[this._clickCoords.length - 1].equals(prjCoord)) {
@@ -526,7 +549,7 @@ class DrawTool extends MapTool {
             this._clickCoords.push(prjCoord);
             this._historyPointer = this._clickCoords.length;
             event.drawTool = this;
-            registerMode['update'](map.getProjection(), this._clickCoords, this._geometry, event);
+            registerMode['update'](map.getProjection(), this._clickCoords, this._geometry, copyEvent || event);
             if (this.getMode() === 'point') {
                 this.endDraw(event);
                 return;
@@ -624,7 +647,11 @@ class DrawTool extends MapTool {
                 if (map && snapResult) {
                     const prjCoord = snapResult.prjCoord;
                     this._clickCoords = [prjCoord];
-                    registerMode['update'](map.getProjection(), this._clickCoords, this._geometry, event);
+                    if (this._geometry._firstClick) {
+                        this._geometry._firstClick = prjCoord;
+                    }
+                    const copyEvent = this._copyMapEventOnSnapTo(event, prjCoord);
+                    registerMode['update'](map.getProjection(), this._clickCoords, this._geometry, copyEvent);
                 }
             }
         }
@@ -644,7 +671,7 @@ class DrawTool extends MapTool {
      */
     //@internal
     _mouseMoveHandler(event) {
-        if(!event?.coordinate) {
+        if (!event?.coordinate) {
             return
         }
         if (!this.options.interactive) {
@@ -670,10 +697,12 @@ class DrawTool extends MapTool {
         // for snap effect
         let snapAdditionVertex = [];
         const snapTo = this._geometry.snapTo;
+        let copyEvent;
         if (snapTo && isFunction(snapTo)) {
             const snapResult = this._getSnapResult(snapTo, containerPoint);
             prjCoord = snapResult.prjCoord;
             snapAdditionVertex = snapResult.effectedVertex;
+            copyEvent = this._copyMapEventOnSnapTo(event, prjCoord);
         }
         const projection = map.getProjection();
         event.drawTool = this;
@@ -683,10 +712,10 @@ class DrawTool extends MapTool {
             if (path && path.length > 0 && prjCoord.equals(path[path.length - 1])) {
                 return;
             }
-            registerMode['update'](projection, path.concat(snapAdditionVertex, [prjCoord]), this._geometry, event);
+            registerMode['update'](projection, path.concat(snapAdditionVertex, [prjCoord]), this._geometry, copyEvent || event);
         } else {
             //free hand mode
-            registerMode['update'](projection, prjCoord, this._geometry, event);
+            registerMode['update'](projection, prjCoord, this._geometry, copyEvent || event);
         }
         /**
          * mousemove事件
@@ -717,7 +746,7 @@ class DrawTool extends MapTool {
      */
     //@internal
     _doubleClickHandler(event) {
-        if(!event?.coordinate) {
+        if (!event?.coordinate) {
             return
         }
         if (!this.options.interactive) {
