@@ -245,8 +245,10 @@ describe('Geometry.Animation', function () {
                 }
             });
             function step(frame) {
-                if (frame.state.playState === 'running' || frame.state.playState === 'finished') {
-                    var p = map.getSize().toPoint().multi(1 / 2);
+                if (frame.state.playState === 'running' && frame.state.delta > 0 ||
+                    frame.state.playState === 'finished') {
+                    var dpr = map.getDevicePixelRatio();
+                    var p = map.getSize().toPoint().multi(dpr / 2);
                     expect(isDrawn(map.getRenderer().canvas, p)).to.be.ok();
                 }
                 if (frame.state.playState !== 'finished') {
