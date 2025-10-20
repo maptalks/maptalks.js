@@ -151,9 +151,21 @@ class DrawTool extends MapTool {
      * @param name      DrawTool mode name
      * @return          mode actions
      */
-    static getRegisterMode(name: string): any {
+    static getRegisterMode(name: string): modeActionType | undefined {
         return registeredMode[name.toLowerCase()];
     }
+
+    /**
+     * 获取all mode actions
+     *
+     * @english
+     * Get all mode actions
+     * @return          mode actions
+     */
+    static getAllRegisterMode(): Record<string, modeActionType> {
+        return Object.assign({}, registeredMode);
+    }
+
 
     /**
      * 实例化DrawTool工具
