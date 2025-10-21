@@ -213,14 +213,14 @@ export function prepareTextGeometry(
 
 export function initTextUniforms(uniforms, regl, geometry, symbol) {
     const glyphAtlas = geometry.properties.glyphAtlas;
-    const glyphTexture = glyphAtlas && createAtlasTexture(regl, glyphAtlas, false);
+    const glyphTexture = glyphAtlas && createAtlasTexture(regl, glyphAtlas, false) || regl.texture(2);
     uniforms = uniforms || {};
     extend(uniforms, {
         flipY: 0,
         tileResolution: geometry.properties.tileResolution,
         tileRatio: geometry.properties.tileRatio,
-        glyphTex: glyphTexture || this._emptyTexture,
-        glyphTexSize: [glyphAtlas && glyphAtlas.width || 0, glyphAtlas && glyphAtlas.height || 0]
+        glyphTex: glyphTexture,
+        glyphTexSize: [glyphTexture && glyphTexture.width || 0, glyphTexture && glyphTexture.height || 0]
     });
     setMeshUniforms(geometry, uniforms, symbol);
     return uniforms;

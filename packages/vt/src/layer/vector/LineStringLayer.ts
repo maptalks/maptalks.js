@@ -132,6 +132,7 @@ class LineStringLayerRenderer extends Vector3DLayerRenderer {
 }
 
 LineStringLayer.registerRenderer("gl", LineStringLayerRenderer);
+LineStringLayer.registerRenderer("gpu", LineStringLayerRenderer);
 LineStringLayer.registerRenderer("canvas", null);
 
 export default LineStringLayer;

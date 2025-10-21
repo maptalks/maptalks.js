@@ -381,6 +381,7 @@ class TileLayerGLRenderer2 extends TexturePoolable(CanvasCompatible(TileLayerRen
 }
 
 maptalks.TileLayer.registerRenderer<typeof TileLayerGLRenderer2>('gl', TileLayerGLRenderer2);
+maptalks.TileLayer.registerRenderer<typeof TileLayerGLRenderer2>('gpu', TileLayerGLRenderer2);
 
 export default TileLayerGLRenderer2;
 

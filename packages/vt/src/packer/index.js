@@ -25,6 +25,11 @@ export { FilterUtil };
 import * as FuncTypeUtil from './style/FuncType.js';
 export { FuncTypeUtil };
 
+export { default as IconAtlas } from './pack/atlas/IconAtlas';
+export { default as GlyphAtlas } from './pack/atlas/GlyphAtlas';
+
+export { RGBAImage } from './Image';
+
 // in meters
 export const DEFAULT_TEX_WIDTH = 128 / 256 * 46.5;
 // vt和vector图层，共同需要重建mesh的symbol属性

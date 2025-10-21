@@ -530,7 +530,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             regl.clear({
                 color: EMPTY_COLOR,
                 depth: 1,
-                stencil: 0xFF,
+                stencil: 0,
                 framebuffer: this._targetFBO
             });
             // regl.clear({
@@ -558,14 +558,14 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             regl.clear({
                 color: EMPTY_COLOR,
                 depth: 1,
-                stencil: 0xFF,
+                stencil: 0,
                 framebuffer: this._outlineFBO
             });
         }
         // regl.clear({
         //     color: EMPTY_COLOR,
         //     depth: 1,
-        //     stencil: 0xFF
+        //     stencil: 0
         // });
     }
 

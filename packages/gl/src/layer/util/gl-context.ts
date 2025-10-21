@@ -27,6 +27,7 @@ export function createWebGLContext(canvas: HTMLCanvasElement, preserveDrawingBuf
         gl: gl,
         reglGL: reglGL,
         regl,
+        device: regl,
         getImageData: (sx, sy, sw, sh) => {
             const pixels = new Uint8Array(sw * sh * 4);
             (regl as any).read({

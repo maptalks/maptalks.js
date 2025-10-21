@@ -169,7 +169,7 @@ export default class PolygonPack extends VectorPack {
         if (hasUV) {
             const { polygonPatternFileFn } = this._fnTypes;
             const patternFile = polygonPatternFileFn ? polygonPatternFileFn(null, properties) : this.symbol['polygonPatternFile'];
-            const image = this.iconAtlas.glyphMap[patternFile];
+            const image = this.iconAtlas.iconMap[patternFile];
             if (image) {
                 const image = this.iconAtlas.positions[patternFile];
                 // 如果图形长宽不是二的n次方，uvStart和uvSize均需要略微缩小，避免缝隙产生

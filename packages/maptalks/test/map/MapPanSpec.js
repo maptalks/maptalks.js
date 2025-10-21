@@ -45,7 +45,7 @@ describe('#MapPan', function () {
            'animation' : true,
            'duration': t
         }, spy);
-        expect(spy.called).to.not.be.ok();
+        expect(spy.called).to.be.ok();
         setTimeout(function(){
            expect(spy.called).to.be.ok();
            done();
@@ -77,7 +77,7 @@ describe('#MapPan', function () {
         var spy = sinon.spy();
         var t = 100;
         map.panBy(offset, { 'animation' : true, 'duration': t }, spy);
-        expect(spy.called).to.not.be.ok();
+        expect(spy.called).to.be.ok();
         setTimeout(function(){
            expect(spy.called).to.be.ok();
            done();

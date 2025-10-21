@@ -17,18 +17,6 @@ const canvasCompatible = function <T extends maptalks.MixinConstructor>(Base: T)
             this.context.device = regl;
             this.device = this.regl;
         }
-
-        // clear context in MapCanvasRenderer
-        clearContext() {
-            if (!this.regl) {
-                return;
-            }
-            this.regl.clear({
-                color: [0, 0, 0, 0],
-                depth: 1,
-                stencil: 0xFF
-            });
-        }
     }
     return compatible;
 };

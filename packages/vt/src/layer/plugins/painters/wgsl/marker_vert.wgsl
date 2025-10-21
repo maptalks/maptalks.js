@@ -251,7 +251,7 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
     if (isPitchWithMap == 1.0 && uniforms.flipY == 0.0) {
         shape *= vec2f(1.0, -1.0);
     }
-    output.vIsText = isText;
+
 
     if (isText > 0.5) {
         shape = shape / shaderUniforms.glyphSize * myTextSize;
@@ -303,6 +303,7 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
     }
 
 #ifndef PICKING_MODE
+    output.vIsText = isText;
     if (isPitchWithMap == 0.0) {
         output.vGammaScale = mix(1.0, cameraScale, uniforms.textPerspectiveRatio);
     } else {
@@ -355,7 +356,7 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
     var visible = true;
 #endif
 
-    fbo_picking_setData(output, output.position.w, visible);
+    fbo_picking_setData(vertexInput, &output, output.position.w, visible);
 #endif
 
     return output;

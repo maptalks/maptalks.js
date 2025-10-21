@@ -170,7 +170,9 @@ export class Path extends Geometry {
                 cb(frame, currentCoord);
             }
         }, this);
-        player.play();
+        setTimeout(() => {
+            player.play();
+        }, 1);
         return player;
     }
 

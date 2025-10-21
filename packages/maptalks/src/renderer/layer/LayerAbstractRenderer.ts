@@ -28,6 +28,17 @@ class ResourceWorkerConnection extends Actor {
     }
 }
 
+const GL_CLEAR = {
+    depth: 1,
+    stencil: 0
+};
+
+const CANVAS_CLEAR = {
+    color: [0, 0, 0, 0],
+    depth: 1,
+    stencil: 0
+};
+
 /**
  * 在 HTMLCanvasElement 上渲染图层的基类
  * @english
@@ -76,6 +87,10 @@ class LayerAbstractRenderer extends Class {
     _canvasUpdated: boolean;
 
     mapDPR?: number;
+    gl: WebGLRenderingContext | WebGL2RenderingContext;
+    reglGL: WebGLRenderingContext | WebGL2RenderingContext;
+    regl: any;
+    device: any;
 
     drawOnInteracting?(...args: any[]): void;
     checkResources?(): any[];
@@ -452,6 +467,11 @@ class LayerAbstractRenderer extends Class {
             } else {
                 this.canvas = mapCanvas;
                 this.context = mapContext;
+                const { gl, regl, reglGL, device } = mapContext;
+                this.gl = gl;
+                this.regl = regl;
+                this.reglGL = reglGL;
+                this.device = device;
             }
             this.initContext();
         } else if (isMapCanvasRenderer) {
@@ -500,7 +520,14 @@ class LayerAbstractRenderer extends Class {
     }
 
     clearContext() {
-
+        if (this.device) {
+            const mapRenderer = this.getMap().getRenderer();
+            if (mapRenderer.isWebGL() || mapRenderer.isWebGPU()) {
+                this.device.clear(GL_CLEAR);
+            } else {
+                this.device.clear(CANVAS_CLEAR);
+            }
+        }
     }
 
     createContext() {
@@ -829,6 +856,7 @@ class LayerAbstractRenderer extends Class {
         };
     }
 
+    // Only for MapCanvasRenderer
     clearCanvas() {
         this.clearContext();
     }

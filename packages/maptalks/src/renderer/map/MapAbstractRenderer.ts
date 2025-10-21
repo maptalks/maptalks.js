@@ -931,6 +931,10 @@ class MapAbstractRenderer extends MapRenderer {
         this.map.fire('drawtopsend');
     }
 
+    isWebGL() {
+        return false;
+    }
+
     isWebGPU() {
         return false;
     }

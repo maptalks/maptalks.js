@@ -96,3 +96,6 @@ class PointLayerRenderer extends Vector3DLayerRenderer {
 }
 
 PointLayer.registerRenderer("gl", PointLayerRenderer);
+PointLayer.registerRenderer("gpu", PointLayerRenderer);
+
+export { PointLayerRenderer };

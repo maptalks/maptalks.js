@@ -3,7 +3,8 @@ import GroundPainter from './layer/GroundPainter';
 import CanvasCompatible from './layer/CanvasCompatible';
 import './light/MapLights';
 import './map/MapPostProcess';
-import './map/MapGLRenderer';
+export { default as MapGLRenderer } from  './map/MapGLRenderer';
+export { default as MapGPURenderer } from  './map/MapGPURenderer';
 
 import * as HighlightUtil from './layer/util/highlight';
 import * as ContextUtil from './layer/util/context';
@@ -12,7 +13,6 @@ export { GroupGLLayer, GroundPainter, CanvasCompatible, HighlightUtil, ContextUt
 import './layer/TileLayerGLRenderer';
 import './map/MapGLRenderer';
 import './layer/ImageLayerGLRenderer';
-import './map/MapGPURenderer';
 
 export { default as HeatmapProcess } from './layer/HeatmapProcess';
 export { GLContext } from '@maptalks/fusiongl';

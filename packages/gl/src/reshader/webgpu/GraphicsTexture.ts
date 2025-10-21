@@ -1,6 +1,8 @@
-import { isArray } from "../common/Util";
+import { extend, isArray } from "../common/Util";
 import { GPUTexFormat, toTextureFormat } from "./common/ReglTranslator";
 import GraphicsDevice from "./GraphicsDevice";
+
+let arrayBuffer = new ArrayBuffer(1024 * 1024 * 4);
 
 export default class GraphicsTexture {
     texture: GPUTexture;
@@ -15,7 +17,7 @@ export default class GraphicsTexture {
         this.device = device;
         this.config = config;
         this.gpuFormat = toTextureFormat(config.format, config.type);
-        this.update(this.config);
+        this._updateTexture();
     }
 
     get width() {
@@ -45,10 +47,17 @@ export default class GraphicsTexture {
         }
         this.config.width = width;
         this.config.height = height;
-        this.update(this.config);
+        this._updateTexture();
     }
 
     update(config) {
+        extend(this.config, config);
+        this.gpuFormat = toTextureFormat(this.config.format, this.config.type);
+        this._updateTexture();
+    }
+
+    _updateTexture() {
+        const config = this.config;
         const device = this.device.wgpu;
         if (this.texture) {
             this.texture.destroy();
@@ -88,13 +97,51 @@ export default class GraphicsTexture {
 
             if (config.data) {
                 if (isArray(config.data)) {
-                    let data =config.data;
-                    if (Array.isArray(config.data)) {
-                        data = new Float32Array(data);
+                    const data = config.data;
+                    const isUint8 = !config.type || config.type === 'uint8';
+                    let byteLength;
+                    if (Array.isArray(data)) {
+                        byteLength = isUint8 ? data.length : data.length * 4;
+                    } else {
+                        byteLength = data.byteLength;
+                    }
+
+                    const isRGBA = !config.format || config.format === 'rgba';
+                    const isPremultipliedAlpha = isRGBA && config.premultiplyAlpha;
+
+                    let dataToWrite;
+                    if (isPremultipliedAlpha || Array.isArray(data)) {
+                        if (arrayBuffer.byteLength < byteLength) {
+                            arrayBuffer = new ArrayBuffer(byteLength);
+                        }
+                        if (isUint8) {
+                            dataToWrite = new Uint8Array(arrayBuffer, 0, byteLength);
+                        } else {
+                            dataToWrite = new Float32Array(arrayBuffer, 0, byteLength / 4);
+                        }
+                    }
+
+                    if (isPremultipliedAlpha) {
+                        const ratio = isUint8 ? 255 : 1;
+                        for (let i = 0; i < data.length; i += 4) {
+                            const alpha = data[i + 3] / ratio;
+                            dataToWrite[i] = data[i] * alpha;
+                            dataToWrite[i + 1] = data[i + 1] * alpha;
+                            dataToWrite[i + 2] = data[i + 2] * alpha;
+                            dataToWrite[i + 3] = data[i + 3];
+                        }
+                    } else {
+                        if (Array.isArray(data)) {
+                            for (let i = 0; i < data.length; i++) {
+                                dataToWrite[i] = data[i];
+                            }
+                        } else {
+                            dataToWrite = data;
+                        }
                     }
                     device.queue.writeTexture(
                         { texture: texture },
-                        data.buffer,
+                        dataToWrite.buffer,
                         {
                             bytesPerRow: width * this.gpuFormat.bytesPerTexel
                         },
@@ -103,10 +150,11 @@ export default class GraphicsTexture {
                 } else {
                     device.queue.copyExternalImageToTexture(
                         { source: config.data, flipY: !!this.config.flipY },
-                        { texture: texture, premultipliedAlpha: true },
+                        { texture: texture, premultipliedAlpha: !!this.config.premultiplyAlpha },
                         [width, height]
                     );
                 }
+
             }
         }
         this.texture = texture;

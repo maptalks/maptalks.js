@@ -18,11 +18,11 @@ export default class MapGLRenderer extends renderer.MapAbstractRenderer {
         if (!this.regl) {
             return;
         }
-        const renderer = layer.getRenderer();
         this.regl.clear({
             depth: 1,
             stencil: 0
         });
+        const renderer = layer.getRenderer();
         renderer.clearContext();
     }
 
@@ -34,6 +34,7 @@ export default class MapGLRenderer extends renderer.MapAbstractRenderer {
         this.gl = gl;
         this.regl = regl;
         this.reglGL = reglGL;
+        this.device = regl;
         this.context = context;
         return Promise.resolve();
     }
@@ -57,6 +58,10 @@ export default class MapGLRenderer extends renderer.MapAbstractRenderer {
 
     getContextInstance() {
         return this.gl.wrap();
+    }
+
+    isWebGL() {
+        return true;
     }
 
     isWebGPU() {

@@ -20,6 +20,7 @@ EffectLineLayer.mergeOptions(options);
 EffectLineLayer.registerJSONType('EffectLineLayer');
 
 EffectLineLayer.registerRenderer('gl', EffectLayerRenderer);
+EffectLineLayer.registerRenderer('gpu', EffectLayerRenderer);
 
 function getShader() {
     const vert = `

@@ -65,6 +65,7 @@ EffectLayer.mergeOptions(options);
 EffectLayer.registerJSONType('EffectLayer');
 
 EffectLayer.registerRenderer('gl', EffectLayerRenderer);
+EffectLayer.registerRenderer('gpu', EffectLayerRenderer);
 
 function getEffectShader() {
     const vert = `

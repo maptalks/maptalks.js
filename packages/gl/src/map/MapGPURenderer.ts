@@ -43,12 +43,16 @@ export default class MapGPURenderer extends renderer.MapAbstractRenderer {
         if (!this.device) {
             return;
         }
-        const renderer = layer.getRenderer();
+        // const renderer = layer.getRenderer();
         this.device.clear({
             depth: 1,
             stencil: 0
         });
-        renderer.clearContext();
+        // renderer.clearContext();
+    }
+
+    isWebGL() {
+        return false;
     }
 
     isWebGPU() {

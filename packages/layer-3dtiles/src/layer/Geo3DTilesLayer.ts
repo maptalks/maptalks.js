@@ -1470,6 +1470,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
 Geo3DTilesLayer.mergeOptions(options);
 
 Geo3DTilesLayer.registerRenderer('gl', Geo3DTilesRenderer as any);
+Geo3DTilesLayer.registerRenderer('gpu', Geo3DTilesRenderer as any);
 
 Geo3DTilesLayer.registerJSONType('Geo3DTilesLayer');
 

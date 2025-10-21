@@ -72,8 +72,8 @@ export default class PipelineDescriptor {
         this.depthBias = depthBias;
         this.depthBiasSlopeScale = depthBiasSlopeScale;
 
-        let depthCompare: GPUCompareFunction = 'less';
-        let depthWriteEnable = true;
+        let depthCompare: GPUCompareFunction = 'always';
+        let depthWriteEnable = false;
         const depthProps = commandProps.depth;
         if (depthEnabled && depthProps && isEnable(depthProps.enable, uniformValues)) {
             if (depthProps.func) {
@@ -99,14 +99,16 @@ export default class PipelineDescriptor {
         this.depthCompare = depthCompare;
         this.depthWriteEnabled = depthWriteEnable;
 
-        let stencilFrontCompare, stencilFrontPassOp;
+        let stencilFrontCompare: GPUCompareFunction = 'always';
+        let stencilFrontPassOp: GPUStencilOperation = 'keep';
         const stencilProps = commandProps.stencil;
         if (stencilEnabled && stencilProps && isEnable(stencilProps.enable, uniformValues)) {
             if (stencilProps.op) {
                 // 目前还没遇到op是函数的情况，所以可以直接读取
                 stencilFrontPassOp = stencilProps.op.zpass;
                 if (isFunction(stencilFrontPassOp)) {
-                    stencilFrontPassOp = stencilFrontPassOp(null, uniformValues);
+                    const stencilFrontPassOpFn = stencilFrontPassOp as any;
+                    stencilFrontPassOp = stencilFrontPassOpFn(null, uniformValues);
                     this.functionProps.push({ func: stencilProps.op.zpass, v: stencilFrontPassOp });
                 }
             }

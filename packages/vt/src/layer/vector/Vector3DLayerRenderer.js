@@ -365,14 +365,8 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         if (!painter || !features || !features.length) {
             return Promise.resolve(null);
         }
-        const options = {
-            zoom: this.getMap().getZoom(),
-            EXTENT: Infinity,
-            requestor: this.requestor,
-            atlas,
-            center,
-            positionType: Float32Array
-        };
+        const options = this._getPackOptions(atlas, center);
+        options.requestor = this.requestor;
 
         const pack = new PackClass(features, symbol, options);
         return pack.load();
@@ -678,19 +672,27 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         mesh.geometry.setElements(arr);
     }
 
-    _createPointPacks(markerFeatures, textFeatures, atlas, center) {
-        const markerOptions = {
+    _getPackOptions(atlas, center) {
+        const options = {
             zoom: this.getMap().getZoom(),
             EXTENT: Infinity,
-            requestor: this._markerRequestor,
             atlas,
             center,
             positionType: Float32Array,
-            defaultAltitude: 0,
-            forceAltitudeAttribute: true,
-            markerWidthType: Uint16Array,
-            markerHeightType: Uint16Array
+            isWebGL1: this.gl && (this.gl instanceof WebGLRenderingContext)
         };
+
+        return options;
+    }
+
+    _createPointPacks(markerFeatures, textFeatures, atlas, center) {
+        const markerOptions = this._getPackOptions(atlas, center);
+        markerOptions.defaultAltitude = 0;
+        markerOptions.forceAltitudeAttribute = true;
+        markerOptions.requestor = this._markerRequestor;
+        markerOptions.markerWidthType = Uint16Array;
+        markerOptions.markerHeightType = Uint16Array;
+
         markerOptions.allowEmptyPack = 1;
 
         return [this._markerSymbol].map((symbol, idx) => {
@@ -752,7 +754,7 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             const styledPoint = new StyledPoint(feature, symbolDef, symbol, fnTypes, options);
             const iconGlyph = styledPoint.getIconAndGlyph();
             if (!this._markerAtlas || !PointPack.isAtlasLoaded(iconGlyph, this._markerAtlas)) {
-                this._markRebuild();
+                this.markRebuild();
                 this.setToRedraw();
                 return false;
             }
@@ -816,7 +818,7 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             return false;
         }
         if (!atlas) {
-            this._markRebuild();
+            this.markRebuild();
             this.setToRedraw();
             return false;
         }
@@ -839,7 +841,7 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             const styledVector = new StyledVector(feature, symbol, fnTypes, options);
             const res = PackClass === LinePack ? styledVector.getLineResource() : styledVector.getPolygonResource();
             if (!VectorPack.isAtlasLoaded(res, atlas[i])) {
-                this._markRebuild();
+                this.markRebuild();
                 this.setToRedraw();
                 return false;
             }
@@ -853,14 +855,14 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             if (featureGroups[i].length) {
                 const mesh = meshes.filter(m => m.feaGroupIndex === i);
                 if (!mesh.length) {
-                    this._markRebuild();
+                    this.markRebuild();
                     this.setToRedraw();
                     return false;
                 } else {
                     const aFeaIds = mesh[0].geometry.properties.aFeaIds;
                     const startIndex = aFeaIds.indexOf(feaId);
                     if (startIndex < 0) {
-                        this._markRebuild();
+                        this.markRebuild();
                         this.setToRedraw();
                         return false;
                     }
@@ -1007,12 +1009,12 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         return [feas, patternFeas, dashFeas];
     }
 
-    _markRebuildGeometry() {
+    markRebuildGeometry() {
         this._dirtyGeo = true;
         this.setToRedraw();
     }
 
-    _markRebuild() {
+    markRebuild() {
         this._dirtyAll = true;
         this.setToRedraw();
     }
@@ -1136,6 +1138,14 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         }
     }
 
+    _removeAllFeatures() {
+        this._featureMapping = {};
+        this._allFeatures = {};
+        this._markerFeatures = {};
+        this._textFeatures = {};
+        this._lineFeatures = {};
+    }
+
     pick(x, y, options) {
         const hits = [];
         if (!this.layer.isVisible()) {
@@ -1198,7 +1208,7 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
 
     _convertAndRebuild(geo) {
         this._convertGeo(geo);
-        this._markRebuild();
+        this.markRebuild();
         redraw(this);
     }
 
@@ -1212,7 +1222,7 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             return;
         }
         this._convertGeometries(geometries);
-        this._markRebuild();
+        this.markRebuild();
         redraw(this);
     }
 
@@ -1229,7 +1239,7 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
                 delete this.features[uid];
             }
         }
-        this._markRebuild();
+        this.markRebuild();
         redraw(this);
     }
 
@@ -1317,7 +1327,7 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         //     return;
         // }
         this._convertGeometries([target]);
-        this._markRebuildGeometry();
+        this.markRebuildGeometry();
         redraw(this);
     }
 
@@ -1339,7 +1349,7 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         if (uid === undefined) {
             return;
         }
-        this._markRebuild();
+        this.markRebuild();
     }
 
     onGeometryShow(e) {
@@ -1390,7 +1400,7 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
 
     onGeometryPropertiesChange(e) {
         //TODO 可能会更新textName
-        // this._markRebuildGeometry();
+        // this.markRebuildGeometry();
         const geo = e.target['_getParent']() || e.target;
         const uid = geo[ID_PROP];
         if (uid === undefined) {
@@ -1404,7 +1414,7 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         if (this._markerMeshes && this._markerMeshes.length && this._markerPainter.needRebuildOnGometryPropertiesChanged() ||
             this._lineMeshes && this._lineMeshes.length && this._linePainter.needRebuildOnGometryPropertiesChanged() ||
             this.meshes && this.meshes.length && this.painter.needRebuildOnGometryPropertiesChanged()) {
-                this._markRebuild();
+                this.markRebuild();
             } else {
                 this.painter.onFeatureChange(this.features[uid], this.meshes);
             }
@@ -1419,9 +1429,9 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         const graphics = regl || device;
         this.regl = regl;
         this.gl = reglGL;
-        this.device = device;
+        this.device = device || regl;
 
-        const isWebGPU = !!device;
+        const isWebGPU = !!this.device.wpu;
         const fboOptions = {
             colorFormat: isWebGPU ? 'bgra8unorm' : 'rgba',
             depthStencil: true,
@@ -1458,10 +1468,20 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             lineSceneConfig.depthMask = true;
         }
         this._linePainter = new LinePainter(this.regl || this.device, this.layer, lineSymbol, lineSceneConfig, 0);
+        this.rebuildGeometries();
+    }
 
-        if (this.layer.getGeometries()) {
-            this.onGeometryAdd(this.layer.getGeometries());
+    rebuildGeometries() {
+        this._removeAllFeatures();
+        const geos = this.getCurrentNeedRenderGeos();
+        if (geos && geos.length) {
+            this.onGeometryAdd(geos);
         }
+        this.markRebuild();
+    }
+
+    getCurrentNeedRenderGeos() {
+        return this.layer.getGeometries();
     }
 
     _defineSymbolBloom(symbol, keys) {
@@ -1602,7 +1622,7 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         if (geometries) {
             this._convertGeometries(geometries);
         }
-        this._markRebuild();
+        this.markRebuild();
     }
 
     _getLayerOpacity() {

@@ -2085,9 +2085,12 @@ describe('update style specs', () => {
             layer.clear();
         });
         layer.once('clear', () => {
-            const pixel = readPixel(renderer.canvas, x / 2, y / 2);
-            assert.deepStrictEqual(pixel, [0, 0, 0, 0]);
-            done();
+            // canvas will be cleared in the following frame
+            setTimeout(() => {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                assert.deepStrictEqual(pixel, [0, 0, 0, 0]);
+                done();
+            }, 100);
         });
         layer.addTo(map);
     });
