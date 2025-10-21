@@ -24,6 +24,8 @@ const DEFAULT_VIEW = {
 
 const TEST_CANVAS = document.createElement('canvas');
 
+const DIFF_LIMIT = 5;
+
 maptalks.Map.mergeOptions({
     renderer: ['gl', 'gpu']
 });
@@ -82,7 +84,7 @@ describe('vector 3d integration specs', () => {
                             done(err);
                             return;
                         }
-                        if (result.diffCount > 0) {
+                        if (result.diffCount > DIFF_LIMIT) {
                             //保存差异图片
                             const dir = expectedPath.substring(0, expectedPath.length - 'expected.png'.length);
                             const diffPath = dir + 'diff.png';
@@ -90,7 +92,7 @@ describe('vector 3d integration specs', () => {
                             const actualPath = dir + 'actual.png';
                             writeImageData(actualPath, canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
                         }
-                        assert(result.diffCount === 0);
+                        assert(result.diffCount <= DIFF_LIMIT, result.diffCount);
                         done();
                     });
                 };

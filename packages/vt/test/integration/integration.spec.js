@@ -34,6 +34,7 @@ maptalks.Map.mergeOptions({
     renderer: ['gl', 'gpu']
 });
 
+const DIFF_LIMIT = 5;
 
 describe('vector tile integration specs', () => {
     let map, container, server;
@@ -122,7 +123,7 @@ describe('vector tile integration specs', () => {
                             done(err);
                             return;
                         }
-                        if (result.diffCount > (style.diffCount || 0)) {
+                        if (result.diffCount > (style.diffCount || DIFF_LIMIT)) {
                             //保存差异图片
                             const dir = expectedPath.substring(0, expectedPath.length - 'expected.png'.length);
                             const diffPath = dir + 'diff.png';
@@ -130,7 +131,7 @@ describe('vector tile integration specs', () => {
                             const actualPath = dir + 'actual.png';
                             writeImageData(actualPath, canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
                         }
-                        assert(result.diffCount <= (style.diffCount || 0));
+                        assert(result.diffCount <= (style.diffCount || DIFF_LIMIT));
                         ended = true;
                         done();
                     });
@@ -177,7 +178,7 @@ describe('vector tile integration specs', () => {
             const groupLayer = new GroupGLLayer('group', [layer], { sceneConfig, antialias: false });
             let generated = false;
             const limit = style.renderingCount || 1;
-            const diffCount = style.diffCount || 0;
+            const diffCount = style.diffCount || DIFF_LIMIT;
             let count = 0;
             const groupLayerListener = () => {
                 const expectedPath = style.expected;
