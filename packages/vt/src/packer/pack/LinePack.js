@@ -356,10 +356,9 @@ export default class LinePack extends VectorPack {
             dashColor = normalizeColor([], dashColor);
             this.feaDashColor = dashColor;
         }
-
         if (this.iconAtlas) {
             const res = line.getLineResource();
-            const image = this.iconAtlas.glyphMap[res];
+            const image = this.iconAtlas.iconMap[res];
             this.feaTexInfo = this.feaTexInfo || [0, 0, 0, 0];
             if (image) {
                 const { tl, displaySize } = this.iconAtlas.positions[res];
