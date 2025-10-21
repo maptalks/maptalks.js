@@ -1468,6 +1468,7 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             lineSceneConfig.depthMask = true;
         }
         this._linePainter = new LinePainter(this.regl || this.device, this.layer, lineSymbol, lineSceneConfig, 0);
+        this.rebuildGeometries();
     }
 
     rebuildGeometries() {
