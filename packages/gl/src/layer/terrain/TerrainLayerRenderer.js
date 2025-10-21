@@ -756,8 +756,10 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         const height = tileSize * 2;
         const regl = this.device;
         const colorsTexture = tileInfo.colorsTexture;
-        //not LRU managed, delete it for GC and release memory
-        delete tileInfo.colorsTexture;
+        if (colorsTexture) {
+            //not LRU managed, delete it for GC and release memory
+            delete tileInfo.colorsTexture;
+        }
         let color;
         if (colorsTexture && colorsTexture instanceof Uint8Array) {
             color = regl.texture({
