@@ -757,7 +757,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         const regl = this.device;
         const colorsTexture = tileInfo.colorsTexture;
         let color;
-        if (colorsTexture && colorsTexture instanceof Uint8Array) {
+        if (colorsTexture && colorsTexture.width && colorsTexture.height && colorsTexture.close) {
             color = regl.texture({
                 data: colorsTexture,
                 min: 'linear',
@@ -1064,10 +1064,10 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
 
     _deleteTerrainImage(tileInfo, image) {
         if (tileInfo && tileInfo.colorsTexture) {
+            if (tileInfo.colorsTexture.close) {
+                tileInfo.colorsTexture.close();
+            }
             delete tileInfo.colorsTexture;
-        }
-        if (image && image.colorsTexture) {
-            delete image.colorsTexture;
         }
         const skin = image.skin;
         if (skin) {

@@ -743,12 +743,19 @@ function createColorsTexture(data, colors, tileSize) {
         // ctx.fillText('1234', width / 2, height / 2);
         const imgdata = ctx.getImageData(0, 0, width, height);
         colorTerrain(imgdata, colors);
-        return new Uint8Array(imgdata.data);
-
+        // return new Uint8Array(imgdata.data);
+        ctx.putImageData(imgdata, 0, 0);
+        const copyImage = canvas.transferToImageBitmap();
+        //flip Y image
         // https://github.com/regl-project/regl/issues/573
-        // ctx.putImageData(imgdata, 0, 0);
-        // const image = canvas.transferToImageBitmap();
-        // return image;
+        ctx.save();
+        ctx.scale(1, -1);
+        ctx.drawImage(copyImage, 0, -copyImage.height, width, height);
+        ctx.restore();
+
+        const image = canvas.transferToImageBitmap();
+        copyImage.close();
+        return image
     } catch (error) {
         console.error(error);
     }
@@ -770,7 +777,7 @@ export const onmessage = function (message, postResponse) {
             if (texture) {
                 data.colorsTexture = texture;
                 transferables = transferables || [];
-                transferables.push(texture.buffer);
+                transferables.push(texture);
             }
             postResponse(data.error, data, transferables);
         });
