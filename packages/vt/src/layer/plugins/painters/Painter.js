@@ -70,6 +70,11 @@ class Painter {
         this._invisibleWhenCreated = this.symbolDef.map(s => !!(s && s.visible === false));
     }
 
+    // 不允许地形上超过限定比例的upscale放大
+    // forbiddenTerrainUpscale() {
+    //     return true;
+    // }
+
     isWebGPU() {
         return !this.regl['_gl'];
     }
@@ -347,10 +352,6 @@ class Painter {
         return !!this.getSymbol(mesh.properties.symbolIndex)['bloom'];
     }
 
-    // 不允许地形上的upscale放大
-    forbiddenTerrainUpscale() {
-        return true;
-    }
 
     addMesh(meshes, progress, context) {
         // console.log(meshes.map(m => m.properties.tile.id).join());
@@ -359,16 +360,16 @@ class Painter {
         //     this.scene.addMesh(meshes[0]);
         // }
 
-        const isRenderingTerrainSkin = context.isRenderingTerrain && this.isTerrainSkin();
-        if (isRenderingTerrainSkin && this.forbiddenTerrainUpscale()) {
-            const res = this.getMap().getResolution();
-            const tileRes = context.tileInfo.res;
-            const scale = tileRes / res;
-            if (scale > 3) {
-                // 过于放大
-                return;
-            }
-        }
+        // const isRenderingTerrainSkin = context.isRenderingTerrain && this.isTerrainSkin();
+        // if (isRenderingTerrainSkin && this.forbiddenTerrainUpscale()) {
+        //     const res = this.getMap().getResolution();
+        //     const tileRes = context.tileInfo.res;
+        //     const scale = tileRes / res;
+        //     if (scale > 3) {
+        //         // 过于放大
+        //         return;
+        //     }
+        // }
         const isRenderingTerrainVector = context.isRenderingTerrain && this.isTerrainVector();
         const fbo = this.getRenderFBO(context);
         meshes = meshes.filter(m => this.isMeshVisible(m));
