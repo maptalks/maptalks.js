@@ -752,7 +752,7 @@ function createColorsTexture(data, colors, tileSize) {
         // https://github.com/regl-project/regl/issues/573
         ctx.save();
         ctx.scale(1, -1);
-        ctx.drawImage(copyImage, 0, -copyImage.height, width, height);
+        ctx.drawImage(copyImage, 0, -height, width, height);
         ctx.restore();
 
         const image = canvas.transferToImageBitmap();
