@@ -723,8 +723,10 @@ function createColorsTexture(data, colors, tileSize) {
         width = tileSize[0];
         height = tileSize[1];
     }
-    width *= 2;
-    height *= 2;
+    //always use default tilesize to create color texture for memory usage
+    [width, height] = DEFAULT_TILESIZE;
+    // width *= 2;
+    // height *= 2;
     try {
         checkBitMapCanvas();
         if (!BITMAP_CANVAS) {
@@ -746,7 +748,7 @@ function createColorsTexture(data, colors, tileSize) {
         // return new Uint8Array(imgdata.data);
         ctx.putImageData(imgdata, 0, 0);
         const copyImage = canvas.transferToImageBitmap();
-        //flip Y image
+        //flip Y image by canvas
         // https://github.com/regl-project/regl/issues/573
         ctx.save();
         ctx.scale(1, -1);
