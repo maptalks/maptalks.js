@@ -537,27 +537,47 @@ class VectorTileLayer extends maptalks.TileLayer {
     style = copyJSON(style);
 
     style = uncompress(style);
-    this._originFeatureStyle = style["featureStyle"] || [];
-    this._featureStyle = parseFeatureStyle(style["featureStyle"]);
-    this._vtStyle = style["style"] || [];
+
+    const renderer = this.getRenderer();
+    if (renderer) {
+      const styles = this._parseStyle(style);
+      (renderer as any).setStyle(styles, () => {
+        this._loadStyle(style);
+      });
+    } else {
+        this._loadStyle(style);
+    }
+  }
+
+  _parseStyle(style) {
     const background = style.background || {};
-    this._background = {
-      enable: background.enable || false,
-      color: unitColor(background.color) || [0, 0, 0, 0],
-      opacity: getOrDefault(background.opacity, 1),
-      patternFile: background.patternFile,
-      depthRange: background.depthRange,
+    return {
+        originFeatureStyle: style["featureStyle"] || [],
+        featureStyle: parseFeatureStyle(style["featureStyle"]),
+        style: style["style"] || [],
+        background: {
+            enable: background.enable || false,
+            color: unitColor(background.color) || [0, 0, 0, 0],
+            opacity: getOrDefault(background.opacity, 1),
+            patternFile: background.patternFile,
+            depthRange: background.depthRange,
+        }
     };
+  }
+
+  //@internal
+  _loadStyle(style) {
+    const styles = this._parseStyle(style);
+    this._originFeatureStyle = styles.originFeatureStyle;
+    this._featureStyle = styles.featureStyle;
+    this._vtStyle = styles.style;
+    this._background = styles.background;
 
     this.validateStyle();
     if (this._replacer) {
-      this._parseStylePath();
+        this._parseStylePath();
     }
     this._compileStyle();
-    const renderer = this.getRenderer();
-    if (renderer) {
-      (renderer as any).setStyle();
-    }
     /**
      * setstyle event.
      *
@@ -568,8 +588,8 @@ class VectorTileLayer extends maptalks.TileLayer {
      * @property {Object|Object[]} style - style to set
      */
     this.fire("setstyle", {
-      style: this.getStyle(),
-      computedStyle: this.getComputedStyle(),
+        style: this.getStyle(),
+        computedStyle: this.getComputedStyle(),
     });
   }
 

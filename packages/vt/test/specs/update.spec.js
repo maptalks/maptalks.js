@@ -2399,6 +2399,68 @@ describe('update style specs', () => {
 
     });
 
+    it('can update gltf-lit style to icon style, maptalks/issues#885', done => {
+        const scale = Math.pow(2, 15);
+        const options = {
+            data: point,
+            style: [{
+                name: 'gltf-point',
+                renderPlugin: {
+                    type: 'gltf-lit',
+                    dataConfig: {
+                        type: 'native-point'
+                    }
+                },
+                symbol: {
+                    url: 'file://' + path.resolve(__dirname, './resources/gltf/Box.glb'),
+                    scaleX: scale,
+                    scaleY: scale,
+                    scaleZ: scale,
+                    polygonOpacity: 1
+                }
+            }],
+            pickingGeometry: true,
+            pickingPoint: true
+        };
+        const layer = new GeoJSONVectorTileLayer('gvt', options);
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                bloom: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        group.once('layerload', () => {
+            setTimeout(() => {
+                layer.setStyle({
+                    style: [
+                        {
+                            filter: true,
+                            renderPlugin: {
+                                dataConfig: { type: "point", altitudeOffset: 0 },
+                                type: "icon",
+                            },
+                            symbol: {
+                                markerType: "ellipse",
+                                markerWidth: 15,
+                                markerHeight: 15
+                            },
+                        }
+                    ]
+                });
+                setTimeout(() => {
+                    const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                    //变成高亮的绿色，但只高亮了文字绘制的部分，所以颜色
+                    assert(pixel[3] === 255);
+                    done();
+                }, 200);
+            }, 200);
+        });
+        group.addTo(map);
+    });
+
     function assertChangeStyle(done, expectedColor, changeFun, isSetStyle, style, renderCount, doneRenderCount) {
         style = style || [
             {
