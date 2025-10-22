@@ -756,10 +756,6 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         const height = tileSize * 2;
         const regl = this.device;
         const colorsTexture = tileInfo.colorsTexture;
-        if (colorsTexture) {
-            //not LRU managed, delete it for GC and release memory
-            delete tileInfo.colorsTexture;
-        }
         let color;
         if (colorsTexture && colorsTexture instanceof Uint8Array) {
             color = regl.texture({
@@ -1020,6 +1016,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
 
                 // this.consumeTile(terrainData, tile);
                 tile.colorsTexture = terrainData.colorsTexture;
+                delete terrainData.colorsTexture;
                 this.onTileLoad(terrainData, tile);
             });
         };
@@ -1062,9 +1059,16 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         }
         delete info.skinTileIds;
         this._deleteTerrainImage(tile.info, image);
+
     }
 
     _deleteTerrainImage(tileInfo, image) {
+        if (tileInfo && tileInfo.colorsTexture) {
+            delete tileInfo.colorsTexture;
+        }
+        if (image && image.colorsTexture) {
+            delete image.colorsTexture;
+        }
         const skin = image.skin;
         if (skin) {
             skin.destroy();
