@@ -757,7 +757,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         const regl = this.device;
         const colorsTexture = tileInfo.colorsTexture;
         let color;
-        if (colorsTexture && colorsTexture.width && colorsTexture.height && colorsTexture.close) {
+        if (maptalks.Util.isImageBitMap(colorsTexture)) {
             color = regl.texture({
                 data: colorsTexture,
                 min: 'linear',
