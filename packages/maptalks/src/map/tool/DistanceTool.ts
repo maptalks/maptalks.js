@@ -458,10 +458,15 @@ class DistanceTool extends DrawTool {
             'symbol': symbol
         });
         const measureLineLayer = this._measureLineLayer,
-            measureMarkerLayer = this._measureMarkerLayer;
+            measureMarkerLayer = this._measureMarkerLayer,
+            //parent draw tool layer
+            drawToolLayer = this._getDrawLayer ? this._getDrawLayer() : null;
         endMarker.on('click', function () {
             measureLineLayer.remove();
             measureMarkerLayer.remove();
+            if (drawToolLayer) {
+                drawToolLayer.remove();
+            }
             //return false to stop propagation of event.
             return false;
         }, this);
