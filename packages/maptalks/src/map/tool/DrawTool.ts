@@ -1,5 +1,5 @@
 import { INTERNAL_LAYER_PREFIX } from '../../core/Constants';
-import { extend, isFunction, isNil, isNumber } from '../../core/util';
+import { extend, isFunction, isNil, isNumber, UID } from '../../core/util';
 import { extendSymbol } from '../../core/util/style';
 import { getExternalResources } from '../../core/util/resource';
 import { stopPropagation } from '../../core/util/dom';
@@ -116,6 +116,8 @@ class DrawTool extends MapTool {
     //@internal
     _layers?: Array<any>;
 
+    id: number;
+
     /**
      * 为DrawTool注册一个新mode
      *
@@ -182,6 +184,7 @@ class DrawTool extends MapTool {
      */
     constructor(options: DrawToolOptions) {
         super(options);
+        this.id = UID();
         this._checkMode();
         /**
          * events
@@ -902,7 +905,7 @@ class DrawTool extends MapTool {
 
     //@internal
     _getDrawLayer() {
-        const drawLayerId = INTERNAL_LAYER_PREFIX + 'drawtool';
+        const drawLayerId = INTERNAL_LAYER_PREFIX + 'drawtool' + `${this.id}`;
         let drawToolLayer: any = this._map.getLayer(drawLayerId);
         if (!drawToolLayer) {
             drawToolLayer = new DrawToolLayer(drawLayerId, {
