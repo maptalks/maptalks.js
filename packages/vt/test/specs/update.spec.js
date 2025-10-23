@@ -2399,6 +2399,56 @@ describe('update style specs', () => {
 
     });
 
+    it('can hide vt with gltf renderPlugin on terrain', done => {
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                antialias: { enable: true },
+            },
+        };
+        const groupLayer = new GroupGLLayer("SceneGroup", [], {
+            sceneConfig,
+        });
+        groupLayer.addTo(map);
+        const terrain = {
+            type: 'mapbox',
+            urlTemplate: '#'
+        };
+        groupLayer.setTerrain(terrain);
+        const scale = Math.pow(2, 15);
+        const options = {
+            data: point,
+            style: [{
+                name: 'gltf-point',
+                renderPlugin: {
+                    type: 'gltf-lit',
+                    dataConfig: {
+                        type: 'native-point'
+                    }
+                },
+                symbol: {
+                    url: 'file://' + path.resolve(__dirname, './resources/gltf/Box.glb'),
+                    scaleX: scale,
+                    scaleY: scale,
+                    scaleZ: scale,
+                    polygonOpacity: 1
+                }
+            }],
+            pickingGeometry: true,
+            pickingPoint: true,
+            awareOfTerrain: false,
+        };
+        const layer = new GeoJSONVectorTileLayer('gvt', options);
+        layer.addTo(groupLayer);
+        layer.hide();
+        setTimeout(() => {
+            done();
+            // setTimeout(() => {
+            //     done();
+            // }, 500);
+        }, 500);
+    });
+
     function assertChangeStyle(done, expectedColor, changeFun, isSetStyle, style, renderCount, doneRenderCount) {
         style = style || [
             {
