@@ -21,6 +21,10 @@ class TerrainFlatMaskPainter extends BasicPainter {
         return this.layer.options.awareOfTerrain;
     }
 
+    // forbiddenTerrainUpscale() {
+    //     return false;
+    // }
+
     needPolygonOffset() {
         return false;
     }

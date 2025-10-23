@@ -588,7 +588,7 @@ function heights2RGBImage(terrainData) {
 
 
 function triangulateTerrain(error, terrainData, terrainWidth, imageBitmap, hasSkirts, cb) {
-    const mesh = createMartiniData(error / 2, terrainData.data, terrainWidth, hasSkirts);
+    const mesh = createMartiniData(error / 6, terrainData.data, terrainWidth, hasSkirts);
     const transferables = [mesh.positions.buffer, mesh.texcoords.buffer, mesh.triangles.buffer];
     //tdt,cesium terrain etc
     if (!imageBitmap) {
