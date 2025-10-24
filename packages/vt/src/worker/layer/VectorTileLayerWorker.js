@@ -67,7 +67,7 @@ export default class VectorTileLayerWorker extends LayerWorker {
                     if (bufferSize > loadTileCachMaxSize) {
                         needCache = false;
                         if (loadTileCacheLog) {
-                            console.warn(`loadTileCachMaxSize exceeded: ${bufferSize} > ${loadTileCachMaxSize},the url: ${url} will not be cached.`);
+                            console.warn(`url:${url},loadTileCachMaxSize exceeded: ${bufferSize} > ${loadTileCachMaxSize},the tile will not be cached.`);
                         }
                     }
                 }
