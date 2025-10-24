@@ -564,6 +564,7 @@ export default class BaseLayerWorker {
                 return symbol;
             }).filter(symbol => !!symbol);
             return Promise.all(symbols.map((symbol) => {
+                options.defaultMarkerVerticalAlignment = 'middle';
                 const fnTypes = VectorPack.genFnTypes(symbol);
                 let packFeatures = features;
                 if (PointPack.needMerge(symbol, fnTypes, zoom)) {

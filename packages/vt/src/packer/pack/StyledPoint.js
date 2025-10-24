@@ -105,7 +105,7 @@ export default class StyledPoint {
                 if (markerType) {
                     vAlignment = VERTICAL_ALIGNMENTS[markerType];
                 } else {
-                    vAlignment = 'top';
+                    vAlignment = this.options.defaultMarkerVerticalAlignment;
                 }
             }
 
