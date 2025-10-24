@@ -8,6 +8,19 @@ import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 
 const URL_PATTERN = /\{ *([\w_]+) *\}/g;
 
+const VERTICAL_ALIGNMENTS = {
+    'ellipse': 'middle',
+    'cross': 'middle',
+    'x': 'middle',
+    'triangle': 'middle',
+    'square': 'middle',
+    'diamond': 'middle',
+    'bar': 'top',
+    'pie': 'top',
+    'pin': 'top',
+    'rectangle': 'bottom'
+};
+
 export default class StyledPoint {
     constructor(feature, symbolDef, loadedSymbol, fnTypes, options) {
         //anchor(世界坐标), offset(normalized offset), tex, size(世界坐标), opacity, rotation
@@ -29,11 +42,16 @@ export default class StyledPoint {
         if (this._shape) {
             return this._shape;
         }
-        const { textHorizontalAlignmentFn, textVerticalAlignmentFn, markerHorizontalAlignmentFn, markerVerticalAlignmentFn, textWrapWidthFn } = this._fnTypes;
+        const {
+            markerTypeFn,
+            textHorizontalAlignmentFn, textVerticalAlignmentFn,
+            markerHorizontalAlignmentFn, markerVerticalAlignmentFn, textWrapWidthFn
+        } = this._fnTypes;
         const shape = {};
         const symbol = this.symbol;
         const iconGlyph = this.getIconAndGlyph();
         const properties = this.feature.properties;
+        const markerType = markerTypeFn ? markerTypeFn(null, properties) : symbol.markerType;
         if (iconGlyph && iconGlyph.glyph) {
             const { font, text } = iconGlyph.glyph;
             if (text === '') {
@@ -76,13 +94,21 @@ export default class StyledPoint {
             }
             shape.textShape = textShape;
         }
-    if (iconGlyph && iconGlyph.icon) {
+        if (iconGlyph && iconGlyph.icon) {
             if (!iconAtlas || !iconAtlas.positions[iconGlyph.icon.url]) {
                 //图片没有载入成功
                 return null;
             }
             const hAlignment = markerHorizontalAlignmentFn ? markerHorizontalAlignmentFn(null, properties) : symbol['markerHorizontalAlignment'];
-            const vAlignment = markerVerticalAlignmentFn ? markerVerticalAlignmentFn(null, properties) : symbol['markerVerticalAlignment'];
+            let vAlignment = markerVerticalAlignmentFn ? markerVerticalAlignmentFn(null, properties) : symbol['markerVerticalAlignment'];
+            if (!vAlignment) {
+                if (markerType) {
+                    vAlignment = VERTICAL_ALIGNMENTS[markerType];
+                } else {
+                    vAlignment = 'top';
+                }
+            }
+
             const markerAnchor = getAnchor(hAlignment, vAlignment);
             const iconShape = shapeIcon(iconAtlas.positions[iconGlyph.icon.url], markerAnchor, this.options.isVector3D);
             if (!this.iconSize) {
