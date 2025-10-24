@@ -6,6 +6,7 @@ import { isNil, hasOwn, isString } from '../../common/Util';
 import { PROP_OMBB } from '../../common/Constant';
 import { projectOMBB } from '../builder/Ombb.js';
 import { calArrayBufferSize, isNumber } from '../util/index';
+
 const ALTITUDE_ERRORS = {
     'MISSING_ALTITUDE_ELEMENT': 2,
 };

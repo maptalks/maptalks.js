@@ -91,7 +91,7 @@ const defaultOptions: VectorTileLayerOptionsType = {
   disableAltitudeWarning: false,
   loadTileErrorLog: true,
   loadTileErrorLogIgnoreCodes: [404, 204],
-  loadTileCachMaxSize: 0,
+  loadTileCachMaxSize: 0,//MB, 0 no limit
   loadTileCacheLog: true
 };
 

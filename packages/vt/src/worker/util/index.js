@@ -1,4 +1,4 @@
-//return mb size of arraybuffer
+//return MB size of arraybuffer
 export function calArrayBufferSize(buffer) {
     if (!buffer) {
         return 0;
