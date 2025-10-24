@@ -90,7 +90,9 @@ const defaultOptions: VectorTileLayerOptionsType = {
   altitudePropertyName: null,
   disableAltitudeWarning: false,
   loadTileErrorLog: true,
-  loadTileErrorLogIgnoreCodes: [404, 204]
+  loadTileErrorLogIgnoreCodes: [404, 204],
+  loadTileCachMaxSize: 0,
+  loadTileCacheLog: true
 };
 
 /**
@@ -2019,6 +2021,8 @@ export type VectorTileLayerOptionsType = {
   disableAltitudeWarning?: boolean,
   loadTileErrorLog?: boolean,
   loadTileErrorLogIgnoreCodes?: Array<number>;
+  loadTileCachMaxSize?: number;
+  loadTileCacheLog?: boolean
 } & TileLayerOptionsType;
 
 export type AsyncFeatureQueryOptions = {

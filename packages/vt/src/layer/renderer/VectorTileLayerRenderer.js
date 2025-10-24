@@ -554,6 +554,8 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             const disableAltitudeWarning = this.layer.options['disableAltitudeWarning'];
             const loadTileErrorLog = this.layer.options.loadTileErrorLog;
             const loadTileErrorLogIgnoreCodes = this.layer.options.loadTileErrorLogIgnoreCodes;
+            const loadTileCachMaxSize = this.layer.options.loadTileCachMaxSize;
+            const loadTileCacheLog = this.layer.options.loadTileCacheLog;
             const loadTileOpitons = {
                 tileInfo: {
                     res: tileInfo.res,
@@ -568,6 +570,8 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 disableAltitudeWarning,
                 loadTileErrorLog,
                 loadTileErrorLogIgnoreCodes,
+                loadTileCachMaxSize,
+                loadTileCacheLog,
                 altitudePropertyName,
                 zScale: this._zScale,
                 centimeterToPoint,
