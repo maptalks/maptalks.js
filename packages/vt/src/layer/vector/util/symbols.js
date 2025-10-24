@@ -87,7 +87,7 @@ export const  MARKER_SYMBOL = {
     },
     markerVerticalAlignment: {
         type: 'identity',
-        default: 'top',
+        default: null,
         property: '_symbol_markerVerticalAlignment'
     },
     markerHorizontalAlignment: {
