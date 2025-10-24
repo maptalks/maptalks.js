@@ -2021,7 +2021,7 @@ export type VectorTileLayerOptionsType = {
   disableAltitudeWarning?: boolean,
   loadTileErrorLog?: boolean,
   loadTileErrorLogIgnoreCodes?: Array<number>;
-  loadTileCachMaxSize?: number;
+  loadTileCachMaxSize?: number;//unit is MB
   loadTileCacheLog?: boolean
 } & TileLayerOptionsType;
 
