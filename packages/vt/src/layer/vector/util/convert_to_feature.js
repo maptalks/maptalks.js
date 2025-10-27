@@ -10,6 +10,22 @@ const POINT = new maptalks.Point(0, 0);
 export const ID_PROP = '_vector3dlayer_id';
 const GRADIENT_PROP_KEY = (LINE_GRADIENT_PROP_KEY + '').trim();
 
+function watchGeoVisible(featue, symbol, geo) {
+    //geo 的visible受options.visible 和style控制
+    const styleFn = maptalks.MapboxUtil.loadGeoSymbol(symbol, geo);
+    Object.defineProperty(featue, 'getVisible', {
+        get: function () {
+            //实时检测geo的可见性,feature上的值是静态值，不应该检测其值
+            const isVisible = geo.isVisible();
+            if (!isVisible) {
+                return false;
+            }
+            const visible = styleFn.visible
+            return visible !== false && visible !== 0;
+        }
+    });
+}
+
 //需要解决精度问题
 // currentFeature 是geometry已经存在的feature，则沿用老的kid
 export function convertToFeature(geo, kidGen, currentFeature) {
@@ -109,6 +125,7 @@ export function convertToFeature(geo, kidGen, currentFeature) {
                 coordinates: coords,
                 extent: Infinity
             };
+            watchGeoVisible(fea, symbol[i], geo);
             fea[keyName] = pickingId;
             features.push(fea);
         }
@@ -136,6 +153,7 @@ export function convertToFeature(geo, kidGen, currentFeature) {
         coordinates: coords,
         extent: Infinity
     };
+    watchGeoVisible(feature, symbol, geo);
     feature[keyName] = pickingId;
     return feature;
 }

@@ -99,6 +99,36 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         return null;
     }
 
+    _checkFeaturesVisibleChange() {
+        const features = this.features;
+        if (!features) {
+            return this;
+        }
+        //实时检测feature的visible变化
+        for (const id in features) {
+            let feats = features[id] || [];
+            if (!Array.isArray(feats)) {
+                feats = [feats];
+            }
+            if (!feats.length) {
+                continue;
+            }
+
+            for (let i = 0; i < feats.length; i++) {
+                const feat = feats[i];
+                if (!feat) {
+                    continue;
+                }
+                const visible = feat.getVisible;
+                if (visible !== feat._visible) {
+                    feat._visible = visible;
+                    this._showHideUpdated = true;
+                }
+            }
+        }
+        return this;
+    }
+
     draw(timestamp, parentContext) {
         this._frameTime = timestamp;
         const layer = this.layer;
@@ -138,7 +168,7 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             this.completeRender();
             return;
         }
-
+        this._checkFeaturesVisibleChange();
         if (this._showHideUpdated) {
             this._updateMeshVisible();
             this._showHideUpdated = false;
@@ -663,7 +693,7 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         const newElements = [];
         for (let j = 0; j < originElements.length; j++) {
             const kid = aPickingId[originElements[j]];
-            if (features[kid] && features[kid].feature.visible) {
+            if (features[kid] && features[kid].feature.getVisible) {
                 newElements.push(originElements[j]);
             }
         }
@@ -1375,7 +1405,7 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
     }
 
     _onShowHide(e) {
-        const geo =  e.target['_getParent']() || e.target;
+        const geo = e.target['_getParent']() || e.target;
         const uid = geo[ID_PROP];
         const features = this.features[uid];
         if (features) {
@@ -1418,10 +1448,10 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         if (this._markerMeshes && this._markerMeshes.length && this._markerPainter.needRebuildOnGometryPropertiesChanged() ||
             this._lineMeshes && this._lineMeshes.length && this._linePainter.needRebuildOnGometryPropertiesChanged() ||
             this.meshes && this.meshes.length && this.painter.needRebuildOnGometryPropertiesChanged()) {
-                this.markRebuild();
-            } else {
-                this.painter.onFeatureChange(this.features[uid], this.meshes);
-            }
+            this.markRebuild();
+        } else {
+            this.painter.onFeatureChange(this.features[uid], this.meshes);
+        }
 
 
         redraw(this);
