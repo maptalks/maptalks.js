@@ -101,13 +101,10 @@ export default class StyledPoint {
             }
             const hAlignment = markerHorizontalAlignmentFn ? markerHorizontalAlignmentFn(null, properties) : symbol['markerHorizontalAlignment'];
             let vAlignment = markerVerticalAlignmentFn ? markerVerticalAlignmentFn(null, properties) : symbol['markerVerticalAlignment'];
-            if (!vAlignment) {
-                if (markerType) {
-                    vAlignment = VERTICAL_ALIGNMENTS[markerType];
-                } else {
-                    vAlignment = this.options.defaultMarkerVerticalAlignment;
-                }
+            if (!vAlignment && markerType) {
+                vAlignment = VERTICAL_ALIGNMENTS[markerType];
             }
+            vAlignment = vAlignment || this.options.defaultMarkerVerticalAlignment;
 
             const markerAnchor = getAnchor(hAlignment, vAlignment);
             const iconShape = shapeIcon(iconAtlas.positions[iconGlyph.icon.url], markerAnchor, this.options.isVector3D);

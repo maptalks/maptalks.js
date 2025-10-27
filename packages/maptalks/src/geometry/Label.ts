@@ -78,10 +78,6 @@ class Label extends TextMarker {
     constructor(content: string, coordinates: Coordinate | Array<number>, options: LabelOptionsType = {}) {
         super(coordinates, options);
         this._content = escapeSpecialChars(content);
-    }
-
-    onAdd() {
-        const options = this.options;
         if (options.textSymbol) {
             this.setTextSymbol(options.textSymbol);
         }
@@ -89,7 +85,6 @@ class Label extends TextMarker {
             this.setBoxStyle(options.boxStyle);
         }
         this._refresh();
-        super.onAdd();
     }
 
     /**
