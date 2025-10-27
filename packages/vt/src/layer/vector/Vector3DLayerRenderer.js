@@ -692,7 +692,7 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         markerOptions.requestor = this._markerRequestor;
         markerOptions.markerWidthType = Uint16Array;
         markerOptions.markerHeightType = Uint16Array;
-
+        markerOptions.defaultMarkerVerticalAlignment = 'top';
         markerOptions.allowEmptyPack = 1;
 
         return [this._markerSymbol].map((symbol, idx) => {
@@ -704,7 +704,11 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
 
     _updateMarkerMesh(marker) {
         const symbols = marker['_getInternalSymbol']();
-        const options = { zoom: this.getMap().getZoom(), isVector3D: true };
+        const options = {
+            zoom: this.getMap().getZoom(),
+            isVector3D: true,
+            defaultMarkerVerticalAlignment: 'top'
+        };
         const uid = this._convertGeo(marker);
         if (!this._markerMeshes) {
             return false;
