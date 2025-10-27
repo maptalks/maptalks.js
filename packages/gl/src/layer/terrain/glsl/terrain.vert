@@ -21,7 +21,7 @@ void main() {
     uv.y = 1.0 - uv.y;
     vec4 encodedHeight = texture2D(flatMask, uv);
     float altitude = aPosition.z;
-    if (length(encodedHeight) < 2.0) {
+    if (length(encodedHeight) > 0.0) {
         float maskHeight = decodeFloat32(encodedHeight);
         altitude = min(aPosition.z, maskHeight);
     }

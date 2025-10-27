@@ -27,7 +27,7 @@ const TERRAIN_CLEAR = {
 };
 
 const TERRAIN_MASK_CLEAR = {
-    color: [1, 1, 1, 1],
+    color: [0, 0, 0, 0],
     depth: 0,
     stencil: 0
 };
@@ -718,8 +718,9 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         const width = tileSize * 2;
         const height = tileSize * 2;
         const color = regl.texture({
-            min: 'linear',
-            mag: 'linear',
+            // min 和 mag 必须用nearest，选择别的值会造成mask的高程值发生错误
+            min: 'nearest',
+            mag: 'nearest',
             type: 'uint8',
             format: 'rgba',
             width,
