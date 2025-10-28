@@ -27,7 +27,7 @@ const TERRAIN_CLEAR = {
 };
 
 const TERRAIN_MASK_CLEAR = {
-    color: [0, 0, 0, 0],
+    color: [1, 1, 1, 1],
     depth: 0,
     stencil: 0
 };

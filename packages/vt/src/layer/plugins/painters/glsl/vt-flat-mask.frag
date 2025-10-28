@@ -7,11 +7,7 @@ varying float vAltitude;
 #include <common_pack_float>
 
 void main() {
-    float altitude = vAltitude;
-    if (altitude == 0.0) {
-        altitude = 0.0001;
-    }
-    glFragColor = encodeFloat32(altitude);
+    glFragColor = encodeFloat32(vAltitude);
     #if __VERSION__ == 100
         gl_FragColor = glFragColor;
     #endif
