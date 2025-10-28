@@ -145,6 +145,7 @@ const GLTFMixin = Base =>
                 // let translationInMeters;
                 if (!hasFnType) {
                     trsMatrix = this._getSymbolTRSMatrix(trsMatrix);
+                    trsMatrix = mat4.multiply([], meterToPointMat, trsMatrix);
                 }
 
                 let zOffset = 0;
@@ -152,9 +153,10 @@ const GLTFMixin = Base =>
                 meshInfos.forEach(info => {
                     const { geometry, nodeMatrix } = info;
                     mat4.multiply(TEMP_MATRIX, Y_TO_Z, nodeMatrix);
-                    mat4.multiply(TEMP_MATRIX, trsMatrix, TEMP_MATRIX);
-                    const positionMatrix = mat4.multiply(TEMP_MATRIX, meterToPointMat, TEMP_MATRIX);
-
+                    let positionMatrix = mat4.multiply(TEMP_MATRIX, trsMatrix, TEMP_MATRIX);
+                    if (hasFnType) {
+                        positionMatrix = mat4.multiply(TEMP_MATRIX, meterToPointMat, TEMP_MATRIX);
+                    }
 
                     const gltfBBox = geometry.boundingBox;
                     const meshBox = gltfBBox.copy();
@@ -209,7 +211,7 @@ const GLTFMixin = Base =>
                         mat4.multiply(positionMatrix, Y_TO_Z, nodeMatrix);
                         // this._getSymbolTRSMatrix(trsMatrix);
                         mat4.multiply(positionMatrix, trsMatrix, positionMatrix);
-                        mat4.multiply(positionMatrix, meterToPointMat, positionMatrix);
+                        // mat4.multiply(positionMatrix, meterToPointMat, positionMatrix);
                         const matrix = mat4.identity(TEMP_MATRIX)
                         if (zOffset !== 0) {
                             mat4.fromTranslation(matrix, anchorTranslation);
@@ -611,7 +613,11 @@ const GLTFMixin = Base =>
                 }
 
                 if (hasFnType) {
-                    const trs = this._getSymbolTRSMatrix(TEMP_MATRIX, features, aPickingId, i);
+                    let trs = this._getSymbolTRSMatrix(TEMP_MATRIX, features, aPickingId, i);
+                    const meterScale = this._getMeterScale();
+                    const meterToPointMat = mat4.identity([]);
+                    mat4.scale(meterToPointMat, meterToPointMat, [meterScale, meterScale, meterScale]);
+                    trs = mat4.multiply([], meterToPointMat, trs);
                     mat4.multiply(mat, mat, trs);
                 }
 
