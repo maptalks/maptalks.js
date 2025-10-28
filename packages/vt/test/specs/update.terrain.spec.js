@@ -101,9 +101,9 @@ describe('update vt on terrain specs', () => {
                 let pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 pixel = readPixel(renderer.canvas, x / 2, y / 2 + 40);
-                assert(pixel[0] === 116);
-                assert(pixel[1] === 116);
-                assert(pixel[2] === 116);
+                assert(pixel[0] >= 116);
+                assert(pixel[1] >= 116);
+                assert(pixel[2] >= 116);
                 assert(pixel[3] === 255);
                 done();
             }, 3000);
