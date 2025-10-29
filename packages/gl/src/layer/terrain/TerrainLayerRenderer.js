@@ -715,8 +715,8 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
     _createTerrainMaskTexture() {
         const regl = this.device;
         const tileSize = this.layer.getTileSize().width;
-        const width = tileSize * 2;
-        const height = tileSize * 2;
+        const width = tileSize / 2;
+        const height = tileSize / 2;
         const color = regl.texture({
             // min 和 mag 必须用nearest，选择别的值会造成mask的高程值发生错误
             min: 'nearest',
