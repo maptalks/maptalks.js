@@ -1,5 +1,11 @@
 # @maptalks/vt-plugin
 
+## 0.115.1
+
+### Patch Changes
+
+- fixes related with terrain
+
 ## 0.115.0
 
 ### Minor Changes
