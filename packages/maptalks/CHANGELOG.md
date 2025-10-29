@@ -1,5 +1,11 @@
 # maptalks
 
+## 1.5.0
+
+### Minor Changes
+
+- focusing on bug fixes and serveral improvements
+
 ## 1.4.6
 
 ### Patch Changes

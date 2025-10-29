@@ -1,5 +1,16 @@
 # @maptalks/3dtiles
 
+## 0.115.0
+
+### Minor Changes
+
+- focusing on bug fixes and serveral improvements
+
+### Patch Changes
+
+- Updated dependencies
+  - maptalks@1.5.0
+
 ## 0.106.6
 
 ### Patch Changes
