@@ -753,12 +753,16 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
     _createTerrainTexture(tileInfo/*, tileImage*/) {
         const tileSize = this.layer.getTileSize().width;
         // 乘以2是为了瓦片（缩放时）被放大后保持清晰度
-        const width = tileSize * 2;
-        const height = tileSize * 2;
+        let width = tileSize * 2;
+        let height = tileSize * 2;
         const regl = this.device;
         const colorsTexture = tileInfo.colorsTexture;
         let color;
-        if (maptalks.Util.isImageBitMap(colorsTexture)) {
+        if (maptalks.Util.isImageBitMap(colorsTexture) && colorsTexture.width > 0) {
+            //不同的打包环境下，framebuffer 的大小和texture不同的，有的报错，有的不报错，why? 我也不知道
+            //确保framebuffer 的大小和texture相同
+            width = colorsTexture.width;
+            height = colorsTexture.height;
             color = regl.texture({
                 data: colorsTexture,
                 min: 'linear',
