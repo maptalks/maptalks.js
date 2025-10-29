@@ -676,6 +676,7 @@ class FillPainter extends BasicPainter {
             projViewMatrix,
             glScale,
             viewport: isRenderingTerrainSkin && context && context.viewport,
+            maskViewport: isRenderingTerrainSkin && context && context.maskViewport,
             hasSSRGround: context && context.hasSSRGround
             // blendSrcIsOne: +(!!(blendSrc === 'one' || blendSrc === 1))
         };

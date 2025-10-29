@@ -112,7 +112,7 @@ class TerrainFlatMaskPainter extends BasicPainter {
         // const blendSrc = this.sceneConfig.blendSrc;
         const uniforms = {
             projViewMatrix,
-            viewport: context && context.viewport
+            viewport: context && context.maskViewport,
         };
         return uniforms;
     }

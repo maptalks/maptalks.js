@@ -1315,6 +1315,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             };
             TERRAIN_CLEAR.framebuffer = texture;
             terrainRegl.clear(TERRAIN_CLEAR);
+            this._parentContext.maskViewport = getTileViewport(tileSize / 4);
             this._parentContext.viewport = getTileViewport(tileSize);
             // 如果矢量瓦片的目标绘制尺寸过大，拉伸后会过于失真，还不如不去绘制
             this._drawTerrainTile(skinImage.tile);
