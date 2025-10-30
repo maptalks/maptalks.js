@@ -107,8 +107,10 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
         drawingParentTiles: WithUndef<boolean>;
         avgMinAltitude: number;
         avgMaxAltitude: number;
+        allLoadTiles: Array<any>;
 
         init() {
+            this.allLoadTiles = [];
             this.tilesInView = {};
             this.tilesLoading = {};
             this._parentTiles = [];
@@ -128,6 +130,20 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
 
         getCurrentTileZoom(): number {
             return this._tileZoom;
+        }
+
+        //测试代码，演示使用，追踪逃逸的瓦片
+        _checkNeedRemoveTiles() {
+            const tileList = this.allLoadTiles || [];
+            const tileCache = this.tileCache;
+            const needRemove = tileList.filter(item => {
+                const id = item.info.id;
+                return !tileCache.has(id) && (!item.info.removed);
+            });
+            //逃逸的瓦片，需要被删除
+            if (needRemove.length) {
+                console.log(needRemove);
+            }
         }
 
         draw(timestamp: number, context): number {
@@ -701,6 +717,11 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
         }
 
         onTileLoad(tileImage: Tile['image'], tileInfo: Tile['info']): void {
+            //记录下所有的瓦片请求成功的数据
+            this.allLoadTiles.push({
+                image: tileImage,
+                info: tileInfo
+            })
             this.removeTileLoading(tileInfo);
             this._tileQueue.push({ tileInfo: tileInfo, tileData: tileImage });
             this._tileQueueIds.add(tileInfo.id);
@@ -1246,6 +1267,9 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
                 tile.image.onload = null;
                 tile.image.onerror = null;
             }
+            if (tile.info) {
+                tile.info.removed = true;
+            }
             const layer = this.layer;
             if (layer) {
                 /**
@@ -1260,6 +1284,8 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
                  */
                 layer.fire('tiledelete', { tile: tile.info, tileImage: tile.image });
             }
+            //每次删除瓦片时检测所有的瓦片里是否有逃逸的瓦片的
+            this._checkNeedRemoveTiles();
         }
 
         //@internal
@@ -1367,6 +1393,7 @@ export interface Tile {
         maxAltitude?: number;
         //@internal
         _glScale: number;
+        removed?: boolean;
     };
 
     image: TileImage;
