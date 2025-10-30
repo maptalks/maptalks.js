@@ -55,8 +55,11 @@ export default class WorkerPool {
     _messages: MessageBatch[][]
     //@internal
     _messageBuffers: ArrayBuffer[]
+    //@internal
+    _idleLoopCount: number;
     workers: Worker[]
     constructor() {
+        this._idleLoopCount = 0;
         this.active = {};
         this.workerCount = typeof window !== 'undefined' ? (GlobalConfig.workerCount || hardwareWorkerCount) : 0;
         this._messages = [];
@@ -125,9 +128,15 @@ export default class WorkerPool {
     }
 
     broadcastIdleMessage(messageRatio: number) {
+        if (this._idleLoopCount < 3) {
+            this._idleLoopCount++;
+            return this;
+        }
+        this._idleLoopCount = 0;
         const workers = this.getWorkers();
+        const message = { messageType: 'idle', messageRatio };
         workers.forEach(worker => {
-            worker.postMessage({ messageType: 'idle', messageRatio });
+            worker.postMessage(message);
         });
         return this;
     }
