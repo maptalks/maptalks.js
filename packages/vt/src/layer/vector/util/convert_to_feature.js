@@ -12,7 +12,7 @@ const GRADIENT_PROP_KEY = (LINE_GRADIENT_PROP_KEY + '').trim();
 
 function watchGeoVisible(featue, symbol, geo) {
     //geo 的visible受options.visible 和style控制
-    //symbol里是否有visible和opaicty
+    //symbol里是否有visible和opacity
     let hasVisibleProp = !isNil(symbol.visible), hasOpacityProp = !isNil(symbol.opacity);
     let styleFn = symbol;
     if (hasVisibleProp || hasOpacityProp) {
@@ -20,7 +20,7 @@ function watchGeoVisible(featue, symbol, geo) {
     }
     Object.defineProperty(featue, 'getVisible', {
         get: function () {
-            //样式里没有visible和opaicty
+            //样式里没有visible和opacity
             if (!hasVisibleProp && (!hasOpacityProp)) {
                 const visible = geo.options.visible;
                 return visible;
