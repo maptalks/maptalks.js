@@ -1,4 +1,4 @@
-import { extend, hasOwn } from '../../../common/Util';
+import { extend, hasOwn, isNil } from '../../../common/Util';
 import * as maptalks from 'maptalks';
 import { KEY_IDX } from '../../../common/Constant';
 import { LINE_GRADIENT_PROP_KEY } from './symbols';
@@ -12,9 +12,19 @@ const GRADIENT_PROP_KEY = (LINE_GRADIENT_PROP_KEY + '').trim();
 
 function watchGeoVisible(featue, symbol, geo) {
     //geo 的visible受options.visible 和style控制
-    const styleFn = maptalks.MapboxUtil.loadGeoSymbol(symbol, geo);
+    //symbol里是否有visible和opaicty
+    let hasVisibleProp = !isNil(symbol.visible), hasOpacityProp = !isNil(symbol.opacity);
+    let styleFn = symbol;
+    if (hasVisibleProp || hasOpacityProp) {
+        styleFn = maptalks.MapboxUtil.loadGeoSymbol(symbol, geo);
+    }
     Object.defineProperty(featue, 'getVisible', {
         get: function () {
+            //样式里没有visible和opaicty
+            if (!hasVisibleProp && (!hasOpacityProp)) {
+                const visible = geo.options.visible;
+                return visible;
+            }
             //实时检测geo的可见性,feature上的值是静态值，不应该检测其值
             const isVisible = geo.isVisible();
             if (!isVisible) {

@@ -58,7 +58,8 @@ const EMPTY_ARRAY = [];
 class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
     constructor(...args) {
         super(...args);
-        this.features = {};
+        //使用array结构,更好的遍历的性能,遍历时注意null和空洞的情况
+        this.features = [];
         this._geometries = {};
         this._counter = 0;
         this._allFeatures = {};
@@ -105,8 +106,11 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             return this;
         }
         //实时检测feature的visible变化
-        for (const id in features) {
-            let feats = features[id] || [];
+        for (let m = 0, len = features.length; m < len; m++) {
+            let feats = features[m];
+            if (!feats) {
+                continue;
+            }
             if (!Array.isArray(feats)) {
                 feats = [feats];
             }
@@ -1270,7 +1274,7 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             if (uid !== undefined) {
                 delete this._geometries[uid];
                 this._removeFeatures(uid);
-                delete this.features[uid];
+                this.features[uid] = null;
             }
         }
         this.markRebuild();
