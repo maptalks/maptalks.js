@@ -48,13 +48,14 @@ function wgsl() {
 const production = process.env.BUILD === 'production';
 const outputFile = pkg.main;
 const plugins = production ? [terser({
-    mangle: {
-        properties: {
-            'regex' : /^_/,
-            'keep_quoted' : true,
-            'reserved': ['on', 'once', 'off', '_getTilesInCurrentFrame', '_drawTiles', '_getTileZoom', '_onGeometryEvent']
-        }
-    },
+    mangle: true,
+    // mangle: {
+    //     properties: {
+    //         'regex' : /^_/,
+    //         'keep_quoted' : true,
+    //         'reserved': ['on', 'once', 'off', '_getTilesInCurrentFrame', '_drawTiles', '_getTileZoom', '_onGeometryEvent']
+    //     }
+    // },
     output : {
         keep_quoted_props: true,
         beautify: true,

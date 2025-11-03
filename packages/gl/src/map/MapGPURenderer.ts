@@ -59,27 +59,28 @@ export default class MapGPURenderer extends renderer.MapAbstractRenderer {
         return true;
     }
 
-    async createContext() {
-        const { gpuDevice, gpuAdapter } = await initGPUDevice();
-        const context = this.canvas.getContext('webgpu');
-        this.device = new GraphicsDevice(gpuDevice, context, gpuAdapter);
+    createContext() {
+        return initGPUDevice().then(({ gpuDevice, gpuAdapter }) => {
+            const context = this.canvas.getContext('webgpu');
+            this.device = new GraphicsDevice(gpuDevice, context, gpuAdapter);
 
-        this.context = {
-            context,
-            device: this.device,
-            getImageData: (sx, sy, sw, sh) => {
-                const pixels = new Uint8Array(sw * sh * 4);
-                const canvas = this.canvas;
-                this.device.read({
-                    x: sx,
-                    y: canvas.height - sy,
-                    width: sw,
-                    height: sh,
-                    data: pixels
-                });
-                return new ImageData(new Uint8ClampedArray(pixels.buffer), sw, sh);
-            }
-        };
+            this.context = {
+                context,
+                device: this.device,
+                getImageData: (sx, sy, sw, sh) => {
+                    const pixels = new Uint8Array(sw * sh * 4);
+                    const canvas = this.canvas;
+                    this.device.read({
+                        x: sx,
+                        y: canvas.height - sy,
+                        width: sw,
+                        height: sh,
+                        data: pixels
+                    });
+                    return new ImageData(new Uint8ClampedArray(pixels.buffer), sw, sh);
+                }
+            };
+        });
     }
 }
 

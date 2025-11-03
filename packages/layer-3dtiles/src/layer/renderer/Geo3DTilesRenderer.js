@@ -392,7 +392,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(CanvasCompatib
     _loadTileContent(url, arraybuffer, tile) {
         let supportedFormats = this._supportedFormats;
         if (!supportedFormats) {
-            supportedFormats = reshader.Util.getSupportedFormats(this.gl || this.device);
+            supportedFormats = reshader.Util.getSupportedFormats(this.gl || this.device && this.device.wgpu);
             this._supportedFormats = supportedFormats;
         }
 

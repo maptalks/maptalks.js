@@ -56,7 +56,12 @@ packages.forEach(item => {
         return !(exclude || []).includes(key);
     });
     const exportStr = keys.join(', ');
-    code += `export { ${exportStr} } from '${name}';\n`;
+    if (name === 'maptalks' || name === '@maptalks/gpu') {
+        code += `export { ${exportStr} } from '${name}';\n`;
+    } else {
+        const gpuName = umdPath.substring(umdPath.lastIndexOf('/') + 1).replace('.js', '.gpu.es.js');
+        code += `export { ${exportStr} } from '${name}/dist/${gpuName}';\n`;
+    }
 });
 //write index.d.ts
 fs.writeFileSync(path.resolve(__dirname, './index.d.ts'), code);

@@ -18,9 +18,9 @@
   },
   "files": [
     "dist/images/**/*",
-    "dist/maptalks-gl.css",
-    "dist/maptalks-gl.js",
-    "dist/maptalks-gl.js.map",
+    "dist/maptalks-gpu.css",
+    "dist/maptalks-gpu.js",
+    "dist/maptalks-gpu.js.map",
     "index.js",
     "index.d.ts"
   ],

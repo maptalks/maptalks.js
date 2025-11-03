@@ -34,7 +34,11 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
 
     onAdd() {
         super.onAdd();
-        this.prepareCanvas();
+        const map = this.getMap();
+        const mapRenderer = map.getRenderer();
+        if (mapRenderer.ready) {
+            this.prepareCanvas();
+        }
     }
 
     updateSceneConfig() {
@@ -641,6 +645,10 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
 
     onRemove() {
         //regl framebuffer for picking created by children layers
+        if (!this.canvas) {
+            super.onRemove();
+            return;
+        }
         const pickingFBO = this.canvas.pickingFBO;
         if (pickingFBO && pickingFBO.destroy && !pickingFBO['___disposed']) {
             pickingFBO['___disposed'] = true;

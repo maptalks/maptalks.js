@@ -240,8 +240,9 @@ fn main(vertexOutput: VertexOutput) ->  @location(0) vec4f {
 #ifdef HAS_HEATMAP
     fragColor = heatmap_getColor(fragColor);
 #endif
-
+#if HAS_HIGHLIGHT_OPACITY || HAS_HIGHLIGHT_COLOR
     fragColor = highlight_blendColor(fragColor, vertexOutput);
+#endif
 
 #ifdef HAS_LAYER_OPACITY
     fragColor *= lightUniforms.layerOpacity;
