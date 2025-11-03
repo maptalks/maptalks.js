@@ -17,16 +17,8 @@
   },
   "files": [
     "ACKNOWLEDGEMENT",
-    "dist/maptalks.min.js",
-    "dist/maptalks.js",
-    "dist/maptalks.js.map",
-    "dist/maptalks.es.js",
-    "dist/maptalks.es.js.map",
-    "dist/maptalks.d.ts",
-    "dist/maptalks.css",
-    "dist/images/**/*",
-    "src/**/*.ts",
-    "src/**/*.json"
+    "dist/",
+    "src/"
   ],
   "homepage": "https://maptalks.org",
   "scripts": {
