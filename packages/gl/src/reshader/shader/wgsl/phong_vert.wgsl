@@ -121,7 +121,7 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
 #else
     let localPosition = getPosition(vec3f(vertexInput.aPosition.xyz), vertexInput);
 #endif
-    let localPositionMatrix = getPositionMatrix(vertexInput, vertexOutput, modelUniforms.positionMatrix);
+    let localPositionMatrix = getPositionMatrix(vertexInput, &vertexOutput, modelUniforms.positionMatrix);
 
     vertexOutput.vFragPos = (modelUniforms.modelMatrix * localPositionMatrix * localPosition).xyz;
 

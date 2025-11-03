@@ -2,7 +2,6 @@ const { nodeResolve } = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
 const pkg = require('./package.json');
 const terser = require('@rollup/plugin-terser');
-const sourcemaps = require('rollup-plugin-sourcemaps');
 const copy = require('rollup-plugin-copy');
 
 const outputFile = pkg.main;
@@ -28,7 +27,6 @@ module.exports = [
                 main: true
             }),
             commonjs(),
-            sourcemaps(),
             terser({
                 mangle: true,
                 compress: {
@@ -39,7 +37,7 @@ module.exports = [
                 output: {
                     ecma: 2017,
                     // keep_quoted_props: true,
-                    beautify: false,
+                    beautify: true,
                     comments: '/^!/'
                 }
             })

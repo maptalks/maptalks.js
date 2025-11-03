@@ -60,6 +60,9 @@ importers:
       '@maptalks/gltf-layer':
         specifier: workspace:*
         version: link:../layer-gltf
+      '@maptalks/gpu':
+        specifier: workspace:*
+        version: link:../gpu
       '@maptalks/vt':
         specifier: workspace:*
         version: link:../vt
@@ -410,6 +413,9 @@ importers:
       '@maptalks/gl':
         specifier: workspace:*
         version: link:../gl
+      '@maptalks/gpu':
+        specifier: workspace:*
+        version: link:../gpu
       '@maptalks/transcoders.crn':
         specifier: workspace:*
         version: link:../transcoders.crn
@@ -486,6 +492,9 @@ importers:
       '@maptalks/gl':
         specifier: workspace:*
         version: link:../gl
+      '@maptalks/gpu':
+        specifier: workspace:*
+        version: link:../gpu
       '@maptalks/transcoders.draco':
         specifier: workspace:*
         version: link:../transcoders.draco
@@ -556,6 +565,9 @@ importers:
       '@maptalks/gl':
         specifier: workspace:*
         version: link:../gl
+      '@maptalks/gpu':
+        specifier: workspace:*
+        version: link:../gpu
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
         version: 25.0.7(rollup@4.17.2)
@@ -906,6 +918,9 @@ importers:
       '@maptalks/gl':
         specifier: workspace:*
         version: link:../gl
+      '@maptalks/gpu':
+        specifier: workspace:*
+        version: link:../gpu
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
         version: 25.0.7(rollup@4.17.2)
@@ -933,6 +948,9 @@ importers:
       '@maptalks/gl':
         specifier: workspace:*
         version: link:../gl
+      '@maptalks/gpu':
+        specifier: workspace:*
+        version: link:../gpu
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
         version: 25.0.7(rollup@4.17.2)
@@ -963,6 +981,9 @@ importers:
       '@maptalks/gl':
         specifier: workspace:*
         version: link:../gl
+      '@maptalks/gpu':
+        specifier: workspace:*
+        version: link:../gpu
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
         version: 25.0.7(rollup@4.17.2)
@@ -996,6 +1017,9 @@ importers:
       '@maptalks/gltf-layer':
         specifier: workspace:*
         version: link:../layer-gltf
+      '@maptalks/gpu':
+        specifier: workspace:*
+        version: link:../gpu
     devDependencies:
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
@@ -1051,6 +1075,9 @@ importers:
       '@maptalks/gl':
         specifier: workspace:*
         version: link:../gl
+      '@maptalks/gpu':
+        specifier: workspace:*
+        version: link:../gpu
       '@maptalks/tbn-packer':
         specifier: ^1.4.5
         version: 1.4.5

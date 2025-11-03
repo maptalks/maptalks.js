@@ -40,6 +40,7 @@ function wgsl() {
 const production = process.env.BUILD === 'production';
 const outputFile = pkg.main;
 const plugins = production ? [terser({
+    mangle: true,
     // mangle: {
     //     properties: {
     //         'regex' : /^_/,

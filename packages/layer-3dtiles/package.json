@@ -8,14 +8,15 @@
   "scripts": {
     "clean": "rimraf dist",
     "lint": "eslint src/**/*.js test/**/*.js",
-    "build": "npm run clean && npm run lint && rollup --environment BUILD:production -c rollup.config.js",
+    "build": "npm run clean && npm run lint && rollup --environment BUILD:production -c rollup.config.js && npm run transform-gpu",
     "build-dev": "rollup -c rollup.config.js",
     "dev": "rollup -w -c rollup.config.js",
     "test": "electron-mocha --retries 3 --main ../ignore-gpu-blacklist.js -t 8000 --show-window --renderer ./test/**/*.spec.js -g \"ciskip\" --invert",
     "test-local": "npm run pretest && npm run test-browser && electron-mocha --main ../ignore-gpu-blacklist.js -t 8000 --show-window --renderer ./test/**/*.spec.js -g \"ciskip \"",
     "test-browser": "electron-mocha -t 8000 --show-window --renderer ./test/**/*.spec.js -g \"ciskip-browser\"",
     "tdd": "electron-mocha --main ../ignore-gpu-blacklist.js -t 8000 --interactive --renderer ./test/**/*.spec.js -g",
-    "pretest": "npm run build"
+    "pretest": "npm run build",
+    "transform-gpu": "node ../../build/transform-to-gpu"
   },
   "repository": {
     "type": "git",
@@ -31,6 +32,7 @@
     "dist/maptalks.3dtiles.js",
     "dist/maptalks.3dtiles.js.map",
     "dist/maptalks.3dtiles.es.js",
+    "dist/maptalks.3dtiles.gpu.es.js",
     "dist/maptalks.3dtiles.es.js.map",
     "dist/maptalks.3dtiles.d.ts"
   ],
@@ -52,6 +54,7 @@
   },
   "devDependencies": {
     "@maptalks/gl": "workspace:*",
+    "@maptalks/gpu": "workspace:*",
     "@maptalks/transcoders.crn": "workspace:*",
     "@maptalks/transcoders.draco": "workspace:*",
     "@maptalks/transcoders.ktx2": "workspace:*",

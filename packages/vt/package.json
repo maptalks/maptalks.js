@@ -9,6 +9,7 @@
     "dist/maptalks.vt.js",
     "dist/maptalks.vt.js.map",
     "dist/maptalks.vt.es.js",
+    "dist/maptalks.vt.gpu.es.js",
     "dist/maptalks.vt.es.js.map",
     "dist/maptalks.vt.d.ts"
   ],
@@ -16,12 +17,13 @@
     "clean": "rimraf dist",
     "lint": "eslint src/**/*.js test/**/*.js",
     "dev": "rollup -w -c build/rollup.config.js",
-    "build": "npm run clean && npm run lint && rollup --environment BUILD:production -c build/rollup.config.js",
+    "build": "npm run clean && npm run lint && rollup --environment BUILD:production -c build/rollup.config.js && npm run transform-gpu",
     "build-dev": "rollup -c build/rollup.config.js",
     "test": "electron-mocha -t 8000 --retries 3 --main ../ignore-gpu-blacklist.js --show-window --renderer ./test/**/*.spec.js -g \"\\btext\\b|ciskip\" --invert",
     "tdd": "electron-mocha -t 8000 --main ../ignore-gpu-blacklist.js --interactive --renderer ./test/**/*.spec.js -g",
     "pretest": "npm run build",
-    "preversion": "npm run pretest"
+    "preversion": "npm run pretest",
+    "transform-gpu": "node ../../build/transform-to-gpu"
   },
   "dependencies": {
     "@mapbox/point-geometry": "^0.1.0",
@@ -32,6 +34,7 @@
     "@maptalks/geojson-bbox": "^1.0.4",
     "@maptalks/geojson-vt": "^3.5.0",
     "@maptalks/gl": "workspace:*",
+    "@maptalks/gpu": "workspace:*",
     "@maptalks/tbn-packer": "^1.4.5",
     "@maptalks/vt-plugin": "workspace:*",
     "animation-easings": "^0.1.0",
