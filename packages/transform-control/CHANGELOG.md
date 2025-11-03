@@ -1,5 +1,18 @@
 # @maptalks/transform-control
 
+## 0.116.0
+
+### Minor Changes
+
+- fixes against maptalks-gpu
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.116.0
+  - @maptalks/gpu@0.116.0
+  - @maptalks/gltf-layer@0.116.0
+
 ## 0.115.1
 
 ### Patch Changes
