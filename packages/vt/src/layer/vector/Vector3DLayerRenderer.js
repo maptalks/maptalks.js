@@ -60,6 +60,8 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         super(...args);
         //使用array结构,更好的遍历的性能,遍历时注意null和空洞的情况
         this.features = [];
+        //记录空洞的feature index
+        this.featuresNullIndex = [];
         this._geometries = {};
         this._counter = 0;
         this._allFeatures = {};
@@ -1079,7 +1081,12 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
 
     _convertGeo(geo) {
         if (geo[ID_PROP] === undefined) {
-            geo[ID_PROP] = this._counter++;
+            //优先利用空洞的索引,防止features数组越来越长
+            if (this.featuresNullIndex.length) {
+                geo[ID_PROP] = this.featuresNullIndex.shift();
+            } else {
+                geo[ID_PROP] = this._counter++;
+            }
         }
         const uid = geo[ID_PROP];
         if (this.features[uid]) {
@@ -1274,7 +1281,11 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             if (uid !== undefined) {
                 delete this._geometries[uid];
                 this._removeFeatures(uid);
+                // delete this.features[uid];
                 this.features[uid] = null;
+                if (this.featuresNullIndex.indexOf(uid) === -1) {
+                    this.featuresNullIndex.push(uid);
+                }
             }
         }
         this.markRebuild();
