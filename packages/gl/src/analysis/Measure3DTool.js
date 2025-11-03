@@ -63,7 +63,10 @@ export default class Measure3DTool extends maptalks.DrawTool {
 
     _addHelperLayer() {
         const id = maptalks.INTERNAL_LAYER_PREFIX + 'drawtool';
-        this._map.getLayer(id).hide();
+        const drawtoolLayer = this._map.getLayer(id);
+        if (drawtoolLayer) {
+            drawtoolLayer.hide();
+        }
     }
 
     _afterEnable() {
