@@ -41,6 +41,7 @@ const style = [
                     document.body.appendChild(canvas);
                     canvas.width = 256;
                     canvas.height = 128;
+                    context.canvas = canvas;
                 }
                 if (needRefresh) {
                     canvas.width = 2048;

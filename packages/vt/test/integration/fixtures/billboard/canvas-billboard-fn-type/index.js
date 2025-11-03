@@ -32,6 +32,7 @@ const style = [
                     document.body.appendChild(canvas);
                     canvas.width = 256;
                     canvas.height = 128;
+                    context.canvas = canvas;
                 }
                 const ctx = canvas.getContext('2d');
                 ctx.fillStyle = boardColor;
