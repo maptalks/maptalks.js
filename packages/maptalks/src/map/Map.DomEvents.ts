@@ -471,7 +471,7 @@ Map.include(/** @lends Map.prototype */ {
             return;
         }
         this._wrapTerrainData(eventParam);
-        
+
         const mousemoveHandler = () => {
             if (eventParam.domEvent && eventParam.domEvent._cancelBubble) {
                 // Always trigger _moumove _touchmove event
@@ -523,7 +523,7 @@ Map.include(/** @lends Map.prototype */ {
 Map.addOnLoadHook('_registerDomEvents');
 
 Map.mergeOptions({
-    'queryTerrainInMapEvents': true
+    'queryTerrainInMapEvents': false
 });
 
 function isRotatingMap(map) {
