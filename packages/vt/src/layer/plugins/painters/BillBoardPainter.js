@@ -104,6 +104,9 @@ export default class BillBoardPainter extends BasicPainter {
                 continue;
             }
             geometry = geometry[0].geometry.properties.billGeometry;
+            if (!geometry) {
+                continue;
+            }
             const { oldPickingId, contextCache, textureCache, features, billTexture } = geometry.properties;
             if (!oldPickingId || !oldPickingId.length) {
                 continue;
