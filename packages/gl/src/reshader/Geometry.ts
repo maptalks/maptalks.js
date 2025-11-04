@@ -891,15 +891,15 @@ export default class Geometry {
         }
     }
 
-    createTangent(name = 'aTangent', tangentsData?: Float32Array) {
+    createTangent(name = 'aTangent', tangentsDataArray?: Float32Array | Array<number>) {
         this._incrVersion();
         //TODO data 可能是含stride的interleaved类型
         const { normalAttribute, positionAttribute, uv0Attribute } = this.desc;
         const normals = this._getAttributeData(normalAttribute);
         const positions = this._getAttributeData(positionAttribute);
-        let tangents = tangentsData;
-        if (tangentsData && tangentsData instanceof Float32Array) {
-            tangents = tangentsData;
+        let tangents = tangentsDataArray;
+        if (tangentsDataArray && tangentsDataArray.length) {
+            tangents = tangentsDataArray;
         } else {
             tangents = buildTangents(
                 positions,
