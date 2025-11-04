@@ -3,6 +3,11 @@ import "./zlib.min";
 import { vec2, vec3 } from 'gl-matrix';
 import { createMartiniData } from '../util/martini';
 import { ColorIn } from 'colorin';
+import { buildTangents } from '@maptalks/tbn-packer';
+
+function isNumber(val) {
+    return (typeof val === 'number') && !isNaN(val);
+}
 // 保存当前的workerId，用于告知主线程结果回传给哪个worker
 let workerId;
 
@@ -764,6 +769,36 @@ function createColorsTexture(data, colors, tileSize) {
 
 }
 
+function createTerrainGeometryTangent(terrainMesh) {
+    if (!terrainMesh) {
+        return;
+    }
+    const { positions, texcoords, triangles, leftSkirtIndex, rightSkirtIndex, bottomSkirtIndex, numVerticesWithoutSkirts } = terrainMesh;
+    if (!positions || !texcoords || !triangles) {
+        return;
+    }
+    if (!isNumber(leftSkirtIndex) || !isNumber(rightSkirtIndex) || !isNumber(bottomSkirtIndex) || !isNumber(numVerticesWithoutSkirts)) {
+        return;
+    }
+    const normals = new Int8Array(positions.length);
+    for (let i = 2; i < normals.length; i += 3) {
+        if (i < numVerticesWithoutSkirts * 3) {
+            normals[i] = 1;
+        } else if (i < leftSkirtIndex / 2 * 3) {
+            normals[i - 2] = -1;
+        } else if (i < rightSkirtIndex / 2 * 3) {
+            normals[i - 2] = 1;
+        } else if (i < bottomSkirtIndex / 2 * 3) {
+            normals[i - 1] = -1;
+        } else {
+            // top
+            normals[i - 1] = 1;
+        }
+    }
+    const tangents = buildTangents(positions, normals, texcoords, triangles);
+    terrainMesh.tangents = new Float32Array(tangents);
+}
+
 export const onmessage = function (message, postResponse) {
     const data = message.data;
     if (data.command === 'addLayer' || data.command === 'removeLayer') {
@@ -780,6 +815,11 @@ export const onmessage = function (message, postResponse) {
                 data.colorsTexture = texture;
                 transferables = transferables || [];
                 transferables.push(texture);
+            }
+
+            createTerrainGeometryTangent(data.mesh);
+            if (data.mesh.tangents) {
+                transferables.push(data.mesh.tangents.buffer);
             }
             postResponse(data.error, data, transferables);
         });

@@ -1,6 +1,6 @@
 import * as reshader from '../../reshader';
 import TerrainPainter from './TerrainPainter';
-import  { extend, isNil } from '../util/util';
+import { extend, isNil } from '../util/util';
 import * as ContextUtil from '../util/context';
 
 const { getIBLResOnCanvas, getPBRUniforms, loginIBLResOnCanvas, logoutIBLResOnCanvas } = reshader.pbr.PBRUtils;
@@ -52,7 +52,7 @@ class TerrainLitPainter extends TerrainPainter {
 
     createTerrainMesh(tileInfo, terrainImage) {
         const { mesh: terrainGeo, image: heightTexture } = terrainImage;
-        const { positions, texcoords, triangles, leftSkirtIndex, rightSkirtIndex, bottomSkirtIndex, numVerticesWithoutSkirts } = terrainGeo;
+        const { positions, texcoords, triangles, leftSkirtIndex, rightSkirtIndex, bottomSkirtIndex, numVerticesWithoutSkirts, tangents } = terrainGeo;
         const normals = new Int8Array(positions.length);
         for (let i = 2; i < normals.length; i += 3) {
             if (i < numVerticesWithoutSkirts * 3) {
@@ -73,14 +73,13 @@ class TerrainLitPainter extends TerrainPainter {
             aTexCoord: texcoords,
             aNormal: normals
         },
-        triangles,
-        0);
-
+            triangles,
+            0);
         // 共用端点时，法线值会出现错误，造成视觉上不连续，所以需要唯一化
         // 唯一化后，三角形数量不变，但端点数组大概会膨胀5倍以上
         // geo.buildUniqueVertex();
         // geo.createNormal();
-        geo.createTangent();
+        geo.createTangent('aTangent', tangents);
         delete geo.data.aNormal;
 
         geo.generateBuffers(this.graphics);
@@ -161,7 +160,7 @@ class TerrainLitPainter extends TerrainPainter {
         extend(uniforms, {
             viewMatrix: map.viewMatrix,
             projMatrix: map.projMatrix,
-            projViewMatrix : map.projViewMatrix,
+            projViewMatrix: map.projViewMatrix,
             outSize: [canvas.width, canvas.height],
             polygonFill: [1, 1, 1, 1],
             terrainHeightMapResolution: [tileSize, tileSize],
