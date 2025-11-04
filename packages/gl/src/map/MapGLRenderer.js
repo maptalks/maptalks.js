@@ -5,20 +5,20 @@ export default class MapGLRenderer extends renderer.MapAbstractRenderer {
     // createCanvas, createContext, getContextInstance, clearLayerCanvasContext 和 clearCanvas 方法都应该动态注入
 
     clearCanvas() {
-        if (!this.regl) {
+        if (!this.device) {
             return;
         }
         // depth and stencil will be cleared in clearLayerCanvasContext
-        this.regl.clear({
+        this.device.clear({
             color: [0, 0, 0, 0]
         });
     }
 
     clearLayerCanvasContext(layer) {
-        if (!this.regl) {
+        if (!this.device) {
             return;
         }
-        this.regl.clear({
+        this.device.clear({
             depth: 1,
             stencil: 0
         });

@@ -270,12 +270,16 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         const { width, height } = this.canvas;
         let fbo = this._outlineFBO;
         if (!fbo) {
+            const isWebGPU = this.device && this.device.wgpu;
+            const format = isWebGPU ? 'rgba' : 'rgba4';
+            const isAntialias = this.layer.options.antialias;
+            const sampleCount = isAntialias ? 4 : 1;
             const outlineTex = this.regl.texture({
                 width: width,
                 height: height,
-                format: 'rgba4',
+                format,
                 // needed by webgpu
-                sampleCount: 4
+                sampleCount
             });
             fbo = this._outlineFBO = this.regl.framebuffer({
                 width: width,
@@ -538,26 +542,6 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
                 stencil: 0,
                 framebuffer: this._targetFBO
             });
-            // device.clear({
-            //     color: EMPTY_COLOR,
-            //     framebuffer: this._noAaFBO
-            // });
-            // device.clear({
-            //     color: EMPTY_COLOR,
-            //     framebuffer: this._pointFBO
-            // });
-            // if (this._taaFBO && this._taaDrawCount) {
-            //     device.clear({
-            //         color: EMPTY_COLOR,
-            //         framebuffer: this._taaFBO
-            //     });
-            // }
-            // if (this._fxaaFBO && this._fxaaAfterTaaDrawCount) {
-            //     device.clear({
-            //         color: EMPTY_COLOR,
-            //         framebuffer: this._fxaaFBO
-            //     });
-            // }
         }
         if (this._outlineFBO) {
             device.clear({
@@ -567,11 +551,6 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
                 framebuffer: this._outlineFBO
             });
         }
-        // device.clear({
-        //     color: EMPTY_COLOR,
-        //     depth: 1,
-        //     stencil: 0
-        // });
     }
 
     resizeCanvas() {
@@ -1168,8 +1147,10 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         width = width || this.canvas.width, height = height || this.canvas.height;
         const regl = this.device;
         const useMultiSamples = this._isUseMultiSample();
+        const isAntialias = this.layer.options.antialias;
         let color;
         if (!forceTexture && useMultiSamples) {
+            // rgba8 是webgl中的格式，regl支持，对应的还有rgba4
             color = regl.renderbuffer({
                 width,
                 height,
@@ -1177,6 +1158,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
                 format: 'rgba8'
             });
         } else {
+            const sampleCount = isAntialias ? 4 : 1;
             const type = 'uint8';//colorType || regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
             color = regl.texture({
                 min: 'nearest',
@@ -1185,7 +1167,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
                 width,
                 height,
                 // needed by webgpu
-                sampleCount: 4
+                sampleCount
             });
         }
         const fboInfo = {
@@ -1219,6 +1201,8 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         } else {
             //depth(stencil) buffer 是可以共享的
             if (enableDepthTex) {
+                const isAntialias = this.layer.options.antialias;
+                const sampleCount = isAntialias ? 4 : 1;
                 const depthStencilTexture = depthTex || regl.texture({
                     min: 'nearest',
                     mag: 'nearest',
@@ -1226,7 +1210,9 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
                     type: 'depth stencil',
                     width,
                     height,
-                    format: 'depth stencil'
+                    format: 'depth stencil',
+                    // needed by webgpu
+                    sampleCount
                 });
                 fboInfo.depthStencil = depthStencilTexture;
             } else {
