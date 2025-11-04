@@ -796,7 +796,7 @@ function createTerrainGeometryTangent(terrainMesh) {
         }
     }
     const tangents = buildTangents(positions, normals, texcoords, triangles);
-    terrainMesh.tangents = new Float32Array(tangents);
+    return new Float32Array(tangents);
 }
 
 export const onmessage = function (message, postResponse) {
@@ -810,16 +810,17 @@ export const onmessage = function (message, postResponse) {
         const colors = (data.params || {}).colors;
         const tileSize = (data.params || {}).tileSize;
         loadTerrain(data.params, (data, transferables) => {
+            transferables = transferables || [];
             const texture = createColorsTexture(data, colors, tileSize);
             if (texture) {
                 data.colorsTexture = texture;
-                transferables = transferables || [];
                 transferables.push(texture);
             }
 
-            createTerrainGeometryTangent(data.mesh);
-            if (data.mesh.tangents) {
-                transferables.push(data.mesh.tangents.buffer);
+            const tangents = createTerrainGeometryTangent(data.mesh);
+            if (tangents && data.mesh) {
+                data.mesh.tangents = tangents;
+                transferables.push(tangents.buffer);
             }
             postResponse(data.error, data, transferables);
         });
