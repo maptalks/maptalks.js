@@ -229,6 +229,12 @@ export default class PostProcess {
         } else {
             delete shaderDefines['HAS_OUTLINE_TEX'];
         }
+        const useMultiSample = this._layer.options.antialias === true;
+        if (useMultiSample) {
+            shaderDefines['HAS_MULTISAMPLED'] = 1;
+        } else {
+            delete shaderDefines['HAS_MULTISAMPLED'];
+        }
         // if (noAaSource) {
         //     shaderDefines['HAS_NOAA_TEX'] = 1;
         // } else {
