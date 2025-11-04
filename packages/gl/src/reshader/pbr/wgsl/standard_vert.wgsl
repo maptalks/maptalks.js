@@ -168,8 +168,8 @@ fn transformTexcoord(uv: vec2f) -> vec2f {
         let texCoord = decodedTexCoord * uniforms.uvScale + uniforms.uvOffset;
         return (origin % 1.0) + texCoord;
     #else
-        let origin = uniforms.uvOrigin;
-        let texCoord = decodedTexCoord * uniforms.uvScale;
+        var origin = uniforms.uvOrigin;
+        var texCoord = decodedTexCoord * uniforms.uvScale;
         if (uniforms.uvRotation != 0.0) {
             origin = rotateUV(origin, uniforms.uvRotation);
             texCoord = rotateUV(texCoord, uniforms.uvRotation);
