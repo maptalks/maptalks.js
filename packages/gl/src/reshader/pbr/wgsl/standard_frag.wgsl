@@ -6,6 +6,7 @@
 #include <terrain_normal_frag>
 #include <vertex_color_frag>
 #include <excavate_frag>
+#include <compute_texcoord_frag>
 
 #define PI 3.141593
 #define RECIPROCAL_PI 0.3183099
