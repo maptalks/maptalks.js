@@ -227,7 +227,7 @@ const polygonHooks: modeActionType = {
 
         // geometry._setPrjCoordinates(prjCoords);
         geometry.setCoordinates(coordinates);
-        const layer = geometry.getLayer();
+        const layer = geometry._drawToolLayer || geometry.getLayer();
         if (layer) {
             let polygon = layer.getGeometryById('polygon');
             if (!polygon && prjCoords.length >= 3) {

@@ -14,11 +14,11 @@ export default class DrawToolLayer extends OverlayLayer {
     static lineLayerClazz: any;
     static polygonLayerClazz: any;
     //@internal
-    _markerLayer: any;
+    _markerLayer: OverlayLayer;
     //@internal
-    _lineLayer: any;
+    _lineLayer: OverlayLayer;
     //@internal
-    _polygonLayer: any;
+    _polygonLayer: OverlayLayer;
 
     static setLayerClass(markerLayerClass, lineLayerClass, polygonLayerClass) {
         DrawToolLayer.markerLayerClazz = markerLayerClass;
@@ -31,7 +31,7 @@ export default class DrawToolLayer extends OverlayLayer {
      * @param options=null          - construct options
      * @param options.style=null    - drawToolLayer's style
      */
-    constructor(id: string, geometries?: DrawToolLayerOptionsType | Array<Geometry>,  options: DrawToolLayerOptionsType = {}) {
+    constructor(id: string, geometries?: DrawToolLayerOptionsType | Array<Geometry>, options: DrawToolLayerOptionsType = {}) {
         if (geometries && (!isGeometry(geometries) && !Array.isArray(geometries) && GEOJSON_TYPES.indexOf((geometries as any).type) < 0)) {
             options = geometries;
             geometries = null;
@@ -47,6 +47,14 @@ export default class DrawToolLayer extends OverlayLayer {
         }
     }
 
+    _bindDrawToolLayer() {
+        const geoList = this._geoList || [];
+        geoList.forEach(geo => {
+            geo._drawToolLayer = this;
+        });
+        return this;
+    }
+
     bringToFront() {
         this._polygonLayer.bringToFront();
         this._lineLayer.bringToFront();
@@ -59,6 +67,7 @@ export default class DrawToolLayer extends OverlayLayer {
             geometries = [geometries];
         }
         pushIn(this._geoList, geometries);
+        this._bindDrawToolLayer();
         for (let i = 0; i < geometries.length; i++) {
             if (this._markerLayer.isVectorLayer) {
                 this._markerLayer.addGeometry(geometries[i]);
@@ -80,6 +89,7 @@ export default class DrawToolLayer extends OverlayLayer {
         }
         for (let i = 0; i < geometries.length; i++) {
             this._geoList.splice(geometries[i] as any, 1);
+            delete geometries[i]._drawToolLayer;
             if (this._markerLayer.isVectorLayer) {
                 this._markerLayer.removeGeometry(geometries[i]);
                 continue;
@@ -99,6 +109,7 @@ export default class DrawToolLayer extends OverlayLayer {
         for (let i = 0; i < geometries.length; i++) {
             if (geometries[i]) {
                 this._geoList.splice(geometries[i] as any, 1);
+                delete geometries[i]._drawToolLayer;
             }
         }
     }

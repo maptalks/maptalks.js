@@ -96,6 +96,8 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     //@internal
     _layer: OverlayLayer;
     //@internal
+    _drawToolLayer: OverlayLayer;
+    //@internal
     _angle: number
     //@internal
     _pivot: Coordinate

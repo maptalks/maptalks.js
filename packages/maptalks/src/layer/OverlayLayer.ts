@@ -61,6 +61,8 @@ class OverlayLayer extends Layer {
     //@internal
     _renderer: OverlayLayerCanvasRenderer;
 
+    isVectorLayer?: boolean;
+
     constructor(id: string, geometries?: OverlayLayerOptionsType | Array<Geometry>, options?: OverlayLayerOptionsType) {
         if (geometries && (!isGeometry(geometries) && !Array.isArray(geometries) && GEOJSON_TYPES.indexOf((geometries as any).type) < 0)) {
             options = geometries;
@@ -119,11 +121,19 @@ class OverlayLayer extends Layer {
         if (isNil(id) || id === '') {
             return null;
         }
-        if (!this._geoMap[id]) {
-            return null;
+        if (this._geoMap[id]) {
+            return this._geoMap[id];
         }
-        return this._geoMap[id];
+        const geoList = this._geoList || [];
+        for (let i = 0, len = geoList.length; i < len; i++) {
+            const geo = geoList[i];
+            if (geo && geo.getId() === id) {
+                return geo;
+            }
+        }
+        return null;
     }
+
 
     /**
      * 获取所有geometries，如果提供 filter() 方法,则根据方法返回
