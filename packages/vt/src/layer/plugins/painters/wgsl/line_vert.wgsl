@@ -103,6 +103,7 @@ struct VertexInput {
 
 struct VertexOutput {
     @builtin(position) position: vec4f,
+#ifndef PICKING_MODE
     @location($o) vNormal: vec2f,
     @location($o) vWidth: vec2f,
     @location($o) vGammaScale: f32,
@@ -115,7 +116,7 @@ struct VertexOutput {
     @location($o) vLinesofar: f32,
 #endif
 
-#ifndef PICKING_MODE
+
     #ifndef HAS_GRADIENT
         #ifdef HAS_COLOR
             @location($o) vColor: vec4f,
@@ -180,15 +181,20 @@ fn main(input: VertexInput) -> VertexOutput {
     let round = abs(f32(input.aExtrude.x)) % 2.0;
     let up = abs(f32(input.aExtrude.y)) % 2.0;
     //transfer up from (0 to 1) to (-1 to 1)
-    output.vNormal = vec2f(round, up * 2.0 - 1.0);
+    let lineNormal = vec2f(round, up * 2.0 - 1.0);
+    #ifndef PICKING_MODE
+        output.vNormal = lineNormal;
+    #endif
 
     let pos4 = vec4f(position, 1.0);
     let vertex = uniforms.projViewModelMatrix * uniforms.positionMatrix * pos4;
-    if (shaderUniforms.isRenderingTerrain == 1.0) {
-        output.vVertex = (uniforms.positionMatrix * pos4).xyz;
-    } else {
-        output.vVertex = (uniforms.modelMatrix * uniforms.positionMatrix * pos4).xyz;
-    }
+    #ifndef PICKING_MODE
+        if (shaderUniforms.isRenderingTerrain == 1.0) {
+            output.vVertex = (uniforms.positionMatrix * pos4).xyz;
+        } else {
+            output.vVertex = (uniforms.modelMatrix * uniforms.positionMatrix * pos4).xyz;
+        }
+    #endif
 
 #ifdef HAS_STROKE_WIDTH
     let strokeWidth = f32(input.aLineStrokeWidth) / 2.0 * shaderUniforms.layerScale;
@@ -213,7 +219,7 @@ fn main(input: VertexInput) -> VertexOutput {
     // of this vertex.
     let extrudeXY = vec2f(input.aExtrude.xy);
 #ifdef USE_LINE_OFFSET
-    let offset = lineOffset * (output.vNormal.y * (extrudeXY - input.aExtrudeOffset) + input.aExtrudeOffset);
+    let offset = lineOffset * (lineNormal.y * (extrudeXY - input.aExtrudeOffset) + input.aExtrudeOffset);
     var dist = (outset * extrudeXY + offset) / EXTRUDE_SCALE;
 #else
     let extrude = extrudeXY / EXTRUDE_SCALE;

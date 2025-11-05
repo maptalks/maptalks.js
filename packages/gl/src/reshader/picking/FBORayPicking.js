@@ -58,8 +58,8 @@ const frag0Wgsl = /*wgsl*/`
     @group(0) @binding($b) var<uniform> pickingUniforms: PickingUniforms;
 
     struct VertexOutput {
-        @location($i) vPickingId: f32,
         @location($i) vFbo_picking_visible: f32,
+        @location($i) vPickingId: f32,
     };
 
     @fragment
@@ -124,8 +124,8 @@ const frag1Wgsl = /*wgsl*/`
 const frag2 = `
     precision highp float;
 
-    varying float vPickingId;
     varying float vFbo_picking_visible;
+    varying float vPickingId;
 
     ${unpackFun}
 
@@ -142,8 +142,8 @@ const frag2Wgsl = /*wgsl*/`
     ${unpackFunWgsl}
 
     struct VertexOutput {
-        @location($i) vPickingId: f32,
         @location($i) vFbo_picking_visible: f32,
+        @location($i) vPickingId: f32,
     };
 
     @fragment
