@@ -205,7 +205,7 @@ export default class GraphicsDevice {
             const context = storage.getContext('webgpu');
             context.configure({
                 device,
-                format: 'bgra8unorm',
+                format: 'rgba8unorm',
                 usage: GPUTextureUsage.COPY_DST,
                 alphaMode: alphaModes[index]
             });
