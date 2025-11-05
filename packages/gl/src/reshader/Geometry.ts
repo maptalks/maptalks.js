@@ -455,9 +455,14 @@ export default class Geometry {
                 } else {
                     ctor = this.elements.constructor;
                 }
-                this.indices = new ctor(elements.length);
-                for (let i = 0; i < elements.length; i++) {
-                    this.indices[i] = elements[i];
+                if (elements instanceof ctor) {
+                    //2x faster
+                    this.indices = new ctor(elements);
+                } else {
+                    this.indices = new ctor(elements.length);
+                    for (let i = 0; i < elements.length; i++) {
+                        this.indices[i] = elements[i];
+                    }
                 }
             }
             this.elements = this.elements.destroy ? this.elements : Geometry.createElementBuffer(device, this.elements);
