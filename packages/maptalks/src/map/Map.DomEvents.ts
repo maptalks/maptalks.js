@@ -404,7 +404,7 @@ Map.include(/** @lends Map.prototype */ {
 
     //@internal
     _wrapTerrainData(eventParam: MapEventDataType) {
-        if (this.options['queryTerrainInMapEvents'] && eventParam.containerPoint && !eventParam.terrain) {
+        if (this.options['queryTerrainInMapEvents'] && eventParam.containerPoint && !eventParam.terrain && !this.isInteracting()) {
             eventParam.terrain = this._queryTerrainInfo(eventParam.containerPoint);
         }
     },
