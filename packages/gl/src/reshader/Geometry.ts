@@ -902,7 +902,7 @@ export default class Geometry {
         const { normalAttribute, positionAttribute, uv0Attribute } = this.desc;
         const normals = this._getAttributeData(normalAttribute);
         const positions = this._getAttributeData(positionAttribute);
-        let tangents = tangentsDataArray;
+        let tangents;
         if (tangentsDataArray && tangentsDataArray.length) {
             tangents = tangentsDataArray;
         } else {
