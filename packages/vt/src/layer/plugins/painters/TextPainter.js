@@ -6,10 +6,15 @@ import { getCharOffset } from './util/get_char_offset';
 import { projectLine } from './util/projection';
 import { getLabelNormal } from './util/get_label_normal';
 import vert from './glsl/text.vert';
+import wgslVert from './wgsl/text_vert.wgsl';
 import vertAlongLine from './glsl/text.line.vert';
+import wgslVertAlongLine from './wgsl/text_line_vert.wgsl';
 import frag from './glsl/text.frag';
+import wgslFrag from './wgsl/text_frag.wgsl';
 import pickingVert from './glsl/text.vert';
+import pickingWgslVert from './wgsl/text_vert.wgsl';
 import linePickingVert from './glsl/text.line.vert';
+import linePickingWgslVert from './wgsl/text_line_vert.wgsl';
 import { projectPoint } from './util/projection';
 import { getShapeMatrix } from './util/box_util';
 import { createTextMesh, DEFAULT_UNIFORMS, createTextShader, GAMMA_SCALE, getTextFnTypeConfig, isLabelCollides, getLabelEntryKey } from './util/create_text_painter';
@@ -920,11 +925,18 @@ export default class TextPainter extends CollisionPainter {
         };
 
         extraCommandProps.viewport = viewport;
-
+        const isVectorTile = this.layer.isVectorTileLayer;
+        const defines = {};
+        defines['POSITION_TYPE_2'] = isVectorTile ? 'vec2i' : 'vec2f';
+        defines['POSITION_TYPE_3'] = isVectorTile ? 'vec4i' : 'vec3f';
         this.shader = new reshader.MeshShader({
+            name: 'text',
             // vert: vertAlongLine, frag,
             vert, frag,
+            wgslVert,
+            wgslFrag,
             uniforms,
+            defines,
             extraCommandProps
         });
         let commandProps = extraCommandProps;
@@ -941,16 +953,24 @@ export default class TextPainter extends CollisionPainter {
             };
         }
         this._shaderAlongLine = new reshader.MeshShader({
-            vert: vertAlongLine, frag,
+            name: 'text-along-line',
+            vert: vertAlongLine,
+            frag,
+            wgslVert: wgslVertAlongLine,
+            wgslFrag: wgslFrag,
             uniforms,
-            extraCommandProps: commandProps
+            extraCommandProps: commandProps,
+            defines,
         });
 
         if (this.pickingFBO) {
             const textPicking = new reshader.FBORayPicking(
                 this.renderer,
                 {
+                    name: 'text-picking',
                     vert: '#define PICKING_MODE 1\n' + pickingVert,
+                    wgslVert: '#define PICKING_MODE 1\n' + pickingWgslVert,
+                    defines,
                     uniforms,
                     extraCommandProps: {
                         viewport: this.pickingViewport
@@ -968,8 +988,11 @@ export default class TextPainter extends CollisionPainter {
             const linePicking = new reshader.FBORayPicking(
                 this.renderer,
                 {
+                    name: 'line-text-picking',
                     vert: '#define PICKING_MODE 1\n' + linePickingVert,
+                    wgslVert: '#define PICKING_MODE 1\n' + linePickingWgslVert,
                     uniforms,
+                    defines,
                     extraCommandProps: {
                         viewport: this.pickingViewport
                     }

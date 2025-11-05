@@ -1,20 +1,18 @@
 import QuadShader from './QuadShader.js';
-import vert from './glsl/quad.vert';
 import frag from './glsl/copy.frag';
 
 class CopyShader extends QuadShader {
     constructor() {
         super({
-            vert,
             frag,
             extraCommandProps: {
                 viewport: {
                     x: 0,
                     y: 0,
-                    width: (context, props) => {
+                    width: (_, props) => {
                         return props['size'][0];
                     },
-                    height: (context, props) => {
+                    height: (_, props) => {
                         return props['size'][1];
                     }
                 }

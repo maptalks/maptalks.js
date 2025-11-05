@@ -9,10 +9,11 @@ struct TextLineUniforms {
     textPerspectiveRatio: f32,
     glyphTexSize: vec2f,
     tileRatio: f32,
+    zoomScale: f32,
 }
 
 struct ShaderUniforms {
-    zoomScale: f32,
+
     cameraToCenterDistance: f32,
     mapPitch: f32,
     canvasSize: vec2f,
@@ -29,43 +30,43 @@ struct ShaderUniforms {
 
 struct VertexInput {
 #ifdef HAS_ALTITUDE
-    @location($i) aPosition: vec2f,
+    @location($i) aPosition: POSITION_TYPE_2,
     @location($i) aAltitude: f32,
 #else
-    @location($i) aPosition: vec3f,
+    @location($i) aPosition: POSITION_TYPE_3,
 #endif
-    @location($i) aTexCoord: vec2f,
+    @location($i) aTexCoord: vec2u,
 #ifdef HAS_OFFSET_Z
-    @location($i) aOffset: vec3f,
+    @location($i) aOffset: vec3i,
 #else
-    @location($i) aOffset: vec2f,
+    @location($i) aOffset: vec2i,
 #endif
 #ifdef ENABLE_COLLISION
-    @location($i) aOpacity: f32,
+    @location($i) aOpacity: vec4u,
 #endif
 #ifdef HAS_OPACITY
-    @location($i) aColorOpacity: f32,
+    @location($i) aColorOpacity: u32,
 #endif
 #ifdef HAS_TEXT_SIZE
-    @location($i) aTextSize: f32,
+    @location($i) aTextSize: u32,
 #endif
 #ifdef HAS_TEXT_DX
-    @location($i) aTextDx: f32,
+    @location($i) aTextDx: i32,
 #endif
 #ifdef HAS_TEXT_DY
-    @location($i) aTextDy: f32,
+    @location($i) aTextDy: i32,
 #endif
 #ifdef HAS_PITCH_ALIGN
-    @location($i) aPitchAlign: f32,
+    @location($i) aPitchAlign: vec2u,
 #endif
 #ifdef HAS_TEXT_FILL
-    @location($i) aTextFill: vec4f,
+    @location($i) aTextFill: vec4u,
 #endif
 #ifdef HAS_TEXT_HALO_FILL
-    @location($i) aTextHaloFill: vec4f,
+    @location($i) aTextHaloFill: vec4u,
 #endif
-#if defined(HAS_TEXT_HALO_RADIUS) || defined(HAS_TEXT_HALO_OPACITY)
-    @location($i) aTextHalo: vec2f,
+#if HAS_TEXT_HALO_RADIUS || HAS_TEXT_HALO_OPACITY
+    @location($i) aTextHalo: vec2u,
 #endif
 };
 
@@ -82,7 +83,7 @@ struct VertexOutput {
     #ifdef HAS_TEXT_HALO_FILL
         @location($o) vTextHaloFill: vec4f,
     #endif
-    #if defined(HAS_TEXT_HALO_RADIUS) || defined(HAS_TEXT_HALO_OPACITY)
+    #if HAS_TEXT_HALO_RADIUS || HAS_TEXT_HALO_OPACITY
         @location($o) vTextHalo: vec2f,
     #endif
 #endif
@@ -93,28 +94,28 @@ struct VertexOutput {
 @vertex
 fn main(input: VertexInput) -> VertexOutput {
     var output: VertexOutput;
-    var position = unpackVTPosition();
+    var position = unpackVTPosition(input);
 
 #ifdef HAS_TEXT_DX
-    var myTextDx = input.aTextDx;
+    var myTextDx = f32(input.aTextDx);
 #else
     var myTextDx = uniforms.textDx;
 #endif
 
 #ifdef HAS_TEXT_DY
-    var myTextDy = input.aTextDy;
+    var myTextDy = f32(input.aTextDy);
 #else
     var myTextDy = uniforms.textDy;
 #endif
 
 #ifdef HAS_TEXT_SIZE
-    var myTextSize = input.aTextSize * shaderUniforms.layerScale;
+    var myTextSize = f32(input.aTextSize) * shaderUniforms.layerScale;
 #else
     var myTextSize = uniforms.textSize * shaderUniforms.layerScale;
 #endif
 
 #ifdef HAS_PITCH_ALIGN
-    var isPitchWithMap = input.aPitchAlign;
+    var isPitchWithMap = f32(input.aPitchAlign);
 #else
     var isPitchWithMap = uniforms.textPitchWithMap;
 #endif
@@ -136,31 +137,32 @@ fn main(input: VertexInput) -> VertexOutput {
     }
 
 #ifdef HAS_OFFSET_Z
-    var offset = input.aOffset / 10.0;
+    var offset = vec2f(input.aOffset) / 10.0;
     offset.z /= shaderUniforms.altitudeScale;
 #else
-    var offset = vec3f(input.aOffset / 10.0, 0.0);
+    var offset = vec3f(vec2f(input.aOffset) / 10.0, 0.0);
 #endif
 
-    var texCoord = input.aTexCoord;
+    var texCoord = vec2f(input.aTexCoord);
 
     if (isPitchWithMap == 1.0) {
         var offsetScale: f32;
         if (shaderUniforms.isRenderingTerrain == 1.0) {
             offsetScale = uniforms.tileRatio;
         } else {
-            offsetScale = uniforms.tileRatio / shaderUniforms.zoomScale * cameraScale * perspectiveRatio;
+            offsetScale = uniforms.tileRatio / uniforms.zoomScale * cameraScale * perspectiveRatio;
         }
-        offset.xy *= offsetScale;
+        offset = offset * offsetScale;
         output.position = uniforms.projViewModelMatrix * vec4f(position + offset, 1.0);
     } else {
-        output.position.xy += offset.xy * 2.0 / shaderUniforms.canvasSize * perspectiveRatio * projDistance;
+        let perspOffset = offset.xy * 2.0 / shaderUniforms.canvasSize * perspectiveRatio * projDistance;
+        output.position = vec4f(output.position.xy + perspOffset, output.position.zw);
     }
-
-    output.position.xy += vec2f(myTextDx, -myTextDy) * 2.0 / shaderUniforms.canvasSize * projDistance;
+    let dxdy = vec2f(myTextDx, -myTextDy) * 2.0 / shaderUniforms.canvasSize * projDistance;
+    output.position = vec4f(output.position.xy + dxdy, output.position.zw);
 
     if (shaderUniforms.textPitchFilter > 0.0) {
-        if (shaderUniforms.textPitchFilter == 1.0 && isPitchWithMap == 0.0 || shaderUniforms.textPitchFilter == 2.0 && isPitchWithMap == 1.0) {
+        if ((shaderUniforms.textPitchFilter == 1.0 && isPitchWithMap == 0.0) || (shaderUniforms.textPitchFilter == 2.0 && isPitchWithMap == 1.0)) {
             output.position = vec4f(-9999.0, -9999.0, 0.0, 1.0);
         }
     }
@@ -175,31 +177,31 @@ fn main(input: VertexInput) -> VertexOutput {
     output.vTexCoord = texCoord / uniforms.glyphTexSize;
     output.vTextSize = myTextSize;
 #ifdef ENABLE_COLLISION
-    output.vOpacity = input.aOpacity / 255.0;
+    output.vOpacity = f32(input.aOpacity[0]) / 255.0;
 #else
     output.vOpacity = 1.0;
 #endif
 #ifdef HAS_OPACITY
-    output.vOpacity *= input.aColorOpacity / 255.0;
+    output.vOpacity *= f32(input.aColorOpacity) / 255.0;
 #endif
 
 #ifdef HAS_TEXT_FILL
-    output.vTextFill = input.aTextFill / 255.0;
+    output.vTextFill = vec4f(input.aTextFill) / 255.0;
 #endif
 
 #ifdef HAS_TEXT_HALO_FILL
-    output.vTextHaloFill = input.aTextHaloFill / 255.0;
+    output.vTextHaloFill = vec4f(input.aTextHaloFill) / 255.0;
 #endif
 
-#if defined(HAS_TEXT_HALO_RADIUS) || defined(HAS_TEXT_HALO_OPACITY)
-    output.vTextHalo = input.aTextHalo;
+#if HAS_TEXT_HALO_RADIUS || HAS_TEXT_HALO_OPACITY
+    output.vTextHalo = vec2f(input.aTextHalo);
 #endif
 #if HAS_HIGHLIGHT_COLOR || HAS_HIGHLIGHT_OPACITY
     highlight_setVarying(input, output);
 #endif
 #else
 #ifdef ENABLE_COLLISION
-    var visible = input.aOpacity == 255.0;
+    var visible = f32(input.aOpacity[0]) == 255.0;
 #else
     var visible = true;
 #endif
