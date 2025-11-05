@@ -43,10 +43,10 @@ struct ShaderUniforms {
 
 struct VertexInput {
 #ifdef HAS_ALTITUDE
-    @location($i) aPosition: vec2f,
+    @location($i) aPosition: POSITION_TYPE_2,
     @location($i) aAltitude: f32,
 #else
-    @location($i) aPosition: vec3f,
+    @location($i) aPosition: POSITION_TYPE_3,
 #endif
     @location($i) aShape: vec4i,
 #ifdef ENABLE_COLLISION

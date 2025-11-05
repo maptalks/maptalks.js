@@ -1,9 +1,14 @@
 struct TextFragUniforms {
     layerOpacity: f32,
+
+}
+
+struct TextUniforms {
     alphaTest: f32
 }
 
 @group(0) @binding($b) var<uniform> uniforms: TextFragUniforms;
+@group(0) @binding($b) var<uniform> textUniforms: TextUniforms;
 
 #include <text_render_frag>
 #include <highlight_frag>
@@ -19,7 +24,7 @@ struct VertexOutput {
     #ifdef HAS_TEXT_HALO_FILL
         @location($o) vTextHaloFill: vec4f,
     #endif
-    #if defined(HAS_TEXT_HALO_RADIUS) || defined(HAS_TEXT_HALO_OPACITY)
+    #if HAS_TEXT_HALO_RADIUS || HAS_TEXT_HALO_OPACITY
         @location($o) vTextHalo: vec2f,
     #endif
 };
@@ -28,7 +33,7 @@ struct VertexOutput {
 fn main(input: VertexOutput) -> @location(0) vec4f {
     var fragColor = renderText(input) * input.vOpacity * uniforms.layerOpacity;
 
-    if (fragColor.a < uniforms.alphaTest) {
+    if (fragColor.a < textUniforms.alphaTest) {
         discard;
     }
 

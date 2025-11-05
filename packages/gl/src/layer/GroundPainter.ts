@@ -1,7 +1,7 @@
 import { vec2, mat4 } from 'gl-matrix';
 import { pbr } from '../reshader';
 import * as reshader from '../reshader';
-import { fillVert, fillFrag } from './glsl/fill.js';
+import { fillVert, fillFrag, fillWgslVert, fillWgslFrag } from './glsl/fill.js';
 import ShadowProcess from './shadow/ShadowProcess';
 import { extend, getGroundTransform, hasOwn, normalizeColor } from './util/util.js';
 import { computeUVUniforms } from './util/uvUniforms.js';
@@ -288,8 +288,8 @@ class GroundPainter {
             name: 'ground-fill',
             vert: fillVert,
             frag: fillFrag,
-            wgslFrag: null,
-            wgslVert: null,
+            wgslVert: fillWgslVert,
+            wgslFrag: fillWgslFrag,
             uniforms: fillUniforms,
             extraCommandProps,
             defines: {}
@@ -367,7 +367,7 @@ class GroundPainter {
 
     _createGround() {
         const planeGeo = new reshader.Plane();
-        planeGeo.data.aTexCoord = new Uint8Array(
+        planeGeo.data.aTexCoord = new Float32Array(
             [
                 0, 0,
                 1, 0,

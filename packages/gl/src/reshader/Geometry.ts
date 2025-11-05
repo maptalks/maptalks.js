@@ -402,8 +402,6 @@ export default class Geometry {
             }
             if (Array.isArray(data[key])) {
                 data[key] = new Float32Array(data[key] as number[]);
-            } else if (isWebGPU && isArray(data[key])) {
-                data[key] = Geometry.padGPUBufferAlignment(data[key] as TypedArray, vertexCount);
             }
             //如果调用过addBuffer，buffer有可能是ArrayBuffer
             if (data[key].buffer !== undefined && !(data[key].buffer instanceof ArrayBuffer)) {
@@ -417,7 +415,12 @@ export default class Geometry {
             } else {
                 const arr = data[key].data ? data[key].data : data[key];
                 const dimension = arr.length / vertexCount;
-                const info = data[key].data ? data[key] : { data: data[key] };
+                let bufferData = data[key];
+                if (isWebGPU) {
+                    bufferData = Geometry.padGPUBufferAlignment(arr, vertexCount);
+                }
+                const info = data[key].data ? data[key] : {};
+                info.data = bufferData;
                 info.dimension = dimension;
                 const buffer = Geometry.createBuffer(device, info, key);
                 buffer[REF_COUNT_KEY] = 1;
@@ -573,6 +576,7 @@ export default class Geometry {
         if (buffer) {
             if (buffer.buffer.mapState) {
                 //webgpu buffer
+                data = Geometry.padGPUBufferAlignment(data, this._vertexCount);
                 buffer.buffer = this._updateGPUBuffer(buffer.buffer, data);
             } else {
                 buffer.buffer(data);

@@ -9,63 +9,68 @@ struct TextVertexUniforms {
     textRotateWithMap: f32,
     textRotation: f32,
     flipY: f32,
-    cameraToCenterDistance: f32,
     textPerspectiveRatio: f32,
     glyphTexSize: vec2f,
+    zoomScale: f32,
+    tileRatio: f32,
+    positionMatrix: mat4x4f,
+    projViewModelMatrix: mat4x4f
+};
+
+struct TextUniforms {
+    cameraToCenterDistance: f32,
+
     canvasSize: vec2f,
     glyphSize: f32,
     mapPitch: f32,
     mapRotation: f32,
-    zoomScale: f32,
-    tileRatio: f32,
     layerScale: f32,
     isRenderingTerrain: f32
 };
 
-@group(0) @binding(0) var<uniform> uniforms: TextVertexUniforms;
-@group(0) @binding(1) var positionMatrix: mat4x4f;
-@group(0) @binding(2) var projViewModelMatrix: mat4x4f;
+@group(0) @binding($b) var<uniform> uniforms: TextVertexUniforms;
+@group(0) @binding($b) var<uniform> textUniforms: TextUniforms;
 
 struct VertexInput {
 #ifdef HAS_ALTITUDE
-    @location($i) aPosition: vec2f,
+    @location($i) aPosition: POSITION_TYPE_2,
     @location($i) aAltitude: f32,
 #else
-    @location($i) aPosition: vec3f,
+    @location($i) aPosition: POSITION_TYPE_3,
 #endif
-    @location($i) aShape: vec4f,
+    @location($i) aShape: vec4i,
 #ifdef ENABLE_COLLISION
-    @location($i) aOpacity: f32,
+    @location($i) aOpacity: vec4u,
 #endif
 #ifdef HAS_OPACITY
-    @location($i) aColorOpacity: f32,
+    @location($i) aColorOpacity: u32,
 #endif
 #ifdef HAS_TEXT_SIZE
-    @location($i) aTextSize: f32,
+    @location($i) aTextSize: u32,
 #endif
 #ifdef HAS_TEXT_DX
-    @location($i) aTextDx: f32,
+    @location($i) aTextDx: i32,
 #endif
 #ifdef HAS_TEXT_DY
-    @location($i) aTextDy: f32,
+    @location($i) aTextDy: i32,
 #endif
 #ifdef HAS_PITCH_ALIGN
-    @location($i) aPitchAlign: f32,
+    @location($i) aPitchAlign: u32,
 #endif
 #ifdef HAS_TEXT_ROTATION_ALIGN
-    @location($i) aRotationAlign: f32,
+    @location($i) aRotationAlign: u32,
 #endif
 #ifdef HAS_TEXT_ROTATION
-    @location($i) aRotation: f32,
+    @location($i) aRotation: u32,
 #endif
 #ifdef HAS_TEXT_FILL
-    @location($i) aTextFill: vec4f,
+    @location($i) aTextFill: vec4u,
 #endif
 #ifdef HAS_TEXT_HALO_FILL
-    @location($i) aTextHaloFill: vec4f,
+    @location($i) aTextHaloFill: vec4u,
 #endif
-#if defined(HAS_TEXT_HALO_RADIUS) || defined(HAS_TEXT_HALO_OPACITY)
-    @location($i) aTextHalo: vec2f,
+#if HAS_TEXT_HALO_RADIUS || HAS_TEXT_HALO_OPACITY
+    @location($i) aTextHalo: vec2u,
 #endif
 };
 
@@ -82,7 +87,7 @@ struct VertexOutput {
     #ifdef HAS_TEXT_HALO_FILL
         @location($o) vTextHaloFill: vec4f,
     #endif
-    #if defined(HAS_TEXT_HALO_RADIUS) || defined(HAS_TEXT_HALO_OPACITY)
+    #if HAS_TEXT_HALO_RADIUS || HAS_TEXT_HALO_OPACITY
         @location($o) vTextHalo: vec2f,
     #endif
 #endif
@@ -97,13 +102,15 @@ struct VertexOutput {
 
 @vertex
 fn main(input: VertexInput) -> VertexOutput {
+    let isRenderingTerrain = textUniforms.isRenderingTerrain;
+    let layerScale = textUniforms.layerScale;
     var output: VertexOutput;
-    var position = unpackVTPosition();
+    var position = unpackVTPosition(input);
 
 #ifdef HAS_TEXT_SIZE
-    var myTextSize = input.aTextSize * uniforms.layerScale;
+    var myTextSize = input.aTextSize * layerScale;
 #else
-    var myTextSize = uniforms.textSize * uniforms.layerScale;
+    var myTextSize = uniforms.textSize * layerScale;
 #endif
 
 #ifdef HAS_TEXT_DX
@@ -134,27 +141,27 @@ fn main(input: VertexInput) -> VertexOutput {
     var projDistance = output.position.w;
 
     var perspectiveRatio: f32;
-    if (uniforms.isRenderingTerrain == 1.0 && isPitchWithMap == 1.0) {
+    if (isRenderingTerrain == 1.0 && isPitchWithMap == 1.0) {
         perspectiveRatio = 1.0;
     } else {
-        var distanceRatio = (1.0 - uniforms.cameraToCenterDistance / projDistance) * uniforms.textPerspectiveRatio;
+        var distanceRatio = (1.0 - textUniforms.cameraToCenterDistance / projDistance) * uniforms.textPerspectiveRatio;
         perspectiveRatio = clamp(
             0.5 + 0.5 * (1.0 - distanceRatio),
             0.0,
             4.0);
     }
-
+    let mapRotation = textUniforms.mapRotation;
 #ifdef HAS_TEXT_ROTATION
-    var rotation = -input.aRotation / 9362.0 - uniforms.mapRotation * isRotateWithMap;
+    var rotation = -input.aRotation / 9362.0 - mapRotation * isRotateWithMap;
 #else
-    var rotation = -uniforms.textRotation - uniforms.mapRotation * isRotateWithMap;
+    var rotation = -uniforms.textRotation - mapRotation * isRotateWithMap;
 #endif
 
     if (isPitchWithMap == 1.0) {
 #ifdef REVERSE_MAP_ROTATION_ON_PITCH
-        rotation += uniforms.mapRotation;
+        rotation += mapRotation;
 #else
-        rotation -= uniforms.mapRotation;
+        rotation -= mapRotation;
 #endif
     }
 
@@ -162,74 +169,79 @@ fn main(input: VertexInput) -> VertexOutput {
     var angleCos = cos(rotation);
     var shapeMatrix = mat2x2f(angleCos, -1.0 * angleSin, angleSin, angleCos);
 
-    var shape = input.aShape.xy / 10.0;
+    var shape = vec2f(input.aShape.xy) / 10.0;
     if (isPitchWithMap == 1.0 && uniforms.flipY == 0.0) {
         shape = shape * vec2f(1.0, -1.0);
     }
 
-    var texCoord = input.aShape.zw;
-    shape = shapeMatrix * (shape / uniforms.glyphSize * myTextSize);
+    var texCoord = vec2f(input.aShape.zw);
+    shape = shapeMatrix * (shape / textUniforms.glyphSize * myTextSize);
 
+
+    let tileRatio = uniforms.tileRatio;
+    let zoomScale = uniforms.zoomScale;
     var cameraScale: f32;
-    if (uniforms.isRenderingTerrain == 1.0) {
+    if (isRenderingTerrain == 1.0) {
         cameraScale = 1.0;
     } else {
-        cameraScale = projDistance / uniforms.cameraToCenterDistance;
+        cameraScale = projDistance / textUniforms.cameraToCenterDistance;
     }
-
+    let canvasSize = textUniforms.canvasSize;
     if (isPitchWithMap == 0.0) {
-        var offset = shape * 2.0 / uniforms.canvasSize;
-        output.position.xy += offset * perspectiveRatio * projDistance;
+        var offset = shape * 2.0 / canvasSize;
+        // output.position.xy += offset * perspectiveRatio * projDistance;
+        output.position = vec4(output.position.xy + offset * perspectiveRatio * projDistance, output.position.zw);
     } else {
         var offsetScale: f32;
-        if (uniforms.isRenderingTerrain == 1.0) {
-            offsetScale = uniforms.tileRatio / uniforms.zoomScale;
+        if (isRenderingTerrain == 1.0) {
+            offsetScale = tileRatio / zoomScale;
         } else {
-            offsetScale = uniforms.tileRatio / uniforms.zoomScale * cameraScale * perspectiveRatio;
+            offsetScale = tileRatio / zoomScale * cameraScale * perspectiveRatio;
         }
         var offset = shape;
         output.position = uniforms.projViewModelMatrix * uniforms.positionMatrix * vec4f(position + vec3f(offset, 0.0) * offsetScale, 1.0);
     }
 
-    output.position.xy += vec2f(myTextDx, -myTextDy) * 2.0 / uniforms.canvasSize * projDistance;
+    let dxdy = vec2f(myTextDx, -myTextDy) * 2.0 / canvasSize * projDistance;
+    output.position = vec4(output.position.xy + dxdy, output.position.zw);
 
 #ifndef PICKING_MODE
     if (isPitchWithMap == 0.0) {
         output.vGammaScale = mix(1.0, cameraScale, uniforms.textPerspectiveRatio);
     } else {
-        output.vGammaScale = cameraScale + uniforms.mapPitch / 4.0;
+        output.vGammaScale = cameraScale + textUniforms.mapPitch / 4.0;
     }
     output.vTexCoord = texCoord / uniforms.glyphTexSize;
     output.vGammaScale = clamp(output.vGammaScale, 0.0, 1.0);
 
     output.vTextSize = myTextSize;
 #ifdef ENABLE_COLLISION
-    output.vOpacity = input.aOpacity / 255.0;
+    output.vOpacity = f32(input.aOpacity[0]) / 255.0;
 #else
     output.vOpacity = 1.0;
 #endif
 
 #ifdef HAS_OPACITY
-    output.vOpacity *= input.aColorOpacity / 255.0;
+    output.vOpacity *= f32(input.aColorOpacity) / 255.0;
 #endif
 
 #ifdef HAS_TEXT_FILL
-    output.vTextFill = input.aTextFill / 255.0;
+    output.vTextFill = vec4f(input.aTextFill) / 255.0;
 #endif
 
 #ifdef HAS_TEXT_HALO_FILL
-    output.vTextHaloFill = input.aTextHaloFill / 255.0;
+    output.vTextHaloFill = vec4f(input.aTextHaloFill) / 255.0;
 #endif
 
-#if defined(HAS_TEXT_HALO_RADIUS) || defined(HAS_TEXT_HALO_OPACITY)
-    output.vTextHalo = input.aTextHalo;
+#if HAS_TEXT_HALO_RADIUS || HAS_TEXT_HALO_OPACITY
+    output.vTextHalo = vec2f(input.aTextHalo);
 #endif
 #if HAS_HIGHLIGHT_COLOR || HAS_HIGHLIGHT_OPACITY
     highlight_setVarying(input, output);
 #endif
 #else
 #ifdef ENABLE_COLLISION
-    var visible = input.aOpacity == 255.0;
+    var visible = f32(input.aOpacity[0]) == 255.0;
 #else
     var visible = true;
 #endif

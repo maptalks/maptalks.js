@@ -1,14 +1,12 @@
 import Geometry from './Geometry.js';
-import { getPosArrayType } from './common/Util';
 
 class Plane extends Geometry {
     constructor(z?: number) {
         z = z || 0;
-        const arrType = getPosArrayType(z);
         super(
             {
                 //width and height are both 1
-                aPosition : new arrType([
+                aPosition : new Float32Array([
                     -1, -1, z, // left bottom
                     1, -1, z,  // right bottom
                     -1, 1, z,  // left top
@@ -16,7 +14,7 @@ class Plane extends Geometry {
                 ]),
 
                 // Normal
-                aNormal : new Int8Array([
+                aNormal : new Float32Array([
                     0, 0, 1,
                     0, 0, 1,
                     0, 0, 1,

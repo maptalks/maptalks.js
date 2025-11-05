@@ -32,6 +32,10 @@ class Renderer {
     clear(options: REGL.ClearOptions) {
         this.device.clear(options);
     }
+
+    isWebGPU() {
+        return !!this.device.wgpu;
+    }
 }
 
 export default Renderer;
