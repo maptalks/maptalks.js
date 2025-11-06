@@ -257,7 +257,13 @@ export function buildExtrudeFaces(
             }
         }
     }
-    const pickingCtor = PackUtil.getUnsignedArrayType(pickingIds.getLength() ? pickingIds[pickingIds.getLength() - 1] : 0);
+    const isVector3D = !!center;
+    let pickingCtor;
+    if (isVector3D) {
+        pickingCtor = Float32Array;
+    } else {
+        pickingCtor = PackUtil.getUnsignedArrayType(pickingIds.getLength() ? pickingIds[pickingIds.getLength() - 1] : 0);
+    }
 
     const data = {
         hasNegativeHeight,
