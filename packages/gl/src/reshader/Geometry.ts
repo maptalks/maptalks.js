@@ -456,7 +456,8 @@ export default class Geometry {
                     ctor = this.elements.constructor;
                 }
                 if (elements instanceof ctor) {
-                    //2x faster
+                    //2x faster by new TypeArray(typearray)
+                    //https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Uint32Array
                     this.indices = new ctor(elements);
                 } else {
                     this.indices = new ctor(elements.length);
