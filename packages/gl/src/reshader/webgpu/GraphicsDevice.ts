@@ -279,6 +279,10 @@ export default class GraphicsDevice {
             this._defaultFramebuffer.destroy();
             delete this._defaultFramebuffer;
         }
+        if (this.dynamicBufferPool) {
+            this.dynamicBufferPool.destroy();
+            delete this.dynamicBufferPool;
+        }
         for (const p in this._readTargets) {
             const buffer = this._readTargets[p];
             if (buffer) {

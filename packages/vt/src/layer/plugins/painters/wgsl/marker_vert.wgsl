@@ -62,10 +62,10 @@ struct VertexInput {
     @location($i) aDxDy: vec4i,
 #endif
 #ifdef HAS_MARKER_WIDTH
-    @location($i) aMarkerWidth: u32,
+    @location($i) aMarkerWidth: vec2u,
 #endif
 #ifdef HAS_MARKER_HEIGHT
-    @location($i) aMarkerHeight: u32,
+    @location($i) aMarkerHeight: vec2u,
 #endif
 #if HAS_MARKER_PITCH_ALIGN || HAS_TEXT_PITCH_ALIGN
     @location($i) aPitchAlign: vec2u,
@@ -142,13 +142,13 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
 #endif
 
 #ifdef HAS_MARKER_WIDTH
-    var myMarkerWidth = f32(vertexInput.aMarkerWidth);
+    var myMarkerWidth = f32(vertexInput.aMarkerWidth[0]);
 #else
     var myMarkerWidth = uniforms.markerWidth;
 #endif
 
 #ifdef HAS_MARKER_HEIGHT
-    var myMarkerHeight = f32(vertexInput.aMarkerHeight);
+    var myMarkerHeight = f32(vertexInput.aMarkerHeight[0]);
 #else
     var myMarkerHeight = uniforms.markerHeight;
 #endif
