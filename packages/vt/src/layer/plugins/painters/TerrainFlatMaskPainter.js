@@ -94,8 +94,6 @@ class TerrainFlatMaskPainter extends BasicPainter {
             },
         ];
 
-//         const TYPE_CONSTS = `#define POSITION_TYPE vec2i
-// `;
         this.shader = new reshader.MeshShader({
             name: 'vt-terrain-flat-mask',
             vert, frag,

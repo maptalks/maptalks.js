@@ -925,10 +925,8 @@ export default class TextPainter extends CollisionPainter {
         };
 
         extraCommandProps.viewport = viewport;
-        const isVectorTile = this.layer.isVectorTileLayer;
         const defines = {};
-        defines['POSITION_TYPE_2'] = isVectorTile ? 'vec2i' : 'vec2f';
-        defines['POSITION_TYPE_3'] = isVectorTile ? 'vec4i' : 'vec3f';
+        this.appendWGSLPositionType(defines);
         this.shader = new reshader.MeshShader({
             name: 'text',
             // vert: vertAlongLine, frag,

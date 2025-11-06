@@ -35,10 +35,10 @@ struct ShaderUniforms {
 
 struct VertexInput {
 #ifdef HAS_ALTITUDE
-    @location($i) aPosition: POSITION_TYPE,
+    @location($i) aPosition: POSITION_TYPE_2,
     @location($i) aAltitude: f32,
 #else
-    @location($i) aPosition: vec4i,
+    @location($i) aPosition: POSITION_TYPE_3,
 #endif
 
 @location($i) aExtrude: vec4i,
