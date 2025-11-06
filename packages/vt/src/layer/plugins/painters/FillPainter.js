@@ -603,14 +603,16 @@ class FillPainter extends BasicPainter {
 
         if (this.pickingFBO) {
             const projViewModelMatrix = [];
-            const isVectorTile = this.layer instanceof maptalks.TileLayer;
+            const isVectorTile = this.layer.isVectorTileLayer;
+            const defines = { 'PICKING_MODE': 1 };
+            this.appendWGSLPositionType(defines);
             this.picking = [new reshader.FBORayPicking(
                 this.renderer,
                 {
                     name: 'fill-picking',
                     vert: pickingVert,
                     wgslVert: pickingWgsl,
-                    defines: { 'PICKING_MODE': 1 },
+                    defines,
                     uniforms: [
                         {
                             name: 'projViewModelMatrix',
@@ -647,13 +649,11 @@ class FillPainter extends BasicPainter {
         const defines = {};
         this.fillIncludes(defines, uniforms, context);
 
-        const isVectorTile = this.layer instanceof maptalks.TileLayer;
-        const TYPE_CONSTS = `#define POSITION_TYPE ${isVectorTile ? 'vec2i' : 'vec2f'}
-`;
+        this.appendWGSLPositionType(defines);
         this.shader = new reshader.MeshShader({
             name: 'vt-fill',
             vert, frag,
-            wgslVert: TYPE_CONSTS + wgslVert,
+            wgslVert: wgslVert,
             wgslFrag,
             uniforms,
             defines,
