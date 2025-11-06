@@ -72,9 +72,7 @@ class TerrainLitPainter extends TerrainPainter {
             aPosition: positions,
             aTexCoord: texcoords,
             aNormal: normals
-        },
-            triangles,
-            0);
+        }, triangles, 0);
         // 共用端点时，法线值会出现错误，造成视觉上不连续，所以需要唯一化
         // 唯一化后，三角形数量不变，但端点数组大概会膨胀5倍以上
         // geo.buildUniqueVertex();
