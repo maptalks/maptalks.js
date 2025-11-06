@@ -9,6 +9,7 @@ import REGL from '@maptalks/regl';
 import { flatten } from 'earcut';
 import { getGPUVertexType, getFormatFromGLTFAccessor, getBytesPerElementFromGLTFAccessor } from './webgpu/common/Types';
 import { roundUp } from './webgpu/common/math';
+import GraphicsDevice from './webgpu/GraphicsDevice';
 
 const EMPTY_VAO_BUFFER = [];
 
@@ -415,7 +416,7 @@ export default class Geometry {
             } else {
                 const arr = data[key].data ? data[key].data : data[key];
                 const dimension = arr.length / vertexCount;
-                let bufferData = data[key];
+                let bufferData = arr;
                 if (isWebGPU) {
                     bufferData = Geometry.padGPUBufferAlignment(arr, vertexCount);
                 }
@@ -577,7 +578,7 @@ export default class Geometry {
             if (buffer.buffer.mapState) {
                 //webgpu buffer
                 data = Geometry.padGPUBufferAlignment(data, this._vertexCount);
-                buffer.buffer = this._updateGPUBuffer(buffer.buffer, data);
+                buffer.buffer = this._updateGPUBuffer(buffer.buffer, data, 0, data.buffer.byteLength);
             } else {
                 buffer.buffer(data);
             }
@@ -591,11 +592,11 @@ export default class Geometry {
         return this;
     }
 
-    _updateGPUBuffer(buffer : GPUBuffer, data : AttributeData) {
+    _updateGPUBuffer(buffer : GPUBuffer, data : AttributeData, offset: number, byteLength: number) {
         if (Array.isArray(data)) {
             data = new Float32Array(data);
         }
-        const device = (buffer as any).device;
+        const device = (buffer as any).device as GraphicsDevice;
         const size = data.buffer.byteLength;
         if (size > buffer.size) {
             const newBuffer = createGPUBuffer(device, data, buffer.usage, buffer.label);
@@ -603,7 +604,7 @@ export default class Geometry {
             buffer.destroy();
             return newBuffer;
         }
-        device.wgpu.queue.writeBuffer(buffer, 0, data.buffer, 0, data.buffer.byteLength);
+        device.wgpu.queue.writeBuffer(buffer, 0, data.buffer, offset, byteLength);
         return buffer;
     }
 
@@ -621,12 +622,23 @@ export default class Geometry {
             this._updateSubBoundingBox(data);
         }
         if (buffer) {
-            const byteWidth = REGL_TYPE_WIDTH[buffer.buffer['_buffer'].dtype];
-            if (data.BYTES_PER_ELEMENT !== byteWidth) {
-                const ctor = getTypeCtor(data, byteWidth);
-                data = new ctor(data);
+            if (buffer.buffer.mapState) {
+                //webgpu buffer
+                data = Geometry.padGPUBufferAlignment(data, this._vertexCount);
+                const byteWidth = buffer.buffer.bytesPerElement;
+                if (data.BYTES_PER_ELEMENT !== byteWidth) {
+                    const ctor = getTypeCtor(data, byteWidth);
+                    data = new ctor(data);
+                }
+                buffer.buffer = this._updateGPUBuffer(buffer.buffer, data, offset * byteWidth, data.buffer.byteLength);
+            } else {
+                const byteWidth = REGL_TYPE_WIDTH[buffer.buffer['_buffer'].dtype];
+                if (data.BYTES_PER_ELEMENT !== byteWidth) {
+                    const ctor = getTypeCtor(data, byteWidth);
+                    data = new ctor(data);
+                }
+                buffer.buffer.subdata(data, offset * byteWidth);
             }
-            buffer.buffer.subdata(data, offset * byteWidth);
         } else {
             const arr = this.data[name].data ? this.data[name].data : this.data[name];
             for (let i = 0; i < data.length; i++) {
@@ -665,7 +677,7 @@ export default class Geometry {
                     const ctor = findElementConstructor(elements);
                     elements = new ctor(elements);
                 }
-                this.elements = this._updateGPUBuffer(e, elements);
+                this.elements = this._updateGPUBuffer(e, elements, 0, elements.buffer.byteLength);
             } else {
                 this.elements = (e as any)(elements);
             }

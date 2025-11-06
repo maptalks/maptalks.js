@@ -17,7 +17,7 @@ function getDefineSet(order) {
 }
 
 function splitDefineCondition(defineKey) {
-    return defineKey.split(/&&|\|\|/);
+    return defineKey.split(/&&|\|\|/).map(v => v.trim());
 }
 
 export function limitDefinesByDevice(device, defines, defineOrder, checkedDefineKeys, currentAttrCount) {
@@ -58,7 +58,8 @@ const MARKER_DEFINE_ORDER = [
     'HAS_ALTITUDE',
     'HAS_OFFSET_Z',
     'HAS_TEXT_SIZE',
-    'HAS_MARKER_WIDTH || HAS_MARKER_HEIGHT',
+    'HAS_MARKER_WIDTH',
+    'HAS_MARKER_HEIGHT',
     'HAS_TEXT_FILL',
     'HAS_MARKER_DX || HAS_MARKER_DY || HAS_TEXT_DX || HAS_TEXT_DY',
     'HAS_OPACITY',
@@ -73,8 +74,8 @@ const MARKER_DEFINE_ORDER = [
 const MARKER_DEFINES = getDefineSet(MARKER_DEFINE_ORDER);
 
 export function limitMarkerDefinesByDevice(device, defines) {
-    // aPosition, aShape
-    const currentAttrCount = 2;
+    // aPosition, aShape, aPickingId(for picking)
+    const currentAttrCount = 3;
     return limitDefinesByDevice(device, defines, MARKER_DEFINE_ORDER, MARKER_DEFINES, currentAttrCount);
 }
 
