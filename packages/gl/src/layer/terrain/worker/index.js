@@ -769,7 +769,12 @@ function createColorsTexture(data, colors, tileSize) {
 
 }
 
-function createTerrainGeometryTangent(terrainMesh) {
+/**
+ * create terrain geometry tangents by worker for perf
+ * @param {*} terrainMesh 
+ * @returns 
+ */
+function createTerrainGeometryTangents(terrainMesh) {
     if (!terrainMesh) {
         return;
     }
@@ -811,13 +816,15 @@ export const onmessage = function (message, postResponse) {
         const tileSize = (data.params || {}).tileSize;
         loadTerrain(data.params, (data, transferables) => {
             transferables = transferables || [];
+            //create terrain colors texture
             const texture = createColorsTexture(data, colors, tileSize);
             if (texture) {
                 data.colorsTexture = texture;
                 transferables.push(texture);
             }
 
-            const tangents = createTerrainGeometryTangent(data.mesh);
+            //create terrain geometry tangents attribute
+            const tangents = createTerrainGeometryTangents(data.mesh);
             if (tangents && data.mesh) {
                 data.mesh.tangents = tangents;
                 transferables.push(tangents.buffer);
