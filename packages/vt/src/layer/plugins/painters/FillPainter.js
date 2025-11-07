@@ -625,7 +625,7 @@ class FillPainter extends BasicPainter {
                     ],
                     extraCommandProps,
                     enableStencil: () => {
-                        return isVectorTile && this.isOnly2D();
+                        return !!(isVectorTile && this.isOnly2D());
                     }
                 },
                 this.pickingFBO,
