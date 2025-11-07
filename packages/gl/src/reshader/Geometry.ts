@@ -96,16 +96,24 @@ export default class Geometry {
         const ctor = array.constructor as any;
         const itemSize = array.length / vertexCount;
         const bytesPerElement = itemBytes / itemSize;
-        // 无法对齐时，itemSize 一定是1或者3，补位成2或者4就能对齐了
-
-        const newItemSize = ensureAlignment(itemSize, bytesPerElement);
-        const newArray = new ctor(newItemSize * vertexCount);
-        for (let i = 0; i < vertexCount; i++) {
-            for (let ii = 0; ii < itemSize; ii++) {
-                newArray[i * newItemSize + ii] = array[i * itemSize + ii];
+        // 无法对齐时，itemSize 一定是1,2,3，不可能是4
+        if (itemSize === 3) {
+            // itemSize 为 3时，补位为 4，wgsl中需要相应修改类型声明
+            const newItemSize = ensureAlignment(itemSize, bytesPerElement);
+            const newArray = new ctor(newItemSize * vertexCount);
+            for (let i = 0; i < vertexCount; i++) {
+                for (let ii = 0; ii < itemSize; ii++) {
+                    newArray[i * newItemSize + ii] = array[i * itemSize + ii];
+                }
             }
+            return newArray;
+        } else {
+            // itemSize 为 1或2时，提升数组的类型，不影响wgsl中的类型声明
+            const newCtor = getPadArrayCtor(ctor, itemSize);
+            const newArray = new newCtor(itemSize * vertexCount);
+            newArray.set(array);
+            return newArray;
         }
-        return newArray;
     }
 
     data: Record<string, AttributeData>
@@ -1316,3 +1324,25 @@ function ensureAlignment(itemSize: number, bytesPerElement: number): any {
     return itemSize + (4 - (itemBytes % 4)) / bytesPerElement;
 }
 
+// itemSize 只可能是1，2
+function getPadArrayCtor(ctor, itemSize): any {
+    if (ctor === Uint8Array || ctor === Uint8ClampedArray) {
+        if (itemSize === 1) {
+            return Uint32Array;
+        } else {
+            return Uint16Array;
+        }
+    } else if (ctor === Int8Array) {
+        if (itemSize === 1) {
+            return Int32Array;
+        } else {
+            return Int16Array;
+        }
+    } else if (ctor === Uint16Array) {
+        return Uint32Array;
+    } else if (ctor === Int16Array) {
+        return Int32Array;
+    } else {
+        throw new Error('sth unexpected in getPadArrayCtor');
+    }
+}

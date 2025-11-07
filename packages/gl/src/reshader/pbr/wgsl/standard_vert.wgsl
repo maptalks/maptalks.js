@@ -35,7 +35,7 @@ struct VertexInput {
     #endif
 
     #ifdef HAS_OPACITY
-        @location($i) aOpacity: vec4u,
+        @location($i) aOpacity: u32,
     #endif
 
     #if HAS_COLOR0
@@ -278,7 +278,7 @@ fn main(input: VertexInput) -> VertexOutput {
         #endif
 
         #ifdef HAS_OPACITY
-            output.vOpacity = f32(input.aOpacity[0]) / 255.0;
+            output.vOpacity = f32(input.aOpacity) / 255.0;
         #else
             output.vOpacity = 1.0;
         #endif

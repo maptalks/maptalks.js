@@ -40,7 +40,7 @@ struct VertexInput {
 #endif
     @location($i) aShape: vec4i,
 #ifdef ENABLE_COLLISION
-    @location($i) aOpacity: vec4u,
+    @location($i) aOpacity: u32,
 #endif
 #ifdef HAS_OPACITY
     @location($i) aColorOpacity: u32,
@@ -216,7 +216,7 @@ fn main(input: VertexInput) -> VertexOutput {
 
     output.vTextSize = myTextSize;
 #ifdef ENABLE_COLLISION
-    output.vOpacity = f32(input.aOpacity[0]) / 255.0;
+    output.vOpacity = f32(input.aOpacity) / 255.0;
 #else
     output.vOpacity = 1.0;
 #endif
