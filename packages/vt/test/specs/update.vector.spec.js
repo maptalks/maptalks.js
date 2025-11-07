@@ -2209,7 +2209,7 @@ describe('vector layers update style specs', () => {
                 polygonFill: '#0f0'
             },
             properties: {
-                height: 80000
+                height_0: 80000
             }
         });
 
@@ -2223,7 +2223,7 @@ describe('vector layers update style specs', () => {
                 const pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 30);
                 assert(pixel[3] === 0);
                 layer.updateDataConfig({
-                    altitudeProperty: 'height'
+                    altitudeProperty: 'height_0'
                 });
             } else if (count === 4) {
                 const canvas = group.getRenderer().canvas;
