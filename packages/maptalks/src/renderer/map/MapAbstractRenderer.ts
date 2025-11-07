@@ -692,11 +692,19 @@ class MapAbstractRenderer extends MapRenderer {
 
     // canvas for tops
     createTopCanvas() {
-        this.topLayer = createEl('canvas') as HTMLCanvasElement;
+        const topLayer = createEl('canvas') as HTMLCanvasElement;
+        this.topLayer = topLayer;
+        topLayer.width = this.canvas.width;
+        topLayer.height = this.canvas.height;
+        topLayer.style.position = 'absolute';
+        topLayer.style.top = '0px';
+        topLayer.style.left = '0px';
+        topLayer.style.width = this.canvas.style.width;
+        topLayer.style.height = this.canvas.style.height;
         const panels = this.map.getPanels();
         const canvasContainer = panels.canvasContainer;
-        canvasContainer.insertBefore(this.topLayer, this.canvas);
-        this.topCtx = this.topLayer.getContext('2d');
+        canvasContainer.insertBefore(topLayer, this.canvas);
+        this.topCtx = topLayer.getContext('2d');
     }
 
     removeTopCanvas() {
