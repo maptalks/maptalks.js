@@ -42,7 +42,7 @@ struct VertexInput {
     @location($i) aOffset: vec2i,
 #endif
 #ifdef ENABLE_COLLISION
-    @location($i) aOpacity: vec4u,
+    @location($i) aOpacity: u32,
 #endif
 #ifdef HAS_OPACITY
     @location($i) aColorOpacity: u32,
@@ -57,7 +57,7 @@ struct VertexInput {
     @location($i) aTextDy: i32,
 #endif
 #ifdef HAS_PITCH_ALIGN
-    @location($i) aPitchAlign: vec2u,
+    @location($i) aPitchAlign: u32,
 #endif
 #ifdef HAS_TEXT_FILL
     @location($i) aTextFill: vec4u,
@@ -177,7 +177,7 @@ fn main(input: VertexInput) -> VertexOutput {
     output.vTexCoord = texCoord / uniforms.glyphTexSize;
     output.vTextSize = myTextSize;
 #ifdef ENABLE_COLLISION
-    output.vOpacity = f32(input.aOpacity[0]) / 255.0;
+    output.vOpacity = f32(input.aOpacity) / 255.0;
 #else
     output.vOpacity = 1.0;
 #endif

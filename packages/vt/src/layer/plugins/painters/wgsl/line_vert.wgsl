@@ -279,12 +279,13 @@ fn main(input: VertexInput) -> VertexOutput {
     #endif
 
     #if HAS_PATTERN || HAS_DASHARRAY || HAS_GRADIENT
+        let aLinesofar = f32(input.aLinesofar);
         #ifdef HAS_GRADIENT
-            output.vLinesofar = input.aLinesofar / MAX_LINE_DISTANCE;
+            output.vLinesofar = aLinesofar / MAX_LINE_DISTANCE;
             output.vGradIndex = f32(input.aGradIndex);
         #else
             // /resScale * tileRatio 是为了把像素宽度转换为瓦片内的值域(即tile extent 8192或4096)
-            let linesofar = input.aLinesofar - halfwidth * input.aExtrude.z / EXTRUDE_SCALE / resScale * uniforms.tileRatio;
+            let linesofar = aLinesofar - halfwidth * f32(input.aExtrude.z) / EXTRUDE_SCALE / resScale * uniforms.tileRatio;
             output.vLinesofar = linesofar / uniforms.tileRatio * resScale;
         #endif
     #endif
