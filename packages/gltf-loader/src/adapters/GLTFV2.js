@@ -112,7 +112,14 @@ export default class V2 extends GLTFAdapter {
                 }
             }
             if (response.format) {
-                out.format = response.format;
+                out.format = response.format; // convert RGB to RGBA
+            }
+            if (out.format === 0x1907) {
+                const length = out.image.array && out.image.array.length;
+                if (length && length === out.image.width * out.image.height * 4) {
+                    // rgb images is transformed to rgba by requestImageOffscreen
+                    out.format = 0x1908;
+                }
             }
             return out;
         });
