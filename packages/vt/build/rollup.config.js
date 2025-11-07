@@ -12,27 +12,27 @@ const production = process.env.BUILD === "production";
 const outputFile = pkg.main;
 const plugins = production
     ? [
-          terser({
-              module: true,
-              mangle: true,
-              output: {
-                  beautify: true,
-                  comments: "/^!/",
-              },
-          }),
-      ]
+        terser({
+            module: true,
+            mangle: true,
+            output: {
+                beautify: true,
+                comments: "/^!/",
+            },
+        }),
+    ]
     : [];
 
 const pluginsWorker = production
     ? [
-          terser({
-              module: true,
-              mangle: true,
-              output: {
-                  beautify: false,
-              },
-          }),
-      ]
+        terser({
+            module: true,
+            mangle: true,
+            output: {
+                beautify: false,
+            },
+        }),
+    ]
     : [];
 //worker.js中的global可能被webpack替换为全局变量，造成worker代码执行失败，所以这里统一把typeof global替换为typeof undefined
 function removeGlobal() {
@@ -116,9 +116,8 @@ function wgsl() {
     };
 }
 
-const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${
-    pkg.license
-}\n * (c) 2016-${new Date().getFullYear()} maptalks.org\n */`;
+const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license
+    }\n * (c) 2016-${new Date().getFullYear()} maptalks.org\n */`;
 const outro = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg.version}');`;
 
 const globalFunc = `
@@ -129,7 +128,7 @@ const getGlobal = function () {
   if (typeof global !== "undefined") { return global; }
 };`
 
-module.exports = [
+const allbundleList = [
     {
         input: "src/packer/index.js",
         external: ["maptalks"],
@@ -141,14 +140,14 @@ module.exports = [
             commonjs(),
             replace({
                 // 'this.exports = this.exports || {}': '',
-                "(function (exports) {": "export function packerExport(exports) {"+ globalFunc + ";if (getGlobal()['maptalks_vt_packers']) return;\n",
+                "(function (exports) {": "export function packerExport(exports) {" + globalFunc + ";if (getGlobal()['maptalks_vt_packers']) return;\n",
                 "})(this.exports = this.exports || {});": "getGlobal()['maptalks_vt_packers'] = exports;}\npackerExport({});",
                 preventAssignment: false,
                 delimiters: ["", ""],
             }),
         ]
             .concat(pluginsWorker),
-            // .concat([transformBackQuote()]),
+        // .concat([transformBackQuote()]),
         output: {
             strict: false,
             format: "iife",
@@ -209,8 +208,8 @@ module.exports = [
             json(),
             production
                 ? glslMinify({
-                      commons: ["src/layer/plugins/painters/includes"],
-                  })
+                    commons: ["src/layer/plugins/painters/includes"],
+                })
                 : glsl(),
             wgsl(),
             nodeResolve({
@@ -261,8 +260,8 @@ module.exports = [
             json(),
             production
                 ? glslMinify({
-                      commons: ["src/layer/plugins/painters/includes"],
-                  })
+                    commons: ["src/layer/plugins/painters/includes"],
+                })
                 : glsl(),
             wgsl(),
             nodeResolve({
@@ -276,9 +275,7 @@ module.exports = [
             include: "build/**/*.js",
         },
     },
-];
-if (production) {
-    module.exports.push({
+    {
         input: './dist/layer/types.d.ts',
         plugins: [dts()],
         output: [
@@ -290,5 +287,7 @@ if (production) {
                 'file': pkg['types']
             }
         ]
-    });
-}
+    }
+];
+const bundleList = production ? allbundleList : allbundleList.slice(0, allbundleList.length - 2)
+module.exports = bundleList;

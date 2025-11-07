@@ -35,6 +35,7 @@
     "@maptalks/geojson-vt": "^3.5.0",
     "@maptalks/gl": "workspace:*",
     "@maptalks/gpu": "workspace:*",
+    "@maptalks/regl": "^3.6.0",
     "@maptalks/tbn-packer": "^1.4.5",
     "@maptalks/vt-plugin": "workspace:*",
     "animation-easings": "^0.1.0",
