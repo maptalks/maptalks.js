@@ -128,7 +128,7 @@ export default class WorkerPool {
     }
 
     broadcastIdleMessage(messageRatio: number) {
-        //目前idle空转情况严重,没有必要频率这么高
+        //目前idle空转情况严重,没有必要频率这么高,简单的限制下
         if (this._idleLoopCount < 3) {
             this._idleLoopCount++;
             return this;
