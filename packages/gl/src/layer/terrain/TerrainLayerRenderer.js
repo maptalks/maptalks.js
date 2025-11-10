@@ -828,12 +828,12 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         let colorsTexture;
         //parent tile has colorstexture
         if (info.colorsTexture) {
-            const x1 = info.extent2d.xmin;
-            const x2 = info.extent2d.xmax;
-            const y1 = info.extent2d.ymin;
-            const y2 = info.extent2d.ymax;
             const { width, height } = info.colorsTexture;
             if (width * height > 0) {
+                const x1 = info.extent2d.xmin;
+                const x2 = info.extent2d.xmax;
+                const y1 = info.extent2d.ymin;
+                const y2 = info.extent2d.ymax;
                 const ax = (width) / (x2 - x1), ay = height / (y2 - y1);
                 const minx = (extent2d.xmin * res / parentRes - parentExtent.xmin) * ax;
                 const maxx = (extent2d.xmax * res / parentRes - parentExtent.xmin) * ax;
@@ -842,6 +842,8 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                 //clip texture from parent tile texture
                 colorsTexture = clipTileTexture(info.colorsTexture, minx, miny, maxx, maxy);
             }
+
+
         }
 
         // const tileSize = tileWidth - 1;
@@ -1042,8 +1044,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                 maptalks.Util.extend(terrainData, resource);
 
                 // this.consumeTile(terrainData, tile);
-                tile.colorsTexture = terrainData.colorsTexture;
-                delete terrainData.colorsTexture;
+                wrapTileColorsTexture(tile, terrainData);
                 this.onTileLoad(terrainData, tile);
             });
         };
