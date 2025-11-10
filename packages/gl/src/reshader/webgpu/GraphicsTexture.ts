@@ -1,4 +1,4 @@
-import { extend, isArray } from "../common/Util";
+import { extend, isArray, isFunction } from "../common/Util";
 import { GPUTexFormat, toTextureFormat } from "./common/ReglTranslator";
 import GraphicsDevice from "./GraphicsDevice";
 
@@ -65,8 +65,8 @@ export default class GraphicsTexture {
         }
         let texture: GPUTexture;
         {
-            let width = config.width;
-            let height = config.height;
+            let width = isFunction(config.width) ? config.width() : config.width;
+            let height = isFunction(config.height) ? config.height() : config.height;
             if (width === undefined || height === undefined) {
                 const data = config.data;
                 if (isArray(config.data)) {

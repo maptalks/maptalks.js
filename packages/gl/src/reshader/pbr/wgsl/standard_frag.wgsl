@@ -6,6 +6,7 @@
 #include <terrain_normal_frag>
 #include <vertex_color_frag>
 #include <excavate_frag>
+#include <compute_texcoord_frag>
 
 #define PI 3.141593
 #define RECIPROCAL_PI 0.3183099
@@ -94,31 +95,31 @@ struct ShaderUniforms {
 // Textures and samplers
 #if HAS_ALBEDO_MAP
     @group(0) @binding($b) var baseColorTexture: texture_2d<f32>;
-    @group(0) @binding($b) var baseColorSampler: sampler;
+    @group(0) @binding($b) var baseColorTextureSampler: sampler;
 #endif
 #if HAS_METALLICROUGHNESS_MAP
     @group(0) @binding($b) var metallicRoughnessTexture: texture_2d<f32>;
-    @group(0) @binding($b) var metallicRoughnessSampler: sampler;
+    @group(0) @binding($b) var metallicRoughnessTextureSampler: sampler;
 #endif
 #if HAS_EMISSIVE_MAP
     @group(0) @binding($b) var emissiveTexture: texture_2d<f32>;
-    @group(0) @binding($b) var emissiveSampler: sampler;
+    @group(0) @binding($b) var emissiveTextureSampler: sampler;
 #endif
 #if HAS_AO_MAP
     @group(0) @binding($b) var occlusionTexture: texture_2d<f32>;
-    @group(0) @binding($b) var occlusionSampler: sampler;
+    @group(0) @binding($b) var occlusionTextureSampler: sampler;
 #endif
 #if HAS_NORMAL_MAP && HAS_TANGENT
     @group(0) @binding($b) var normalTexture: texture_2d<f32>;
-    @group(0) @binding($b) var normalSampler: sampler;
+    @group(0) @binding($b) var normalTextureSampler: sampler;
 #endif
 #if HAS_SKIN_MAP
     @group(0) @binding($b) var skinTexture: texture_2d<f32>;
-    @group(0) @binding($b) var skinSampler: sampler;
+    @group(0) @binding($b) var skinTextureSampler: sampler;
 #endif
 #if HAS_RANDOM_TEX
     @group(0) @binding($b) var noiseTexture: texture_2d<f32>;
-    @group(0) @binding($b) var noiseSampler: sampler;
+    @group(0) @binding($b) var noiseTextureSampler: sampler;
 #endif
 @group(0) @binding($b) var brdfLUT: texture_2d<f32>;
 @group(0) @binding($b) var brdfLUTSampler: sampler;
@@ -138,7 +139,7 @@ struct ShaderUniforms {
 #endif
 #if HAS_PATTERN
     @group(0) @binding($b) var linePatternFile: texture_2d<f32>;
-    @group(0) @binding($b) var linePatternSampler: sampler;
+    @group(0) @binding($b) var linePatternFileSampler: sampler;
 #endif
 
 struct VertexOutput {
@@ -375,7 +376,7 @@ fn computeSpecularAO(ao: f32, NoV: f32) -> f32 {
 fn initMaterial(vertexOutput: VertexOutput) -> MaterialUniforms {
     var materialUniforms: MaterialUniforms;
 #ifdef HAS_MAP
-    var uv = computeTexCoord(vertexOutput.vTexCoord);
+    var uv = computeTexCoord(vertexOutput.vTexCoord, vertexOutput);
 #endif
 
 #ifdef HAS_UV_FLIP
@@ -481,7 +482,7 @@ fn initMaterial(vertexOutput: VertexOutput) -> MaterialUniforms {
     materialUniforms.emit *= uniforms.emitColorFactor;
 
 #if HAS_AO_MAP
-    let aoTexCoord = computeTexCoord(vertexOutput.vTexCoord1);
+    let aoTexCoord = computeTexCoord(vertexOutput.vTexCoord1, vertexOutput);
     materialUniforms.ao = textureSample(occlusionTexture, occlusionTextureSampler, aoTexCoord).r;
 #else
     materialUniforms.ao = 1.0;

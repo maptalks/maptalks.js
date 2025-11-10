@@ -205,7 +205,7 @@ export default class GraphicsDevice {
             const context = storage.getContext('webgpu');
             context.configure({
                 device,
-                format: 'bgra8unorm',
+                format: 'rgba8unorm',
                 usage: GPUTextureUsage.COPY_DST,
                 alphaMode: alphaModes[index]
             });
@@ -278,6 +278,10 @@ export default class GraphicsDevice {
         if (this._defaultFramebuffer) {
             this._defaultFramebuffer.destroy();
             delete this._defaultFramebuffer;
+        }
+        if (this.dynamicBufferPool) {
+            this.dynamicBufferPool.destroy();
+            delete this.dynamicBufferPool;
         }
         for (const p in this._readTargets) {
             const buffer = this._readTargets[p];

@@ -2177,6 +2177,21 @@ describe('render specs', () => {
             }, layer, { path: `./integration/expected/${resPath}/expected.png`, zoomOffset: 1, diffCount: 5, renderCount: 1, noGroup: true });
         });
 
+        it('maptalks/maptalks.js#2699, fix incorrect image format with jpeg texture', done => {
+            const resPath = 'BatchedDraco/issue-2699';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                        heightOffset: 0
+                    }
+                ]
+            });
+            runner(() => {
+                done();
+            }, layer, { path: `./integration/expected/${resPath}/expected.png`, zoomOffset: 1, diffCount: 5, renderCount: 1, noGroup: true });
+        });
+
         it('3dtiles under hdr, maptalks/issues#755', done => {
             const resPath = 'BatchedDraco/issue-755';
             map.setLights({

@@ -1,3 +1,4 @@
+#define SHADER_NAME BACK_FILL
 precision mediump float;
 
 #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)

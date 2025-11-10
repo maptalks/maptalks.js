@@ -9,6 +9,7 @@ import REGL from '@maptalks/regl';
 import { flatten } from 'earcut';
 import { getGPUVertexType, getFormatFromGLTFAccessor, getBytesPerElementFromGLTFAccessor } from './webgpu/common/Types';
 import { roundUp } from './webgpu/common/math';
+import GraphicsDevice from './webgpu/GraphicsDevice';
 
 const EMPTY_VAO_BUFFER = [];
 
@@ -95,16 +96,24 @@ export default class Geometry {
         const ctor = array.constructor as any;
         const itemSize = array.length / vertexCount;
         const bytesPerElement = itemBytes / itemSize;
-        // 无法对齐时，itemSize 一定是1或者3，补位成2或者4就能对齐了
-
-        const newItemSize = ensureAlignment(itemSize, bytesPerElement);
-        const newArray = new ctor(newItemSize * vertexCount);
-        for (let i = 0; i < vertexCount; i++) {
-            for (let ii = 0; ii < itemSize; ii++) {
-                newArray[i * newItemSize + ii] = array[i * itemSize + ii];
+        // 无法对齐时，itemSize 一定是1,2,3，不可能是4
+        if (itemSize === 3) {
+            // itemSize 为 3时，补位为 4，wgsl中需要相应修改类型声明
+            const newItemSize = ensureAlignment(itemSize, bytesPerElement);
+            const newArray = new ctor(newItemSize * vertexCount);
+            for (let i = 0; i < vertexCount; i++) {
+                for (let ii = 0; ii < itemSize; ii++) {
+                    newArray[i * newItemSize + ii] = array[i * itemSize + ii];
+                }
             }
+            return newArray;
+        } else {
+            // itemSize 为 1或2时，提升数组的类型，不影响wgsl中的类型声明
+            const newCtor = getPadArrayCtor(ctor, itemSize);
+            const newArray = new newCtor(itemSize * vertexCount);
+            newArray.set(array);
+            return newArray;
         }
-        return newArray;
     }
 
     data: Record<string, AttributeData>
@@ -402,8 +411,6 @@ export default class Geometry {
             }
             if (Array.isArray(data[key])) {
                 data[key] = new Float32Array(data[key] as number[]);
-            } else if (isWebGPU && isArray(data[key])) {
-                data[key] = Geometry.padGPUBufferAlignment(data[key] as TypedArray, vertexCount);
             }
             //如果调用过addBuffer，buffer有可能是ArrayBuffer
             if (data[key].buffer !== undefined && !(data[key].buffer instanceof ArrayBuffer)) {
@@ -417,7 +424,12 @@ export default class Geometry {
             } else {
                 const arr = data[key].data ? data[key].data : data[key];
                 const dimension = arr.length / vertexCount;
-                const info = data[key].data ? data[key] : { data: data[key] };
+                let bufferData = arr;
+                if (isWebGPU) {
+                    bufferData = Geometry.padGPUBufferAlignment(arr, vertexCount);
+                }
+                const info = data[key].data ? data[key] : {};
+                info.data = bufferData;
                 info.dimension = dimension;
                 const buffer = Geometry.createBuffer(device, info, key);
                 buffer[REF_COUNT_KEY] = 1;
@@ -579,7 +591,8 @@ export default class Geometry {
         if (buffer) {
             if (buffer.buffer.mapState) {
                 //webgpu buffer
-                buffer.buffer = this._updateGPUBuffer(buffer.buffer, data);
+                data = Geometry.padGPUBufferAlignment(data, this._vertexCount);
+                buffer.buffer = this._updateGPUBuffer(buffer.buffer, data, 0, data.buffer.byteLength);
             } else {
                 buffer.buffer(data);
             }
@@ -593,11 +606,12 @@ export default class Geometry {
         return this;
     }
 
-    _updateGPUBuffer(buffer: GPUBuffer, data: AttributeData) {
+
+    _updateGPUBuffer(buffer : GPUBuffer, data : AttributeData, offset: number, byteLength: number) {
         if (Array.isArray(data)) {
             data = new Float32Array(data);
         }
-        const device = (buffer as any).device;
+        const device = (buffer as any).device as GraphicsDevice;
         const size = data.buffer.byteLength;
         if (size > buffer.size) {
             const newBuffer = createGPUBuffer(device, data, buffer.usage, buffer.label);
@@ -605,7 +619,7 @@ export default class Geometry {
             buffer.destroy();
             return newBuffer;
         }
-        device.wgpu.queue.writeBuffer(buffer, 0, data.buffer, 0, data.buffer.byteLength);
+        device.wgpu.queue.writeBuffer(buffer, 0, data.buffer, offset, byteLength);
         return buffer;
     }
 
@@ -623,12 +637,23 @@ export default class Geometry {
             this._updateSubBoundingBox(data);
         }
         if (buffer) {
-            const byteWidth = REGL_TYPE_WIDTH[buffer.buffer['_buffer'].dtype];
-            if (data.BYTES_PER_ELEMENT !== byteWidth) {
-                const ctor = getTypeCtor(data, byteWidth);
-                data = new ctor(data);
+            if (buffer.buffer.mapState) {
+                //webgpu buffer
+                data = Geometry.padGPUBufferAlignment(data, this._vertexCount);
+                const byteWidth = buffer.buffer.bytesPerElement;
+                if (data.BYTES_PER_ELEMENT !== byteWidth) {
+                    const ctor = getTypeCtor(data, byteWidth);
+                    data = new ctor(data);
+                }
+                buffer.buffer = this._updateGPUBuffer(buffer.buffer, data, offset * byteWidth, data.buffer.byteLength);
+            } else {
+                const byteWidth = REGL_TYPE_WIDTH[buffer.buffer['_buffer'].dtype];
+                if (data.BYTES_PER_ELEMENT !== byteWidth) {
+                    const ctor = getTypeCtor(data, byteWidth);
+                    data = new ctor(data);
+                }
+                buffer.buffer.subdata(data, offset * byteWidth);
             }
-            buffer.buffer.subdata(data, offset * byteWidth);
         } else {
             const arr = this.data[name].data ? this.data[name].data : this.data[name];
             for (let i = 0; i < data.length; i++) {
@@ -667,7 +692,7 @@ export default class Geometry {
                     const ctor = findElementConstructor(elements);
                     elements = new ctor(elements);
                 }
-                this.elements = this._updateGPUBuffer(e, elements);
+                this.elements = this._updateGPUBuffer(e, elements, 0, elements.buffer.byteLength);
             } else {
                 this.elements = (e as any)(elements);
             }
@@ -1311,3 +1336,25 @@ function ensureAlignment(itemSize: number, bytesPerElement: number): any {
     return itemSize + (4 - (itemBytes % 4)) / bytesPerElement;
 }
 
+// itemSize 只可能是1，2
+function getPadArrayCtor(ctor, itemSize): any {
+    if (ctor === Uint8Array || ctor === Uint8ClampedArray) {
+        if (itemSize === 1) {
+            return Uint32Array;
+        } else {
+            return Uint16Array;
+        }
+    } else if (ctor === Int8Array) {
+        if (itemSize === 1) {
+            return Int32Array;
+        } else {
+            return Int16Array;
+        }
+    } else if (ctor === Uint16Array) {
+        return Uint32Array;
+    } else if (ctor === Int16Array) {
+        return Int32Array;
+    } else {
+        throw new Error('sth unexpected in getPadArrayCtor');
+    }
+}

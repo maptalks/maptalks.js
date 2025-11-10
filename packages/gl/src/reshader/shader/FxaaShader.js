@@ -1,19 +1,20 @@
 import QuadShader from './QuadShader.js';
-import vert from './glsl/quad.vert';
 import frag from './glsl/fxaa.frag';
+import wgslFrag from './wgsl/fxaa_frag.wgsl';
 
 class FxaaShader extends QuadShader {
     constructor() {
         super({
-            vert, frag,
+            name: 'fxaa',
+            frag, wgslFrag,
             extraCommandProps: {
                 viewport: {
                     x: 0,
                     y: 0,
-                    width: (context, props) => {
+                    width: (_, props) => {
                         return props['resolution'][0];
                     },
-                    height: (context, props) => {
+                    height: (_, props) => {
                         return props['resolution'][1];
                     }
                 }

@@ -96,8 +96,8 @@ export default class CommandBuilder {
             fragGroups = fragReflect.getBindGroups();
         }
         // generate bind group layout
-        const layout = this._createBindGroupLayout(vertGroups, fragGroups, mesh, this.uniformValues);
-        const pipeline = this._createPipeline(device, vert, vertexInfo, frag, layout, mesh, pipelineDesc, fbo);
+        const layout = this._createCommandBindGroupLayout(vertGroups, fragGroups, mesh, this.uniformValues);
+        const pipeline = this._createCommandPipeline(device, vert, vertexInfo, frag, layout, mesh, pipelineDesc, fbo);
 
         const bindGroupMapping = this._createBindGroupMapping(vertGroups, fragGroups, mesh);
         const alignment = device.wgpu.limits.minUniformBufferOffsetAlignment;
@@ -122,7 +122,7 @@ export default class CommandBuilder {
         return attributes as ActiveAttributes;
     }
 
-    _createBindGroupLayout(vertGroups: any, fragGroups: any, mesh: Mesh, uniformValues: ShaderUniforms) {
+    _createCommandBindGroupLayout(vertGroups: any, fragGroups: any, mesh: Mesh, uniformValues: ShaderUniforms) {
 
         const entries = [];
         for (let i = 0; i < vertGroups.length; i++) {
@@ -171,14 +171,19 @@ export default class CommandBuilder {
             const name = groupInfo.name;
             const texture = uniformValues[name] || mesh.material && mesh.material.get(name);
             let format;
+            let multisampled = false;
             if (texture) {
                 if (texture instanceof Texture2D) {
                     format = (texture as Texture2D).config.type;
                 } else if (texture instanceof GraphicsTexture) {
                     format = (texture as GraphicsTexture).gpuFormat.format;
                 }
+                multisampled = !!(texture.config && texture.config.sampleCount > 1);
             }
-            let sampleType: GPUTextureSampleType = 'float';//sint， uint
+
+            // https://gpuweb.github.io/gpuweb/#dictdef-gputexturebindinglayout
+            // 根据规范，如果 multisampled 为真，sampleType 不能是float
+            let sampleType: GPUTextureSampleType = multisampled ? 'unfilterable-float' : 'float';
             if (format && format.startsWith('depth')) {
                 sampleType = 'depth';
             }
@@ -186,6 +191,7 @@ export default class CommandBuilder {
                 binding,
                 visibility,
                 texture: {
+                    multisampled,
                     sampleType
                 }
             };
@@ -287,7 +293,7 @@ export default class CommandBuilder {
         }
     }
     // 运行时调用，生成 uniform buffer， 用来存放全局 uniform 变量的值
-    _createPipeline(graphicsDevice: GraphicsDevice,
+    _createCommandPipeline(graphicsDevice: GraphicsDevice,
         vert: string, vertInfo, frag: string, layout: GPUBindGroupLayout, mesh:Mesh,
         pipelineDesc: PipelineDescriptor, fbo: GraphicsFramebuffer): GPURenderPipeline {
         const device = graphicsDevice.wgpu;

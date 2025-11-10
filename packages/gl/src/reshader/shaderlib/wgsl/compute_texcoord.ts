@@ -20,8 +20,7 @@ const frag = /* wgsl */`
     }
 #endif
 
-fn computeTexCoord(vertexOutput: VertexOutput) -> vec2f {
-    let texCoord = vertexOutput.vTexCoord;
+fn computeTexCoord(texCoord: vec2f, vertexOutput: VertexOutput) -> vec2f {
     #ifdef HAS_I3S_UVREGION
         let atlasScale = vertexOutput.vUvRegion.zw - vertexOutput.vUvRegion.xy;
         let uvAtlas = fract(texCoord) * atlasScale + vertexOutput.vUvRegion.xy;

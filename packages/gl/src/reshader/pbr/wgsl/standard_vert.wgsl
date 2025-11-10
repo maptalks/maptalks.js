@@ -35,7 +35,7 @@ struct VertexInput {
     #endif
 
     #ifdef HAS_OPACITY
-        @location($i) aOpacity: f32,
+        @location($i) aOpacity: u32,
     #endif
 
     #if HAS_COLOR0
@@ -168,8 +168,8 @@ fn transformTexcoord(uv: vec2f) -> vec2f {
         let texCoord = decodedTexCoord * uniforms.uvScale + uniforms.uvOffset;
         return (origin % 1.0) + texCoord;
     #else
-        let origin = uniforms.uvOrigin;
-        let texCoord = decodedTexCoord * uniforms.uvScale;
+        var origin = uniforms.uvOrigin;
+        var texCoord = decodedTexCoord * uniforms.uvScale;
         if (uniforms.uvRotation != 0.0) {
             origin = rotateUV(origin, uniforms.uvRotation);
             texCoord = rotateUV(texCoord, uniforms.uvRotation);
@@ -278,7 +278,7 @@ fn main(input: VertexInput) -> VertexOutput {
         #endif
 
         #ifdef HAS_OPACITY
-            output.vOpacity = input.aOpacity / 255.0;
+            output.vOpacity = f32(input.aOpacity) / 255.0;
         #else
             output.vOpacity = 1.0;
         #endif

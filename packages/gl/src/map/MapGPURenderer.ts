@@ -1,5 +1,6 @@
 import { GraphicsDevice } from '../reshader';
-import { Layer, Map, renderer } from 'maptalks';
+import MapGLRenderer from './MapGLRenderer';
+import { Layer, Map } from 'maptalks';
 
 let gpuAdapter;
 let gpuDevice;
@@ -17,8 +18,8 @@ async function initGPUDevice() {
     return { gpuDevice, gpuAdapter };
 }
 
-export default class MapGPURenderer extends renderer.MapAbstractRenderer {
-    device: GraphicsDevice;
+export default class MapGPURenderer extends MapGLRenderer {
+    device: any;
     gpuDevice: GPUDevice;
 
     drawLayers(layers: Layer[], framestamp: number) {
@@ -27,36 +28,6 @@ export default class MapGPURenderer extends renderer.MapAbstractRenderer {
             this.device.submit();
         }
         return updated;
-    }
-
-    clearCanvas() {
-        if (!this.device) {
-            return;
-        }
-        // depth and stencil will be cleared in clearLayerCanvasContext
-        this.device.clear({
-            color: [0, 0, 0, 0]
-        });
-    }
-
-    clearLayerCanvasContext(layer) {
-        if (!this.device) {
-            return;
-        }
-        // const renderer = layer.getRenderer();
-        this.device.clear({
-            depth: 1,
-            stencil: 0
-        });
-        // renderer.clearContext();
-    }
-
-    isWebGL() {
-        return false;
-    }
-
-    isWebGPU() {
-        return true;
     }
 
     createContext() {
@@ -81,6 +52,14 @@ export default class MapGPURenderer extends renderer.MapAbstractRenderer {
                 }
             };
         });
+    }
+
+    isWebGL() {
+        return false;
+    }
+
+    isWebGPU() {
+        return true;
     }
 }
 

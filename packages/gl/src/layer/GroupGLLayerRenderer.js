@@ -78,6 +78,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
 
     prepareCanvas() {
         super.prepareCanvas();
+        this.resizeCanvas();
         this.forEachRenderer(renderer => {
             renderer.prepareCanvas();
         });
@@ -109,7 +110,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             this._renderInMode('default', null, methodName, args, true);
             return;
         }
-        const fGL = this.reglGL;
+        // const fGL = this.reglGL;
 
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
@@ -120,7 +121,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         drawContext.jitter = NO_JITTER;
         const groundConfig = this.layer.getGroundConfig();
         drawContext.hasSSRGround = !!(ssrMode && groundConfig && groundConfig.enable && groundConfig.symbol && groundConfig.symbol.ssr);
-        fGL.resetDrawCalls();
+        // fGL.resetDrawCalls();
         // this._renderInMode(enableTAA ? 'fxaaBeforeTaa' : 'fxaa', this._targetFBO, methodName, args);
         this._renderInMode('default', this._targetFBO, methodName, args, true);
         // this._fxaaDrawCount = fGL.getDrawCalls();
@@ -186,14 +187,14 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         }
 
         // noAa的绘制放在bloom后，避免noAa的数据覆盖了bloom效果
-        fGL.resetDrawCalls();
+        // fGL.resetDrawCalls();
         // this._renderInMode('noAa', this._noAaFBO, methodName, args);
         // this._noaaDrawCount = fGL.getDrawCalls();
 
         // fGL.resetDrawCalls();
         // this._renderInMode('point', this._pointFBO, methodName, args, true);
         this._weatherPainter.renderScene(drawContext);
-        this._pointDrawCount = fGL.getDrawCalls();
+        // this._pointDrawCount = fGL.getDrawCalls();
 
         // return tex;
     }
@@ -269,12 +270,16 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         const { width, height } = this.canvas;
         let fbo = this._outlineFBO;
         if (!fbo) {
+            const isWebGPU = this.device && this.device.wgpu;
+            const format = isWebGPU ? 'rgba' : 'rgba4';
+            const isAntialias = this.layer.options.antialias;
+            const sampleCount = isAntialias ? 4 : 1;
             const outlineTex = this.regl.texture({
                 width: width,
                 height: height,
-                format: 'rgba4',
+                format,
                 // needed by webgpu
-                sampleCount: 4
+                sampleCount
             });
             fbo = this._outlineFBO = this.regl.framebuffer({
                 width: width,
@@ -529,48 +534,23 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
     }
 
     _clearFramebuffers() {
-        const regl = this.regl;
+        const device = this.device;
         if (this._targetFBO) {
-            regl.clear({
+            device.clear({
                 color: EMPTY_COLOR,
                 depth: 1,
                 stencil: 0,
                 framebuffer: this._targetFBO
             });
-            // regl.clear({
-            //     color: EMPTY_COLOR,
-            //     framebuffer: this._noAaFBO
-            // });
-            // regl.clear({
-            //     color: EMPTY_COLOR,
-            //     framebuffer: this._pointFBO
-            // });
-            // if (this._taaFBO && this._taaDrawCount) {
-            //     regl.clear({
-            //         color: EMPTY_COLOR,
-            //         framebuffer: this._taaFBO
-            //     });
-            // }
-            // if (this._fxaaFBO && this._fxaaAfterTaaDrawCount) {
-            //     regl.clear({
-            //         color: EMPTY_COLOR,
-            //         framebuffer: this._fxaaFBO
-            //     });
-            // }
         }
         if (this._outlineFBO) {
-            regl.clear({
+            device.clear({
                 color: EMPTY_COLOR,
                 depth: 1,
                 stencil: 0,
                 framebuffer: this._outlineFBO
             });
         }
-        // regl.clear({
-        //     color: EMPTY_COLOR,
-        //     depth: 1,
-        //     stencil: 0
-        // });
     }
 
     resizeCanvas() {
@@ -1144,14 +1124,14 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
         if (!this._targetFBO) {
-            const regl = this.regl;
+            const device = this.device;
             let depthTex = this._depthTex;
             if (!depthTex || !depthTex['_texture'] || depthTex['_texture'].refCount <= 0) {
                 depthTex = null;
             }
             const fboInfo = this.createFBOInfo(config, depthTex);
             this._depthTex = fboInfo.depth || fboInfo.depthStencil;
-            this._targetFBO = regl.framebuffer(fboInfo);
+            this._targetFBO = device.framebuffer(fboInfo);
             // const noAaInfo = this.createFBOInfo(config, this._depthTex);
             // this._noAaFBO = regl.framebuffer(noAaInfo);
             // const pointInfo = this.createFBOInfo(config, this._depthTex);
@@ -1167,8 +1147,10 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         width = width || this.canvas.width, height = height || this.canvas.height;
         const regl = this.device;
         const useMultiSamples = this._isUseMultiSample();
+        const isAntialias = this.layer.options.antialias;
         let color;
         if (!forceTexture && useMultiSamples) {
+            // rgba8 是webgl中的格式，regl支持，对应的还有rgba4
             color = regl.renderbuffer({
                 width,
                 height,
@@ -1176,6 +1158,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
                 format: 'rgba8'
             });
         } else {
+            const sampleCount = isAntialias ? 4 : 1;
             const type = 'uint8';//colorType || regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
             color = regl.texture({
                 min: 'nearest',
@@ -1184,7 +1167,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
                 width,
                 height,
                 // needed by webgpu
-                sampleCount: 4
+                sampleCount
             });
         }
         const fboInfo = {
@@ -1218,6 +1201,8 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         } else {
             //depth(stencil) buffer 是可以共享的
             if (enableDepthTex) {
+                const isAntialias = this.layer.options.antialias;
+                const sampleCount = isAntialias ? 4 : 1;
                 const depthStencilTexture = depthTex || regl.texture({
                     min: 'nearest',
                     mag: 'nearest',
@@ -1225,7 +1210,9 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
                     type: 'depth stencil',
                     width,
                     height,
-                    format: 'depth stencil'
+                    format: 'depth stencil',
+                    // needed by webgpu
+                    sampleCount
                 });
                 fboInfo.depthStencil = depthStencilTexture;
             } else {

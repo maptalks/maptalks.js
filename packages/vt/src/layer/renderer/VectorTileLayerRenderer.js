@@ -114,6 +114,9 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                     this._workersyncing = false;
                     if (onLoad) {
                         onLoad();
+                        if (this._groundPainter) {
+                            this._groundPainter.update();
+                        }
                     }
 
                     if (err) throw new Error(err);
@@ -129,6 +132,9 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         } else {
             if (onLoad) {
                 onLoad();
+                if (this._groundPainter) {
+                    this._groundPainter.update();
+                }
             }
             this._initPlugins();
         }

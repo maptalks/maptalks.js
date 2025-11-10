@@ -450,16 +450,16 @@ class LinePainter extends BasicPainter {
 
         if (this.pickingFBO) {
             const isVectorTile = this.layer instanceof maptalks.TileLayer;
-            const TYPE_CONSTS = `#define POSITION_TYPE ${isVectorTile ? 'vec2i' : 'vec2f'}
-#define LINESOFAR_TYPE ${isVectorTile ? 'u32' : 'f32'}
-`;
+            const defines = { 'PICKING_MODE': 1 };
+            this.appendWGSLPositionType(defines);
+            defines['LINESOFAR_TYPE'] = isVectorTile ? 'u32' : 'f32';
             this.picking = [new reshader.FBORayPicking(
                 this.renderer,
                 {
                     name: 'line-picking',
                     vert: pickingVert,
-                    wgslVert: TYPE_CONSTS + wgslVert,
-                    defines: { 'PICKING_MODE': 1 },
+                    wgslVert: wgslVert,
+                    defines,
                     uniforms: [
                         {
                             name: 'projViewModelMatrix',
@@ -500,15 +500,14 @@ class LinePainter extends BasicPainter {
             }
         );
 
-        const isVectorTile = this.layer instanceof maptalks.TileLayer;
-        const TYPE_CONSTS = `#define POSITION_TYPE ${isVectorTile ? 'vec2i' : 'vec2f'}
-#define LINESOFAR_TYPE ${isVectorTile ? 'u32' : 'f32'}
-`;
+        const isVectorTile = this.layer.isVectorTileLayer;
+        this.appendWGSLPositionType(defines);
+        defines['LINESOFAR_TYPE'] = isVectorTile ? 'u32' : 'f32';
         this.shader = new reshader.MeshShader({
             name: 'vt-line',
             vert,
             frag,
-            wgslVert: TYPE_CONSTS + wgslVert,
+            wgslVert,
             wgslFrag,
             uniforms,
             defines,
