@@ -54,14 +54,14 @@ const prefix = (SYMBOL_PREFIX + '').trim();
 const KEY_IDX_NAME = (KEY_IDX + '').trim();
 let EMPTY_POSITION = new Float32Array(1);
 const EMPTY_ARRAY = [];
+const TEMP_ARRAY = [];
 
 class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
     constructor(...args) {
         super(...args);
-        //使用array结构,更好的遍历的性能,遍历时注意null和空洞的情况
-        this.features = [];
-        //记录空洞的feature index
-        this.featuresNullIndex = [];
+        this.features = {};
+        this.featuresArray = [];
+        this.featuresChanged = false;
         this._geometries = {};
         this._counter = 0;
         this._allFeatures = {};
@@ -103,18 +103,23 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
     }
 
     _checkFeaturesVisibleChange() {
-        const features = this.features;
-        if (!features) {
+        if (this.featuresChanged) {
+            this.featuresArray = Object.values(this.features);
+            this.featuresChanged = false;
+        }
+        const featuresArray = this.featuresArray;
+        if (!featuresArray) {
             return this;
         }
         //实时检测feature的visible变化
-        for (let m = 0, len = features.length; m < len; m++) {
-            let feats = features[m];
+        for (let m = 0, len = featuresArray.length; m < len; m++) {
+            let feats = featuresArray[m];
             if (!feats) {
                 continue;
             }
             if (!Array.isArray(feats)) {
-                feats = [feats];
+                TEMP_ARRAY[0] = feats;
+                feats = TEMP_ARRAY;
             }
             if (!feats.length) {
                 continue;
@@ -1081,18 +1086,14 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
 
     _convertGeo(geo) {
         if (geo[ID_PROP] === undefined) {
-            //优先利用空洞的索引,防止features数组越来越长
-            if (this.featuresNullIndex.length) {
-                geo[ID_PROP] = this.featuresNullIndex.shift();
-            } else {
-                geo[ID_PROP] = this._counter++;
-            }
+            geo[ID_PROP] = this._counter++;
         }
         const uid = geo[ID_PROP];
         if (this.features[uid]) {
             this._removeFeatures(uid);
         }
         this.features[uid] = convertToFeature(geo, this._kidGen, this.features[uid]);
+        this.featuresChanged = true;
         const feas = this.features[uid];
         this._refreshFeatures(feas, uid);
         this._geometries[uid] = geo;
@@ -1281,11 +1282,8 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             if (uid !== undefined) {
                 delete this._geometries[uid];
                 this._removeFeatures(uid);
-                // delete this.features[uid];
-                this.features[uid] = null;
-                if (this.featuresNullIndex.indexOf(uid) === -1) {
-                    this.featuresNullIndex.push(uid);
-                }
+                delete this.features[uid];
+                this.featuresChanged = true;
             }
         }
         this.markRebuild();
