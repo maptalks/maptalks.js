@@ -206,10 +206,10 @@ const polygonHooks: modeActionType = {
     'create': function (projection, prjPath, mapEvent) {
         // const path = prjPath.map(c => projection.unproject(c));
         const path: any = queryTerrainCoordinates(projection, prjPath, mapEvent);
-        const line = new LineString(path);
-        // line._setPrjCoordinates(prjPath);
-        line.setCoordinates(path);
-        return line;
+        const polygon = new Polygon([path]);
+        // polygon._setPrjCoordinates(prjPath);
+        polygon.setCoordinates(path);
+        return polygon;
     },
     'update': function (projection, path, geometry, mapEvent) {
         const symbol = geometry.getSymbol();
