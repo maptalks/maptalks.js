@@ -1,4 +1,5 @@
 import { GEOJSON_TYPES } from "../core/Constants";
+import { isNil } from "../core/util";
 import { pushIn } from "../core/util/util";
 import { Geometry, LineString, Marker, MultiLineString, MultiPoint, MultiPolygon, Polygon } from "../geometry/index";
 import OverlayLayer, { isGeometry, OverlayLayerOptionsType } from "./OverlayLayer";
@@ -69,6 +70,9 @@ export default class DrawToolLayer extends OverlayLayer {
         pushIn(this._geoList, geometries);
         this._bindDrawToolLayer();
         for (let i = 0; i < geometries.length; i++) {
+            const geo = geometries[i];
+            //cache to _geoMap
+            this._cacheToGeoMap(geo, i);
             if (this._markerLayer.isVectorLayer) {
                 this._markerLayer.addGeometry(geometries[i]);
                 continue;
@@ -110,6 +114,11 @@ export default class DrawToolLayer extends OverlayLayer {
             if (geometries[i]) {
                 this._geoList.splice(geometries[i] as any, 1);
                 delete geometries[i]._drawToolLayer;
+                const geo = geometries[i];
+                const geoId = geo.getId();
+                if (!isNil(geoId)) {
+                    delete this._geoMap[geoId];
+                }
             }
         }
     }

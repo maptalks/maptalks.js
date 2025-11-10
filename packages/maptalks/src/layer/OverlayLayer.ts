@@ -121,17 +121,10 @@ class OverlayLayer extends Layer {
         if (isNil(id) || id === '') {
             return null;
         }
-        if (this._geoMap[id]) {
-            return this._geoMap[id];
+        if (!this._geoMap[id]) {
+            return null;
         }
-        const geoList = this._geoList || [];
-        for (let i = 0, len = geoList.length; i < len; i++) {
-            const geo = geoList[i];
-            if (geo && geo.getId() === id) {
-                return geo;
-            }
-        }
-        return null;
+        return this._geoMap[id];
     }
 
 
@@ -421,13 +414,7 @@ class OverlayLayer extends Layer {
             this._toSort = geo.getZIndex() !== 0;
         }
         this._updateZIndex(geo.getZIndex());
-        const geoId = geo.getId();
-        if (!isNil(geoId)) {
-            if (!isNil(this._geoMap[geoId])) {
-                throw new Error('Duplicate geometry id in layer(' + this.getId() + '):' + geoId + ', at index:' + i);
-            }
-            this._geoMap[geoId] = geo;
-        }
+        this._cacheToGeoMap(geo, i);
         const internalId = UID();
         geo._setInternalId(internalId);
         this._geoList.push(geo);
@@ -456,6 +443,16 @@ class OverlayLayer extends Layer {
         });
         if (this._cookedStyles) {
             this._styleGeometry(geo);
+        }
+    }
+
+    _cacheToGeoMap(geo: Geometry, i?: number) {
+        const geoId = geo.getId();
+        if (!isNil(geoId)) {
+            if (!isNil(this._geoMap[geoId])) {
+                throw new Error('Duplicate geometry id in layer(' + this.getId() + '):' + geoId + ', at index:' + i);
+            }
+            this._geoMap[geoId] = geo;
         }
     }
 
