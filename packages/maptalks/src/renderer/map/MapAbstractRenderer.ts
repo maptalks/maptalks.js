@@ -359,7 +359,7 @@ class MapAbstractRenderer extends MapRenderer {
         for (let i = layers.length - 1; i >= 0; i--) {
             const layer = layers[i];
             const renderer = layer._getRenderer();
-            if (!renderer || !renderer.isRenderComplete()) {
+            if (!renderer || renderer.isRenderComplete && !renderer.isRenderComplete()) {
                 continue;
             }
             /**

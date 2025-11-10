@@ -283,7 +283,7 @@ class MapCanvasRenderer extends MapAbstractRenderer {
                     return;
                 }
                 const renderer = layer._getRenderer();
-                if (!renderer || !renderer.isRenderComplete()) {
+                if (!renderer || renderer.isRenderComplete && !renderer.isRenderComplete()) {
                     return;
                 }
                 /**

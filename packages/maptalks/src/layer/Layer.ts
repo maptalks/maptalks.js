@@ -745,10 +745,12 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         }
         // for map's gl and gpu renderer, layer's renderer is fixed
         const mapRenderer = this.getMap().getRenderer();
-        if (mapRenderer.isWebGL()) {
-            renderer = 'gl';
-        } else if (mapRenderer.isWebGPU()) {
-            renderer = 'gpu';
+        if (renderer !== 'dom') {
+            if (mapRenderer.isWebGL()) {
+                renderer = 'gl';
+            } else if (mapRenderer.isWebGPU()) {
+                renderer = 'gpu';
+            }
         }
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
