@@ -826,6 +826,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         ymin = Math.floor(ymin);
 
         let colorsTexture;
+        //parent tile has colorstexture
         if (info.colorsTexture) {
             const x1 = info.extent2d.xmin;
             const x2 = info.extent2d.xmax;
@@ -838,6 +839,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                 const maxx = (extent2d.xmax * res / parentRes - parentExtent.xmin) * ax;
                 const miny = (extent2d.ymin * res / parentRes - parentExtent.ymin) * ay;
                 const maxy = (extent2d.ymax * res / parentRes - parentExtent.ymin) * ay;
+                //clip texture from parent tile texture
                 colorsTexture = clipTileTexture(info.colorsTexture, minx, miny, maxx, maxy);
             }
         }
@@ -1713,5 +1715,11 @@ function clipTileTexture(image, x1, y1, x2, y2) {
 function wrapTileColorsTexture(tile, terrainData) {
     const colorsTexture = terrainData.colorsTexture;
     delete terrainData.colorsTexture;
-    tile.colorsTexture = colorsTexture;
+    if (colorsTexture) {
+        if (tile.info) {
+            tile.info.colorsTexture = colorsTexture;
+        } else {
+            tile.colorsTexture = colorsTexture;
+        }
+    }
 }
