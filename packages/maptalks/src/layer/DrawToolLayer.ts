@@ -47,6 +47,14 @@ export default class DrawToolLayer extends OverlayLayer {
         }
     }
 
+    clear() {
+        super.clear();
+        this._markerLayer.clear();
+        this._lineLayer.clear();
+        this._polygonLayer.clear();
+        return this;
+    }
+
     bringToFront() {
         this._polygonLayer.bringToFront();
         this._lineLayer.bringToFront();
