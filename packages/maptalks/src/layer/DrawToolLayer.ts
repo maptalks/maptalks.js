@@ -63,6 +63,21 @@ export default class DrawToolLayer extends OverlayLayer {
         return this;
     }
 
+    _deleteGeo(geo: Geometry) {
+        if (!geo) {
+            return this;
+        }
+        const index = this._geoList.indexOf(geo);
+        if (index > -1) {
+            this._geoList.splice(index, 1);
+        }
+        delete geo._drawToolLayer;
+        const geoId = geo.getId();
+        if (!isNil(geoId)) {
+            delete this._geoMap[geoId];
+        }
+    }
+
     addGeometry(geometries: Geometry | Array<Geometry>) {
         if (!Array.isArray(geometries)) {
             geometries = [geometries];
@@ -92,8 +107,7 @@ export default class DrawToolLayer extends OverlayLayer {
             geometries = [geometries];
         }
         for (let i = 0; i < geometries.length; i++) {
-            this._geoList.splice(geometries[i] as any, 1);
-            delete geometries[i]._drawToolLayer;
+            this._deleteGeo(geometries[i]);
             if (this._markerLayer.isVectorLayer) {
                 this._markerLayer.removeGeometry(geometries[i]);
                 continue;
@@ -112,13 +126,8 @@ export default class DrawToolLayer extends OverlayLayer {
         const geometries = params.geometries;
         for (let i = 0; i < geometries.length; i++) {
             if (geometries[i]) {
-                this._geoList.splice(geometries[i] as any, 1);
-                delete geometries[i]._drawToolLayer;
                 const geo = geometries[i];
-                const geoId = geo.getId();
-                if (!isNil(geoId)) {
-                    delete this._geoMap[geoId];
-                }
+                this._deleteGeo(geo);
             }
         }
     }
