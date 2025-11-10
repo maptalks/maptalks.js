@@ -1070,6 +1070,10 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         };
     }
 
+    stringifyView() {
+        return JSON.stringify(this.getView());
+    }
+
     //@internal
     _validateView(view: MapViewType) {
         if (!view || !isObject(view)) {
