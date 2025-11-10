@@ -66,6 +66,7 @@ export default class RayCaster {
 
     _testMesh(mesh, ray, map, positions, altitudes, indices, dim, matrix, count) {
         const coordinates = [];
+        const glRes = map.getGLRes();
         for (let j = 0; j < indices.length; j += 3) {
             if (j > mesh.properties.skirtOffset) {
                 break;
@@ -73,22 +74,41 @@ export default class RayCaster {
             const a = indices[j];
             const b = indices[j + 1];
             const c = indices[j + 2];
-            const positionsA = vec3.set(pA_VEC, positions[a * dim], positions[a * dim + 1], positions[a * dim + 2]);
-            const pA = this._toWorldPosition(POS_A, map, positionsA, altitudes[a] / 100, matrix);
-            const positionsB = vec3.set(pB_VEC, positions[b * dim], positions[b * dim + 1], positions[b * dim + 2]);
-            const pB = this._toWorldPosition(POS_B, map, positionsB, altitudes[b] / 100, matrix);
-            const positionsC = vec3.set(pC_VEC, positions[c * dim], positions[c * dim + 1], positions[c * dim + 2]);
-            const pC = this._toWorldPosition(POS_C, map, positionsC, altitudes[c] / 100, matrix);
+            const aindex = a * dim, bindex = b * dim, cindex = c * dim;
+            //高频操作,尽可能的减少function(vec3.set) call,
+            pA_VEC[0] = positions[aindex];
+            pA_VEC[1] = positions[aindex + 1];
+            pA_VEC[2] = positions[aindex + 2];
+
+            pB_VEC[0] = positions[bindex];
+            pB_VEC[1] = positions[bindex + 1];
+            pB_VEC[2] = positions[bindex + 2];
+
+            pC_VEC[0] = positions[cindex];
+            pC_VEC[1] = positions[cindex + 1];
+            pC_VEC[2] = positions[cindex + 2];
+
+
+            const pA = this._toWorldPosition(POS_A, map, pA_VEC, altitudes[a] / 100, matrix);
+            const pB = this._toWorldPosition(POS_B, map, pB_VEC, altitudes[b] / 100, matrix);
+            const pC = this._toWorldPosition(POS_C, map, pC_VEC, altitudes[c] / 100, matrix);
+
+            // const positionsA = vec3.set(pA_VEC, positions[a * dim], positions[a * dim + 1], positions[a * dim + 2]);
+            // const pA = this._toWorldPosition(POS_A, map, positionsA, altitudes[a] / 100, matrix);
+            // const positionsB = vec3.set(pB_VEC, positions[b * dim], positions[b * dim + 1], positions[b * dim + 2]);
+            // const pB = this._toWorldPosition(POS_B, map, positionsB, altitudes[b] / 100, matrix);
+            // const positionsC = vec3.set(pC_VEC, positions[c * dim], positions[c * dim + 1], positions[c * dim + 2]);
+            // const pC = this._toWorldPosition(POS_C, map, positionsC, altitudes[c] / 100, matrix);
 
             const triangle = vec3.set(TRIANGLE, pA, pB, pC);
             const vAB = vec3.sub(TEMP_VEC_AB, pA, pB);
             const vAC = vec3.sub(TEMP_VEC_AC, pA, pC);
             const intersectPoint = this._testIntersection(INTERSECT_POINT, triangle, ray);
             if (intersectPoint) {
-                const altitude = map.pointAtResToAltitude(intersectPoint[2], map.getGLRes());
+                const altitude = map.pointAtResToAltitude(intersectPoint[2], glRes);
                 TEMP_POINT.x = intersectPoint[0];
                 TEMP_POINT.y = intersectPoint[1];
-                const coord = map.pointAtResToCoordinate(TEMP_POINT, map.getGLRes());
+                const coord = map.pointAtResToCoordinate(TEMP_POINT, glRes);
                 coord.z = altitude;
                 coordinates.push({
                     coordinate: coord,

@@ -386,23 +386,22 @@ class VectorTileLayer extends maptalks.TileLayer {
   getWorkerOptions(): Record<string, any> {
     const isWebGPU = this.getMap().getRenderer().isWebGPU();
     const renderer = this.getRenderer();
+    const options = this.options;
     return {
-      debug: (this.options as any)["debug"],
-      debugTile: (this.options as any)["debugTile"],
-      altitudeProperty: (this.options as any)["altitudeProperty"],
+      debug: options.debug,
+      debugTile: options.debugTile,
+      altitudeProperty: options.altitudeProperty,
       tileSize: this.getTileSize().width,
       //default render时，this._vtStyle有可能被default render设值
       style: this.isDefaultRender()
         ? { style: [], featureStyle: [] }
         : this._getComputedStyle(),
-      features:
-        (this.options as any).debugTileData || (this.options as any).features,
-      schema: (this.options as any).schema,
-      pickingGeometry: (this.options as any)["pickingGeometry"],
+      features: options.debugTileData || options.features,
+      schema: options.schema,
+      pickingGeometry: options.pickingGeometry,
       projectionCode: this.getSpatialReference().getProjection().code,
-      workerGlyph:
-        (this.options as any)["workerGlyph"] && !this.getURLModifier(),
-      featureIdProperty: (this.options as any)["featureIdProperty"],
+      workerGlyph: options.workerGlyph && !this.getURLModifier(),
+      featureIdProperty: options.featureIdProperty,
       isWebGPU,
       isWebGL1: renderer.gl && (renderer.gl instanceof WebGLRenderingContext)
     };
@@ -547,23 +546,23 @@ class VectorTileLayer extends maptalks.TileLayer {
         this._loadStyle(style);
       });
     } else {
-        this._loadStyle(style);
+      this._loadStyle(style);
     }
   }
 
   _parseStyle(style) {
     const background = style.background || {};
     return {
-        originFeatureStyle: style["featureStyle"] || [],
-        featureStyle: parseFeatureStyle(style["featureStyle"]),
-        style: style["style"] || [],
-        background: {
-            enable: background.enable || false,
-            color: unitColor(background.color) || [0, 0, 0, 0],
-            opacity: getOrDefault(background.opacity, 1),
-            patternFile: background.patternFile,
-            depthRange: background.depthRange,
-        }
+      originFeatureStyle: style["featureStyle"] || [],
+      featureStyle: parseFeatureStyle(style["featureStyle"]),
+      style: style["style"] || [],
+      background: {
+        enable: background.enable || false,
+        color: unitColor(background.color) || [0, 0, 0, 0],
+        opacity: getOrDefault(background.opacity, 1),
+        patternFile: background.patternFile,
+        depthRange: background.depthRange,
+      }
     };
   }
 
@@ -577,7 +576,7 @@ class VectorTileLayer extends maptalks.TileLayer {
 
     this.validateStyle();
     if (this._replacer) {
-        this._parseStylePath();
+      this._parseStylePath();
     }
     this._compileStyle();
     /**
@@ -590,8 +589,8 @@ class VectorTileLayer extends maptalks.TileLayer {
      * @property {Object|Object[]} style - style to set
      */
     this.fire("setstyle", {
-        style: this.getStyle(),
-        computedStyle: this.getComputedStyle(),
+      style: this.getStyle(),
+      computedStyle: this.getComputedStyle(),
     });
   }
 
@@ -2026,6 +2025,7 @@ export type VectorTileLayerOptionsType = {
   enableAltitude?: true,
 
   debugTileData?: boolean,
+  debugTile?: boolean;
 
   altitudeQueryTimeLimitPerFrame?: number,
   workerGlyph?: boolean,

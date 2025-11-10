@@ -88,7 +88,7 @@ export default class Geometry {
         }
     }
 
-    static padGPUBufferAlignment(array:TypedArray, vertexCount: number): TypedArray {
+    static padGPUBufferAlignment(array: TypedArray, vertexCount: number): TypedArray {
         const itemBytes = array.byteLength / vertexCount;
         if (itemBytes % 4 === 0) {
             return array;
@@ -226,7 +226,7 @@ export default class Geometry {
                     if (!id) {
                         id = attribute.array.buffer['__id'] = GUID();
                     }
-                    this.data[attr] =  {
+                    this.data[attr] = {
                         buffer: id,
                         offset: attribute.byteOffset,
                         stride: attribute.byteStride,
@@ -467,9 +467,15 @@ export default class Geometry {
                 } else {
                     ctor = this.elements.constructor;
                 }
-                this.indices = new ctor(elements.length);
-                for (let i = 0; i < elements.length; i++) {
-                    this.indices[i] = elements[i];
+                if (elements instanceof ctor) {
+                    //2x faster by new TypeArray(typearray)
+                    //https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Uint32Array
+                    this.indices = new ctor(elements);
+                } else {
+                    this.indices = new ctor(elements.length);
+                    for (let i = 0; i < elements.length; i++) {
+                        this.indices[i] = elements[i];
+                    }
                 }
             }
             this.elements = this.elements.destroy ? this.elements : Geometry.createElementBuffer(device, this.elements);
@@ -495,7 +501,7 @@ export default class Geometry {
         if (isArray(data)) {
             // 因为data可能被转成regl buffer，需要保存到this._vertexCount
             // 在 updateData时再更新
-            this._vertexCount = Math.ceil(data.length /  positionSize);
+            this._vertexCount = Math.ceil(data.length / positionSize);
         } else if (data && data.count !== undefined) {
             this._vertexCount = data.count;
         }
@@ -599,6 +605,7 @@ export default class Geometry {
         delete this._reglData;
         return this;
     }
+
 
     _updateGPUBuffer(buffer : GPUBuffer, data : AttributeData, offset: number, byteLength: number) {
         if (Array.isArray(data)) {
@@ -899,7 +906,7 @@ export default class Geometry {
             //对于POSITION数据，为避免updateBBox时频繁创建临时数组，采用缓存tempPosArray的策略获取interleavedArray,
             //对于非POSITION的数据，直接readInterleavedArray读取即可
             if (name === this.desc.positionAttribute) {
-                if (!this._tempPosArray || (this._tempPosArray && this._tempPosArray.length < size *count)) {
+                if (!this._tempPosArray || (this._tempPosArray && this._tempPosArray.length < size * count)) {
                     this._tempPosArray = new ctor(size * count);
                     return gltf.GLTFLoader.readInterleavedArray(this._tempPosArray, attribute, count, size, stride, offset, componentType);
                 }
@@ -915,18 +922,23 @@ export default class Geometry {
         }
     }
 
-    createTangent(name = 'aTangent') {
+    createTangent(name = 'aTangent', tangentsDataArray?: Float32Array | Array<number>) {
         this._incrVersion();
         //TODO data 可能是含stride的interleaved类型
         const { normalAttribute, positionAttribute, uv0Attribute } = this.desc;
         const normals = this._getAttributeData(normalAttribute);
         const positions = this._getAttributeData(positionAttribute);
-        const tangents = buildTangents(
-            positions,
-            normals,
-            this.data[uv0Attribute],
-            this.elements
-        );
+        let tangents;
+        if (tangentsDataArray && tangentsDataArray.length) {
+            tangents = tangentsDataArray;
+        } else {
+            tangents = buildTangents(
+                positions,
+                normals,
+                this.data[uv0Attribute],
+                this.elements
+            );
+        }
         const aTangent = this.data[name] = new Float32Array(tangents.length);
         const t: vec4 = [0, 0, 0, 0], n: vec3 = [0, 0, 0], q: vec4 = [0, 0, 0, 0];
         for (let i = 0; i < tangents.length; i += 4) {
@@ -982,7 +994,7 @@ export default class Geometry {
         const oldData = {};
 
         let pos = data[this.desc.positionAttribute];
-        pos = pos.length ?  pos : pos.array; //存在两种结构 array或者 { array }
+        pos = pos.length ? pos : pos.array; //存在两种结构 array或者 { array }
         if (!isArray(pos)) {
             throw new Error(this.desc.positionAttribute + ' must be array to build unique vertex.');
         }
@@ -1016,7 +1028,7 @@ export default class Geometry {
             indices[i] = cursor++;
         }
         pos = this.data[this.desc.positionAttribute];
-        this._vertexCount = Math.ceil(pos.length /  this.desc.positionSize);
+        this._vertexCount = Math.ceil(pos.length / this.desc.positionSize);
         delete this._reglData;
     }
 
@@ -1048,7 +1060,7 @@ export default class Geometry {
 
     //@internal
     _forEachBuffer(fn: (buffer: any) => void) {
-        if (this.elements && this.elements.destroy)  {
+        if (this.elements && this.elements.destroy) {
             fn(this.elements);
         }
         for (const p in this.data) {
@@ -1283,7 +1295,7 @@ function createGPUBuffer(device, data, usage, label) {
         data = new Float32Array(data);
     }
     const ctor = data.constructor;
-     // f32 in default
+    // f32 in default
     const byteLength = data.byteLength;
     // mappedAtCreation requires size is a multiplier of 4
     // https://github.com/gpuweb/gpuweb/issues/5105
