@@ -498,7 +498,11 @@ class DistanceTool extends DrawTool {
             return null;
         }
         const coordinates = this._geometry.getCoordinates() || [];
-        return coordinates[0];
+        const firstCoordinate = coordinates[0];
+        if (Array.isArray(firstCoordinate)) {
+            return firstCoordinate[0];
+        }
+        return firstCoordinate;
     }
 
     //@internal
@@ -507,7 +511,11 @@ class DistanceTool extends DrawTool {
             return null;
         }
         const coordinates = this._geometry.getCoordinates() || [];
-        return coordinates[coordinates.length - 1];
+        const lastCoordiante = coordinates[coordinates.length - 1];
+        if (Array.isArray(lastCoordiante)) {
+            return lastCoordiante[lastCoordiante.length - 1];
+        }
+        return lastCoordiante;
     }
 
 }
