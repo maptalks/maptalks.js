@@ -832,12 +832,14 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             const y1 = info.extent2d.ymin;
             const y2 = info.extent2d.ymax;
             const { width, height } = info.colorsTexture;
-            const ax = (width) / (x2 - x1), ay = height / (y2 - y1);
-            const minx = (extent2d.xmin * res / parentRes - parentExtent.xmin) * ax;
-            const maxx = (extent2d.xmax * res / parentRes - parentExtent.xmin) * ax;
-            const miny = (extent2d.ymin * res / parentRes - parentExtent.ymin) * ay;
-            const maxy = (extent2d.ymax * res / parentRes - parentExtent.ymin) * ay;
-            colorsTexture = clipTileTexture(info.colorsTexture, minx, miny, maxx, maxy);
+            if (width * height > 0) {
+                const ax = (width) / (x2 - x1), ay = height / (y2 - y1);
+                const minx = (extent2d.xmin * res / parentRes - parentExtent.xmin) * ax;
+                const maxx = (extent2d.xmax * res / parentRes - parentExtent.xmin) * ax;
+                const miny = (extent2d.ymin * res / parentRes - parentExtent.ymin) * ay;
+                const maxy = (extent2d.ymax * res / parentRes - parentExtent.ymin) * ay;
+                colorsTexture = clipTileTexture(info.colorsTexture, minx, miny, maxx, maxy);
+            }
         }
 
         // const tileSize = tileWidth - 1;
