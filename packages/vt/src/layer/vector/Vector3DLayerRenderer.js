@@ -54,11 +54,14 @@ const prefix = (SYMBOL_PREFIX + '').trim();
 const KEY_IDX_NAME = (KEY_IDX + '').trim();
 let EMPTY_POSITION = new Float32Array(1);
 const EMPTY_ARRAY = [];
+const TEMP_ARRAY = [];
 
 class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
     constructor(...args) {
         super(...args);
         this.features = {};
+        this.featuresArray = [];
+        this.featuresChanged = false;
         this._geometries = {};
         this._counter = 0;
         this._allFeatures = {};
@@ -100,15 +103,23 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
     }
 
     _checkFeaturesVisibleChange() {
-        const features = this.features;
-        if (!features) {
+        if (this.featuresChanged) {
+            this.featuresArray = Object.values(this.features);
+            this.featuresChanged = false;
+        }
+        const featuresArray = this.featuresArray;
+        if (!featuresArray) {
             return this;
         }
         //实时检测feature的visible变化
-        for (const id in features) {
-            let feats = features[id] || [];
+        for (let m = 0, len = featuresArray.length; m < len; m++) {
+            let feats = featuresArray[m];
+            if (!feats) {
+                continue;
+            }
             if (!Array.isArray(feats)) {
-                feats = [feats];
+                TEMP_ARRAY[0] = feats;
+                feats = TEMP_ARRAY;
             }
             if (!feats.length) {
                 continue;
@@ -1082,6 +1093,7 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             this._removeFeatures(uid);
         }
         this.features[uid] = convertToFeature(geo, this._kidGen, this.features[uid]);
+        this.featuresChanged = true;
         const feas = this.features[uid];
         this._refreshFeatures(feas, uid);
         this._geometries[uid] = geo;
@@ -1271,6 +1283,7 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
                 delete this._geometries[uid];
                 this._removeFeatures(uid);
                 delete this.features[uid];
+                this.featuresChanged = true;
             }
         }
         this.markRebuild();
