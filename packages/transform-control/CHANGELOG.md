@@ -1,5 +1,18 @@
 # @maptalks/transform-control
 
+## 0.117.0
+
+### Minor Changes
+
+- major fixes version against webgpu renderer
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.117.0
+  - @maptalks/gpu@0.117.0
+  - @maptalks/gltf-layer@0.117.0
+
 ## 0.116.0
 
 ### Minor Changes

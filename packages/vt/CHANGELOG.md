@@ -1,5 +1,18 @@
 # @maptalks/vt
 
+## 0.117.0
+
+### Minor Changes
+
+- major fixes version against webgpu renderer
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.117.0
+  - @maptalks/gpu@0.117.0
+  - @maptalks/vt-plugin@0.117.0
+
 ## 0.116.0
 
 ### Minor Changes

@@ -1,5 +1,18 @@
 # @maptalks/gl
 
+## 0.117.0
+
+### Minor Changes
+
+- major fixes version against webgpu renderer
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/fusiongl@0.117.0
+  - @maptalks/gltf-loader@0.117.0
+  - maptalks@1.6.0
+
 ## 0.116.0
 
 ### Minor Changes
