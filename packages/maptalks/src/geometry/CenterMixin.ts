@@ -1,6 +1,4 @@
 import { MixinConstructor } from '../core/Mixin';
-import { isNumber } from '../core/util';
-import { getIgnoreProjectionGeometryCenter } from '../core/util/path';
 
 import Coordinate from '../geo/Coordinate';
 import Point from '../geo/Point';
@@ -120,10 +118,6 @@ export default function <T extends MixinConstructor>(Base: T) {
 
         //@internal
         _computeCenter(): Coordinate | null {
-            const center = getIgnoreProjectionGeometryCenter(this);
-            if (center) {
-                return center;
-            }
             return this._coordinates ? this._coordinates.copy() : null;
         }
     };
