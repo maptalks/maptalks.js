@@ -60,7 +60,7 @@ const options: UIComponentOptionsType = {
     'collisionWeight': 0,
     'collisionFadeIn': false,
     'zIndex': 0,
-    'enableSrollbar': true
+    'enableScrollbar': true
 };
 
 const COLLISION_STATES = ['collision', 'collisionBufferSize', 'collisionWeight', 'collisionFadeIn']
@@ -1060,7 +1060,7 @@ class UIComponent extends Eventable(Class) {
         if (!map) {
             return;
         }
-        if (!this.options.enableSrollbar) {
+        if (!this.options.enableScrollbar) {
             return;
         }
         if (this.options.eventsPropagation) {
@@ -1127,5 +1127,5 @@ export type UIComponentOptionsType = {
     collisionFadeIn?: boolean;
     zIndex?: number;
     cssName?: string | Array<string>;
-    enableSrollbar?: boolean;
+    enableScrollbar?: boolean;
 }
