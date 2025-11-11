@@ -3,7 +3,7 @@ import { getEllipseGLSize, pointsToCoordinates, withInEllipse } from '../core/ut
 import Coordinate from '../geo/Coordinate';
 import CenterMixin from './CenterMixin';
 import Polygon, { PolygonOptionsType, RingCoordinates, RingsCoordinates } from './Polygon';
-import Circle from './Circle';
+import Circle, { SpecialGeometryOptionsType } from './Circle';
 import Point from '../geo/Point';
 import Extent from '../geo/Extent';
 
@@ -191,8 +191,9 @@ export class Ellipse extends CenterMixin(Polygon) {
             const { glWidth, glHeight, glCenter } = getEllipseGLSize(center, measurer, map, width / 2, height / 2);
             //gl width
             const w = glWidth * 2;
-            //gl width 
+            //gl height
             const h = glHeight * 2;
+
             const s = Math.pow(w / 2, 2) * Math.pow(h / 2, 2),
                 sx = Math.pow(w / 2, 2),
                 sy = Math.pow(h / 2, 2);
@@ -355,5 +356,4 @@ export default Ellipse;
 export type EllipseOptionsType = PolygonOptionsType & {
     numberOfShellPoints?: number;
     debug?: boolean;
-    ignoreProjection?: boolean;
-}
+} & SpecialGeometryOptionsType;

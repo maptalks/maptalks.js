@@ -313,17 +313,23 @@ export function pointsToCoordinates(map, points: Point[], glRes: number, altitud
     return ring;
 }
 
+const WORLD_CENTER = new Coordinate(0, 0);
+
 export function getEllipseGLSize(center: Coordinate, measurer, map, halfWidth: number, halfHeight: number) {
     const glRes = map.getGLRes();
-    const c1 = measurer.locate(center, halfWidth, 0);
-    const c2 = measurer.locate(center, 0, halfHeight);
-    const pt = map.coordToPointAtRes(center, glRes);
+    const c1 = measurer.locate(WORLD_CENTER, 1, 0);
+    // const c2 = measurer.locate(CENTER, 0, halfHeight);
+    const glCenter = map.coordToPointAtRes(center, glRes);
+    const p0 = map.coordToPointAtRes(WORLD_CENTER, glRes);
     const p1 = map.coordToPointAtRes(c1, glRes);
-    const p2 = map.coordToPointAtRes(c2, glRes);
+    // const p2 = map.coordToPointAtRes(c2, glRes);
+    const glWidth = p0.distanceTo(p1) * halfWidth;
+    const glHeight = glWidth * halfHeight / halfWidth;
+
     return {
-        glWidth: pt.distanceTo(p1),
-        glHeight: pt.distanceTo(p2),
-        glCenter: pt
+        glWidth,
+        glHeight,
+        glCenter
     }
 }
 

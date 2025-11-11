@@ -101,12 +101,12 @@ export class Circle extends CenterMixin(Polygon) {
         if (ignoreProjection && map) {
             const glRes = map.getGLRes();
             const { glWidth, glHeight, glCenter } = getEllipseGLSize(center, measurer, map, radius, radius);
-            const r = Math.max(glWidth, glHeight);
+            const R = Math.max(glWidth, glHeight);
             const pts: Point[] = [];
             for (let i = 0, len = numberOfPoints - 1; i < len; i++) {
                 rad = (360 * i / len) * Math.PI / 180;
-                const x = Math.cos(rad) * r + glCenter.x;
-                const y = Math.sin(rad) * r + glCenter.y;
+                const x = Math.cos(rad) * R + glCenter.x;
+                const y = Math.sin(rad) * R + glCenter.y;
                 const p = new Point(x, y);
                 pts[i] = p;
             }
@@ -243,5 +243,8 @@ export default Circle;
 
 export type CircleOptionsType = PolygonOptionsType & {
     numberOfShellPoints?: number;
+} & SpecialGeometryOptionsType;
+
+export type SpecialGeometryOptionsType = {
     ignoreProjection?: boolean;
 }

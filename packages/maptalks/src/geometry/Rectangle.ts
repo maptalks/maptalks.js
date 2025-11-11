@@ -1,8 +1,10 @@
 import { extend, isNil } from '../core/util';
+import { getEllipseGLSize, pointsToCoordinates } from '../core/util/path';
 import Coordinate from '../geo/Coordinate';
 import Extent from '../geo/Extent';
 import Point from '../geo/Point';
 import { CommonProjectionType } from '../geo/projection';
+import { SpecialGeometryOptionsType } from './Circle';
 import Polygon, { PolygonOptionsType, RingCoordinates, RingsCoordinates } from './Polygon';
 
 /**
@@ -144,6 +146,20 @@ export class Rectangle extends Polygon {
                 sy = 1;
             }
         }
+        const options = this.options as RectangleOptionsType;
+        const ignoreProjection = options.ignoreProjection;
+        if (map && ignoreProjection) {
+            const center = nw, width = this._width, height = this._height;
+            const { glWidth, glHeight, glCenter } = getEllipseGLSize(center, measurer, map, width, height);
+            const p1 = glCenter.add(glWidth * sx, 0);
+            const p2 = glCenter.add(glWidth * sx, glHeight * sy);
+            const p3 = glCenter.add(0, glHeight * sy);
+            const glRes = map.getGLRes();
+
+            const coordinates = pointsToCoordinates(map, [glCenter, p1, p2, p3] as Point[], glRes, center.z);
+            return coordinates;
+        }
+
         const points = [];
         points.push(nw);
         const p0 = measurer.locate(nw, sx * this._width, 0);
@@ -348,4 +364,4 @@ Rectangle.registerJSONType('Rectangle');
 
 export default Rectangle;
 
-export type RectangleOptionsType = PolygonOptionsType;
+export type RectangleOptionsType = PolygonOptionsType & SpecialGeometryOptionsType;
