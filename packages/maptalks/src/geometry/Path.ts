@@ -170,7 +170,9 @@ export class Path extends Geometry {
                 cb(frame, currentCoord);
             }
         }, this);
-        player.play();
+        setTimeout(() => {
+            player.play();
+        }, 1);
         return player;
     }
 
@@ -193,6 +195,7 @@ export class Path extends Geometry {
             this._animLenSoFar += segLen;
         }
         this._animIdx = i - 1;
+        //is end
         if (this._animIdx >= l - 1) {
             this.setCoordinates(coordinates);
             return coordinates[coordinates.length - 1];
@@ -211,9 +214,12 @@ export class Path extends Geometry {
 
         const c1 = coordinates[idx], c2 = coordinates[idx + 1];
         const cx = c1.x + (c2.x - c1.x) * r,
-            cy = c1.y + (c2.y - c1.y) * r;
+            cy = c1.y + (c2.y - c1.y) * r,
+            cz = (c1.z || 0) + ((c2.z || 0) - (c1.z || 0)) * r;
         this._tempCoord.x = cx;
         this._tempCoord.y = cy;
+        this._tempCoord.z = cz;
+
         // const targetCoord = projection.unproject(lastCoord, this._tempCoord);
         const targetCoord = this._tempCoord;
         const isPolygon = !!this.getShell;
@@ -447,19 +453,25 @@ export class Path extends Geometry {
     //@internal
     _hitTestTolerance(): number {
         const symbol = this._getInternalSymbol();
-        let w;
+        let w, border = 0;
         if (Array.isArray(symbol)) {
             w = 0;
+
             for (let i = 0; i < symbol.length; i++) {
                 if (isNumber(symbol[i]['lineWidth'])) {
                     if (symbol[i]['lineWidth'] > w) {
                         w = symbol[i]['lineWidth'];
                     }
                 }
+                if (isNumber(symbol[i]['lineStrokeWidth'])) {
+                    border = Math.max(border, symbol[i]['lineStrokeWidth']);
+                }
             }
         } else {
             w = symbol['lineWidth'];
+            border = symbol['lineStrokeWidth'] || 0;
         }
+        w += border * 2;
         return super._hitTestTolerance() + (isNumber(w) ? w / 2 : 1.5);
     }
 
@@ -486,6 +498,7 @@ export default Path;
 export type PathOptionsType = GeometryOptionsType & {
     'smoothness'?: boolean;
     'enableClip'?: boolean;
+    'strictClip'?: boolean;
     'enableSimplify'?: boolean;
     'simplifyTolerance'?: number;
     'symbol'?: FillSymbol | LineSymbol;

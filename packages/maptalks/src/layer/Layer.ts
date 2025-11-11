@@ -89,6 +89,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     //@internal
     _toRedraw: boolean
     map: Map
+    parent: any;
     //@internal
     _mask: Polygon | MultiPolygon | Marker;
     //@internal
@@ -714,11 +715,16 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     onRemove() { }
 
     //@internal
-    _bindMap(map: Map, zIndex?: number) {
-        if (!map) {
+    _bindMap(parent: any, zIndex?: number) {
+        if (!parent) {
             return;
         }
-        this.map = map;
+        this.parent = parent;
+        if (parent.isMap) {
+            this.map = parent;
+        } else {
+            this.map = parent.getMap();
+        }
         if (!isNil(zIndex)) {
             this.setZIndex(zIndex);
         }
@@ -731,11 +737,20 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     //@internal
     _initRenderer() {
-        const renderer = this.options['renderer'];
+        let renderer = this.options['renderer'];
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         if (!this.constructor.getRendererClass || !renderer) {
             return;
+        }
+        // for map's gl and gpu renderer, layer's renderer is fixed
+        const mapRenderer = this.getMap().getRenderer();
+        if (renderer !== 'dom') {
+            if (mapRenderer.isWebGL()) {
+                renderer = 'gl';
+            } else if (mapRenderer.isWebGPU()) {
+                renderer = 'gpu';
+            }
         }
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
@@ -904,7 +919,7 @@ export type LayerOptionsType = {
     opacity?: number,
     zIndex?: number
     globalCompositeOperation?: string,
-    renderer?: 'canvas' | 'gl' | 'dom' | null,
+    renderer?: 'canvas' | 'gl' | 'gpu' | 'dom' | null,
     debugOutline?: string,
     cssFilter?: string,
     forceRenderOnMoving?: boolean,

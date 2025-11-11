@@ -174,10 +174,6 @@ export function hasOwn(obj, prop) {
 
 export function getCentiMeterScale(res, map) {
     let p = map.altitudeToPoint(100, res);
-    const heightFactor = map.options['heightFactor'];
-    if (heightFactor && heightFactor !== 1) {
-        p /= heightFactor;
-    }
     // to centimeter
     return p / 100 / 100;
 }

@@ -70,6 +70,11 @@ class Painter {
         this._invisibleWhenCreated = this.symbolDef.map(s => !!(s && s.visible === false));
     }
 
+    // 不允许地形上超过限定比例的upscale放大
+    // forbiddenTerrainUpscale() {
+    //     return true;
+    // }
+
     isWebGPU() {
         return !this.regl['_gl'];
     }
@@ -167,6 +172,10 @@ class Painter {
         return this.layer.options.awareOfTerrain;
     }
 
+    isTerrainMask() {
+        return false;
+    }
+
     isTerrainVector() {
         return false;
     }
@@ -241,10 +250,10 @@ class Painter {
                 const geo = this.createGeometry(glData[i], features, i);
                 if (geo && geo.geometry) {
                     const props = geo.geometry.properties;
-                    const { pickingIdMap, idPickingMap, hasFeaIds } = this._getIdMap(glData[i]);
+                    const { feaIdToPickingIdMap, pickingIdToFeaIdMap, hasFeaIds } = this._getIdMap(glData[i]);
                     if (hasFeaIds) {
-                        props.feaIdPickingMap = pickingIdMap;
-                        props.feaPickingIdMap = idPickingMap;
+                        props.feaIdPickingMap = feaIdToPickingIdMap;
+                        props.feaPickingIdMap = pickingIdToFeaIdMap;
                     }
 
                     props.symbolIndex = geo.symbolIndex;
@@ -280,23 +289,23 @@ class Painter {
             }
         }
         const feaIds = glData.featureIds;
-        const idPickingMap = {};
-        const pickingIdMap = {};
+        const pickingIdToFeaIdMap = {};
+        const feaIdToPickingIdMap = {};
         const hasFeaIds = feaIds && feaIds.length;
         if (hasFeaIds) {
             for (let i = 0; i < feaIds.length; i++) {
                 const pickingId = glData.data.aPickingId[i];
-                if (idPickingMap[pickingId] !== undefined) {
+                if (pickingIdToFeaIdMap[pickingId] !== undefined) {
                     continue;
                 }
-                idPickingMap[pickingId] = feaIds[i];
-                if (!pickingIdMap[feaIds[i]]) {
-                    pickingIdMap[feaIds[i]] = [];
+                pickingIdToFeaIdMap[pickingId] = feaIds[i];
+                if (!feaIdToPickingIdMap[feaIds[i]]) {
+                    feaIdToPickingIdMap[feaIds[i]] = [];
                 }
-                pickingIdMap[feaIds[i]].push(glData.data.aPickingId[i]);
+                feaIdToPickingIdMap[feaIds[i]].push(glData.data.aPickingId[i]);
             }
         }
-        return { hasFeaIds, idPickingMap, pickingIdMap };
+        return { hasFeaIds, pickingIdToFeaIdMap, feaIdToPickingIdMap };
     }
 
     createGeometry(/* glData, features */) {
@@ -343,10 +352,6 @@ class Painter {
         return !!this.getSymbol(mesh.properties.symbolIndex)['bloom'];
     }
 
-    // 不允许地形上的upscale放大
-    forbiddenTerrainUpscale() {
-        return true;
-    }
 
     addMesh(meshes, progress, context) {
         // console.log(meshes.map(m => m.properties.tile.id).join());
@@ -355,16 +360,16 @@ class Painter {
         //     this.scene.addMesh(meshes[0]);
         // }
 
-        const isRenderingTerrainSkin = context.isRenderingTerrain && this.isTerrainSkin();
-        if (isRenderingTerrainSkin && this.forbiddenTerrainUpscale()) {
-            const res = this.getMap().getResolution();
-            const tileRes = context.tileInfo.res;
-            const scale = tileRes / res;
-            if (scale > 3) {
-                // 过于放大
-                return;
-            }
-        }
+        // const isRenderingTerrainSkin = context.isRenderingTerrain && this.isTerrainSkin();
+        // if (isRenderingTerrainSkin && this.forbiddenTerrainUpscale()) {
+        //     const res = this.getMap().getResolution();
+        //     const tileRes = context.tileInfo.res;
+        //     const scale = tileRes / res;
+        //     if (scale > 3) {
+        //         // 过于放大
+        //         return;
+        //     }
+        // }
         const isRenderingTerrainVector = context.isRenderingTerrain && this.isTerrainVector();
         const fbo = this.getRenderFBO(context);
         meshes = meshes.filter(m => this.isMeshVisible(m));
@@ -531,6 +536,7 @@ class Painter {
         this._setLayerUniforms(uniforms);
 
         this.scene.setMeshes(renderMeshes);
+        uniforms.painterContext = context;
         this._drawCount += this.renderer.render(shader, uniforms, this.scene, this.getRenderFBO(context));
         this.scene.setMeshes(meshes);
     }
@@ -636,6 +642,9 @@ class Painter {
                 plugin: this.pluginIndex,
             };
             if (!isNil(mesh.properties.nodeIndex)) {
+                if (!result.data) {
+                    result.data = {};
+                }
                 result.data.nodeIndex = mesh.properties.nodeIndex;
             }
             // const idMap = mesh.geometry.properties.feaPickingIdMap;
@@ -1109,6 +1118,7 @@ class Painter {
             const pickingVert = this.picking[i].getPickingVert();
             const wgslPickingVert = this.picking[i].getPickingWGSLVert();
             const defines = {
+                'PICKING_MODE': 1,
                 'ENABLE_PICKING': 1,
                 'HAS_PICKING_ID': 1
             };
@@ -1402,6 +1412,16 @@ class Painter {
             }
             this._terrainAltitudeCache.add(cacheId, { altitudeData: aTerrainAltitude, terrainTileInfos });
         }
+    }
+
+    shouldDrawParentTile() {
+        return true;
+    }
+
+    appendWGSLPositionType(defines) {
+        const isVectorTile = this.layer.isVectorTileLayer;
+        defines['POSITION_TYPE_2'] = isVectorTile ? 'vec2i' : 'vec2f';
+        defines['POSITION_TYPE_3'] = isVectorTile ? 'vec4i' : 'vec3f';
     }
 }
 

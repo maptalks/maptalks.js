@@ -1,9 +1,9 @@
 import { now } from '../../core/util';
 import { on, off, getEventContainerPoint, preventDefault, stopPropagation, isMoveEvent, isMousemoveEventBlocked } from '../../core/util/dom';
-import Handler from '../../handler/Handler';
 import Geometry from '../../geometry/Geometry';
 import Map from '../Map';
 import GlobalConfig from '../../GlobalConfig';
+import MapBaseHandler from './MapBaseHandler';
 
 const EVENTS =
     /**
@@ -184,7 +184,7 @@ const fireGeoEvent = (geometry, domEvent, type?) => {
     return null;
 };
 
-class MapGeometryEventsHandler extends Handler {
+class MapGeometryEventsHandler extends MapBaseHandler {
     //@internal
     _mouseDownTime: number
     //@internal

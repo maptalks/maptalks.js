@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { reshader } from '@maptalks/gl';
+import { reshader, CanvasCompatible } from '@maptalks/gl';
 import { getGLTFLoaderBundle } from '@maptalks/gl/dist/transcoders.js';
 import { MaskRendererMixin } from '@maptalks/gl';
 import Geo3DTilesWorkerConnection from '../Geo3DTilesWorkerConnection';
@@ -31,7 +31,7 @@ let TileCacheRefCount = 0;
 
 
 
-export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.renderer.LayerAbstractRenderer) {
+export default class Geo3DTilesRenderer extends MaskRendererMixin(CanvasCompatible(maptalks.renderer.LayerAbstractRenderer)) {
 
     constructor(layer) {
         super(layer);
@@ -392,7 +392,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
     _loadTileContent(url, arraybuffer, tile) {
         let supportedFormats = this._supportedFormats;
         if (!supportedFormats) {
-            supportedFormats = reshader.Util.getSupportedFormats(this.gl || this.device);
+            supportedFormats = reshader.Util.getSupportedFormats(this.gl || this.device && this.device.wgpu);
             this._supportedFormats = supportedFormats;
         }
 
@@ -499,12 +499,37 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
     }
 
     _onMeshCreated(data, tile, err, mesh) {
+        this._enableLayerOpacity(mesh);
         if (err) {
             this.onTileError(err, tile);
         } else {
             const size = this._getMeshSize(mesh);
             tile.memorySize = size;
             this.onTileLoad(data, tile);
+        }
+    }
+
+    _enableLayerOpacity(mesh) {
+        if (Array.isArray(mesh)) {
+            for (let i = 0; i < mesh.length; i++) {
+                if (mesh[i]) {
+                    if (Array.isArray(mesh[i])) {
+                        this._enableLayerOpacity(mesh[i]);
+                    } else {
+                        const defines = mesh[i].defines || {};
+                        defines['HAS_LAYER_OPACITY'] = 1;
+                        mesh[i].setDefines(defines);
+                    }
+                }
+            }
+        } else if (mesh) {
+            if (Array.isArray(mesh)) {
+                this._enableLayerOpacity(mesh);
+            } else {
+                const defines = mesh.defines || {};
+                defines['HAS_LAYER_OPACITY'] = 1;
+                mesh.setDefines(defines);
+            }
         }
     }
 

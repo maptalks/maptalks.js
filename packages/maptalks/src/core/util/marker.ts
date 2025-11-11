@@ -152,7 +152,7 @@ export function getVectorMarkerFixedExtent(out: PointExtent, symbol: any, size?:
 }
 
 export function getDefaultHAlign(markerType?: MarkerType) {
-    if (markerType === 'rectangle') {
+    if (markerType === 'rectangle' || markerType === 'roundrectangle') {
         return 'right';
     } else {
         return 'middle';
@@ -162,7 +162,7 @@ export function getDefaultHAlign(markerType?: MarkerType) {
 export function getDefaultVAlign(markerType?: MarkerType) {
     if (markerType === 'bar' || markerType === 'pie' || markerType === 'pin') {
         return 'top';
-    } else if (markerType === 'rectangle') {
+    } else if (markerType === 'rectangle' || markerType === 'roundrectangle') {
         return 'bottom';
     } else {
         return 'middle';
@@ -213,7 +213,7 @@ function rotateExtent(fixedExtent: PointExtent, angle: number) {
     return ROTATE_EXTENT.convertTo(p => p._rotate(angle), fixedExtent);
 }
 
-export function getMarkerRotation(symbol:any, prop = 'markerRotation') {
+export function getMarkerRotation(symbol: any, prop = 'markerRotation') {
     const r = symbol[prop];
     if (!isNumber(r)) {
         return 0;

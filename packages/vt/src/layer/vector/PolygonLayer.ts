@@ -205,6 +205,7 @@ export class PolygonLayerRenderer extends Vector3DLayerRenderer {
 }
 
 PolygonLayer.registerRenderer("gl", PolygonLayerRenderer);
+PolygonLayer.registerRenderer("gpu", PolygonLayerRenderer);
 PolygonLayer.registerRenderer("canvas", null);
 
 export default PolygonLayer;

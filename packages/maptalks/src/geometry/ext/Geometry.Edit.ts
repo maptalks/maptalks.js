@@ -22,6 +22,7 @@ export type GeometryEditOptionsType = {
     collisionBufferSize?: number;
     vertexZIndex?: number;
     newVertexZIndex?: number;
+    shadowDraggable?: boolean;
 }
 
 declare module "../Geometry" {
@@ -34,7 +35,7 @@ declare module "../Geometry" {
         cancelEdit(): this;
         isEditing(): boolean;
         undoEditcheck(): boolean;
-        redoEditcheck(): boolean;  
+        redoEditcheck(): boolean;
     }
 }
 

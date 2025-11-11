@@ -1,4 +1,4 @@
-import { mat4, quat, vec3, vec2, reshader } from '@maptalks/gl';
+import { mat4, quat, vec3, vec2, reshader, GroupGLLayer } from '@maptalks/gl';
 import { Handlerable, Eventable, Class, Point, Coordinate, INTERNAL_LAYER_PREFIX } from 'maptalks';
 import TransformHelper from './helper/TransformHelper';
 import { calFixedScale, getTranslationPoint } from './common/Util';
@@ -99,7 +99,12 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
         }
         this.addToMapCount++;
         this.map = map;
-        this._helperlayer.addTo(this.map);
+        const gllayer = map.getLayers(layer => layer instanceof GroupGLLayer)[0];
+        if (gllayer) {
+            this._helperlayer.addTo(gllayer);
+        } else {
+            this._helperlayer.addTo(this.map);
+        }
         this.container = map.getContainer();
         map.on('dom:mousemove', this._mouseMoveHandle, this);
         map.on('dom:mousedown', this._mousedownHandle, this);
@@ -122,13 +127,15 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
     }
 
     remove() {
-        if (!this.map || !this.container || !this.layerRenderer) {
+        if (!this.map) {
             return;
         }
         this._removeEvents();
         this.TransformHelper.dispose();
-        this.layerRenderer.setToRedraw();
         this._helperlayer.remove();
+        if (this.layerRenderer) {
+            this.layerRenderer.setToRedraw();
+        }
         delete this._helper;
         delete this._helperlayer;
         delete this.map;
@@ -215,7 +222,7 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
             this.firstDownPoint = null;
             this._resetScale();
             this._needRefreshPicking = true;
-            this.fire('transformend', { action: this._task, type: 'transformend' });
+            this.fire('transformend', { action: this._task, type: 'transformend', transformtarget: this._target.getTargets() });
         }
         this.mouseAction = 'moving';
         if (this._mode !== 'xyzScale') {

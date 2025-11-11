@@ -5,9 +5,7 @@ const typescript = require("@rollup/plugin-typescript");
 const pkg = require("./package.json");
 
 const production = process.env.BUILD === "production";
-const outputFile = production
-    ? "dist/maptalks.video.js"
-    : "dist/maptalks.video-dev.js";
+const outputFile = pkg.main;
 const plugins = [].concat(
     production
         ? [

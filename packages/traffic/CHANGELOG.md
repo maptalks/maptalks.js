@@ -1,5 +1,56 @@
 # @maptalks/traffic
 
+## 0.116.0
+
+### Minor Changes
+
+- fixes against maptalks-gpu
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gltf-layer@0.116.0
+
+## 0.115.1
+
+### Patch Changes
+
+- fixes related with terrain
+- Updated dependencies
+  - @maptalks/gltf-layer@0.115.1
+
+## 0.115.0
+
+### Minor Changes
+
+- focusing on bug fixes and serveral improvements
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gltf-layer@0.115.0
+
+## 0.103.1
+
+### Patch Changes
+
+- add gpu and maptalks-gpu packages and fix some bugs
+  - @maptalks/gltf-layer@0.106.0
+
+## 0.103.0
+
+### Minor Changes
+
+- - implement terrain-flat-mask rendre plugin in VectorLayer
+  - sync codes with maptalks/gl-layers
+  - webgl layers' compatibility fixes with MapCanvasRenderer
+  - bug fixes in maptalks
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gltf-layer@0.106.0
+
 ## 0.101.1
 
 ### Patch Changes

@@ -1,0 +1,56 @@
+{
+  "name": "maptalks-gpu",
+  "version": "0.116.0",
+  "description": "All-in-one package for maptalks webgl layers",
+  "module": "index.js",
+  "main": "dist/maptalks-gpu.js",
+  "unpkg": "dist/maptalks-gpu.js",
+  "jsdelivr": "dist/maptalks-gpu.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "clean": "rimraf dist",
+    "dev": "node build.js && rollup -w -c rollup.config.js",
+    "build": "npm run clean && node build.js && rollup -c rollup.config.js",
+    "preversion": "npm run build && npm run copy-styles",
+    "copy-darwin-styles": "cp -rf ../map/dist/images dist && cp -f ../map/dist/maptalks.css dist",
+    "copy-win-styles": "xcopy ..\\maptalks\\dist\\images dist\\images /e /y /i && copy ..\\maptalks\\dist\\maptalks.css dist\\maptalks-gl.css",
+    "copy-styles": "npm run copy-win-styles"
+  },
+  "files": [
+    "dist/images/**/*",
+    "dist/maptalks-gpu.css",
+    "dist/maptalks-gpu.js",
+    "dist/maptalks-gpu.js.map",
+    "index.js",
+    "index.d.ts"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maptalks/maptalks.js.git"
+  },
+  "keywords": [
+    "maptalks",
+    "webgl",
+    "layers"
+  ],
+  "author": "fuzhenn",
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "0.4.4",
+    "rimraf": "^6.0.1",
+    "rollup": "^4.17.2",
+    "rollup-plugin-sourcemaps": "0.6.3",
+    "rollup-plugin-copy": "^3.5.0"
+  },
+  "dependencies": {
+    "@maptalks/3dtiles": "workspace:*",
+    "@maptalks/gpu": "workspace:*",
+    "@maptalks/gltf-layer": "workspace:*",
+    "@maptalks/transform-control": "workspace:*",
+    "@maptalks/video-layer": "workspace:*",
+    "@maptalks/vt": "workspace:*",
+    "maptalks": "workspace:*"
+  }
+}

@@ -635,6 +635,34 @@ describe('Geometry.LineString', function () {
             });
             layer.addGeometry(line);
         });
+
+        it('fix missing z,the coordinates should carray z', function (done) {
+            const c1 = map.getCenter();
+            const c2 = c1.add(0.001, 0);
+            c1.z = 10;
+            c2.z = 20;
+            var line = new maptalks.LineString([c1, c2], {
+                symbol: [{
+                    'lineColor': '#1bbc9b',
+                    'lineWidth': 6,
+                    'lineJoin': 'round', //miter, round, bevel
+                    'lineCap': 'round', //butt, round, square
+                    'lineDasharray': null, //dasharray, e.g. [10, 5, 5]
+                    'lineOpacity ': 1
+                }]
+            });
+            layer.addGeometry(line);
+
+            setTimeout(() => {
+                const player = line.animateShow({ duration: 3000 }, ((frame, current) => {
+                    expect(current).to.be.a('object');
+                    expect(current.z).to.be.a('number');
+                    expect(current.z).to.be.within(10, 20);
+                    player.cancel();
+                    done();
+                }));
+            }, 100);
+        });
     });
 
     it('#2167 line draw altitude wall ', function (done) {

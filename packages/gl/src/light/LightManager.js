@@ -1,5 +1,34 @@
 import createREGL from '@maptalks/regl';
-import * as reshader from '@maptalks/reshader.gl';
+import * as reshader from '../reshader';
+import { worker, Util } from 'maptalks';
+
+let actor;
+function getWorkerActor() {
+    if (!actor) {
+        actor = new worker.Actor('maplight');
+    }
+    return actor;
+}
+
+//cal projectEnvironmentMapCPU by worker
+function projectEnvironmentMapCPU(params, callback) {
+    const { cubePixels, width, height } = params;
+    const buffers = cubePixels.map(face => {
+        return face.buffer;
+    });
+    getWorkerActor().send({
+        cubePixels: buffers,
+        width,
+        height,
+    }, buffers, (err, data) => {
+        if (err) {
+            console.error(err);
+            return;
+        }
+        callback(data.shList);
+    })
+
+}
 
 const PREFILTER_CUBE_SIZE = 512;
 
@@ -8,6 +37,7 @@ class LightManager {
     constructor(map) {
         this._map = map;
         this._loader = new reshader.ResourceLoader();
+        this.updateTime = Util.now();
     }
 
     getDirectionalLight() {
@@ -34,7 +64,9 @@ class LightManager {
             this._initAmbientResources();
             return;
         } else if (this._iblMaps) {
-            if (config.ambient.prefilterCubeSize !== oldConfig.ambient && oldConfig.ambient.prefilterCubeSize) {
+            const oldResource = oldConfig.ambient && oldConfig.ambient.resource;
+            const resource = config.ambient.resource;
+            if (resource && resource.prefilterCubeSize !== oldResource && oldResource.prefilterCubeSize) {
                 this._onHDRLoaded();
             }
             ambientUpdate = true;
@@ -91,7 +123,7 @@ class LightManager {
                 this._onSkyboxLoaded(images);
             }
         }
-        const onerror = function() {
+        const onerror = function () {
             throw new Error(`skybox image with url(${this.src}) failed to load, please check the image's url.`);
         }
         const urlModifier = this._urlModifier;
@@ -106,10 +138,14 @@ class LightManager {
                 envUrls = [nx, px, nz, pz, py, ny];
             }
             count = envUrls.length;
+            const crossOrigin = resource.crossOrigin;
             for (let i = 0; i < count; i++) {
                 const img = new Image();
                 img.onload = onload;
                 img.onerror = onerror;
+                if (!Util.isNil(crossOrigin)) {
+                    img.crossOrigin = crossOrigin;
+                }
                 img.src = urlModifier && urlModifier(envUrls[i]) || envUrls[i];
                 images[i] = img;
             }
@@ -142,10 +178,16 @@ class LightManager {
 
     _onHDRLoaded() {
         if (this._hdr) {
-            this._iblMaps = this._createIBLMaps(this._hdr);
+            this._createIBLMaps(this._hdr).then(maps => {
+                this._iblMaps = maps;
+                this._map.fire('updatelights', { 'ambientUpdate': true });
+                if (this.getAmbientLight().debug) {
+                    console.log(`ambientLight hdr loadend`);
+                }
+            })
             // this._hdr.dispose();
             // delete this._hdr;
-            this._map.fire('updatelights', { 'ambientUpdate': true });
+
         }
     }
 
@@ -154,42 +196,59 @@ class LightManager {
     }
 
     _onSkyboxLoaded(images) {
-        this._iblMaps = this._createIBLMaps(images);
-        this._map.fire('updatelights', { 'ambientUpdate': true });
+        this._createIBLMaps(images).then(maps => {
+            this._iblMaps = maps;
+            this._map.fire('updatelights', { 'ambientUpdate': true });
+            if (this.getAmbientLight().debug) {
+                console.log(`ambientLight skybox loadend`);
+            }
+        })
     }
 
     _createIBLMaps(envTexture) {
-        const config = this._config.ambient.resource;
-        const cubeSize = config.prefilterCubeSize || PREFILTER_CUBE_SIZE;
-        const regl = this._tryToGetREGLContext(this._map);
-        const maps = reshader.pbr.PBRHelper.createIBLMaps(regl, {
-            envTexture: Array.isArray(envTexture) ? envTexture : envTexture.getREGLTexture(regl),
-            ignoreSH: !!config['sh'],
-            envCubeSize: cubeSize,
-            prefilterCubeSize: cubeSize,
-            environmentExposure: this._config.ambient.exposure,
-            format: 'array'
-        });
-        // hdr.dispose();
-        if (config['sh']) {
-            maps.sh = config['sh'];
-            //兼容老的[[], [], ..]形式的sh
-            if (Array.isArray(maps['sh'][0])) {
-                const sh = maps['sh'];
-                const flatten = [];
-                for (let i = 0; i < sh.length; i++) {
-                    flatten.push(...sh[i]);
+        this.updateTime = Util.now();
+        return new Promise((resolve) => {
+            const config = this._config.ambient.resource;
+            const cubeSize = config.prefilterCubeSize || PREFILTER_CUBE_SIZE;
+            const regl = this._tryToGetREGLContext(this._map);
+            const asynchronous = config.asynchronous;
+            reshader.pbr.PBRHelper.createIBLMapsAsync(regl, {
+                updateTime: this.updateTime,
+                asynchronous,
+                envTexture: Array.isArray(envTexture) ? envTexture : envTexture.getREGLTexture(regl),
+                ignoreSH: !!config['sh'],
+                envCubeSize: cubeSize,
+                prefilterCubeSize: cubeSize,
+                environmentExposure: this._config.ambient.exposure,
+                format: 'array',
+                projectEnvironmentMapCPU: asynchronous ? projectEnvironmentMapCPU : null
+            }).then((maps) => {
+                //单位时间内多次更新，永远使用最新的
+                if (maps.updateTime !== this.updateTime) {
+                    return;
                 }
-                maps['sh'] = flatten;
-            }
-        }/* else {
-            console.log(JSON.stringify(maps.sh));
-        }*/
-        if (regl._temp) {
-            delete this._hdr;
-            regl.destroy();
-        }
-        return maps;
+                // hdr.dispose();
+                if (config['sh']) {
+                    maps.sh = config['sh'];
+                    //兼容老的[[], [], ..]形式的sh
+                    if (Array.isArray(maps['sh'][0])) {
+                        const sh = maps['sh'];
+                        const flatten = [];
+                        for (let i = 0; i < sh.length; i++) {
+                            flatten.push(...sh[i]);
+                        }
+                        maps['sh'] = flatten;
+                    }
+                }
+                if (regl._temp) {
+                    delete this._hdr;
+                    regl.destroy();
+                }
+                resolve(maps);
+            });
+
+        });
+
     }
 
     _disposeCubeLight() {

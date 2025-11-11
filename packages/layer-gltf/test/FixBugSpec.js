@@ -9,6 +9,285 @@ describe('bug', () => {
         removeMap(map);
     });
 
+    
+    it('setNodeTRS(maptalks/issues#711)', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFGeometry(center,
+            { symbol: {
+                scaleX: 0.1,
+                scaleY: 0.1,
+                scaleZ: 0.1,
+                url: url5,
+                animation: false
+            }});
+        gltflayer.addGeometry(marker);
+
+        function checkColor() {
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, 1, 1, 1);
+                expect(pixelMatch([111, 110, 109, 229], pixel)).to.be.eql(true);
+                done();
+            }, 100);
+        }
+        marker.on('load', () => {
+            marker.setNodeTRS(6, {
+                rotation: [45, 0, 0],
+                scale: [2, 2, 2]
+            });
+            checkColor();
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
+
+    it('show and hide boundingBox', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
+        const marker = new maptalks.GLTFGeometry(center, { symbol: { url: url2,
+            scaleX: 80,
+            scaleY: 80,
+            scaleZ: 80
+        }});
+        gltflayer.addGeometry(marker);
+        marker.showBoundingBox();
+        marker.on('load', () => {
+            setTimeout(function() {
+                const pixel = pickPixel(map, 187, 120, 1, 1);
+                expect(pixelMatch([204, 204, 25, 255], pixel)).to.be.eql(true);
+                hideBoundingBox();
+            }, 100);
+        });
+
+        function hideBoundingBox() {
+            marker.hideBoundingBox();
+            setTimeout(function() {
+                const pixel = pickPixel(map, 187, 120, 1, 1);
+                expect(pixelMatch([0, 0, 0, 0], pixel)).to.be.eql(true);
+                done();
+            }, 100);
+        }
+    });
+
+    it('show boundingBox with linecolor and lineOpacity', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
+        const marker = new maptalks.GLTFGeometry(center, { symbol: { url: url2,
+            scaleX: 80,
+            scaleY: 80,
+            scaleZ: 80
+        }});
+        gltflayer.addGeometry(marker);
+        marker.showBoundingBox({ lineColor: [0.1, 0.1, 1, 1], lineOpacity: 0.5 });
+        marker.on('load', () => {
+            setTimeout(function() {
+                const pixel = pickPixel(map, 187, 120, 1, 1);
+                expect(pixelMatch([24, 24, 255, 127], pixel)).to.be.eql(true);
+                done();
+            }, 100);
+        });
+    });
+
+    it('combineGLTFBoundingBox', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
+        const marker1 = new maptalks.GLTFGeometry(center.add(-0.001, 0.001), { symbol: { url: url2,
+            scaleX: 80,
+            scaleY: 80,
+            scaleZ: 80
+        }});
+        const marker2 = new maptalks.GLTFGeometry(center, {
+            symbol: {
+                scaleX: 40,
+                scaleY: 40,
+                scaleZ: 40,
+                url: url1
+            }
+        }).addTo(gltflayer);
+        const marker3 = new maptalks.GLTFGeometry(center.add(0.001, -0.001), {
+            symbol: {
+                modelHeight: 100,
+                url: url3
+            }
+        }).addTo(gltflayer);
+        const markers = [marker1, marker2, marker3];
+        gltflayer.addGeometry(markers);
+        gltflayer.on('modelload', () => {
+            setTimeout(function() {
+                const bbox = maptalks.GLTFMarker.combineGLTFBoundingBox(markers);
+                const { min, max } = bbox;
+                expect(max).to.be.eql([2.2732110642994363, 2.052021745737641, 2.0583606767769975]);
+                expect(min).to.be.eql([-1.5934618772014453, -1.9143420394070614, -1.3162279709491824]);
+                done();
+            }, 100);
+        });
+    });
+
+    it('gltf modelHeight', done => {
+        map.setPitch(70);
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFGeometry(center, {
+            symbol: {
+                scaleX: 1,
+                scaleY: 1,
+                scaleZ: 1,
+                modelHeight: 50,
+                url: url2
+            }
+        }).addTo(gltflayer);
+
+        function checkColor() {
+            setTimeout(function() {
+                const pixel1 = pickPixel(map, map.width / 2, 20, 1, 1);//高度为100时,不能被pick到
+                expect(pixelMatch([0, 0, 0, 0], pixel1)).to.be.eql(true);
+                const pixel2 = pickPixel(map, map.width / 2, 40, 1, 1);
+                expect(pixelMatch([141, 141, 141, 255], pixel2)).to.be.eql(true);
+                done();
+            }, 100);
+        }
+        marker.on('load', () => {
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, 20, 1, 1);//高度为50时,不能被pick到
+                expect(pixel).to.be.eql([0, 0, 0, 0]);
+                marker.setModelHeight(100);
+                checkColor();
+            }, 100);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const vLayer = new maptalks.VectorLayer('v', { enableAltitude: true }).addTo(map);
+        new maptalks.Marker([0, 0, 100]).addTo(vLayer);//高度为100的标记，方便排查
+    });
+
+    it('add GLTFMarker', done => {
+        map.setPitch(70);
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol: {
+                modelHeight: 50,
+                url: url2
+            }
+        }).addTo(gltflayer);
+
+        function checkColor() {
+            setTimeout(function() {
+                const pixel1 = pickPixel(map, map.width / 2, 50, 1, 1);
+                expect(pixelMatch([57, 88, 114, 255], pixel1)).to.be.eql(true);
+                const pixel2 = pickPixel(map, map.width / 2, 100, 1, 1);
+                expect(pixelMatch([130, 130, 130, 255], pixel2)).to.be.eql(true);
+                done();
+            }, 100);
+        }
+        marker.on('load', () => {
+            setTimeout(function() {
+                const pixel1 = pickPixel(map, map.width / 2, 50, 1, 1);
+                expect(pixelMatch([0, 0, 0, 0], pixel1)).to.be.eql(true);
+                const pixel2 = pickPixel(map, map.width / 2, 100, 1, 1);
+                expect(pixelMatch([130, 130, 130, 255], pixel2)).to.be.eql(true);
+                marker.setModelHeight(100);
+                checkColor();
+            }, 100);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
+    
+    it('setCoordinates should update shadow immediately(fuzhenn/maptalks-ide/issues/3081)', done => {
+        const config = JSON.parse(JSON.stringify(sceneConfig));
+        config.shadow.enable = true;
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gltfMarker = new maptalks.GLTFGeometry(center, {
+            symbol: {
+                scaleX: 40,
+                scaleY: 40,
+                scaleZ: 40,
+                url: url1,
+                shadow: true
+            }
+        }).addTo(gltflayer);
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig: config }).addTo(map);
+        gltfMarker.once('load', () => {
+            setTimeout(function() {
+                const x = 215, y = 190;
+                const pixel1 = pickPixel(map, x, y, 1, 1);
+                expect(pixelMatch([255, 0, 0, 186], pixel1)).to.be.eql(true);
+                const coordinate = new maptalks.Coordinate([center.x, center.y, 30]);
+                gltfMarker.setCoordinates(coordinate);
+                setTimeout(function() {
+                    const pixel2 = pickPixel(map, x - 10, y + 10, 1, 1);
+                    expect(pixelMatch([255, 0, 0, 1], pixel2)).to.be.eql(true);
+                    done();
+                }, 100);
+            }, 100);
+        });
+    });
+
+    it('gltfmarker rotate around its geometry center', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gltfMarker = new maptalks.GLTFGeometry(center, {
+            symbol: {
+                url: 'models/teapot/teapot-in-center.gltf'
+            }
+        }).addTo(gltflayer);
+        gltflayer.on('modelload', () => {
+            const mesh = gltfMarker.getMeshes()[0];
+            expect(mesh.localTransform).to.be.eql([0.013082664547695053, 0, 0, 0, 0, 8.010821630629924e-19, 0.017078430346316762, 0, 0, -0.013082664546557212, 1.0457522529038922e-18, 0, 0, 0, 0, 1]);
+            setTimeout(function() {
+                gltfMarker.setRotation(45, 0, 0);
+                const mesh = gltfMarker.getMeshes()[0];
+                expect(mesh.localTransform).to.be.eql([0.013082664547695053, 0, 0, 0, 0, -0.0120762739099027, 0.012076273909902699, 0, 0, -0.009250840816859432, -0.009250840816859434, 0, 0, 0, 0, 1]);
+                done();
+            }, 200);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
+    
+    it('correct localTransform', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
+        const marker = new maptalks.GLTFGeometry(center, {
+            symbol: {
+                scaleX: 10,
+                scaleY: 10,
+                scaleZ: 10
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            const meshes = marker.getMeshes();
+            expect(meshes[0].localTransform).to.be.eql([7.849598728617032, 0, 0, 0, 0, 4.806492978377955e-16, 10.247058207790056, 0, 0, -7.849598727934327, 6.274513517423353e-16, 0, 0, 0, 0, 1]);
+            done();
+        });
+    });
+
+    it('set rotation for model which is off centered(fuzhenn/maptalks-studio#2298)', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
+        const marker = new maptalks.GLTFGeometry(center, {
+            symbol: {
+                scaleX: 10,
+                scaleY: 10,
+                scaleZ: 10,
+                url: url1,
+                animation: true
+            }
+        }).addTo(gltflayer);
+        marker.on('createscene-debug', () => {
+            marker.setRotation(0, 0, 90);
+            const meshes = marker.getMeshes();
+            const localTransform = meshes[0].localTransform;
+            expect(localTransform).to.be.eql([2.9049350808596614e-17, 0.13082664547695053, 0, 0, -1.1437228588383228e-8, 2.5395749033448274e-24, -0.1707843034631676, 0, -0.13082664546557213, 2.90493508060701e-17, 1.493043799345968e-8, 0, 0.02636779937687218, 0.13082052414450185, -0.15827267434369002, 1]);
+            done();
+        });
+    });
+
+    it('save scale(fuzhenn/maptalks-studio#1296)', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
+        const marker = new maptalks.GLTFGeometry(center, {
+            symbol: {
+                scaleX: 2,
+                scaleY: 2,
+                scaleZ: 2
+            }
+        }).addTo(gltflayer);
+        marker.on('createscene-debug', () => {
+            const meshes = marker.getMeshes();
+            const localTransform = meshes[0].localTransform;
+            expect(localTransform).to.be.eql([1.5699197457234064, 0, 0, 0, 0, 9.61298595675591e-17, 2.0494116415580113, 0, 0, -1.5699197455868654, 1.2549027034846707e-16, 0, 0, 0, 0, 1]);
+            done();
+        });
+    });
+
     it('The units for translations are meters', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltflayer');
         const marker = new maptalks.GLTFGeometry(center, {
@@ -417,7 +696,37 @@ describe('bug', () => {
             setTimeout(function() {
                 const infoWindowStyle = gltfMarker.getInfoWindow().__uiDOM.style;
                 expect(infoWindowStyle.display).not.to.be.eql('none');
-                expect(infoWindowStyle.cssText).to.be.eql('width: auto; bottom: 0px; position: absolute; left: 0px; transform: translate3d(114.5px, 137.887px, 0px) scale(1); transform-origin: 81.5px bottom; z-index: 0;');
+                expect(infoWindowStyle.cssText).to.be.eql('width: auto; bottom: 0px; position: absolute; left: 0px; transform: translate3d(116px, 138px, 0px) scale(1); transform-origin: 79.8438px bottom; z-index: 0;');
+                done();
+            }, 100);
+        });
+    });
+
+    it('set infoWindow for gltfmarker which has altitude(issues/880)', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
+        center.z = 10;
+        map.setPitch(45);
+        const gltfMarker = new maptalks.GLTFGeometry(center, {
+            symbol: {
+                scaleX: 10,
+                scaleY: 10,
+                scaleZ: 10,
+                url: url1
+            }
+        }).addTo(gltflayer);
+        gltflayer.on('modelload', () => {
+            gltfMarker.setInfoWindow({
+                'title': 'GLTFMarker\'s InfoWindow',
+                'content': 'Click on marker to open.',
+                'autoOpenOn': 'click',
+                'autoCloseOn': 'click',
+                'autoPan': false
+            });
+            gltfMarker.openInfoWindow();
+            setTimeout(function() {
+                const infoWindowStyle = gltfMarker.getInfoWindow().__uiDOM.style;
+                expect(infoWindowStyle.display).not.to.be.eql('none');
+                expect(infoWindowStyle.cssText).to.be.eql('width: auto; bottom: 0px; position: absolute; left: 0px; transform: translate3d(116px, 108px, 0px) scale(1); transform-origin: 79.8438px bottom; z-index: 0;');
                 done();
             }, 100);
         });
@@ -613,22 +922,6 @@ describe('bug', () => {
         gltflayer.on('layerload', () => {
             done();
             gltflayer.remove();
-        });
-    });
-
-    it('correct localTransform', (done) => {
-        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
-        const marker = new maptalks.GLTFGeometry(center, {
-            symbol: {
-                scaleX: 10,
-                scaleY: 10,
-                scaleZ: 10
-            }
-        }).addTo(gltflayer);
-        marker.on('load', () => {
-            const meshes = marker.getMeshes();
-            expect(meshes[0].localTransform).to.be.eql([7.849598728617032, 0, 0, 0, 0, 4.806492978377955e-16, 10.247058207790056, 0, 0, -7.849598727934327, 6.274513517423353e-16, 0, 0, 0, 0, 1]);
-            done();
         });
     });
 
@@ -833,43 +1126,6 @@ describe('bug', () => {
         });
     });
 
-    it('set rotation for model which is off centered(fuzhenn/maptalks-studio#2298)', (done) => {
-        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
-        const marker = new maptalks.GLTFGeometry(center, {
-            symbol: {
-                scaleX: 10,
-                scaleY: 10,
-                scaleZ: 10,
-                url: url1,
-                animation: true
-            }
-        }).addTo(gltflayer);
-        marker.on('createscene-debug', () => {
-            marker.setRotation(0, 0, 90);
-            const meshes = marker.getMeshes();
-            const localTransform = meshes[0].localTransform;
-            expect(localTransform).to.be.eql([2.9049350808596614e-17, 0.13082664547695053, 0, 0, -1.1437228588383228e-8, 2.5395749033448274e-24, -0.1707843034631676, 0, -0.13082664546557213, 2.90493508060701e-17, 1.493043799345968e-8, 0, 0.02636779937687218, 0.13082052414450185, -0.15827267434369002, 1]);
-            done();
-        });
-    });
-
-    it('save scale(fuzhenn/maptalks-studio#1296)', (done) => {
-        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
-        const marker = new maptalks.GLTFGeometry(center, {
-            symbol: {
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
-            }
-        }).addTo(gltflayer);
-        marker.on('createscene-debug', () => {
-            const meshes = marker.getMeshes();
-            const localTransform = meshes[0].localTransform;
-            expect(localTransform).to.be.eql([1.5699197457234064, 0, 0, 0, 0, 9.61298595675591e-17, 2.0494116415580113, 0, 0, -1.5699197455868654, 1.2549027034846707e-16, 0, 0, 0, 0, 1]);
-            done();
-        });
-    });
-
     it('identify more than one layers in groupgllayer', done => {
         const gltflayer1 = new maptalks.GLTFLayer('gltf1');
         new maptalks.GLTFGeometry(center, {
@@ -983,26 +1239,6 @@ describe('bug', () => {
         });
     });
 
-    it('gltfmarker rotate around its geometry center', (done) => {
-        const gltflayer = new maptalks.GLTFLayer('gltf');
-        const gltfMarker = new maptalks.GLTFGeometry(center, {
-            symbol: {
-                url: 'models/teapot/teapot-in-center.gltf'
-            }
-        }).addTo(gltflayer);
-        gltflayer.on('modelload', () => {
-            const mesh = gltfMarker.getMeshes()[0];
-            expect(mesh.localTransform).to.be.eql([0.013082664547695053, 0, 0, 0, 0, 8.010821630629924e-19, 0.017078430346316762, 0, 0, -0.013082664546557212, 1.0457522529038922e-18, 0, 0, 0, 0, 1]);
-            setTimeout(function() {
-                gltfMarker.setRotation(45, 0, 0);
-                const mesh = gltfMarker.getMeshes()[0];
-                expect(mesh.localTransform).to.be.eql([0.013082664547695053, 0, 0, 0, 0, -0.0120762739099027, 0.012076273909902699, 0, 0, -0.009250840816859432, -0.009250840816859434, 0, 0, 0, 0, 1]);
-                done();
-            }, 200);
-        });
-        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
-    });
-
     it('unfixed scale for gltfmarker(fuzhenn/maptalks-ide/issues/2922)', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gltfMarker = new maptalks.GLTFGeometry(center, {
@@ -1023,36 +1259,6 @@ describe('bug', () => {
                 expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
                 expect(pixelMatch([137, 137, 137, 239], pixel3)).to.be.eql(true);
                 done();
-            }, 100);
-        });
-    });
-
-    it('setCoordinates should update shadow immediately(fuzhenn/maptalks-ide/issues/3081)', done => {
-        const config = JSON.parse(JSON.stringify(sceneConfig));
-        config.shadow.enable = true;
-        const gltflayer = new maptalks.GLTFLayer('gltf');
-        const gltfMarker = new maptalks.GLTFGeometry(center, {
-            symbol: {
-                scaleX: 40,
-                scaleY: 40,
-                scaleZ: 40,
-                url: url1,
-                shadow: true
-            }
-        }).addTo(gltflayer);
-        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig: config }).addTo(map);
-        gltfMarker.once('load', () => {
-            setTimeout(function() {
-                const x = 215, y = 190;
-                const pixel1 = pickPixel(map, x, y, 1, 1);
-                expect(pixelMatch([255, 0, 0, 186], pixel1)).to.be.eql(true);
-                const coordinate = new maptalks.Coordinate([center.x, center.y, 30]);
-                gltfMarker.setCoordinates(coordinate);
-                setTimeout(function() {
-                    const pixel2 = pickPixel(map, x - 10, y + 10, 1, 1);
-                    expect(pixelMatch([255, 0, 0, 1], pixel2)).to.be.eql(true);
-                    done();
-                }, 100);
             }, 100);
         });
     });
@@ -1079,35 +1285,6 @@ describe('bug', () => {
                 done();
             }, 100);
         });
-    });
-
-    it('canvasisdirty', done => {
-        const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFGeometry(center, {
-            symbol: {
-                scaleX: 80,
-                scaleY: 80,
-                scaleZ: 80,
-                url: url2,
-                shadow: true
-            }
-        }).addTo(gltflayer);
-        marker.on('load', () => {
-            gltflayer.once('canvasisdirty', () => {
-                map.once('renderend', () => {
-                    const canvas = map.getRenderer().canvas;
-                    const ctx = canvas.getContext("2d");
-                    const width = map.width, height = map.height;
-                    const pixels = ctx.getImageData(0, 0, width, height).data;
-                    const index = width * (height / 2) * 4 + width / 2 * 4;
-                    expect(pixelMatch(pixels.slice(index, index + 4), [147, 147, 147, 255])).to.be.eql(true);
-                    expect(pixelMatch(pixels.slice(index + 4, index + 8), [147, 147, 147, 255])).to.be.eql(true);
-                    expect(pixelMatch(pixels.slice(index + 8, index + 12), [147, 147, 147, 255])).to.be.eql(true);
-                    done();
-                });
-            });
-        });
-        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
     });
 
     it('update altitude(maptalks-ide/issues/3127)', done => {
@@ -1200,73 +1377,6 @@ describe('bug', () => {
                 newLayer.addTo(groupgllayer);
             }, 100);
         });
-    });
-
-    it('gltf modelHeight', done => {
-        map.setPitch(70);
-        const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFGeometry(center, {
-            symbol: {
-                scaleX: 1,
-                scaleY: 1,
-                scaleZ: 1,
-                modelHeight: 50,
-                url: url2
-            }
-        }).addTo(gltflayer);
-
-        function checkColor() {
-            setTimeout(function() {
-                const pixel1 = pickPixel(map, map.width / 2, 20, 1, 1);//高度为100时,不能被pick到
-                expect(pixelMatch([0, 0, 0, 0], pixel1)).to.be.eql(true);
-                const pixel2 = pickPixel(map, map.width / 2, 30, 1, 1);
-                expect(pixelMatch([222, 51, 51, 255], pixel2)).to.be.eql(true);
-                done();
-            }, 100);
-        }
-        marker.on('load', () => {
-            setTimeout(function() {
-                const pixel = pickPixel(map, map.width / 2, 20, 1, 1);//高度为50时,不能被pick到
-                expect(pixel).to.be.eql([0, 0, 0, 0]);
-                marker.setModelHeight(100);
-                checkColor();
-            }, 100);
-        });
-        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
-        const vLayer = new maptalks.VectorLayer('v', { enableAltitude: true }).addTo(map);
-        new maptalks.Marker([0, 0, 100]).addTo(vLayer);//高度为100的标记，方便排查
-    });
-
-    it('add GLTFMarker', done => {
-        map.setPitch(70);
-        const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFMarker(center, {
-            symbol: {
-                modelHeight: 50,
-                url: url2
-            }
-        }).addTo(gltflayer);
-
-        function checkColor() {
-            setTimeout(function() {
-                const pixel1 = pickPixel(map, map.width / 2, 50, 1, 1);
-                expect(pixelMatch([57, 88, 114, 255], pixel1)).to.be.eql(true);
-                const pixel2 = pickPixel(map, map.width / 2, 100, 1, 1);
-                expect(pixelMatch([130, 130, 130, 255], pixel2)).to.be.eql(true);
-                done();
-            }, 100);
-        }
-        marker.on('load', () => {
-            setTimeout(function() {
-                const pixel1 = pickPixel(map, map.width / 2, 50, 1, 1);
-                expect(pixelMatch([0, 0, 0, 0], pixel1)).to.be.eql(true);
-                const pixel2 = pickPixel(map, map.width / 2, 100, 1, 1);
-                expect(pixelMatch([130, 130, 130, 255], pixel2)).to.be.eql(true);
-                marker.setModelHeight(100);
-                checkColor();
-            }, 100);
-        });
-        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
     });
 
     it('default roughnessFactor and metallicFactor(maptalks-ide/issues/3169)', done => {
@@ -1429,85 +1539,6 @@ describe('bug', () => {
                     'clientX':clickContainerPoint.x,
                     'clientY':clickContainerPoint.y
                 });
-            }, 100);
-        });
-    });
-
-    it('show and hide boundingBox', done => {
-        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
-        const marker = new maptalks.GLTFGeometry(center, { symbol: { url: url2,
-            scaleX: 80,
-            scaleY: 80,
-            scaleZ: 80
-        }});
-        gltflayer.addGeometry(marker);
-        marker.showBoundingBox();
-        marker.on('load', () => {
-            setTimeout(function() {
-                const pixel = pickPixel(map, 187, 120, 1, 1);
-                expect(pixelMatch([204, 204, 25, 255], pixel)).to.be.eql(true);
-                hideBoundingBox();
-            }, 100);
-        });
-
-        function hideBoundingBox() {
-            marker.hideBoundingBox();
-            setTimeout(function() {
-                const pixel = pickPixel(map, 187, 120, 1, 1);
-                expect(pixelMatch([0, 0, 0, 0], pixel)).to.be.eql(true);
-                done();
-            }, 100);
-        }
-    });
-
-    it('show boundingBox with linecolor and lineOpacity', done => {
-        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
-        const marker = new maptalks.GLTFGeometry(center, { symbol: { url: url2,
-            scaleX: 80,
-            scaleY: 80,
-            scaleZ: 80
-        }});
-        gltflayer.addGeometry(marker);
-        marker.showBoundingBox({ lineColor: [0.1, 0.1, 1, 1], lineOpacity: 0.5 });
-        marker.on('load', () => {
-            setTimeout(function() {
-                const pixel = pickPixel(map, 187, 120, 1, 1);
-                expect(pixelMatch([24, 24, 255, 127], pixel)).to.be.eql(true);
-                done();
-            }, 100);
-        });
-    });
-
-    it('combineGLTFBoundingBox', done => {
-        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
-        const marker1 = new maptalks.GLTFGeometry(center.add(-0.001, 0.001), { symbol: { url: url2,
-            scaleX: 80,
-            scaleY: 80,
-            scaleZ: 80
-        }});
-        const marker2 = new maptalks.GLTFGeometry(center, {
-            symbol: {
-                scaleX: 40,
-                scaleY: 40,
-                scaleZ: 40,
-                url: url1
-            }
-        }).addTo(gltflayer);
-        const marker3 = new maptalks.GLTFGeometry(center.add(0.001, -0.001), {
-            symbol: {
-                modelHeight: 100,
-                url: url3
-            }
-        }).addTo(gltflayer);
-        const markers = [marker1, marker2, marker3];
-        gltflayer.addGeometry(markers);
-        gltflayer.on('modelload', () => {
-            setTimeout(function() {
-                const bbox = maptalks.GLTFMarker.combineGLTFBoundingBox(markers);
-                const { min, max } = bbox;
-                expect(max).to.be.eql([2.2732110642994363, 2.052021745737641, 2.0583606767769975]);
-                expect(min).to.be.eql([-1.5934618772014453, -1.9143420394070614, -1.3162279709491824]);
-                done();
             }, 100);
         });
     });
@@ -2001,31 +2032,64 @@ describe('bug', () => {
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
     });
 
-    it('setNodeTRS(maptalks/issues#711)', done => {
+    it('add gltflayer to MapCanvasRenderer', done => {
+        removeMap(map);
+        map = createCanvasMap();
+        map.setPitch(70);
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFGeometry(center,
-            { symbol: {
-                scaleX: 0.1,
-                scaleY: 0.1,
-                scaleZ: 0.1,
-                url: url5,
-                animation: false
-            }});
-        gltflayer.addGeometry(marker);
+        const marker = new maptalks.GLTFGeometry(center, {
+            symbol: {
+                scaleX: 1,
+                scaleY: 1,
+                scaleZ: 1,
+                modelHeight: 50,
+                url: url2
+            }
+        }).addTo(gltflayer);
 
         function checkColor() {
             setTimeout(function() {
-                const pixel = pickPixel(map, map.width / 2, 1, 1, 1);
-                expect(pixelMatch([111, 110, 109, 229], pixel)).to.be.eql(true);
+                const pixel1 = pickPixel(map, map.width / 2, 20, 1, 1);
+                expect(pixelMatch([0, 0, 0, 0], pixel1)).to.be.eql(true);
+                const pixel2 = pickPixel(map, map.width / 2, 40, 1, 1);
+                expect(pixelMatch([141, 141, 141, 255], pixel2)).to.be.eql(false);
                 done();
             }, 100);
         }
         marker.on('load', () => {
-            marker.setNodeTRS(6, {
-                rotation: [45, 0, 0],
-                scale: [2, 2, 2]
-            });
-            checkColor();
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, 20, 1, 1);
+                expect(pixel).to.be.eql([0, 0, 0, 0]);
+                marker.setModelHeight(100);
+                checkColor();
+            }, 100);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const vLayer = new maptalks.VectorLayer('v', { enableAltitude: true }).addTo(map);
+        new maptalks.Marker([0, 0, 100]).addTo(vLayer);
+    });
+    
+    it('set uniform for specific nodeIndex(#issues/886)', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFGeometry(center, {
+            symbol: {
+                scaleX: 50,
+                scaleY: 50,
+                scaleZ: 50,
+                url: url2,
+                uniforms: {
+                    polygonFill: [1, 1, 1, 1],
+                    polygonOpacity: 1
+                }
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            marker.setUniform('polygonFill', [1, 0, 0, 1], 1);
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixelMatch([168, 3, 3, 255], pixel)).to.be.eql(true);
+                done();
+            }, 100);
         });
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
     });

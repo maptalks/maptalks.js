@@ -67,9 +67,9 @@ class FillPainter extends BasicPainter {
         return !!symbol[bloomSymbol];
     }
 
-    forbiddenTerrainUpscale() {
-        return true;
-    }
+    // forbiddenTerrainUpscale() {
+    //     return true;
+    // }
 
     needPolygonOffset() {
         return true;
@@ -498,7 +498,8 @@ class FillPainter extends BasicPainter {
     paint(context) {
         if (this.isShadowIncludeChanged(context)) {
             this.shader.dispose();
-            this._createShader(context);
+            const extraCommandProps = this._getExtraCommandProps();
+            this._createShader(context, extraCommandProps);
         }
         super.paint(context);
     }
@@ -514,7 +515,7 @@ class FillPainter extends BasicPainter {
         return isEnableStencil && (isVectorTile || isTileLayer && this.isOnly2D());
     }
 
-    init(context) {
+    _getExtraCommandProps() {
         const regl = this.regl;
         const canvas = this.canvas;
         const viewport = {
@@ -537,8 +538,8 @@ class FillPainter extends BasicPainter {
         const extraCommandProps = {
             viewport,
             stencil: {
-                enable: () => {
-                    return this.isEnableTileStencil(context);
+                enable: (_, props) => {
+                    return props.geometryProperties.is2D && this.isEnableTileStencil(props.painterContext);
                 },
                 func: {
                     cmp: () => {
@@ -593,18 +594,25 @@ class FillPainter extends BasicPainter {
                 offset: this.getPolygonOffset()
             }
         };
+        return extraCommandProps;
+    }
+
+    init(context) {
+        const extraCommandProps = this._getExtraCommandProps();
         this._createShader(context, extraCommandProps);
 
         if (this.pickingFBO) {
             const projViewModelMatrix = [];
-            const isVectorTile = this.layer instanceof maptalks.TileLayer;
+            const isVectorTile = this.layer.isVectorTileLayer;
+            const defines = { 'PICKING_MODE': 1 };
+            this.appendWGSLPositionType(defines);
             this.picking = [new reshader.FBORayPicking(
                 this.renderer,
                 {
                     name: 'fill-picking',
                     vert: pickingVert,
                     wgslVert: pickingWgsl,
-                    defines: { 'PICKING_MODE': 1 },
+                    defines,
                     uniforms: [
                         {
                             name: 'projViewModelMatrix',
@@ -617,7 +625,7 @@ class FillPainter extends BasicPainter {
                     ],
                     extraCommandProps,
                     enableStencil: () => {
-                        return isVectorTile && this.isOnly2D();
+                        return !!(isVectorTile && this.isOnly2D());
                     }
                 },
                 this.pickingFBO,
@@ -641,13 +649,11 @@ class FillPainter extends BasicPainter {
         const defines = {};
         this.fillIncludes(defines, uniforms, context);
 
-        const isVectorTile = this.layer instanceof maptalks.TileLayer;
-        const TYPE_CONSTS = `#define POSITION_TYPE ${isVectorTile ? 'vec2i' : 'vec2f'}
-`;
+        this.appendWGSLPositionType(defines);
         this.shader = new reshader.MeshShader({
             name: 'vt-fill',
             vert, frag,
-            wgslVert: TYPE_CONSTS + wgslVert,
+            wgslVert: wgslVert,
             wgslFrag,
             uniforms,
             defines,
@@ -670,6 +676,7 @@ class FillPainter extends BasicPainter {
             projViewMatrix,
             glScale,
             viewport: isRenderingTerrainSkin && context && context.viewport,
+            maskViewport: isRenderingTerrainSkin && context && context.maskViewport,
             hasSSRGround: context && context.hasSSRGround
             // blendSrcIsOne: +(!!(blendSrc === 'one' || blendSrc === 1))
         };

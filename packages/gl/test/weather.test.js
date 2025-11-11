@@ -10,7 +10,8 @@ describe('weather tests', () => {
         map = new maptalks.Map(container, {
             center: [0, 0],
             pitch: 70,
-            zoom: 12
+            zoom: 12,
+            devicePixelRatio: 1
         });
     });
 
@@ -23,8 +24,7 @@ describe('weather tests', () => {
         const px = x || map.width / 2, py = y || map.height / 2;
         const w = width || 1, h = height || 1;
         const canvas = map.getRenderer().canvas;
-        const ctx = canvas.getContext("2d");
-        const pixel = ctx.getImageData(px, py, w, h).data;
+        const pixel = readPixel(canvas, px, py, w, h);
         return pixel;
     }
 
@@ -322,3 +322,13 @@ describe('weather tests', () => {
         gltfLayer.addGeometry(gltfMarker);
     });
 });
+
+
+function readPixel(canvas, x, y, sw = 1, sh = 1) {
+    const resultCanvas = document.createElement('canvas');
+    resultCanvas.width = canvas.width;
+    resultCanvas.height = canvas.height;
+    const ctx = resultCanvas.getContext('2d');
+    ctx.drawImage(canvas, 0, 0);
+    return ctx.getImageData(x, y, sw, sh);
+}

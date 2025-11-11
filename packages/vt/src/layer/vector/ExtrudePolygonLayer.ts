@@ -139,7 +139,9 @@ const SYMBOL = {
 };
 
 const DEFAULT_DATACONFIG = {
-  defaultAltitude: 20,
+    altitudeProperty: 'height',
+    minHeightProperty: 'min_height',
+    defaultAltitude: 20,
 };
 
 const topFilter = (mesh) => {
@@ -216,7 +218,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
       return;
     }
     this.painter.updateDataConfig(dataConfig, old);
-    this._markRebuild();
+    this.markRebuild();
   }
 
   updateBloom(enableBloom: boolean) {
@@ -278,7 +280,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
     const topDataConfig = extend({}, dataConfig);
     topDataConfig.upsideUpTexture = true;
     const painter = new StandardPainter(
-      this.regl,
+      this.device,
       layer,
       this.painterSymbol,
       sceneConfig,
@@ -286,7 +288,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
       topDataConfig
     );
     this.sidePainter = new StandardPainter(
-      this.regl,
+      this.device,
       layer,
       this.sidePainterSymbol,
       sceneConfig,
@@ -515,6 +517,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
 }
 
 ExtrudePolygonLayer.registerRenderer("gl", ExtrudePolygonLayerRenderer);
+ExtrudePolygonLayer.registerRenderer("gpu", ExtrudePolygonLayerRenderer);
 ExtrudePolygonLayer.registerRenderer("canvas", null);
 
 export default ExtrudePolygonLayer;

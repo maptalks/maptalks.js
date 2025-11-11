@@ -8,6 +8,7 @@ import Extent from '../geo/Extent';
 import Layer, { LayerOptionsType } from './Layer';
 import { PointExtent } from '../geo';
 import { getResouceCacheInstance } from '../core/ResourceCacheManager';
+import { MixinConstructor } from '../core/Mixin';
 
 
 /**
@@ -130,9 +131,110 @@ ImageLayer.mergeOptions(options);
 
 const EMPTY_ARRAY = [];
 
-export class ImageLayerCanvasRenderer extends CanvasRenderer {
-    //@internal
-    _imageLoaded: boolean
+const ImageLayerRenderable = function <T extends MixinConstructor>(Base: T) {
+    const renderable = class extends Base {
+        [x: string]: any;
+        //@internal
+        _imageLoaded: boolean
+
+        isDrawable() {
+            return true;
+        }
+
+        checkResources() {
+            if (this._imageLoaded) {
+                return EMPTY_ARRAY;
+            }
+            const layer = this.layer;
+            let urls = layer._imageData.map(img => [img.url, null, null]);
+            if (this.resources) {
+                const unloaded = [];
+                const resources = getResouceCacheInstance();
+                urls.forEach(url => {
+                    if (this.resources.isResourceLoaded(url)) {
+                        const img = this.resources.getImage(url);
+                        resources.addResource(url, img);
+                    } else {
+                        unloaded.push(url);
+                    }
+                });
+                this.resources.forEach((url, res) => {
+                    if (!resources.isResourceLoaded(url)) {
+                        this.retireImage(res.image);
+                    }
+                });
+                this.resources = resources;
+                urls = unloaded;
+            }
+            this._imageLoaded = true;
+            return urls;
+        }
+
+        retireImage(image: LayerImageType) {
+            const img = image as ImageBitmap;
+            if (img.close) {
+                img.close();
+            }
+
+        }
+
+        refreshImages() {
+            this._imageLoaded = false;
+            this.setToRedraw();
+        }
+
+        draw(timestamp?: number, context?: any) {
+            if (!this.isDrawable()) {
+                return;
+            }
+            this.prepareCanvas();
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            this._painted = false;
+            this.drawImages(timestamp, context);
+            this.completeRender();
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        drawImage(image: LayerImageType, extent: PointExtent, opacity: number) {
+
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        drawImages(timestamp?: number, context?: any) {
+            const imgData = this.layer._imageData;
+            const map = this.getMap();
+            const mapExtent = map.get2DExtentAtRes(map.getGLRes());
+            if (imgData && imgData.length) {
+                for (let i = 0; i < imgData.length; i++) {
+                    const extent = imgData[i].extent2d;
+                    const image = this.resources && this.resources.getImage(imgData[i].url);
+                    if (image && mapExtent.intersects(extent)) {
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        this._painted = true;
+                        let opacity = imgData[i].opacity;
+                        if (!isNumber(opacity)) {
+                            opacity = 1;
+                        }
+                        this.drawImage(image, extent, opacity);
+                    }
+                }
+            }
+        }
+
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        drawOnInteracting(event?: any, timestamp?: number, context?: any) {
+            this.draw();
+        }
+    };
+    return renderable;
+};
+
+export { ImageLayerRenderable };
+
+export class ImageLayerCanvasRenderer extends ImageLayerRenderable(CanvasRenderer) {
 
     isDrawable() {
         if (this.getMap().getPitch()) {
@@ -144,86 +246,7 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
         return true;
     }
 
-    checkResources() {
-        if (this._imageLoaded) {
-            return EMPTY_ARRAY;
-        }
-        const layer = this.layer;
-        let urls = layer._imageData.map(img => [img.url, null, null]);
-        if (this.resources) {
-            const unloaded = [];
-            const resources = getResouceCacheInstance();
-            urls.forEach(url => {
-                if (this.resources.isResourceLoaded(url)) {
-                    const img = this.resources.getImage(url);
-                    resources.addResource(url, img);
-                } else {
-                    unloaded.push(url);
-                }
-            });
-            this.resources.forEach((url, res) => {
-                if (!resources.isResourceLoaded(url)) {
-                    this.retireImage(res.image);
-                }
-            });
-            this.resources = resources;
-            urls = unloaded;
-        }
-        this._imageLoaded = true;
-        return urls;
-    }
-
-    retireImage(image: LayerImageType) {
-        const img = image as ImageBitmap;
-        if (img.close) {
-            img.close();
-        }
-
-    }
-
-    refreshImages() {
-        this._imageLoaded = false;
-        this.setToRedraw();
-    }
-
-    draw(timestamp?: number, context?: any) {
-        if (!this.isDrawable()) {
-            return;
-        }
-        this.prepareCanvas();
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        this._painted = false;
-        this._drawImages(timestamp, context);
-        this.completeRender();
-    }
-
-    //@internal
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _drawImages(timestamp?: number, context?: any) {
-        const imgData = this.layer._imageData;
-        const map = this.getMap();
-        const mapExtent = map.get2DExtentAtRes(map.getGLRes());
-        if (imgData && imgData.length) {
-            for (let i = 0; i < imgData.length; i++) {
-                const extent = imgData[i].extent2d;
-                const image = this.resources && this.resources.getImage(imgData[i].url);
-                if (image && mapExtent.intersects(extent)) {
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    this._painted = true;
-                    let opacity = imgData[i].opacity;
-                    if (!isNumber(opacity)) {
-                        opacity = 1;
-                    }
-                    this._drawImage(image, extent, opacity);
-                }
-            }
-        }
-    }
-
-    //@internal
-    _drawImage(image: LayerImageType, extent: PointExtent, opacity: number) {
+    drawImage(image: LayerImageType, extent: PointExtent, opacity: number) {
         let globalAlpha = 0;
         const ctx = this.context;
         if (opacity < 1) {
@@ -253,10 +276,6 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    drawOnInteracting(event?: any, timestamp?: number, context?: any) {
-        this.draw();
-    }
 }
 
 export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRenderer) {
@@ -279,8 +298,7 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
         }
     }
 
-    //@internal
-    _drawImages(timestamp?: number, parentContext?: any) {
+    drawImages(timestamp?: number, parentContext?: any) {
         const gl = this.gl;
         if (parentContext && parentContext.renderTarget) {
             const fbo = parentContext.renderTarget.fbo;
@@ -290,7 +308,7 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
             }
         }
         this._prepareGLContext();
-        super._drawImages();
+        super.drawImages();
         if (parentContext && parentContext.renderTarget) {
             const fbo = parentContext.renderTarget.fbo;
             if (fbo) {
@@ -304,8 +322,7 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
         return true;
     }
 
-    //@internal
-    _drawImage(image: LayerImageType, extent: PointExtent, opacity: number) {
+    drawImage(image: LayerImageType, extent: PointExtent, opacity: number) {
         const width = extent.getWidth();
         this.drawGLImage(image, extent.xmin, extent.ymax, width, extent.getHeight(), 1, opacity, image.width !== width);
     }

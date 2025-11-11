@@ -9,7 +9,7 @@ import wgslVert from './wgsl/marker_vert.wgsl';
 import wgslFrag from './wgsl/marker_frag.wgsl';
 import pickingVert from './glsl/marker.vert';
 import { getIconBox } from './util/get_icon_box';
-import { isNil, isIconText, getUniqueIds } from '../Util';
+import { isNil, isIconText, getUniqueIds, extend } from '../Util';
 import { GAMMA_SCALE, isLabelCollides, getLabelEntryKey, getTextFnTypeConfig } from './util/create_text_painter';
 import CollisionGroup from './CollisionGroup';
 
@@ -729,6 +729,8 @@ class IconPainter extends CollisionPainter {
             }
         };
         const defines = this._shaderDefines || {};
+
+        this.appendWGSLPositionType(defines);
         this.shader = new reshader.MeshShader({
             name: 'marker',
             vert, frag,
@@ -755,13 +757,15 @@ class IconPainter extends CollisionPainter {
         this.shader.version = 300;
 
         if (this.pickingFBO) {
+            const pickingDefines = extend({}, defines);
+            pickingDefines['PICKING_MODE'] = 1;
             const markerPicking = new reshader.FBORayPicking(
                 this.renderer,
                 {
                     name: 'marker-picking',
-                    vert: pickingVert,
+                    vert: '#define PICKING_MODE 1\n' + pickingVert,
                     wgslVert,
-                    defines: { 'PICKING_MODE': 1 },
+                    defines: pickingDefines,
                     uniforms: [
                         {
                             name: 'projViewModelMatrix',

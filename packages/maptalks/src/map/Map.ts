@@ -98,7 +98,7 @@ const REDRAW_OPTIONS_PROPERTIES = ['centerCross', 'fog', 'fogColor', 'debugSky']
  * @property {Number} [options.mousemoveThrottleTime=48]         - mousemove event interval time(ms)
  * @property {Number} [options.maxFPS=0]         - 0 means no frame is locked, otherwise the frame is locked
  * @property {Number} [options.cameraFarUndergroundInMeter=2000]      - camera far distance from underground in meter
- * @property {Boolean} [options.queryTerrainInMapEvents=true]         - whether to query terrain in map's event
+ * @property {Boolean} [options.queryTerrainInMapEvents=false]         - whether to query terrain in map's event
  * @memberOf Map
  * @instance
  */
@@ -107,12 +107,14 @@ const options: MapOptionsType = {
     'maxPitch': 80,
     'centerCross': false,
 
+    'zoomable': true,
     'zoomInCenter': false,
     'zoomOrigin': null,
     'zoomAnimation': (function () {
         return !IS_NODE;
     })(),
     'zoomAnimationDuration': 330,
+    'tileBackgroundLimitPerFrame': 3,
 
     'panAnimation': (function () {
         return !IS_NODE;
@@ -125,7 +127,7 @@ const options: MapOptionsType = {
         return !IS_NODE;
     })(),
 
-    'zoomable': true,
+
     'enableInfoWindow': true,
 
     'hitDetect': (function () {
@@ -232,10 +234,8 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     //@internal
     _center: Coordinate;
     //@internal
-    _centerZ: number;
-    //@internal
     _mapViewPoint: Point;
-    isMap: boolean;
+    isMap: boolean = true;
     //@internal
     _containerDOM: HTMLDivElement | HTMLCanvasElement;
     //@internal
@@ -290,7 +290,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     //@internal
     _limitMaxExtenting: boolean;
     //@internal
-    _terrainLayer: any;
+    _currentViewGLInfo: any;
     options: MapOptionsType;
     static VERSION: string;
     JSON_VERSION: '1.0';
@@ -355,7 +355,6 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
 
         this._zoomLevel = zoom;
         this._center = center;
-        this._centerZ = center.z;
 
         this.setSpatialReference(opts['spatialReference'] || opts['view']);
 
@@ -375,8 +374,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         this.setMaxExtent(opts['maxExtent']);
 
         this._Load();
-        this.proxyOptions();
-        this.isMap = true;
+        this.proxyOptions()
     }
 
     /**
@@ -610,7 +608,6 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         const center = projection.unproject(this._prjCenter);
         center.x = Math.round(center.x * 1E8) / 1E8;
         center.y = Math.round(center.y * 1E8) / 1E8;
-        center.z = this._centerZ;
         if (this.centerAltitude) {
             center.z = this.centerAltitude;
         }
@@ -644,7 +641,6 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             this._center = center;
             return this;
         }
-        this._centerZ = center.z;
         this.onMoveStart();
         this._setPrjCenter(pcenter);
         this.onMoveEnd(this._parseEventFromCoord(this.getCenter()));
@@ -1074,6 +1070,10 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         };
     }
 
+    stringifyView() {
+        return JSON.stringify(this.getView());
+    }
+
     //@internal
     _validateView(view: MapViewType) {
         if (!view || !isObject(view)) {
@@ -1283,7 +1283,6 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
 
         this._baseLayer = baseLayer;
         baseLayer._bindMap(this, -1);
-        this._findTerrainLayer();
 
         function onbaseLayerload() {
             /**
@@ -1396,9 +1395,8 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             this._layerCache = {};
         }
         const mapLayers = this._layers;
-        let hasTerrainLayer = false;
         for (let i = 0, len = layers.length; i < len; i++) {
-            const layer = layers[i] as any;
+            const layer = layers[i];
             const id = layer.getId();
             if (isNil(id)) {
                 throw new Error('Invalid id for the layer: ' + id);
@@ -1409,9 +1407,6 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             if (this._layerCache[id]) {
                 throw new Error('Duplicate layer id in the map: ' + id);
             }
-            if (layer.queryTerrainAtPoint && layer.getTerrainLayer && layer.getTerrainLayer()) {
-                hasTerrainLayer = true;
-            }
             this._layerCache[id] = layer;
             layer._bindMap(this);
             mapLayers.push(layer);
@@ -1421,9 +1416,6 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
 
         this._sortLayersByZIndex();
-        if (hasTerrainLayer) {
-            this._findTerrainLayer();
-        }
 
         /**
          * addlayer event, fired when adding layers.
@@ -1454,7 +1446,6 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             return this.removeLayer([layers]);
         }
         const removed = [];
-        let terrainRemoved = false;
         for (let i = 0, len = layers.length; i < len; i++) {
             let layer = layers[i];
             if (!(layer instanceof Layer)) {
@@ -1467,9 +1458,6 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             if (!map || (map as any) !== this) {
                 continue;
             }
-            if (layer === this._terrainLayer) {
-                terrainRemoved = true;
-            }
             removed.push(layer);
             this._removeLayer(layer, this._layers);
             if (this._loaded) {
@@ -1479,9 +1467,6 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             if (this._layerCache) {
                 delete this._layerCache[id];
             }
-        }
-        if (terrainRemoved) {
-            this._findTerrainLayer();
         }
         if (removed.length > 0) {
             const renderer = this.getRenderer();
@@ -1513,21 +1498,19 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this;
     }
 
+    //@internal
     _findTerrainLayer() {
-        this._terrainLayer = null;
-        const baseLayer = this._baseLayer as any;
-        if (baseLayer && baseLayer.queryTerrainAtPoint && baseLayer.getTerrainLayer && baseLayer.getTerrainLayer()) {
-            this._terrainLayer = baseLayer;
-            return;
+        if (isTerrainLayer(this._baseLayer)) {
+            return this._baseLayer;
         }
         const layers = this._getLayers() || [];
         for (let i = 0; i < layers.length; i++) {
             const layer = layers[i];
-            if (layer && layer.queryTerrainAtPoint && layer.getTerrainLayer && layer.getTerrainLayer()) {
-                this._terrainLayer = layer;
-                break;
+            if (isTerrainLayer(layer)) {
+                return layer;
             }
         }
+        return null;
     }
 
     /**
@@ -2025,9 +2008,9 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             }
         }
 
-        if (this._containerDOM.childNodes && this._containerDOM.childNodes.length > 0) {
-            //@ts-expect-error I don't know either
-            if (this._containerDOM.childNodes[0].className === 'maptalks-wrapper') {
+        if (this._containerDOM?.childNodes?.length > 0) {
+            const firstChild = this._containerDOM.childNodes[0];
+            if (firstChild instanceof HTMLElement && firstChild.classList.contains('maptalks-wrapper')) {
                 throw new Error('Container is already loaded with another map instance, use map.remove() to clear it.');
             }
         }
@@ -2158,7 +2141,9 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
                 break;
             }
         }
-
+        if (!this._renderer) {
+            throw new Error('Invalid map.options.renderer: ' + this.options['renderer']);
+        }
     }
 
     //@internal
@@ -2845,15 +2830,18 @@ export type MapOptionsType = {
     maxVisualPitch?: number;
     maxPitch?: number;
     centerCross?: boolean;
+
+    zoomable?: boolean;
     zoomInCenter?: boolean;
     zoomOrigin?: Array<number>;
     zoomAnimation?: boolean;
     zoomAnimationDuration?: number;
+    tileBackgroundLimitPerFrame?: number;
     panAnimation?: boolean;
     panAnimationDuration?: number;
     rotateAnimation?: boolean;
     rotateAnimationDuration?: number;
-    zoomable?: boolean;
+
     enableInfoWindow?: boolean;
     hitDetect?: boolean;
     hitDetectLimit?: number;
@@ -2924,6 +2912,7 @@ export type MapViewType = {
     pitch?: number;
     bearing?: number;
     height?: number;
+    around?: Point;
 }
 
 export type MapFitType = {
@@ -2940,7 +2929,7 @@ export type MapDataURLType = {
     save?: boolean;
 }
 
-export type MapAnimationOptionsType = AnimationOptionsType & { counterclockwise?: boolean }
+export type MapAnimationOptionsType = AnimationOptionsType & { counterclockwise?: boolean, continueOnViewChanged?: boolean, wheelZoom?: boolean }
 
 export type MapIdentifyOptionsType = {
     tolerance?: number;
@@ -2956,3 +2945,7 @@ export type MapIdentifyOptionsType = {
 export type MapContainerType = string | HTMLDivElement | HTMLCanvasElement | { [key: string]: any };
 
 export type PanelDom = (HTMLDivElement | HTMLElement) & { layerDOM: HTMLElement; uiDOM: HTMLElement; }
+
+function isTerrainLayer(layer: any): boolean {
+    return layer && layer.queryTerrainAtPoint && layer.getTerrainLayer && layer.getTerrainLayer();
+}

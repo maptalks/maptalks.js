@@ -1,6 +1,7 @@
 #define SHADER_NAME PNTS
 precision mediump float;
 
+uniform float layerOpacity;
 varying vec4 vColor;
 
 void main() {
@@ -10,4 +11,7 @@ void main() {
     } else {
         gl_FragColor = vColor;
     }
+    #ifdef HAS_LAYER_OPACITY
+        gl_FragColor *= layerOpacity;
+    #endif
 }

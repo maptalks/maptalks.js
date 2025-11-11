@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { createREGL, reshader, mat4, quat } from '@maptalks/gl';
+import { CanvasCompatible, reshader, mat4, quat } from '@maptalks/gl';
 import { intersectsBox } from 'frustum-intersects';
 
 const vert = `
@@ -67,7 +67,7 @@ const shaderConfig = {
 };
 
 const triangles = [1, 0, 3, 3, 2, 1];
-class VideoLayerRenderer extends maptalks.renderer.CanvasRenderer {
+class VideoLayerRenderer extends CanvasCompatible(maptalks.renderer.LayerAbstractRenderer) {
     constructor(layer) {
         super(layer);
         this._scenes = {};
@@ -90,37 +90,14 @@ class VideoLayerRenderer extends maptalks.renderer.CanvasRenderer {
         return false;
     }
 
-    createContext() {
-        const inGroup = this.canvas.gl && this.canvas.gl.wrap;
-        if (inGroup) {
-            this.gl = this.canvas.gl.wrap();
-            this.regl = this.canvas.gl.regl;
-        } else {
-            const layer = this.layer;
-            const attributes = layer.options.glOptions || {
-                alpha: true,
-                depth: true,
-                //antialias: true,
-                stencil : true
-            };
-            this.glOptions = attributes;
-            this.gl = this.gl || this._createGLContext(this.canvas, attributes);
-            this.regl = createREGL({
-                gl : this.gl,
-                extensions : [
-                    'ANGLE_instanced_arrays',
-                    'OES_texture_float',
-                    'OES_texture_half_float',
-                    'OES_texture_float_linear',
-                    'OES_texture_half_float_linear',
-                    'EXT_shader_texture_lod',
-                    'OES_element_index_uint',
-                    'OES_standard_derivatives',
-                    'WEBGL_depth_texture'
-                ],
-                optionalExtensions : this.layer.options['glExtensions'] || []
-            });
-        }
+    initContext() {
+        super.initContext();
+        const { regl, device, reglGL } = this.context;
+
+        this.regl = regl || device;
+        this.gl = reglGL;
+        this.device = regl || device;
+
         this._initShader();
         this._initRenderer();
         const videoSurfaces = this.layer.getVideoSurfaces();
@@ -195,7 +172,7 @@ class VideoLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     _createScene(videoSurface) {
-        const texture =  this.regl.texture();
+        const texture =  this.device.texture();
         const material = new reshader.Material({
             videoTexture: texture,
             opacity: 1.0

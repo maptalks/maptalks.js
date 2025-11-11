@@ -1,3 +1,4 @@
+#define SHADER_NAME BACK_FILL
 attribute vec3 aPosition;
 uniform mat4 projViewModelMatrix;
 uniform mat4 modelMatrix;

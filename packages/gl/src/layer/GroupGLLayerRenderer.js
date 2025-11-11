@@ -1,12 +1,14 @@
 import * as maptalks from 'maptalks';
-import { vec2, vec3, mat4 } from '@maptalks/reshader.gl';
+import { vec2, vec3, mat4 } from 'gl-matrix';
 import ShadowProcess from './shadow/ShadowProcess';
-import * as reshader from '@maptalks/reshader.gl';
+import * as reshader from '../reshader';
 import GroundPainter from './GroundPainter';
 import EnvironmentPainter from './EnvironmentPainter';
 import WeatherPainter from './weather/WeatherPainter';
 import PostProcess from './postprocess/PostProcess.js';
 import AnalysisPainter from '../analysis/AnalysisPainter.js';
+import ScanEffectPainter from './effect/ScanEffectPainter.js';
+import CanvasCompatible from './CanvasCompatible';
 
 const { LayerAbstractRenderer } = maptalks.renderer;
 
@@ -23,7 +25,7 @@ const noSsrFilter = m => !m.ssr;
 const SSR_STATIC = 1;
 const SSR_IN_ONE_FRAME = 2;
 
-class GroupGLLayerRenderer extends LayerAbstractRenderer {
+class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
 
     setToRedraw() {
         this.setRetireFrames();
@@ -32,7 +34,11 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
 
     onAdd() {
         super.onAdd();
-        this.prepareCanvas();
+        const map = this.getMap();
+        const mapRenderer = map.getRenderer();
+        if (mapRenderer.ready) {
+            this.prepareCanvas();
+        }
     }
 
     updateSceneConfig() {
@@ -72,6 +78,7 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
 
     prepareCanvas() {
         super.prepareCanvas();
+        this.resizeCanvas();
         this.forEachRenderer(renderer => {
             renderer.prepareCanvas();
         });
@@ -103,7 +110,7 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
             this._renderInMode('default', null, methodName, args, true);
             return;
         }
-        const fGL = this.reglGL;
+        // const fGL = this.reglGL;
 
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
@@ -114,9 +121,9 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
         drawContext.jitter = NO_JITTER;
         const groundConfig = this.layer.getGroundConfig();
         drawContext.hasSSRGround = !!(ssrMode && groundConfig && groundConfig.enable && groundConfig.symbol && groundConfig.symbol.ssr);
-        fGL.resetDrawCalls();
+        // fGL.resetDrawCalls();
         // this._renderInMode(enableTAA ? 'fxaaBeforeTaa' : 'fxaa', this._targetFBO, methodName, args);
-        this._renderInMode('default', this._targetFBO, methodName, args);
+        this._renderInMode('default', this._targetFBO, methodName, args, true);
         // this._fxaaDrawCount = fGL.getDrawCalls();
 
         // 重用上一帧的深度纹理，先绘制ssr图形
@@ -180,14 +187,14 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
         }
 
         // noAa的绘制放在bloom后，避免noAa的数据覆盖了bloom效果
-        fGL.resetDrawCalls();
+        // fGL.resetDrawCalls();
         // this._renderInMode('noAa', this._noAaFBO, methodName, args);
         // this._noaaDrawCount = fGL.getDrawCalls();
 
         // fGL.resetDrawCalls();
         // this._renderInMode('point', this._pointFBO, methodName, args, true);
         this._weatherPainter.renderScene(drawContext);
-        this._pointDrawCount = fGL.getDrawCalls();
+        // this._pointDrawCount = fGL.getDrawCalls();
 
         // return tex;
     }
@@ -263,12 +270,16 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
         const { width, height } = this.canvas;
         let fbo = this._outlineFBO;
         if (!fbo) {
+            const isWebGPU = this.device && this.device.wgpu;
+            const format = isWebGPU ? 'rgba' : 'rgba4';
+            const isAntialias = this.layer.options.antialias;
+            const sampleCount = isAntialias ? 4 : 1;
             const outlineTex = this.regl.texture({
                 width: width,
                 height: height,
-                format: 'rgba4',
+                format,
                 // needed by webgpu
-                sampleCount: 4
+                sampleCount
             });
             fbo = this._outlineFBO = this.regl.framebuffer({
                 width: width,
@@ -358,7 +369,7 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
     }
 
     _isUseMultiSample() {
-        if (this.device) {
+        if (this.device && this.device.wgpu) {
             // in webgpu, multisample is set in device.createPipeline, doesn't need further more setup.
             return false;
         }
@@ -389,6 +400,9 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
             return true;
         }
         if (this._weatherPainter && this._weatherPainter.isEnable()) {
+            return true;
+        }
+        if (this.isEnableScanEffect()) {
             return true;
         }
         const terrainLayer = this.layer.getTerrainLayer();
@@ -490,10 +504,12 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
         });
         const layer = this.layer;
         const { regl, gl, reglGL, device } = this.context;
-        this.device = device;
+        this.device = device || regl;
         this.regl = regl;
         this.reglGL = reglGL;
         this.gl = gl;
+        // 为老的webgl插件提供兼容性
+        this.canvas.gl = this.gl;
         this._jitter = [0, 0];
         const graphics = regl || device;
         this._groundPainter = new GroundPainter(graphics, this.layer);
@@ -501,6 +517,7 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
         const weatherConfig = this.layer.getWeatherConfig();
         this._weatherPainter = new WeatherPainter(graphics, layer, weatherConfig);
         this._analysisPainter = new AnalysisPainter(graphics, layer);
+        this._scanEffectPainter = new ScanEffectPainter(graphics, layer);
 
         const sceneConfig =  this.layer._getSceneConfig() || {};
         const config = sceneConfig && sceneConfig.postProcess;
@@ -517,48 +534,23 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
     }
 
     _clearFramebuffers() {
-        const regl = this.regl;
+        const device = this.device;
         if (this._targetFBO) {
-            regl.clear({
+            device.clear({
                 color: EMPTY_COLOR,
                 depth: 1,
-                stencil: 0xFF,
+                stencil: 0,
                 framebuffer: this._targetFBO
             });
-            // regl.clear({
-            //     color: EMPTY_COLOR,
-            //     framebuffer: this._noAaFBO
-            // });
-            // regl.clear({
-            //     color: EMPTY_COLOR,
-            //     framebuffer: this._pointFBO
-            // });
-            // if (this._taaFBO && this._taaDrawCount) {
-            //     regl.clear({
-            //         color: EMPTY_COLOR,
-            //         framebuffer: this._taaFBO
-            //     });
-            // }
-            // if (this._fxaaFBO && this._fxaaAfterTaaDrawCount) {
-            //     regl.clear({
-            //         color: EMPTY_COLOR,
-            //         framebuffer: this._fxaaFBO
-            //     });
-            // }
         }
         if (this._outlineFBO) {
-            regl.clear({
+            device.clear({
                 color: EMPTY_COLOR,
                 depth: 1,
-                stencil: 0xFF,
+                stencil: 0,
                 framebuffer: this._outlineFBO
             });
         }
-        // regl.clear({
-        //     color: EMPTY_COLOR,
-        //     depth: 1,
-        //     stencil: 0xFF
-        // });
     }
 
     resizeCanvas() {
@@ -628,13 +620,19 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
         if (fbo) {
             config['framebuffer'] = fbo;
         }
-        (this.regl || this.device).clear(config);
+        this.device.clear(config);
     }
 
     onRemove() {
         //regl framebuffer for picking created by children layers
-        if (this.canvas.pickingFBO && this.canvas.pickingFBO.destroy) {
-            this.canvas.pickingFBO.destroy();
+        if (!this.canvas) {
+            super.onRemove();
+            return;
+        }
+        const pickingFBO = this.canvas.pickingFBO;
+        if (pickingFBO && pickingFBO.destroy && !pickingFBO['___disposed']) {
+            pickingFBO['___disposed'] = true;
+            pickingFBO.destroy();
         }
         this._destroyFramebuffers();
         if (this._groundPainter) {
@@ -1098,6 +1096,22 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
         return this._weatherPainter.paint(tex, meshes, weatherConfig);
     }
 
+    _renderScanEffect(tex) {
+        let meshes = [];
+        this.forEachRenderer((renderer, layer) => {
+            if (!renderer.getAnalysisMeshes || !layer.isVisible()) {
+                return;
+            }
+            const renderMeshes = renderer.getAnalysisMeshes();
+            meshes = meshes.concat(renderMeshes);
+        });
+        if (this._groundPainter) {
+            const groundMesh = this._groundPainter.getRenderMeshes();
+            meshes = meshes.concat(groundMesh);
+        }
+        return this._scanEffectPainter.paint(tex, meshes);
+    }
+
     getGroundMesh() {
         if (this._groundPainter) {
             const groundMesh = this._groundPainter.getRenderMeshes();
@@ -1110,14 +1124,14 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
         if (!this._targetFBO) {
-            const regl = this.regl;
+            const device = this.device;
             let depthTex = this._depthTex;
             if (!depthTex || !depthTex['_texture'] || depthTex['_texture'].refCount <= 0) {
                 depthTex = null;
             }
             const fboInfo = this.createFBOInfo(config, depthTex);
             this._depthTex = fboInfo.depth || fboInfo.depthStencil;
-            this._targetFBO = regl.framebuffer(fboInfo);
+            this._targetFBO = device.framebuffer(fboInfo);
             // const noAaInfo = this.createFBOInfo(config, this._depthTex);
             // this._noAaFBO = regl.framebuffer(noAaInfo);
             // const pointInfo = this.createFBOInfo(config, this._depthTex);
@@ -1131,10 +1145,12 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
 
     _createSimpleFBOInfo(forceTexture, width, height) {
         width = width || this.canvas.width, height = height || this.canvas.height;
-        const regl = this.regl || this.device;
+        const regl = this.device;
         const useMultiSamples = this._isUseMultiSample();
+        const isAntialias = this.layer.options.antialias;
         let color;
         if (!forceTexture && useMultiSamples) {
+            // rgba8 是webgl中的格式，regl支持，对应的还有rgba4
             color = regl.renderbuffer({
                 width,
                 height,
@@ -1142,6 +1158,7 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
                 format: 'rgba8'
             });
         } else {
+            const sampleCount = isAntialias ? 4 : 1;
             const type = 'uint8';//colorType || regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
             color = regl.texture({
                 min: 'nearest',
@@ -1150,7 +1167,7 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
                 width,
                 height,
                 // needed by webgpu
-                sampleCount: 4
+                sampleCount
             });
         }
         const fboInfo = {
@@ -1169,7 +1186,7 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
         let { width, height } = this.canvas;
         width = width || 1;
         height = height || 1;
-        const regl = this.regl || this.device;
+        const regl = this.device;
         const fboInfo = this._createSimpleFBOInfo();
         const useMultiSamples = this._isUseMultiSample();
         const enableDepthTex = !this.regl || regl.hasExtension('WEBGL_depth_texture');
@@ -1184,6 +1201,8 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
         } else {
             //depth(stencil) buffer 是可以共享的
             if (enableDepthTex) {
+                const isAntialias = this.layer.options.antialias;
+                const sampleCount = isAntialias ? 4 : 1;
                 const depthStencilTexture = depthTex || regl.texture({
                     min: 'nearest',
                     mag: 'nearest',
@@ -1191,7 +1210,9 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
                     type: 'depth stencil',
                     width,
                     height,
-                    format: 'depth stencil'
+                    format: 'depth stencil',
+                    // needed by webgpu
+                    sampleCount
                 });
                 fboInfo.depthStencil = depthStencilTexture;
             } else {
@@ -1268,7 +1289,8 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
         // const enableAntialias = +!!(config.antialias && config.antialias.enable);
         const enableAnalysis = this._analysisPainter._hasAnalysis();
         const enableWeather = this._weatherPainter._hasWeather();
-        const hasPost = /* enableSSAO ||  */enableBloom || enableSSR || enableAnalysis || enableWeather;
+        const enableScanEffect = this.isEnableScanEffect();
+        const hasPost = /*enableSSAO || */enableBloom || enableSSR || enableAnalysis || enableWeather || enableScanEffect;
 
         let postFBO = this._postFBO;
         if (hasPost) {
@@ -1354,6 +1376,9 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
                 this._needUpdateSSR = false;
             }
         }
+        if (this._scanEffectPainter && this.isEnableScanEffect()) {
+            tex = this._renderScanEffect(tex);
+        }
         if (this._analysisPainter) {
             tex = this._renderAnalysis(tex);
         }
@@ -1365,6 +1390,12 @@ class GroupGLLayerRenderer extends LayerAbstractRenderer {
             this._postProcessor.renderFBOToScreen(tex, +!!(config.sharpen && config.sharpen.enable), sharpFactor, map.getDevicePixelRatio());
         }
         this.layer.fire('postprocessend');
+    }
+
+    isEnableScanEffect() {
+        const sceneConfig =  this.layer._getSceneConfig();
+        const config = sceneConfig && sceneConfig.postProcess && sceneConfig.postProcess.scanEffect;
+        return config && config.enable && config.effects.length;
     }
 }
 

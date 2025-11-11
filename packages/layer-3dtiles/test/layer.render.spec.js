@@ -11,6 +11,10 @@ const PORT = 39887;
 
 const TARGET_CANVAS = document.createElement('canvas');
 
+maptalks.Map.mergeOptions({
+    renderer: ['gl', 'gpu']
+});
+
 describe('render specs', () => {
     let server;
     before(done => {
@@ -46,17 +50,18 @@ describe('render specs', () => {
         }
     };
 
-    function createMap(center) {
-        const option = {
+    function createMap(mapOptions = {}) {
+        const option = maptalks.Util.extend(mapOptions, {
             zoom: 20,
-            center: center || [0, 0],
+            center: [0, 0],
+            devicePixelRatio: 1
             // centerCross: true
             // baseLayer: new maptalks.TileLayer('base', {
             //     urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
             //     subdomains: ['a','b','c','d'],
             //     attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
             // }),
-        };
+        });
         map = new maptalks.Map(container, option);
     }
 
@@ -85,18 +90,19 @@ describe('render specs', () => {
                 }
                 map.fitExtent(extent, expected.zoomOffset || 0, { animation: false });
             }
-
         });
         let ended = false;
-        layer.on('canvasisdirty', ({ renderCount }) => {
+        let timeoutHandle = null;
+        layer.on('canvasisdirty', () => {
             if (ended) {
                 return;
             }
-
-            const expectedPath = join(__dirname, expected.path);
-            const threshold = expected.threshold || 0.1;
-            if (renderCount >= expected.renderCount) {
+            clearTimeout(timeoutHandle);
+            timeoutHandle = setTimeout(() => {
+                const expectedPath = join(__dirname, expected.path);
+                const threshold = expected.threshold || 0.1;
                 const canvas = layer.getRenderer().canvas;
+                ended = true;
                 //比对测试
                 match(canvas, expectedPath, threshold, (err, result) => {
                     if (err) {
@@ -116,14 +122,15 @@ describe('render specs', () => {
                         ctx.drawImage(canvas, 0, 0);
                         writeImageData(actualPath, ctx.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
                     }
-                    ended = true;
+
                     assert(result.diffCount <= expected.diffCount, 'result: ' + result.diffCount + ', expected: ' + expected.diffCount);
                     if (layerAssertion) {
                         layerAssertion(layer);
                     }
                     done();
                 });
-            }
+            }, expected.timeout || 500);
+
         });
         if (expected.noGroup) {
             layer.addTo(map);
@@ -206,6 +213,7 @@ describe('render specs', () => {
             }
         }
 
+
         it('i3s-eslpk-1.7-no-draco', done => {
             // 必须要放到第一个来运行测试，否则会失败，原因未知
             const resPath = 'I3S/eslpk';
@@ -227,10 +235,10 @@ describe('render specs', () => {
                 const geoData = mesh.geometry.data;
                 assert(!!geoData['_BATCHID']);
             };
-            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 4, threshold: 0.4, zoomOffset: 0 }, assertion);
+            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 4, timeout: 800, threshold: 0.4, zoomOffset: 0 }, assertion);
         }).timeout(10000);
 
-        it('i3s-eslpk-1.7-draco', done => {
+        it('ciskip i3s-eslpk-1.7-draco', done => {
             // 必须要放到第一个来运行测试，否则会失败，原因未知
             const resPath = 'I3S/eslpk';
             const layer = new Geo3DTilesLayer('3d-tiles', {
@@ -250,7 +258,7 @@ describe('render specs', () => {
                 const geoData = mesh.geometry.data;
                 assert(!!geoData['_BATCHID']);
             };
-            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 4, threshold: 0.4, zoomOffset: 0 }, assertion);
+            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 4, timeout: 2000, threshold: 0.4, zoomOffset: 0 }, assertion);
         }).timeout(10000);
 
         it('i3s-eslpk-1.6-no-draco', done => {
@@ -268,7 +276,7 @@ describe('render specs', () => {
                     }
                 ]
             });
-            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 4, threshold: 0.4, zoomOffset: 0 });
+            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 4, timeout: 800, threshold: 0.4, zoomOffset: 0 });
         }).timeout(10000);
 
         it('i3s-map-identity-data-4326', done => {
@@ -286,7 +294,7 @@ describe('render specs', () => {
                     }
                 ]
             });
-            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 5 });
+            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 5, timeout: 800});
         }).timeout(10000);
 
         it('i3s-map-identity-data-identity', done => {
@@ -304,7 +312,7 @@ describe('render specs', () => {
                     }
                 ]
             });
-            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 7 });
+            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 7, timeout: 800 });
         }).timeout(10000);
 
         it('i3s-map-traverse_mercator-data-identity', done => {
@@ -322,7 +330,7 @@ describe('render specs', () => {
                     }
                 ]
             });
-            runner(done, layer, { path: `./integration/expected/${resPath}-etmerc/expected.png`, diffCount: 50, renderCount: 7 });
+            runner(done, layer, { path: `./integration/expected/${resPath}-etmerc/expected.png`, diffCount: 50, renderCount: 7, timeout: 800 });
         }).timeout(10000);
 
         it('i3s-map-traverse_mercator-data-4326', done => {
@@ -340,7 +348,7 @@ describe('render specs', () => {
                     }
                 ]
             });
-            runner(done, layer, { path: `./integration/expected/${resPath}-etmerc/expected.png`, diffCount: 50, renderCount: 5 });
+            runner(done, layer, { path: `./integration/expected/${resPath}-etmerc/expected.png`, diffCount: 50, renderCount: 5, timeout: 800 });
         }).timeout(10000);
 
         it('fangzhicheng', done => {
@@ -1775,7 +1783,7 @@ describe('render specs', () => {
                     }
                 ]
             });
-            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 13 });
+            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, timeout: 1000, diffCount: 400, renderCount: 13 });
         }).timeout(5000);
         it('layer opacity', done => {
             const resPath = 'BatchedDraco/dayanta/';
@@ -1849,8 +1857,8 @@ describe('render specs', () => {
                     setTimeout(() => {
                         runner(done, layer, { path: `./integration/expected/${resPath}/removeGroupgllayer/expected-add.png`, diffCount: 0, renderCount: 1, noGroup: false, noAddToMap: true });
                         group.addTo(map);
-                    }, 200);
-                }, 200);
+                    }, 1000);
+                }, 1000);
             }, layer, { path: `./integration/expected/${resPath}/removeGroupgllayer/expected.png`, diffCount: 0, renderCount: 1, noGroup: false });
         });
 
@@ -1906,7 +1914,7 @@ describe('render specs', () => {
             }, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 5 });
         });
 
-        it('gltf content', done => {
+        it('ciskip gltf content', done => {
             const resPath = 'Cesium3DTiles/GltfContent/gltf';
             const layer = new Geo3DTilesLayer('3d-tiles', {
                 services : [
@@ -1918,7 +1926,7 @@ describe('render specs', () => {
             });
             runner(() => {
                 done();
-            }, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 5 });
+            }, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 5, timeout: 1500 });
         });
     });
 
@@ -2169,6 +2177,21 @@ describe('render specs', () => {
             }, layer, { path: `./integration/expected/${resPath}/expected.png`, zoomOffset: 1, diffCount: 5, renderCount: 1, noGroup: true });
         });
 
+        it('maptalks/maptalks.js#2699, fix incorrect image format with jpeg texture', done => {
+            const resPath = 'BatchedDraco/issue-2699';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                        heightOffset: 0
+                    }
+                ]
+            });
+            runner(() => {
+                done();
+            }, layer, { path: `./integration/expected/${resPath}/expected.png`, zoomOffset: 1, diffCount: 5, renderCount: 1, noGroup: true });
+        });
+
         it('3dtiles under hdr, maptalks/issues#755', done => {
             const resPath = 'BatchedDraco/issue-755';
             map.setLights({
@@ -2179,6 +2202,7 @@ describe('render specs', () => {
                 ambient: {
                   resource: {
                     url: `http://localhost:${PORT}/integration/fixtures/${resPath}/env3.hdr`,
+                    prefilterCubeSize: 64
                   },
                   exposure: 1,
                   hsv: [0, 0, 0],

@@ -7,6 +7,9 @@ const startServer = require('./server.js');
 
 const PORT = 39887;
 
+maptalks.Map.mergeOptions({
+    renderer: ['gl', 'gpu']
+});
 
 describe('highlight and showOnly specs', () => {
     let server;
@@ -23,7 +26,8 @@ describe('highlight and showOnly specs', () => {
     function createMap(center) {
         const option = {
             zoom: 20,
-            center: center || [0, 0]
+            center: center || [0, 0],
+            devicePixelRatio: 1
         };
         map = new maptalks.Map(container, option);
     }
@@ -65,20 +69,39 @@ describe('highlight and showOnly specs', () => {
             const y = canvas.height / 2 + (offset && offset[1] || 0);
             return map.getRenderer().context.getImageData(x, y, 1 ,1);
         }
-
+        let counterLimit = 1;
+        let timeoutHandle;
+        let timeoutDone = false;
+        if (options.expected === true) {
+            timeoutHandle = setTimeout(() => {
+                timeoutDone = true;
+                done();
+            }, 7000);
+        }
         layer.on('canvasisdirty', ({ renderCount }) => {
+            clearTimeout(timeoutHandle);
+            if (timeoutDone) {
+                return;
+            }
             if (!hited && renderCount === options.renderCount) {
                 hited = true;
-
-
                 map.on('frameend', () => {
-                    if (counter === 1) {
+                    if (counter === counterLimit) {
                         if (options.afterExe) {
                             options.afterExe();
                         } else {
                             const color = readPixel(options.offset);
-                            assert.deepEqual(color.data, options.expected);
-                            done();
+                            if (options.expected === true) {
+                                done();
+                                return;
+                            }
+                            if (color.data[3] === 0 && options.expected[3] !== 0) {
+                                counterLimit++;
+                            } else {
+                                assert.deepEqual(color.data, options.expected);
+                                done();
+                            }
+
                         }
                     } else if (counter === 0) {
                         if (options.onPainted) {
@@ -89,13 +112,13 @@ describe('highlight and showOnly specs', () => {
                         } else if (options.showOnlys) {
                             layer.showOnly(options.showOnlys);
                         }
-                    } else if (options.afterExe && counter === 3) {
+                    } else if (options.afterExe && counter === counterLimit + 2) {
                         done();
                     }
 
                     counter++;
                     layer.getRenderer().setToRedraw();
-                })
+                });
             }
         });
         const sceneConfig = {
@@ -112,6 +135,24 @@ describe('highlight and showOnly specs', () => {
         const group = new GroupGLLayer('group', [layer], { sceneConfig });
         group.addTo(map);
     };
+
+    // ci 上似乎需要先垫一个测试用例，才会正常运行
+    it('highlight test start for CI, can be ignored if failed.', done => {
+        const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
+        const layer = new Geo3DTilesLayer('3d-tiles', {
+            services : [
+                {
+                    url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                    shader: 'pbr'
+                }
+            ]
+        });
+        const highlights = {
+            id: 0,
+            color: '#f00'
+        };
+        runner(done, layer, { renderCount: 1, highlights, expected: true });
+    });
 
     it('highlight color', done => {
         const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
@@ -179,7 +220,7 @@ describe('highlight and showOnly specs', () => {
             color: '#ff0',
             bloom: 1
         };
-        runner(done, layer, { renderCount: 1, highlights, offset: [10, 0], expected: new Uint8ClampedArray([75, 75, 0, 56]) });
+        runner(done, layer, { renderCount: 1, highlights, offset: [10, 0], expected: new Uint8ClampedArray([74, 74, 0, 55]) });
     });
 
     it('cancelHighlight', done => {

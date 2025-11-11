@@ -3,6 +3,7 @@
 precision mediump float;
 uniform sampler2D skin;
 uniform float polygonOpacity;
+uniform float layerOpacity;
 varying vec2 vUv;
 #include <mask_frag>
 #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
@@ -16,7 +17,7 @@ void main() {
         float shadowCoeff = shadow_computeShadow();
         color.rgb = shadow_blend(color.rgb, shadowCoeff).rgb;
     #endif
-    gl_FragColor = color * polygonOpacity;
+    gl_FragColor = color * polygonOpacity * layerOpacity;
     #ifdef HAS_MASK_EXTENT
       gl_FragColor = setMask(gl_FragColor);
     #endif

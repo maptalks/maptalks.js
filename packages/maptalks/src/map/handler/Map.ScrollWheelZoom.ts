@@ -1,7 +1,7 @@
 import { isNil, isNumber } from '../../core/util';
 import { addDomEvent, removeDomEvent, getEventContainerPoint, preventDefault, stopPropagation } from '../../core/util/dom';
-import Handler from '../../handler/Handler';
 import Map from '../Map';
+import MapBaseHandler from './MapBaseHandler';
 
 /*!
  * Contains code from mapbox-gl-js
@@ -16,7 +16,7 @@ const wheelZoomRate = 1 / 450;
 
 const maxScalePerFrame = 2;
 
-class MapScrollWheelZoomHandler extends Handler {
+class MapScrollWheelZoomHandler extends MapBaseHandler {
     //@internal
     _thisScrollZoom: () => void
     //@internal

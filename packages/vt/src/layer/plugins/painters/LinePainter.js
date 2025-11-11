@@ -396,6 +396,7 @@ class LinePainter extends BasicPainter {
                 symbolName: 'lineDx',
                 type: Int8Array,
                 width: 2,
+                index: 0,
                 define: 'HAS_LINE_DX',
                 evaluate: properties => {
                     const lineDx = aLineDxFn(map.getZoom(), properties);
@@ -408,6 +409,7 @@ class LinePainter extends BasicPainter {
                 symbolName: 'lineDy',
                 type: Int8Array,
                 width: 2,
+                index: 1,
                 define: 'HAS_LINE_DY',
                 evaluate: properties => {
                     const lineDy = aLineDyFn(map.getZoom(), properties);
@@ -448,16 +450,16 @@ class LinePainter extends BasicPainter {
 
         if (this.pickingFBO) {
             const isVectorTile = this.layer instanceof maptalks.TileLayer;
-            const TYPE_CONSTS = `#define POSITION_TYPE ${isVectorTile ? 'vec2i' : 'vec2f'}
-#define LINESOFAR_TYPE ${isVectorTile ? 'u32' : 'f32'}
-`;
+            const defines = { 'PICKING_MODE': 1 };
+            this.appendWGSLPositionType(defines);
+            defines['LINESOFAR_TYPE'] = isVectorTile ? 'u32' : 'f32';
             this.picking = [new reshader.FBORayPicking(
                 this.renderer,
                 {
                     name: 'line-picking',
                     vert: pickingVert,
-                    wgslVert: TYPE_CONSTS + wgslVert,
-                    defines: { 'PICKING_MODE': 1 },
+                    wgslVert: wgslVert,
+                    defines,
                     uniforms: [
                         {
                             name: 'projViewModelMatrix',
@@ -498,15 +500,14 @@ class LinePainter extends BasicPainter {
             }
         );
 
-        const isVectorTile = this.layer instanceof maptalks.TileLayer;
-        const TYPE_CONSTS = `#define POSITION_TYPE ${isVectorTile ? 'vec2i' : 'vec2f'}
-#define LINESOFAR_TYPE ${isVectorTile ? 'u32' : 'f32'}
-`;
+        const isVectorTile = this.layer.isVectorTileLayer;
+        this.appendWGSLPositionType(defines);
+        defines['LINESOFAR_TYPE'] = isVectorTile ? 'u32' : 'f32';
         this.shader = new reshader.MeshShader({
             name: 'vt-line',
             vert,
             frag,
-            wgslVert: TYPE_CONSTS + wgslVert,
+            wgslVert,
             wgslFrag,
             uniforms,
             defines,
@@ -522,7 +523,7 @@ class LinePainter extends BasicPainter {
         return isEnableStencil;
     }
 
-    getExtraCommandProps(context) {
+    getExtraCommandProps() {
         const canvas = this.canvas;
         const viewport = {
             x: (_, props) => {
@@ -542,8 +543,8 @@ class LinePainter extends BasicPainter {
         return {
             viewport,
             stencil: {
-                enable: () => {
-                    return this.isEnableTileStencil(context);
+                enable: (_, props) => {
+                    return this.isEnableTileStencil(props.painterContext);
                 },
                 func: {
                     cmp: () => {

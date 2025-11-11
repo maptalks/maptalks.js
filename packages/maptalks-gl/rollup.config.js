@@ -2,7 +2,7 @@ const { nodeResolve } = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
 const pkg = require('./package.json');
 const terser = require('@rollup/plugin-terser');
-const sourcemaps = require('rollup-plugin-sourcemaps');
+const copy = require('rollup-plugin-copy');
 
 const outputFile = pkg.main;
 
@@ -15,13 +15,18 @@ module.exports = [
     {
         input: './index.js',
         plugins: [
+            copy({
+                targets: [
+                    { src: '../maptalks/assets/*', dest: 'dist' },
+                    { src: '../maptalks/assets/maptalks.css', dest: 'dist/', rename: 'maptalks-gl.css' },
+                ]
+            }),
             nodeResolve({
                 module: true,
                 // jsnext : true,
                 main: true
             }),
             commonjs(),
-            sourcemaps(),
             terser({
                 mangle: true,
                 compress: {

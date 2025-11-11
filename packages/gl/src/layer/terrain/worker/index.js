@@ -1,8 +1,13 @@
 import { Ajax } from '@maptalks/gltf-loader';
 import "./zlib.min";
-import { vec2, vec3 } from '@maptalks/reshader.gl';
+import { vec2, vec3 } from 'gl-matrix';
 import { createMartiniData } from '../util/martini';
 import { ColorIn } from 'colorin';
+import { buildTangents } from '@maptalks/tbn-packer';
+
+function isNumber(val) {
+    return (typeof val === 'number') && !isNaN(val);
+}
 // 保存当前的workerId，用于告知主线程结果回传给哪个worker
 let workerId;
 
@@ -254,7 +259,9 @@ function generateCesiumTerrain(buffer) {
 
     const triangleCount = view.getUint32(pos, true);
     pos += Uint32Array.BYTES_PER_ELEMENT;
-    const indices = vertexCount > 65536 ? new Uint32Array(buffer, pos, triangleCount * triangleElements) : new Uint16Array(buffer, pos, triangleCount * triangleElements);
+    const indices = vertexCount > 65536 ?
+        new Uint32Array(buffer, pos, triangleCount * triangleElements) :
+        new Uint16Array(buffer, pos, triangleCount * triangleElements);
 
     let highest = 0;
     const length = indices.length;
@@ -451,7 +458,7 @@ function generateMapboxTerrain(buffer) {
 function loadTerrain(params, cb) {
     const { url, origin, type, accessToken, terrainWidth, error, tileImage } = params;
     //custom loadTileImage and return mapbox terrain rgb data
-    if(tileImage&&tileImage.close){
+    if (tileImage && tileImage.close) {
         const imageData = bitmapToImageData(tileImage);
         const terrainData = mapboxBitMapToHeights(imageData, terrainWidth);
         triangulateTerrain(error, terrainData, terrainWidth, tileImage, true, cb);
@@ -586,7 +593,7 @@ function heights2RGBImage(terrainData) {
 
 
 function triangulateTerrain(error, terrainData, terrainWidth, imageBitmap, hasSkirts, cb) {
-    const mesh = createMartiniData(error, terrainData.data, terrainWidth, hasSkirts);
+    const mesh = createMartiniData(error / 6, terrainData.data, terrainWidth, hasSkirts);
     const transferables = [mesh.positions.buffer, mesh.texcoords.buffer, mesh.triangles.buffer];
     //tdt,cesium terrain etc
     if (!imageBitmap) {
@@ -721,8 +728,10 @@ function createColorsTexture(data, colors, tileSize) {
         width = tileSize[0];
         height = tileSize[1];
     }
-    width *= 2;
-    height *= 2;
+    //always use default tilesize to create color texture for memory usage
+    [width, height] = DEFAULT_TILESIZE;
+    // width *= 2;
+    // height *= 2;
     try {
         checkBitMapCanvas();
         if (!BITMAP_CANVAS) {
@@ -741,16 +750,58 @@ function createColorsTexture(data, colors, tileSize) {
         // ctx.fillText('1234', width / 2, height / 2);
         const imgdata = ctx.getImageData(0, 0, width, height);
         colorTerrain(imgdata, colors);
-        return new Uint8Array(imgdata.data);
-
+        // return new Uint8Array(imgdata.data);
+        ctx.putImageData(imgdata, 0, 0);
+        const copyImage = canvas.transferToImageBitmap();
+        //flip Y image by canvas
         // https://github.com/regl-project/regl/issues/573
-        // ctx.putImageData(imgdata, 0, 0);
-        // const image = canvas.transferToImageBitmap();
-        // return image;
+        ctx.save();
+        ctx.scale(1, -1);
+        ctx.drawImage(copyImage, 0, -height, width, height);
+        ctx.restore();
+
+        const image = canvas.transferToImageBitmap();
+        copyImage.close();
+        return image
     } catch (error) {
         console.error(error);
     }
 
+}
+
+/**
+ * create terrain geometry tangents by worker for perf
+ * @param {*} terrainMesh 
+ * @returns 
+ */
+function createTerrainGeometryTangents(terrainMesh) {
+    if (!terrainMesh) {
+        return;
+    }
+    const { positions, texcoords, triangles, leftSkirtIndex, rightSkirtIndex, bottomSkirtIndex, numVerticesWithoutSkirts } = terrainMesh;
+    if (!positions || !texcoords || !triangles) {
+        return;
+    }
+    if (!isNumber(leftSkirtIndex) || !isNumber(rightSkirtIndex) || !isNumber(bottomSkirtIndex) || !isNumber(numVerticesWithoutSkirts)) {
+        return;
+    }
+    const normals = new Int8Array(positions.length);
+    for (let i = 2; i < normals.length; i += 3) {
+        if (i < numVerticesWithoutSkirts * 3) {
+            normals[i] = 1;
+        } else if (i < leftSkirtIndex / 2 * 3) {
+            normals[i - 2] = -1;
+        } else if (i < rightSkirtIndex / 2 * 3) {
+            normals[i - 2] = 1;
+        } else if (i < bottomSkirtIndex / 2 * 3) {
+            normals[i - 1] = -1;
+        } else {
+            // top
+            normals[i - 1] = 1;
+        }
+    }
+    const tangents = buildTangents(positions, normals, texcoords, triangles);
+    return new Float32Array(tangents);
 }
 
 export const onmessage = function (message, postResponse) {
@@ -764,11 +815,19 @@ export const onmessage = function (message, postResponse) {
         const colors = (data.params || {}).colors;
         const tileSize = (data.params || {}).tileSize;
         loadTerrain(data.params, (data, transferables) => {
+            transferables = transferables || [];
+            //create terrain colors texture
             const texture = createColorsTexture(data, colors, tileSize);
             if (texture) {
                 data.colorsTexture = texture;
-                transferables = transferables || [];
-                transferables.push(texture.buffer);
+                transferables.push(texture);
+            }
+
+            //create terrain geometry tangents attribute
+            const tangents = createTerrainGeometryTangents(data.mesh);
+            if (tangents && data.mesh) {
+                data.mesh.tangents = tangents;
+                transferables.push(tangents.buffer);
             }
             postResponse(data.error, data, transferables);
         });

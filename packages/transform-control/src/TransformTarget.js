@@ -67,9 +67,9 @@ export default class TransformTarget {
         vec3.add(this._scaling, TEMP_SCALE, this._scaling);
         vec3.add(this._translating, deltaTranslate, this._translating);
         if (task.indexOf('translate') > -1) {
-            transformcontrol.fire('positionchange', { action: task, type: 'positionchange', target: this._targetList, center: this.getCoordinates(), scale: this._scaling, rotation: this._rotation, translation: this._translating, deltaTranslate, deltaRotation, deltaScale });
+            transformcontrol.fire('positionchange', { action: task, type: 'positionchange', transformtarget: this._targetList, center: this.getCoordinates(), scale: this._scaling, rotation: this._rotation, translation: this._translating, deltaTranslate, deltaRotation, deltaScale });
         } else {
-            transformcontrol.fire('transforming', { action: task, type: 'transforming', target: this._targetList, center: this._targetList[0].getTransformOrigin(), scale: this._scaling, rotation: this._rotation, translation: this._translating, deltaTranslate, deltaRotation, deltaScale });
+            transformcontrol.fire('transforming', { action: task, type: 'transforming', transformtarget: this._targetList, center: this._targetList[0].getTransformOrigin(), scale: this._scaling, rotation: this._rotation, translation: this._translating, deltaTranslate, deltaRotation, deltaScale });
         }
     }
 

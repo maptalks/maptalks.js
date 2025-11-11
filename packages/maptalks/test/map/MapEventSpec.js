@@ -194,6 +194,38 @@ describe('Map.Event', function () {
 
 
         }, 500);
-      
+
     });
+
+    it('events with terrain info', function (done) {
+        map.config('queryTerrainInMapEvents', true);
+        // mimic a terrain layer
+        const terrainLayer = new maptalks.TileLayer('tile', {
+            urlTemplate: '#',
+            terrain: {
+                urlTemplate: '#'
+            }
+        });
+        terrainLayer.queryTerrainAtPoint = function () {
+            return new maptalks.Coordinate(118.846825, 32.046534, 100);
+        };
+        terrainLayer.getTerrainLayer = function () {
+            return this;
+        };
+
+        terrainLayer.addTo(map);
+        map.on('dom:click', function (e) {
+            expect(e.terrain).to.be.ok();
+            expect(e.terrain.altitude).to.be.eql(100);
+            done();
+        });
+
+        var domPosition = GET_PAGE_POSITION(container);
+        var point = map.coordinateToContainerPoint(center).add(domPosition);
+        happen.click(eventContainer, {
+            'clientX': point.x,
+            'clientY': point.y
+        });
+    });
+
 });

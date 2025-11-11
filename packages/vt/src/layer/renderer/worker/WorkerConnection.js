@@ -47,7 +47,7 @@ export default class WorkerConnection extends maptalks.worker.Actor {
             command: 'addLayer',
             params: {
                 type: type,
-                options: options
+                options: JSON.parse(JSON.stringify(options))
             }
         };
         if (this._isDedicated) {
@@ -103,7 +103,7 @@ export default class WorkerConnection extends maptalks.worker.Actor {
             mapId: this._mapId,
             layerId,
             command: 'updateStyle',
-            params: style
+            params: JSON.parse(JSON.stringify(style))
         };
         if (this._isDedicated) {
             if (this._dedicatedVTWorkers[layerId] !== undefined) {
@@ -120,7 +120,7 @@ export default class WorkerConnection extends maptalks.worker.Actor {
             mapId: this._mapId,
             layerId,
             command: 'updateOptions',
-            params: options
+            params: JSON.parse(JSON.stringify(options))
         };
         if (this._isDedicated) {
             if (this._dedicatedVTWorkers[layerId] !== undefined) {
@@ -189,6 +189,16 @@ export default class WorkerConnection extends maptalks.worker.Actor {
             params: {
                 data: geojson
             }
+        };
+        this.send(data, null, cb, this._dedicatedVTWorkers[layerId]);
+    }
+
+    clearData(cb) {
+        const layerId = this._workerLayerId;
+        const data = {
+            mapId: this._mapId,
+            layerId,
+            command: 'clearData'
         };
         this.send(data, null, cb, this._dedicatedVTWorkers[layerId]);
     }

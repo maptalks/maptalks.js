@@ -1,12 +1,12 @@
-import Handler from '../../handler/Handler';
 import Map from '../Map';
 import DrawTool from '../tool/DrawTool';
 import Extent from '../../geo/Extent';
 import { type Param } from './CommonType'
+import MapBaseHandler from './MapBaseHandler';
 
-class MapBoxZoomHander extends Handler {
+class MapBoxZoomHander extends MapBaseHandler {
     drawTool: DrawTool
-    constructor(target: any) {
+    constructor(target: Map) {
         super(target);
         this.drawTool = new DrawTool({
             'mode': 'boxZoom',

@@ -1,5 +1,5 @@
-import { mat4, vec3, quat } from '@maptalks/reshader.gl';
-import * as reshader from '@maptalks/reshader.gl';
+import { mat4, vec3, quat } from 'gl-matrix';
+import * as reshader from '../../reshader';
 import snowVert from './glsl/snow.vert';
 import snowFrag from './glsl/snow.frag';
 const modelViewMatrix = [];

@@ -172,7 +172,8 @@ export default class GLTFMarker extends Marker {
             let needUpdateMatrix = this.isAnimated() ||
             (this._getMarkerPixelHeight() && map.isZooming()) ||
             this._dirtyMarkerBBox ||
-            (this.getGLTFMarkerType() === 'multigltfmarker' && this._dirty);
+            (this.getGLTFMarkerType() === 'multigltfmarker' && this._dirty) ||
+            this.getGLTFMarkerType() === 'effectmarker';
             if (!needUpdateMatrix) {
                 const trsMatrix = this._modelMatrix;
                 mat4.copy(TEMP_MAT, trsMatrix);
@@ -184,7 +185,7 @@ export default class GLTFMarker extends Marker {
             }
             meshes = this._meshes.filter(mesh => {
                 if (intersectsBox(map.projViewMatrix, mesh.getBoundingBox()) || mesh instanceof reshader.InstancedMesh) {
-                    this._updateUniforms(mesh);
+                    this._updateUniforms(mesh, timestamp);
                     this._updateDefines(mesh);
                     return true;
                 }
@@ -316,7 +317,13 @@ export default class GLTFMarker extends Marker {
         //此处涉及到材质的更新，比较耗费性能，对于不需要更新材质的操作尽量不去更新
         if (markerUniforms  && this.isDirty() && this._isUniformsDirty()) {
             for (const u in markerUniforms) {
-                mesh.setUniform(u, markerUniforms[u]);
+                if (this._uniformNodeIndex && defined(this._uniformNodeIndex[u])) {
+                    if (Number(mesh.properties.nodeIndex) === this._uniformNodeIndex[u]) {
+                        mesh.setUniform(u, markerUniforms[u]);
+                    }
+                } else {
+                    mesh.setUniform(u, markerUniforms[u]);
+                }
             }
         }
         if (this._isTransparent()) {
@@ -938,11 +945,10 @@ export default class GLTFMarker extends Marker {
         if (!gltfBBox) {
             return null;
         }
-        const pointZ = this.getPointZ() || 0;
         const min = gltfBBox.min;
         const max = gltfBBox.max;
-        const bboxMin = vec4.set(VEC41, (min[0] + max[0]) / 2, (min[1] + max[1]) / 2, min[2] + pointZ, 1);
-        const bboxMax = vec4.set(VEC42, (min[0] + max[0]) / 2, (min[1] + max[1]) / 2, max[2] + pointZ, 1);
+        const bboxMin = vec4.set(VEC41, (min[0] + max[0]) / 2, (min[1] + max[1]) / 2, min[2], 1);
+        const bboxMax = vec4.set(VEC42, (min[0] + max[0]) / 2, (min[1] + max[1]) / 2, max[2], 1);
         //计算clip space中的最大最小点坐标
         const bboxClipSpaceMin = vec4.transformMat4(bboxMin, bboxMin, map.projViewMatrix);
         const bboxClipSpaceMax = vec4.transformMat4(bboxMax, bboxMax, map.projViewMatrix);
@@ -1136,11 +1142,13 @@ export default class GLTFMarker extends Marker {
         return symbol && symbol.uniforms;
     }
 
-    setUniform(key, value) {
+    setUniform(key, value, nodeIndex) {
         const uniforms = this.getUniforms() || {};
         uniforms[key] = value;
         super.updateSymbol({ uniforms });
         this._uniformDirty = true;
+        this._uniformNodeIndex = this._uniformNodeIndex || {};
+        this._uniformNodeIndex[key] = nodeIndex;
         return this;
     }
 

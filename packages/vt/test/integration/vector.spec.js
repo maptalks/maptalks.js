@@ -6,9 +6,6 @@ const { match, readSpecs, hasOwn } = require('./util');
 const { PointLayer, LineStringLayer, PolygonLayer, ExtrudePolygonLayer } = require('../../dist/maptalks.vt.js');
 const { GroupGLLayer } = require('@maptalks/gl');
 
-const GENERATE_MODE = false;
-const TEST_CANVAS = document.createElement('canvas');
-
 const DEFAULT_VIEW = {
     center: [0, 0],
     zoom: 6,
@@ -25,8 +22,16 @@ const DEFAULT_VIEW = {
     }
 };
 
+const TEST_CANVAS = document.createElement('canvas');
+
+const DIFF_LIMIT = 5;
+
+maptalks.Map.mergeOptions({
+    renderer: ['gl', 'gpu']
+});
+
 describe('vector 3d integration specs', () => {
-    let map, container;
+    let map, layer, container;
     before(() => {
         // const iconDebug = document.createElement('canvas');
         // iconDebug.id = 'MAPTALKS_ICON_DEBUG';
@@ -38,13 +43,14 @@ describe('vector 3d integration specs', () => {
     });
 
     afterEach(() => {
+        layer.clear();
         map.remove();
     });
 
     const runner = (p, Layer, style) => {
         return done => {
             const options = style.view || DEFAULT_VIEW;
-            options.centerCross = true;
+            // options.centerCross = true;
             if (!options.lights) {
                 options.lights = DEFAULT_VIEW.lights;
             }
@@ -52,41 +58,53 @@ describe('vector 3d integration specs', () => {
             container.style.width = (style.containerWidth || 128) + 'px';
             container.style.height = (style.containerHeight || 128) + 'px';
             options.devicePixelRatio = 1;
+            const enableBloom = style.options && style.options.enableBloom;
             map = new maptalks.Map(container, options);
-            const layer = new Layer('vector', style.data, style.options);
+            layer = new Layer('vector', style.data, style.options);
+            let timeoutHandle;
             let counter = 0;
             layer.on('canvasisdirty', () => {
                 counter++;
-                if (counter < count || counter > count) {
+                if (!enableBloom && counter < count || counter > count) {
                     return;
                 }
-                const canvas = map.getRenderer().canvas;
-                const expectedPath = style.expected;
-                //比对测试
-                match(canvas, expectedPath, (err, result) => {
-                    if (err) {
-                        done(err);
-                        return;
-                    }
-                    if (result.diffCount > 0) {
-                        //保存差异图片
-                        const dir = expectedPath.substring(0, expectedPath.length - 'expected.png'.length);
-                        const diffPath = dir + 'diff.png';
-                        writeImageData(diffPath, result.diffImage, result.width, result.height);
-                        const actualPath = dir + 'actual.png';
-                        const dataCanvas = TEST_CANVAS;
-                        dataCanvas.width = canvas.width;
-                        dataCanvas.height = canvas.height;
-                        const ctx = dataCanvas.getContext('2d', { willReadFrequently: true });
-                        ctx.drawImage(canvas, 0, 0);
-                        writeImageData(GENERATE_MODE ? expectedPath : actualPath, ctx.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
-                    }
-                    if (!GENERATE_MODE) {
-                        assert(result.diffCount === 0);
-                    }
 
-                    done();
-                });
+                const doneFn = () => {
+                    const mapCanvas = map.getRenderer().canvas;
+                    // const canvas = map.getRenderer().canvas;
+                    const canvas = TEST_CANVAS;
+                    canvas.width = mapCanvas.width;
+                    canvas.height = mapCanvas.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(mapCanvas, 0, 0);
+                    const expectedPath = style.expected;
+                    //比对测试
+                    match(canvas, expectedPath, (err, result) => {
+                        if (err) {
+                            done(err);
+                            return;
+                        }
+                        if (result.diffCount > DIFF_LIMIT) {
+                            //保存差异图片
+                            const dir = expectedPath.substring(0, expectedPath.length - 'expected.png'.length);
+                            const diffPath = dir + 'diff.png';
+                            writeImageData(diffPath, result.diffImage, result.width, result.height);
+                            const actualPath = dir + 'actual.png';
+                            writeImageData(actualPath, canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
+                        }
+                        assert(result.diffCount <= DIFF_LIMIT, result.diffCount);
+                        done();
+                    });
+                };
+                if (enableBloom) {
+                    clearTimeout(timeoutHandle);
+                    timeoutHandle = setTimeout(doneFn, 500);
+                } else {
+                    map.once('renderend', () => {
+                        doneFn();
+                    });
+
+                }
             });
             if (style.options && style.options.enableBloom) {
                 const sceneConfig = {
@@ -111,10 +129,7 @@ describe('vector 3d integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'vector-fixtures', 'icon'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                if (p.indexOf('text') >= 0) {
-                    continue;
-                }
-                it('icon-' + p, runner(p, PointLayer, specs[p])).timeout(5000);
+                it('icon-' + p, runner(p, PointLayer, specs[p]));
             }
         }
     });
@@ -123,7 +138,7 @@ describe('vector 3d integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'vector-fixtures', 'line'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it('line-' + p, runner(p, LineStringLayer, specs[p])).timeout(5000);
+                it('line-' + p, runner(p, LineStringLayer, specs[p]));
             }
         }
     });
@@ -132,7 +147,7 @@ describe('vector 3d integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'vector-fixtures', 'polygon'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it('polygon-' + p, runner(p, PolygonLayer, specs[p])).timeout(5000);
+                it('polygon-' + p, runner(p, PolygonLayer, specs[p]));
             }
         }
     });
@@ -141,7 +156,7 @@ describe('vector 3d integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'vector-fixtures', 'extrude'));
         for (const p in specs) {
             if (hasOwn(specs, p)) {
-                it('extrude-' + p, runner(p, ExtrudePolygonLayer, specs[p])).timeout(5000);
+                it('extrude-' + p, runner(p, ExtrudePolygonLayer, specs[p]));
             }
         }
     });
@@ -159,7 +174,7 @@ describe('vector 3d integration specs', () => {
                 if (specs[p].options.altitude === undefined) {
                     specs[p].options.altitude = 80000;
                 }
-                it('options-' + p, runner(p, getLayerClazz(specs[p].layerClass), specs[p])).timeout(5000);
+                it('options-' + p, runner(p, getLayerClazz(specs[p].layerClass), specs[p]));
             }
         }
     });

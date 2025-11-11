@@ -59,8 +59,11 @@ const options: UIComponentOptionsType = {
     'collisionBufferSize': 2,
     'collisionWeight': 0,
     'collisionFadeIn': false,
-    'zIndex': 0
+    'zIndex': 0,
+    'enableSrollbar': true
 };
+
+const COLLISION_STATES = ['collision', 'collisionBufferSize', 'collisionWeight', 'collisionFadeIn']
 
 /**
  * @classdesc
@@ -992,8 +995,26 @@ class UIComponent extends Eventable(Class) {
         return false;
     }
 
-    onConfig() {
+    onConfig(config: Record<string, any>) {
+        let collisionStateChange = false;
+        if (config) {
+            for (let i = 0, len = COLLISION_STATES.length; i < len; i++) {
+                const key = COLLISION_STATES[i];
+                if (key in config) {
+                    collisionStateChange = true;
+                    break;
+                }
+            }
+        }
         this._updatePosition();
+        //https://github.com/maptalks/maptalks.js/issues/2609
+        if (collisionStateChange) {
+            this._collides();
+            const map = this.getMap();
+            if (map && map._sortUI) {
+                map._sortUI();
+            }
+        }
         return this;
     }
 
@@ -1037,6 +1058,9 @@ class UIComponent extends Eventable(Class) {
     _configMapPreventWheelScroll(preventWheelScroll: boolean) {
         const map = this.getMap();
         if (!map) {
+            return;
+        }
+        if (!this.options.enableSrollbar) {
             return;
         }
         if (this.options.eventsPropagation) {
@@ -1103,4 +1127,5 @@ export type UIComponentOptionsType = {
     collisionFadeIn?: boolean;
     zIndex?: number;
     cssName?: string | Array<string>;
+    enableSrollbar?: boolean;
 }

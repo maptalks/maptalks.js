@@ -58,6 +58,8 @@ packages.forEach(item => {
     const exportStr = keys.join(', ');
     code += `export { ${exportStr} } from '${name}';\n`;
 });
+//write index.d.ts
+fs.writeFileSync(path.resolve(__dirname, './index.d.ts'), code);
 
 code += `
 import { transcoders } from '@maptalks/gl';

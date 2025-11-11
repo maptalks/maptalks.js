@@ -64,7 +64,7 @@ module.exports = {
         for (let i = 0; i < arr.length; i++) {
             imageData.data[i] = arr[i];
         }
-        canvas.getContext('2d').putImageData(imageData, 0, 0);
+        canvas.getContext('2d', { willReadFrequently: true }).putImageData(imageData, 0, 0);
         const dataURL = canvas.toDataURL();
         const base64Data = dataURL.replace(/^data:image\/png;base64,/, '');
         fs.writeFileSync(path, base64Data, 'base64');

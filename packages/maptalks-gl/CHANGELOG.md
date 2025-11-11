@@ -1,5 +1,168 @@
 # maptalks-gl
 
+## 0.116.0
+
+### Minor Changes
+
+- fixes against maptalks-gpu
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.116.0
+  - @maptalks/3dtiles@0.116.0
+  - @maptalks/gltf-layer@0.116.0
+  - @maptalks/video-layer@0.116.0
+  - @maptalks/transform-control@0.116.0
+  - @maptalks/vt@0.116.0
+
+## 0.115.1
+
+### Patch Changes
+
+- fixes related with terrain
+- Updated dependencies
+  - @maptalks/gl@0.115.1
+  - @maptalks/3dtiles@0.115.1
+  - @maptalks/gltf-layer@0.115.1
+  - @maptalks/video-layer@0.115.1
+  - @maptalks/transform-control@0.115.1
+  - @maptalks/vt@0.115.1
+
+## 0.115.0
+
+### Minor Changes
+
+- focusing on bug fixes and serveral improvements
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.115.0
+  - @maptalks/3dtiles@0.115.0
+  - @maptalks/gltf-layer@0.115.0
+  - @maptalks/video-layer@0.115.0
+  - maptalks@1.5.0
+  - @maptalks/transform-control@0.115.0
+  - @maptalks/vt@0.115.0
+
+## 0.114.0
+
+### Minor Changes
+
+- add gpu and maptalks-gpu packages and fix some bugs
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.110.0
+  - @maptalks/vt@0.109.0
+  - maptalks@1.4.6
+  - @maptalks/3dtiles@0.106.6
+  - @maptalks/gltf-layer@0.106.0
+  - @maptalks/video-layer@0.103.0
+  - @maptalks/transform-control@0.106.7
+
+## 0.113.6
+
+### Patch Changes
+
+- some bug fixes related with terrain and 3dtiles
+- Updated dependencies
+  - @maptalks/gl@0.109.6
+  - @maptalks/3dtiles@0.106.5
+  - @maptalks/gltf-layer@0.106.0
+  - @maptalks/video-layer@0.103.0
+  - @maptalks/transform-control@0.106.6
+  - @maptalks/vt@0.108.6
+
+## 0.113.5
+
+### Patch Changes
+
+- Fix some bugs
+- Updated dependencies
+  - maptalks@1.4.5
+  - @maptalks/vt@0.108.5
+  - @maptalks/gl@0.109.5
+  - @maptalks/3dtiles@0.106.4
+  - @maptalks/gltf-layer@0.106.0
+  - @maptalks/video-layer@0.103.0
+  - @maptalks/transform-control@0.106.5
+
+## 0.113.4
+
+### Patch Changes
+
+- merge reshader.gl into gl and fix default ambientColor in 3dtiles layer
+- Updated dependencies
+  - @maptalks/gl@0.109.4
+  - @maptalks/3dtiles@0.106.3
+  - @maptalks/gltf-layer@0.106.0
+  - @maptalks/video-layer@0.103.0
+  - @maptalks/transform-control@0.106.4
+  - @maptalks/vt@0.108.4
+
+## 0.113.3
+
+### Patch Changes
+
+- Fix shader compilation failure in PolygonLayer.outline (#2630)
+- Updated dependencies
+  - @maptalks/vt@0.108.3
+  - @maptalks/gl@0.109.3
+  - @maptalks/gltf-layer@0.106.0
+  - @maptalks/3dtiles@0.106.2
+  - @maptalks/video-layer@0.103.0
+  - @maptalks/transform-control@0.106.3
+
+## 0.113.2
+
+### Patch Changes
+
+- fix bugs in maptalks/vt/gl
+- Updated dependencies
+  - @maptalks/gl@0.109.2
+  - maptalks@1.4.4
+  - @maptalks/vt@0.108.2
+  - @maptalks/3dtiles@0.106.2
+  - @maptalks/gltf-layer@0.106.0
+  - @maptalks/video-layer@0.103.0
+  - @maptalks/transform-control@0.106.2
+
+## 0.113.1
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.109.1
+  - maptalks@1.4.3
+  - @maptalks/3dtiles@0.106.1
+  - @maptalks/gltf-layer@0.106.0
+  - @maptalks/video-layer@0.103.0
+  - @maptalks/transform-control@0.106.1
+  - @maptalks/vt@0.108.1
+
+## 0.113.0
+
+### Minor Changes
+
+- - implement terrain-flat-mask rendre plugin in VectorLayer
+  - sync codes with maptalks/gl-layers
+  - webgl layers' compatibility fixes with MapCanvasRenderer
+  - bug fixes in maptalks
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.109.0
+  - @maptalks/3dtiles@0.106.0
+  - @maptalks/gltf-layer@0.106.0
+  - @maptalks/video-layer@0.103.0
+  - @maptalks/transform-control@0.106.0
+  - @maptalks/vt@0.108.0
+  - maptalks@1.4.2
+
 ## 0.105.2
 
 ### Patch Changes

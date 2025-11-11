@@ -1,7 +1,7 @@
 import * as maptalks from 'maptalks';
 import TerrainLayerRenderer from './TerrainLayerRenderer';
 import { getTileIdsAtLevel, getSkinTileScale, getSkinTileRes, getCascadeTileIds } from './TerrainTileUtil';
-import { extend } from '../util/util';
+import { isNil, extend } from '../util/util';
 import MaskLayerMixin from '../mask/MaskLayerMixin';
 
 const COORD0 = new maptalks.Coordinate(0, 0);
@@ -156,6 +156,14 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
         }
         const token = [TOKEN_VERSION, SKU_ID, sessionRandomizer].join('');
         return token;
+    }
+
+    _getExaggeration() {
+        let exaggeration = this.options.exaggeration;
+        if (isNil(exaggeration)) {
+            exaggeration = 1;
+        }
+        return exaggeration;
     }
 
     setSkinLayers(skinLayers) {
@@ -358,10 +366,12 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
         renderer._queryTileMesh(tile, cb);
     }
 
-    getTerrainTiles(tileInfo) {
+    // get terrain tiles against tileInfo of the given layer
+    getTerrainTiles(layer, tileInfo) {
         const { x, y, z, res, offset } = tileInfo;
         const tileSize = tileInfo.extent2d.getWidth();
         const tc = this['_getTileConfig']();
+        const layerTC = layer['_getTileConfig']();
         const sr = this.getSpatialReference();
         const { res: terrainRes, zoom } = getSkinTileRes(sr, z, res);
 
@@ -373,7 +383,7 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
             nw = tileInfo.nw = this.getMap().pointAtResToCoord(tileInfo.extent2d.getMin(POINT0), tileInfo.res);
         }
 
-        const terrainTiles = getCascadeTileIds(this, x, y, zoom, nw, offset, tc.tileSystem.scale.y, scale, 1)[0];
+        const terrainTiles = getCascadeTileIds(this, x, y, zoom, nw, offset, layerTC.tileSystem.scale.y, scale, 1)[0];
         for (let i = 0; i < terrainTiles.length; i++) {
             const { x: tx, y: ty } = terrainTiles[i];
             const nw = tc.getTilePointNW(tx, ty, terrainRes, POINT0);
@@ -460,3 +470,4 @@ TerrainLayer.mergeOptions(options);
 TerrainLayer.registerJSONType('TerrainLayer');
 
 TerrainLayer.registerRenderer('gl', TerrainLayerRenderer);
+TerrainLayer.registerRenderer('gpu', TerrainLayerRenderer);

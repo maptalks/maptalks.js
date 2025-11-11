@@ -496,9 +496,26 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             return this;
         }
         let s = this._getSymbol();
+        const propsIsArray = Array.isArray(props);
+        if (!s) {
+            //generate defalut empty symbol
+            s = this._getInternalSymbol() || {};
+            // if (propsIsArray) {
+            //     s = props.map(() => { return {} });
+            // }
+        }
+        if (!Array.isArray(s) && propsIsArray) {
+            //only read first element of props
+            props = props[0] || {};
+        }
         if (Array.isArray(s)) {
-            if (!Array.isArray(props)) {
-                throw new Error('Parameter of updateSymbol is not an array.');
+            if (!propsIsArray) {
+                //auto generate array symbol
+                props = [props];
+                while (props.length < s.length) {
+                    props.push({});
+                }
+                // throw new Error('Parameter of updateSymbol is not an array.');
             }
             for (let i = 0; i < props.length; i++) {
                 if (isTextSymbol(props[i])) {
@@ -509,7 +526,10 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
                 }
             }
         } else if (Array.isArray(props)) {
-            throw new Error('Geometry\'s symbol is not an array to update.');
+            // throw new Error('Geometry\'s symbol is object but the update symbol is array.');
+            console.error('Geometry\'s symbol is object but the update symbol is array.');
+            console.error('Geometry\'s symbol and update symbol:', s, props);
+            return this;
         } else {
             if (isTextSymbol(s)) {
                 delete this._textDesc;
@@ -644,7 +664,9 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             this._fixedExtent = new PointExtent();
         }
         const symbol = this._sizeSymbol;
-        const t = (symbol && symbol['lineWidth'] || 1) / 2;
+        let t = (symbol && symbol['lineWidth'] || 1) / 2;
+        const border = (symbol && symbol['lineStrokeWidth'] || 0);
+        t += border;
         this._fixedExtent.set(-t, -t, t, t);
         const dx = (symbol && symbol['lineDx']) || 0;
         this._fixedExtent._add([dx, 0]);
@@ -1526,7 +1548,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             return this._painter;
         }
         const layer = this.getLayer();
-        if (!this._painter && layer) {
+        if (layer) {
             if (GEOMETRY_COLLECTION_TYPES.indexOf(this.type) !== -1) {
                 //@ts-expect-error todo 待vectorlayer ts完善
                 if (layer.constructor.getCollectionPainterClass) {

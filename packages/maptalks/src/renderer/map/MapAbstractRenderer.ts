@@ -12,6 +12,7 @@ import type EditOutline from '../edit/EditOutline';
 import type { Layer } from '../../layer';
 import type Size from '../../geo/Size';
 import type { WithUndef } from '../../types/typings';
+import { getDefaultBBOX, pointsBBOX } from '../../core/util/bbox';
 
 const tempCollisionIndex = new CollisionIndex();
 
@@ -97,11 +98,79 @@ class MapAbstractRenderer extends MapRenderer {
         this.initContainer();
     }
 
+    _updateMapCurrentViewGLInfo() {
+        const map = this.map;
+        if (!map) {
+            return this;
+        }
+        map._currentViewGLInfo = null;
+        const containerExtent = map.getContainerExtent();
+        if (!containerExtent) {
+            return this;
+        }
+        const bufferSize = 100;
+        const { xmin, ymin, xmax, ymax } = containerExtent
+
+        const p1 = new Point(xmin, ymin);
+        const p2 = new Point(xmax, ymin);
+        const p3 = new Point(xmax + bufferSize, ymax + bufferSize);
+        const p4 = new Point(xmin - bufferSize, ymax + bufferSize);
+        const scale = map._getResolution() / map.getGLRes();
+        let ring = [p1, p2, p3, p4].map(p => {
+            return map._containerPointToPoint(p)._multi(scale);
+        })
+        const RB = ring[2];
+        const LB = ring[3];
+        ring = ring.sort((a, b) => {
+            return b.y - a.y;
+        });
+
+        const [lp1, lp2, rp1, rp2] = ring;
+        let lt, lb, rt, rb;
+        if (lp1.x < lp2.x) {
+            lt = lp1;
+            rt = lp2;
+        } else {
+            lt = lp2;
+            rt = lp1;
+        }
+        if (rp1.x < rp2.x) {
+            lb = rp1;
+            rb = rp2;
+        } else {
+            lb = rp2;
+            rb = rp1;
+        }
+        const bbox = getDefaultBBOX();
+        pointsBBOX(ring, bbox);
+        const [minx, miny, maxx, maxy] = bbox;
+        const center = new Point((minx + maxx) / 2, (miny + maxy) / 2);
+        /**
+         *  LT---------------RT
+         *   \               /
+         *    \             /
+         *     \           /
+         *       LB------RB
+         *      camera behind
+         *
+         */
+        map._currentViewGLInfo = {
+            lt,
+            rt,
+            rb,
+            lb,
+            center,
+            RB,
+            LB
+        };
+    }
+
     /**
      * render layers in current frame
      * @returns return false to cease frame loop
      */
     renderFrame(framestamp: number): boolean {
+        this._updateMapCurrentViewGLInfo();
         const map = this.map;
         if (!map || !map.options['renderable']) {
             return false;
@@ -211,6 +280,17 @@ class MapAbstractRenderer extends MapRenderer {
                 renderer.render(framestamp);
             }
         }
+        /**
+         * renderend event, an event fired when map ends rendering.
+         * @event Map#renderend
+         * @type {Object}
+         * @property {String} type                      - renderend
+         * @property {Map} target              - the map fires event
+         * @property {CanvasRenderingContext2D} context - canvas context
+         */
+        map._fireEvent('renderend', {
+            'context': this.context
+        });
         return true;
     }
 
@@ -279,7 +359,7 @@ class MapAbstractRenderer extends MapRenderer {
         for (let i = layers.length - 1; i >= 0; i--) {
             const layer = layers[i];
             const renderer = layer._getRenderer();
-            if (!renderer || !renderer.isRenderComplete()) {
+            if (!renderer || renderer.isRenderComplete && !renderer.isRenderComplete()) {
                 continue;
             }
             /**
@@ -612,11 +692,19 @@ class MapAbstractRenderer extends MapRenderer {
 
     // canvas for tops
     createTopCanvas() {
-        this.topLayer = createEl('canvas') as HTMLCanvasElement;
+        const topLayer = createEl('canvas') as HTMLCanvasElement;
+        this.topLayer = topLayer;
+        topLayer.width = this.canvas.width;
+        topLayer.height = this.canvas.height;
+        topLayer.style.position = 'absolute';
+        topLayer.style.top = '0px';
+        topLayer.style.left = '0px';
+        topLayer.style.width = this.canvas.style.width;
+        topLayer.style.height = this.canvas.style.height;
         const panels = this.map.getPanels();
         const canvasContainer = panels.canvasContainer;
-        canvasContainer.insertBefore(this.topLayer, this.canvas);
-        this.topCtx = this.topLayer.getContext('2d');
+        canvasContainer.insertBefore(topLayer, this.canvas);
+        this.topCtx = topLayer.getContext('2d');
     }
 
     removeTopCanvas() {
@@ -845,10 +933,18 @@ class MapAbstractRenderer extends MapRenderer {
                 updated = true;
             }
         }
-        if (updated) {
+        if (updated && this.context && this.context.drawImage) {
             this.context.drawImage(this.topLayer, 0, 0);
         }
         this.map.fire('drawtopsend');
+    }
+
+    isWebGL() {
+        return false;
+    }
+
+    isWebGPU() {
+        return false;
     }
 }
 

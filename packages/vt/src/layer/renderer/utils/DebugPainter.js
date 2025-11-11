@@ -8,6 +8,10 @@ class DebugPainter {
     }
 
     draw(debugInfo, transform, tileSize, extent, fbo) {
+        const isWebGPU = !!this._regl.wgpu;
+        if (isWebGPU) {
+            return;
+        }
         if (!this._command) {
             this._init();
         }

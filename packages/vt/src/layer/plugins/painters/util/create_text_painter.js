@@ -213,14 +213,14 @@ export function prepareTextGeometry(
 
 export function initTextUniforms(uniforms, regl, geometry, symbol) {
     const glyphAtlas = geometry.properties.glyphAtlas;
-    const glyphTexture = glyphAtlas && createAtlasTexture(regl, glyphAtlas, false);
+    const glyphTexture = glyphAtlas && createAtlasTexture(regl, glyphAtlas, false) || regl.texture(2);
     uniforms = uniforms || {};
     extend(uniforms, {
         flipY: 0,
         tileResolution: geometry.properties.tileResolution,
         tileRatio: geometry.properties.tileRatio,
-        glyphTex: glyphTexture || this._emptyTexture,
-        glyphTexSize: [glyphAtlas && glyphAtlas.width || 0, glyphAtlas && glyphAtlas.height || 0]
+        glyphTex: glyphTexture,
+        glyphTexSize: [glyphTexture && glyphTexture.width || 0, glyphTexture && glyphTexture.height || 0]
     });
     setMeshUniforms(geometry, uniforms, symbol);
     return uniforms;
@@ -283,6 +283,7 @@ function prepareGeometry(geometry, enableCollision, visibleInCollision) {
         delete geometry.data.aCount;
     }
 
+
     if ((enableCollision || isLinePlacement)) {
         let aShapeData = aShape;
         if (aShape.length === vertexCount * 4) {
@@ -313,7 +314,7 @@ function prepareGeometry(geometry, enableCollision, visibleInCollision) {
         delete geometry.data.aGlyphOffset;
         delete geometry.data.aPitchRotation;
 
-        const offsetLength = vertexCount / 2 * (is3DPitchText ? 3 : 2);
+        const offsetLength = vertexCount * (is3DPitchText ? 3 : 2);
         geometry.data.aOffset = {
             usage: 'dynamic',
             data: new Int16Array(offsetLength)

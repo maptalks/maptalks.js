@@ -20,6 +20,7 @@ EffectRingLayer.mergeOptions(options);
 EffectRingLayer.registerJSONType('EffectRingLayer');
 
 EffectRingLayer.registerRenderer('gl', GLTFLayerRenderer);
+EffectRingLayer.registerRenderer('gpu', GLTFLayerRenderer);
 
 function getShader() {
     const vert = `

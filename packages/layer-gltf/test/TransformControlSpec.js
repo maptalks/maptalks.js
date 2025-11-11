@@ -154,8 +154,6 @@ describe('transform-control', () => {
         const transformControl = new maptalks.TransformControl();
         transformControl.addTo(map);
         transformControl.on('transforming', e => {
-            const target = transformControl.getTransformTarget();
-            const marker = target.getTargets()[0];
             marker.setTRS(e.translate, e.rotation, e.scale);
         });
 
@@ -380,7 +378,7 @@ describe('transform-control', () => {
                 const newCoord = marker.getCoordinates();
                 expect(newCoord.x).to.be.eql(0);
                 expect(newCoord.y).to.be.eql(0);
-                expect(newCoord.z.toFixed(5)).to.be.eql(-0.00822);// change z value
+                expect(newCoord.z.toFixed(5)).to.be.eql(-0.00871);// change z value
                 done();
             }, 100);
         }
@@ -441,7 +439,7 @@ describe('transform-control', () => {
                 expect(newCoord.x).to.be.eql(0);
                 expect(newCoord.y).to.be.eql(0);
                 const scale = marker.getScale();
-                expect(scale).to.be.eql([0.8049506435385853, 0.6666666666666666, 0.6666666666666666]);
+                expect(scale).to.be.eql([0.6666666666666666, 0.6666666666666666, 0.6666666666666666]);
                 done();
             }, 100);
         }
@@ -503,15 +501,15 @@ describe('transform-control', () => {
             happen.mouseup(eventContainer);
             setTimeout(function() {
                 const newCoord = marker1.getCoordinates();
-                expect(newCoord.x).to.be.eql(-0.000796152114868164);
+                expect(newCoord.x).to.be.eql(-0.0008011028954351805);
                 expect(newCoord.y).to.be.eql(0);
 
                 const newCoord2 = marker2.getCoordinates();
-                expect(newCoord2.x).to.be.eql(0.00020384788513183594);
+                expect(newCoord2.x).to.be.eql(0.00019889710456481957);
                 expect(newCoord2.y).to.be.eql(0);
 
                 const newCoord3 = marker3.getCoordinates();
-                expect(newCoord3.x).to.be.eql(0.001203847885131836);
+                expect(newCoord3.x).to.be.eql(0.0011988971045648203);
                 expect(newCoord3.y).to.be.eql(0);
                 done();
             }, 100);
@@ -571,5 +569,30 @@ describe('transform-control', () => {
                 moveTransformControl();
             }, 100);
         }, 100);
+    });
+
+    it('transform remove', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        new maptalks.GLTFGeometry(center,
+            {
+                id:'gltfmarker1',
+                symbol: {
+                    scaleX: 2 / 3,
+                    scaleY: 2 / 3,
+                    scaleZ: 2 / 3
+                }
+            }
+        ).addTo(gltflayer);
+        new maptalks.GroupGLLayer('group', [],  { sceneConfig }).addTo(map);
+        const transformControl = new maptalks.TransformControl();
+        transformControl.addTo(map);
+        setTimeout(function () {
+            transformControl.remove();
+            done();
+        }, 100);
+        setTimeout(function () {
+            const newTransformControl = new maptalks.TransformControl();
+            newTransformControl.addTo(map);
+        }, 200);
     });
 });

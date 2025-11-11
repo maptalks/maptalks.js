@@ -66,7 +66,7 @@ const style = {
 module.exports = {
     style,
     data,
-    renderingCount: 1,
+    renderingCount: 7,
     view: {
         center: [0, 0],
         zoom: 6,
@@ -75,7 +75,6 @@ module.exports = {
         lights: {
             ambient: {
                 resource: {
-                    prefilterCubeSize: 64,
                     url: path.join(__dirname, "../../../resources/env.hdr"),
                     sh: [
                         0.20858436898833022, 0.23915094694605302, 0.2764453514295079, 0.04950023235319853,
@@ -85,7 +84,8 @@ module.exports = {
                         -0.00543337565708197, -0.003958969121495932, 0.030768413550559873, 0.028952465658790758,
                         0.020335418593710984, -0.11441424414505244, -0.11983866529491013, -0.09375876129847162,
                         0.017978553168773385, 0.0158766066546692, 0.011120821552798437
-                    ]
+                    ],
+                    prefilterCubeSize: 64
                 }
             },
             directional: {

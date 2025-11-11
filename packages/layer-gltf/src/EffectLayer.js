@@ -1,4 +1,4 @@
-import { reshader } from '@maptalks/gl';
+import { reshader, MaskLayerMixin } from '@maptalks/gl';
 import EffectLayerRenderer from './EffectLayerRenderer';
 import AbstractGLTFLayer from './common/AbstractGLTFLayer';
 
@@ -6,7 +6,7 @@ const options = {
     markerTypes: ['effectmarker']
 };
 
-export default class EffectLayer extends AbstractGLTFLayer {
+export default class EffectLayer extends MaskLayerMixin(AbstractGLTFLayer) {
 
     static initDefaultShader() {
         const effectShader = getEffectShader();
@@ -65,6 +65,7 @@ EffectLayer.mergeOptions(options);
 EffectLayer.registerJSONType('EffectLayer');
 
 EffectLayer.registerRenderer('gl', EffectLayerRenderer);
+EffectLayer.registerRenderer('gpu', EffectLayerRenderer);
 
 function getEffectShader() {
     const vert = `
@@ -104,6 +105,12 @@ function getEffectShader() {
                     dst: 'one minus src alpha'
                 },
                 equation: 'add'
+            },
+            depth: {
+                enable: true,
+                func: 'always',
+                mask: true,
+                range: [0, 0]
             }
         }
     };

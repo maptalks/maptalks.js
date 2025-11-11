@@ -1,6 +1,6 @@
-import { isFunction, uid } from '../../common/Util';
+import { isFunction, isNil, uid } from '../../common/Util';
 
-const USE_FETCH = typeof fetch === 'function' && typeof AbortController  === 'function';
+const USE_FETCH = typeof fetch === 'function' && typeof AbortController === 'function';
 
 /**
  * @classdesc
@@ -68,6 +68,10 @@ const Ajax = {
             options = t;
         }
         options = options || {};
+        let errorLog = options.errorLog;
+        if (isNil(errorLog)) {
+            errorLog = true;
+        }
         if (options.method) {
             options.method = options.method.toUpperCase();
         }
@@ -115,14 +119,18 @@ const Ajax = {
                         }
                     }).catch(err => {
                         if (!err.code || err.code !== DOMException.ABORT_ERR) {
-                            console.error('Fetch error:', url, err);
+                            if (errorLog) {
+                                console.error('Fetch error:', url, err);
+                            }
                             cb(err);
                         }
                     });
                 }
             }).catch(err => {
                 if (!err.code || err.code !== DOMException.ABORT_ERR) {
-                    console.error('Fetch error:', url, err);
+                    if (errorLog) {
+                        console.error('Fetch error:', url, err);
+                    }
                     cb(err);
                 }
             });
@@ -185,7 +193,7 @@ const Ajax = {
             client = new XMLHttpRequest();
         } catch (e) {
             try { client = new ActiveXObject('Msxml2.XMLHTTP'); } catch (e) {
-                try { client = new ActiveXObject('Microsoft.XMLHTTP'); } catch (e) {}
+                try { client = new ActiveXObject('Microsoft.XMLHTTP'); } catch (e) { }
             }
         }
         client.onreadystatechange = Ajax._wrapCallback(client, cb);

@@ -183,7 +183,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         const markerType = this.style['markerType'];
         if (markerType === 'bar' || markerType === 'pie' || markerType === 'pin') {
             return new Point(w / 2, h - margin);
-        } else if (markerType === 'rectangle') {
+        } else if (markerType === 'rectangle' || markerType === 'roundrectangle') {
             return new Point(margin, margin);
         } else {
             return new Point(w / 2, h / 2);

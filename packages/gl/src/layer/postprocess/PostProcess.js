@@ -1,5 +1,5 @@
-import * as reshader from '@maptalks/reshader.gl';
-import { vec2 } from '@maptalks/reshader.gl';
+import * as reshader from '../../reshader';
+import { vec2 } from 'gl-matrix';
 
 const RESOLUTION = [];
 const bloomFilter = m => !!m.bloom;
@@ -228,6 +228,12 @@ export default class PostProcess {
             shaderDefines['HAS_OUTLINE_TEX'] = 1;
         } else {
             delete shaderDefines['HAS_OUTLINE_TEX'];
+        }
+        const useMultiSample = this._layer.options.antialias === true;
+        if (useMultiSample) {
+            shaderDefines['HAS_MULTISAMPLED'] = 1;
+        } else {
+            delete shaderDefines['HAS_MULTISAMPLED'];
         }
         // if (noAaSource) {
         //     shaderDefines['HAS_NOAA_TEX'] = 1;

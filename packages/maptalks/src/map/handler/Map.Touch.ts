@@ -1,10 +1,10 @@
 import { off, addDomEvent, removeDomEvent, getEventContainerPoint, preventDefault } from '../../core/util/dom';
-import Handler from '../../handler/Handler';
 import Point from '../../geo/Point';
 import Map from '../Map';
+import MapBaseHandler from './MapBaseHandler';
 
 //handler to zoom map by pinching
-class MapTouchZoomHandler extends Handler {
+class MapTouchZoomHandler extends MapBaseHandler {
     preY: number
     //@internal
     _startP1: Point

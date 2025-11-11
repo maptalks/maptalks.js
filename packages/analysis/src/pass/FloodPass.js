@@ -14,8 +14,8 @@ export default class FloodPass extends AnalysisPass {
                 viewport: this._viewport
             }
         });
-        this._fbo = this.renderer.regl.framebuffer({
-            color: this.renderer.regl.texture({
+        this._fbo = this.renderer.device.framebuffer({
+            color: this.renderer.device.texture({
                 width: 1,
                 height: 1,
                 wrap: 'clamp',

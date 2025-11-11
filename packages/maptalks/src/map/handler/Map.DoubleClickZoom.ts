@@ -1,9 +1,9 @@
-import Handler from '../../handler/Handler';
 import Map from '../Map';
 import { type Param } from './CommonType'
+import MapBaseHandler from './MapBaseHandler';
 
 
-class MapDoubleClickZoomHandler extends Handler {
+class MapDoubleClickZoomHandler extends MapBaseHandler {
     addHooks() {
         if (!this.target) {
             return;

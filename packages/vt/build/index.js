@@ -8,7 +8,7 @@ mat4.create();
 import chunk from './worker.js';
 
 import { packerExport }  from './packer';
-import { inject } from '../src/packer/inject';
+import { inject, getVectorPacker } from '../src/packer/inject';
 
 const workerSource = inject(chunk, packerExport);
 
@@ -28,3 +28,4 @@ if (maptalksgl.transcoders) {
 }
 
 export * from '../src/layer/';
+export { getVectorPacker };

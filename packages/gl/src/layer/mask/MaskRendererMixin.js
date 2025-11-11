@@ -1,4 +1,4 @@
-import * as reshader from '@maptalks/reshader.gl';
+import * as reshader from '../../reshader';
 import { extend } from '../util/util';
 
 function renderExtentMap(extent, projViewMatrix, ratio, minHeight) {
@@ -39,7 +39,7 @@ function updateVideoMask() {
     this['_extentPass'].render(maskMeshes, this['_projViewMatrix']);
     const masks = this.layer.getMasks();
     for (let i = 0; i < masks.length; i++) {
-        if (masks[i].getMode() === 'video') {
+        if (masks[i]._update) {
             masks[i]._update();
         }
     }
@@ -62,8 +62,8 @@ function hasPlayingVideoMask() {
         return false;
     }
     for (let i = 0; i < masks.length; i++) {
-        if (masks[i].getMode() === 'video' && masks[i]._needUpdate()) {
-            return true;
+        if (masks[i]._needUpdate) {
+            return masks[i]._needUpdate();
         }
     }
     return false;

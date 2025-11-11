@@ -1,4 +1,4 @@
-import {  isNumber, isFunction, calCanvasSize, pushIn } from '../../core/util';
+import { isNumber, isFunction, calCanvasSize, pushIn } from '../../core/util';
 import { createEl } from '../../core/util/dom';
 import Point from '../../geo/Point';
 import Canvas2D from '../../core/Canvas';
@@ -32,6 +32,7 @@ class MapCanvasRenderer extends MapAbstractRenderer {
      * @returns return false to cease frame loop
      */
     renderFrame(framestamp: number): boolean {
+        this._updateMapCurrentViewGLInfo();
         const map = this.map;
         if (!map || !map.options['renderable']) {
             return false;
@@ -282,7 +283,7 @@ class MapCanvasRenderer extends MapAbstractRenderer {
                     return;
                 }
                 const renderer = layer._getRenderer();
-                if (!renderer || !renderer.isRenderComplete()) {
+                if (!renderer || renderer.isRenderComplete && !renderer.isRenderComplete()) {
                     return;
                 }
                 /**
@@ -493,12 +494,15 @@ class MapCanvasRenderer extends MapAbstractRenderer {
         }
         const alpha = ctx.globalAlpha;
 
-        if (op < 1) {
-            ctx.globalAlpha *= op;
+        if (layer.options.renderer === 'canvas') {
+            if (op < 1) {
+                ctx.globalAlpha *= op;
+            }
+            if (imgOp < 1) {
+                ctx.globalAlpha *= imgOp;
+            }
         }
-        if (imgOp < 1) {
-            ctx.globalAlpha *= imgOp;
-        }
+
         if (layer.options['cssFilter']) {
             ctx.filter = layer.options['cssFilter'];
         }
@@ -670,6 +674,7 @@ class MapCanvasRenderer extends MapAbstractRenderer {
     drawTops() {
         super.drawTopElements();
     }
+
 }
 
 Map.registerRenderer<typeof MapCanvasRenderer>('canvas', MapCanvasRenderer);

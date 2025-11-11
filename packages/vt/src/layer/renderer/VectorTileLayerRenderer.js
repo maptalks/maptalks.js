@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { mat4, vec3, GroundPainter } from '@maptalks/gl';
+import { mat4, vec3, GroundPainter, CanvasCompatible } from '@maptalks/gl';
 import WorkerConnection from './worker/WorkerConnection';
 import { EMPTY_VECTOR_TILE } from '../core/Constant';
 import DebugPainter from './utils/DebugPainter';
@@ -34,7 +34,7 @@ const terrainVectorFilter = plugin => {
     return plugin.isTerrainVector();
 }
 
-class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRenderer) {
+class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(LayerAbstractRenderer)) {
 
     supportRenderMode() {
         return true;
@@ -71,28 +71,71 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
         return this._styleCounter;
     }
 
-    setStyle() {
+    clearData() {
+        this.clear();
+        if (!this._workerConn) {
+            this.layer.fire('cleardata');
+            return;
+        }
+        this._workersyncing = true;
+        this._workerConn.clearData(() => {
+            this._workersyncing = false;
+            this._needRetire = true;
+            this.setToRedraw();
+
+            this.layer.fire('cleardata');
+        });
+    }
+
+    clear() {
+        this.clearTileCaches();
+        super.clear();
+    }
+
+    setStyle(styles, onLoad) {
         if (this._groundPainter) {
             this._groundPainter.update();
         }
         if (this._workerConn) {
-            this._styleCounter++;
-            this._preservePrevTiles();
-            const style = this.layer._getComputedStyle();
-            style.styleCounter = this._styleCounter;
+            if (this._workerUpdateTimeout) {
+                clearTimeout(this._workerUpdateTimeout);
+            }
             this._workersyncing = true;
-            this._workerConn.updateStyle(style, err => {
-                this._workersyncing = false;
-                if (err) throw new Error(err);
-                this._needRetire = true;
-                // this.clear();
-                // this._clearPlugin();
-                this._initPlugins();
-                this.setToRedraw();
+            this._workerUpdateTimeout = setTimeout(() => {
+                if (!this.layer) {
+                    // layer is removed from map
+                    return;
+                }
+                this._styleCounter++;
+                this._preservePrevTiles();
+                const style = styles || this.layer._getComputedStyle();
+                style.styleCounter = this._styleCounter;
+                this._workerConn.updateStyle(style, err => {
+                    this._workersyncing = false;
+                    if (onLoad) {
+                        onLoad();
+                        if (this._groundPainter) {
+                            this._groundPainter.update();
+                        }
+                    }
 
-                this.layer.fire('refreshstyle');
-            });
+                    if (err) throw new Error(err);
+                    this._needRetire = true;
+                    // this.clear();
+                    // this._clearPlugin();
+                    this._initPlugins();
+                    this.setToRedraw();
+
+                    this.layer.fire('refreshstyle');
+                });
+            }, 10);
         } else {
+            if (onLoad) {
+                onLoad();
+                if (this._groundPainter) {
+                    this._groundPainter.update();
+                }
+            }
             this._initPlugins();
         }
     }
@@ -188,18 +231,14 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
     }
 
     //always redraw when map is interacting
-    needToRedraw() {
-        const redraw = super.needToRedraw();
-        if (!redraw) {
-            const plugins = this._getFramePlugins();
-            for (let i = 0; i < plugins.length; i++) {
-                if (plugins[i] && plugins[i].needToRedraw()) {
-                    return true;
-                }
-
+    testIfNeedRedraw() {
+        const plugins = this._getFramePlugins();
+        for (let i = 0; i < plugins.length; i++) {
+            if (plugins[i] && plugins[i].needToRedraw()) {
+                return true;
             }
         }
-        return redraw;
+        return super.testIfNeedRedraw();
     }
 
     needRetireFrames() {
@@ -213,6 +252,10 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
             }
         }
         return false;
+    }
+
+    getCurrentTiles() {
+        return this._vtCurrentTiles;
     }
 
     isAnimating() {
@@ -253,9 +296,9 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
         const graphics = regl || device;
         this.regl = regl;
         this.gl = reglGL;
-        this.device = device;
+        this.device = device || regl;
 
-        const isWebGPU = !!device;
+        const isWebGPU = !!this.device.wpu;
         const fboOptions = {
             colorFormat: isWebGPU ? 'bgra8unorm' : 'rgba',
             depthStencil: true,
@@ -356,13 +399,8 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
             // this.completeRender();
             return;
         }
-        let plugins = this._plugins[this._styleCounter];
-        if (!plugins) {
-            this._initPlugins();
-            this._setPluginIndex();
-            plugins = this._getStylePlugins();
-        }
-        const featurePlugins = this._getFeaturePlugins();
+        const { plugins, featurePlugins } = this._preparePlugins();
+
         if (!layer.isDefaultRender() && (!plugins.length && !featurePlugins.length)) {
             this.completeRender();
             return;
@@ -383,6 +421,17 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
         this._endFrame(timestamp);
         // this.completeRender();
         this._currentTimestamp = timestamp;
+    }
+
+    _preparePlugins() {
+        let plugins = this._plugins[this._styleCounter];
+        if (!plugins) {
+            this._initPlugins();
+            this._setPluginIndex();
+            plugins = this._getStylePlugins();
+        }
+        const featurePlugins = this._getFeaturePlugins();
+        return { plugins, featurePlugins };
     }
 
     _setPluginIndex() {
@@ -516,6 +565,10 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
             const referrer = window && window.location.href;
             const altitudePropertyName = this.layer.options['altitudePropertyName'];
             const disableAltitudeWarning = this.layer.options['disableAltitudeWarning'];
+            const loadTileErrorLog = this.layer.options.loadTileErrorLog;
+            const loadTileErrorLogIgnoreCodes = this.layer.options.loadTileErrorLogIgnoreCodes;
+            const loadTileCachMaxSize = this.layer.options.loadTileCachMaxSize;
+            const loadTileCacheLog = this.layer.options.loadTileCacheLog;
             const loadTileOpitons = {
                 tileInfo: {
                     res: tileInfo.res,
@@ -528,6 +581,10 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
                 },
                 glScale,
                 disableAltitudeWarning,
+                loadTileErrorLog,
+                loadTileErrorLogIgnoreCodes,
+                loadTileCachMaxSize,
+                loadTileCacheLog,
                 altitudePropertyName,
                 zScale: this._zScale,
                 centimeterToPoint,
@@ -575,8 +632,17 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
     }
 
     getRenderedFeatures() {
-        const renderedFeatures = [];
         const keys = this.tileCache.keys();
+        return this._getFeaturesByKeys(keys);
+    }
+
+    getCurrentRenderedFeatures() {
+        const keys = this._vtCurrentTiles && Object.keys(this._vtCurrentTiles);
+        return this._getFeaturesByKeys(keys);
+    }
+
+    _getFeaturesByKeys(keys) {
+        const renderedFeatures = [];
         for (let i = 0; i < keys.length; i++) {
             const cache = this.tileCache.get(keys[i]);
             if (!cache || !cache.info || !cache.image) {
@@ -674,19 +740,22 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
                 data.data.push(oldData[i]);
             }
         }
+        const debugTileData = layer.options['debugTileData'];
         data.layers = layers;
         for (let i = 0; i < tiles.length; i++) {
             const tileInfo = tiles[i];
             if (i === 0) {
-                if (layer.options['debugTileData']) {
+                if (debugTileData) {
                     const { x, y, z } = tileInfo;
-                    console.log('tile', {
-                        'layerId': layer.getId(),
-                        x,
-                        y,
-                        z,
-                        layers: groupFeatures(Object.values(features))
-                    });
+                    if (debugTileData === true || debugTileData.x === x && debugTileData.y === y && debugTileData.z === z) {
+                        console.log('tile', {
+                            'layerId': layer.getId(),
+                            x,
+                            y,
+                            z,
+                            layers: groupFeatures(Object.values(features))
+                        });
+                    }
                 }
             }
             const tileData = i === 0 ? data : copyTileData(data);
@@ -987,7 +1056,7 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
             if (isRenderingTerrain && !terrainVectorFilter(plugin)) {
                 return;
             }
-            (this.regl || this.device).clear({
+            this.device.clear({
                 stencil: 0xFF,
                 framebuffer: targetFBO
             });
@@ -1229,25 +1298,37 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
     }
 
     renderTerrainSkin(terrainRegl, terrainLayer, skinImages) {
+        if (!this.ready) {
+            return;
+        }
+        const { plugins, featurePlugins } = this._preparePlugins();
+        if (!this.layer.isDefaultRender() && (!plugins.length && !featurePlugins.length)) {
+            return;
+        }
+        this.isRenderingTerrainSkin = true;
         const timestamp = this._currentTimestamp;
         const parentContext = this._parentContext;
         const tileSize = this.layer.getTileSize().width;
         this._startFrame(timestamp);
         for (let i = 0; i < skinImages.length; i++) {
-            const texture = skinImages[i].texture;
+            const skinImage = skinImages[i];
+            const texture = skinImage.texture;
             this._parentContext = {
+                terrainMaskFBO: skinImage.terrainMaskFBO,
                 renderTarget: {
                     fbo: texture
                 }
             };
             TERRAIN_CLEAR.framebuffer = texture;
             terrainRegl.clear(TERRAIN_CLEAR);
+            this._parentContext.maskViewport = getTileViewport(skinImage.terrainMaskFBO.width / 2);
             this._parentContext.viewport = getTileViewport(tileSize);
             // 如果矢量瓦片的目标绘制尺寸过大，拉伸后会过于失真，还不如不去绘制
-            this._drawTerrainTile(skinImages[i].tile, texture);
+            this._drawTerrainTile(skinImage.tile);
         }
         this._endTerrainFrame(skinImages);
         this._parentContext = parentContext;
+        this.isRenderingTerrainSkin = false;
     }
 
     _drawTerrainTile(tile) {
@@ -1295,7 +1376,7 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
             }
             for (let i = 0; i < skinImages.length; i++) {
                 const texture = skinImages[i].texture;
-                (this.regl || this.device).clear({
+                this.device.clear({
                     stencil: 0xFF,
                     framebuffer: texture
                 });
@@ -1325,6 +1406,11 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
 
         const plugins = this._getFramePlugins(tileData);
 
+        // isRenderingTerrain为true，但isRenderingTerrainSkin为false，说明是 terrainVector 的绘制阶段
+        if (!filter && isRenderingTerrain && !this.isRenderingTerrainSkin) {
+            filter = terrainVectorFilter;
+        }
+
         plugins.forEach((plugin, idx) => {
             if (!plugin || filter && !filter(plugin)) {
                 return;
@@ -1333,6 +1419,22 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
                 return;
             }
             if (!tileCache[idx]) {
+                return;
+            }
+            if (tileCache[idx].plugin !== plugin) {
+                if (tileCache[idx]) {
+                    plugin.deleteTile({
+                        pluginIndex: idx,
+                        regl: this.regl,
+                        layer: this.layer,
+                        gl: this.gl,
+                        tileCache: tileCache[idx],
+                        tileInfo: tileInfo
+                    });
+                }
+                return;
+            }
+            if (this.drawingParentTiles && !plugin.painter.shouldDrawParentTile()) {
                 return;
             }
             const isRenderingTerrainSkin = isRenderingTerrain && terrainSkinFilter(plugin);
@@ -1360,6 +1462,11 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
             if (isRenderingTerrainSkin && parentContext && parentContext.renderTarget) {
                 // 渲染 terrain skin 时，每个瓦片需要绘制到各自的renderTarget里（terrain texture）
                 context.renderTarget = parentContext.renderTarget;
+                if (plugin.isTerrainMask()) {
+                    context.renderTarget = {
+                        fbo: parentContext.terrainMaskFBO
+                    }
+                }
             }
             const status = plugin.paintTile(context);
             if (!this._needRetire && (status.retire || status.redraw) && plugin.supportRenderMode('taa')) {
@@ -1403,8 +1510,20 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
             const isRenderingTerrainSkin = isRenderingTerrain && terrainSkinFilter(plugin);
             const regl = this.regl || this.device;
             const gl = this.gl;
-            if (!tileCache[idx]) {
-                tileCache[idx] = {};
+            if (!tileCache[idx] || tileCache[idx].plugin !== plugin) {
+                if (tileCache[idx]) {
+                    plugin.deleteTile({
+                        pluginIndex: idx,
+                        regl: this.regl,
+                        layer: this.layer,
+                        gl: this.gl,
+                        tileCache: tileCache[idx],
+                        tileInfo: tileInfo
+                    });
+                }
+                tileCache[idx] = {
+                    plugin
+                };
             }
             const context = {
                 regl,
@@ -1427,7 +1546,7 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
             const status = plugin.createTile(context);
             if (tileCache[idx].geometry) {
                 //插件数据以及经转化为geometry，可以删除原始数据以节省内存
-                tileData.data[idx] = 1;
+                tileData.data[idx] = 'geometry created';
             }
             if (!this._needRetire && status.retire && plugin.supportRenderMode('taa')) {
                 this._needRetire = true;
@@ -1449,7 +1568,11 @@ class VectorTileLayerRenderer extends TileLayerRendererable(LayerAbstractRendere
             if (!plugin) {
                 return;
             }
-            const visible = this._isVisible(plugin);
+            const sceneConfig = plugin.painter && plugin.painter.sceneConfig;
+            if (sceneConfig.picking === false) {
+                return;
+            }
+            const visible = plugin.isVisible();
             if (!visible) {
                 return;
             }

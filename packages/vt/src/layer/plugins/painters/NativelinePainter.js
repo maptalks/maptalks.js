@@ -61,7 +61,7 @@ class NativeLinePainter extends BasicPainter {
         return isEnableStencil;
     }
 
-    init(context) {
+    init() {
         const regl = this.regl;
 
         this.renderer = new reshader.Renderer(regl);
@@ -105,8 +105,8 @@ class NativeLinePainter extends BasicPainter {
             extraCommandProps: {
                 viewport,
                 stencil: {
-                    enable: () => {
-                        return this.isEnableTileStencil(context);
+                    enable: (_, props) => {
+                        return this.isEnableTileStencil(props.painterContext);
                     },
                     func: {
                         cmp: () => {

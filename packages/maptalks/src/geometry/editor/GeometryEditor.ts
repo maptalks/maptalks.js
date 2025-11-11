@@ -15,6 +15,7 @@ import { getDefaultBBOX, pointsBBOX } from '../../core/util/bbox';
 import Extent from '../../geo/Extent';
 
 const EDIT_STAGE_LAYER_PREFIX = INTERNAL_LAYER_PREFIX + '_edit_stage_';
+const SHADOW_DRAG_EVENTS = 'dragend dragstart';
 
 type GeometryEvents = {
     'symbolchange': any,
@@ -154,7 +155,8 @@ const options: GeometryEditOptionsType = {
     'collision': false,
     'collisionBufferSize': 0,
     'vertexZIndex': 0,
-    'newVertexZIndex': 0
+    'newVertexZIndex': 0,
+    'shadowDraggable': false
 };
 
 /**
@@ -175,7 +177,7 @@ class GeometryEditor extends Eventable(Class) {
     //@internal
     _shadowLayer: any
     //@internal
-    _shadow: any
+    _shadow?: Geometry;
     //@internal
     _geometryDraggble: boolean
     //@internal
@@ -285,7 +287,7 @@ class GeometryEditor extends Eventable(Class) {
             shadow._setEventTarget(geometry);
             //drag shadow by center handle instead.
             shadow.setId(null).config({
-                'draggable': false
+                'draggable': this.options.shadowDraggable
             });
 
             this._shadow = shadow;
@@ -345,6 +347,7 @@ class GeometryEditor extends Eventable(Class) {
         }
         this._geometry.config('draggable', this._geometryDraggble);
         if (this._shadow) {
+            this._shadow.off(SHADOW_DRAG_EVENTS, this._shadowDragEvent, this);
             delete this._shadow;
             delete this._geometryDraggble;
             this._geometry.show();
@@ -406,7 +409,7 @@ class GeometryEditor extends Eventable(Class) {
 
     //@internal
     _onMarkerDragEnd(): void {
-        this._update('setCoordinates', this._shadow.getCoordinates().toArray());
+        this._update('setCoordinates', (this._shadow as Marker).getCoordinates().toArray());
     }
 
     /**
@@ -450,13 +453,30 @@ class GeometryEditor extends Eventable(Class) {
         return outline;
     }
 
+    _shadowDragEvent(e) {
+        const type = e.type;
+        if (type === 'dragend') {
+            //update Geometry coordinates by shadow
+            this._updateCoordFromShadow();
+        }
+    }
+
 
     //@internal
     _createCenterHandle(): void {
         const map = this.getMap();
         const symbol = this.options['centerHandleSymbol'];
         let shadow;
+
+        if (this._shadow) {
+            this._shadow.off(SHADOW_DRAG_EVENTS, this._shadowDragEvent, this);
+        }
+
+
         // const cointainerPoint = map.coordToContainerPoint(this._geometry.getCenter());
+        if (this.options.shadowDraggable && this._shadow) {
+            this._shadow.on(SHADOW_DRAG_EVENTS, this._shadowDragEvent, this);
+        }
         const cointainerPoint = coordinatesToContainerPoint(map, this._geometry._getEditCenter());
         const handle = this.createHandle(cointainerPoint, {
             ignoreCollision: true,
@@ -1229,6 +1249,7 @@ class GeometryEditor extends Eventable(Class) {
         }
 
         let pauseRefresh = false;
+        let isSplitSegment = false;
         function createNewVertexHandle(index: number, ringIndex: number = 0, ringCoordinates: Array<Coordinate>): any {
             let vertexCoordinates = ringCoordinates || getVertexCoordinates(ringIndex);
             let nextVertex;
@@ -1237,7 +1258,12 @@ class GeometryEditor extends Eventable(Class) {
             } else {
                 nextVertex = vertexCoordinates[index + 1];
             }
-            const vertex = vertexCoordinates[index].add(nextVertex).multi(1 / 2);
+
+            let vertex = vertexCoordinates[index].add(nextVertex).multi(1 / 2);
+            //add two "new vertex" handles
+            if (isSplitSegment) {
+                vertex = coordinatesToContainerPoint(map, vertex);
+            }
             const handle = me.createHandle(vertex, {
                 'symbol': me.options['newVertexHandleSymbol'],
                 'cursor': 'pointer',
@@ -1272,7 +1298,9 @@ class GeometryEditor extends Eventable(Class) {
                     handle.opacity = 1;
 
                     //add two "new vertex" handles
+                    isSplitSegment = true;
                     newVertexHandles[ringIndex].splice(vertexIndex, 0, createNewVertexHandle.call(me, vertexIndex, ringIndex), createNewVertexHandle.call(me, vertexIndex + 1, ringIndex));
+                    isSplitSegment = false;
                     pauseRefresh = true;
                 },
                 onMove: function (): void {
@@ -1553,13 +1581,13 @@ class GeometryEditor extends Eventable(Class) {
         if (!this._history || this._historyPointer === this._history.length - 1) {
             return true;
         }
-        return false; 
+        return false;
     }
     _isundoEdit(): boolean {
         if (!this._history || this._historyPointer === 0) {
             return true;
         }
-        return false; 
+        return false;
     }
 
 }

@@ -132,6 +132,7 @@ const getGlobal = function () {
 module.exports = [
     {
         input: "src/packer/index.js",
+        external: ["maptalks"],
         plugins: [
             json(),
             nodeResolve({
@@ -152,7 +153,7 @@ module.exports = [
             strict: false,
             format: "iife",
             name: "exports",
-            globals: ["exports"],
+            globals: ["exports", "maptalks"],
             extend: true,
             file: "build/packer.js"
             // footer: ``

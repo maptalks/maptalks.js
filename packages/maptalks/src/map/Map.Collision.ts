@@ -11,7 +11,9 @@ declare module "./Map" {
         _insertUICollidesQueue(): this
         uiCollides(): this
         //@internal
-        _addUI(ui: UIComponent): this
+        _addUI(ui: UIComponent): this;
+        //@internal
+        _sortUI(): this
         //@internal
         _removeUI(ui: UIComponent): number
     }
@@ -79,6 +81,7 @@ Map.include({
             const ui = uiList[i];
             const { collisionBufferSize, collision } = ui.options;
             if (!collision) {
+                ui._collidesEffect(true);
                 continue;
             }
             const dom = ui.getDOM();
@@ -137,6 +140,11 @@ Map.include({
             return this;
         }
         this.uiList.push(ui);
+        return this._sortUI();
+    },
+
+    _sortUI() {
+        this.uiList = this.uiList || [];
         this.uiList = this.uiList.sort((a, b) => {
             return b.options['collisionWeight'] - a.options['collisionWeight'];
         });

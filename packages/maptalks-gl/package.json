@@ -1,6 +1,6 @@
 {
   "name": "maptalks-gl",
-  "version": "0.105.3",
+  "version": "0.116.0",
   "description": "All-in-one package for maptalks webgl layers",
   "module": "index.js",
   "main": "dist/maptalks-gl.js",
@@ -26,7 +26,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fuzhenn/gl-layers.git"
+    "url": "git+https://github.com/maptalks/maptalks.js.git"
   },
   "keywords": [
     "maptalks",
@@ -41,7 +41,8 @@
     "@rollup/plugin-terser": "0.4.4",
     "rimraf": "^6.0.1",
     "rollup": "^4.17.2",
-    "rollup-plugin-sourcemaps": "0.6.3"
+    "rollup-plugin-sourcemaps": "0.6.3",
+    "rollup-plugin-copy": "^3.5.0"
   },
   "dependencies": {
     "@maptalks/3dtiles": "workspace:*",

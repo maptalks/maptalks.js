@@ -3,6 +3,7 @@ const commonjs = require('@rollup/plugin-commonjs');
 const replace = require('@rollup/plugin-replace');
 const terser = require('@rollup/plugin-terser');
 const typescript = require('@rollup/plugin-typescript');
+const glslMinify = require('@maptalks/rollup-plugin-glsl-minify');
 const { dts } = require("rollup-plugin-dts");
 const pkg = require('./package.json');
 
@@ -28,32 +29,25 @@ function wgsl() {
     return {
         transform(code, id) {
             if (/\.wgsl$/.test(id) === false) return null;
-            let transformedCode = JSON.stringify(code.trim()
-                // .replace(/(^\s*)|(\s*$)/gm, '')
-                .replace(/\r/g, '')
-                .replace(/[ \t]*\/\/.*\n/g, '') // remove //
-                .replace(/[ \t]*\/\*[\s\S]*?\*\//g, '') // remove /* */
-                .replace(/\n{2,}/g, '\n')); // # \n+ to \n;;
-            transformedCode = `export default ${transformedCode};`;
             return {
-                code: transformedCode,
+                code: `export default '';`,
                 map: { mappings: '' }
             };
         }
     };
 }
 
-
 const production = process.env.BUILD === 'production';
 const outputFile = pkg.main;
 const plugins = production ? [terser({
-    mangle: {
-        properties: {
-            'regex' : /^_/,
-            'keep_quoted' : true,
-            'reserved': ['on', 'once', 'off', '_getTilesInCurrentFrame', '_drawTiles', '_getTileZoom', '_onGeometryEvent']
-        }
-    },
+    mangle: true,
+    // mangle: {
+    //     properties: {
+    //         'regex' : /^_/,
+    //         'keep_quoted' : true,
+    //         'reserved': ['on', 'once', 'off', '_getTilesInCurrentFrame', '_drawTiles', '_getTileZoom', '_onGeometryEvent']
+    //     }
+    // },
     output : {
         keep_quoted_props: true,
         beautify: true,
@@ -64,7 +58,11 @@ const plugins = production ? [terser({
 const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}\n * (c) 2016-${new Date().getFullYear()} maptalks.com\n */`;
 const outro = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg.version}');`;
 const configPlugins = [
-    glsl(),
+    production ? glslMinify({
+        commons: [
+            './src/reshader/shaderlib/glsl'
+        ]
+    }) : glsl(),
     wgsl(),
     nodeResolve({
         // mainFields: ''
@@ -72,8 +70,7 @@ const configPlugins = [
         // jsnext : true,
         // main : true
     }),
-    commonjs(),
-
+    commonjs()
 ];
 
 const tsPlugins = [
@@ -84,13 +81,13 @@ const tsPlugins = [
 const pluginsWorker = production ? [
     terser({
         module: true,
-        mangle: {
-            properties: {
-                'regex': /^_/,
-                'keep_quoted': true,
-                'reserved': ['on', 'once', 'off'],
-            }
-        },
+        // mangle: {
+        //     properties: {
+        //         'regex': /^_/,
+        //         'keep_quoted': true,
+        //         'reserved': ['on', 'once', 'off'],
+        //     }
+        // },
         output: {
             beautify: false,
             // comments: '/^!/'
@@ -124,6 +121,8 @@ var getGlobal = function () {
   if (typeof global !== "undefined") { return global; }
 };`
 
+const externalPackages = ['maptalks', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix', '@maptalks/gltf-loader', '@maptalks/tbn-packer'];
+
 
 module.exports = [
     {
@@ -147,7 +146,7 @@ module.exports = [
             name: "exports",
             globals: ["exports"],
             extend: true,
-            file: "build/gltf-loader-bundle.js"
+            file: "build/dist/gltf-loader-bundle.js"
             // footer: ``
         },
         watch: {
@@ -177,12 +176,43 @@ module.exports = [
             name: 'exports',
             globals: ['exports'],
             extend: true,
-            file: 'build/worker.js',
+            file: 'build/dist/worker.js',
             banner: `export default `,
             // footer: ``
         },
         watch: {
             include: ['src/layer/terrain/worker/*.js', 'src/layer/terrain/util/*.js']
+        }
+    },
+        {
+        input: 'src/light/LightWorker.js',
+        external: ['maptalks'],
+        plugins: [
+            nodeResolve({
+                mainFields: ['module', 'main'],
+            }),
+            commonjs(),
+            replace({
+                // 'this.exports = this.exports || {}': '',
+                '(function (exports) {': 'function (exports) {',
+                '})(this.exports = this.exports || {});': '}',
+                'Object.defineProperty(exports, \'__esModule\', { value: true });': '',
+                preventAssignment: false,
+                delimiters: ['', '']
+            }),
+        ].concat(pluginsWorker).concat([transformBackQuote()]),
+        output: {
+            strict: false,
+            format: 'iife',
+            name: 'exports',
+            globals: ['exports'],
+            extend: true,
+            file: 'build/dist/LightWorker.js',
+            banner: `export default `,
+            // footer: ``
+        },
+        watch: {
+            include: ['src/light/LightWorker.js']
         }
     },
     {
@@ -201,14 +231,14 @@ if (production) {
     module.exports.push({
         input: 'src/index.ts',
         plugins: tsPlugins.concat(plugins),
-        external : ['maptalks', '@maptalks/reshader.gl', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix'],
+        external : externalPackages,
         output: {
             'sourcemap': true,
             'format': 'es',
             'globals' : {
                 'maptalks' : 'maptalks'
             },
-            'file': 'build/gl/gl.es.js'
+            'file': 'build/dist/gl/gl.es.js'
         }
     });
 }
@@ -231,7 +261,7 @@ module.exports.push({
     },
     watch: {
         include: ['src/**/*.js', 'src/**/*.ts', 'src/**/*.glsl',  'src/**/*.wgsl', 'src/**/*.vert',  'src/**/*.frag',
-            '../reshader.gl/dist/reshadergl.es.js', 'build/worker.js', 'build/gltf-loader-bundle.js']
+            'build/dist/**/*.js']
     }
 });
 
@@ -239,7 +269,7 @@ if (production) {
     module.exports.push({
         input: 'src/index-dev.js',
         plugins: tsPlugins,
-        external : ['maptalks', '@maptalks/reshader.gl', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix'],
+        external : externalPackages,
         output: {
             'sourcemap': true,
             'format': 'es',

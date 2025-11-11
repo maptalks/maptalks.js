@@ -1,5 +1,5 @@
-import * as reshader from '@maptalks/reshader.gl';
-import { vec2 } from '@maptalks/reshader.gl';
+import * as reshader from '../../reshader';
+import { vec2 } from 'gl-matrix';
 import RainPainter from './RainPainter.js';
 import SnowPainter from './SnowPainter.js';
 

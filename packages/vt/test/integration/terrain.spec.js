@@ -1,15 +1,11 @@
 const maptalks = require('maptalks');
 const assert = require('assert');
 const path = require('path');
-const fs = require('fs');
 const { match, readSpecs, writeImageData, hasOwn } = require('./util');
 const { GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.js');
 const { GroupGLLayer } = require('@maptalks/gl');
 const startServer = require('../specs/server.js');
 const PORT = 4398;
-
-const GENERATE_MODE = false;
-const TEST_CANVAS = document.createElement('canvas');
 
 const DEFAULT_VIEW = {
     center: [91.14478,29.658272],
@@ -26,6 +22,8 @@ const DEFAULT_VIEW = {
         }
     }
 };
+
+const TEST_CANVAS = document.createElement('canvas');
 
 describe('vector tile on terrain integration specs', () => {
     let map, container, server;
@@ -55,6 +53,7 @@ describe('vector tile on terrain integration specs', () => {
                 options.lights = DEFAULT_VIEW.lights;
             }
             options.devicePixelRatio = 1;
+            options.renderer = 'canvas';
 
             const limit = style.renderingCount || 6;
             map = new maptalks.Map(container, options);
@@ -80,31 +79,29 @@ describe('vector tile on terrain integration specs', () => {
                 fadeAnimation: false
                 // shader: 'lit'
             };
+            if (style.lit) {
+                terrain.shader = 'lit';
+            }
             const group = new GroupGLLayer('group', [layer], { terrain });
             group.addTo(map);
 
+
             const terrainLayer = group.getTerrainLayer();
             let count = 0;
-            let generated = false;
             let ended = false;
             terrainLayer.on('terrainreadyandrender', () => {
                 count++;
-                const canvas = map.getRenderer().canvas;
+                const mapCanvas = map.getRenderer().canvas;
                 const expectedPath = style.expected;
                 if (!ended && count >= limit) {
                     ended = true;
-                    if (GENERATE_MODE) {
-                        if (!generated) {
-                            //生成fixtures
-                            const dataURL = canvas.toDataURL();
-                            // remove Base64 stuff from the Image
-                            const base64Data = dataURL.replace(/^data:image\/png;base64,/, '');
-                            fs.writeFile(expectedPath, base64Data, 'base64', () => {});
-                            generated = true;
-                            done();
-                        }
-                        return;
-                    }
+
+                    const canvas = TEST_CANVAS;
+                    canvas.width = mapCanvas.width;
+                    canvas.height = mapCanvas.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(mapCanvas, 0, 0);
+
                     //比对测试
                     match(canvas, expectedPath, (err, result) => {
                         if (err) {
@@ -117,12 +114,7 @@ describe('vector tile on terrain integration specs', () => {
                             const diffPath = dir + 'diff.png';
                             writeImageData(diffPath, result.diffImage, result.width, result.height);
                             const actualPath = dir + 'actual.png';
-                            const dataCanvas = TEST_CANVAS;
-                            dataCanvas.width = canvas.width;
-                            dataCanvas.height = canvas.height;
-                            const ctx = dataCanvas.getContext('2d', { willReadFrequently: true });
-                            ctx.drawImage(canvas, 0, 0);
-                            writeImageData(actualPath, ctx.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
+                            writeImageData(actualPath, canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
                         }
                         // console.log(JSON.stringify(map.getView()));
                         assert(result.diffCount === 0);

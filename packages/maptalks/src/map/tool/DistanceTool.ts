@@ -458,10 +458,15 @@ class DistanceTool extends DrawTool {
             'symbol': symbol
         });
         const measureLineLayer = this._measureLineLayer,
-            measureMarkerLayer = this._measureMarkerLayer;
+            measureMarkerLayer = this._measureMarkerLayer,
+            //parent draw tool layer
+            drawToolLayer = this._getDrawLayer ? this._getDrawLayer() : null;
         endMarker.on('click', function () {
             measureLineLayer.remove();
             measureMarkerLayer.remove();
+            if (drawToolLayer) {
+                drawToolLayer.remove();
+            }
             //return false to stop propagation of event.
             return false;
         }, this);
@@ -493,7 +498,11 @@ class DistanceTool extends DrawTool {
             return null;
         }
         const coordinates = this._geometry.getCoordinates() || [];
-        return coordinates[0];
+        const firstCoordinate = coordinates[0];
+        if (Array.isArray(firstCoordinate)) {
+            return firstCoordinate[0];
+        }
+        return firstCoordinate;
     }
 
     //@internal
@@ -502,7 +511,11 @@ class DistanceTool extends DrawTool {
             return null;
         }
         const coordinates = this._geometry.getCoordinates() || [];
-        return coordinates[coordinates.length - 1];
+        const lastCoordiante = coordinates[coordinates.length - 1];
+        if (Array.isArray(lastCoordiante)) {
+            return lastCoordiante[lastCoordiante.length - 1];
+        }
+        return lastCoordiante;
     }
 
 }

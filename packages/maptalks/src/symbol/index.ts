@@ -70,7 +70,7 @@ export type FileMarkerSymbol = {
 } & MarkerCommonSymbol & SymbolCommon;
 
 export type VectorMarkerSymbol = {
-    markerType: 'ellipse' | 'cross' | 'x' | 'diamond' | 'bar' | 'square' | 'rectangle' | 'triangle' | 'pin' | 'pie';
+    markerType: 'ellipse' | 'cross' | 'x' | 'diamond' | 'bar' | 'square' | 'rectangle' | 'roundrectangle' | 'triangle' | 'pin' | 'pie';
     markerFill?: SymbolColorType;
     markerFillPatternFile?: string;
     markerFillOpacity?: number;
@@ -129,6 +129,8 @@ export type LineSymbol = {
     lineDx?: SymbolNumberType;
     lineDy?: SymbolNumberType;
     lineGradientProperty?: string;
+    lineStrokeColor?: SymbolColorType;
+    lineStrokeWidth?: SymbolNumberType;
 }
 
 export type FillSymbol = {

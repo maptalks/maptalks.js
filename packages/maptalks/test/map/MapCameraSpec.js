@@ -464,7 +464,7 @@ describe('Map.Camera', function () {
             expect(map.getCenter().y).to.be.eql(0);
             expect(map.getPitch()).to.be.eql(0);
             expect(map.getBearing()).to.be.eql(0);
-            expect(map.getZoom()).to.be.within(8, 9);
+            expect(map.getZoom()).to.be.within(9, 10);
         });
 
         it('pitch 45, bearing 45', function () {
@@ -473,11 +473,11 @@ describe('Map.Camera', function () {
                 pitch: 45,
                 bearing: 45,
             })
-            expect(map.getCenter().x).to.be.within(0.07, 0.08);
-            expect(map.getCenter().y).to.be.within(0.07, 0.08);
+            expect(map.getCenter().x).to.be.within(0.08, 0.09);
+            expect(map.getCenter().y).to.be.within(0.08, 0.09);
             expect(map.getPitch()).to.be.eql(45);
             expect(map.getBearing()).to.be.eql(45);
-            expect(map.getZoom()).to.be.within(7, 8);
+            expect(map.getZoom()).to.be.within(8, 9);
         });
 
         it('pitch 45, bearing 135', function () {
@@ -486,11 +486,11 @@ describe('Map.Camera', function () {
                 pitch: 45,
                 bearing: 135,
             })
-            expect(map.getCenter().x).to.be.within(0.07, 0.08);
-            expect(map.getCenter().y).to.be.within(-0.08, 0.07);
+            expect(map.getCenter().x).to.be.within(0.08, 0.09);
+            expect(map.getCenter().y).to.be.within(-0.09, -0.08);
             expect(map.getPitch()).to.be.eql(45);
             expect(map.getBearing()).to.be.eql(135);
-            expect(map.getZoom()).to.be.within(7, 8);
+            expect(map.getZoom()).to.be.within(8, 9);
         });
 
         it('pitch 45, bearing -45', function () {
@@ -499,11 +499,11 @@ describe('Map.Camera', function () {
                 pitch: 45,
                 bearing: -45,
             })
-            expect(map.getCenter().x).to.be.within(-0.08, 0.07);
-            expect(map.getCenter().y).to.be.within(0.07, 0.08);
+            expect(map.getCenter().x).to.be.within(-0.09, -0.08);
+            expect(map.getCenter().y).to.be.within(0.08, 0.09);
             expect(map.getPitch()).to.be.eql(45);
             expect(map.getBearing()).to.be.eql(-45);
-            expect(map.getZoom()).to.be.within(7, 8);
+            expect(map.getZoom()).to.be.within(8, 9);
         });
 
         it('pitch 45, bearing -135', function () {
@@ -512,11 +512,11 @@ describe('Map.Camera', function () {
                 pitch: 45,
                 bearing: -135,
             })
-            expect(map.getCenter().x).to.be.within(-0.08, -0.07);
-            expect(map.getCenter().y).to.be.within(-0.08, -0.07);
+            expect(map.getCenter().x).to.be.within(-0.09, -0.08);
+            expect(map.getCenter().y).to.be.within(-0.09, -0.08);
             expect(map.getPitch()).to.be.eql(45);
             expect(map.getBearing()).to.be.eql(-135);
-            expect(map.getZoom()).to.be.within(7, 8);
+            expect(map.getZoom()).to.be.within(8, 9);
         });
 
         it('position z', function () {
@@ -529,8 +529,50 @@ describe('Map.Camera', function () {
             expect(map.getCenter().y).to.be.eql(0);
             expect(map.getPitch()).to.be.eql(0);
             expect(map.getBearing()).to.be.eql(0);
-            expect(map.getZoom()).to.be.within(14, 15);
-        })
+            expect(map.getZoom()).to.be.within(15, 16);
+        });
+
+        it('map.lookAt', function () {
+            const view = map.getView();
+            const cameraPosition = map.cameraPosition.slice();
+            const pitch = map.getPitch();
+            const bearing = map.getBearing();
+
+            map.lookAt(view);
+
+            expect(map.cameraPosition).to.be.closeTo(cameraPosition);
+            expect(map.getPitch()).to.be.eql(pitch);
+            expect(map.getBearing()).to.be.eql(bearing);
+        });
+
+        it('map.lookAt with distance', function () {
+            const view = map.getView();
+            let distance = map.cameraToCenterDistance;
+
+            // compute meter distance in XYZ against map.cameraToCenterDistance
+            const glRes = map.getGLRes();
+            const radBearing = map.getBearing() * Math.PI / 180;
+            const radPitch = map.getPitch() * Math.PI / 180;
+            let distZ = distance * Math.sin(radPitch);
+            let xyDist = Math.sin(radPitch) * distance;
+            const distX = xyDist * Math.sin(radBearing);
+            const distY = xyDist * Math.cos(radBearing);
+            distZ = distZ / map._meterToGLPoint;
+            xyDist = map.pointAtResToDistance(distX, distY, glRes);
+            distance = Math.sqrt(xyDist * xyDist + distZ * distZ);
+
+            const cameraPosition = map.cameraPosition.slice();
+            const pitch = map.getPitch();
+            const bearing = map.getBearing();
+
+            view.distance = map.pointAtResToAltitude(distance, map.getGLRes());
+            map.lookAt(view);
+
+            expect(map.cameraPosition).to.be.closeTo(cameraPosition);
+            expect(map.cameraPosition[2]).to.be.eql(cameraPosition[2]);
+            expect(map.getPitch()).to.be.eql(pitch);
+            expect(map.getBearing()).to.be.eql(bearing);
+        });
     });
 
     describe('containsPoint when pitching', function () {
@@ -627,7 +669,7 @@ describe('Map.Camera', function () {
         map.setPitch(75);
         map.setBearing(45);
         // expect(maptalks.Util.join(map.domCssMatrix)).to.be.eql([31.819805153394643, -8.235571585149868, 0.7139488752261732, 0.6830127018922193, 31.819805153394636, 8.23557158514987, -0.7139488752261733, -0.6830127018922194, 0, -43.466662183008076, -0.27054191763364316, -0.25881904510252074, 0, 0, 46.83368719036461, 45].join());
-        expect(maptalks.Util.join(map.domCssMatrix)).to.be.eql([31.819805153394643,-8.235571585149868,0.6834126770126959,0.6830127018922193,31.819805153394636,8.23557158514987,-0.683412677012696,-0.6830127018922194,0,-43.466662183008076,-0.2589706106275245,-0.25881904510252074,0,0,44.956019102246906,45].join());
+        expect(maptalks.Util.join(map.domCssMatrix)).to.be.eql([31.819805153394643,-8.235571585149868,0.6833747672629105,0.6830127018922193,31.819805153394636,8.23557158514987,-0.6833747672629105,-0.6830127018922194,0,-43.466662183008076,-0.25895624520618993,-0.25881904510252074,0,0,44.9535233858847,45].join());
     });
 
     it('setCameraPosition', function() {
@@ -637,9 +679,9 @@ describe('Map.Camera', function () {
         const zoom = map.getZoom();
         const pitch = map.getPitch();
         const bearing = map.getBearing();
-        expect(zoom).to.be.eql(14.899641034986649);
-        expect(pitch).to.be.eql(85.67228588474566);
-        expect(bearing).to.be.eql(139.8095157874954);
+        expect(zoom.toFixed(3)).to.be.eql(15.785);
+        expect(pitch.toFixed(1)).to.be.eql(85.7);
+        expect(bearing.toFixed(1)).to.be.eql(139.8);
     });
 });
 

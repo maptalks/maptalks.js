@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { mat4, vec3 } from '@maptalks/gl';
+import { mat4, vec3, CanvasCompatible } from '@maptalks/gl';
 import { convertToFeature, ID_PROP } from './util/convert_to_feature';
 import { extend, hasOwn, getCentiMeterScale, isNil } from '../../common/Util';
 import IconRequestor from '../../common/IconRequestor';
@@ -54,11 +54,14 @@ const prefix = (SYMBOL_PREFIX + '').trim();
 const KEY_IDX_NAME = (KEY_IDX + '').trim();
 let EMPTY_POSITION = new Float32Array(1);
 const EMPTY_ARRAY = [];
+const TEMP_ARRAY = [];
 
-class Vector3DLayerRenderer extends LayerAbstractRenderer {
+class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
     constructor(...args) {
         super(...args);
         this.features = {};
+        this.featuresArray = [];
+        this.featuresChanged = false;
         this._geometries = {};
         this._counter = 0;
         this._allFeatures = {};
@@ -97,6 +100,44 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
 
     getRayCastData() {
         return null;
+    }
+
+    _checkFeaturesVisibleChange() {
+        if (this.featuresChanged) {
+            this.featuresArray = Object.values(this.features);
+            this.featuresChanged = false;
+        }
+        const featuresArray = this.featuresArray;
+        if (!featuresArray) {
+            return this;
+        }
+        //实时检测feature的visible变化
+        for (let m = 0, len = featuresArray.length; m < len; m++) {
+            let feats = featuresArray[m];
+            if (!feats) {
+                continue;
+            }
+            if (!Array.isArray(feats)) {
+                TEMP_ARRAY[0] = feats;
+                feats = TEMP_ARRAY;
+            }
+            if (!feats.length) {
+                continue;
+            }
+
+            for (let i = 0; i < feats.length; i++) {
+                const feat = feats[i];
+                if (!feat) {
+                    continue;
+                }
+                const visible = feat.getVisible;
+                if (visible !== feat._visible) {
+                    feat._visible = visible;
+                    this._showHideUpdated = true;
+                }
+            }
+        }
+        return this;
     }
 
     draw(timestamp, parentContext) {
@@ -138,7 +179,7 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
             this.completeRender();
             return;
         }
-
+        this._checkFeaturesVisibleChange();
         if (this._showHideUpdated) {
             this._updateMeshVisible();
             this._showHideUpdated = false;
@@ -365,14 +406,8 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
         if (!painter || !features || !features.length) {
             return Promise.resolve(null);
         }
-        const options = {
-            zoom: this.getMap().getZoom(),
-            EXTENT: Infinity,
-            requestor: this.requestor,
-            atlas,
-            center,
-            positionType: Float32Array
-        };
+        const options = this._getPackOptions(atlas, center);
+        options.requestor = this.requestor;
 
         const pack = new PackClass(features, symbol, options);
         return pack.load();
@@ -453,15 +488,15 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
         const needWarning = this.getMap().getProjection().isSphere();
         let invalid = false;
         if (coordinates[0] > 180 || coordinates[0] < -180) {
-            invalid = true;
             if (needWarning && !warned) {
+                invalid = true;
                 warned = true;
                 console.warn(`Layer(${this.layer.getId()}) has invalid longitude value: ${coordinates[0]}`);
             }
         }
         if (coordinates[1] > 90 || coordinates[1] < -90) {
-            invalid = true;
             if (needWarning && !warned) {
+                invalid = true;
                 warned = true;
                 console.warn(`Layer(${this.layer.getId()}) has invalid latitude value: ${coordinates[1]}`);
             }
@@ -669,7 +704,7 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
         const newElements = [];
         for (let j = 0; j < originElements.length; j++) {
             const kid = aPickingId[originElements[j]];
-            if (features[kid] && features[kid].feature.visible) {
+            if (features[kid] && features[kid].feature.getVisible) {
                 newElements.push(originElements[j]);
             }
         }
@@ -678,19 +713,27 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
         mesh.geometry.setElements(arr);
     }
 
-    _createPointPacks(markerFeatures, textFeatures, atlas, center) {
-        const markerOptions = {
+    _getPackOptions(atlas, center) {
+        const options = {
             zoom: this.getMap().getZoom(),
             EXTENT: Infinity,
-            requestor: this._markerRequestor,
             atlas,
             center,
             positionType: Float32Array,
-            defaultAltitude: 0,
-            forceAltitudeAttribute: true,
-            markerWidthType: Uint16Array,
-            markerHeightType: Uint16Array
+            isWebGL1: this.gl && (this.gl instanceof WebGLRenderingContext)
         };
+
+        return options;
+    }
+
+    _createPointPacks(markerFeatures, textFeatures, atlas, center) {
+        const markerOptions = this._getPackOptions(atlas, center);
+        markerOptions.defaultAltitude = 0;
+        markerOptions.forceAltitudeAttribute = true;
+        markerOptions.requestor = this._markerRequestor;
+        markerOptions.markerWidthType = Uint16Array;
+        markerOptions.markerHeightType = Uint16Array;
+        markerOptions.defaultMarkerVerticalAlignment = 'top';
         markerOptions.allowEmptyPack = 1;
 
         return [this._markerSymbol].map((symbol, idx) => {
@@ -702,7 +745,11 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
 
     _updateMarkerMesh(marker) {
         const symbols = marker['_getInternalSymbol']();
-        const options = { zoom: this.getMap().getZoom(), isVector3D: true };
+        const options = {
+            zoom: this.getMap().getZoom(),
+            isVector3D: true,
+            defaultMarkerVerticalAlignment: 'top'
+        };
         const uid = this._convertGeo(marker);
         if (!this._markerMeshes) {
             return false;
@@ -752,7 +799,7 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
             const styledPoint = new StyledPoint(feature, symbolDef, symbol, fnTypes, options);
             const iconGlyph = styledPoint.getIconAndGlyph();
             if (!this._markerAtlas || !PointPack.isAtlasLoaded(iconGlyph, this._markerAtlas)) {
-                this._markRebuild();
+                this.markRebuild();
                 this.setToRedraw();
                 return false;
             }
@@ -816,7 +863,7 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
             return false;
         }
         if (!atlas) {
-            this._markRebuild();
+            this.markRebuild();
             this.setToRedraw();
             return false;
         }
@@ -839,7 +886,7 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
             const styledVector = new StyledVector(feature, symbol, fnTypes, options);
             const res = PackClass === LinePack ? styledVector.getLineResource() : styledVector.getPolygonResource();
             if (!VectorPack.isAtlasLoaded(res, atlas[i])) {
-                this._markRebuild();
+                this.markRebuild();
                 this.setToRedraw();
                 return false;
             }
@@ -853,14 +900,14 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
             if (featureGroups[i].length) {
                 const mesh = meshes.filter(m => m.feaGroupIndex === i);
                 if (!mesh.length) {
-                    this._markRebuild();
+                    this.markRebuild();
                     this.setToRedraw();
                     return false;
                 } else {
                     const aFeaIds = mesh[0].geometry.properties.aFeaIds;
                     const startIndex = aFeaIds.indexOf(feaId);
                     if (startIndex < 0) {
-                        this._markRebuild();
+                        this.markRebuild();
                         this.setToRedraw();
                         return false;
                     }
@@ -1007,12 +1054,12 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
         return [feas, patternFeas, dashFeas];
     }
 
-    _markRebuildGeometry() {
+    markRebuildGeometry() {
         this._dirtyGeo = true;
         this.setToRedraw();
     }
 
-    _markRebuild() {
+    markRebuild() {
         this._dirtyAll = true;
         this.setToRedraw();
     }
@@ -1046,6 +1093,7 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
             this._removeFeatures(uid);
         }
         this.features[uid] = convertToFeature(geo, this._kidGen, this.features[uid]);
+        this.featuresChanged = true;
         const feas = this.features[uid];
         this._refreshFeatures(feas, uid);
         this._geometries[uid] = geo;
@@ -1136,6 +1184,14 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
         }
     }
 
+    _removeAllFeatures() {
+        this._featureMapping = {};
+        this._allFeatures = {};
+        this._markerFeatures = {};
+        this._textFeatures = {};
+        this._lineFeatures = {};
+    }
+
     pick(x, y, options) {
         const hits = [];
         if (!this.layer.isVisible()) {
@@ -1198,7 +1254,7 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
 
     _convertAndRebuild(geo) {
         this._convertGeo(geo);
-        this._markRebuild();
+        this.markRebuild();
         redraw(this);
     }
 
@@ -1212,7 +1268,7 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
             return;
         }
         this._convertGeometries(geometries);
-        this._markRebuild();
+        this.markRebuild();
         redraw(this);
     }
 
@@ -1227,9 +1283,10 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
                 delete this._geometries[uid];
                 this._removeFeatures(uid);
                 delete this.features[uid];
+                this.featuresChanged = true;
             }
         }
-        this._markRebuild();
+        this.markRebuild();
         redraw(this);
     }
 
@@ -1317,7 +1374,7 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
         //     return;
         // }
         this._convertGeometries([target]);
-        this._markRebuildGeometry();
+        this.markRebuildGeometry();
         redraw(this);
     }
 
@@ -1339,7 +1396,7 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
         if (uid === undefined) {
             return;
         }
-        this._markRebuild();
+        this.markRebuild();
     }
 
     onGeometryShow(e) {
@@ -1361,7 +1418,7 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
     }
 
     _onShowHide(e) {
-        const geo =  e.target['_getParent']() || e.target;
+        const geo = e.target['_getParent']() || e.target;
         const uid = geo[ID_PROP];
         const features = this.features[uid];
         if (features) {
@@ -1390,7 +1447,7 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
 
     onGeometryPropertiesChange(e) {
         //TODO 可能会更新textName
-        // this._markRebuildGeometry();
+        // this.markRebuildGeometry();
         const geo = e.target['_getParent']() || e.target;
         const uid = geo[ID_PROP];
         if (uid === undefined) {
@@ -1404,10 +1461,10 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
         if (this._markerMeshes && this._markerMeshes.length && this._markerPainter.needRebuildOnGometryPropertiesChanged() ||
             this._lineMeshes && this._lineMeshes.length && this._linePainter.needRebuildOnGometryPropertiesChanged() ||
             this.meshes && this.meshes.length && this.painter.needRebuildOnGometryPropertiesChanged()) {
-                this._markRebuild();
-            } else {
-                this.painter.onFeatureChange(this.features[uid], this.meshes);
-            }
+            this.markRebuild();
+        } else {
+            this.painter.onFeatureChange(this.features[uid], this.meshes);
+        }
 
 
         redraw(this);
@@ -1419,9 +1476,9 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
         const graphics = regl || device;
         this.regl = regl;
         this.gl = reglGL;
-        this.device = device;
+        this.device = device || regl;
 
-        const isWebGPU = !!device;
+        const isWebGPU = !!this.device.wpu;
         const fboOptions = {
             colorFormat: isWebGPU ? 'bgra8unorm' : 'rgba',
             depthStencil: true,
@@ -1458,10 +1515,20 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
             lineSceneConfig.depthMask = true;
         }
         this._linePainter = new LinePainter(this.regl || this.device, this.layer, lineSymbol, lineSceneConfig, 0);
+        this.rebuildGeometries();
+    }
 
-        if (this.layer.getGeometries()) {
-            this.onGeometryAdd(this.layer.getGeometries());
+    rebuildGeometries() {
+        this._removeAllFeatures();
+        const geos = this.getCurrentNeedRenderGeos();
+        if (geos && geos.length) {
+            this.onGeometryAdd(geos);
         }
+        this.markRebuild();
+    }
+
+    getCurrentNeedRenderGeos() {
+        return this.layer.getGeometries();
     }
 
     _defineSymbolBloom(symbol, keys) {
@@ -1602,7 +1669,7 @@ class Vector3DLayerRenderer extends LayerAbstractRenderer {
         if (geometries) {
             this._convertGeometries(geometries);
         }
-        this._markRebuild();
+        this.markRebuild();
     }
 
     _getLayerOpacity() {

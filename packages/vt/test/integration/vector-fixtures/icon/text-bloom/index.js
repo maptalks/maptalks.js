@@ -18,6 +18,7 @@ module.exports = {
         center: [0, 0],
         zoom: 6
     },
+    renderingCount: 6,
     options: {
         enableBloom: true
     }

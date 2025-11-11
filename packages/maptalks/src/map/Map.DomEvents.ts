@@ -404,7 +404,7 @@ Map.include(/** @lends Map.prototype */ {
 
     //@internal
     _wrapTerrainData(eventParam: MapEventDataType) {
-        if (this.options['queryTerrainInMapEvents'] && eventParam.containerPoint && !eventParam.terrain) {
+        if (this.options['queryTerrainInMapEvents'] && eventParam.containerPoint && !eventParam.terrain && !this.isInteracting()) {
             eventParam.terrain = this._queryTerrainInfo(eventParam.containerPoint);
         }
     },
@@ -471,7 +471,7 @@ Map.include(/** @lends Map.prototype */ {
             return;
         }
         this._wrapTerrainData(eventParam);
-        
+
         const mousemoveHandler = () => {
             if (eventParam.domEvent && eventParam.domEvent._cancelBubble) {
                 // Always trigger _moumove _touchmove event
@@ -523,7 +523,7 @@ Map.include(/** @lends Map.prototype */ {
 Map.addOnLoadHook('_registerDomEvents');
 
 Map.mergeOptions({
-    'queryTerrainInMapEvents': true
+    'queryTerrainInMapEvents': false
 });
 
 function isRotatingMap(map) {

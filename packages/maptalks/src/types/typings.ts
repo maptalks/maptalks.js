@@ -18,5 +18,7 @@ declare global {
         isMultiClip: boolean;
         dpr: number;
         lineColorIn: any;
+        lineStrokeColor: any;
+        lineStrokeWidth:any;
     }
 }

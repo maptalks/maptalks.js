@@ -1,10 +1,10 @@
 import * as maptalks from 'maptalks';
-import Renderer from './GroupGLLayerRenderer.js';
-import { vec3 } from '@maptalks/reshader.gl';
-import { isNil, extend } from './util/util.js';
+import Renderer from './GroupGLLayerRenderer';
+import { vec3 } from 'gl-matrix';
+import { isNil, extend } from './util/util';
 import TerrainLayer from './terrain/TerrainLayer';
-import RayCaster from './raycaster/RayCaster.js';
-import Mask from './mask/Mask.js';
+import RayCaster from './raycaster/RayCaster';
+import Mask from './mask/Mask';
 import { LayerJSONType } from 'maptalks';
 
 const options: GroupGLLayerOptions = {
@@ -34,6 +34,9 @@ const options: GroupGLLayerOptions = {
         'WEBGL_compressed_texture_s3tc',
         'WEBGL_compressed_texture_s3tc_srgb'
     ],
+    forceRenderOnZooming : true,
+    forceRenderOnMoving : true,
+    forceRenderOnRotating : true,
     viewMoveThreshold: 100,
     geometryEvents: true,
     multiSamples: 4,
@@ -74,6 +77,8 @@ export default class GroupGLLayer extends maptalks.Layer {
     _analysisTaskList: Analysis[]
     //@internal
     _terrainLayer: TerrainLayer
+    //@internal
+    _meterToGLPoint: number
 
     /**
      * @param id    - layer's id
@@ -129,6 +134,11 @@ export default class GroupGLLayer extends maptalks.Layer {
     getWeatherConfig(): SceneWeather {
         const sceneConfig = this._getSceneConfig();
         return sceneConfig.weather;
+    }
+
+    getScanEffectConfig(): ScanEffect {
+        const sceneConfig = this._getSceneConfig();
+        return sceneConfig.postProcess && sceneConfig.postProcess.scanEffect;
     }
 
     /**
@@ -278,10 +288,11 @@ export default class GroupGLLayer extends maptalks.Layer {
 
     //@internal
     _prepareLayer(layer: maptalks.Layer) {
-        const map = (this as any).getMap();
+        const renderer = (this as any).getRenderer();
         this._layerMap[layer.getId()] = layer;
-        layer['_canvas'] = (this as any).getRenderer().canvas;
-        layer['_bindMap'](map);
+        layer['_canvas'] = renderer.canvas;
+        layer['_bindMap'](this);
+        layer.once('renderercreate', this._onChildRendererCreate, this);
         // layer.on('setstyle updatesymbol', this._onChildLayerStyleChanged, this);
         layer.remove = () => {
             this.removeLayer(layer);
@@ -341,6 +352,11 @@ export default class GroupGLLayer extends maptalks.Layer {
         const layer = this.getLayer(oldId);
         delete this._layerMap[oldId];
         this._layerMap[newId] = layer;
+    }
+
+    //@internal
+    _onChildRendererCreate(e) {
+        e.renderer.clearCanvas = empty;
     }
 
     // _onChildLayerStyleChanged() {
@@ -621,7 +637,10 @@ export default class GroupGLLayer extends maptalks.Layer {
         });
 
         const from = map.pointAtResToCoordinate(new maptalks.Point(coord0[0], coord0[1]), glRes, EMPTY_COORD0);
-        from.z = coord0[2] / map.altitudeToPoint(1, glRes);
+        if (!this._meterToGLPoint) {
+            this._meterToGLPoint = map.altitudeToPoint(1, glRes)
+        }
+        from.z = coord0[2] / this._meterToGLPoint;
         const fromPoint = vec3.set(TEMP_VEC3, from.x, from.y, from.z);
 
         coordinates.sort((a, b) => {
@@ -774,7 +793,10 @@ export default class GroupGLLayer extends maptalks.Layer {
 (GroupGLLayer as any).registerJSONType('GroupGLLayer');
 
 (GroupGLLayer as any).registerRenderer('gl', Renderer);
+(GroupGLLayer as any).registerRenderer('gpu', Renderer);
 (GroupGLLayer as any).registerRenderer('canvas', null);
+
+function empty() { return }
 
 function sortLayersByZIndex(a: maptalks.Layer, b: maptalks.Layer) {
     const c = a.getZIndex() - b.getZIndex();
@@ -822,6 +844,9 @@ export type GroupGLLayerOptions = {
     single?: boolean,
     onlyWebGL1?: boolean,
     optionalExtensions?: string[],
+    forceRenderOnZooming?: true,
+    forceRenderOnMoving?: true,
+    forceRenderOnRotating?: true,
     viewMoveThreshold?: number,
     geometryEvents?: boolean,
     multiSamples?: number,
@@ -875,6 +900,18 @@ export type SceneWeather = {
     }
 }
 
+export type ScanEffectItem = {
+    center: maptalks.Coordinate,
+    radius: number,
+    speed: number,
+    color: number[]//normal rgb
+}
+
+export type ScanEffect = {
+    enable?: boolean,
+    effects: ScanEffectItem[]
+}
+
 export type SceneShadow = {
     enable?: boolean,
     type?: 'esm',
@@ -914,7 +951,8 @@ export type ScenePostProcess = {
         outlineFactor?: number,
         outlineWidth?: number,
         outlineColor?: number[]
-    }
+    },
+    scanEffect?: ScanEffect
 }
 
 export type GroupGLLayerSceneConfig = {
@@ -922,5 +960,5 @@ export type GroupGLLayerSceneConfig = {
     shadow? : SceneShadow,
     ground?: SceneGround,
     weather?: SceneWeather,
-    postProcess?: ScenePostProcess
+    postProcess?: ScenePostProcess,
 }

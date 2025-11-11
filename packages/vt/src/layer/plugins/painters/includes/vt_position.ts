@@ -13,7 +13,7 @@ struct VTPUniforms {
             altitude += vertexInput.aTerrainAltitude * 100.0;
         #endif
         altitude += vtUniforms.minAltitude * 100.0;
-        return vec3f(vec2f(vertexInput.aPosition), altitude);
+        return vec3f(vec2f(vertexInput.aPosition.xy), altitude);
     }
 #else
     // 16384 is pow(2.0, 14.0)

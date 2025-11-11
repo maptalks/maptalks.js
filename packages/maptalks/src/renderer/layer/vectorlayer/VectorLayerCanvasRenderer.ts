@@ -273,7 +273,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     //@internal
     _checkGeos() {
-        const geos = this._getCurrentNeedRenderGeos();
+        const geos = this.getCurrentNeedRenderGeos();
         for (let i = 0, len = geos.length; i < len; i++) {
             this.checkGeo(geos[i]);
         }
@@ -348,6 +348,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         }
 
         const painter = geo._getPainter();
+        if (!painter) {
+            return;
+        }
         let inCurrentView = true;
         if (geo._inCurrentView || !isNil(geo.options.arcDegree) || geo.hasAltitude()) {
             inCurrentView = true;
@@ -497,7 +500,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this._onlyHasPoint = true;
         //Traverse all Geo
         let idx = 0;
-        const geos = this._getCurrentNeedRenderGeos();
+        const geos = this.getCurrentNeedRenderGeos();
         for (let i = 0, len = geos.length; i < len; i++) {
             const geo = geos[i];
             // const type = geo.getType();
@@ -684,6 +687,10 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         const start = (page - 1) * pageSize, end = page * pageSize;
         const pageGeos = geos.slice(start, end);
         return pageGeos;
+    }
+
+    getCurrentNeedRenderGeos(): Geometries[] {
+        return this._getCurrentNeedRenderGeos();
     }
 
     //@internal

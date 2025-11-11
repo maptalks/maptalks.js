@@ -6,6 +6,7 @@ import { subtract, add, scale, normalize, dot, set, distance, angle, cross } fro
 import { clamp, interpolate, isNumber, isNil, wrap, toDegree, toRadian, Matrix4, Vector3 } from '../core/util';
 import { applyMatrix, matrixToQuaternion, quaternionToMatrix, lookAt, setPosition } from '../core/util/math';
 import Browser from '../core/Browser';
+import { altitudesHasData } from '../core/util/path';
 
 
 declare module "./Map" {
@@ -64,18 +65,6 @@ const TEMP_COORD = new Coordinate(0, 0);
 const TEMP_POINT = new Point(0, 0);
 const SOUTH = [0, -1, 0], BEARING = [];
 
-const altitudesHasData = (altitudes) => {
-    if (isNumber(altitudes)) {
-        return altitudes !== 0;
-    } else if (Array.isArray(altitudes) && altitudes.length > 0) {
-        for (let i = 0, len = altitudes.length; i < len; i++) {
-            if (isNumber(altitudes[i]) && altitudes[i] !== 0) {
-                return true;
-            }
-        }
-    }
-    return false;
-};
 
 /*!
  * contains code from mapbox-gl-js
@@ -342,6 +331,58 @@ Map.include(/** @lends Map.prototype */{
         }, frame);
     },
 
+
+    /**
+     * Look at the given coordinates.
+     * @param {Coordinate} coordinates - coordinates to look at
+     * @returns {Map} this
+     */
+    lookAt(params) {
+        let { coordinates, bearing, pitch, distance } = params;
+        coordinates = params.center || coordinates;
+        if (Array.isArray(coordinates)) {
+            coordinates = new Coordinate(coordinates as any);
+        }
+        if (!coordinates.z && !distance) {
+            return this.setCenter(coordinates)
+        }
+        const glRes = this.getGLRes();
+        bearing = isNil(bearing) ? this.getBearing(): bearing;
+        pitch = isNil(pitch) ? this.getPitch() : pitch;
+        const radPitch = pitch * RADIAN;
+        const radBearing = bearing * RADIAN;
+        if (distance) {
+            let distZ = distance * Math.sin(radPitch);
+            let xyDist = Math.sin(radPitch) * distance;
+            const distX = xyDist * Math.sin(radBearing);
+            const distY = xyDist * Math.cos(radBearing);
+            distZ = distZ * this._meterToGLPoint;
+            xyDist = this.distanceToPointAtRes(distX, distY, glRes).mag();
+            distance = Math.sqrt(xyDist * xyDist + distZ * distZ);
+        }
+        const point = this.coordToPointAtRes(coordinates, glRes);
+        point.z = 0;
+        if (coordinates.z) {
+            point.z = coordinates.z * this._meterToGLPoint;
+        }
+
+        const cameraToTargetDistance = distance || this.cameraToGroundDistance || this.cameraToCenterDistance;
+        const xyDistance = Math.sin(radPitch) * cameraToTargetDistance;
+        const cz = cameraToTargetDistance * Math.cos(radPitch);
+        const cx = point.x - xyDistance * Math.sin(radBearing);
+        const cy = point.y - xyDistance * Math.cos(radBearing);
+        const cameraPosition = [cx, cy, cz + point.z];
+        const cameraPoint = new Point(cameraPosition as Vector3);
+        const cameraCoord = this.pointAtResToCoord(cameraPoint, glRes);
+        const cameraAltitude = cameraPoint.z / this._meterToGLPoint;
+        cameraCoord.z = cameraAltitude;
+        return this.setCameraOrientation({
+            position: cameraCoord.toArray(),
+            bearing,
+            pitch
+        });
+    },
+
     /**
      * Set camera's orientation
      * @param {Object}   options - options
@@ -400,6 +441,7 @@ Map.include(/** @lends Map.prototype */{
         this._angle = -angle(BEARING as any, SOUTH as any);
         this._zoomLevel = this.getFitZoomForCamera(coordinate, this._pitch).zoom;
         this._calcMatrices();
+        return this;
     },
 
     getFitZoomForCamera(cameraPosition: Array<number> | Coordinate, pitch: number) {
@@ -426,22 +468,8 @@ Map.include(/** @lends Map.prototype */{
 
     getFitZoomForAltitude(distance: number) {
         const ratio = this._getFovRatio();
-        const scale = distance * ratio * 2 / (this.height || 1) * this.getGLRes();
-        const resolutions = this._getResolutions();
-        let z = 0;
-        for (z; z < resolutions.length - 1; z++) {
-            if (resolutions[z] === scale) {
-                return z;
-            } else if (resolutions[z + 1] === scale) {
-                return z + 1;
-            } else if (scale < resolutions[z] && scale > resolutions[z + 1]) {
-                z = (scale - resolutions[z]) / (resolutions[z + 1] - resolutions[z]) + z;
-                return z - 1;
-            } else {
-                continue;
-            }
-        }
-        return z;
+        const res = distance * ratio * 2 / (this.height || 1) * this.getGLRes();
+        return this.getZoomFromRes(res);
     },
 
     /**
@@ -817,7 +845,7 @@ Map.include(/** @lends Map.prototype */{
         return function () {
             const glRes = this.getGLRes();
             if (!this._meterToGLPoint) {
-                this._meterToGLPoint = this.distanceToPointAtRes(100, 0, glRes).x / 100;
+                this._meterToGLPoint = this.altitudeToPoint(100, glRes) / 100;
             }
 
             const center2D = this._prjToPointAtRes(this._prjCenter, glRes, TEMP_POINT);
@@ -835,6 +863,7 @@ Map.include(/** @lends Map.prototype */{
             const cameraToCenterDistance = this._getFovZ();
             const cameraZenithDistance = this.cameraZenithDistance === undefined ? cameraToCenterDistance : this.cameraZenithDistance;
             const cameraToGroundDistance = cameraZenithDistance - centerPointZ;
+            this.cameraToGroundDistance = cameraToGroundDistance;
             const cz = cameraToGroundDistance * Math.cos(pitch);
             // and [dist] away from map's center on XY plane to tilt the scene.
             const dist = Math.sin(pitch) * cameraToGroundDistance;
@@ -906,7 +935,7 @@ Map.include(/** @lends Map.prototype */{
 
     //@internal
     _recenterOnTerrain() {
-        if (this.centerAltitude === undefined || this._centerZ !== undefined) {
+        if (this.centerAltitude === undefined) {
             return;
         }
         let queriedAltitude = this._queryTerrainByProjCoord(this._prjCenter);
@@ -914,7 +943,7 @@ Map.include(/** @lends Map.prototype */{
             // remains previous center altitude if queried altitude is null
             queriedAltitude = this.centerAltitude;
         }
-        const centerAltitude = queriedAltitude || 0;
+        const centerAltitude = queriedAltitude > 0 && queriedAltitude || 0;
         const pitch = this.getPitch() * RADIAN;
         const bearing = this.getBearing() * RADIAN;
         const altDist = (centerAltitude - this.centerAltitude) * this._meterToGLPoint;
@@ -1006,8 +1035,12 @@ Map.include(/** @lends Map.prototype */{
 
     //@internal
     _queryTerrainInfo(containerPoint) {
-        if (containerPoint && this._terrainLayer) {
-            const coordinate = this._terrainLayer.queryTerrainAtPoint(containerPoint);
+        if (containerPoint) {
+            const terrainLayer = this._findTerrainLayer();
+            if (!terrainLayer) {
+                return null;
+            }
+            const coordinate = terrainLayer.queryTerrainAtPoint(containerPoint);
             if (coordinate) {
                 return {
                     coordinate,

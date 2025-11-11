@@ -166,6 +166,9 @@ export default class BaseLayerWorker {
 
     onRemove() {
         this.loadings = {};
+        if (this._cache) {
+            this._cache.reset();
+        }
         delete this._cache;
         this.requests = {};
     }
@@ -308,11 +311,6 @@ export default class BaseLayerWorker {
             }
             // type = 0 是普通 style， type = 1 是 feature style
             const targetData = pluginConfig.type === 0 ? data : featureData;
-            if (pluginConfig.symbol && pluginConfig.symbol.visible === false) {
-                //数据不存在，则在data中添加个占位的null，不然renderer中featureData与data，对应的plugin会不正确
-                targetData[typeIndex] = null;
-                continue;
-            }
             getFnTypeProps(pluginConfig.symbol, fnTypeProps, i);
             hasFnTypeProps = hasFnTypeProps || fnTypeProps[i] && fnTypeProps[i].size > 0;
 
@@ -530,7 +528,8 @@ export default class BaseLayerWorker {
             zoom,
             debugIndex,
             features: this.options.features,
-            isWebGPU: this.options.isWebGPU
+            isWebGPU: this.options.isWebGPU,
+            isWebGL1: this.options.isWebGL1
         });
         if (type === '3d-extrusion') {
             const t = hasTexture(symbol);
@@ -542,8 +541,13 @@ export default class BaseLayerWorker {
             }
             const projectionCode = this.options.projectionCode;
             const textureWidth = symbol.material && symbol.material.textureWidth || DEFAULT_TEX_WIDTH;
-            return Promise.all([Promise.resolve(build3DExtrusion(features, dataConfig, extent, tilePoint,
-                textureWidth, context.tileInfo.res, glScale, extent / this.options['tileSize'], centimeterToPoint, verticalCentimeterToPoint, symbol, zoom, projectionCode, debugIndex))]);
+            return Promise.all([Promise.resolve(
+                build3DExtrusion(
+                    features, dataConfig, extent, tilePoint,
+                    textureWidth, context.tileInfo.res, glScale, extent / this.options['tileSize'], centimeterToPoint,
+                    verticalCentimeterToPoint, symbol, zoom, projectionCode, debugIndex
+                )
+            )]);
         } else if (type === '3d-wireframe') {
             return Promise.all([Promise.resolve(buildWireframe(features, extent, symbol, dataConfig))]);
         } else if (type === 'point') {
@@ -565,6 +569,7 @@ export default class BaseLayerWorker {
                 return symbol;
             }).filter(symbol => !!symbol);
             return Promise.all(symbols.map((symbol) => {
+                options.defaultMarkerVerticalAlignment = 'middle';
                 const fnTypes = VectorPack.genFnTypes(symbol);
                 let packFeatures = features;
                 if (PointPack.needMerge(symbol, fnTypes, zoom)) {

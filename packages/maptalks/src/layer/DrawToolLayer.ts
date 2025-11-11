@@ -10,11 +10,8 @@ const options: DrawToolLayerOptionsType = {
 
 export default class DrawToolLayer extends OverlayLayer {
     options: DrawToolLayerOptionsType;
-    //@internal
     static markerLayerClazz: any;
-    //@internal
     static lineLayerClazz: any;
-    //@internal
     static polygonLayerClazz: any;
     //@internal
     _markerLayer: any;
@@ -23,7 +20,6 @@ export default class DrawToolLayer extends OverlayLayer {
     //@internal
     _polygonLayer: any;
 
-    //@internal
     static setLayerClass(markerLayerClass, lineLayerClass, polygonLayerClass) {
         DrawToolLayer.markerLayerClazz = markerLayerClass;
         DrawToolLayer.lineLayerClazz = lineLayerClass;
@@ -43,12 +39,20 @@ export default class DrawToolLayer extends OverlayLayer {
         super(id, options);
         const depthFunc = this.options.depthFunc || 'always';
         options.sceneConfig = { depthFunc };
-        this._markerLayer = new DrawToolLayer.markerLayerClazz(id + '_marker', options);
-        this._lineLayer = new DrawToolLayer.lineLayerClazz(id + '_line', options);
-        this._polygonLayer = new DrawToolLayer.polygonLayerClazz(id + '_polygon', options);
+        this._markerLayer = new DrawToolLayer.markerLayerClazz(id + '_____________marker', options);
+        this._lineLayer = new DrawToolLayer.lineLayerClazz(id + '_____________line', options);
+        this._polygonLayer = new DrawToolLayer.polygonLayerClazz(id + '_____________polygon', options);
         if (geometries) {
             this.addGeometry(geometries as Array<Geometry>);
         }
+    }
+
+    clear() {
+        super.clear();
+        this._markerLayer.clear();
+        this._lineLayer.clear();
+        this._polygonLayer.clear();
+        return this;
     }
 
     bringToFront() {

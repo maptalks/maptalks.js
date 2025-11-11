@@ -1,5 +1,108 @@
 # @maptalks/vt
 
+## 0.116.0
+
+### Minor Changes
+
+- fixes against maptalks-gpu
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.116.0
+  - @maptalks/gpu@0.116.0
+  - @maptalks/vt-plugin@0.116.0
+
+## 0.115.1
+
+### Patch Changes
+
+- fixes related with terrain
+- Updated dependencies
+  - @maptalks/gl@0.115.1
+  - @maptalks/vt-plugin@0.115.1
+
+## 0.115.0
+
+### Minor Changes
+
+- focusing on bug fixes and serveral improvements
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.115.0
+  - @maptalks/vt-plugin@0.115.0
+
+## 0.109.0
+
+### Minor Changes
+
+- add gpu and maptalks-gpu packages and fix some bugs
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.110.0
+
+## 0.108.6
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.109.6
+
+## 0.108.5
+
+### Patch Changes
+
+- Fix some bugs
+  - @maptalks/gl@0.109.5
+
+## 0.108.4
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.109.4
+
+## 0.108.3
+
+### Patch Changes
+
+- Fix shader compilation failure in PolygonLayer.outline (#2630)
+  - @maptalks/gl@0.109.3
+
+## 0.108.2
+
+### Patch Changes
+
+- fix bugs in maptalks/vt/gl
+- Updated dependencies
+  - @maptalks/gl@0.109.2
+
+## 0.108.1
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.109.1
+
+## 0.108.0
+
+### Minor Changes
+
+- - implement terrain-flat-mask rendre plugin in VectorLayer
+  - sync codes with maptalks/gl-layers
+  - webgl layers' compatibility fixes with MapCanvasRenderer
+  - bug fixes in maptalks
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.109.0
+  - @maptalks/vt-plugin@0.100.0
+
 ## 0.103.2
 
 ### Patch Changes

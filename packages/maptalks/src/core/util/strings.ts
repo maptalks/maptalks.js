@@ -19,7 +19,7 @@ export const EMPTY_STRING = '';
 /**
  * Trim the string
  * @param str
- * @return 
+ * @return
  * @memberOf StringUtil
  */
 export function trim(str: string) {

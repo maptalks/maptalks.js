@@ -63,7 +63,7 @@ describe('Control.Reset', function () {
             map.addControl(control);
 
             control.setView({
-                center: [120, 20, 0],
+                center: [120, 20],
                 zoom: 10,
                 bearing: 2,
                 pitch: 1
@@ -73,7 +73,7 @@ describe('Control.Reset', function () {
 
             map.once('viewchange', function () {
                 expect(map.getView()).to.eql({
-                    center: [120, 20, 0],
+                    center: [120, 20],
                     zoom: 10,
                     bearing: 2,
                     pitch: 1

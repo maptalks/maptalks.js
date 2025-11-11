@@ -42,21 +42,21 @@ export class ImagePosition {
 
 export default class IconAtlas {
     /**
-     * glyphMap : { string : StyleImage }
+     * iconMap : { string : StyleImage }
      *  type StyleImage = {
             data: RGBAImage,
-            pixelRatio: number,
-            sdf: boolean
+            pixelRatio: number
      *  };
-     * @param {Object} glyphMap glyph map
+     * @param {Object} iconMap icon map
      */
-    constructor(glyphMap) {
-        this.glyphMap = glyphMap;
+    constructor(iconMap, options) {
+        this.iconMap = iconMap;
+        this.options = options || {};
         this.build();
     }
 
     build() {
-        const images = this.glyphMap;
+        const images = this.iconMap;
         const count = Object.keys(images).length;
         const positions = {};
         const pack = new ShelfPack(0, 0, { autoResize: true });
@@ -75,7 +75,8 @@ export default class IconAtlas {
         }
 
         pack.pack(bins, { inPlace: true });
-        if (!isPowerOfTwo(pack.w) || !isPowerOfTwo(pack.h)) {
+        const nonPowerOfTwo = this.options.nonPowerOfTwo;
+        if (!nonPowerOfTwo && (!isPowerOfTwo(pack.w) || !isPowerOfTwo(pack.h))) {
             const w = ceilPowerOfTwo(pack.w);
             const h = ceilPowerOfTwo(pack.h);
             pack.resize(w, h);
