@@ -267,6 +267,4 @@ Sector.registerJSONType('Sector');
 
 export default Sector;
 
-export type SectorOptionsType = CircleOptionsType & {
-
-}
+export type SectorOptionsType = CircleOptionsType;
