@@ -1,5 +1,11 @@
 # maptalks
 
+## 1.6.0
+
+### Minor Changes
+
+- major fixes version against webgpu renderer
+
 ## 1.5.0
 
 ### Minor Changes

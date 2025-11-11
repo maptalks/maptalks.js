@@ -1,5 +1,22 @@
 # maptalks-gl
 
+## 0.117.0
+
+### Minor Changes
+
+- major fixes version against webgpu renderer
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.117.0
+  - @maptalks/3dtiles@0.117.0
+  - @maptalks/gltf-layer@0.117.0
+  - @maptalks/video-layer@0.117.0
+  - maptalks@1.6.0
+  - @maptalks/transform-control@0.117.0
+  - @maptalks/vt@0.117.0
+
 ## 0.116.0
 
 ### Minor Changes

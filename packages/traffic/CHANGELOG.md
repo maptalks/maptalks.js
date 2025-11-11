@@ -1,5 +1,16 @@
 # @maptalks/traffic
 
+## 0.117.0
+
+### Minor Changes
+
+- major fixes version against webgpu renderer
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gltf-layer@0.117.0
+
 ## 0.116.0
 
 ### Minor Changes

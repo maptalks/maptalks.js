@@ -1,5 +1,11 @@
 # @maptalks/transcoders.ktx2
 
+## 0.117.0
+
+### Minor Changes
+
+- major fixes version against webgpu renderer
+
 ## 0.116.0
 
 ### Minor Changes
