@@ -1,5 +1,5 @@
 import { extend, isNil } from '../core/util';
-import { getEllipseGLSize, pointsToCoordinates } from '../core/util/path';
+import { getEllipseGLSize, getIgnoreProjectionGeometryCenter, pointsToCoordinates } from '../core/util/path';
 import Coordinate from '../geo/Coordinate';
 import Extent from '../geo/Extent';
 import Point from '../geo/Point';
@@ -252,6 +252,10 @@ export class Rectangle extends Polygon {
 
     //@internal
     _computeCenter(measurer?: any): Coordinate {
+        const center = getIgnoreProjectionGeometryCenter(this);
+        if (center) {
+            return center;
+        }
         return measurer.locate(this._coordinates, this._width / 2, -this._height / 2);
     }
 

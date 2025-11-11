@@ -333,6 +333,39 @@ export function getEllipseGLSize(center: Coordinate, measurer, map, halfWidth: n
     }
 }
 
+export function getIgnoreProjectionGeometryCenter(geo) {
+    const ignoreProjection = geo.options.ignoreProjection;
+    if (ignoreProjection) {
+        const ring = geo.getShell ? geo.getShell() : null;
+        if (ring && ring.length) {
+            const map = geo.getMap();
+            if (!map) {
+                return;
+            }
+            const glRes = map.getGLRes();
+            const points = ring.map(c => {
+                return map.coordToPointAtRes(c, glRes);
+            })
+
+            let sumx = 0,
+                sumy = 0,
+                counter = 0;
+            const size = points.length;
+            for (let i = 0; i < size; i++) {
+                if (points[i]) {
+                    if (isNumber(points[i].x) && isNumber(points[i].y)) {
+                        sumx += points[i].x;
+                        sumy += points[i].y;
+                        counter++;
+                    }
+                }
+            }
+            const p = new Point(sumx / counter, sumy / counter);
+            return map.pointAtResToCoordinate(p, glRes);
+        }
+    }
+}
+
 /**
  * point left segment
  * @param p
