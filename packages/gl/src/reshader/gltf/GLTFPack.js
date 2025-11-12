@@ -8,6 +8,9 @@ import { KEY_DISPOSED } from '../common/Constants.js';
 import GLTFResource from './GLTFResource';
 import { getPrimitive, getTextureMagFilter, getTextureMinFilter, getTextureWrap, getUniqueREGLBuffer } from '../common/REGLHelper';
 import Texture from '../Texture2D';
+import BoundingBox from '../BoundingBox';
+
+const Y_TO_Z = [1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1];
 
 let timespan = 0;
 
@@ -42,7 +45,7 @@ export default class GLTFPack {
         return this.geometries;
     }
 
-    getGLTFBBox() {
+    getGLTFBBox(transform) {
         if (!this.gltf) {
             return null;
         }
@@ -74,7 +77,12 @@ export default class GLTFPack {
                 max[2] = bboxMax[2];
             }
         }
-        return{ min, max };
+        const bbox = new BoundingBox(min, max);
+        if (transform) {
+            bbox.transform(transform);
+        }
+
+        return bbox;
     }
 
     _createSkins(skins) {
@@ -477,13 +485,13 @@ export default class GLTFPack {
      * @param options
      * @returns
      */
-    arrangeAlongLine(from, to, xyDist, gltfScale, projectionScale, options) {
+    arrangeAlongLine(from, to, xyDist, gltfScale, projectionScale, rotationScaleMat, options) {
         const items = [];
         const rotationZ = this._getRotationZ(from, to);
         // cm to mi
         const zDist = (from.z || 0) - (to.z || 0);
         const rotationXY = this._getRotationXY(xyDist, zDist);
-        let boxWidth = this._calBoxWidth(gltfScale, options);
+        let boxWidth = this._calBoxWidth(gltfScale, rotationScaleMat, options);
         boxWidth /= projectionScale;
         const distance = Math.sqrt(xyDist * xyDist + zDist * zDist);
         const times = Math.floor(distance / boxWidth);
@@ -547,8 +555,9 @@ export default class GLTFPack {
         return vec3.set(out, fitScale, fitScale, fitScale);
     }
 
-    _calBoxWidth(scale, options) {
-        const gltfmodelBBox = this.getGLTFBBox();
+    _calBoxWidth(scale, rotationScaleMat, options) {
+        const mat = mat4.multiply(MAT4, rotationScaleMat, Y_TO_Z);
+        const gltfmodelBBox = this.getGLTFBBox(mat);
         const direction = options.direction || 0;
         const boxExtent = vec3.sub(TEMP_VEC, gltfmodelBBox.max, gltfmodelBBox.min);
         vec3.multiply(boxExtent, boxExtent, scale);

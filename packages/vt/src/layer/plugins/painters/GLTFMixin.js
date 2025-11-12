@@ -95,7 +95,7 @@ const GLTFMixin = Base =>
                 return null;
             }
             if (this.dataConfig.type === 'native-line') {
-                this._arrangeAlongLine(0, geometry, tilePoint);
+                this._arrangeAlongLine(0, geometry, tilePoint, features);
             }
             const { aPosition } = geometry.data;
             let count = aPosition.length / positionSize;
@@ -106,7 +106,10 @@ const GLTFMixin = Base =>
                 // 'instance_color': [],
                 'aPickingId': []
             };
-            const instanceCenter = this._updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, geometry.properties.z, geometry.data, positionSize, features);
+            const instanceCenter = this._updateInstanceData(
+                instanceData, tileTranslationMatrix, tileExtent,
+                geometry.properties.z, geometry.data, positionSize, features
+            );
             if (geometry.data.aTerrainAltitude) {
                 instanceData.aTerrainAltitude = geometry.data.aTerrainAltitude;
             }
@@ -274,7 +277,7 @@ const GLTFMixin = Base =>
         }
 
 
-        _arrangeAlongLine(symbolIndex, geometry) {
+        _arrangeAlongLine(symbolIndex, geometry, features) {
             const { tileExtent, z: tileZoom } = geometry.properties;
             const { data, positionSize } = geometry;
 
@@ -303,6 +306,7 @@ const GLTFMixin = Base =>
             const tileScale = tileSize / tileExtent * this.layer.getRenderer().getTileGLScale(tileZoom);
             const zScale = this.layer.getRenderer().getZScale();
             let currentPickingId = aPickingId[0];
+            const rotationScaleMat = [];
             for (let i = 0; i < aPosition.length - positionSize; i += positionSize) {
                 const nextPickingId = aPickingId[i / positionSize + 1];
                 if (nextPickingId !== currentPickingId) {
@@ -329,8 +333,8 @@ const GLTFMixin = Base =>
                 const from = coord0.set(x0 * tileScale, y0 * tileScale, z0 * zScale);
                 const to = coord1.set(x1 * tileScale, y1 * tileScale, z1 * zScale);
                 const dist = from.distanceTo(to);
-
-                const items = gltfPack.arrangeAlongLine(from, to, dist, gltfScale, 1, options);
+                this._getSymbolRotationScaleMatrix(rotationScaleMat, features, aPickingId, i / positionSize);
+                const items = gltfPack.arrangeAlongLine(from, to, dist, gltfScale, 1,  rotationScaleMat, options);
                 for (let j = 0; j < items.length; j++) {
                     const item = items[j];
                     // const coord = item.coordinates;
@@ -638,8 +642,12 @@ const GLTFMixin = Base =>
             return this._meterScale;
         }
 
+        _getSymbolRotationScaleMatrix(out, features, aPickingId, i) {
+            return this._getSymbolTRSMatrix(out, features, aPickingId, i, true);
+        }
+
         // features, aPickingId, i 允许为空
-        _getSymbolTRSMatrix(out, features, aPickingId, i) {
+        _getSymbolTRSMatrix(out, features, aPickingId, i, ignoreTranslation) {
             const map = this.getMap();
             const symbolDef = this.symbolDef[0];
 
@@ -647,6 +655,9 @@ const GLTFMixin = Base =>
             let tx = symbolDef['translationX'] || 0;
             let ty = symbolDef['translationY'] || 0;
             let tz = symbolDef['translationZ'] || 0;
+            if (ignoreTranslation) {
+                tx = ty = tz = 0;
+            }
 
             let rx = symbolDef['rotationX'] || 0;
             let ry = symbolDef['rotationY'] || 0;
@@ -664,15 +675,18 @@ const GLTFMixin = Base =>
 
             const heightScale = this._getModelHeightScale(zoom, properties);
 
-            if (this._txFn) {
-                tx = this._txFn(zoom, properties);
+            if (!ignoreTranslation) {
+                if (this._txFn) {
+                    tx = this._txFn(zoom, properties);
+                }
+                if (this._tyFn) {
+                    ty = this._tyFn(zoom, properties);
+                }
+                if (this._tzFn) {
+                    tz = this._tzFn(zoom, properties);
+                }
             }
-            if (this._tyFn) {
-                ty = this._tyFn(zoom, properties);
-            }
-            if (this._tzFn) {
-                tz = this._tzFn(zoom, properties);
-            }
+
             const translation = vec3.set(TEMP_V3_0, tx * meterScale, ty * meterScale, tz * meterScale);
 
             if (this._rxFn) {
