@@ -679,21 +679,38 @@ export default class GroupGLLayer extends maptalks.Layer {
                     skinLayers.push(layers[i]);
                     continue;
                 }
-                layer.getTiles = () => {
+                const getTilesFn = layer.getTiles;
+                layer.getTiles = (...args) => {
                     // debugger
+                    if (!layer.options['awareOfTerrain']) {
+                        return getTilesFn.call(layer, ...args);
+                    }
                     return this._terrainLayer && this._terrainLayer.getSkinTiles(layer);
                 };
                 // 重载原有的drawTile方法
                 // 如果renderer定义了drawTileOnTerrain，则代替原有的drawTile，否则用空方法代替
+                const drawTileFn = renderer.drawTile;
                 if (renderer.drawTileOnTerrain) {
                     renderer.drawTile = (...args) => {
+                        if (!layer.options['awareOfTerrain']) {
+                            return drawTileFn.call(renderer, ...args);
+                        }
                         return renderer.drawTileOnTerrain(...args);
                     };
                 } else {
-                    renderer.drawTile = emptyMethod;
+                    renderer.drawTile = (...args) => {
+                        if (!layer.options['awareOfTerrain']) {
+                            return drawTileFn.call(renderer, ...args);
+                        }
+                    };
                 }
                 // skinLayer的deleteTile交由TerrainLayerRenderer.deleteTile中手动执行
-                renderer.deleteTile = emptyMethod;
+                const deleteTileFn = renderer.deleteTile;
+                renderer.deleteTile = (...args) => {
+                    if (!layer.options['awareOfTerrain']) {
+                        return deleteTileFn.call(renderer, ...args);
+                    }
+                }
 
                 skinLayers.push(layers[i]);
             }
