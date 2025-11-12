@@ -644,6 +644,7 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
 
                 // (tileImage as any).onload = this.onTileLoad.bind(this, tileImage, tile);
                 (tileImage as any).onload = () => {
+                    //更少的图像解码时间
                     if (Browser.decodeImageInWorker) {
                         createImageBitmap(tileImage).then(imagebit => {
                             this.onTileLoad(imagebit as TileImage, tile);
