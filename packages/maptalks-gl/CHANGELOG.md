@@ -1,5 +1,19 @@
 # maptalks-gl
 
+## 0.117.1
+
+### Patch Changes
+
+- fixes with terrain, tilelayer and gltf-lit renderPlugin
+- Updated dependencies
+  - @maptalks/gl@0.117.1
+  - @maptalks/3dtiles@0.117.1
+  - @maptalks/gltf-layer@0.117.1
+  - @maptalks/video-layer@0.117.1
+  - maptalks@1.6.1
+  - @maptalks/transform-control@0.117.1
+  - @maptalks/vt@0.117.1
+
 ## 0.117.0
 
 ### Minor Changes

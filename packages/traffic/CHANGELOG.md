@@ -1,5 +1,13 @@
 # @maptalks/traffic
 
+## 0.117.1
+
+### Patch Changes
+
+- fixes with terrain, tilelayer and gltf-lit renderPlugin
+- Updated dependencies
+  - @maptalks/gltf-layer@0.117.1
+
 ## 0.117.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # maptalks
 
+## 1.6.1
+
+### Patch Changes
+
+- fixes with terrain, tilelayer and gltf-lit renderPlugin
+
 ## 1.6.0
 
 ### Minor Changes

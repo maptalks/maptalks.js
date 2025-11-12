@@ -1,5 +1,11 @@
 # @maptalks/vt-plugin
 
+## 0.117.1
+
+### Patch Changes
+
+- fixes with terrain, tilelayer and gltf-lit renderPlugin
+
 ## 0.117.0
 
 ### Minor Changes

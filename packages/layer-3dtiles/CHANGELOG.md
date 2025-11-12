@@ -1,5 +1,13 @@
 # @maptalks/3dtiles
 
+## 0.117.1
+
+### Patch Changes
+
+- fixes with terrain, tilelayer and gltf-lit renderPlugin
+- Updated dependencies
+  - maptalks@1.6.1
+
 ## 0.117.0
 
 ### Minor Changes

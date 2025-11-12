@@ -1,5 +1,15 @@
 # @maptalks/gpu
 
+## 0.117.1
+
+### Patch Changes
+
+- fixes with terrain, tilelayer and gltf-lit renderPlugin
+- Updated dependencies
+  - @maptalks/fusiongl@0.117.1
+  - @maptalks/gltf-loader@0.117.1
+  - maptalks@1.6.1
+
 ## 0.117.0
 
 ### Minor Changes
