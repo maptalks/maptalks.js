@@ -120,7 +120,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         const terrainWidth = heights.width;
         const mesh = createMartiniData(error / 2, heights.data, terrainWidth, true);
 
-        return { data: heights, mesh, sourceZoom };
+        return { data: heights, mesh, sourceZoom, colorsTexture: heights.colorsTexture };
     }
 
     _findTileMinAltitude(tile, parentTile) {
@@ -156,6 +156,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                 tileImage.sourceZoom = -1;
             } else {
                 tileImage = this._createTerrainFromParent(tileInfo, parentTile);
+                wrapTileColorsTexture(tileInfo, tileImage);
             }
         }
         this._createMesh(tileImage, tileInfo);
@@ -824,6 +825,27 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         xmin = Math.floor(xmin);
         ymin = Math.floor(ymin);
 
+        let colorsTexture;
+        //parent tile has colorstexture
+        if (info.colorsTexture) {
+            const { width, height } = info.colorsTexture;
+            if (width * height > 0) {
+                const x1 = info.extent2d.xmin;
+                const x2 = info.extent2d.xmax;
+                const y1 = info.extent2d.ymin;
+                const y2 = info.extent2d.ymax;
+                const ax = (width) / (x2 - x1), ay = height / (y2 - y1);
+                const minx = (extent2d.xmin * res / parentRes - parentExtent.xmin) * ax;
+                const maxx = (extent2d.xmax * res / parentRes - parentExtent.xmin) * ax;
+                const miny = (extent2d.ymin * res / parentRes - parentExtent.ymin) * ay;
+                const maxy = (extent2d.ymax * res / parentRes - parentExtent.ymin) * ay;
+                //clip texture from parent tile texture
+                colorsTexture = clipTileTexture(info.colorsTexture, minx, miny, maxx, maxy);
+            }
+
+
+        }
+
         // const tileSize = tileWidth - 1;
         // if (tileSize & (tileSize - 1)) {
         //     debugger
@@ -865,7 +887,8 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             height: tileWidth,
             data: heights,
             min,
-            max
+            max,
+            colorsTexture
         };
     }
 
@@ -978,6 +1001,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                 const args = [x, y, maxAvailableZoom, idx, idy, res, tile.error * Math.pow(2, diff)];
                 tile = layer.createTileNode ? layer.createTileNode(...args) : layer._createTileNode(...args);
             } else {
+                wrapTileColorsTexture(tile, terrainData);
                 this.onTileLoad(terrainData, tile);
                 return terrainData;
             }
@@ -1020,8 +1044,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                 maptalks.Util.extend(terrainData, resource);
 
                 // this.consumeTile(terrainData, tile);
-                tile.colorsTexture = terrainData.colorsTexture;
-                delete terrainData.colorsTexture;
+                wrapTileColorsTexture(tile, terrainData);
                 this.onTileLoad(terrainData, tile);
             });
         };
@@ -1664,4 +1687,40 @@ function isValidSkinImage(image) {
 
 function getParentRequestKey(x, y) {
     return x + '-' + y;
+}
+
+function isPowerOfTwo(value) {
+    return (value & (value - 1)) === 0 && value !== 0;
+}
+
+let tempCanvas;
+
+function clipTileTexture(image, x1, y1, x2, y2) {
+    if (maptalks.Browser.decodeImageInWorker) {
+        if (!tempCanvas) {
+            tempCanvas = new OffscreenCanvas(1, 1);
+        }
+        const width = Math.floor(x2 - x1), height = Math.floor((y2 - y1));
+        if (!isPowerOfTwo(width) || !isPowerOfTwo(height)) {
+            return;
+        }
+        tempCanvas.width = width;
+        tempCanvas.height = height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.clearRect(0, 0, width, height);
+        ctx.drawImage(image, x1, y1, width, height, 0, 0, width, height);
+        return tempCanvas.transferToImageBitmap();
+    }
+}
+
+function wrapTileColorsTexture(tile, terrainData) {
+    const colorsTexture = terrainData.colorsTexture;
+    delete terrainData.colorsTexture;
+    if (colorsTexture) {
+        if (tile.info) {
+            tile.info.colorsTexture = colorsTexture;
+        } else {
+            tile.colorsTexture = colorsTexture;
+        }
+    }
 }

@@ -729,9 +729,10 @@ function createColorsTexture(data, colors, tileSize) {
         height = tileSize[1];
     }
     //always use default tilesize to create color texture for memory usage
-    [width, height] = DEFAULT_TILESIZE;
-    // width *= 2;
-    // height *= 2;
+    // [width, height] = DEFAULT_TILESIZE;
+    //缩放两倍,这样才能保持和TileLayer联合作为纹理时不出错
+    width *= 2;
+    height *= 2;
     try {
         checkBitMapCanvas();
         if (!BITMAP_CANVAS) {
@@ -771,8 +772,8 @@ function createColorsTexture(data, colors, tileSize) {
 
 /**
  * create terrain geometry tangents by worker for perf
- * @param {*} terrainMesh 
- * @returns 
+ * @param {*} terrainMesh
+ * @returns
  */
 function createTerrainGeometryTangents(terrainMesh) {
     if (!terrainMesh) {
