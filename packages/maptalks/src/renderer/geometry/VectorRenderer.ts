@@ -110,6 +110,9 @@ const el = {
         }
         const map = this.getMap();
         const altitude = this._getAltitude();
+        if ((this instanceof Ellipse || this instanceof Circle || this instanceof Rectangle) && this.options.ignoreProjection) {
+            return true;
+        }
         // when map is tilting, draw the circle/ellipse as a polygon by vertexes.
         return altitude > 0 || map.getPitch() || ((this instanceof Ellipse) && map.getBearing());
     },
