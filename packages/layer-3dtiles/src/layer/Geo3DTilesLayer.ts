@@ -41,7 +41,7 @@ const options: Geo3DTilesLayerOptions = {
     'geometryEvents': false,
     'alwaysShowTopTiles': true,
     // 'ambientLight' : [0, 0, 0],
-    // 'heightOffsets' : null,
+    // 'heightOffsets': null,
     // 'polygonOffsets' : null,
     'antialias': false,
     'offset': [0, 0],
@@ -589,7 +589,8 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         if (!Array.isArray(coordOffset)) {
             throw new Error('service.coordOffset must be an array');
         }
-        if (!boundingVolume._centerTransformed && (!node.boundingVolume || (!heightOffset && mat4.exactEquals(node.matrix as mat4, IDENTITY_MATRIX) && !hasOffset && coordOffset === EMPTY_COORD_OFFSET))) {
+        if (!boundingVolume._centerTransformed &&
+            (!node.boundingVolume || ((!heightOffset && heightOffset !== 0) && mat4.exactEquals(node.matrix as mat4, IDENTITY_MATRIX) && !hasOffset && coordOffset === EMPTY_COORD_OFFSET))) {
             return;
         }
         if (boundingVolume.box && boundingVolume.region) {
@@ -1686,7 +1687,7 @@ export type Geo3DTilesLayerOptions = {
     'geometryEvents'?: boolean,
     'alwaysShowTopTiles'?: boolean,
     // 'ambientLight' : [0, 0, 0],
-    // 'heightOffsets' : null,
+    'heightOffsets'?: number;
     // 'polygonOffsets' : null,
     'antialias'?: boolean,
     'offset'?: number[] | OffsetFunction,
