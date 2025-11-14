@@ -266,7 +266,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
                 }
                 if (Util.isNil(f.id)) {
                     //添加必要的前缀，防止和原来的数据里冲突
-                    f.id = 'maptalks_vt_feature_' + uid++;
+                    f.id = 'mtk_vt_f_' + uid++;
                 }
                 if (idTemp[f.id]) {
                     warnFeatures.push(f);
