@@ -1,4 +1,4 @@
-import { isString, isObject, extend, isNumber } from '../../common/Util';
+import { isString, isObject, extend, isNumber, isNil } from '../../common/Util';
 import Ajax from '../util/Ajax';
 import geojsonvt from '@maptalks/geojson-vt';
 import BaseLayerWorker from './BaseLayerWorker';
@@ -175,6 +175,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
         const idMap = {};
         let uid = 0;
         const feaIdProp = this.options.featureIdProperty;
+        const idTemp = {}, warnFeatures = [];
         function visit(f, index, length) {
             if (!f) {
                 return;
@@ -182,9 +183,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             if (f.type === 'Feature' && !f.geometry) {
                 return;
             }
-            if (!isNumber(f.id)) {
-                f.id = uid++;
-            }
+            f.properties = f.properties || {};
             if (feaIdProp) {
                 let idProp = feaIdProp;
                 if (isObject(feaIdProp)) {
@@ -192,6 +191,14 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                 }
                 f.id = f.properties[idProp];
             }
+            if (isNil(f.id)) {
+                //添加必要的前缀，防止和原来的数据里冲突
+                f.id = 'maptalks_vt_feature_' + uid++;
+            }
+            if (idTemp[f.id]) {
+                warnFeatures.push(f);
+            }
+            idTemp[f.id] = 1;
             idMap[f.id] = extend({}, f);
             if (f.geometry) {
                 idMap[f.id].geometry = extend({}, f.geometry);
@@ -199,7 +206,6 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             } else if (f.coordinates) {
                 idMap[f.id].coordinates = null;
             }
-
             insertSample(f, sample1000, index, length);
         }
         if (data) {
@@ -207,6 +213,9 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             data.forEach((f, index) => {
                 visit(f, index, length);
             });
+        }
+        if (warnFeatures.length) {
+            console.warn('the feature id is Duplicate, please configure the appropriate ID attribute or reset the relevant values:', warnFeatures);
         }
         return { sample1000, idMap };
     }
