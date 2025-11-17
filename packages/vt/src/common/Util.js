@@ -201,3 +201,21 @@ export function wrap(n, min, max) {
     const w = ((n - min) % d + d) % d + min;
     return w;
 }
+
+export function checkFeatureId(feature, feaIdProp) {
+    if (!feature) {
+        return;
+    }
+    feature.properties = feature.properties || {};
+    if (feaIdProp) {
+        let idProp = feaIdProp;
+        if (isObject(feaIdProp)) {
+            idProp = feaIdProp[feature.layer || "0"];
+        }
+        feature.id = feature.properties[idProp];
+    }
+    if (isNil(feature.id)) {
+        //添加必要的前缀，防止和原来的数据里冲突
+        feature.id = 'mtk_vt_f_' + uid();
+    }
+}

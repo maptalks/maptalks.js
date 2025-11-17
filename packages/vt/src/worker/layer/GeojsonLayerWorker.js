@@ -1,4 +1,4 @@
-import { isString, isObject, extend, isNumber, isNil } from '../../common/Util';
+import { isString, extend, isNumber, checkFeatureId } from '../../common/Util';
 import Ajax from '../util/Ajax';
 import geojsonvt from '@maptalks/geojson-vt';
 import BaseLayerWorker from './BaseLayerWorker';
@@ -173,7 +173,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
         // generate id
         const sample1000 = [];
         const idMap = {};
-        let uid = 0;
+        // let uid = 0;
         const feaIdProp = this.options.featureIdProperty;
         const idTemp = {}, warnFeatures = [];
         function visit(f, index, length) {
@@ -183,18 +183,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             if (f.type === 'Feature' && !f.geometry) {
                 return;
             }
-            f.properties = f.properties || {};
-            if (feaIdProp) {
-                let idProp = feaIdProp;
-                if (isObject(feaIdProp)) {
-                    idProp = feaIdProp[f.layer || '0'];
-                }
-                f.id = f.properties[idProp];
-            }
-            if (isNil(f.id)) {
-                //添加必要的前缀，防止和原来的数据里冲突
-                f.id = 'mtk_vt_f_' + uid++;
-            }
+            checkFeatureId(f, feaIdProp);
             if (idTemp[f.id]) {
                 warnFeatures.push(f);
             }

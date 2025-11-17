@@ -1,6 +1,6 @@
 import { Extent, Util } from "maptalks";
 
-import { isNumber, isObject, isString } from "../../common/Util";
+import { checkFeatureId, isNumber, isObject, isString } from "../../common/Util";
 
 import Ajax from "../../worker/util/Ajax";
 import type { ArrayExtent, Callback, LayerJSONType } from "maptalks";
@@ -256,18 +256,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
                 if (!f || !f.geometry) {
                     continue;
                 }
-                f.properties = f.properties || {};
-                if (feaIdProp) {
-                    let idProp = feaIdProp;
-                    if (isObject(feaIdProp)) {
-                        idProp = feaIdProp[f.layer || "0"];
-                    }
-                    f.id = f.properties[idProp];
-                }
-                if (Util.isNil(f.id)) {
-                    //添加必要的前缀，防止和原来的数据里冲突
-                    f.id = 'mtk_vt_f_' + uid++;
-                }
+                checkFeatureId(f, feaIdProp);
                 if (idTemp[f.id]) {
                     warnFeatures.push(f);
                 }
