@@ -141,6 +141,7 @@ class VectorTileLayer extends maptalks.TileLayer {
   _replacer?: Function;
   //@internal
   _urlModifier?: Function;
+  forceReloadIng: boolean;
   options: VectorTileLayerOptionsType;
 
   // create a layer instance from given json
@@ -351,12 +352,15 @@ class VectorTileLayer extends maptalks.TileLayer {
   }
 
   forceReload(): this {
+    this.forceReloadIng=true;
     // expire cached tiles in worker
     const renderer = this.getRenderer() as any;
     if (renderer) {
       renderer._incrWorkerCacheIndex();
     }
-    return super.forceReload();
+     super.forceReload();
+     this.forceReloadIng=false;
+     return this;
   }
 
   onWorkerReady() { }

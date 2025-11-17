@@ -77,13 +77,18 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             this.layer.fire('cleardata');
             return;
         }
+        const forceReloadIng = this.layer.forceReloadIng;
         this._workersyncing = true;
         this._workerConn.clearData(() => {
             this._workersyncing = false;
             this._needRetire = true;
             this.setToRedraw();
-
             this.layer.fire('cleardata');
+            const layer = this.layer;
+            //GeoJSONVectorTileLayer 强制刷新的状态，需要重置数据,如果data is url即重新fetch geojson，如果是geojson对象将没有任何意义
+            if (forceReloadIng && isFunction(layer.setData)) {
+                layer.setData(layer.options.data);
+            }
         });
     }
 

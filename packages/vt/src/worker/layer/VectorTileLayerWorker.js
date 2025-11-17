@@ -20,8 +20,9 @@ export default class VectorTileLayerWorker extends LayerWorker {
         callback();
     }
 
-    clearData() {
+    clearData(cb) {
         this._abortRequests();
+        cb();
     }
 
     /**

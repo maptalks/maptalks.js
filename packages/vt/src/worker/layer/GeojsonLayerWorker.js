@@ -30,8 +30,9 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
         this.setData(options.data, cb);
     }
 
-    clearData() {
+    clearData(cb) {
         delete this.index;
+        cb();
     }
 
     /**
