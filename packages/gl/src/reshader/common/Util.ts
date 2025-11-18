@@ -240,7 +240,7 @@ export function clamp(n: number, min: number, max: number) {
  * @param regl regl context
  * @returns
  */
-export function isSupportVAO(regl: any) {
+export function _isSupportVAO(regl: any) {
     if (globalThis['MAPTALKS_DISABLE_VAO']) {
         return false;
     }
@@ -249,6 +249,16 @@ export function isSupportVAO(regl: any) {
     }
     // return false;
     return regl && regl.hasExtension && regl.hasExtension('oes_vertex_array_object');
+}
+
+export function isSupportVAO(regl: any) {
+    if (regl.supportVAO === true) {
+        return true;
+    }
+    if (regl.supportVAO === false) {
+        return false;
+    }
+    return _isSupportVAO(regl);
 }
 
 /**
@@ -282,7 +292,7 @@ export function getBufferSize(buffer: AttributeBufferData | AttributeType): numb
     } else if ((buffer as number[]).length) {
         // FLOAT32 in default
         return (buffer as number[]).length * 4;
-    }else if ((buffer as AttributeBufferData).buffer && (buffer as AttributeBufferData).buffer.destroy) {
+    } else if ((buffer as AttributeBufferData).buffer && (buffer as AttributeBufferData).buffer.destroy) {
         const reglBuffer = (buffer as any).buffer['_buffer'];
         if (reglBuffer) {
             // regl

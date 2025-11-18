@@ -9,6 +9,7 @@ import PostProcess from './postprocess/PostProcess.js';
 import AnalysisPainter from '../analysis/AnalysisPainter.js';
 import ScanEffectPainter from './effect/ScanEffectPainter.js';
 import CanvasCompatible from './CanvasCompatible';
+import { _isSupportVAO } from '../reshader/common/Util';
 
 const { LayerAbstractRenderer } = maptalks.renderer;
 
@@ -54,7 +55,14 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         this.setToRedraw();
     }
 
+    _updateDeviceStates() {
+        if (this.device) {
+            this.device.supportVAO = _isSupportVAO(this.device);
+        }
+    }
+
     render(...args) {
+        this._updateDeviceStates();
         if (!this.getMap() || !this.layer.isVisible()) {
             return;
         }
@@ -85,6 +93,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
     }
 
     drawOnInteracting(...args) {
+        this._updateDeviceStates();
         if (!this.getMap() || !this.layer.isVisible()) {
             return;
         }
@@ -112,7 +121,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         }
         // const fGL = this.reglGL;
 
-        const sceneConfig =  this.layer._getSceneConfig();
+        const sceneConfig = this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
         const ssrMode = this.isSSROn();
 
@@ -379,7 +388,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
     }
 
     hasRenderTarget() {
-        const sceneConfig =  this.layer._getSceneConfig();
+        const sceneConfig = this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
         if (!config || !config.enable) {
             return false;
@@ -519,7 +528,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         this._analysisPainter = new AnalysisPainter(graphics, layer);
         this._scanEffectPainter = new ScanEffectPainter(graphics, layer);
 
-        const sceneConfig =  this.layer._getSceneConfig() || {};
+        const sceneConfig = this.layer._getSceneConfig() || {};
         const config = sceneConfig && sceneConfig.postProcess;
         const ratio = config && config.antialias && config.antialias.jitterRatio || 0.2;
         this._jitGetter = new reshader.Jitter(ratio);
@@ -745,7 +754,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             delete context.sceneFilter;
         }
         const drawn = this._groundPainter.paint(context);
-        if (this._groundPainter.needToRedraw()){
+        if (this._groundPainter.needToRedraw()) {
             this.setToRedraw();
         }
         if (sceneFilter) {
@@ -790,7 +799,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
     }
 
     isEnableSSR() {
-        const sceneConfig =  this.layer._getSceneConfig();
+        const sceneConfig = this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
         return config && config.enable && config.ssr && config.ssr.enable;
     }
@@ -828,13 +837,13 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
     }
 
     isEnableOutline() {
-        const sceneConfig =  this.layer._getSceneConfig();
+        const sceneConfig = this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
         return config && config.enable && config.outline && config.outline.enable;
     }
 
     isEnableWeather() {
-        const sceneConfig =  this.layer._getSceneConfig();
+        const sceneConfig = this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.weather;
         return config && config.enable;
     }
@@ -898,7 +907,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
 
 
     _prepareDrawContext(timestamp) {
-        const sceneConfig =  this.layer._getSceneConfig();
+        const sceneConfig = this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
         const weatherConfig = sceneConfig && sceneConfig.weather;
         const context = {
@@ -1010,7 +1019,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
     }
 
     _prepareShadowContext(context) {
-        const sceneConfig =  this.layer._getSceneConfig();
+        const sceneConfig = this.layer._getSceneConfig();
         if (!sceneConfig || !sceneConfig.shadow || !sceneConfig.shadow.enable) {
             if (this._shadowProcess) {
                 this._shadowProcess.dispose();
@@ -1032,7 +1041,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
 
     _renderShadow(context) {
         const fbo = context.renderTarget && context.renderTarget.fbo;
-        const sceneConfig =  this.layer._getSceneConfig();
+        const sceneConfig = this.layer._getSceneConfig();
         const meshes = [];
         let forceUpdate = context.states.lightDirectionChanged || context.states.viewChanged;
         this.forEachRenderer((renderer, layer) => {
@@ -1121,7 +1130,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
     }
 
     _getFramebufferTarget() {
-        const sceneConfig =  this.layer._getSceneConfig();
+        const sceneConfig = this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
         if (!this._targetFBO) {
             const device = this.device;
@@ -1233,7 +1242,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             this._needRetireFrames = false;
             return;
         }
-        const sceneConfig =  this.layer._getSceneConfig();
+        const sceneConfig = this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
         if (!config || !config.enable) {
             if (this.isEnableWeather()) {
@@ -1393,7 +1402,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
     }
 
     isEnableScanEffect() {
-        const sceneConfig =  this.layer._getSceneConfig();
+        const sceneConfig = this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess && sceneConfig.postProcess.scanEffect;
         return config && config.enable && config.effects.length;
     }
