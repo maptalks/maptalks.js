@@ -99,12 +99,14 @@ describe('layer related specs', () => {
         const layer = new GeoJSONVectorTileLayer('gvt', {
             data: polygon
         });
-        layer.once('datareceived', () => {
+        setTimeout(() => {
             layer.forceReload();
             setTimeout(() => {
+                const rendredFeatures = layer.getRenderedFeatures();
+                assert(rendredFeatures.length > 0);
                 done();
             }, 200);
-        });
+        }, 500);
         layer.addTo(map);
     });
 
