@@ -193,12 +193,13 @@ export default class WorkerConnection extends maptalks.worker.Actor {
         this.send(data, null, cb, this._dedicatedVTWorkers[layerId]);
     }
 
-    clearData(cb) {
+    clearData(params, cb) {
         const layerId = this._workerLayerId;
         const data = {
             mapId: this._mapId,
             layerId,
-            command: 'clearData'
+            command: 'clearData',
+            params
         };
         this.send(data, null, cb, this._dedicatedVTWorkers[layerId]);
     }

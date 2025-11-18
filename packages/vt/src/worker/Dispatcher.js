@@ -118,10 +118,10 @@ export default class Dispatcher {
         }
     }
 
-    clearData({ mapId, layerId },callback) {
+    clearData({ mapId, layerId, params }, callback) {
         const layer = this._getLayerById(mapId, layerId);
         if (layer) {
-            layer.clearData(callback);
+            layer.clearData(params, callback);
             this._resetCache();
         }
     }

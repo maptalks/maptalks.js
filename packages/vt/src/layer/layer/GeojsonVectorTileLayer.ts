@@ -65,12 +65,14 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     _dataExtent: maptalks.Extent;
     //@internal
     _idMaps: Record<string, any>;
+    dataIsURL:boolean;
 
     constructor(id: string, options: GeoJSONVectorTileLayerParamOptionsType) {
     // use map's spatial reference
     options = options || {};
     options.spatialReference = null;
     super(id, options as GeoJSONVectorTileLayerOptionsType);
+    this.dataIsURL=false;
     this.setData(options["data"]);
   }
 
@@ -119,6 +121,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
   setData(data: any) {
     this.options.data = data;
     if (data && (isString(data) || data.url)) {
+        this.dataIsURL=true;
       const renderInited = !!this.getRenderer();
       if (renderInited) {
         this._updateWorker();
