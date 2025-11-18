@@ -9,7 +9,6 @@ import PostProcess from './postprocess/PostProcess.js';
 import AnalysisPainter from '../analysis/AnalysisPainter.js';
 import ScanEffectPainter from './effect/ScanEffectPainter.js';
 import CanvasCompatible from './CanvasCompatible';
-import { _isSupportVAO } from '../reshader/common/Util';
 
 const { LayerAbstractRenderer } = maptalks.renderer;
 
@@ -55,14 +54,8 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         this.setToRedraw();
     }
 
-    _updateDeviceStates() {
-        if (this.device) {
-            this.device.supportVAO = _isSupportVAO(this.device);
-        }
-    }
 
     render(...args) {
-        this._updateDeviceStates();
         if (!this.getMap() || !this.layer.isVisible()) {
             return;
         }
@@ -93,7 +86,6 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
     }
 
     drawOnInteracting(...args) {
-        this._updateDeviceStates();
         if (!this.getMap() || !this.layer.isVisible()) {
             return;
         }

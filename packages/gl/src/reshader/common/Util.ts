@@ -240,7 +240,7 @@ export function clamp(n: number, min: number, max: number) {
  * @param regl regl context
  * @returns
  */
-export function _isSupportVAO(regl: any) {
+function _isSupportVAO(regl: any) {
     if (globalThis['MAPTALKS_DISABLE_VAO']) {
         return false;
     }
@@ -252,13 +252,10 @@ export function _isSupportVAO(regl: any) {
 }
 
 export function isSupportVAO(regl: any) {
-    if (regl.supportVAO === true) {
-        return true;
+    if (regl.supportVAO === undefined) {
+        regl.supportVAO = _isSupportVAO(regl);
     }
-    if (regl.supportVAO === false) {
-        return false;
-    }
-    return _isSupportVAO(regl);
+    return regl.supportVAO;
 }
 
 /**
