@@ -1,4 +1,4 @@
-import * as maptalks from "maptalks";
+import { Geometry, Circle, Rectangle, Ellipse, Sector, Coordinate, Point, Polygon, MultiPolygon } from "maptalks";
 
 import type { LitDataConfig, LitMaterial } from "../../types";
 import { extend, isNil } from "../../common/Util";
@@ -13,6 +13,16 @@ import { build3DExtrusion } from "../../worker/builder/";
 import computeOMBB from "../../worker/builder/Ombb";
 import { fromJSON } from "./util/from_json";
 import { meterToPoint } from "../plugins/Util";
+
+
+function isSpecialGeometry(geo: Geometry) {
+    if (!geo) {
+        return false;
+    }
+    return (geo instanceof Circle) || (geo instanceof Ellipse) || (geo instanceof Sector) || (geo instanceof Rectangle);
+}
+
+const TEMP_POLYGON_COORDINATES: Array<Array<Coordinate>> = [];
 
 const { DEFAULT_TEX_WIDTH } = getVectorPacker();
 
@@ -153,7 +163,7 @@ const sideFilter = (mesh) => {
 };
 
 class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
-    GeometryTypes = [maptalks.Polygon, maptalks.MultiPolygon];
+    GeometryTypes = [Polygon, MultiPolygon];
     sidePainter: Record<string, any>;
     sidePainterSymbol: Record<string, any>;
 
@@ -375,8 +385,8 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         const tileRatio = 1;
         // 原zoom是用来计算functiont-type 的symbol属性值
         const zoom = map.getZoom();
-        const tilePoint = new maptalks.Point(0, 0);
-        const tileCoord = new maptalks.Coordinate(0, 0);
+        const tilePoint = new Point(0, 0);
+        const tileCoord = new Coordinate(0, 0);
         const dataConfig = extend(
             {},
             DEFAULT_DATACONFIG,
@@ -461,8 +471,8 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
             geo.setProperties({});
         }
         if (!geo.getProperties()[PROP_OMBB]) {
-            const coordinates = geo.getCoordinates();
-            if (geo instanceof maptalks.MultiPolygon) {
+            let coordinates = geo.getCoordinates();
+            if (geo instanceof MultiPolygon) {
                 const ombb = [];
                 for (let i = 0; i < coordinates.length; i++) {
                     const shell = coordinates[i] && coordinates[i][0];
@@ -470,6 +480,10 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
                 }
                 geo.getProperties()[PROP_OMBB] = ombb;
             } else {
+                if (isSpecialGeometry(geo)) {
+                    TEMP_POLYGON_COORDINATES[0] = geo.getShell();
+                    coordinates = TEMP_POLYGON_COORDINATES;
+                }
                 const ombb = computeOMBB(coordinates[0]);
                 geo.getProperties()[PROP_OMBB] = ombb;
             }
