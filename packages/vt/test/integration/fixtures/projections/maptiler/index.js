@@ -1,5 +1,3 @@
-const { VectorTileLayer } = require('../../../../../dist/maptalks.vt.js');
-
 module.exports = {
     tileSize: 512,
     tms: true,
@@ -12,7 +10,7 @@ module.exports = {
         }
     },
     renderingCount: 20,
-    ctor: VectorTileLayer,
+    isVectorTile: true,
     containerWidth: 512,
     containerHeight: 512
 };
