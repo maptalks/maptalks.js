@@ -48,7 +48,7 @@
     "karma-mocha": "^2.0.1",
     "karma-mocha-reporter": "^2.2.5",
     "maptalks": "workspace:*",
-    "mocha": "^11.0.1",
+    "mocha": "^10.3.0",
     "rollup": "^4.17.2"
   },
   "dependencies": {
