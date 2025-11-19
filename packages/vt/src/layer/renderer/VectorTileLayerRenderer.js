@@ -962,6 +962,24 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         const useDefault = this.layer.isDefaultRender() && this._layerPlugins;
         const parentContext = this._parentContext;
         const plugins = this._getAllPlugins();
+        const regl = this.regl || this.device;
+        const gl = this.gl;
+        const mergeContext = {
+            regl,
+            layer: this.layer,
+            symbol: null,
+            gl,
+            isRenderingTerrain,
+            sceneConfig: null,
+            dataConfig: null,
+            pluginIndex: null,
+            timestamp
+        }
+        //数据结构是一样的，无需每次合并,每次替换需要更新的值即可
+        if (parentContext) {
+            extend(mergeContext, parentContext);
+        }
+
         plugins.forEach((plugin, idx) => {
             if (!plugin || filter && !filter(plugin)) {
                 return;
@@ -970,24 +988,34 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             if (!visible) {
                 return;
             }
-            const regl = this.regl || this.device;
-            const gl = this.gl;
             const symbol = useDefault ? plugin.defaultSymbol : plugin.style && plugin.style.symbol;
-            const context = {
-                regl,
-                layer: this.layer,
-                symbol,
-                gl,
-                isRenderingTerrain,
-                sceneConfig: plugin.config ? plugin.config.sceneConfig : null,
-                dataConfig: plugin.config ? plugin.config.dataConfig : null,
-                pluginIndex: idx,
-                timestamp
-            };
-            if (parentContext) {
-                extend(context, parentContext);
-            }
-            plugin.startFrame(context);
+            const sceneConfig = plugin.config ? plugin.config.sceneConfig : null;
+            const dataConfig = plugin.config ? plugin.config.dataConfig : null;
+
+            mergeContext.symbol = null;
+            mergeContext.sceneConfig = null;
+            mergeContext.dataConfig = null;
+
+            mergeContext.pluginIndex = idx;
+            mergeContext.symbol = symbol;
+            mergeContext.sceneConfig = sceneConfig;
+            mergeContext.dataConfig = dataConfig;
+
+            // const context = {
+            //     regl,
+            //     layer: this.layer,
+            //     symbol,
+            //     gl,
+            //     isRenderingTerrain,
+            //     sceneConfig: plugin.config ? plugin.config.sceneConfig : null,
+            //     dataConfig: plugin.config ? plugin.config.dataConfig : null,
+            //     pluginIndex: idx,
+            //     timestamp
+            // };
+            // if (parentContext) {
+            //     extend(context, parentContext);
+            // }
+            plugin.startFrame(mergeContext);
         });
     }
 
