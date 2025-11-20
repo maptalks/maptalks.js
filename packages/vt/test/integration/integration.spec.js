@@ -4,8 +4,8 @@ const assert = require('assert');
 const path = require('path');
 const fs = require('fs');
 const { match, readSpecs, writeImageData, hasOwn } = require('./util');
-const { GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.js');
 const { GroupGLLayer } = require('@maptalks/gl');
+const { GeoJSONVectorTileLayer, VectorTileLayer } = require('../../dist/maptalks.vt.js');
 const startServer = require('../specs/server.js');
 const PORT = 4398;
 
@@ -90,7 +90,8 @@ describe('vector tile integration specs', () => {
                 style.workerGlyph = false;
             }
             // style.debug = true;
-            const layer = new (style.ctor || GeoJSONVectorTileLayer)('gvt', style);
+            const ctor = style.isVectorTile ? VectorTileLayer : GeoJSONVectorTileLayer;
+            const layer = new ctor('gvt', style);
             let generated = false;
             let count = 0;
             const time = performance.now();

@@ -1,5 +1,4 @@
 //https://github.com/maptalks/issues/issues/827
-const { VectorTileLayer } = require('../../../../../dist/maptalks.vt.js');
 
 module.exports = {
     urlTemplate: 'http://localhost:4398/827/{z}/{x}/{y}.pbf',
@@ -9,7 +8,7 @@ module.exports = {
         zoom: 15
     },
     renderingCount: 12,
-    ctor: VectorTileLayer,
+    isVectorTile: true,
     containerWidth: 512,
     containerHeight: 512,
     // debug:true
