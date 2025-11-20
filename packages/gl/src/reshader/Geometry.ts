@@ -89,6 +89,9 @@ export default class Geometry {
     }
 
     static padGPUBufferAlignment(array: TypedArray, vertexCount: number): TypedArray {
+        if (vertexCount === 0) {
+            return array;
+        }
         const itemBytes = array.byteLength / vertexCount;
         if (itemBytes % 4 === 0) {
             return array;

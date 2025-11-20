@@ -20,7 +20,6 @@ async function initGPUDevice() {
 
 export default class MapGPURenderer extends MapGLRenderer {
     device: any;
-    gpuDevice: GPUDevice;
 
     drawLayers(layers: Layer[], framestamp: number) {
         const updated = super.drawLayers(layers, framestamp);
