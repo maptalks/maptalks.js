@@ -363,7 +363,7 @@ describe('update style specs', () => {
                     symbol: { lineColor: '#0f0', lineWidth: 8, lineOpacity: 1 }
                 }
             ]);
-        });
+        }, true, null, 0, 2, true);
     });
 
     // 2022-10-14, 暂时去掉renderStyle的相关方法
@@ -2511,7 +2511,7 @@ describe('update style specs', () => {
         }, 500);
     });
 
-    function assertChangeStyle(done, expectedColor, changeFun, isSetStyle, style, renderCount, doneRenderCount) {
+    function assertChangeStyle(done, expectedColor, changeFun, isSetStyle, style, renderCount, doneRenderCount, isListenToRefreshStyle) {
         style = style || [
             {
                 name: 'lineStyle',
@@ -2543,7 +2543,8 @@ describe('update style specs', () => {
             dirty = true;
         });
         //因为是setStyle时，数据会被清空重绘，所以需要监听两次canvasisdirty
-        layer.on(isSetStyle ? 'canvasisdirty' : 'layerload', () => {
+        const eventName = isSetStyle ? 'canvasisdirty' : 'layerload'
+        layer.on(eventName, () => {
             if (!dirty) {
                 return;
             }
@@ -2553,13 +2554,21 @@ describe('update style specs', () => {
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 changeFun(layer);
-            } else if (count === renderCount + doneRenderCount) {
+            } else if (!isListenToRefreshStyle && count === renderCount + doneRenderCount) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //变成绿色
                 assert.deepEqual(pixel, expectedColor);
                 done();
             }
         });
+        if (isListenToRefreshStyle) {
+            layer.once('refreshstyle', () => {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //变成绿色
+                assert.deepEqual(pixel, expectedColor);
+                done();
+            });
+        }
         layer.addTo(map);
     }
 
