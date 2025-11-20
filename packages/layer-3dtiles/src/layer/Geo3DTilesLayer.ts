@@ -31,7 +31,7 @@ const options: Geo3DTilesLayerOptions = {
     'loadingLimitOnInteracting': 5,
     'loadingLimit': 10,
     'debug': false,
-    'meshLimitPerFrame': 1,
+    'meshLimitPerFrame': 2,
     'i3sNodepageLimitPerFrame': 1,
     'enableI3SCompressedGeometry': true,
     'forceI3SCompressedGeometry': true,
@@ -41,7 +41,7 @@ const options: Geo3DTilesLayerOptions = {
     'geometryEvents': false,
     'alwaysShowTopTiles': true,
     // 'ambientLight' : [0, 0, 0],
-    // 'heightOffsets' : null,
+    // 'heightOffsets': null,
     // 'polygonOffsets' : null,
     'antialias': false,
     'offset': [0, 0],
@@ -146,7 +146,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
     isGeo3DTilesLayer: boolean
     options: Geo3DTilesLayerOptions
     //@internal
-    _nodeBoxes: (TileSphereBox | TileOrientedBox | TileRegionBox)[]
+    _nodeBoxes: Map<string, (TileSphereBox | TileOrientedBox | TileRegionBox)>;
     //@internal
     _rootMap: Record<string, number>
     //@internal
@@ -166,8 +166,8 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         super(id, options);
         this.isGeo3DTilesLayer = true;
         this._initRoots();
-        //tileset.json requests
-        this._nodeBoxes = [];
+        //tileset.json requests, use map for perf 2x faster
+        this._nodeBoxes = new Map();
     }
 
     //@internal
@@ -589,7 +589,8 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         if (!Array.isArray(coordOffset)) {
             throw new Error('service.coordOffset must be an array');
         }
-        if (!boundingVolume._centerTransformed && (!node.boundingVolume || (!heightOffset && mat4.exactEquals(node.matrix as mat4, IDENTITY_MATRIX) && !hasOffset && coordOffset === EMPTY_COORD_OFFSET))) {
+        if (!boundingVolume._centerTransformed &&
+            (!node.boundingVolume || ((!heightOffset && heightOffset !== 0) && mat4.exactEquals(node.matrix as mat4, IDENTITY_MATRIX) && !hasOffset && coordOffset === EMPTY_COORD_OFFSET))) {
             return;
         }
         if (boundingVolume.box && boundingVolume.region) {
@@ -824,7 +825,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
     //@internal
     _isTileInFrustum(node: TileNode, maxExtent: maptalks.Extent, projectionView: number[]): boolean {
         const id = node.id;
-        let nodeBox = this._nodeBoxes[id];
+        let nodeBox = this._nodeBoxes.get(id);
         const { boundingVolume } = node;
         const region = boundingVolume.region;
         const box = boundingVolume.box;
@@ -833,14 +834,18 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         const renderer = this.getRenderer() as any;
         if (!nodeBox || nodeBox.version !== rootNode.version) {
             if (region) {
-                nodeBox = this._nodeBoxes[id] = this._createRegionBox(node);
+                nodeBox = this._createRegionBox(node);
             } else if (box) {
-                nodeBox = this._nodeBoxes[id] = this._createBBox(node);
+                nodeBox = this._createBBox(node);
             } else if (sphere) {
                 //[xcenter, ycenter, radius]
-                nodeBox = this._nodeBoxes[id] = this._createSphere(node);
+                nodeBox = this._createSphere(node);
+            }
+            if (nodeBox) {
+                this._nodeBoxes.set(id, nodeBox);
             }
             nodeBox.version = rootNode.version;
+
             if (node._boxMesh) {
                 renderer._deleteBoxMesh(node._boxMesh);
                 delete node._boxMesh;
@@ -849,7 +854,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
 
         const service = this._getNodeService(node._rootIdx);
         if (service['debug']) {
-            this._nodeBoxes[id].node = node;
+            this._nodeBoxes.get(id).node = node;
             renderer._createBoxMesh(node);
         }
 
@@ -878,12 +883,12 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         //         return false;
         //     }
         // }
-
-        if (nodeBox.obbox) {
+        const obbox = (nodeBox as TileOrientedBox).obbox;
+        if (obbox) {
             // https://blog.csdn.net/u011760195/article/details/105351979
-            return intersectsOrientedBox(projectionView, nodeBox.obbox);
+            return intersectsOrientedBox(projectionView, obbox);
         } else if (sphere) {
-            return intersectsSphere(projectionView, nodeBox.sphereBox);
+            return intersectsSphere(projectionView, (nodeBox as TileSphereBox).sphereBox);
         }
         return false;
     }
@@ -1267,7 +1272,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
 
     //@internal
     _getNodeBox(id: string): TileRegionBox | TileSphereBox | TileOrientedBox {
-        return this._nodeBoxes[id];
+        return this._nodeBoxes.get(id);
     }
 
     /**
@@ -1686,7 +1691,7 @@ export type Geo3DTilesLayerOptions = {
     'geometryEvents'?: boolean,
     'alwaysShowTopTiles'?: boolean,
     // 'ambientLight' : [0, 0, 0],
-    // 'heightOffsets' : null,
+    'heightOffsets'?: number;
     // 'polygonOffsets' : null,
     'antialias'?: boolean,
     'offset'?: number[] | OffsetFunction,
@@ -1955,7 +1960,8 @@ export type IdentifyOptions = {
 type TileBoxCenter = {
     boxCoord: maptalks.Coordinate,
     boxCenter: number[],
-    node?: TileNode
+    node?: TileNode,
+    version?: number;
 };
 
 type TileOrientedBox = {
