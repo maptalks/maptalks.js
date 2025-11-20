@@ -986,14 +986,16 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         renderContext.pluginIndex = null;
         renderContext.symbol = null;
 
+        for (let i = 0, len = plugins.length; i < len; i++) {
+            const plugin = plugins[i];
+            const idx = i;
 
-        plugins.forEach((plugin, idx) => {
             if (!plugin || filter && !filter(plugin)) {
-                return;
+                continue;
             }
             const visible = this._isVisible(idx);
             if (!visible) {
-                return;
+                continue;
             }
             const symbol = useDefault ? plugin.defaultSymbol : plugin.style && plugin.style.symbol;
             const sceneConfig = plugin.config ? plugin.config.sceneConfig : null;
@@ -1024,7 +1026,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             //     extend(context, parentContext);
             // }
             plugin.startFrame(renderContext);
-        });
+        }
     }
 
     _endFrame(timestamp) {
@@ -1045,34 +1047,38 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         // maptalks/issues#202, finalRender后不再更新collision，以免后处理（如bloom）阶段继续更新collision造成bug
         if (this.layer.options.collision && !parentContext.isPostProcess) {
             //按照plugin顺序更新collision索引
-            plugins.forEach((plugin) => {
+            for (let i = 0, len = plugins.length; i < len; i++) {
+                const plugin = plugins[i];
+
                 if (!this._isVisible(plugin) || !plugin.hasMesh()) {
-                    return;
+                    continue;
                 }
                 if (mode && mode !== 'default' && !plugin.supportRenderMode(mode)) {
-                    return;
+                    continue;
                 }
                 if (isRenderingTerrain && !terrainVectorFilter(plugin)) {
-                    return;
+                    continue;
                 }
                 const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp, renderContext);
                 plugin.prepareRender(context);
                 plugin.updateCollision(context);
-            });
+            }
         } else {
-            plugins.forEach((plugin) => {
+            for (let i = 0, len = plugins.length; i < len; i++) {
+                const plugin = plugins[i];
+
                 if (!this._isVisible(plugin) || !plugin.hasMesh()) {
-                    return;
+                    continue;
                 }
                 if (mode && mode !== 'default' && !plugin.supportRenderMode(mode)) {
-                    return;
+                    continue;
                 }
                 if (isRenderingTerrain && !terrainVectorFilter(plugin)) {
-                    return;
+                    continue;
                 }
                 const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp, renderContext);
                 plugin.prepareRender(context);
-            });
+            }
         }
 
         const isFirstRender = this._currentTimestamp !== parentContext.timestamp;
@@ -1086,16 +1092,18 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             groundContext.offsetUnits = groundOffset
             this._groundPainter.paint(groundContext);
         }
-        plugins.forEach((plugin, idx) => {
+        for (let i = 0, len = plugins.length; i < len; i++) {
+            const plugin = plugins[i];
+            const idx = i;
             const hasMesh = this._isVisitable(plugin);
             if (!hasMesh) {
-                return;
+                continue;
             }
             if (mode && mode !== 'default' && !plugin.supportRenderMode(mode)) {
-                return;
+                continue;
             }
             if (isRenderingTerrain && !terrainVectorFilter(plugin)) {
-                return;
+                continue;
             }
             this.device.clear({
                 stencil: 0xFF,
@@ -1112,7 +1120,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 this.setToRedraw();
             }
             dirty = true;
-        });
+        }
         if (dirty) {
             this.layer.fire('canvasisdirty');
         }
@@ -1465,15 +1473,17 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             filter = terrainVectorFilter;
         }
 
-        plugins.forEach((plugin, idx) => {
+        for (let i = 0, len = plugins.length; i < len; i++) {
+            const plugin = plugins[i];
+            const idx = i;
             if (!plugin || filter && !filter(plugin)) {
-                return;
+                continue;
             }
             if (!pluginData[idx]) {
-                return;
+                continue;
             }
             if (!tileCache[idx]) {
-                return;
+                continue;
             }
             if (tileCache[idx].plugin !== plugin) {
                 if (tileCache[idx]) {
@@ -1486,10 +1496,10 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                         tileInfo: tileInfo
                     });
                 }
-                return;
+                continue;
             }
             if (this.drawingParentTiles && !plugin.painter.shouldDrawParentTile()) {
-                return;
+                continue;
             }
             const isRenderingTerrainSkin = isRenderingTerrain && terrainSkinFilter(plugin);
             const regl = this.regl || this.device;
@@ -1530,7 +1540,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 //let plugin to determine when to redraw
                 this.setToRedraw();
             }
-        });
+        }
         if (tileData && tileData.style === this._styleCounter) {
             this._retirePrevTile(tileInfo);
         }
