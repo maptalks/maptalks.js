@@ -975,7 +975,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             pluginIndex: null,
             timestamp
         }
-        //数据结构是一样的，无需每次合并,每次替换需要更新的值即可
+        //数据结构是一样的，无需每次合并,每次替换需要更新的值即可,也可能存在bug
         if (parentContext) {
             extend(mergeContext, parentContext);
         }
@@ -1029,6 +1029,21 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         const isRenderingTerrain = this._isRenderingTerrain();
         const isFinalRender = !parentContext.timestamp || parentContext.isFinalRender;
 
+        const regl = this.regl || this.device;
+        const gl = this.gl;
+        const mergeContext = {
+            regl,
+            layer: this.layer,
+            gl,
+            sceneConfig: null,
+            pluginIndex: null,
+            timestamp,
+            cameraPosition
+        }
+        //数据结构是一样的，无需每次合并,每次替换需要更新的值即可,也可能存在bug
+        if (parentContext) {
+            extend(mergeContext, parentContext);
+        }
         // maptalks/issues#202, finalRender后不再更新collision，以免后处理（如bloom）阶段继续更新collision造成bug
         if (this.layer.options.collision && !parentContext.isPostProcess) {
             //按照plugin顺序更新collision索引
@@ -1042,7 +1057,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 if (isRenderingTerrain && !terrainVectorFilter(plugin)) {
                     return;
                 }
-                const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp);
+                const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp, mergeContext);
                 plugin.prepareRender(context);
                 plugin.updateCollision(context);
             });
@@ -1057,7 +1072,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 if (isRenderingTerrain && !terrainVectorFilter(plugin)) {
                     return;
                 }
-                const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp);
+                const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp, mergeContext);
                 plugin.prepareRender(context);
             });
         }
@@ -1089,7 +1104,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 framebuffer: targetFBO
             });
             const polygonOffsetIndex = this._pluginOffsets[idx] || 0;
-            const context = this._getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp);
+            const context = this._getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp, mergeContext);
             if (plugin.painter && plugin.painter.isEnableTileStencil(context)) {
                 this._drawTileStencil(targetFBO, plugin.painter);
             }
@@ -1157,9 +1172,22 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         }
     }
 
-    _getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp) {
+    _getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp, mergeContext) {
         const isRenderingTerrain = this._isRenderingTerrain();
         const isRenderingTerrainSkin = isRenderingTerrain && plugin && terrainSkinFilter(plugin);
+        if (mergeContext) {
+            mergeContext.isRenderingTerrain = isRenderingTerrain;
+            mergeContext.isRenderingTerrainSkin = isRenderingTerrainSkin;
+            mergeContext.polygonOffsetIndex = polygonOffsetIndex;
+            mergeContext.cameraPosition = cameraPosition;
+            mergeContext.timestamp = timestamp;
+
+            mergeContext.sceneConfig = null;
+            mergeContext.pluginIndex = null;
+            mergeContext.sceneConfig = plugin && plugin.config.sceneConfig;
+            mergeContext.pluginIndex = plugin && plugin.renderIndex;
+            return mergeContext;
+        }
         const regl = this.regl || this.device;
         const gl = this.gl;
         const context = {
