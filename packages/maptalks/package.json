@@ -25,7 +25,7 @@
     "clean": "rimraf dist",
     "docs:build": "npx tsc --project docs/typedoc-plugins && npx typedoc",
     "docs:english": "npx tsc --project docs/typedoc-plugins && npx typedoc --lang english",
-    "tsc": "tsc --noEmit",
+    "tsc": "tsc",
     "build-dts": "dts-bundle-generator src/index.ts -o dist/maptalks.d.ts --no-banner --no-check",
     "build": "npm run clean && npm run lint && npm run tsc && rollup -c && npm run build-dts",
     "build-test": "rollup -c --environment BUILD:test",
