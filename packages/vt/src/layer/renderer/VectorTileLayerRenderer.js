@@ -980,7 +980,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         const isRenderingTerrain = this._isRenderingTerrain();
         const useDefault = this.layer.isDefaultRender() && this._layerPlugins;
         const plugins = this._getAllPlugins();
-        const renderContext = this._createtempRenderContext(timestamp, isRenderingTerrain);
+        const renderContext = this._createTempRenderContext(timestamp, isRenderingTerrain);
         renderContext.sceneConfig = null;
         renderContext.dataConfig = null;
         renderContext.pluginIndex = null;
@@ -1038,7 +1038,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         const isFinalRender = !parentContext.timestamp || parentContext.isFinalRender;
 
 
-        const renderContext = this._createtempRenderContext(timestamp, isRenderingTerrain);
+        const renderContext = this._createTempRenderContext(timestamp, isRenderingTerrain);
         renderContext.sceneConfig = null;
         renderContext.pluginIndex = null;
 
