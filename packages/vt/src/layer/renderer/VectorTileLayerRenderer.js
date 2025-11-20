@@ -957,38 +957,76 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         return this._featurePlugins[styleCounter] || EMPTY_ARRAY;
     }
 
+    _createTempRenderContext(timestamp, isRenderingTerrain) {
+        const regl = this.regl || this.device;
+        const gl = this.gl;
+        const context = {
+            regl,
+            layer: this.layer,
+            gl,
+            isRenderingTerrain,
+            timestamp
+        }
+        const parentContext = this._parentContext;
+        //数据结构是一样的，无需每次合并,每次替换需要更新的值即可,也可能存在bug
+        if (parentContext) {
+            extend(context, parentContext);
+        }
+        return context;
+
+    }
+
     _startFrame(timestamp, filter) {
         const isRenderingTerrain = this._isRenderingTerrain();
         const useDefault = this.layer.isDefaultRender() && this._layerPlugins;
-        const parentContext = this._parentContext;
         const plugins = this._getAllPlugins();
-        plugins.forEach((plugin, idx) => {
+        const renderContext = this._createTempRenderContext(timestamp, isRenderingTerrain);
+        renderContext.sceneConfig = null;
+        renderContext.dataConfig = null;
+        renderContext.pluginIndex = null;
+        renderContext.symbol = null;
+
+        for (let i = 0, len = plugins.length; i < len; i++) {
+            const plugin = plugins[i];
+            const idx = i;
+
             if (!plugin || filter && !filter(plugin)) {
-                return;
+                continue;
             }
             const visible = this._isVisible(idx);
             if (!visible) {
-                return;
+                continue;
             }
-            const regl = this.regl || this.device;
-            const gl = this.gl;
             const symbol = useDefault ? plugin.defaultSymbol : plugin.style && plugin.style.symbol;
-            const context = {
-                regl,
-                layer: this.layer,
-                symbol,
-                gl,
-                isRenderingTerrain,
-                sceneConfig: plugin.config ? plugin.config.sceneConfig : null,
-                dataConfig: plugin.config ? plugin.config.dataConfig : null,
-                pluginIndex: idx,
-                timestamp
-            };
-            if (parentContext) {
-                extend(context, parentContext);
-            }
-            plugin.startFrame(context);
-        });
+            const sceneConfig = plugin.config ? plugin.config.sceneConfig : null;
+            const dataConfig = plugin.config ? plugin.config.dataConfig : null;
+
+            renderContext.symbol = null;
+            renderContext.sceneConfig = null;
+            renderContext.dataConfig = null;
+            renderContext.pluginIndex = null;
+
+            renderContext.pluginIndex = idx;
+            renderContext.symbol = symbol;
+            renderContext.sceneConfig = sceneConfig;
+            renderContext.dataConfig = dataConfig;
+
+            // const context = {
+            //     regl,
+            //     layer: this.layer,
+            //     symbol,
+            //     gl,
+            //     isRenderingTerrain,
+            //     sceneConfig: plugin.config ? plugin.config.sceneConfig : null,
+            //     dataConfig: plugin.config ? plugin.config.dataConfig : null,
+            //     pluginIndex: idx,
+            //     timestamp
+            // };
+            // if (parentContext) {
+            //     extend(context, parentContext);
+            // }
+            plugin.startFrame(renderContext);
+        }
     }
 
     _endFrame(timestamp) {
@@ -1001,37 +1039,46 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         const isRenderingTerrain = this._isRenderingTerrain();
         const isFinalRender = !parentContext.timestamp || parentContext.isFinalRender;
 
+
+        const renderContext = this._createTempRenderContext(timestamp, isRenderingTerrain);
+        renderContext.sceneConfig = null;
+        renderContext.pluginIndex = null;
+
         // maptalks/issues#202, finalRender后不再更新collision，以免后处理（如bloom）阶段继续更新collision造成bug
         if (this.layer.options.collision && !parentContext.isPostProcess) {
             //按照plugin顺序更新collision索引
-            plugins.forEach((plugin) => {
+            for (let i = 0, len = plugins.length; i < len; i++) {
+                const plugin = plugins[i];
+
                 if (!this._isVisible(plugin) || !plugin.hasMesh()) {
-                    return;
+                    continue;
                 }
                 if (mode && mode !== 'default' && !plugin.supportRenderMode(mode)) {
-                    return;
+                    continue;
                 }
                 if (isRenderingTerrain && !terrainVectorFilter(plugin)) {
-                    return;
+                    continue;
                 }
-                const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp);
+                const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp, renderContext);
                 plugin.prepareRender(context);
                 plugin.updateCollision(context);
-            });
+            }
         } else {
-            plugins.forEach((plugin) => {
+            for (let i = 0, len = plugins.length; i < len; i++) {
+                const plugin = plugins[i];
+
                 if (!this._isVisible(plugin) || !plugin.hasMesh()) {
-                    return;
+                    continue;
                 }
                 if (mode && mode !== 'default' && !plugin.supportRenderMode(mode)) {
-                    return;
+                    continue;
                 }
                 if (isRenderingTerrain && !terrainVectorFilter(plugin)) {
-                    return;
+                    continue;
                 }
-                const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp);
+                const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp, renderContext);
                 plugin.prepareRender(context);
-            });
+            }
         }
 
         const isFirstRender = this._currentTimestamp !== parentContext.timestamp;
@@ -1045,23 +1092,25 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             groundContext.offsetUnits = groundOffset
             this._groundPainter.paint(groundContext);
         }
-        plugins.forEach((plugin, idx) => {
+        for (let i = 0, len = plugins.length; i < len; i++) {
+            const plugin = plugins[i];
+            const idx = i;
             const hasMesh = this._isVisitable(plugin);
             if (!hasMesh) {
-                return;
+                continue;
             }
             if (mode && mode !== 'default' && !plugin.supportRenderMode(mode)) {
-                return;
+                continue;
             }
             if (isRenderingTerrain && !terrainVectorFilter(plugin)) {
-                return;
+                continue;
             }
             this.device.clear({
                 stencil: 0xFF,
                 framebuffer: targetFBO
             });
             const polygonOffsetIndex = this._pluginOffsets[idx] || 0;
-            const context = this._getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp);
+            const context = this._getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp, renderContext);
             if (plugin.painter && plugin.painter.isEnableTileStencil(context)) {
                 this._drawTileStencil(targetFBO, plugin.painter);
             }
@@ -1071,7 +1120,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 this.setToRedraw();
             }
             dirty = true;
-        });
+        }
         if (dirty) {
             this.layer.fire('canvasisdirty');
         }
@@ -1129,9 +1178,22 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         }
     }
 
-    _getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp) {
+    _getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp, renderContext) {
         const isRenderingTerrain = this._isRenderingTerrain();
         const isRenderingTerrainSkin = isRenderingTerrain && plugin && terrainSkinFilter(plugin);
+        if (renderContext) {
+            renderContext.isRenderingTerrain = isRenderingTerrain;
+            renderContext.isRenderingTerrainSkin = isRenderingTerrainSkin;
+            renderContext.polygonOffsetIndex = polygonOffsetIndex;
+            renderContext.cameraPosition = cameraPosition;
+            renderContext.timestamp = timestamp;
+
+            renderContext.sceneConfig = null;
+            renderContext.pluginIndex = null;
+            renderContext.sceneConfig = plugin && plugin.config.sceneConfig;
+            renderContext.pluginIndex = plugin && plugin.renderIndex;
+            return renderContext;
+        }
         const regl = this.regl || this.device;
         const gl = this.gl;
         const context = {
@@ -1411,15 +1473,17 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             filter = terrainVectorFilter;
         }
 
-        plugins.forEach((plugin, idx) => {
+        for (let i = 0, len = plugins.length; i < len; i++) {
+            const plugin = plugins[i];
+            const idx = i;
             if (!plugin || filter && !filter(plugin)) {
-                return;
+                continue;
             }
             if (!pluginData[idx]) {
-                return;
+                continue;
             }
             if (!tileCache[idx]) {
-                return;
+                continue;
             }
             if (tileCache[idx].plugin !== plugin) {
                 if (tileCache[idx]) {
@@ -1432,10 +1496,10 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                         tileInfo: tileInfo
                     });
                 }
-                return;
+                continue;
             }
             if (this.drawingParentTiles && !plugin.painter.shouldDrawParentTile()) {
-                return;
+                continue;
             }
             const isRenderingTerrainSkin = isRenderingTerrain && terrainSkinFilter(plugin);
             const regl = this.regl || this.device;
@@ -1476,7 +1540,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 //let plugin to determine when to redraw
                 this.setToRedraw();
             }
-        });
+        }
         if (tileData && tileData.style === this._styleCounter) {
             this._retirePrevTile(tileInfo);
         }
