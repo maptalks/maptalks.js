@@ -276,7 +276,7 @@ class Painter {
         return this._is2D;
     }
 
-    postCreateGeometry() {}
+    postCreateGeometry() { }
 
     _getIdMap(glData) {
         if (!glData) {
@@ -379,7 +379,8 @@ class Painter {
         }
         const castShadow = this.sceneConfig.castShadow === undefined || !!this.sceneConfig.castShadow;
         const isEnableBloom = !!(context && context.bloom);
-        meshes.forEach(mesh => {
+        for (let i = 0, len = meshes.length; i < len; i++) {
+            const mesh = meshes[i];
             const bloom = this.isBloom(mesh) && isEnableBloom;
             mesh.bloom = bloom;
             mesh.castShadow = castShadow;
@@ -418,7 +419,7 @@ class Painter {
                 mesh.setUniform('targetFramebuffer', fbo);
             }
             this._highlightMesh(mesh);
-        });
+        }
 
         this.scene.addMesh(meshes);
         return;
@@ -728,7 +729,7 @@ class Painter {
         this.scene.clear();
     }
 
-    resize(/*width, height*/) {}
+    resize(/*width, height*/) { }
 
     delete(/* context */) {
         this.scene.clear();
@@ -1243,7 +1244,7 @@ class Painter {
             return;
         }
         const properties = mesh instanceof reshader.InstancedMesh ? mesh.properties : mesh.geometry.properties;
-        const { pickingIdIndiceMap } =  properties;
+        const { pickingIdIndiceMap } = properties;
         const highlights = this._highlighted ? convertHighlights(mesh, this.layer, this._highlighted) : null;
         HighlightUtil.highlightMesh(this.regl, mesh, highlights, this._highlightTimestamp, pickingIdIndiceMap);
     }

@@ -1224,7 +1224,13 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             return meshes.length > 0;
         }
         // 还要检查是否存在 hlBloomMesh
-        return meshes.filter(mesh => filter(mesh) || mesh.properties.hlBloomMesh && filter(mesh.properties.hlBloomMesh)).length > 0;
+        for (let i = 0, len = meshes.length; i < len; i++) {
+            const mesh = meshes[i];
+            if (filter(mesh) || mesh.properties.hlBloomMesh && filter(mesh.properties.hlBloomMesh)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     _drawTileStencil(fbo, painter) {

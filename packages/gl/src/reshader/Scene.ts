@@ -54,20 +54,13 @@ class Scene {
         if (!mesh || (Array.isArray(mesh) && !mesh.length)) {
             return this;
         }
-        if (Array.isArray(mesh)) {
-            mesh.forEach(m => {
-                const scenes = (m as any)._scenes = (m as any)._scenes || {};
-                if (!scenes[this._id]) {
-                    scenes[this._id] = 1;
-                    this.meshes.push(m);
-                    this.dirty();
-                }
-            });
-        } else {
-            const scenes = (mesh as any)._scenes = (mesh as any)._scenes || {};
+        const meshes = Array.isArray(mesh) ? mesh : [mesh];
+        for (let i = 0, len = meshes.length; i < len; i++) {
+            const m = meshes[i];
+            const scenes = (m as any)._scenes = (m as any)._scenes || {};
             if (!scenes[this._id]) {
                 scenes[this._id] = 1;
-                this.meshes.push(mesh);
+                this.meshes.push(m);
                 this.dirty();
             }
         }
