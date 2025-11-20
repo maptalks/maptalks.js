@@ -957,28 +957,35 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         return this._featurePlugins[styleCounter] || EMPTY_ARRAY;
     }
 
+    _createTempRenderContext(timestamp, isRenderingTerrain) {
+        const regl = this.regl || this.device;
+        const gl = this.gl;
+        const context = {
+            regl,
+            layer: this.layer,
+            gl,
+            isRenderingTerrain,
+            timestamp
+        }
+        const parentContext = this._parentContext;
+        //数据结构是一样的，无需每次合并,每次替换需要更新的值即可,也可能存在bug
+        if (parentContext) {
+            extend(context, parentContext);
+        }
+        return context;
+
+    }
+
     _startFrame(timestamp, filter) {
         const isRenderingTerrain = this._isRenderingTerrain();
         const useDefault = this.layer.isDefaultRender() && this._layerPlugins;
-        const parentContext = this._parentContext;
         const plugins = this._getAllPlugins();
-        const regl = this.regl || this.device;
-        const gl = this.gl;
-        const mergeContext = {
-            regl,
-            layer: this.layer,
-            symbol: null,
-            gl,
-            isRenderingTerrain,
-            sceneConfig: null,
-            dataConfig: null,
-            pluginIndex: null,
-            timestamp
-        }
-        //数据结构是一样的，无需每次合并,每次替换需要更新的值即可,也可能存在bug
-        if (parentContext) {
-            extend(mergeContext, parentContext);
-        }
+        const renderContext = this._createtempRenderContext(timestamp, isRenderingTerrain);
+        renderContext.sceneConfig = null;
+        renderContext.dataConfig = null;
+        renderContext.pluginIndex = null;
+        renderContext.symbol = null;
+
 
         plugins.forEach((plugin, idx) => {
             if (!plugin || filter && !filter(plugin)) {
@@ -992,14 +999,15 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             const sceneConfig = plugin.config ? plugin.config.sceneConfig : null;
             const dataConfig = plugin.config ? plugin.config.dataConfig : null;
 
-            mergeContext.symbol = null;
-            mergeContext.sceneConfig = null;
-            mergeContext.dataConfig = null;
+            renderContext.symbol = null;
+            renderContext.sceneConfig = null;
+            renderContext.dataConfig = null;
+            renderContext.pluginIndex = null;
 
-            mergeContext.pluginIndex = idx;
-            mergeContext.symbol = symbol;
-            mergeContext.sceneConfig = sceneConfig;
-            mergeContext.dataConfig = dataConfig;
+            renderContext.pluginIndex = idx;
+            renderContext.symbol = symbol;
+            renderContext.sceneConfig = sceneConfig;
+            renderContext.dataConfig = dataConfig;
 
             // const context = {
             //     regl,
@@ -1015,7 +1023,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             // if (parentContext) {
             //     extend(context, parentContext);
             // }
-            plugin.startFrame(mergeContext);
+            plugin.startFrame(renderContext);
         });
     }
 
@@ -1029,21 +1037,11 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         const isRenderingTerrain = this._isRenderingTerrain();
         const isFinalRender = !parentContext.timestamp || parentContext.isFinalRender;
 
-        const regl = this.regl || this.device;
-        const gl = this.gl;
-        const mergeContext = {
-            regl,
-            layer: this.layer,
-            gl,
-            sceneConfig: null,
-            pluginIndex: null,
-            timestamp,
-            cameraPosition
-        }
-        //数据结构是一样的，无需每次合并,每次替换需要更新的值即可,也可能存在bug
-        if (parentContext) {
-            extend(mergeContext, parentContext);
-        }
+
+        const renderContext = this._createtempRenderContext(timestamp, isRenderingTerrain);
+        renderContext.sceneConfig = null;
+        renderContext.pluginIndex = null;
+
         // maptalks/issues#202, finalRender后不再更新collision，以免后处理（如bloom）阶段继续更新collision造成bug
         if (this.layer.options.collision && !parentContext.isPostProcess) {
             //按照plugin顺序更新collision索引
@@ -1057,7 +1055,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 if (isRenderingTerrain && !terrainVectorFilter(plugin)) {
                     return;
                 }
-                const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp, mergeContext);
+                const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp, renderContext);
                 plugin.prepareRender(context);
                 plugin.updateCollision(context);
             });
@@ -1072,7 +1070,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 if (isRenderingTerrain && !terrainVectorFilter(plugin)) {
                     return;
                 }
-                const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp, mergeContext);
+                const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp, renderContext);
                 plugin.prepareRender(context);
             });
         }
@@ -1104,7 +1102,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 framebuffer: targetFBO
             });
             const polygonOffsetIndex = this._pluginOffsets[idx] || 0;
-            const context = this._getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp, mergeContext);
+            const context = this._getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp, renderContext);
             if (plugin.painter && plugin.painter.isEnableTileStencil(context)) {
                 this._drawTileStencil(targetFBO, plugin.painter);
             }
@@ -1172,21 +1170,21 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         }
     }
 
-    _getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp, mergeContext) {
+    _getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp, renderContext) {
         const isRenderingTerrain = this._isRenderingTerrain();
         const isRenderingTerrainSkin = isRenderingTerrain && plugin && terrainSkinFilter(plugin);
-        if (mergeContext) {
-            mergeContext.isRenderingTerrain = isRenderingTerrain;
-            mergeContext.isRenderingTerrainSkin = isRenderingTerrainSkin;
-            mergeContext.polygonOffsetIndex = polygonOffsetIndex;
-            mergeContext.cameraPosition = cameraPosition;
-            mergeContext.timestamp = timestamp;
+        if (renderContext) {
+            renderContext.isRenderingTerrain = isRenderingTerrain;
+            renderContext.isRenderingTerrainSkin = isRenderingTerrainSkin;
+            renderContext.polygonOffsetIndex = polygonOffsetIndex;
+            renderContext.cameraPosition = cameraPosition;
+            renderContext.timestamp = timestamp;
 
-            mergeContext.sceneConfig = null;
-            mergeContext.pluginIndex = null;
-            mergeContext.sceneConfig = plugin && plugin.config.sceneConfig;
-            mergeContext.pluginIndex = plugin && plugin.renderIndex;
-            return mergeContext;
+            renderContext.sceneConfig = null;
+            renderContext.pluginIndex = null;
+            renderContext.sceneConfig = plugin && plugin.config.sceneConfig;
+            renderContext.pluginIndex = plugin && plugin.renderIndex;
+            return renderContext;
         }
         const regl = this.regl || this.device;
         const gl = this.gl;
