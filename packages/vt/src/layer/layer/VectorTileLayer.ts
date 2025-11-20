@@ -1854,7 +1854,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         super.onRemove();
     }
 
-    clear() {
+    clearData() {
         const renderer = this.getRenderer();
         if (renderer) {
             renderer.clearData();
