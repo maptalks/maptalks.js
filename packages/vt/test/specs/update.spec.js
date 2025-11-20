@@ -2082,7 +2082,7 @@ describe('update style specs', () => {
         layer.once('canvasisdirty', () => {
             const pixel = readPixel(renderer.canvas, x / 2, y / 2);
             assert.deepStrictEqual(pixel, [255, 0, 0, 255]);
-            layer.clear();
+            layer.clearData();
         });
         layer.once('clear', () => {
             // canvas will be cleared in the following frame
