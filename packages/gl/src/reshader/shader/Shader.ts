@@ -595,6 +595,9 @@ export default class GPUShader extends GLShader {
             }
         }
         const commands = this.gpuCommands;
+        if (!commands) {
+            return;
+        }
         for (let i = 0; i < commands.length; i++) {
             if (!commands[i]) {
                 continue;
