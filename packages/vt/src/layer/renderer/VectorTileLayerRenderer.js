@@ -1224,7 +1224,13 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             return meshes.length > 0;
         }
         // 还要检查是否存在 hlBloomMesh
-        return meshes.filter(mesh => filter(mesh) || mesh.properties.hlBloomMesh && filter(mesh.properties.hlBloomMesh)).length > 0;
+        for (let i = 0, len = meshes.length; i < len; i++) {
+            const mesh = meshes[i];
+            if (filter(mesh) || mesh.properties.hlBloomMesh && filter(mesh.properties.hlBloomMesh)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     _drawTileStencil(fbo, painter) {
@@ -1472,6 +1478,28 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         if (!filter && isRenderingTerrain && !this.isRenderingTerrainSkin) {
             filter = terrainVectorFilter;
         }
+        const regl = this.regl || this.device;
+        const gl = this.gl;
+        const renderContext = {
+            regl,
+            layer: this.layer,
+            gl,
+            sceneConfig: null,
+            pluginIndex: null,
+            tileCache: null,
+            tileData: null,
+            tileTransform: null,
+            tileVectorTransform: tileTransform,
+            tileTranslationMatrix,
+            tileExtent: tileData.extent,
+            timestamp: this._frameTime,
+            tileInfo,
+            tileZoom: this['_tileZoom'],
+            bloom: this._parentContext && this._parentContext.bloom,
+            isRenderingTerrain,
+            isRenderingTerrainSkin: null,
+            renderTarget: null
+        }
 
         for (let i = 0, len = plugins.length; i < len; i++) {
             const plugin = plugins[i];
@@ -1502,37 +1530,52 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 continue;
             }
             const isRenderingTerrainSkin = isRenderingTerrain && terrainSkinFilter(plugin);
-            const regl = this.regl || this.device;
-            const gl = this.gl;
-            const context = {
-                regl,
-                layer: this.layer,
-                gl,
-                sceneConfig: plugin.config.sceneConfig,
-                pluginIndex: idx,
-                tileCache: tileCache[idx],
-                tileData: pluginData[idx],
-                tileTransform: isRenderingTerrainSkin ? terrainTileTransform : tileTransform,
-                tileVectorTransform: tileTransform,
-                tileTranslationMatrix,
-                tileExtent: tileData.extent,
-                timestamp: this._frameTime,
-                tileInfo,
-                tileZoom: this['_tileZoom'],
-                bloom: this._parentContext && this._parentContext.bloom,
-                isRenderingTerrain,
-                isRenderingTerrainSkin
-            };
+
+            renderContext.sceneConfig = null;
+            renderContext.pluginIndex = null;
+            renderContext.tileData = null;
+            renderContext.tileCache = null;
+            renderContext.tileTransform = null;
+            renderContext.isRenderingTerrainSkin = null;
+            renderContext.renderTarget = null;
+
+
+            renderContext.sceneConfig = plugin.config.sceneConfig;
+            renderContext.pluginIndex = idx;
+            renderContext.tileCache = tileCache[idx];
+            renderContext.tileData = pluginData[idx];
+            renderContext.tileTransform = isRenderingTerrainSkin ? terrainTileTransform : tileTransform;
+            renderContext.isRenderingTerrainSkin = isRenderingTerrainSkin;
+
+            // const context = {
+            //     regl,
+            //     layer: this.layer,
+            //     gl,
+            //     sceneConfig: plugin.config.sceneConfig,
+            //     pluginIndex: idx,
+            //     tileCache: tileCache[idx],
+            //     tileData: pluginData[idx],
+            //     tileTransform: isRenderingTerrainSkin ? terrainTileTransform : tileTransform,
+            //     tileVectorTransform: tileTransform,
+            //     tileTranslationMatrix,
+            //     tileExtent: tileData.extent,
+            //     timestamp: this._frameTime,
+            //     tileInfo,
+            //     tileZoom: this['_tileZoom'],
+            //     bloom: this._parentContext && this._parentContext.bloom,
+            //     isRenderingTerrain,
+            //     isRenderingTerrainSkin
+            // };
             if (isRenderingTerrainSkin && parentContext && parentContext.renderTarget) {
                 // 渲染 terrain skin 时，每个瓦片需要绘制到各自的renderTarget里（terrain texture）
-                context.renderTarget = parentContext.renderTarget;
+                renderContext.renderTarget = parentContext.renderTarget;
                 if (plugin.isTerrainMask()) {
-                    context.renderTarget = {
+                    renderContext.renderTarget = {
                         fbo: parentContext.terrainMaskFBO
                     }
                 }
             }
-            const status = plugin.paintTile(context);
+            const status = plugin.paintTile(renderContext);
             if (!this._needRetire && (status.retire || status.redraw) && plugin.supportRenderMode('taa')) {
                 this._needRetire = true;
             }

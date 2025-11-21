@@ -42,8 +42,8 @@ class Scene {
             if (!mesh) {
                 continue;
             }
-            mesh._scenes = mesh._scenes || {};
-            mesh._scenes[this._id] = 1;
+            // mesh._scenes = mesh._scenes || {};
+            // mesh._scenes[this._id] = 1;
             this.meshes.push(mesh);
         }
         this.dirty();
@@ -54,68 +54,105 @@ class Scene {
         if (!mesh || (Array.isArray(mesh) && !mesh.length)) {
             return this;
         }
-        if (Array.isArray(mesh)) {
-            mesh.forEach(m => {
-                const scenes = (m as any)._scenes = (m as any)._scenes || {};
-                if (!scenes[this._id]) {
-                    scenes[this._id] = 1;
-                    this.meshes.push(m);
-                    this.dirty();
-                }
-            });
-        } else {
-            const scenes = (mesh as any)._scenes = (mesh as any)._scenes || {};
-            if (!scenes[this._id]) {
-                scenes[this._id] = 1;
+        const meshes = Array.isArray(mesh) ? mesh : [mesh];
+        for (let i = 0, len = meshes.length; i < len; i++) {
+            const mesh = meshes[i];
+            if (mesh && this.meshes.indexOf(mesh) === -1) {
                 this.meshes.push(mesh);
                 this.dirty();
             }
+
         }
         return this;
     }
 
     removeMesh(mesh?: Mesh | Mesh[]) {
-        if (!mesh || (Array.isArray(mesh) && !mesh.length)) { return this; }
-        if (Array.isArray(mesh)) {
-            let hit = false;
-            for (let i = 0; i < mesh.length; i++) {
-                const scenes = (mesh[i] as any)._scenes;
-                if (scenes && scenes[this._id]) {
-                    hit = true;
-                    this.dirty();
-                    delete scenes[this._id];
+        if (!mesh || (Array.isArray(mesh) && !mesh.length)) {
+            return this;
+        }
+        const meshes = Array.isArray(mesh) ? mesh : [mesh];
+        const needRemoveMehes: Mesh[] = [];
+        for (let i = 0; i < meshes.length; i++) {
+            const mesh = meshes[i];
+            if (mesh && this.meshes.indexOf(mesh) >= 0) {
+                needRemoveMehes.push(mesh);
+            }
+        }
+        if (needRemoveMehes.length > 0) {
+            const filterMeshes = [];
+            for (let i = 0; i < this.meshes.length; i++) {
+                const mesh = this.meshes[i];
+                if (needRemoveMehes.indexOf(mesh) === -1) {
+                    filterMeshes.push(mesh);
                 }
             }
-            if (hit) {
-                this.meshes = this.meshes.filter(el => {
-                    return mesh.indexOf(el) < 0;
-                });
-            }
-        } else {
-            const scenes = (mesh as any)._scenes;
-            if (!scenes || !scenes[this._id]) {
-                return this;
-            }
-            const idx = this.meshes.indexOf(mesh);
-            if (idx >= 0) {
-                this.meshes.splice(idx, 1);
-            }
-            delete scenes[this._id];
+            this.meshes = filterMeshes;
             this.dirty();
         }
         return this;
     }
 
+    // addMesh(mesh: Mesh | Mesh[]) {
+    //     if (!mesh || (Array.isArray(mesh) && !mesh.length)) {
+    //         return this;
+    //     }
+    //     const meshes = Array.isArray(mesh) ? mesh : [mesh];
+    //     for (let i = 0, len = meshes.length; i < len; i++) {
+    //         const m = meshes[i];
+    //         const scenes = (m as any)._scenes = (m as any)._scenes || {};
+    //         if (!scenes[this._id]) {
+    //             scenes[this._id] = 1;
+    //             this.meshes.push(m);
+    //             this.dirty();
+    //         }
+    //     }
+    //     return this;
+    // }
+
+
+    // removeMesh(mesh?: Mesh | Mesh[]) {
+    //     if (!mesh || (Array.isArray(mesh) && !mesh.length)) { return this; }
+    //     if (Array.isArray(mesh)) {
+    //         let hit = false;
+    //         for (let i = 0; i < mesh.length; i++) {
+    //             const scenes = (mesh[i] as any)._scenes;
+    //             if (scenes && scenes[this._id]) {
+    //                 hit = true;
+    //                 this.dirty();
+    //                 delete scenes[this._id];
+    //             }
+    //         }
+    //         if (hit) {
+    //             this.meshes = this.meshes.filter(el => {
+    //                 return mesh.indexOf(el) < 0;
+    //             });
+    //         }
+    //     } else {
+    //         const scenes = (mesh as any)._scenes;
+    //         if (!scenes || !scenes[this._id]) {
+    //             return this;
+    //         }
+    //         const idx = this.meshes.indexOf(mesh);
+    //         if (idx >= 0) {
+    //             this.meshes.splice(idx, 1);
+    //         }
+    //         delete scenes[this._id];
+    //         this.dirty();
+    //     }
+    //     return this;
+    // }
+
     getMeshes() {
         return this.meshes || [];
     }
 
+
     clear() {
-        if (this.meshes) {
-            for (let i = 0; i < this.meshes.length; i++) {
-                delete (this.meshes[i] as any)._scenes[this._id];
-            }
-        }
+        // if (this.meshes) {
+        //     for (let i = 0; i < this.meshes.length; i++) {
+        //         delete (this.meshes[i] as any)._scenes[this._id];
+        //     }
+        // }
         this.meshes = [];
         this.sortedMeshes.opaques = [];
         this.sortedMeshes.transparents = [];

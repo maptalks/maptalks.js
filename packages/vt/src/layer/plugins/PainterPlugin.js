@@ -147,7 +147,7 @@ function createPainterPlugin(type, Painter) {
         },
 
         _createMeshes(geometries, context) {
-             const {
+            const {
                 tileInfo,
                 tileExtent,
                 tileTransform,
@@ -208,11 +208,12 @@ function createPainterPlugin(type, Painter) {
 
             //更新stencil level值，不同zoom会发生变化
             const level = painter.getTileLevelValue(tileInfo, tileZoom);//getUniformLevel(tileInfo.z, tileZoom);
-            meshes.forEach(m => {
+            for (let i = 0, len = meshes.length; i < len; i++) {
+                const m = meshes[i];
                 // 保留一些有用的信息
                 m.properties.tile = tileInfo;
                 m.properties.level = level;
-            });
+            }
 
             let redraw = false;
             if (!this._frameCache[key]) {
@@ -369,7 +370,7 @@ function createPainterPlugin(type, Painter) {
         },
 
         isAnimating() {
-           if (!this.painter) {
+            if (!this.painter) {
                 return false;
             }
             return this.painter.isAnimating();

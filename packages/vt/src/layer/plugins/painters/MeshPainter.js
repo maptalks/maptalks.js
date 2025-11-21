@@ -204,7 +204,7 @@ class MeshPainter extends Painter {
                 return geometry.properties.hasAlpha || symbol['polygonOpacity'] < 1 ||
                     symbol['lineOpacity'] < 1 ||
                     mesh.material && (mesh.material.uniforms.baseColorTexture ||
-                    mesh.material.uniforms.emissiveTexture);
+                        mesh.material.uniforms.emissiveTexture);
             }
         });
 
@@ -271,7 +271,7 @@ class MeshPainter extends Painter {
         const cullFace = this.sceneConfig.cullFace;
         this.sceneConfig.cullFace = 'front';
         this.callBackgroundTileShader(uniforms, context);
-         if (cullFace === undefined) {
+        if (cullFace === undefined) {
             delete this.sceneConfig.cullFace;
         } else {
             this.sceneConfig.cullFace = cullFace;
@@ -320,14 +320,14 @@ class MeshPainter extends Painter {
     }
 
     startFrame(...args) {
-        delete this._needPolygonOffset;
+        this._needPolygonOffset = false;
         return super.startFrame(...args);
     }
 
     addMesh(mesh, progress) {
-        mesh.forEach(m => {
-            this._prepareMesh(m, progress);
-        });
+        for (let i = 0, len = mesh.length; i < len; i++) {
+            this._prepareMesh(mesh[i], progress);
+        }
         super.addMesh(...arguments);
     }
 
