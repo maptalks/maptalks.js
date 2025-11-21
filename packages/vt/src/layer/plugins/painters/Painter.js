@@ -2,7 +2,7 @@ import * as maptalks from 'maptalks';
 import { reshader, vec3, mat4, HighlightUtil } from '@maptalks/gl';
 import { getVectorPacker } from '../../../packer/inject';
 import { isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
-import { extend, copyJSON, isNil, hasOwn } from '../Util';
+import { extend, copyJSON, isNil, hasOwn, isNumber } from '../Util';
 import outlineFrag from './glsl/outline.frag';
 import outlineWGSLFrag from './wgsl/outline_frag.wgsl';
 import { updateOneGeometryFnTypeAttrib } from './util/fn_type_util';
@@ -105,7 +105,11 @@ class Painter {
         // if (this._visibleFn && !this._visibleFn.isFeatureConstant) {
         //     return true;
         // }
-        const { minZoom, maxZoom } = this.sceneConfig;
+        const { minZoom, maxZoom } = this.sceneConfig || {};
+        //如果不是数字下面的逻辑不用走了
+        if (!isNumber(minZoom) && !isNumber(maxZoom)) {
+            return true;
+        }
         const map = this.getMap();
         const zoom = map.getZoom();
         if (!isNil(minZoom) && zoom < minZoom) {
@@ -527,12 +531,14 @@ class Painter {
     callRenderer(shader, uniforms, context) {
         const meshes = this.scene.getMeshes();
         const renderMeshes = [];
-        meshes.forEach(mesh => {
+        for (let i = 0, len = meshes.length; i < len; i++) {
+            const mesh = meshes[i];
+
             if (mesh.properties.hlBloomMesh && context && context.bloom) {
                 renderMeshes.push(mesh.properties.hlBloomMesh);
             }
             renderMeshes.push(mesh);
-        });
+        }
 
         this._setLayerUniforms(uniforms);
 
