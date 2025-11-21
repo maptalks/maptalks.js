@@ -106,18 +106,17 @@ class Painter {
         //     return true;
         // }
         const { minZoom, maxZoom } = this.sceneConfig || {};
-        //如果不是数字下面的逻辑不用走了
-        if (!isNumber(minZoom) && !isNumber(maxZoom)) {
-            return true;
+        if (isNumber(minZoom) || isNumber(maxZoom)) {
+            const map = this.getMap();
+            const zoom = map.getZoom();
+            if (!isNil(minZoom) && zoom < minZoom) {
+                return false;
+            }
+            if (!isNil(maxZoom) && zoom > maxZoom) {
+                return false;
+            }
         }
-        const map = this.getMap();
-        const zoom = map.getZoom();
-        if (!isNil(minZoom) && zoom < minZoom) {
-            return false;
-        }
-        if (!isNil(maxZoom) && zoom > maxZoom) {
-            return false;
-        }
+
         const visibleFns = this._visibleFn;
         if (visibleFns.length) {
             for (let i = 0; i < visibleFns.length; i++) {
