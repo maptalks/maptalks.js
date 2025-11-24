@@ -22,7 +22,7 @@ function replace(filePath) {
         if (err) {
             return console.log(err);
         }
-        const result = data.replaceAll("@maptalks/gl", "@maptalks/gpu").replace(/"@maptalks\/gltf-layer"/g, "\"@maptalks/gltf-layer/dist/maptalks.gltf.gpu.es.js\"");
+        const result = data.replace(/@maptalks\/gl\b/g, "@maptalks/gpu").replace(/"@maptalks\/gltf-layer"/g, "\"@maptalks/gltf-layer/dist/maptalks.gltf.gpu.es.js\"");
         let gpuFileName;
         if (filePath.indexOf('es.js') > 0) {
             gpuFileName = filePath.replace(/\.es\.js$/, ".gpu.es.js");
