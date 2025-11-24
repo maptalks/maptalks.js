@@ -1,7 +1,7 @@
 const assert = require('assert');
 const { readPixel } = require('../common/Util');
 const maptalks = require('maptalks');
-const { PolygonLayer } = require('../../dist/maptalks.vt.js');
+const { PolygonLayer } = require('../../dist/maptalks.vt.gpu.js');
 const happen = require('happen');
 
 const DEFAULT_VIEW = {
@@ -27,6 +27,12 @@ function GET_PAGE_POSITION(obj) {
     const rect = obj.getBoundingClientRect();
     return new maptalks.Point(rect['left'] + docEl['scrollLeft'], rect['top'] + docEl['scrollTop']);
 }
+
+const mapRenderer = window.mapRenderer;
+
+maptalks.Map.mergeOptions({
+    renderer: mapRenderer || 'gl'
+});
 
 describe('edit specs', () => {
     let container, eventContainer, map;

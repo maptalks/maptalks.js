@@ -1,7 +1,12 @@
 const assert = require('assert');
 const maptalks = require('maptalks');
-const { GeoJSONVectorTileLayer, VectorTileLayer } = require('../../dist/maptalks.vt.js');
+const { GeoJSONVectorTileLayer, VectorTileLayer } = require('../../dist/maptalks.vt.gpu.js');
 
+const mapRenderer = window.mapRenderer;
+
+maptalks.Map.mergeOptions({
+    renderer: mapRenderer || 'gl'
+});
 
 const DEFAULT_VIEW = {
     center: [0, 0],

@@ -3,7 +3,7 @@ const maptalks = require('maptalks');
 
 const {
     PolygonLayer
-} = require('../../dist/maptalks.vt.js');
+} = require('../../dist/maptalks.vt.gpu.js');
 
 const DEFAULT_VIEW = {
     center: [0, 0],

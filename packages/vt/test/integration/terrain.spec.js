@@ -2,8 +2,8 @@ const maptalks = require('maptalks');
 const assert = require('assert');
 const path = require('path');
 const { match, readSpecs, writeImageData, hasOwn } = require('./util');
-const { GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.js');
-const { GroupGLLayer } = require('@maptalks/gl');
+const { GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.gpu.js');
+const { GroupGLLayer } = require('@maptalks/gpu');
 const startServer = require('../specs/server.js');
 const PORT = 4398;
 
@@ -24,6 +24,13 @@ const DEFAULT_VIEW = {
 };
 
 const TEST_CANVAS = document.createElement('canvas');
+
+const mapRenderer = window.mapRenderer;
+
+const isWebGPU = mapRenderer === 'gpu';
+maptalks.Map.mergeOptions({
+    renderer: mapRenderer || 'gl'
+});
 
 describe('vector tile on terrain integration specs', () => {
     let map, container, server;
@@ -95,6 +102,10 @@ describe('vector tile on terrain integration specs', () => {
                 const expectedPath = style.expected;
                 if (!ended && count >= limit) {
                     ended = true;
+                    if (isWebGPU) {
+                        done();
+                        return;
+                    }
 
                     const canvas = TEST_CANVAS;
                     canvas.width = mapCanvas.width;

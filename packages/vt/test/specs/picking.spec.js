@@ -5,16 +5,22 @@ const maptalks = require('maptalks');
 const startServer = require('./server.js');
 const PORT = 4398;
 
+const mapRenderer = window.mapRenderer;
+
+maptalks.Map.mergeOptions({
+    renderer: mapRenderer || 'gl'
+});
+
 const {
     GeoJSONVectorTileLayer,
     PointLayer,
     LineStringLayer,
     VectorTileLayer,
     PolygonLayer
-} = require('../../dist/maptalks.vt.js');
+} = require('../../dist/maptalks.vt.gpu.js');
 const {
     GroupGLLayer
-} = require('@maptalks/gl');
+} = require('@maptalks/gpu');
 
 const DEFAULT_VIEW = {
     center: [0, 0],

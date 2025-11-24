@@ -12,14 +12,25 @@ fs.readFile(packagePath, "utf8", function (err, data) {
         return;
     }
     const modulePath = path.join(curPath, obj.module);
-    fs.readFile(modulePath, "utf8", function (err, data) {
+    replace(modulePath);
+    const mainPath = path.join(curPath, obj.main);
+    replace(mainPath);
+});
+
+function replace(filePath) {
+    fs.readFile(filePath, "utf8", function (err, data) {
         if (err) {
             return console.log(err);
         }
-        const result = data.replace(/@maptalks\/gl"/g, "@maptalks/gpu\"").replace(/"@maptalks\/gltf-layer"/g, "\"@maptalks/gltf-layer/dist/maptalks.gltf.gpu.es.js\"");
-        const gpuFileName = modulePath.replace(/\.es\.js$/, ".gpu.es.js");
+        const result = data.replaceAll("@maptalks/gl", "@maptalks/gpu").replace(/"@maptalks\/gltf-layer"/g, "\"@maptalks/gltf-layer/dist/maptalks.gltf.gpu.es.js\"");
+        let gpuFileName;
+        if (filePath.indexOf('es.js') > 0) {
+            gpuFileName = filePath.replace(/\.es\.js$/, ".gpu.es.js");
+        } else {
+            gpuFileName = filePath.replace(/\.js$/, ".gpu.js");
+        }
         fs.writeFile(gpuFileName, result, "utf8", function (err) {
             if (err) return console.log(err);
         });
     });
-});
+}

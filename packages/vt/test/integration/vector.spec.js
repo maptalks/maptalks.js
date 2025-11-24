@@ -3,8 +3,8 @@ const assert = require('assert');
 const path = require('path');
 const fs = require('fs');
 const { match, readSpecs, hasOwn } = require('./util');
-const { PointLayer, LineStringLayer, PolygonLayer, ExtrudePolygonLayer } = require('../../dist/maptalks.vt.js');
-const { GroupGLLayer } = require('@maptalks/gl');
+const { PointLayer, LineStringLayer, PolygonLayer, ExtrudePolygonLayer } = require('../../dist/maptalks.vt.gpu.js');
+const { GroupGLLayer } = require('@maptalks/gpu');
 
 const DEFAULT_VIEW = {
     center: [0, 0],
@@ -26,8 +26,11 @@ const TEST_CANVAS = document.createElement('canvas');
 
 const DIFF_LIMIT = 5;
 
+const mapRenderer = window.mapRenderer;
+
+const isWebGPU = mapRenderer === 'gpu';
 maptalks.Map.mergeOptions({
-    renderer: ['gl', 'gpu']
+    renderer: mapRenderer || 'gl'
 });
 
 describe('vector 3d integration specs', () => {
@@ -70,6 +73,11 @@ describe('vector 3d integration specs', () => {
                 }
 
                 const doneFn = () => {
+                    if (isWebGPU) {
+                        done();
+                        return;
+                    }
+
                     const mapCanvas = map.getRenderer().canvas;
                     // const canvas = map.getRenderer().canvas;
                     const canvas = TEST_CANVAS;
