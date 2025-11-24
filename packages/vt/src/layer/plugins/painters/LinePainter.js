@@ -194,14 +194,14 @@ class LinePainter extends BasicPainter {
     }
 
     addMesh(...args) {
-        delete this._hasPatternAnim;
-        const mesh = args[0];
-        if (Array.isArray(mesh)) {
-            mesh.forEach(m => {
-                this._prepareMesh(m);
-            });
-        } else {
-            this._prepareMesh(mesh);
+        //delete Will cause reordering of object properties
+        this._hasPatternAnim = null;
+        let meshes = args[0];
+        if (!Array.isArray(meshes)) {
+            meshes = [meshes];
+        }
+        for (let i = 0; i < meshes.length; i++) {
+            this._prepareMesh(meshes[i]);
         }
         super.addMesh(...args);
     }
@@ -222,7 +222,7 @@ class LinePainter extends BasicPainter {
         const geometry = mesh.geometry;
         const symbol = this.getSymbol(mesh.properties.symbolIndex);
         if (geometry.data['aDasharray'] || Array.isArray(symbol.lineDasharray) &&
-            symbol.lineDasharray.reduce((accumulator, currentValue)=> {
+            symbol.lineDasharray.reduce((accumulator, currentValue) => {
                 return accumulator + currentValue;
             }, 0) > 0) {
             defines['HAS_DASHARRAY'] = 1;
@@ -290,7 +290,7 @@ class LinePainter extends BasicPainter {
         const aLinePatternAnimSpeedFn = piecewiseConstant(symbolDef['aLinePatternAnimSpeed']);
         const aLinePatternGapFn = piecewiseConstant(symbolDef['aLinePatternGap']);
         const shapeConfigs = this.createShapeFnTypeConfigs(map, symbolDef);
-        const i8  = new Int8Array(2);
+        const i8 = new Int8Array(2);
         return [
             {
                 //geometry.data 中的属性数据
@@ -360,7 +360,7 @@ class LinePainter extends BasicPainter {
         const aLineDxFn = interpolated(symbolDef['lineDx']);
         const aLineDyFn = interpolated(symbolDef['lineDy']);
         const u16 = new Uint16Array(1);
-        const i8  = new Int8Array(1);
+        const i8 = new Int8Array(1);
         return [
             {
                 attrName: 'aLineWidth',
