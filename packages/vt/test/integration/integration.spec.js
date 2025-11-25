@@ -141,8 +141,8 @@ describe('vector tile integration specs', () => {
                             const actualPath = dir + 'actual.png';
                             writeImageData(actualPath, canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
                         }
-                        assert(result.diffCount <= (style.diffCount || DIFF_LIMIT));
                         ended = true;
+                        assert(result.diffCount <= (style.diffCount || DIFF_LIMIT));
                         done();
                     });
                 } else {
