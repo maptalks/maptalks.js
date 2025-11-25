@@ -2,6 +2,8 @@ import * as maptalks from 'maptalks';
 import { reshader, vec4 } from '@maptalks/gl';
 import collisionVert from './glsl/collision.vert';
 import collisionFrag from './glsl/collision.frag';
+import collisionWGSLVert from './wgsl/collision_vert.wgsl';
+import collisionWGSLFrag from './wgsl/collision_frag.wgsl';
 import BasicPainter from './BasicPainter';
 import { clamp, isNil, getUniqueIds } from '../Util';
 import CollisionGroup from './CollisionGroup';
@@ -816,8 +818,9 @@ export default class CollisionPainter extends BasicPainter {
         }
         const geometry = this._collisionMesh.geometry;
         geometry.updateData('aPosition', new Float32Array(aPosition));
-        geometry.updateData('aVisible', new Uint8Array(aVisible));
+        geometry.updateData('aVisible', new Float32Array(aVisible));
         geometry.setElements(indices);
+        geometry.generateBuffers(this.regl);
 
         this._collisionRenderer.render(
             this._collisionShader,
@@ -847,7 +850,10 @@ export default class CollisionPainter extends BasicPainter {
             }
         };
         this._collisionShader = new reshader.MeshShader({
-            vert: collisionVert, frag: collisionFrag,
+            vert: collisionVert,
+            frag: collisionFrag,
+            wgslVert: collisionWGSLVert,
+            wgslFrag: collisionWGSLFrag,
             uniforms: [
                 'size'
             ],

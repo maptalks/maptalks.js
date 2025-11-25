@@ -321,7 +321,7 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
     output.vHalo = f32(vertexInput.aShape.w) % 2.0;
     output.vTextSize = myTextSize;
 #ifdef ENABLE_COLLISION
-    output.vOpacity = vertexInput.aOpacity / 255.0;
+    output.vOpacity = f32(vertexInput.aOpacity) / 255.0;
 #else
     output.vOpacity = 1.0;
 #endif

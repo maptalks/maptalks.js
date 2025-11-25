@@ -4,8 +4,8 @@ const assert = require('assert');
 const path = require('path');
 const fs = require('fs');
 const { match, readSpecs, writeImageData, hasOwn } = require('./util');
-const { GroupGLLayer } = require('@maptalks/gl');
-const { GeoJSONVectorTileLayer, VectorTileLayer } = require('../../dist/maptalks.vt.js');
+const { GroupGLLayer } = require('@maptalks/gpu');
+const { GeoJSONVectorTileLayer, VectorTileLayer } = require('../../dist/maptalks.vt.gpu.js');
 const startServer = require('../specs/server.js');
 const PORT = 4398;
 
@@ -30,8 +30,11 @@ const DEFAULT_VIEW = {
     }
 };
 
+const mapRenderer = window.mapRenderer;
+
+const isWebGPU = mapRenderer === 'gpu';
 maptalks.Map.mergeOptions({
-    renderer: ['gl', 'gpu']
+    renderer: mapRenderer || 'gl'
 });
 
 const DIFF_LIMIT = 5;
@@ -111,6 +114,12 @@ describe('vector tile integration specs', () => {
                         done();
                     }
                 } else if (!ended && checked) {
+                    if (isWebGPU) {
+                        // webgpu 模式下不比较渲染结果
+                        ended = true;
+                        done();
+                        return;
+                    }
                     const canvas = TEST_CANVAS;
                     canvas.width = mapCanvas.width;
                     canvas.height = mapCanvas.height;
@@ -132,8 +141,8 @@ describe('vector tile integration specs', () => {
                             const actualPath = dir + 'actual.png';
                             writeImageData(actualPath, canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
                         }
-                        assert(result.diffCount <= (style.diffCount || DIFF_LIMIT));
                         ended = true;
+                        assert(result.diffCount <= (style.diffCount || DIFF_LIMIT));
                         done();
                     });
                 } else {

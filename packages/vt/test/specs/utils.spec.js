@@ -1,5 +1,12 @@
 const assert = require('assert');
-const { PackUtil, FilterUtil } = require('../../dist/maptalks.vt.js');
+const maptalks = require('maptalks');
+const { PackUtil, FilterUtil } = require('../../dist/maptalks.vt.gpu.js');
+
+const mapRenderer = window.mapRenderer;
+
+maptalks.Map.mergeOptions({
+    renderer: mapRenderer || 'gl'
+});
 
 describe('util specs', () => {
     it('rtl text conversion', () => {
