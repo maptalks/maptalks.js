@@ -239,8 +239,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         if (!this.features) {
             return;
         }
-        //why?
-        // this.features = JSON.parse(JSON.stringify(this.features));
+        this.features = JSON.parse(JSON.stringify(this.features));
         if (!this.features) {
             return;
         }
