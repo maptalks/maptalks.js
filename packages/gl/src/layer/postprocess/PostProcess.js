@@ -117,7 +117,6 @@ export default class PostProcess {
         context.renderMode = 'default';
         context['sceneFilter'] = ssrFilter;
         context.renderTarget.fbo = fbo;
-        const fGL = layerRenderer.reglGL;
         let cleared = false;
         if (event) {
             layerRenderer.forEachRenderer(renderer => {
