@@ -626,10 +626,10 @@ export default class Geometry {
     _updateGPUBuffer(buffer : GPUBuffer, data : AttributeData, offset: number, byteLength: number) {
         if (Array.isArray(data)) {
             data = new Float32Array(data);
+            byteLength = data.length * 4;
         }
         const device = (buffer as any).device as GraphicsDevice;
-        const size = data.buffer.byteLength;
-        if (size > buffer.size) {
+        if (byteLength > buffer.size) {
             const newBuffer = createGPUBuffer(device, data, buffer.usage, buffer.label);
             delete (buffer as any).device;
             buffer.destroy();
