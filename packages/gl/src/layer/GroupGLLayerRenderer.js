@@ -188,11 +188,11 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         }
 
         // noAa的绘制放在bloom后，避免noAa的数据覆盖了bloom效果
-        // fGL.resetDrawCalls();
+        // this.resetDrawCalls();
         // this._renderInMode('noAa', this._noAaFBO, methodName, args);
         // this._noaaDrawCount = fGL.getDrawCalls();
 
-        // fGL.resetDrawCalls();
+        // this.resetDrawCalls();
         // this._renderInMode('point', this._pointFBO, methodName, args, true);
         this._weatherPainter.renderScene(drawContext);
         // this._pointDrawCount = fGL.getDrawCalls();
@@ -254,8 +254,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         }
         const fbo = this._getOutlineFBO();
 
-        const fGl = this.reglGL;
-        fGl.resetDrawCalls();
+        this.resetDrawCalls();
         this.forEachRenderer((renderer, layer) => {
             if (!layer.isVisible()) {
                 return;
@@ -264,7 +263,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
                 renderer.drawOutline(fbo);
             }
         });
-        this._outlineCounts = fGl.getDrawCalls();
+        this._outlineCounts = this.getDrawCalls();
     }
 
     _getOutlineFBO() {
@@ -1305,7 +1304,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
                         format: 'depth24 stencil8'
                     });
                 }
-                postFBO = this._postFBO = this.regl.framebuffer(info);
+                postFBO = this._postFBO = this.device.framebuffer(info);
             }
             const { width, height } = this.canvas;
             if (postFBO.width !== width || postFBO.height !== height) {
@@ -1397,6 +1396,24 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         const sceneConfig = this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess && sceneConfig.postProcess.scanEffect;
         return config && config.enable && config.effects.length;
+    }
+
+    resetDrawCalls() {
+        if (this.reglGL) {
+            this.reglGL.resetDrawCalls();
+        }
+        if (this.device && this.device.wgpu) {
+            this.device.resetDrawCalls();
+        }
+    }
+
+    getDrawCalls() {
+        if (this.reglGL) {
+            return this.reglGL.getDrawCalls();
+        }
+        if (this.device && this.device.wgpu) {
+            return this.device.getDrawCalls();
+        }
     }
 }
 

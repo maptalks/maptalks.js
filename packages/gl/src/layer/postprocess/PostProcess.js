@@ -72,8 +72,7 @@ export default class PostProcess {
             getFramebuffer,
             getDepthTexture
         };
-        const fGL = layerRenderer.reglGL;
-        fGL.resetDrawCalls();
+        layerRenderer.resetDrawCalls();
         if (event) {
             layerRenderer.forEachRenderer(renderer => {
                 layerRenderer.clearStencil(renderer, bloomFBO);
@@ -90,7 +89,7 @@ export default class PostProcess {
         context.sceneFilter = sceneFilter;
         context.renderTarget = renderTarget;
 
-        return fGL.getDrawCalls();
+        return layerRenderer.getDrawCalls();
     }
 
     genSsrMipmap(tex, depthTex) {
@@ -124,7 +123,7 @@ export default class PostProcess {
             layerRenderer.forEachRenderer(renderer => {
                 layerRenderer.clearStencil(renderer, fbo);
                 if (!cleared) {
-                    fGL.resetDrawCalls();
+                    layerRenderer.resetDrawCalls();
                     cleared = true;
                 }
                 renderer.drawOnInteracting(event, timestamp, context);
@@ -133,7 +132,7 @@ export default class PostProcess {
             layerRenderer.forEachRenderer(renderer => {
                 layerRenderer.clearStencil(renderer, fbo);
                 if (!cleared) {
-                    fGL.resetDrawCalls();
+                    layerRenderer.resetDrawCalls();
                     cleared = true;
                 }
                 renderer.draw(timestamp, context);
@@ -145,7 +144,7 @@ export default class PostProcess {
         delete context.isPostProcess;
         context.renderMode = renderMode;
         context['sceneFilter'] = filter;
-        this._ssrPainted = fGL.getDrawCalls() > 0;
+        this._ssrPainted = layerRenderer.getDrawCalls() > 0;
         return groundPainted;
     }
 

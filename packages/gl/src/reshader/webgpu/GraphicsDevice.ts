@@ -22,6 +22,7 @@ export default class GraphicsDevice {
     //@internal
     _readTargets: Record<number, GPUBuffer> = {};
     _supportedFormats: any;
+    _drawCount: 0;
 
     constructor(device: GPUDevice, context: GPUCanvasContext, adapter: GPUAdapter) {
         this.wgpu = device;
@@ -297,5 +298,17 @@ export default class GraphicsDevice {
             }
         }
         this._readTargets = {};
+    }
+
+    incrDrawCall() {
+        this._drawCount++;
+    }
+
+    resetDrawCalls() {
+        this._drawCount = 0;
+    }
+
+    getDrawCalls() {
+        return this._drawCount;
     }
 }
