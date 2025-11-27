@@ -713,16 +713,16 @@ export default class Geometry {
 
                 if (byteLen % 4 > 0) {
                     // byteLen % 4 !== 0 时 webgpu 会报错。
-                    // elements 只可能是 Uint16 和 Float32 两种，% 4 > 0 只可能是 Uint16
-                    byteLen = 4 * Math.floor(byteLen / 4);
+                    // elements % 4 > 0 只可能是 Uint16
+                    byteLen = 4 * Math.ceil(byteLen / 4);
                     if (GPU_ELEMENTS.buffer.byteLength < byteLen) {
-                        GPU_ELEMENTS = new Uint16Array(byteLen);
+                        GPU_ELEMENTS = new Uint16Array(byteLen / 2);
                     }
                     GPU_ELEMENTS.fill(0);
-                    GPU_ELEMENTS.set(elements);
-                    data = GPU_ELEMENTS;
+                    data = GPU_ELEMENTS.subarray(0, byteLen / 2);
+                    data.set(elements);
                 }
-                this.elements = this._updateGPUBuffer(e, data, 0, data.buffer.byteLength);
+                this.elements = this._updateGPUBuffer(e, data, 0, byteLen);
             } else {
                 this.elements = (e as any)(elements);
             }
