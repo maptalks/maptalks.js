@@ -247,7 +247,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         this._idMaps = {};
         const feaIdProp = this.options.featureIdProperty;
         const data = this.features;
-        const features = data.features || data;
+        const features = data.features || data.data || data;
         if (Array.isArray(features)) {
             for (let i = 0, len = features.length; i < len; i++) {
                 const f = features[i];
