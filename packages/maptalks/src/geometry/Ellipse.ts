@@ -1,9 +1,9 @@
 import { extend, isNil, pushIn } from '../core/util';
-import { withInEllipse } from '../core/util/path';
+import { getEllipseGLSize, pointsToCoordinates, withInEllipse } from '../core/util/path';
 import Coordinate from '../geo/Coordinate';
 import CenterMixin from './CenterMixin';
 import Polygon, { PolygonOptionsType, RingCoordinates, RingsCoordinates } from './Polygon';
-import Circle from './Circle';
+import Circle, { SpecialGeometryOptionsType } from './Circle';
 import Point from '../geo/Point';
 import Extent from '../geo/Extent';
 
@@ -44,7 +44,8 @@ function angleT(numberOfShellPoints: number) {
  * @instance
  */
 const options: EllipseOptionsType = {
-    'numberOfShellPoints': 81
+    'numberOfShellPoints': 81,
+    'ignoreProjection': false
 };
 
 /**
@@ -181,6 +182,42 @@ export class Ellipse extends CenterMixin(Polygon) {
             console.log(angles);
         }
         let deg, rad, dx, dy;
+
+        const options = this.options as EllipseOptionsType;
+        const ignoreProjection = options.ignoreProjection;
+        const map = this.getMap();
+        if (ignoreProjection && map) {
+            const glRes = map.getGLRes();
+            const { glWidth, glHeight, glCenter } = getEllipseGLSize(center, measurer, map, width / 2, height / 2);
+            //gl width
+            const w = glWidth * 2;
+            //gl height
+            const h = glHeight * 2;
+
+            const s = Math.pow(w / 2, 2) * Math.pow(h / 2, 2),
+                sx = Math.pow(w / 2, 2),
+                sy = Math.pow(h / 2, 2);
+            const pts: Point[] = [];
+            for (let i = 0; i < angles.length; i++) {
+                deg = angles[i];
+                rad = deg * Math.PI / 180;
+                dx = Math.sqrt(s / (sx * Math.pow(Math.tan(rad), 2) + sy));
+                dy = Math.sqrt(s / (sy * Math.pow(1 / Math.tan(rad), 2) + sx));
+                if (deg > 90 && deg < 270) {
+                    dx *= -1;
+                }
+                if (deg > 180 && deg < 360) {
+                    dy *= -1;
+                }
+                const p = glCenter.copy();
+                p.x += dx;
+                p.y += dy;
+                pts[i] = p;
+            }
+            const ring = pointsToCoordinates(map, pts, glRes, center.z);
+            ring.push(ring[0].copy());
+            return ring;
+        }
 
         for (let i = 0; i < angles.length; i++) {
             deg = angles[i];
@@ -319,4 +356,4 @@ export default Ellipse;
 export type EllipseOptionsType = PolygonOptionsType & {
     numberOfShellPoints?: number;
     debug?: boolean;
-}
+} & SpecialGeometryOptionsType;

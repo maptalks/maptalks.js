@@ -301,12 +301,77 @@ export function getMinMaxAltitude(altitude: number | number[] | number[][]): [nu
     return [min, max];
 }
 
+export function pointsToCoordinates(map, points: Point[], glRes: number, altitude: number): Coordinate[] {
+    const ring = [];
+    for (let i = 0, len = points.length; i < len; i++) {
+        const pt = points[i];
+        const c = map.pointAtResToCoordinate(pt, glRes);
+        c.z = altitude;
+        ring[i] = c;
+    }
+    // ring.push(ring[0].copy());
+    return ring;
+}
+
+const WORLD_CENTER = new Coordinate(0, 0);
+
+export function getEllipseGLSize(center: Coordinate, measurer, map, halfWidth: number, halfHeight: number) {
+    const glRes = map.getGLRes();
+    const c1 = measurer.locate(WORLD_CENTER, 1, 0);
+    // const c2 = measurer.locate(CENTER, 0, halfHeight);
+    const glCenter = map.coordToPointAtRes(center, glRes);
+    const p0 = map.coordToPointAtRes(WORLD_CENTER, glRes);
+    const p1 = map.coordToPointAtRes(c1, glRes);
+    // const p2 = map.coordToPointAtRes(c2, glRes);
+    const glWidth = p0.distanceTo(p1) * halfWidth;
+    const glHeight = glWidth * halfHeight / halfWidth;
+
+    return {
+        glWidth,
+        glHeight,
+        glCenter
+    }
+}
+
+export function getIgnoreProjectionGeometryCenter(geo) {
+    const ignoreProjection = geo.options.ignoreProjection;
+    if (ignoreProjection) {
+        const ring = geo.getShell ? geo.getShell() : null;
+        if (ring && ring.length) {
+            const map = geo.getMap();
+            if (!map) {
+                return;
+            }
+            const glRes = map.getGLRes();
+            const points = ring.map(c => {
+                return map.coordToPointAtRes(c, glRes);
+            })
+
+            let sumx = 0,
+                sumy = 0,
+                counter = 0;
+            const size = points.length;
+            for (let i = 0; i < size; i++) {
+                if (points[i]) {
+                    if (isNumber(points[i].x) && isNumber(points[i].y)) {
+                        sumx += points[i].x;
+                        sumy += points[i].y;
+                        counter++;
+                    }
+                }
+            }
+            const p = new Point(sumx / counter, sumy / counter);
+            return map.pointAtResToCoordinate(p, glRes);
+        }
+    }
+}
+
 /**
  * point left segment
- * @param p 
- * @param p1 
- * @param p2 
- * @returns 
+ * @param p
+ * @param p1
+ * @param p2
+ * @returns
  */
 export function pointLeftSegment(p: Point, p1: Point, p2: Point) {
     const x1 = p1.x, y1 = p1.y;
@@ -320,7 +385,7 @@ function pointRightSegment(p: Point, p1: Point, p2: Point) {
 }
 
 /**
- * 
+ *
  * LT--------------------RT
  *   \                  /
  *    \                /
@@ -329,12 +394,12 @@ function pointRightSegment(p: Point, p1: Point, p2: Point) {
  *        camera behind
  *
  * Points within a convex quadrilateral
- * @param point 
- * @param p1 
- * @param p2 
- * @param p3 
- * @param p4 
- * @returns 
+ * @param point
+ * @param p1
+ * @param p2
+ * @param p3
+ * @param p4
+ * @returns
  */
 export function pointInQuadrilateral(p: Point, LT: Point, RT: Point, RB: Point, LB: Point) {
     //LT-RT
@@ -352,11 +417,11 @@ export function pointInQuadrilateral(p: Point, LT: Point, RT: Point, RB: Point, 
 /**
  * 直线和直线的交点
  * Intersection of two line
- * @param p1 
- * @param p2 
- * @param p3 
- * @param p4 
- * @returns 
+ * @param p1
+ * @param p2
+ * @param p3
+ * @param p4
+ * @returns
  */
 export function lineIntersection(p1: Point, p2: Point, p3: Point, p4: Point): Point | null {
     const dx1 = p2.x - p1.x, dy1 = p2.y - p1.y;
@@ -404,8 +469,8 @@ export function lineIntersection(p1: Point, p2: Point, p3: Point, p4: Point): Po
 
 /**
  *  Does it contain altitude values
- * @param altitudes 
- * @returns 
+ * @param altitudes
+ * @returns
  */
 export function altitudesHasData(altitudes: number | Array<number>) {
     if (isNumber(altitudes)) {
