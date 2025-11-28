@@ -13,7 +13,7 @@ import type {
 import Color from 'color';
 import { getVectorPacker } from "../../packer/inject";
 import { compress, uncompress } from "./Compress";
-import { extend, hasOwn, isNil, isObject, isString, pushIn } from "../../common/Util";
+import { extend, hasOwn, isNil, isNumber, isObject, isString, pushIn } from "../../common/Util";
 
 import Ajax from "../../worker/util/Ajax";
 import VectorTileLayerRenderer from "../renderer/VectorTileLayerRenderer";
@@ -670,16 +670,15 @@ class VectorTileLayer extends maptalks.TileLayer {
             if (!feature || !tile || !geometry) {
                 continue;
             }
-            if (geometry.type) {
-                continue;
+            if (geometry.isMVTCoordinates) {
+                const { x, y, res, extent } = tile;
+                if (x !== tempX || y !== tempY || res !== tempRes) {
+                    tempNW = tileConfig.getTilePointNW(x, y, res);
+                }
+                const type = feature.type;
+                const geo = this._convertGeometry(geometry.type || type, geometry, tempNW, extent, res);
+                feature.geometry = geo;
             }
-            const { x, y, res, extent } = tile;
-            if (x !== tempX || y !== tempY || res !== tempRes) {
-                tempNW = tileConfig.getTilePointNW(x, y, res);
-            }
-            const type = feature.type;
-            const geo = this._convertGeometry(type, geometry, tempNW, extent, res);
-            feature.geometry = geo;
         }
     }
 
