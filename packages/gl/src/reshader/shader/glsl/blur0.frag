@@ -34,6 +34,7 @@ vec3 decodeRGBM(const in vec4 color, const in float range) {
     if(inputRGBM == 0.0) return color.rgb;
     return range * color.rgb * color.a;
 }
+
 vec4 gaussianBlur() {
     vec3 pixel = 0.375 *  (extractBright(vec4(decodeRGBM(texture2D(TextureBlurInput, gTexCoord.xy), rgbmRange), 1.0))).rgb;
     vec2 offset;

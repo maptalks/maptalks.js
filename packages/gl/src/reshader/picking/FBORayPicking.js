@@ -478,6 +478,27 @@ export default class FBORayPicking {
             height
         });
 
+        // const data2 = regl.read({
+        //     data: new Uint8Array(4 * fbo.width * fbo.height),
+        //     x: 0,
+        //     y: 0,
+        //     framebuffer: fbo,
+        //     width: fbo.width,
+        //     height: fbo.height
+        // });
+
+        // const canvas = document.createElement('canvas');
+        // canvas.width = fbo.width;
+        // canvas.height = fbo.height;
+        // document.body.appendChild(canvas);
+        // for (let i = 0; i < data2.length; i += 4) {
+        //     if (data2[i + 3] !== 255) {
+        //         data2[i + 3] = 255;
+        //     }
+        // }
+
+        // canvas.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(data2), 128), 0, 0);
+
         const meshIds = [];
         let pickingIds = [];
         for (let i = 0; i < data.length; i += 4) {

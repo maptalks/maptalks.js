@@ -7,7 +7,7 @@ let gpuDevice;
 
 async function initGPUDevice() {
     if (gpuDevice) {
-        return gpuDevice;
+        return { gpuDevice, gpuAdapter };
     }
     gpuAdapter = await navigator.gpu?.requestAdapter();
     gpuDevice = await gpuAdapter?.requestDevice({

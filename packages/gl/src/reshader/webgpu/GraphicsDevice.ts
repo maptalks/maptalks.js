@@ -22,6 +22,7 @@ export default class GraphicsDevice {
     //@internal
     _readTargets: Record<number, GPUBuffer> = {};
     _supportedFormats: any;
+    _drawCount: 0;
 
     constructor(device: GPUDevice, context: GPUCanvasContext, adapter: GPUAdapter) {
         this.wgpu = device;
@@ -172,13 +173,15 @@ export default class GraphicsDevice {
         }
         const device = this.wgpu;
         this.submit();
-        const origin = { x: options.x, y: fboHeight - options.y, z: 0 };
-        if (origin.x + width > fboWidth) {
-            origin.x = fboWidth - width;
-        }
-        if (origin.y + height > fboHeight) {
-            origin.y = fboHeight - height;
-        }
+        // regl.read 参数y从左上角开始，但读取的结果垂直翻转（webgpu不会垂直翻转）
+        // 因此为了和webgl保持一致，webgpu 原点的 y 是距离底部 y + height 像素处，并将结果图像上下翻转
+        const origin = { x: options.x, y: fboHeight - options.y - height, z: 0 };
+        // if (origin.x + width > fboWidth) {
+        //     origin.x = fboWidth - width;
+        // }
+        // if (origin.y + height > fboHeight) {
+        //     origin.y = fboHeight - height;
+        // }
         const data = options.pixels || new Uint8Array(width * height * 4);
         if (framebuffer === this._defaultFramebuffer) {
             // read default framebuffer
@@ -218,13 +221,18 @@ export default class GraphicsDevice {
             const ctx = stagingHostStorage.getContext('2d', {
                 willReadFrequently: true,
             });
-            ctx.drawImage(stagingDeviceStorage[index], 0, 0);
+            // 为了和webgl保持一致，垂直翻转图像
+            ctx.scale(1, -1);
+            ctx.drawImage(stagingDeviceStorage[index], 0, -height);
+
             const stagingValues = ctx.getImageData(0, 0, width, height).data;
             const alphaMode = alphaModes[index];
             for (let k = 0; k < data.length; k += 4) {
                 if (alphaMode === 'premultiplied') {
+                    // premultiplied 模式获取 a
                     data[k + 3] = stagingValues[k + 3];
                 } else {
+                    // opaque模式获取rgb
                     data[k] = stagingValues[k];
                     data[k + 1] = stagingValues[k + 1];
                     data[k + 2] = stagingValues[k + 2];
@@ -290,5 +298,17 @@ export default class GraphicsDevice {
             }
         }
         this._readTargets = {};
+    }
+
+    incrDrawCall() {
+        this._drawCount++;
+    }
+
+    resetDrawCalls() {
+        this._drawCount = 0;
+    }
+
+    getDrawCalls() {
+        return this._drawCount;
     }
 }

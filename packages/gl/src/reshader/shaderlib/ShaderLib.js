@@ -36,6 +36,7 @@ import vertex_color_frag from './glsl/vertex_color.frag';
 import excavate_vert from './glsl/excavate.vert';
 import excavate_frag from './glsl/excavate.frag';
 import srgb_frag from './glsl/srgb.frag';
+import rgbm_frag from './glsl/rgbm.frag';
 
 import mesh_picking_vert from './glsl/mesh_picking.vert';
 
@@ -85,7 +86,9 @@ const ShaderChunk = {
     excavate_frag,
 
     srgb_frag,
-    mesh_picking_vert
+    mesh_picking_vert,
+
+    rgbm_frag
 };
 /* eslint-enable camelcase */
 

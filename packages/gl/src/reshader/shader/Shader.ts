@@ -557,6 +557,7 @@ export default class GPUShader extends GLShader {
             } else {
                 passEncoder.draw(drawCount, instanceCount, drawOffset);
             }
+            device.incrDrawCall();
         }
         passEncoder.end();
     }
