@@ -670,15 +670,13 @@ class VectorTileLayer extends maptalks.TileLayer {
             if (!feature || !tile || !geometry) {
                 continue;
             }
-            if (geometry.isMVTCoordinates) {
-                const { x, y, res, extent } = tile;
-                if (x !== tempX || y !== tempY || res !== tempRes) {
-                    tempNW = tileConfig.getTilePointNW(x, y, res);
-                }
-                const type = feature.type;
-                const geo = this._convertGeometry(geometry.type || type, geometry, tempNW, extent, res);
-                feature.geometry = geo;
+            const { x, y, res, extent } = tile;
+            if (x !== tempX || y !== tempY || res !== tempRes) {
+                tempNW = tileConfig.getTilePointNW(x, y, res);
             }
+            const type = feature.type;
+            const geo = this._convertGeometry(type, geometry, tempNW, extent, res);
+            feature.geometry = geo;
         }
     }
 
@@ -1681,15 +1679,14 @@ class VectorTileLayer extends maptalks.TileLayer {
                 const type = pick.data.feature.type;
                 pick.data.feature.type = "Feature";
                 // pick.data.feature.type = getFeatureType(pick.data.feature);
-                if (geometry.isMVTCoordinates) {
-                    pick.data.feature.geometry = this._convertGeometry(
-                        geometry.type || type,
-                        geometry,
-                        nw,
-                        extent,
-                        res
-                    );
-                }
+                pick.data.feature.geometry = this._convertGeometry(
+                    type,
+                    geometry,
+                    nw,
+                    extent,
+                    res
+                );
+
                 // pick.data.feature.geometry = this._convertGeometryCoords(geometry, nw, extent, res);
             }
         }
@@ -1704,9 +1701,16 @@ class VectorTileLayer extends maptalks.TileLayer {
         extent: number,
         res: number
     ) {
+        //not mvt coordinates
+        if (!geometry.isMVTCoordinates) {
+            return geometry;
+        }
         //the geometry has convert
         if (geometry.type && geometry.coordinates) {
             return geometry;
+        }
+        if (!isNumber(type)) {
+            type = geometry.type;
         }
         let geoType: string, coordinates: any;
         if (type === 1) {
