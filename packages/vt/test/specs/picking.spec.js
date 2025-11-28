@@ -706,9 +706,9 @@ describe('picking specs', () => {
                     customProperties: [
                         {
                             "filter": true,
-                              "properties": {
+                            "properties": {
                                 "custom_prop_line_batch_id": "admin-0-boundary-bg"
-                              }
+                            }
                         }
                     ],
                     symbol: {
@@ -906,7 +906,7 @@ describe('picking specs', () => {
 
 
 
-    it('should return feature properties used in symbol', done => {
+        it('should return feature properties used in symbol', done => {
             const options = {
                 // 不返回features
                 features: 0,
@@ -1116,7 +1116,7 @@ describe('picking specs', () => {
             const layer = new GeoJSONVectorTileLayer('gvt', options);
             layer.once('canvasisdirty', () => {
                 const hit = layer.identify([13.41720, 52.52952])[0];
-                const expectedFeature = { "type": "Feature", "geometry": { "type": "Polygon","coordinates": [[[13.417135053741617,52.52956625878565],[13.417226248848124,52.52956625878565],[13.417226248848124,52.52946625878565],[13.417135053741617,52.52946625878565],[13.417135053741617,52.52956625878565]]] },"properties": { "type": 1, "color": "#f00", "foo": "bar", "foo1": "bar1" },"id": 0,"layer": 0 };
+                const expectedFeature = { "type": "Feature", "geometry": { "type": "Polygon", "coordinates": [[[13.417135053741617, 52.52956625878565], [13.417226248848124, 52.52956625878565], [13.417226248848124, 52.52946625878565], [13.417135053741617, 52.52946625878565], [13.417135053741617, 52.52956625878565]]] }, "properties": { "type": 1, "color": "#f00", "foo": "bar", "foo1": "bar1" }, "id": 0, "layer": 0 };
                 assert.deepEqual(hit.coordinate, [13.417199426755861, 52.52951893867223, -0.000006980199889114576]);
                 assert.deepEqual(expectedFeature, hit.data.feature);
                 done();
@@ -1253,15 +1253,15 @@ describe('picking specs', () => {
             map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
             const layer = new PointLayer('gvt', [marker]);
             new GroupGLLayer('group', [layer], {
-        sceneConfig: {
-          environment: {
-            enable: true,
-            mode: 1,
-            level: 0,
-            brightness: 0,
-          },
-        },
-      }).addTo(map);
+                sceneConfig: {
+                    environment: {
+                        enable: true,
+                        mode: 1,
+                        level: 0,
+                        brightness: 0,
+                    },
+                },
+            }).addTo(map);
             layer.once('canvasisdirty', () => {
                 const redPoint = layer.identify([0, 0]);
                 assert(redPoint[0].geometry instanceof maptalks.Marker);
@@ -1638,10 +1638,18 @@ describe('picking specs', () => {
             count++;
             if (count === 5) {
                 const picked = layer.identifyAtPoint(new maptalks.Point(map.width / 2, map.height / 2));
-                assert(picked[0].data.feature.type === 'Feature');
-                assert(picked[0].data.feature.geometry.type.includes('Polygon'));
-                assert(Math.abs(picked[0].data.feature.geometry.coordinates[0][0][0]) < 10);
-                assert(Math.abs(picked[0].data.feature.geometry.coordinates[0][0][1]) < 10);
+                const feature = picked[0].data.feature;
+                assert(feature.type === 'Feature');
+                let coordinates = feature.geometry.coordinates;
+                const type = feature.geometry.type;
+                assert(type.includes('Polygon'));
+                if (type === 'MultiPolygon') {
+                    coordinates = coordinates[0][0][0];
+                } else {
+                    coordinates = coordinates[0][0];
+                }
+                assert(Math.abs(coordinates[0]) < 10);
+                assert(Math.abs(coordinates[1]) < 10);
                 done();
             }
         });
@@ -1650,7 +1658,7 @@ describe('picking specs', () => {
 
     it('ciskip should enable stencil in VectorTileLayer FillPainter pick, maptalks/issues#832', done => {
         map = new maptalks.Map(container, {
-            center: [121.52861644,31.23331691],
+            center: [121.52861644, 31.23331691],
             zoom: 19,
             devicePixelRatio: 1
         });
