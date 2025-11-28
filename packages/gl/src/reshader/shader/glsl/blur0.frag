@@ -22,7 +22,19 @@ vec4 extractBright(vec4 color) {
 
 vec2 gTexCoord;
 
-#include <rgbm_frag>
+vec4 encodeRGBM(const in vec3 color, const in float range) {
+    vec4 rgbm;
+    vec3 col = color / range;
+    rgbm.a = clamp( max( max( col.r, col.g ), max( col.b, 1e-6 ) ), 0.0, 1.0 );
+    rgbm.a = ceil( rgbm.a * 255.0 ) / 255.0;
+    rgbm.rgb = col / rgbm.a;
+    return rgbm;
+}
+vec3 decodeRGBM(const in vec4 color, const in float range) {
+    if(inputRGBM == 0.0) return color.rgb;
+    return range * color.rgb * color.a;
+}
+
 vec4 gaussianBlur() {
     vec3 pixel = 0.375 *  (extractBright(vec4(decodeRGBM(texture2D(TextureBlurInput, gTexCoord.xy), rgbmRange), 1.0))).rgb;
     vec2 offset;

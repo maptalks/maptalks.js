@@ -8,6 +8,6 @@ vec4 encodeRGBM(const in vec3 color, const in float range) {
     return rgbm;
 }
 vec3 decodeRGBM(const in vec4 color, const in float range) {
-    if(inputRGBM == 0.0) return color.rgb;
+    if(range <= 0.0) return color.rgb;
     return range * color.rgb * color.a;
 }
