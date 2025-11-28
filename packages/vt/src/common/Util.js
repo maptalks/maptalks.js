@@ -223,7 +223,11 @@ export function decodeJSON(uint8Array) {
     }
 }
 
-export function wrapVTFeatureGeometryInfo(tileCacheImage, features) {
+export function wrapVTFeatureGeometryInfo(layerFeatueValue, tileCacheImage, features) {
+    // layer features is 0 or false
+    if (!layerFeatueValue) {
+        return;
+    }
     if (!tileCacheImage || !features || !Array.isArray(features)) {
         return;
     }
@@ -250,7 +254,13 @@ export function wrapVTFeatureGeometryInfo(tileCacheImage, features) {
                 if (featureJSON && isObj) {
                     // feature.properties = featureJSON.properties;
                     //把geometry信息补起来
-                    feature.geometry = featureJSON.geometry;
+                    if (!feature.geometry || !feature.geometry.coordinates) {
+                        feature.geometry = featureJSON.geometry;
+                        feature.geometry.isMVTCoordinates = true;
+                        if (!feature.geometry.type) {
+                            feature.geometry.type = featureJSON.type;
+                        }
+                    }
                 }
             }
         }

@@ -1639,7 +1639,7 @@ describe('picking specs', () => {
             if (count === 5) {
                 const picked = layer.identifyAtPoint(new maptalks.Point(map.width / 2, map.height / 2));
                 assert(picked[0].data.feature.type === 'Feature');
-                assert(picked[0].data.feature.geometry.type === 'Polygon');
+                assert(picked[0].data.feature.geometry.type.includes('Polygon'));
                 assert(Math.abs(picked[0].data.feature.geometry.coordinates[0][0][0]) < 10);
                 assert(Math.abs(picked[0].data.feature.geometry.coordinates[0][0][1]) < 10);
                 done();

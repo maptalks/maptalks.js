@@ -1,6 +1,6 @@
 import * as maptalks from 'maptalks';
 import { KEY_IDX } from '../../../common/Constant';
-import { extend } from '../../../common/Util';
+import { extend, isObject } from '../../../common/Util';
 
 const KEY_IDX_NAME = (KEY_IDX + '').trim();
 
@@ -13,7 +13,8 @@ export default function convertToPainterFeatures(features, feaIndexes, layerId, 
         for (let ii = 0, ll = data.length; ii < ll; ii++) {
             let feature = feaIndexes ? features[feaIndexes[ii]] : features[ii];
             if (layer.options['features'] === 'id' && layer.getFeature) {
-                feature = layer.getFeature(feature);
+                const featureId = isObject(feature) ? feature.id : feature;
+                feature = layer.getFeature(featureId);
                 feature.layer = layerId;
             }
             if (layer instanceof maptalks.TileLayer) {
@@ -46,11 +47,11 @@ export const oldPropsKey = '__original_properties';
 export const externalPropsKey = '__external_properties';
 
 const proxyGetter = {
-    get: function(obj, prop) {
+    get: function (obj, prop) {
         return prop in obj ? obj[prop] : (obj[oldPropsKey][prop] || obj[externalPropsKey] && obj[externalPropsKey][prop]);
     },
-    has: function(obj, prop) {
-        return (prop in obj) || (prop in obj[oldPropsKey])  || obj[externalPropsKey] && (prop in obj[externalPropsKey]);
+    has: function (obj, prop) {
+        return (prop in obj) || (prop in obj[oldPropsKey]) || obj[externalPropsKey] && (prop in obj[externalPropsKey]);
     }
 };
 

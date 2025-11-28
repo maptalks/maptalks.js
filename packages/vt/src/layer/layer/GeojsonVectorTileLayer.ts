@@ -9,7 +9,7 @@ import VectorTileLayer, { VectorTileLayerOptionsType } from "./VectorTileLayer";
 const options = {
     //feature data to return from worker
     //for geojson layer, only need to return id of features
-    features: true,
+    features: "id",
     tileBuffer: 64,
     extent: 8192,
     pyramidMode: 1,

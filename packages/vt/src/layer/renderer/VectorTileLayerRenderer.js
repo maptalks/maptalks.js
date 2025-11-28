@@ -649,7 +649,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 continue;
             }
             const { info, image } = cache;
-            const features = findFeatures(image);
+            const features = findFeatures(this.layer, image);
             renderedFeatures.push({
                 tile: { id: info.id, x: info.x, y: info.y, z: info.z, url: info.url },
                 current: !!this.tilesInView[info.id],
@@ -1690,11 +1690,11 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             }
         });
         hits.forEach(item => {
-            const { data } = item;
+            const data = item.data || {};
             const tile = data.tile;
             if (tile) {
                 const tileCacheItem = this.tileCache.get(tile.id) || {};
-                wrapVTFeatureGeometryInfo(tileCacheItem.image, [data])
+                wrapVTFeatureGeometryInfo(this.layer.options.features, tileCacheItem.image, [data])
             }
         });
         return hits;
@@ -2414,7 +2414,7 @@ function getTileViewport(tileSize) {
     };
 }
 
-function findFeatures(image) {
+function findFeatures(layer, image) {
     if (!image.cache) {
         return [];
     }
@@ -2433,7 +2433,7 @@ function findFeatures(image) {
                 if (empty !== undefined) {
                     geometry.properties.features.empty = empty;
                 }
-                wrapVTFeatureGeometryInfo(image, features);
+                wrapVTFeatureGeometryInfo(layer.options.features, image, features);
                 return features;
             }
         }

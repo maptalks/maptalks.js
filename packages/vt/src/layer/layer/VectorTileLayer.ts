@@ -1642,13 +1642,15 @@ class VectorTileLayer extends maptalks.TileLayer {
             point.y * dpr,
             options
         );
-        if (
-            (this.options as any)["features"] &&
-            (this.options as any)["features"] !== "id"
-        ) {
-            // 将瓦片坐标转成经纬度坐标
-            results = this._convertPickedFeature(results);
-        }
+        // if (
+        //     (this.options as any)["features"] &&
+        //     (this.options as any)["features"] !== "id"
+        // ) {
+        //     // 将瓦片坐标转成经纬度坐标
+        //     results = this._convertPickedFeature(results);
+        // }
+        //always _convertPickedFeature
+        results = this._convertPickedFeature(results);
         if (options && options.filter) {
             return results.filter(g => options.filter(g));
         } else {
@@ -1680,13 +1682,15 @@ class VectorTileLayer extends maptalks.TileLayer {
                 const type = pick.data.feature.type;
                 pick.data.feature.type = "Feature";
                 // pick.data.feature.type = getFeatureType(pick.data.feature);
-                pick.data.feature.geometry = this._convertGeometry(
-                    type,
-                    geometry,
-                    nw,
-                    extent,
-                    res
-                );
+                if (geometry.isMVTCoordinates) {
+                    pick.data.feature.geometry = this._convertGeometry(
+                        geometry.type || type,
+                        geometry,
+                        nw,
+                        extent,
+                        res
+                    );
+                }
                 // pick.data.feature.geometry = this._convertGeometryCoords(geometry, nw, extent, res);
             }
         }
