@@ -201,3 +201,59 @@ export function wrap(n, min, max) {
     const w = ((n - min) % d + d) % d + min;
     return w;
 }
+
+
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
+export function encodeJSON(json) {
+    try {
+        const str = JSON.stringify(json);
+        return encoder.encode(str);
+    } catch (error) {
+        console.error('encode JSON to Uint8Array error:', error);
+    }
+}
+
+export function decodeJSON(uint8Array) {
+    try {
+        const str = decoder.decode(uint8Array);
+        return JSON.parse(str);
+    } catch (error) {
+        console.error('decode Uint8Array to JSON error:', error);
+    }
+}
+
+export function wrapVTFeatureGeometryInfo(tileCacheImage, features) {
+    if (!tileCacheImage || !features || !Array.isArray(features)) {
+        return;
+    }
+    const image = tileCacheImage;
+    const featuresTypeArray = image.featuresTypeArray;
+    //解码features的 typearray
+    if (featuresTypeArray && featuresTypeArray instanceof Uint8Array) {
+        image.featuresFullJSON = decodeJSON(featuresTypeArray);
+        delete image.featuresTypeArray;
+    }
+    const featuresFullJSON = image.featuresFullJSON;
+
+    const linkTo = (dataList) => {
+        dataList = dataList || [];
+        if (featuresFullJSON) {
+            for (let i = 0, len = dataList.length; i < len; i++) {
+                const feature = dataList[i].feature;
+                let featureId = feature;
+                const isObj = isObject(featureId);
+                if (isObj) {
+                    featureId = featureId.id;
+                }
+                const featureJSON = featuresFullJSON[featureId];
+                if (featureJSON && isObj) {
+                    // feature.properties = featureJSON.properties;
+                    //把geometry信息补起来
+                    feature.geometry = featureJSON.geometry;
+                }
+            }
+        }
+    }
+    linkTo(features);
+}
