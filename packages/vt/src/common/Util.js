@@ -223,12 +223,12 @@ export function decodeJSON(uint8Array) {
     }
 }
 
-export function wrapVTFeatureGeometryInfo(layerFeatueValue, tileCacheImage, features) {
+export function wrapVTFeatureGeometryInfo(layerOptionsFeatures, tileCacheImage, dataList) {
     // layer features is 0 or false
-    if (!layerFeatueValue) {
+    if (!layerOptionsFeatures) {
         return;
     }
-    if (!tileCacheImage || !features || !Array.isArray(features)) {
+    if (!tileCacheImage || !dataList || !Array.isArray(dataList)) {
         return;
     }
     const image = tileCacheImage;
@@ -239,31 +239,28 @@ export function wrapVTFeatureGeometryInfo(layerFeatueValue, tileCacheImage, feat
         delete image.featuresTypeArray;
     }
     const featuresFullJSON = image.featuresFullJSON;
-
-    const linkTo = (dataList) => {
+    if (featuresFullJSON) {
         dataList = dataList || [];
-        if (featuresFullJSON) {
-            for (let i = 0, len = dataList.length; i < len; i++) {
-                const feature = dataList[i].feature;
-                let featureId = feature;
-                const isObj = isObject(featureId);
-                if (isObj) {
-                    featureId = featureId.id;
-                }
-                const featureJSON = featuresFullJSON[featureId];
-                if (featureJSON && isObj) {
-                    // feature.properties = featureJSON.properties;
-                    //把geometry信息补起来
-                    if (!feature.geometry || !feature.geometry.coordinates) {
-                        feature.geometry = featureJSON.geometry;
-                        feature.geometry.isMVTCoordinates = true;
-                        if (!feature.geometry.type) {
-                            feature.geometry.type = featureJSON.type;
-                        }
+        for (let i = 0, len = dataList.length; i < len; i++) {
+            const feature = dataList[i].feature;
+            let featureId = feature;
+            const isObj = isObject(featureId);
+            if (isObj) {
+                featureId = featureId.id;
+            }
+            const featureJSON = featuresFullJSON[featureId];
+            if (featureJSON && isObj) {
+                // feature.properties = featureJSON.properties;
+                //把geometry信息补起来
+                if (!feature.geometry || !feature.geometry.coordinates) {
+                    feature.geometry = featureJSON.geometry;
+                    feature.geometry.isMVTCoordinates = true;
+                    if (!feature.geometry.type) {
+                        feature.geometry.type = featureJSON.type;
                     }
                 }
             }
         }
     }
-    linkTo(features);
+
 }
