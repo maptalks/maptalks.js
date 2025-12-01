@@ -2,7 +2,6 @@
 precision highp float;
 uniform float rgbmRange;
 uniform sampler2D TextureBlurInput;
-uniform sampler2D TextureInput;
 uniform vec2 blurDir;
 uniform vec2 pixelRatio;
 uniform vec2 outputSize;
