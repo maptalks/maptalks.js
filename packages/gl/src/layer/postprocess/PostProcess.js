@@ -264,9 +264,20 @@ export default class PostProcess {
         }
         this._copyFBOSize[0] = fbo.width;
         this._copyFBOSize[1] = fbo.height;
+
+        const shaderDefines = {};
+        const texture =  fbo.color && renderer._getFBOColor(fbo) || fbo;
+        const useMultiSample = texture.texture && texture.texture.sampleCount > 1;
+        if (useMultiSample) {
+            shaderDefines['HAS_MULTISAMPLED'] = 1;
+        } else {
+            delete shaderDefines['HAS_MULTISAMPLED'];
+        }
+        this._copyShader.setDefines(shaderDefines);
+
         const renderer = this._layer.getRenderer();
         this._renderer.render(this._copyShader, {
-            texture: fbo.color && renderer._getFBOColor(fbo) || fbo,
+            texture,
             size: this._copyFBOSize,
             enableSharpen: +(!!enableSharpen),
             sharpFactor,
@@ -332,12 +343,16 @@ export default class PostProcess {
                 format: 'rgba8'
             });
         } else {
+            const isAntialias = this._layer.options.antialias;
+            const sampleCount = isAntialias ? 4 : 1;
             color = regl.texture({
                 min: 'nearest',
                 mag: 'nearest',
                 format: colorFormat || 'rgba',
                 width,
-                height
+                height,
+                // webgpu
+                sampleCount
             });
         }
         const fboInfo = {

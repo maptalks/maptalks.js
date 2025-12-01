@@ -3,6 +3,8 @@ import QuadShader from './QuadShader.js';
 import BlurPass from './BlurPass.js';
 import quadVert from './glsl/quad.vert';
 import combineFrag from './glsl/bloom_combine.frag';
+import quadVertWgsl from './wgsl/quad_vert.wgsl';
+import combineFragWgsl from './wgsl/bloom_combine_frag.wgsl';
 import { vec2 } from 'gl-matrix';
 
 class BloomPass {
@@ -17,6 +19,7 @@ class BloomPass {
 
         //blur
         const blurTexes = this._blurPass.render(bloomTex, bloomThreshold);
+
         //combine
         const output = this._combine(sourceTex, blurTexes, bloomTex, bloomFactor, bloomRadius, noAaSource, pointSource, enableAA, paintToScreen);
 
@@ -58,15 +61,8 @@ class BloomPass {
         vec2.set(uniforms['outputSize'], sourceTex.width, sourceTex.height);
 
         const shaderDefines = {};
-        if (noAaSource) {
-            shaderDefines['HAS_NOAA_TEX'] = 1;
-        } else {
-            delete shaderDefines['HAS_NOAA_TEX'];
-        }
-        if (pointSource) {
-            shaderDefines['HAS_POINT_TEX'] = 1;
-        } else {
-            delete shaderDefines['HAS_POINT_TEX'];
+        if (sourceTex.config && sourceTex.config.sampleCount > 1) {
+            shaderDefines['HAS_MULTISAMPLED'] = 1;
         }
         this._combineShader.setDefines(shaderDefines);
         this._renderer.render(this._combineShader, uniforms, null, paintToScreen ? null : this._combineFBO);
@@ -136,8 +132,11 @@ class BloomPass {
             };
             this._blurPass = new BlurPass(this._regl, false);
             this._combineShader = new QuadShader({
+                name: 'bloom-combine',
                 vert: quadVert,
                 frag: combineFrag,
+                wgslVert: quadVertWgsl,
+                wgslFrag: combineFragWgsl,
                 extraCommandProps: {
                     viewport
                 }

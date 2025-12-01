@@ -75,7 +75,7 @@ export default class BindGroupFormat {
         }
     }
 
-    createBindGroup(device: GraphicsDevice, mesh: Mesh, shaderUniforms: ShaderUniforms, layout: GPUBindGroupLayout, shaderBuffer: DynamicBuffer, meshBuffer: DynamicBuffer) {
+    createFormatBindGroup(device: GraphicsDevice, mesh: Mesh, shaderUniforms: ShaderUniforms, layout: GPUBindGroupLayout, shaderBuffer: DynamicBuffer, meshBuffer: DynamicBuffer) {
         const label = this.name + '-' + mesh.uuid;
         if (!this.groups) {
             return device.wgpu.createBindGroup({

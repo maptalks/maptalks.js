@@ -521,7 +521,7 @@ export default class GPUShader extends GLShader {
             // 获取或者生成bind group
             let bindGroup = mesh.getBindGroup(groupKey);
             if (!bindGroup || (bindGroup as any).outdated) {
-                bindGroup = bindGroupFormat.createBindGroup(device, mesh, props[i], layout, shaderBuffer, meshBuffer);
+                bindGroup = bindGroupFormat.createFormatBindGroup(device, mesh, props[i], layout, shaderBuffer, meshBuffer);
                 // 缓存bind group，只要buffer没有发生变化，即可以重用
                 mesh.setBindGroup(groupKey, bindGroup);
             }
