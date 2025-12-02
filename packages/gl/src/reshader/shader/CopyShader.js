@@ -1,9 +1,12 @@
 import QuadShader from './QuadShader.js';
 import frag from './glsl/copy.frag';
+import wgslFrag from './wgsl/copy_frag.wgsl';
 
 class CopyShader extends QuadShader {
     constructor() {
         super({
+            name: 'copy',
+            wgslFrag,
             frag,
             extraCommandProps: {
                 viewport: {
@@ -21,10 +24,12 @@ class CopyShader extends QuadShader {
     }
 
     getMeshCommand(regl, mesh) {
-        if (!this.commands['copy']) {
-            this.commands['copy'] = this.createMeshCommand(regl, mesh);
+        const key = this.dkey || '';
+        const cmdKey = key + '_copy';
+        if (!this.commands[cmdKey]) {
+            this.commands[cmdKey] = this.createMeshCommand(regl, mesh);
         }
-        return this.commands['copy'];
+        return this.commands[cmdKey];
     }
 }
 

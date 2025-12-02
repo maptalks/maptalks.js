@@ -18,6 +18,7 @@ import srgb from './wgsl/srgb';
 import snow from './wgsl/snow';
 import terrain_normal from './wgsl/terrain_normal';
 import mesh_picking from './wgsl/mesh_picking';
+import rgbm from './wgsl/rgbm';
 
 //Shader Chunks for includes
 const ShaderChunk = {
@@ -39,7 +40,8 @@ const ShaderChunk = {
     srgb,
     snow,
     terrain_normal,
-    mesh_picking
+    mesh_picking,
+    rgbm
 };
 /* eslint-enable camelcase */
 

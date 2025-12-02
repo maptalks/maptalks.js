@@ -46,6 +46,8 @@ export default class GraphicsFramebuffer {
         }
         this.options.width = width;
         this.options.height = height;
+        this.width = width;
+        this.height = height;
         if (this.colorTexture) {
             this.colorTexture.resize(width, height);
         }

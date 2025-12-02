@@ -3,12 +3,19 @@ import QuadShader from './QuadShader.js';
 // import BoxBlurShader from './BoxBlurShader.js';
 import quadVert from './glsl/quad.vert';
 import blur0Frag from './glsl/blur0.frag';
+import blur0FragWgsl from './wgsl/blur0_frag.wgsl';
 import blur1Frag from './glsl/blur1.frag';
+import blur1FragWgsl from './wgsl/blur1_frag.wgsl';
 import blur2Frag from './glsl/blur2.frag';
+import blur2FragWgsl from './wgsl/blur2_frag.wgsl';
 import blur3Frag from './glsl/blur3.frag';
+import blur3FragWgsl from './wgsl/blur3_frag.wgsl';
 import blur4Frag from './glsl/blur4.frag';
+import blur4FragWgsl from './wgsl/blur4_frag.wgsl';
 import blur5Frag from './glsl/blur5.frag';
+import blur5FragWgsl from './wgsl/blur5_frag.wgsl';
 import blur6Frag from './glsl/blur6.frag';
+import blur6FragWgsl from './wgsl/blur6_frag.wgsl';
 import { vec2 } from 'gl-matrix';
 
 class BlurPass {
@@ -53,6 +60,15 @@ class BlurPass {
         }
         vec2.set(uniforms['outSize'], curTex.width, curTex.height);
 
+        if (curTex.config && curTex.config.sampleCount > 1) {
+            const defines = {
+                'HAS_MULTISAMPLED': 1
+            };
+            this._blur0Shader.setDefines(defines);
+        } else {
+            this._blur0Shader.setDefines({});
+        }
+
         //只有第一次blur需要用 luminThreshold 过滤像素
         this._blurOnce(this._blur0Shader, curTex, this._blur00FBO, this._blur01FBO, 0.5, luminThreshold);
         this._blurOnce(this._blur1Shader, this._blur01FBO.color[0], this._blur10FBO, this._blur11FBO, 0.5);
@@ -87,6 +103,9 @@ class BlurPass {
         vec2.set(uniforms['outputSize'], output0.width, output0.height);
         this._renderer.render(shader, uniforms, null, output0);
 
+        if (shader.shaderDefines && shader.shaderDefines['HAS_MULTISAMPLED']) {
+            shader.setDefines({});
+        }
         uniforms['luminThreshold'] = 0;
         uniforms['inputRGBM'] = 1;
         vec2.set(uniforms['blurDir'], 1, 0);
@@ -251,21 +270,35 @@ class BlurPass {
             };
 
             config.frag = blur0Frag;
+            config.wgslFrag = blur0FragWgsl;
+            config.name = 'blur0';
             this._blur0Shader = new QuadShader(config);
             config.frag = blur1Frag;
+            config.wgslFrag = blur1FragWgsl;
+            config.name = 'blur1';
             this._blur1Shader = new QuadShader(config);
             config.frag = blur2Frag;
+            config.wgslFrag = blur2FragWgsl;
+            config.name = 'blur2';
             this._blur2Shader = new QuadShader(config);
             config.frag = blur3Frag;
+            config.wgslFrag = blur3FragWgsl;
+            config.name = 'blur3';
             this._blur3Shader = new QuadShader(config);
             config.frag = blur4Frag;
+            config.wgslFrag = blur4FragWgsl;
+            config.name = 'blur4';
             this._blur4Shader = new QuadShader(config);
 
             if (this._level > 5) {
                 config.frag = blur5Frag;
+                config.wgslFrag = blur5FragWgsl;
+                config.name = 'blur5';
                 this._blur5Shader = new QuadShader(config);
 
                 config.frag = blur6Frag;
+                config.wgslFrag = blur6FragWgsl;
+                config.name = 'blur6';
                 this._blur6Shader = new QuadShader(config);
             }
 
