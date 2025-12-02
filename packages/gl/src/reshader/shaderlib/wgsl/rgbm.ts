@@ -1,6 +1,6 @@
 const frag = /*wgsl*/`
 fn encodeRGBM(color: vec3f, range: f32) -> vec4f {
-    if range <= 0.0 {
+    if (range <= 0.0) {
         return vec4f(color, 1.0);
     }
     var rgbm: vec4f;
@@ -12,7 +12,7 @@ fn encodeRGBM(color: vec3f, range: f32) -> vec4f {
 }
 
 fn decodeRGBM(color: vec4f, range: f32) -> vec3f {
-    if range <= 0.0 {
+    if (range <= 0.0) {
         return color.rgb;
     }
     return range * color.rgb * color.a;

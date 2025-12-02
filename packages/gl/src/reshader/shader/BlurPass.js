@@ -103,6 +103,9 @@ class BlurPass {
         vec2.set(uniforms['outputSize'], output0.width, output0.height);
         this._renderer.render(shader, uniforms, null, output0);
 
+        if (shader.shaderDefines && shader.shaderDefines['HAS_MULTISAMPLED']) {
+            shader.setDefines({});
+        }
         uniforms['luminThreshold'] = 0;
         uniforms['inputRGBM'] = 1;
         vec2.set(uniforms['blurDir'], 1, 0);

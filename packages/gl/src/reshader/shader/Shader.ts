@@ -12,6 +12,7 @@ import CommandBuilder from '../webgpu/CommandBuilder';
 import GraphicsDevice from '../webgpu/GraphicsDevice';
 import GraphicsFramebuffer from '../webgpu/GraphicsFramebuffer';
 import DynamicOffsets from '../webgpu/DynamicOffsets';
+import { BindGroupResult } from '../webgpu/BindGroupFormat';
 
 
 const UNIFORM_TYPE = {
@@ -517,19 +518,24 @@ export default class GPUShader extends GLShader {
             const mesh = props[i].meshObject as Mesh;
             // 获取mesh的dynamicBuffer
             const meshBuffer = mesh.writeDynamicBuffer(uid, props[i], bindGroupFormat.getMeshUniforms(), buffersPool, this._dynamicOffsets);
-            const groupKey = bindGroupFormat.uuid + '-' + meshBuffer.version + '-' + shaderBuffer.version;
+            const groupKey = bindGroupFormat.uuid + '-' + meshBuffer.version + '-' + shaderBuffer.version + '-'
+                + mesh.textureVersion + '-' + (mesh.material && mesh.material.textureVersion || 0);
             // 获取或者生成bind group
             let bindGroup = mesh.getBindGroup(groupKey);
+            if (bindGroup && !this._checkBindGroupTextures(bindGroup, props[i])) {
+                bindGroup.outdated = true;
+            }
             if (!bindGroup || (bindGroup as any).outdated) {
                 bindGroup = bindGroupFormat.createFormatBindGroup(device, mesh, props[i], layout, shaderBuffer, meshBuffer);
-                // 缓存bind group，只要buffer没有发生变化，即可以重用
+                bindGroupFormat.copyTextures(bindGroup, props[i]);
+                // 缓存bind group，只要buffer和texture没有发生变化，即可以重用
                 mesh.setBindGroup(groupKey, bindGroup);
             }
 
             // 获取 dynamicOffsets
             this._dynamicOffsets.addItems(shaderDynamicOffsets);
             const dynamicOffsets = this._dynamicOffsets.getDynamicOffsets();
-            passEncoder.setBindGroup(0, bindGroup, dynamicOffsets);
+            passEncoder.setBindGroup(0, bindGroup.bindGroup, dynamicOffsets);
 
             let instancedMesh;
             if (mesh instanceof InstancedMesh) {
@@ -560,6 +566,19 @@ export default class GPUShader extends GLShader {
             device.incrDrawCall();
         }
         passEncoder.end();
+    }
+
+    _checkBindGroupTextures(bindGroup: BindGroupResult, props) {
+        if (!bindGroup.uniformTextures) {
+            return true;
+        }
+        const uniformTextures = bindGroup.uniformTextures;
+        for (const p in uniformTextures) {
+            if (uniformTextures[p] !== props[p]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     _getCurrentRenderPassEncoder(device: GraphicsDevice) {

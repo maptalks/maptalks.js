@@ -546,3 +546,7 @@ export function isTextureDestroyed(texture) {
     }
     return true;
 }
+
+export function isTextureLike(texture) {
+    return texture && (texture.dispose || texture.destroy);
+}

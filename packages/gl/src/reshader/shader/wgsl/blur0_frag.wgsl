@@ -51,7 +51,7 @@ fn fetchSourceTexel(uv: vec2f) -> vec4f {
 #ifdef HAS_MULTISAMPLED
   return textureLoad(TextureBlurInput, vec2i(uv * vec2f(uniforms.outSize)), 0);
 #else
-  return textureSample(TextureBlurInput, textureSourceSampler, uv);
+  return textureSample(TextureBlurInput, TextureBlurInputSampler, uv);
 #endif
 }
 
