@@ -2,12 +2,16 @@
 import QuadShader from './QuadShader.js';
 import vert from './glsl/quad.vert';
 import frag from './glsl/copy_depth.frag';
+import wgslVert from './wgsl/quad_vert.wgsl';
+import wgslFrag from './wgsl/copy_depth_frag.wgsl';
 
 class CopyDepthShader extends QuadShader {
     constructor() {
         const size = [];
         super({
+            name: 'copy-depth',
             vert, frag,
+            wgslVert, wgslFrag,
             uniforms: [
                 {
                     name: 'textureSize',

@@ -2,8 +2,8 @@ import { vec2, vec4, mat4 } from 'gl-matrix';
 import Renderer from '../Renderer.js';
 import CopyDepthShader from './CopyDepthShader.js';
 
-import quadVert from './glsl/quad.vert';
 import quadFrag from './glsl/quad.frag';
+import quadFragWgsl from './wgsl/quad_frag.wgsl';
 import QuadShader from './QuadShader.js';
 
 class SsrPass {
@@ -129,6 +129,11 @@ class SsrPass {
         } else if (depthTex.width !== this._depthCopy.width || depthTex.height !== this._depthCopy.height) {
             this._depthCopyFBO.resize(depthTex.width, depthTex.height);
         }
+        const defines = {};
+        if (depthTex.texture && depthTex.texture.sampleCount > 1) {
+            defines['HAS_MULTISAMPLED'] = 1;
+        }
+        this._copyDepthShader.setDefines(defines);
         this._renderer.render(this._copyDepthShader, {
             'TextureDepth': depthTex
         }, null, this._depthCopyFBO);
@@ -157,7 +162,11 @@ class SsrPass {
         uniforms['TextureInput'] = inputTex;
         uniforms['inputRGBM'] = +this._inputRGBM;
         vec2.set(uniforms['outputSize'], output.width, output.height);
-
+        const defines = {};
+        if (inputTex.texture && inputTex.texture.sampleCount > 1) {
+            defines['HAS_MULTISAMPLED'] = 1;
+        }
+        this._ssrQuadShader.setDefines(defines);
         this._renderer.render(this._ssrQuadShader, uniforms, null, output);
     }
 
@@ -193,8 +202,9 @@ class SsrPass {
             this._copyDepthShader = new CopyDepthShader();
 
             const config = {
-                vert: quadVert,
+                name: 'ssr-mipmap-quad',
                 frag: quadFrag,
+                wgslFrag: quadFragWgsl,
                 extraCommandProps: {
                     viewport: {
                         x: 0,
