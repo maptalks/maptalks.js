@@ -328,11 +328,6 @@ class Painter {
                 this._updateTerrainAltitude(geo, geo.data, geo.properties, geo.positionSize || geo.desc.positionSize, context);
             }
             let mesh = this.createMesh(geometries[i], transform, params, context || {});
-            const defines = mesh.defines || {};
-            if (!defines['POSITION_TYPE_3']) {
-                this.appendWGSLPositionType(defines);
-                mesh.setDefines(defines);
-            }
             if (Array.isArray(mesh)) {
                 mesh = mesh.filter(m => !!m);
                 meshes.push(...mesh);
@@ -340,6 +335,14 @@ class Painter {
                 meshes.push(mesh);
             }
 
+        }
+        for (let i = 0; i < meshes.length; i++) {
+            const mesh = meshes[i];
+            const defines = mesh.defines || {};
+            if (!defines['POSITION_TYPE_3']) {
+                this.appendWGSLPositionType(defines);
+                mesh.setDefines(defines);
+            }
         }
         return meshes;
     }
