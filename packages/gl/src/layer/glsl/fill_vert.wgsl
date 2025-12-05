@@ -8,7 +8,7 @@ struct VertexInput {
 };
 
 struct VertexOutput {
-    @builtin(position) Position: vec4f,
+    @builtin(position) position: vec4f,
 #ifdef HAS_PATTERN
     @location($o) vTexCoord: vec2f,
 #endif
@@ -33,11 +33,11 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
     vertexOutput.vTexCoord = vertexInput.aTexCoord * uniforms.uvScale + uniforms.uvOffset;
 #endif
 
-    let position = vec3f(vertexInput.aPosition);
-    vertexOutput.Position = uniforms.projViewModelMatrix * vec4f(position, 1.0);
+    let position = vec3f(vertexInput.aPosition.xyz);
+    vertexOutput.position = uniforms.projViewModelMatrix * vec4f(position, 1.0);
 
 #if HAS_SHADOWING && !HAS_BLOOM
-    shadow_computeShadowPars(uniforms.modelMatrix * vec4f(position, 1.0));
+    shadow_computeShadowPars(vec4f(position, 1.0), &vertexOutput);
 #endif
 
     return vertexOutput;

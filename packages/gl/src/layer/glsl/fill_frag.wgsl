@@ -3,7 +3,6 @@
 #endif
 
 struct VertexOutput {
-    @builtin(position) Position: vec4f,
 #ifdef HAS_PATTERN
     @location($i) vTexCoord: vec2f,
 #endif
@@ -32,7 +31,7 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
     var fragColor: vec4f = color * uniforms.polygonOpacity;
 
 #if HAS_SHADOWING && !HAS_BLOOM
-    let shadowCoeff = shadow_computeShadow();
+    let shadowCoeff = shadow_computeShadow(vertexOutput);
     fragColor = vec4(shadow_blend(fragColor.rgb, shadowCoeff), fragColor.a);
 #endif
 

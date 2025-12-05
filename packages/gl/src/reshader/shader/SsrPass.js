@@ -156,12 +156,14 @@ class SsrPass {
             uniforms = this._blurUniforms = {
                 'rgbmRange': 7,
                 'outputSize': [0, 0],
+                'inputSize': [0, 0]
             };
         }
 
         uniforms['TextureInput'] = inputTex;
         uniforms['inputRGBM'] = +this._inputRGBM;
         vec2.set(uniforms['outputSize'], output.width, output.height);
+        vec2.set(uniforms['inputSize'], inputTex.width, inputTex.height);
         const defines = {};
         if (inputTex.texture && inputTex.texture.sampleCount > 1) {
             defines['HAS_MULTISAMPLED'] = 1;

@@ -66,11 +66,19 @@ class ShadowPass {
                 depth : 1,
                 framebuffer : this.blurFBO
             });
+            const depthTex = this.depthTex;
+            const defines = this.boxBlurShader.shaderDefines;
+            if (depthTex.texture && depthTex.texture.sampleCount > 1) {
+                defines['HAS_MULTISAMPLED'] = 1;
+            } else {
+                delete defines['HAS_MULTISAMPLED'];
+            }
+            this.boxBlurShader.setDefines(defines);
             renderer.render(
                 this.boxBlurShader,
                 {
-                    resolution : [this.depthTex.width, this.depthTex.height],
-                    textureSource : this.depthTex
+                    resolution : [depthTex.width, depthTex.height],
+                    textureSource : depthTex
                 },
                 null,
                 this.blurFBO

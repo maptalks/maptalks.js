@@ -193,7 +193,7 @@ fn main(vertexOutput: VertexOutput) ->  @location(0) vec4f {
 #endif
 
 #if HAS_SHADOWING && !HAS_BLOOM
-    let shadowCoeff = shadow_computeShadow();
+    let shadowCoeff = shadow_computeShadow(vertexOutput);
     diffuse = shadow_blend(diffuse, shadowCoeff).rgb;
     specular = shadow_blend(specular, shadowCoeff).rgb;
     ambient = shadow_blend(ambient, shadowCoeff).rgb;

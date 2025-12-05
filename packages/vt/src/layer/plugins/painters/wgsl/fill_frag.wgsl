@@ -119,7 +119,7 @@ fn main(
     outputColor *= uniforms.layerOpacity;
 
     #if HAS_SHADOWING && !HAS_BLOOM
-        let shadowCoeff = shadow_computeShadow();
+        let shadowCoeff = shadow_computeShadow(vertexOutput);
         outputColor.rgb = shadow_blend(outputColor.rgb, shadowCoeff);
     #endif
 

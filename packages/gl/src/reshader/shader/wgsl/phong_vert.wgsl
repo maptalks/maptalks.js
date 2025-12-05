@@ -175,7 +175,7 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
 #endif
 
 #if HAS_SHADOWING && !HAS_BLOOM
-    shadow_computeShadowPars(localPositionMatrix * localPosition);
+    shadow_computeShadowPars(localPositionMatrix * localPosition, &vertexOutput);
 #endif
 
 #ifdef HAS_I3S_UVREGION

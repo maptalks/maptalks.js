@@ -326,7 +326,7 @@ fn main(input: VertexInput) -> VertexOutput {
     #endif
 
     #if HAS_SHADOWING && !HAS_BLOOM
-        shadow_computeShadowPars(localVertex);
+        shadow_computeShadowPars(localVertex, &output);
     #endif
     #if HAS_HIGHLIGHT_COLOR || HAS_HIGHLIGHT_OPACITY
         highlight_setVarying(input, output);
