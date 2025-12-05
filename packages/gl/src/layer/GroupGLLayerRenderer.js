@@ -313,7 +313,8 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
     }
 
     _blitDepthTex() {
-        if (this._depthTex.subimage) {
+        const isWebGPU = !!this.device.wgpu;
+        if (isWebGPU || this._depthTex.subimage) {
             return this._depthTex;
         }
         const { width, height } = this._depthTex;

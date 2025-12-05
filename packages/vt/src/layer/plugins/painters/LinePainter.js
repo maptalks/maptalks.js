@@ -451,7 +451,6 @@ class LinePainter extends BasicPainter {
         if (this.pickingFBO) {
             const isVectorTile = this.layer instanceof maptalks.TileLayer;
             const defines = { 'PICKING_MODE': 1 };
-            this.appendWGSLPositionType(defines);
             defines['LINESOFAR_TYPE'] = isVectorTile ? 'u32' : 'f32';
             this.picking = [new reshader.FBORayPicking(
                 this.renderer,
@@ -501,7 +500,6 @@ class LinePainter extends BasicPainter {
         );
 
         const isVectorTile = this.layer.isVectorTileLayer;
-        this.appendWGSLPositionType(defines);
         defines['LINESOFAR_TYPE'] = isVectorTile ? 'u32' : 'f32';
         this.shader = new reshader.MeshShader({
             name: 'vt-line',

@@ -8,7 +8,7 @@ import PipelineDescriptor from '../webgpu/common/PipelineDesc';
 import InstancedMesh from '../InstancedMesh';
 import Mesh from '../Mesh';
 import DynamicBuffer from '../webgpu/DynamicBuffer';
-import CommandBuilder from '../webgpu/CommandBuilder';
+import CommandBuilder, { CommandStruct } from '../webgpu/CommandBuilder';
 import GraphicsDevice from '../webgpu/GraphicsDevice';
 import GraphicsFramebuffer from '../webgpu/GraphicsFramebuffer';
 import DynamicOffsets from '../webgpu/DynamicOffsets';
@@ -477,7 +477,7 @@ export default class GPUShader extends GLShader {
         return { vert, frag };
     }
 
-    run(deviceOrRegl: any, command, props) {
+    run(deviceOrRegl: any, command: CommandStruct, props) {
         if (!deviceOrRegl.wgpu) {
             // regl command
             return super.run(deviceOrRegl, command, props);

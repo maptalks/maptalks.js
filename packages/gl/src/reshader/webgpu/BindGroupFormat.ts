@@ -137,9 +137,15 @@ export default class BindGroupFormat {
                     continue;
                 }
                 textures.push(graphicsTexture);
+                let descriptor: GPUTextureViewDescriptor;
+                if ((graphicsTexture as GraphicsTexture).gpuFormat.isDepthStencil) {
+                    descriptor = {
+                        aspect: 'depth-only'
+                    };
+                }
                 entries.push({
                     binding: group.binding,
-                    resource: (graphicsTexture as GraphicsTexture).getView()
+                    resource: (graphicsTexture as GraphicsTexture).getView(descriptor)
                 });
             } else {
                 const allocation = group.isGlobal ? shaderBuffer.allocation : meshBuffer.allocation;
@@ -154,6 +160,7 @@ export default class BindGroupFormat {
                 });
             }
         }
+
         const bindGroup = device.wgpu.createBindGroup({
             layout,
             label,

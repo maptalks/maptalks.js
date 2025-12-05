@@ -336,6 +336,14 @@ class Painter {
             }
 
         }
+        for (let i = 0; i < meshes.length; i++) {
+            const mesh = meshes[i];
+            const defines = mesh.defines || {};
+            if (!defines['POSITION_TYPE_3']) {
+                this.appendWGSLPositionType(defines);
+                mesh.setDefines(defines);
+            }
+        }
         return meshes;
     }
 

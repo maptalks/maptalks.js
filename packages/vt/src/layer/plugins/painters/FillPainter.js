@@ -605,7 +605,6 @@ class FillPainter extends BasicPainter {
             const projViewModelMatrix = [];
             const isVectorTile = this.layer.isVectorTileLayer;
             const defines = { 'PICKING_MODE': 1 };
-            this.appendWGSLPositionType(defines);
             this.picking = [new reshader.FBORayPicking(
                 this.renderer,
                 {
@@ -649,7 +648,6 @@ class FillPainter extends BasicPainter {
         const defines = {};
         this.fillIncludes(defines, uniforms, context);
 
-        this.appendWGSLPositionType(defines);
         this.shader = new reshader.MeshShader({
             name: 'vt-fill',
             vert, frag,
