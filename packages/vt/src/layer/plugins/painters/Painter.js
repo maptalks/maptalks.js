@@ -328,7 +328,7 @@ class Painter {
                 this._updateTerrainAltitude(geo, geo.data, geo.properties, geo.positionSize || geo.desc.positionSize, context);
             }
             let mesh = this.createMesh(geometries[i], transform, params, context || {});
-            const defines = mesh.defines;
+            const defines = mesh.defines || {};
             if (!defines['POSITION_TYPE_3']) {
                 this.appendWGSLPositionType(defines);
                 mesh.setDefines(defines);
