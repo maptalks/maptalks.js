@@ -247,14 +247,17 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         this._idMaps = {};
         const feaIdProp = this.options.featureIdProperty;
         const data = this.features;
-        if (Array.isArray(data)) {
-            data.forEach((f) => {
+        const features = data.features || data.data || data;
+        if (Array.isArray(features)) {
+            for (let i = 0, len = features.length; i < len; i++) {
+                const f = features[i];
                 if (!f) {
-                    return;
+                    continue;
                 }
                 if (!isNumber(f.id)) {
                     f.id = uid++;
                 }
+                f.properties = f.properties || {};
                 if (feaIdProp) {
                     let idProp = feaIdProp;
                     if (isObject(feaIdProp)) {
@@ -263,24 +266,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
                     f.id = f.properties[idProp];
                 }
                 this._idMaps[f.id] = f;
-            });
-        } else if (data.features) {
-            data.features.forEach((f) => {
-                if (!f) {
-                    return;
-                }
-                if (!isNumber(f.id)) {
-                    f.id = uid++;
-                }
-                if (feaIdProp) {
-                    let idProp = feaIdProp;
-                    if (isObject(feaIdProp)) {
-                        idProp = feaIdProp[f.layer || "0"];
-                    }
-                    f.id = f.properties[idProp];
-                }
-                this._idMaps[f.id] = f;
-            });
+            }
         }
     }
 }
