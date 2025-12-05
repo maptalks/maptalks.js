@@ -13,7 +13,7 @@ import type {
 import Color from 'color';
 import { getVectorPacker } from "../../packer/inject";
 import { compress, uncompress } from "./Compress";
-import { extend, hasOwn, isNil, isObject, isString, pushIn } from "../../common/Util";
+import { extend, hasOwn, isNil, isNumber, isObject, isString, pushIn } from "../../common/Util";
 
 import Ajax from "../../worker/util/Ajax";
 import VectorTileLayerRenderer from "../renderer/VectorTileLayerRenderer";
@@ -668,9 +668,6 @@ class VectorTileLayer extends maptalks.TileLayer {
             const { feature, tile } = features[i];
             const geometry = feature.geometry;
             if (!feature || !tile || !geometry) {
-                continue;
-            }
-            if (geometry.type) {
                 continue;
             }
             const { x, y, res, extent } = tile;
@@ -1642,13 +1639,15 @@ class VectorTileLayer extends maptalks.TileLayer {
             point.y * dpr,
             options
         );
-        if (
-            (this.options as any)["features"] &&
-            (this.options as any)["features"] !== "id"
-        ) {
-            // 将瓦片坐标转成经纬度坐标
-            results = this._convertPickedFeature(results);
-        }
+        // if (
+        //     (this.options as any)["features"] &&
+        //     (this.options as any)["features"] !== "id"
+        // ) {
+        //     // 将瓦片坐标转成经纬度坐标
+        //     results = this._convertPickedFeature(results);
+        // }
+        //always _convertPickedFeature
+        results = this._convertPickedFeature(results);
         if (options && options.filter) {
             return results.filter(g => options.filter(g));
         } else {
@@ -1687,6 +1686,7 @@ class VectorTileLayer extends maptalks.TileLayer {
                     extent,
                     res
                 );
+
                 // pick.data.feature.geometry = this._convertGeometryCoords(geometry, nw, extent, res);
             }
         }
@@ -1701,9 +1701,16 @@ class VectorTileLayer extends maptalks.TileLayer {
         extent: number,
         res: number
     ) {
+        //not mvt coordinates
+        if (!geometry.isMVTCoordinates) {
+            return geometry;
+        }
         //the geometry has convert
         if (geometry.type && geometry.coordinates) {
             return geometry;
+        }
+        if (!isNumber(type)) {
+            type = geometry.type;
         }
         let geoType: string, coordinates: any;
         if (type === 1) {

@@ -201,3 +201,66 @@ export function wrap(n, min, max) {
     const w = ((n - min) % d + d) % d + min;
     return w;
 }
+
+
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
+export function encodeJSON(json) {
+    try {
+        const str = JSON.stringify(json);
+        return encoder.encode(str);
+    } catch (error) {
+        console.error('encode JSON to Uint8Array error:', error);
+    }
+}
+
+export function decodeJSON(uint8Array) {
+    try {
+        const str = decoder.decode(uint8Array);
+        return JSON.parse(str);
+    } catch (error) {
+        console.error('decode Uint8Array to JSON error:', error);
+    }
+}
+
+export function wrapVTFeatureGeometryInfo(layerOptionsFeatures, tileCacheImage, dataList) {
+    // layer features is 0 or false
+    if (!layerOptionsFeatures) {
+        return;
+    }
+    if (!tileCacheImage || !dataList || !Array.isArray(dataList)) {
+        return;
+    }
+    const image = tileCacheImage;
+    const featuresTypeArray = image.featuresTypeArray;
+    //解码features的 typearray
+    if (featuresTypeArray && featuresTypeArray instanceof Uint8Array) {
+        image.featuresFullJSON = decodeJSON(featuresTypeArray);
+        delete image.featuresTypeArray;
+    }
+    const featuresFullJSON = image.featuresFullJSON;
+    if (featuresFullJSON) {
+        dataList = dataList || [];
+        for (let i = 0, len = dataList.length; i < len; i++) {
+            const feature = dataList[i].feature;
+            let featureId = feature;
+            const isObj = isObject(featureId);
+            if (isObj) {
+                featureId = featureId.id;
+            }
+            const featureJSON = featuresFullJSON[featureId];
+            if (featureJSON && isObj) {
+                // feature.properties = featureJSON.properties;
+                //把geometry信息补起来
+                if (!feature.geometry || !feature.geometry.coordinates) {
+                    feature.geometry = featureJSON.geometry;
+                    feature.geometry.isMVTCoordinates = true;
+                    if (!feature.geometry.type) {
+                        feature.geometry.type = featureJSON.type;
+                    }
+                }
+            }
+        }
+    }
+
+}
