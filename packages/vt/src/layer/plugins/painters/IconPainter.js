@@ -49,7 +49,6 @@ class IconPainter extends CollisionPainter {
         this.isLabelCollides = isLabelCollides.bind(this);
 
         this._meshesToCheck = [];
-        this._emptyTexture = regl.texture(2);
     }
 
     needToRefreshTerrainTileOnZooming() {
@@ -835,16 +834,6 @@ class IconPainter extends CollisionPainter {
         const { aType } = mesh.geometry.properties;
         const index = elements[start];
         return aType[index] === 1;
-    }
-
-    delete() {
-        if (this._emptyTexture) {
-            if (!reshader.Util.isTextureDestroyed(this._emptyTexture)) {
-                this._emptyTexture.destroy();
-            }
-            this._emptyTexture = null;
-        }
-        return super.delete();
     }
 }
 
