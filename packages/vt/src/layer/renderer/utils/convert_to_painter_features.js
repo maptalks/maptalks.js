@@ -13,7 +13,7 @@ export default function convertToPainterFeatures(features, feaIndexes, layerId, 
         for (let ii = 0, ll = data.length; ii < ll; ii++) {
             let feature = feaIndexes ? features[feaIndexes[ii]] : features[ii];
             //is GeoJSONVectorTileLayer
-            if (layer.getFeature) {
+            if (layer.options['features'] === 'id' && layer.getFeature) {
                 const featureId = isObject(feature) ? feature.id : feature;
                 feature = layer.getFeature(featureId);
                 feature.layer = layerId;
