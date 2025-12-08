@@ -15,18 +15,19 @@ struct CopyDepthUniforms {
 @group(0) @binding($b) var TextureDepthSampler: sampler;
 
 struct VertexOutput {
-    @builtin(position) position: vec4f
+    @builtin(position) position: vec4f,
+    @location($i) vTexCoord: vec2f,
 };
 
 @fragment
 fn main(
     vertexOutput: VertexOutput
 ) -> @location(0) vec4f {
-    let uv = vertexOutput.position.xy;
+    let uv = vertexOutput.vTexCoord;
     #ifdef HAS_MULTISAMPLED
-        let depth = textureLoad(TextureDepth, vec2i(uv), 0);
+        let depth = textureLoad(TextureDepth, vec2i(uv * uniforms.textureSize), 0);
     #else
-        let depth = textureSample(TextureDepth, TextureDepthSampler, uv / uniforms.textureSize);
+        let depth = textureSample(TextureDepth, TextureDepthSampler, uv);
     #endif
     var fragColor = common_encodeDepth(depth);
     return fragColor;

@@ -296,7 +296,7 @@ fn main(input: VertexInput) -> VertexOutput {
         #endif
 
         #if HAS_SHADOWING && !HAS_BLOOM
-            shadow_computeShadowPars(position);
+            shadow_computeShadowPars(position, &output);
         #endif
 
         #if HAS_BUMP_MAP && HAS_TANGENT
