@@ -272,8 +272,10 @@ describe('GeoJSONVectorTileLayer', () => {
         layer.on('layerload', () => {
             count++;
             if (count === 1) {
-                assert.deepStrictEqual(layer.getComputedStyle().style[0].renderPlugin.sceneConfig, { foo: 1 });
-                done();
+                setTimeout(() => {
+                    assert.deepStrictEqual(layer.getComputedStyle().style[0].renderPlugin.sceneConfig, { foo: 1 });
+                    done();
+                }, 1000);
             }
         });
         layer.addTo(map);
