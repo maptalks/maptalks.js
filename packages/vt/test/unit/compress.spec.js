@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.js');
+const { GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.gpu.js');
 
 const STYLE = [
     {

@@ -160,8 +160,8 @@ export default class GraphicsTexture {
         this.texture = texture;
     }
 
-    getView() {
-        return this.texture.createView();
+    getView(descriptor?: GPUTextureViewDescriptor): GPUTextureView {
+        return this.texture.createView(descriptor);
     }
 
     addBindGroup(bindGroup) {

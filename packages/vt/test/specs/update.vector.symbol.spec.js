@@ -1,9 +1,14 @@
 const assert = require('assert');
 const { readPixel, } = require('../common/Util');
 const maptalks = require('maptalks');
-const { PointLayer, LineStringLayer, PolygonLayer } = require('../../dist/maptalks.vt.js');
-const { GroupGLLayer } = require('@maptalks/gl');
+const { PointLayer, LineStringLayer, PolygonLayer } = require('../../dist/maptalks.vt.gpu.js');
+const { GroupGLLayer } = require('@maptalks/gpu');
 
+const mapRenderer = window.mapRenderer;
+
+maptalks.Map.mergeOptions({
+    renderer: mapRenderer || 'gl'
+});
 
 const DEFAULT_VIEW = {
     center: [0, 0],

@@ -15,6 +15,16 @@ import { isNil } from "../common/Util";
 const GLOBAL_IN_MESH_ERROR = 'Found a global uniform in mesh struct:';
 const MESH_IN_GLOBAL_ERROR = 'Found a mesh uniform in global struct:';
 
+export type CommandStruct = {
+    uid: number,
+    layout: GPUBindGroupLayout,
+    pipeline: GPURenderPipeline,
+    vertexInfo: any,
+    bindGroupFormat: BindGroupFormat,
+    bindGroupMapping: any,
+    activeAttributes: ActiveAttributes
+};
+
 export default class CommandBuilder {
     //@internal
     device: GraphicsDevice;
@@ -49,7 +59,7 @@ export default class CommandBuilder {
         this.uniformValues = uniformValues;
     }
 
-    build(pipelineDesc: PipelineDescriptor, fbo: GraphicsFramebuffer) {
+    build(pipelineDesc: PipelineDescriptor, fbo: GraphicsFramebuffer): CommandStruct {
         const mesh = this.mesh;
         const device = this.device;
         const defines = this.defines;

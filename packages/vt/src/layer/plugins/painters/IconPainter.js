@@ -730,7 +730,6 @@ class IconPainter extends CollisionPainter {
         };
         const defines = this._shaderDefines || {};
 
-        this.appendWGSLPositionType(defines);
         this.shader = new reshader.MeshShader({
             name: 'marker',
             vert, frag,

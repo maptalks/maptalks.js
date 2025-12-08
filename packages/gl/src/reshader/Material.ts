@@ -18,6 +18,8 @@ export default class Material extends Eventable(Base) {
     //@internal
     _propVerion: number
     //@internal
+    _texVersion: number
+    //@internal
     _uniformVer?: number
     //@internal
     _uniformKeys?: string
@@ -33,9 +35,10 @@ export default class Material extends Eventable(Base) {
     _disposed?: boolean
 
     constructor(uniforms: ShaderUniforms = {}, defaultUniforms?: ShaderUniforms) {
-        super()
+        super();
         this._version = 0;
         this._propVerion = 0;
+        this._texVersion = 0;
         this.uniforms = extendWithoutNil({}, defaultUniforms || {}, uniforms);
         for (const p in uniforms) {
             const getter = Object.getOwnPropertyDescriptor(uniforms, p).get;
@@ -65,6 +68,10 @@ export default class Material extends Eventable(Base) {
 
     get propVersion(): number {
         return this._propVerion;
+    }
+
+    get textureVersion() {
+        return this._texVersion;
     }
 
     set doubleSided(value: boolean) {
@@ -164,6 +171,7 @@ export default class Material extends Eventable(Base) {
         }
         if (this.isTexture(k)) {
             this._checkTextures();
+            this._texVersion++;
         }
         if (dirty) {
             this._genUniformKeys();

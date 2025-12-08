@@ -1,4 +1,4 @@
-import { extend, isNil, isNumber, isFunction, isSupportVAO, hasOwn } from './common/Util.js';
+import { extend, isNil, isNumber, isFunction, isSupportVAO, hasOwn, isTextureLike } from './common/Util.js';
 import { mat4, vec3 } from 'gl-matrix';
 import BoundingBox from './BoundingBox.js';
 import Geometry from './Geometry';
@@ -6,7 +6,7 @@ import Material from './Material';
 import { MatrixFunction, MeshOptions, ShaderDefines, ShaderUniformValue, ShaderUniforms } from './types/typings';
 import DynamicBuffer from './webgpu/DynamicBuffer';
 import DynamicOffsets from './webgpu/DynamicOffsets';
-import BindGroupFormat from './webgpu/BindGroupFormat';
+import BindGroupFormat, { BindGroupResult } from './webgpu/BindGroupFormat';
 import DynamicBufferPool from './webgpu/DynamicBufferPool';
 
 const tempMat4: mat4 = new Array(16) as mat4;
@@ -21,6 +21,8 @@ let uuid = 0;
 export default class Mesh {
     //@internal
     _version: number
+    //@internal
+    _texVersion: number
     //@internal
     _geometry: Geometry
     //@internal
@@ -66,7 +68,7 @@ export default class Mesh {
     //@internal
     _uniformDescriptors?: Set<string>
     //@internal
-    _bindGroupCache?: Record<string, GPUBindGroup>
+    _bindGroupCache?: Record<string, BindGroupResult>
     //@internal
     _commandKeyCache?: Record<number, GPUBindGroup>
 
@@ -86,6 +88,7 @@ export default class Mesh {
 
     constructor(geometry: Geometry, material?: Material, config: MeshOptions = {}) {
         this._version = 0;
+        this._texVersion = 0;
         this._geometry = geometry;
         this._material = material;
         // this._bindedOnMaterialUpdate = (...args) => {
@@ -140,6 +143,10 @@ export default class Mesh {
 
     get version() {
         return this._version;
+    }
+
+    get textureVersion() {
+        return this._texVersion;
     }
 
     get geometry() {
@@ -237,6 +244,9 @@ export default class Mesh {
     setUniform(k: string, v: ShaderUniformValue) {
         if (this.uniforms[k] === v) {
             return this;
+        }
+        if (isTextureLike(v)) {
+            this._texVersion++;
         }
         this._updateUniformState(k);
         this.uniforms[k] = v;

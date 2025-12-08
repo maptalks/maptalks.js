@@ -7,7 +7,7 @@ let gpuDevice;
 
 async function initGPUDevice() {
     if (gpuDevice) {
-        return gpuDevice;
+        return { gpuDevice, gpuAdapter };
     }
     gpuAdapter = await navigator.gpu?.requestAdapter();
     gpuDevice = await gpuAdapter?.requestDevice({
@@ -20,7 +20,6 @@ async function initGPUDevice() {
 
 export default class MapGPURenderer extends MapGLRenderer {
     device: any;
-    gpuDevice: GPUDevice;
 
     drawLayers(layers: Layer[], framestamp: number) {
         const updated = super.drawLayers(layers, framestamp);

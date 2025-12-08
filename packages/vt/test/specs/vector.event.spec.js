@@ -1,9 +1,15 @@
 const assert = require('assert');
 const { readPixel } = require('../common/Util');
 const maptalks = require('maptalks');
-const { PointLayer } = require('../../dist/maptalks.vt.js');
-const { GroupGLLayer } = require('@maptalks/gl');
+const { PointLayer } = require('../../dist/maptalks.vt.gpu.js');
+const { GroupGLLayer } = require('@maptalks/gpu');
 const happen = require('happen');
+
+const mapRenderer = window.mapRenderer;
+
+maptalks.Map.mergeOptions({
+    renderer: mapRenderer || 'gl'
+});
 
 function GET_PAGE_POSITION(obj) {
     const docEl = document.documentElement;

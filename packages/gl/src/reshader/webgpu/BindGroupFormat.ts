@@ -9,8 +9,15 @@ import AbstractTexture from "../AbstractTexture";
 import GraphicsTexture from "./GraphicsTexture";
 import { roundUp } from "./common/math";
 import GraphicsFramebuffer from "./GraphicsFramebuffer";
+import { isTextureLike } from "../common/Util";
 
 let uuid = 0;
+
+export type BindGroupResult = {
+    bindGroup: GPUBindGroup,
+    outdated: boolean,
+    uniformTextures?: any
+}
 
 export default class BindGroupFormat {
     bytes: number;
@@ -75,14 +82,20 @@ export default class BindGroupFormat {
         }
     }
 
-    createBindGroup(device: GraphicsDevice, mesh: Mesh, shaderUniforms: ShaderUniforms, layout: GPUBindGroupLayout, shaderBuffer: DynamicBuffer, meshBuffer: DynamicBuffer) {
+    createFormatBindGroup(device: GraphicsDevice, mesh: Mesh,
+        shaderUniforms: ShaderUniforms, layout: GPUBindGroupLayout,
+        shaderBuffer: DynamicBuffer, meshBuffer: DynamicBuffer): BindGroupResult {
         const label = this.name + '-' + mesh.uuid;
         if (!this.groups) {
-            return device.wgpu.createBindGroup({
-                layout,
-                label,
-                entries: []
-            });
+            return {
+                bindGroup: device.wgpu.createBindGroup({
+                    layout,
+                    label,
+                    entries: []
+                }),
+                outdated: false,
+                uniformTextures: {}
+            };
         }
         const groups = this.groups[0];
         const entries = [];
@@ -124,9 +137,15 @@ export default class BindGroupFormat {
                     continue;
                 }
                 textures.push(graphicsTexture);
+                let descriptor: GPUTextureViewDescriptor;
+                if ((graphicsTexture as GraphicsTexture).gpuFormat.isDepthStencil) {
+                    descriptor = {
+                        aspect: 'depth-only'
+                    };
+                }
                 entries.push({
                     binding: group.binding,
-                    resource: (graphicsTexture as GraphicsTexture).getView()
+                    resource: (graphicsTexture as GraphicsTexture).getView(descriptor)
                 });
             } else {
                 const allocation = group.isGlobal ? shaderBuffer.allocation : meshBuffer.allocation;
@@ -141,6 +160,7 @@ export default class BindGroupFormat {
                 });
             }
         }
+
         const bindGroup = device.wgpu.createBindGroup({
             layout,
             label,
@@ -149,7 +169,24 @@ export default class BindGroupFormat {
         for (let i = 0; i < textures.length; i++) {
             textures[i].addBindGroup(bindGroup);
         }
-        return bindGroup;
+        return { bindGroup, outdated: false, uniformTextures: {} };
+    }
+
+    copyTextures(bindGroup: BindGroupResult, props: any) {
+        for (const p in props) {
+            if (p === 'meshObject') {
+                continue;
+            }
+            let v;
+            try {
+                v = props[p];
+            } catch(e) {
+                continue;
+            }
+            if (isTextureLike(v)) {
+                bindGroup.uniformTextures[p] = v;
+            }
+        }
     }
 
     dispose() {

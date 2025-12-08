@@ -47,6 +47,8 @@ const DEFAULT_DESC: GeometryDesc = {
     'textureCoordMatrixAttribute': 'aTextureCoordMatrix'
 };
 
+let GPU_ELEMENTS = new Uint16Array(1024);
+
 function getSemantic(desc: GeometryDesc) {
     const semantic = {};
     for (const p in DEFAULT_DESC) {
@@ -63,6 +65,17 @@ function GUID() {
 }
 
 const REF_COUNT_KEY = '_reshader_refCount';
+
+const arrays = {};
+function getTempParamArray(ctor, length: number) {
+    const name = ctor.name;
+    if (!arrays[name] || arrays[name].length < length) {
+        arrays[name] = new ctor(length);
+    }
+    const arr = arrays[name].subarray(0, length);
+    arr.fill(0);
+    return arr;
+}
 
 export default class Geometry {
 
@@ -89,6 +102,9 @@ export default class Geometry {
     }
 
     static padGPUBufferAlignment(array: TypedArray, vertexCount: number): TypedArray {
+        if (vertexCount === 0) {
+            return array;
+        }
         const itemBytes = array.byteLength / vertexCount;
         if (itemBytes % 4 === 0) {
             return array;
@@ -100,7 +116,7 @@ export default class Geometry {
         if (itemSize === 3) {
             // itemSize 为 3时，补位为 4，wgsl中需要相应修改类型声明
             const newItemSize = ensureAlignment(itemSize, bytesPerElement);
-            const newArray = new ctor(newItemSize * vertexCount);
+            const newArray = getTempParamArray(ctor, newItemSize * vertexCount); //new ctor(newItemSize * vertexCount);
             for (let i = 0; i < vertexCount; i++) {
                 for (let ii = 0; ii < itemSize; ii++) {
                     newArray[i * newItemSize + ii] = array[i * itemSize + ii];
@@ -110,7 +126,7 @@ export default class Geometry {
         } else {
             // itemSize 为 1或2时，提升数组的类型，不影响wgsl中的类型声明
             const newCtor = getPadArrayCtor(ctor, itemSize);
-            const newArray = new newCtor(itemSize * vertexCount);
+            const newArray = getTempParamArray(newCtor, itemSize * vertexCount);//new newCtor(itemSize * vertexCount);
             newArray.set(array);
             return newArray;
         }
@@ -610,10 +626,10 @@ export default class Geometry {
     _updateGPUBuffer(buffer : GPUBuffer, data : AttributeData, offset: number, byteLength: number) {
         if (Array.isArray(data)) {
             data = new Float32Array(data);
+            byteLength = data.length * 4;
         }
         const device = (buffer as any).device as GraphicsDevice;
-        const size = data.buffer.byteLength;
-        if (size > buffer.size) {
+        if (byteLength > buffer.size) {
             const newBuffer = createGPUBuffer(device, data, buffer.usage, buffer.label);
             delete (buffer as any).device;
             buffer.destroy();
@@ -692,7 +708,21 @@ export default class Geometry {
                     const ctor = findElementConstructor(elements);
                     elements = new ctor(elements);
                 }
-                this.elements = this._updateGPUBuffer(e, elements, 0, elements.buffer.byteLength);
+                let data = elements;
+                let byteLen = elements.buffer.byteLength;
+
+                if (byteLen % 4 > 0) {
+                    // byteLen % 4 !== 0 时 webgpu 会报错。
+                    // elements % 4 > 0 只可能是 Uint16
+                    byteLen = 4 * Math.ceil(byteLen / 4);
+                    if (GPU_ELEMENTS.buffer.byteLength < byteLen) {
+                        GPU_ELEMENTS = new Uint16Array(byteLen / 2);
+                    }
+                    GPU_ELEMENTS.fill(0);
+                    data = GPU_ELEMENTS.subarray(0, byteLen / 2);
+                    data.set(elements);
+                }
+                this.elements = this._updateGPUBuffer(e, data, 0, byteLen);
             } else {
                 this.elements = (e as any)(elements);
             }

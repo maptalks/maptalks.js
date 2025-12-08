@@ -51,6 +51,11 @@ export default {
     varyings: [
         {
             defines: ['ENABLE_PICKING'],
+            name: 'vFbo_picking_visible',
+            type: 'f32'
+        },
+        {
+            defines: ['ENABLE_PICKING'],
             name: 'vPickingId',
             type: 'f32'
         },
@@ -59,11 +64,7 @@ export default {
             name: 'vFbo_picking_viewZ',
             type: 'f32'
         },
-        {
-            defines: ['ENABLE_PICKING'],
-            name: 'vFbo_picking_visible',
-            type: 'f32'
-        },
+
         {
             name: 'vFbo_picking_fragDepth',
             type: 'f32'

@@ -72,8 +72,7 @@ export default class PostProcess {
             getFramebuffer,
             getDepthTexture
         };
-        const fGL = layerRenderer.reglGL;
-        fGL.resetDrawCalls();
+        layerRenderer.resetDrawCalls();
         if (event) {
             layerRenderer.forEachRenderer(renderer => {
                 layerRenderer.clearStencil(renderer, bloomFBO);
@@ -90,7 +89,7 @@ export default class PostProcess {
         context.sceneFilter = sceneFilter;
         context.renderTarget = renderTarget;
 
-        return fGL.getDrawCalls();
+        return layerRenderer.getDrawCalls();
     }
 
     genSsrMipmap(tex, depthTex) {
@@ -118,13 +117,12 @@ export default class PostProcess {
         context.renderMode = 'default';
         context['sceneFilter'] = ssrFilter;
         context.renderTarget.fbo = fbo;
-        const fGL = layerRenderer.reglGL;
         let cleared = false;
         if (event) {
             layerRenderer.forEachRenderer(renderer => {
                 layerRenderer.clearStencil(renderer, fbo);
                 if (!cleared) {
-                    fGL.resetDrawCalls();
+                    layerRenderer.resetDrawCalls();
                     cleared = true;
                 }
                 renderer.drawOnInteracting(event, timestamp, context);
@@ -133,7 +131,7 @@ export default class PostProcess {
             layerRenderer.forEachRenderer(renderer => {
                 layerRenderer.clearStencil(renderer, fbo);
                 if (!cleared) {
-                    fGL.resetDrawCalls();
+                    layerRenderer.resetDrawCalls();
                     cleared = true;
                 }
                 renderer.draw(timestamp, context);
@@ -145,7 +143,7 @@ export default class PostProcess {
         delete context.isPostProcess;
         context.renderMode = renderMode;
         context['sceneFilter'] = filter;
-        this._ssrPainted = fGL.getDrawCalls() > 0;
+        this._ssrPainted = layerRenderer.getDrawCalls() > 0;
         return groundPainted;
     }
 
@@ -266,9 +264,20 @@ export default class PostProcess {
         }
         this._copyFBOSize[0] = fbo.width;
         this._copyFBOSize[1] = fbo.height;
+
+        const shaderDefines = {};
+        const texture =  fbo.color && renderer._getFBOColor(fbo) || fbo;
+        const useMultiSample = texture.texture && texture.texture.sampleCount > 1;
+        if (useMultiSample) {
+            shaderDefines['HAS_MULTISAMPLED'] = 1;
+        } else {
+            delete shaderDefines['HAS_MULTISAMPLED'];
+        }
+        this._copyShader.setDefines(shaderDefines);
+
         const renderer = this._layer.getRenderer();
         this._renderer.render(this._copyShader, {
-            texture: fbo.color && renderer._getFBOColor(fbo) || fbo,
+            texture,
             size: this._copyFBOSize,
             enableSharpen: +(!!enableSharpen),
             sharpFactor,
@@ -334,12 +343,16 @@ export default class PostProcess {
                 format: 'rgba8'
             });
         } else {
+            const isAntialias = this._layer.options.antialias;
+            const sampleCount = isAntialias ? 4 : 1;
             color = regl.texture({
                 min: 'nearest',
                 mag: 'nearest',
                 format: colorFormat || 'rgba',
                 width,
-                height
+                height,
+                // webgpu
+                sampleCount
             });
         }
         const fboInfo = {
