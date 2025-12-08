@@ -268,15 +268,12 @@ describe('GeoJSONVectorTileLayer', () => {
             data: dataUrl,
             style: path.join(__dirname, 'style.json'),
         });
-        let count = 0;
-        layer.on('layerload', () => {
-            count++;
-            if (count === 1) {
-                assert.deepStrictEqual(layer.getComputedStyle().style[0].renderPlugin.sceneConfig, { foo: 1 });
-                done();
-            }
-        });
+
         layer.addTo(map);
+        setTimeout(() => {
+            assert.deepStrictEqual(layer.getComputedStyle().style[0].renderPlugin.sceneConfig, { foo: 1 });
+            done();
+        }, 500);
     });
 
     it('should can fire dataerror event', done => {
