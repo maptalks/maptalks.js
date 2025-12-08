@@ -38,7 +38,7 @@ const defaultOptions: VectorTileLayerOptionsType = {
     forceRenderOnMoving: true,
     forceRenderOnRotating: true,
     tileSize: [512, 512],
-    features: false,
+    // features: false,
     schema: false,
     cascadeTiles: true,
     collision: true,
@@ -396,7 +396,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             style: this.isDefaultRender()
                 ? { style: [], featureStyle: [] }
                 : this._getComputedStyle(),
-            features: options.debugTileData || options.features,
+            features: options.debugTileData || (options as any).features,
             schema: options.schema,
             pickingGeometry: options.pickingGeometry,
             projectionCode: this.getSpatialReference().getProjection().code,
@@ -2003,7 +2003,7 @@ function checkStyleExist(styles, idx) {
 export type VectorTileLayerOptionsType = {
     renderer?: "gl",
     altitudeProperty?: string,
-    features?: boolean,
+    // features?: boolean,
     schema?: boolean,
     collision?: boolean,
     collisionBuffserSize?: number,
