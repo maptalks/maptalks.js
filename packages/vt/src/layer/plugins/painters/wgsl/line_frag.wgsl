@@ -236,7 +236,7 @@ fn main(input: VertexOutput) -> @location(0) vec4f {
     var fragColor = color * opacity * shaderUniforms.layerOpacity;
 
     #if HAS_SHADOWING && !HAS_BLOOM
-        let shadowCoeff = shadow_computeShadow();
+        let shadowCoeff = shadow_computeShadow(input);
         fragColor.rgb = shadow_blend(fragColor.rgb, shadowCoeff);
     #endif
     let cameraPosition = shaderUniforms.cameraPosition;

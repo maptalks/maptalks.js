@@ -151,6 +151,7 @@ class ShadowProcess {
         const matrix = this._lightProjViewMatrix;
         const ground = this._ground;
         const groundLightProjViewModelMatrix = this._groundLightProjViewModelMatrix || [];
+        const projViewMatrix = this._projViewMatrix || [];
         const canvas = this._layer.getRenderer().canvas;
         const texSize = this._texSize = this._texSize || [];
         texSize[0] = canvas.width;
@@ -161,6 +162,7 @@ class ShadowProcess {
             'globalTexSize': texSize,
             'projMatrix': this._projMatrix,
             'viewMatrix': this._viewMatrix,
+            'projViewMatrix': mat4.multiply(projViewMatrix, this._projMatrix, this._viewMatrix),
             'shadow_lightProjViewModelMatrix': mat4.multiply(groundLightProjViewModelMatrix, matrix, ground.localTransform),
             'shadow_shadowMap': this._shadowMap,
             'esm_shadow_threshold': this._esmShadowThreshold,

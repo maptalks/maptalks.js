@@ -199,7 +199,7 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
     #endif
 
     #if HAS_SHADOWING && !HAS_BLOOM
-        shadow_computeShadowPars(localVertex);
+        shadow_computeShadowPars(localVertex, &out);
     #endif
 
     return out;

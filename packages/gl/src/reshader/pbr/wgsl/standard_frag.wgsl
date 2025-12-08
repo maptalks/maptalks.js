@@ -7,6 +7,9 @@
 #include <vertex_color_frag>
 #include <excavate_frag>
 #include <compute_texcoord_frag>
+#if HAS_SHADOWING && !HAS_BLOOM
+    #include <vsm_shadow_frag>
+#endif
 
 #define PI 3.141593
 #define RECIPROCAL_PI 0.3183099
@@ -816,7 +819,7 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
     var ambientSpecular = lambertResult.specular;
 
     #if HAS_SHADOWING && !HAS_BLOOM
-        let shadowCoeff = shadow_computeShadow();
+        let shadowCoeff = shadow_computeShadow(vertexOutput);
         ambientDiffuse = shadow_blend(ambientDiffuse, shadowCoeff).rgb;
         ambientSpecular = shadow_blend(ambientSpecular, shadowCoeff).rgb;
     #endif

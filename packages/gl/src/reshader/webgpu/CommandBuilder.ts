@@ -159,7 +159,6 @@ export default class CommandBuilder {
         }
         // sort by binding
         entries.sort(sortByBinding);
-
         return this.device.wgpu.createBindGroupLayout({
             label: this.name + '-bindgrouplayout',
             entries
@@ -171,6 +170,12 @@ export default class CommandBuilder {
             const sampler: GPUSamplerBindingLayout = {};
             if (groupInfo.type && groupInfo.type.name === 'sampler_comparison') {
                 sampler.type = 'comparison';
+            } else {
+                const name = groupInfo.name.replace('Sampler', '');
+                const { format } = this._getTextureInfo(name, mesh, uniformValues);
+                if (format && format.startsWith('depth')) {
+                    sampler.type = 'non-filtering';
+                }
             }
             return {
                 binding,
@@ -179,18 +184,7 @@ export default class CommandBuilder {
             };
         } else if (groupInfo.resourceType === ResourceType.Texture) {
             const name = groupInfo.name;
-            const texture = uniformValues[name] || mesh.material && mesh.material.get(name);
-            let format;
-            let multisampled = false;
-            if (texture) {
-                if (texture instanceof Texture2D) {
-                    format = (texture as Texture2D).config.type;
-                } else if (texture instanceof GraphicsTexture) {
-                    format = (texture as GraphicsTexture).gpuFormat.format;
-                }
-                multisampled = !!(texture.config && texture.config.sampleCount > 1);
-            }
-
+            const { format, multisampled } = this._getTextureInfo(name, mesh, uniformValues);
             // https://gpuweb.github.io/gpuweb/#dictdef-gputexturebindinglayout
             // 根据规范，如果 multisampled 为真，sampleType 不能是float
             let sampleType: GPUTextureSampleType = multisampled ? 'unfilterable-float' : 'float';
@@ -215,6 +209,21 @@ export default class CommandBuilder {
                 }
             };
         }
+    }
+
+    _getTextureInfo(name: string, mesh, uniformValues) {
+        const texture = uniformValues[name] || mesh.material && mesh.material.get(name);
+        let format;
+        let multisampled = false;
+        if (texture) {
+            if (texture instanceof Texture2D) {
+                format = (texture as Texture2D).config.type;
+            } else if (texture instanceof GraphicsTexture) {
+                format = (texture as GraphicsTexture).gpuFormat.format;
+            }
+            multisampled = !!(texture.config && texture.config.sampleCount > 1);
+        }
+        return { format, multisampled };
     }
 
     // 从vertex的entry function读出vertex的信息（如location，format等）

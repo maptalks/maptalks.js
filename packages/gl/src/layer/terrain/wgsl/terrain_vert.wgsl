@@ -48,7 +48,7 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
     vertexOutput.vUv = vertexInput.aTexCoord;
 
     #if HAS_SHADOWING && !HAS_BLOOM
-        shadow_computeShadowPars(position, vertexOutput);
+        shadow_computeShadowPars(position, &vertexOutput);
     #endif
 
     return vertexOutput;

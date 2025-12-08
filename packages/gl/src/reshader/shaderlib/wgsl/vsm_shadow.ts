@@ -5,11 +5,7 @@ struct ShadowUniforms {
 
 @group(0) @binding($b) var<uniform> shadowUniforms: ShadowUniforms;
 
-struct VertexOutput {
-    shadow_vLightSpacePos: vec4f,
-};
-
-fn shadow_computeShadowPars(position: vec4f, vertexOutput: VertexOutput) {
+fn shadow_computeShadowPars(position: vec4f, vertexOutput: ptr<function, VertexOutput>) {
     vertexOutput.shadow_vLightSpacePos = shadowUniforms.shadow_lightProjViewModelMatrix * position;
 }
 `;
@@ -34,38 +30,41 @@ fn esm(projCoords: vec3f, shadowTexel: vec4f) -> f32 {
     let compare = projCoords.z;
     let c = 120.0;
 #ifdef PACK_FLOAT
-    let depth = common_decodeDepth(shadowTexel);
+    var depth = common_decodeDepth(shadowTexel);
     if (depth >= 1.0 - 1E-6 || compare <= depth) {
         return 1.0;
     }
 #else
-    let depth = shadowTexel.r;
+    var depth = shadowTexel.r;
 #endif
 
-    let depth = exp(-c * min(compare - depth, 0.05));
+    depth = exp(-c * min(compare - depth, 0.05));
     return clamp(depth, shadowUniforms.esm_shadow_threshold, 1.0);
 }
 
 fn shadow_computeShadow_coeff(shadowMap: texture_2d<f32>, projCoords: vec3f) -> f32 {
-    let uv = projCoords.xy;
+    var uv = projCoords.xy;
     let shadowTexel = textureSample(shadowMap, shadow_shadowMapSampler, uv);
     let esm_coeff = esm(projCoords, shadowTexel);
     let coeff = esm_coeff * esm_coeff;
     return 1.0 - (1.0 - coeff) * shadowUniforms.shadow_opacity;
+
+    // return shadowTexel.r;
 }
 
 fn shadow_computeShadow(vertexOutput: VertexOutput) -> f32 {
-    let projCoords = vertexOutput.shadow_vLightSpacePos.xyz / vertexOutput.shadow_vLightSpacePos.w;
-    projCoords = projCoords * 0.5 + 0.5;
+    var projCoords = vertexOutput.shadow_vLightSpacePos.xyz / vertexOutput.shadow_vLightSpacePos.w;
+    // projCoords = projCoords * 0.5 + 0.5;
+    projCoords = vec3(projCoords.xy * 0.5 + 0.5, projCoords.z);
+    let coeff = shadow_computeShadow_coeff(shadow_shadowMap, projCoords);
     if (projCoords.z >= 1.0 || projCoords.x < 0.0 || projCoords.x > 1.0 || projCoords.y < 0.0 || projCoords.y > 1.0) {
         return 1.0;
     }
-    return shadow_computeShadow_coeff(shadow_shadowMap, projCoords);
+    return coeff;
 }
 
 fn shadow_blend(color: vec3f, coeff: f32) -> vec3f {
-    color = color * coeff + shadowUniforms.shadow_color * shadowUniforms.shadow_opacity * (1.0 - coeff);
-    return color;
+    return color * coeff + shadowUniforms.shadow_color * shadowUniforms.shadow_opacity * (1.0 - coeff);
 }
 `;
 

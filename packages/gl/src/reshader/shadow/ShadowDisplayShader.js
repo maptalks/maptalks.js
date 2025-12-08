@@ -1,22 +1,26 @@
 import { mat4 } from 'gl-matrix';
 import shadowDisplayFrag from './glsl/shadow_display.frag';
 import shadowDisplayVert from './glsl/shadow_display.vert';
+import shadowDisplayFragWgsl from './wgsl/shadow_display_frag.wgsl';
+import shadowDisplayVertWgsl from './wgsl/shadow_display_vert.wgsl';
 import MeshShader from '../shader/MeshShader.js';
 
 class ShadowDisplayShader extends MeshShader {
 
     constructor(defines) {
+        const projViewModelMatrix = [];
         super({
+            name: 'shadow_display',
             vert : shadowDisplayVert,
             frag : shadowDisplayFrag,
+            wgslVert: shadowDisplayVertWgsl,
+            wgslFrag: shadowDisplayFragWgsl,
             uniforms : [
                 {
-                    name : 'modelViewMatrix',
-                    type : 'function',
-                    fn : function (context, props) {
-                        const modelViewMatrix = [];
-                        mat4.multiply(modelViewMatrix, props['viewMatrix'], props['modelMatrix']);
-                        return modelViewMatrix;
+                    name: 'projViewModelMatrix',
+                    type: 'function',
+                    fn: function (context, props) {
+                        return mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                     }
                 }
             ],

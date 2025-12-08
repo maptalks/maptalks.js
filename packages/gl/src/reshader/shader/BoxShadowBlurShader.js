@@ -1,12 +1,14 @@
 import frag from './glsl/box_shadow_blur.frag';
-import vert from './glsl/quad.vert';
+import wgslFrag from './wgsl/box_shadow_blur_frag.wgsl';
 import QuadShader from './QuadShader.js';
 
 class BoxShadowBlurShader extends QuadShader {
 
     constructor({ blurOffset }) {
         super({
-            vert, frag,
+            name: 'box-shadow-blur',
+            frag,
+            wgslFrag,
             defines : {
                 'BOXBLUR_OFFSET' : blurOffset || 2
             }
@@ -15,7 +17,7 @@ class BoxShadowBlurShader extends QuadShader {
     }
 
     getMeshCommand(regl, mesh) {
-        const key = 'box_shadow_blur_' + this._blurOffset;
+        const key = this.dkey + '_box_shadow_blur_' + this._blurOffset;
         if (!this.commands[key]) {
             this.commands[key] = this.createMeshCommand(regl, mesh);
         }
