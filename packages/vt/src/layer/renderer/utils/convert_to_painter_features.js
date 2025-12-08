@@ -12,11 +12,11 @@ export default function convertToPainterFeatures(features, feaIndexes, layerId, 
         //[feature index, style index]
         for (let ii = 0, ll = data.length; ii < ll; ii++) {
             let feature = feaIndexes ? features[feaIndexes[ii]] : features[ii];
-            if (layer.options['features'] === 'id' && layer.getFeature) {
-                const featureId = isObject(feature) ? feature.id : feature;
-                feature = layer.getFeature(featureId);
-                feature.layer = layerId;
-            }
+            // if (layer.options['features'] === 'id' && layer.getFeature) {
+            const featureId = isObject(feature) ? feature.id : feature;
+            feature = layer.getFeature(featureId);
+            feature.layer = layerId;
+            // }
             if (layer instanceof maptalks.TileLayer) {
                 feature = proxyFea(feature, copy);
             }
