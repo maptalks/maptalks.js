@@ -187,7 +187,7 @@ function setMeshUniforms(uniforms, regl, geometry, symbol) {
     setUniformFromSymbol(uniforms, 'markerRotateWithMap', symbol, 'markerRotationAlignment', 0, v => v === 'map' ? 1 : 0);
 
     const iconAtlas = geometry.properties.iconAtlas;
-    uniforms['iconTex'] = iconAtlas ? createAtlasTexture(regl, iconAtlas, false) : this._emptyTexture;
+    uniforms['iconTex'] = iconAtlas ? createAtlasTexture(regl, iconAtlas, false) : regl.texture(2);
     uniforms['iconTexSize'] = iconAtlas ? [iconAtlas.width, iconAtlas.height] : [0, 0];
 }
 

@@ -136,11 +136,12 @@ export default class GraphicsDevice {
     }
 
     // implementation of regl.texture
-    texture(config) {
-        if (isNumber(config)) {
+    texture(width, height?) {
+        let config = width;
+        if (isNumber(width)) {
             config = {
-                width: config,
-                height: config
+                width,
+                height: isNumber(height) ? height : width
             };
         }
         return new GraphicsTexture(this, config);
