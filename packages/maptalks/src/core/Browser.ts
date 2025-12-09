@@ -45,6 +45,7 @@ type BrowserType = {
     proxy: boolean;
     requestIdleCallback: boolean;
     checkDevicePixelRatio: () => boolean;
+    scheduler: boolean;
 }
 
 let Browser: BrowserType = {} as unknown as BrowserType;
@@ -85,6 +86,7 @@ if (!IS_NODE) {
         btoa = typeof window !== 'undefined' && isFunction(window.btoa),
         proxy = typeof window !== 'undefined' && isFunction(window.Proxy),
         requestIdleCallback = typeof window !== 'undefined' && isFunction(window.requestIdleCallback),
+        scheduler = typeof globalThis.scheduler !== 'undefined' && typeof globalThis.scheduler  == 'object',
         roundRect = typeof CanvasRenderingContext2D !== 'undefined' && isFunction(CanvasRenderingContext2D.prototype.roundRect);
 
 
@@ -185,6 +187,7 @@ if (!IS_NODE) {
         supportsPassive,
         proxy,
         requestIdleCallback,
+        scheduler,
         // removeDPRListening: (map) => {
         //     // if (map) {
         //     //     delete maps[map.id];
