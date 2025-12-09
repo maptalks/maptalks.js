@@ -602,7 +602,7 @@ export default class Mesh {
 
     _meshBuffer: Record<string, DynamicBuffer>;
     // 实现webgpu相关的逻辑
-    writeDynamicBuffer(commandUID: number, renderProps, bindGroupMapping: BindGroupFormat, pool: DynamicBufferPool, dynamicOffsets: DynamicOffsets) {
+    writeDynamicBuffer(commandUID: string, renderProps, bindGroupMapping: BindGroupFormat, pool: DynamicBufferPool, dynamicOffsets: DynamicOffsets) {
         if (!this._meshBuffer) {
             this._meshBuffer = {};
         }

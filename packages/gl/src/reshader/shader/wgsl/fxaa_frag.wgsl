@@ -10,7 +10,6 @@ struct FxaaUniforms {
   pixelRatio: f32,
   sharpFactor: f32,
   #ifdef HAS_OUTLINE_TEX
-  enableOutline: f32,
   highlightFactor: f32,
   outlineFactor: f32,
   outlineWidth: f32,
@@ -164,9 +163,7 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
     }
 
     #ifdef HAS_OUTLINE_TEX
-    if (uniforms.enableOutline == 1.0) {
-        color = composeOutline(color);
-    }
+      color = composeOutline(color);
     #endif
 
     return color;
