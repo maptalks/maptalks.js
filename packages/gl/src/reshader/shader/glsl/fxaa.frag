@@ -36,7 +36,6 @@ uniform float sharpFactor;//0 - 5
 
 #ifdef HAS_OUTLINE_TEX
   uniform sampler2D textureOutline;
-  uniform float enableOutline;
   uniform float highlightFactor;
   uniform float outlineFactor;
   uniform float outlineWidth;

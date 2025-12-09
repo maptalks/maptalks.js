@@ -16,7 +16,7 @@ const GLOBAL_IN_MESH_ERROR = 'Found a global uniform in mesh struct:';
 const MESH_IN_GLOBAL_ERROR = 'Found a mesh uniform in global struct:';
 
 export type CommandStruct = {
-    uid: number,
+    uid: string,
     layout: GPUBindGroupLayout,
     pipeline: GPURenderPipeline,
     vertexInfo: any,
@@ -115,7 +115,7 @@ export default class CommandBuilder {
         const activeAttributes = this._getActiveAttributes(/* vertexInfo */);
 
         return {
-            uid: -1,
+            uid: -1 + '',
             layout,
             pipeline,
             vertexInfo,
@@ -133,7 +133,6 @@ export default class CommandBuilder {
     }
 
     _createCommandBindGroupLayout(vertGroups: any, fragGroups: any, mesh: Mesh, uniformValues: ShaderUniforms) {
-
         const entries = [];
         for (let i = 0; i < vertGroups.length; i++) {
             const groupInfo = vertGroups[i];
@@ -212,9 +211,12 @@ export default class CommandBuilder {
     }
 
     _getTextureInfo(name: string, mesh, uniformValues) {
-        const texture = uniformValues[name] || mesh.material && mesh.material.get(name);
+        let texture = uniformValues[name] || mesh.material && mesh.material.get(name);
         let format;
         let multisampled = false;
+        if (texture instanceof GraphicsFramebuffer) {
+            texture = (texture as GraphicsFramebuffer).colorTexture;
+        }
         if (texture) {
             if (texture instanceof Texture2D) {
                 format = (texture as Texture2D).config.type;
