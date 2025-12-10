@@ -16,18 +16,21 @@ export default function convertToPainterFeatures(features, feaIndexes, layerId, 
             //is GeoJSONVectorTileLayer
             if (layer.getFeature && !isNil(feature)) {
                 const featureId = isObj ? feature.id : feature;
-                //customProperties
-                let properties, customProps;
-                if (isObj) {
-                    properties = feature.properties;
-                    customProps = feature.customProps;
-                }
-                feature = layer.getFeature(featureId);
-                feature.layer = layerId;
-                if ((properties || customProps) && isObject(feature)) {
-                    feature.properties = feature.properties || {};
-                    //merge customProperties
-                    extend(feature.properties, properties || {}, customProps || {});
+                const queryFeature = layer.getFeature(featureId);
+                if (queryFeature) {
+                    //customProperties
+                    let properties, customProps;
+                    if (isObj) {
+                        properties = feature.properties;
+                        customProps = feature.customProps;
+                    }
+                    feature = queryFeature;
+                    feature.layer = layerId;
+                    if ((properties || customProps) && isObject(feature)) {
+                        feature.properties = feature.properties || {};
+                        //merge customProperties
+                        extend(feature.properties, properties || {}, customProps || {});
+                    }
                 }
             }
             if (layer instanceof maptalks.TileLayer) {
