@@ -1648,16 +1648,6 @@ class VectorTileLayer extends maptalks.TileLayer {
         // }
         //always _convertPickedFeature
         results = this._convertPickedFeature(results);
-        //@ts-ignore
-        if (!this.options.features) {
-            //delete geometry info when layer disable features
-            results.forEach(item => {
-                if (item && item.data && item.data.feature) {
-                    delete item.data.feature.geometry;
-                }
-            });
-        }
-
         if (options && options.filter) {
             return results.filter(g => options.filter(g));
         } else {
