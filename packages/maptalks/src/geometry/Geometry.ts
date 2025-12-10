@@ -606,8 +606,6 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @returns {Extent} geometry's extent
      */
     getExtent(): Extent {
-        //force clear extent cache
-        this._extent = null;
         const prjExt = this._getPrjExtent();
         const projection = this._getProjection();
         if (prjExt && projection) {
@@ -1616,12 +1614,18 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         delete this._extent;
         delete this._extent2d;
         this._clearAltitudeCache();
+        if (this._parent && this._parent._clearCache) {
+            this._parent._clearCache();
+        }
     }
 
     //@internal
     _clearProjection(): void {
         delete this._extent;
         delete this._extent2d;
+        if (this._parent && this._parent._clearProjection) {
+            this._parent._clearProjection();
+        }
     }
 
     //@internal
