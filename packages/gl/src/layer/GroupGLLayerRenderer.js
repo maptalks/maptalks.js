@@ -274,14 +274,14 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             const format = isWebGPU ? 'rgba' : 'rgba4';
             const isAntialias = this.layer.options.antialias;
             const sampleCount = isAntialias ? 4 : 1;
-            const outlineTex = this.regl.texture({
+            const outlineTex = this.device.texture({
                 width: width,
                 height: height,
                 format,
                 // needed by webgpu
                 sampleCount
             });
-            fbo = this._outlineFBO = this.regl.framebuffer({
+            fbo = this._outlineFBO = this.device.framebuffer({
                 width: width,
                 height: height,
                 colors: [outlineTex],

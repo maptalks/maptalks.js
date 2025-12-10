@@ -30,6 +30,7 @@ export class GLShader {
     wgslVert: string;
     wgslFrag: string;
     uid: number;
+    commandId: number
     version: number;
     //@internal
     uniforms: ShaderUniformValue[];
@@ -54,6 +55,7 @@ export class GLShader {
         this.frag = frag;
         this.wgslVert = wgslVert;
         this.wgslFrag = wgslFrag;
+        this.commandId = 0;
         const shaderId = uid++;
         Object.defineProperty(this, 'uid', {
             enumerable: true,
@@ -460,7 +462,7 @@ export default class GPUShader extends GLShader {
             const extraCommandProps = extend({}, this.extraCommandProps || {}, commandProps || {});
             pipelineDesc.readFromREGLCommand(extraCommandProps, mesh, renderProps, fbo);
             const command = builder.build(pipelineDesc, fbo);
-            command.uid = this.uid;
+            command.uid = this.uid + '-' + this.commandId++;
             return command;
         } else {
             // regl

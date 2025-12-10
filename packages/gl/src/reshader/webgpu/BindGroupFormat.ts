@@ -117,7 +117,14 @@ export default class BindGroupFormat {
                 if (!texture) {
                     continue;
                 }
-                const { min, mag, wrapS, wrapT, compare } = (texture as Texture2D).config;
+                const { min, mag, compare, wrap } = (texture as Texture2D).config;
+                let { wrapS, wrapT } = (texture as Texture2D).config;
+                if (wrap && !wrapS) {
+                    wrapS = wrap as any;
+                }
+                if (wrap && !wrapT) {
+                    wrapT = wrap as any;
+                }
                 const filters = toGPUSampler(min, mag, wrapS, wrapT, compare);
                 const sampler = device.wgpu.createSampler(filters);
                 entries.push({

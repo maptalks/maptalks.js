@@ -69,7 +69,9 @@ export default class GraphicsTexture {
             let height = isFunction(config.height) ? config.height() : config.height;
             if (width === undefined || height === undefined) {
                 const data = config.data;
-                if (isArray(config.data)) {
+                if (!data) {
+                    width = height = 1;
+                } else if (isArray(config.data)) {
                     const length = config.data.length;
                     width = Math.sqrt(length / 4);
                     height = width;
