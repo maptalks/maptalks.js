@@ -767,6 +767,10 @@ class Extent {
         }
     }
 
+    toBBOX() {
+        return [this.xmin, this.ymin, this.xmax, this.ymax];
+    }
+
     /**
      * 获取 extent 的 xmin、ymin、xmax、ymax 组成的字符串
      *

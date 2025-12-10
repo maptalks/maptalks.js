@@ -196,4 +196,45 @@ describe('Geometry.MultiPolygon', function () {
         geometry = maptalks.Geometry.fromJSON(json);
         expect(geometry instanceof maptalks.MultiPolygon).to.be.ok();
     });
+
+    it('multipolygon getExtent when edit and translate', function (done) {
+
+        var polygon = new maptalks.MultiPolygon([[
+            [
+                [-0.131049, 51.498568],
+                [-0.107049, 51.498568],
+                [-0.107049, 51.493568],
+                [-0.131049, 51.493568],
+                [-0.131049, 51.498568]
+            ]
+        ]], {
+            visible: true,
+            editable: true,
+            cursor: 'pointer',
+            draggable: false,
+            dragShadow: false, // display a shadow during dragging
+            drawOnAxis: null,  // force dragging stick on a axis, can be: x, y
+            symbol: {
+                'lineColor': '#34495e',
+                'lineWidth': 2,
+                'polygonFill': 'rgb(135,196,240)',
+                'polygonOpacity': 0.6
+            }
+        });
+
+        new maptalks.VectorLayer('vector', polygon).addTo(map);
+        const bbox1 = polygon.getExtent().toBBOX();
+        expect(bbox1).to.be.eql([-0.131049, 51.49356800000001, -0.107049, 51.49856800000001]);
+
+        setTimeout(() => {
+            polygon.translate(0.1, 0.1);
+            setTimeout(() => {
+                const bbox2 = polygon.getExtent().toBBOX();
+                expect(bbox2).to.be.eql([-0.031048999999999993, 51.593568000000005, -0.007049, 51.59856800000001]);
+                done();
+            }, 100);
+
+        }, 100);
+    });
+
 });
