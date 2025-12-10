@@ -97,9 +97,6 @@ struct VertexOutput {
 };
 
 #include <highlight_frag>
-#if HAS_SHADOWING && !HAS_BLOOM
-    #include <vsm_shadow_frag>
-#endif
 
 #ifdef HAS_PATTERN
 fn computeUV(texCoord: vec2f) -> vec2f {
@@ -237,7 +234,7 @@ fn main(input: VertexOutput) -> @location(0) vec4f {
 
     #if HAS_SHADOWING && !HAS_BLOOM
         let shadowCoeff = shadow_computeShadow(input);
-        fragColor.rgb = shadow_blend(fragColor.rgb, shadowCoeff);
+        fragColor = vec4(shadow_blend(fragColor.rgb, shadowCoeff), fragColor.a);
     #endif
     let cameraPosition = shaderUniforms.cameraPosition;
     let perspectiveAlpha = select(

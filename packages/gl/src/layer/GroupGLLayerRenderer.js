@@ -1020,7 +1020,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             return null;
         }
         if (!this._shadowProcess) {
-            this._shadowProcess = new ShadowProcess(this.regl, this.layer);
+            this._shadowProcess = new ShadowProcess(this.device, this.layer);
         }
         const shadow = {
             config: sceneConfig.shadow,
