@@ -168,7 +168,7 @@ describe('picking specs', () => {
                             'height': 20000
                         },
                         'id': 0,
-                        'layer': 0
+                        'layer': '0'
                     },
                 },
                 'point': [736.00012, 736.00012, -0.00098],
@@ -607,7 +607,10 @@ describe('picking specs', () => {
                         },
                         'id': 0,
                         'layer': 0,
-                        "properties": {}
+                        "properties": {
+                            "mapbox_clip_end": 1,
+                            "mapbox_clip_start": 0
+                        }
                     },
                     'symbol': {
                         'lineColor': '#f00'
@@ -671,7 +674,10 @@ describe('picking specs', () => {
                         },
                         'id': 0,
                         'layer': 0,
-                        "properties": {}
+                        "properties": {
+                            "mapbox_clip_end": 1,
+                            "mapbox_clip_start": 0
+                        }
                     },
                     'symbol': {
                         'lineColor': '#f00',
@@ -735,18 +741,18 @@ describe('picking specs', () => {
                 const expected = {
                     "feature": {
                         "type": "Feature",
-                        "layer": "0",
+                        "layer": 0,
                         "id": 0,
                         "geometry": {
                             "type": "LineString",
-                            "coordinates": [[13.417135030031202, 52.52956633939653], [13.417226225137709, 52.52956633939653]]
+                            "coordinates": [[13.417135053741617, 52.52956625878565], [13.417226248848124, 52.52956625878565]]
                         },
                         "properties": {
                             "custom_prop_line_batch_id": "admin-0-boundary-bg",
                             "mapbox_clip_start": 0,
                             "mapbox_clip_end": 1
                         },
-                        "extent": 8192
+                        // "extent": 8192
                     },
                     "symbol": {
                         "lineColor": "#f00",
@@ -820,7 +826,9 @@ describe('picking specs', () => {
                         },
                         'id': 0,
                         'layer': 0,
-                        'properties': {}
+                        'properties': {
+                            "maptalks_ombb": [[1493588.6420870982, 6896450.095810079], [1493588.6420870982, 6896431.797296667], [1493598.7938799174, 6896431.797296667], [1493598.7938799174, 6896450.095810079], 0]
+                        }
                     },
                     'symbol': {
                         'polygonFill': '#f00',
@@ -895,7 +903,9 @@ describe('picking specs', () => {
                         },
                         'id': 0,
                         'layer': 0,
-                        'properties': {}
+                        'properties': {
+                            "maptalks_ombb": [[1493588.6420870982, 6896450.095810079], [1493588.6420870982, 6896431.797296667], [1493598.7938799174, 6896431.797296667], [1493598.7938799174, 6896450.095810079], 0]
+                        }
                     },
                     'symbol': {
                         'lineColor': '#f00',
@@ -973,12 +983,11 @@ describe('picking specs', () => {
             layer.once('canvasisdirty', () => {
                 const redPoint = layer.identify([13.41720, 52.52952]);
                 const expected = {
-                    "type": 3,
-                    "layer": "0",
+                    "type": 'Feature',
+                    "layer": 0,
                     "id": 0,
                     "properties": {
-                        "type": 1,
-                        "color": "#f00"
+                        "type": 1, "color": "#f00", "foo": "bar", "foo1": "bar1"
                     }
                 };
                 delete redPoint[0].data.feature["__fea_idx"];
@@ -1042,7 +1051,10 @@ describe('picking specs', () => {
                         },
                         'id': 0,
                         'layer': 0,
-                        'properties': {}
+                        'properties': {
+                            "mapbox_clip_end": 1,
+                            "mapbox_clip_start": 0
+                        }
                     },
                     'symbol': {
                         'lineColor': '#f00',
@@ -1122,7 +1134,8 @@ describe('picking specs', () => {
             const layer = new GeoJSONVectorTileLayer('gvt', options);
             layer.once('canvasisdirty', () => {
                 const hit = layer.identify([13.41720, 52.52952])[0];
-                const expectedFeature = { "type": "Feature", "geometry": { "type": "Polygon", "coordinates": [[[13.417135053741617, 52.52956625878565], [13.417226248848124, 52.52956625878565], [13.417226248848124, 52.52946625878565], [13.417135053741617, 52.52946625878565], [13.417135053741617, 52.52956625878565]]] }, "properties": { "type": 1, "color": "#f00", "foo": "bar", "foo1": "bar1" }, "id": 0, "layer": 0 };
+                const expectedFeature = {"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[13.417135053741617,52.52956625878565],[13.417226248848124,52.52956625878565],[13.417226248848124,52.52946625878565],[13.417135053741617,52.52946625878565],[13.417135053741617,52.52956625878565]]]},"properties":{"type":1,"color":"#f00","foo":"bar","foo1":"bar1","maptalks_ombb":[[1493588.6420870982,6896450.095810079],[1493588.6420870982,6896431.797296667],[1493598.7938799174,6896431.797296667],[1493598.7938799174,6896450.095810079],0]},"id":0,"layer":0}
+
                 assert.deepEqual(hit.coordinate, [13.417199426755861, 52.52951893867223, -0.000006980199889114576]);
                 assert.deepEqual(expectedFeature, hit.data.feature);
                 done();
