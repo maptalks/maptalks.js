@@ -16,7 +16,7 @@ export default function convertToPainterFeatures(features, feaIndexes, layerId, 
             //is GeoJSONVectorTileLayer
             if (layer.getFeature && !isNil(feature)) {
                 const featureId = isObj ? feature.id : feature;
-                //query feature from main thread
+                //query feature from main thread,it may be null
                 const queryFeature = layer.getFeature(featureId);
                 if (queryFeature) {
                     //customProperties
