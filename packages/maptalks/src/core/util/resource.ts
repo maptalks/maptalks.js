@@ -85,7 +85,7 @@ export function getMarkerPathBase64(symbol: any, width?: number, height?: number
         path = isString(pathes[i]) ? {
             'path': pathes[i]
         } : pathes[i];
-        path = extend({}, path, svgStyles);
+        path = extend({}, svgStyles, path);
         path['d'] = path['path'];
         delete path['path'];
         pathesToRender.push(path);
@@ -115,7 +115,7 @@ export function getMarkerPathBase64(symbol: any, width?: number, height?: number
             svg.push(pathesToRender[i].d.outerHTML);
             continue;
         }
-        let strPath = '<path ';
+        let strPath = '<path';
         for (const p in pathesToRender[i]) {
             if (pathesToRender[i].hasOwnProperty(p)) {
                 strPath += ' ' + p + '="' + pathesToRender[i][p] + '"';
