@@ -4,7 +4,9 @@ const ctx = canvas.getContext('2d', { willReadFrequently: true });
 const assert = require('assert');
 
 function readPixel(target, x, y) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (target.readbackCanvas) {
+        target = target.readbackCanvas;
+    }
     canvas.width = target.width;
     canvas.height = target.height;
     ctx.drawImage(target, 0, 0);

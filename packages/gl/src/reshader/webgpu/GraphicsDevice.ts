@@ -21,7 +21,9 @@ export default class GraphicsDevice {
     _defaultFramebuffer: GraphicsFramebuffer;
     //@internal
     _readTargets: Record<number, GPUBuffer> = {};
+    //@internal
     _supportedFormats: any;
+    //@internal
     _drawCount: 0;
 
     constructor(device: GPUDevice, context: GPUCanvasContext, adapter: GPUAdapter) {
@@ -114,6 +116,12 @@ export default class GraphicsDevice {
             this.wgpu.queue.submit(this.commandBuffers);
             this.commandBuffers.length = 0;
         }
+    }
+
+    preserveDrawingBuffer(canvas) {
+        canvas.width = this.context.canvas.width;
+        canvas.height = this.context.canvas.height;
+        canvas.getContext('2d').drawImage(this.context.canvas, 0, 0);
     }
 
     // implementation of regl.buffer

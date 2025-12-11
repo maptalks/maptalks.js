@@ -6,7 +6,8 @@ const { PointLayer, LineStringLayer, PolygonLayer } = require('../../dist/maptal
 const mapRenderer = window.mapRenderer;
 
 maptalks.Map.mergeOptions({
-    renderer: mapRenderer || 'gl'
+    renderer: mapRenderer || 'gl',
+    preserveGpuDrawingBuffer: true
 });
 
 const DEFAULT_VIEW = {
