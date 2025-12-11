@@ -8,7 +8,8 @@ const PORT = 4398;
 const mapRenderer = window.mapRenderer;
 
 maptalks.Map.mergeOptions({
-    renderer: mapRenderer || 'gl'
+    renderer: mapRenderer || 'gl',
+    preserveGpuDrawingBuffer: true
 });
 
 const {

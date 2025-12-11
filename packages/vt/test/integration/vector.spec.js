@@ -30,7 +30,8 @@ const mapRenderer = window.mapRenderer;
 
 const isWebGPU = mapRenderer === 'gpu';
 maptalks.Map.mergeOptions({
-    renderer: mapRenderer || 'gl'
+    renderer: mapRenderer || 'gl',
+    preserveGpuDrawingBuffer: true
 });
 
 describe('vector 3d integration specs', () => {

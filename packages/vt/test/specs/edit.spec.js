@@ -31,7 +31,8 @@ function GET_PAGE_POSITION(obj) {
 const mapRenderer = window.mapRenderer;
 
 maptalks.Map.mergeOptions({
-    renderer: mapRenderer || 'gl'
+    renderer: mapRenderer || 'gl',
+    preserveGpuDrawingBuffer: true
 });
 
 describe('edit specs', () => {
