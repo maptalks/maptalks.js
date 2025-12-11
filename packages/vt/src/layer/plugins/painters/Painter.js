@@ -1433,7 +1433,8 @@ class Painter {
     }
 
     appendWGSLPositionType(mesh, defines) {
-        const isFloat32 = mesh.geometry.data.aPosition.array instanceof Float32Array;
+        const positionAttr = mesh.geometry.desc.positionAttribute;
+        const isFloat32 = mesh.geometry.data[positionAttr].array instanceof Float32Array;
         defines['POSITION_TYPE_2'] = isFloat32 ? 'vec2f' : 'vec2i';
         defines['POSITION_TYPE_3'] = isFloat32 ? 'vec3f' : 'vec4i';
     }
