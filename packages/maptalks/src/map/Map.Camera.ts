@@ -726,7 +726,13 @@ Map.include(/** @lends Map.prototype */{
             this.cameraNear = this.cameraCenterDistance / 20;
             // camera projection matrix
             const projMatrix = this.projMatrix || createMat4();
-            mat4.perspective(projMatrix, fov, w / h, this.cameraNear, farZ);
+            const isWebGPU = this.options.renderer === 'gpu';
+            if (isWebGPU) {
+                // In WebGPU, the Y coordinate of the clip space is inverted.
+                mat4.perspectiveNO(projMatrix, fov, w / h, this.cameraNear, farZ);
+            } else {
+                mat4.perspective(projMatrix, fov, w / h, this.cameraNear, farZ);
+            }
             this.projMatrix = projMatrix;
 
             // view matrix

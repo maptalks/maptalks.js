@@ -218,7 +218,11 @@ const depthFragWgsl = /*wgsl*/`
     @group(0) @binding($b) var<uniform> depthPackingUniforms: DepthPackingUniforms;
 
     struct VertexOutput {
-        @location($i) vFbo_picking_viewZ: f32,
+        #ifdef ENABLE_PICKING
+            @location($i) vFbo_picking_visible: f32,
+            @location($i) vPickingId: f32,
+            @location($i) vFbo_picking_viewZ: f32,
+        #endif
         @location($i) vFbo_picking_fragDepth: f32,
     };
 
@@ -682,7 +686,6 @@ export default class FBORayPicking {
             width,
             height
         });
-
         // this._debugFBO(fbo1);
 
         const depths = [];
