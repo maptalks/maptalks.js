@@ -4,12 +4,12 @@ const vert = /* wgsl */`
     fn highlight_setVarying(input: VertexInput, output: ptr<function, VertexOutput>) {
         // 如果有高亮颜色
     #if HAS_HIGHLIGHT_COLOR
-        output.vHighlightColor = input.aHighlightColor / 255.0;
+        output.vHighlightColor = vec4f(input.aHighlightColor) / 255.0;
     #endif
 
         // 如果有高亮透明度
     #if HAS_HIGHLIGHT_OPACITY
-        output.vHighlightOpacity = input.aHighlightOpacity / 255.0;
+        output.vHighlightOpacity = f32(input.aHighlightOpacity) / 255.0;
     #endif
     }
 `;
@@ -21,11 +21,13 @@ const frag = /* wgsl */`
 
         // 如果有高亮颜色
         #if HAS_HIGHLIGHT_COLOR
-            outColor.rgb = outColor.rgb * (1.0 - output.vHighlightColor.a) + output.vHighlightColor.rgb * output.vHighlightColor.a;
+            let highlightColor = output.vHighlightColor;
+            let opacity = highlightColor.a;
+            outColor = vec4f(outColor.rgb * (1.0 - opacity) + highlightColor.rgb * opacity, outColor.a);
             #if HAS_HIGHLIGHT_COLOR_POINT
             #else
             // 如果没有高亮颜色点
-                outColor.a = outColor.a * (1.0 - output.vHighlightColor.a) + output.vHighlightColor.a;
+                outColor.a = outColor.a * (1.0 - opacity) + opacity;
             #endif
         #endif
 
@@ -42,12 +44,12 @@ const attributes = [
     {
         defines: ['HAS_HIGHLIGHT_COLOR'],
         name: 'aHighlightColor',
-        type: 'vec4f'
+        type: 'vec4u'
     },
     {
         defines: ['HAS_HIGHLIGHT_OPACITY'],
         name: 'aHighlightOpacity',
-        type: 'f32'
+        type: 'u32'
     }
 ];
 
