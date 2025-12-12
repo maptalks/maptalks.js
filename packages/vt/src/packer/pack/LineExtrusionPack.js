@@ -491,8 +491,7 @@ export default class LineExtrusionPack extends LinePack {
             arrays['aLineWidth'] = aLineWidth;
         }
         if (aLineHeight) {
-            const ArrType = getPosArrayType(this.maxAltitude);
-            arrays['aLineHeight'] = new ArrType(aLineHeight);
+            arrays['aLineHeight'] = aLineHeight;
         }
         const buffers = [];
         for (const p in arrays) {
