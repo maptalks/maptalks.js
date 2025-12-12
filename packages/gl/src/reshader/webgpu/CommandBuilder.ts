@@ -70,12 +70,14 @@ export default class CommandBuilder {
             vert = WGSLParseDefines(vert, defines);
         } catch (error) {
             error.message = this.name + '(vert):' + error.message;
+            console.error(error);
             throw error;
         }
         try {
             frag = WGSLParseDefines(frag, defines);
         } catch (error) {
             error.message = this.name + '(frag):' + error.message;
+            console.error(error);
             throw error;
         }
         // dynamically assign location index with $in and $out
@@ -92,7 +94,8 @@ export default class CommandBuilder {
             frag = fragSource;
         }
 
-
+        // console.log('vert', vert);
+        // console.log('frag', frag);
         const vertReflect = new WgslReflect(vert);
         const vertexInfo = this._formatBufferInfo(vertReflect, mesh);
         let fragReflect;

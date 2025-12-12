@@ -212,7 +212,7 @@ class NativePointPainter extends BasicPainter {
             this.picking = [new reshader.FBORayPicking(
                 this.renderer,
                 {
-                    vert: '#define PICKING_MODE 1\n' + pickingVert,
+                    vert: pickingVert,
                     uniforms: [
                         {
                             name: 'projViewModelMatrix',
@@ -223,6 +223,7 @@ class NativePointPainter extends BasicPainter {
                             }
                         }
                     ],
+                    defines: { 'PICKING_MODE': 1 },
                     extraCommandProps: {
                         viewport: this.pickingViewport
                     }

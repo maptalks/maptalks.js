@@ -961,13 +961,14 @@ export default class TextPainter extends CollisionPainter {
         });
 
         if (this.pickingFBO) {
+            const pickingDefines = extend({ PICKING_MODE: 1 }, defines);
             const textPicking = new reshader.FBORayPicking(
                 this.renderer,
                 {
                     name: 'text-picking',
-                    vert: '#define PICKING_MODE 1\n' + pickingVert,
-                    wgslVert: '#define PICKING_MODE 1\n' + pickingWgslVert,
-                    defines,
+                    vert: pickingVert,
+                    wgslVert: pickingWgslVert,
+                    defines: pickingDefines,
                     uniforms,
                     extraCommandProps: {
                         viewport: this.pickingViewport
@@ -986,10 +987,10 @@ export default class TextPainter extends CollisionPainter {
                 this.renderer,
                 {
                     name: 'line-text-picking',
-                    vert: '#define PICKING_MODE 1\n' + linePickingVert,
-                    wgslVert: '#define PICKING_MODE 1\n' + linePickingWgslVert,
+                    vert: linePickingVert,
+                    wgslVert: linePickingWgslVert,
                     uniforms,
-                    defines,
+                    defines: pickingDefines,
                     extraCommandProps: {
                         viewport: this.pickingViewport
                     }

@@ -93,12 +93,14 @@ struct VertexOutput {
 #endif
 };
 
+
 #include <vt_position_vert>
-#ifndef PICKING_MODE
 #include <highlight_vert>
-#else
+
+#ifdef PICKING_MODE
 #include <fbo_picking_vert>
 #endif
+
 
 @vertex
 fn main(input: VertexInput) -> VertexOutput {
@@ -241,11 +243,11 @@ fn main(input: VertexInput) -> VertexOutput {
 #endif
 #else
 #ifdef ENABLE_COLLISION
-    var visible = f32(input.aOpacity[0]) == 255.0;
+    var visible = f32(input.aOpacity) == 255.0;
 #else
     var visible = true;
 #endif
-    fbo_picking_setData(output, output.position.w, visible);
+    fbo_picking_setData(input, &output, output.position.w, visible);
 #endif
 
     return output;
