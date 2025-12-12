@@ -137,7 +137,7 @@ fn main(input: VertexInput) -> VertexOutput {
     }
 
 #ifdef HAS_OFFSET_Z
-    var offset = vec2f(input.aOffset) / 10.0;
+    var offset = vec3f(input.aOffset) / 10.0;
     offset.z /= shaderUniforms.altitudeScale;
 #else
     var offset = vec3f(vec2f(input.aOffset) / 10.0, 0.0);
@@ -201,7 +201,7 @@ fn main(input: VertexInput) -> VertexOutput {
 #endif
 #else
 #ifdef ENABLE_COLLISION
-    var visible = f32(input.aOpacity[0]) == 255.0;
+    var visible = f32(input.aOpacity) == 255.0;
 #else
     var visible = true;
 #endif
