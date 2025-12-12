@@ -35,7 +35,7 @@ export function loadGeoSymbol(symbol, geo): any {
         }
         let mergeProperties = geo._funTypeProperties;
         if (changed) {
-            mergeProperties = extend(mergeProperties || {}, geo.getProperties(), setProp(prop, map && map.getBearing() || 0, map && map.getPitch() || 0, map ? map.getZoom() : 10));
+            mergeProperties = extend(mergeProperties || {}, geo.getProperties(), setProp(prop, bearing, pitch, zoom));
         }
         return set(arr, map ? map.getZoom() : 12, mergeProperties);
     });
