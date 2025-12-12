@@ -83,14 +83,31 @@ export type VectorMarkerSymbol = {
 
 type SVGPathItem = {
     path: string;
-    fill?: string;
-
+    'transform'?: string;
+    /** @see https://developer.mozilla.org/docs/Web/SVG/Reference/Attribute/fill */
+    'fill'?: string;
+    'fill-opacity'?: string;
+    'fill-rule'?: string;
+    /** @see https://developer.mozilla.org/docs/Web/SVG/Reference/Attribute/stroke */
+    'stroke'?: string;
+    'stroke-width'?: string;
+    'stroke-opacity'?: string;
+    'stroke-dasharray'?: string;
+    'stroke-linecap'?: string;
+    'stroke-linejoin'?: string;
+    [key: string]: string
 }
+
 export type PathMarkerSymbol = {
     markerType: 'path';
     markerPath: string | Array<SVGPathItem>;
     markerPathWidth: number;
     markerPathHeight: number;
+    markerFill?: SymbolColorType;
+    markerFillOpacity?: number;
+    markerLineColor?: SymbolColorType;
+    markerLineWidth?: number;
+    markerLineOpacity?: number;
 } & MarkerCommonSymbol & SymbolCommon;
 
 export type TextSymbol = {
