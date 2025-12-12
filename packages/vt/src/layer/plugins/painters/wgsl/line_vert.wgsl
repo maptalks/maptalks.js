@@ -40,8 +40,11 @@ struct VertexInput {
 #else
     @location($i) aPosition: POSITION_TYPE_3,
 #endif
-
-@location($i) aExtrude: vec4i,
+#if HAS_PATTERN || HAS_DASHARRAY
+    @location($i) aExtrude: vec4i,
+#else
+    @location($i) aExtrude: vec2i,
+#endif
 
 #if HAS_PATTERN || HAS_DASHARRAY || HAS_GRADIENT || HAS_TRAIL
     @location($i) aLinesofar: LINESOFAR_TYPE,
@@ -218,13 +221,8 @@ fn main(input: VertexInput) -> VertexOutput {
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
     let extrudeXY = vec2f(input.aExtrude.xy);
-#ifdef USE_LINE_OFFSET
-    let offset = lineOffset * (lineNormal.y * (extrudeXY - input.aExtrudeOffset) + input.aExtrudeOffset);
-    var dist = (outset * extrudeXY + offset) / EXTRUDE_SCALE;
-#else
     let extrude = extrudeXY / EXTRUDE_SCALE;
     var dist = outset * extrude;
-#endif
 
     let resScale = uniforms.tileResolution / shaderUniforms.resolution;
 
