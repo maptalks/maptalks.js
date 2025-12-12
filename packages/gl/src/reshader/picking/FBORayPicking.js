@@ -683,7 +683,7 @@ export default class FBORayPicking {
             height
         });
 
-        this._debugFBO(fbo1);
+        // this._debugFBO(fbo1);
 
         const depths = [];
         for (let i = 0; i < data.length; i += 4) {
