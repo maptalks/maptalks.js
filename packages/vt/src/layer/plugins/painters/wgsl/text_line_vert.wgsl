@@ -90,6 +90,7 @@ struct VertexOutput {
 };
 
 #include <vt_position_vert>
+#include <fbo_picking_vert>
 
 @vertex
 fn main(input: VertexInput) -> VertexOutput {
@@ -205,7 +206,7 @@ fn main(input: VertexInput) -> VertexOutput {
 #else
     var visible = true;
 #endif
-    fbo_picking_setData(output, output.position.w, visible);
+    fbo_picking_setData(input, &output, output.position.w, visible);
 #endif
 
     return output;

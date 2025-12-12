@@ -157,7 +157,7 @@ export default class GraphicsDevice {
 
     // implementation of regl.clear
     clear(options) {
-        const fbo = options.framebuffer || this.getDefaultFramebuffer();
+        const fbo = (options.framebuffer || this.getDefaultFramebuffer()) as GraphicsFramebuffer;
         fbo.setClearOptions(options);
     }
 
