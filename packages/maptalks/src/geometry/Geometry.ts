@@ -191,6 +191,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     //@internal
     _updateCache?(): void;
     onAdd?(): void;
+    propertiesDirty: boolean;
 
     constructor(options: GeometryOptionsType) {
         const opts = extend({}, options);
@@ -201,6 +202,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         delete opts['id'];
         delete opts['properties'];
         super(opts);
+        this.propertiesDirty = false;
         if (symbol) {
             this.setSymbol(symbol);
         } else {
@@ -376,6 +378,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @fires Geometry#propertieschange
      */
     setProperties(properties: { [key: string]: any }): this {
+        this.propertiesDirty = true;
         const old = this.properties;
         this.properties = isObject(properties) ? extend({}, properties) : properties;
         const children = this.getGeometries ? this.getGeometries() : [];
