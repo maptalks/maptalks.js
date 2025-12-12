@@ -1,5 +1,5 @@
 import { extend, isNil } from '../core/util';
-import { withInEllipse } from '../core/util/path';
+import { getEllipseGLSize, pointsToCoordinates, withInEllipse } from '../core/util/path';
 import Coordinate from '../geo/Coordinate';
 import Extent from '../geo/Extent';
 import Point from '../geo/Point';
@@ -14,7 +14,8 @@ import Polygon, { PolygonOptionsType, RingCoordinates, RingsCoordinates } from '
  * @instance
  */
 const options: CircleOptionsType = {
-    'numberOfShellPoints': 60
+    'numberOfShellPoints': 60,
+    'ignoreProjection': false
 };
 
 /**
@@ -93,6 +94,26 @@ export class Circle extends CenterMixin(Polygon) {
             radius = this.getRadius();
         const shell = [];
         let rad, dx, dy;
+        const options = this.options as CircleOptionsType;
+        const ignoreProjection = options.ignoreProjection;
+        const map = this.getMap();
+
+        if (ignoreProjection && map) {
+            const glRes = map.getGLRes();
+            const { glWidth, glHeight, glCenter } = getEllipseGLSize(center, measurer, map, radius, radius);
+            const R = Math.max(glWidth, glHeight);
+            const pts: Point[] = [];
+            for (let i = 0, len = numberOfPoints - 1; i < len; i++) {
+                rad = (360 * i / len) * Math.PI / 180;
+                const x = Math.cos(rad) * R + glCenter.x;
+                const y = Math.sin(rad) * R + glCenter.y;
+                const p = new Point(x, y);
+                pts[i] = p;
+            }
+            const ring = pointsToCoordinates(map, pts, glRes, center.z);
+            ring.push(ring[0].copy());
+            return ring;
+        }
         for (let i = 0, len = numberOfPoints - 1; i < len; i++) {
             rad = (360 * i / len) * Math.PI / 180;
             dx = radius * Math.cos(rad);
@@ -101,6 +122,7 @@ export class Circle extends CenterMixin(Polygon) {
             vertex.z = center.z;
             shell.push(vertex);
         }
+
         shell.push(shell[0]);
         return shell;
     }
@@ -221,4 +243,8 @@ export default Circle;
 
 export type CircleOptionsType = PolygonOptionsType & {
     numberOfShellPoints?: number;
+} & SpecialGeometryOptionsType;
+
+export type SpecialGeometryOptionsType = {
+    ignoreProjection?: boolean;
 }
