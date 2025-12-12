@@ -90,14 +90,16 @@ describe('update function type style specs', () => {
     });
 
     it('property function type to property function type', done => {
-        const symbol = { lineColor: {
-            type: 'categorical',
-            property: 'type',
-            stops: [
-                [1, '#f00'],
-                [2, '#f00'],
-            ]
-        }, lineWidth: 8, lineOpacity: 1 };
+        const symbol = {
+            lineColor: {
+                type: 'categorical',
+                property: 'type',
+                stops: [
+                    [1, '#f00'],
+                    [2, '#f00'],
+                ]
+            }, lineWidth: 8, lineOpacity: 1
+        };
         assertChangeStyle(done, symbol, [255, 0, 0, 255], [0, 255, 0, 255], layer => {
             layer.updateSymbol(0, {
                 lineColor: {
@@ -135,20 +137,22 @@ describe('update function type style specs', () => {
     });
 
     it('property-zoom based to normal color', done => {
-        const symbol = { lineColor: {
-            type: 'categorical',
-            property: 'type',
-            stops: [
-                [1, {
-                    type: 'interval',
-                    stops: [
-                        [map.getZoom(), '#00f'],
-                        [map.getZoom() + 2, '#f00'],
-                    ]
-                }],
-                [2, '#f00'],
-            ]
-        }, lineWidth: 8, lineOpacity: 1 };
+        const symbol = {
+            lineColor: {
+                type: 'categorical',
+                property: 'type',
+                stops: [
+                    [1, {
+                        type: 'interval',
+                        stops: [
+                            [map.getZoom(), '#00f'],
+                            [map.getZoom() + 2, '#f00'],
+                        ]
+                    }],
+                    [2, '#f00'],
+                ]
+            }, lineWidth: 8, lineOpacity: 1
+        };
         assertChangeStyle(done, symbol, [0, 0, 255, 255], [255, 0, 0, 255], layer => {
             layer.updateSymbol(0, {
                 lineColor: '#f00'
@@ -158,20 +162,22 @@ describe('update function type style specs', () => {
 
     //TODO 目前暂时不支持zoom-property形式的function type
     it.skip('zoom-property-zoom based to normal color', done => {
-        const symbol = { lineColor: {
-            type: 'interval',
-            stops: [
-                [map.getZoom(), {
-                    type: 'categorical',
-                    property: 'type',
-                    stops: [
-                        [1, '#00f'],
-                        [2, '#f00'],
-                    ]
-                }],
-                [map.getZoom() + 2, '#f00'],
-            ]
-        }, lineWidth: 8, lineOpacity: 1 };
+        const symbol = {
+            lineColor: {
+                type: 'interval',
+                stops: [
+                    [map.getZoom(), {
+                        type: 'categorical',
+                        property: 'type',
+                        stops: [
+                            [1, '#00f'],
+                            [2, '#f00'],
+                        ]
+                    }],
+                    [map.getZoom() + 2, '#f00'],
+                ]
+            }, lineWidth: 8, lineOpacity: 1
+        };
         assertChangeStyle(done, symbol, [0, 0, 255, 255], [255, 0, 0, 255], layer => {
             layer.updateSymbol(0, {
                 lineColor: '#f00'
@@ -180,13 +186,15 @@ describe('update function type style specs', () => {
     });
 
     it('zoom based to normal color', done => {
-        const symbol = { lineColor: {
-            type: 'interval',
-            stops: [
-                [map.getZoom(), '#00f'],
-                [map.getZoom() + 2, '#f00'],
-            ]
-        }, lineWidth: 8, lineOpacity: 1 };
+        const symbol = {
+            lineColor: {
+                type: 'interval',
+                stops: [
+                    [map.getZoom(), '#00f'],
+                    [map.getZoom() + 2, '#f00'],
+                ]
+            }, lineWidth: 8, lineOpacity: 1
+        };
         assertChangeStyle(done, symbol, [0, 0, 255, 255], [255, 0, 0, 255], layer => {
             layer.updateSymbol(0, {
                 lineColor: '#f00'
@@ -220,6 +228,7 @@ describe('update function type style specs', () => {
         layer.once('canvasisdirty', () => {
             dirty = true;
         });
+        let doned = false;
         //因为是setStyle时，数据会被清空重绘，所以需要监听两次canvasisdirty
         layer.on(isSetStyle ? 'canvasisdirty' : 'canvasisdirty', () => {
             if (!dirty) {
@@ -235,7 +244,10 @@ describe('update function type style specs', () => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //变成绿色
                 assert.deepEqual(pixel, expectedColor);
-                done();
+                if (!doned) {
+                    done();
+                    doned = true;
+                }
             }
         });
         layer.addTo(map);

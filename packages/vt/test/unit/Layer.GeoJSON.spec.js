@@ -268,7 +268,6 @@ describe('GeoJSONVectorTileLayer', () => {
             data: dataUrl,
             style: path.join(__dirname, 'style.json'),
         });
-
         layer.addTo(map);
         setTimeout(() => {
             assert.deepStrictEqual(layer.getComputedStyle().style[0].renderPlugin.sceneConfig, { foo: 1 });
