@@ -30,6 +30,7 @@ export default function convertToPainterFeatures(features, feaIndexes, layerId, 
                     }
                     feature = queryFeature;
                     feature.layer = layerId;
+                    //merge properties
                     mergeFeatureProperties(feature, properties, customProps);
                 }
             }
@@ -37,6 +38,7 @@ export default function convertToPainterFeatures(features, feaIndexes, layerId, 
                 if (isObj) {
                     const properties = feature.properties;
                     const customProps = feature.customProps;
+                    //merge properties
                     mergeFeatureProperties(feature, properties, customProps);
                 }
             }
