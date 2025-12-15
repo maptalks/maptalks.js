@@ -964,7 +964,7 @@ export function updateMarkerFitSize(map, iconGeometry) {
         if (fitPadding[0] !== fitPadding[2] || fitPadding[1] !== fitPadding[3]) {
             aPadOffset = props.aPadOffset;
             if (!aPadOffset) {
-                aPadOffset = props.aPadOffset = new Int8Array(aMarkerWidth.length * 2);
+                aPadOffset = props.aPadOffset = new Int16Array(aMarkerWidth.length * 2);
             }
         }
         // delete properties['$layer'];
@@ -1042,5 +1042,8 @@ export function updateMarkerFitSize(map, iconGeometry) {
     const { aPadOffset } = props;
     if (aPadOffset) {
         iconGeometry.data.aPadOffset = aPadOffset;
+        if (iconGeometry.isBufferGenerated()) {
+            iconGeometry.generateBuffers(this.regl, { excludeElementsInVAO: true });
+        }
     }
 }
