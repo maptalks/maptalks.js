@@ -4,10 +4,6 @@ struct Uniforms {
     resolution: vec2f
 };
 
-struct VertexOutput {
-    @location($i) vTexCoord: vec2f,
-};
-
 @group(0) @binding($b) var<uniform> uniforms: Uniforms;
 #ifdef HAS_MULTISAMPLED
 @binding($b) @group(0) var textureSource: texture_multisampled_2d<f32>;

@@ -2,11 +2,6 @@
     #include <common_pack_float>
 #endif
 
-
-struct VertexOutput {
-    @builtin(position) position: vec4f
-};
-
 struct FragmentOutput {
     @location(0) color: vec4f,
 };

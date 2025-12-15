@@ -17,24 +17,6 @@ struct ShaderUniforms {
 
 #include <highlight_frag>
 
-struct VertexOutput {
-    @location($i) vTexCoord: vec2f,
-    @location($i) vOpacity: f32,
-    @location($i) vGammaScale: f32,
-    @location($i) vTextSize: f32,
-    @location($i) vHalo: f32,
-    @location($i) vIsText: f32,
-    #ifdef HAS_TEXT_FILL
-        @location($i) vTextFill: vec4f,
-    #endif
-    #ifdef HAS_TEXT_HALO_FILL
-        @location($i) vTextHaloFill: vec4f,
-    #endif
-    #if HAS_TEXT_HALO_RADIUS || HAS_TEXT_HALO_OPACITY
-        @location($i) vTextHalo: vec2f,
-    #endif
-}
-
 #include <text_render_frag>
 
 @fragment

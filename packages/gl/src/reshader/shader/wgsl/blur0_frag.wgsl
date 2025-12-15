@@ -16,10 +16,6 @@ struct GaussianBlur0Uniforms {
 #endif
 @group(0) @binding($b) var TextureBlurInputSampler: sampler;
 
-struct VertexOutput {
-    @builtin(position) position: vec4f,
-};
-
 const colorBright = vec3f(0.2126, 0.7152, 0.0722);
 
 fn getLuminance(color: vec3f) -> f32 {

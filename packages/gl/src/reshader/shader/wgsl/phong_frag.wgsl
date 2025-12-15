@@ -65,29 +65,6 @@ struct MaterialUniforms {
 #endif
 #endif
 
-struct VertexOutput {
-    @location($o)  vFragPos: vec3f,
-    @location($o) vNormal: vec3f,
-    #ifdef HAS_MAP
-        @location($o) vTexCoord: vec2f,
-    #ifdef HAS_I3S_UVREGION
-        @location($o) vUvRegion: vec4f,
-    #endif
-    #ifdef HAS_AO_MAP
-        @location($o) vTexCoord1: vec2f,
-    #endif
-    #endif
-    #ifdef HAS_COLOR || HAS_COLOR0
-        @location($o) vColor: vec4f,
-    #endif
-    #if HAS_EXTRUSION_OPACITY
-        @location($o) vExtrusionOpacity: f32,
-    #endif
-    #ifdef HAS_TANGENT
-        @location($o) vTangent: vec4f,
-    #endif
-};
-
 #if HAS_SHADOWING && !HAS_BLOOM
 #include <vsm_shadow_frag>
 #endif

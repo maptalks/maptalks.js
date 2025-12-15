@@ -2,12 +2,6 @@
     #include <vsm_shadow_frag>
 #endif
 
-struct VertexOutput {
-#ifdef HAS_PATTERN
-    @location($i) vTexCoord: vec2f,
-#endif
-};
-
 struct BackFillUniforms {
     polygonFill: vec4f,
     polygonOpacity: f32,
