@@ -9,10 +9,6 @@ struct GaussianBlurUniforms {
 @group(0) @binding($b) var TextureBlurInput: texture_2d<f32>;
 @group(0) @binding($b) var TextureBlurInputSampler: sampler;
 
-struct VertexOutput {
-    @builtin(position) position: vec4f,
-};
-
 #include <rgbm_frag>
 
 fn gaussianBlur(gTexCoord: vec2f) -> vec4f {

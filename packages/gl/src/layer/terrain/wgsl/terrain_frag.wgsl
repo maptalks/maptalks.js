@@ -9,10 +9,6 @@ struct TerrainUniforms {
     polygonOpacity: f32,
 };
 
-struct VertexOutput {
-    @location($o) vUv: vec2f,
-};
-
 @group(0) @binding($b) var<uniform> uniforms: TerrainUniforms;
 @group(0) @binding($b) var skin: texture_2d<f32>;
 @group(0) @binding($b) var skinSampler: sampler;

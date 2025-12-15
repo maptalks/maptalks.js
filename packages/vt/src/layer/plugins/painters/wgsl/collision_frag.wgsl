@@ -1,6 +1,3 @@
-struct VertexOutput {
-    @location($i) vColor: vec4f,
-};
 
 @fragment
 fn main(

@@ -15,6 +15,8 @@ import { isNil } from "../common/Util";
 const GLOBAL_IN_MESH_ERROR = 'Found a global uniform in mesh struct:';
 const MESH_IN_GLOBAL_ERROR = 'Found a mesh uniform in global struct:';
 
+const vertexOutputRegex = /struct\s+VertexOutput\s*\{[\s\S]*?\}/;
+
 export type CommandStruct = {
     uid: string,
     layout: GPUBindGroupLayout,
@@ -92,6 +94,12 @@ export default class CommandBuilder {
         if (frag) {
             const { source: fragSource } = parseBindingIndex(frag, index)
             frag = fragSource;
+            // fill vertexOutput struct from vertex shader
+            const match = vert.match(vertexOutputRegex);
+            if (match) {
+                const structStartIndex = findLastDefineIndex(vert);
+                frag = frag.substring(0, structStartIndex) + match[0] + '\n' +frag.substring(structStartIndex);
+            }
         }
 
         // console.log('vert', vert);
@@ -248,6 +256,16 @@ export default class CommandBuilder {
             const info = inputMapping[attr];
             if (info) {
                 vertexInfo[attr] = {
+                    geoAttrName: name,
+                    location: info.location,
+                    itemSize: getItemSize(info.type)
+                };
+            }
+        }
+        for (const name in inputMapping) {
+            if (!data[name]) {
+                const info = inputMapping[name];
+                vertexInfo[name] = {
                     geoAttrName: name,
                     location: info.location,
                     itemSize: getItemSize(info.type)
@@ -415,6 +433,7 @@ export default class CommandBuilder {
                 }
             }
         }
+
         return device.createRenderPipeline(pipelineOptions);
     }
 }
@@ -468,4 +487,17 @@ function removeComment(str) {
     }
     return str.replace(/[ \t]*\/\/.*\n/g, '') // remove //
         .replace(/[ \t]*\/\*[\s\S]*?\*\//g, ''); // remove /* */
+}
+
+function findLastDefineIndex(code: string): number {
+    // 找到最后一个 #define 的位置
+    const lastDefineIndex = code.lastIndexOf('#define');
+
+    if (lastDefineIndex !== -1) {
+        // 从该位置开始查找换行符
+        const newlineIndex = code.indexOf('\n', lastDefineIndex);
+        return newlineIndex + 1; // 返回换行符后的索引位置
+    }
+
+    return 0;
 }

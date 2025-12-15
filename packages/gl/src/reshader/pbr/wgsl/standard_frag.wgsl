@@ -145,52 +145,6 @@ struct ShaderUniforms {
     @group(0) @binding($b) var linePatternFileSampler: sampler;
 #endif
 
-struct VertexOutput {
-
-    #ifdef HAS_SSR
-        @location($i) vViewNormal: vec3f,
-        #ifdef HAS_TANGENT
-            @location($i) vViewTangent: vec4f,
-        #endif
-    #endif
-
-    @location($i) vModelNormal: vec3f,
-    @location($i) vViewVertex: vec4f,
-
-    #if HAS_TANGENT
-        @location($i) vModelTangent: vec4f,
-        @location($i) vModelBiTangent: vec3f,
-    #endif
-
-    @location($i) vModelVertex: vec3f,
-
-    #if HAS_MAP
-        @location($i) vTexCoord: vec2f,
-        #ifdef HAS_AO_MAP
-            @location($i) vTexCoord1: vec2f,
-        #endif
-        #ifdef HAS_I3S_UVREGION
-            @location($i) vUvRegion: vec4f,
-        #endif
-    #endif
-
-    #if HAS_COLOR
-        @location($i) vColor: vec4f,
-    #endif
-
-        @location($i) vOpacity: f32,
-
-    #if HAS_COLOR0
-        @location($i) vColor0: vec4f,
-    #endif
-
-    #if HAS_BUMP_MAP && HAS_TANGENT
-        @location($i) vTangentViewPos: vec3f,
-        @location($i) vTangentFragPos: vec3f,
-    #endif
-
-};
-
 fn getMaterialAlbedo() -> vec3f {
     return materialUniforms.albedo;
 }

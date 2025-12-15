@@ -13,10 +13,6 @@ struct Scene {
     @group(0) @binding(5) var debugTexture: texture_2d<f32>;
 #endif
 
-struct VertexOutput {
-    @location(0) vTexCoord : vec2f,
-};
-
 @fragment
 fn main(
     input : VertexOutput,

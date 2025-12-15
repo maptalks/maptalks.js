@@ -57,10 +57,6 @@ const frag0Wgsl = /*wgsl*/`
 
     @group(0) @binding($b) var<uniform> pickingUniforms: PickingUniforms;
 
-    struct VertexOutput {
-        @location($i) vFbo_picking_visible: f32,
-        @location($i) vPickingId: f32,
-    };
 
     @fragment
     fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
@@ -103,10 +99,6 @@ const frag1Wgsl = /*wgsl*/`
 
     @group(0) @binding(0) var<uniform> pickingUniforms: PickingUniforms;
 
-    struct VertexOutput {
-        @location($i) vFbo_picking_visible: f32,
-    };
-
     @fragment
     fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
         if (vertexOutput.vFbo_picking_visible == 0.0) {
@@ -140,11 +132,6 @@ const frag2 = `
 
 const frag2Wgsl = /*wgsl*/`
     ${unpackFunWgsl}
-
-    struct VertexOutput {
-        @location($i) vFbo_picking_visible: f32,
-        @location($i) vPickingId: f32,
-    };
 
     @fragment
     fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
@@ -216,15 +203,6 @@ const depthFragWgsl = /*wgsl*/`
     };
 
     @group(0) @binding($b) var<uniform> depthPackingUniforms: DepthPackingUniforms;
-
-    struct VertexOutput {
-        #ifdef ENABLE_PICKING
-            @location($i) vFbo_picking_visible: f32,
-            @location($i) vPickingId: f32,
-            @location($i) vFbo_picking_viewZ: f32,
-        #endif
-        @location($i) vFbo_picking_fragDepth: f32,
-    };
 
     const PackUpscale = 256.0 / 255.0;
     const UnpackDownscale = 255.0 / 256.0;

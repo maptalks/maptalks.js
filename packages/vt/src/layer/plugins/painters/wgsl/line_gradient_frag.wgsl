@@ -34,28 +34,6 @@ struct LineFragmentUniforms {
 @group(0) @binding($b) var lineGradientTexture: texture_2d<f32>;
 @group(0) @binding($b) var lineGradientTextureSampler: sampler;
 
-struct VertexOutput {
-    @location($i) vNormal: vec2f,
-    @location($i) vWidth: vec2f,
-    @location($i) vGammaScale: f32,
-#ifndef ENABLE_TILE_STENCIL
-    @location($i) vPosition: vec2f,
-#endif
-    @location($i) vVertex: vec3f,
-#if HAS_PATTERN || HAS_DASHARRAY || HAS_GRADIENT || HAS_TRAIL
-    @location($i) vLinesofar: f32,
-#endif
-    #ifdef HAS_STROKE_COLOR
-        @location($i) vStrokeColor: vec4f,
-    #endif
-    #ifdef HAS_OPACITY
-        @location($i) vOpacity: f32,
-    #endif
-    #ifdef HAS_GRADIENT
-        @location($i) vGradIndex: f32,
-    #endif
-};
-
 @fragment
 fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
     #ifndef ENABLE_TILE_STENCIL
