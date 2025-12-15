@@ -164,6 +164,8 @@ export default class Geometry {
     _disposed?: boolean
     //@internal
     _isIndexed?: boolean
+    //@internal
+    _bufferGen?: boolean
 
     constructor(data: AttributeData, elements, count?: number, desc?: GeometryDesc) {
         this._version = 0;
@@ -406,6 +408,7 @@ export default class Geometry {
     }
 
     generateBuffers(device: any) {
+        this._bufferGen = true;
         const isWebGPU = !!device.wgpu;
         //generate regl buffers beforehand to avoid repeated bufferData
         //提前处理addBuffer插入的arraybuffer
@@ -504,6 +507,9 @@ export default class Geometry {
         }
     }
 
+    isBufferGenerated(): boolean {
+        return this._bufferGen;
+    }
 
     getVertexCount(): number {
         const { positionAttribute, positionSize, color0Attribute } = this.desc;

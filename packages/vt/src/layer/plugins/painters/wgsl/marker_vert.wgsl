@@ -77,7 +77,7 @@ struct VertexInput {
     @location($i) aRotation: vec2u,
 #endif
 #ifdef HAS_PAD_OFFSET
-    @location($i) aPadOffset: vec2f,
+    @location($i) aPadOffset: vec2i,
 #endif
 #ifdef HAS_TEXT_FILL
     @location($i) aTextFill: vec4u,
@@ -257,8 +257,8 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
         shape = shape / shaderUniforms.glyphSize * myTextSize;
     } else {
 #ifdef HAS_PAD_OFFSET
-        var padOffsetX = vertexInput.aPadOffset.x - 1.0;
-        var padOffsetY = vertexInput.aPadOffset.y;
+        var padOffsetX = f32(vertexInput.aPadOffset.x) - 1.0;
+        var padOffsetY = f32(vertexInput.aPadOffset.y);
 #else
         var padOffsetX = 0.0;
         var padOffsetY = 0.0;
