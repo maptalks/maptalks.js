@@ -1,7 +1,6 @@
 import { default as LinePack, EXTRUDE_SCALE }  from './LinePack';
 // import { vec3, vec4 } from 'gl-matrix';
 import { buildNormals } from '@maptalks/tbn-packer';
-import { getPosArrayType } from './util/array';
 import { getFeaAltitudeAndHeight } from './util/util';
 
 const ALTITUDE_SCALE = 32767;
