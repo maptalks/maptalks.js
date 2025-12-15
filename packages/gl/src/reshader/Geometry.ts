@@ -606,7 +606,8 @@ export default class Geometry {
         if (buf.buffer && buf.buffer.destroy) {
             buffer = buf;
         }
-        if (name === this.desc.positionAttribute) {
+        const isPosition = name === this.desc.positionAttribute;
+        if (isPosition) {
             this.updateBoundingBox();
         }
         this.getVertexCount();
@@ -619,9 +620,12 @@ export default class Geometry {
                 buffer.buffer(data);
             }
             this.data[name] = buffer;
+            if (isPosition) {
+                this.data[name].array = data;
+            }
         }
         this._prepareData(false);
-        if (this.desc.positionAttribute === name) {
+        if (isPosition) {
             this._posDirty = true;
         }
         delete this._reglData;
