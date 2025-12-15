@@ -18,6 +18,7 @@ export default function convertToPainterFeatures(features, feaIndexes, layerId, 
                 const featureId = isObj ? feature.id : feature;
                 //query feature from main thread,it may be null
                 const queryFeature = layer.getFeature(featureId);
+                //it may be null
                 if (queryFeature) {
                     //customProperties
                     let properties, customProps;
