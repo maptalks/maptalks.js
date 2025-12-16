@@ -75,7 +75,7 @@ class NativePointPainter extends BasicPainter {
         };
         let mesh;
         if (this.isWebGPU()) {
-            const { aPosition, aAltitude } = geometry.data;
+            const { aPosition, aAltitude, aColor } = geometry.data;
             const position = new Int16Array([
                 -1, -1,
                  1, -1,
@@ -89,7 +89,7 @@ class NativePointPainter extends BasicPainter {
             }, 6, 0, { positionSize: 2 });
             geo.generateBuffers(this.regl);
             mesh = new reshader.InstancedMesh({
-                instancePosition: aPosition, instanceAltitude: aAltitude,
+                instancePosition: aPosition, instanceAltitude: aAltitude, aColor
             }, geometry.getVertexCount(), geo, material, meshOptions);
             mesh.generateInstancedBuffers(this.regl);
         } else {
