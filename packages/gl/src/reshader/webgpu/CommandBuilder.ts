@@ -104,11 +104,25 @@ export default class CommandBuilder {
 
         // console.log('vert', vert);
         // console.log('frag', frag);
-        const vertReflect = new WgslReflect(vert);
+        let vertReflect;
+        try {
+            vertReflect = new WgslReflect(vert);
+        } catch (error) {
+            console.error('WGSL Reflect vert error in ' + this.name, error);
+            console.error(vert);
+            throw error;
+        }
+
         const vertexInfo = this._formatBufferInfo(vertReflect, mesh);
         let fragReflect;
         if (frag) {
-            fragReflect = new WgslReflect(frag);
+            try {
+                fragReflect = new WgslReflect(frag);
+            } catch (error) {
+                console.error('WGSL Reflect frag error in ' + this.name, error);
+                console.error(frag);
+                throw error;
+            }
         }
 
         const vertGroups = vertReflect.getBindGroups();
