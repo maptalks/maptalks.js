@@ -65,7 +65,7 @@ fn main(
     out.position.y += f32(input.aPosition.y) * markerSize.y * w;
     #ifndef PICKING_MODE
         #ifdef HAS_COLOR
-            out.vColor = input.aColor / 255.0;
+            out.vColor = vec4f(input.aColor) / 255.0;
         #endif
     #endif
 
