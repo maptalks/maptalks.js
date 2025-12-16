@@ -129,6 +129,11 @@ export default class GraphicsDevice {
         return Geometry.createBuffer(this, options, options.name);
     }
 
+    elements(options) {
+        const data = options.data || options;
+        return Geometry.createElementBuffer(this, data);
+    }
+
     // implementation of regl.framebuffer
     framebuffer(width, height) {
         let reglFBODescriptor;
