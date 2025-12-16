@@ -98,8 +98,8 @@ class SourceCompiler {
         // source中的 #include 预处理已经替换为了实际的代码
         if (this.isVert) {
             source = this.fillAttributes(source);
+            source = this.fillVaryings(source);
         }
-        source = this.fillVaryings(source);
         return source;
     }
 
