@@ -36,7 +36,7 @@ struct VertexInput {
     #endif
     #ifdef HAS_PATTERN
         @location($i) aLinesofar: u32,
-        @location($i) aTexInfo: vec4i,
+        @location($i) aTexInfo: vec4u,
         @location($i) aNormalDistance: i32,
         #if HAS_PATTERN_ANIM
             @location($i) aLinePatternAnimSpeed: i32,
@@ -139,7 +139,7 @@ fn main(input: VertexInput) -> VertexOutput {
                 let linesofar = f32(input.aLinesofar);
             #endif
             output.vLinesofar = linesofar / uniforms.tileRatio * scale;
-            output.vTexInfo = vec4f(input.aTexInfo.xy, input.aTexInfo.zw + 1.0);
+            output.vTexInfo = vec4f(vec2f(input.aTexInfo.xy), vec2f(input.aTexInfo.zw) + 1.0);
             output.vPatternHeight = myLineWidth * uniforms.centiMeterToLocal.x / uniforms.tileRatio * scale;
             output.vNormalY = f32(input.aTubeNormal.w) / EXTRUDE_SCALE;
 
