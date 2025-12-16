@@ -265,10 +265,12 @@ export default class CommandBuilder {
         const vertexInfo = {};
         const data = mesh.geometry.data;
         const semantic = mesh.geometry.semantic;
+        const visited = new Set();
         for (const name in data) {
             const attr = semantic[name] || name;
             const info = inputMapping[attr];
             if (info) {
+                visited.add(attr);
                 vertexInfo[attr] = {
                     geoAttrName: name,
                     location: info.location,
@@ -277,7 +279,7 @@ export default class CommandBuilder {
             }
         }
         for (const name in inputMapping) {
-            if (!data[name]) {
+            if (!visited.has(name)) {
                 const info = inputMapping[name];
                 vertexInfo[name] = {
                     geoAttrName: name,
