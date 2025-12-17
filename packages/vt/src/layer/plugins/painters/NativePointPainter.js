@@ -6,7 +6,7 @@ import frag from './glsl/native-point.frag';
 import wgslVert from './wgsl/native-point_vert.wgsl';
 import wgslFrag from './wgsl/native-point_frag.wgsl';
 import pickingVert from './glsl/native-point.vert';
-import { setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar } from '../Util';
+import { extend, setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar } from '../Util';
 import { isFunctionDefinition, piecewiseConstant } from '@maptalks/function-type';
 import { prepareFnTypeData } from './util/fn_type_util';
 
@@ -87,6 +87,7 @@ class NativePointPainter extends BasicPainter {
             const geo = new reshader.Geometry({
                 pointPosition: position
             }, 6, 0, { positionSize: 2, positionAttribute: 'pointPosition' });
+            extend(geo.properties, geometry.properties);
             geo.generateBuffers(this.regl);
             mesh = new reshader.InstancedMesh({
                 instancePosition: aPosition, instanceAltitude: aAltitude, aColor, aPickingId
