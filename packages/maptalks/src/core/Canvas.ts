@@ -525,7 +525,7 @@ const Canvas = {
 
     /**
      * 临时canvas,用于图层的事件使用,主要用于getImageData
-     * @returns 
+     * @returns
      */
     getTempCanvas() {
         if (!TEMP_LAYER_CANVAS) {
@@ -689,6 +689,7 @@ const Canvas = {
             max = extent.getMax(),
             width = extent.getWidth(),
             height = extent.getHeight();
+        const bearing = (extent as any).bearing || 0;
         if (!g['type'] || g['type'] === 'linear') {
             if (!places) {
                 places = [min.x, min.y, max.x, min.y];
@@ -701,6 +702,22 @@ const Canvas = {
                     min.x + places[2] * width, min.y + places[3] * height
                 ];
             }
+            if (bearing !== 0 && !g['places']) {
+                //auto with map rotate
+                const bearing1 = 180 - bearing;
+                const bearing2 = bearing1 + 180;
+                const { xmin, ymin, xmax, ymax } = extent;
+                const cx = (xmin + xmax) / 2, cy = (ymin + ymax) / 2;
+                const r = Math.sqrt(width * width + height * height) / 2;
+                const rad1 = (bearing1) / 180 * Math.PI;
+                const rad2 = (bearing2) / 180 * Math.PI;
+                const tx1 = Math.cos(rad1) * r + cx;
+                const ty1 = Math.sin(rad1) * r + cy;
+                const tx2 = Math.cos(rad2) * r + cx;
+                const ty2 = Math.sin(rad2) * r + cy;
+                places = [tx1, ty1, tx2, ty2];
+            }
+
             // eslint-disable-next-line prefer-spread
             gradient = ctx.createLinearGradient.apply(ctx, places);
         } else if (g['type'] === 'radial') {

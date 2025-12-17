@@ -74,6 +74,10 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         }
         if (checkGradient(style['polygonFill'])) {
             style['polygonGradientExtent'] = this.geometry.getContainerExtent();
+            const map = this.getMap();
+            if (map) {
+                style['polygonGradientExtent'].bearing = map.getBearing();
+            }
         }
         // const lineWidth = style['lineWidth'] || 1;
         const geometryEventTolerance = this.geometry.getLayer().options['geometryEventTolerance'] || 0;
@@ -240,6 +244,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
             }
             colorStops = colorStopsArray;
         }
+        console.log('create createLinearGradient');
         const grad = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
         colorStops.forEach(function (stop: [number, string]) {
             grad.addColorStop(...stop);
