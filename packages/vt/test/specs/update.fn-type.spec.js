@@ -213,30 +213,22 @@ describe('update function type style specs', () => {
             data: line,
             style
         });
-        let dirty = false;
-        let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
         layer.once('canvasisdirty', () => {
-            dirty = true;
-        });
-        //因为是setStyle时，数据会被清空重绘，所以需要监听两次canvasisdirty
-        layer.on(isSetStyle ? 'canvasisdirty' : 'canvasisdirty', () => {
-            if (!dirty) {
-                return;
-            }
-            count++;
-            if (count === 1) {
+            setTimeout(() => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, currentColor);
                 changeFun(layer);
-            } else if (count === (endCount || 2)) {
-                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
-                //变成绿色
-                assert.deepEqual(pixel, expectedColor);
-                done();
-            }
+                setTimeout(() => {
+                    const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                    //变成绿色
+                    assert.deepEqual(pixel, expectedColor);
+                    done();
+
+                }, 500);
+            }, 500);
         });
         layer.addTo(map);
     }
