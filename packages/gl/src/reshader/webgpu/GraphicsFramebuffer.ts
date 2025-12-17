@@ -29,6 +29,7 @@ export default class GraphicsFramebuffer {
     _ownColor: boolean;
     //@internal
     _ownDepthTexture: boolean;
+    _destroyed: boolean;
 
     constructor(device, options) {
         this.device = device;
@@ -184,7 +185,7 @@ export default class GraphicsFramebuffer {
             depthStencilAttachment.depthLoadOp = this.depthLoadOp || 'load';
             depthStencilAttachment.depthClearValue = this.depthClearValue || 1;
             const depthTexture = this.depthTexture;
-            if (depthTexture.gpuFormat.isDepthStencil) {
+            if (depthTexture && depthTexture.gpuFormat.isDepthStencil) {
                 depthStencilAttachment.stencilLoadOp = this.stencilLoadOp || 'load';
                 depthStencilAttachment.stencilClearValue = this.stencilClearValue || 0;
             }
@@ -232,5 +233,10 @@ export default class GraphicsFramebuffer {
             delete this.depthTexture;
             delete this._ownDepthTexture;
         }
+        this._destroyed = true;
+    }
+
+    isDestroyed() {
+        return !!this._destroyed;
     }
 }

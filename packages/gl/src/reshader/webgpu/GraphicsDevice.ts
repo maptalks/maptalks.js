@@ -26,7 +26,7 @@ export default class GraphicsDevice {
     //@internal
     _drawCount: 0;
     //@internal
-    _emptyPipelines: any;
+    _clearPipelines: any;
 
     constructor(device: GPUDevice, context: GPUCanvasContext, adapter: GPUAdapter) {
         this.wgpu = device;
@@ -98,7 +98,9 @@ export default class GraphicsDevice {
         fbo = fbo || this.getDefaultFramebuffer();
         const desc = fbo.getRenderPassDescriptor();
         const commandEncoder = this.getCommandEncoder();
-        return commandEncoder.beginRenderPass(desc);
+        const renderPass = commandEncoder.beginRenderPass(desc);
+        (renderPass as any).desc = desc;
+        return renderPass;
     }
 
     addCommandBuffer(commandBuffer: GPUCommandBuffer, front: boolean) {
@@ -316,7 +318,7 @@ export default class GraphicsDevice {
             }
         }
         this._readTargets = {};
-        this._emptyPipelines = {};
+        this._clearPipelines = {};
     }
 
     incrDrawCall() {
@@ -332,27 +334,34 @@ export default class GraphicsDevice {
     }
 
     _renderToClear(fbo) {
+        if (fbo && fbo.isDestroyed()) {
+            return;
+        }
         const pass = this.getRenderPassEncoder(fbo);
-        const pipeline = this._getEmptyPipeline(fbo);
+        const pipeline = this._getClearPipeline(fbo);
         pass.setPipeline(pipeline);
         pass.draw(3);
         pass.end();
         this.submit();
     }
 
-    _getEmptyPipeline(fbo) {
-        const hasColorTexture = !!fbo.colorTexture;
-        const sampleCount = fbo.colorTexture && fbo.colorTexture.config.sampleCount;
-        const depthEnabled = !!fbo.depthTexture;
-
-        this._emptyPipelines = this._emptyPipelines || {};
-        const key = hasColorTexture + '-' + depthEnabled + '-' + sampleCount;
-        if (this._emptyPipelines[key]) {
-            return this._emptyPipelines[key];
+    _getClearPipeline(fbo): GPURenderPipeline {
+        const isDefault = fbo === this.getDefaultFramebuffer();
+        const sampleCount = fbo.colorTexture && fbo.colorTexture.config.sampleCount || 1;
+        const depthEnabled = isDefault || !!fbo.depthTexture;
+        let format;
+        if (fbo.colorTexture) {
+            format = fbo.colorTexture.gpuFormat.format;
+        } else {
+            format = navigator.gpu.getPreferredCanvasFormat();
+        }
+        this._clearPipelines = this._clearPipelines || {};
+        const key = format + '-' + isDefault + '-' + depthEnabled + '-' + sampleCount;
+        if (this._clearPipelines[key]) {
+            return this._clearPipelines[key];
         }
         const device = this.wgpu;
         const module = device.createShaderModule({
-            label: 'empty shader',
             code: /* wgsl */ `
             @vertex fn vs(
                 @builtin(vertex_index) vertexIndex : u32
@@ -369,13 +378,9 @@ export default class GraphicsDevice {
             }
             `,
         });
-        let format;
-        if (fbo.colorTexture) {
-            format = fbo.colorTexture.gpuFormat.format;
-        } else {
-            format = navigator.gpu.getPreferredCanvasFormat();
-        }
+
         const options = {
+            label: 'clear',
             layout: 'auto',
             vertex: { module },
             fragment: {
@@ -394,7 +399,8 @@ export default class GraphicsDevice {
             options.multisample = { count: sampleCount };
         }
         const pipeline = device.createRenderPipeline(options);
-        this._emptyPipelines[key] = pipeline;
-        return this._emptyPipelines[key];
+        (pipeline as any).options = options;
+        this._clearPipelines[key] = pipeline;
+        return this._clearPipelines[key];
     }
 }
