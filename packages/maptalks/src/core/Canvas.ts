@@ -703,7 +703,7 @@ const Canvas = {
                 ];
             }
             if (bearing !== 0 && !g['places']) {
-                //auto with map rotate
+                //auto with map rotate when places missing
                 const bearing1 = 180 - bearing;
                 const bearing2 = bearing1 + 180;
                 const { xmin, ymin, xmax, ymax } = extent;
