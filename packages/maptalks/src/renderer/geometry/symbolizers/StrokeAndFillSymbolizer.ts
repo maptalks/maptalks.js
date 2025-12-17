@@ -244,7 +244,6 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
             }
             colorStops = colorStopsArray;
         }
-        console.log('create createLinearGradient');
         const grad = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
         colorStops.forEach(function (stop: [number, string]) {
             grad.addColorStop(...stop);
