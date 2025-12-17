@@ -367,9 +367,9 @@ export default class GraphicsDevice {
                 @builtin(vertex_index) vertexIndex : u32
             ) -> @builtin(position) vec4f {
                 let pos = array(
-                    vec2f( 0.0,  0.5),
-                    vec2f(-0.5, -0.5),
-                    vec2f( 0.5, -0.5)
+                    vec2f(2,  2.5),
+                    vec2f(1.5, 1.5),
+                    vec2f(2.5, 1.5)
                 );
                 return vec4f(pos[vertexIndex], 0.0, 1.0);
             }

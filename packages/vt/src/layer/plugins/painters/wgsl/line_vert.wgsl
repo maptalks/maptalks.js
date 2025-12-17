@@ -327,7 +327,7 @@ fn main(input: VertexInput) -> VertexOutput {
         shadow_computeShadowPars(localVertex, &output);
     #endif
     #if HAS_HIGHLIGHT_COLOR || HAS_HIGHLIGHT_OPACITY
-        highlight_setVarying(input, output);
+        highlight_setVarying(input, &output);
     #endif
 #else
     fbo_picking_setData(input, &output, projDistance, true);
