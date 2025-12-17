@@ -1,5 +1,4 @@
 const frag = /*wgsl*/`
-#define HAS_HIGHLIGHT_COLOR_POINT 1
 #define SDF_PX 8.0
 #define DEVICE_PIXEL_RATIO 1.0
 // 0.105 / DEVICE_PIXEL_RATIO

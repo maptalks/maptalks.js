@@ -1,5 +1,3 @@
-#define HAS_HIGHLIGHT_COLOR_POINT 1
-
 struct MarkerFragUniforms {
     alphaTest: f32,
     markerOpacity: f32
