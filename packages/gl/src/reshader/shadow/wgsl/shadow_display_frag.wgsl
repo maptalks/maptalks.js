@@ -4,7 +4,7 @@ struct ShadowDisplayUniforms3 {
     color: vec3f,
 };
 
-@group(0) @binding(0) var<uniform> uniforms: ShadowDisplayUniforms3;
+@group(0) @binding($b) var<uniform> uniforms: ShadowDisplayUniforms3;
 
 @fragment
 fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {

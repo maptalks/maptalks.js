@@ -1,7 +1,3 @@
-struct VertexOutput {
-    @location($o) vTexCoord: vec2f
-}
-
 struct FxaaUniforms {
   enableFXAA: f32,
   enableToneMapping: f32,

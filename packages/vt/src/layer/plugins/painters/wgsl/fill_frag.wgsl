@@ -36,26 +36,6 @@ struct ShaderUniforms {
     @group(0) @binding($b) var polygonPatternFile: texture_2d<f32>;
     @group(0) @binding($b) var polygonPatternFileSampler: sampler;
 #endif
-#ifdef HAS_PATTERN || HAS_COLOR || HAS_OPACITY || HAS_UV_SCALE || HAS_UV_OFFSET || HAS_HIGHLIGHT_COLOR || HAS_HIGHLIGHT_OPACITY
-    struct VertexOutput {
-    #ifdef HAS_PATTERN
-        @location($i) vTexCoord: vec2f,
-        @location($i) vTexInfo: vec4f,
-    #endif
-    #ifdef HAS_COLOR
-        @location($i) vColor: vec4f,
-    #endif
-    #ifdef HAS_OPACITY
-        @location($i) vOpacity: f32,
-    #endif
-    #ifdef HAS_PATTERN && HAS_UV_SCALE
-        @location($i) vUVScale: vec2f,
-    #endif
-    #ifdef HAS_PATTERN && HAS_UV_OFFSET
-        @location($i) vUVOffset: vec2f,
-    #endif
-    }
-#endif
 
 #include <highlight_frag>
 

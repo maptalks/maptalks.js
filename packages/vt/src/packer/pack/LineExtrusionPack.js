@@ -1,7 +1,6 @@
 import { default as LinePack, EXTRUDE_SCALE }  from './LinePack';
 // import { vec3, vec4 } from 'gl-matrix';
 import { buildNormals } from '@maptalks/tbn-packer';
-import { getPosArrayType } from './util/array';
 import { getFeaAltitudeAndHeight } from './util/util';
 
 const ALTITUDE_SCALE = 32767;
@@ -491,8 +490,7 @@ export default class LineExtrusionPack extends LinePack {
             arrays['aLineWidth'] = aLineWidth;
         }
         if (aLineHeight) {
-            const ArrType = getPosArrayType(this.maxAltitude);
-            arrays['aLineHeight'] = new ArrType(aLineHeight);
+            arrays['aLineHeight'] = aLineHeight;
         }
         const buffers = [];
         for (const p in arrays) {

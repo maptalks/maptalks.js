@@ -167,6 +167,7 @@ class ShadowProcess {
             'shadow_shadowMap': this._shadowMap,
             'esm_shadow_threshold': this._esmShadowThreshold,
             'shadow_opacity': opacity,
+            'shadow_color': DEFAULT_SHADOW_COLOR,
             'color': color || DEFAULT_SHADOW_COLOR
         }, this._groundScene, framebuffer);
     }

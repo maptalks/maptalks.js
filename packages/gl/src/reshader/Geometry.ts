@@ -164,6 +164,8 @@ export default class Geometry {
     _disposed?: boolean
     //@internal
     _isIndexed?: boolean
+    //@internal
+    _bufferGen?: boolean
 
     constructor(data: AttributeData, elements, count?: number, desc?: GeometryDesc) {
         this._version = 0;
@@ -406,6 +408,7 @@ export default class Geometry {
     }
 
     generateBuffers(device: any) {
+        this._bufferGen = true;
         const isWebGPU = !!device.wgpu;
         //generate regl buffers beforehand to avoid repeated bufferData
         //提前处理addBuffer插入的arraybuffer
@@ -504,6 +507,9 @@ export default class Geometry {
         }
     }
 
+    isBufferGenerated(): boolean {
+        return this._bufferGen;
+    }
 
     getVertexCount(): number {
         const { positionAttribute, positionSize, color0Attribute } = this.desc;
@@ -600,7 +606,8 @@ export default class Geometry {
         if (buf.buffer && buf.buffer.destroy) {
             buffer = buf;
         }
-        if (name === this.desc.positionAttribute) {
+        const isPosition = name === this.desc.positionAttribute;
+        if (isPosition) {
             this.updateBoundingBox();
         }
         this.getVertexCount();
@@ -613,9 +620,12 @@ export default class Geometry {
                 buffer.buffer(data);
             }
             this.data[name] = buffer;
+            if (isPosition) {
+                this.data[name].array = data;
+            }
         }
         this._prepareData(false);
-        if (this.desc.positionAttribute === name) {
+        if (isPosition) {
             this._posDirty = true;
         }
         delete this._reglData;

@@ -38,6 +38,14 @@ class PhongMaterial extends Material {
     appendDefines(defines: ShaderDefines, geometry: Geometry) {
         super.appendDefines(defines, geometry);
         const uniforms = this.uniforms;
+        const position = geometry.data[geometry.desc.positionAttribute];
+        if (position.buffer && position.buffer.itemType  && position.buffer.itemType.startsWith('sint')) {
+            defines['POSITION_IS_INT'] = 1;
+        }
+        const normal = geometry.data[geometry.desc.normalAttribute];
+        if (normal && normal.buffer && normal.buffer.itemType && normal.buffer.itemType.startsWith('sint')) {
+            defines['NORMAL_IS_INT'] = 1;
+        }
         if (this.unlit) {
             defines['SHADING_MODEL_UNLIT'] = 1;
         }

@@ -89,7 +89,7 @@ fn getPosition(inputPosition: vec3f, vertexInput: VertexInput) -> vec4f {
         uv.y = 1.0 - uv.y;
         let encodedHeight = textureSample(flatMask, flatMaskSampler, uv);
         if (length(encodedHeight) < 2.0) {
-            float maskHeight = decodeFloat32(encodedHeight);
+            let maskHeight = decodeFloat32(encodedHeight);
             outputPosition.z = min(outputPosition.z, maskHeight);
         }
     #endif

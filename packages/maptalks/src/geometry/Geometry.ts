@@ -191,6 +191,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     //@internal
     _updateCache?(): void;
     onAdd?(): void;
+    propertiesDirty: boolean;
 
     constructor(options: GeometryOptionsType) {
         const opts = extend({}, options);
@@ -201,6 +202,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         delete opts['id'];
         delete opts['properties'];
         super(opts);
+        this.propertiesDirty = false;
         if (symbol) {
             this.setSymbol(symbol);
         } else {
@@ -376,6 +378,7 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @fires Geometry#propertieschange
      */
     setProperties(properties: { [key: string]: any }): this {
+        this.propertiesDirty = true;
         const old = this.properties;
         this.properties = isObject(properties) ? extend({}, properties) : properties;
         const children = this.getGeometries ? this.getGeometries() : [];
@@ -1614,12 +1617,23 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         delete this._extent;
         delete this._extent2d;
         this._clearAltitudeCache();
+        //MultiGeometry
+        if (this._parent) {
+            delete this._parent._extent;
+            delete this._parent._extent2d;
+            this._parent._clearAltitudeCache();
+        }
     }
 
     //@internal
     _clearProjection(): void {
         delete this._extent;
         delete this._extent2d;
+        //MultiGeometry
+        if (this._parent) {
+            delete this._parent._extent;
+            delete this._parent._extent2d;
+        }
     }
 
     //@internal

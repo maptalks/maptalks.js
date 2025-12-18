@@ -44,7 +44,7 @@ const frag0 = `
             discard;
             return;
         }
-        gl_FragColor = vec4(unpack(vPickingId), fbo_picking_meshId / 255.0);
+        gl_FragColor = vec4(unpack(vPickingId + 1.0), (fbo_picking_meshId + 1.0) / 255.0);
     }
 `;
 
@@ -57,10 +57,6 @@ const frag0Wgsl = /*wgsl*/`
 
     @group(0) @binding($b) var<uniform> pickingUniforms: PickingUniforms;
 
-    struct VertexOutput {
-        @location($i) vFbo_picking_visible: f32,
-        @location($i) vPickingId: f32,
-    };
 
     @fragment
     fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
@@ -68,8 +64,8 @@ const frag0Wgsl = /*wgsl*/`
             discard;
         }
 
-        let rgb = unpack(vertexOutput.vPickingId);
-        let alpha = pickingUniforms.fbo_picking_meshId / 255.0;
+        let rgb = unpack(vertexOutput.vPickingId + 1);
+        let alpha = (pickingUniforms.fbo_picking_meshId + 1) / 255.0;
         return vec4f(rgb, alpha);
         // return vec4f(1.0, 0.0, 0.0, 1.0);
     }
@@ -89,7 +85,7 @@ const frag1 = `
             discard;
             return;
         }
-        gl_FragColor = vec4(unpack(float(fbo_picking_meshId)), 1.0);
+        gl_FragColor = vec4(unpack(float(fbo_picking_meshId + 1.0)), 1.0);
         // gl_FragColor = vec4(unpack(float(35)), 1.0);
     }
 `;
@@ -103,17 +99,13 @@ const frag1Wgsl = /*wgsl*/`
 
     @group(0) @binding(0) var<uniform> pickingUniforms: PickingUniforms;
 
-    struct VertexOutput {
-        @location($i) vFbo_picking_visible: f32,
-    };
-
     @fragment
     fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
         if (vertexOutput.vFbo_picking_visible == 0.0) {
             discard;
         }
 
-        let meshIdFloat = pickingUniforms.fbo_picking_meshId;
+        let meshIdFloat = pickingUniforms.fbo_picking_meshId + 1.0;
         let rgb = unpack(meshIdFloat);
 
         return vec4f(rgb, 1.0);
@@ -134,24 +126,19 @@ const frag2 = `
             discard;
             return;
         }
-        gl_FragColor = vec4(unpack(vPickingId), 1.0);
+        gl_FragColor = vec4(unpack(vPickingId + 1.0), 1.0);
     }
 `;
 
 const frag2Wgsl = /*wgsl*/`
     ${unpackFunWgsl}
 
-    struct VertexOutput {
-        @location($i) vFbo_picking_visible: f32,
-        @location($i) vPickingId: f32,
-    };
-
     @fragment
     fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
         if (vertexOutput.vFbo_picking_visible == 0.0) {
             discard;
         }
-        let rgb = unpack(vertexOutput.vPickingId);
+        let rgb = unpack(vertexOutput.vPickingId + 1.0);
         return vec4f(rgb, 1.0);
     }
 `;
@@ -216,11 +203,6 @@ const depthFragWgsl = /*wgsl*/`
     };
 
     @group(0) @binding($b) var<uniform> depthPackingUniforms: DepthPackingUniforms;
-
-    struct VertexOutput {
-        @location($i) vFbo_picking_viewZ: f32,
-        @location($i) vFbo_picking_fragDepth: f32,
-    };
 
     const PackUpscale = 256.0 / 255.0;
     const UnpackDownscale = 255.0 / 256.0;
@@ -682,6 +664,7 @@ export default class FBORayPicking {
             width,
             height
         });
+        // this._debugFBO(fbo1);
 
         const depths = [];
         for (let i = 0; i < data.length; i += 4) {
@@ -692,8 +675,8 @@ export default class FBORayPicking {
     }
 
     _packData(data, shader) {
-        if (data[0] === 255 && data[1] === 255 &&
-            data[2] === 255 && data[3] === 255) {
+        if (data[0] === 0 && data[1] === 0 &&
+            data[2] === 0 && data[3] === 0) {
             return {
                 meshId : null,
                 pickingId : null
@@ -703,20 +686,20 @@ export default class FBORayPicking {
         let meshId = null;
         if (shader === this._shader1) {
             //only fbo_picking_meshId
-            meshId = pack3(data);
+            meshId = pack3(data) - 1;
         } else if (shader === this._shader0) {
-            meshId = data[3];
-            pickingId = pack3(data);
+            meshId = data[3] - 1;
+            pickingId = pack3(data) - 1;
         } else {
             meshId = null;
-            pickingId = pack3(data);
+            pickingId = pack3(data) - 1;
         }
         return { meshId, pickingId };
     }
 
     _clearFbo(framebuffer) {
         this._renderer.device.clear({
-            color: [1, 1, 1, 1],
+            color: [0, 0, 0, 0],
             depth: 1,
             stencil: 255,
             framebuffer
@@ -724,7 +707,7 @@ export default class FBORayPicking {
     }
 
     _getShader(meshes, once) {
-        if (once && meshes.length < 256) {
+        if (once && meshes.length < 255) {
             return this._shader0;
         }
         return this._shader1;
@@ -739,6 +722,30 @@ export default class FBORayPicking {
             this._fbo1.resize(fbo.width, fbo.height);
         }
         return this._fbo1;
+    }
+
+    _debugFBO(fbo) {
+        const regl = this._renderer.device;
+        const data2 = regl.read({
+            data: new Uint8Array(4 * fbo.width * fbo.height),
+            x: 0,
+            y: 0,
+            framebuffer: fbo,
+            width: fbo.width,
+            height: fbo.height
+        });
+
+        const canvas = document.createElement('canvas');
+        canvas.width = fbo.width;
+        canvas.height = fbo.height;
+        document.body.appendChild(canvas);
+        for (let i = 0; i < data2.length; i += 4) {
+            if (data2[i + 3] !== 255) {
+                data2[i + 3] = 255;
+            }
+        }
+
+        canvas.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(data2), fbo.width), 0, 0);
     }
 
     // _getPartialMeshForPicking(mesh, pickingId) {

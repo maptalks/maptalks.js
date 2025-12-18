@@ -75,7 +75,7 @@ class NativePointPainter extends BasicPainter {
         };
         let mesh;
         if (this.isWebGPU()) {
-            const { aPosition, aAltitude } = geometry.data;
+            const { aPosition, aAltitude, aColor } = geometry.data;
             const position = new Int16Array([
                 -1, -1,
                  1, -1,
@@ -89,7 +89,7 @@ class NativePointPainter extends BasicPainter {
             }, 6, 0, { positionSize: 2 });
             geo.generateBuffers(this.regl);
             mesh = new reshader.InstancedMesh({
-                instancePosition: aPosition, instanceAltitude: aAltitude,
+                instancePosition: aPosition, instanceAltitude: aAltitude, aColor
             }, geometry.getVertexCount(), geo, material, meshOptions);
             mesh.generateInstancedBuffers(this.regl);
         } else {
@@ -212,7 +212,7 @@ class NativePointPainter extends BasicPainter {
             this.picking = [new reshader.FBORayPicking(
                 this.renderer,
                 {
-                    vert: '#define PICKING_MODE 1\n' + pickingVert,
+                    vert: pickingVert,
                     uniforms: [
                         {
                             name: 'projViewModelMatrix',
@@ -223,6 +223,7 @@ class NativePointPainter extends BasicPainter {
                             }
                         }
                     ],
+                    defines: { 'PICKING_MODE': 1 },
                     extraCommandProps: {
                         viewport: this.pickingViewport
                     }

@@ -8,7 +8,8 @@ const { GroupGLLayer } = require('@maptalks/gpu');
 const mapRenderer = window.mapRenderer;
 
 maptalks.Map.mergeOptions({
-    renderer: mapRenderer || 'gl'
+    renderer: mapRenderer || 'gl',
+    preserveGpuDrawingBuffer: true
 });
 
 const DEFAULT_VIEW = {

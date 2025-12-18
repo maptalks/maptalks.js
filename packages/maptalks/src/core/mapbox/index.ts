@@ -18,12 +18,26 @@ const arr = [],
 export function loadGeoSymbol(symbol, geo): any {
     return loadFunctionTypes(symbol, () => {
         const map = geo.getMap();
-        return set(arr, map ? map.getZoom() : 12,
-            extend({},
-                geo.getProperties(),
-                setProp(prop, map && map.getBearing() || 0, map && map.getPitch() || 0, map ? map.getZoom() : 10)
-            )
-        );
+        const bearing = map && map.getBearing() || 0;
+        const pitch = map && map.getPitch();
+        const zoom = map ? map.getZoom() : 10;
+        let changed = false;
+        geo._funTypeProperties = geo._funTypeProperties || {};
+        //geo update properties,reset
+        if (geo.propertiesDirty) {
+            geo._funTypeProperties = {};
+            geo.propertiesDirty = false;
+            changed = true;
+        } else {
+            //map camera change
+            const funTypeProperties = geo._funTypeProperties;
+            changed = (funTypeProperties['{bearing}'] !== bearing || funTypeProperties['{pitch}'] !== pitch || funTypeProperties['{zoom}'] !== zoom);
+        }
+        let mergeProperties = geo._funTypeProperties;
+        if (changed) {
+            mergeProperties = extend(mergeProperties || {}, geo.getProperties(), setProp(prop, bearing, pitch, zoom));
+        }
+        return set(arr, map ? map.getZoom() : 12, mergeProperties);
     });
 }
 

@@ -15,6 +15,8 @@ import { isNil } from "../common/Util";
 const GLOBAL_IN_MESH_ERROR = 'Found a global uniform in mesh struct:';
 const MESH_IN_GLOBAL_ERROR = 'Found a mesh uniform in global struct:';
 
+const vertexOutputRegex = /struct\s+VertexOutput\s*\{[\s\S]*?\}/;
+
 export type CommandStruct = {
     uid: string,
     layout: GPUBindGroupLayout,
@@ -70,12 +72,14 @@ export default class CommandBuilder {
             vert = WGSLParseDefines(vert, defines);
         } catch (error) {
             error.message = this.name + '(vert):' + error.message;
+            console.error(error);
             throw error;
         }
         try {
             frag = WGSLParseDefines(frag, defines);
         } catch (error) {
             error.message = this.name + '(frag):' + error.message;
+            console.error(error);
             throw error;
         }
         // dynamically assign location index with $in and $out
@@ -90,14 +94,35 @@ export default class CommandBuilder {
         if (frag) {
             const { source: fragSource } = parseBindingIndex(frag, index)
             frag = fragSource;
+            // fill vertexOutput struct from vertex shader
+            const match = vert.match(vertexOutputRegex);
+            if (match) {
+                const structStartIndex = findLastDefineIndex(vert);
+                frag = frag.substring(0, structStartIndex) + match[0] + '\n' +frag.substring(structStartIndex);
+            }
         }
 
+        // console.log('vert', vert);
+        // console.log('frag', frag);
+        let vertReflect;
+        try {
+            vertReflect = new WgslReflect(vert);
+        } catch (error) {
+            console.error('WGSL Reflect vert error in ' + this.name, error);
+            console.error(vert);
+            throw error;
+        }
 
-        const vertReflect = new WgslReflect(vert);
         const vertexInfo = this._formatBufferInfo(vertReflect, mesh);
         let fragReflect;
         if (frag) {
-            fragReflect = new WgslReflect(frag);
+            try {
+                fragReflect = new WgslReflect(frag);
+            } catch (error) {
+                console.error('WGSL Reflect frag error in ' + this.name, error);
+                console.error(frag);
+                throw error;
+            }
         }
 
         const vertGroups = vertReflect.getBindGroups();
@@ -240,11 +265,23 @@ export default class CommandBuilder {
         const vertexInfo = {};
         const data = mesh.geometry.data;
         const semantic = mesh.geometry.semantic;
+        const visited = new Set();
         for (const name in data) {
             const attr = semantic[name] || name;
             const info = inputMapping[attr];
             if (info) {
+                visited.add(attr);
                 vertexInfo[attr] = {
+                    geoAttrName: name,
+                    location: info.location,
+                    itemSize: getItemSize(info.type)
+                };
+            }
+        }
+        for (const name in inputMapping) {
+            if (!visited.has(name)) {
+                const info = inputMapping[name];
+                vertexInfo[name] = {
                     geoAttrName: name,
                     location: info.location,
                     itemSize: getItemSize(info.type)
@@ -412,6 +449,7 @@ export default class CommandBuilder {
                 }
             }
         }
+
         return device.createRenderPipeline(pipelineOptions);
     }
 }
@@ -465,4 +503,17 @@ function removeComment(str) {
     }
     return str.replace(/[ \t]*\/\/.*\n/g, '') // remove //
         .replace(/[ \t]*\/\*[\s\S]*?\*\//g, ''); // remove /* */
+}
+
+function findLastDefineIndex(code: string): number {
+    // 找到最后一个 #define 的位置
+    const lastDefineIndex = code.lastIndexOf('#define');
+
+    if (lastDefineIndex !== -1) {
+        // 从该位置开始查找换行符
+        const newlineIndex = code.indexOf('\n', lastDefineIndex);
+        return newlineIndex + 1; // 返回换行符后的索引位置
+    }
+
+    return 0;
 }

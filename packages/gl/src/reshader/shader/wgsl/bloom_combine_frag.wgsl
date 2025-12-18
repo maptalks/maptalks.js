@@ -96,10 +96,6 @@ fn bloomCombine() -> vec4f {
     return bloomInputColor + srcColor * (1.0 - bloomInputColor.a) + bloomColor;
 }
 
-struct VertexOutput {
-    @builtin(position) position: vec4f
-};
-
 @fragment
 fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
     // 假设vertexOutput包含position或其他必要属性

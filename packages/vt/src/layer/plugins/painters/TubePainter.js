@@ -6,6 +6,7 @@ import { setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar, isNil
 import { prepareFnTypeData, isFnTypeSymbol } from './util/fn_type_util';
 import { createAtlasTexture } from './util/atlas_util';
 import tubeVert from './glsl/tube.vert';
+import tubeVertWgsl from './wgsl/tube_vert.wgsl';
 import { isFunctionDefinition, piecewiseConstant, interpolated } from '@maptalks/function-type';
 import { getVectorPacker } from '../../../packer/inject';
 
@@ -192,7 +193,8 @@ class TubePainter extends BasicPainter {
             this.picking = [new reshader.FBORayPicking(
                 this.renderer,
                 {
-                    vert: '#define PICKING_MODE 1\n' + tubeVert,
+                    vert: tubeVert,
+                    defines: { 'PICKING_MODE': 1 },
                     uniforms: [
                         {
                             name: 'projViewModelMatrix',
@@ -237,7 +239,9 @@ class TubePainter extends BasicPainter {
         );
 
         this.shader = new reshader.pbr.StandardShader({
+            name: 'vt-tube',
             vert: tubeVert,
+            wgslVert: tubeVertWgsl,
             uniforms,
             defines: this._getDefines(defines),
             extraCommandProps: this.getExtraCommandProps()

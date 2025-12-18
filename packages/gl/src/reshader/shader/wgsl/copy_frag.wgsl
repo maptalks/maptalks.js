@@ -46,10 +46,6 @@ fn sharpColorFactor(color: vec3f, sharp: f32) -> vec3f {
     return color + sharp * (count * color - rgbNW.rgb - rgbNE.rgb - rgbSW.rgb - rgbSE.rgb);
 }
 
-struct VertexOutput {
-    @builtin(position) position: vec4f
-}
-
 @fragment
 fn main(
     input : VertexOutput,

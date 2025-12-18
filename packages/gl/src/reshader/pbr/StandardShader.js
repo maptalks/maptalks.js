@@ -99,8 +99,7 @@ class StandardShader extends MeshShader {
         const fragSource = config.frag || frag;
         const wgslVertSource = config.wgslVert || wgslVert;
         const wgslFragSource = config.wgslFrag || wgslFrag;
-        super({
-            name: 'standard',
+        const shaderConfig = {
             vert: vertSource,
             frag: fragSource,
             wgslVert: wgslVertSource,
@@ -108,7 +107,9 @@ class StandardShader extends MeshShader {
             uniforms,
             extraCommandProps,
             defines
-        });
+        };
+        shaderConfig.name = config.name || 'standard';
+        super(shaderConfig);
         this.version = 300;
     }
 

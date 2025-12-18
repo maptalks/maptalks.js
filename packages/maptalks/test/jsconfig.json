@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "noEmit": true,
+  },
+  "include": [
+    "**/*.js",
+    "global.ts",
+  ]
+}

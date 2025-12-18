@@ -25,6 +25,11 @@ export default class MapGPURenderer extends MapGLRenderer {
         const updated = super.drawLayers(layers, framestamp);
         if (updated) {
             this.device.submit();
+            if (this.map.options['preserveGpuDrawingBuffer']) {
+                const mapCanvas = this.canvas as any;
+                const canvas = mapCanvas.readbackCanvas =  mapCanvas.readbackCanvas || document.createElement('canvas');
+                this.device.preserveDrawingBuffer(canvas);
+            }
         }
         return updated;
     }

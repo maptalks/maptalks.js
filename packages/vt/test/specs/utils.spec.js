@@ -5,7 +5,8 @@ const { PackUtil, FilterUtil } = require('../../dist/maptalks.vt.gpu.js');
 const mapRenderer = window.mapRenderer;
 
 maptalks.Map.mergeOptions({
-    renderer: mapRenderer || 'gl'
+    renderer: mapRenderer || 'gl',
+    preserveGpuDrawingBuffer: true
 });
 
 describe('util specs', () => {

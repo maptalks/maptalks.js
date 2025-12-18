@@ -13,10 +13,6 @@ struct QuadFragUniforms {
 #endif
 @group(0) @binding($b) var TextureInputSampler: sampler;
 
-struct VertexOutput {
-    @builtin(position) position: vec4f
-};
-
 @fragment
 fn main(
     vertexOutput: VertexOutput

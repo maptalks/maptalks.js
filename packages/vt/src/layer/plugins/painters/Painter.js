@@ -340,7 +340,7 @@ class Painter {
             const mesh = meshes[i];
             const defines = mesh.defines || {};
             if (!defines['POSITION_TYPE_3']) {
-                this.appendWGSLPositionType(defines);
+                this.appendWGSLPositionType(mesh, defines);
                 mesh.setDefines(defines);
             }
         }
@@ -1432,10 +1432,11 @@ class Painter {
         return true;
     }
 
-    appendWGSLPositionType(defines) {
-        const isVectorTile = this.layer.isVectorTileLayer;
-        defines['POSITION_TYPE_2'] = isVectorTile ? 'vec2i' : 'vec2f';
-        defines['POSITION_TYPE_3'] = isVectorTile ? 'vec4i' : 'vec3f';
+    appendWGSLPositionType(mesh, defines) {
+        const positionAttr = mesh.geometry.desc.positionAttribute;
+        const isFloat32 = mesh.geometry.data[positionAttr].array instanceof Float32Array;
+        defines['POSITION_TYPE_2'] = isFloat32 ? 'vec2f' : 'vec2i';
+        defines['POSITION_TYPE_3'] = isFloat32 ? 'vec3f' : 'vec4i';
     }
 }
 

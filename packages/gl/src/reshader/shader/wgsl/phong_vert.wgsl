@@ -3,7 +3,11 @@ struct VertexInput {
 #if HAS_DRACO_POSITION || HAS_COMPRESSED_INT16_POSITION
     @location($i) aPosition: vec4i,
 #else
-    @location($i) aPosition: vec3f,
+    #ifdef POSITION_IS_INT
+        @location($i) aPosition: vec4i,
+    #else
+        @location($i) aPosition: vec3f,
+    #endif
 #endif
 #ifdef HAS_MAP
     #if HAS_DRACO_TEXCOORD || HAS_COMPRESSED_INT16_TEXCOORD_0
@@ -34,7 +38,11 @@ struct VertexInput {
     @location($i) aTangent: vec4f,
 #endif
 #ifdef HAS_NORMAL
-    @location($i) aNormal: vec3f,
+    #ifdef NORMAL_IS_INT
+        @location($i) aNormal: vec4i,
+    #else
+        @location($i) aNormal: vec3f,
+    #endif
 #endif
 // 动态插入include中定义的attributes
 };
@@ -133,7 +141,7 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
     toTangentFrame(vertexInput.aTangent, Normal, t);
     vertexOutput.vTangent = vec4f(localNormalMatrix * t, vertexInput.aTangent.w);
 #else
-    Normal = decode_getNormal(vertexInput.aNormal);
+    Normal = decode_getNormal(vec3f(vertexInput.aNormal.xyz));
 #endif
     let localNormal = appendMorphNormal(Normal, vertexInput);
     vertexOutput.vNormal = normalize(localNormalMatrix * localNormal);

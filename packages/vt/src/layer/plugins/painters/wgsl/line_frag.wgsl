@@ -40,66 +40,7 @@ struct ShaderUniforms {
     @group(0) @binding($b) var linePatternFileSampler: sampler;
 #endif
 
-struct VertexOutput {
-    @location($i) vNormal: vec2f,
-    @location($i) vWidth: vec2f,
-    @location($i) vGammaScale: f32,
-#ifndef ENABLE_TILE_STENCIL
-    @location($i) vPosition: vec2f,
-#endif
-    @location($i) vVertex: vec3f,
-
-#if HAS_PATTERN || HAS_DASHARRAY || HAS_GRADIENT || HAS_TRAIL
-    @location($i) vLinesofar: f32,
-#endif
-
-#ifndef HAS_GRADIENT
-    #ifdef HAS_COLOR
-        @location($i) vColor: vec4f,
-    #endif
-
-    #ifdef HAS_PATTERN
-        #ifdef HAS_PATTERN_ANIM
-            @location($i) vLinePatternAnimSpeed: f32,
-        #endif
-
-        #ifdef HAS_PATTERN_GAP
-            @location($i) vLinePatternGap: f32,
-        #endif
-
-        @location($i) vTexInfo: vec4f,
-    #endif
-
-    #ifdef HAS_DASHARRAY
-        #ifdef HAS_DASHARRAY_ATTR
-            @location($i) vDasharray: vec4f,
-        #endif
-
-        #ifdef HAS_DASHARRAY_COLOR
-            @location($i) vDashColor: vec4f,
-        #endif
-    #endif
-#endif
-
-#ifdef HAS_STROKE_COLOR
-    @location($i) vStrokeColor: vec4f,
-#endif
-
-#ifdef HAS_OPACITY
-    @location($i) vOpacity: f32,
-#endif
-
-#ifdef HAS_GRADIENT
-    @location($i) vGradIndex: f32,
-#endif
-
-
-};
-
 #include <highlight_frag>
-#if HAS_SHADOWING && !HAS_BLOOM
-    #include <vsm_shadow_frag>
-#endif
 
 #ifdef HAS_PATTERN
 fn computeUV(texCoord: vec2f) -> vec2f {
@@ -237,7 +178,7 @@ fn main(input: VertexOutput) -> @location(0) vec4f {
 
     #if HAS_SHADOWING && !HAS_BLOOM
         let shadowCoeff = shadow_computeShadow(input);
-        fragColor.rgb = shadow_blend(fragColor.rgb, shadowCoeff);
+        fragColor = vec4(shadow_blend(fragColor.rgb, shadowCoeff), fragColor.a);
     #endif
     let cameraPosition = shaderUniforms.cameraPosition;
     let perspectiveAlpha = select(

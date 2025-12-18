@@ -131,13 +131,13 @@ export function buildWireframe(
     const ctor = PackUtil.getIndexArrayType(maxIndex);
     const tIndices = new ctor(indices);
 
-    const feaCtor = PackUtil.getUnsignedArrayType(features.length);
+    // const feaCtor = PackUtil.getUnsignedArrayType(features.length);
     const maxAltitudeValue = Math.max(Math.abs(maxAltitude, Math.abs(minAltitude)));
     const posArrayType = PackUtil.getPosArrayType(Math.max(512, maxAltitudeValue));
     const data = {
         aPosition: new posArrayType(vertices),  // vertexes
         indices: tIndices,    // indices for drawElements
-        aPickingId: new feaCtor(featIndexes),     // vertex index of each feature
+        aPickingId: new Float32Array(featIndexes),     // vertex index of each feature
         aColor: colors,
         maxAltitude: maxAltitude === -Infinity ? 0 : maxAltitude / 100,
         minAltitude: minAltitude === Infinity ? 0 : minAltitude / 100

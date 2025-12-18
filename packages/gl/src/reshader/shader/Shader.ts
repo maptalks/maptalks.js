@@ -65,7 +65,8 @@ export class GLShader {
             }
         });
         //defines besides meshes : lights, etc
-        this.shaderDefines = defines && extend({}, defines) || {};
+        // this.shaderDefines = defines && extend({}, defines) || {};
+        this.setDefines(defines && extend({}, defines) || {});
 
         uniforms = this.uniforms = (uniforms || []).slice();
         this.contextDesc = {};

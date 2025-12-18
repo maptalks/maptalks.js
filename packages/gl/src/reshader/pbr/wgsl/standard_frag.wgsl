@@ -58,8 +58,21 @@ struct SceneUniforms {
         #ifdef IS_LINE_EXTRUSION
         lineColor: vec4f,
         #else
-        polygonFill: vec4f
+        polygonFill: vec4f,
         #endif
+    #endif
+    #ifdef HAS_PATTERN
+        #ifndef HAS_PATTERN_ANIM
+            linePatternAnimSpeed: f32,
+        #endif
+        #ifndef HAS_PATTERN_GAP
+            linePatternGap: f32,
+        #endif
+        linePatternGapColor: vec4f,
+        flipY: f32,
+        animSpeedScale: f32,
+        uvScale: vec2f,
+        atlasSize: vec2f,
     #endif
 };
 
@@ -89,6 +102,10 @@ struct ShaderUniforms {
         ssrFactor: f32,
         ssrQuality: f32,
         projMatrix: mat4x4f,
+    #endif
+
+    #ifdef HAS_PATTERN
+        currentTime: f32,
     #endif
 }
 
@@ -144,52 +161,6 @@ struct ShaderUniforms {
     @group(0) @binding($b) var linePatternFile: texture_2d<f32>;
     @group(0) @binding($b) var linePatternFileSampler: sampler;
 #endif
-
-struct VertexOutput {
-
-    #ifdef HAS_SSR
-        @location($i) vViewNormal: vec3f,
-        #ifdef HAS_TANGENT
-            @location($i) vViewTangent: vec4f,
-        #endif
-    #endif
-
-    @location($i) vModelNormal: vec3f,
-    @location($i) vViewVertex: vec4f,
-
-    #if HAS_TANGENT
-        @location($i) vModelTangent: vec4f,
-        @location($i) vModelBiTangent: vec3f,
-    #endif
-
-    @location($i) vModelVertex: vec3f,
-
-    #if HAS_MAP
-        @location($i) vTexCoord: vec2f,
-        #ifdef HAS_AO_MAP
-            @location($i) vTexCoord1: vec2f,
-        #endif
-        #ifdef HAS_I3S_UVREGION
-            @location($i) vUvRegion: vec4f,
-        #endif
-    #endif
-
-    #if HAS_COLOR
-        @location($i) vColor: vec4f,
-    #endif
-
-        @location($i) vOpacity: f32,
-
-    #if HAS_COLOR0
-        @location($i) vColor0: vec4f,
-    #endif
-
-    #if HAS_BUMP_MAP && HAS_TANGENT
-        @location($i) vTangentViewPos: vec3f,
-        @location($i) vTangentFragPos: vec3f,
-    #endif
-
-};
 
 fn getMaterialAlbedo() -> vec3f {
     return materialUniforms.albedo;
@@ -376,10 +347,20 @@ fn computeSpecularAO(ao: f32, NoV: f32) -> f32 {
     return clamp((d * d) - 1.0 + ao, 0.0, 1.0);
 }
 
+#ifdef HAS_PATTERN
+    fn computeUV(input: VertexOutput, texCoord: vec2f) -> vec2f {
+        let uv = texCoord % 1.0;
+        let uvStart = vec2f(input.vTexInfo.xy);
+        let uvSize = vec2f(input.vTexInfo.zw);
+        return (uvStart + uv * uvSize) / uniforms.atlasSize;
+    }
+#endif
+
 fn initMaterial(vertexOutput: VertexOutput) -> MaterialUniforms {
     var materialUniforms: MaterialUniforms;
+    var uv: vec2f;
 #ifdef HAS_MAP
-    var uv = computeTexCoord(vertexOutput.vTexCoord, vertexOutput);
+    uv = computeTexCoord(vertexOutput.vTexCoord, vertexOutput);
 #endif
 
 #ifdef HAS_UV_FLIP
@@ -414,19 +395,20 @@ fn initMaterial(vertexOutput: VertexOutput) -> MaterialUniforms {
     let patternWidth = ceil(uvSize.x * vertexOutput.vPatternHeight / uvSize.y);
     let plusGapWidth = patternWidth * (1.0 + myGap);
     let animSpeed = myAnimSpeed / uniforms.animSpeedScale;
-    linesofar += (uniforms.currentTime * -animSpeed * 0.2) % plusGapWidth;
+    linesofar += (shaderUniforms.currentTime * -animSpeed * 0.2) % plusGapWidth;
     let patternx = (linesofar / plusGapWidth) % 1.0;
     let patterny = (uniforms.flipY * vertexOutput.vNormalY) % 1.0;
-    uv = computeUV(vec2(patternx * (1.0 + myGap) * uniforms.uvScale[0], patterny * uniforms.uvScale[1]));
-    let patternColor = textureSample(linePatternFile, linePatternFileSampler, uv);
+    let texCoord = vec2f(patternx * (1.0 + myGap) * uniforms.uvScale[0], patterny * uniforms.uvScale[1]);
+    uv = computeUV(vertexOutput, texCoord);
+    var patternColor = textureSample(linePatternFile, linePatternFileSampler, uv);
     let inGap = clamp(sign(1.0 / (1.0 + myGap) - patternx) + 0.000001, 0.0, 1.0);
-    let patternColor = mix(uniforms.linePatternGapColor, patternColor, inGap);
+    patternColor = mix(uniforms.linePatternGapColor, patternColor, inGap);
 
 #ifdef IS_SQUARE_TUBE
     // 当vNormal绝对值为1.0时，则不读取patternColor
     // vNormaly为1时，v为1，否则为0
     let v = clamp(sign(abs(vertexOutput.vNormalY) - 0.999999), 0.0, 1.0);
-    let patternColor = mix(patternColor, vec4(1.0), v);
+    patternColor = mix(patternColor, vec4(1.0), v);
 #endif
 
     materialUniforms.albedo *= patternColor.rgb;

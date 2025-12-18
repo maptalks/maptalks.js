@@ -21,8 +21,12 @@ export default class GraphicsDevice {
     _defaultFramebuffer: GraphicsFramebuffer;
     //@internal
     _readTargets: Record<number, GPUBuffer> = {};
+    //@internal
     _supportedFormats: any;
+    //@internal
     _drawCount: 0;
+    //@internal
+    _emptyPipelines: any;
 
     constructor(device: GPUDevice, context: GPUCanvasContext, adapter: GPUAdapter) {
         this.wgpu = device;
@@ -116,9 +120,20 @@ export default class GraphicsDevice {
         }
     }
 
+    preserveDrawingBuffer(canvas) {
+        canvas.width = this.context.canvas.width;
+        canvas.height = this.context.canvas.height;
+        canvas.getContext('2d').drawImage(this.context.canvas, 0, 0);
+    }
+
     // implementation of regl.buffer
     buffer(options) {
         return Geometry.createBuffer(this, options, options.name);
+    }
+
+    elements(options) {
+        const data = options.data || options;
+        return Geometry.createElementBuffer(this, data);
     }
 
     // implementation of regl.framebuffer
@@ -149,8 +164,10 @@ export default class GraphicsDevice {
 
     // implementation of regl.clear
     clear(options) {
-        const fbo = options.framebuffer || this.getDefaultFramebuffer();
+        const fbo = (options.framebuffer || this.getDefaultFramebuffer()) as GraphicsFramebuffer;
         fbo.setClearOptions(options);
+        //ensure at least one command buffer is submitted to clear canvas
+        this._renderToClear(fbo);
     }
 
 
@@ -299,6 +316,7 @@ export default class GraphicsDevice {
             }
         }
         this._readTargets = {};
+        this._emptyPipelines = {};
     }
 
     incrDrawCall() {
@@ -311,5 +329,72 @@ export default class GraphicsDevice {
 
     getDrawCalls() {
         return this._drawCount;
+    }
+
+    _renderToClear(fbo) {
+        const pass = this.getRenderPassEncoder(fbo);
+        const pipeline = this._getEmptyPipeline(fbo);
+        pass.setPipeline(pipeline);
+        pass.draw(3);
+        pass.end();
+        this.submit();
+    }
+
+    _getEmptyPipeline(fbo) {
+        const hasColorTexture = !!fbo.colorTexture;
+        const sampleCount = fbo.colorTexture && fbo.colorTexture.config.sampleCount;
+        const depthEnabled = !!fbo.depthTexture;
+
+        this._emptyPipelines = this._emptyPipelines || {};
+        const key = hasColorTexture + '-' + depthEnabled + '-' + sampleCount;
+        if (this._emptyPipelines[key]) {
+            return this._emptyPipelines[key];
+        }
+        const device = this.wgpu;
+        const module = device.createShaderModule({
+            label: 'empty shader',
+            code: /* wgsl */ `
+            @vertex fn vs(
+                @builtin(vertex_index) vertexIndex : u32
+            ) -> @builtin(position) vec4f {
+                let pos = array(
+                    vec2f( 0.0,  0.5),
+                    vec2f(-0.5, -0.5),
+                    vec2f( 0.5, -0.5)
+                );
+                return vec4f(pos[vertexIndex], 0.0, 1.0);
+            }
+            @fragment fn fs() -> @location(0) vec4f {
+                return vec4f(0, 0, 0, 0);
+            }
+            `,
+        });
+        let format;
+        if (fbo.colorTexture) {
+            format = fbo.colorTexture.gpuFormat.format;
+        } else {
+            format = navigator.gpu.getPreferredCanvasFormat();
+        }
+        const options = {
+            layout: 'auto',
+            vertex: { module },
+            fragment: {
+                module,
+                targets: [{ format }],
+            },
+        } as GPURenderPipelineDescriptor;
+        if (depthEnabled) {
+            options.depthStencil = {
+                depthWriteEnabled: false,
+                depthCompare: 'always',
+                format: 'depth24plus-stencil8',
+            };
+        }
+        if (sampleCount > 1) {
+            options.multisample = { count: sampleCount };
+        }
+        const pipeline = device.createRenderPipeline(options);
+        this._emptyPipelines[key] = pipeline;
+        return this._emptyPipelines[key];
     }
 }

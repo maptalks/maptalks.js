@@ -72,8 +72,6 @@ struct ModelUniforms {
 #ifdef IS_VT
     tileRatio: f32,
     tileScale: f32,
-#else
-    glScale: f32,
 #endif
 #endif
 };
@@ -91,7 +89,7 @@ struct Uniforms {
 #endif
 
 #ifdef HAS_PATTERN
-    fn computeUV(vertex: vec2f, patternWidth: vec2f) -> vec2f {
+    fn computeUV(input: VertexInput, vertex: vec2f, patternWidth: vec2f) -> vec2f {
         #ifdef IS_VT
             let u = vertex.x / patternWidth.x;
             let v = vertex.y / patternWidth.y;
@@ -100,15 +98,15 @@ struct Uniforms {
             let glScale = shaderUniforms.glScale;
             var mapGLScale = glScale;
             #ifdef HAS_PATTERN_WIDTH
-                let hasPatternWidth = sign(length(aPatternWidth));
+                let hasPatternWidth = sign(length(vec2f(input.aPatternWidth)));
                 mapGLScale = mix(glScale, 1.0, hasPatternWidth);
             #endif
             var origin = uniforms.uvOrigin;
             #ifdef HAS_PATTERN_ORIGIN
-                origin = aPatternOrigin;
+                origin = vec2f(input.aPatternOrigin);
             #endif
             #ifdef HAS_PATTERN_OFFSET
-                let myPatternOffset = aPatternOffset;
+                let myPatternOffset = vec2f(input.aPatternOffset);
             #else
                 let myPatternOffset = uniforms.patternOffset;
             #endif
@@ -119,7 +117,10 @@ struct Uniforms {
         #endif
     }
 
-    fn computeTexCoord(localVertex: vec4f, patternSize: vec2f) -> vec2f {
+    fn computeTexCoord(input:VertexInput, localVertex: vec4f, patternSize: vec2f) -> vec2f {
+        #ifdef HAS_PATTERN_WIDTH
+            let aPatternWidth = vec2f(input.aPatternWidth);
+        #endif
         #ifdef IS_VT
             #ifdef HAS_PATTERN_OFFSET
                 let myPatternOffset = aPatternOffset;
@@ -136,7 +137,7 @@ struct Uniforms {
                 myPatternWidth = aPatternWidth;
             #endif
             let originOffset = origin * vec2f(1.0, -1.0) / myPatternWidth;
-            return (originOffset % 1.0) + computeUV(localVertex.xy * uniforms.tileScale / uniforms.tileRatio, myPatternWidth);
+            return (originOffset % 1.0) + computeUV(input, localVertex.xy * uniforms.tileScale / uniforms.tileRatio, myPatternWidth);
         #else
             var myPatternWidth = patternSize;
             #ifdef HAS_PATTERN_WIDTH
@@ -144,7 +145,7 @@ struct Uniforms {
                 myPatternWidth = mix(patternSize, aPatternWidth, hasPatternWidth);
             #endif
             let position = uniforms.modelMatrix * localVertex;
-            return computeUV(position.xy, myPatternWidth);
+            return computeUV(input, position.xy, myPatternWidth);
         #endif
     }
 #endif
@@ -170,12 +171,12 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
         out.vTexInfo = vec4f(aTexInfo.xy, patternSize);
         #ifdef HAS_TEX_COORD
             if (vertexInput.aTexCoord.x == INVALID_TEX_COORD) {
-                out.vTexCoord = computeTexCoord(localVertex, patternSize);
+                out.vTexCoord = computeTexCoord(vertexInput, localVertex, patternSize);
             } else {
                 out.vTexCoord = vertexInput.aTexCoord;
             }
         #else
-            out.vTexCoord = computeTexCoord(localVertex, patternSize);
+            out.vTexCoord = computeTexCoord(vertexInput, localVertex, patternSize);
         #endif
 
         #ifdef HAS_UV_SCALE

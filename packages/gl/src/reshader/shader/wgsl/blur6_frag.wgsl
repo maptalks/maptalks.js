@@ -12,10 +12,6 @@ struct GaussianBlurUniforms {
 @group(0) @binding($b) var TextureBlurInput: texture_2d<f32>;
 @group(0) @binding($b) var TextureBlurInputSampler: sampler;
 
-struct VertexOutput {
-    @builtin(position) position: vec4f,
-};
-
 fn gaussianBlur(gTexCoord: vec2f) -> vec4f {
     var pixel = 0.196380615234375 * vec4f(decodeRGBM(textureSample(TextureBlurInput, TextureBlurInputSampler, gTexCoord), uniforms.rgbmRange), 1.0).rgb;
 
