@@ -561,6 +561,21 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 tiles: [tileInfo]
             };
             this._requestingMVT[url].keys[tileInfo.id] = 1;
+
+            if (this.layer._dataExtent && this.layer._getTileBBox) {
+                const tileBBOX = this.layer._getTileBBox(tileInfo);
+                const dataBBOX = this.layer._dataExtent.toBBOX();
+                const bboxIntersect = maptalks.BBOXUtil.bboxIntersect;
+                //when data extent and tile extent not Intersect,return empty
+                if (tileBBOX && dataBBOX && !bboxIntersect(tileBBOX, dataBBOX)) {
+                    const tid = setTimeout(() => {
+                        clearTimeout(tid);
+                        this._onReceiveMVTData(url, null, null);
+                    }, 8);
+                    return {};
+                }
+            }
+
             const fetchOptions = this.layer.options['fetchOptions'];
             const referrer = window && window.location.href;
             const altitudePropertyName = this.layer.options['altitudePropertyName'];
