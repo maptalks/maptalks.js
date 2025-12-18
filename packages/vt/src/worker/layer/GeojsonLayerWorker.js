@@ -72,7 +72,8 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                     cb(err);
                 }
                 if (!resp) {
-                    cb(null, { extent: null, idMap: {} });
+                    //empty data
+                    cb(null, { extent: null, idMap: new Map() });
                     return;
                 }
                 let data = resp;
@@ -172,10 +173,11 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
     _generateId(data) {
         // generate id
         const sample1000 = [];
-        const idMap = {};
+        const idMap = new Map();
         let uid = 0;
         const feaIdProp = this.options.featureIdProperty;
         function visit(f, index, length) {
+            console.log(f);
             if (!f) {
                 return;
             }
@@ -192,13 +194,18 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                 }
                 f.id = f.properties[idProp];
             }
-            idMap[f.id] = extend({}, f);
+            const feature = extend({}, f);
+            // idMap[f.id] = extend({}, f);
             if (f.geometry) {
-                idMap[f.id].geometry = extend({}, f.geometry);
-                idMap[f.id].geometry.coordinates = null;
+                feature.geometry = extend({}, f.geometry);
+                feature.geometry.coordinates = null;
+                // idMap[f.id].geometry = extend({}, f.geometry);
+                // idMap[f.id].geometry.coordinates = null;
             } else if (f.coordinates) {
-                idMap[f.id].coordinates = null;
+                feature.coordinates = null;
+                // idMap[f.id].coordinates = null;
             }
+            idMap.set(f.id, feature);
 
             insertSample(f, sample1000, index, length);
         }

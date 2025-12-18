@@ -64,13 +64,14 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     //@internal
     _dataExtent: maptalks.Extent;
     //@internal
-    _idMaps: Record<string, any>;
+    _idMaps: Map<string | number, any>;
 
     constructor(id: string, options: GeoJSONVectorTileLayerParamOptionsType) {
         // use map's spatial reference
         options = options || {};
         options.spatialReference = null;
         super(id, options as GeoJSONVectorTileLayerOptionsType);
+        this._idMaps = new Map();
         this.setData(options["data"]);
     }
 
@@ -216,7 +217,10 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     }
 
     getFeature(id: string) {
-        return this._idMaps[id];
+        if (!this._idMaps) {
+            return null;
+        }
+        return this._idMaps.get(id);
     }
 
     static fromJSON(layerJSON: LayerJSONType): GeoJSONVectorTileLayer | null {
@@ -231,7 +235,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         if (!this._idMaps) {
             return null;
         }
-        return this._idMaps[id];
+        return this._idMaps.get(id);
     }
 
     //@internal
@@ -244,7 +248,8 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
             return;
         }
         let uid = 0;
-        this._idMaps = {};
+        // this._idMaps = {};
+        this._idMaps.clear();
         const feaIdProp = this.options.featureIdProperty;
         const data = this.features;
         const features = data.features || data.data || data;
@@ -265,7 +270,8 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
                     }
                     f.id = f.properties[idProp];
                 }
-                this._idMaps[f.id] = f;
+                // this._idMaps[f.id] = f;
+                this._idMaps.set(f.id, f);
             }
         }
     }
