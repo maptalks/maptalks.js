@@ -1,6 +1,13 @@
 // var CommonSpec = require('./CommonSpec');
 
 describe('SymbolSpec', function () {
+    function parseSvgResource(resource){
+        return {
+            'content': atob(resource[0].split(',')[1]),
+            'width': resource[1],
+            'height': resource[2],
+        }
+    }
 
     var container;
     var map;
@@ -225,7 +232,6 @@ describe('SymbolSpec', function () {
     });
 
     it('marker path', function () {
-        var expected = 'data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSIgPjxkZWZzPjwvZGVmcz4gPHBhdGggIGZpbGw9IiNERTMzMzMiIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBkPSJNOCAyM2wwIDAgMCAwIDAgMCAwIDAgMCAwYy00LC01IC04LC0xMCAtOCwtMTQgMCwtNSA0LC05IDgsLTlsMCAwIDAgMGM0LDAgOCw0IDgsOSAwLDQgLTQsOSAtOCwxNHogTTUsOSBhMywzIDAsMSwwLDAsLTAuOVoiPjwvcGF0aD4gPC9zdmc+';
         var marker = new maptalks.Marker([100, 0], {
             symbol: {
                 'markerType': 'path',
@@ -241,9 +247,42 @@ describe('SymbolSpec', function () {
         });
         var res = marker._getExternalResources();
         expect(res).to.have.length(1);
-        expect(res[0][0]).to.be.eql(expected);
-        expect(res[0][1]).to.be.eql(20);
-        expect(res[0][2]).to.be.eql(30);
+        var svg = parseSvgResource(res[0])
+
+        expect(svg.content).to.be.eql('<svg version="1.1" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" ><defs></defs> <path stroke-linecap="butt" stroke-linejoin="round" fill="#DE3333" d="M8 23l0 0 0 0 0 0 0 0 0 0c-4,-5 -8,-10 -8,-14 0,-5 4,-9 8,-9l0 0 0 0c4,0 8,4 8,9 0,4 -4,9 -8,14z M5,9 a3,3 0,1,0,0,-0.9Z"></path> </svg>');
+        expect(svg.width).to.be.eql(20);
+        expect(svg.height).to.be.eql(30);
+    });
+    it('marker path property overrides', function () {
+        var marker = new maptalks.Marker(map.getCenter(), {
+            symbol: {
+                'markerType': 'path',
+                'markerPath': [
+                    {
+                        'path': 'M0 10h10v10H0z',
+                        'fill': 'green',
+                        'fill-opacity': '0.5',
+                        'stroke-linecap': 'round',
+                    },
+                    {
+                        'path': 'M0 0h10v10H0z',
+                    }
+                ],
+                'markerFill': 'red',
+                'markerFillOpacity': '0.1',
+                'markerPathWidth': 20,
+                'markerPathHeight': 20,
+                'markerWidth': 40,
+                'markerHeight': 40,
+                'markerVerticalAlignment': 'middle',
+            }
+        });
+        var res = marker._getExternalResources();
+        expect(res).to.have.length(1);
+        var svg = parseSvgResource(res[0])
+        expect(svg.width).to.be.eql(40);
+        expect(svg.height).to.be.eql(40);
+        expect(svg.content).to.be.eql('<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" preserveAspectRatio="none" ><defs></defs> <path stroke-linecap="round" stroke-linejoin="round" fill="green" fill-opacity="0.5" d="M0 10h10v10H0z"></path> <path stroke-linecap="butt" stroke-linejoin="round" fill="red" fill-opacity="0.1" d="M0 0h10v10H0z"></path> </svg>')
     });
 
     describe('symbol number properties in type of string', function () {
@@ -432,8 +471,6 @@ describe('SymbolSpec', function () {
     });
 
     it('function type markerPath', function () {
-        var expected0 = 'data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSIgPjxkZWZzPjwvZGVmcz4gPHBhdGggIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBkPSJNOCAyM2wwIDAgMCAwIDAgMCAwIDAgMCAwYy00LC01IC04LC0xMCAtOCwtMTQgMCwtNSA0LC05IDgsLTlsMCAwIDAgMGM0LDAgOCw0IDgsOSAwLDQgLTQsOSAtOCwxNHogTTUsOSBhMywzIDAsMSwwLDAsLTAuOVoiPjwvcGF0aD4gPC9zdmc+';
-        var expected1 = 'data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSIgPjxkZWZzPjwvZGVmcz4gPHBhdGggIGZpbGw9IiNERTMzMzMiIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBkPSJNOCAyM2wwIDAgMCAwIDAgMCAwIDAgMCAwYy00LC01IC04LC0xMCAtOCwtMTQgMCwtNSA0LC05IDgsLTlsMCAwIDAgMGM0LDAgOCw0IDgsOSAwLDQgLTQsOSAtOCwxNHogTTUsOSBhMywzIDAsMSwwLDAsLTAuOVoiPjwvcGF0aD4gPC9zdmc+';
         var marker = new maptalks.Marker([100, 0], {
             symbol: {
                 'markerType': 'path',
@@ -454,8 +491,16 @@ describe('SymbolSpec', function () {
         });
         var res = marker._getExternalResources();
         expect(res).to.have.length(2);
-        expect(res[0]).to.be.eql([expected0, 20, 30]);
-        expect(res[1]).to.be.eql([expected1, 20, 30]);
+        expect(parseSvgResource(res[0])).to.be.eql({
+            width: 20,
+            height: 30,
+            content: '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" ><defs></defs> <path stroke-linecap="butt" stroke-linejoin="round" d="M8 23l0 0 0 0 0 0 0 0 0 0c-4,-5 -8,-10 -8,-14 0,-5 4,-9 8,-9l0 0 0 0c4,0 8,4 8,9 0,4 -4,9 -8,14z M5,9 a3,3 0,1,0,0,-0.9Z"></path> </svg>',
+        });
+        expect(parseSvgResource(res[1])).to.be.eql({
+            width: 20,
+            height: 30,
+            content: '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" ><defs></defs> <path stroke-linecap="butt" stroke-linejoin="round" fill="#DE3333" d="M8 23l0 0 0 0 0 0 0 0 0 0c-4,-5 -8,-10 -8,-14 0,-5 4,-9 8,-9l0 0 0 0c4,0 8,4 8,9 0,4 -4,9 -8,14z M5,9 a3,3 0,1,0,0,-0.9Z"></path> </svg>',
+        });
     });
 
     it('#2588 update symbol consider layer.style when geometry symbol is null', function (done) {
