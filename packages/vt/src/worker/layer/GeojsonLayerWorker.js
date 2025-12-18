@@ -177,7 +177,6 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
         let uid = 0;
         const feaIdProp = this.options.featureIdProperty;
         function visit(f, index, length) {
-            console.log(f);
             if (!f) {
                 return;
             }
