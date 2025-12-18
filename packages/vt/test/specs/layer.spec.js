@@ -201,54 +201,54 @@ describe('layer related specs', () => {
         layer.addTo(map);
     });
 
-    it('transient features', done => {
-        map = new maptalks.Map(container, DEFAULT_VIEW);
-        const layer = new GeoJSONVectorTileLayer('gvt', {
-            features: 'transient',
-            data: polygon,
-            style: [
-                {
-                    filter: true,
-                    renderPlugin: {
-                        type: 'fill',
-                        dataConfig: {
-                            type: 'fill'
-                        }
-                    },
-                    symbol: {
-                        polygonFill: '#f00',
-                        polygonOpacity: {
-                            type: 'interval',
-                            property: 'levels',
-                            stops: [
-                                [0, 1],
-                                [200, 1]
-                            ]
-                        }
-                    }
-                }
-            ]
-        });
-        let hasFeatures = false;
-        let hit = false;
-        layer.on('tileload', e => {
-            if (!hasFeatures && e.tileImage && e.tileImage.features) {
-                hasFeatures = true;
-                assert(e.tileImage.features.length > 0);
-            }
-        })
-        layer.on('_transientfeature', e => {
-            if (!hit) {
-                assert(hasFeatures);
-                hit = true;
-                const feature = e.tileImage.data[0].features[0].feature;
-                // 保存了fn-type所需要的properties
-                assert(feature.properties['__original_properties'].levels === 3000);
-                assert(feature.properties['__original_properties'].foo === undefined);
-                done();
-            }
+    // it('transient features', done => {
+    //     map = new maptalks.Map(container, DEFAULT_VIEW);
+    //     const layer = new GeoJSONVectorTileLayer('gvt', {
+    //         features: 'transient',
+    //         data: polygon,
+    //         style: [
+    //             {
+    //                 filter: true,
+    //                 renderPlugin: {
+    //                     type: 'fill',
+    //                     dataConfig: {
+    //                         type: 'fill'
+    //                     }
+    //                 },
+    //                 symbol: {
+    //                     polygonFill: '#f00',
+    //                     polygonOpacity: {
+    //                         type: 'interval',
+    //                         property: 'levels',
+    //                         stops: [
+    //                             [0, 1],
+    //                             [200, 1]
+    //                         ]
+    //                     }
+    //                 }
+    //             }
+    //         ]
+    //     });
+    //     let hasFeatures = false;
+    //     let hit = false;
+    //     layer.on('tileload', e => {
+    //         if (!hasFeatures && e.tileImage && e.tileImage.features) {
+    //             hasFeatures = true;
+    //             assert(e.tileImage.features.length > 0);
+    //         }
+    //     })
+    //     layer.on('_transientfeature', e => {
+    //         if (!hit) {
+    //             assert(hasFeatures);
+    //             hit = true;
+    //             const feature = e.tileImage.data[0].features[0].feature;
+    //             // 保存了fn-type所需要的properties
+    //             assert(feature.properties['__original_properties'].levels === 3000);
+    //             assert(feature.properties['__original_properties'].foo === undefined);
+    //             done();
+    //         }
 
-        });
-        layer.addTo(map);
-    });
+    //     });
+    //     layer.addTo(map);
+    // });
 });

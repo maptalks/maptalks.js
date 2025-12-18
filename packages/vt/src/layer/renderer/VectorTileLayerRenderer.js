@@ -4,7 +4,7 @@ import WorkerConnection from './worker/WorkerConnection';
 import { EMPTY_VECTOR_TILE } from '../core/Constant';
 import DebugPainter from './utils/DebugPainter';
 import TileStencilRenderer from './stencil/TileStencilRenderer';
-import { extend, pushIn, getCentiMeterScale, isNil, isFunction } from '../../common/Util';
+import { extend, pushIn, getCentiMeterScale, isNil, isFunction, wrapVTFeatureGeometryInfo } from '../../common/Util';
 import { default as convertToPainterFeatures, oldPropsKey } from './utils/convert_to_painter_features';
 import { isFunctionDefinition } from '@maptalks/function-type';
 import { meterToPoint } from '../plugins/Util';
@@ -649,7 +649,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 continue;
             }
             const { info, image } = cache;
-            const features = findFeatures(image);
+            const features = findFeatures(this.layer, image);
             renderedFeatures.push({
                 tile: { id: info.id, x: info.x, y: info.y, z: info.z, url: info.url },
                 current: !!this.tilesInView[info.id],
@@ -1689,6 +1689,14 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 hits.push(picked);
             }
         });
+        hits.forEach(item => {
+            const data = item.data || {};
+            const tile = data.tile;
+            if (tile) {
+                const tileCacheItem = this.tileCache.get(tile.id) || {};
+                wrapVTFeatureGeometryInfo(this.layer.options.features, tileCacheItem.image, [data])
+            }
+        });
         return hits;
     }
 
@@ -1697,6 +1705,8 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             return;
         }
         if (tile.image && !tile.image._empty) {
+            delete tile.image.featuresTypeArray;
+            delete tile.image.featuresFullJSON;
             const styleCounter = tile.image && tile.image.style;
             const plugins = this._getStylePlugins(styleCounter);
             if (plugins) {
@@ -2404,10 +2414,11 @@ function getTileViewport(tileSize) {
     };
 }
 
-function findFeatures(image) {
+function findFeatures(layer, image) {
     if (!image.cache) {
         return [];
     }
+
     for (const p in image.cache) {
         const data = image.cache[p];
         if (!data.geometry) {
@@ -2422,6 +2433,7 @@ function findFeatures(image) {
                 if (empty !== undefined) {
                     geometry.properties.features.empty = empty;
                 }
+                wrapVTFeatureGeometryInfo(layer.options.features, image, features);
                 return features;
             }
         }

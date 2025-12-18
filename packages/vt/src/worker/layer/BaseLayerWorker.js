@@ -1,4 +1,4 @@
-import { isNil, extend, isString, isObject, isNumber, pushIn, isFnTypeSymbol } from '../../common/Util';
+import { isNil, extend, isString, isObject, isNumber, pushIn, isFnTypeSymbol, encodeJSON } from '../../common/Util';
 import { buildWireframe, build3DExtrusion } from '../builder/';
 import { createFilter } from '@maptalks/feature-filter';
 import { KEY_IDX } from '../../common/Constant';
@@ -129,6 +129,34 @@ export default class BaseLayerWorker {
             data.data.styleCounter = context.styleCounter;
             if (props) {
                 extend(data.data, props);
+            }
+
+
+            const features = data.data.features;
+            if (features) {
+                const newFeatures = {};
+                for (const index in features) {
+                    const feature = features[index];
+                    newFeatures[feature.id] = feature;
+                }
+                //完整的feature json 进行编码
+                const uint8Array = encodeJSON(newFeatures);
+                if (uint8Array) {
+                    data.data.featuresTypeArray = uint8Array;
+                    data.buffers = data.buffer || [];
+                    data.buffers.push(uint8Array.buffer);
+                }
+                const onlyId = this.options.features === 'id';
+                for (const index in features) {
+                    const featureData = features[index];
+                    if (uint8Array) {
+                        //删除geometry,已经包含在featuresTypeArray
+                        delete featureData.geometry;
+                    }
+                    if (onlyId) {
+                        features[index] = featureData.id;
+                    }
+                }
             }
             cb(null, data.data, data.buffers);
         }).catch(err => {
@@ -426,48 +454,49 @@ export default class BaseLayerWorker {
                     }
                     if (feature && (options.features || hasFnTypeProps && feaTags[i])) {
                         //reset feature's marks
-                        if (options.features === 'id') {
-                            allFeas[i] = feature.id;
-                        } else {
-                            if (!options.pickingGeometry) {
-                                delete feature.geometry;
-                            }
-                            delete feature.extent;
-                            delete feature.properties['$layer'];
-                            delete feature.properties['$type'];
-                            // _getFeaturesToMerge 中用于排序的临时字段
-                            delete feature['__index'];
-                            const originalFeature = feature.originalFeature;
-                            if (originalFeature) {
-                                const properties = feature.properties;
-                                const fea = extend({}, feature.originalFeature);
-                                // fea.properties = extend({}, feature.originalFeature.properties, properties);
-                                delete properties[oldPropsKey];
-                                fea.customProps = extend({}, properties);
+                        //always return full feature json body
+                        // if (options.features === 'id') {
+                        //     allFeas[i] = feature.id;
+                        // } else {
+                        //     if (!options.pickingGeometry) {
+                        //         delete feature.geometry;
+                        //     }
+                        delete feature.extent;
+                        delete feature.properties['$layer'];
+                        delete feature.properties['$type'];
+                        // _getFeaturesToMerge 中用于排序的临时字段
+                        delete feature['__index'];
+                        const originalFeature = feature.originalFeature;
+                        if (originalFeature) {
+                            const properties = feature.properties;
+                            const fea = extend({}, feature.originalFeature);
+                            // fea.properties = extend({}, feature.originalFeature.properties, properties);
+                            delete properties[oldPropsKey];
+                            fea.customProps = extend({}, properties);
 
-                                feature = fea;
-                            }
-                            const o = extend({}, feature);
-                            if (hasFnTypeProps && feaTags[i] && (!options.features || options.features === 'transient')) {
-                                // 只输出symbol中用到的属性
-                                const pluginIndexs = feaTags[i];
-                                for (let j = 0; j < pluginIndexs.length; j++) {
-                                    const props = fnTypeProps[j];
-                                    if (!props) {
-                                        continue;
-                                    }
-                                    props.forEach(p => {
-                                        const properties = originalFeature ? originalFeature.properties : feature.properties;
-                                        if (!properties[fntypePropsKey]) {
-                                            properties[fntypePropsKey] = new Set();
-                                        }
-                                        properties[fntypePropsKey].add(p);
-                                        needClearNoneFnTypeProps = true;
-                                    });
-                                }
-                            }
-                            allFeas[i] = o;
+                            feature = fea;
                         }
+                        const o = extend({}, feature);
+                        if (hasFnTypeProps && feaTags[i] && (!options.features || options.features === 'transient')) {
+                            // 只输出symbol中用到的属性
+                            const pluginIndexs = feaTags[i];
+                            for (let j = 0; j < pluginIndexs.length; j++) {
+                                const props = fnTypeProps[j];
+                                if (!props) {
+                                    continue;
+                                }
+                                props.forEach(p => {
+                                    const properties = originalFeature ? originalFeature.properties : feature.properties;
+                                    if (!properties[fntypePropsKey]) {
+                                        properties[fntypePropsKey] = new Set();
+                                    }
+                                    properties[fntypePropsKey].add(p);
+                                    needClearNoneFnTypeProps = true;
+                                });
+                            }
+                        }
+                        allFeas[i] = o;
+                        // }
                     }
                 }
                 if (needClearNoneFnTypeProps) {
@@ -811,30 +840,30 @@ export default class BaseLayerWorker {
 
 function getDefaultRenderPlugin(type) {
     switch (type) {
-    case 1:
-        return {
-            type: 'native-point',
-            dataConfig: {
+        case 1:
+            return {
                 type: 'native-point',
-                only2D: true
-            }
-        };
-    case 2:
-        return {
-            type: 'native-line',
-            dataConfig: {
+                dataConfig: {
+                    type: 'native-point',
+                    only2D: true
+                }
+            };
+        case 2:
+            return {
                 type: 'native-line',
-                only2D: true
-            }
-        };
-    case 3:
-        return {
-            type: 'fill',
-            dataConfig: {
+                dataConfig: {
+                    type: 'native-line',
+                    only2D: true
+                }
+            };
+        case 3:
+            return {
                 type: 'fill',
-                only2D: true
-            }
-        };
+                dataConfig: {
+                    type: 'fill',
+                    only2D: true
+                }
+            };
     }
     return null;
 }
@@ -842,20 +871,20 @@ function getDefaultRenderPlugin(type) {
 
 function getDefaultSymbol(type) {
     switch (type) {
-    case 1:
-        return {
-            markerFill: '#f00',
-            markerSize: 10
-        };
-    case 2:
-        return {
-            lineColor: '#fff'
-        };
-    case 3:
-        return {
-            polygonFill: '#00f',
-            polygonOpacity: 0.4
-        };
+        case 1:
+            return {
+                markerFill: '#f00',
+                markerSize: 10
+            };
+        case 2:
+            return {
+                lineColor: '#fff'
+            };
+        case 3:
+            return {
+                polygonFill: '#00f',
+                polygonOpacity: 0.4
+            };
     }
     return null;
 }
@@ -984,7 +1013,7 @@ function cloneFeaAndAppendCustomTags(features, zoom, pluginConfig, customProps) 
 }
 
 const proxyGetter0 = {
-    get (obj, prop) {
+    get(obj, prop) {
         return prop in obj ? obj[prop] : obj.originalFeature[prop];
     },
     has(obj, key) {
@@ -993,7 +1022,7 @@ const proxyGetter0 = {
 };
 
 const proxyGetter1 = {
-    get: function(obj, prop) {
+    get: function (obj, prop) {
         return prop in obj ? obj[prop] : obj[oldPropsKey][prop];
     },
     has(obj, key) {
