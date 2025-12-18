@@ -173,6 +173,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
     _generateId(data) {
         // generate id
         const sample1000 = [];
+        //use map for query perf
         const idMap = new Map();
         let uid = 0;
         const feaIdProp = this.options.featureIdProperty;
