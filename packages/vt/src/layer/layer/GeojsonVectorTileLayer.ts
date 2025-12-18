@@ -217,7 +217,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         return this.getId() + "," + x + "," + y + "," + z;
     }
 
-    getFeature(id: number) {
+    getFeature(id: number | string) {
         if (!this._idMaps) {
             return null;
         }
