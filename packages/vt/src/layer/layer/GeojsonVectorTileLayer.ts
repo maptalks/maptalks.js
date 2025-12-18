@@ -71,6 +71,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         options = options || {};
         options.spatialReference = null;
         super(id, options as GeoJSONVectorTileLayerOptionsType);
+        //use map for query perf
         this._idMaps = new Map();
         this.setData(options["data"]);
     }
