@@ -1267,6 +1267,12 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         if (!geometries || !geometries.length) {
             return;
         }
+        for (let i = 0; i < geometries.length; i++) {
+            const geo = geometries[i];
+            if (geo) {
+                delete geo[ID_PROP];
+            }
+        }
         this._convertGeometries(geometries);
         this.markRebuild();
         redraw(this);
@@ -1280,6 +1286,7 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             const geo = geometries[i];
             const uid = geo[ID_PROP];
             if (uid !== undefined) {
+                delete geo[ID_PROP];
                 delete this._geometries[uid];
                 this._removeFeatures(uid);
                 delete this.features[uid];
