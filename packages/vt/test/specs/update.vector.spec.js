@@ -1291,6 +1291,54 @@ describe('vector layers update style specs', () => {
         }, 500);
     });
 
+    it('marker with ID_PROP should can add to PointLayer, maptalks/issues#898', done => {
+        const marker0 = new maptalks.Marker(map.getCenter(), {
+            id: 0,
+            symbol: {
+                markerType: 'ellipse',
+                markerFill: '#0f0',
+                markerWidth: 30,
+                markerHeight: 30,
+                markerVerticalAlignment: 'middle',
+                markerOpacity: 1
+            }
+        });
+
+        const layer = new PointLayer('point', marker0);
+        const marker1 = new maptalks.Marker(map.getCenter().add(1, 1), {
+            id: 1,
+            symbol: {
+                markerType: 'ellipse',
+                markerFill: '#f00',
+                markerWidth: 30,
+                markerHeight: 30,
+                markerVerticalAlignment: 'middle',
+                markerOpacity: 1
+            }
+        });
+
+        const layer1 = new PointLayer('point1', marker1);
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                outline: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer, layer1], { sceneConfig });
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        group.addTo(map);
+        setTimeout(() => {
+            marker1.remove();
+            layer.addGeometry(marker1);
+            setTimeout(() => {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                assert.deepEqual(pixel, [0, 255, 0, 255]);
+                done();
+            }, 500);
+        }, 500);
+    });
+
     it('LineStringLayer in GroupGLLayer remove and add again to map, maptalks/issues#256', done => {
         const line = new maptalks.LineString([[-1, 0], [1, 0]]);
         const layer = new LineStringLayer('vector', line, {
