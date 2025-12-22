@@ -611,6 +611,7 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
                     if (tileImage.loadTime === undefined) {
                         // tile image's loading may not be async
                         // if empty not add to tilesLoading, it is not async
+                        //空的瓦片不加入加载队列，因为不是异步的
                         if (!(tileImage as any)._empty) {
                             this.tilesLoading[tile['id']] = {
                                 image: tileImage,
