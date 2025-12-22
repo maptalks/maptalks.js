@@ -568,11 +568,8 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 const bboxIntersect = maptalks.BBOXUtil.bboxIntersect;
                 //when data extent and tile extent not Intersect,return empty
                 if (tileBBOX && dataBBOX && !bboxIntersect(tileBBOX, dataBBOX)) {
-                    const tid = setTimeout(() => {
-                        clearTimeout(tid);
-                        this._onReceiveMVTData(url, null, null);
-                    }, 8);
-                    return {};
+                    this._onReceiveMVTData(url, null, null);
+                    return { _empty: true };
                 }
             }
 
