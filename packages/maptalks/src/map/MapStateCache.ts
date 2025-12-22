@@ -19,5 +19,6 @@ export function updateMapStateCache(map) {
         bearing: map.getBearing(),
         zoom: map.getZoom(),
         devicePixelRatio: map.getDevicePixelRatio()
+        //other states can be added later
     };
 }
