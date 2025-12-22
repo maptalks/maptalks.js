@@ -256,7 +256,8 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         this.sidePainterSymbol = extend({}, SYMBOL);
         this._defineSymbolBloom(
             this.painterSymbol,
-            StandardPainter.getBloomSymbol()
+            StandardPainter.getBloomSymbol(),
+            "enablePolygonBloom"
         );
         const layer = this.layer;
         const dataConfig = extend(
