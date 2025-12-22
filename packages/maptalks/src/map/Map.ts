@@ -295,6 +295,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     static VERSION: string;
     JSON_VERSION: '1.0';
     attributionControl?: Attribution;
+    id: number;
 
 
 
