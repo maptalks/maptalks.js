@@ -34,8 +34,9 @@ export { default as DragHandler } from './handler/Drag';
 export * from './geo/index';
 
 import { Map } from './map/index';
+import { MapStateCache } from './map/MapStateCache';
 Map.VERSION = version;
-export { Map };
+export { Map, MapStateCache };
 
 export { MapTool, DrawTool, AreaTool, DistanceTool } from './map/tool/index';
 export { default as SpatialReference, getDefaultSpatialReference } from './map/spatial-reference/SpatialReference';

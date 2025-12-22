@@ -13,6 +13,7 @@ import type { Layer } from '../../layer';
 import type Size from '../../geo/Size';
 import type { WithUndef } from '../../types/typings';
 import { getDefaultBBOX, pointsBBOX } from '../../core/util/bbox';
+import { updateMapStateCache } from './../../map/MapStateCache'
 
 const tempCollisionIndex = new CollisionIndex();
 
@@ -165,11 +166,21 @@ class MapAbstractRenderer extends MapRenderer {
         };
     }
 
+    _updateMapStateCache() {
+        const map = this.map;
+        if (!map) {
+            return this;
+        }
+        updateMapStateCache(map);
+        return this;
+    }
+
     /**
      * render layers in current frame
      * @returns return false to cease frame loop
      */
     renderFrame(framestamp: number): boolean {
+        this._updateMapStateCache();
         this._updateMapCurrentViewGLInfo();
         const map = this.map;
         if (!map || !map.options['renderable']) {
