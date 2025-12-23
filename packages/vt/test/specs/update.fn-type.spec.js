@@ -202,7 +202,7 @@ describe('update function type style specs', () => {
         });
     });
 
-    function assertChangeStyle(done, symbol, currentColor, expectedColor, changeFun, isSetStyle, endCount) {
+    function assertChangeStyle(done, symbol, currentColor, expectedColor, changeFun) {
         const style = [
             {
                 filter: {
