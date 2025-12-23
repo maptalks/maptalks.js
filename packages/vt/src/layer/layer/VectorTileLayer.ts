@@ -1665,7 +1665,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         const sr = this.getSpatialReference();
         for (let i = 0; i < picks.length; i++) {
             let pick = picks[i];
-            if (!pick || !pick.data) {
+            if (!pick || !pick.data || !pick.data.tile) {
                 continue;
             }
             const { tile } = pick.data;

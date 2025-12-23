@@ -67,7 +67,8 @@ class LineStringLayerRenderer extends Vector3DLayerRenderer {
         );
         this._defineSymbolBloom(
             this.painterSymbol,
-            LineGradientPainter.getBloomSymbol()
+            LineGradientPainter.getBloomSymbol(),
+            "enableLineBloom"
         );
         const sceneConfig = extend({}, this.layer.options.sceneConfig || {});
         if (sceneConfig.depthMask === undefined) {

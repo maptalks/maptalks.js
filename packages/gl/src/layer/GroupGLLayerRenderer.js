@@ -878,7 +878,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         if (map.options.lights) {
             const lightManager = map.getLightManager();
             const lightDirection = lightManager.getDirectionalLight().direction || DEFAULT_LIGHT_DIRECTION;
-            lightDirectionChanged = !vec3.equals(this._renderedView.lightDirection, lightDirection);
+            lightDirectionChanged = !vec3.equals(this._renderedView.lightDirection || [], lightDirection);
             if (lightDirectionChanged) {
                 this._renderedView.lightDirection = vec3.copy([], lightDirection);
             }

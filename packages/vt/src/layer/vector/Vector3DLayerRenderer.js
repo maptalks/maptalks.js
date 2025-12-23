@@ -1267,6 +1267,12 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         if (!geometries || !geometries.length) {
             return;
         }
+        for (let i = 0; i < geometries.length; i++) {
+            const geo = geometries[i];
+            if (geo) {
+                delete geo[ID_PROP];
+            }
+        }
         this._convertGeometries(geometries);
         this.markRebuild();
         redraw(this);
@@ -1280,6 +1286,7 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             const geo = geometries[i];
             const uid = geo[ID_PROP];
             if (uid !== undefined) {
+                delete geo[ID_PROP];
                 delete this._geometries[uid];
                 this._removeFeatures(uid);
                 delete this.features[uid];
@@ -1497,7 +1504,7 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         let bloomSymbols = IconPainter.getBloomSymbol();
         const markerSymbol = extend({}, MARKER_SYMBOL, TEXT_SYMBOL);
         markerSymbol.markerPerspectiveRatio = this.layer.options['markerPerspectiveRatio'] || 0;
-        this._defineSymbolBloom(markerSymbol, bloomSymbols);
+        this._defineSymbolBloom(markerSymbol, bloomSymbols, 'enableMarkerBloom');
         this._markerSymbol = markerSymbol;
         const sceneConfig = extend({}, ICON_PAINTER_SCENECONFIG, this.layer.options.sceneConfig || {});
         this._markerPainter = new IconPainter(this.regl || this.device, this.layer, markerSymbol, sceneConfig, 0);
@@ -1508,7 +1515,7 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         const LinePainter = Vector3DLayer.get3DPainterClass('line');
         const lineSymbol = extend({}, LINE_SYMBOL);
         bloomSymbols = LinePainter.getBloomSymbol();
-        this._defineSymbolBloom(lineSymbol, bloomSymbols);
+        this._defineSymbolBloom(lineSymbol, bloomSymbols, 'enableLineBloom');
         this._lineSymbol = lineSymbol;
         const lineSceneConfig = extend({}, this.layer.options.sceneConfig || {});
         if (lineSceneConfig.depthMask === undefined) {
@@ -1531,19 +1538,35 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         return this.layer.getGeometries();
     }
 
-    _defineSymbolBloom(symbol, keys) {
+    _defineSymbolBloom(symbol, keys, name) {
+        let bloom = this.layer.options['enableBloom'];
+        if (!bloom && name) {
+            bloom = this.layer.options[name];
+        }
         for (let i = 0; i < keys.length; i++) {
-            symbol[keys[i]] = this.layer.options['enableBloom'];
+            symbol[keys[i]] = bloom;
         }
     }
 
     updateBloom(enableBloom) {
+        this.updateMarkerBloom(enableBloom);
+        this.updateLineBloom(enableBloom);
+        this.updatePolygonBloom(enableBloom);
+    }
+
+    updateMarkerBloom(enableBloom) {
         if (this._markerPainter) {
             this._updatePainterBloom(this._markerPainter, this._markerSymbol, enableBloom);
         }
+    }
+
+    updateLineBloom(enableBloom) {
         if (this._linePainter) {
             this._updatePainterBloom(this._linePainter, this._lineSymbol, enableBloom);
         }
+    }
+
+    updatePolygonBloom(enableBloom) {
         if (this.painter) {
             this._updatePainterBloom(this.painter, this.painterSymbol, enableBloom);
         }
