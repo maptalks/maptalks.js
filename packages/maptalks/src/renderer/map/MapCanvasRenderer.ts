@@ -32,6 +32,7 @@ class MapCanvasRenderer extends MapAbstractRenderer {
      * @returns return false to cease frame loop
      */
     renderFrame(framestamp: number): boolean {
+        this._updateMapStateCache();
         this._updateMapCurrentViewGLInfo();
         const map = this.map;
         if (!map || !map.options['renderable']) {

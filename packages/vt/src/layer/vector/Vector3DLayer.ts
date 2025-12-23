@@ -17,6 +17,9 @@ const defaultOptions = {
     forceRenderOnRotating: true,
     meshRenderOrder: 0,
     enableBloom: false,
+    enablePolygonBloom: false,
+    enableLineBloom: false,
+    enableMarkerBloom: false,
     enableAltitude: true,
     workarounds: {
         //#94, text rendering crashes on windows with intel gpu
@@ -69,12 +72,26 @@ class Vector3DLayer extends maptalks.OverlayLayer {
 
     onConfig(conf: unknown) {
         super.onConfig(conf);
-        if (conf["enableBloom"] !== undefined) {
-            const renderer: Record<string, any> = this.getRenderer();
-            if (renderer) {
-                renderer.updateBloom(conf["enableBloom"]);
+        const renderer: Record<string, any> = this.getRenderer();
+        if (renderer) {
+            if (conf['enableMarkerBloom'] !== undefined) {
+                const bloom = conf["enableMarkerBloom"];
+                renderer.updateMarkerBloom(bloom);
+            }
+            if (conf['enableLineBloom'] !== undefined) {
+                const bloom = conf["enableLineBloom"];
+                renderer.updateLineBloom(bloom);
+            }
+            if (conf['enablePolygonBloom'] !== undefined) {
+                const bloom = conf["enablePolygonBloom"];
+                renderer.updatePolygonBloom(bloom);
+            }
+            if (conf["enableBloom"] !== undefined) {
+                const bloom = conf["enableBloom"];
+                renderer.updateBloom(bloom);
             }
         }
+
     }
 
     // constructor(...args) {

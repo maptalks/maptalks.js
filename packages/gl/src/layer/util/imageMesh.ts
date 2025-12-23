@@ -21,7 +21,13 @@ export function createImageMesh(geometry, image, extent2d, offset, scale, unifor
         mag: 'nearest',
         mipmap: true,
         premultiplyAlpha: true
-    };
+    } as any;
+    if (!image || image.width === 0 || image.height === 0) {
+        image = new Uint8Array([0, 0, 0, 0]);
+        config.width = 1;
+        config.height = 1;
+        config.data = image;
+    }
     let texture = this.getTexture();
     if (!texture) {
         texture = new reshader.Texture2D(config);

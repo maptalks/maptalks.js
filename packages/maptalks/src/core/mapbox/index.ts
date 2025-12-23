@@ -1,6 +1,7 @@
 import { loadFunctionTypes, isFunctionDefinition, getFunctionTypeResources, interpolated, hasFunctionDefinition } from '@maptalks/function-type';
 import { compileStyle, isFeatureFilter, createFilter, getFilterFeature } from '@maptalks/feature-filter';
 import { extend } from '../util/common';
+import { MapStateCache } from './../../map/MapStateCache';
 
 /**
  * @classdesc
@@ -18,9 +19,20 @@ const arr = [],
 export function loadGeoSymbol(symbol, geo): any {
     return loadFunctionTypes(symbol, () => {
         const map = geo.getMap();
-        const bearing = map && map.getBearing() || 0;
-        const pitch = map && map.getPitch();
-        const zoom = map ? map.getZoom() : 10;
+        let bearing = 0, pitch = 0, zoom = 10, hasMap = !!map;
+        if (map) {
+            const mapId = map.id;
+            if (MapStateCache[mapId]) {
+                const cache = MapStateCache[mapId];
+                bearing = cache.bearing;
+                pitch = cache.pitch;
+                zoom = cache.zoom;
+            } else {
+                bearing = map.getBearing();
+                pitch = map.getPitch();
+                zoom = map.getZoom();
+            }
+        }
         let changed = false;
         geo._funTypeProperties = geo._funTypeProperties || {};
         //geo update properties,reset
@@ -37,7 +49,7 @@ export function loadGeoSymbol(symbol, geo): any {
         if (changed) {
             mergeProperties = extend(mergeProperties || {}, geo.getProperties(), setProp(prop, bearing, pitch, zoom));
         }
-        return set(arr, map ? map.getZoom() : 12, mergeProperties);
+        return set(arr, hasMap ? zoom : 12, mergeProperties);
     });
 }
 

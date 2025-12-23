@@ -62,7 +62,7 @@ describe('vector 3d integration specs', () => {
             container.style.width = (style.containerWidth || 128) + 'px';
             container.style.height = (style.containerHeight || 128) + 'px';
             options.devicePixelRatio = 1;
-            const enableBloom = style.options && style.options.enableBloom;
+            const enableBloom = style.options && (style.options.enableBloom || style.options.enableLineBloom || style.options.enableMarkerBloom || style.options.enablePolygonBloom);
             map = new maptalks.Map(container, options);
             layer = new Layer('vector', style.data, style.options);
             let timeoutHandle;
@@ -115,7 +115,7 @@ describe('vector 3d integration specs', () => {
 
                 }
             });
-            if (style.options && style.options.enableBloom) {
+            if (enableBloom) {
                 const sceneConfig = {
                     postProcess: {
                         enable: true,
