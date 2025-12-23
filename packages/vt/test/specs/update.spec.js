@@ -227,24 +227,20 @@ describe('update style specs', () => {
             }
         };
         const group = new GroupGLLayer('group', [layer], { sceneConfig });
-        let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        let first = 3;
-        map.on('renderend', () => {
-            count++;
-            if (count === first) {
-                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
-                //开始是红色
-                assert.deepEqual(pixel, [255, 0, 0, 255]);
-                layer.setId('newId');
-                group.removeLayer('newId');
-            } else if (count === first + 1) {
+        setTimeout(() => {
+            const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+            //开始是红色
+            assert.deepEqual(pixel, [255, 0, 0, 255]);
+            layer.setId('newId');
+            group.removeLayer('newId');
+            setTimeout(() => {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 assert(pixel[0] === 0);
                 done();
-            }
-        });
+            }, 200);
+        }, 500);
         group.addTo(map);
     });
 

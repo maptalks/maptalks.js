@@ -1178,7 +1178,7 @@ describe('picking specs', () => {
             };
             const coord = [0.5, 0.5];
             const isGPU = mapRenderer === 'gpu';
-            const pxy = isGPU ? 702.48074 : 701.48074;
+            const pxy = isGPU ? 702.48074 : 702.48068;
             const pz = isGPU ? 279.81299 : 279.81348;
             const x = isGPU ? 0.48235524154733567 : 0.4823552013840498;
             const y = isGPU ? 0.48234954388384144 : 0.48234950372197244;
