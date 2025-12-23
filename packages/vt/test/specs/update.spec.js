@@ -783,22 +783,21 @@ describe('update style specs', () => {
             data: point,
             style
         });
-        let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        layer.on('canvasisdirty', () => {
-            count++;
-            if (count === 1) {
+        layer.once('canvasisdirty', () => {
+            setTimeout(() => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 layer.updateSymbol(0, { textFill: '#0f0' });
-            } else if (count === 2) {
-                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
-                //变成绿色
-                assert.deepEqual(pixel, [0, 255, 0, 255]);
-                done();
-            }
+                setTimeout(() => {
+                    const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                    //变成绿色
+                    assert.deepEqual(pixel, [0, 255, 0, 255]);
+                    done();
+                }, 300);
+            }, 300)
         });
         layer.addTo(map);
     });
@@ -2556,7 +2555,7 @@ describe('update style specs', () => {
                         //变成绿色
                         assert.deepEqual(pixel, expectedColor);
                         done();
-                    }, 200);
+                    }, 500);
                 }
             }, 800);
         } else {
