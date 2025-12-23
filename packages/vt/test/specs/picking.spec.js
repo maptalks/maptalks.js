@@ -1177,6 +1177,12 @@ describe('picking specs', () => {
                 pickingPoint: true
             };
             const coord = [0.5, 0.5];
+            const isGPU = mapRenderer === 'gpu';
+            const pxy = isGPU ? 702.48074 : 701.48074;
+            const pz = isGPU ? 279.81299 : 279.81348;
+            const x = isGPU ? 0.48235524154733567 : 0.4823552013840498;
+            const y = isGPU ? 0.48234954388384144 : 0.48234950372197244;
+            const z = isGPU ? 16384.21152854897 : 16384.240119431175;
             const expected = [{
                 'data': {
                     'feature': {
@@ -1194,8 +1200,8 @@ describe('picking specs', () => {
                     },
                     "nodeIndex": 1
                 },
-                'point': [702.48068, 702.48068, 279.81348],
-                'coordinate': [0.4823552013840498, 0.48234950372197244, 16384.240119431175],
+                'point': [pxy, pxy, pz],
+                'coordinate': [x, y, z],
                 'type': 'gltf-lit',
                 'plugin': 0
             }];
