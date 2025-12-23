@@ -16,6 +16,7 @@ import Painter from './Painter';
 import type { ProjectionType } from '../../geo/projection';
 import Coordinate from '../../geo/Coordinate';
 import { WithNull } from '../../types/typings';
+import { MapStateCache } from '../../map/MapStateCache';
 
 const TEMP_WITHIN = {
     within: false,
@@ -110,8 +111,11 @@ const el = {
         }
         const map = this.getMap();
         const altitude = this._getAltitude();
-        // when map is tilting, draw the circle/ellipse as a polygon by vertexes.
-        return altitude > 0 || map.getPitch() || ((this instanceof Ellipse) && map.getBearing());
+        const cache = MapStateCache[map.id];
+        const pitch = cache ? cache.pitch : map.getPitch();
+        const bearing = cache ? cache.bearing : map.getBearing();
+        // when map is tilting, draw the ;circle/ellipse as a polygon by vertexes.
+        return altitude > 0 || pitch || ((this instanceof Ellipse) && bearing);
     },
 
     //@internal
@@ -213,7 +217,9 @@ const sectorInclude = {
             // @ts-expect-error
             return Canvas.polygon(...args);
         } else {
-            const r = this.getMap().getBearing();
+            const map = this.getMap();
+            const cache = MapStateCache[map.id];
+            const r = cache ? cache.bearing : map.getBearing();
             if (r) {
                 args[3] = args[3].slice(0);
                 args[3][0] += r;

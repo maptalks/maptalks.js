@@ -13,6 +13,7 @@ import * as Symbolizers from '../../renderer/geometry/symbolizers';
 import { GeometryEditOptionsType, GeometryEditSymbolType } from '../ext/Geometry.Edit';
 import { getDefaultBBOX, pointsBBOX } from '../../core/util/bbox';
 import Extent from '../../geo/Extent';
+import { MapStateCache } from '../../map/MapStateCache';
 
 const EDIT_STAGE_LAYER_PREFIX = INTERNAL_LAYER_PREFIX + '_edit_stage_';
 const SHADOW_DRAG_EVENTS = 'dragend dragstart';
@@ -39,9 +40,9 @@ function createHandleSymbol(markerType: string, opacity: number): GeometryEditSy
 
 /**
  * coordinate to containerPoint with altitude
- * @param map 
- * @param coordinate 
- * @returns 
+ * @param map
+ * @param coordinate
+ * @returns
  */
 function coordinatesToContainerPoint(map, coordinate) {
     const glRes = map.getGLRes();
@@ -519,13 +520,18 @@ class GeometryEditor extends Eventable(Class) {
     _createHandleInstance(containerPoint: Point, opts: GeometryEditOptionsType): EditHandle {
         opts = opts || {};
         const map = this.getMap();
+
         const symbol = loadFunctionTypes(opts['symbol'], (): any => {
+            const cache = MapStateCache[map.id];
+            const zoom = cache ? cache.zoom : map.getZoom();
+            const pitch = cache ? cache.pitch : map.getPitch();
+            const bearing = cache ? cache.bearing : map.getBearing();
             return [
-                map.getZoom(),
+                zoom,
                 {
-                    '{bearing}': map.getBearing(),
-                    '{pitch}': map.getPitch(),
-                    '{zoom}': map.getZoom()
+                    '{bearing}': bearing,
+                    '{pitch}': pitch,
+                    '{zoom}': zoom
                 }
             ];
         });

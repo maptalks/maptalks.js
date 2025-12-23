@@ -414,7 +414,9 @@ class MeshPainter extends Painter {
                 define: 'HAS_COLOR',
                 //
                 evaluate: (properties, geometry) => {
-                    let color = fillFn(map.getZoom(), properties);
+                    const cache = maptalks.MapStateCache[map.id];
+                    const zoom = cache ? cache.zoom : map.getZoom();
+                    let color = fillFn(zoom, properties);
                     if (isFunctionDefinition(color)) {
                         color = this.evaluateInFnTypeConfig(color, geometry, map, properties, true);
                     }
@@ -431,7 +433,9 @@ class MeshPainter extends Painter {
                 width: 1,
                 symbolName: opacityName,
                 evaluate: (properties, geometry) => {
-                    let polygonOpacity = opacityFn(map.getZoom(), properties);
+                    const cache = maptalks.MapStateCache[map.id];
+                    const zoom = cache ? cache.zoom : map.getZoom();
+                    let polygonOpacity = opacityFn(zoom, properties);
                     if (isFunctionDefinition(polygonOpacity)) {
                         polygonOpacity = this.evaluateInFnTypeConfig(polygonOpacity, geometry, map, properties, false);
                     }
@@ -449,7 +453,9 @@ class MeshPainter extends Painter {
                 symbolName: 'lineWidth',
                 define: 'HAS_LINE_WIDTH',
                 evaluate: properties => {
-                    const lineWidth = aLineWidthFn(map.getZoom(), properties);
+                    const cache = maptalks.MapStateCache[map.id];
+                    const zoom = cache ? cache.zoom : map.getZoom();
+                    const lineWidth = aLineWidthFn(zoom, properties);
                     //乘以2是为了解决 #190
                     u16[0] = Math.round(lineWidth * 2.0);
                     return u16[0];

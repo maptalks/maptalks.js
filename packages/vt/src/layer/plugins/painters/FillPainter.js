@@ -170,7 +170,7 @@ class FillPainter extends BasicPainter {
                     if (!texWidth && !texHeight) {
                         return DEFAULT_UNIFORMS['patternWidth'];
                     }
-                    const [ width, height ] = this._computePatternWidth(ARR_0, texWidth, texHeight, isVectorTile ? tileRatio : 1, tileCoord, tileRes);
+                    const [width, height] = this._computePatternWidth(ARR_0, texWidth, texHeight, isVectorTile ? tileRatio : 1, tileCoord, tileRes);
                     return vec2.set(patternWidthUniform, width, height);
                 }
             });
@@ -319,7 +319,7 @@ class FillPainter extends BasicPainter {
                         origin = COORD2.set(patternOrigin[0], patternOrigin[1]);
                     }
                 }
-                const [ scaleX, scaleY ] = this._computePatternWidth(ARR_0, width, height, tileRatio, origin, tileRes);
+                const [scaleX, scaleY] = this._computePatternWidth(ARR_0, width, height, tileRatio, origin, tileRes);
                 currentScaleX = aPatternWidth[i * 2] = scaleX;
                 currentScaleY = aPatternWidth[i * 2 + 1] = scaleY;
             } else {
@@ -428,6 +428,7 @@ class FillPainter extends BasicPainter {
         const u8 = new Uint8Array(1);
         const u16 = new Uint16Array(2);
         const offsetU8 = new Uint8Array(2);
+
         return [
             {
                 //geometry.data 中的属性数据
@@ -439,7 +440,9 @@ class FillPainter extends BasicPainter {
                 define: 'HAS_COLOR',
                 //
                 evaluate: (properties, geometry) => {
-                    let color = polygonFillFn(map.getZoom(), properties);
+                    const cache = maptalks.MapStateCache[map.id];
+                    const zoom = cache ? cache.zoom : map.getZoom();
+                    let color = polygonFillFn(zoom, properties);
                     if (isFunctionDefinition(color)) {
                         color = this.evaluateInFnTypeConfig(color, geometry, map, properties, true);
                     }
@@ -457,7 +460,9 @@ class FillPainter extends BasicPainter {
                 width: 1,
                 define: 'HAS_OPACITY',
                 evaluate: (properties, geometry) => {
-                    let opacity = polygonOpacityFn(map.getZoom(), properties);
+                    const cache = maptalks.MapStateCache[map.id];
+                    const zoom = cache ? cache.zoom : map.getZoom();
+                    let opacity = polygonOpacityFn(zoom, properties);
                     if (isFunctionDefinition(opacity)) {
                         opacity = this.evaluateInFnTypeConfig(opacity, geometry, map, properties);
                     }
@@ -473,7 +478,9 @@ class FillPainter extends BasicPainter {
                 width: 2,
                 define: 'HAS_UV_SCALE',
                 evaluate: properties => {
-                    const scale = uvScaleFn(map.getZoom(), properties);
+                    const cache = maptalks.MapStateCache[map.id];
+                    const zoom = cache ? cache.zoom : map.getZoom();
+                    const scale = uvScaleFn(zoom, properties);
                     u16[0] = scale[0] * 255;
                     u16[1] = scale[1] * 255;
                     return u16;
@@ -486,7 +493,9 @@ class FillPainter extends BasicPainter {
                 width: 2,
                 define: 'HAS_UV_OFFSET',
                 evaluate: properties => {
-                    const offset = uvOffsetFn(map.getZoom(), properties);
+                    const cache = maptalks.MapStateCache[map.id];
+                    const zoom = cache ? cache.zoom : map.getZoom();
+                    const offset = uvOffsetFn(zoom, properties);
                     offsetU8[0] = offset[0] * 255;
                     offsetU8[1] = offset[1] * 255;
                     return offsetU8;

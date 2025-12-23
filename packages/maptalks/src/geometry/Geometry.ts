@@ -34,6 +34,7 @@ import type { Map } from '../map';
 import { WithNull } from '../types/typings';
 import { InfoWindowOptionsType } from '../ui/InfoWindow';
 import { getMinMaxAltitude } from '../core/util/path';
+import { MapStateCache } from '../map/MapStateCache';
 
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_EXTENT = new PointExtent();
@@ -697,7 +698,9 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         map._prjToPointAtRes(min, glRes, min);
         map._prjToPointAtRes(max, glRes, max);
         this._extent2d = new PointExtent(min, max);
-        (this._extent2d as any).z = map.getZoom();
+        const cache = MapStateCache[map.id];
+        const zoom = cache ? cache.zoom : map.getZoom();
+        (this._extent2d as any).z = zoom;
         return this._extent2d;
     }
 

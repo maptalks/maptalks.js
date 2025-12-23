@@ -3,6 +3,7 @@ import BasicPainter from './BasicPainter';
 import { interpolated } from '@maptalks/function-type';
 import { prepareFnTypeData } from './util/fn_type_util';
 import { setUniformFromSymbol } from '../Util';
+import { MapStateCache } from 'maptalks';
 
 export default class HeatmapPainter extends BasicPainter {
     createFnTypeConfig(map, symbolDef) {
@@ -16,7 +17,9 @@ export default class HeatmapPainter extends BasicPainter {
                 width: 1,
                 define: 'HAS_HEAT_WEIGHT',
                 evaluate: properties => {
-                    const x = heatWeightFn(map.getZoom(), properties);
+                    const cache = MapStateCache[map.id];
+                    const zoom = cache ? cache.zoom : map.getZoom();
+                    const x = heatWeightFn(zoom, properties);
                     i16[0] = x * 255;
                     return i16[0];
                 }

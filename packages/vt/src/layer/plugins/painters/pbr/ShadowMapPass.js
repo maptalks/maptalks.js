@@ -1,5 +1,6 @@
 import { reshader, mat4, vec3 } from '@maptalks/gl';
 import { isNil } from '../../Util';
+import { MapStateCache } from 'maptalks';
 
 
 const COORD_THRESHOLD = 100;
@@ -33,7 +34,7 @@ class VSMShadowPass {
             fn: function (context, props) {
                 const lightProjViews = props['vsm_shadow_lightProjViewMatrix'];
                 const model = props['modelMatrix'];
-                return  mat4.multiply([], lightProjViews, model);
+                return mat4.multiply([], lightProjViews, model);
             }
         });
         uniforms.push('vsm_shadow_shadowMap', 'vsm_shadow_opacity', 'vsm_shadow_threshold');
@@ -75,10 +76,14 @@ class VSMShadowPass {
                 ids[m.properties.meshKey] = 1;
                 return ids;
             }, {});
+            const cache = MapStateCache[map.id];
+            const pitch = cache ? cache.pitch : map.getPitch();
+            const bearing = cache ? cache.bearing : map.getBearing();
+            const center = cache ? cache.center : map.getCenter();
             this._renderedView = {
-                center: map.getCenter(),
-                bearing: map.getBearing(),
-                pitch: map.getPitch()
+                center,
+                bearing,
+                pitch
             };
         } else {
             matrix = this._lightProjViewMatrix;
@@ -133,9 +138,12 @@ class VSMShadowPass {
         }
         const map = layer.getMap();
         const cp = map.coordToContainerPoint(this._renderedView.center);
+        const cache = MapStateCache[map.id];
+        const pitch = cache ? cache.pitch : map.getPitch();
+        const bearing = cache ? cache.bearing : map.getBearing();
         changed = (cp._sub(map.width / 2, map.height / 2).mag() > COORD_THRESHOLD) ||
-            Math.abs(this._renderedView.bearing - map.getBearing()) > 30 ||
-            Math.abs(this._renderedView.pitch - map.getPitch()) > 15;
+            Math.abs(this._renderedView.bearing - bearing) > 30 ||
+            Math.abs(this._renderedView.pitch - pitch) > 15;
         return changed;
     }
 }

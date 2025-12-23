@@ -14,6 +14,7 @@ import Extent from '../../geo/Extent';
 import type { WithUndef } from '../../types/typings';
 import { Geometries } from '../../geometry'
 import { ResourceCache } from '../../core/ResourceCacheManager';
+import { MapStateCache } from '../../map/MapStateCache';
 
 //registered symbolizers
 //the latter will paint at the last
@@ -230,9 +231,10 @@ class Painter extends Class {
             glScale = mapStateCache.glScale;
             containerExtent = mapStateCache.containerExtent;
         } else {
+            const cache = MapStateCache[map.id];
             resolution = map.getResolution();
-            pitch = map.getPitch();
-            bearing = map.getBearing();
+            pitch = cache ? cache.pitch : map.getPitch();
+            bearing = cache ? cache.bearing : map.getBearing();
             glScale = map.getGLScale();
             containerExtent = map.getContainerExtent();
         }
@@ -537,7 +539,8 @@ class Painter extends Class {
             //@internal
             _2DExtent = map.get2DExtent();
             glExtent = map.get2DExtentAtRes(map.getGLRes());
-            pitch = map.getPitch();
+            const cache = MapStateCache[map.id];
+            pitch = cache ? cache.pitch : map.getPitch();
         }
         let extent2D = _2DExtent._expand(lineWidth);
         if (pitch > 0 && altitude) {
@@ -844,7 +847,8 @@ class Painter extends Class {
         this._verifyProjection();
         const map = this.getMap();
         resources = resources || this.getLayer()._getRenderer().resources;
-        const zoom = map.getZoom();
+        const cache = MapStateCache[map.id];
+        const zoom = cache ? cache.zoom : map.getZoom();
         const isDynamicSize = this._isDynamicSize();
         if (!this._extent2D || this._extent2D._zoom !== zoom || !this._fixedExtent) {
             if (this._extent2D && this._extent2D._zoom !== zoom) {
@@ -924,7 +928,8 @@ class Painter extends Class {
 
     getFixedExtent() {
         const map = this.getMap();
-        const zoom = map.getZoom();
+        const cache = MapStateCache[map.id];
+        const zoom = cache ? cache.zoom : map.getZoom();
         if (this._isDynamicSize()) {
             return this._computeFixedExtent(null, new PointExtent());
         }

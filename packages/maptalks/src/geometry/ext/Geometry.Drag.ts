@@ -9,6 +9,7 @@ import { ConnectorLine } from '../ConnectorLine';
 import Point from '../../geo/Point';
 import Coordinate from '../../geo/Coordinate';
 import { getResouceCacheInstance } from '../../core/ResourceCacheManager';
+import { MapStateCache } from '../../map/MapStateCache';
 
 const DRAG_STAGE_LAYER_ID = INTERNAL_LAYER_PREFIX + '_drag_stage';
 
@@ -424,7 +425,9 @@ class GeometryDragHandler extends Handler {
     //@internal
     _correctCoord(coord: any): any {
         const map = this.target.getMap();
-        if (!map.getPitch()) {
+        const cache = MapStateCache[map.id];
+        const pitch = cache ? cache.pitch : map.getPitch();
+        if (!pitch) {
             return coord;
         }
         const target = this.target;

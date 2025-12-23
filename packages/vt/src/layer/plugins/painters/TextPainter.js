@@ -22,6 +22,7 @@ import { GLYPH_SIZE } from './Constant';
 import { getCentiMeterScale } from '../../../common/Util';
 import { INVALID_PROJECTED_ANCHOR, INVALID_ALTITUDE } from '../../../common/Constant';
 import { getVectorPacker } from '../../../packer/inject';
+import { MapStateCache } from 'maptalks';
 
 const { TextUtil, PackUtil, FilterUtil, TEXT_MAX_ANGLE } = getVectorPacker();
 
@@ -343,7 +344,9 @@ export default class TextPainter extends CollisionPainter {
         }
 
         const map = this.getMap();
-        const bearing = -map.getBearing() * Math.PI / 180;
+        const cache = MapStateCache[map.id];
+
+        const bearing = -(cache ? cache.bearing : map.getBearing()) * Math.PI / 180;
         const planeMatrix = mat2.fromRotation(PLANE_MATRIX, bearing);
         //boxVisible, mesh, meshBoxes, mvpMatrix, boxIndex
         const fn = (visElemts, meshBoxes, mvpMatrix, labelIndex) => {
@@ -459,8 +462,9 @@ export default class TextPainter extends CollisionPainter {
         if (!line) {
             return;
         }
-        const pitch = map.getPitch();
-        const bearing = map.getBearing();
+        const cache = MapStateCache[map.id];
+        const pitch = cache ? cache.pitch : map.getPitch();
+        const bearing = cache ? cache.bearing : map.getBearing();
         const { lineTextPitch: linePitch, lineTextBearing: lineBearing } = mesh.properties;
 
         // this._counter++;
@@ -657,7 +661,8 @@ export default class TextPainter extends CollisionPainter {
         } else {
             elevatedAnchor = projLabelAnchor;
         }
-        const dpr = map.getDevicePixelRatio();
+        const cache = MapStateCache[map.id];
+        const dpr = cache ? cache.devicePixelRatio : map.getdevicePixelRatio();
         vec4.scale(BOX, elevatedAnchor, 1 / dpr);
         if (map.isOffscreen(BOX)) {
             if (!enableCollision) {
@@ -1034,17 +1039,21 @@ export default class TextPainter extends CollisionPainter {
         //     0.0, pitchSin, pitchCos
         // ];
         const zScale = getCentiMeterScale(map.getResolution(), map);
+        const cache = MapStateCache[map.id];
+        const pitch = cache ? cache.pitch : map.getPitch();
+        const bearing = cache ? cache.bearing : map.getBearing();
+        const resolution = cache ? cache.resolution : map.getResolution()
         return {
             layerScale: this.layer.options['styleScale'] || 1,
-            mapPitch: map.getPitch() * Math.PI / 180,
-            mapRotation: map.getBearing() * Math.PI / 180,
+            mapPitch: pitch * Math.PI / 180,
+            mapRotation: bearing * Math.PI / 180,
             projViewMatrix,
             viewMatrix: map.viewMatrix,
             cameraToCenterDistance, canvasSize,
             glyphSize: GLYPH_SIZE,
             // gammaScale : 0.64,
             gammaScale: GAMMA_SCALE * (this.layer.options['textGamma'] || 1),
-            resolution: map.getResolution(),
+            resolution,
             altitudeScale: zScale,
             viewport: isRenderingTerrainSkin && context && context.viewport,
             // 过滤 pitchAlignment 为特定值的text，0时不过滤; 1时，过滤掉viewport; 2时，过滤掉map
