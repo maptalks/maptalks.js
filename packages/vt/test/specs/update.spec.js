@@ -2542,24 +2542,43 @@ describe('update style specs', () => {
             dirty = true;
         });
         //因为是setStyle时，数据会被清空重绘，所以需要监听两次canvasisdirty
-        const eventName = isSetStyle ? 'canvasisdirty' : 'layerload'
-        layer.on(eventName, () => {
-            if (!dirty) {
-                return;
-            }
-            count++;
-            if (count === renderCount + 1) {
+        const eventName = isSetStyle ? 'canvasisdirty' : 'layerload';
+        const isGPU = mapRenderer === 'gpu';
+        if (isGPU) {
+            setTimeout(() => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 changeFun(layer);
-            } else if (!isListenToRefreshStyle && count === renderCount + doneRenderCount) {
-                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
-                //变成绿色
-                assert.deepEqual(pixel, expectedColor);
-                done();
-            }
-        });
+                if (!isListenToRefreshStyle) {
+                    setTimeout(() => {
+                        const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                        //变成绿色
+                        assert.deepEqual(pixel, expectedColor);
+                        done();
+                    }, 200);
+                }
+            }, 800);
+        } else {
+            layer.on(eventName, () => {
+                if (!dirty) {
+                    return;
+                }
+                count++;
+                if (count === renderCount + 1) {
+                    const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                    //开始是红色
+                    assert.deepEqual(pixel, [255, 0, 0, 255]);
+                    changeFun(layer);
+                } else if (!isListenToRefreshStyle && count === renderCount + doneRenderCount) {
+                    const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                    //变成绿色
+                    assert.deepEqual(pixel, expectedColor);
+                    done();
+                }
+            });
+        }
+
         if (isListenToRefreshStyle) {
             layer.once('refreshstyle', () => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
