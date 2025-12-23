@@ -25,12 +25,12 @@ export default class Analysis extends Eventable(Handlerable(Class)) {
 
     _setAnalysisPass() {
         const renderer = this.layer.getRenderer();
-        if (renderer) {
-            this.regl = renderer.device;
+        if (renderer && renderer.device) {
+            this.device = renderer.device;
             this._setPass(renderer);
         } else {
             this.layer.once('renderercreate', e => {
-                this.regl = e.renderer.device;
+                this.device = e.renderer.device;
                 this._setPass(e.renderer);
             }, this);
         }
@@ -163,7 +163,7 @@ export default class Analysis extends Eventable(Handlerable(Class)) {
         map.setBearing(prebearing);
         this._extentMeshes = this._createBoundaryMesh(boundary, center);
         if (!this._extentPass) {
-            const extentRenderer = new reshader.Renderer(this.regl);
+            const extentRenderer = new reshader.Renderer(this.device);
             this._extentPass = new ExtentPass(extentRenderer, this._viewport);
         }
         const extentMap = this._extentPass.render(this._extentMeshes, this._pvMatrix);
