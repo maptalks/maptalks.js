@@ -29,9 +29,9 @@ export default class Analysis extends Eventable(Handlerable(Class)) {
             this.device = renderer.device;
             this._setPass(renderer);
         } else {
-            this.layer.once('renderercreate', e => {
-                this.device = e.renderer.device;
-                this._setPass(e.renderer);
+            this.layer.once('contextinit', e => {
+                this.device = e.context.device;
+                this._setPass(e.target.getRenderer());
             }, this);
         }
     }

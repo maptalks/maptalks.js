@@ -474,6 +474,7 @@ class LayerAbstractRenderer extends Class {
                 this.device = device;
             }
             this.initContext();
+            this.layer.fire('contextinit', { 'context': this.context });
         } else if (isMapCanvasRenderer) {
             this.clearContext();
             this.resizeCanvas();
