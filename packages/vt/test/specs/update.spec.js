@@ -1,6 +1,6 @@
 const path = require('path');
 const assert = require('assert');
-const { readPixel, compareExpected } = require('../common/Util');
+const { readPixel } = require('../common/Util');
 const maptalks = require('maptalks');
 const { GeoJSONVectorTileLayer, PolygonLayer } = require('../../dist/maptalks.vt.gpu.js');
 const { GroupGLLayer } = require('@maptalks/gpu');
