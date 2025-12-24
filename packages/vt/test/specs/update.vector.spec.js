@@ -2752,25 +2752,43 @@ describe('vector layers update style specs', () => {
         layer.once('canvasisdirty', () => {
             dirty = true;
         });
-        let endCount = 3;
-        //因为是setStyle时，数据会被清空重绘，所以需要监听两次canvasisdirty
-        layer.on(isSetStyle ? 'canvasisdirty' : 'layerload', () => {
-            if (!dirty) {
-                return;
-            }
-            count++;
-            if (count === 1) {
+        const isGPU = mapRenderer === 'gpu';
+        if (isGPU) {
+            setTimeout(() => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, firstColor || [255, 0, 0, 255]);
-                endCount = changeFun(layer) || 3;
-            } else if (count === endCount) {
-                const pixel = readPixel(layer.getRenderer().canvas, x / 2 + offset[0], y / 2 + offset[1]);
-                //变成绿色
-                assert.deepEqual(pixel, expectedColor);
-                done();
-            }
-        });
+                changeFun(layer);
+                setTimeout(() => {
+                    const pixel = readPixel(layer.getRenderer().canvas, x / 2 + offset[0], y / 2 + offset[1]);
+                    //变成绿色
+                    assert.deepEqual(pixel, expectedColor);
+                    done();
+                }, 500);
+
+            }, 800);
+        } else {
+
+            let endCount = 3;
+            //因为是setStyle时，数据会被清空重绘，所以需要监听两次canvasisdirty
+            layer.on(isSetStyle ? 'canvasisdirty' : 'layerload', () => {
+                if (!dirty) {
+                    return;
+                }
+                count++;
+                if (count === 1) {
+                    const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                    //开始是红色
+                    assert.deepEqual(pixel, firstColor || [255, 0, 0, 255]);
+                    endCount = changeFun(layer) || 3;
+                } else if (count === endCount) {
+                    const pixel = readPixel(layer.getRenderer().canvas, x / 2 + offset[0], y / 2 + offset[1]);
+                    //变成绿色
+                    assert.deepEqual(pixel, expectedColor);
+                    done();
+                }
+            });
+        }
         layer.addTo(map);
     }
 });
