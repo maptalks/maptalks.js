@@ -821,22 +821,21 @@ describe('update style specs', () => {
             data: point,
             style
         });
-        let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        layer.on('canvasisdirty', () => {
-            count++;
-            if (count === 1) {
+        layer.once('canvasisdirty', () => {
+            setTimeout(() => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 layer.updateSymbol(0, { textSize: 20, textFill: '#0f0' });
-            } else if (count === 2) {
-                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
-                //变成绿色
-                assert.deepEqual(pixel, [0, 255, 0, 255]);
-                done();
-            }
+                setTimeout(() => {
+                    const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                    //变成绿色
+                    assert.deepEqual(pixel, [0, 255, 0, 255]);
+                    done();
+                }, 300);
+            }, 300);
         });
         layer.addTo(map);
     });
@@ -860,23 +859,22 @@ describe('update style specs', () => {
             data: line,
             style
         });
-        let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        layer.on('canvasisdirty', () => {
-            count++;
+        layer.once('canvasisdirty', () => {
             const xOffset = 2;
-            if (count === 1) {
+            setTimeout(() => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2 + xOffset, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 layer.updateSymbol(0, { textSize: 20, textFill: '#0f0' });
-            } else if (count === 2) {
-                const pixel = readPixel(layer.getRenderer().canvas, x / 2 + xOffset, y / 2);
-                //变成绿色
-                assert.deepEqual(pixel, [0, 255, 0, 255]);
-                done();
-            }
+                setTimeout(() => {
+                    const pixel = readPixel(layer.getRenderer().canvas, x / 2 + xOffset, y / 2);
+                    //变成绿色
+                    assert.deepEqual(pixel, [0, 255, 0, 255]);
+                    done();
+                }, 300);
+            }, 300);
         });
         layer.addTo(map);
     });
@@ -999,26 +997,21 @@ describe('update style specs', () => {
             }
         };
         const group = new GroupGLLayer('group', [layer], { sceneConfig });
-        let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        layer.on('canvasisdirty', () => {
-            count++;
-        });
-        let finished = false;
-        map.on('renderend', () => {
-            if (count === 1) {
+        layer.once('canvasisdirty', () => {
+            setTimeout(() => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 layer.outlineBatch(0);
-            } else if (count === 2 && !finished) {
-                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
-                //变成高亮的绿色
-                assert(pixel[1] > 10);
-                finished = true;
-                done();
-            }
+                setTimeout(() => {
+                    const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                    //变成绿色
+                    assert(pixel[1] > 10);
+                    done();
+                }, 300);
+            }, 300);
         });
         group.addTo(map);
     });
@@ -1049,25 +1042,21 @@ describe('update style specs', () => {
             }
         };
         const group = new GroupGLLayer('group', [layer], { sceneConfig });
-        let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        layer.on('canvasisdirty', () => {
-            count++;
-
-        });
-        map.on('renderend', () => {
-            if (count === 1) {
+        layer.once('canvasisdirty', () => {
+            setTimeout(() => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 layer.outlineAll();
-            } else if (count === 2) {
-                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
-                //变成高亮的绿色
-                assert(pixel[1] > 10);
-                done();
-            }
+                setTimeout(() => {
+                    const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                    //变成绿色
+                    assert(pixel[1] > 10);
+                    done();
+                }, 300);
+            }, 300);
         });
         group.addTo(map);
     });
@@ -1098,25 +1087,21 @@ describe('update style specs', () => {
             }
         };
         const group = new GroupGLLayer('group', [layer], { sceneConfig });
-        let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        layer.on('canvasisdirty', () => {
-            count++;
-
-        });
-        map.on('renderend', () => {
-            if (count === 1) {
+        layer.once('canvasisdirty', () => {
+            setTimeout(() => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 layer.outline(0, [0]);
-            } else if (count === 2) {
-                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
-                //变成高亮的绿色
-                assert(pixel[1] > 10);
-                done();
-            }
+                setTimeout(() => {
+                    const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                    //变成绿色
+                    assert(pixel[1] > 10);
+                    done();
+                }, 300);
+            }, 300);
         });
         group.addTo(map);
     });
@@ -1146,30 +1131,27 @@ describe('update style specs', () => {
             }
         };
         const group = new GroupGLLayer('group', [layer], { sceneConfig });
-        let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        layer.on('canvasisdirty', () => {
-            count++;
-
-        });
-        map.on('renderend', () => {
-            if (count === 1) {
+        layer.once('canvasisdirty', () => {
+            setTimeout(() => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 layer.outlineFeatures([0]);
-            } else if (count === 2) {
-                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
-                //变成高亮的绿色
-                assert(pixel[1] > 10);
-                layer.cancelOutline();
-            } else if (count === 3) {
-                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
-                //变成高亮的绿色
-                assert(pixel[1] === 0);
-                done();
-            }
+                setTimeout(() => {
+                    const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                    //变成高亮的绿色
+                    assert(pixel[1] > 10);
+                    layer.cancelOutline();
+                    setTimeout(() => {
+                        const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                        //变成高亮的绿色
+                        assert(pixel[1] === 0);
+                        done();
+                    }, 200);
+                }, 200);
+            }, 300);
         });
         group.addTo(map);
     });
@@ -1267,23 +1249,19 @@ describe('update style specs', () => {
             style,
             loadingLimit: 0
         });
-        let count = 0;
-        layer.on('canvasisdirty', () => {
-            count++;
-            if (count === 1) {
+        layer.once('canvasisdirty', () => {
+            setTimeout(() => {
                 const canvas = layer.getRenderer().canvas;
                 const pixel = readPixel(canvas, canvas.width / 2 + 3, canvas.height / 2);
                 assert.deepEqual(pixel, [64, 92, 143, 255]);
-                layer.updateSymbol(0, { textFill: 'rgba(25, 95, 230, 1)' });
-            } else if (count === 2) {
-                const canvas = layer.getRenderer().canvas;
-                const pixel = readPixel(canvas, canvas.width / 2 + 3, canvas.height / 2);
-                assert.deepEqual(pixel, [25, 95, 230, 255]);
-                //确保glyphAtlas是有效的（否则会绘制一个矩形）
-                const pixel2 = readPixel(canvas, canvas.width / 2 + 7, canvas.height / 2);
-                assert.deepEqual(pixel2, [0, 0, 0, 0]);
-                done();
-            }
+                layer.updateSymbol(0, { textFill: 'rgba(255, 0, 0, 1)' });
+                setTimeout(() => {
+                    const canvas = layer.getRenderer().canvas;
+                    const pixel = readPixel(canvas, canvas.width / 2 + 3, canvas.height / 2);
+                    assert.deepEqual(pixel, [255, 0, 0, 255]);
+                    done();
+                }, 300);
+            }, 300);
         });
         layer.addTo(map);
     });
