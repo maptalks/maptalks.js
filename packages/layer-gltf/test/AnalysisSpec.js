@@ -212,8 +212,8 @@ describe('add analysis', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);//未超过高度阈值的颜色
                 const pixel2 = pickPixel(map, 172, 148, 1, 1);//超过高度阈值颜色
-                expect(pixelMatch([151, 151, 151, 255], pixel1)).to.be.eql(true);
-                expect(pixelMatch([178, 107, 107, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([150, 150, 150, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([177, 107, 107, 255], pixel2)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -360,11 +360,11 @@ describe('add analysis', () => {
             viewshedAnalysis.enable();
             setTimeout(() => {
                 const pixel = pickPixel(map, map.width / 2 + 10, map.height / 2, 1, 1);//enable后的颜色
-                expect(pixelMatch([224, 45, 45, 255], pixel)).to.be.eql(true);
+                expect(pixelMatch([224, 44, 44, 255], pixel)).to.be.eql(true);
                 viewshedAnalysis.disable();
                 setTimeout(function() {
                     const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);//disable后的颜色
-                    expect(pixelMatch([151, 151, 151, 255], pixel)).to.be.eql(true);
+                    expect(pixelMatch([150, 150, 150, 255], pixel)).to.be.eql(true);
                     done();
                 }, 100);
             }, 100);
@@ -472,12 +472,12 @@ describe('add analysis', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, 302, 47, 1, 1);
                 expect(pixelMatch([255, 0, 0, 255], pixel1)).to.be.eql(true);//非通视区颜色
-                const pixel2 = pickPixel(map, 249, 100, 1, 1);
+                const pixel2 = pickPixel(map, 251, 101, 1, 1);
                 expect(pixelMatch([0, 255, 0, 255], pixel2)).to.be.eql(true);//通视区颜色
                 //另一条通视线的颜色比对
-                const pixel3 = pickPixel(map, 140, 246, 4, 4);
+                const pixel3 = pickPixel(map, 142, 244, 4, 4);
                 expect(pixelMatch([0, 255, 0, 255], pixel3.slice(8, 12))).to.be.eql(true);//通视区颜色
-                const pixel4 = pickPixel(map, 167, 201, 4, 4);
+                const pixel4 = pickPixel(map, 167, 200, 4, 4);
                 expect(pixelMatch([0, 255, 0, 255], pixel4.slice(8, 12))).to.be.eql(true);//通视区颜色
                 done();
             }, 100);

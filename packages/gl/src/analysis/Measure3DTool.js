@@ -126,6 +126,10 @@ export default class Measure3DTool extends maptalks.DrawTool {
         this._first = true;
         this._drawCoordinates[this._drawCoordinates.length - 1] = coordinate;
         this._drawVertexMarker();
+        const tempGeometry = this.getTempGeometry();
+        if (tempGeometry) {
+            tempGeometry.hide();
+        }
     }
 
     _msOnMouseMove(e) {
