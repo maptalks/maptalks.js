@@ -3,15 +3,15 @@ const canvas = document.createElement('canvas');
 const ctx = canvas.getContext('2d', { willReadFrequently: true });
 const assert = require('assert');
 
-function readPixel(target, x, y) {
+function readPixel(target, x, y, width = 1, height = 1) {
     if (target.readbackCanvas) {
         target = target.readbackCanvas;
     }
     canvas.width = target.width;
     canvas.height = target.height;
     ctx.drawImage(target, 0, 0);
-    const pixel = ctx.getImageData(x, y, 1, 1).data;
-    return [pixel[0], pixel[1], pixel[2], pixel[3]];
+    const pixel = ctx.getImageData(x, y, width, height).data;
+    return Array.from(pixel);
 }
 
 function readCanvasPixels(target) {

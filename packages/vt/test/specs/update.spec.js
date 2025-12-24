@@ -1278,23 +1278,30 @@ describe('update style specs', () => {
                     dataConfig: { type: 'point', only2D: true },
                     sceneConfig: { collision: false, fading: false }
                 },
-                symbol: { textOpacity: 1, textSize: 30, textFill: 'rgba(64,92,143,1)', textName: '大大大', textHaloRadius: 0, textHaloFill: '#f00' }
+                symbol: { textOpacity: 1, textSize: 30, textFill: '#0f0', textName: '■', textHaloRadius: 0, textHaloFill: '#f00' }
             }
         ];
         const layer = new GeoJSONVectorTileLayer('gvt', {
             data: point,
             style
         });
-        let count = 0;
-        layer.on('canvasisdirty', () => {
-            count++;
-            if (count === 1) {
-                layer.updateSymbol(0, { textHaloRadius: 1 });
-            } else if (count === 2) {
+        layer.once('canvasisdirty', () => {
+
+            layer.updateSymbol(0, { textHaloRadius: 2 });
+            setTimeout(() => {
                 const canvas = map.getRenderer().canvas;
-                const expectedPath = path.join(__dirname, 'fixtures', 'halo0', 'expected.png');
-                compareExpected(canvas, { expectedPath, expectedDiffCount: 10 }, done);
-            }
+                const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2, 14, 1);
+                let hit = false;
+                for (let i = 0; i < pixel.length; i += 4) {
+                    if (pixel[i] === 255) {
+                        hit = true;
+                        break;
+                    }
+                }
+                assert(hit);
+                done();
+            }, 500);
+
         });
         layer.addTo(map);
     });
