@@ -4,6 +4,7 @@ import { isGradient as checkGradient } from '../../../core/util/style';
 import Coordinate from '../../../geo/Coordinate';
 import PointExtent from '../../../geo/PointExtent';
 import { Geometry } from '../../../geometry';
+import { MapStateCache } from '../../../map/MapStateCache';
 import Painter from '../Painter';
 import CanvasSymbolizer from './CanvasSymbolizer';
 import { ColorIn } from 'colorin';
@@ -76,7 +77,9 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
             style['polygonGradientExtent'] = this.geometry.getContainerExtent();
             const map = this.getMap();
             if (map) {
-                style['polygonGradientExtent'].bearing = map.getBearing();
+                const cache = MapStateCache[map.id];
+                const bearing = cache ? cache.bearing : map.getBearing();
+                style['polygonGradientExtent'].bearing = bearing;
             }
         }
         // const lineWidth = style['lineWidth'] || 1;

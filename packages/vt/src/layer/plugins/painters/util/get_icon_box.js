@@ -4,6 +4,7 @@ import { getPitchPosition, getPosition, getShapeMatrix } from './box_util';
 import { getDefaultMarkerSize } from './atlas_util';
 import { isNil, clamp } from '../../Util';
 import { DEFAULT_MARKER_WIDTH, DEFAULT_MARKER_HEIGHT, ICON_SIZE } from '../Constant';
+import { MapStateCache } from 'maptalks';
 
 //temparary variables
 const ANCHOR = [], PROJ_ANCHOR = [];
@@ -16,6 +17,7 @@ const SIZE_SCALE = [1, 1];
 
 export function getIconBox(out, mesh, i, matrix, map) {
 
+    const cache = MapStateCache[map.id];
     const uniforms = mesh.material.uniforms;
     const cameraToCenterDistance = map.cameraToCenterDistance;
     const geoProps = mesh.geometry.properties;
@@ -66,7 +68,7 @@ export function getIconBox(out, mesh, i, matrix, map) {
         vec2.multiply(br, br, AXIS_FACTOR);
     }
 
-    const [ defaultMarkerWidth, defaultMarkerHeight ] = getDefaultMarkerSize(mesh.geometry);
+    const [defaultMarkerWidth, defaultMarkerHeight] = getDefaultMarkerSize(mesh.geometry);
     let markerWidth = (aMarkerWidth ? aMarkerWidth[i] : symbol['markerWidth']);
     if (isNil(markerWidth)) {
         markerWidth = defaultMarkerWidth || DEFAULT_MARKER_WIDTH;
@@ -96,7 +98,7 @@ export function getIconBox(out, mesh, i, matrix, map) {
     //   3.1 如果没有pitchWithMap，值是 shapeMatrix * shape
     //   3.2 如果pitchWithMap， 值是aAnchor和shape相加后，projectPoint后的计算结果
     //4. 将最终计算结果与dxdy相加
-    const mapRotation = map.getBearing() * Math.PI / 180;
+    const mapRotation = (cache ? cache.bearing : map.geBearing()) * Math.PI / 180;
     if (mapRotation * rotateWithMap || rotation) {
         const shapeMatrix = getShapeMatrix(MAT2, rotation, mapRotation, rotateWithMap, pitchWithMap);
 
@@ -116,7 +118,7 @@ export function getIconBox(out, mesh, i, matrix, map) {
         getPosition(out, projAnchor, tl, tr, bl, br, dxdy, perspectiveRatio);
     }
 
-    const dpr = this.getMap().getDevicePixelRatio();
+    const dpr = cache ? cache.devicePixelRatio : map.getDevicePixelRatio();
     if (dpr !== 1) {
         out[0] *= dpr;
         out[1] *= dpr;

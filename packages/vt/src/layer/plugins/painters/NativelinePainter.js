@@ -7,6 +7,7 @@ import wgslVert from './wgsl/native-line_vert.wgsl';
 import wgslFrag from './wgsl/native-line_frag.wgsl';
 import pickingVert from './glsl/native-line.vert';
 import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
+import { MapStateCache } from 'maptalks';
 
 const IDENTITY_ARR = mat4.identity([]);
 
@@ -17,7 +18,11 @@ class NativeLinePainter extends BasicPainter {
         if (isFunctionDefinition(this.symbolDef['lineColor'])) {
             const map = layer.getMap();
             const fn = piecewiseConstant(this.symbolDef['lineColor']);
-            this.colorSymbol = properties => fn(map.getZoom(), properties);
+            this.colorSymbol = properties => {
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                return fn(zoom, properties)
+            }
         }
     }
 

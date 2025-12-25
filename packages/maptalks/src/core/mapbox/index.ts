@@ -22,8 +22,8 @@ export function loadGeoSymbol(symbol, geo): any {
         let bearing = 0, pitch = 0, zoom = 10, hasMap = !!map;
         if (map) {
             const mapId = map.id;
-            if (MapStateCache[mapId]) {
-                const cache = MapStateCache[mapId];
+            const cache = MapStateCache[mapId];
+            if (cache) {
                 bearing = cache.bearing;
                 pitch = cache.pitch;
                 zoom = cache.zoom;

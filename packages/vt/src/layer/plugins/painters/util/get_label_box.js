@@ -4,6 +4,7 @@ import { getPitchPosition, getPosition, getShapeMatrix } from './box_util';
 import { GLYPH_SIZE } from '../Constant';
 import { getCentiMeterScale } from '../../../../common/Util';
 import { getVectorPacker } from '../../../../packer/inject';
+import { MapStateCache } from 'maptalks';
 
 const { PackUtil } = getVectorPacker();
 
@@ -23,6 +24,7 @@ export function getLabelBox(out, anchor, projAnchor, mesh, textSize, textHaloRad
     const geoProps = mesh.geometry.properties;
     const symbol = this.getSymbol(geoProps.symbolIndex);
     const isAlongLine = symbol['textPlacement'] === 'line' && !isIconText(symbol);
+    const cache = MapStateCache[map.id];
 
     const glyphSize = GLYPH_SIZE;
 
@@ -95,7 +97,7 @@ export function getLabelBox(out, anchor, projAnchor, mesh, textSize, textHaloRad
         } else {
             textRotation = (symbol['textRotation'] || 0) * Math.PI / 180;
         }
-        const mapRotation = !isAlongLine ? map.getBearing() * Math.PI / 180 : 0;
+        const mapRotation = !isAlongLine ? (cache ? cache.bearing : map.getBearing()) * Math.PI / 180 : 0;
         if (textRotation || mapRotation) {
             const shapeMatrix = getShapeMatrix(MAT2, textRotation, mapRotation, rotateWidthMap, pitchWithMap);
             tl = vec2.transformMat2(tl, tl, shapeMatrix);
@@ -138,17 +140,17 @@ export function getLabelBox(out, anchor, projAnchor, mesh, textSize, textHaloRad
         //除以10是因为赋值时, aOffset有精度修正
         if (is3DPitchText) {
             tl = vec3.set(V2_0, aOffset[i * 3] / 10, aOffset[i * 3 + 1] / 10, aOffset[i * 3 + 2] / 10),
-            tr = vec3.set(V2_1, aOffset[i * 3 + 3] / 10, aOffset[i * 3 + 4] / 10, aOffset[i * 3 + 5] / 10),
-            bl = vec3.set(V2_2, aOffset[i * 3 + 6] / 10, aOffset[i * 3 + 7] / 10, aOffset[i * 3 + 8] / 10),
-            br = vec3.set(V2_3, aOffset[i * 3 + 9] / 10, aOffset[i * 3 + 10] / 10, aOffset[i * 3 + 11] / 10);
+                tr = vec3.set(V2_1, aOffset[i * 3 + 3] / 10, aOffset[i * 3 + 4] / 10, aOffset[i * 3 + 5] / 10),
+                bl = vec3.set(V2_2, aOffset[i * 3 + 6] / 10, aOffset[i * 3 + 7] / 10, aOffset[i * 3 + 8] / 10),
+                br = vec3.set(V2_3, aOffset[i * 3 + 9] / 10, aOffset[i * 3 + 10] / 10, aOffset[i * 3 + 11] / 10);
         } else {
             tl = vec2.set(V2_0, aOffset[i * 2] / 10, aOffset[i * 2 + 1] / 10),
-            tr = vec2.set(V2_1, aOffset[i * 2 + 2] / 10, aOffset[i * 2 + 3] / 10),
-            bl = vec2.set(V2_2, aOffset[i * 2 + 4] / 10, aOffset[i * 2 + 5] / 10),
-            br = vec2.set(V2_3, aOffset[i * 2 + 6] / 10, aOffset[i * 2 + 7] / 10);
+                tr = vec2.set(V2_1, aOffset[i * 2 + 2] / 10, aOffset[i * 2 + 3] / 10),
+                bl = vec2.set(V2_2, aOffset[i * 2 + 4] / 10, aOffset[i * 2 + 5] / 10),
+                br = vec2.set(V2_3, aOffset[i * 2 + 6] / 10, aOffset[i * 2 + 7] / 10);
         }
         if (pitchWithMap === 1) {
-            const altitudeScale = getCentiMeterScale(map.getResolution(), map);
+            const altitudeScale = getCentiMeterScale(cache ? cache.resolution : map.getResolution(), map);
             getPitchPosition(out, anchor, tl, tr, bl, br, matrix, dxdy, uniforms, map, cameraDistance, perspectiveRatio, is3DPitchText, altitudeScale);
         } else {
             vec2.multiply(tl, tl, AXIS_FACTOR);
@@ -164,7 +166,7 @@ export function getLabelBox(out, anchor, projAnchor, mesh, textSize, textHaloRad
     out[2] += textHaloRadius + TEXT_BOX_MARGIN;
     out[3] += textHaloRadius + TEXT_BOX_MARGIN;
 
-    const dpr = this.getMap().getDevicePixelRatio();
+    const dpr = cache ? cache.devicePixelRatio : map.getDevicePixelRatio();
     if (dpr !== 1) {
         out[0] *= dpr;
         out[1] *= dpr;

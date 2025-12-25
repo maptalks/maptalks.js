@@ -9,6 +9,7 @@ import pickingVert from './glsl/native-point.vert';
 import { setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar } from '../Util';
 import { isFunctionDefinition, piecewiseConstant } from '@maptalks/function-type';
 import { prepareFnTypeData } from './util/fn_type_util';
+import { MapStateCache } from 'maptalks';
 
 const DEFAULT_UNIFORMS = {
     markerFill: [0, 0, 0],
@@ -78,11 +79,11 @@ class NativePointPainter extends BasicPainter {
             const { aPosition, aAltitude, aColor } = geometry.data;
             const position = new Int16Array([
                 -1, -1,
-                 1, -1,
-                -1,  1,
-                -1,  1,
-                 1, -1,
-                 1,  1
+                1, -1,
+                -1, 1,
+                -1, 1,
+                1, -1,
+                1, 1
             ]);
             const geo = new reshader.Geometry({
                 aPosition: position
@@ -121,7 +122,9 @@ class NativePointPainter extends BasicPainter {
                 width: 4,
                 define: 'HAS_COLOR',
                 evaluate: (properties, geometry) => {
-                    let color = aColorFn(map.getZoom(), properties);
+                    const cache = MapStateCache[map.id];
+                    const zoom = cache ? cache.zoom : map.getZoom();
+                    let color = aColorFn(zoom, properties);
                     if (isFunctionDefinition(color)) {
                         color = this.evaluateInFnTypeConfig(color, geometry, map, properties, true);
                     }

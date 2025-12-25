@@ -5,6 +5,7 @@ import WMSTileLayer from '../../../layer/tile/WMSTileLayer';
 import CanvasRenderer from '../CanvasRenderer';
 import Point from '../../../geo/Point';
 import TileLayerRenderable, { RenderContext, Tile } from './TileLayerRendererable';
+import { MapStateCache } from '../../../map/MapStateCache';
 
 const TILE_POINT = new Point(0, 0);
 const TEMP_POINT = new Point(0, 0);
@@ -178,10 +179,11 @@ export default class TileLayerCanvasRenderer extends TileLayerRenderable(CanvasR
         const point = TILE_POINT.set(extent2d.xmin - offset[0], extent2d.ymax - offset[1]),
             tileZoom = tileInfo.z,
             tileId = tileInfo.id;
-        const zoom = map.getZoom(),
+        const cache = MapStateCache[map.id];
+        const zoom = cache ? cache.zoom : map.getZoom(),
             ctx = this.context,
             cp = map._pointAtResToContainerPoint(point, tileInfo.res, 0, TEMP_POINT),
-            bearing = map.getBearing(),
+            bearing = cache ? cache.bearing : map.getBearing(),
             transformed = bearing || zoom !== tileZoom;
         const opacity = this.getTileOpacity(tileImage, tileInfo);
         const alpha = ctx.globalAlpha;

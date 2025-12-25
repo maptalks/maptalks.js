@@ -714,8 +714,11 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
     }
 
     _getPackOptions(atlas, center) {
+        const map = this.getMap();
+        const cache = maptalks.MapStateCache[map.id];
+        const zoom = cache ? cache.zoom : map.getZoom();
         const options = {
-            zoom: this.getMap().getZoom(),
+            zoom,
             EXTENT: Infinity,
             atlas,
             center,
@@ -744,9 +747,12 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
     updateMesh() { }
 
     _updateMarkerMesh(marker) {
+        const map = this.getMap();
+        const cache = maptalks.MapStateCache[map.id];
+        const zoom = cache ? cache.zoom : map.getZoom();
         const symbols = marker['_getInternalSymbol']();
         const options = {
-            zoom: this.getMap().getZoom(),
+            zoom,
             isVector3D: true,
             defaultMarkerVerticalAlignment: 'top'
         };
@@ -761,7 +767,6 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         const params = [];
         const markerFeatures = [];
         const textFeatures = [];
-        const zoom = this.getMap().getZoom();
         let loadedSymbols;
         if (Array.isArray(symbols)) {
             loadedSymbols = symbols.map(symbol => {
@@ -868,7 +873,10 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             return false;
         }
         const symbols = target['_getInternalSymbol']();
-        const options = { zoom: this.getMap().getZoom() };
+        const map = this.getMap();
+        const cache = maptalks.MapStateCache[map.id];
+        const zoom = cache ? cache.zoom : map.getZoom();
+        const options = { zoom };
         const uid = target[ID_PROP];
         let feature = this.features[uid];
         if (!Array.isArray(feature)) {

@@ -4,6 +4,7 @@ import Coordinate from '../geo/Coordinate';
 import Extent from '../geo/Extent';
 import Point from '../geo/Point';
 import { CommonProjectionType } from '../geo/projection';
+import { MapStateCache } from '../map/MapStateCache';
 import CenterMixin from './CenterMixin';
 import Polygon, { PolygonOptionsType, RingCoordinates, RingsCoordinates } from './Polygon';
 
@@ -122,7 +123,9 @@ export class Circle extends CenterMixin(Polygon) {
     //@internal
     _containsPoint(point: Point, tolerance?: number): boolean {
         const map = this.getMap();
-        if (map.getPitch()) {
+        const cache = MapStateCache[map.id];
+        const pitch = cache ? cache.pitch : map.getPitch();
+        if (pitch) {
             return super._containsPoint(point, tolerance);
         }
         const center = map._pointToContainerPoint(this._getCenter2DPoint()),

@@ -139,7 +139,7 @@ class IconPainter extends CollisionPainter {
 
     }
 
-        _prepareRequiredProps(geometry) {
+    _prepareRequiredProps(geometry) {
         const { aCount, aShape } = geometry.data;
         geometry.properties.aCount = aCount;
         delete geometry.data.aCount;
@@ -293,7 +293,7 @@ class IconPainter extends CollisionPainter {
             let id = 0;
             let currentCount = aCount[0];
             for (let i = 0; i < collideIds.length;) {
-                const next =  i + currentCount * BOX_VERTEX_COUNT;
+                const next = i + currentCount * BOX_VERTEX_COUNT;
                 collideIds.fill(id++, i, next);
                 i += currentCount * BOX_VERTEX_COUNT;
                 if (next < collideIds.length) {
@@ -325,7 +325,9 @@ class IconPainter extends CollisionPainter {
                 updateMarkerFitSize.call(this, this.getMap(), geometry);
             }
         }
-        const z = this.getMap().getZoom();
+        const map = this.getMap();
+        const cache = maptalks.MapStateCache[map.id];
+        const z = cache ? cache.zoom : map.getZoom();
         for (let i = 0; i < meshes.length; i++) {
             if (!this.isMeshIterable(meshes[i])) {
                 continue;
@@ -801,15 +803,19 @@ class IconPainter extends CollisionPainter {
         }
         const blendFunc = this.getBlendFunc();
         const blendSrc = maptalks.Util.isFunction(blendFunc.src) ? blendFunc.src() : blendFunc.src;
+        const cache = maptalks.MapStateCache[map.id];
+        const pitch = cache ? cache.pitch : map.getPitch();
+        const bearing = cache ? cache.bearing : map.getBearing();
+        const resolution = cache ? cache.resolution : map.getResolution()
         return {
             layerScale: this.layer.options['styleScale'] || 1,
-            mapPitch: map.getPitch() * Math.PI / 180,
-            mapRotation: map.getBearing() * Math.PI / 180,
+            mapPitch: pitch * Math.PI / 180,
+            mapRotation: bearing * Math.PI / 180,
             projViewMatrix,
             cameraToCenterDistance,
             canvasSize,
             iconSize: ICON_SIZE_ARR,
-            resolution: map.getResolution(),
+            resolution,
 
             //text uniforms
             glyphSize: GLYPH_SIZE,

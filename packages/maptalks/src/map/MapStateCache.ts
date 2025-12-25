@@ -3,6 +3,8 @@ type MapStateCacheValue = {
     bearing: number,
     zoom: number,
     devicePixelRatio: number;
+    resolution: number;
+    center: any;
     //other states can be added later
 }
 export const MapStateCache: Record<number, MapStateCacheValue> = {
@@ -18,7 +20,9 @@ export function updateMapStateCache(map) {
         pitch: map.getPitch(),
         bearing: map.getBearing(),
         zoom: map.getZoom(),
-        devicePixelRatio: map.getDevicePixelRatio()
+        devicePixelRatio: map.getDevicePixelRatio(),
+        resolution: map.getResolution(),
+        center: map.getCenter(),
         //other states can be added later
     };
 }

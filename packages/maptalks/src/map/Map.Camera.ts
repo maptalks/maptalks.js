@@ -347,7 +347,7 @@ Map.include(/** @lends Map.prototype */{
             return this.setCenter(coordinates)
         }
         const glRes = this.getGLRes();
-        bearing = isNil(bearing) ? this.getBearing(): bearing;
+        bearing = isNil(bearing) ? this.getBearing() : bearing;
         pitch = isNil(pitch) ? this.getPitch() : pitch;
         const radPitch = pitch * RADIAN;
         const radBearing = bearing * RADIAN;
@@ -749,6 +749,10 @@ Map.include(/** @lends Map.prototype */{
             this._mapGlRes = this.getGLRes();
             this._mapExtent2D = this.get2DExtent();
             this._mapGlExtent2D = this.get2DExtentAtRes(this._mapGlRes);
+            const renderer = this.getRenderer();
+            if (renderer && renderer._updateMapStateCache) {
+                renderer._updateMapStateCache();
+            }
         };
     }(),
 

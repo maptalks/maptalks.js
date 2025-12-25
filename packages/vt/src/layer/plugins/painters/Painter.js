@@ -108,7 +108,8 @@ class Painter {
         const { minZoom, maxZoom } = this.sceneConfig || {};
         if (isNumber(minZoom) || isNumber(maxZoom)) {
             const map = this.getMap();
-            const zoom = map.getZoom();
+            const cache = maptalks.MapStateCache[map.id];
+            const zoom = cache ? cache.zoom : map.getZoom();
             if (!isNil(minZoom) && zoom < minZoom) {
                 return false;
             }
@@ -147,7 +148,10 @@ class Painter {
             if (!visibleFns[i].isFeatureConstant) {
                 return true;
             } else {
-                visible = visibleFns[i](this.getMap().getZoom());
+                const map = this.getMap();
+                const cache = maptalks.MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                visible = visibleFns[i](zoom);
             }
         } else {
             visible = this.getSymbol(symbolIndex).visible;
@@ -462,7 +466,9 @@ class Painter {
             return;
         }
         const sceneFilter = context && context.sceneFilter;
-        const z = this.getMap().getZoom();
+        const map = this.getMap();
+        const cache = maptalks.MapStateCache[map.id];
+        const z = cache ? cache.zoom : map.getZoom();
         for (let i = 0; i < meshes.length; i++) {
             if (!meshes[i] || !meshes[i].geometry) {
                 continue;
@@ -822,7 +828,9 @@ class Painter {
         const params = [];
         // extend(this._symbol, this.symbolDef);
         const loadedSymbol = FuncTypeUtil.loadSymbolFnTypes(this.symbolDef[i], () => {
-            params[0] = map.getZoom();
+            const cache = maptalks.MapStateCache[map.id];
+            const zoom = cache ? cache.zoom : map.getZoom();
+            params[0] = zoom;
             return params;
         });
         for (const p in loadedSymbol) {
@@ -866,7 +874,9 @@ class Painter {
         const map = this.getMap();
         const params = [];
         const fn = () => {
-            params[0] = map.getZoom();
+            const cache = maptalks.MapStateCache[map.id];
+            const zoom = cache ? cache.zoom : map.getZoom();
+            params[0] = zoom;
             return params;
         };
         this._symbol = [];
@@ -1230,7 +1240,9 @@ class Painter {
         if (!fn) {
             fn = fnCaches[key] = isPiecewiseConstant ? piecewiseConstant(v) : interpolated(v);
         }
-        return fn(map.getZoom(), properties);
+        const cache = maptalks.MapStateCache[map.id];
+        const zoom = cache ? cache.zoom : map.getZoom();
+        return fn(zoom, properties);
     }
 
     highlight(highlights) {
