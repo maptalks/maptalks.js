@@ -14,9 +14,6 @@ const DRAG_STAGE_LAYER_ID = INTERNAL_LAYER_PREFIX + '_drag_stage';
 
 const EVENTS = Browser.touch ? 'touchstart mousedown' : 'mousedown';
 
-const TEMP_POINT = new Point(0, 0);
-
-
 export function fixDragPointCoordinates(geometry: Geometry, dragContainerPoint: Point, dragCoordinates: Coordinate) {
     const editCenter = geometry._getEditCenter();
     const map = geometry.getMap();
