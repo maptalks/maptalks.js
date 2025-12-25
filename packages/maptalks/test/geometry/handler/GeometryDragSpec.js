@@ -13,7 +13,7 @@ describe('Geometry.Drag', function () {
         geometry.on('mousedown', spy);
 
         var domPosition = GET_PAGE_POSITION(container);
-        var point = coordinate2PointWidthAltitude(map, geometry.getFirstCoordinate()).add(domPosition);
+        var point = coordinate2PointWithAltitude(map, geometry.getFirstCoordinate()).add(domPosition);
         if (offset) {
             point._add(offset);
         }

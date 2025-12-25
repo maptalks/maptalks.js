@@ -8,6 +8,7 @@ import Coordinate from '../geo/Coordinate';
 import Point from '../geo/Point';
 import UIComponent, { UIComponentOptionsType } from './UIComponent';
 import type { Map } from '../map';
+import { MapStateCache } from '../map/MapStateCache';
 
 /**
  * @property {Object} options - construct options
@@ -581,7 +582,8 @@ class UIMarker extends Handlerable(UIComponent) {
         if (!this.options['visible']) {
             return false;
         }
-        const zoom = map.getZoom();
+        const cache = MapStateCache[map.id];
+        const zoom = cache ? cache.zoom : map.getZoom();
         const { minZoom, maxZoom } = this.options;
         if (!isNil(minZoom) && zoom < minZoom || (!isNil(maxZoom) && zoom > maxZoom)) {
             return false;

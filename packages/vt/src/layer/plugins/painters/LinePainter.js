@@ -301,7 +301,9 @@ class LinePainter extends BasicPainter {
                 width: 4,
                 define: 'HAS_COLOR',
                 evaluate: (properties, geometry) => {
-                    let color = aColorFn(map.getZoom(), properties);
+                    const cache = maptalks.MapStateCache[map.id];
+                    const zoom = cache ? cache.zoom : map.getZoom();
+                    let color = aColorFn(zoom, properties);
                     if (isFunctionDefinition(color)) {
                         color = this.evaluateInFnTypeConfig(color, geometry, map, properties, true);
                     }
@@ -320,7 +322,9 @@ class LinePainter extends BasicPainter {
                 related: ['linePatternGap'],
                 define: 'HAS_LINE_PATTERN',
                 evaluate: (properties, geometry, arr, index) => {
-                    let speed = aLinePatternAnimSpeedFn(map.getZoom(), properties);
+                    const cache = maptalks.MapStateCache[map.id];
+                    const zoom = cache ? cache.zoom : map.getZoom();
+                    let speed = aLinePatternAnimSpeedFn(zoom, properties);
                     if (isNil(speed)) {
                         speed = 0;
                     }
@@ -340,7 +344,9 @@ class LinePainter extends BasicPainter {
                 related: ['linePatternAnimSpeed'],
                 define: 'HAS_LINE_PATTERN',
                 evaluate: (properties, geometry, arr, index) => {
-                    let gap = aLinePatternGapFn(map.getZoom(), properties);
+                    const cache = maptalks.MapStateCache[map.id];
+                    const zoom = cache ? cache.zoom : map.getZoom();
+                    let gap = aLinePatternGapFn(zoom, properties);
                     if (isNil(gap)) {
                         gap = 0;
                     }
@@ -369,7 +375,9 @@ class LinePainter extends BasicPainter {
                 width: 1,
                 define: 'HAS_LINE_WIDTH',
                 evaluate: (properties, geometry) => {
-                    let lineWidth = aLineWidthFn(map.getZoom(), properties);
+                    const cache = maptalks.MapStateCache[map.id];
+                    const zoom = cache ? cache.zoom : map.getZoom();
+                    let lineWidth = aLineWidthFn(zoom, properties);
                     if (isFunctionDefinition(lineWidth)) {
                         lineWidth = this.evaluateInFnTypeConfig(lineWidth, geometry, map, properties);
                     }
@@ -385,7 +393,9 @@ class LinePainter extends BasicPainter {
                 width: 1,
                 define: 'HAS_STROKE_WIDTH',
                 evaluate: properties => {
-                    const lineStrokeWidth = aLineStrokeWidthFn(map.getZoom(), properties);
+                    const cache = maptalks.MapStateCache[map.id];
+                    const zoom = cache ? cache.zoom : map.getZoom();
+                    const lineStrokeWidth = aLineStrokeWidthFn(zoom, properties);
                     //乘以2是为了解决 #190
                     u16[0] = Math.round(lineStrokeWidth * 2.0);
                     return u16[0];
@@ -399,7 +409,9 @@ class LinePainter extends BasicPainter {
                 index: 0,
                 define: 'HAS_LINE_DX',
                 evaluate: properties => {
-                    const lineDx = aLineDxFn(map.getZoom(), properties);
+                    const cache = maptalks.MapStateCache[map.id];
+                    const zoom = cache ? cache.zoom : map.getZoom();
+                    const lineDx = aLineDxFn(zoom, properties);
                     i8[0] = lineDx;
                     return i8[0];
                 }
@@ -412,7 +424,9 @@ class LinePainter extends BasicPainter {
                 index: 1,
                 define: 'HAS_LINE_DY',
                 evaluate: properties => {
-                    const lineDy = aLineDyFn(map.getZoom(), properties);
+                    const cache = maptalks.MapStateCache[map.id];
+                    const zoom = cache ? cache.zoom : map.getZoom();
+                    const lineDy = aLineDyFn(zoom, properties);
                     i8[0] = lineDy;
                     return i8[0];
                 }
@@ -424,7 +438,9 @@ class LinePainter extends BasicPainter {
                 width: 1,
                 define: 'HAS_OPACITY',
                 evaluate: (properties, geometry) => {
-                    let opacity = aLineOpacityFn(map.getZoom(), properties);
+                    const cache = maptalks.MapStateCache[map.id];
+                    const zoom = cache ? cache.zoom : map.getZoom();
+                    let opacity = aLineOpacityFn(zoom, properties);
                     if (isFunctionDefinition(opacity)) {
                         opacity = this.evaluateInFnTypeConfig(opacity, geometry, map, properties);
                     }

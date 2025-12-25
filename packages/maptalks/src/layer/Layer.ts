@@ -12,6 +12,7 @@ import { CommonProjectionType } from '../geo/projection';
 import Coordinate from '../geo/Coordinate';
 import Point from '../geo/Point';
 import LayerAbstractRenderer from '../renderer/layer/LayerAbstractRenderer';
+import { MapStateCache } from '../map/MapStateCache';
 
 /**
  * 配置项
@@ -501,13 +502,16 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         if (isNumber(opacity) && opacity <= 0) {
             return false;
         }
-        const map = this.map;
-        if (map) {
-            const zoom = map.getZoom();
-            const minZoom = this.options.minZoom, maxZoom = this.options.maxZoom;
-            if ((!isNil(maxZoom) && maxZoom < zoom) ||
-                (!isNil(minZoom) && minZoom > zoom)) {
-                return false;
+        const { minZoom, maxZoom } = this.options;
+        if (isNumber(minZoom) || isNumber(maxZoom)) {
+            const map = this.map;
+            if (map) {
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                if ((!isNil(maxZoom) && maxZoom < zoom) ||
+                    (!isNil(minZoom) && minZoom > zoom)) {
+                    return false;
+                }
             }
         }
 

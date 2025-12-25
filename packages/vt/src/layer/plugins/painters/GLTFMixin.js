@@ -1,4 +1,4 @@
-import { Coordinate } from 'maptalks';
+import { Coordinate, MapStateCache } from 'maptalks';
 import { vec3, mat4, quat, reshader } from '@maptalks/gl';
 import { setUniformFromSymbol, createColorSetter, isNumber, extend } from '../Util';
 import { getCentiMeterScale, isNil } from '../../../common/Util';
@@ -334,7 +334,7 @@ const GLTFMixin = Base =>
                 const to = coord1.set(x1 * tileScale, y1 * tileScale, z1 * zScale);
                 const dist = from.distanceTo(to);
                 this._getSymbolRotationScaleMatrix(rotationScaleMat, features, aPickingId, i / positionSize);
-                const items = gltfPack.arrangeAlongLine(from, to, dist, gltfScale, 1,  rotationScaleMat, options);
+                const items = gltfPack.arrangeAlongLine(from, to, dist, gltfScale, 1, rotationScaleMat, options);
                 for (let j = 0; j < items.length; j++) {
                     const item = items[j];
                     // const coord = item.coordinates;
@@ -585,7 +585,7 @@ const GLTFMixin = Base =>
                 const y = vertex[1];
                 const pos = vec3.set(
                     position,
-                    x * tileScale  - cx,
+                    x * tileScale - cx,
                     //vt中的y轴方向与opengl(maptalks世界坐标系)相反
                     -y * tileScale - cy,
                     (vertex[2] + altitudeOffset) * zScale - cz
@@ -669,8 +669,9 @@ const GLTFMixin = Base =>
 
             const idx = aPickingId && aPickingId[i];
             const feature = features && features[idx];
+            const cache = MapStateCache[map.id];
 
-            const zoom = map.getZoom();
+            const zoom = cache ? cache.zoom : map.getZoom();
             const properties = feature && feature.feature && feature.feature.properties;
 
             const heightScale = this._getModelHeightScale(zoom, properties);

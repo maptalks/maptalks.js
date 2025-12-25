@@ -518,7 +518,10 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
 
     _getTileZoomDiff(mesh) {
         const layer = this.layer;
-        let zoom = layer['_getTileZoom'](this.getMap().getZoom());
+        const map = this.getMap();
+        const cache = maptalks.MapStateCache[map.id];
+
+        let zoom = layer['_getTileZoom'](cache ? cache.zoom : map.getZoom());
         const minZoom = layer.getMinZoom(),
             maxZoom = layer.getMaxZoom();
         zoom = maptalks.Util.clamp(zoom, minZoom, maxZoom);

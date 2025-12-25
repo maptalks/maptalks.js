@@ -2,6 +2,7 @@ import type Map from '../../map/Map';
 import type GeometryEditor from '../../geometry/editor/GeometryEditor';
 import type { Point } from '../../geo';
 import type { BBOX } from '../../core/util/bbox';
+import { MapStateCache } from '../../map/MapStateCache';
 
 export interface EditOutlineOptions {
     zIndex?: number;
@@ -49,7 +50,8 @@ export default class EditOutline {
             this.ymax <= 0 || this.ymin >= map.height) {
             return;
         }
-        const dpr = map.getDevicePixelRatio();
+        const cache = MapStateCache[map.id];
+        const dpr = cache ? cache.devicePixelRatio : map.getDevicePixelRatio();
         // make line thiner
         const padding = 0.5;
         function c(v: number) {

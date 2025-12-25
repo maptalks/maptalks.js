@@ -10,6 +10,7 @@ import { BBOX, bufferBBOX, getDefaultBBOX } from '../../core/util/bbox';
 import type Map from '../../map/Map';
 import type GeometryEditor from '../../geometry/editor/GeometryEditor';
 import { getResouceCacheInstance } from '../../core/ResourceCacheManager';
+import { MapStateCache } from '../../map/MapStateCache';
 
 const resources = getResouceCacheInstance();
 let prevX, prevY;
@@ -121,7 +122,8 @@ export default class EditHandle extends Eventable<any>(Class) {
         const w = this.w;
         const h = this.h;
         if (x + w > 0 && x < map.width && y + h > 0 && y < map.height) {
-            const dpr = map.getDevicePixelRatio();
+            const cache = MapStateCache[map.id];
+            const dpr = cache ? cache.devicePixelRatio : map.getDevicePixelRatio();
             ctx.globalAlpha = this.opacity;
             ctx.drawImage(this._img, Math.round((x + dx) * dpr), Math.round((y + dy) * dpr), Math.round(w * dpr), Math.round(h * dpr));
             return true;
@@ -250,7 +252,8 @@ export default class EditHandle extends Eventable<any>(Class) {
         const { x, y } = this._point;
         const w = this.w;
         const h = this.h;
-        dpr = dpr || map.getDevicePixelRatio();
+        const cache = MapStateCache[map.id];
+        dpr = dpr || cache ? cache.devicePixelRatio : map.getDevicePixelRatio();
         this.bbox = this.bbox || getDefaultBBOX();
         const x1 = Math.round((x + dx) * dpr);
         const y1 = Math.round((y + dy) * dpr);

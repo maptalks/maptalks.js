@@ -3,6 +3,7 @@ import { loadGeoSymbol, isFunctionDefinition, interpolated, } from '../../../cor
 import Symbolizer from './Symbolizer';
 import Canvas from '../../../core/Canvas';
 import { ResourceCache } from '../../../core/ResourceCacheManager';
+import { MapStateCache } from '../../../map/MapStateCache';
 
 /**
  *所有基于 HTML5 Canvas2D 的symbolizer类
@@ -36,7 +37,9 @@ abstract class CanvasSymbolizer extends Symbolizer {
             }
         } else if (this._opacityFn) {
             const map = this.getMap();
-            ctx.globalAlpha = this._opacityFn(map.getZoom());
+            const cache = MapStateCache[map.id];
+            const zoom = cache ? cache.zoom : map.getZoom();
+            ctx.globalAlpha = this._opacityFn(zoom);
         } else if (ctx.globalAlpha !== 1) {
             ctx.globalAlpha = 1;
         }

@@ -347,7 +347,7 @@ Map.include(/** @lends Map.prototype */{
             return this.setCenter(coordinates)
         }
         const glRes = this.getGLRes();
-        bearing = isNil(bearing) ? this.getBearing(): bearing;
+        bearing = isNil(bearing) ? this.getBearing() : bearing;
         pitch = isNil(pitch) ? this.getPitch() : pitch;
         const radPitch = pitch * RADIAN;
         const radBearing = bearing * RADIAN;
@@ -637,7 +637,7 @@ Map.include(/** @lends Map.prototype */{
         const coord0 = [0, 0, 0],
             coord1 = [0, 0, 0];
         return function (p, res, out, height) {
-            if (this.isTransforming()) {
+            if (this.isTransforming() || !!height) {
                 this.getContainerPointRay(coord0, coord1, p);
                 const x0 = coord0[0];
                 const x1 = coord1[0];
@@ -645,9 +645,9 @@ Map.include(/** @lends Map.prototype */{
                 const y1 = coord1[1];
                 const z0 = coord0[2];
                 const z1 = coord1[2];
-
+                const glRes = this.getGLRes();
                 //container plane maybe has height, although it is 0 in most cases.
-                const altitudePoint = !height ? 0 : this.altitudeToPoint(height, res) * this._glScale;
+                const altitudePoint = !height ? 0 : this.altitudeToPoint(height, glRes);
                 const t = z0 === z1 ? altitudePoint : (altitudePoint - z0) / (z1 - z0);
                 const x = interpolate(x0, x1, t);
                 const y = interpolate(y0, y1, t);
@@ -749,6 +749,10 @@ Map.include(/** @lends Map.prototype */{
             this._mapGlRes = this.getGLRes();
             this._mapExtent2D = this.get2DExtent();
             this._mapGlExtent2D = this.get2DExtentAtRes(this._mapGlRes);
+            const renderer = this.getRenderer();
+            if (renderer && renderer._updateMapStateCache) {
+                renderer._updateMapStateCache();
+            }
         };
     }(),
 

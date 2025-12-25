@@ -331,7 +331,7 @@ class TubePainter extends BasicPainter {
         const aLinePatternAnimSpeedFn = piecewiseConstant(symbolDef['aLinePatternAnimSpeed']);
         const aLinePatternGapFn = piecewiseConstant(symbolDef['aLinePatternGap']);
         const shapeConfigs = this.createShapeFnTypeConfigs(map, symbolDef);
-        const i8  = new Int8Array(2);
+        const i8 = new Int8Array(2);
         return [
             {
                 //geometry.data 中的属性数据
@@ -342,7 +342,9 @@ class TubePainter extends BasicPainter {
                 width: 4,
                 define: 'HAS_COLOR',
                 evaluate: (properties, geometry) => {
-                    let color = aColorFn(map.getZoom(), properties);
+                    const cache = maptalks.MapStateCache[map.id];
+                    const zoom = cache ? cache.zoom : map.getZoom();
+                    let color = aColorFn(zoom, properties);
                     if (isFunctionDefinition(color)) {
                         color = this.evaluateInFnTypeConfig(color, geometry, map, properties, true);
                     }
@@ -361,7 +363,9 @@ class TubePainter extends BasicPainter {
                 related: ['linePatternGap'],
                 define: 'HAS_LINE_PATTERN',
                 evaluate: (properties, geometry, arr, index) => {
-                    let speed = aLinePatternAnimSpeedFn(map.getZoom(), properties);
+                    const cache = maptalks.MapStateCache[map.id];
+                    const zoom = cache ? cache.zoom : map.getZoom();
+                    let speed = aLinePatternAnimSpeedFn(zoom, properties);
                     if (isNil(speed)) {
                         speed = 0;
                     }
@@ -381,7 +385,9 @@ class TubePainter extends BasicPainter {
                 related: ['linePatternAnimSpeed'],
                 define: 'HAS_LINE_PATTERN',
                 evaluate: (properties, geometry, arr, index) => {
-                    let gap = aLinePatternGapFn(map.getZoom(), properties);
+                    const cache = maptalks.MapStateCache[map.id];
+                    const zoom = cache ? cache.zoom : map.getZoom();
+                    let gap = aLinePatternGapFn(zoom, properties);
                     if (isNil(gap)) {
                         gap = 0;
                     }
@@ -406,7 +412,9 @@ class TubePainter extends BasicPainter {
                 width: 1,
                 define: 'HAS_LINE_WIDTH',
                 evaluate: (properties, geometry) => {
-                    let lineWidth = aLineWidthFn(map.getZoom(), properties);
+                    const cache = maptalks.MapStateCache[map.id];
+                    const zoom = cache ? cache.zoom : map.getZoom();
+                    let lineWidth = aLineWidthFn(zoom, properties);
                     if (isFunctionDefinition(lineWidth)) {
                         lineWidth = this.evaluateInFnTypeConfig(lineWidth, geometry, map, properties);
                     }
@@ -422,7 +430,9 @@ class TubePainter extends BasicPainter {
                 width: 1,
                 define: 'HAS_OPACITY',
                 evaluate: (properties, geometry) => {
-                    let opacity = aLineOpacityFn(map.getZoom(), properties);
+                    const cache = maptalks.MapStateCache[map.id];
+                    const zoom = cache ? cache.zoom : map.getZoom();
+                    let opacity = aLineOpacityFn(zoom, properties);
                     if (isFunctionDefinition(opacity)) {
                         opacity = this.evaluateInFnTypeConfig(opacity, geometry, map, properties);
                     }

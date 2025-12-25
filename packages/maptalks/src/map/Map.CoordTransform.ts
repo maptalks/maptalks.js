@@ -97,6 +97,15 @@ declare module "./Map" {
          * @param          * @param  out    - optional coordinate to receive result
          * @return          */
         containerPointToCoordinate(containerPoint: Point, out?: Coordinate): Coordinate;
+
+        /**
+         * Converts a container point to geographical coordinate with altitude.
+         * @param containerPoint
+         * @param number
+         * @param altitude
+         * @param out
+         */
+        containerPointToCoordinate3(containerPoint: Point, altitude?: number, out?: Coordinate): Coordinate;
         /**
          * Converts a container point extent to the geographic extent.
          * @param  containerExtent - containeproints extent
@@ -310,6 +319,18 @@ Map.include(/** @lends Map.prototype */{
             return this.getProjection().unproject(pCoordinate, out);
         };
     }(),
+
+    containerPointToCoordinate3: function () {
+        const POINT = new Point(0, 0);
+        return function (containerPoint, altitude, out) {
+            const res = this.getGLRes();
+            const point2d = this['_containerPointToPointAtRes'](containerPoint, res, POINT, altitude);
+            const coord = this.pointAtResToCoord(point2d, res, out);
+            coord.z = altitude;
+            return coord;
+        };
+    }(),
+
 
     containerToExtent: function () {
         const POINT0 = new Point(0, 0);

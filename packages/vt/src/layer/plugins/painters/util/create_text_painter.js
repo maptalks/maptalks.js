@@ -16,6 +16,7 @@ import { projectPoint } from './projection';
 import { getLabelContent } from './get_label_content';
 import { createAtlasTexture } from './atlas_util';
 import { INVALID_PROJECTED_ANCHOR } from '../../../../common/Constant';
+import { MapStateCache } from 'maptalks';
 
 const GAMMA_SCALE = 1;
 const BOX_ELEMENT_COUNT = 6;
@@ -139,7 +140,7 @@ export function createHaloTextMesh(
     textMesh.setUniform('alphaTest', DEFAULT_ICON_ALPHA_TEST);
 
     // isLabelCollides 中，计算碰撞盒时需要
-    Object.defineProperty(textMesh.properties, 'textSize',  {
+    Object.defineProperty(textMesh.properties, 'textSize', {
         enumerable: true,
         get: function () {
             return uniforms1['textSize'];
@@ -476,7 +477,9 @@ export function getTextFnTypeConfig(map, symbolDef) {
             width: 4,
             //
             evaluate: (properties, geometry) => {
-                let color = textFillFn(map.getZoom(), properties);
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                let color = textFillFn(zoom, properties);
                 if (isFunctionDefinition(color)) {
                     color = this.evaluateInFnTypeConfig(color, geometry, map, properties, true);
                 }
@@ -494,7 +497,9 @@ export function getTextFnTypeConfig(map, symbolDef) {
             type: Uint8Array,
             width: 1,
             evaluate: (properties, geometry) => {
-                let size = textSizeFn(map.getZoom(), properties) || DEFAULT_UNIFORMS['textSize'];
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                let size = textSizeFn(zoom, properties) || DEFAULT_UNIFORMS['textSize'];
                 if (isFunctionDefinition(size)) {
                     size = this.evaluateInFnTypeConfig(size, geometry, map, properties);
                 }
@@ -512,7 +517,9 @@ export function getTextFnTypeConfig(map, symbolDef) {
             width: 4,
             //
             evaluate: properties => {
-                let color = textHaloFillFn(map.getZoom(), properties);
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                let color = textHaloFillFn(zoom, properties);
                 if (!Array.isArray(color)) {
                     color = colorCache[color] = colorCache[color] || Color(color).unitArray();
                 }
@@ -528,7 +535,9 @@ export function getTextFnTypeConfig(map, symbolDef) {
             index: 0,
             width: 2,
             evaluate: properties => {
-                const radius = textHaloRadiusFn(map.getZoom(), properties);
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                const radius = textHaloRadiusFn(zoom, properties);
                 u8[0] = radius;
                 return u8[0];
             }
@@ -541,7 +550,9 @@ export function getTextFnTypeConfig(map, symbolDef) {
             index: 1,
             width: 2,
             evaluate: properties => {
-                const opacity = textHaloOpacityFn(map.getZoom(), properties);
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                const opacity = textHaloOpacityFn(zoom, properties);
                 u8[0] = opacity * 255;
                 return u8[0];
             }
@@ -553,7 +564,9 @@ export function getTextFnTypeConfig(map, symbolDef) {
             type: Uint8Array,
             width: 1,
             evaluate: (properties, geometry) => {
-                let x = textDxFn(map.getZoom(), properties);
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                let x = textDxFn(zoom, properties);
                 if (isFunctionDefinition(x)) {
                     x = this.evaluateInFnTypeConfig(x, geometry, map, properties);
                 }
@@ -568,7 +581,9 @@ export function getTextFnTypeConfig(map, symbolDef) {
             type: Uint8Array,
             width: 1,
             evaluate: (properties, geometry) => {
-                let y = textDyFn(map.getZoom(), properties);
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                let y = textDyFn(zoom, properties);
                 if (isFunctionDefinition(y)) {
                     y = this.evaluateInFnTypeConfig(y, geometry, map, properties);
                 }
@@ -583,7 +598,9 @@ export function getTextFnTypeConfig(map, symbolDef) {
             type: Uint8Array,
             width: 1,
             evaluate: (properties, geometry) => {
-                let opacity = textOpacityFn(map.getZoom(), properties);
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                let opacity = textOpacityFn(zoom, properties);
                 if (isFunctionDefinition(opacity)) {
                     opacity = this.evaluateInFnTypeConfig(opacity, geometry, map, properties);
                 }
@@ -598,7 +615,9 @@ export function getTextFnTypeConfig(map, symbolDef) {
             width: 1,
             define: 'HAS_PITCH_ALIGN',
             evaluate: properties => {
-                const y = +(textPitchAlignmentFn(map.getZoom(), properties) === 'map');
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                const y = +(textPitchAlignmentFn(zoom, properties) === 'map');
                 return y;
             }
         },
@@ -609,7 +628,9 @@ export function getTextFnTypeConfig(map, symbolDef) {
             width: 1,
             define: 'HAS_ROTATION_ALIGN',
             evaluate: properties => {
-                const y = +(textRotationAlignmentFn(map.getZoom(), properties) === 'map');
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                const y = +(textRotationAlignmentFn(zoom, properties) === 'map');
                 return y;
             }
         },
@@ -620,7 +641,9 @@ export function getTextFnTypeConfig(map, symbolDef) {
             width: 1,
             define: 'HAS_TEXT_ROTATION',
             evaluate: properties => {
-                const y = wrap(textRotationFn(map.getZoom(), properties), 0, 360) * Math.PI / 180;
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                const y = wrap(textRotationFn(zoom, properties), 0, 360) * Math.PI / 180;
                 u16[0] = y * 9362;
                 return u16[0];
             }
@@ -631,8 +654,10 @@ export function getTextFnTypeConfig(map, symbolDef) {
             type: Uint8Array,
             width: 1,
             evaluate: properties => {
-                let overlap = textAllowOverlapFn(map.getZoom(), properties) || 0;
-                let placement = (textIgnorePlacementFn ? textIgnorePlacementFn(map.getZoom(), properties) : symbolDef['textIgnorePlacement']) || 0;
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                let overlap = textAllowOverlapFn(zoom, properties) || 0;
+                let placement = (textIgnorePlacementFn ? textIgnorePlacementFn(zoom, properties) : symbolDef['textIgnorePlacement']) || 0;
                 overlap = 1 << 3 + overlap * (1 << 2);
                 placement = (textIgnorePlacementFn ? 1 << 1 : 0) + placement;
                 return overlap + placement;
@@ -647,8 +672,10 @@ export function getTextFnTypeConfig(map, symbolDef) {
             type: Uint8Array,
             width: 1,
             evaluate: properties => {
-                let overlap = (textAllowOverlapFn ? textAllowOverlapFn(map.getZoom(), properties) : symbolDef['textAllowOverlap']) || 0;
-                let placement = textIgnorePlacementFn(map.getZoom(), properties) || 0;
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                let overlap = (textAllowOverlapFn ? textAllowOverlapFn(zoom, properties) : symbolDef['textAllowOverlap']) || 0;
+                let placement = textIgnorePlacementFn(zoom, properties) || 0;
                 overlap = (textAllowOverlapFn ? 1 << 3 : 0) + overlap * (1 << 2);
                 placement = 1 << 1 + placement;
                 return overlap + placement;

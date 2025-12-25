@@ -29,6 +29,7 @@ import { Coordinate, Extent } from '../../geo';
 import { type TileLayerCanvasRenderer } from '../../renderer';
 import { Tile } from '../../renderer/layer/tilelayer/TileLayerRendererable';
 import { BBOX, bboxInMask } from '../../core/util/bbox';
+import { MapStateCache } from '../../map/MapStateCache';
 
 const DEFAULT_MAXERROR = 1;
 const TEMP_POINT = new Point(0, 0);
@@ -789,7 +790,8 @@ class TileLayer extends Layer {
         }
         // const r = 1;
         const error = geometricError * r / distance * this.options['tileErrorScale'];
-        const pitch = map.getPitch();
+        const cache = MapStateCache[map.id];
+        const pitch = cache ? cache.pitch : map.getPitch();
         if (pitch <= 60) {
             return error * 1.45;
         }

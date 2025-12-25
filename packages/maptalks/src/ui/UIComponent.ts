@@ -17,6 +17,7 @@ import Geometry from '../geometry/Geometry';
 import Coordinate from '../geo/Coordinate';
 import type { Map } from './../map/Map';
 import { Point } from '../geo';
+import { MapStateCache } from '../map/MapStateCache';
 
 /**
  * @property {Object} options
@@ -669,7 +670,8 @@ class UIComponent extends Eventable(Class) {
                     offsetY = -((bottom + margin) - mapHeight);
                 }
                 if (offsetX !== 0 || offsetY !== 0) {
-                    const pitch = map.getPitch();
+                    const cache = MapStateCache[map.id];
+                    const pitch = cache ? cache.pitch : map.getPitch();
                     if (pitch > 40 && offsetY !== 0 && this._coordinate) {
                         map.animateTo({ center: this._coordinate }, { duration: map.options['panAnimationDuration'] });
                     } else {
@@ -947,9 +949,13 @@ class UIComponent extends Eventable(Class) {
             return '';
         }
         if (Browser.any3d) {
-            const map = this.getMap(),
-                bearing = map ? map.getBearing() : 0,
-                pitch = map ? map.getPitch() : 0;
+            const map = this.getMap();
+            let bearing = 0, pitch = 0;
+            if (map) {
+                const cache = MapStateCache[map.id];
+                bearing = cache ? cache.bearing : map.getBearing();
+                pitch = cache ? cache.pitch : map.getPitch();
+            }
             let r = '';
             if (this.options['pitchWithMap'] && pitch) {
                 r += ` rotateX(${Math.round(pitch)}deg)`;

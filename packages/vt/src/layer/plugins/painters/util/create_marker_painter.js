@@ -6,6 +6,7 @@ import { createAtlasTexture, getDefaultMarkerSize } from './atlas_util';
 import { prepareFnTypeData, PREFIX, isFnTypeSymbol } from './fn_type_util';
 import { prepareTextGeometry, initTextUniforms, initTextMeshDefines } from './create_text_painter';
 import { limitMarkerDefinesByDevice } from './limit_defines';
+import { MapStateCache } from 'maptalks';
 // import { getIconBox } from './get_icon_box';
 
 export const BOX_ELEMENT_COUNT = 6;
@@ -175,7 +176,7 @@ export function prepareDxDy(geometry) {
 }
 
 function setMeshUniforms(uniforms, regl, geometry, symbol) {
-    const [ defaultMarkerWidth, defaultMarkerHeight ] = getDefaultMarkerSize(geometry);
+    const [defaultMarkerWidth, defaultMarkerHeight] = getDefaultMarkerSize(geometry);
     setUniformFromSymbol(uniforms, 'markerOpacity', symbol, 'markerOpacity', 1);
     setUniformFromSymbol(uniforms, 'markerPerspectiveRatio', symbol, 'markerPerspectiveRatio', symbol.markerTextFit ? 0 : 1);
     setUniformFromSymbol(uniforms, 'markerWidth', symbol, 'markerWidth', defaultMarkerWidth || DEFAULT_MARKER_WIDTH);
@@ -300,7 +301,7 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
     const markerPitchAlignmentFn = piecewiseConstant(symbolDef['markerPitchAlignment']);
     const textPitchAlignmentFn = piecewiseConstant(symbolDef['textPitchAlignment']);
     const markerRotationAlignmentFn = piecewiseConstant(symbolDef['markerRotationAlignment']);
-    const textRotationAlignmentFn =  piecewiseConstant(symbolDef['textRotationAlignment']);
+    const textRotationAlignmentFn = piecewiseConstant(symbolDef['textRotationAlignment']);
     const markerRotationFn = interpolated(symbolDef['markerRotation']);
     const textRotationFn = interpolated(symbolDef['textRotation']);
     const markerAllowOverlapFn = piecewiseConstant(symbolDef['markerAllowOverlapFn']);
@@ -318,14 +319,16 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             width: 1,
             define: 'HAS_MARKER_WIDTH',
             evaluate: (properties, geometry, arr, index) => {
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
                 const value = arr[index];
                 const markerTextFit = symbolDef['markerTextFit'];
                 //如果是markerTextFit，aMarkerWidth已经更新过了，直接返回原值
-                const textFit = markerTextFitFn ? markerTextFitFn(map.getZoom(), properties) : markerTextFit;
+                const textFit = markerTextFitFn ? markerTextFitFn(zoom, properties) : markerTextFit;
                 if (textFit === 'both' || textFit === 'width') {
                     return value;
                 }
-                let x = markerWidthFn(map.getZoom(), properties);
+                let x = markerWidthFn(zoom, properties);
                 if (isFunctionDefinition(x)) {
                     x = this.evaluateInFnTypeConfig(x, geometry, map, properties);
                 }
@@ -340,13 +343,15 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             width: 1,
             define: 'HAS_MARKER_HEIGHT',
             evaluate: (properties, geometry, arr, index) => {
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
                 const value = arr[index];
                 const markerTextFit = symbolDef['markerTextFit'];
-                const textFit = markerTextFitFn ? markerTextFitFn(map.getZoom(), properties) : markerTextFit;
+                const textFit = markerTextFitFn ? markerTextFitFn(zoom, properties) : markerTextFit;
                 if (textFit === 'both' || textFit === 'height') {
                     return value;
                 }
-                let x = markerHeightFn(map.getZoom(), properties);
+                let x = markerHeightFn(zoom, properties);
                 if (isFunctionDefinition(x)) {
                     x = this.evaluateInFnTypeConfig(x, geometry, map, properties);
                 }
@@ -363,7 +368,9 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             index: 0,
             define: 'HAS_MARKER_DX',
             evaluate: (properties, geometry, arr, index) => {
-                let x = markerDxFn(map.getZoom(), properties);
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                let x = markerDxFn(zoom, properties);
                 if (isFunctionDefinition(x)) {
                     x = this.evaluateInFnTypeConfig(x, geometry, map, properties);
                 }
@@ -384,7 +391,9 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             index: 1,
             define: 'HAS_MARKER_DY',
             evaluate: (properties, geometry, arr, index) => {
-                let x = markerDyFn(map.getZoom(), properties);
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                let x = markerDyFn(zoom, properties);
                 if (isFunctionDefinition(x)) {
                     x = this.evaluateInFnTypeConfig(x, geometry, map, properties);
                 }
@@ -404,7 +413,9 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             index: 2,
             define: 'HAS_TEXT_DX',
             evaluate: (properties, geometry, arr, index) => {
-                let x = textDxFn(map.getZoom(), properties);
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                let x = textDxFn(zoom, properties);
                 if (isFunctionDefinition(x)) {
                     x = this.evaluateInFnTypeConfig(x, geometry, map, properties);
                 }
@@ -425,7 +436,9 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             index: 3,
             define: 'HAS_TEXT_DY',
             evaluate: (properties, geometry, arr, index) => {
-                let x = textDyFn(map.getZoom(), properties);
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                let x = textDyFn(zoom, properties);
                 if (isFunctionDefinition(x)) {
                     x = this.evaluateInFnTypeConfig(x, geometry, map, properties);
                 }
@@ -448,7 +461,9 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             evaluate: (properties, geometry) => {
                 let opacity = 1;
                 if (markerOpacityFn) {
-                    opacity = markerOpacityFn(map.getZoom(), properties);
+                    const cache = MapStateCache[map.id];
+                    const zoom = cache ? cache.zoom : map.getZoom();
+                    opacity = markerOpacityFn(zoom, properties);
                     if (isFunctionDefinition(opacity)) {
                         opacity = this.evaluateInFnTypeConfig(opacity, geometry, map, properties);
                     }
@@ -467,7 +482,9 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             evaluate: (properties, geometry) => {
                 let opacity = 1;
                 if (textOpacityFn) {
-                    opacity = textOpacityFn(map.getZoom(), properties);
+                    const cache = MapStateCache[map.id];
+                    const zoom = cache ? cache.zoom : map.getZoom();
+                    opacity = textOpacityFn(zoom, properties);
                     if (isFunctionDefinition(opacity)) {
                         opacity = this.evaluateInFnTypeConfig(opacity, geometry, map, properties);
                     }
@@ -484,7 +501,9 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             index: 0,
             define: 'HAS_PITCH_ALIGN',
             evaluate: properties => {
-                const y = +(markerPitchAlignmentFn(map.getZoom(), properties) === 'map');
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                const y = +(markerPitchAlignmentFn(zoom, properties) === 'map');
                 return y;
             }
         },
@@ -496,7 +515,9 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             index: 1,
             define: 'HAS_PITCH_ALIGN',
             evaluate: properties => {
-                const y = +(textPitchAlignmentFn(map.getZoom(), properties) === 'map');
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                const y = +(textPitchAlignmentFn(zoom, properties) === 'map');
                 return y;
             }
         },
@@ -508,7 +529,9 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             index: 0,
             define: 'HAS_MARKER_ROTATION_ALIGN',
             evaluate: properties => {
-                const y = +(markerRotationAlignmentFn(map.getZoom(), properties) === 'map');
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                const y = +(markerRotationAlignmentFn(zoom, properties) === 'map');
                 return y;
             }
         },
@@ -520,7 +543,9 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             index: 1,
             define: 'HAS_TEXT_ROTATION_ALIGN',
             evaluate: properties => {
-                const y = +(textRotationAlignmentFn(map.getZoom(), properties) === 'map');
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                const y = +(textRotationAlignmentFn(zoom, properties) === 'map');
                 return y;
             }
         },
@@ -532,7 +557,9 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             index: 0,
             define: 'HAS_MARKER_ROTATION',
             evaluate: properties => {
-                const y = wrap(markerRotationFn(map.getZoom(), properties), 0, 360) * Math.PI / 180;
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                const y = wrap(markerRotationFn(zoom, properties), 0, 360) * Math.PI / 180;
                 u16[0] = y * 9362;
                 return u16[0];
             }
@@ -545,7 +572,9 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             index: 1,
             define: 'HAS_TEXT_ROTATION',
             evaluate: properties => {
-                const y = wrap(textRotationFn(map.getZoom(), properties), 0, 360) * Math.PI / 180;
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                const y = wrap(textRotationFn(zoom, properties), 0, 360) * Math.PI / 180;
                 u16[0] = y * 9362;
                 return u16[0];
             }
@@ -556,8 +585,10 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             type: Uint8Array,
             width: 1,
             evaluate: properties => {
-                let overlap = markerAllowOverlapFn(map.getZoom(), properties) || 0;
-                let placement = (markerIgnorePlacementFn ? markerIgnorePlacementFn(map.getZoom(), properties) : symbolDef['markerIgnorePlacement']) || 0;
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                let overlap = markerAllowOverlapFn(zoom, properties) || 0;
+                let placement = (markerIgnorePlacementFn ? markerIgnorePlacementFn(zoom, properties) : symbolDef['markerIgnorePlacement']) || 0;
                 overlap = 1 << 3 + overlap * (1 << 2);
                 placement = (markerIgnorePlacementFn ? 1 << 1 : 0) + placement;
                 return overlap + placement;
@@ -572,8 +603,10 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             type: Uint8Array,
             width: 1,
             evaluate: properties => {
-                let overlap = (markerAllowOverlapFn ? markerAllowOverlapFn(map.getZoom(), properties) : symbolDef['markerAllowOverlap']) || 0;
-                let placement = markerIgnorePlacementFn(map.getZoom(), properties) || 0;
+                const cache = MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                let overlap = (markerAllowOverlapFn ? markerAllowOverlapFn(zoom, properties) : symbolDef['markerAllowOverlap']) || 0;
+                let placement = markerIgnorePlacementFn(zoom, properties) || 0;
                 overlap = (markerAllowOverlapFn ? 1 << 3 : 0) + overlap * (1 << 2);
                 placement = (1 << 1) + placement;
                 return overlap + placement;
@@ -928,7 +961,8 @@ export function updateMarkerFitSize(map, iconGeometry) {
             paddingFn = props._paddingFn;
         }
     }
-    const zoom = map.getZoom();
+    const cache = MapStateCache[map.id];
+    const zoom = cache ? cache.zoom : map.getZoom();
     //textSize是fn-type，实时更新aMarkerHeight或者aMarkerWidth
     const { fitIcons, fitWidthIcons, fitHeightIcons } = props;
     const { aMarkerWidth, aMarkerHeight, labelShape } = props;
@@ -953,7 +987,7 @@ export function updateMarkerFitSize(map, iconGeometry) {
             const fn = properties.textSizeFn = properties.textSizeFn || interpolated(textSize);
             textSize = fn(zoom, properties);
         }
-        textSize /=  GLYPH_SIZE;
+        textSize /= GLYPH_SIZE;
         let fitPadding = paddingFn && paddingFn(zoom, properties) || padding;
         if (isFunctionDefinition(fitPadding)) {
             const fn = properties.fitPaddingFn = properties.fitPaddingFn || piecewiseConstant(fitPadding);

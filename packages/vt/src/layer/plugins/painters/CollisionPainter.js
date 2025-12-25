@@ -105,20 +105,22 @@ export default class CollisionPainter extends BasicPainter {
                 this._anchorCoord0 = new maptalks.Coordinate(0, 0);
                 this._anchorCoord1 = new maptalks.Coordinate(0, 0);
             }
+            const cache = maptalks.MapStateCache[map.id];
             meshContext.anchor0 = map.containerPointToCoord(this._containerAnchor0, this._anchorCoord0);
             meshContext.anchor1 = map.containerPointToCoord(this._containerAnchor1, this._anchorCoord1);
-            meshContext.anchor0.z = map.getZoom();
+            meshContext.anchor0.z = cache ? cache.zoom : map.getZoom();
             meshContext.anchor0.width = map.width;
             meshContext.anchor0.height = map.height;
-            meshContext.anchor0.pitch = map.getPitch();
+            meshContext.anchor0.pitch = cache ? cache.pitch : map.getPitch();
         }
         this.getMap().collisionFrameTime += performance.now() - this._startTime;
     }
 
     _isCachedCollisionStale(meshKey) {
         const map = this.getMap();
-        const z = map.getZoom();
-        const pitch = map.getPitch();
+        const cache = maptalks.MapStateCache[map.id];
+        const z = cache ? cache.zoom : map.getZoom();
+        const pitch = cache ? cache.pitch : map.getPitch();
         const [anchor0, anchor1] = this._getMeshAnchor(meshKey);
         //如果没有anchor，或者anchor距离它应该在的点的像素距离超过阈值时，则说明collision已经过期
         if (!anchor0 || !anchor1 || anchor0.z !== z ||
@@ -141,12 +143,13 @@ export default class CollisionPainter extends BasicPainter {
                 tags: {}
             };
         }
+        const cache = maptalks.MapStateCache[map.id];
         this._cachedInstances = {
             layer: this.layer,
             renderer: this.layer.getRenderer(),
             frameTimestamp: this.layer.getRenderer().getFrameTimestamp(),
-            map: this.getMap(),
-            zoom: map.getZoom(),
+            map,
+            zoom: cache ? cache.zoom : map.getZoom(),
             collisionTags: this._collisionContext.tags,
             isEnableUniquePlacement: this.isEnableUniquePlacement()
         };
@@ -623,7 +626,8 @@ export default class CollisionPainter extends BasicPainter {
     isCollides(box/*, tileInfo*/) {
         const layer = this.layer,
             map = layer.getMap();
-        const dpr = map.getDevicePixelRatio();
+        const cache = maptalks.MapStateCache[map.id];
+        const dpr = cache ? cache.devicePixelRatio : map.getDevicePixelRatio();
         vec4.scale(BOX, box, 1 / dpr);
         if (map.isOffscreen(BOX)) {
             return -1;
@@ -685,7 +689,8 @@ export default class CollisionPainter extends BasicPainter {
             box = bufferBox(BOX, box, bufferSize);
         }
         const map = this.getMap();
-        const dpr = map.getDevicePixelRatio();
+        const cache = maptalks.MapStateCache[map.id];
+        const dpr = cache ? cache.devicePixelRatio : map.getDevicePixelRatio();
         vec4.scale(BOX, box, 1 / dpr);
         if (map.isOffscreen(BOX)) {
             return;
@@ -963,7 +968,9 @@ export default class CollisionPainter extends BasicPainter {
         if (!this.isEnableUniquePlacement()) {
             return;
         }
-        const zoom = this.getMap().getZoom();
+        const map = this.getMap();
+        const cache = maptalks.MapStateCache[map.id];
+        const zoom = cache ? cache.zoom : map.getZoom();
         let changed = !this._mergedMeshes || this._mergedMehesZoom !== zoom;
         if (!changed) {
             for (let i = 0; i < meshes.length; i++) {

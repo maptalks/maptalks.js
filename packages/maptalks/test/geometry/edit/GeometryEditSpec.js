@@ -7,7 +7,7 @@ describe('Geometry.Edit', function () {
 
     function dragVertext(coordinate, offset) {
         var domPosition = GET_PAGE_POSITION(container);
-        var point = coordinate2PointWidthAltitude(map, coordinate).add(domPosition);
+        var point = coordinate2PointWithAltitude(map, coordinate).add(domPosition);
         if (offset) {
             point._add(offset);
         }

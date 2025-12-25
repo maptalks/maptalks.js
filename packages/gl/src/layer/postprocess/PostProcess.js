@@ -266,6 +266,7 @@ export default class PostProcess {
         this._copyFBOSize[1] = fbo.height;
 
         const shaderDefines = {};
+        const renderer = this._layer.getRenderer();
         const texture =  fbo.color && renderer._getFBOColor(fbo) || fbo;
         const useMultiSample = texture.texture && texture.texture.sampleCount > 1;
         if (useMultiSample) {
@@ -275,7 +276,6 @@ export default class PostProcess {
         }
         this._copyShader.setDefines(shaderDefines);
 
-        const renderer = this._layer.getRenderer();
         this._renderer.render(this._copyShader, {
             texture,
             size: this._copyFBOSize,

@@ -21,7 +21,13 @@ export function createImageMesh(geometry, image, extent2d, offset, scale, unifor
         mag: 'nearest',
         mipmap: true,
         premultiplyAlpha: true
-    };
+    } as any;
+    if (!image || image.width === 0 || image.height === 0) {
+        image = new Uint8Array([0, 0, 0, 0]);
+        config.width = 1;
+        config.height = 1;
+        config.data = image;
+    }
     let texture = this.getTexture();
     if (!texture) {
         texture = new reshader.Texture2D(config);
@@ -48,14 +54,16 @@ export function createImageMesh(geometry, image, extent2d, offset, scale, unifor
 }
 
 export function updateFilter(mesh: reshader.Mesh, map: maptalks.Map, res: number) {
-    const minFilter = getTexMinFilter(map);
+    const cache = maptalks.MapStateCache[map.id];
+    const zoom = cache ? cache.zoom : map.getZoom();
+    const dpr = cache ? cache.devicePixelRatio : map.getDevicePixelRatio();
+    const minFilter = getTexMinFilter(map, zoom);
 
     if (mesh.properties.minFilter !== minFilter) {
         const baseColorTexture = (mesh.material.get('baseColorTexture') as any);
         baseColorTexture.setMinFilter(minFilter);
         mesh.properties.minFilter = minFilter;
     }
-    const dpr = map.getDevicePixelRatio();
     const resized = map.getResolution() !== res;
 
     let magFilter: number = WebGLConstants.GL_NEAREST;
@@ -69,8 +77,7 @@ export function updateFilter(mesh: reshader.Mesh, map: maptalks.Map, res: number
     }
 }
 
-function getTexMinFilter(map: maptalks.Map) {
-    const zoom = map.getZoom();
+function getTexMinFilter(map: maptalks.Map, zoom: number) {
     const blurTexture = map.isMoving() && map.getRenderer().isViewChanged();
     let minFilter;
     if (blurTexture) {

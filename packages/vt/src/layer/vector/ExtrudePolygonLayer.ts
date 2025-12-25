@@ -1,4 +1,4 @@
-import { Geometry, Circle, Rectangle, Ellipse, Sector, Coordinate, Point, Polygon, MultiPolygon } from "maptalks";
+import { Geometry, Circle, Rectangle, Ellipse, Sector, Coordinate, Point, Polygon, MultiPolygon, MapStateCache } from "maptalks";
 
 import type { LitDataConfig, LitMaterial } from "../../types";
 import { extend, isNil } from "../../common/Util";
@@ -385,7 +385,9 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         const extent = Infinity;
         const tileRatio = 1;
         // 原zoom是用来计算functiont-type 的symbol属性值
-        const zoom = map.getZoom();
+        const cache = MapStateCache[map.id];
+
+        const zoom = cache ? cache.zoom : map.getZoom();
         const tilePoint = new Point(0, 0);
         const tileCoord = new Coordinate(0, 0);
         const dataConfig = extend(

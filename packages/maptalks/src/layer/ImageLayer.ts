@@ -9,6 +9,7 @@ import Layer, { LayerOptionsType } from './Layer';
 import { PointExtent } from '../geo';
 import { getResouceCacheInstance } from '../core/ResourceCacheManager';
 import { MixinConstructor } from '../core/Mixin';
+import { MapStateCache } from '../map/MapStateCache';
 
 
 /**
@@ -257,7 +258,9 @@ export class ImageLayerCanvasRenderer extends ImageLayerRenderable(CanvasRendere
         const nw = TEMP_POINT.set(extent.xmin, extent.ymax);
         const point = map._pointAtResToContainerPoint(nw, map.getGLRes());
         let x = point.x, y = point.y;
-        const bearing = map.getBearing();
+        const cache = MapStateCache[map.id];
+        const bearing = cache ? cache.bearing : map.getBearing();
+
         if (bearing) {
             ctx.save();
             ctx.translate(x, y);
