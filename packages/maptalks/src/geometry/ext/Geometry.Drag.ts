@@ -14,6 +14,8 @@ const DRAG_STAGE_LAYER_ID = INTERNAL_LAYER_PREFIX + '_drag_stage';
 
 const EVENTS = Browser.touch ? 'touchstart mousedown' : 'mousedown';
 
+const TEMP_POINT = new Point(0, 0);
+
 
 export function fixDragPointCoordinates(geometry: Geometry, dragContainerPoint: Point, dragCoordinates: Coordinate) {
     const editCenter = geometry._getEditCenter();
@@ -22,26 +24,9 @@ export function fixDragPointCoordinates(geometry: Geometry, dragContainerPoint: 
         return dragCoordinates || map.containerPointToCoord(dragContainerPoint);
     }
     const altitude = editCenter.z;
-    const glRes = map.getGLRes();
-    //coordinates to glpoint
-    const renderPoints = map.coordToPointAtRes(editCenter, glRes);
-    //没有海拔下的屏幕坐标
-    const point1 = map._pointAtResToContainerPoint(renderPoints, glRes, 0);
-    //有海拔下的屏幕坐标
-    const point2 = map._pointAtResToContainerPoint(renderPoints, glRes, altitude);
-    //屏幕坐标的偏移量
-    const offset = point2.sub(point1);
-    const containerPoint = dragContainerPoint.sub(offset);
-    const coordiantes = map.containerPointToCoord(containerPoint);
-    coordiantes.z = 0;
-    const isPoint = !geometry.getGeometries && geometry.isPoint;
-    if (isPoint) {
-        coordiantes.z = altitude;
-    }
-    return coordiantes;
-
-
+    return map.containerPointToCoordinate3(dragContainerPoint, altitude);
 }
+
 /**
  * 几何图形的拖动处理程序
  * @english
@@ -290,11 +275,10 @@ class GeometryDragHandler extends Handler {
             } else if (axis === 'y') {
                 point.x = this._lastPoint.x;
             }
-            coord = map.containerPointToCoord(point);
-        } else {
-            coord = this._correctCoord(coord);
         }
-        coord = fixDragPointCoordinates(target, e['containerPoint'], coord);
+        const altitude = this._lastCoord.z;
+        coord = map.containerPointToCoordinate3(point, altitude);
+
         const pointOffset = point.sub(this._lastPoint);
         const coordOffset = coord.sub(this._lastCoord);
         if (!dragOnScreenAxis) {
