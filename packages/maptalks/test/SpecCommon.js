@@ -350,7 +350,7 @@ function mapMousemove(map, steps, callback) {
     })
 }
 
-function coordinate2PointWidthAltitude(map, coordinate) {
+function coordinate2PointWithAltitude(map, coordinate) {
     const glRes = map.getGLRes();
     //coordinates to glpoint
     const renderPoints = map.coordToPointAtRes(coordinate, glRes);

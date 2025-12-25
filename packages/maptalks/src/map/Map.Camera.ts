@@ -637,7 +637,7 @@ Map.include(/** @lends Map.prototype */{
         const coord0 = [0, 0, 0],
             coord1 = [0, 0, 0];
         return function (p, res, out, height) {
-            if (this.isTransforming()) {
+            if (this.isTransforming() || !!height) {
                 this.getContainerPointRay(coord0, coord1, p);
                 const x0 = coord0[0];
                 const x1 = coord1[0];
@@ -645,9 +645,9 @@ Map.include(/** @lends Map.prototype */{
                 const y1 = coord1[1];
                 const z0 = coord0[2];
                 const z1 = coord1[2];
-
+                const glRes = this.getGLRes();
                 //container plane maybe has height, although it is 0 in most cases.
-                const altitudePoint = !height ? 0 : this.altitudeToPoint(height, res) * this._glScale;
+                const altitudePoint = !height ? 0 : this.altitudeToPoint(height, glRes);
                 const t = z0 === z1 ? altitudePoint : (altitudePoint - z0) / (z1 - z0);
                 const x = interpolate(x0, x1, t);
                 const y = interpolate(y0, y1, t);
