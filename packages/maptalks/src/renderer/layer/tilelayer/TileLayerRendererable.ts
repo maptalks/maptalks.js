@@ -610,11 +610,15 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
                     const tileImage = this.loadTile(tile);
                     if (tileImage.loadTime === undefined) {
                         // tile image's loading may not be async
-                        this.tilesLoading[tile['id']] = {
-                            image: tileImage,
-                            current: true,
-                            info: tile
-                        };
+                        // if empty not add to tilesLoading, it is not async
+                        //空的瓦片不加入加载队列，因为不是异步的
+                        if (!(tileImage as any)._empty) {
+                            this.tilesLoading[tile['id']] = {
+                                image: tileImage,
+                                current: true,
+                                info: tile
+                            };
+                        }
                     }
                 }
             }
@@ -721,7 +725,11 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
         }
 
         removeTileLoading(tileInfo: Tile['info']): void {
-            delete this.tilesLoading[tileInfo.id];
+            if (this.tilesLoading[tileInfo.id]) {
+                delete this.tilesLoading[tileInfo.id];
+            } else {
+                // console.warn('Tile not found in tilesLoading:', tileInfo.id);
+            }
             // need to setToRedraw to let tiles blocked by loadingLimit continue to load
             this.setToRedraw();
         }
