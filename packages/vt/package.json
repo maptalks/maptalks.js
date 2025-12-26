@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/vt",
-  "version": "0.117.1",
+  "version": "0.118.0",
   "description": "The vector-tile plugin for maptalks.js",
   "main": "dist/maptalks.vt.js",
   "module": "dist/maptalks.vt.es.js",
@@ -22,7 +22,7 @@
     "test": "electron-mocha -t 8000 --retries 3 --main ../ignore-gpu-blacklist.js --show-window --renderer ./test/**/*.spec.js -g \"\\btext\\b|ciskip\" --invert",
     "tdd": "npm run transform-gpu && electron-mocha -t 8000 --main ../ignore-gpu-blacklist.js --interactive --renderer ./test/**/*.spec.js -g",
     "test-gpu": "npm run transform-gpu && electron-mocha -t 8000 --preload ./test/integration/gpu.js --show-window --renderer ./test/**/*.spec.js",
-    "tdd-gpu":  "npm run transform-gpu && electron-mocha -t 8000 --preload ./test/integration/gpu.js --interactive --renderer ./test/**/*.spec.js -g",
+    "tdd-gpu": "npm run transform-gpu && electron-mocha -t 8000 --preload ./test/integration/gpu.js --interactive --renderer ./test/**/*.spec.js -g",
     "pretest": "npm run build && npm run transform-gpu",
     "preversion": "npm run pretest",
     "transform-gpu": "node ../../build/transform-to-gpu"

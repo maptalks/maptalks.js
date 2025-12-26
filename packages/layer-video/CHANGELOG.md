@@ -1,5 +1,11 @@
 # @maptalks/video-layer
 
+## 0.118.0
+
+### Minor Changes
+
+- fixes and features
+
 ## 0.117.1
 
 ### Patch Changes
