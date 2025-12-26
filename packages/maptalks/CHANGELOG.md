@@ -1,5 +1,11 @@
 # maptalks
 
+## 1.7.1
+
+### Patch Changes
+
+- fix DrawToolLayer
+
 ## 1.7.0
 
 ### Minor Changes

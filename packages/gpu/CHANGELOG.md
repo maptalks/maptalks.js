@@ -1,5 +1,15 @@
 # @maptalks/gpu
 
+## 0.118.1
+
+### Patch Changes
+
+- fix DrawToolLayer
+- Updated dependencies
+  - @maptalks/fusiongl@0.118.1
+  - @maptalks/gltf-loader@0.118.1
+  - maptalks@1.7.1
+
 ## 0.118.0
 
 ### Minor Changes

@@ -1,5 +1,19 @@
 # maptalks-gl
 
+## 0.118.1
+
+### Patch Changes
+
+- fix DrawToolLayer
+- Updated dependencies
+  - @maptalks/gpu@0.118.1
+  - @maptalks/3dtiles@0.118.1
+  - @maptalks/gltf-layer@0.118.1
+  - @maptalks/video-layer@0.118.1
+  - maptalks@1.7.1
+  - @maptalks/transform-control@0.118.1
+  - @maptalks/vt@0.118.1
+
 ## 0.118.0
 
 ### Minor Changes

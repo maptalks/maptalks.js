@@ -1,5 +1,15 @@
 # @maptalks/transform-control
 
+## 0.118.1
+
+### Patch Changes
+
+- fix DrawToolLayer
+- Updated dependencies
+  - @maptalks/gl@0.118.1
+  - @maptalks/gpu@0.118.1
+  - @maptalks/gltf-layer@0.118.1
+
 ## 0.118.0
 
 ### Minor Changes

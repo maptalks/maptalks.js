@@ -1,5 +1,13 @@
 # @maptalks/traffic
 
+## 0.118.1
+
+### Patch Changes
+
+- fix DrawToolLayer
+- Updated dependencies
+  - @maptalks/gltf-layer@0.118.1
+
 ## 0.118.0
 
 ### Minor Changes

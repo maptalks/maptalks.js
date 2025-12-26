@@ -1,5 +1,11 @@
 # @maptalks/fusiongl
 
+## 0.118.1
+
+### Patch Changes
+
+- fix DrawToolLayer
+
 ## 0.118.0
 
 ### Minor Changes
