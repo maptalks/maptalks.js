@@ -19,8 +19,7 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - uses: pnpm/action-setup@v4
       - run: pnpm install
-      - run: pnpm build
       - name: Publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-        run: pnpm publish -r --no-git-checks --access public
+        run: pnpm release
