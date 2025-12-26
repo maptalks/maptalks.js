@@ -1,0 +1,26 @@
+name: maptalks publish
+
+on:
+  release:
+    types: [created]
+
+permissions:
+  id-token: write  # Required for OIDC
+  contents: read
+
+jobs:
+  publish-npm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org/
+      - uses: pnpm/action-setup@v4
+      - run: pnpm install
+      - run: pnpm build
+      - name: Publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+        run: pnpm publish -r --no-git-checks --access public
