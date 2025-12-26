@@ -97,7 +97,10 @@ export default class DrawToolLayer extends OverlayLayer {
             geometries = [geometries];
         }
         for (let i = 0; i < geometries.length; i++) {
-            this._geoList.splice(geometries[i] as any, 1);
+            const idx = this._findInList(geometries[i]);
+            if (idx >= 0) {
+                this._geoList.splice(idx, 1);
+            }
             if (this._markerLayer.isVectorLayer) {
                 this._markerLayer.removeGeometry(geometries[i]);
                 continue;
@@ -116,7 +119,10 @@ export default class DrawToolLayer extends OverlayLayer {
         const geometries = params.geometries;
         for (let i = 0; i < geometries.length; i++) {
             if (geometries[i]) {
-                this._geoList.splice(geometries[i] as any, 1);
+                const idx = this._findInList(geometries[i]);
+                if (idx >= 0) {
+                    this._geoList.splice(idx, 1);
+                }
             }
         }
     }

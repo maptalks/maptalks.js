@@ -1303,6 +1303,11 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         }
         this.markRebuild();
         redraw(this);
+        this.layer.fire('removegeo', {
+            'type': 'removegeo',
+            'target': this,
+            'geometries': geometries
+        });
     }
 
     onGeometrySymbolChange(e) {
