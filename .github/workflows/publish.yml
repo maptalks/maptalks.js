@@ -6,7 +6,7 @@ on:
 
 permissions:
   id-token: write  # Required for OIDC
-  contents: write
+  contents: read
 
 jobs:
   publish-npm:
@@ -21,7 +21,8 @@ jobs:
           node-version: 22
           registry-url: https://registry.npmjs.org/
       - run: pnpm install
-      - run: pnpm release
+      - run: pnpm build
+      - run: pnpm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.PAT }}
