@@ -1477,7 +1477,7 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             this._lineMeshes && this._lineMeshes.length && this._linePainter.needRebuildOnGometryPropertiesChanged() ||
             this.meshes && this.meshes.length && this.painter.needRebuildOnGometryPropertiesChanged()) {
             this.markRebuild();
-        } else {
+        } else if (this.meshes) {
             this.painter.onFeatureChange(this.features[uid], this.meshes);
         }
 
