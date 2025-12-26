@@ -1,5 +1,6 @@
 import { GEOJSON_TYPES } from "../core/Constants";
 import { pushIn } from "../core/util/util";
+import { isNil } from "../core/util/common";
 import { Geometry, LineString, Marker, MultiLineString, MultiPoint, MultiPolygon, Polygon } from "../geometry/index";
 import OverlayLayer, { isGeometry, OverlayLayerOptionsType } from "./OverlayLayer";
 
@@ -80,6 +81,15 @@ export default class DrawToolLayer extends OverlayLayer {
                 this._polygonLayer.addGeometry(geometries[i]);
             }
         }
+    }
+
+    getGeometryById(id: string | number): Geometry {
+        if (isNil(id) || id === '') {
+            return null;
+        }
+        return this._markerLayer.getGeometryById(id) ||
+            this._lineLayer.getGeometryById(id) ||
+            this._polygonLayer.getGeometryById(id);
     }
 
     removeGeometry(geometries: Geometry | Geometry[]) {
