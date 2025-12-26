@@ -27,7 +27,7 @@ struct VertexOutput {
 fn main(input: VertexInput) -> VertexOutput {
     var output: VertexOutput;
 
-    let localPositionMatrix = getPositionMatrix(input, &output, uniforms.modelMatrix);
+    let localPositionMatrix = getPositionMatrix(input, &output, uniforms.positionMatrix);
     let localPosition = getPosition(vec3f(input.aPosition.xyz), input);
 
     output.position = uniforms.projViewModelMatrix * localPositionMatrix * localPosition;

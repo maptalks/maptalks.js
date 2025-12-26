@@ -69,6 +69,7 @@ export default {
 };
 
 const pattern = /^[ \t]*#include +<([\w\d.]+)>/gm;
+const attrInputPattern = /\bstruct\s+AttributeInput\b/;
 const vertexInputPattern = /\bstruct\s+VertexInput\b/;
 const vertexOutputPattern = /\bstruct\s+VertexOutput\b/;
 
@@ -146,6 +147,9 @@ class SourceCompiler {
     }
 
     fillAttributes(source) {
+        if (source.indexOf('AttributeInput') > 0) {
+            return this.fillStruct(source, attrInputPattern, '$i', this.attributes);
+        }
         return this.fillStruct(source, vertexInputPattern, '$i', this.attributes);
     }
 

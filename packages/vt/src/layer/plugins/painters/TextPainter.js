@@ -930,7 +930,9 @@ export default class TextPainter extends CollisionPainter {
         };
 
         extraCommandProps.viewport = viewport;
-        const defines = {};
+        const defines = {
+            HAS_HIGHLIGHT_COLOR_POINT: 1
+        };
         this.shader = new reshader.MeshShader({
             name: 'text',
             // vert: vertAlongLine, frag,

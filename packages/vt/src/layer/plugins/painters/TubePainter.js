@@ -189,18 +189,20 @@ class TubePainter extends BasicPainter {
         this.createShader(context);
 
         if (this.pickingFBO) {
+            const projViewModelMatrix = [];
             const modelNormalMatrix = [];
+            const modelViewMatrix = [];
             this.picking = [new reshader.FBORayPicking(
                 this.renderer,
                 {
                     vert: tubeVert,
+                    wgslVert: tubeVertWgsl,
                     defines: { 'PICKING_MODE': 1 },
                     uniforms: [
                         {
                             name: 'projViewModelMatrix',
                             type: 'function',
                             fn: function (context, props) {
-                                const projViewModelMatrix = [];
                                 mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                                 return projViewModelMatrix;
                             }
@@ -211,7 +213,14 @@ class TubePainter extends BasicPainter {
                             fn: (_, props) => {
                                 return mat3.fromMat4(modelNormalMatrix, props['modelMatrix']);
                             }
-                        }
+                        },
+                        {
+                            name: 'modelViewMatrix',
+                            type: 'function',
+                            fn: function (context, props) {
+                                return mat4.multiply(modelViewMatrix, props['viewMatrix'], props['modelMatrix']);
+                            }
+                        },
                     ],
                     extraCommandProps: this.getExtraCommandProps()
                 },
@@ -226,12 +235,12 @@ class TubePainter extends BasicPainter {
         const uniforms = [];
         const defines = {};
         this.fillIncludes(defines, uniforms, context);
+        const projViewModelMatrix = [];
         uniforms.push(
             {
                 name: 'projViewModelMatrix',
                 type: 'function',
                 fn: function (context, props) {
-                    const projViewModelMatrix = [];
                     mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                     return projViewModelMatrix;
                 }
