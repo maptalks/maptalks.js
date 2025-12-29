@@ -238,3 +238,9 @@ export function pointAtResToMeter(map, pointDistance, patternOrigin, res, isYAxi
     const distance = map.pointAtResToDistance(isYAxis ? 0 : pointDistance, isYAxis ? pointDistance : 0, res, patternOrigin);
     return distance;
 }
+
+
+export function getColorOpacity(color) {
+    const cColor = Color(color);
+    return cColor.alpha();
+}

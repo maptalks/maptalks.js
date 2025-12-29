@@ -92,7 +92,9 @@ const defaultOptions: VectorTileLayerOptionsType = {
     loadTileErrorLog: true,
     loadTileErrorLogIgnoreCodes: [404, 204],
     loadTileCachMaxSize: 0,//MB, 0 no limit
-    loadTileCacheLog: true
+    loadTileCacheLog: true,
+
+    renderBeforeTerrain: false
 };
 
 /**
@@ -2049,7 +2051,9 @@ export type VectorTileLayerOptionsType = {
     loadTileErrorLog?: boolean,
     loadTileErrorLogIgnoreCodes?: Array<number>;
     loadTileCachMaxSize?: number;//unit is MB
-    loadTileCacheLog?: boolean
+    loadTileCacheLog?: boolean,
+
+    renderBeforeTerrain?: boolean,
 } & TileLayerOptionsType;
 
 export type AsyncFeatureQueryOptions = {

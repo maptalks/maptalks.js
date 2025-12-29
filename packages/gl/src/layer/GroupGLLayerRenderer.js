@@ -586,7 +586,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
     forEachRenderer(fn) {
         const layers = this._getLayers();
         for (const layer of layers) {
-            if (!layer.isVisible() || !layer.options['beneathTerrain']) {
+            if (!layer.isVisible() || !layer.options['renderBeforeTerrain']) {
                 continue;
             }
             const renderer = layer.getRenderer();
@@ -602,7 +602,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             }
         }
         for (const layer of layers) {
-            if (!layer.isVisible() || layer.options['beneathTerrain']) {
+            if (!layer.isVisible() || layer.options['renderBeforeTerrain']) {
                 continue;
             }
             const renderer = layer.getRenderer();
