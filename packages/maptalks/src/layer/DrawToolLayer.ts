@@ -1,5 +1,6 @@
 import { GEOJSON_TYPES } from "../core/Constants";
 import { pushIn } from "../core/util/util";
+import { isNil } from "../core/util/common";
 import { Geometry, LineString, Marker, MultiLineString, MultiPoint, MultiPolygon, Polygon } from "../geometry/index";
 import OverlayLayer, { isGeometry, OverlayLayerOptionsType } from "./OverlayLayer";
 
@@ -82,12 +83,24 @@ export default class DrawToolLayer extends OverlayLayer {
         }
     }
 
+    getGeometryById(id: string | number): Geometry {
+        if (isNil(id) || id === '') {
+            return null;
+        }
+        return this._markerLayer.getGeometryById(id) ||
+            this._lineLayer.getGeometryById(id) ||
+            this._polygonLayer.getGeometryById(id);
+    }
+
     removeGeometry(geometries: Geometry | Geometry[]) {
         if (!Array.isArray(geometries)) {
             geometries = [geometries];
         }
         for (let i = 0; i < geometries.length; i++) {
-            this._geoList.splice(geometries[i] as any, 1);
+            const idx = this._findInList(geometries[i]);
+            if (idx >= 0) {
+                this._geoList.splice(idx, 1);
+            }
             if (this._markerLayer.isVectorLayer) {
                 this._markerLayer.removeGeometry(geometries[i]);
                 continue;
@@ -106,7 +119,10 @@ export default class DrawToolLayer extends OverlayLayer {
         const geometries = params.geometries;
         for (let i = 0; i < geometries.length; i++) {
             if (geometries[i]) {
-                this._geoList.splice(geometries[i] as any, 1);
+                const idx = this._findInList(geometries[i]);
+                if (idx >= 0) {
+                    this._geoList.splice(idx, 1);
+                }
             }
         }
     }

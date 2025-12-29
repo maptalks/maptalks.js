@@ -1,7 +1,7 @@
 import { Coordinate, MapStateCache } from 'maptalks';
 import { vec3, mat4, quat, reshader } from '@maptalks/gl';
-import { setUniformFromSymbol, createColorSetter, isNumber, extend } from '../Util';
-import { getCentiMeterScale, isNil } from '../../../common/Util';
+import { setUniformFromSymbol, createColorSetter, isNumber, extend, getColorOpacity } from '../Util';
+import { getCentiMeterScale, isNil, isString } from '../../../common/Util';
 import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 import { getVectorPacker } from '../../../packer/inject';
 
@@ -204,7 +204,16 @@ const GLTFMixin = Base =>
                         //TODO 什么时候设置 HAS_MORPHNORMALS
                     }
                     // StandardPainter 需要hasAlpha决定是否开启stencil和blend
-                    mesh.setUniform('hasAlpha', extraInfo.alphaMode && extraInfo.alphaMode.toUpperCase() === 'BLEND');
+                    let markerOpacity = symbol['markerOpacity'];
+                    if (!markerOpacity && markerOpacity !== 0) {
+                        markerOpacity = 1;
+                    }
+                    let markerFill = symbol['markerFill'];
+                    if (markerFill && isString(markerFill) && markerFill.startsWith('rgba')) {
+                        const opacity = getColorOpacity(markerFill);
+                        markerOpacity *= opacity;
+                    }
+                    mesh.setUniform('hasAlpha', extraInfo.alphaMode && extraInfo.alphaMode.toUpperCase() === 'BLEND' || markerOpacity < 1);
                     setUniformFromSymbol(mesh.uniforms, 'polygonFill', symbol, 'markerFill', DEFAULT_MARKER_FILL, createColorSetter(this.colorCache));
                     setUniformFromSymbol(mesh.uniforms, 'polygonOpacity', symbol, 'markerOpacity', 1);
                     // mesh.setPositionMatrix(mat4.multiply([], trsMatrix, nodeMatrix));

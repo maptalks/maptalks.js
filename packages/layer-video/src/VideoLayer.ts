@@ -68,7 +68,7 @@ export default class VideoLayer extends Layer {
     }
     if (Array.isArray(videoSurfaces)) {
       videoSurfaces.forEach((videoSurface) => {
-        (this as any).addMarker(videoSurface);
+        (this as any).addSurfaces(videoSurface);
       });
     } else {
       videoSurfaces._layer = this;

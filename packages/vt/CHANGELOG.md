@@ -1,5 +1,28 @@
 # @maptalks/vt
 
+## 0.118.1
+
+### Patch Changes
+
+- fix DrawToolLayer
+- Updated dependencies
+  - @maptalks/gl@0.118.1
+  - @maptalks/gpu@0.118.1
+  - @maptalks/vt-plugin@0.118.1
+
+## 0.118.0
+
+### Minor Changes
+
+- fixes and features
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.118.0
+  - @maptalks/gpu@0.118.0
+  - @maptalks/vt-plugin@0.118.0
+
 ## 0.117.1
 
 ### Patch Changes

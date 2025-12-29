@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/gltf-layer",
-  "version": "0.117.1",
+  "version": "0.118.1",
   "description": "A maptalks Layer to render gltf",
   "license": "UNLICENSED",
   "repository": {

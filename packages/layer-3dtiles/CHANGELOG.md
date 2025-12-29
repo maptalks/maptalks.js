@@ -1,5 +1,24 @@
 # @maptalks/3dtiles
 
+## 0.118.1
+
+### Patch Changes
+
+- fix DrawToolLayer
+- Updated dependencies
+  - maptalks@1.7.1
+
+## 0.118.0
+
+### Minor Changes
+
+- fixes and features
+
+### Patch Changes
+
+- Updated dependencies
+  - maptalks@1.7.0
+
 ## 0.117.1
 
 ### Patch Changes

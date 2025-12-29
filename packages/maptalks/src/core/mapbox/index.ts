@@ -19,7 +19,8 @@ const arr = [],
 export function loadGeoSymbol(symbol, geo): any {
     return loadFunctionTypes(symbol, () => {
         const map = geo.getMap();
-        let bearing = 0, pitch = 0, zoom = 10, hasMap = !!map;
+        let bearing = 0, pitch = 0, zoom = 10;
+        const hasMap = !!map;
         if (map) {
             const mapId = map.id;
             const cache = MapStateCache[mapId];

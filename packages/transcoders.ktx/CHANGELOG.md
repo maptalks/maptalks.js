@@ -1,5 +1,17 @@
 # @maptalks/transcoders.ktx2
 
+## 0.118.1
+
+### Patch Changes
+
+- fix DrawToolLayer
+
+## 0.118.0
+
+### Minor Changes
+
+- fixes and features
+
 ## 0.117.1
 
 ### Patch Changes
