@@ -472,6 +472,9 @@ export default class GPUShader extends GLShader {
     }
 
     _compileWGSLSource(defines) {
+        if (!this.wgslVert) {
+            throw new Error(`(${this.name}) WGSL vertex shader source is not provided.`);
+        }
         const vert = WgslShaderLib.compile(this.wgslVert, defines);
         let frag;
         if (this.wgslFrag) {

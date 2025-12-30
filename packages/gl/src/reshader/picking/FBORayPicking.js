@@ -735,10 +735,15 @@ export default class FBORayPicking {
             height: fbo.height
         });
 
-        const canvas = document.createElement('canvas');
+        const id = 'picking_debug_canvas';
+        let canvas = document.getElementById(id);
+        if (!canvas) {
+            canvas = document.createElement('canvas');
+            canvas.id = id;
+            document.body.appendChild(canvas);
+        }
         canvas.width = fbo.width;
         canvas.height = fbo.height;
-        document.body.appendChild(canvas);
         for (let i = 0; i < data2.length; i += 4) {
             if (data2[i + 3] !== 255) {
                 data2[i + 3] = 255;

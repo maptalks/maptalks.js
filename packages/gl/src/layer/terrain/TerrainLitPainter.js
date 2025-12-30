@@ -105,6 +105,7 @@ class TerrainLitPainter extends TerrainPainter {
         if (!mesh.uniforms.flatMask) {
             const emptyTexture = this.getEmptyTexture();
             mesh.setUniform('flatMask', emptyTexture);
+            mesh.setUniform('maskResolution', [emptyTexture.width, emptyTexture.height]);
         }
         const defines = mesh.defines;
         defines['HAS_UV_FLIP'] = 1;
@@ -131,7 +132,9 @@ class TerrainLitPainter extends TerrainPainter {
                 mesh.material.set('skinTexture', tileImage.skin.color[0]);
             }
             if (tileImage.mask) {
-                mesh.setUniform('flatMask', tileImage.mask.color[0]);
+                const mask = tileImage.mask.color[0];
+                mesh.setUniform('flatMask', mask);
+                mesh.setUniform('maskResolution', [mask.width, mask.height]);
             }
             mesh.setUniform('polygonOpacity', 1.0);
             // const { skirtOffset, skirtCount } = mesh.properties;
