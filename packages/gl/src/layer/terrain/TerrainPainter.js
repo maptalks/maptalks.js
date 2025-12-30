@@ -86,6 +86,7 @@ class TerrainPainter {
         if (!mesh.uniforms.flatMask) {
             const emptyTexture = this.getEmptyTexture();
             mesh.setUniform('flatMask', emptyTexture);
+            mesh.setUniform('maskResolution', [emptyTexture.width, emptyTexture.height]);
         }
 
         mesh.setUniform('heightTexture', heightTexture);
@@ -163,7 +164,9 @@ class TerrainPainter {
         const mesh = tileImage.terrainMesh;
         if (mesh && mesh.geometry && tileImage.skin) {
             mesh.setUniform('skin', tileImage.skin.color[0]);
-            mesh.setUniform('flatMask', tileImage.mask.color[0])
+            const mask = tileImage.mask.color[0];
+            mesh.setUniform('flatMask', mask);
+            mesh.setUniform('maskResolution', [mask.width, mask.height]);
             mesh.setUniform('polygonOpacity', 1.0);
             // const { skirtOffset, skirtCount } = mesh.properties;
             // mesh.geometry.setDrawOffset(skirtOffset);

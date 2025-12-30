@@ -2,9 +2,7 @@ const vert = /* wgsl */`
 #include <invert_matrix>
 #include <draco_decode_vert>
 
-
 #include <instance_vert>
-
 
 #ifdef HAS_SKIN
     struct SkinUniforms {
@@ -32,8 +30,11 @@ const vert = /* wgsl */`
 #endif
 
 #ifdef HAS_TERRAIN_FLAT_MASK
+    struct TerrainMaskUniforms {
+        maskResolution: vec2f
+    };
+    @group(0) @binding($b) var<uniform> terrainMaskUniforms: TerrainMaskUniforms;
     @group(0) @binding($b) var flatMask: texture_2d<f32>;
-    @group(0) @binding($b) var flatMaskSampler: sampler;
 #endif
 
 fn getPositionMatrix(input: VertexInput, vertexOutput: ptr<function, VertexOutput>, positionMatrix: mat4x4f) -> mat4x4f {
@@ -85,9 +86,10 @@ fn getPosition(inputPosition: vec3f, vertexInput: VertexInput) -> vec4f {
         outputPosition.z += vertexInput.aTerrainAltitude * 100.0;
     #endif
     #ifdef HAS_TERRAIN_FLAT_MASK
-        var uv = aTexCoord;
+        var uv = vertexInput.aTexCoord;
         uv.y = 1.0 - uv.y;
-        let encodedHeight = textureSample(flatMask, flatMaskSampler, uv);
+        let texCoord = vec2i(uv * terrainMaskUniforms.maskResolution);
+        let encodedHeight = textureLoad(flatMask, texCoord, 0);
         if (length(encodedHeight) < 2.0) {
             let maskHeight = decodeFloat32(encodedHeight);
             outputPosition.z = min(outputPosition.z, maskHeight);

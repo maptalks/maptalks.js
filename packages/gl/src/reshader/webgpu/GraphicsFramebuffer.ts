@@ -195,7 +195,7 @@ export default class GraphicsFramebuffer {
                 depthStencilAttachment.view = depthTexture.getView();
             }
         }
-        this._resetClearOptions();
+        this.resetClearOptions();
         return this._renderPass;
     }
 
@@ -214,7 +214,7 @@ export default class GraphicsFramebuffer {
         }
     }
 
-    _resetClearOptions() {
+    resetClearOptions() {
         this.colorLoadOp = null;
         this.colorClearValue = null;
         this.depthLoadOp = null;

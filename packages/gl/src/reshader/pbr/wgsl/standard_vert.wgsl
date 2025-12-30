@@ -46,14 +46,13 @@ struct VertexInput {
         #endif
     #endif
 
-    #if HAS_TANGENT || HAS_NORMAL
+    #if HAS_TANGENT
+        @location($i) aTangent: vec4f,
+    #elif HAS_NORMAL
         #ifdef NORMAL_IS_INT
             @location($i) aNormal: vec4i,
         #else
             @location($i) aNormal: vec3f,
-        #endif
-        #if HAS_TANGENT
-            @location($i) aTangent: vec4f,
         #endif
     #endif
 }

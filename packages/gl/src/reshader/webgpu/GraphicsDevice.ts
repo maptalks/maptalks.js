@@ -317,6 +317,10 @@ export default class GraphicsDevice {
                 buffer.destroy();
             }
         }
+        if (this.wgpu) {
+            this.wgpu.destroy();
+            delete this.wgpu;
+        }
         this._readTargets = {};
         this._clearPipelines = {};
     }
