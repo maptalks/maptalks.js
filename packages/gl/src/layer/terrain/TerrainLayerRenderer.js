@@ -1694,7 +1694,7 @@ function computeSkinDimension(terrainTileInfo, tile, terrainTileSize, isFBO, isW
     if (!isFBO && isWebGPU) {
         bottom = -(terrainExtent.ymax - ymax + dy);
     }
-    return [left, -bottom, scale * info.tileSize / terrainTileSize];;
+    return [left, -bottom, scale * info.tileSize / terrainTileSize];
 }
 
 function isValidSkinImage(image) {
