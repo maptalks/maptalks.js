@@ -618,6 +618,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         const tileSize = this.layer.getTileSize().width;
         const skinImages = terrainTileImage.skinImages;
         if (skinImages) {
+            const isWebGPU = !!this.device.wgpu;
             for (let i = 0; i < skinImages.length; i++) {
                 const layerSkinImages = skinImages[i];
                 for (let ii = 0; ii < layerSkinImages.length; ii++) {
@@ -633,8 +634,18 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                         }
 
                     }
-                    const skinDim = computeSkinDimension(terrainTileInfo, tile, tileSize);
+
                     const mesh = layerSkinImages[ii].skinMesh || new reshader.Mesh(this._skinGeometry);
+
+                    // 如果不是FBO，WebGPU 上的 texture 本身需要上下翻转，位置也需要上下调整
+                    const isFBO = checkIfFBO(texture);
+                    const skinDim = computeSkinDimension(terrainTileInfo, tile, tileSize, isFBO, isWebGPU);
+                    if (!isFBO) {
+                        mesh.setUniform('flipY', 1);
+                    } else {
+                        mesh.setUniform('flipY', 0);
+                    }
+
                     mesh.setUniform('skinTexture', texture);
                     const skinTileOpacity = layer.getOpacity();
                     mesh.setUniform('opacity', isNil(skinTileOpacity) ? 1 : skinTileOpacity);
@@ -654,6 +665,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             const debugTexture = terrainTileImage.debugTexture || this._createDebugTexture(terrainTileInfo, tileSize, terrainTileImage.temp);
             terrainTileImage.debugTexture = debugTexture;
             terrainTileImage.skinDebugMesh = debugMesh;
+            debugMesh.setUniform('flipY', 1);
             debugMesh.setUniform('opacity', 1);
             debugMesh.setUniform('skinTexture', debugTexture);
             debugMesh.setUniform('skinDim', [0, 0, 1]);
@@ -1667,18 +1679,22 @@ export default TerrainLayerRenderer;
 //     }
 // }
 
-function computeSkinDimension(terrainTileInfo, tile, terrainTileSize) {
+function computeSkinDimension(terrainTileInfo, tile, terrainTileSize, isFBO, isWebGPU) {
     const { res, extent2d: terrainExtent, offset: terrainOffset } = terrainTileInfo;
     const { info } = tile;
     const scale = info.res / res;
     const offset = info.offset;
     const xmin = info.extent2d.xmin * scale;
+    const ymax = info.extent2d.ymax * scale;
     const ymin = info.extent2d.ymin * scale;
     const dx = terrainOffset[0] - offset[0];
     const dy = offset[1] - terrainOffset[1];
     const left = xmin - terrainExtent.xmin + dx;
-    const bottom = terrainExtent.ymin - ymin + dy;
-    return [left, -bottom, scale * info.tileSize / terrainTileSize];
+    let bottom = terrainExtent.ymin - ymin + dy;
+    if (!isFBO && isWebGPU) {
+        bottom = -(terrainExtent.ymax - ymax + dy);
+    }
+    return [left, -bottom, scale * info.tileSize / terrainTileSize];;
 }
 
 function isValidSkinImage(image) {
@@ -1723,4 +1739,8 @@ function wrapTileColorsTexture(tile, terrainData) {
             tile.colorsTexture = colorsTexture;
         }
     }
+}
+
+function checkIfFBO(texture) {
+    return !!(texture.colorTexture || texture.color);
 }

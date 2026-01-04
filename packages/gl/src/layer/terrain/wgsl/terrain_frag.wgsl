@@ -16,7 +16,7 @@ struct TerrainUniforms {
 @fragment
 fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
     var uv = vec2f(vertexOutput.vUv);
-    uv.y = 1.0 - uv.y;
+    // uv.y = 1.0 - uv.y;
     var color = textureSample(skin, skinSampler, uv);
 
     #if HAS_SHADOWING && !HAS_BLOOM
