@@ -604,7 +604,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             return;
         }
         if (!terrainTileImage.skin) {
-            terrainTileImage.skin = this._createTerrainTexture(terrainTileInfo, terrainTileImage);
+            terrainTileImage.skin = this._createTerrainSkinTexture(terrainTileInfo, terrainTileImage);
             this._prepareMask(terrainTileInfo, terrainTileImage);
         } else {
             TERRAIN_CLEAR.framebuffer = terrainTileImage.skin;
@@ -751,7 +751,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         return texture;
     }
 
-    _createTerrainTexture(tileInfo/*, tileImage*/) {
+    _createTerrainSkinTexture(tileInfo/*, tileImage*/) {
         const tileSize = this.layer.getTileSize().width;
         // 乘以2是为了瓦片（缩放时）被放大后保持清晰度
         let width = tileSize * 2;
