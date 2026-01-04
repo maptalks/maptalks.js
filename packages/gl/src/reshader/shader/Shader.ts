@@ -528,10 +528,10 @@ export default class GPUShader extends GLShader {
                 + mesh.textureVersion + '-' + (mesh.material && mesh.material.textureVersion || 0);
             // 获取或者生成bind group
             let bindGroup = mesh.getBindGroup(groupKey);
-            if (bindGroup && !this._checkBindGroupTextures(bindGroup, props[i])) {
-                bindGroup.outdated = true;
+            if (bindGroup && this._checkBindGroupOutdated(bindGroup, props[i])) {
+                bindGroup = null;
             }
-            if (!bindGroup || (bindGroup as any).outdated) {
+            if (!bindGroup) {
                 bindGroup = bindGroupFormat.createFormatBindGroup(device, mesh, props[i], layout, shaderBuffer, meshBuffer);
                 bindGroupFormat.copyTextures(bindGroup, props[i]);
                 // 缓存bind group，只要buffer和texture没有发生变化，即可以重用
@@ -574,17 +574,18 @@ export default class GPUShader extends GLShader {
         passEncoder.end();
     }
 
-    _checkBindGroupTextures(bindGroup: BindGroupResult, props) {
+    _checkBindGroupOutdated(bindGroup: BindGroupResult, props) {
         if (!bindGroup.uniformTextures) {
-            return true;
+            return false;
         }
+        // 当纹理的version不同，或纹理不同时，则认为bindGroup过期，需要重新创建
         const uniformTextures = bindGroup.uniformTextures;
         for (const p in uniformTextures) {
-            if (uniformTextures[p] !== props[p]) {
-                return false;
+            if (uniformTextures[p].texture !== props[p] || uniformTextures[p].version !== props[p].version) {
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     _getCurrentRenderPassEncoder(device: GraphicsDevice) {

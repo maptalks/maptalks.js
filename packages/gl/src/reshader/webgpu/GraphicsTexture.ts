@@ -3,15 +3,15 @@ import { GPUTexFormat, toTextureFormat } from "./common/ReglTranslator";
 import GraphicsDevice from "./GraphicsDevice";
 
 let arrayBuffer = new ArrayBuffer(1024 * 1024 * 4);
+let flipYBuffer = new ArrayBuffer(1024 * 1024 * 4);
 
 export default class GraphicsTexture {
     texture: GPUTexture;
     device: GraphicsDevice;
     config: any;
     //@internal
-    _bindGroups: GPUBindGroup[] = [];
-    //@internal
     gpuFormat: GPUTexFormat;
+    version = 0;
 
     constructor(device: GraphicsDevice, config) {
         this.device = device;
@@ -30,14 +30,8 @@ export default class GraphicsTexture {
 
     // called when minFilter or magFilter changed
     updateFilter() {
-        this._clearBindGroups();
-    }
-    _clearBindGroups() {
-        if (this._bindGroups.length) {
-            for (let i = 0; i < this._bindGroups.length; i++) {
-                (this._bindGroups[i] as any).outdated = true;
-            }
-            this._bindGroups = [];
+        if (this.texture) {
+            this.version++;
         }
     }
 
@@ -60,8 +54,8 @@ export default class GraphicsTexture {
         const config = this.config;
         const device = this.device.wgpu;
         if (this.texture) {
-            this.texture.destroy();
-            this._clearBindGroups();
+            this.version++;
+            this.device.addToDestroyList(this.texture);
         }
         let texture: GPUTexture;
         {
@@ -141,6 +135,9 @@ export default class GraphicsTexture {
                             dataToWrite = data;
                         }
                     }
+                    if (this.config.flipY) {
+                        dataToWrite = flipY(dataToWrite, width, height, byteLength);
+                    }
                     device.queue.writeTexture(
                         { texture: texture },
                         dataToWrite.buffer,
@@ -166,15 +163,51 @@ export default class GraphicsTexture {
         return this.texture.createView(descriptor);
     }
 
-    addBindGroup(bindGroup) {
-        this._bindGroups.push(bindGroup);
-    }
-
     destroy() {
         if (this.texture) {
             this.texture.destroy();
             delete this.texture;
         }
-        delete this._bindGroups;
     }
+}
+
+/**
+ * 对Uint8Array图像数据进行垂直翻转
+ * @param imageData - 原始图像数据
+ * @param width - 图像宽度（像素）
+ * @param height - 图像高度（像素）
+ * @param bytesPerPixel - 每像素字节数（通常为3-RGB或4-RGBA）
+ * @returns {Uint8Array} - 垂直翻转后的图像数据
+ */
+function flipY(imageData: Float32Array | Uint8Array, width: number, height: number, byteLength: number) {
+    if (flipYBuffer.byteLength < arrayBuffer.byteLength) {
+        flipYBuffer = new ArrayBuffer(arrayBuffer.byteLength);
+    }
+    const bytesPerPixel = imageData instanceof Float32Array ? 4 * 4 : 4;
+    // 创建相同大小的新数组
+    let flippedData;
+    if (imageData instanceof Float32Array) {
+        flippedData = new Float32Array(flipYBuffer, 0, byteLength / 4);
+    } else {
+        flippedData = new Uint8Array(flipYBuffer, 0, byteLength);
+    }
+
+    // 每行的字节数
+    const rowBytes = width * bytesPerPixel;
+
+    // 遍历每一行
+    for (let y = 0; y < height; y++) {
+        // 原始数据的行起始位置
+        const originalRowStart = y * rowBytes;
+        // 翻转后数据的行起始位置（从底部开始）
+        const flippedRowStart = (height - 1 - y) * rowBytes;
+
+        // 复制整行数据
+        flippedData.set(
+            imageData.subarray(originalRowStart, originalRowStart + rowBytes),
+            flippedRowStart
+        );
+    }
+
+    return flippedData;
 }

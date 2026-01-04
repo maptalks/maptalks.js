@@ -27,6 +27,8 @@ export default class GraphicsDevice {
     _drawCount: 0;
     //@internal
     _clearPipelines: any;
+    //@internal
+    _destroyList: any = [];
 
     constructor(device: GPUDevice, context: GPUCanvasContext, adapter: GPUAdapter) {
         this.wgpu = device;
@@ -120,6 +122,16 @@ export default class GraphicsDevice {
             this.wgpu.queue.submit(this.commandBuffers);
             this.commandBuffers.length = 0;
         }
+        for (let i = 0; i < this._destroyList.length; i++) {
+            const resource = this._destroyList[i];
+            resource.destroy();
+        }
+        this._destroyList = [];
+
+    }
+
+    addToDestroyList(texture: GPUTexture) {
+        this._destroyList.push(texture);
     }
 
     preserveDrawingBuffer(canvas) {
