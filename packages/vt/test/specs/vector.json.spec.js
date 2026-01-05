@@ -145,12 +145,12 @@ describe('vector layers toJSON and fromJSON', () => {
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
         //因为是setStyle时，数据会被清空重绘，所以需要监听两次canvasisdirty
-        layer.once('canvasisdirty', () => {
+        setTimeout(() => {
             const pixel = readPixel(layer.getRenderer().canvas, x / 2 + offset[0], y / 2 + offset[1]);
             //开始是红色
             assert.deepEqual(pixel, expectedColor);
             done();
-        });
+        }, 200);
         layer.addTo(map);
     }
 
