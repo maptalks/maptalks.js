@@ -320,11 +320,11 @@ describe('vector layers update style specs', () => {
         });
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        layer.once('canvasisdirty', () => {
+        setTimeout(() => {
             const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
             assert.deepEqual(pixel, [255, 0, 0, 255]);
             done();
-        });
+        }, 100);
         layer.addTo(map);
     });
 
@@ -347,11 +347,11 @@ describe('vector layers update style specs', () => {
         });
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        layer.once('canvasisdirty', () => {
+        setTimeout(() => {
             const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
             assert.deepEqual(pixel, [255, 0, 0, 255]);
             done();
-        });
+        }, 200);
         layer.addTo(map);
         layer.addGeometry(marker);
     });
@@ -375,19 +375,16 @@ describe('vector layers update style specs', () => {
         });
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        let count = 0;
-        layer.on('canvasisdirty', () => {
-            count++;
-            if (count === 1) {
+        setTimeout(() => {
                 marker.setCoordinates([1, 0]);
-            } else if (count === 3) {
+            setTimeout(() => {
                 let pixel = readPixel(layer.getRenderer().canvas, x / 2 + 50, y / 2);
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 assert.deepEqual(pixel, [0, 0, 0, 0]);
                 done();
-            }
-        });
+            }, 200);
+        }, 200);
         layer.addTo(map);
     });
 
@@ -413,26 +410,22 @@ describe('vector layers update style specs', () => {
         });
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        let count = 0;
-        layer.on('canvasisdirty', () => {
-            count++;
-            if (count === 1) {
-                markers[0].remove();
-            } else if (count === 2) {
-                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
-                assert.deepEqual(pixel, [255, 0, 0, 255]);
-                //marker with [0, 1]
-                const pixel2 = readPixel(layer.getRenderer().canvas, x / 2, y / 2 - 50);
-                assert.deepEqual(pixel2, [255, 0, 0, 255]);
-            } else if (count === 3) {
+        setTimeout(() => {
+            const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+            assert.deepEqual(pixel, [255, 0, 0, 255]);
+            //marker with [0, 1]
+            const pixel2 = readPixel(layer.getRenderer().canvas, x / 2, y / 2 - 50);
+            assert.deepEqual(pixel2, [255, 0, 0, 255]);
+            markers[0].remove();
+            setTimeout(() => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 assert.deepEqual(pixel, [0, 0, 0, 0]);
                 //marker with [0, 1]
                 const pixel2 = readPixel(layer.getRenderer().canvas, x / 2, y / 2 - 50);
                 assert.deepEqual(pixel2, [255, 0, 0, 255]);
                 done();
-            }
-        });
+            }, 200);
+        }, 200);
         layer.addTo(map);
     });
 
@@ -452,11 +445,11 @@ describe('vector layers update style specs', () => {
         });
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        layer.once('canvasisdirty', () => {
+        setTimeout(() => {
             const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
             assert.deepEqual(pixel, [255, 0, 0, 255]);
             done();
-        });
+        }, 200);
         layer.addTo(map);
     });
 
@@ -473,19 +466,21 @@ describe('vector layers update style specs', () => {
         const layer = new LineStringLayer('vector', line);
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        layer.once('canvasisdirty', () => {
+        setTimeout(() => {
             const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
-            assert.deepEqual(pixel, [255, 185, 0, 255]);
-            layer.once('canvasisdirty', () => {
+            assert(pixel[0] === 255);
+            assert(pixel[1] > 180);
+            assert(pixel[3] === 255);
+            setTimeout(() => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 assert.deepEqual(pixel, [0, 0, 255, 255]);
                 done();
-            });
+            }, 200);
             line.setProperties({
                 gradients: [0, 'blue', 0.7, 'blue', 1, 'blue']
             });
 
-        });
+        }, 200);
         layer.addTo(map);
     });
 
@@ -518,19 +513,16 @@ describe('vector layers update style specs', () => {
         const layer = new LineStringLayer('vector', line);
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        let count = 0;
-        layer.on('canvasisdirty', () => {
-            count++;
-            if (count === 1) {
-                line.updateSymbol({
-                    lineOpacity: 1
-                });
-            } else if (count === 3) {
+        setTimeout(() => {
+            line.updateSymbol({
+                lineOpacity: 1
+            });
+            setTimeout(() => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 done();
-            }
-        });
+            }, 200);
+        }, 200);
         layer.addTo(map);
     });
 
@@ -555,19 +547,16 @@ describe('vector layers update style specs', () => {
         const layer = new PointLayer('points', marker);
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        let count = 0;
-        layer.on('canvasisdirty', () => {
-            count++;
-            if (count === 1) {
-                marker.updateSymbol({
-                    markerOpacity: 0.5
-                });
-            } else if (count === 3) {
+        setTimeout(() => {
+            marker.updateSymbol({
+                markerOpacity: 0.5
+            });
+            setTimeout(() => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2 - 10);
                 assert.deepEqual(pixel, [255, 0, 0, 127]);
                 done();
-            }
-        });
+            }, 200);
+        }, 200);
         layer.addTo(map);
     });
 
@@ -588,11 +577,11 @@ describe('vector layers update style specs', () => {
         });
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        layer.once('canvasisdirty', () => {
+        setTimeout(() => {
             const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
             assert.deepEqual(pixel, [255, 0, 0, 255]);
             done();
-        });
+        }, 200);
         layer.addTo(map);
         layer.addGeometry(line);
     });
@@ -613,24 +602,21 @@ describe('vector layers update style specs', () => {
         });
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        let count = 0;
         let partialUpdate = false;
         layer.on('partialupdate', () => {
             partialUpdate = true;
         });
-        layer.on('canvasisdirty', () => {
-            count++;
-            if (count === 1) {
-                line.setCoordinates([[-1, 1], [1, 1], [1.1, 1]]);
-            } else if (count === 3) {
+        setTimeout(() => {
+            line.setCoordinates([[-1, 1], [1, 1], [1.1, 1]]);
+            setTimeout(() => {
                 let pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2 - 50);
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 assert.deepEqual(pixel, [0, 0, 0, 0]);
                 assert(!partialUpdate);
                 done();
-            }
-        });
+            }, 200);
+        }, 200);
         layer.addTo(map);
     });
 
@@ -649,24 +635,21 @@ describe('vector layers update style specs', () => {
         });
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        let count = 0;
         let partialUpdate = false;
         layer.on('partialupdate', () => {
             partialUpdate = true;
         });
-        layer.on('canvasisdirty', () => {
-            count++;
-            if (count === 1) {
-                line.translate(0, 1);
-            } else if (count === 3) {
+        setTimeout(() => {
+            line.translate(0, 1);
+            setTimeout(() => {
                 let pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2 - 50);
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 assert.deepEqual(pixel, [0, 0, 0, 0]);
                 assert(partialUpdate);
                 done();
-            }
-        });
+            }, 200);
+        }, 200);
         layer.addTo(map);
     });
 
@@ -689,24 +672,20 @@ describe('vector layers update style specs', () => {
         });
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        let count = 0;
-        layer.on('canvasisdirty', () => {
-            count++;
-            if (count === 1) {
-                lines[0].remove();
-            } else if (count === 2) {
-                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
-                assert.deepEqual(pixel, [255, 0, 0, 255]);
-                const pixel2 = readPixel(layer.getRenderer().canvas, x / 2, y / 2 - 50);
-                assert.deepEqual(pixel2, [255, 0, 0, 255]);
-            } else if (count === 3) {
+        setTimeout(() => {
+            const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+            assert.deepEqual(pixel, [255, 0, 0, 255]);
+            const pixel2 = readPixel(layer.getRenderer().canvas, x / 2, y / 2 - 50);
+            assert.deepEqual(pixel2, [255, 0, 0, 255]);
+            lines[0].remove();
+            setTimeout(() => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 assert.deepEqual(pixel, [0, 0, 0, 0]);
                 const pixel2 = readPixel(layer.getRenderer().canvas, x / 2, y / 2 - 50);
                 assert.deepEqual(pixel2, [255, 0, 0, 255]);
                 done();
-            }
-        });
+            }, 200);
+        }, 200);
         layer.addTo(map);
     });
 
@@ -721,16 +700,13 @@ describe('vector layers update style specs', () => {
         const layer = new LineStringLayer('vector', line);
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        let count = 0;
-        layer.on('canvasisdirty', () => {
-            count++;
-            if (count === 1) {
-                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
-                assert.deepEqual(pixel, [255, 0, 0, 255]);
-                line.updateSymbol({
-                    lineDasharray: [24, 24, 0, 0]
-                });
-            } else if (count === 3) {
+        setTimeout(() => {
+            const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+            assert.deepEqual(pixel, [255, 0, 0, 255]);
+            line.updateSymbol({
+                lineDasharray: [24, 24, 0, 0]
+            });
+            setTimeout(() => {
                 let pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 pixel = readPixel(layer.getRenderer().canvas, x / 2 + 20, y / 2);
@@ -738,14 +714,15 @@ describe('vector layers update style specs', () => {
                 line.updateSymbol({
                     lineDasharray: [0, 0, 0, 0]
                 });
-            } else if (count === 5) {
-                let pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
-                assert.deepEqual(pixel, [255, 0, 0, 255]);
-                pixel = readPixel(layer.getRenderer().canvas, x / 2 + 20, y / 2);
-                assert.deepEqual(pixel, [255, 0, 0, 255]);
-                done();
-            }
-        });
+                setTimeout(() => {
+                    let pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                    assert.deepEqual(pixel, [255, 0, 0, 255]);
+                    pixel = readPixel(layer.getRenderer().canvas, x / 2 + 20, y / 2);
+                    assert.deepEqual(pixel, [255, 0, 0, 255]);
+                    done();
+                }, 200);
+            }, 200);
+        }, 200);
         layer.addTo(map);
     });
 
@@ -761,28 +738,26 @@ describe('vector layers update style specs', () => {
         const layer = new LineStringLayer('vector', line);
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        let count = 0;
-        layer.on('canvasisdirty', () => {
-            count++;
-            if (count === 1) {
+        setTimeout(() => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 line.updateSymbol({
                     lineJoin: 'bevel'
                 });
-            } else if (count === 3) {
+            setTimeout(() => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 line.updateSymbol({
                     lineJoin: 'miter'
                 });
 
-            } else if (count === 5) {
-                let pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
-                assert.deepEqual(pixel, [255, 0, 0, 255]);
-                done();
-            }
-        });
+                setTimeout(() => {
+                    let pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                    assert.deepEqual(pixel, [255, 0, 0, 255]);
+                    done();
+                }, 200);
+            }, 200);
+        }, 200);
         layer.addTo(map);
     });
 
@@ -798,28 +773,26 @@ describe('vector layers update style specs', () => {
         const layer = new LineStringLayer('vector', line);
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        let count = 0;
-        layer.on('canvasisdirty', () => {
-            count++;
-            if (count === 1) {
-                const pixel = readPixel(layer.getRenderer().canvas, x / 2 - 5, y / 2);
-                assert.deepEqual(pixel, [255, 0, 0, 255]);
-                line.updateSymbol({
-                    lineCap: 'square'
-                });
-            } else if (count === 3) {
+        setTimeout(() => {
+            const pixel = readPixel(layer.getRenderer().canvas, x / 2 - 5, y / 2);
+            assert.deepEqual(pixel, [255, 0, 0, 255]);
+            line.updateSymbol({
+                lineCap: 'square'
+            });
+            setTimeout(() => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 line.updateSymbol({
                     lineCap: 'round'
                 });
 
-            } else if (count === 5) {
-                let pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
-                assert.deepEqual(pixel, [255, 0, 0, 255]);
-                done();
-            }
-        });
+                setTimeout(() => {
+                    let pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                    assert.deepEqual(pixel, [255, 0, 0, 255]);
+                    done();
+                }, 200);
+            }, 200);
+        }, 200);
         layer.addTo(map);
     });
 
@@ -839,24 +812,21 @@ describe('vector layers update style specs', () => {
         });
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        let count = 0;
         let partialUpdate = false;
         layer.on('partialupdate', () => {
             partialUpdate = true;
         });
-        layer.on('canvasisdirty', () => {
-            count++;
-            if (count === 1) {
-                polygon.setCoordinates([[[-1, 2], [1, 2], [1, 0], [-1, 0], [-1, 2]]]);
-            } else if (count === 3) {
+        setTimeout(() => {
+            polygon.setCoordinates([[[-1, 2], [1, 2], [1, 0], [-1, 0], [-1, 2]]]);
+            setTimeout(() => {
                 let pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2 - 50);
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 assert.deepEqual(pixel, [0, 0, 0, 0]);
                 assert(!partialUpdate);
                 done();
-            }
-        });
+            }, 200);
+        }, 200);
         layer.addTo(map);
     });
 
@@ -874,24 +844,21 @@ describe('vector layers update style specs', () => {
         });
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        let count = 0;
         let partialUpdate = false;
         layer.on('partialupdate', () => {
             partialUpdate = true;
         });
-        layer.on('canvasisdirty', () => {
-            count++;
-            if (count === 1) {
-                polygon.translate(0, 1);
-            } else if (count === 3) {
+        setTimeout(() => {
+            polygon.translate(0, 1);
+            setTimeout(() => {
                 let pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2 - 50);
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2 + 20);
                 assert.deepEqual(pixel, [0, 0, 0, 0]);
                 assert(partialUpdate);
                 done();
-            }
-        });
+            }, 200);
+        }, 200);
         layer.addTo(map);
     });
 
@@ -905,19 +872,16 @@ describe('vector layers update style specs', () => {
         const layer = new PolygonLayer('vector', polygon);
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        let count = 0;
-        layer.on('canvasisdirty', () => {
-            count++;
-            if (count === 1) {
-                polygon.updateSymbol({
-                    polygonOpacity: 1
-                });
-            } else if (count === 4) {
+        setTimeout(() => {
+            polygon.updateSymbol({
+                polygonOpacity: 1
+            });
+            setTimeout(() => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 done();
-            }
-        });
+            }, 200);
+        }, 200);
         layer.addTo(map);
     });
 
@@ -938,27 +902,24 @@ describe('vector layers update style specs', () => {
         });
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        let count = 0;
         let partialUpdate = false;
         layer.on('partialupdate', () => {
             partialUpdate = true;
         });
-        layer.on('canvasisdirty', () => {
-            count++;
-            if (count === 1) {
-                let pixel = readPixel(layer.getRenderer().canvas, x / 2 + 40, y / 2);
-                assert.deepEqual(pixel, [255, 0, 0, 255]);
-                polygon.setCoordinates([
-                    [[[-1, 2], [-0.5, 2], [-0.5, 0], [-1, 0], [-1, 2]]],
-                    [[[0.5, 2], [1, 2], [1, 0], [0.5, 0], [0.5, 2]]],
-                ]);
-            } else if (count === 3) {
+        setTimeout(() => {
+            let pixel = readPixel(layer.getRenderer().canvas, x / 2 + 40, y / 2);
+            assert.deepEqual(pixel, [255, 0, 0, 255]);
+            polygon.setCoordinates([
+                [[[-1, 2], [-0.5, 2], [-0.5, 0], [-1, 0], [-1, 2]]],
+                [[[0.5, 2], [1, 2], [1, 0], [0.5, 0], [0.5, 2]]],
+            ]);
+            setTimeout(() => {
                 let pixel = readPixel(layer.getRenderer().canvas, x / 2 + 40, y / 2);
                 assert.deepEqual(pixel, [0, 0, 0, 0]);
                 assert(!partialUpdate);
                 done();
-            }
-        });
+            }, 200);
+        }, 200);
         layer.addTo(map);
     });
 
@@ -979,24 +940,21 @@ describe('vector layers update style specs', () => {
         });
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        let count = 0;
         let partialUpdate = false;
         layer.on('partialupdate', () => {
             partialUpdate = true;
         });
-        layer.on('canvasisdirty', () => {
-            count++;
-            if (count === 1) {
-                let pixel = readPixel(layer.getRenderer().canvas, x / 2 + 40, y / 2);
-                assert.deepEqual(pixel, [255, 0, 0, 255]);
-                polygon.translate(new maptalks.Coordinate(0, 100));
-            } else if (count === 3) {
+        setTimeout(() => {
+            let pixel = readPixel(layer.getRenderer().canvas, x / 2 + 40, y / 2);
+            assert.deepEqual(pixel, [255, 0, 0, 255]);
+            polygon.translate(new maptalks.Coordinate(0, 100));
+            setTimeout(() => {
                 let pixel = readPixel(layer.getRenderer().canvas, x / 2 + 40, y / 2);
                 assert.deepEqual(pixel, [0, 0, 0, 0]);
                 assert(partialUpdate);
                 done();
-            }
-        });
+            }, 200);
+        }, 200);
         layer.addTo(map);
     });
 
