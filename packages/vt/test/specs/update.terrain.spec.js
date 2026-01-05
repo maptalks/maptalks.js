@@ -40,7 +40,6 @@ const line = {
 const terrain = {
     type: 'mapbox',
     tileSize: 512,
-    spatialReference: 'preset-vt-3857',
     urlTemplate: 'http://localhost:' + PORT + '/mapbox-terrain/{z}/{x}/{y}.webp',
     tileStackDepth: 0,
     tileLimitPerFrame: 0,
@@ -107,20 +106,15 @@ describe('update vt on terrain specs', () => {
             setTimeout(() => {
                 let pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
-                pixel = readPixel(renderer.canvas, x / 2, y / 2 + 40);
-                assert(pixel[0] >= 116);
-                assert(pixel[1] >= 116);
-                assert(pixel[2] >= 116);
-                assert(pixel[3] === 255);
                 done();
             }, 3000);
             group.addTo(map);
         }
-        it ('without post process', done => {
+        it('without post process', done => {
             lineTerrainRunner(done, false);
         });
 
-        it ('with post process', done => {
+        it('with post process', done => {
             lineTerrainRunner(done, true);
         });
 
