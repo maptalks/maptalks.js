@@ -196,7 +196,7 @@ describe('layer related specs', () => {
                     {
                         type: 'Feature',
                         geometry: {
-                            coordinates: [[0, 0], [0.0001, 0]],
+                            coordinates: [[0, 0], [1, 0]],
                             type: 'LineString'
                         },
                         properties: {}
@@ -230,7 +230,56 @@ describe('layer related specs', () => {
 
                 ]
             },
-            features: true
+            features: true,
+            style: {
+                style: [
+                    {
+                        filter: ["all",
+                            ["==", "$type", "Polygon"]
+                        ],
+                        renderPlugin: {
+                            dataConfig: {
+                                type: "fill"
+                            },
+                            type: "fill"
+                        },
+                        symbol: {
+                            polygonFill: "green"
+                        },
+                    },
+                    {
+                        filter: ["all",
+                            ["==", "$type", "LineString"]
+                        ],
+                        renderPlugin: {
+                            dataConfig: {
+                                type: "line"
+                            },
+                            type: "line"
+                        },
+                        symbol: {
+                            lineColor: "#1bbc9b",
+                            lineWidth: 6,
+                        },
+                    },
+                    {
+                        filter: ["all",
+                            ["==", "$type", "Point"]
+                        ],
+                        renderPlugin: {
+                            dataConfig: {
+                                type: "point"
+                            },
+                            type: "icon"
+                        },
+                        symbol: {
+                            markerType: 'ellipse',
+                            markerWidth: 5,
+                            markerHeight: 5
+                        },
+                    }
+                ]
+            }
         });
         let count = 0;
         layer.on('canvasisdirty', () => {
