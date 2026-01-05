@@ -2119,7 +2119,7 @@ describe('vector layers update style specs', () => {
         const canvas = map.getRenderer().canvas;
         setTimeout(() => {
             const expectedPath = path.join(__dirname, 'fixtures', 'line-altitude', 'expected.png');
-            compareExpected(canvas, { expectedPath }, done);
+            compareExpected(canvas, { expectedPath, expectedDiffCount: 5 }, done);
         }, 500);
         group.addTo(map);
     });

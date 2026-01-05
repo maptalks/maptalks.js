@@ -23,6 +23,9 @@ function readCanvasPixels(target) {
 }
 
 function compareExpected(canvas, { expectedPath, expectedDiffCount }, done) {
+    if (canvas.readbackCanvas) {
+        canvas = canvas.readbackCanvas;
+    }
     match(canvas, expectedPath, (err, result) => {
         if (err) {
             if (done) {
@@ -39,7 +42,7 @@ function compareExpected(canvas, { expectedPath, expectedDiffCount }, done) {
             const actualPath = dir + 'actual.png';
             writeImageData(actualPath, readCanvasPixels(canvas), canvas.width, canvas.height);
         }
-        assert(result.diffCount <= expectedDiffCount);
+        assert(result.diffCount <= expectedDiffCount, result.diffCount + ' pixels are different from expected ' + expectedDiffCount);
         if (done) {
             done();
         }
