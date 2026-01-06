@@ -1,8 +1,10 @@
+import REGL from "@maptalks/regl";
 import { getSupportedFormats, isNumber } from "../common/Util";
 import Geometry from "../Geometry";
 import DynamicBufferPool from "./DynamicBufferPool";
 import GraphicsFramebuffer from "./GraphicsFramebuffer";
 import GraphicsTexture from "./GraphicsTexture";
+import GraphicsCubeTexture from "./GraphicsCubeTexture";
 
 let uid = 0;
 
@@ -174,6 +176,11 @@ export default class GraphicsDevice {
             };
         }
         return new GraphicsTexture(this, config);
+    }
+
+    // implementation of regl.cube
+    cube(options: REGL.TextureCubeOptions) {
+        return new GraphicsCubeTexture(this, options);
     }
 
     // implementation of regl.clear
