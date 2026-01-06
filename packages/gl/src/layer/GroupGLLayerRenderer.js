@@ -557,18 +557,21 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
     resizeCanvas() {
         const width = this.canvas.width;
         const height = this.canvas.height;
-        if (this._targetFBO && (this._targetFBO.width !== width ||
-            this._targetFBO.height !== height)) {
+        let needResize = false;
+        const map = this.getMap();
+        if (map) {
+            const mapRenderer = map.getRenderer() || {};
+            if (mapRenderer.canvas) {
+                const mapCanvas = mapRenderer.canvas;
+                needResize = width !== mapCanvas.width || height !== mapCanvas.height;
+            }
+        }
+        if (needResize) {
             super.resizeCanvas();
-            this._targetFBO.resize(width, height);
-            // this._noAaFBO.resize(width, height);
-            // this._pointFBO.resize(width, height);
-            // if (this._taaFBO) {
-            //     this._taaFBO.resize(width, height);
-            // }
-            // if (this._fxaaFBO) {
-            //     this._fxaaFBO.resize(width, height);
-            // }
+            const { width, height } = this.canvas;
+            if (this._targetFBO) {
+                this._targetFBO.resize(width, height);
+            }
             this._clearFramebuffers();
             this.forEachRenderer(renderer => {
                 if (renderer.canvas) {
@@ -576,6 +579,25 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
                 }
             });
         }
+        // if (this._targetFBO && (this._targetFBO.width !== width ||
+        //     this._targetFBO.height !== height)) {
+        //     super.resizeCanvas();
+        //     this._targetFBO.resize(width, height);
+        //     // this._noAaFBO.resize(width, height);
+        //     // this._pointFBO.resize(width, height);
+        //     // if (this._taaFBO) {
+        //     //     this._taaFBO.resize(width, height);
+        //     // }
+        //     // if (this._fxaaFBO) {
+        //     //     this._fxaaFBO.resize(width, height);
+        //     // }
+        //     this._clearFramebuffers();
+        //     this.forEachRenderer(renderer => {
+        //         if (renderer.canvas) {
+        //             renderer.resizeCanvas();
+        //         }
+        //     });
+        // }
 
     }
 
