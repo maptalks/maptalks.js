@@ -565,6 +565,11 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
                 const mapCanvas = mapRenderer.canvas;
                 needResize = width !== mapCanvas.width || height !== mapCanvas.height;
             }
+            if (!needResize) {
+                if (this._targetFBO) {
+                    needResize = (this._targetFBO.width !== width || this._targetFBO.height !== height)
+                }
+            }
         }
         if (needResize) {
             super.resizeCanvas();
