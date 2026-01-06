@@ -684,10 +684,8 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             const scale = this.getScale();
 
             const calBox = () => {
-                //@ts-ignore
-                const p3 = this._containerPointToPointAtRes(p1, glRes);
-                //@ts-ignore
-                const p4 = this._containerPointToPointAtRes(p2, glRes);
+                const p3 = this['_containerPointToPointAtRes'](p1, glRes);
+                const p4 = this['_containerPointToPointAtRes'](p2, glRes);
                 box[0][0] = Math.min(p3.x, p4.x);
                 box[0][1] = Math.min(p3.y, p4.y);
                 box[1][0] = Math.max(p3.x, p4.x);
