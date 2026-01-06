@@ -1,7 +1,6 @@
 import Ellipse from '../../geometry/Ellipse';
 import ArcCurve from '../../geometry/ArcCurve';
 import LineString from '../../geometry/LineString';
-import { extendSymbol } from '../../core/util/style';
 import { extend, isFunction } from '../../core/util/';
 import QuadBezierCurve from '../../geometry/QuadBezierCurve';
 import Coordinate from '../../geo/Coordinate';
@@ -212,7 +211,6 @@ const polygonHooks: modeActionType = {
         return polygon;
     },
     'update': function (projection, path, geometry, mapEvent) {
-        const symbol = geometry.getSymbol();
         let prjCoords;
         if (Array.isArray(path)) {
             prjCoords = path;
@@ -227,27 +225,6 @@ const polygonHooks: modeActionType = {
 
         // geometry._setPrjCoordinates(prjCoords);
         geometry.setCoordinates(coordinates);
-        const layer = geometry.getLayer();
-        if (layer) {
-            let polygon = layer.getGeometryById('polygon');
-            if (!polygon && prjCoords.length >= 3) {
-                polygon = new Polygon([coordinates], {
-                    'id': 'polygon',
-                    'zIndex': -1
-                });
-                if (symbol) {
-                    const pSymbol = extendSymbol(symbol, {
-                        'lineOpacity': 0
-                    });
-                    polygon.setSymbol(pSymbol);
-                }
-                polygon.addTo(layer);
-            }
-            if (polygon) {
-                // polygon._setPrjCoordinates(prjCoords);
-                polygon.setCoordinates([coordinates]);
-            }
-        }
     },
     'generate': function (geometry) {
         const polygon = new Polygon(geometry.getCoordinates(), {
