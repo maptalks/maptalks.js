@@ -560,7 +560,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         let needResize = false;
         const map = this.getMap();
         if (map) {
-            //map renderer is canvas
+            //map renderer is 'canvas'
             const mapRenderer = map.getRenderer() || {};
             if (mapRenderer.canvas) {
                 const mapCanvas = mapRenderer.canvas;
@@ -569,7 +569,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         }
         if (!needResize) {
             if (this._targetFBO) {
-                //map renderer is gl
+                //map renderer is 'gl'
                 needResize = (this._targetFBO.width !== width || this._targetFBO.height !== height)
             }
         }
