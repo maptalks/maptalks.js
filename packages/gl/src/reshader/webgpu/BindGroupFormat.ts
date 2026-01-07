@@ -145,6 +145,10 @@ export default class BindGroupFormat {
                     descriptor = {
                         aspect: 'depth-only'
                     };
+                } else if (group.type.name === 'texture_cube') {
+                    descriptor = {
+                        dimension: 'cube'
+                    };
                 }
                 entries.push({
                     binding: group.binding,
@@ -163,7 +167,6 @@ export default class BindGroupFormat {
                 });
             }
         }
-
         const bindGroup = device.wgpu.createBindGroup({
             layout,
             label,

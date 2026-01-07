@@ -79,7 +79,7 @@ struct SceneUniforms {
 struct ShaderUniforms {
     #if HAS_IBL_LIGHTING
         hdrHSV: vec3f,
-        diffuseSPH: vec3f,
+        diffuseSPH: array<vec3f, 9>,
         prefilterMiplevel: vec2f,
         prefilterSize: vec2f,
     #else
@@ -145,7 +145,7 @@ struct ShaderUniforms {
 @group(0) @binding($b) var brdfLUTSampler: sampler;
 #if HAS_IBL_LIGHTING
     @group(0) @binding($b) var prefilterMap: texture_cube<f32>;
-    @group(0) @binding($b) var prefilterSampler: sampler;
+    @group(0) @binding($b) var prefilterMapSampler: sampler;
 #endif
 #if HAS_SSR
     @group(0) @binding($b) var TextureDepth: texture_2d<f32>;
@@ -274,7 +274,7 @@ fn computeLambert(
 
 #if HAS_IBL_LIGHTING
     fn computeDiffuseSPH(normal: vec3f) -> vec3f {
-        let n = uniforms.environmentTransform * normal;
+        let n = shaderUniforms.environmentTransform * normal;
         let diffuseSPH = shaderUniforms.diffuseSPH;
         let x = n.x;
         let y = n.y;
@@ -300,7 +300,7 @@ fn computeLambert(
         let dir = R;
         let maxLevels = shaderUniforms.prefilterMiplevel.x;
         let lod = min(maxLevels, roughness * shaderUniforms.prefilterMiplevel.y);
-        var envLight = textureSampleLevel(prefilterMap, prefilterSampler, dir, lod).rgb;
+        var envLight = textureSampleLevel(prefilterMap, prefilterMapSampler, dir, lod).rgb;
         if (length(shaderUniforms.hdrHSV) > 0.0) {
             envLight = hsv_apply3(envLight, shaderUniforms.hdrHSV);
         }
@@ -313,7 +313,7 @@ fn computeLambert(
 
         let factor = clamp(1.0 + dot(R, frontNormal), 0.0, 1.0);
 
-        let prefilteredEnvColor = fetchEnvMap(roughness, uniforms.environmentTransform * R) * factor * factor;
+        let prefilteredEnvColor = fetchEnvMap(roughness, shaderUniforms.environmentTransform * R) * factor * factor;
         return prefilteredEnvColor;
     }
 #else
