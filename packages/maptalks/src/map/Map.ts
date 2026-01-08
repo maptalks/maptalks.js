@@ -671,8 +671,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (maxVisualPitch && pitch > maxVisualPitch) {
             visualHeight = this._getVisualHeight(maxVisualPitch);
         }
-        const extent = new PointExtent(0, this.height - visualHeight, this.width, this.height);
-        return extent;
+        return new PointExtent(0, this.height - visualHeight, this.width, this.height);
     }
 
 
