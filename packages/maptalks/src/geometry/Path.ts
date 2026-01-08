@@ -499,6 +499,7 @@ export type PathOptionsType = GeometryOptionsType & {
     'smoothness'?: boolean;
     'enableClip'?: boolean;
     'strictClip'?: boolean;
+    'groundClip'?: boolean;
     'enableSimplify'?: boolean;
     'simplifyTolerance'?: number;
     'symbol'?: FillSymbol | LineSymbol;
