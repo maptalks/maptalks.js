@@ -477,8 +477,8 @@ class LayerAbstractRenderer extends Class {
             this.layer.fire('contextinit', { 'context': this.context });
         } else if (isMapCanvasRenderer) {
             this.clearContext();
-            this.resizeCanvas();
         }
+        this.resizeCanvas();
         this.prepareContext();
         delete this._maskExtent;
         const mask = this.layer.getMask();
