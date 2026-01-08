@@ -1473,7 +1473,7 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         if (uid === undefined) {
             return;
         }
-        if (!this.painter) {
+        if (!this.features[uid]) {
             return;
         }
         this.features[uid] = convertToFeature(geo, this._kidGen);
