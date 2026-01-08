@@ -8,3 +8,4 @@ if ((typeof transcoders) !== 'undefined') {
     transcodersGPU.registerTranscoder('ktx2', transcoder);
 }
 
+export default transcoder;
