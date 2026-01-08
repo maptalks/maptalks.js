@@ -221,15 +221,15 @@ class Painter extends Class {
      */
     getPaintParams(dx: number, dy: number, ignoreAltitude: boolean, disableClip: boolean, ptkey = '_pt') {
         const renderer = this.getLayer()._getRenderer();
-        const mapStateCache = renderer.mapStateCache;
+        const rendererStateCache = renderer.rendererStateCache;
         let resolution, pitch, bearing, glScale, containerExtent;
         const map = this.getMap();
-        if (mapStateCache && (!this._hitPoint)) {
-            resolution = mapStateCache.resolution;
-            pitch = mapStateCache.pitch;
-            bearing = mapStateCache.bearing;
-            glScale = mapStateCache.glScale;
-            containerExtent = mapStateCache.containerExtent;
+        if (rendererStateCache && (!this._hitPoint)) {
+            resolution = rendererStateCache.resolution;
+            pitch = rendererStateCache.pitch;
+            bearing = rendererStateCache.bearing;
+            glScale = rendererStateCache.glScale;
+            containerExtent = rendererStateCache.containerExtent;
         } else {
             const cache = MapStateCache[map.id];
             resolution = map.getResolution();
@@ -310,15 +310,15 @@ class Painter extends Class {
             return null;
         }
         const renderer = this.getLayer()._getRenderer();
-        const mapStateCache = renderer.mapStateCache;
+        const rendererStateCache = renderer.rendererStateCache;
 
         const map = this.getMap(),
             geometry = this.geometry,
             containerOffset = this.containerOffset;
         let glRes: number, containerExtent: Extent;
-        if (mapStateCache) {
-            glRes = mapStateCache.glRes;
-            containerExtent = mapStateCache.containerExtent;
+        if (rendererStateCache) {
+            glRes = rendererStateCache.glRes;
+            containerExtent = rendererStateCache.containerExtent;
         } else {
             glRes = map.getGLRes();
             containerExtent = map.getGroundExtent();
@@ -529,13 +529,13 @@ class Painter extends Class {
             lineWidth = 4;
         }
         const renderer = this.getLayer()._getRenderer();
-        const mapStateCache = renderer.mapStateCache;
+        const rendererStateCache = renderer.rendererStateCache;
         let _2DExtent, glExtent, pitch;
-        if (mapStateCache) {
+        if (rendererStateCache) {
             //@internal
-            _2DExtent = mapStateCache._2DExtent;
-            glExtent = mapStateCache.glExtent;
-            pitch = mapStateCache.pitch;
+            _2DExtent = rendererStateCache._2DExtent;
+            glExtent = rendererStateCache.glExtent;
+            pitch = rendererStateCache.pitch;
         } else {
             //@internal
             _2DExtent = map.get2DExtent();
@@ -694,7 +694,7 @@ class Painter extends Class {
         if (!renderer || !renderer.context && !context) {
             return;
         }
-        const mapStateCache = renderer.mapStateCache || { offset: undefined };
+        const rendererStateCache = renderer.rendererStateCache || { offset: undefined };
         //reduce geos to paint when drawOnInteracting
         if (!this.geometry._isCheck) {
             if (extent && !extent.intersects(this.get2DExtent(renderer.resources, TEMP_PAINT_EXTENT))) {
@@ -705,7 +705,7 @@ class Painter extends Class {
             return;
         }
         //Multiplexing offset
-        this.containerOffset = offset || mapStateCache.offset;
+        this.containerOffset = offset || rendererStateCache.offset;
         if (!this.containerOffset) {
             const map = this.getMap();
             this.containerOffset = map._pointToContainerPoint(renderer.middleWest)._add(0, -map.height / 2);

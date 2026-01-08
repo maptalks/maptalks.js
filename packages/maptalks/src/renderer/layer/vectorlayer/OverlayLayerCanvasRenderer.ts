@@ -5,7 +5,7 @@ import Extent from '../../../geo/Extent';
 import LayerAbstractRenderer from '../LayerAbstractRenderer';
 import { MixinConstructor } from '../../../core/Mixin';
 
-interface MapStateCacheType {
+interface RendererStateCacheType {
     resolution: number;
     pitch: number;
     bearing: number;
@@ -28,7 +28,7 @@ const OverlayLayerRenderable = function <T extends MixinConstructor>(Base: T) {
         //@internal
         _lastGeosToDraw: Geometry[];
         //@internal
-        mapStateCache: MapStateCacheType;
+        rendererStateCache: RendererStateCacheType;
 
         /**
          * @english
