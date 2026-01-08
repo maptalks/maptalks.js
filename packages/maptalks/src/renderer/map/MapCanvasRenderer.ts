@@ -561,7 +561,7 @@ class MapCanvasRenderer extends MapAbstractRenderer {
         const h30 = this.map.height - this.map._getVisualHeight(cascadePitches[0]);
         const h60 = this.map.height - this.map._getVisualHeight(cascadePitches[1]);
 
-        const extent = this.map.getContainerExtent();
+        const extent = this.map._getContainerExtent();
         const ctx = this.context;
         ctx.beginPath();
         ctx.moveTo(0, extent.ymin);
@@ -590,7 +590,7 @@ class MapCanvasRenderer extends MapAbstractRenderer {
         const fogThickness = 30;
         const r = map.getDevicePixelRatio();
         const ctx = this.context,
-            clipExtent = map.getContainerExtent();
+            clipExtent = map._getContainerExtent();
         let top = (map.height - map._getVisualHeight(75)) * r;
         if (top < 0) top = 0;
         const bottom = clipExtent.ymin * r,
@@ -613,7 +613,7 @@ class MapCanvasRenderer extends MapAbstractRenderer {
         if (!map) {
             return this;
         }
-        const height = map.getContainerExtent().ymin;
+        const height = map._getContainerExtent().ymin;
         if (height <= 0) {
             return this;
         }

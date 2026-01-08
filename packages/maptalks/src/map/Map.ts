@@ -660,8 +660,11 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
         return new Size(this.width, this.height);
     }
-
-    _getContainerExtent() {
+    /**
+     * Get container extent of the map
+     * @return {PointExtent}
+     */
+    getContainerExtent() {
         let visualHeight = this.height;
         const pitch = this.getPitch(),
             maxVisualPitch = this.options['maxVisualPitch'];
@@ -672,12 +675,9 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         return extent;
     }
 
-    /**
-     * Get container extent of the map
-     * @return {PointExtent}
-     */
-    getContainerExtent() {
-        const extent = this._getContainerExtent();
+
+    _getContainerExtent() {
+        const extent = this.getContainerExtent();
         const { ymin } = extent;
         if (ymin > 0 || this.getPitch() > 60) {
             const halfh = this.height / 2;

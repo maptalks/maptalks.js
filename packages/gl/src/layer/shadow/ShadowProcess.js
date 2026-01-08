@@ -86,7 +86,7 @@ class ShadowProcess {
             const lightDir = vec3.normalize(this._tempMat1, lightDirection);
 
             if (!VISUAL_EXTENT) {
-                VISUAL_EXTENT = map._getContainerExtent();
+                VISUAL_EXTENT = map.getContainerExtent();
             }
             //只渲染pitch < SHADOW_MAX_PITCH的范围内的mesh，提高shadowmap精度
             let visualHeight = map.height;

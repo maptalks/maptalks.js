@@ -493,7 +493,7 @@ Map.include(/** @lends Map.prototype */{
             if (res === this._mapGlRes && this._mapGlExtent2D) {
                 return this._mapGlExtent2D;
             }
-            const cExtent = this._getContainerExtent();
+            const cExtent = this.getContainerExtent();
             return cExtent.convertTo(c => this._containerPointToPointAtRes(c, res, POINT), out);
         };
     }(),

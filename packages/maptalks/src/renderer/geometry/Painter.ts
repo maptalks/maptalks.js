@@ -236,7 +236,7 @@ class Painter extends Class {
             pitch = cache ? cache.pitch : map.getPitch();
             bearing = cache ? cache.bearing : map.getBearing();
             glScale = map.getGLScale();
-            containerExtent = map.getContainerExtent();
+            containerExtent = map._getContainerExtent();
         }
         const geometry = this.geometry,
             res = resolution,
@@ -321,7 +321,7 @@ class Painter extends Class {
             containerExtent = mapStateCache.containerExtent;
         } else {
             glRes = map.getGLRes();
-            containerExtent = map.getContainerExtent();
+            containerExtent = map._getContainerExtent();
         }
         let cPoints;
         const roundPoint = this.getLayer().options['roundPoint'];
