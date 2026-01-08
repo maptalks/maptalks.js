@@ -458,7 +458,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         const bearing = map.getBearing();
         const glScale = map.getGLScale();
         const glRes = map.getGLRes();
-        const containerExtent = map._getContainerExtent();
+        const containerExtent = map.getGroundExtent();
         const _2DExtent = map.get2DExtent();
         const glExtent = map.get2DExtentAtRes(glRes);
         this.mapStateCache = {
@@ -529,7 +529,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         const map = this.getMap();
         let pts = getPointsResultPts(cPoints, '_pt');
         pts = map._pointsAtResToContainerPoints(cPoints, glRes, altitudes, pts);
-        const containerExtent = map._getContainerExtent();
+        const containerExtent = map.getGroundExtent();
         const { xmax, ymax, xmin, ymin } = containerExtent;
         const extentCache = {};
         for (let i = 0, len = markers.length; i < len; i++) {

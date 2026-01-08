@@ -676,7 +676,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
 
-    _getContainerExtent() {
+    getGroundExtent() {
         const extent = this.getContainerExtent();
         const { ymin } = extent;
         if (ymin > 0 || this.getPitch() > 60) {
