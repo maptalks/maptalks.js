@@ -7,3 +7,5 @@ if ((typeof transcoders) !== 'undefined') {
 } else {
     transcodersGPU.registerTranscoder('draco', transcoder);
 }
+
+export default transcoder;

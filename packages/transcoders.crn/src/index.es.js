@@ -7,3 +7,5 @@ if ((typeof transcoders) !== 'undefined') {
 } else {
     transcodersGPU.registerTranscoder('crn', transcoder);
 }
+
+export default transcoder;
