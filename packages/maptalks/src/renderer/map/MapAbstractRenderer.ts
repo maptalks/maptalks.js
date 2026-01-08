@@ -105,7 +105,7 @@ class MapAbstractRenderer extends MapRenderer {
             return this;
         }
         map._currentViewGLInfo = null;
-        const containerExtent = map.getContainerExtent();
+        const containerExtent = map._getContainerExtent();
         if (!containerExtent) {
             return this;
         }

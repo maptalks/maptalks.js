@@ -229,7 +229,7 @@ class Overview extends Control<OverviewOptionsTypeSpec> {
     _getPerspectiveCoords() {
         const map = this.getMap();
         const projection = map.getProjection();
-        return map.getContainerExtent().toArray().map(c => {
+        return map._getContainerExtent().toArray().map(c => {
             if (projection) {
                 const prjCoord = map._containerPointToPrj(c as Point);
                 map._fixPrjOnWorldWide(prjCoord);

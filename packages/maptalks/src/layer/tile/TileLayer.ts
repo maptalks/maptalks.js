@@ -483,7 +483,7 @@ class TileLayer extends Layer {
         let queue;
 
         if (this.options['repeatWorld']) {
-            const mapContainerExtent = map.getContainerExtent();
+            const mapContainerExtent = map._getContainerExtent();
             const mapExtent2D = this._convertToExtent2d(mapContainerExtent);
             const scale = sr.getResolution(0) / map.getResolution();
             if (!mapExtent2D.within(fullExtent.copy()._scale(scale))) {
@@ -808,7 +808,7 @@ class TileLayer extends Layer {
         const map = this.getMap();
         const pitch = map.getPitch();
         const parentRenderer = parentLayer && parentLayer.getRenderer();
-        const mapExtent = map.getContainerExtent();
+        const mapExtent = map._getContainerExtent();
         const tileGrids = [];
         let count = 0;
         const minZoom = this.getMinZoom();
