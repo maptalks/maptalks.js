@@ -17,12 +17,12 @@ class TerrainPainter {
     constructor(layer) {
         this.layer = layer;
         const renderer = layer.getRenderer();
-        this.graphics = renderer.regl || renderer.device;
-        this.renderer = new reshader.Renderer(this.graphics);
+        this.device = renderer.regl || renderer.device;
+        this.renderer = new reshader.Renderer(this.device);
         this._leafScene = new reshader.Scene();
         const pixels = new Uint8Array(16);
         pixels.fill(255);
-        this._emptyTileTexture = this.graphics.texture({
+        this._emptyTileTexture = this.device.texture({
             width: 2,
             height: 2,
             data: pixels
@@ -58,7 +58,7 @@ class TerrainPainter {
             mesh.geometry.updateData('aPosition', positions);
             mesh.geometry.updateData('aTexCoord', texcoords);
             mesh.geometry.setElements(triangles);
-            mesh.geometry.generateBuffers(this.graphics);
+            mesh.geometry.generateBuffers(this.device);
         } else {
             const geo = empty ?
                 this._emptyTerrainGeometry :
@@ -69,7 +69,7 @@ class TerrainPainter {
                 triangles,
                 0);
             if (geo !== this._emptyTerrainGeometry) {
-                geo.generateBuffers(this.graphics);
+                geo.generateBuffers(this.device);
             }
             if (mesh) {
                 mesh.geometry = geo;
@@ -86,6 +86,7 @@ class TerrainPainter {
         if (!mesh.uniforms.flatMask) {
             const emptyTexture = this.getEmptyTexture();
             mesh.setUniform('flatMask', emptyTexture);
+            mesh.setUniform('maskResolution', [emptyTexture.width, emptyTexture.height]);
         }
 
         mesh.setUniform('heightTexture', heightTexture);
@@ -163,7 +164,9 @@ class TerrainPainter {
         const mesh = tileImage.terrainMesh;
         if (mesh && mesh.geometry && tileImage.skin) {
             mesh.setUniform('skin', tileImage.skin.color[0]);
-            mesh.setUniform('flatMask', tileImage.mask.color[0])
+            const mask = tileImage.mask.color[0];
+            mesh.setUniform('flatMask', mask);
+            mesh.setUniform('maskResolution', [mask.width, mask.height]);
             mesh.setUniform('polygonOpacity', 1.0);
             // const { skirtOffset, skirtCount } = mesh.properties;
             // mesh.geometry.setDrawOffset(skirtOffset);
@@ -356,7 +359,7 @@ class TerrainPainter {
         },
         triangles,
         0);
-        this._emptyTerrainGeometry.generateBuffers(this.graphics);
+        this._emptyTerrainGeometry.generateBuffers(this.device);
     }
 }
 

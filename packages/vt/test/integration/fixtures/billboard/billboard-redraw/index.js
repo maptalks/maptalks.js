@@ -38,7 +38,7 @@ const style = [
                 }
                 if (!canvas) {
                     canvas = document.createElement('canvas');
-                    document.body.appendChild(canvas);
+                    // document.body.appendChild(canvas);
                     canvas.width = 256;
                     canvas.height = 128;
                     context.canvas = canvas;

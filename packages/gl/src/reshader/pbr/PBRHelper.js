@@ -426,7 +426,8 @@ function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevel
     const mipmap = createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLevels, isHDR);
     // debugger
     const prefilterMap = regl.cube({
-        radius: SIZE,
+        width: SIZE,
+        height: SIZE,
         min: 'linear',
         mag: 'linear',
         type: isHDR ? 'float16' : 'uint8',

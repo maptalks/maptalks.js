@@ -1,5 +1,4 @@
 const frag = /*wgsl*/`
-#define HAS_HIGHLIGHT_COLOR_POINT 1
 #define SDF_PX 8.0
 #define DEVICE_PIXEL_RATIO 1.0
 // 0.105 / DEVICE_PIXEL_RATIO
@@ -43,7 +42,7 @@ fn renderText(input: VertexOutput) -> vec4f {
     let fontScale = input.vTextSize / 24.0;
     var color = myTextFill;
     var gamma = EDGE_GAMMA / (fontScale * gammaScale);
-    let buff = 185.0 / 256.0; // (256.0 - 64.0) / 256.0
+    var buff = 185.0 / 256.0; // (256.0 - 64.0) / 256.0
 
     var isHaloText: bool;
     #ifdef HAS_HALO_ATTR
@@ -72,7 +71,7 @@ fn renderText(input: VertexOutput) -> vec4f {
 
         color = haloFill;
         gamma = (textRenderUniforms.textHaloBlur * 1.19 / SDF_PX + EDGE_GAMMA) / (fontScale * gammaScale);
-        let buff = (6.0 - haloRadius / fontScale) / SDF_PX;
+        buff = (6.0 - haloRadius / fontScale) / SDF_PX;
 
         #ifdef HAS_TEXT_HALO_OPACITY
             let haloOpacity = input.vTextHalo.y / 255.0;

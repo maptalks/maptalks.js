@@ -2,16 +2,16 @@ import { extend, isArray, isFunction } from "../common/Util";
 import { GPUTexFormat, toTextureFormat } from "./common/ReglTranslator";
 import GraphicsDevice from "./GraphicsDevice";
 
-let arrayBuffer = new ArrayBuffer(1024 * 1024 * 4);
+const arrayBuffer = new ArrayBuffer(1024 * 1024 * 4);
+const flipYBuffer = new ArrayBuffer(1024 * 1024 * 4);
 
 export default class GraphicsTexture {
     texture: GPUTexture;
     device: GraphicsDevice;
     config: any;
     //@internal
-    _bindGroups: GPUBindGroup[] = [];
-    //@internal
     gpuFormat: GPUTexFormat;
+    version = 0;
 
     constructor(device: GraphicsDevice, config) {
         this.device = device;
@@ -28,16 +28,13 @@ export default class GraphicsTexture {
         return this.texture && this.texture.height || this.config && this.config.height;
     }
 
+    get arrayLayers() {
+        return 1;
+    }
     // called when minFilter or magFilter changed
     updateFilter() {
-        this._clearBindGroups();
-    }
-    _clearBindGroups() {
-        if (this._bindGroups.length) {
-            for (let i = 0; i < this._bindGroups.length; i++) {
-                (this._bindGroups[i] as any).outdated = true;
-            }
-            this._bindGroups = [];
+        if (this.texture) {
+            this.version++;
         }
     }
 
@@ -60,8 +57,8 @@ export default class GraphicsTexture {
         const config = this.config;
         const device = this.device.wgpu;
         if (this.texture) {
-            this.texture.destroy();
-            this._clearBindGroups();
+            this.version++;
+            this.device.addToDestroyList(this.texture);
         }
         let texture: GPUTexture;
         {
@@ -88,86 +85,149 @@ export default class GraphicsTexture {
                 GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT;
 
             const options = {
-                size: [width, height, 1],
+                size: [width, height, this.arrayLayers],
                 format,
-                usage
+                usage,
+                mipLevelCount: this.getMipLevelCount()
             } as GPUTextureDescriptor;
             if (config.sampleCount) {
                 options.sampleCount = config.sampleCount;
             }
             texture = device.createTexture(options);
 
-            if (config.data) {
-                if (isArray(config.data)) {
-                    const data = config.data;
-                    const isUint8 = !config.type || config.type === 'uint8';
-                    let byteLength;
-                    if (Array.isArray(data)) {
-                        byteLength = isUint8 ? data.length : data.length * 4;
-                    } else {
-                        byteLength = data.byteLength;
-                    }
-
-                    const isRGBA = !config.format || config.format === 'rgba';
-                    const isPremultipliedAlpha = isRGBA && config.premultiplyAlpha;
-
-                    let dataToWrite;
-                    if (isPremultipliedAlpha || Array.isArray(data)) {
-                        if (arrayBuffer.byteLength < byteLength) {
-                            arrayBuffer = new ArrayBuffer(byteLength);
-                        }
-                        if (isUint8) {
-                            dataToWrite = new Uint8Array(arrayBuffer, 0, byteLength);
-                        } else {
-                            dataToWrite = new Float32Array(arrayBuffer, 0, byteLength / 4);
-                        }
-                    }
-
-                    if (isPremultipliedAlpha) {
-                        const ratio = isUint8 ? 255 : 1;
-                        for (let i = 0; i < data.length; i += 4) {
-                            const alpha = data[i + 3] / ratio;
-                            dataToWrite[i] = data[i] * alpha;
-                            dataToWrite[i + 1] = data[i + 1] * alpha;
-                            dataToWrite[i + 2] = data[i + 2] * alpha;
-                            dataToWrite[i + 3] = data[i + 3];
-                        }
-                    } else {
-                        if (Array.isArray(data)) {
-                            for (let i = 0; i < data.length; i++) {
-                                dataToWrite[i] = data[i];
-                            }
-                        } else {
-                            dataToWrite = data;
-                        }
-                    }
-                    device.queue.writeTexture(
-                        { texture: texture },
-                        dataToWrite.buffer,
-                        {
-                            bytesPerRow: width * this.gpuFormat.bytesPerTexel
-                        },
-                        [width, height]
-                    );
-                } else {
-                    device.queue.copyExternalImageToTexture(
-                        { source: config.data, flipY: !!this.config.flipY },
-                        { texture: texture, premultipliedAlpha: !!this.config.premultiplyAlpha },
-                        [width, height]
-                    );
-                }
-
-            }
+            this.fillData(texture, width, height);
         }
         this.texture = texture;
     }
 
-    getView(descriptor?: GPUTextureViewDescriptor): GPUTextureView {
-        return this.texture.createView(descriptor);
+    getMipLevelCount() {
+        const data = this.config.data;
+        if (data && data.mipmap) {
+            return data.mipmap.length;
+        }
+        return 1;
     }
 
-    addBindGroup(bindGroup) {
-        this._bindGroups.push(bindGroup);
+    fillData(texture, width, height) {
+        const config = this.config;
+        const origin = [0, 0, 0];
+        if (config.data) {
+            if (this.isArrayData(config.data)) {
+                this.fillArrayData(texture, config.data, width, height, origin);
+            } else {
+                this.fillImageData(texture, config.data, width, height, origin);
+            }
+        }
+    }
+
+    fillImageData(texture, data, width, height, origin) {
+        const device = this.device.wgpu;
+        const flipY = !!this.config.flipY;
+        const premultipliedAlpha = !!this.config.premultiplyAlpha;
+        if (data.mipmap) {
+            const mipmap = data.mipmap;
+            for (let i = 0; i < mipmap.length; i++) {
+                device.queue.copyExternalImageToTexture(
+                    { source: mipmap[i], flipY },
+                    { texture, premultipliedAlpha, mipLevel: i, origin },
+                    [Math.max(1, width >> i), Math.max(1, height >> i)]
+                );
+            }
+        } else {
+            device.queue.copyExternalImageToTexture(
+                { source: data, flipY },
+                { texture: texture, premultipliedAlpha, origin },
+                [width, height]
+            );
+        }
+
+    }
+
+    fillArrayData(texture, data, width, height, origin) {
+        if (data.mipmap) {
+            for (let i = 0; i < data.mipmap.length; i++) {
+                this._fillMipmap(texture, i, data.mipmap[i], Math.max(1, texture.width >> i), Math.max(1, texture.width >> i), origin);
+            }
+        } else {
+            this._fillMipmap(texture, 0, data, width, height, origin);
+        }
+
+    }
+
+    _fillMipmap(texture, mipLevel, data, width, height, origin) {
+        const device = this.device.wgpu;
+        const dataToWrite = this.formatTextureArray(data, arrayBuffer, width, height);
+        device.queue.writeTexture(
+            { texture, mipLevel, origin },
+            dataToWrite,
+            {
+                bytesPerRow: width * this.gpuFormat.bytesPerTexel
+            },
+            [width, height]
+        );
+    }
+
+    formatTextureArray(data, arrayBuffer, width, height) {
+        const config = this.config;
+        const isUint8 = !config.type || config.type === 'uint8';
+        let byteLength;
+        if (Array.isArray(data)) {
+            byteLength = isUint8 ? data.length : data.length * 4;
+        } else {
+            byteLength = data.byteLength;
+        }
+
+        const isRGBA = !config.format || config.format === 'rgba';
+        const isPremultipliedAlpha = isRGBA && config.premultiplyAlpha;
+
+        let dataToWrite;
+        if (isPremultipliedAlpha || Array.isArray(data)) {
+            if (arrayBuffer.byteLength < byteLength) {
+                arrayBuffer.resize(byteLength);
+            }
+            if (isUint8) {
+                dataToWrite = new Uint8Array(arrayBuffer, 0, byteLength);
+            } else {
+                dataToWrite = new Float32Array(arrayBuffer, 0, byteLength / 4);
+            }
+        }
+
+        if (isPremultipliedAlpha) {
+            const ratio = isUint8 ? 255 : 1;
+            for (let i = 0; i < data.length; i += 4) {
+                const alpha = data[i + 3] / ratio;
+                dataToWrite[i] = data[i] * alpha;
+                dataToWrite[i + 1] = data[i + 1] * alpha;
+                dataToWrite[i + 2] = data[i + 2] * alpha;
+                dataToWrite[i + 3] = data[i + 3];
+            }
+        } else {
+            if (Array.isArray(data)) {
+                for (let i = 0; i < data.length; i++) {
+                    dataToWrite[i] = data[i];
+                }
+            } else {
+                dataToWrite = data;
+            }
+        }
+        if (this.config.flipY) {
+            dataToWrite = flipY(dataToWrite, width, height, byteLength);
+        }
+        return dataToWrite;
+    }
+
+    isArrayData(data) {
+        if (!data.mipmap && !isArray(data)) {
+            return false;
+        }
+        if ((data as any).mipmap) {
+            return isArray((data as any).mipmap[0]);
+        }
+        return true;
+    }
+
+    getView(descriptor?: GPUTextureViewDescriptor): GPUTextureView {
+        return this.texture.createView(descriptor);
     }
 
     destroy() {
@@ -175,6 +235,46 @@ export default class GraphicsTexture {
             this.texture.destroy();
             delete this.texture;
         }
-        delete this._bindGroups;
     }
+}
+
+/**
+ * 对Uint8Array图像数据进行垂直翻转
+ * @param imageData - 原始图像数据
+ * @param width - 图像宽度（像素）
+ * @param height - 图像高度（像素）
+ * @param bytesPerPixel - 每像素字节数（通常为3-RGB或4-RGBA）
+ * @returns {Uint8Array} - 垂直翻转后的图像数据
+ */
+function flipY(imageData: Float32Array | Uint8Array, width: number, height: number, byteLength: number) {
+    if (flipYBuffer.byteLength < arrayBuffer.byteLength) {
+        (flipYBuffer as any).resize(arrayBuffer.byteLength);
+    }
+    const bytesPerPixel = imageData instanceof Float32Array ? 4 * 4 : 4;
+    // 创建相同大小的新数组
+    let flippedData;
+    if (imageData instanceof Float32Array) {
+        flippedData = new Float32Array(flipYBuffer, 0, byteLength / 4);
+    } else {
+        flippedData = new Uint8Array(flipYBuffer, 0, byteLength);
+    }
+
+    // 每行的字节数
+    const rowBytes = width * bytesPerPixel;
+
+    // 遍历每一行
+    for (let y = 0; y < height; y++) {
+        // 原始数据的行起始位置
+        const originalRowStart = y * rowBytes;
+        // 翻转后数据的行起始位置（从底部开始）
+        const flippedRowStart = (height - 1 - y) * rowBytes;
+
+        // 复制整行数据
+        flippedData.set(
+            imageData.subarray(originalRowStart, originalRowStart + rowBytes),
+            flippedRowStart
+        );
+    }
+
+    return flippedData;
 }

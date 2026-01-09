@@ -645,7 +645,7 @@ export default class Geometry {
             buffer.destroy();
             return newBuffer;
         }
-        device.wgpu.queue.writeBuffer(buffer, 0, data.buffer, offset, byteLength);
+        device.wgpu.queue.writeBuffer(buffer, offset, data.buffer, 0, byteLength);
         return buffer;
     }
 
@@ -664,14 +664,16 @@ export default class Geometry {
         }
         if (buffer) {
             if (buffer.buffer.mapState) {
+                const itemSize = buffer.buffer.itemCount / this._vertexCount;
+                const itemCount = data.length / itemSize;
                 //webgpu buffer
-                data = Geometry.padGPUBufferAlignment(data, this._vertexCount);
+                data = Geometry.padGPUBufferAlignment(data, itemCount);
                 const byteWidth = buffer.buffer.bytesPerElement;
                 if (data.BYTES_PER_ELEMENT !== byteWidth) {
                     const ctor = getTypeCtor(data, byteWidth);
                     data = new ctor(data);
                 }
-                buffer.buffer = this._updateGPUBuffer(buffer.buffer, data, offset * byteWidth, data.buffer.byteLength);
+                buffer.buffer = this._updateGPUBuffer(buffer.buffer, data, offset * byteWidth, data.length * byteWidth);
             } else {
                 const byteWidth = REGL_TYPE_WIDTH[buffer.buffer['_buffer'].dtype];
                 if (data.BYTES_PER_ELEMENT !== byteWidth) {

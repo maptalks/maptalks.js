@@ -548,5 +548,5 @@ export function isTextureDestroyed(texture) {
 }
 
 export function isTextureLike(texture) {
-    return texture && (texture.dispose || texture.destroy);
+    return texture && !(texture instanceof GPUBuffer) && (texture.dispose || texture.destroy);
 }

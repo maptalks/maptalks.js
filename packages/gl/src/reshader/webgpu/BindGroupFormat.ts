@@ -15,7 +15,6 @@ let uuid = 0;
 
 export type BindGroupResult = {
     bindGroup: GPUBindGroup,
-    outdated: boolean,
     uniformTextures?: any
 }
 
@@ -93,13 +92,11 @@ export default class BindGroupFormat {
                     label,
                     entries: []
                 }),
-                outdated: false,
                 uniformTextures: {}
             };
         }
         const groups = this.groups[0];
         const entries = [];
-        const textures = [];
         for (let i = 0; i < groups.length; i++) {
             const group = groups[i];
             if (!group) {
@@ -143,11 +140,14 @@ export default class BindGroupFormat {
                 if (!graphicsTexture) {
                     continue;
                 }
-                textures.push(graphicsTexture);
                 let descriptor: GPUTextureViewDescriptor;
                 if ((graphicsTexture as GraphicsTexture).gpuFormat.isDepthStencil) {
                     descriptor = {
                         aspect: 'depth-only'
+                    };
+                } else if (group.type.name === 'texture_cube') {
+                    descriptor = {
+                        dimension: 'cube'
                     };
                 }
                 entries.push({
@@ -167,16 +167,12 @@ export default class BindGroupFormat {
                 });
             }
         }
-
         const bindGroup = device.wgpu.createBindGroup({
             layout,
             label,
             entries
         });
-        for (let i = 0; i < textures.length; i++) {
-            textures[i].addBindGroup(bindGroup);
-        }
-        return { bindGroup, outdated: false, uniformTextures: {} };
+        return { bindGroup, uniformTextures: {} };
     }
 
     copyTextures(bindGroup: BindGroupResult, props: any) {
@@ -191,7 +187,7 @@ export default class BindGroupFormat {
                 continue;
             }
             if (isTextureLike(v)) {
-                bindGroup.uniformTextures[p] = v;
+                bindGroup.uniformTextures[p] = { texture: v, version: v.version };
             }
         }
     }

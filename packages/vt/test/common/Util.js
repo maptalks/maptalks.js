@@ -3,15 +3,15 @@ const canvas = document.createElement('canvas');
 const ctx = canvas.getContext('2d', { willReadFrequently: true });
 const assert = require('assert');
 
-function readPixel(target, x, y) {
+function readPixel(target, x, y, width = 1, height = 1) {
     if (target.readbackCanvas) {
         target = target.readbackCanvas;
     }
     canvas.width = target.width;
     canvas.height = target.height;
     ctx.drawImage(target, 0, 0);
-    const pixel = ctx.getImageData(x, y, 1, 1).data;
-    return [pixel[0], pixel[1], pixel[2], pixel[3]];
+    const pixel = ctx.getImageData(x, y, width, height).data;
+    return Array.from(pixel);
 }
 
 function readCanvasPixels(target) {
@@ -23,6 +23,9 @@ function readCanvasPixels(target) {
 }
 
 function compareExpected(canvas, { expectedPath, expectedDiffCount }, done) {
+    if (canvas.readbackCanvas) {
+        canvas = canvas.readbackCanvas;
+    }
     match(canvas, expectedPath, (err, result) => {
         if (err) {
             if (done) {
@@ -39,7 +42,7 @@ function compareExpected(canvas, { expectedPath, expectedDiffCount }, done) {
             const actualPath = dir + 'actual.png';
             writeImageData(actualPath, readCanvasPixels(canvas), canvas.width, canvas.height);
         }
-        assert(result.diffCount <= expectedDiffCount);
+        assert(result.diffCount <= expectedDiffCount, result.diffCount + ' pixels are different from expected ' + expectedDiffCount);
         if (done) {
             done();
         }

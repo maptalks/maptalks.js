@@ -150,6 +150,7 @@ class NativeLinePainter extends BasicPainter {
             this.picking = [new reshader.FBORayPicking(
                 this.renderer,
                 {
+                    name: 'vt-native-line-picking',
                     wgslVert: wgslVert,
                     vert: pickingVert,
                     uniforms,

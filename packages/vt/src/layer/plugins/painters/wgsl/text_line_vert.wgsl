@@ -198,7 +198,7 @@ fn main(input: VertexInput) -> VertexOutput {
     output.vTextHalo = vec2f(input.aTextHalo);
 #endif
 #if HAS_HIGHLIGHT_COLOR || HAS_HIGHLIGHT_OPACITY
-    highlight_setVarying(input, output);
+    highlight_setVarying(input, &output);
 #endif
 #else
 #ifdef ENABLE_COLLISION

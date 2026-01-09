@@ -41,7 +41,7 @@ class TerrainLitPainter extends TerrainPainter {
 
     createIBLTextures() {
         const canvas = this.getMap().getRenderer().canvas;
-        loginIBLResOnCanvas(canvas, this.graphics, this.getMap());
+        loginIBLResOnCanvas(canvas, this.device, this.getMap());
         this.layer.fire('iblupdated');
     }
 
@@ -80,16 +80,18 @@ class TerrainLitPainter extends TerrainPainter {
         geo.createTangent('aTangent', tangents);
         delete geo.data.aNormal;
 
-        geo.generateBuffers(this.graphics);
+        geo.generateBuffers(this.device);
 
         let terrainHeightTexture;
         if (heightTexture) {
-            terrainHeightTexture = this.graphics.texture({
+            const isWebGPU = !!this.device.wgpu;
+            terrainHeightTexture = this.device.texture({
                 width: heightTexture.width,
                 height: heightTexture.height,
                 data: heightTexture,
                 min: 'linear',
-                mag: 'linear'
+                mag: 'linear',
+                flipY: isWebGPU
             });
         } else {
             terrainHeightTexture = this.getEmptyTexture();
@@ -105,9 +107,11 @@ class TerrainLitPainter extends TerrainPainter {
         if (!mesh.uniforms.flatMask) {
             const emptyTexture = this.getEmptyTexture();
             mesh.setUniform('flatMask', emptyTexture);
+            mesh.setUniform('maskResolution', [emptyTexture.width, emptyTexture.height]);
         }
         const defines = mesh.defines;
-        defines['HAS_UV_FLIP'] = 1;
+        const isWebGPU = !!this.device.wgpu;
+        defines['HAS_UV_FLIP'] = isWebGPU ? 0 : 1;
         defines['HAS_TERRAIN_NORMAL'] = 1;
         defines['HAS_MAP'] = 1;
         defines['HAS_LAYER_OPACITY'] = 1;
@@ -131,7 +135,9 @@ class TerrainLitPainter extends TerrainPainter {
                 mesh.material.set('skinTexture', tileImage.skin.color[0]);
             }
             if (tileImage.mask) {
-                mesh.setUniform('flatMask', tileImage.mask.color[0]);
+                const mask = tileImage.mask.color[0];
+                mesh.setUniform('flatMask', mask);
+                mesh.setUniform('maskResolution', [mask.width, mask.height]);
             }
             mesh.setUniform('polygonOpacity', 1.0);
             // const { skirtOffset, skirtCount } = mesh.properties;

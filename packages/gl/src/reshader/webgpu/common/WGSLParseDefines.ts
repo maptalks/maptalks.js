@@ -97,7 +97,7 @@ function ParseDefines(
     const assertTemplateFollows = (match, string) => {
         if (match.index + match[0].length != string.length) {
             throw new Error(
-                `#${match[1]} must be immediately followed by a template expression (ie: \${value})`,
+                `#${match[1]} must be immediately followed by a template expression (${string})`,
             );
         }
     };
