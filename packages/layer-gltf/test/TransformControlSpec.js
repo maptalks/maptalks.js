@@ -595,4 +595,30 @@ describe('transform-control', () => {
             newTransformControl.addTo(map);
         }, 200);
     });
+
+    it('transform bug fix(#issues/920)', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gltfmarker = new maptalks.GLTFGeometry(center,
+            {
+                id:'gltfmarker1',
+                symbol: {
+                    scaleX: 2 / 3,
+                    scaleY: 2 / 3,
+                    scaleZ: 2 / 3
+                }
+            }
+        ).addTo(gltflayer);
+        new maptalks.GroupGLLayer('group', [gltflayer],  { sceneConfig }).addTo(map);
+        const transformControl = new maptalks.TransformControl();
+        transformControl.addTo(map);
+        setTimeout(function () {
+            transformControl.transform(gltfmarker);
+            const transformTarget = transformControl.getTransformTarget();
+            expect(transformTarget).to.be.ok();
+            expect(transformTarget.getTargets()[0].getId()).to.be.eql('gltfmarker1');
+            transformControl.remove();
+            done();
+        }, 100);
+    });
+
 });
