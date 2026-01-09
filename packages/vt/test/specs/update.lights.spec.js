@@ -119,19 +119,13 @@ describe('lights specs', () => {
 
                 if (count === 2 && rendend && !doneCalled) {
                     //第一次更新环境光的颜色
-
-                    setTimeout(() => {
-                        assert.deepEqual(readColor(), [161, 0, 110, 255]);
-                        doneCalled = true;
-                        done();
-                    }, 2000);
+                    assert.deepEqual(readColor(), [161, 0, 110, 255]);
+                    doneCalled = true;
+                    done();
                 } else if (count === 1 && rendend) {
                     //更新环境光后的颜色
-                    setTimeout(() => {
-                        assert.deepEqual(readColor(), [105, 138, 181, 255]);
-                        updateLights();
-                    }, 2000);
-
+                    assert.deepEqual(readColor(), [105, 138, 181, 255]);
+                    updateLights()
                 }
             }
 
