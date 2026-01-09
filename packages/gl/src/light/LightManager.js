@@ -258,6 +258,7 @@ class LightManager {
         }
         delete this._iblMaps;
     }
+
 }
 
 export default LightManager;
