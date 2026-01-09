@@ -676,7 +676,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
 
 
     /**
-     * get Ground Extent for sky ,line ,polygon clip etc
+     * get Ground Extent for sky ,line ,polygon 2d render clip etc
      * @return {PointExtent}
      */
     getGroundExtent() {

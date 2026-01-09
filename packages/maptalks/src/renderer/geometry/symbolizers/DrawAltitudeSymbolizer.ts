@@ -55,6 +55,7 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
                 ctx.save();
                 const { ymin, ymax, xmin, xmax } = groundExtent;
                 ctx.beginPath();
+                //sky area not draw
                 ctx.rect(xmin, ymin, xmax - xmin, ymax - ymin);
                 ctx.clip();
                 cliped = true;
