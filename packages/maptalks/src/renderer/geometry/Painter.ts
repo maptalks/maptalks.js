@@ -309,7 +309,8 @@ class Painter extends Class {
         if (this._aboveCamera()) {
             return null;
         }
-        const renderer = this.getLayer()._getRenderer();
+        const layer = this.getLayer();
+        const renderer = layer._getRenderer();
         const rendererStateCache = renderer.rendererStateCache;
 
         const map = this.getMap(),
@@ -324,10 +325,10 @@ class Painter extends Class {
             containerExtent = map.getGroundExtent();
         }
         let cPoints;
-        const roundPoint = this.getLayer().options['roundPoint'];
+        const roundPoint = layer.options['roundPoint'];
         let minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
         let needClip = !disableClip;
-        const clipBBoxBufferSize = renderer.layer.options['clipBBoxBufferSize'] || 3;
+        const clipBBoxBufferSize = layer.options['clipBBoxBufferSize'] || 3;
         const symbolizers = this.symbolizers;
 
         const enableClip = geometry.options.enableClip;
