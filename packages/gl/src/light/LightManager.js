@@ -74,8 +74,7 @@ class LightManager {
                 this._iblMaps.sh = config.ambient.resource.sh;
             }
         }
-        // this._map.fire('updatelights', { ambientUpdate });
-        this._fireUpdate({ ambientUpdate });
+        this._map.fire('updatelights', { ambientUpdate });
     }
 
     _tryToGetREGLContext(map) {
@@ -181,8 +180,7 @@ class LightManager {
         if (this._hdr) {
             this._createIBLMaps(this._hdr).then(maps => {
                 this._iblMaps = maps;
-                // this._map.fire('updatelights', { 'ambientUpdate': true });
-                this._fireUpdate({ 'ambientUpdate': true });
+                this._map.fire('updatelights', { 'ambientUpdate': true });
                 if (this.getAmbientLight().debug) {
                     console.log(`ambientLight hdr loadend`);
                 }
@@ -200,8 +198,7 @@ class LightManager {
     _onSkyboxLoaded(images) {
         this._createIBLMaps(images).then(maps => {
             this._iblMaps = maps;
-            // this._map.fire('updatelights', { 'ambientUpdate': true });
-            this._fireUpdate({ 'ambientUpdate': true });
+            this._map.fire('updatelights', { 'ambientUpdate': true });
             if (this.getAmbientLight().debug) {
                 console.log(`ambientLight skybox loadend`);
             }
@@ -262,15 +259,6 @@ class LightManager {
         delete this._iblMaps;
     }
 
-    _fireUpdate(params) {
-        const map = this._map;
-        if (map) {
-            const renderer = map.getRenderer();
-            renderer.callInNextFrame(() => {
-                map.fire('updatelights', { ...params });
-            })
-        }
-    }
 }
 
 export default LightManager;
