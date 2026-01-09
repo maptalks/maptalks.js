@@ -5,6 +5,9 @@ type MapStateCacheValue = {
     devicePixelRatio: number;
     resolution: number;
     center: any;
+    groundExtent: any;
+    glScale: number;
+    glRes: number;
     //other states can be added later
 }
 export const MapStateCache: Record<number, MapStateCacheValue> = {
@@ -23,6 +26,9 @@ export function updateMapStateCache(map) {
         devicePixelRatio: map.getDevicePixelRatio(),
         resolution: map.getResolution(),
         center: map.getCenter(),
+        groundExtent: map.getGroundExtent(),
+        glScale: map.getGLScale(),
+        glRes: map.getGLRes()
         //other states can be added later
     };
 }
