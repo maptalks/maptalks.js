@@ -727,7 +727,7 @@ class Painter extends Class {
         this._afterPaint();
         this._painted = true;
         // reduce function call
-        if (this.geometry.options['debug'] || layer.options['debug']) {
+        if (!ctx.isClip && (this.geometry.options['debug'] || layer.options['debug'])) {
             this._debugSymbolizer.symbolize(ctx);
         }
     }
