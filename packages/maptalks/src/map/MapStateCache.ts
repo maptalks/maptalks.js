@@ -5,7 +5,7 @@ type MapStateCacheValue = {
     devicePixelRatio: number;
     resolution: number;
     center: any;
-    groundExtent?: any;
+    groundExtent: any;
     //other states can be added later
 }
 export const MapStateCache: Record<number, MapStateCacheValue> = {
