@@ -47,7 +47,7 @@ export default class DrawToolLayer extends OverlayLayer {
             this.addGeometry(geometries as Array<Geometry>);
         }
         //always hide drawtool layer,all render proxy by children layers
-        //DrawToolLayer不应该参与渲染,注意下面的_getRenderer,让MarkerLayer多次渲染了
+        //DrawToolLayer不应该参与渲染,注意下面的_getRenderer(),让MarkerLayer多次渲染了
         this.hide();
     }
 
