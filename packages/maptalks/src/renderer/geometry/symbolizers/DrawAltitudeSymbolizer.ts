@@ -100,6 +100,7 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
             const map = this.getMap();
             const cache = MapStateCache[map.id];
             const groundExtent = cache ? cache.groundExtent : map.getGroundExtent();
+            //vertical line overflow ground
             if (y1 < groundExtent.ymin && y2 < groundExtent.ymin) {
                 return;
             }

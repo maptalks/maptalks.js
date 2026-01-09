@@ -403,7 +403,8 @@ class Painter extends Class {
                 maxx = Math.max(p.x, maxx);
                 maxy = Math.max(p.y, maxy);
             }
-            const clipByGround = !isGround && !isPoint && (groundClip || (enableClip && needClip && isDashLine(symbolizers)))
+            const clipByGround = !isGround && !isPoint && (groundClip || (enableClip && needClip && isDashLine(symbolizers)));
+            //line polygon clip by ground
             if (clipByGround) {
                 TEMP_CLIP_EXTENT2.ymin = containerExtent.ymin;
                 if (TEMP_CLIP_EXTENT2.ymin < clipBBoxBufferSize) {
@@ -419,15 +420,15 @@ class Painter extends Class {
                 if (!clipPts.length) {
                     return []
                 }
-                if (clipPts.length) {
-                    const points = [];
-                    clipPts.forEach(clipPt => {
-                        for (let i = 0, len = clipPt.length; i < len; i++) {
-                            points.push(clipPt[i].point);
-                        }
-                    });
-                    return points;
-                }
+
+                const points = [];
+                clipPts.forEach(clipPt => {
+                    for (let i = 0, len = clipPt.length; i < len; i++) {
+                        points.push(clipPt[i].point);
+                    }
+                });
+                return points;
+
             }
             return pts;
         }
