@@ -675,6 +675,10 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
 
+    /**
+     * get Ground Extent for sky ,line ,polygon clip etc
+     * @return {PointExtent}
+     */
     getGroundExtent() {
         const extent = this.getContainerExtent();
         const { ymin } = extent;
