@@ -2421,6 +2421,7 @@ function findFeatures(layer, image) {
     if (!image.cache) {
         return [];
     }
+    const result = [];
 
     for (const p in image.cache) {
         const data = image.cache[p];
@@ -2437,12 +2438,13 @@ function findFeatures(layer, image) {
                     geometry.properties.features.empty = empty;
                 }
                 wrapVTFeatureGeometryInfo(layer.options.features, image, features);
-                return features;
+                maptalks.Util.pushIn(result, features);
+                // return features;
             }
         }
 
     }
-    return [];
+    return result;
 }
 
 function getTileAbsoluteUrl(tile) {

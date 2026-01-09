@@ -178,6 +178,144 @@ describe('layer related specs', () => {
         });
         layer.addTo(map);
     });
+    it('getRenderedFeatures() with multi plugins', done => {
+        map = new maptalks.Map(container, DEFAULT_VIEW);
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: {
+                type: 'FeatureCollection',
+                features: [
+                    {
+                        type: 'Feature',
+                        geometry: {
+                            coordinates: [0, 0],
+                            type: 'Point'
+                        },
+                        properties: {}
+                    },
+
+                    {
+                        type: 'Feature',
+                        geometry: {
+                            coordinates: [[0, 0], [1, 0]],
+                            type: 'LineString'
+                        },
+                        properties: {}
+                    },
+                    {
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Polygon',
+                            coordinates: [
+                                [
+                                    [-1., 1.0],
+                                    [1., 1.0],
+                                    [1., -1.0],
+                                    [-1., -1],
+                                    [-1., 1]
+                                ],
+                                [
+                                    [-0.5, 0.5],
+                                    [0.5, 0.5],
+                                    [0.5, -0.5],
+                                    [-0.5, -0.5],
+                                    [-0.5, 0.5]
+                                ]
+                            ]
+                        },
+                        properties: {
+                            levels: 3000,
+                            foo: 'bar'
+                        }
+                    },
+
+                ]
+            },
+            features: true,
+            style: {
+                style: [
+                    {
+                        filter: ["all",
+                            ["==", "$type", "Polygon"]
+                        ],
+                        renderPlugin: {
+                            dataConfig: {
+                                type: "fill"
+                            },
+                            type: "fill"
+                        },
+                        symbol: {
+                            polygonFill: "green"
+                        },
+                    },
+                    {
+                        filter: ["all",
+                            ["==", "$type", "LineString"]
+                        ],
+                        renderPlugin: {
+                            dataConfig: {
+                                type: "line"
+                            },
+                            type: "line"
+                        },
+                        symbol: {
+                            lineColor: "#1bbc9b",
+                            lineWidth: 6,
+                        },
+                    },
+                    {
+                        filter: ["all",
+                            ["==", "$type", "Point"]
+                        ],
+                        renderPlugin: {
+                            dataConfig: {
+                                type: "point"
+                            },
+                            type: "icon"
+                        },
+                        symbol: {
+                            markerType: 'ellipse',
+                            markerWidth: 5,
+                            markerHeight: 5
+                        },
+                    }
+                ]
+            }
+        });
+        let count = 0;
+        layer.on('canvasisdirty', () => {
+            count++;
+            if (count === 2) {
+                const rendredFeatures = layer.getRenderedFeatures();
+                let hasPoint, hasLine, hasPolygon;
+                rendredFeatures.forEach(item => {
+                    const { current } = item;
+                    if (!current) {
+                        return;
+                    }
+                    const features = item.features || [];
+                    features.forEach(data => {
+                        const feature = data.feature || {};
+                        const geometry = feature.geometry || {};
+                        const type = geometry.type;
+                        if (type === 'Point') {
+                            hasPoint = true;
+                        }
+                        if (type === 'LineString') {
+                            hasLine = true;
+                        }
+                        if (type === 'Polygon') {
+                            hasPolygon = true;
+                        }
+                    });
+                });
+                assert(hasPoint === true);
+                assert(hasLine === true);
+                assert(hasPolygon === true);
+                done();
+            }
+        });
+        layer.addTo(map);
+    });
 
     it('getRenderedFeaturesAsync()', done => {
         map = new maptalks.Map(container, DEFAULT_VIEW);
