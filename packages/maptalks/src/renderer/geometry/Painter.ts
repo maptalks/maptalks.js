@@ -333,6 +333,9 @@ class Painter extends Class {
         const enableClip = geometry.options.enableClip;
         const strictClip = geometry.options.strictClip;
         const groundClip = geometry.options.groundClip;
+        const isPoint = geometry.isPoint;
+
+
 
         function pointsContainerPoints(viewPoints = [], alts = []) {
             let filterPoints = viewPoints;
@@ -400,7 +403,7 @@ class Painter extends Class {
                 maxx = Math.max(p.x, maxx);
                 maxy = Math.max(p.y, maxy);
             }
-            const clipByGround = !isGround && (groundClip || (enableClip && needClip && isDashLine(symbolizers)))
+            const clipByGround = !isGround && !isPoint && (groundClip || (enableClip && needClip && isDashLine(symbolizers)))
             if (clipByGround) {
                 TEMP_CLIP_EXTENT2.ymin = containerExtent.ymin;
                 if (TEMP_CLIP_EXTENT2.ymin < clipBBoxBufferSize) {
