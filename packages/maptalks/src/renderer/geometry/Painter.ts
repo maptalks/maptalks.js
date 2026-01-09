@@ -219,7 +219,7 @@ class Painter extends Class {
      * for strokeAndFillSymbolizer
      * @return resources to render vector
      */
-    getPaintParams(dx: number, dy: number, ignoreAltitude: boolean, disableClip: boolean, ptkey = '_pt') {
+    getPaintParams(dx: number, dy: number, ignoreAltitude: boolean, disableClip: boolean, ptkey = '_pt', isGround) {
         const renderer = this.getLayer()._getRenderer();
         const rendererStateCache = renderer.rendererStateCache;
         let resolution, pitch, bearing, glScale, containerExtent;
@@ -285,7 +285,7 @@ class Painter extends Class {
 
         const mapExtent = containerExtent;
         const isPolygon = !!geometry.getHoles;
-        const cPoints = this._pointContainerPoints(points, dx, dy, ignoreAltitude, disableClip || this._hitPoint && !mapExtent.contains(this._hitPoint), null, ptkey, isPolygon);
+        const cPoints = this._pointContainerPoints(points, dx, dy, ignoreAltitude, disableClip || this._hitPoint && !mapExtent.contains(this._hitPoint), null, ptkey, isPolygon, isGround);
         if (!cPoints) {
             return null;
         }
@@ -305,7 +305,7 @@ class Painter extends Class {
     }
 
     //@internal
-    _pointContainerPoints(points, dx: number, dy: number, ignoreAltitude: boolean, disableClip: boolean, pointPlacement: string, ptkey = '_pt', isPolygon?: boolean) {
+    _pointContainerPoints(points, dx: number, dy: number, ignoreAltitude: boolean, disableClip: boolean, pointPlacement: string, ptkey = '_pt', isPolygon?: boolean, isGround?: boolean) {
         if (this._aboveCamera()) {
             return null;
         }
@@ -400,7 +400,8 @@ class Painter extends Class {
                 maxx = Math.max(p.x, maxx);
                 maxy = Math.max(p.y, maxy);
             }
-            if (groundClip || (enableClip && needClip && isDashLine(symbolizers))) {
+            const clipByGround = !isGround && (groundClip || (enableClip && needClip && isDashLine(symbolizers)))
+            if (clipByGround) {
                 TEMP_CLIP_EXTENT2.ymin = containerExtent.ymin;
                 if (TEMP_CLIP_EXTENT2.ymin < clipBBoxBufferSize) {
                     TEMP_CLIP_EXTENT2.ymin = containerExtent.ymin - clipBBoxBufferSize;
@@ -412,6 +413,9 @@ class Painter extends Class {
                     return clipPolygon(pts, TEMP_CLIP_EXTENT2);
                 }
                 const clipPts = clipLine(pts, TEMP_CLIP_EXTENT2, false);
+                if (!clipPts.length) {
+                    return []
+                }
                 if (clipPts.length) {
                     const points = [];
                     clipPts.forEach(clipPt => {
