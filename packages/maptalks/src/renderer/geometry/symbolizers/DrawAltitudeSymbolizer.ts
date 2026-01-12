@@ -6,6 +6,7 @@ import Canvas from '../../../core/Canvas';
 import { Geometry } from '../../../geometry';
 import Painter from '../Painter';
 import { PointExtent } from '../../../geo';
+import { MapStateCache } from '../../../map/MapStateCache';
 
 const defaultSymbol = {
     lineWidth: 1,
@@ -43,6 +44,26 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
         });
     }
 
+    groundClip(ctx) {
+        const groundClip = this.geometry.options['groundClip'];
+        let cliped = false;
+        if (groundClip) {
+            const map = this.getMap();
+            const cache = MapStateCache[map.id];
+            const groundExtent = cache ? cache.groundExtent : map.getGroundExtent();
+            if (groundExtent.ymin > 0) {
+                ctx.save();
+                const { ymin, ymax, xmin, xmax } = groundExtent;
+                ctx.beginPath();
+                //sky area not draw
+                ctx.rect(xmin, ymin, xmax - xmin, ymax - ymin);
+                ctx.clip();
+                cliped = true;
+            }
+        }
+        return cliped;
+    }
+
     symbolize(ctx: CanvasRenderingContext2D): void {
         const layer = this.geometry.getLayer();
         if (!layer.options['drawAltitude']) {
@@ -63,12 +84,25 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
                 return;
             }
             //container points that ignore altitude
-            const groundPoints = this.getPainter().getPaintParams(style['lineDx'], style['lineDy'], true, true, '_groundpt')[0];
+            const groundPoints = this.getPainter().getPaintParams(style['lineDx'], style['lineDy'], true, true, '_groundpt', true)[0];
+            const cliped = this.groundClip(ctx);
             this._drawLineAltitude(ctx, paintParams[0], groundPoints);
+            if (cliped) {
+                ctx.restore();
+            }
         } else {
             const point = this._getRenderContainerPoints(),
                 groundPoint = this._getRenderContainerPoints(true);
-            if (!point || point.length === 0) {
+            if (!point || point.length === 0 || !groundPoint || groundPoint.length === 0) {
+                return;
+            }
+            const y1 = point[0].y;
+            const y2 = groundPoint[0].y;
+            const map = this.getMap();
+            const cache = MapStateCache[map.id];
+            const groundExtent = cache ? cache.groundExtent : map.getGroundExtent();
+            //vertical line overflow ground
+            if (y1 < groundExtent.ymin && y2 < groundExtent.ymin) {
                 return;
             }
             this._drawMarkerAltitude(ctx, point[0], groundPoint[0]);
@@ -94,7 +128,7 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
 
     //@internal
     _getPaintParams(dx: any, dy: any): any[] {
-        return this.getPainter().getPaintParams(dx || 0, dy || 0, null, true, '_altpt');
+        return this.getPainter().getPaintParams(dx || 0, dy || 0, null, true, '_altpt', true);
     }
 
     //@internal

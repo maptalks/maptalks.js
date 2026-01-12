@@ -208,12 +208,12 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         const map = this.getMap();
         //refresh geometries on zooming
         const count = this.layer.getCount();
-        const res = this.mapStateCache.resolution;
+        const res = this.rendererStateCache.resolution;
         if (map.isZooming() &&
             map.options['seamlessZoom'] && this._drawnRes !== undefined && res > this._drawnRes * 1.5 &&
             this._geosToDraw.length < count || map.isMoving() || map.isInteracting()) {
             this.prepareToDraw();
-            this._batchConversionMarkers(this.mapStateCache.glRes);
+            this._batchConversionMarkers(this.rendererStateCache.glRes);
             if (!this._onlyHasPoint) {
                 this._checkGeos();
             }
@@ -283,10 +283,10 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     drawGeos() {
         this._drawSnapshot();
         this._updateMapStateCache();
-        this._drawnRes = this.mapStateCache.resolution;
+        this._drawnRes = this.rendererStateCache.resolution;
         this._updateDisplayExtent();
         this.prepareToDraw();
-        this._batchConversionMarkers(this.mapStateCache.glRes);
+        this._batchConversionMarkers(this.rendererStateCache.glRes);
         if (!this._onlyHasPoint) {
             this._checkGeos();
         }
@@ -458,10 +458,10 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         const bearing = map.getBearing();
         const glScale = map.getGLScale();
         const glRes = map.getGLRes();
-        const containerExtent = map.getContainerExtent();
+        const containerExtent = map.getGroundExtent();
         const _2DExtent = map.get2DExtent();
         const glExtent = map.get2DExtentAtRes(glRes);
-        this.mapStateCache = {
+        this.rendererStateCache = {
             resolution,
             pitch,
             bearing,
@@ -529,7 +529,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         const map = this.getMap();
         let pts = getPointsResultPts(cPoints, '_pt');
         pts = map._pointsAtResToContainerPoints(cPoints, glRes, altitudes, pts);
-        const containerExtent = map.getContainerExtent();
+        const containerExtent = map.getGroundExtent();
         const { xmax, ymax, xmin, ymin } = containerExtent;
         const extentCache = {};
         for (let i = 0, len = markers.length; i < len; i++) {
