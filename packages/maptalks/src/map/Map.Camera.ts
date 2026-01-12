@@ -723,7 +723,7 @@ Map.include(/** @lends Map.prototype */{
             const fov = this.getFov() * Math.PI / 180;
             const farZ = this._getCameraFar(fov, this.getPitch());
             this.cameraFar = farZ;
-            this.cameraNear = this.cameraCenterDistance / 20;
+            this.cameraNear = this.cameraCenterDistance / 20 * this.options['cameraNearScale'];
             // camera projection matrix
             const projMatrix = this.projMatrix || createMat4();
             const isWebGPU = this.options.renderer === 'gpu';

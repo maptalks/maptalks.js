@@ -170,6 +170,7 @@ const options: MapOptionsType = {
     'maxFPS': 0,
     'debug': false,
     'cameraFarUndergroundInMeter': 2000,
+    'cameraNearScale': 1,
 
     'onlyWebGL1': false,
     'forceRedrawPerFrame': false,
@@ -2944,6 +2945,7 @@ export type MapOptionsType = {
     forceRedrawPerFrame?: boolean;
     extensions?: string[];
     optionalExtensions?: string[];
+    cameraNearScale?: number;
 }
 
 export type MapCreateOptionsType = {
