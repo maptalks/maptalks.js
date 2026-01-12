@@ -17,7 +17,8 @@
     "vt-test": "pnpm --filter=@maptalks/vt run test",
     "3dtiles-test": "pnpm --filter=@maptalks/3dtiles run test",
     "changeset": "changeset",
-    "changeset-version": "changeset version && changeset tag",
+    "changeset-version": "changeset version",
+    "changeset-tag": "changeset tag",
     "release": "pnpm build && changeset publish"
   },
   "repository": {
