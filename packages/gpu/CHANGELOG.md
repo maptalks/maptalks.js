@@ -1,5 +1,18 @@
 # @maptalks/gpu
 
+## 0.119.0
+
+### Minor Changes
+
+- mainly a bug fix version with some new features
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/fusiongl@0.119.0
+  - @maptalks/gltf-loader@0.119.0
+  - maptalks@1.8.0
+
 ## 0.118.1
 
 ### Patch Changes

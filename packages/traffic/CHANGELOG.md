@@ -1,5 +1,16 @@
 # @maptalks/traffic
 
+## 0.119.0
+
+### Minor Changes
+
+- mainly a bug fix version with some new features
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gltf-layer@0.119.0
+
 ## 0.118.1
 
 ### Patch Changes

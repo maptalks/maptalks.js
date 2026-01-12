@@ -1,5 +1,11 @@
 # @maptalks/vt-plugin
 
+## 0.119.0
+
+### Minor Changes
+
+- mainly a bug fix version with some new features
+
 ## 0.118.1
 
 ### Patch Changes
