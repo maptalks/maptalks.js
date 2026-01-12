@@ -450,19 +450,24 @@ export function _defaults(obj: any, defaults: any) {
 
 export function getPointsResultPts(points: any[] = [], ptKey = '_pt') {
     const resultPoints = [];
+    let idx = -1;
+    const hasKey = `${ptKey}Has`;
     for (let i = 0, len = points.length; i < len; i++) {
         const point = points[i];
         if (!point) {
-            resultPoints.push(null);
+            // resultPoints.push(null);
+            resultPoints[++idx] = null;
             continue;
         }
-        if (!point[ptKey]) {
+        if (!point[hasKey]) {
+            point[hasKey] = true;
             point[ptKey] = new Point(0, 0);
         }
         const pt = point[ptKey];
         pt.x = 0;
         pt.y = 0;
-        resultPoints.push(pt);
+        // resultPoints.push(pt);
+        resultPoints[++idx] = pt;
     }
     return resultPoints;
 }
