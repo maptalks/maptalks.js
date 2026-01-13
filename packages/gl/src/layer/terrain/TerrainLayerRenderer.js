@@ -363,7 +363,6 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             const { info, image } = terrainTiles[i];
             this._prepareMask(info, image);
             this._debugTile(info, 'renderChildTerrainSkin');
-            let cleared = false;
             if (this._prepareChildTerrainSkin(skinIndex, info, image, skinImagesToDel)) {
                 const skinImages = image.skinImages[skinIndex];
                 for (let j = 0; j < skinImages.length; j++) {
@@ -371,11 +370,6 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
 
                     // 检查是否存在重复的瓦片，重复的瓦片只需要绘制一次
                     if (!visitedSkinTiles.has(tileId)) {
-                        if (!cleared && skinImages[j].layer.hasTerrainMask) {
-                            //FIXME 潜在bug： 如果skinLayers中有多个 hasTerrainMask 的图层，其中一个clearMask并更新mask后，其他的terrainMask图层并没有更新mask
-                            this._clearMask(image.mask);
-                            cleared = true;
-                        }
                         skinImages[j].terrainMaskFBO = image.mask;
                         layerSkinImages.push(skinImages[j]);
                         visitedSkinTiles.add(tileId);
@@ -747,6 +741,17 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         const texture = regl.framebuffer(fboInfo)
         texture.colorTex = color;
         this._clearMask(texture);
+        texture.clearTerrainMask = () => {
+            if (!texture._timestamp) {
+                texture._timestamp = 0;
+            }
+            const timestamp = this.getFrameTimestamp();
+            if (timestamp > texture._timestamp) {
+                TERRAIN_MASK_CLEAR.framebuffer = texture;
+                regl.clear(TERRAIN_MASK_CLEAR);
+                texture._timestamp = timestamp;
+            }
+        }
         // 单独创建的 color 必须要手动destroy回收，光destroy framebuffer，color是不会销毁的
         return texture;
     }
