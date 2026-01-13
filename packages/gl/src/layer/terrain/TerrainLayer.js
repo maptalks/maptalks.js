@@ -36,6 +36,8 @@ const options = {
     'tileStackDepth': 6,
     'currentTilesFirst': false,
     'exaggeration': 1,
+    'errorScale': 1,
+    'hasSkirts': true,
     'colors': []
 };
 
@@ -453,6 +455,10 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
             error,
             children: []
         };
+    }
+
+    _getErrorScale() {
+        return this.options.errorScale / 6;
     }
 }
 

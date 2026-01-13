@@ -457,23 +457,24 @@ function generateMapboxTerrain(buffer) {
 
 function loadTerrain(params, cb) {
     const { url, origin, type, accessToken, terrainWidth, error, tileImage } = params;
+    const hasSkirts = true;
     //custom loadTileImage and return mapbox terrain rgb data
     if (tileImage && tileImage.close) {
         const imageData = bitmapToImageData(tileImage);
         const terrainData = mapboxBitMapToHeights(imageData, terrainWidth);
-        triangulateTerrain(error, terrainData, terrainWidth, tileImage, true, cb);
+        triangulateTerrain(error, terrainData, terrainWidth, tileImage, hasSkirts, cb);
         return;
     }
     const headers = params.headers || requestHeaders[type];
     if (type === 'tianditu') {
-        fetchTerrain(url, headers, type, terrainWidth, error, cb);
+        fetchTerrain(url, headers, type, terrainWidth, error, hasSkirts, cb);
     } else if (type === 'cesium-ion') {
         const tokenUrl = params.cesiumIonTokenURL + accessToken;
         if (cesium_access_token) {
-            fetchTerrain(url, headers, type, terrainWidth, error, cb);
+            fetchTerrain(url, headers, type, terrainWidth, error, hasSkirts, cb);
         } else if (cesiumAccessTokenPromise) {
             cesiumAccessTokenPromise.then(() => {
-                fetchTerrain(url, headers, type, terrainWidth, error, cb);
+                fetchTerrain(url, headers, type, terrainWidth, error, hasSkirts, cb);
             });
         } else {
             cesiumAccessTokenPromise = fetch(tokenUrl, {
@@ -491,17 +492,17 @@ function loadTerrain(params, cb) {
                 cesiumAccessTokenPromise = null;
             });
             cesiumAccessTokenPromise.then(() => {
-                fetchTerrain(url, headers, type, terrainWidth, error, cb);
+                fetchTerrain(url, headers, type, terrainWidth, error, hasSkirts, cb);
             });
         }
     } else if (type === 'cesium') {
-        fetchTerrain(url, headers, type, terrainWidth, error, cb);
+        fetchTerrain(url, headers, type, terrainWidth, error, hasSkirts, cb);
     } else if (type === 'mapbox') {
-        fetchTerrain(url, headers, type, terrainWidth, error, cb);
+        fetchTerrain(url, headers, type, terrainWidth, error, hasSkirts, cb);
     }
 }
 
-function fetchTerrain(url, headers, type, terrainWidth, error, cb) {
+function fetchTerrain(url, headers, type, terrainWidth, error, hasSkirts, cb) {
     if (type === 'cesium-ion') {
         headers['Authorization'] = 'Bearer ' + cesium_access_token;
     }
@@ -518,17 +519,17 @@ function fetchTerrain(url, headers, type, terrainWidth, error, cb) {
             let terrain = null;
             if (type === 'tianditu') {
                 const terrainData = generateTiandituTerrain(buffer, terrainWidth);
-                triangulateTerrain(error, terrainData, terrainWidth, null, true, cb);
+                triangulateTerrain(error, terrainData, terrainWidth, null, hasSkirts, cb);
             } else if (type === 'cesium-ion' || type === 'cesium') {
                 terrain = generateCesiumTerrain(buffer);
                 const terrainData = cesiumTerrainToHeights(terrain, terrainWidth);
-                triangulateTerrain(error, terrainData, terrainWidth, null, true, cb);
+                triangulateTerrain(error, terrainData, terrainWidth, null, hasSkirts, cb);
             } else if (type === 'mapbox') {
                 terrain = generateMapboxTerrain(buffer);
                 terrain.then(imgBitmap => {
                     const imageData = bitmapToImageData(imgBitmap);
                     const terrainData = mapboxBitMapToHeights(imageData, terrainWidth);
-                    triangulateTerrain(error, terrainData, terrainWidth, imgBitmap, true, cb);
+                    triangulateTerrain(error, terrainData, terrainWidth, imgBitmap, hasSkirts, cb);
                 });
             }
         }
@@ -593,7 +594,7 @@ function heights2RGBImage(terrainData) {
 
 
 function triangulateTerrain(error, terrainData, terrainWidth, imageBitmap, hasSkirts, cb) {
-    const mesh = createMartiniData(error / 6, terrainData.data, terrainWidth, hasSkirts);
+    const mesh = createMartiniData(error, terrainData.data, terrainWidth, hasSkirts);
     const transferables = [mesh.positions.buffer, mesh.texcoords.buffer, mesh.triangles.buffer];
     //tdt,cesium terrain etc
     if (!imageBitmap) {

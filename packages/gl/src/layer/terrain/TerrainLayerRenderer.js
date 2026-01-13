@@ -118,7 +118,9 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             return { data: createEmtpyTerrainHeights(minAltitude || 0, 5), minAltitude, mesh: EMPTY_TERRAIN_GEO, sourceZoom };
         }
         const terrainWidth = heights.width;
-        const mesh = createMartiniData(error / 2, heights.data, terrainWidth, true);
+        const errorScale = this.layer._getErrorScale();
+        const hasSkirts = this.layer.options['hasSkirts'];
+        const mesh = createMartiniData(error * errorScale, heights.data, terrainWidth, hasSkirts);
 
         return { data: heights, mesh, sourceZoom, colorsTexture: heights.colorsTexture };
     }
@@ -1018,7 +1020,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             type: layerOptions.type,
             accessToken: layerOptions.accessToken,
             cesiumIonTokenURL: layerOptions.cesiumIonTokenURL,
-            error: error,
+            error: error * layer._getErrorScale(),
             colors: layerOptions.colors,
             tileSize: tileSize ? [tileSize.width, tileSize.height] : [256, 256],
             command: 'loadTile'

@@ -2,7 +2,7 @@ import Martini from '@maptalks/martini';
 
 const martinis = {};
 
-export function createMartiniData(error, heights, width/* , hasSkirts */) {
+export function createMartiniData(error, heights, width, hasSkirts) {
     let martini = martinis[width];
     if (!martini) {
         martini = martinis[width] = new Martini(width);
@@ -10,7 +10,12 @@ export function createMartiniData(error, heights, width/* , hasSkirts */) {
     const terrainTile = martini.createTile(heights);
     //TODO 需要增加判断，只有pbr渲染时，才需要把isolateSkirtVertices设成true
     const isolateSkirtVertices = true;
-    const mesh = terrainTile.getMeshWithSkirts(error, isolateSkirtVertices);
+    let mesh;
+    if (hasSkirts) {
+        mesh = terrainTile.getMeshWithSkirts(error, isolateSkirtVertices);
+    } else {
+        mesh = terrainTile.getMesh(error);
+    }
 
     const { triangles, vertices, leftSkirtIndex, rightSkirtIndex, bottomSkirtIndex, topSkirtIndex } = mesh;
     let { numVerticesWithoutSkirts, numTrianglesWithoutSkirts } = mesh;
