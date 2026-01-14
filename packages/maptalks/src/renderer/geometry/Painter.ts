@@ -470,6 +470,7 @@ class Painter extends Class {
                     //polygon rings or clipped line string
                     if (altitudeIsNumber) {
                         const cring = pointsContainerPoints(c, altitude);
+                        //may be multi path
                         Array.isArray(cring[0]) ? cPoints.push(...cring) : cPoints.push(cring);
                         // cPoints.push(cring);
                         continue;
@@ -487,6 +488,7 @@ class Painter extends Class {
                         altArray.push(alt);
                     }
                     const cring = pointsContainerPoints(c, altArray);
+                    //may be multi path
                     Array.isArray(cring[0]) ? cPoints.push(...cring) : cPoints.push(cring);
                     // cPoints.push(cring);
 
