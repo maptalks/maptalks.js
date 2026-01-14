@@ -424,9 +424,12 @@ class Painter extends Class {
 
                 const points = [];
                 clipPts.forEach(clipPt => {
+                    const path = [];
                     for (let i = 0, len = clipPt.length; i < len; i++) {
-                        points.push(clipPt[i].point);
+                        // points.push(clipPt[i].point);
+                        path[i] = clipPt[i].point;
                     }
+                    points.push(path);
                 });
                 return points;
 
@@ -467,7 +470,8 @@ class Painter extends Class {
                     //polygon rings or clipped line string
                     if (altitudeIsNumber) {
                         const cring = pointsContainerPoints(c, altitude);
-                        cPoints.push(cring);
+                        Array.isArray(cring[0]) ? cPoints.push(...cring) : cPoints.push(cring);
+                        // cPoints.push(cring);
                         continue;
                     }
                     const altArray = [];
@@ -483,7 +487,9 @@ class Painter extends Class {
                         altArray.push(alt);
                     }
                     const cring = pointsContainerPoints(c, altArray);
-                    cPoints.push(cring);
+                    Array.isArray(cring[0]) ? cPoints.push(...cring) : cPoints.push(cring);
+                    // cPoints.push(cring);
+
                 } else {
                     //line string
                     if (Array.isArray(altitude)) {
