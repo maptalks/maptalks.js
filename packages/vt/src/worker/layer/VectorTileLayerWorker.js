@@ -51,7 +51,7 @@ export default class VectorTileLayerWorker extends LayerWorker {
         }
         fetchOptions.referrer = context.referrer;
         fetchOptions.errorLog = context.loadTileErrorLog;
-        const { loadTileCachMaxSize, loadTileCacheLog, needDecodeGZip } = context;
+        const { loadTileCachMaxSize, loadTileCacheLog, loadTileDecodeGZip } = context;
         return Ajax.getArrayBuffer(url, fetchOptions, (err, response) => {
             if (!this._cache) {
                 // removed
@@ -64,7 +64,7 @@ export default class VectorTileLayerWorker extends LayerWorker {
                 }
             } else if (response && response.data) {
                 arrayBuffer = response.data;
-                if (needDecodeGZip && arrayBuffer instanceof ArrayBuffer) {
+                if (loadTileDecodeGZip && arrayBuffer instanceof ArrayBuffer) {
                     try {
                         // eslint-disable-next-line no-undef
                         const gunzip = new Zlib.Gunzip(new Uint8Array(arrayBuffer));

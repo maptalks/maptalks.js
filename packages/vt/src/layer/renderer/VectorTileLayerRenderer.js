@@ -584,7 +584,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             const loadTileErrorLogIgnoreCodes = this.layer.options.loadTileErrorLogIgnoreCodes;
             const loadTileCachMaxSize = this.layer.options.loadTileCachMaxSize;
             const loadTileCacheLog = this.layer.options.loadTileCacheLog;
-            const needDecodeGZip = this.layer.options.needDecodeGZip;
+            const loadTileDecodeGZip = this.layer.options.loadTileDecodeGZip;
             const loadTileOpitons = {
                 tileInfo: {
                     res: tileInfo.res,
@@ -601,7 +601,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 loadTileErrorLogIgnoreCodes,
                 loadTileCachMaxSize,
                 loadTileCacheLog,
-                needDecodeGZip,
+                loadTileDecodeGZip,
                 altitudePropertyName,
                 zScale: this._zScale,
                 centimeterToPoint,
