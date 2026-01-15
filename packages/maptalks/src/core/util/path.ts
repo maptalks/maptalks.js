@@ -1,13 +1,15 @@
 import Point from '../../geo/Point';
 import Coordinate from '../../geo/Coordinate';
 import { isNumber } from './common';
+import { PointExtent } from '../../geo';
 
 
 export function clipLine(points, bounds, round?: boolean, noCut?: boolean) {
+    const min = bounds.getMin(), max = bounds.getMax();
     const parts = [];
     let k = 0, segment;
     for (let j = 0, l = points.length; j < l - 1; j++) {
-        segment = clipSegment(points[j], points[j + 1], bounds, j, round, noCut);
+        segment = clipSegment(points[j], points[j + 1], min, max, j, round, noCut);
 
         if (!segment) { continue; }
 
@@ -38,9 +40,9 @@ let _lastCode;
 // (modifying the segment points directly!). Used by Leaflet to only show polyline
 // points that are on the screen or near, increasing performance.
 // @copyright Leaflet
-export function clipSegment(a, b, bounds, useLastCode, round, noCut) {
-    let codeA = useLastCode ? _lastCode : _getBitCode(a, bounds),
-        codeB = _getBitCode(b, bounds),
+export function clipSegment(a, b, min: Point, max: Point, useLastCode, round, noCut) {
+    let codeA = useLastCode ? _lastCode : _getBitCode(a, min, max),
+        codeB = _getBitCode(b, min, max),
 
         codeOut, p, newCode;
 
@@ -64,8 +66,8 @@ export function clipSegment(a, b, bounds, useLastCode, round, noCut) {
         }
         // other cases
         codeOut = codeA || codeB;
-        p = _getEdgeIntersection(a, b, codeOut, bounds, round);
-        newCode = _getBitCode(p, bounds);
+        p = _getEdgeIntersection(a, b, codeOut, min, max, round);
+        newCode = _getBitCode(p, min, max);
 
         if (codeOut === codeA) {
             a = p;
@@ -85,15 +87,17 @@ export function clipSegment(a, b, bounds, useLastCode, round, noCut) {
  * than polyline, so there's a seperate method for it.
  * @copyright Leaflet
  */
-export function clipPolygon(points, bounds, round?: boolean) {
+export function clipPolygon(points, bounds: PointExtent, round?: boolean) {
     const edges = [1, 4, 2, 8];
     let clippedPoints,
         i, j, k,
         a, b,
         len, edge, p;
 
+    const min = bounds.getMin(), max = bounds.getMax();
+
     for (i = 0, len = points.length; i < len; i++) {
-        points[i]._code = _getBitCode(points[i], bounds);
+        points[i]._code = _getBitCode(points[i], min, max);
     }
 
     // for each edge (left, bottom, right, top)
@@ -109,16 +113,16 @@ export function clipPolygon(points, bounds, round?: boolean) {
             if (!(a._code & edge)) {
                 // if b is outside the clip window (a->b goes out of screen)
                 if (b._code & edge) {
-                    p = _getEdgeIntersection(b, a, edge, bounds, round);
-                    p._code = _getBitCode(p, bounds);
+                    p = _getEdgeIntersection(b, a, edge, min, max, round);
+                    p._code = _getBitCode(p, min, max);
                     clippedPoints.push(p);
                 }
                 clippedPoints.push(a);
 
                 // else if b is inside the clip window (a->b enters the screen)
             } else if (!(b._code & edge)) {
-                p = _getEdgeIntersection(b, a, edge, bounds, round);
-                p._code = _getBitCode(p, bounds);
+                p = _getEdgeIntersection(b, a, edge, min, max, round);
+                p._code = _getBitCode(p, min, max);
                 clippedPoints.push(p);
             }
         }
@@ -185,11 +189,9 @@ export function pointInsidePolygon(p: Coordinate, points: Coordinate[]): boolean
     return c;
 }
 
-function _getEdgeIntersection(a, b, code, bounds, round) {
+function _getEdgeIntersection(a, b, code, min: Point, max: Point, round) {
     const dx = b.x - a.x,
-        dy = b.y - a.y,
-        min = bounds.getMin(),
-        max = bounds.getMax();
+        dy = b.y - a.y;
     let x, y;
 
     if (code & 8) { // top
@@ -216,18 +218,18 @@ function _getEdgeIntersection(a, b, code, bounds, round) {
     return p;
 }
 
-function _getBitCode(p, bounds) {
+function _getBitCode(p, min: Point, max: Point) {
     let code = 0;
 
-    if (p.x < bounds.getMin().x) { // left
+    if (p.x < min.x) { // left
         code |= 1;
-    } else if (p.x > bounds.getMax().x) { // right
+    } else if (p.x > max.x) { // right
         code |= 2;
     }
 
-    if (p.y < bounds.getMin().y) { // bottom
+    if (p.y < min.y) { // bottom
         code |= 4;
-    } else if (p.y > bounds.getMax().y) { // top
+    } else if (p.y > max.y) { // top
         code |= 8;
     }
 
@@ -303,10 +305,10 @@ export function getMinMaxAltitude(altitude: number | number[] | number[][]): [nu
 
 /**
  * point left segment
- * @param p 
- * @param p1 
- * @param p2 
- * @returns 
+ * @param p
+ * @param p1
+ * @param p2
+ * @returns
  */
 export function pointLeftSegment(p: Point, p1: Point, p2: Point) {
     const x1 = p1.x, y1 = p1.y;
@@ -320,7 +322,7 @@ function pointRightSegment(p: Point, p1: Point, p2: Point) {
 }
 
 /**
- * 
+ *
  * LT--------------------RT
  *   \                  /
  *    \                /
@@ -329,12 +331,12 @@ function pointRightSegment(p: Point, p1: Point, p2: Point) {
  *        camera behind
  *
  * Points within a convex quadrilateral
- * @param point 
- * @param p1 
- * @param p2 
- * @param p3 
- * @param p4 
- * @returns 
+ * @param point
+ * @param p1
+ * @param p2
+ * @param p3
+ * @param p4
+ * @returns
  */
 export function pointInQuadrilateral(p: Point, LT: Point, RT: Point, RB: Point, LB: Point) {
     //LT-RT
@@ -352,11 +354,11 @@ export function pointInQuadrilateral(p: Point, LT: Point, RT: Point, RB: Point, 
 /**
  * 直线和直线的交点
  * Intersection of two line
- * @param p1 
- * @param p2 
- * @param p3 
- * @param p4 
- * @returns 
+ * @param p1
+ * @param p2
+ * @param p3
+ * @param p4
+ * @returns
  */
 export function lineIntersection(p1: Point, p2: Point, p3: Point, p4: Point): Point | null {
     const dx1 = p2.x - p1.x, dy1 = p2.y - p1.y;
@@ -404,8 +406,8 @@ export function lineIntersection(p1: Point, p2: Point, p3: Point, p4: Point): Po
 
 /**
  *  Does it contain altitude values
- * @param altitudes 
- * @returns 
+ * @param altitudes
+ * @returns
  */
 export function altitudesHasData(altitudes: number | Array<number>) {
     if (isNumber(altitudes)) {
