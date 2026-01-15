@@ -66,6 +66,7 @@ export default class VectorTileLayerWorker extends LayerWorker {
                 arrayBuffer = response.data;
                 if (loadTileDecodeGZip && arrayBuffer instanceof ArrayBuffer) {
                     try {
+                        // https://github.com/imaya/zlib.js/tree/develop
                         // eslint-disable-next-line no-undef
                         const gunzip = new Zlib.Gunzip(new Uint8Array(arrayBuffer));
                         const plain = gunzip.decompress();
