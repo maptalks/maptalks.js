@@ -38,7 +38,7 @@ const defaultOptions: VectorTileLayerOptionsType = {
     forceRenderOnMoving: true,
     forceRenderOnRotating: true,
     tileSize: [512, 512],
-    features: true,
+    features: true,//always open features
     schema: false,
     cascadeTiles: true,
     collision: true,
