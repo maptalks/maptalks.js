@@ -256,6 +256,38 @@ class TileLayer extends Layer {
         return new TileLayer(layerJSON['id'], layerJSON['options']);
     }
 
+    onAdd() {
+        this._prepareOptions();
+    }
+
+    _prepareOptions() {
+        const options = this.options as any;
+        const map = this.getMap();
+        const projection = map.getProjection();
+        const is4326 =
+            projection.code === "EPSG:4326" || projection.code === "EPSG:4490";
+        const is3857 = projection.code === "EPSG:3857";
+
+        if (!options.tileSystem) {
+            if (options.tms) {
+                if (is3857) {
+                    options.tileSystem = [
+                        1,
+                        1,
+                        -6378137 * Math.PI,
+                        -6378137 * Math.PI,
+                    ];
+                } else if (is4326) {
+                    options.tileSystem = [1, 1, -180, -90];
+                }
+            } else {
+                if (is4326) {
+                    options.tileSystem = [1, -1, -180, 90];
+                }
+            }
+        }
+    }
+
     /**
      * force Reload tilelayer.
      * Note that this method will clear all cached tiles and reload them. It shouldn't be called frequently for performance reason.
