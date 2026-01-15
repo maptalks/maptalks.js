@@ -1516,8 +1516,10 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             isRenderingTerrain,
             isRenderingTerrainSkin: null,
             renderTarget: null
+        };
+        if (isRenderingTerrain && parentContext && parentContext.terrainMaskFBO) {
+            parentContext.terrainMaskFBO.clearTerrainMask();
         }
-
         for (let i = 0, len = plugins.length; i < len; i++) {
             const plugin = plugins[i];
             const idx = i;
@@ -1548,14 +1550,13 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             }
             const isRenderingTerrainSkin = isRenderingTerrain && terrainSkinFilter(plugin);
 
-            renderContext.sceneConfig = null;
-            renderContext.pluginIndex = null;
-            renderContext.tileData = null;
-            renderContext.tileCache = null;
-            renderContext.tileTransform = null;
-            renderContext.isRenderingTerrainSkin = null;
+            // renderContext.sceneConfig = null;
+            // renderContext.pluginIndex = null;
+            // renderContext.tileData = null;
+            // renderContext.tileCache = null;
+            // renderContext.tileTransform = null;
+            // renderContext.isRenderingTerrainSkin = null;
             renderContext.renderTarget = null;
-
 
             renderContext.sceneConfig = plugin.config.sceneConfig;
             renderContext.pluginIndex = idx;
