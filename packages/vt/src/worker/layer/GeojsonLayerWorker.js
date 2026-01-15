@@ -92,15 +92,15 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                 data = JSON.parse(data);
             }
             const features = Array.isArray(data) ? data : data.features;
-            const length = features && features.length;
+            // const length = features && features.length;
             this._genOMBB(features);
             let sample1000 = features;
-            if (features && length > 1000) {
-                sample1000 = [];
-                for (let i = 0; i < length; i++) {
-                    insertSample(features[i], sample1000, i, length);
-                }
-            }
+            // if (features && length > 1000) {
+            //     sample1000 = [];
+            //     for (let i = 0; i < length; i++) {
+            //         insertSample(features[i], sample1000, i, length);
+            //     }
+            // }
             this._generate(sample1000, null, data, options, cb);
         }
     }
@@ -177,6 +177,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
         const idMap = new Map();
         let uid = 0;
         const feaIdProp = this.options.featureIdProperty;
+        // eslint-disable-next-line no-unused-vars
         function visit(f, index, length) {
             if (!f) {
                 return;
@@ -206,8 +207,9 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                 // idMap[f.id].coordinates = null;
             }
             idMap.set(f.id, feature);
+            sample1000.push(f);
 
-            insertSample(f, sample1000, index, length);
+            // insertSample(f, sample1000, index, length);
         }
         if (data) {
             const length = data.length;
@@ -288,14 +290,14 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
     }
 }
 
-function insertSample(feature, sample1000, i, length) {
-    const step = Math.floor(length / (1000 - 2));
-    if (i === 0 || i === length - 1) {
-        sample1000.push(feature);
-    } else if ((step === 0 || i % step === 0) && sample1000.length < 999) {
-        sample1000.push(feature);
-    }
-}
+// function insertSample(feature, sample1000, i, length) {
+//     const step = Math.floor(length / (1000 - 2));
+//     if (i === 0 || i === length - 1) {
+//         sample1000.push(feature);
+//     } else if ((step === 0 || i % step === 0) && sample1000.length < 999) {
+//         sample1000.push(feature);
+//     }
+// }
 
 function isEmptyData(data) {
     if (!data) {

@@ -219,24 +219,24 @@ class Painter extends Class {
      * for strokeAndFillSymbolizer
      * @return resources to render vector
      */
-    getPaintParams(dx: number, dy: number, ignoreAltitude: boolean, disableClip: boolean, ptkey = '_pt') {
+    getPaintParams(dx: number, dy: number, ignoreAltitude: boolean, disableClip: boolean, ptkey = '_pt', isGround) {
         const renderer = this.getLayer()._getRenderer();
-        const mapStateCache = renderer.mapStateCache;
+        const rendererStateCache = renderer.rendererStateCache;
         let resolution, pitch, bearing, glScale, containerExtent;
         const map = this.getMap();
-        if (mapStateCache && (!this._hitPoint)) {
-            resolution = mapStateCache.resolution;
-            pitch = mapStateCache.pitch;
-            bearing = mapStateCache.bearing;
-            glScale = mapStateCache.glScale;
-            containerExtent = mapStateCache.containerExtent;
+        if (rendererStateCache && (!this._hitPoint)) {
+            resolution = rendererStateCache.resolution;
+            pitch = rendererStateCache.pitch;
+            bearing = rendererStateCache.bearing;
+            glScale = rendererStateCache.glScale;
+            containerExtent = rendererStateCache.containerExtent;
         } else {
             const cache = MapStateCache[map.id];
             resolution = map.getResolution();
             pitch = cache ? cache.pitch : map.getPitch();
             bearing = cache ? cache.bearing : map.getBearing();
             glScale = map.getGLScale();
-            containerExtent = map.getContainerExtent();
+            containerExtent = map.getGroundExtent();
         }
         const geometry = this.geometry,
             res = resolution,
@@ -285,7 +285,7 @@ class Painter extends Class {
 
         const mapExtent = containerExtent;
         const isPolygon = !!geometry.getHoles;
-        const cPoints = this._pointContainerPoints(points, dx, dy, ignoreAltitude, disableClip || this._hitPoint && !mapExtent.contains(this._hitPoint), null, ptkey, isPolygon);
+        const cPoints = this._pointContainerPoints(points, dx, dy, ignoreAltitude, disableClip || this._hitPoint && !mapExtent.contains(this._hitPoint), null, ptkey, isPolygon, isGround);
         if (!cPoints) {
             return null;
         }
@@ -305,33 +305,38 @@ class Painter extends Class {
     }
 
     //@internal
-    _pointContainerPoints(points, dx: number, dy: number, ignoreAltitude: boolean, disableClip: boolean, pointPlacement: string, ptkey = '_pt', isPolygon?: boolean) {
+    _pointContainerPoints(points, dx: number, dy: number, ignoreAltitude: boolean, disableClip: boolean, pointPlacement: string, ptkey = '_pt', isPolygon?: boolean, isGround?: boolean) {
         if (this._aboveCamera()) {
             return null;
         }
-        const renderer = this.getLayer()._getRenderer();
-        const mapStateCache = renderer.mapStateCache;
+        const layer = this.getLayer();
+        const renderer = layer._getRenderer();
+        const rendererStateCache = renderer.rendererStateCache;
 
         const map = this.getMap(),
             geometry = this.geometry,
             containerOffset = this.containerOffset;
         let glRes: number, containerExtent: Extent;
-        if (mapStateCache) {
-            glRes = mapStateCache.glRes;
-            containerExtent = mapStateCache.containerExtent;
+        if (rendererStateCache) {
+            glRes = rendererStateCache.glRes;
+            containerExtent = rendererStateCache.containerExtent;
         } else {
             glRes = map.getGLRes();
-            containerExtent = map.getContainerExtent();
+            containerExtent = map.getGroundExtent();
         }
         let cPoints;
-        const roundPoint = this.getLayer().options['roundPoint'];
+        const roundPoint = layer.options['roundPoint'];
         let minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
         let needClip = !disableClip;
-        const clipBBoxBufferSize = renderer.layer.options['clipBBoxBufferSize'] || 3;
+        const clipBBoxBufferSize = layer.options['clipBBoxBufferSize'] || 3;
         const symbolizers = this.symbolizers;
 
         const enableClip = geometry.options.enableClip;
         const strictClip = geometry.options.strictClip;
+        const groundClip = geometry.options.groundClip;
+        const isPoint = geometry.isPoint;
+
+
 
         function pointsContainerPoints(viewPoints = [], alts = []) {
             let filterPoints = viewPoints;
@@ -399,7 +404,9 @@ class Painter extends Class {
                 maxx = Math.max(p.x, maxx);
                 maxy = Math.max(p.y, maxy);
             }
-            if (enableClip && needClip && isDashLine(symbolizers)) {
+            const clipByGround = !isGround && !isPoint && (groundClip || (enableClip && needClip && isDashLine(symbolizers)));
+            //line polygon clip by ground
+            if (clipByGround) {
                 TEMP_CLIP_EXTENT2.ymin = containerExtent.ymin;
                 if (TEMP_CLIP_EXTENT2.ymin < clipBBoxBufferSize) {
                     TEMP_CLIP_EXTENT2.ymin = containerExtent.ymin - clipBBoxBufferSize;
@@ -411,15 +418,18 @@ class Painter extends Class {
                     return clipPolygon(pts, TEMP_CLIP_EXTENT2);
                 }
                 const clipPts = clipLine(pts, TEMP_CLIP_EXTENT2, false);
-                if (clipPts.length) {
-                    const points = [];
-                    clipPts.forEach(clipPt => {
-                        for (let i = 0, len = clipPt.length; i < len; i++) {
-                            points.push(clipPt[i].point);
-                        }
-                    });
-                    return points;
+                if (!clipPts.length) {
+                    return []
                 }
+
+                const points = [];
+                clipPts.forEach(clipPt => {
+                    for (let i = 0, len = clipPt.length; i < len; i++) {
+                        points.push(clipPt[i].point);
+                    }
+                });
+                return points;
+
             }
             return pts;
         }
@@ -528,13 +538,13 @@ class Painter extends Class {
             lineWidth = 4;
         }
         const renderer = this.getLayer()._getRenderer();
-        const mapStateCache = renderer.mapStateCache;
+        const rendererStateCache = renderer.rendererStateCache;
         let _2DExtent, glExtent, pitch;
-        if (mapStateCache) {
+        if (rendererStateCache) {
             //@internal
-            _2DExtent = mapStateCache._2DExtent;
-            glExtent = mapStateCache.glExtent;
-            pitch = mapStateCache.pitch;
+            _2DExtent = rendererStateCache._2DExtent;
+            glExtent = rendererStateCache.glExtent;
+            pitch = rendererStateCache.pitch;
         } else {
             //@internal
             _2DExtent = map.get2DExtent();
@@ -693,7 +703,7 @@ class Painter extends Class {
         if (!renderer || !renderer.context && !context) {
             return;
         }
-        const mapStateCache = renderer.mapStateCache || { offset: undefined };
+        const rendererStateCache = renderer.rendererStateCache || { offset: undefined };
         //reduce geos to paint when drawOnInteracting
         if (!this.geometry._isCheck) {
             if (extent && !extent.intersects(this.get2DExtent(renderer.resources, TEMP_PAINT_EXTENT))) {
@@ -704,7 +714,7 @@ class Painter extends Class {
             return;
         }
         //Multiplexing offset
-        this.containerOffset = offset || mapStateCache.offset;
+        this.containerOffset = offset || rendererStateCache.offset;
         if (!this.containerOffset) {
             const map = this.getMap();
             this.containerOffset = map._pointToContainerPoint(renderer.middleWest)._add(0, -map.height / 2);
@@ -727,7 +737,8 @@ class Painter extends Class {
         this._afterPaint();
         this._painted = true;
         // reduce function call
-        if (this.geometry.options['debug'] || layer.options['debug']) {
+        const isClip = ctx.isClip || ctx.isMultiClip;
+        if (!isClip && (this.geometry.options['debug'] || layer.options['debug'])) {
             this._debugSymbolizer.symbolize(ctx);
         }
     }

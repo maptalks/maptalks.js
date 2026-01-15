@@ -1612,6 +1612,55 @@ describe('vector layers update style specs', () => {
         group.addTo(map);
     });
 
+    it('marker should can update properties of textName', done => {
+        const marker = new maptalks.Marker(map.getCenter(), {
+            id: 0,
+            symbol: {
+                textName: '{content}',
+                textFill: '#00f',
+                textSize: 24
+            },
+            properties: {
+                content: '.'
+            }
+        });
+
+        const layer = new PointLayer('point', marker);
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                outline: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        layer.on('canvasisdirty', () => {
+            count++;
+        });
+        let updated = false;
+        let doneCalled = false;
+        group.on('layerload', () => {
+            if (count >= 1 && !updated) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [0, 0, 0, 0]);
+                marker.setProperties({
+                    content: '■■■'
+                });
+                updated = true;
+            } else if (updated && count >= 3 && !doneCalled) {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert.deepEqual(pixel, [0, 0, 255, 255]);
+                doneCalled = true;
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
     it('should can turn on/off sceneConfig.collision', done => {
         const symbol = { markerType: 'ellipse', markerWidth: 10, markerHeight: 10 };
         const marker0 = new maptalks.Marker([0, 0], { symbol });

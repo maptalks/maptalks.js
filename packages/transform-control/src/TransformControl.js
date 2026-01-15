@@ -237,6 +237,9 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
 
     _viewchanging() {
         const planeMesh = this.TransformHelper.planeHelper.getMeshes()[0][0];
+        if (!planeMesh) {
+            return;
+        }
         const bearing = this.map.getBearing();
         planeMesh.rotation[2] = -bearing;
         this._updateMatrix();

@@ -31,10 +31,12 @@ import { AnimationOptionsType, EasingType } from '../core/Animation';
 import { BBOX, bboxInBBOX, getDefaultBBOX, pointsBBOX } from '../core/util/bbox';
 import { Attribution } from '../control';
 import { AttributionOptionsType } from '../control/Control.Attribution';
+import { intersectsBox } from 'frustum-intersects';
 
 const TEMP_COORD = new Coordinate(0, 0);
 const TEMP_POINT = new Point(0, 0);
 const REDRAW_OPTIONS_PROPERTIES = ['centerCross', 'fog', 'fogColor', 'debugSky'];
+const SKYBOX3 = [[0, 0, 0], [0, 0, 0]];
 /**
  * @property {Object} options                                   - map's options, options must be updated by config method:<br> map.config('zoomAnimation', false);
  * @property {Boolean} [options.centerCross=false]              - Display a red cross in the center of map
@@ -168,6 +170,7 @@ const options: MapOptionsType = {
     'maxFPS': 0,
     'debug': false,
     'cameraFarUndergroundInMeter': 2000,
+    'cameraNearScale': 1,
 
     'onlyWebGL1': false,
     'forceRedrawPerFrame': false,
@@ -658,7 +661,6 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
         return new Size(this.width, this.height);
     }
-
     /**
      * Get container extent of the map
      * @return {PointExtent}
@@ -671,6 +673,56 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             visualHeight = this._getVisualHeight(maxVisualPitch);
         }
         return new PointExtent(0, this.height - visualHeight, this.width, this.height);
+    }
+
+
+    /**
+     * get Ground Extent for sky ,line ,polygon 2d render clip etc
+     * @return {PointExtent}
+     */
+    getGroundExtent() {
+        const extent = this.getContainerExtent();
+        const { ymin } = extent;
+        if (ymin > 0 || this.getPitch() > 60) {
+            const halfh = this.height / 2;
+            const halfw = this.width / 2;
+            const box = SKYBOX3;
+            const p1 = new Point(halfw, ymin);
+            const p2 = p1.copy();
+            const glRes = this.getGLRes();
+            const scale = this.getScale();
+
+            const calBox = () => {
+                const p3 = this['_containerPointToPointAtRes'](p1, glRes);
+                const p4 = this['_containerPointToPointAtRes'](p2, glRes);
+                box[0][0] = Math.min(p3.x, p4.x);
+                box[0][1] = Math.min(p3.y, p4.y);
+                box[1][0] = Math.max(p3.x, p4.x);
+                box[1][1] = Math.max(p3.y, p4.y);
+            }
+            if (scale > 15) {
+                for (let y = ymin; y <= halfh; y++) {
+                    p1.y = y;
+                    p2.y = y + 1;
+                    calBox();
+                    if (intersectsBox(this.projViewMatrix, box)) {
+                        extent.ymin = y;
+                        break;
+                    }
+                }
+            } else {
+                for (let y = ymin; y >= 0; y--) {
+                    p1.y = y;
+                    p2.y = y - 1;
+                    calBox();
+                    if (!intersectsBox(this.projViewMatrix, box)) {
+                        extent.ymin = y;
+                        break;
+                    }
+                }
+            }
+        }
+        return extent;
     }
 
     //@internal
@@ -2893,6 +2945,7 @@ export type MapOptionsType = {
     forceRedrawPerFrame?: boolean;
     extensions?: string[];
     optionalExtensions?: string[];
+    cameraNearScale?: number;
 }
 
 export type MapCreateOptionsType = {

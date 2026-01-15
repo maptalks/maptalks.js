@@ -564,6 +564,18 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 tiles: [tileInfo]
             };
             this._requestingMVT[url].keys[tileInfo.id] = 1;
+
+            if (this.layer._dataExtent && this.layer._getTileBBox) {
+                const tileBBOX = this.layer._getTileBBox(tileInfo);
+                const dataBBOX = this.layer._dataExtent.toBBOX();
+                const bboxIntersect = maptalks.BBOXUtil.bboxIntersect;
+                //when data extent and tile extent not Intersect,return empty
+                if (tileBBOX && dataBBOX && !bboxIntersect(tileBBOX, dataBBOX)) {
+                    this._onReceiveMVTData(url, null, null);
+                    return { _empty: true };
+                }
+            }
+
             const fetchOptions = this.layer.options['fetchOptions'];
             const referrer = window && window.location.href;
             const altitudePropertyName = this.layer.options['altitudePropertyName'];
@@ -1501,8 +1513,10 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             isRenderingTerrain,
             isRenderingTerrainSkin: null,
             renderTarget: null
+        };
+        if (isRenderingTerrain && parentContext && parentContext.terrainMaskFBO) {
+            parentContext.terrainMaskFBO.clearTerrainMask();
         }
-
         for (let i = 0, len = plugins.length; i < len; i++) {
             const plugin = plugins[i];
             const idx = i;
@@ -1533,14 +1547,13 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             }
             const isRenderingTerrainSkin = isRenderingTerrain && terrainSkinFilter(plugin);
 
-            renderContext.sceneConfig = null;
-            renderContext.pluginIndex = null;
-            renderContext.tileData = null;
-            renderContext.tileCache = null;
-            renderContext.tileTransform = null;
-            renderContext.isRenderingTerrainSkin = null;
+            // renderContext.sceneConfig = null;
+            // renderContext.pluginIndex = null;
+            // renderContext.tileData = null;
+            // renderContext.tileCache = null;
+            // renderContext.tileTransform = null;
+            // renderContext.isRenderingTerrainSkin = null;
             renderContext.renderTarget = null;
-
 
             renderContext.sceneConfig = plugin.config.sceneConfig;
             renderContext.pluginIndex = idx;
@@ -2420,6 +2433,7 @@ function findFeatures(layer, image) {
     if (!image.cache) {
         return [];
     }
+    const result = [];
 
     for (const p in image.cache) {
         const data = image.cache[p];
@@ -2436,12 +2450,13 @@ function findFeatures(layer, image) {
                     geometry.properties.features.empty = empty;
                 }
                 wrapVTFeatureGeometryInfo(layer.options.features, image, features);
-                return features;
+                maptalks.Util.pushIn(result, features);
+                // return features;
             }
         }
 
     }
-    return [];
+    return result;
 }
 
 function getTileAbsoluteUrl(tile) {

@@ -1,5 +1,11 @@
 # maptalks
 
+## 1.8.0
+
+### Minor Changes
+
+- mainly a bug fix version with some new features
+
 ## 1.7.1
 
 ### Patch Changes

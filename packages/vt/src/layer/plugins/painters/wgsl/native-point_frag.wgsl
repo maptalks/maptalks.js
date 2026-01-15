@@ -29,5 +29,9 @@ fn main(
     #else
         pointColor = vec4f(uniforms.markerFill, 1.0);
     #endif
-    return pointColor * uniforms.markerOpacity * alpha * layerOpacity;
+    let color = pointColor * uniforms.markerOpacity * alpha * layerOpacity;
+    if (color.a <= 0.01) {
+        discard;
+    }
+    return color;
 }

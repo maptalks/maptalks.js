@@ -44,6 +44,9 @@ void main() {
         vec4 pointColor = vec4(markerFill, 1.0);
     #endif
     glFragColor = pointColor * markerOpacity * alpha * layerOpacity;
+    if (glFragColor.a <= 0.01) {
+        discard;
+    }
 
     #if __VERSION__ == 100
         gl_FragColor = glFragColor;

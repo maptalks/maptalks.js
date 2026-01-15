@@ -196,7 +196,7 @@ class NativePointPainter extends BasicPainter {
                 // },
                 depth: {
                     enable: true,
-                    mask: false,
+                    // mask: true,
                     range: this.sceneConfig.depthRange || [0, 1],
                     func: this.sceneConfig.depthFunc || 'always'
                 },
