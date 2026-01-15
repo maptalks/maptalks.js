@@ -3,7 +3,7 @@ struct VertexInput {
     @location($i) aPosition: vec2i,
     @location($i) aAltitude: f32,
 #else
-    @location($o) aPosition: vec4i,
+    @location($i) aPosition: vec4i,
 #endif
 #ifndef PICKING_MODE
     #if HAS_COLOR
@@ -28,7 +28,7 @@ struct VertexOutput {
 #endif
 }
 
-#ifndef PICKING_MODE
+#ifdef PICKING_MODE
     #include <fbo_picking_vert>
 #endif
 

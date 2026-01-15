@@ -192,7 +192,7 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
     #endif
 
     #if HAS_HIGHLIGHT_COLOR || HAS_HIGHLIGHT_OPACITY
-        highlight_setVarying(vertexInput, out);
+        highlight_setVarying(vertexInput, &out);
     #endif
 
     #ifdef HAS_OPACITY

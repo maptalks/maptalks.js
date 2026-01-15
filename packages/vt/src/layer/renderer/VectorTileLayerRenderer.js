@@ -1392,8 +1392,9 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         const timestamp = this._currentTimestamp;
         const parentContext = this._parentContext;
         const tileSize = this.layer.getTileSize().width;
-        this._startFrame(timestamp);
+
         for (let i = 0; i < skinImages.length; i++) {
+            this._startFrame(timestamp);
             const skinImage = skinImages[i];
             const texture = skinImage.texture;
             this._parentContext = {
@@ -1408,8 +1409,9 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             this._parentContext.viewport = getTileViewport(tileSize);
             // 如果矢量瓦片的目标绘制尺寸过大，拉伸后会过于失真，还不如不去绘制
             this._drawTerrainTile(skinImage.tile);
+            this._endTerrainFrame(skinImage);
         }
-        this._endTerrainFrame(skinImages);
+
         this._parentContext = parentContext;
         this.isRenderingTerrainSkin = false;
     }
@@ -1419,7 +1421,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         this.drawTile(info, image, terrainSkinFilter);
     }
 
-    _endTerrainFrame(skinImages) {
+    _endTerrainFrame(skinImage) {
         const plugins = this._getAllPlugins();
         const cameraPosition = this.getMap().cameraPosition;
         const timestamp = this._currentTimestamp || 0;
@@ -1457,14 +1459,11 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             if (!hasMesh || !terrainSkinFilter(plugin)) {
                 return;
             }
-            for (let i = 0; i < skinImages.length; i++) {
-                const texture = skinImages[i].texture;
-                this.device.clear({
-                    stencil: 0xFF,
-                    framebuffer: texture
-                });
-            }
-
+            const texture = skinImage.texture;
+            this.device.clear({
+                stencil: 0xFF,
+                framebuffer: texture
+            });
             const polygonOffsetIndex = this._pluginOffsets[idx] || 0;
             const context = this._getPluginContext(plugin, polygonOffsetIndex, [0, 0, 0], this._currentTimestamp);
             context.isRenderingTerrainSkin = true;

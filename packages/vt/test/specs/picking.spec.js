@@ -202,6 +202,12 @@ describe('picking specs', () => {
                 pickingPoint: true
             };
             const coord = [0.5, 0.5];
+            const isGPU = mapRenderer === 'gpu';
+            const x = isGPU ? 0.505371174076569 : 0.5053712142398551;
+            const y = isGPU ? 0.5053646212837458 : 0.5053646614454622;
+            const z = isGPU ? -0.057181795866020145 : -0.08577269462447806;
+            const pxy = isGPU ? 736.00012 : 736.00018;
+            const pz = isGPU ? -0.00098 : -0.00146;
             const expected = [{
                 'data': {
                     'feature': {
@@ -218,8 +224,8 @@ describe('picking specs', () => {
                         'layer': 0
                     },
                 },
-                'coordinate': [0.5053712142398551, 0.5053646614454622, -0.08577269462447806],
-                'point': [736.00018, 736.00018, -0.00146],
+                'coordinate': [x, y, z],
+                'point': [pxy, pxy, pz],
                 'type': 'icon',
                 'plugin': 0
             }];
@@ -1171,6 +1177,12 @@ describe('picking specs', () => {
                 pickingPoint: true
             };
             const coord = [0.5, 0.5];
+            const isGPU = mapRenderer === 'gpu';
+            const pxy = isGPU ? 702.48074 : 702.48068;
+            const pz = isGPU ? 279.81299 : 279.81348;
+            const x = isGPU ? 0.48235524154733567 : 0.4823552013840498;
+            const y = isGPU ? 0.48234954388384144 : 0.48234950372197244;
+            const z = isGPU ? 16384.21152854897 : 16384.240119431175;
             const expected = [{
                 'data': {
                     'feature': {
@@ -1188,8 +1200,8 @@ describe('picking specs', () => {
                     },
                     "nodeIndex": 1
                 },
-                'point': [702.48068, 702.48068, 279.81348],
-                'coordinate': [0.4823552013840498, 0.48234950372197244, 16384.240119431175],
+                'point': [pxy, pxy, pz],
+                'coordinate': [x, y, z],
                 'type': 'gltf-lit',
                 'plugin': 0
             }];

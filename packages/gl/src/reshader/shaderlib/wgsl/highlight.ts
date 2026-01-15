@@ -24,9 +24,8 @@ const frag = /* wgsl */`
             let highlightColor = output.vHighlightColor;
             let opacity = highlightColor.a;
             outColor = vec4f(outColor.rgb * (1.0 - opacity) + highlightColor.rgb * opacity, outColor.a);
-            #if HAS_HIGHLIGHT_COLOR_POINT
-            #else
-            // 如果没有高亮颜色点
+            #ifndef HAS_HIGHLIGHT_COLOR_POINT
+                // 如果没有高亮颜色点
                 outColor.a = outColor.a * (1.0 - opacity) + opacity;
             #endif
         #endif

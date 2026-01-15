@@ -1,5 +1,4 @@
 #define SHADER_NAME MARKER
-#define HAS_HIGHLIGHT_COLOR_POINT 1
 
 precision mediump float;
 #include <gl2_frag>

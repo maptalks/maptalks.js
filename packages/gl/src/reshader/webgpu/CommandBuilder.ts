@@ -215,13 +215,17 @@ export default class CommandBuilder {
             if (format && format.startsWith('depth')) {
                 sampleType = 'depth';
             }
+            const texture = {
+                multisampled,
+                sampleType
+            };
+            if (groupInfo.type && groupInfo.type.name === 'texture_cube') {
+                (texture as any).viewDimension = 'cube';
+            }
             return {
                 binding,
                 visibility,
-                texture: {
-                    multisampled,
-                    sampleType
-                }
+                texture
             };
         } else {
             return {
@@ -449,7 +453,6 @@ export default class CommandBuilder {
                 }
             }
         }
-
         return device.createRenderPipeline(pipelineOptions);
     }
 }
