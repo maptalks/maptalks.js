@@ -6,6 +6,7 @@ import { isNil, hasOwn, isString } from '../../common/Util';
 import { PROP_OMBB } from '../../common/Constant';
 import { projectOMBB } from '../builder/Ombb.js';
 import { calArrayBufferSize, isNumber } from '../util/index';
+import './../util/zlib_and_gzip.min.js';
 
 const ALTITUDE_ERRORS = {
     'MISSING_ALTITUDE_ELEMENT': 2,
@@ -50,20 +51,32 @@ export default class VectorTileLayerWorker extends LayerWorker {
         }
         fetchOptions.referrer = context.referrer;
         fetchOptions.errorLog = context.loadTileErrorLog;
-        const { loadTileCachMaxSize, loadTileCacheLog, } = context;
+        const { loadTileCachMaxSize, loadTileCacheLog, needDecodeGZip } = context;
         return Ajax.getArrayBuffer(url, fetchOptions, (err, response) => {
             if (!this._cache) {
                 // removed
                 return;
             }
+            let arrayBuffer;
             if (err) {
                 if (!err.loading) {
                     this._cache.add(url, { err, data: response && response.data, cacheIndex: context.workerCacheIndex });
                 }
             } else if (response && response.data) {
+                arrayBuffer = response.data;
+                if (needDecodeGZip && arrayBuffer instanceof ArrayBuffer) {
+                    try {
+                        // eslint-disable-next-line no-undef
+                        const gunzip = new Zlib.Gunzip(new Uint8Array(arrayBuffer));
+                        const plain = gunzip.decompress();
+                        arrayBuffer = plain.buffer;
+                    } catch (error) {
+                        console.error('decode tile gzip error:', error, context.tileInfo);
+                    }
+                }
                 let needCache = true;
-                if (isNumber(loadTileCachMaxSize) && loadTileCachMaxSize > 0) {
-                    const bufferSize = calArrayBufferSize(response.data);
+                if (arrayBuffer && isNumber(loadTileCachMaxSize) && loadTileCachMaxSize > 0) {
+                    const bufferSize = calArrayBufferSize(arrayBuffer);
                     if (bufferSize > loadTileCachMaxSize) {
                         needCache = false;
                         if (loadTileCacheLog) {
@@ -71,12 +84,12 @@ export default class VectorTileLayerWorker extends LayerWorker {
                         }
                     }
                 }
-                if (needCache) {
-                    this._cache.add(url, { err: null, data: response.data, cacheIndex: context.workerCacheIndex });
+                if (needCache && arrayBuffer) {
+                    this._cache.add(url, { err: null, data: arrayBuffer, cacheIndex: context.workerCacheIndex });
                 }
             }
 
-            this._readTile(url, altitudePropertyName, disableAltitudeWarning, err, response && response.data, cb);
+            this._readTile(url, altitudePropertyName, disableAltitudeWarning, err, arrayBuffer, cb);
         });
     }
 

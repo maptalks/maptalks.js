@@ -38,7 +38,7 @@ const defaultOptions: VectorTileLayerOptionsType = {
     forceRenderOnMoving: true,
     forceRenderOnRotating: true,
     tileSize: [512, 512],
-    // features: false,
+    features: true,
     schema: false,
     cascadeTiles: true,
     collision: true,
@@ -93,6 +93,7 @@ const defaultOptions: VectorTileLayerOptionsType = {
     loadTileErrorLogIgnoreCodes: [404, 204],
     loadTileCachMaxSize: 0,//MB, 0 no limit
     loadTileCacheLog: true,
+    needDecodeGZip: false,
 
     renderBeforeTerrain: false
 };
@@ -2005,7 +2006,7 @@ function checkStyleExist(styles, idx) {
 export type VectorTileLayerOptionsType = {
     renderer?: "gl",
     altitudeProperty?: string,
-    // features?: boolean,
+    features?: boolean,
     schema?: boolean,
     collision?: boolean,
     collisionBuffserSize?: number,
@@ -2052,6 +2053,8 @@ export type VectorTileLayerOptionsType = {
     loadTileErrorLogIgnoreCodes?: Array<number>;
     loadTileCachMaxSize?: number;//unit is MB
     loadTileCacheLog?: boolean,
+    // https://github.com/mapbox/vector-tile-js?tab=readme-ov-file
+    needDecodeGZip?: boolean;
 
     renderBeforeTerrain?: boolean,
 } & TileLayerOptionsType;
