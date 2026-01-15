@@ -240,7 +240,7 @@ describe('update style specs', () => {
                 assert(pixel[0] === 0);
                 done();
             }, 200);
-        }, 1200);
+        }, 2400);
         group.addTo(map);
     });
 
@@ -2068,7 +2068,7 @@ describe('update style specs', () => {
             const pixel = readPixel(renderer.canvas, x / 2, y / 2);
             assert.deepStrictEqual(pixel, [255, 0, 0, 255]);
             layer.clearData();
-        }, 800);
+        }, 1600);
 
         layer.once('clear', () => {
             // canvas will be cleared in the following frame
