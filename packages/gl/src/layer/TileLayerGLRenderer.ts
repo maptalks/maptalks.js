@@ -83,7 +83,27 @@ class TileLayerGLRenderer2 extends TexturePoolable(CanvasCompatible(TileLayerRen
         });
     }
 
-    onDrawTileEnd(context, parentContext: RenderContext) {
+    _drawCurrentTiles(tiles, parentTiles) {
+        super._drawCurrentTiles(tiles, parentTiles);
+        this._submitMeshes(parentTiles);
+    }
+
+    _drawChildTiles(childTiles, parentContext) {
+        super._drawChildTiles(childTiles, parentContext);
+        this._submitMeshes(parentContext);
+
+    }
+
+    _drawParentTiles(parentTiles, parentContext) {
+        super._drawChildTiles(parentTiles, parentContext);
+        this._submitMeshes(parentContext);
+    }
+
+    onDrawTileEnd(_, parentContext: RenderContext) {
+        this._submitMeshes(parentContext);
+    }
+
+    _submitMeshes(parentContext) {
         const uniformValues = this._getUniformValues();
         let fbo;
         if (parentContext && parentContext.renderTarget) {
@@ -91,6 +111,7 @@ class TileLayerGLRenderer2 extends TexturePoolable(CanvasCompatible(TileLayerRen
         }
         this._tileScene.setMeshes(this._tileMeshes);
         this._renderer.render(this._shader, uniformValues, this._tileScene, fbo);
+        this._tileMeshes.length = 0;
     }
 
     _getUniformValues() {
