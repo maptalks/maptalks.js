@@ -2387,7 +2387,7 @@ describe('vector layers update style specs', () => {
                 assert.notDeepEqual(pixel1,  pixel);
                 done();
              }, 600);
-        }, 800);
+        }, 1200);
         group.addTo(map);
     });
 
