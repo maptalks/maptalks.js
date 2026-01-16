@@ -2360,10 +2360,10 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     //@internal
     _setPrjCenter(pcenter: Coordinate) {
-        if (pcenter) {
-            const altitude = this._prjCenter.z || 0;
+        if (pcenter && this._prjCenter) {
             //Respect the current altitude
             if (!isNumber(pcenter.z)) {
+                const altitude = this._prjCenter.z || 0;
                 pcenter.z = altitude;
             }
         }
