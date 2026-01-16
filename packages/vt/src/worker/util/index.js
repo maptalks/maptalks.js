@@ -47,8 +47,11 @@ export function decompressGzipWithBlob(compressedArrayBuffer, callback) {
 
         // 转换为响应并获取数据
         const response = new Response(decompressedStream);
-        response.arrayBuffer().then(arrayBuffer=>{
+        response.arrayBuffer().then(arrayBuffer => {
             callback(arrayBuffer)
+        }).catch(error => {
+            console.error('decompressGzipWithBlob:', error);
+            callback();
         })
     } catch (error) {
         console.error('decompressGzipWithBlob:', error);
