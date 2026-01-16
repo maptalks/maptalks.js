@@ -256,6 +256,26 @@ class TileLayer extends Layer {
         return new TileLayer(layerJSON['id'], layerJSON['options']);
     }
 
+    onAdd() {
+        this._prepareOptions();
+    }
+
+    _prepareOptions() {
+        const options = this.options as any;
+        if (!options.tileSystem && options.tms) {
+            const sr = this.getSpatialReference();
+            const projection = sr.getProjection();
+            const is4326 = projection.code === "EPSG:4326" || projection.code === "EPSG:4490";
+            const is3857 = projection.code === "EPSG:3857";
+
+            if (is3857) {
+                options.tileSystem = TileSystem['tms-global-mercator'];
+            } else if (is4326) {
+                options.tileSystem = TileSystem['tms-global-geodetic'];
+            }
+        }
+    }
+
     /**
      * force Reload tilelayer.
      * Note that this method will clear all cached tiles and reload them. It shouldn't be called frequently for performance reason.

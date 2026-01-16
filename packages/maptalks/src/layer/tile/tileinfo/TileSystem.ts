@@ -1,5 +1,7 @@
 import { extend } from '../../../core/util';
 
+const semiCircum = 6378137 * Math.PI;
+
 /**
  * @classdesc
  * A class internally used by tile layer helps to descibe tile system used by different tile services.<br>
@@ -19,6 +21,39 @@ class TileSystem {
         x: number;
         y: number;
     }
+
+    /**
+     * The most common used tile system, used by google maps, bing maps and amap, soso maps in China.
+     * @see {@link https://en.wikipedia.org/wiki/Web_Mercator}
+     * @constant
+     * @static
+     */
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    static 'web-mercator' = new TileSystem([1, -1, -semiCircum, semiCircum]);
+
+    /**
+     * Predefined tile system for TMS tile system, A tile system published by [OSGEO]{@link http://www.osgeo.org/}. <br>
+     * Also used by mapbox's [mbtiles]{@link https://github.com/mapbox/mbtiles-spec} specification.
+     * @see {@link http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification}
+     * @constant
+     * @static
+     */
+    static 'tms-global-mercator' = new TileSystem([1, 1, -semiCircum, -semiCircum]);
+
+    /**
+     * Another tile system published by [OSGEO]{@link http://www.osgeo.org/}, based on EPSG:4326 SRS.
+     * @see {@link http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification#global-geodetic}
+     * @constant
+     * @static
+     */
+    static 'tms-global-geodetic' = new TileSystem([1, 1, -180, -90]);
+
+    /**
+     * Tile system used by [baidu]{@link http://map.baidu.com}
+     * @constant
+     * @static
+     */
+    static 'baidu' = new TileSystem([1, 1, 0, 0]);
 
     /**
      * Similar with [transformation]{@link Transformation}, it contains 4 numbers: sx, sy, ox, oy.<br>
@@ -68,42 +103,5 @@ class TileSystem {
         }
     }
 }
-
-const semiCircum = 6378137 * Math.PI;
-
-extend(TileSystem, /** @lends TileSystem */ {
-    /**
-     * The most common used tile system, used by google maps, bing maps and amap, soso maps in China.
-     * @see {@link https://en.wikipedia.org/wiki/Web_Mercator}
-     * @constant
-     * @static
-     */
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    'web-mercator': new TileSystem([1, -1, -semiCircum, semiCircum]),
-
-    /**
-     * Predefined tile system for TMS tile system, A tile system published by [OSGEO]{@link http://www.osgeo.org/}. <br>
-     * Also used by mapbox's [mbtiles]{@link https://github.com/mapbox/mbtiles-spec} specification.
-     * @see {@link http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification}
-     * @constant
-     * @static
-     */
-    'tms-global-mercator': new TileSystem([1, 1, -semiCircum, -semiCircum]),
-
-    /**
-     * Another tile system published by [OSGEO]{@link http://www.osgeo.org/}, based on EPSG:4326 SRS.
-     * @see {@link http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification#global-geodetic}
-     * @constant
-     * @static
-     */
-    'tms-global-geodetic': new TileSystem([1, 1, -180, -90]),
-
-    /**
-     * Tile system used by [baidu]{@link http://map.baidu.com}
-     * @constant
-     * @static
-     */
-    'baidu': new TileSystem([1, 1, 0, 0])
-});
 
 export default TileSystem;

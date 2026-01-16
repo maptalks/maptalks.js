@@ -331,24 +331,12 @@ class VectorTileLayer extends maptalks.TileLayer {
                 }
             }
         }
-        if (!options.tileSystem) {
-            if (options.tms) {
-                if (is3857) {
-                    options.tileSystem = [
-                        1,
-                        1,
-                        -6378137 * Math.PI,
-                        -6378137 * Math.PI,
-                    ];
-                } else if (is4326) {
-                    options.tileSystem = [1, 1, -180, -90];
-                }
-            } else {
-                if (is4326) {
-                    options.tileSystem = [1, -1, -180, 90];
-                }
+        if (!options.tileSystem && !options.tms) {
+            if (is4326) {
+                options.tileSystem = [1, -1, -180, 90];
             }
         }
+        super['_prepareOptions']();
     }
 
     forceReload(): this {
