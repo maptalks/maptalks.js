@@ -38,7 +38,7 @@ const defaultOptions: VectorTileLayerOptionsType = {
     forceRenderOnMoving: true,
     forceRenderOnRotating: true,
     tileSize: [512, 512],
-    // features: false,
+    features: true,//always open features
     schema: false,
     cascadeTiles: true,
     collision: true,
@@ -1992,7 +1992,7 @@ function checkStyleExist(styles, idx) {
 export type VectorTileLayerOptionsType = {
     renderer?: "gl",
     altitudeProperty?: string,
-    // features?: boolean,
+    features?: boolean,
     schema?: boolean,
     collision?: boolean,
     collisionBuffserSize?: number,
@@ -2038,7 +2038,7 @@ export type VectorTileLayerOptionsType = {
     loadTileErrorLog?: boolean,
     loadTileErrorLogIgnoreCodes?: Array<number>;
     loadTileCachMaxSize?: number;//unit is MB
-    loadTileCacheLog?: boolean,
+    loadTileCacheLog?: boolean;
 
     renderBeforeTerrain?: boolean,
 } & TileLayerOptionsType;
