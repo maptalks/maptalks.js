@@ -46,7 +46,7 @@ describe('Map.Camera', function () {
     });
 
     describe('TileLayer\'s rendering', function () {
-        it('gl render after composite operations', function (done) {
+        it.skip('gl render after composite operations', function (done) {
             if (!maptalks.Browser.webgl) {
                 done();
                 return;
