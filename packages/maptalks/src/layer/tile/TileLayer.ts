@@ -271,14 +271,9 @@ class TileLayer extends Layer {
         if (!options.tileSystem) {
             if (options.tms) {
                 if (is3857) {
-                    options.tileSystem = [
-                        1,
-                        1,
-                        -6378137 * Math.PI,
-                        -6378137 * Math.PI,
-                    ];
+                    options.tileSystem = TileSystem['tms-global-mercator'];
                 } else if (is4326) {
-                    options.tileSystem = [1, 1, -180, -90];
+                    options.tileSystem = TileSystem['tms-global-geodetic'];
                 }
             } else {
                 if (is4326) {
