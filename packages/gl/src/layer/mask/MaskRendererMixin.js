@@ -4,16 +4,18 @@ import { extend } from '../util/util';
 function renderExtentMap(extent, projViewMatrix, ratio, minHeight) {
     const maskMeshes = getMaskMeshes.call(this, ratio, minHeight);
     this['_projViewMatrix'] = projViewMatrix;
-    const { colorExtent, modeExtent } = this['_extentPass'].render(maskMeshes, projViewMatrix);
-    this['_maskUniforms'] = this['_maskUniforms'] || {};
-    this['_maskUniforms']['mask_colorExtent'] = colorExtent;
-    this['_maskUniforms']['mask_extent'] = extent;
-    this['_maskUniforms']['mask_modeExtent'] = modeExtent;
-    this['_maskUniforms']['mask_hasFlatOut'] = hasOutMask.call(this, 'flat-outside');
-    this['_maskUniforms']['mask_hasClipOut'] = hasOutMask.call(this, 'clip-outside');
-    this['_maskUniforms']['mask_hasVideo'] = hasOutMask.call(this, 'video');
-    this['_maskUniforms']['mask_heightRatio'] = ratio;
-    this['_maskUniforms']['mask_heightOffset'] = minHeight;
+    if (projViewMatrix) {
+        const { colorExtent, modeExtent } = this['_extentPass'].render(maskMeshes, projViewMatrix);
+        this['_maskUniforms'] = this['_maskUniforms'] || {};
+        this['_maskUniforms']['mask_colorExtent'] = colorExtent;
+        this['_maskUniforms']['mask_extent'] = extent;
+        this['_maskUniforms']['mask_modeExtent'] = modeExtent;
+        this['_maskUniforms']['mask_hasFlatOut'] = hasOutMask.call(this, 'flat-outside');
+        this['_maskUniforms']['mask_hasClipOut'] = hasOutMask.call(this, 'clip-outside');
+        this['_maskUniforms']['mask_hasVideo'] = hasOutMask.call(this, 'video');
+        this['_maskUniforms']['mask_heightRatio'] = ratio;
+        this['_maskUniforms']['mask_heightOffset'] = minHeight;
+    }
     this.setToRedraw();
 }
 
@@ -74,12 +76,12 @@ export default function (Base) {
         setMask(extent, projViewMatrix, ratio, minHeight) {
             if (!this.viewport) {
                 this.viewport = {
-                    x : 0,
-                    y : 0,
-                    width : () => {
+                    x: 0,
+                    y: 0,
+                    width: () => {
                         return this.canvas ? this.canvas.width : 1;
                     },
-                    height : () => {
+                    height: () => {
                         return this.canvas ? this.canvas.height : 1;
                     }
                 };

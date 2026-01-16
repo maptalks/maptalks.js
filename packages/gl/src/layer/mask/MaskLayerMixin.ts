@@ -26,7 +26,7 @@ function normalizeHeight(minHeight, maxHeight) {
     const max = maxHeight === -Infinity ? 0 : maxHeight;
     const range = Math.abs(max - min);
     if (range === 0) {
-        return { ratio: 1, minHeight: 0};
+        return { ratio: 1, minHeight: 0 };
     }
     const ratio = Math.pow(range, -1);
     return { ratio, minHeight: min };
@@ -41,12 +41,34 @@ function hasVisibleMask() {
     return false;
 }
 
+function arrayEqual(array1, array2) {
+    const len = Math.max(array1.length, array2.length);
+    for (let i = 0; i < len; i++) {
+        const v1 = array1[i];
+        const v2 = array2[i];
+        if (v1 !== v2) {
+            return false;
+        }
+    }
+    return true;
+}
+
+type MaskExtentResult = {
+    extent: Extent,
+    ratio: number,
+    minHeight: number
+}
+
 export default function <T extends MixinConstructor>(Base: T) {
     return class MaskLayerMixin extends Base {
         //@internal
         _maskProjViewMatrix: mat4;
         //@internal
         _maskExtentInWorld: [number, number, number, number];
+
+        _preMapView: any;
+
+        _preMaskExtent: MaskExtentResult;
 
         removeMask(masks: undefined | null | any) {
             if (!this['_maskList']) {
@@ -156,7 +178,7 @@ export default function <T extends MixinConstructor>(Base: T) {
             super['remove']();
         }
 
-        updateMask(extent): { projViewMatrix: mat4, extentInWorld: [number, number, number, number]} {
+        updateMask(extent): { projViewMatrix: mat4, extentInWorld: [number, number, number, number] } {
             const map = this['getMap']();
             const { projViewMatrix, mapExtent } = this.getProjViewMatrixInOrtho(extent);
             COORD_EXTENT.x = mapExtent.xmin;
@@ -203,20 +225,49 @@ export default function <T extends MixinConstructor>(Base: T) {
             if (!maskExtent) {
                 return;
             }
-            const { extent, ratio, minHeight } = maskExtent;
-            const { projViewMatrix, extentInWorld } = this.updateMask(extent);
-            this._maskProjViewMatrix = projViewMatrix;
-            this._maskExtentInWorld = extentInWorld;
-            if (renderer) {
-                renderer.setMask(this._maskExtentInWorld, this._maskProjViewMatrix, ratio, minHeight);
-            } else {
-                this['once']('renderercreate', e => {
-                    e.renderer.setMask(this._maskExtentInWorld, this._maskProjViewMatrix, ratio, minHeight);
-                });
+            let needUpdate = true;
+            if (this._preMapView && this._preMaskExtent) {
+                //map view change or self state change
+                const view = map.getView();
+                const a = this._preMapView.zoom === view.zoom;
+                const b = this._preMapView.pitch === view.pitch;
+                const c = this._preMapView.bearing === view.bearing;
+                const d = arrayEqual(this._preMapView.center, view.center);
+                const e = this._preMaskExtent.minHeight === maskExtent.minHeight;
+                const f = this._preMaskExtent.ratio === maskExtent.ratio;
+                const g = arrayEqual(this._preMaskExtent.extent.toBBOX(), maskExtent.extent.toBBOX());
+                if (a && b && c && d && e && f && g) {
+                    needUpdate = false;
+                }
             }
+            this._preMapView = map.getView();
+            this._preMaskExtent = maskExtent;
+
+            const { extent, ratio, minHeight } = maskExtent;
+            const render = () => {
+                if (renderer) {
+                    renderer.setMask(this._maskExtentInWorld, this._maskProjViewMatrix, ratio, minHeight);
+                } else {
+                    this['once']('renderercreate', e => {
+                        e.renderer.setMask(this._maskExtentInWorld, this._maskProjViewMatrix, ratio, minHeight);
+                    });
+                }
+            }
+            if (needUpdate) {
+                const mapRenderer = map.getRenderer();
+                // next frame update
+                // https://github.com/maptalks/issues/issues/913
+                mapRenderer.callInNextFrame(() => {
+                    const { projViewMatrix, extentInWorld } = this.updateMask(extent);
+                    this._maskProjViewMatrix = projViewMatrix;
+                    this._maskExtentInWorld = extentInWorld;
+                })
+            }
+            render();
+
         }
 
-        getMaskExtent() {
+        getMaskExtent(): MaskExtentResult {
             let xmin = Infinity, ymin = Infinity, xmax = -Infinity, ymax = -Infinity, maxheight = -Infinity, minheight = Infinity;
             let hasMaskInExtent = false;
             const map = this['getMap']();
