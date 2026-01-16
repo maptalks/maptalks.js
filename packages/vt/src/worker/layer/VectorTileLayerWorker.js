@@ -5,7 +5,7 @@ import Ajax from '../util/Ajax';
 import { isNil, hasOwn, isString } from '../../common/Util';
 import { PROP_OMBB } from '../../common/Constant';
 import { projectOMBB } from '../builder/Ombb.js';
-import { calArrayBufferSize, isNumber } from '../util/index';
+import { calArrayBufferSize, isNumber, arraybufferIsGZip } from '../util/index';
 import './../util/gunzip.min.js';
 
 const ALTITUDE_ERRORS = {
@@ -51,7 +51,7 @@ export default class VectorTileLayerWorker extends LayerWorker {
         }
         fetchOptions.referrer = context.referrer;
         fetchOptions.errorLog = context.loadTileErrorLog;
-        const { loadTileCachMaxSize, loadTileCacheLog, loadTileDecodeGZip } = context;
+        const { loadTileCachMaxSize, loadTileCacheLog } = context;
         return Ajax.getArrayBuffer(url, fetchOptions, (err, response) => {
             if (!this._cache) {
                 // removed
@@ -64,7 +64,9 @@ export default class VectorTileLayerWorker extends LayerWorker {
                 }
             } else if (response && response.data) {
                 arrayBuffer = response.data;
-                if (loadTileDecodeGZip && arrayBuffer instanceof ArrayBuffer) {
+                const isGZip = arraybufferIsGZip(arrayBuffer);
+                if (isGZip) {
+
                     try {
                         // https://github.com/imaya/zlib.js/tree/develop
                         // eslint-disable-next-line no-undef

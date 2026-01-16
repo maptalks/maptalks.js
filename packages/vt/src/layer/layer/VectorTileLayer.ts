@@ -93,7 +93,6 @@ const defaultOptions: VectorTileLayerOptionsType = {
     loadTileErrorLogIgnoreCodes: [404, 204],
     loadTileCachMaxSize: 0,//MB, 0 no limit
     loadTileCacheLog: true,
-    loadTileDecodeGZip: false,
 
     renderBeforeTerrain: false
 };
@@ -2051,9 +2050,7 @@ export type VectorTileLayerOptionsType = {
     loadTileErrorLog?: boolean,
     loadTileErrorLogIgnoreCodes?: Array<number>;
     loadTileCachMaxSize?: number;//unit is MB
-    loadTileCacheLog?: boolean,
-    // https://github.com/mapbox/vector-tile-js?tab=readme-ov-file
-    loadTileDecodeGZip?: boolean;
+    loadTileCacheLog?: boolean
 
     renderBeforeTerrain?: boolean,
 } & TileLayerOptionsType;
