@@ -2360,6 +2360,15 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     //@internal
     _setPrjCenter(pcenter: Coordinate) {
+        if (pcenter && this._prjCenter) {
+            //Respect the current altitude
+            // https://github.com/maptalks/maptalks.js/issues/2724
+            // https://github.com/maptalks/issues/issues/913
+            if (!isNumber(pcenter.z) && isNumber(this._prjCenter.z)) {
+                const altitude = this._prjCenter.z;
+                pcenter.z = altitude;
+            }
+        }
         this._prjCenter = pcenter;
         if (this.isInteracting() && !this.isMoving()) {
             // when map is not moving, map's center is updated but map platform won't
