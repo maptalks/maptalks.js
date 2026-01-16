@@ -512,9 +512,7 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
 
             this.drawingCurrentTiles = true;
             tiles.sort(this._compareTiles);
-            for (let i = 0, l = tiles.length; i < l; i++) {
-                this._drawTileAndCache(tiles[i], parentContext);
-            }
+            this._drawCurrentTiles(tiles, parentContext);
             delete this.drawingCurrentTiles;
 
             if (drawBackground && this.layer.options['opacity'] < 1) {
@@ -533,6 +531,12 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
 
             this.onDrawTileEnd(context, parentContext);
 
+        }
+
+        _drawCurrentTiles(tiles, parentContext) {
+            for (let i = 0, l = tiles.length; i < l; i++) {
+                this._drawTileAndCache(tiles[i], parentContext);
+            }
         }
 
         //@internal

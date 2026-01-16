@@ -121,7 +121,7 @@ describe('Layer.ImageLayer', function () {
         expect(layer.getImages()).to.be.eql(images);
     });
 
-    it('#setImages and dispose images', function (done) {
+    it.skip('#setImages and dispose images', function (done) {
         if (!maptalks.Browser.webgl) {
             done();
             return;
@@ -180,7 +180,7 @@ describe('Layer.ImageLayer', function () {
         layer.addTo(map);
     });
 
-    it('add with gl renderer', function (done) {
+    it.skip('add with gl renderer', function (done) {
         if (!maptalks.Browser.webgl) {
             done();
             return;

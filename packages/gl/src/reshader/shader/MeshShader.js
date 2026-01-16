@@ -130,7 +130,7 @@ class MeshShader extends Shader {
         }
         const meshKey = mesh.getCommandKey(device);
         if (!storedKeys[meshKey]) {
-            storedKeys[meshKey] = key + '_' + mesh.getCommandKey();
+            storedKeys[meshKey] = key + '_' + meshKey;
         }
         const dKey = storedKeys[meshKey];
         // const key = this.dkey || '';

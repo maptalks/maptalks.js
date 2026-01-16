@@ -224,6 +224,10 @@ export function updateOneGeometryFnTypeAttrib(regl, layer, symbolDef, configs, m
 function symbolChanged(geometry, symbolDef, config) {
     const value = symbolDef[config.symbolName];
     const savedTypes = geometry[SAVED_FN_TYPE];
+    if (!savedTypes) {
+        // only happens in NativePointPainter in webgpu
+        return false;
+    }
     if (!deepEqual(value, savedTypes[config.symbolName])) {
         savedTypes[config.symbolName] = value;
         return true;

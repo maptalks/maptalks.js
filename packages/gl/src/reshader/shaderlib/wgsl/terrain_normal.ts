@@ -3,17 +3,15 @@ const frag = /*wgsl*/`
 struct TerrainNormalUniforms {
     terrainHeightMapResolution: vec2f,
     terrainResolution: vec2f,
-    terrainHeightScale: f32,
-    terrainTileResolution: f32,
     terrainUnpackFactors: vec4f
 };
 
 @group(0) @binding($b) var<uniform> terrainNormalUniforms: TerrainNormalUniforms;
 @group(0) @binding($b) var terrainHeightTexture: texture_2d<f32>;
-@group(0) @binding($b) var terrainHeightSampler: sampler;
+@group(0) @binding($b) var terrainHeightTextureSampler: sampler;
 
 fn getHeight(uv: vec2f) -> f32 {
-    let color = textureSample(terrainHeightTexture, terrainHeightSampler, uv) * 255.0;
+    let color = textureSample(terrainHeightTexture, terrainHeightTextureSampler, uv) * 255.0;
     let colorWithAlpha = vec4f(color.rgb, -1.0);
     return dot(colorWithAlpha, terrainNormalUniforms.terrainUnpackFactors) / 4.0;
 }
