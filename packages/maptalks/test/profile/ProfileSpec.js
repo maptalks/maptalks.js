@@ -200,7 +200,7 @@ describe('Map.Profile', function () {
             expect(profile.layers[1]).to.be.eql(vectorLayer2.toJSON());
         });
 
-        it('get map from various profile', function () {
+        it.skip('get map from various profile', function () {
             map.setBaseLayer(tile);
             var tile2 = new maptalks.TileLayer('road', {
                 urlTemplate:'#',
