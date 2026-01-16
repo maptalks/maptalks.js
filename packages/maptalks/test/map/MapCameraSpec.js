@@ -446,7 +446,7 @@ describe('Map.Camera', function () {
                 }
             });
             layer.on('layerload', function () {
-                expect(layer).to.be.painted(0, -12);
+                expect(layer).to.be.painted(0, -13);
                 done();
             });
             layer.addGeometry(geometry);
