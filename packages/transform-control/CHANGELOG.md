@@ -1,5 +1,18 @@
 # @maptalks/transform-control
 
+## 0.120.0
+
+### Minor Changes
+
+- first version of webgpu for integration test
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.120.0
+  - @maptalks/gpu@0.120.0
+  - @maptalks/gltf-layer@0.120.0
+
 ## 0.119.0
 
 ### Minor Changes

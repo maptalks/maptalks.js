@@ -1,5 +1,22 @@
 # maptalks-gl
 
+## 0.120.0
+
+### Minor Changes
+
+- first version of webgpu for integration test
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gpu@0.120.0
+  - @maptalks/3dtiles@0.120.0
+  - @maptalks/gltf-layer@0.120.0
+  - @maptalks/video-layer@0.120.0
+  - maptalks@1.9.0
+  - @maptalks/transform-control@0.120.0
+  - @maptalks/vt@0.120.0
+
 ## 0.119.0
 
 ### Minor Changes

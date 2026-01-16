@@ -1,5 +1,18 @@
 # @maptalks/gpu
 
+## 0.120.0
+
+### Minor Changes
+
+- first version of webgpu for integration test
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/fusiongl@0.120.0
+  - @maptalks/gltf-loader@0.120.0
+  - maptalks@1.9.0
+
 ## 0.119.0
 
 ### Minor Changes

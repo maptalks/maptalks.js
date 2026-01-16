@@ -1,5 +1,16 @@
 # @maptalks/3dtiles
 
+## 0.120.0
+
+### Minor Changes
+
+- first version of webgpu for integration test
+
+### Patch Changes
+
+- Updated dependencies
+  - maptalks@1.9.0
+
 ## 0.119.0
 
 ### Minor Changes
