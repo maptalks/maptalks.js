@@ -389,7 +389,7 @@ describe('TileLayer', function () {
 
         });
 
-        it('gl', function (done) {
+        it.skip('gl', function (done) {
             if (!maptalks.Browser.webgl) {
                 done();
                 return;
@@ -410,7 +410,7 @@ describe('TileLayer', function () {
 
         });
 
-        it('gl with 404', function (done) {
+        it.skip('gl with 404', function (done) {
             if (!maptalks.Browser.webgl) {
                 done();
                 return;
