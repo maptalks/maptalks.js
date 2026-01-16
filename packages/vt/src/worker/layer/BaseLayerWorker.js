@@ -218,7 +218,9 @@ export default class BaseLayerWorker {
             if (glyphs && Object.keys(glyphs).length) {
                 const promise = new Promise((resolve) => {
                     if (!this._glyphRequestor) {
-                        this._glyphRequestor = new GlyphRequestor();
+                       // Get sdfURL from layer options first, then from renderPlugin if not found
+                        const sdfURL = this.options.sdfURL || (this.options.style && this.options.style.renderPlugin && this.options.style.renderPlugin.sdfURL);
+                        this._glyphRequestor = new GlyphRequestor(null, null, null, sdfURL);
                     }
                     this._glyphRequestor.getGlyphs(glyphs, (err, glyphData) => {
                         resolve({ err, glyphData });

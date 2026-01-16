@@ -28,9 +28,12 @@ export default class WorkerConnection extends maptalks.worker.Actor {
             }
         });
         const useCharBackBuffer = !layer.getRenderer().isEnableWorkAround('win-intel-gpu-crash');
+          // Get sdfURL from layer options first, then from renderPlugin if not found
+        const sdfURL = layer.options.sdfURL || (layer.options.style && layer.options.style.renderPlugin && layer.options.style.renderPlugin.sdfURL);
+        console.log('WorkerConnection creating GlyphRequestor with sdfURL:', sdfURL);
         this._glyphRequestor = new GlyphRequestor(fn => {
             layer.getMap().getRenderer().callInNextFrame(fn);
-        }, layer.options['glyphSdfLimitPerFrame'], useCharBackBuffer);
+        }, layer.options['glyphSdfLimitPerFrame'], useCharBackBuffer,sdfURL);
     }
 
     initialize(cb) {

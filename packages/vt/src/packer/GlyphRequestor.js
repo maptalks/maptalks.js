@@ -2,6 +2,7 @@ import LRUCache from './LRUCache';
 import { extend } from './style/Util';
 import TinySDF from './pack/atlas/TinySDF';
 import { charHasUprightVerticalOrientation } from './pack/util/script_detection';
+import parseGlyphPBF from './parse_glyph_pbf';
 
 let DEBUG_COUNTER = 0;
 let LIMIT_PER_FRAME = 15;
@@ -15,10 +16,6 @@ export default class GlyphRequestor {
         this._limit = limit;
         this._isCompactChars = isCompactChars;
         this._sdfURL = sdfURL;
-    }
-
-    _isValidSDFURL(url) {
-        return url && url.indexOf('{stack}') >= 0 && url.indexOf('{range}') > 0;
     }
 
     getGlyphs(glyphs, cb) {
@@ -92,50 +89,144 @@ export default class GlyphRequestor {
 
     }
 
-    // 从远程服务请求sdf数据
+
+   // 从远程服务请求sdf数据
     _requestRemoteSDF(glyphs, cb) {
-        const promises = [];
+        const glyphSdfs = {};
+        const buffers = [];
+        let pending = 0;
+        let finished = false;
+
+        const done = (err) => {
+            if (finished) return;
+            finished = true;
+            cb(err, err ? null : { glyphs: glyphSdfs, buffers });
+        };
+
         for (const font in glyphs) {
-            for (const charCode of glyphs[font]) {
-                promises.push(this._requestGlyph(font, charCode));
+            if (font === 'options') continue;
+
+            glyphSdfs[font] = {};
+            const entry = this._getFontEntry(font);
+            const ranges = this._groupByRange(glyphs[font]);
+
+            for (const [range, chars] of ranges) {
+                // 检查该范围内哪些字符尚未加载成功
+                const missingChars = [];
+                for (const code of chars) {
+                    const glyph = entry.glyphs[code];
+                    if (!glyph || !glyph.bitmap || !glyph.bitmap.data) {
+                        missingChars.push(code);
+                    }
+                }
+                
+                // 如果所有字符都已成功加载，直接使用缓存
+                if (missingChars.length === 0) {
+                    for (const code of chars) {
+                        const glyph = entry.glyphs[code];
+                        if (glyph && glyph.bitmap && glyph.bitmap.data) {
+                            // 确保字形metrics符合预期
+                            if (!glyph.metrics) {
+                                glyph.metrics = {
+                                    width: 0,
+                                    height: 0,
+                                    left: 0,
+                                    top: 0,
+                                    advance: 0
+                                };
+                            }
+                            const cloned = cloneSDF(glyph);
+                            glyphSdfs[font][code] = cloned;
+                            buffers.push(cloned.bitmap.data.buffer);
+                        }
+                    }
+                } else {
+                    // 有字符缺失，需要加载该范围
+                    pending++;
+
+                    this._loadGlyphRange(font, range, (err, rangeGlyphs) => {
+                        if (finished) return;
+
+                        if (err) {
+                            done(err);
+                            return;
+                        }
+
+                        for (const code of chars) {
+                            const glyph = rangeGlyphs[code];
+                            if (!glyph || !glyph.bitmap || !glyph.bitmap.data) continue;
+
+                            // 确保字形metrics符合预期
+                            if (!glyph.metrics) {
+                                glyph.metrics = {
+                                    width: 0,
+                                    height: 0,
+                                    left: 0,
+                                    top: 0,
+                                    advance: 0
+                                };
+                            }
+
+                            const cloned = cloneSDF(glyph);
+                            glyphSdfs[font][code] = cloned;
+                            buffers.push(cloned.bitmap.data.buffer);
+                        }
+
+                        if (--pending === 0) {
+                            done();
+                        }
+                    });
+                }
             }
         }
-        Promise.all(promises).then(glyphData => {
-            cb(null, glyphData);
-        });
+
+        if (pending === 0) {
+            done();
+        }
     }
 
-    _requestGlyph(/* font, charCode */) {
-        /* const url = this._sdfURL;
-        let entry = this.entries[font];
-        if (!entry) {
-            entry = this.entries[font] = {
-                glyphs: {},
-                requests: {},
-                ranges: {}
-            };
-        }
-        let glyph = entry.glyphs[charCode];
-        if (glyph) {
-            return Promise.resolve({font, charCode, glyph});
+    _loadGlyphRange(font, range, callback) {
+        const entry = this._getFontEntry(font);
+
+        if (entry.ranges[range]) {
+            callback(null, entry.glyphs);
+            return;
         }
 
-        const range = Math.floor(charCode / 256);
-        if (range * 256 > 65535) {
-            return Promise.reject(new Error('glyphs > 65535 not supported'));
+        if (entry.requests[range]) {
+            entry.requests[range].push(callback);
+            return;
         }
-        let requests = entry.requests[range];
-        if (!requests) {
-            // request
-        }
-        requests.push((err, result) => {
-            if (err) {
-                return (err);
-            } else if (result) {
-                fnCallback(null, {stack, id, glyph: result.glyphs[id] || null});
-            }
-        }); */
-        return Promise.resolve(null);
+
+        entry.requests[range] = [callback];
+
+        const rangeStr = `${range}-${range + 255}`;
+        let url = this._sdfURL
+            .replace('{fontstack}', font)
+            .replace('{stack}', font)
+            .replace('{range}', rangeStr);
+
+        fetch(url)
+            .then(r => {
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                return r.arrayBuffer();
+            })
+            .then(buf => {
+                const data = parseGlyphPBF(buf);
+
+                entry.ascender = data.ascender;
+                entry.descender = data.descender;
+
+                for (const code in data.glyphs) {
+                    entry.glyphs[+code] = data.glyphs[code];
+                }
+
+                entry.ranges[range] = true;
+                this._flushCallbacks(entry, range, null);
+            })
+            .catch(err => {
+                this._flushCallbacks(entry, range, err);
+            });
     }
 
     _tinySDF(entry, fonts, charCode, isCharsCompact) {
@@ -210,6 +301,43 @@ export default class GlyphRequestor {
                 advance: width + buffer + advanceBuffer
             }
         };
+    }
+     /* =======================
+     * Utils
+     * ======================= */
+
+    _getFontEntry(font) {
+        return this.entries[font]= this.entries[font]|| {
+            glyphs: {},
+            requests: {},
+            ranges: {},
+            ascender: undefined,
+            descender: undefined,
+            tinySDF: null
+        };
+    }
+
+    _groupByRange(chars) {
+        const map = new Map();
+        for (const code in chars) {
+            const r = Math.floor(code / 256) * 256;
+            (map.get(r) || map.set(r, []).get(r)).push(+code);
+        }
+        return map;
+    }
+
+    _flushCallbacks(entry, range, err) {
+        const cbs = entry.requests[range];
+        delete entry.requests[range];
+        cbs.forEach(cb => cb(err, entry.glyphs));
+    }
+
+    _isValidSDFURL(url) {
+        return (
+            url &&
+            (url.includes('{fontstack}') || url.includes('{stack}')) &&
+            url.includes('{range}')
+        );
     }
 }
 

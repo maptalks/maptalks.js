@@ -7,6 +7,19 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@rollup/plugin-replace':
+        specifier: ^5.0.5
+        version: 5.0.5(rollup@4.17.2)
+      '@rollup/plugin-terser':
+        specifier: 0.4.4
+        version: 0.4.4(rollup@4.17.2)
+      maptalks-gl:
+        specifier: ^0.119.0
+        version: 0.119.0
+      rollup-plugin-polyfill-node:
+        specifier: ^0.13.0
+        version: 0.13.0(rollup@4.17.2)
     devDependencies:
       '@changesets/cli':
         specifier: ^2.27.7
@@ -646,6 +659,13 @@ importers:
       simplify-js:
         specifier: ^1.2.1
         version: 1.2.4
+    optionalDependencies:
+      '@rollup/rollup-darwin-x64':
+        specifier: ^4.13.0
+        version: 4.17.2
+      '@rollup/rollup-linux-x64-gnu':
+        specifier: ^4.13.0
+        version: 4.17.2
     devDependencies:
       '@babel/preset-env':
         specifier: ^7.24.1
@@ -752,13 +772,6 @@ importers:
       typescript-eslint:
         specifier: ^8.34.0
         version: 8.34.0(eslint@8.57.0)(typescript@5.4.5)
-    optionalDependencies:
-      '@rollup/rollup-darwin-x64':
-        specifier: ^4.13.0
-        version: 4.17.2
-      '@rollup/rollup-linux-x64-gnu':
-        specifier: ^4.13.0
-        version: 4.17.2
 
   packages/maptalks-gl:
     dependencies:
@@ -1844,11 +1857,17 @@ packages:
   '@mapbox/vector-tile@1.3.1':
     resolution: {integrity: sha512-MCEddb8u44/xfQ3oD+Srl/tNcQoqTw3goGk2oLsrFxOTc3dUp+kAnby3PvAeeBYSMSjSPD1nd1AJA6W49WnoUw==}
 
+  '@maptalks/3dtiles@0.119.0':
+    resolution: {integrity: sha512-XR2fHxdxXHgNrIZ+Y6W4dEe2V3AAPvn+XeubcjNfb2zWF+VDRoN5McE/5bcn39aI45F0Mu3ebfBQy3t8kJHIbw==}
+
   '@maptalks/feature-filter@1.3.0':
     resolution: {integrity: sha512-O6GcFzPuCbz6bO4TNBnmP8VunS0GexTzZ4m36A4HbYQICY1cplpFgntX2fyB/TY3cZrFRGoeMePBeMZFMOOhcQ==}
 
   '@maptalks/function-type@1.4.1':
     resolution: {integrity: sha512-Z78FdI8mZ4vdcBqxlMDV6HP6WE/njZ9PhlM5JwbURxW1DnQK7R1GP+fubkGJPP6hVSv0Y52/dK8cZE/HuXVZ3A==}
+
+  '@maptalks/fusiongl@0.119.0':
+    resolution: {integrity: sha512-xfk/32EV2MOa3pT2wmzeoeRzS8wEYnNvwv6bYTk9D71CyrBVqMmLM+te9torIx2oKI1IOjcFBgO7Y9xkVNwF8A==}
 
   '@maptalks/geojson-bbox@1.0.5':
     resolution: {integrity: sha512-DLeXOssDHx1cWTMhAh3ZDSEv2mMEaEbYeX/4DrGzUMpYAzQHV86BGFymLvhyZ/K08vVImzeQ882aPiRWm0OXGQ==}
@@ -1856,8 +1875,20 @@ packages:
   '@maptalks/geojson-vt@3.5.0':
     resolution: {integrity: sha512-7c/SXnGv6CSXimu7wFrYv3Tn+HO+P/hdV+bWihMqDcN1ln/SS75jPgrR8cXXSsPGOY1Q8JnvbV1KrpHTRrZyww==}
 
+  '@maptalks/gl@0.119.0':
+    resolution: {integrity: sha512-XNQaTZgV3Jq3HkMPlNiZfkzm+/cAOczAd1FZ+kKdkyqFCn+qxVH68bhmEbEotHTJSNIYqmzyiV9ZPna9Yr4b9Q==}
+
   '@maptalks/glsl-parser@2.0.3':
     resolution: {integrity: sha512-XluKp5GwR51/FCHmeUkJyhiuOU1BO6dk3pkJI16Xqu1z0uCdJgcHoeHwe9KAV3lpssZoG57BtCv8VgXgUAEjQw==}
+
+  '@maptalks/gltf-layer@0.119.0':
+    resolution: {integrity: sha512-m6KkR6gJDsbDK6QAacAuTNkmw/DRClVz21dwHDkzHDRd0mMFCFcBqZoaIwNIQ8+jvmwYD3/L7ti1JSDZPV6Z1g==}
+
+  '@maptalks/gltf-loader@0.119.0':
+    resolution: {integrity: sha512-c8vnVVhwGrRDaPQsT1DtHKyTnRUJ2gpZRr8vppxylH/kIlkLcNKr92v+K7ApMlMC/8nfoPpJi142oym/pMxpYQ==}
+
+  '@maptalks/gpu@0.119.0':
+    resolution: {integrity: sha512-R91SCZzq6WAbCwuQkjKmc4hd0s/19K3KqU+NEAMYpABQ3XHs+wSouCcHEMI1eqSItWCakWk8kfHKuvOEa8bCnQ==}
 
   '@maptalks/martini@0.4.0':
     resolution: {integrity: sha512-h7yiE8FXaBhTncygKDOt24VNqvSwzK/nPVu7irr33jdp+1dmvKPWLyp40EUxecs9DOHMr/clbRD3sBJbtU9KnA==}
@@ -1870,6 +1901,18 @@ packages:
 
   '@maptalks/tbn-packer@1.4.5':
     resolution: {integrity: sha512-miZF0diQ0Zf5bs4FNrBXp3ifdii6MUuW7lKxp+TZdzcj4Gs53BLX/rKLH24e1UbJJzQXjcxK37x6du5fXBCWNg==}
+
+  '@maptalks/transform-control@0.119.0':
+    resolution: {integrity: sha512-aXSflPwiGHur+c6K+WfPxfsNOmwr4VgwXgHx8eBIBLvlNkgCt+ZctiUTbyc0qeuZdXAqrpCsKQyijXkPW7ViPQ==}
+
+  '@maptalks/video-layer@0.119.0':
+    resolution: {integrity: sha512-OAGj8oU7Zg1UWYjD8m85FB0vi8M8/lpsXIRVqqsAkO8/UlYBUPEJRa5KBvkmP71G9hsaVSkHwnVKZ4XARvOUnQ==}
+
+  '@maptalks/vt-plugin@0.119.0':
+    resolution: {integrity: sha512-PNtxeB5FfeypJqmCmklg1iUXA4eNe3bL7fBe2zJE6CZc0DC9HZbv1l37K6lozco3gbEaoE+tf9M3tvcIDmwmzA==}
+
+  '@maptalks/vt@0.119.0':
+    resolution: {integrity: sha512-a+TeDLzPAqiEbajqTNq3UP4cHB92qIIUjScinqy6qQeb6fPb/tAApg6pTeQ2qJoTFgxhNdYTN60AeGBC4MwXTg==}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -4059,6 +4102,12 @@ packages:
   makeerror@1.0.12:
     resolution: {integrity: sha512-JmqCvUhmt43madlpFzG4BQzG2Z3m6tvQDNKdClZnO3VbIudJYmxsT0FNJMeiB2+JTSlTQTSbU8QdesVmwJcmLg==}
 
+  maptalks-gl@0.119.0:
+    resolution: {integrity: sha512-rk4Lrg/0niZ2SmVE4yaa7q43dFOBJodkwfTxpiSVZKOEISXVajf9VCrMzjgRbJlStJMMjiVo6d+aQ1OcsO7+FQ==}
+
+  maptalks@1.8.0:
+    resolution: {integrity: sha512-hUD2F+nWeO3BSNdqzfsuO/1NGvGOllEwgaAv4JdLgQ+413IVvSbZ8UTEviTC2atSGqd6LhG3FA49qcxC5qzsKQ==}
+
   marchingsquares@1.3.3:
     resolution: {integrity: sha512-gz6nNQoVK7Lkh2pZulrT4qd4347S/toG9RXH2pyzhLgkL5mLkBoqgv4EvAGXcV0ikDW72n/OQb3Xe8bGagQZCg==}
 
@@ -6182,21 +6231,78 @@ snapshots:
     dependencies:
       '@mapbox/point-geometry': 0.1.0
 
+  '@maptalks/3dtiles@0.119.0':
+    dependencies:
+      '@maptalks/function-type': 1.4.1
+      '@maptalks/tbn-packer': 1.4.5
+      color: 3.2.1
+      frustum-intersects: 0.2.4
+      gl-matrix: 3.4.3
+      maptalks: 1.8.0
+      pako: 2.1.0
+      parse-dds: 1.2.1
+
   '@maptalks/feature-filter@1.3.0': {}
 
   '@maptalks/function-type@1.4.1':
     dependencies:
       colorin: 0.5.0
 
+  '@maptalks/fusiongl@0.119.0':
+    dependencies:
+      fast-deep-equal: 2.0.1
+
   '@maptalks/geojson-bbox@1.0.5': {}
 
   '@maptalks/geojson-vt@3.5.0': {}
+
+  '@maptalks/gl@0.119.0':
+    dependencies:
+      '@maptalks/fusiongl': 0.119.0
+      '@maptalks/gltf-loader': 0.119.0
+      '@maptalks/martini': 0.4.0
+      '@maptalks/regl': 3.6.0
+      '@maptalks/tbn-packer': 1.4.5
+      '@webgpu/types': 0.1.52
+      color: 3.2.1
+      colorin: 0.6.0
+      earcut: 3.0.1
+      frustum-intersects: 0.2.4
+      gl-matrix: 3.4.3
+      maptalks: 1.8.0
+      wgsl_reflect: 1.0.16
 
   '@maptalks/glsl-parser@2.0.3':
     dependencies:
       glsl-tokenizer: 2.1.5
       through: 2.3.4
       through2: 0.6.5
+
+  '@maptalks/gltf-layer@0.119.0':
+    dependencies:
+      '@maptalks/feature-filter': 1.3.0
+      '@maptalks/function-type': 1.4.1
+      frustum-intersects: 0.2.4
+
+  '@maptalks/gltf-loader@0.119.0':
+    dependencies:
+      gl-matrix: 3.4.3
+
+  '@maptalks/gpu@0.119.0':
+    dependencies:
+      '@maptalks/fusiongl': 0.119.0
+      '@maptalks/gltf-loader': 0.119.0
+      '@maptalks/martini': 0.4.0
+      '@maptalks/regl': 3.6.0
+      '@maptalks/tbn-packer': 1.4.5
+      '@webgpu/types': 0.1.52
+      color: 3.2.1
+      colorin: 0.6.0
+      earcut: 3.0.1
+      frustum-intersects: 0.2.4
+      gl-matrix: 3.4.3
+      maptalks: 1.8.0
+      wgsl_reflect: 1.0.16
 
   '@maptalks/martini@0.4.0': {}
 
@@ -6214,6 +6320,44 @@ snapshots:
   '@maptalks/tbn-packer@1.4.5':
     dependencies:
       gl-matrix: 2.8.1
+
+  '@maptalks/transform-control@0.119.0':
+    dependencies:
+      '@maptalks/gl': 0.119.0
+      '@maptalks/gltf-layer': 0.119.0
+      '@maptalks/gpu': 0.119.0
+
+  '@maptalks/video-layer@0.119.0':
+    dependencies:
+      frustum-intersects: 0.2.4
+
+  '@maptalks/vt-plugin@0.119.0': {}
+
+  '@maptalks/vt@0.119.0':
+    dependencies:
+      '@mapbox/point-geometry': 0.1.0
+      '@mapbox/shelf-pack': 3.2.0
+      '@mapbox/vector-tile': 1.3.1
+      '@maptalks/feature-filter': 1.3.0
+      '@maptalks/function-type': 1.4.1
+      '@maptalks/geojson-bbox': 1.0.5
+      '@maptalks/geojson-vt': 3.5.0
+      '@maptalks/gl': 0.119.0
+      '@maptalks/gpu': 0.119.0
+      '@maptalks/tbn-packer': 1.4.5
+      '@maptalks/vt-plugin': 0.119.0
+      animation-easings: 0.1.0
+      color: 3.2.1
+      earcut: 3.0.1
+      fast-deep-equal: 2.0.1
+      gl-matrix: 3.4.3
+      pbf: 3.2.1
+      point-in-polygon: 1.1.0
+      quickselect: 1.1.1
+      rbush: 3.0.1
+      robust-predicates: 2.0.4
+      tinyqueue: 2.0.3
+      vt-pbf: 3.1.3
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
@@ -9225,6 +9369,29 @@ snapshots:
   makeerror@1.0.12:
     dependencies:
       tmpl: 1.0.5
+
+  maptalks-gl@0.119.0:
+    dependencies:
+      '@maptalks/3dtiles': 0.119.0
+      '@maptalks/gl': 0.119.0
+      '@maptalks/gltf-layer': 0.119.0
+      '@maptalks/transform-control': 0.119.0
+      '@maptalks/video-layer': 0.119.0
+      '@maptalks/vt': 0.119.0
+      maptalks: 1.8.0
+
+  maptalks@1.8.0:
+    dependencies:
+      '@maptalks/feature-filter': 1.3.0
+      '@maptalks/function-type': 1.4.1
+      colorin: 0.6.0
+      frustum-intersects: 0.1.0
+      lineclip: 1.1.5
+      rbush: 2.0.2
+      simplify-js: 1.2.4
+    optionalDependencies:
+      '@rollup/rollup-darwin-x64': 4.17.2
+      '@rollup/rollup-linux-x64-gnu': 4.17.2
 
   marchingsquares@1.3.3: {}
 
