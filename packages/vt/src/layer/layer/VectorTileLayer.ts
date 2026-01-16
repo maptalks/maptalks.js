@@ -2050,7 +2050,7 @@ export type VectorTileLayerOptionsType = {
     loadTileErrorLog?: boolean,
     loadTileErrorLogIgnoreCodes?: Array<number>;
     loadTileCachMaxSize?: number;//unit is MB
-    loadTileCacheLog?: boolean
+    loadTileCacheLog?: boolean;
 
     renderBeforeTerrain?: boolean,
 } & TileLayerOptionsType;
