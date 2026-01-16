@@ -32,3 +32,26 @@ export function arraybufferIsGZip(buffer) {
     }
     return false;
 }
+
+export function decompressGzipWithBlob(compressedArrayBuffer, callback) {
+    try {
+        // 创建解压缩流
+        const decompressionStream = new DecompressionStream('gzip');
+
+        // 创建 Blob 并获取可读流
+        const blob = new Blob([compressedArrayBuffer]);
+        const readableStream = blob.stream();
+
+        // 管道传输
+        const decompressedStream = readableStream.pipeThrough(decompressionStream);
+
+        // 转换为响应并获取数据
+        const response = new Response(decompressedStream);
+        response.arrayBuffer().then(arrayBuffer=>{
+            callback(arrayBuffer)
+        })
+    } catch (error) {
+        console.error('decompressGzipWithBlob:', error);
+        callback();
+    }
+}

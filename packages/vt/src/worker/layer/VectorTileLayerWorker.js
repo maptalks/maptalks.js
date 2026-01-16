@@ -5,8 +5,7 @@ import Ajax from '../util/Ajax';
 import { isNil, hasOwn, isString } from '../../common/Util';
 import { PROP_OMBB } from '../../common/Constant';
 import { projectOMBB } from '../builder/Ombb.js';
-import { calArrayBufferSize, isNumber, arraybufferIsGZip } from '../util/index';
-import './../util/gunzip.min.js';
+import { calArrayBufferSize, isNumber, arraybufferIsGZip, decompressGzipWithBlob } from '../util/index';
 
 const ALTITUDE_ERRORS = {
     'MISSING_ALTITUDE_ELEMENT': 2,
@@ -52,47 +51,58 @@ export default class VectorTileLayerWorker extends LayerWorker {
         fetchOptions.referrer = context.referrer;
         fetchOptions.errorLog = context.loadTileErrorLog;
         const { loadTileCachMaxSize, loadTileCacheLog } = context;
+
         return Ajax.getArrayBuffer(url, fetchOptions, (err, response) => {
             if (!this._cache) {
                 // removed
                 return;
             }
-            let arrayBuffer;
+            let arrayBuffer, hasData = false;
+
+            const readTile = () => {
+                this._readTile(url, altitudePropertyName, disableAltitudeWarning, err, arrayBuffer, cb);
+            }
+
             if (err) {
                 if (!err.loading) {
                     this._cache.add(url, { err, data: response && response.data, cacheIndex: context.workerCacheIndex });
                 }
             } else if (response && response.data) {
+                hasData = true;
                 arrayBuffer = response.data;
                 const isGZip = arraybufferIsGZip(arrayBuffer);
-                if (isGZip) {
 
-                    try {
-                        // https://github.com/imaya/zlib.js/tree/develop
-                        // eslint-disable-next-line no-undef
-                        const gunzip = new Zlib.Gunzip(new Uint8Array(arrayBuffer));
-                        const plain = gunzip.decompress();
-                        arrayBuffer = plain.buffer;
-                    } catch (error) {
-                        console.error('decode tile gzip error:', error, context.tileInfo);
-                    }
-                }
-                let needCache = true;
-                if (arrayBuffer && isNumber(loadTileCachMaxSize) && loadTileCachMaxSize > 0) {
-                    const bufferSize = calArrayBufferSize(arrayBuffer);
-                    if (bufferSize > loadTileCachMaxSize) {
-                        needCache = false;
-                        if (loadTileCacheLog) {
-                            console.warn(`url:${url},loadTileCachMaxSize exceeded: ${bufferSize} > ${loadTileCachMaxSize},the tile will not be cached.`);
+                const cacheTile = () => {
+                    let needCache = true;
+                    if (arrayBuffer && isNumber(loadTileCachMaxSize) && loadTileCachMaxSize > 0) {
+                        const bufferSize = calArrayBufferSize(arrayBuffer);
+                        if (bufferSize > loadTileCachMaxSize) {
+                            needCache = false;
+                            if (loadTileCacheLog) {
+                                console.warn(`url:${url},loadTileCachMaxSize exceeded: ${bufferSize} > ${loadTileCachMaxSize},the tile will not be cached.`);
+                            }
                         }
                     }
+                    if (needCache && arrayBuffer) {
+                        this._cache.add(url, { err: null, data: arrayBuffer, cacheIndex: context.workerCacheIndex });
+                    }
+                    readTile();
                 }
-                if (needCache && arrayBuffer) {
-                    this._cache.add(url, { err: null, data: arrayBuffer, cacheIndex: context.workerCacheIndex });
+
+                if (isGZip) {
+                    decompressGzipWithBlob(arrayBuffer, (buffer => {
+                        if (buffer) {
+                            arrayBuffer = buffer;
+                        }
+                        cacheTile();
+                    }))
+                } else {
+                    cacheTile();
                 }
             }
-
-            this._readTile(url, altitudePropertyName, disableAltitudeWarning, err, arrayBuffer, cb);
+            if (!hasData) {
+                readTile();
+            }
         });
     }
 
