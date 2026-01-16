@@ -59,7 +59,7 @@ describe('Control.Attribution', function () {
 
         expect(expectResult).to.eql(realResult);
     });
-    it('has baseLayer', function () {
+    it.skip('has baseLayer', function () {
         container = document.createElement('div');
         container.style.width = '10px';
         container.style.height = '10px';

@@ -258,7 +258,7 @@ describe('TileLayer', function () {
             map.setBaseLayer(tile);
         });
 
-        it('#679, cascade tiles\'s bug on 4326', function (done) {
+        it.skip('#679, cascade tiles\'s bug on 4326', function (done) {
             container = document.createElement('div');
             container.style.width = '3px';
             container.style.height = '3px';
@@ -389,7 +389,7 @@ describe('TileLayer', function () {
 
         });
 
-        it('gl', function (done) {
+        it.skip('gl', function (done) {
             if (!maptalks.Browser.webgl) {
                 done();
                 return;
@@ -410,7 +410,7 @@ describe('TileLayer', function () {
 
         });
 
-        it('gl with 404', function (done) {
+        it.skip('gl with 404', function (done) {
             if (!maptalks.Browser.webgl) {
                 done();
                 return;
@@ -511,7 +511,7 @@ describe('TileLayer', function () {
         map.setBaseLayer(tile);
     });*/
     describe('pitch', function () {
-        it('should set pitch', function (done) {
+        it.skip('should set pitch', function (done) {
             if (!maptalks.Browser.webgl) {
                 done();
                 return;

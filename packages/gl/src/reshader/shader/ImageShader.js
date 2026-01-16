@@ -31,12 +31,14 @@ class ImageShader extends MeshShader {
         });
     }
 
-    getMeshCommand(regl, mesh) {
-        const key = mesh.getCommandKey(regl);
-        if (!this.commands['image_' + key]) {
-            this.commands['image_' + key] = this.createMeshCommand(regl, mesh);
+    getMeshCommand(regl, mesh, renderProps) {
+        const key = this.getShaderCommandKey(regl, mesh, renderProps);
+        const meshKey = mesh.getCommandKey(regl);
+        const dKey = key + '_' + meshKey;
+        if (!this.commands['image_' + dKey]) {
+            this.commands['image_' + dKey] = this.createMeshCommand(regl, mesh, null, renderProps);
         }
-        return this.commands['image_' + key];
+        return this.commands['image_' + dKey];
     }
 }
 
