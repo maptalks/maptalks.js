@@ -2362,6 +2362,8 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     _setPrjCenter(pcenter: Coordinate) {
         if (pcenter && this._prjCenter) {
             //Respect the current altitude
+            // https://github.com/maptalks/maptalks.js/issues/2724
+            // https://github.com/maptalks/issues/issues/913
             if (!isNumber(pcenter.z) && isNumber(this._prjCenter.z)) {
                 const altitude = this._prjCenter.z;
                 pcenter.z = altitude;
