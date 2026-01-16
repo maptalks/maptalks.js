@@ -347,7 +347,7 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
 #endif
 
 #if HAS_HIGHLIGHT_COLOR || HAS_HIGHLIGHT_OPACITY
-    highlight_setVarying(vertexInput, output);
+    highlight_setVarying(vertexInput, &output);
 #endif
 #else
 #ifdef ENABLE_COLLISION

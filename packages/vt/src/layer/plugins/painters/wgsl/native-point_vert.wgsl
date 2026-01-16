@@ -1,4 +1,4 @@
-struct InstanceInput {
+struct AttributeInput {
     @location($i) aPosition: vec2i,
 #ifdef HAS_ALTITUDE
     @location($i) instancePosition: vec2i,
@@ -20,6 +20,7 @@ struct VertexInput {
 #else
     aPosition: vec4i,
 #endif
+    aPickingId: f32,
 }
 
 struct VertexOutput {
@@ -48,12 +49,13 @@ struct MarkerUniforms {
 
 @vertex
 fn main(
-    input: InstanceInput
+    input: AttributeInput
 ) -> VertexOutput {
     var out: VertexOutput;
 
     var inputVertex: VertexInput;
     inputVertex.aPosition = input.instancePosition;
+
     #ifdef HAS_ALTITUDE
         inputVertex.aAltitude = input.instanceAltitude;
     #endif
@@ -70,7 +72,8 @@ fn main(
     #endif
 
     #ifdef PICKING_MODE
-        fbo_picking_setData(w, true);
+        inputVertex.aPickingId = input.aPickingId;
+        fbo_picking_setData(inputVertex, &out, w, true);
     #endif
 
     return out;

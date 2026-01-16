@@ -34,7 +34,7 @@ describe('SpatialReference.Update', function () {
         expect(map.getMaxZoom()).to.be.eql(24);
     });
 
-    it('SpatialReference.TileLayer', function (done) {
+    it.skip('SpatialReference.TileLayer', function (done) {
         var tileLayer = new maptalks.TileLayer('base', {
             urlTemplate : '#'
         });

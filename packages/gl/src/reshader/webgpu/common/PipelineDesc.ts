@@ -51,22 +51,31 @@ export default class PipelineDescriptor {
                 depthBiasSlopeScale = 0;
             } else {
                 const offsetProps = commandProps.polygonOffset.offset;
-                if (offsetProps && !isNil(offsetProps.units)) {
-                    if (isFunction(offsetProps.units)) {
-                        depthBias = offsetProps.units(null, uniformValues);
-                        this.functionProps.push({ func: offsetProps.units, v: depthBias });
-                    } else {
-                        depthBias = offsetProps.units;
+                if (isFunction(offsetProps)) {
+                    const offset = offsetProps(null, uniformValues);
+                    depthBias = offset.units;
+                    depthBiasSlopeScale = offset.factor;
+                    this.functionProps.push({ func: (_, props) => { return offsetProps(null, props).units; }, v: depthBias });
+                    this.functionProps.push({ func: (_, props) => { return offsetProps(null, props).factor; }, v: depthBiasSlopeScale });
+                } else {
+                    if (offsetProps && !isNil(offsetProps.units)) {
+                        if (isFunction(offsetProps.units)) {
+                            depthBias = offsetProps.units(null, uniformValues);
+                            this.functionProps.push({ func: offsetProps.units, v: depthBias });
+                        } else {
+                            depthBias = offsetProps.units;
+                        }
+                    }
+                    if (offsetProps && !isNil(offsetProps.factor)) {
+                        if (isFunction(offsetProps.factor)) {
+                            depthBiasSlopeScale = offsetProps.factor(null, uniformValues);
+                            this.functionProps.push({ func: offsetProps.factor, v: depthBiasSlopeScale });
+                        } else {
+                            depthBiasSlopeScale = offsetProps.factor;
+                        }
                     }
                 }
-                if (offsetProps && !isNil(offsetProps.factor)) {
-                    if (isFunction(offsetProps.factor)) {
-                        depthBiasSlopeScale = offsetProps.factor(null, uniformValues);
-                        this.functionProps.push({ func: offsetProps.factor, v: depthBiasSlopeScale });
-                    } else {
-                        depthBiasSlopeScale = offsetProps.factor;
-                    }
-                }
+
             }
         }
         this.depthBias = depthBias;
@@ -252,7 +261,7 @@ export default class PipelineDescriptor {
     }
 }
 
-function isEnable(enable, props) {
+export function isEnable(enable, props) {
     if (!isFunction(enable)) {
         return !!enable;
     }

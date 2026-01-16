@@ -730,6 +730,7 @@ class IconPainter extends CollisionPainter {
             }
         };
         const defines = this._shaderDefines || {};
+        defines['HAS_HIGHLIGHT_COLOR_POINT'] = 1;
 
         this.shader = new reshader.MeshShader({
             name: 'marker',

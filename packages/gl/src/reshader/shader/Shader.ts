@@ -4,7 +4,7 @@ import ShaderLib from '../shaderlib/ShaderLib.js';
 import WgslShaderLib from '../shaderlib/WgslShaderLib';
 import { KEY_DISPOSED } from '../common/Constants.js';
 import { ShaderUniformValue } from '../types/typings';
-import PipelineDescriptor from '../webgpu/common/PipelineDesc';
+import PipelineDescriptor, { isEnable } from '../webgpu/common/PipelineDesc';
 import InstancedMesh from '../InstancedMesh';
 import Mesh from '../Mesh';
 import DynamicBuffer from '../webgpu/DynamicBuffer';
@@ -472,6 +472,9 @@ export default class GPUShader extends GLShader {
     }
 
     _compileWGSLSource(defines) {
+        if (!this.wgslVert) {
+            throw new Error(`(${this.name}) WGSL vertex shader source is not provided.`);
+        }
         const vert = WgslShaderLib.compile(this.wgslVert, defines);
         let frag;
         if (this.wgslFrag) {
@@ -492,8 +495,8 @@ export default class GPUShader extends GLShader {
         const device = deviceOrRegl as GraphicsDevice;
         this.isGPU = true;
         const buffersPool = device.dynamicBufferPool;
-        const passEncoder: GPURenderPassEncoder = this._getCurrentRenderPassEncoder(device);
-        passEncoder.setPipeline(command.pipeline);
+        const renderPass: GPURenderPassEncoder = this._getCurrentRenderPassEncoder(device);
+        renderPass.setPipeline(command.pipeline);
 
         const { uid, bindGroupFormat, vertexInfo, layout } = command;
         // 1. 生成shader uniform 需要的dynamic buffer
@@ -516,6 +519,8 @@ export default class GPUShader extends GLShader {
         shaderBuffer.writeBuffer(props[0], this._shaderDynamicOffsets);
         const shaderDynamicOffsets = this._shaderDynamicOffsets.getItems();
 
+        const stencil = this.extraCommandProps['stencil'];
+
         for (let i = 0; i < props.length; i++) {
             this._dynamicOffsets.reset();
             const mesh = props[i].meshObject as Mesh;
@@ -525,10 +530,10 @@ export default class GPUShader extends GLShader {
                 + mesh.textureVersion + '-' + (mesh.material && mesh.material.textureVersion || 0);
             // 获取或者生成bind group
             let bindGroup = mesh.getBindGroup(groupKey);
-            if (bindGroup && !this._checkBindGroupTextures(bindGroup, props[i])) {
-                bindGroup.outdated = true;
+            if (bindGroup && this._checkBindGroupOutdated(bindGroup, props[i])) {
+                bindGroup = null;
             }
-            if (!bindGroup || (bindGroup as any).outdated) {
+            if (!bindGroup) {
                 bindGroup = bindGroupFormat.createFormatBindGroup(device, mesh, props[i], layout, shaderBuffer, meshBuffer);
                 bindGroupFormat.copyTextures(bindGroup, props[i]);
                 // 缓存bind group，只要buffer和texture没有发生变化，即可以重用
@@ -538,7 +543,7 @@ export default class GPUShader extends GLShader {
             // 获取 dynamicOffsets
             this._dynamicOffsets.addItems(shaderDynamicOffsets);
             const dynamicOffsets = this._dynamicOffsets.getDynamicOffsets();
-            passEncoder.setBindGroup(0, bindGroup.bindGroup, dynamicOffsets);
+            renderPass.setBindGroup(0, bindGroup.bindGroup, dynamicOffsets);
 
             let instancedMesh;
             if (mesh instanceof InstancedMesh) {
@@ -550,7 +555,19 @@ export default class GPUShader extends GLShader {
                 if (!vertexBuffer && instancedMesh) {
                     vertexBuffer = instancedMesh.getInstancedBuffer(name);
                 }
-                passEncoder.setVertexBuffer(vertex.location, vertexBuffer, 0, vertexBuffer.byteLength);
+                renderPass.setVertexBuffer(vertex.location, vertexBuffer, 0, vertexBuffer.byteLength);
+            }
+
+            if (stencil && isEnable(stencil.enable, props[i])) {
+                let ref = stencil.func && stencil.func.ref;
+                if (ref !== undefined) {
+                    if (isFunction(ref)) {
+                        ref = ref(null, props[i]);
+                    }
+                    if (ref >= 0) {
+                        renderPass.setStencilReference(ref);
+                    }
+                }
             }
 
             const elements = mesh.getElements();
@@ -561,27 +578,28 @@ export default class GPUShader extends GLShader {
                 instanceCount = instancedMesh.instanceCount;
             }
             if (mesh.geometry.isIndexedElements()) {
-                passEncoder.setIndexBuffer(elements, elements.itemType);
-                passEncoder.drawIndexed(drawCount, instanceCount, drawOffset);
+                renderPass.setIndexBuffer(elements, elements.itemType);
+                renderPass.drawIndexed(drawCount, instanceCount, drawOffset);
             } else {
-                passEncoder.draw(drawCount, instanceCount, drawOffset);
+                renderPass.draw(drawCount, instanceCount, drawOffset);
             }
             device.incrDrawCall();
         }
-        passEncoder.end();
+        renderPass.end();
     }
 
-    _checkBindGroupTextures(bindGroup: BindGroupResult, props) {
+    _checkBindGroupOutdated(bindGroup: BindGroupResult, props) {
         if (!bindGroup.uniformTextures) {
-            return true;
+            return false;
         }
+        // 当纹理的version不同，或纹理不同时，则认为bindGroup过期，需要重新创建
         const uniformTextures = bindGroup.uniformTextures;
         for (const p in uniformTextures) {
-            if (uniformTextures[p] !== props[p]) {
-                return false;
+            if (uniformTextures[p].texture !== props[p] || uniformTextures[p].version !== props[p].version) {
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     _getCurrentRenderPassEncoder(device: GraphicsDevice) {

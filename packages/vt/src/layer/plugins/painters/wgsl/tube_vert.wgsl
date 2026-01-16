@@ -110,7 +110,7 @@ fn main(input: VertexInput) -> VertexOutput {
     output.position = uniforms.projViewModelMatrix * localVertex;
 
     #ifdef PICKING_MODE
-        fbo_picking_setData(output.position.w, true);
+        fbo_picking_setData(input, &output, output.position.w, true);
     #else
         output.vViewVertex = uniforms.modelViewMatrix * localVertex;
         let localNormal = normalize(tubeNormal);
@@ -152,7 +152,7 @@ fn main(input: VertexInput) -> VertexOutput {
             #endif
         #endif
         #if HAS_HIGHLIGHT_COLOR || HAS_HIGHLIGHT_OPACITY
-            highlight_setVarying(input, output);
+            highlight_setVarying(input, &output);
         #endif
     #endif
 

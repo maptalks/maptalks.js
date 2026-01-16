@@ -2,6 +2,7 @@ struct TerrrainSkinUniforms {
     tileSize: f32,
     skinDim: vec3f,
     opacity: f32,
+    flipY: f32
 }
 
 @group(0) @binding($b) var<uniform> uniforms: TerrrainSkinUniforms;
@@ -14,6 +15,9 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
     var fragCoord = vertexOutput.position.xy / 2.0;
     var resolution = vec2f(uniforms.tileSize);
     var uv = (fragCoord - uniforms.skinDim.xy) / (resolution * uniforms.skinDim.z);
+    if (uniforms.flipY > 0.5) {
+        uv.y = 1.0 - uv.y;
+    }
     var color = textureSample(skinTexture, skinTextureSampler, uv);
     var opacity = 0.0;
     if (uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0) {

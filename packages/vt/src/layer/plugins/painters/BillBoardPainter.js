@@ -3,7 +3,8 @@ import { reshader, mat4, quat } from '@maptalks/gl';
 import BasicPainter from './BasicPainter';
 import vert from './glsl/billboard.vert';
 import frag from './glsl/billboard.frag';
-import pickingVert from './glsl/billboard.vert';
+import wgslVert from './wgsl/billboard_vert.wgsl';
+import wgslFrag from './wgsl/billboard_frag.wgsl';
 import ShelfPack from '@mapbox/shelf-pack';
 import { RGBAImage } from '../../../packer/Image';
 import { isFunction, isString } from '../../../common/Util';
@@ -148,7 +149,7 @@ export default class BillBoardPainter extends BasicPainter {
             if (tileRedraw) {
                 const aTexCoord = refreshTexCoord ? geometry.properties.aTexCoord : null;
                 const image = this._fillFnTextureData(aTexCoord, geometry, bins);
-                billTexture({
+                const config = {
                     width: image.width,
                     height: image.height,
                     data: image.data,
@@ -157,7 +158,12 @@ export default class BillBoardPainter extends BasicPainter {
                     min: 'linear',
                     flipY: false,
                     premultiplyAlpha: true
-                });
+                };
+                if (billTexture.update) {
+                    billTexture.update(config);
+                } else {
+                    billTexture(config);
+                }
                 if (refreshTexCoord) {
                     geometry.updateData('aTexCoord', geometry.properties.aTexCoord);
                 }
@@ -499,6 +505,8 @@ export default class BillBoardPainter extends BasicPainter {
         const config = {
             vert,
             frag,
+            wgslVert,
+            wgslFrag,
             uniforms: [
                 {
                     name: 'projViewModelMatrix',
@@ -555,7 +563,8 @@ export default class BillBoardPainter extends BasicPainter {
             this.picking = [new reshader.FBORayPicking(
                 this.renderer,
                 {
-                    vert: pickingVert,
+                    vert,
+                    wgslVert,
                     uniforms: [
                         {
                             name: 'projViewModelMatrix',
