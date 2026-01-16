@@ -331,6 +331,11 @@ class VectorTileLayer extends maptalks.TileLayer {
                 }
             }
         }
+        if (!options.tileSystem && !options.tms) {
+            if (is4326) {
+                options.tileSystem = [1, -1, -180, 90];
+            }
+        }
         super['_prepareOptions']();
     }
 

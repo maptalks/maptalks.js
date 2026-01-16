@@ -262,23 +262,16 @@ class TileLayer extends Layer {
 
     _prepareOptions() {
         const options = this.options as any;
-        const map = this.getMap();
-        const projection = map.getProjection();
-        const is4326 =
-            projection.code === "EPSG:4326" || projection.code === "EPSG:4490";
-        const is3857 = projection.code === "EPSG:3857";
+        if (!options.tileSystem && options.tms) {
+            const sr = this.getSpatialReference();
+            const projection = sr.getProjection();
+            const is4326 = projection.code === "EPSG:4326" || projection.code === "EPSG:4490";
+            const is3857 = projection.code === "EPSG:3857";
 
-        if (!options.tileSystem) {
-            if (options.tms) {
-                if (is3857) {
-                    options.tileSystem = TileSystem['tms-global-mercator'];
-                } else if (is4326) {
-                    options.tileSystem = TileSystem['tms-global-geodetic'];
-                }
-            } else {
-                if (is4326) {
-                    options.tileSystem = [1, -1, -180, 90];
-                }
+            if (is3857) {
+                options.tileSystem = TileSystem['tms-global-mercator'];
+            } else if (is4326) {
+                options.tileSystem = TileSystem['tms-global-geodetic'];
             }
         }
     }
