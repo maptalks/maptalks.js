@@ -564,7 +564,9 @@ export default class GPUShader extends GLShader {
                     if (isFunction(ref)) {
                         ref = ref(null, props[i]);
                     }
-                    renderPass.setStencilReference(ref);
+                    if (ref >= 0) {
+                        renderPass.setStencilReference(ref);
+                    }
                 }
             }
 
