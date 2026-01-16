@@ -61,7 +61,7 @@ export default class VectorTileLayerWorker extends LayerWorker {
 
             const readTile = () => {
                 this._readTile(url, altitudePropertyName, disableAltitudeWarning, err, arrayBuffer, cb);
-            }
+            };
 
             if (err) {
                 if (!err.loading) {
@@ -72,7 +72,7 @@ export default class VectorTileLayerWorker extends LayerWorker {
                 arrayBuffer = response.data;
                 const isGZip = arraybufferIsGZip(arrayBuffer);
 
-                const cacheTile = () => {
+                const resolveTile = () => {
                     let needCache = true;
                     if (arrayBuffer && isNumber(loadTileCachMaxSize) && loadTileCachMaxSize > 0) {
                         const bufferSize = calArrayBufferSize(arrayBuffer);
@@ -87,17 +87,17 @@ export default class VectorTileLayerWorker extends LayerWorker {
                         this._cache.add(url, { err: null, data: arrayBuffer, cacheIndex: context.workerCacheIndex });
                     }
                     readTile();
-                }
+                };
 
                 if (isGZip) {
                     decompressGzipWithBlob(arrayBuffer, (buffer => {
                         if (buffer) {
                             arrayBuffer = buffer;
                         }
-                        cacheTile();
+                        resolveTile();
                     }))
                 } else {
-                    cacheTile();
+                    resolveTile();
                 }
             }
             if (!hasData) {
