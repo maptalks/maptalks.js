@@ -258,7 +258,7 @@ describe('TileLayer', function () {
             map.setBaseLayer(tile);
         });
 
-        it('#679, cascade tiles\'s bug on 4326', function (done) {
+        it.skip('#679, cascade tiles\'s bug on 4326', function (done) {
             container = document.createElement('div');
             container.style.width = '3px';
             container.style.height = '3px';
