@@ -414,17 +414,21 @@ export default class GPUShader extends GLShader {
 
     getShaderCommandKey(device, mesh, renderProps) {
         if (device && device.wgpu) {
+            let fboKey = '';
+            if (this._gpuFramebuffer) {
+                fboKey = `-${this._gpuFramebuffer.getCommandKey()}`;
+            }
             // 获取pipeline所需要的特征变量，即任何变量发生变化后，就需要创建新的pipeline
             const fnValues = mesh.getShaderFnValues(this.uid);
             if (fnValues) {
                 const { funcs, key, commandKey } = fnValues;
                 if (!funcs.length) {
-                    return commandKey;
+                    return commandKey + fboKey;
                 }
                 const values = funcs.map(func => func(null, renderProps));
                 const currentKey = pipelineDesc.generateValuesKey(values);
                 if (currentKey === key) {
-                    return commandKey;
+                    return commandKey + fboKey;
                 }
             }
             const fbo = this._gpuFramebuffer;
@@ -435,8 +439,8 @@ export default class GPUShader extends GLShader {
                 funcs: pipelineDesc.functionProps.map(item => item.func),
                 key: pipelineDesc.getFnValuesKey(),
                 commandKey
-            })
-            return commandKey;
+            });
+            return commandKey + fboKey;
         } else {
             // regl
             return super.getShaderCommandKey(device, mesh, renderProps);
@@ -495,6 +499,7 @@ export default class GPUShader extends GLShader {
         const device = deviceOrRegl as GraphicsDevice;
         this.isGPU = true;
         const buffersPool = device.dynamicBufferPool;
+
         const renderPass: GPURenderPassEncoder = this._getCurrentRenderPassEncoder(device);
         renderPass.setPipeline(command.pipeline);
 

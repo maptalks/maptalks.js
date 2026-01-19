@@ -1,7 +1,7 @@
 #include <get_output>
 
 // Uniform 结构体
-struct Uniforms_{
+struct Uniforms {
     projViewModelMatrix: mat4x4f,
     positionMatrix: mat4x4f,
 };
@@ -16,7 +16,15 @@ struct VertexInput {
 };
 #else
 struct VertexInput {
-    @location($i) aPosition: vec3f,
+    #if HAS_DRACO_POSITION || HAS_COMPRESSED_INT16_POSITION
+        @location($i) aPosition: vec4i,
+    #else
+        #ifdef POSITION_IS_INT
+            @location($i) aPosition: vec4i,
+        #else
+            @location($i) aPosition: vec3f,
+        #endif
+    #endif
 };
 #endif
 
@@ -42,8 +50,8 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
         let j: vec4f = vec4f(i, 1.0);
         output.position = uniforms.projViewModelMatrix * j;
     #else
-        let localPositionMatrix: mat4x4f = getPositionMatrix();
-        output.position = uniforms.projViewModelMatrix * localPositionMatrix * getPosition(vertexInput.aPosition);
+        let localPositionMatrix: mat4x4f = getPositionMatrix(vertexInput, &output, uniforms.positionMatrix);
+        output.position = uniforms.projViewModelMatrix * localPositionMatrix * getPosition(vec3f(vertexInput.aPosition.xyz), vertexInput);
     #endif
 
     output.vFragDepth = 1.0 + output.position.w;

@@ -48,6 +48,7 @@ export default class AnalysisPass {
 
     _createDepthShader(horizontalAngle, verticalAngle) {
         this._depthShader = new reshader.MeshShader({
+            name: 'analysis-depth',
             vert: depthVert,
             frag: depthFrag,
             wgslVert,

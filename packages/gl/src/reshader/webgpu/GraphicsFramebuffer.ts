@@ -29,6 +29,9 @@ export default class GraphicsFramebuffer {
     _ownColor: boolean;
     //@internal
     _ownDepthTexture: boolean;
+    //@internal
+    _cmdKey: string;
+    //@internal
     _destroyed: boolean;
 
     constructor(device, options) {
@@ -65,6 +68,23 @@ export default class GraphicsFramebuffer {
                 depthAttchment.view = this.depthTexture.getView();
             }
         }
+    }
+
+    getCommandKey() {
+        if (this._cmdKey) {
+            return this._cmdKey;
+        }
+        const colorTexture = this.colorTexture;
+        const depthTexture = this.depthTexture;
+        let key = '';
+        if (colorTexture) {
+            key += `${colorTexture.gpuFormat.format}-${colorTexture.config.sampleCount};`;
+        }
+        if (depthTexture) {
+            key += `${depthTexture.gpuFormat.format};`;
+        }
+        this._cmdKey = key;
+        return key;
     }
 
     _update() {

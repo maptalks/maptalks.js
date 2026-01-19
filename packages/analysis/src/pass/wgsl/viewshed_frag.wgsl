@@ -1,15 +1,19 @@
-#include <unpack_depth_functions>
-
 // Uniform 结构体
 struct FragUniforms {
     near: f32,
     far: f32,
-    #ifdef HAS_HELPERLINE
-    lineColor: vec3f,
-    #endif
 };
 
+#ifdef HAS_HELPERLINE
+    struct HelperUniforms {
+        lineColor: vec3f,
+    };
+#endif
+
 @group(0) @binding($b) var<uniform> uniforms: FragUniforms;
+#ifdef HAS_HELPERLINE
+    @group(0) @binding($b) var<uniform> helperUniforms: HelperUniforms;
+#endif
 
 // Texture 和 Sampler
 @group(0) @binding($b) var depthMap: texture_2d<f32>;
@@ -32,7 +36,7 @@ fn linear(value: f32) -> f32 {
 @fragment
 fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
     #ifdef HAS_HELPERLINE
-        return vec4f(uniforms.lineColor, 0.009);
+        return vec4f(helperUniforms.lineColor, 0.009);
     #else
         let shadowCoord: vec3f = (vertexOutput.viewshed_positionFromViewpoint.xyz / vertexOutput.viewshed_positionFromViewpoint.w) / 2.0 + 0.5;
 

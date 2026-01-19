@@ -14,7 +14,7 @@ const ShiftRight8: f32 = 1.0 / 256.0;
 
 fn packDepthToRGBA(v: f32) -> vec4f {
     var r: vec4f = vec4f(fract(v * PackFactors), v);
-    r.yzw = r.yzw - r.xyz * ShiftRight8;
+    r = vec4f(r.x, r.yzw - r.xyz * ShiftRight8);
     return r * PackUpscale;
 }
 

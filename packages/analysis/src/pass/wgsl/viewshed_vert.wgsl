@@ -5,31 +5,39 @@ struct Uniforms {
     modelMatrix: mat4x4f,
     positionMatrix: mat4x4f,
     projViewModelMatrix: mat4x4f,
-    viewshed_projViewMatrixFromViewpoint: mat4x4f,
 };
+
+struct ShaderUniforms {
+    viewshed_projViewMatrixFromViewpoint: mat4x4f,
+}
 
 @group(0) @binding($b) var<uniform> uniforms: Uniforms;
+@group(0) @binding($b) var<uniform> shaderUniforms: ShaderUniforms;
 
-// 顶点输入结构体
 struct VertexInput {
-    @location($i) aPosition: vec3f,
+    #if HAS_DRACO_POSITION || HAS_COMPRESSED_INT16_POSITION
+        @location($i) aPosition: vec4i,
+    #else
+        #ifdef POSITION_IS_INT
+            @location($i) aPosition: vec4i,
+        #else
+            @location($i) aPosition: vec3f,
+        #endif
+    #endif
 };
 
-// 顶点输出结构体
 struct VertexOutput {
     @builtin(position) position: vec4f,
-    @builtin(point_size) point_size: f32,
     @location($o) viewshed_positionFromViewpoint: vec4f,
 };
 
 @vertex
 fn main(vertexInput: VertexInput) -> VertexOutput {
-    let localPositionMatrix: mat4x4f = getPositionMatrix(uniforms);
-    let localPosition: vec4f = localPositionMatrix * getPosition(vertexInput.aPosition);
-
     var output: VertexOutput;
-    output.viewshed_positionFromViewpoint = uniforms.viewshed_projViewMatrixFromViewpoint * uniforms.modelMatrix * localPosition;
-    output.point_size = 1.0;
+    let localPositionMatrix: mat4x4f = getPositionMatrix(vertexInput, &output, uniforms.positionMatrix);
+    let localPosition: vec4f = localPositionMatrix * getPosition(vec3f(vertexInput.aPosition.xyz), vertexInput);
+
+    output.viewshed_positionFromViewpoint = shaderUniforms.viewshed_projViewMatrixFromViewpoint * uniforms.modelMatrix * localPosition;
     output.position = uniforms.projViewModelMatrix * localPosition;
 
     return output;

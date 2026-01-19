@@ -35,6 +35,7 @@ export default class ViewshedPass extends AnalysisPass {
     _init() {
         super._init();
         this._viewshedShader = new reshader.MeshShader({
+            name: 'viewshed',
             vert,
             frag,
             wgslVert,
@@ -52,8 +53,9 @@ export default class ViewshedPass extends AnalysisPass {
                 viewport: this._viewport
             }
         });
-        this._fbo = this.renderer.device.framebuffer({
-            color: this.renderer.device.texture({
+        const device = this.renderer.device;
+        this._fbo = device.framebuffer({
+            color: device.texture({
                 width: 1,
                 height: 1,
                 wrap: 'clamp',
@@ -72,6 +74,7 @@ export default class ViewshedPass extends AnalysisPass {
             primitive : 'lines',
             positionAttribute: 'POSITION'
         });
+        helperGeometry.generateBuffers(device);
         this._helperMesh = new reshader.Mesh(helperGeometry, new reshader.Material({ lineColor: [0.8, 0.8, 0.1]}));
         const defines = this._helperMesh.getDefines();
         defines.HAS_HELPERLINE = 1;

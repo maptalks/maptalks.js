@@ -1343,7 +1343,7 @@ function getItemFormat(data, itemSize) {
 }
 
 function getAttrArray(data) {
-    return data.data || (data.buffer && data.buffer.destroy) || data;
+    return data.data || (data.buffer && data.buffer.destroy && data.buffer) || data;
 }
 
 function createGPUBuffer(device, data, usage, label) {
