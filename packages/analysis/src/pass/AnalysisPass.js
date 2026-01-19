@@ -1,6 +1,8 @@
 import { reshader, mat4 } from '@maptalks/gl';
 import depthVert from './glsl/depth.vert';
 import depthFrag from './glsl/depth.frag';
+import wgslVert from './wgsl/depth_vert.wgsl';
+import wgslFrag from './wgsl/depth_frag.wgsl';
 
 const RESOLUTION = 2048;
 export default class AnalysisPass {
@@ -48,6 +50,8 @@ export default class AnalysisPass {
         this._depthShader = new reshader.MeshShader({
             vert: depthVert,
             frag: depthFrag,
+            wgslVert,
+            wgslFrag,
             uniforms: [
                 {
                     name: 'projViewModelMatrix',

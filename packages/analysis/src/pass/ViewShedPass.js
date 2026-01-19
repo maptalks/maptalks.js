@@ -2,6 +2,8 @@ import { mat4, quat, vec3 } from '@maptalks/gl';
 import { reshader } from '@maptalks/gl';
 import vert from './glsl/viewshed.vert';
 import frag from './glsl/viewshed.frag';
+import wgslVert from './wgsl/viewshed_vert.wgsl';
+import wgslFrag from './wgsl/viewshed_frag.wgsl';
 import { Util, Point } from 'maptalks';
 import AnalysisPass from './AnalysisPass';
 
@@ -27,6 +29,7 @@ const helperIndices = [
 const MAT = [], QUAT1 = quat.identity([]), QUAT2 = quat.identity([]),  VEC3 = [], v1 = [1, 0, 0], VEC31 = [], VEC32 = [], TEMP_POS = [], TEMP_POINT = new Point(0, 0);
 const clearColor = [0, 0, 0, 1];
 let near = 0.01;
+
 export default class ViewshedPass extends AnalysisPass {
 
     _init() {
@@ -34,6 +37,8 @@ export default class ViewshedPass extends AnalysisPass {
         this._viewshedShader = new reshader.MeshShader({
             vert,
             frag,
+            wgslVert,
+            wgslFrag,
             uniforms: [
                 {
                     name: 'projViewModelMatrix',
