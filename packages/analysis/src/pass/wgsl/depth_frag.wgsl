@@ -24,9 +24,8 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
     // 深度输出需要使用 @builtin(frag_depth) 属性
     // 这里假设深度计算仅用于其他目的，不直接设置片段深度
 
-    let fragCoordZ: f32 = 0.5 * vertexOutput.vHighPrecisionZW[0] / vertexOutput.vHighPrecisionZW[1] + 0.5;
+    let fragCoordZ: f32 = vertexOutput.vHighPrecisionZW[0] / vertexOutput.vHighPrecisionZW[1];
     var glFragColor: vec4f = packDepthToRGBA(fragCoordZ);
 
-    // WGSL 不支持 __VERSION__ 宏，但可以保留条件编译结构
     return glFragColor;
 }
