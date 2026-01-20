@@ -729,7 +729,7 @@ Map.include(/** @lends Map.prototype */{
             const isWebGPU = this.options.renderer === 'gpu';
             if (isWebGPU) {
                 // In WebGPU, the Y coordinate of the clip space is inverted.
-                mat4.perspectiveNO(projMatrix, fov, w / h, this.cameraNear, farZ);
+                mat4.perspectiveZO(projMatrix, fov, w / h, this.cameraNear, farZ);
             } else {
                 mat4.perspective(projMatrix, fov, w / h, this.cameraNear, farZ);
             }

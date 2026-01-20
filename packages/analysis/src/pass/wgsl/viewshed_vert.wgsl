@@ -28,7 +28,7 @@ struct VertexInput {
 
 struct VertexOutput {
     @builtin(position) position: vec4f,
-    @location($o) viewshed_positionFromViewpoint: vec4f,
+    @location($o) viewpoint: vec4f,
 };
 
 @vertex
@@ -37,7 +37,7 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
     let localPositionMatrix: mat4x4f = getPositionMatrix(vertexInput, &output, uniforms.positionMatrix);
     let localPosition: vec4f = localPositionMatrix * getPosition(vec3f(vertexInput.aPosition.xyz), vertexInput);
 
-    output.viewshed_positionFromViewpoint = shaderUniforms.viewshed_projViewMatrixFromViewpoint * uniforms.modelMatrix * localPosition;
+    output.viewpoint = shaderUniforms.viewshed_projViewMatrixFromViewpoint * uniforms.modelMatrix * localPosition;
     output.position = uniforms.projViewModelMatrix * localPosition;
 
     return output;

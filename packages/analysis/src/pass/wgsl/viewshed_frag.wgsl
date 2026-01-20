@@ -29,8 +29,12 @@ fn unpackRGBAToDepth(v: vec4f) -> f32 {
 }
 
 fn linear(value: f32) -> f32 {
-    let z: f32 = value * 2.0 - 1.0;
-    return (2.0 * uniforms.near * uniforms.far) / (uniforms.far + uniforms.near - z * (uniforms.far - uniforms.near));
+    let near = uniforms.near;
+    let far = uniforms.far;
+
+    // let z = value * 2.0 - 1.0;
+    // return (2.0 * near * far) / (far + near - z * (far - near));
+    return (near * far) / (far + value * (near - far));
 }
 
 @fragment
@@ -38,19 +42,21 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
     #ifdef HAS_HELPERLINE
         return vec4f(helperUniforms.lineColor, 0.009);
     #else
-        let shadowCoord: vec3f = (vertexOutput.viewshed_positionFromViewpoint.xyz / vertexOutput.viewshed_positionFromViewpoint.w) / 2.0 + 0.5;
+        let near = uniforms.near;
+        let far = uniforms.far;
+        let viewpoint = vertexOutput.viewpoint;
 
-        // WGSL 纹理采样方式
+        let shadowCoord: vec3f = vec3f((viewpoint.xy / viewpoint.w) / 2.0 + 0.5, viewpoint.z / viewpoint.w);
         let rgbaDepth: vec4f = textureSample(depthMap, depthMapSampler, shadowCoord.xy);
         let depth: f32 = unpackRGBAToDepth(rgbaDepth);
-        let linearZ: f32 = linear(shadowCoord.z);
         let linearDepth: f32 = linear(depth);
+        let linearZ: f32 = linear(shadowCoord.z);
 
         if (shadowCoord.x >= 0.0 && shadowCoord.x <= 1.0 &&
             shadowCoord.y >= 0.0 && shadowCoord.y <= 1.0 &&
-            linearZ >= uniforms.near && linearZ <= uniforms.far - uniforms.near) {
+            linearZ >= near && linearZ <= far - near) {
 
-            if (linearZ / uniforms.far <= linearDepth / (uniforms.far - uniforms.near)) {
+            if (linearZ <= linearDepth) {
                 return vec4f(0.0, 1.0, 0.0, 1.0); // 可视区
             } else {
                 return vec4f(1.0, 0.0, 0.0, 1.0); // 不可视区
