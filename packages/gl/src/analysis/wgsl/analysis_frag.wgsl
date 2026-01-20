@@ -1,4 +1,5 @@
 struct FragmentUniforms {
+  resolution: vec2f,
   #ifdef HAS_FLOODANALYSE
     flood_waterColor: vec3f,
     flood_waterOpacity: f32,
@@ -61,7 +62,11 @@ struct FragmentUniforms {
   @group(0) @binding($b) var heightLimitMapSampler: sampler;
 #endif
 
-@group(0) @binding($b) var sceneMap: texture_2d<f32>;
+#ifdef HAS_MULTISAMPLED
+  @group(0) @binding($b) var sceneMap: texture_multisampled_2d<f32>;
+#else
+  @group(0) @binding($b) var sceneMap: texture_2d<f32>;
+#endif
 @group(0) @binding($b) var sceneMapSampler: sampler;
 
 @group(0) @binding($b) var<uniform> uniforms: FragmentUniforms;
@@ -69,11 +74,17 @@ struct FragmentUniforms {
 @fragment
 fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
   var glFragColor: vec4f;
-  let sceneColor = textureSample(sceneMap, sceneMapSampler, vertexOutput.vTexCoord);
+  var uv = vertexOutput.vTexCoord;
+  uv.y = 1.0 - uv.y;
+  #ifdef HAS_MULTISAMPLED
+      let sceneColor = textureLoad(sceneMap, vec2i(uv * uniforms.resolution), 0);
+  #else
+      let sceneColor = textureSample(sceneMap, sceneMapSampler, uv);
+  #endif
   glFragColor = sceneColor;
 
   #ifdef HAS_VIEWSHED
-    let viewshedColor = textureSample(viewshedMap, viewshedMapSampler, vertexOutput.vTexCoord);
+    let viewshedColor = textureSample(viewshedMap, viewshedMapSampler, uv);
     if (viewshedColor.r > 0.99) {
       glFragColor = vec4f(
         mix(uniforms.viewshed_invisibleColor.rgb, sceneColor.rgb, uniforms.viewshed_invisibleColor.a),
@@ -90,7 +101,7 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
   #endif
 
   #ifdef HAS_FLOODANALYSE
-    let floodColor = textureSample(floodMap, floodMapSampler, vertexOutput.vTexCoord);
+    let floodColor = textureSample(floodMap, floodMapSampler, uv);
     if (floodColor.r > 0.0) {
       glFragColor = vec4f(
         mix(glFragColor.rgb, uniforms.flood_waterColor, uniforms.flood_waterOpacity),
@@ -100,14 +111,14 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
   #endif
 
   #ifdef HAS_SKYLINE
-    let skylineColor = textureSample(skylineMap, skylineMapSampler, vertexOutput.vTexCoord);
+    let skylineColor = textureSample(skylineMap, skylineMapSampler, uv);
     if (skylineColor.r > 0.0 || skylineColor.g > 0.0 || skylineColor.b > 0.0) {
       glFragColor = skylineColor;
     }
   #endif
 
   #ifdef HAS_INSIGHT
-    let insightColor = textureSample(insightMap, insightMapSampler, vertexOutput.vTexCoord);
+    let insightColor = textureSample(insightMap, insightMapSampler, uv);
     if (insightColor.g > 0.0) {
       glFragColor = uniforms.insight_visibleColor;
     } else if (insightColor.r > 0.0) {
@@ -116,8 +127,8 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
   #endif
 
   #ifdef HAS_CUT
-    let cutColor = textureSample(invisibleMap, invisibleMapSampler, vertexOutput.vTexCoord);
-    let meshesMapColor = textureSample(meshesMap, meshesMapSampler, vertexOutput.vTexCoord);
+    let cutColor = textureSample(invisibleMap, invisibleMapSampler, uv);
+    let meshesMapColor = textureSample(meshesMap, meshesMapSampler, uv);
     if (cutColor.r == 1.0 && cutColor.g == 0.0 && cutColor.b == 0.0) {
       glFragColor = meshesMapColor;
     } else if (cutColor.r == 0.0 && cutColor.g == 1.0 && cutColor.b == 0.0) {
@@ -128,7 +139,7 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
   #endif
 
   #ifdef HAS_EXCAVATE
-    let excavateColor = textureSample(excavateMap, excavateMapSampler, vertexOutput.vTexCoord);
+    let excavateColor = textureSample(excavateMap, excavateMapSampler, uv);
     if (excavateColor.r == 1.0 && excavateColor.g == 0.0 && excavateColor.b == 0.0) {
       glFragColor = sceneColor;
     } else {
@@ -137,7 +148,7 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
   #endif
 
   #ifdef HAS_CROSSCUT
-    let crosscutColor = textureSample(crosscutMap, crosscutMapSampler, vertexOutput.vTexCoord);
+    let crosscutColor = textureSample(crosscutMap, crosscutMapSampler, uv);
     if (crosscutColor.r > 0.0) {
       glFragColor = vec4f(
         mix(uniforms.cutLineColor.rgb, glFragColor.rgb, 0.99),
@@ -147,7 +158,7 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
   #endif
 
   #ifdef HAS_HEIGHTLIMIT
-    let heightLimitColor = textureSample(heightLimitMap, heightLimitMapSampler, vertexOutput.vTexCoord);
+    let heightLimitColor = textureSample(heightLimitMap, heightLimitMapSampler, uv);
     if (heightLimitColor.r > 0.0) {
       glFragColor = vec4f(
         mix(uniforms.limitColor, glFragColor.rgb, 0.6),

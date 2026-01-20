@@ -4,7 +4,7 @@ import vert from './glsl/viewshed.vert';
 import frag from './glsl/viewshed.frag';
 import wgslVert from './wgsl/viewshed_vert.wgsl';
 import wgslFrag from './wgsl/viewshed_frag.wgsl';
-import { Util, Point } from 'maptalks';
+import { Point } from 'maptalks';
 import AnalysisPass from './AnalysisPass';
 
 const helperPos = [
@@ -187,8 +187,7 @@ export default class ViewshedPass extends AnalysisPass {
     }
 
     _resize(horizontalAngle, verticalAngle) {
-        const width = Util.isFunction(this._viewport.width.data) ? this._viewport.width.data() : this._viewport.width;
-        const height = Util.isFunction(this._viewport.height.data) ? this._viewport.height.data() : this._viewport.height;
+        const { width, height } = this.getViewportSize();
         if (this._fbo && (this._fbo.width !== width || this._fbo.height !== height)) {
             this._fbo.resize(width, height);
         }

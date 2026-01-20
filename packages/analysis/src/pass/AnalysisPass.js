@@ -3,6 +3,7 @@ import depthVert from './glsl/depth.vert';
 import depthFrag from './glsl/depth.frag';
 import wgslVert from './wgsl/depth_vert.wgsl';
 import wgslFrag from './wgsl/depth_frag.wgsl';
+import { Util } from 'maptalks';
 
 const RESOLUTION = 2048;
 export default class AnalysisPass {
@@ -89,6 +90,18 @@ export default class AnalysisPass {
 
     _validViewport(horizontalAngle, verticalAngle) {
         return horizontalAngle && verticalAngle && horizontalAngle * verticalAngle > 0;
+    }
+
+    getViewportSize() {
+        let width, height;
+        if (this._viewport.width.data) {
+            width = Util.isFunction(this._viewport.width.data) ? this._viewport.width.data() : this._viewport.width;
+            height = Util.isFunction(this._viewport.height.data) ? this._viewport.height.data() : this._viewport.height;
+        } else {
+            width = Util.isFunction(this._viewport.width) ? this._viewport.width() : this._viewport.width;
+            height = Util.isFunction(this._viewport.height) ? this._viewport.height() : this._viewport.height;
+        }
+        return { width, height };
     }
 
     dispose() {
