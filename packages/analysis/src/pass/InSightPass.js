@@ -130,7 +130,13 @@ export default class InSightPass extends AnalysisPass {
     _createProjViewMatrix(from, to, verticalAngle, horizontalAngle) {
         const aspect =  verticalAngle / horizontalAngle;
         const distance = Math.sqrt(Math.pow(from[0] - to[0], 2) + Math.pow(from[1] - to[1], 2) + Math.pow(from[2] - to[2], 2));
-        const projMatrix = mat4.perspective([], horizontalAngle * Math.PI / 180, aspect, 1.0, distance + 1000);
+        const isWebGPU = !!this.renderer.device.wgpu;
+        let projMatrix;
+        if (isWebGPU) {
+            projMatrix = mat4.perspectiveZO([], horizontalAngle * Math.PI / 180, aspect, 1.0, distance + 1000);
+        } else {
+            projMatrix = mat4.perspective([], horizontalAngle * Math.PI / 180, aspect, 1.0, distance + 1000);
+        }
         const viewMatrix = mat4.lookAt([], from, to, [0, 1, 0]);
         const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
         return { projViewMatrixFromViewpoint: projViewMatrix, far: distance };
