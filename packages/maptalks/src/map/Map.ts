@@ -2976,6 +2976,7 @@ export type MapViewType = {
     bearing?: number;
     height?: number;
     around?: Point;
+    prjCenter?: Array<number> | Coordinate,
 }
 
 export type MapFitType = {
@@ -3014,7 +3015,6 @@ function isTerrainLayer(layer: any): boolean {
 }
 
 export function mapViewEqual(view1: MapViewType, view2: MapViewType): boolean {
-
     if (view1 === view2) {
         return true;
     }
@@ -3067,34 +3067,38 @@ export function mapViewEqual(view1: MapViewType, view2: MapViewType): boolean {
         return false;
     }
 
+    const centerEqual = (p1, p2) => {
+        if (p1 === p2) {
+            return true;
+        }
+        if (!p1 || !p2) {
+            return false;
+        }
+        const c1 = new Coordinate(p1 as Coordinate);
+        const c2 = new Coordinate(p2 as Coordinate);
 
-    const center1 = view1.center;
-    const center2 = view2.center;
+        if (c1.equals(c2)) {
+            return true;
+        }
 
-    const c1 = new Coordinate(center1 as Coordinate);
-    const c2 = new Coordinate(center2 as Coordinate);
+        let x1 = c1.x, y1 = c1.y, z1 = c1.z || 0;
+        let x2 = c2.x, y2 = c2.y, z2 = c2.z || 0;
 
-    if (c1.equals(c2)) {
-        return true;
+        x1 = roundValue(x1);
+        y1 = roundValue(y1);
+        z1 = roundValue(z1);
+        x2 = roundValue(x2);
+        y2 = roundValue(y2);
+        z2 = roundValue(z2);
+
+        return (x1 === x2 && y1 === y2 && z1 === z2)
     }
-
-    let x1 = c1.x, y1 = c1.y, z1 = c1.z || 0;
-    let x2 = c2.x, y2 = c2.y, z2 = c2.z || 0;
-
-
-    x1 = roundValue(x1);
-    y1 = roundValue(y1);
-    z1 = roundValue(z1);
-    x2 = roundValue(x2);
-    y2 = roundValue(y2);
-    z2 = roundValue(z2);
-
-    if (x1 === x2 && y1 === y2 && z1 === z2) {
-        return true
+    if (!centerEqual(view1.center, view2.center)) {
+        return false;
     }
-
-    return false;
-
-
+    if (!centerEqual(view1.prjCenter, view2.prjCenter)) {
+        return false;
+    }
+    return true;
 
 }
