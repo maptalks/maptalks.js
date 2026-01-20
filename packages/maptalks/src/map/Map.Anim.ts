@@ -1,7 +1,7 @@
 import { Animation, Player } from '../core/Animation';
 import Coordinate from '../geo/Coordinate';
 import Point from '../geo/Point';
-import { Map, MapViewType } from './Map';
+import { Map, mapViewEqual, MapViewType } from './Map';
 import { isNil, isFunction, hasOwn, extend, clamp } from '../core/util';
 
 
@@ -115,6 +115,10 @@ Map.include(/** @lends Map.prototype */{
             currView = this.getView(),
             props = {};
         let empty = true;
+        const isEqual = mapViewEqual(view, currView);
+        if (isEqual) {
+            console.warn('The target view is the same as the current view in animateTo.');
+        }
         for (const p in view) {
             if (hasOwn(view, p) && !isNil(view[p]) && (p === 'prjCenter' || !isNil(currView[p]))) {
                 empty = false;
@@ -166,7 +170,7 @@ Map.include(/** @lends Map.prototype */{
                 (player as any).finish();
                 return;
             }
-            if (player.playState === 'running') {
+            if (player.playState === 'running' && !isEqual) {
                 // const view = this.getView();
                 // if (!options['continueOnViewChanged'] && !equalView(view, preView)) {
                 //     // map's view is updated by another operation, animation should stop

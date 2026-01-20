@@ -3012,3 +3012,89 @@ export type PanelDom = (HTMLDivElement | HTMLElement) & { layerDOM: HTMLElement;
 function isTerrainLayer(layer: any): boolean {
     return layer && layer.queryTerrainAtPoint && layer.getTerrainLayer && layer.getTerrainLayer();
 }
+
+export function mapViewEqual(view1: MapViewType, view2: MapViewType): boolean {
+
+    if (view1 === view2) {
+        return true;
+    }
+    if (!view1 || !view2) {
+        return false;
+    }
+    try {
+        const str1 = JSON.stringify(view1);
+        const str2 = JSON.stringify(view2);
+        if (str1 === str2) {
+            return true;
+        }
+    } catch (e) {
+        console.error('stringify map view error', e);
+        return false;
+    }
+
+    // Precision after decimal point
+    const pow = Math.pow(10, 7);
+
+    const roundValue = (v: number) => {
+        v = v || 0;
+        return Math.round(v * pow);
+    }
+
+    let zoom1 = view1.zoom, zoom2 = view2.zoom;
+    let bearing1 = view1.bearing, bearing2 = view2.bearing;
+    let pitch1 = view1.pitch, pitch2 = view2.pitch;
+    let height1 = view1.height || 0, height2 = view2.height || 0;
+
+    zoom1 = roundValue(zoom1);
+    zoom2 = roundValue(zoom2);
+    bearing1 = roundValue(bearing1);
+    bearing2 = roundValue(bearing2);
+    pitch1 = roundValue(pitch1);
+    pitch2 = roundValue(pitch2);
+    height1 = roundValue(height1);
+    height2 = roundValue(height2);
+
+    if (zoom1 !== zoom2) {
+        return false;
+    }
+    if (bearing1 !== bearing2) {
+        return false;
+    }
+    if (pitch1 !== pitch2) {
+        return false;
+    }
+    if (height1 !== height2) {
+        return false;
+    }
+
+
+    const center1 = view1.center;
+    const center2 = view2.center;
+
+    const c1 = new Coordinate(center1 as Coordinate);
+    const c2 = new Coordinate(center2 as Coordinate);
+
+    if (c1.equals(c2)) {
+        return true;
+    }
+
+    let x1 = c1.x, y1 = c1.y, z1 = c1.z || 0;
+    let x2 = c2.x, y2 = c2.y, z2 = c2.z || 0;
+
+
+    x1 = roundValue(x1);
+    y1 = roundValue(y1);
+    z1 = roundValue(z1);
+    x2 = roundValue(x2);
+    y2 = roundValue(y2);
+    z2 = roundValue(z2);
+
+    if (x1 === x2 && y1 === y2 && z1 === z2) {
+        return true
+    }
+
+    return false;
+
+
+
+}
