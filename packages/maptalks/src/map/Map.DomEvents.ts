@@ -331,9 +331,29 @@ Map.include(/** @lends Map.prototype */ {
         if (this._ignoreEvent(e)) {
             return;
         }
-        this._fireDOMEvent(this, e, type);
+
+        const fireClick = (mimicEvent?: string) => {
+            if (!this._domMouseDownView) {
+                this._fireDOMEvent(this, e, mimicEvent || type);
+            } else {
+                if (mapViewEqual(this._domMouseDownView, this.getView())) {
+                    this._fireDOMEvent(this, e, mimicEvent || type);
+                }
+            }
+
+        }
+        if (type === 'click') {
+            fireClick();
+        } else {
+            this._fireDOMEvent(this, e, type);
+        }
+
         if (mimicEvent) {
-            this._fireDOMEvent(this, e, mimicEvent);
+            if (mimicEvent === 'click') {
+                fireClick(mimicEvent);
+            } else {
+                this._fireDOMEvent(this, e, mimicEvent);
+            }
         }
     },
 
@@ -532,4 +552,17 @@ function isRotatingMap(map) {
     }
     const view = map.getView(), mouseDownView = map._domMouseDownView;
     return (view.bearing !== mouseDownView.bearing || view.pitch !== mouseDownView.pitch);
+}
+
+function mapViewEqual(view1, view2) {
+    if (view1 === view2) {
+        return;
+    }
+    if (!view1 || !view2) {
+        return false;
+    }
+    const str1 = JSON.stringify(view1);
+    const str2 = JSON.stringify(view2);
+    return str1 === str2;
+
 }
