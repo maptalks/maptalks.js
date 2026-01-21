@@ -301,6 +301,7 @@ export function getMinMaxAltitude(altitude: number | number[] | number[][] | num
             const alts = altitude[i];
             pathMinMax(alts as number[]);
         }
+        return [min, max];
     }
     //number [][][],multipolygon
     for (let i = 0, len = altitude.length; i < len; i++) {
