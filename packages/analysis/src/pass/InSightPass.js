@@ -2,6 +2,8 @@ import { mat4 } from '@maptalks/gl';
 import { reshader } from '@maptalks/gl';
 import vert from './glsl/insight.vert';
 import frag from './glsl/insight.frag';
+import wgslVert from './wgsl/insight_vert.wgsl';
+import wgslFrag from './wgsl/insight_frag.wgsl';
 import { Util } from 'maptalks';
 import AnalysisPass from './AnalysisPass';
 
@@ -21,6 +23,8 @@ export default class InSightPass extends AnalysisPass {
         this._insightShader = new reshader.MeshShader({
             vert,
             frag,
+            wgslVert,
+            wgslFrag,
             uniforms: [
                 {
                     name: 'projViewModelMatrix',
@@ -54,6 +58,7 @@ export default class InSightPass extends AnalysisPass {
             primitive : 'lines',
             positionAttribute: 'POSITION'
         });
+        helperGeometry.generateBuffers(this.renderer.device);
         this._helperGeometry = helperGeometry;
         this._helperMesh = new reshader.Mesh(helperGeometry, new reshader.Material({ lineColor: [0.8, 0.8, 0.1]}));
         this._scene = new reshader.Scene();
@@ -107,6 +112,7 @@ export default class InSightPass extends AnalysisPass {
                 primitive : 'lines',
                 positionAttribute: 'POSITION'
             });
+            this._helperGeometry.generateBuffers(this.renderer.device);
             this._helperMesh = new reshader.Mesh(this._helperGeometry, new reshader.Material({ lineColor: [0.8, 0.8, 0.1]}));
         }
     }
