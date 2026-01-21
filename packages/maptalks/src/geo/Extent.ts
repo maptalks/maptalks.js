@@ -887,7 +887,6 @@ function minValue(a: number, b: number): number {
     } else if (isNumber(b)) {
         return b;
     }
-    return 0;
 }
 
 function maxValue(a: number, b: number): number {
@@ -898,7 +897,6 @@ function maxValue(a: number, b: number): number {
     } else if (isNumber(b)) {
         return b;
     }
-    return 0;
 }
 
 export function combineExtentAltitude(extent1: Extent, extent2: Extent): Extent {
