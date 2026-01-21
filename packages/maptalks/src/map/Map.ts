@@ -1269,7 +1269,11 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
         const maxAltitude = (extent as Extent).maxAltitude;
         if (isNumber(maxAltitude) && maxAltitude !== 0) {
-            center.z = maxAltitude;
+            const currentCenterZ = this.getCenter().z || 0;
+            if (maxAltitude > currentCenterZ) {
+                center.z = maxAltitude;
+            }
+
         }
 
         if (typeof (options['animation']) === 'undefined' || options['animation'])

@@ -612,8 +612,6 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     getExtent(): Extent {
         const prjExt = this._getPrjExtent();
         const projection = this._getProjection();
-
-
         let extent: Extent;
         if (prjExt && projection) {
             const min = projection.unproject(new Coordinate(prjExt['xmin'], prjExt['ymin'])),
