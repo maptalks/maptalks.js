@@ -612,13 +612,23 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     getExtent(): Extent {
         const prjExt = this._getPrjExtent();
         const projection = this._getProjection();
+
+
+        let extent: Extent;
         if (prjExt && projection) {
             const min = projection.unproject(new Coordinate(prjExt['xmin'], prjExt['ymin'])),
                 max = projection.unproject(new Coordinate(prjExt['xmax'], prjExt['ymax']));
-            return new Extent(min, max, projection);
+            extent = new Extent(min, max, projection);
         } else {
-            return this._computeExtent(this._getMeasurer());
+            extent = this._computeExtent(this._getMeasurer());
         }
+        if (extent) {
+            const altitudes = this._getAltitude();
+            const [minAlt, maxAlt] = getMinMaxAltitude(altitudes);
+            extent.minAltitude = minAlt;
+            extent.maxAltitude = maxAlt;
+        }
+        return extent;
     }
 
     /**

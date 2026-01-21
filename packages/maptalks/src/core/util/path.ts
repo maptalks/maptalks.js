@@ -272,7 +272,7 @@ export function withInEllipse(point: Point, center: Point, southeast: Point, tol
 }
 
 
-export function getMinMaxAltitude(altitude: number | number[] | number[][]): [number, number] {
+export function getMinMaxAltitude(altitude: number | number[] | number[][] | number[][][]): [number, number] {
     if (!altitude) {
         return [0, 0];
     }
@@ -290,16 +290,27 @@ export function getMinMaxAltitude(altitude: number | number[] | number[][]): [nu
             max = Math.max(max, alt);
         }
     }
-    //number []
+    //number [],line
     if (!Array.isArray(altitude[0])) {
         pathMinMax(altitude as number[]);
         return [min, max];
     }
-    //number [][]
-    for (let i = 0, len = altitude.length; i < len; i++) {
-        const alts = altitude[i];
-        pathMinMax(alts as number[]);
+    //number [][],multiline ,polygon
+    if (!Array.isArray(altitude[0][0])) {
+        for (let i = 0, len = altitude.length; i < len; i++) {
+            const alts = altitude[i];
+            pathMinMax(alts as number[]);
+        }
     }
+    //number [][][],multipolygon
+    for (let i = 0, len = altitude.length; i < len; i++) {
+        const alts = altitude[i] as number[][];
+        for (let j = 0, len1 = alts.length; j < len1; j++) {
+            const alt = alts[j];
+            pathMinMax(alt as number[]);
+        }
+    }
+
     return [min, max];
 }
 
