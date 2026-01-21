@@ -21,6 +21,7 @@ export default class InSightPass extends AnalysisPass {
     _init() {
         super._init();
         this._insightShader = new reshader.MeshShader({
+            name: 'insight',
             vert,
             frag,
             wgslVert,

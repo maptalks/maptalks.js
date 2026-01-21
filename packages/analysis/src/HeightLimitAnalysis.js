@@ -12,7 +12,7 @@ export default class HeightLimitAnalysis extends FloodAnalysis {
         super._prepareRenderOptions(renderer);
         const map = this.layer.getMap();
         this._renderOptions['waterHeight'] = altitudeToDistance(map, this.options.limitHeight);
-        this._renderOptions['type'] = 2.0;
+        this._renderOptions['analysisType'] = 2;
     }
 
     update(name, value) {

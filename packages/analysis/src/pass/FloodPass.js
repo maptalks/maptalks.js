@@ -9,6 +9,7 @@ export default class FloodPass extends AnalysisPass {
 
     _init() {
         this._shader = new reshader.MeshShader({
+            name: 'flood',
             vert,
             frag,
             wgslVert,
