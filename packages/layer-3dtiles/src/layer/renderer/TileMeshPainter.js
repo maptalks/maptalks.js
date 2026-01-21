@@ -1465,14 +1465,15 @@ export default class TileMeshPainter {
             }
             if (isWebGPU) {
                 const array = attributes[p].array;
-                const newArray = reshader.Geometry.padGPUBufferAlignment(attributes[p].array, attributes[p].count);
+                const newArray = reshader.Geometry.padGPUBufferAlignment(array, attributes[p].count);
                 if (array !== newArray) {
+                    const itemSize = newArray.length / attributes[p].count;
                     if (isPosition) {
-                        positionSize += 1;
+                        positionSize = itemSize;
                     }
                     attributes[p].array = newArray;
                     attributes[p].byteLength = newArray.byteLength;
-                    attributes[p].itemSize += 1;
+                    attributes[p].itemSize = itemSize;
                     const type = attributes[p].type;
                     attributes[p].type = type.substring(0, type.length - 1) + attributes[p].itemSize;
                     //TODO attributes[p].byteStride 可能不为0

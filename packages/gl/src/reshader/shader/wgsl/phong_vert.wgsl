@@ -82,22 +82,12 @@ struct ModelUniforms {
     modelViewMatrix: mat4x4f,
     modelMatrix: mat4x4f,
     positionMatrix: mat4x4f,
-};
-
-struct UvUniforms {
     uvScale: vec2f,
     uvOffset: vec2f,
 };
 
-struct JitterUniforms {
-    halton: vec2f,
-    outSize: vec2f,
-};
-
 @group(0) @binding($b) var<uniform> uniforms: MatrixUniforms;
 @group(0) @binding($b) var<uniform> modelUniforms: ModelUniforms;
-@group(0) @binding($b) var<uniform> uvUniforms: UvUniforms;
-@group(0) @binding($b) var<uniform> jitterUniforms: JitterUniforms;
 
 #include <line_extrusion_vert>
 #include <highlight_vert>
@@ -160,12 +150,12 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
 
 #ifdef HAS_MAP
     let decodedTexCoord = decode_getTexcoord(vec2f(vertexInput.aTexCoord));
-    vertexOutput.vTexCoord = decodedTexCoord * uvUniforms.uvScale + uvUniforms.uvOffset;
+    vertexOutput.vTexCoord = decodedTexCoord * modelUniforms.uvScale + modelUniforms.uvOffset;
 #endif
 
 #ifdef HAS_AO_MAP
     let decodedTexCoord1 = decode_getTexcoord(vec2f(vertexInput.aTexCoord1));
-    vertexOutput.vTexCoord1 = decodedTexCoord1 * uvUniforms.uvScale + uvUniforms.uvOffset;
+    vertexOutput.vTexCoord1 = decodedTexCoord1 * modelUniforms.uvScale + modelUniforms.uvOffset;
 #endif
 
 #ifdef HAS_EXTRUSION_OPACITY

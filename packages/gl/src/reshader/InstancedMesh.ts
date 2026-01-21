@@ -158,7 +158,7 @@ export default class InstancedMesh extends Mesh {
             if (Array.isArray(data[key])) {
                 data[key] = new Float32Array(data[key] as number[]);
             } else if (isWebGPU && isArray(data[key])) {
-                data[key] = Geometry.padGPUBufferAlignment(data[key] as TypedArray, instanceCount);
+                data[key] = Geometry.padGPUBufferAlignment(data[key] as TypedArray, instanceCount, true);
             }
             const attrBuf = (data[key] as AttributeBufferData);
             if (attrBuf.buffer !== undefined && attrBuf.buffer.destroy) {
