@@ -18,11 +18,13 @@ export default class FloodAnalysis extends Analysis {
         this._renderOptions['waterOpacity'] = this.options.waterOpacity;
         this._renderOptions['waterColor'] = this.options.waterColor;
         this._renderOptions['extent'] = VEC4;
-        this._renderOptions['extentMap'] = renderer.device.texture({width: 2, height: 2});
+        const emptyTexture = renderer.device.texture({width: 2, height: 2});
+        this._renderOptions['extentMap'] = emptyTexture;
         this._renderOptions['hasExtent'] = 0;
-        this._renderOptions['type'] = 1.0;
+        this._renderOptions['analysisType'] = 1.0;
         if (this.options.boundary) {
             const { extentMap, extentInWorld } = this._calExtent(this.options.boundary);
+            emptyTexture.destroy();
             this._renderOptions['extent'] = extentInWorld;
             this._renderOptions['extentMap'] = extentMap;
             this._renderOptions['hasExtent'] = 1;

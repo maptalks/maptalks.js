@@ -1,6 +1,8 @@
 import { reshader } from '@maptalks/gl';
 import vert from './glsl/flood.vert';
 import frag from './glsl/flood.frag';
+import wgslVert from './wgsl/flood_vert.wgsl';
+import wgslFrag from './wgsl/flood_frag.wgsl';
 import AnalysisPass from './AnalysisPass';
 
 export default class FloodPass extends AnalysisPass {
@@ -9,6 +11,8 @@ export default class FloodPass extends AnalysisPass {
         this._shader = new reshader.MeshShader({
             vert,
             frag,
+            wgslVert,
+            wgslFrag,
             extraCommandProps: {
                 viewport: this._viewport
             }
