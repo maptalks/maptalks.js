@@ -548,5 +548,6 @@ export function isTextureDestroyed(texture) {
 }
 
 export function isTextureLike(texture) {
-    return texture && !(texture instanceof GPUBuffer) && (texture.dispose || texture.destroy);
+    // not a GPUBuffer or a REGLBuffer
+    return texture && !texture.mapAsync && (texture.dispose || texture.destroy);
 }
