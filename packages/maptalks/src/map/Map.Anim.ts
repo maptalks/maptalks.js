@@ -116,9 +116,6 @@ Map.include(/** @lends Map.prototype */{
             props = {};
         let empty = true;
         const isEqual = mapViewEqual(view, currView);
-        if (isEqual) {
-            console.warn('The target view is the same as the current view in animateTo.');
-        }
         for (const p in view) {
             if (hasOwn(view, p) && !isNil(view[p]) && (p === 'prjCenter' || !isNil(currView[p]))) {
                 empty = false;
