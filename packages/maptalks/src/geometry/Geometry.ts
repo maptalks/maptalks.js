@@ -623,8 +623,8 @@ export class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (extent) {
             const altitudes = this._getAltitude();
             const [minAlt, maxAlt] = getMinMaxAltitude(altitudes);
-            extent.minAltitude = minAlt;
-            extent.maxAltitude = maxAlt;
+            extent.zmin = minAlt;
+            extent.zmax = maxAlt;
         }
         return extent;
     }

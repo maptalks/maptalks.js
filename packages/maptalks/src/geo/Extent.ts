@@ -86,8 +86,8 @@ class Extent {
     top?: number;
     bottom?: number;
     antiMeridian?: boolean;
-    minAltitude?: number;
-    maxAltitude?: number;
+    zmin?: number;
+    zmax?: number;
 
     constructor(p1?: WithNull<ExtentLike>, p?: Projection);
     constructor(p1: PositionType, p2: PositionType, p?: Projection);
@@ -903,13 +903,13 @@ export function combineExtentAltitude(extent1: Extent, extent2: Extent): Extent 
     if (!extent2) {
         return extent1;
     }
-    const min1 = extent1.minAltitude;
-    const max1 = extent1.maxAltitude;
-    const min2 = extent2.minAltitude;
-    const max2 = extent2.maxAltitude;
+    const min1 = extent1.zmin;
+    const max1 = extent1.zmax;
+    const min2 = extent2.zmin;
+    const max2 = extent2.zmax;
 
-    extent1.minAltitude = minValue(min1, min2);
-    extent1.maxAltitude = maxValue(max1, max2);
+    extent1.zmin = minValue(min1, min2);
+    extent1.zmax = maxValue(max1, max2);
     return extent1;
 
 
