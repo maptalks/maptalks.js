@@ -1,6 +1,6 @@
 # maptalks-gl
 
-[![NPM Version](https://img.shields.io/npm/v/maptalks-gl.svg)](https://github.com/maptalks/maptalks.js)
+[![NPM Version](https://img.shields.io/npm/v/maptalks-gl.svg)](https://www.npmjs.com/package/maptalks-gl)
 
 ## NOTICE
 

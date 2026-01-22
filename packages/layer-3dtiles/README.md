@@ -1,5 +1,5 @@
 # 3dtiles插件
-[![NPM Version](https://img.shields.io/npm/v/@maptalks/3dtiles.svg)](https://github.com/fuzhenn/3dtiles-issues)
+[![NPM Version](https://img.shields.io/npm/v/@maptalks/3dtiles.svg)](https://www.npmjs.com/package/@maptalks/3dtiles)
 
 maptalks用于载入3dtiles数据的图层插件
 

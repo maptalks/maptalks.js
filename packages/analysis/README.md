@@ -1,5 +1,5 @@
 # maptalks.analysis
-[![NPM Version](https://img.shields.io/npm/v/@maptalks/analysis.svg)](https://github.com/fuzhenn/analysis.git)
+[![NPM Version](https://img.shields.io/npm/v/@maptalks/analysis.svg)](https://www.npmjs.com/package/@maptalks/analysis)
 ## Usage
 
 ```maptalks.analysis``` a plugin to excute analysis task in maptalks.
