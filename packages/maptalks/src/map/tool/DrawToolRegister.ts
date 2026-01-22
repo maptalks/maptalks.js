@@ -145,6 +145,8 @@ const rectangleHooks: modeActionType = {
         const forceRectOnDrawRectangle = drawTool ? drawTool.options.forceRectOnDrawRectangle : false;
         let rect;
         //force create rectangle
+        //https://github.com/maptalks/maptalks.js/issues/1583
+        //https://github.com/maptalks/maptalks.js/issues/2697
         if (forceRectOnDrawRectangle) {
             rect = new Rectangle([0, 0], 0, 0);
         } else {
