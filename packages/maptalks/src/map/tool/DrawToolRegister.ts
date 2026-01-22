@@ -144,7 +144,7 @@ const rectangleHooks: modeActionType = {
         const drawTool = event.drawTool;
         const forceRectOnDrawRectangle = drawTool ? drawTool.options.forceRectOnDrawRectangle : false;
         let rect;
-        //force create rect
+        //force create rectangle
         if (forceRectOnDrawRectangle) {
             rect = new Rectangle([0, 0], 0, 0);
         } else {
