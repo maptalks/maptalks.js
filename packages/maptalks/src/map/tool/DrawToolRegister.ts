@@ -144,7 +144,7 @@ const rectangleHooks: modeActionType = {
         const drawTool = event.drawTool;
         const forceRectOnDrawRectangle = drawTool ? drawTool.options.forceRectOnDrawRectangle : false;
         let rect;
-        //force create rectangle
+        //force create rectangle,the draw geometry width and height always equal when map pitched
         //https://github.com/maptalks/maptalks.js/issues/1583
         //https://github.com/maptalks/maptalks.js/issues/2697
         if (forceRectOnDrawRectangle) {
