@@ -35,8 +35,6 @@
     "@maptalks/function-type": "^1.4.1",
     "@maptalks/geojson-bbox": "^1.0.4",
     "@maptalks/geojson-vt": "^3.5.0",
-    "@maptalks/gl": "workspace:*",
-    "@maptalks/gpu": "workspace:*",
     "@maptalks/tbn-packer": "^1.4.5",
     "@maptalks/vt-plugin": "workspace:*",
     "animation-easings": "^0.1.0",
@@ -53,6 +51,8 @@
     "vt-pbf": "^3.1.0"
   },
   "devDependencies": {
+    "@maptalks/gl": "workspace:*",
+    "@maptalks/gpu": "workspace:*",
     "@maptalks/rollup-plugin-glsl-minify": "^0.1.7",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-json": "^6.1.0",

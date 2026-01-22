@@ -76,11 +76,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         this.setData(options["data"]);
     }
 
-    onAdd() {
-        this._prepareOptions();
-    }
-
-    protected _prepareOptions() {
+    _prepareOptions() {
         const map = this.getMap();
         const maxNativeZoom = map.getMaxNativeZoom();
         const projection = map.getProjection();
