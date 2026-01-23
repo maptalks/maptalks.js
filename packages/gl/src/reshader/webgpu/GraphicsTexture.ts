@@ -45,6 +45,7 @@ export default class GraphicsTexture {
         if (this.texture && this.texture.width === width && this.texture.height === height) {
             return;
         }
+        this.dirty = true;
         this.config.width = width;
         this.config.height = height;
         this._updateTexture();
