@@ -346,6 +346,7 @@ class GeometryEditor extends Eventable(Class) {
             this.fire('remove');
             return;
         }
+        map.off('drawtopstart', this._refresh, this);
         this._geometry.config('draggable', this._geometryDraggble);
         if (this._shadow) {
             this._shadow.off(SHADOW_DRAG_EVENTS, this._shadowDragEvent, this);
