@@ -414,6 +414,7 @@ describe('TileSpatialRefSpec', function () {
         createMap([121.47791752169039, 31.18614357868957], 17.1, crs);
         var tileLayer = new maptalks.TileLayer("base", {
             urlTemplate: '#',
+            renderer: 'canvas',
             // repeatWorld:true,
             spatialReference: {
                 projection: 'EPSG:3857'

@@ -314,7 +314,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this._featureStamp && this._featureStamp !== timestamp;
     }
 
-    protected _prepareOptions() {
+    _prepareOptions() {
         const options = this.options as any;
         const map = this.getMap();
         const projection = map.getProjection();
