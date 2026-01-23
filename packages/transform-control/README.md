@@ -1,5 +1,5 @@
 # maptalks.TransformControl
-[![NPM Version](https://img.shields.io/npm/v/@maptalks/transform-control.svg)](https://github.com/fuzhenn/transform-control.git)
+[![NPM Version](https://img.shields.io/npm/v/@maptalks/transform-control.svg)](https://www.npmjs.com/package/@maptalks/transform-control)
 ## Usage
 
 ```transform-control``` a plugin to control model's translate、rotation and scale.
