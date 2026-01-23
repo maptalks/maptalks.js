@@ -168,6 +168,9 @@ export default class GraphicsDevice {
 
     // implementation of regl.texture
     texture(width, height?) {
+        if (width === undefined) {
+            width = 1;
+        }
         let config = width;
         if (isNumber(width)) {
             config = {

@@ -1,38 +1,17 @@
 import * as maptalks from 'maptalks';
 import { CanvasCompatible, reshader, mat4, quat } from '@maptalks/gl';
 import { intersectsBox } from 'frustum-intersects';
+import vert from './video.vert';
+import frag from './video.frag';
+import wgslVert from './video_vert.wgsl';
+import wgslFrag from './video_frag.wgsl';
 
-const vert = `
-    attribute vec3 aPosition;
-    attribute vec2 aTexCoord;
-    uniform mat4 projViewModelMatrix;
-    uniform mat4 positionMatrix;
-    uniform mat4 modelMatrix;
-    varying vec2 vTexCoords;
-    #include <get_output>
-    void main()
-    {
-        mat4 localPositionMatrix = getPositionMatrix();
-        vec4 localPosition = getPosition(aPosition);
-        gl_Position = projViewModelMatrix * localPositionMatrix * localPosition;
-        vTexCoords = aTexCoord;
-    }
-`;
-
-const frag = `
-    precision mediump float;
-    uniform sampler2D videoTexture;
-    uniform float opacity;
-
-    varying vec2 vTexCoords;
-    void main() {
-        vec4 color = texture2D(videoTexture, vTexCoords);
-        gl_FragColor = color * opacity;
-    }
-`;
 const shaderConfig = {
+    name: 'video-layer',
     vert,
     frag,
+    wgslVert,
+    wgslFrag,
     uniforms : [
         {
             name: 'projViewModelMatrix',
@@ -218,26 +197,28 @@ class VideoLayerRenderer extends CanvasCompatible(maptalks.renderer.LayerAbstrac
     }
 
     _createGeometry(points) {
-        return new reshader.Geometry({
-            POSITION : points,
-            TEXCOORD : [
+        const geometry = new reshader.Geometry({
+            POSITION: new Float32Array(points),
+            TEXCOORD: new Float32Array([
                 0.0, 0.0,
                 1.0, 0.0,
                 1.0, 1.0,
                 0.0, 1.0
-            ]
+            ])
         },
-        triangles,
+        new Uint16Array(triangles),
         0,
         {
             primitive: 'triangles',
-            //顶点的属性名称，默认为aPosition
+            //顶点的属性名称，默认为 aPosition
             positionAttribute: 'POSITION',
             uv0Attribute: 'TEXCOORD',
             normalAttribute: 'NORMAL',
             //顶点个数，默认为3
-            positionSize : 3
+            positionSize: 3
         });
+        geometry.generateBuffers(this.device);
+        return geometry;
     }
 
     _transformCoordToWorld(coordinates) {
@@ -275,7 +256,12 @@ class VideoLayerRenderer extends CanvasCompatible(maptalks.renderer.LayerAbstrac
                 const material = mesh.getMaterial();
                 const texture = material.get('videoTexture');
                 if (texture && videoSurface._canDrawing()) {
-                    texture(videoSurface.video);
+                    if (texture.update) {
+                        texture.update({ data: videoSurface.video });
+                    } else {
+                        texture(videoSurface.video);
+                    }
+
                     material.set('opacity', videoSurface.getOpacity());
                 }
                 if (intersectsBox(map.projViewMatrix, mesh.getBoundingBox())) {
