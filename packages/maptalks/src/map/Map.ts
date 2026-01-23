@@ -1267,6 +1267,15 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (this._getPaddingSize(options)) {
             center = this._getCenterByPadding(center, zoom, options);
         }
+        const maxAltitude = (extent as Extent).zmax;
+        if (isNumber(maxAltitude) && maxAltitude !== 0) {
+            const currentCenterZ = this.getCenter().z || 0;
+            if (maxAltitude > currentCenterZ) {
+                center.z = maxAltitude;
+            }
+
+        }
+
         if (typeof (options['animation']) === 'undefined' || options['animation'])
             return this._animateTo({
                 center,
