@@ -8,7 +8,7 @@ import {
     isMoveEvent,
     isMousemoveEventBlocked
 } from '../core/util/dom';
-import Map from './Map';
+import Map, { mapViewEqual } from './Map';
 import { Coordinate, Point } from '../geo';
 import Ray from '../core/math/Ray';
 
@@ -336,7 +336,7 @@ Map.include(/** @lends Map.prototype */ {
             if (!this._domMouseDownView) {
                 this._fireDOMEvent(this, e, mimicEvent || type);
             } else {
-                if (mapViewEqual(this._domMouseDownView, this.getView())) {
+                if (mapViewEqual(this._domMouseDownView, this.getView(), true)) {
                     this._fireDOMEvent(this, e, mimicEvent || type);
                 }
             }
@@ -552,17 +552,4 @@ function isRotatingMap(map) {
     }
     const view = map.getView(), mouseDownView = map._domMouseDownView;
     return (view.bearing !== mouseDownView.bearing || view.pitch !== mouseDownView.pitch);
-}
-
-function mapViewEqual(view1, view2) {
-    if (view1 === view2) {
-        return;
-    }
-    if (!view1 || !view2) {
-        return false;
-    }
-    const str1 = JSON.stringify(view1);
-    const str2 = JSON.stringify(view2);
-    return str1 === str2;
-
 }
