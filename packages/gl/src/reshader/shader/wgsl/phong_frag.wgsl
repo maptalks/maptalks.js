@@ -78,7 +78,7 @@ struct MaterialUniforms {
 fn transformNormal(vertexOutput: VertexOutput) -> vec3f {
 #ifdef HAS_NORMAL_MAP
     let n = normalize(vertexOutput.vNormal);
-    let normal = textureSample(normalTexture, normalTextureSampler, computeTexCoord(vertexOutput)).xyz * 2.0 - 1.0;
+    let normal = textureSample(normalTexture, normalTextureSampler, computeTexCoord(vertexOutput.vTexCoord, vertexOutput)).xyz * 2.0 - 1.0;
 #ifdef HAS_TANGENT
     let t = normalize(vertexOutput.vTangent.xyz);
     let b = normalize(cross(n, t) * sign(vertexOutput.vTangent.w));
@@ -94,9 +94,9 @@ fn transformNormal(vertexOutput: VertexOutput) -> vec3f {
 
 fn getBaseColor(vertexOutput: VertexOutput) -> vec4f {
 #ifdef HAS_BASECOLOR_MAP
-    return textureSample(baseColorTexture, baseColorTextureSampler, computeTexCoord(vertexOutput));
+    return textureSample(baseColorTexture, baseColorTextureSampler, computeTexCoord(vertexOutput.vTexCoord, vertexOutput));
 #elif HAS_DIFFUSE_MAP
-    return textureSample(diffuseTexture, diffuseTextureSampler, computeTexCoord(vertexOutput));
+    return textureSample(diffuseTexture, diffuseTextureSampler, computeTexCoord(vertexOutput.vTexCoord, vertexOutput));
 #elif SHADING_MODEL_SPECULAR_GLOSSINESS
     return materialUniforms.diffuseFactor;
 #else
@@ -106,7 +106,7 @@ fn getBaseColor(vertexOutput: VertexOutput) -> vec4f {
 
 fn getSpecularColor(vertexOutput: VertexOutput) -> vec3f {
 #ifdef HAS_SPECULARGLOSSINESS_MAP
-    return textureSample(specularGlossinessTexture, specularGlossinessTextureSampler, computeTexCoord(vertexOutput)).rgb;
+    return textureSample(specularGlossinessTexture, specularGlossinessTextureSampler, computeTexCoord(vertexOutput.vTexCoord, vertexOutput)).rgb;
 #elif SHADING_MODEL_SPECULAR_GLOSSINESS
     return materialUniforms.specularFactor;
 #else
@@ -165,7 +165,7 @@ fn main(vertexOutput: VertexOutput) ->  @location(0) vec4f {
     var specular = materialUniforms.specularStrength * lightSpecular * spec * getSpecularColor(vertexOutput);
 
 #ifdef HAS_OCCLUSION_MAP
-    let ao = textureSample(occlusionTexture, occlusionTextureSampler, computeTexCoord(vertexOutput1)).r;
+    let ao = textureSample(occlusionTexture, occlusionTextureSampler, computeTexCoord(vertexOutput.vTexCoord, vertexOutput1)).r;
     ambient *= ao;
 #endif
 
@@ -179,7 +179,7 @@ fn main(vertexOutput: VertexOutput) ->  @location(0) vec4f {
     var result = ambient + diffuse + specular;
 
 #ifdef HAS_EMISSIVE_MAP
-    let emit = textureSample(emissiveTexture, emissiveTextureSampler, computeTexCoord(vertexOutput)).rgb;
+    let emit = textureSample(emissiveTexture, emissiveTextureSampler, computeTexCoord(vertexOutput.vTexCoord, vertexOutput)).rgb;
     result += emit;
 #endif
 

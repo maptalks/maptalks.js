@@ -3,7 +3,6 @@ import quadVert from './glsl/quad.vert';
 import extentFrag from './glsl/extent.frag';
 import outlineFrag from './glsl/outline.frag';
 import sceneVert from './glsl/sceneVert.vert';
-import { Util } from 'maptalks';
 import AnalysisPass from './AnalysisPass';
 
 export default class OutlinePass extends AnalysisPass {
@@ -125,8 +124,7 @@ export default class OutlinePass extends AnalysisPass {
     }
 
     _resize() {
-        const width = Util.isFunction(this._viewport.width.data) ? this._viewport.width.data() : this._viewport.width;
-        const height = Util.isFunction(this._viewport.height.data) ? this._viewport.height.data() : this._viewport.height;
+        const { width, height } = this.getViewportSize();
         if (this._fbo.width !== width || this.fboExtent.height !== height) {
             this._fbo.resize(width, height);
         }

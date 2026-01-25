@@ -57,20 +57,24 @@ class AnalysisPainter {
             stencil : 0,
             framebuffer : this._fbo
         });
-        delete this._shader.shaderDefines['HAS_FLOODANALYSE'];
-        delete this._shader.shaderDefines['HAS_VIEWSHED'];
-        delete this._shader.shaderDefines['HAS_SKYLINE'];
-        delete this._shader.shaderDefines['HAS_INSIGHT'];
-        delete this._shader.shaderDefines['HAS_CUT'];
-        delete this._shader.shaderDefines['HAS_CROSSCUT'];
-        delete this._shader.shaderDefines['HAS_HEIGHTLIMIT'];
+        const shaderDefines = extend({}, this._shader.shaderDefines);
+        delete shaderDefines['HAS_FLOODANALYSE'];
+        delete shaderDefines['HAS_VIEWSHED'];
+        delete shaderDefines['HAS_SKYLINE'];
+        delete shaderDefines['HAS_INSIGHT'];
+        delete shaderDefines['HAS_CUT'];
+        delete shaderDefines['HAS_CROSSCUT'];
+        delete shaderDefines['HAS_HEIGHTLIMIT'];
+        if (tex.texture && tex.texture.sampleCount > 1) {
+            shaderDefines['HAS_MULTISAMPLED'] = 1;
+        }
         for (let i = 0; i < analysisTaskList.length; i++) {
             const task = analysisTaskList[i];
             if (!task.isEnable()) {
                 continue;
             }
             const defines = task.getDefines();
-            extend(this._shader.shaderDefines, defines);
+            extend(shaderDefines, defines);
             const map = this.getMap();
             const width = map.width, height = map.height;
             const toAanalysisMeshes = this._getToAnalysisMeshes(layers, task.getExcludeLayers());
@@ -80,7 +84,8 @@ class AnalysisPainter {
             }
         }
         uniforms['sceneMap'] = tex;
-        this._shader.setDefines(this._shader.shaderDefines);
+        uniforms['resolution'] = [this._fbo.width, this._fbo.height];
+        this._shader.setDefines(shaderDefines);
         this.renderer.render(this._shader, uniforms, null, this._fbo);
         return this._fbo;
     }
@@ -103,9 +108,20 @@ class AnalysisPainter {
         return toAnalysisMeshes;
     }
 
+    getViewportSize() {
+        let width, height;
+        if (this._viewport.width.data) {
+            width = Util.isFunction(this._viewport.width.data) ? this._viewport.width.data() : this._viewport.width;
+            height = Util.isFunction(this._viewport.height.data) ? this._viewport.height.data() : this._viewport.height;
+        } else {
+            width = Util.isFunction(this._viewport.width) ? this._viewport.width() : this._viewport.width;
+            height = Util.isFunction(this._viewport.height) ? this._viewport.height() : this._viewport.height;
+        }
+        return { width, height };
+    }
+
     _resize() {
-        const width = Util.isFunction(this._viewport.width.data) ? this._viewport.width.data() : this._viewport.width;
-        const height = Util.isFunction(this._viewport.height.data) ? this._viewport.height.data() : this._viewport.height;
+        const { width, height } = this.getViewportSize();
         if (this._fbo && (this._fbo.width !== width || this._fbo.height !== height)) {
             this._fbo.resize(width, height);
         }

@@ -30,7 +30,11 @@ void main() {
         float depth = unpackRGBAToDepth(rgbaDepth);
         float linearZ = linear(shadowCoord.z);
         float linearDepth = linear(depth);
-        if (shadowCoord.x >= 0.0 && shadowCoord.x <= 1.0 && shadowCoord.y >= 0.0 && shadowCoord.y <= 1.0 && linearZ >= near && linearZ <= far - near) {
+
+        if (shadowCoord.x >= 0.0 && shadowCoord.x <= 1.0 &&
+            shadowCoord.y >= 0.0 && shadowCoord.y <= 1.0 &&
+            linearZ >= near && linearZ <= far - near) {
+
             if (linearZ / far <= linearDepth / (far - near)) {
                 gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);//可视区
             } else {

@@ -19,7 +19,13 @@ const renderToCube = function () {
         const aspect = 1;
         const near = 0.5;
         const far = 1.1;
-        const projMatrix = mat4.perspective(pmat, fov, aspect, near, far);
+        const isWebGPU = !!regl.wgpu;
+        let projMatrix;
+        if (isWebGPU) {
+            projMatrix = mat4.perspectiveZO(pmat, fov, aspect, near, far);
+        } else {
+            projMatrix = mat4.perspective(pmat, fov, aspect, near, far);
+        }
 
         const config = {
             context : {

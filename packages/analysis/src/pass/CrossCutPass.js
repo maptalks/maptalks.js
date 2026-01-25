@@ -1,7 +1,6 @@
 import { reshader, mat4 } from '@maptalks/gl';
 import vert from './glsl/crosscut.vert';
 import frag from './glsl/crosscut.frag';
-import { Util } from 'maptalks';
 import AnalysisPass from './AnalysisPass';
 
 export default class CrossCutPass extends AnalysisPass {
@@ -71,8 +70,7 @@ export default class CrossCutPass extends AnalysisPass {
     }
 
     _resize() {
-        const width = Util.isFunction(this._viewport.width.data) ? this._viewport.width.data() : this._viewport.width;
-        const height = Util.isFunction(this._viewport.height.data) ? this._viewport.height.data() : this._viewport.height;
+        const { width, height } = this.getViewportSize();
         if (this._fbo && (this._fbo.width !== width || this._fbo.height !== height)) {
             this._fbo.resize(width, height);
         }

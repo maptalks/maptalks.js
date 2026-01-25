@@ -168,6 +168,9 @@ export default class GraphicsDevice {
 
     // implementation of regl.texture
     texture(width, height?) {
+        if (width === undefined) {
+            width = 1;
+        }
         let config = width;
         if (isNumber(width)) {
             config = {
@@ -371,7 +374,7 @@ export default class GraphicsDevice {
     _getClearPipeline(fbo): GPURenderPipeline {
         const isDefault = fbo === this.getDefaultFramebuffer();
         const sampleCount = fbo.colorTexture && fbo.colorTexture.config.sampleCount || 1;
-        const depthEnabled = isDefault || !!fbo.depthTexture;
+        const depthFormat = isDefault || fbo.depthTexture && fbo.depthTexture.gpuFormat.format;
         let format;
         if (fbo.colorTexture) {
             format = fbo.colorTexture.gpuFormat.format;
@@ -379,7 +382,7 @@ export default class GraphicsDevice {
             format = navigator.gpu.getPreferredCanvasFormat();
         }
         this._clearPipelines = this._clearPipelines || {};
-        const key = format + '-' + isDefault + '-' + depthEnabled + '-' + sampleCount;
+        const key = format + '-' + isDefault + '-' + depthFormat + '-' + sampleCount;
         if (this._clearPipelines[key]) {
             return this._clearPipelines[key];
         }
@@ -411,11 +414,11 @@ export default class GraphicsDevice {
                 targets: [{ format }],
             },
         } as GPURenderPipelineDescriptor;
-        if (depthEnabled) {
+        if (depthFormat) {
             options.depthStencil = {
                 depthWriteEnabled: false,
                 depthCompare: 'always',
-                format: 'depth24plus-stencil8',
+                format: depthFormat === true ? 'depth24plus-stencil8' : depthFormat,
             };
         }
         if (sampleCount > 1) {

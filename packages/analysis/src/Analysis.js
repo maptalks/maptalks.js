@@ -194,6 +194,7 @@ export default class Analysis extends Eventable(Handlerable(Class)) {
         {
             positionAttribute: 'POSITION'
         });
+        geometry.generateBuffers(this.device);
         const mesh = new reshader.Mesh(geometry);
         const mMatrix = mat4.fromRotationTranslationScale([], quat.identity([]), centerPos, [1, 1, 1]);
         mesh.localTransform = mMatrix;

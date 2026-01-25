@@ -1,6 +1,6 @@
 import { GEOJSON_TYPES } from '../core/Constants';
 import { isNil, UID, isObject, extend, isFunction, parseStyleRootPath } from '../core/util';
-import Extent from '../geo/Extent';
+import Extent, { combineExtentAltitude } from '../geo/Extent';
 import { Geometry } from '../geometry';
 import { createFilter, getFilterFeature, compileStyle } from '@maptalks/feature-filter';
 import Layer, { LayerOptionsType } from './Layer';
@@ -208,7 +208,9 @@ class OverlayLayer extends Layer {
         // @ts-ignore /src/gro/Extent.js-Ts  获取Extent符合参数的type
         const extent = new Extent(this.getProjection());
         this.forEach(g => {
-            extent._combine(g.getExtent());
+            const geoExtent = g.getExtent();
+            extent._combine(geoExtent);
+            combineExtentAltitude(extent, geoExtent);
         });
         return extent;
     }
@@ -427,7 +429,9 @@ class OverlayLayer extends Layer {
             geo.onAdd();
         }
         if (extent) {
-            extent._combine(geo.getExtent());
+            const geoExtent = geo.getExtent();
+            extent._combine(geoExtent);
+            combineExtentAltitude(extent, geoExtent);
         }
         /**
          * add 事件

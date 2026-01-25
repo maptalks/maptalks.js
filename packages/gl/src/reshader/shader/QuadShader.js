@@ -50,12 +50,14 @@ class QuadShader extends MeshShader {
         return super.draw(regl, this._quadMesh);
     }
 
-    getMeshCommand(regl) {
-        const keys = this.dkey || '';
-        if (!this.commands[keys + '_quad']) {
-            this.commands[keys + '_quad'] = this.createMeshCommand(regl, this._quadMesh[0]);
+    getMeshCommand(regl, mesh, renderProps) {
+        const key = this.dkey || '';
+        const shaderKey = this.getShaderCommandKey(regl, mesh, renderProps);
+        const cmdKey = key + shaderKey + '_quad';
+        if (!this.commands[cmdKey]) {
+            this.commands[cmdKey] = this.createMeshCommand(regl, mesh);
         }
-        return this.commands[keys + '_quad'];
+        return this.commands[cmdKey];
     }
 
     _createQuadMesh(regl) {

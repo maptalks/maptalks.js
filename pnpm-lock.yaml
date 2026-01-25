@@ -1011,16 +1011,16 @@ importers:
 
   packages/transform-control:
     dependencies:
-      '@maptalks/gl':
-        specifier: workspace:*
-        version: link:../gl
       '@maptalks/gltf-layer':
         specifier: workspace:*
         version: link:../layer-gltf
+    devDependencies:
+      '@maptalks/gl':
+        specifier: workspace:*
+        version: link:../gl
       '@maptalks/gpu':
         specifier: workspace:*
         version: link:../gpu
-    devDependencies:
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
         version: 25.0.7(rollup@4.17.2)
@@ -1072,12 +1072,6 @@ importers:
       '@maptalks/geojson-vt':
         specifier: ^3.5.0
         version: 3.5.0
-      '@maptalks/gl':
-        specifier: workspace:*
-        version: link:../gl
-      '@maptalks/gpu':
-        specifier: workspace:*
-        version: link:../gpu
       '@maptalks/tbn-packer':
         specifier: ^1.4.5
         version: 1.4.5
@@ -1121,6 +1115,12 @@ importers:
         specifier: ^3.1.0
         version: 3.1.3
     devDependencies:
+      '@maptalks/gl':
+        specifier: workspace:*
+        version: link:../gl
+      '@maptalks/gpu':
+        specifier: workspace:*
+        version: link:../gpu
       '@maptalks/rollup-plugin-glsl-minify':
         specifier: ^0.1.7
         version: 0.1.7

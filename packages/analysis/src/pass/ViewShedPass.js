@@ -2,7 +2,9 @@ import { mat4, quat, vec3 } from '@maptalks/gl';
 import { reshader } from '@maptalks/gl';
 import vert from './glsl/viewshed.vert';
 import frag from './glsl/viewshed.frag';
-import { Util, Point } from 'maptalks';
+import wgslVert from './wgsl/viewshed_vert.wgsl';
+import wgslFrag from './wgsl/viewshed_frag.wgsl';
+import { Point } from 'maptalks';
 import AnalysisPass from './AnalysisPass';
 
 const helperPos = [
@@ -27,13 +29,17 @@ const helperIndices = [
 const MAT = [], QUAT1 = quat.identity([]), QUAT2 = quat.identity([]),  VEC3 = [], v1 = [1, 0, 0], VEC31 = [], VEC32 = [], TEMP_POS = [], TEMP_POINT = new Point(0, 0);
 const clearColor = [0, 0, 0, 1];
 let near = 0.01;
+
 export default class ViewshedPass extends AnalysisPass {
 
     _init() {
         super._init();
         this._viewshedShader = new reshader.MeshShader({
+            name: 'viewshed',
             vert,
             frag,
+            wgslVert,
+            wgslFrag,
             uniforms: [
                 {
                     name: 'projViewModelMatrix',
@@ -47,8 +53,9 @@ export default class ViewshedPass extends AnalysisPass {
                 viewport: this._viewport
             }
         });
-        this._fbo = this.renderer.device.framebuffer({
-            color: this.renderer.device.texture({
+        const device = this.renderer.device;
+        this._fbo = device.framebuffer({
+            color: device.texture({
                 width: 1,
                 height: 1,
                 wrap: 'clamp',
@@ -67,6 +74,7 @@ export default class ViewshedPass extends AnalysisPass {
             primitive : 'lines',
             positionAttribute: 'POSITION'
         });
+        helperGeometry.generateBuffers(device);
         this._helperMesh = new reshader.Mesh(helperGeometry, new reshader.Material({ lineColor: [0.8, 0.8, 0.1]}));
         const defines = this._helperMesh.getDefines();
         defines.HAS_HELPERLINE = 1;
@@ -158,7 +166,13 @@ export default class ViewshedPass extends AnalysisPass {
         const aspect =  verticalAngle / horizontalAngle;
         const distance = Math.sqrt(Math.pow(eyePos[0] - lookPoint[0], 2) + Math.pow(eyePos[1] - lookPoint[1], 2) + Math.pow(eyePos[2] - lookPoint[2], 2));
         near = distance / 100;
-        const projMatrix = mat4.perspective([], horizontalAngle * Math.PI / 180, aspect, near, distance);
+        let projMatrix;
+        const isWebGPU = !!this.renderer.device.wgpu;
+        if (isWebGPU) {
+            projMatrix = mat4.perspectiveZO([], horizontalAngle * Math.PI / 180, aspect, near, distance);
+        } else {
+            projMatrix = mat4.perspective([], horizontalAngle * Math.PI / 180, aspect, near, distance);
+        }
         const viewMatrix = mat4.lookAt([], eyePos, lookPoint, [0, 1, 0]);
         const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
         return { projViewMatrixFromViewpoint: projViewMatrix, far: distance };
@@ -179,8 +193,7 @@ export default class ViewshedPass extends AnalysisPass {
     }
 
     _resize(horizontalAngle, verticalAngle) {
-        const width = Util.isFunction(this._viewport.width.data) ? this._viewport.width.data() : this._viewport.width;
-        const height = Util.isFunction(this._viewport.height.data) ? this._viewport.height.data() : this._viewport.height;
+        const { width, height } = this.getViewportSize();
         if (this._fbo && (this._fbo.width !== width || this._fbo.height !== height)) {
             this._fbo.resize(width, height);
         }

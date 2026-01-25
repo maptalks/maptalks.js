@@ -101,7 +101,7 @@ export default class Geometry {
         }
     }
 
-    static padGPUBufferAlignment(array: TypedArray, vertexCount: number): TypedArray {
+    static padGPUBufferAlignment(array: TypedArray, vertexCount: number, transient = false): TypedArray {
         if (vertexCount === 0) {
             return array;
         }
@@ -116,7 +116,12 @@ export default class Geometry {
         if (itemSize === 3) {
             // itemSize 为 3时，补位为 4，wgsl中需要相应修改类型声明
             const newItemSize = ensureAlignment(itemSize, bytesPerElement);
-            const newArray = getTempParamArray(ctor, newItemSize * vertexCount); //new ctor(newItemSize * vertexCount);
+            let newArray;
+            if (transient) {
+                newArray = getTempParamArray(ctor, newItemSize * vertexCount); //new ctor(newItemSize * vertexCount);
+            } else {
+                newArray = new ctor(newItemSize * vertexCount);
+            }
             for (let i = 0; i < vertexCount; i++) {
                 for (let ii = 0; ii < itemSize; ii++) {
                     newArray[i * newItemSize + ii] = array[i * itemSize + ii];
@@ -126,7 +131,12 @@ export default class Geometry {
         } else {
             // itemSize 为 1或2时，提升数组的类型，不影响wgsl中的类型声明
             const newCtor = getPadArrayCtor(ctor, itemSize);
-            const newArray = getTempParamArray(newCtor, itemSize * vertexCount);//new newCtor(itemSize * vertexCount);
+            let newArray;
+            if (transient) {
+                newArray = getTempParamArray(newCtor, itemSize * vertexCount);//new newCtor(itemSize * vertexCount);
+            } else {
+                newArray = new newCtor(itemSize * vertexCount);
+            }
             newArray.set(array);
             return newArray;
         }
@@ -441,11 +451,19 @@ export default class Geometry {
                     buffers[key].buffer = allocatedBuffers[data[key].buffer].buffer;
                 }
             } else {
-                const arr = data[key].data ? data[key].data : data[key];
-                const dimension = arr.length / vertexCount;
+                let arr = data[key].data ? data[key].data : data[key];
+                const dimension = Math.floor(arr.length / vertexCount);
+                if (dimension * vertexCount !== arr.length) {
+                    arr = arr.slice(0, vertexCount * dimension);
+                    if (data[key].data) {
+                        data[key].data = arr;
+                    } else {
+                        data[key] = arr;
+                    }
+                }
                 let bufferData = arr;
                 if (isWebGPU) {
-                    bufferData = Geometry.padGPUBufferAlignment(arr, vertexCount);
+                    bufferData = Geometry.padGPUBufferAlignment(arr, vertexCount, true);
                 }
                 const info = data[key].data ? data[key] : {};
                 info.data = bufferData;
@@ -614,7 +632,7 @@ export default class Geometry {
         if (buffer) {
             if (buffer.buffer.mapState) {
                 //webgpu buffer
-                data = Geometry.padGPUBufferAlignment(data, this._vertexCount);
+                data = Geometry.padGPUBufferAlignment(data, this._vertexCount, true);
                 buffer.buffer = this._updateGPUBuffer(buffer.buffer, data, 0, data.buffer.byteLength);
             } else {
                 buffer.buffer(data);
@@ -667,7 +685,7 @@ export default class Geometry {
                 const itemSize = buffer.buffer.itemCount / this._vertexCount;
                 const itemCount = data.length / itemSize;
                 //webgpu buffer
-                data = Geometry.padGPUBufferAlignment(data, itemCount);
+                data = Geometry.padGPUBufferAlignment(data, itemCount, true);
                 const byteWidth = buffer.buffer.bytesPerElement;
                 if (data.BYTES_PER_ELEMENT !== byteWidth) {
                     const ctor = getTypeCtor(data, byteWidth);
@@ -1325,7 +1343,7 @@ function getItemFormat(data, itemSize) {
 }
 
 function getAttrArray(data) {
-    return data.data || (data.buffer.destroy && data.buffer) || data;
+    return data.data || (data.buffer && data.buffer.destroy && data.buffer) || data;
 }
 
 function createGPUBuffer(device, data, usage, label) {

@@ -33,7 +33,7 @@ export function perspective(out: Matrix4InOut, fovy: number, aspect: number, nea
     return out;
 }
 
-export function perspectiveNO(out: Matrix4InOut, fovy: number, aspect: number, near: number, far: number) {
+export function perspectiveZO(out: Matrix4InOut, fovy: number, aspect: number, near: number, far: number) {
   const f = 1.0 / Math.tan(fovy / 2);
   out[0] = f / aspect;
   out[1] = 0;
@@ -51,11 +51,11 @@ export function perspectiveNO(out: Matrix4InOut, fovy: number, aspect: number, n
   out[15] = 0;
   if (far != null && far !== Infinity) {
     const nf = 1 / (near - far);
-    out[10] = (far + near) * nf;
-    out[14] = 2 * far * near * nf;
+    out[10] = far * nf;
+    out[14] = far * near * nf;
   } else {
     out[10] = -1;
-    out[14] = -2 * near;
+    out[14] = -near;
   }
   return out;
 }
