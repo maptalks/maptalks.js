@@ -24,7 +24,6 @@ export type DrawToolOptions = {
     interactive?: boolean,
     edgeAutoComplete?: boolean,
     transformCoordinate?: (coordinate: Coordinate, e: MapEventDataType) => Coordinate | undefined,
-    forceRectOnDrawRectangle?: boolean
 }
 
 export type modeActionType = {
@@ -68,8 +67,7 @@ const options: DrawToolOptions = {
     'zIndex': Number.MAX_VALUE,
     'enableAltitude': true,
     'interactive': true,
-    'transformCoordinate': null,
-    'forceRectOnDrawRectangle': false
+    'transformCoordinate': null
 };
 
 const registeredMode = {};
