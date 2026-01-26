@@ -23,7 +23,7 @@ export type DrawToolOptions = {
     enableAltitude?: boolean,
     interactive?: boolean,
     edgeAutoComplete?: boolean,
-    transformCoordinate?: (coordinate: Coordinate, e: MapEventDataType) => Coordinate | undefined,
+    transformCoordinate?: (coordinate: Coordinate, e: MapEventDataType) => Coordinate | undefined
 }
 
 export type modeActionType = {
