@@ -542,9 +542,11 @@ class Vector3DLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
             }
         });
         const useCharBackBuffer = !this._isEnableWorkAround('win-intel-gpu-crash');
+          // Get sdfURL from layer options first, then from renderPlugin if not found
+        const sdfURL = layer.options.sdfURL ;
         this._glyphRequestor = new GlyphRequestor(fn => {
             layer.getMap().getRenderer().callInNextFrame(fn);
-        }, layer.options['glyphSdfLimitPerFrame'], useCharBackBuffer);
+        }, layer.options['glyphSdfLimitPerFrame'], useCharBackBuffer,sdfURL);
         this.requestor = this._fetchPattern.bind(this);
         this._markerRequestor = this._fetchIconGlyphs.bind(this);
     }
