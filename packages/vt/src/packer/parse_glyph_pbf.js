@@ -36,8 +36,10 @@ function readFontstack(tag, data, pbf) {
             metrics: {
                 width: glyph.width,
                 height: glyph.height,
-                left: glyph.left,
-                top: glyph.top,
+                // left: glyph.left + border,
+                // top: glyph.top + border,
+                left: 1,
+                top: -2,
                 advance: glyph.advance
             }
         };
