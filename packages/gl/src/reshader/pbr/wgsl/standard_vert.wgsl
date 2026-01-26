@@ -225,7 +225,7 @@ fn main(input: VertexInput) -> VertexOutput {
             alpha *= f32(input.aColor0.a);
         #endif
 
-        fbo_picking_setData(vertex, &output, output.position.w, alpha != 0.0);
+        fbo_picking_setData(input, &output, output.position.w, alpha != 0.0);
     #else
         #if HAS_MAP
             output.vTexCoord = transformTexcoord(input.aTexCoord);

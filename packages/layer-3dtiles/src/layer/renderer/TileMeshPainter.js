@@ -2,6 +2,7 @@ import * as maptalks from 'maptalks';
 import { reshader, vec3, vec4, mat3, mat4, quat, HighlightUtil, ContextUtil } from '@maptalks/gl';
 import { iterateMesh, iterateBufferData, getItemAtBufferData, setInstanceData, } from '../../common/GLTFHelpers';
 import pickingVert from './glsl/picking.vert';
+import pickingWGSLVert from './wgsl/picking_vert.wgsl';
 import pntsVert from './glsl/pnts.vert';
 import pntsFrag from './glsl/pnts.frag';
 import { isFunction, isNil, extend, setColumn3, flatArr, isNumber, normalizeColor, pushIn } from '../../common/Util';
@@ -748,11 +749,13 @@ export default class TileMeshPainter {
         const distToProjScaleTransform = mat4.fromScaling(TEMP_MATRIX_SCALE, distToProjScale);
 
         const { POSITION, NORMAL_UP, NORMAL_RIGHT, SCALE, SCALE_NON_UNIFORM } = i3dm;
+        const isWebGPU = this.getMap().getRenderer().isWebGPU();
+        const ctor = isWebGPU ? Float32Array : Uint16Array;
         const instanceData = {
             'instance_vectorA': new Float32Array(instanceCount * 4),
             'instance_vectorB': new Float32Array(instanceCount * 4),
             'instance_vectorC': new Float32Array(instanceCount * 4),
-            'aPickingId': new Uint16Array(instanceCount)
+            'aPickingId': new ctor(instanceCount)
         };
         for (let i = 0; i < instanceCount; i++) {
             instanceData['aPickingId'][i] = i;
@@ -1427,6 +1430,7 @@ export default class TileMeshPainter {
     }
 
     _createGeometry(gltfMesh, isI3DM, attributeSemantics) {
+        const isWebGPU = this.getMap().getRenderer().isWebGPU();
         const attributes = gltfMesh.attributes;
         const color0Name = 'COLOR_0';
         // 把Float32类型的color0改为uint8类型数组
@@ -1434,6 +1438,9 @@ export default class TileMeshPainter {
         if (batchIdData) {
             if (batchIdData.byteOffset) {
                 batchIdData = new batchIdData.constructor(batchIdData);
+                if (isWebGPU && !(batchIdData instanceof Float32Array)) {
+                    batchIdData = new Float32Array(batchIdData);
+                }
             }
         }
         if (attributes[color0Name]) {
@@ -1452,7 +1459,7 @@ export default class TileMeshPainter {
 
             }
         }
-        const isWebGPU = this.getMap().getRenderer().isWebGPU();
+
         const attrs = {};
         let positionSize = 0;
         let vertexCount = 0;
@@ -1493,7 +1500,8 @@ export default class TileMeshPainter {
         // 补上缺失的_BATHCID属性，解决macos下 vertex buffer not big enough 报错
         const pickingIdAttribute = attributeSemantics['_BATCHID'];
         if (!attrs[pickingIdAttribute] && !isI3DM) {
-            const pickingData = new Uint8Array(vertexCount);
+            const ctor = isWebGPU ? Float32Array : Uint8Array;
+            const pickingData = new ctor(vertexCount);
             attrs[pickingIdAttribute] = pickingData;
         }
         // createColorArray(attrs);
@@ -1693,6 +1701,7 @@ export default class TileMeshPainter {
             this._renderer,
             {
                 vert: pickingVert,
+                wgslVert: pickingWGSLVert,
                 extraCommandProps,
                 uniforms: this._standardShader.uniforms,
                 defines: {
