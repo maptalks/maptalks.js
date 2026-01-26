@@ -33,6 +33,11 @@ const Ajax = {
         if (!options) {
             options = {};
         }
+        //https://github.com/maptalks/issues/issues/919
+        //注意opitons的值,多个fetch的options可能共享,比如图层里有多个gltf,这个options可能来自layer上的options共享值
+        //getArrayBuffer/getJSON 等,会修改 options.responseType
+        //如果先 getJSON,然后在 getArrayBuffer，注意这时options.responseType被修改了，导致getJSON callback判断的responseType为arraybuffer
+        options = extend({}, options);
         const controller = new AbortController();
         const signal = controller.signal;
         const requestConfig = extend({}, options);
