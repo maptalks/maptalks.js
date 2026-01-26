@@ -1,5 +1,22 @@
 # maptalks-gl
 
+## 0.121.0
+
+### Minor Changes
+
+- add sdf in vt and some fixes on webgpu
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/vt@0.121.0
+  - @maptalks/gpu@0.121.0
+  - @maptalks/3dtiles@0.121.0
+  - @maptalks/gltf-layer@0.121.0
+  - @maptalks/video-layer@0.121.0
+  - maptalks@1.10.0
+  - @maptalks/transform-control@0.121.0
+
 ## 0.120.0
 
 ### Minor Changes

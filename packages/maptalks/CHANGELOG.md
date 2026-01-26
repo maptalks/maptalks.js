@@ -1,5 +1,11 @@
 # maptalks
 
+## 1.10.0
+
+### Minor Changes
+
+- add sdf in vt and some fixes on webgpu
+
 ## 1.9.0
 
 ### Minor Changes

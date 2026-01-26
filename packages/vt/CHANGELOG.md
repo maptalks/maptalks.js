@@ -1,5 +1,16 @@
 # @maptalks/vt
 
+## 0.121.0
+
+### Minor Changes
+
+- add sdf in vt and some fixes on webgpu
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/vt-plugin@0.121.0
+
 ## 0.120.0
 
 ### Minor Changes

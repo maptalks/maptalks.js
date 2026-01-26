@@ -1,5 +1,11 @@
 # @maptalks/transcoders.draco
 
+## 0.121.0
+
+### Minor Changes
+
+- add sdf in vt and some fixes on webgpu
+
 ## 0.120.0
 
 ### Minor Changes
