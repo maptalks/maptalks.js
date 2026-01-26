@@ -11,6 +11,7 @@ import Circle from '../../geometry/Circle';
 import Polygon from '../../geometry/Polygon';
 import DrawTool from './DrawTool';
 import { modeActionType } from './DrawTool'
+import { Rectangle } from '../../geometry';
 
 /**
  * 当地形存在时就不能通过update prj来控制Geometry的坐标数据了,因为有了地形后prj对应的
@@ -139,7 +140,7 @@ DrawTool.registerMode('freeHandEllipse', extend({
 }, ellipseHooks));
 
 const rectangleHooks: modeActionType = {
-    'create': function (projection, prjCoords) {
+    'create': function (projection, prjCoords, event) {
         const rect: any = new Polygon([]);
         rect._firstClick = prjCoords[0];
         return rect;
@@ -159,6 +160,7 @@ const rectangleHooks: modeActionType = {
         // geometry.setCoordinates(ring.map(c => map.containerPointToCoord(new Point(c))));
         // geometry._setPrjCoordinates(prjs);
         geometry.setCoordinates(coordinates);
+
     },
     'generate': function (geometry) {
         return geometry;
@@ -173,6 +175,61 @@ DrawTool.registerMode('rectangle', extend({
 DrawTool.registerMode('freeHandRectangle', extend({
     'action': ['mousedown touchstart', 'mousemove touchmove', 'mouseup touchend']
 }, rectangleHooks));
+
+
+const realRectangleHooks: modeActionType = {
+    'create': function (projection, prjCoords, event) {
+        //force create rectangle,the draw geometry width and height always equal when map pitched
+        //https://github.com/maptalks/maptalks.js/issues/1583
+        //https://github.com/maptalks/maptalks.js/issues/2697
+        let rect: any = new Rectangle([0, 0], 0, 0);
+
+        rect._firstClick = prjCoords[0];
+        return rect;
+    },
+    'update': function (projection, prjCoords, geometry, mapEvent) {
+        const map = geometry.getMap();
+        const containerPoint = mapEvent['containerPoint'];
+        const firstClick = map.prjToContainerPoint(geometry._firstClick);
+        const ring = [
+            [firstClick.x, firstClick.y],
+            [containerPoint.x, firstClick.y],
+            [containerPoint.x, containerPoint.y],
+            [firstClick.x, containerPoint.y],
+        ];
+        const prjs = ring.map((c: any) => map._containerPointToPrj(new Point(c)));
+        const coordinates = queryTerrainCoordinates(projection, prjs, mapEvent);
+        // geometry.setCoordinates(ring.map(c => map.containerPointToCoord(new Point(c))));
+        // geometry._setPrjCoordinates(prjs);
+        const sw = coordinates[0];
+        const ne = coordinates[2];
+        geometry.setCoordinates(sw);
+        const c1 = ne.copy();
+        const c2 = ne.copy();
+        c1.y = sw.y;
+        c2.x = sw.x;
+        const w = map.computeLength(sw, c1);
+        const h = map.computeLength(sw, c2);
+        geometry.setWidth(w);
+        geometry.setHeight(h);
+
+
+    },
+    'generate': function (geometry) {
+        return geometry;
+    }
+};
+
+DrawTool.registerMode('realrectangle', extend({
+    'clickLimit': 2,
+    'action': ['click', 'mousemove', 'click'],
+}, realRectangleHooks));
+
+DrawTool.registerMode('freeHandRealRectangle', extend({
+    'action': ['mousedown touchstart', 'mousemove touchmove', 'mouseup touchend']
+}, realRectangleHooks));
+
+
 
 DrawTool.registerMode('point', {
     'clickLimit': 1,
