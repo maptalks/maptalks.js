@@ -8,7 +8,7 @@ import {
     isMoveEvent,
     isMousemoveEventBlocked
 } from '../core/util/dom';
-import Map from './Map';
+import Map, { mapViewEqual } from './Map';
 import { Coordinate, Point } from '../geo';
 import Ray from '../core/math/Ray';
 
@@ -331,9 +331,29 @@ Map.include(/** @lends Map.prototype */ {
         if (this._ignoreEvent(e)) {
             return;
         }
-        this._fireDOMEvent(this, e, type);
+
+        const fireClick = (mimicEvent?: string) => {
+            if (!this._domMouseDownView) {
+                this._fireDOMEvent(this, e, mimicEvent || type);
+            } else {
+                if (mapViewEqual(this._domMouseDownView, this.getView(), true)) {
+                    this._fireDOMEvent(this, e, mimicEvent || type);
+                }
+            }
+
+        }
+        if (type === 'click') {
+            fireClick();
+        } else {
+            this._fireDOMEvent(this, e, type);
+        }
+
         if (mimicEvent) {
-            this._fireDOMEvent(this, e, mimicEvent);
+            if (mimicEvent === 'click') {
+                fireClick(mimicEvent);
+            } else {
+                this._fireDOMEvent(this, e, mimicEvent);
+            }
         }
     },
 

@@ -3023,7 +3023,7 @@ function isTerrainLayer(layer: any): boolean {
     return layer && layer.queryTerrainAtPoint && layer.getTerrainLayer && layer.getTerrainLayer();
 }
 
-export function mapViewEqual(view1: MapViewType, view2: MapViewType): boolean {
+export function mapViewEqual(view1: MapViewType, view2: MapViewType, strict?: boolean): boolean {
     if (view1 === view2) {
         return true;
     }
@@ -3038,6 +3038,9 @@ export function mapViewEqual(view1: MapViewType, view2: MapViewType): boolean {
         }
     } catch (e) {
         console.error('stringify map view error', e);
+        return false;
+    }
+    if (strict) {
         return false;
     }
 
