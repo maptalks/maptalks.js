@@ -141,17 +141,7 @@ DrawTool.registerMode('freeHandEllipse', extend({
 
 const rectangleHooks: modeActionType = {
     'create': function (projection, prjCoords, event) {
-        const drawTool = event.drawTool;
-        const forceRectOnDrawRectangle = drawTool ? drawTool.options.forceRectOnDrawRectangle : false;
-        let rect;
-        //force create rectangle,the draw geometry width and height always equal when map pitched
-        //https://github.com/maptalks/maptalks.js/issues/1583
-        //https://github.com/maptalks/maptalks.js/issues/2697
-        if (forceRectOnDrawRectangle) {
-            rect = new Rectangle([0, 0], 0, 0);
-        } else {
-            rect = new Polygon([]);
-        }
+        const rect: any = new Polygon([]);
         rect._firstClick = prjCoords[0];
         return rect;
     },
@@ -169,21 +159,7 @@ const rectangleHooks: modeActionType = {
         const coordinates = queryTerrainCoordinates(projection, prjs, mapEvent);
         // geometry.setCoordinates(ring.map(c => map.containerPointToCoord(new Point(c))));
         // geometry._setPrjCoordinates(prjs);
-        if (geometry instanceof Rectangle) {
-            const sw = coordinates[0];
-            const ne = coordinates[2];
-            geometry.setCoordinates(sw);
-            const c1 = ne.copy();
-            const c2 = ne.copy();
-            c1.y = sw.y;
-            c2.x = sw.x;
-            const w = map.computeLength(sw, c1);
-            const h = map.computeLength(sw, c2);
-            geometry.setWidth(w);
-            geometry.setHeight(h);
-        } else {
-            geometry.setCoordinates(coordinates);
-        }
+        geometry.setCoordinates(coordinates);
 
     },
     'generate': function (geometry) {
@@ -199,6 +175,61 @@ DrawTool.registerMode('rectangle', extend({
 DrawTool.registerMode('freeHandRectangle', extend({
     'action': ['mousedown touchstart', 'mousemove touchmove', 'mouseup touchend']
 }, rectangleHooks));
+
+
+const realRectangleHooks: modeActionType = {
+    'create': function (projection, prjCoords, event) {
+        //force create rectangle,the draw geometry width and height always equal when map pitched
+        //https://github.com/maptalks/maptalks.js/issues/1583
+        //https://github.com/maptalks/maptalks.js/issues/2697
+        let rect: any = new Rectangle([0, 0], 0, 0);
+
+        rect._firstClick = prjCoords[0];
+        return rect;
+    },
+    'update': function (projection, prjCoords, geometry, mapEvent) {
+        const map = geometry.getMap();
+        const containerPoint = mapEvent['containerPoint'];
+        const firstClick = map.prjToContainerPoint(geometry._firstClick);
+        const ring = [
+            [firstClick.x, firstClick.y],
+            [containerPoint.x, firstClick.y],
+            [containerPoint.x, containerPoint.y],
+            [firstClick.x, containerPoint.y],
+        ];
+        const prjs = ring.map((c: any) => map._containerPointToPrj(new Point(c)));
+        const coordinates = queryTerrainCoordinates(projection, prjs, mapEvent);
+        // geometry.setCoordinates(ring.map(c => map.containerPointToCoord(new Point(c))));
+        // geometry._setPrjCoordinates(prjs);
+        const sw = coordinates[0];
+        const ne = coordinates[2];
+        geometry.setCoordinates(sw);
+        const c1 = ne.copy();
+        const c2 = ne.copy();
+        c1.y = sw.y;
+        c2.x = sw.x;
+        const w = map.computeLength(sw, c1);
+        const h = map.computeLength(sw, c2);
+        geometry.setWidth(w);
+        geometry.setHeight(h);
+
+
+    },
+    'generate': function (geometry) {
+        return geometry;
+    }
+};
+
+DrawTool.registerMode('realrectangle', extend({
+    'clickLimit': 2,
+    'action': ['click', 'mousemove', 'click'],
+}, realRectangleHooks));
+
+DrawTool.registerMode('freeHandRealRectangle', extend({
+    'action': ['mousedown touchstart', 'mousemove touchmove', 'mouseup touchend']
+}, realRectangleHooks));
+
+
 
 DrawTool.registerMode('point', {
     'clickLimit': 1,
