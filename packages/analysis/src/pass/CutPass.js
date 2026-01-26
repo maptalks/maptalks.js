@@ -209,8 +209,7 @@ export default class CutPass extends AnalysisPass {
             depth : 1,
             framebuffer : this._meshesFBO
         });
-        const width = Util.isFunction(this._viewport.width.data) ? this._viewport.width.data() : this._viewport.width;
-        const height = Util.isFunction(this._viewport.height.data) ? this._viewport.height.data() : this._viewport.height;
+        const { width, height } = this.getViewportSize();
         const uniforms = {
             'projMatrix': map.projMatrix,
             'cut_projViewMatrixFromViewpoint': projViewMatrixFromViewpoint,
@@ -256,8 +255,7 @@ export default class CutPass extends AnalysisPass {
     }
 
     _resize() {
-        const width = Util.isFunction(this._viewport.width.data) ? this._viewport.width.data() : this._viewport.width;
-        const height = Util.isFunction(this._viewport.height.data) ? this._viewport.height.data() : this._viewport.height;
+        const { width, height } = this.getViewportSize();
         if (this._fbo && (this._fbo.width !== width || this._fbo.height !== height)) {
             this._fbo.resize(width, height);
         }

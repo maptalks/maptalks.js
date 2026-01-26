@@ -1,6 +1,8 @@
 import skyboxData from './skybox.js';
 import vert from './skybox.vert';
 import frag from './skybox.frag';
+import wgslVert from './skybox_vert.wgsl';
+import wgslFrag from './skybox_frag.wgsl';
 import MeshShader from '../shader/MeshShader';
 import Mesh from '../Mesh.js';
 import Geometry from '../Geometry.js';
@@ -8,8 +10,11 @@ import Geometry from '../Geometry.js';
 class SkyboxShader extends MeshShader {
     constructor() {
         const config = {
+            name: 'skybox',
             vert,
             frag,
+            wgslVert,
+            wgslFrag,
             extraCommandProps: {
                 depth: {
                     enable : true,
@@ -19,8 +24,8 @@ class SkyboxShader extends MeshShader {
                 viewport: {
                     x: 0,
                     y: 0,
-                    width: (context, props) => { return props.resolution[0]; },
-                    height: (context, props) => { return props.resolution[1]; },
+                    width: (_, props) => { return props.resolution[0]; },
+                    height: (_, props) => { return props.resolution[1]; },
                 }
             }
         };
@@ -58,7 +63,7 @@ class SkyboxShader extends MeshShader {
     _createSkyboxMesh(regl) {
         const geometry = new Geometry(
             {
-                aPosition: new Int8Array(skyboxData.vertices)
+                aPosition: new Float32Array(skyboxData.vertices)
             },
             null,
             skyboxData.vertices.length / 3

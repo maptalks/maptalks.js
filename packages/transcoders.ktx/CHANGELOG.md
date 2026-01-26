@@ -1,5 +1,11 @@
 # @maptalks/transcoders.ktx2
 
+## 0.120.0
+
+### Minor Changes
+
+- first version of webgpu for integration test
+
 ## 0.119.0
 
 ### Minor Changes

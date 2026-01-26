@@ -5,7 +5,7 @@ import Ajax from '../util/Ajax';
 import { isNil, hasOwn, isString } from '../../common/Util';
 import { PROP_OMBB } from '../../common/Constant';
 import { projectOMBB } from '../builder/Ombb.js';
-import { calArrayBufferSize, isNumber } from '../util/index';
+import { calArrayBufferSize, isNumber, arraybufferIsGZip, decompressGzipWithBlob } from '../util/index';
 
 const ALTITUDE_ERRORS = {
     'MISSING_ALTITUDE_ELEMENT': 2,
@@ -50,33 +50,59 @@ export default class VectorTileLayerWorker extends LayerWorker {
         }
         fetchOptions.referrer = context.referrer;
         fetchOptions.errorLog = context.loadTileErrorLog;
-        const { loadTileCachMaxSize, loadTileCacheLog, } = context;
+        const { loadTileCachMaxSize, loadTileCacheLog } = context;
+
         return Ajax.getArrayBuffer(url, fetchOptions, (err, response) => {
             if (!this._cache) {
                 // removed
                 return;
             }
+            let arrayBuffer, hasData = false;
+
+            const readTile = () => {
+                this._readTile(url, altitudePropertyName, disableAltitudeWarning, err, arrayBuffer, cb);
+            };
+
             if (err) {
                 if (!err.loading) {
                     this._cache.add(url, { err, data: response && response.data, cacheIndex: context.workerCacheIndex });
                 }
             } else if (response && response.data) {
-                let needCache = true;
-                if (isNumber(loadTileCachMaxSize) && loadTileCachMaxSize > 0) {
-                    const bufferSize = calArrayBufferSize(response.data);
-                    if (bufferSize > loadTileCachMaxSize) {
-                        needCache = false;
-                        if (loadTileCacheLog) {
-                            console.warn(`url:${url},loadTileCachMaxSize exceeded: ${bufferSize} > ${loadTileCachMaxSize},the tile will not be cached.`);
+                hasData = true;
+                arrayBuffer = response.data;
+                const isGZip = arraybufferIsGZip(arrayBuffer);
+
+                const resolveTile = () => {
+                    let needCache = true;
+                    if (arrayBuffer && isNumber(loadTileCachMaxSize) && loadTileCachMaxSize > 0) {
+                        const bufferSize = calArrayBufferSize(arrayBuffer);
+                        if (bufferSize > loadTileCachMaxSize) {
+                            needCache = false;
+                            if (loadTileCacheLog) {
+                                console.warn(`url:${url},loadTileCachMaxSize exceeded: ${bufferSize} > ${loadTileCachMaxSize},the tile will not be cached.`);
+                            }
                         }
                     }
-                }
-                if (needCache) {
-                    this._cache.add(url, { err: null, data: response.data, cacheIndex: context.workerCacheIndex });
+                    if (needCache && arrayBuffer) {
+                        this._cache.add(url, { err: null, data: arrayBuffer, cacheIndex: context.workerCacheIndex });
+                    }
+                    readTile();
+                };
+
+                if (isGZip) {
+                    decompressGzipWithBlob(arrayBuffer, (buffer => {
+                        if (buffer) {
+                            arrayBuffer = buffer;
+                        }
+                        resolveTile();
+                    }))
+                } else {
+                    resolveTile();
                 }
             }
-
-            this._readTile(url, altitudePropertyName, disableAltitudeWarning, err, response && response.data, cb);
+            if (!hasData) {
+                readTile();
+            }
         });
     }
 

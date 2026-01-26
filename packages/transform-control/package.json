@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/transform-control",
-  "version": "0.119.0",
+  "version": "0.120.0",
   "description": "a plugin to control model's translate、rotation and scale",
   "license": "UNLICENSED",
   "repository": {
@@ -29,6 +29,8 @@
     "transform-gpu": "node ../../build/transform-to-gpu"
   },
   "devDependencies": {
+    "@maptalks/gl": "workspace:*",
+    "@maptalks/gpu": "workspace:*",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-replace": "^5.0.5",
@@ -40,8 +42,6 @@
     "rollup": "^4.17.2"
   },
   "dependencies": {
-    "@maptalks/gl": "workspace:*",
-    "@maptalks/gpu": "workspace:*",
     "@maptalks/gltf-layer": "workspace:*"
   },
   "gitHead": "9eeea4807723d460fa7e09969c6556d53f6bed84"

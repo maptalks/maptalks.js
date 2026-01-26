@@ -1,4 +1,4 @@
-// import { extend } from '../../../core/util';
+import { extend } from '../../../core/util';
 
 const semiCircum = 6378137 * Math.PI;
 

@@ -1,15 +1,19 @@
 import { reshader } from '@maptalks/gl';
 import vert from './glsl/flood.vert';
 import frag from './glsl/flood.frag';
-import { Util } from 'maptalks';
+import wgslVert from './wgsl/flood_vert.wgsl';
+import wgslFrag from './wgsl/flood_frag.wgsl';
 import AnalysisPass from './AnalysisPass';
 
 export default class FloodPass extends AnalysisPass {
 
     _init() {
         this._shader = new reshader.MeshShader({
+            name: 'flood',
             vert,
             frag,
+            wgslVert,
+            wgslFrag,
             extraCommandProps: {
                 viewport: this._viewport
             }
@@ -63,8 +67,7 @@ export default class FloodPass extends AnalysisPass {
     }
 
     _resize() {
-        const width = Util.isFunction(this._viewport.width.data) ? this._viewport.width.data() : this._viewport.width;
-        const height = Util.isFunction(this._viewport.height.data) ? this._viewport.height.data() : this._viewport.height;
+        const { width, height } = this.getViewportSize();
         if (this._fbo && (this._fbo.width !== width || this._fbo.height !== height)) {
             this._fbo.resize(width, height);
         }

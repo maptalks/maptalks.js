@@ -86,6 +86,8 @@ class Extent {
     top?: number;
     bottom?: number;
     antiMeridian?: boolean;
+    zmin?: number;
+    zmax?: number;
 
     constructor(p1?: WithNull<ExtentLike>, p?: Projection);
     constructor(p1: PositionType, p2: PositionType, p?: Projection);
@@ -876,3 +878,39 @@ class Extent {
 TEMP_EXTENT = new Extent(0, 0, 0, 0);
 
 export default Extent;
+
+function minValue(a: number, b: number): number {
+    if (isNumber(a) && isNumber(b)) {
+        return Math.min(a, b);
+    } else if (isNumber(a)) {
+        return a;
+    } else if (isNumber(b)) {
+        return b;
+    }
+}
+
+function maxValue(a: number, b: number): number {
+    if (isNumber(a) && isNumber(b)) {
+        return Math.max(a, b);
+    } else if (isNumber(a)) {
+        return a;
+    } else if (isNumber(b)) {
+        return b;
+    }
+}
+
+export function combineExtentAltitude(extent1: Extent, extent2: Extent): Extent {
+    if (!extent2) {
+        return extent1;
+    }
+    const min1 = extent1.zmin;
+    const max1 = extent1.zmax;
+    const min2 = extent2.zmin;
+    const max2 = extent2.zmax;
+
+    extent1.zmin = minValue(min1, min2);
+    extent1.zmax = maxValue(max1, max2);
+    return extent1;
+
+
+}

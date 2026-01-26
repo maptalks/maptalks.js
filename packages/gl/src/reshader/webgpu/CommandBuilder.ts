@@ -397,7 +397,8 @@ export default class CommandBuilder {
             },
             primitive: {
                 topology: pipelineDesc.topology,
-                cullMode: pipelineDesc.cullMode
+                cullMode: pipelineDesc.cullMode,
+                frontFace: pipelineDesc.frontFace
             }
         };
         const sampleCount = fbo && fbo.colorTexture && fbo.colorTexture.config.sampleCount;

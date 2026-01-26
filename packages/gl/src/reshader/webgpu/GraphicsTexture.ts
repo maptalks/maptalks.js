@@ -12,11 +12,14 @@ export default class GraphicsTexture {
     //@internal
     gpuFormat: GPUTexFormat;
     version = 0;
+    //@internal
+    dirty: boolean;
 
     constructor(device: GraphicsDevice, config) {
         this.device = device;
         this.config = config;
         this.gpuFormat = toTextureFormat(config.format, config.type);
+        this.dirty = false;
         this._updateTexture();
     }
 
@@ -42,41 +45,37 @@ export default class GraphicsTexture {
         if (this.texture && this.texture.width === width && this.texture.height === height) {
             return;
         }
+        this.dirty = true;
         this.config.width = width;
         this.config.height = height;
         this._updateTexture();
     }
 
     update(config) {
+        if (this.texture) {
+            this.dirty = this._isDirty(config);
+        }
+        const { width, height } = this._getSize(config);
         extend(this.config, config);
+        this.config.width = width;
+        this.config.height = height;
         this.gpuFormat = toTextureFormat(this.config.format, this.config.type);
         this._updateTexture();
     }
 
     _updateTexture() {
         const config = this.config;
+        const { width, height } = this._getSize(config);
         const device = this.device.wgpu;
-        if (this.texture) {
+        if (this.dirty) {
             this.version++;
             this.device.addToDestroyList(this.texture);
+            this.texture = null;
+            this.dirty = false;
         }
-        let texture: GPUTexture;
+        let texture: GPUTexture = this.texture;
         {
-            let width = isFunction(config.width) ? config.width() : config.width;
-            let height = isFunction(config.height) ? config.height() : config.height;
-            if (width === undefined || height === undefined) {
-                const data = config.data;
-                if (!data) {
-                    width = height = 1;
-                } else if (isArray(config.data)) {
-                    const length = config.data.length;
-                    width = Math.sqrt(length / 4);
-                    height = width;
-                } else {
-                    width = data.width;
-                    height = data.height;
-                }
-            }
+
             const format = this.gpuFormat.format;
             const isDepth = format === 'depth24plus' || format === 'depth24plus-stencil8';
             const usage = isDepth ?
@@ -93,15 +92,57 @@ export default class GraphicsTexture {
             if (config.sampleCount) {
                 options.sampleCount = config.sampleCount;
             }
-            texture = device.createTexture(options);
+            texture = texture || device.createTexture(options);
 
             this.fillData(texture, width, height);
         }
         this.texture = texture;
     }
 
-    getMipLevelCount() {
-        const data = this.config.data;
+    _isDirty(newConfig) {
+        if (!this.texture) {
+            return false;
+        }
+        const { width, height } = this._getSize(newConfig);
+        if (width !== this.texture.width) {
+            return true;
+        }
+        if (height !== this.texture.height) {
+            return true;
+        }
+        if (newConfig.format && newConfig.format !== this.config.format) {
+            return true;
+        }
+        if (newConfig.type && newConfig.type !== this.config.type) {
+            return true;
+        }
+        if (this.getMipLevelCount(newConfig.data) !== this.getMipLevelCount()) {
+            return true;
+        }
+        return false;
+    }
+
+    _getSize(config) {
+        let width = isFunction(config.width) ? config.width() : config.width;
+        let height = isFunction(config.height) ? config.height() : config.height;
+        if (width === undefined || height === undefined) {
+            const data = config.data;
+            if (!data) {
+                width = height = 1;
+            } else if (isArray(config.data)) {
+                const length = config.data.length;
+                width = Math.sqrt(length / 4);
+                height = width;
+            } else {
+                width = data.videoWidth || data.width;
+                height = data.videoHeight || data.height;
+            }
+        }
+        return { width, height };
+    }
+
+    getMipLevelCount(data?) {
+        data = data || this.config.data;
         if (data && data.mipmap) {
             return data.mipmap.length;
         }

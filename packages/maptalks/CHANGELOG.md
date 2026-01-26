@@ -1,5 +1,11 @@
 # maptalks
 
+## 1.9.0
+
+### Minor Changes
+
+- first version of webgpu for integration test
+
 ## 1.8.0
 
 ### Minor Changes

@@ -1,5 +1,5 @@
 # maptalks.gltf
-[![NPM Version](https://img.shields.io/npm/v/@maptalks/gltf-layer.svg)](https://github.com/fuzhenn/maptalks.gltf)
+[![NPM Version](https://img.shields.io/npm/v/@maptalks/gltf-layer.svg)](https://www.npmjs.com/package/@maptalks/gltf-layer)
 [![Circle CI](https://circleci.com/gh/fuzhenn/maptalks.gltf.svg?style=shield&circle-token=ceb1fa0d07ea46c8d3f148693988bd12c835df06)](https://circleci.com/gh/fuzhenn/maptalks.gltf)
 ## Usage
 

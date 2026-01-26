@@ -81,8 +81,8 @@ export default class PipelineDescriptor {
         this.depthBias = depthBias;
         this.depthBiasSlopeScale = depthBiasSlopeScale;
 
-        let depthCompare: GPUCompareFunction = 'always';
-        let depthWriteEnable = false;
+        let depthCompare: GPUCompareFunction = 'less';
+        let depthWriteEnable = true;
         const depthProps = commandProps.depth;
         if (depthEnabled && depthProps && isEnable(depthProps.enable, uniformValues)) {
             if (depthProps.func) {
