@@ -9,6 +9,12 @@ const packages = [
         exclude: []
     },
     {
+        name: '@maptalks/gl',
+        umdPath: '../gl/dist/maptalksgl.js',
+        //exclude some variables
+        exclude: []
+    },
+    {
         name: '@maptalks/gpu',
         umdPath: '../gpu/dist/maptalksgpu.js',
         //exclude some variables
@@ -56,18 +62,13 @@ packages.forEach(item => {
         return !(exclude || []).includes(key);
     });
     const exportStr = keys.join(', ');
-    if (name === 'maptalks' || name === '@maptalks/gpu') {
-        code += `export { ${exportStr} } from '${name}';\n`;
-    } else {
-        const gpuName = umdPath.substring(umdPath.lastIndexOf('/') + 1).replace('.js', '.gpu.es.js');
-        code += `export { ${exportStr} } from '${name}/dist/${gpuName}';\n`;
-    }
+    code += `export { ${exportStr} } from '${name}';\n`;
 });
 //write index.d.ts
 fs.writeFileSync(path.resolve(__dirname, './index.d.ts'), code);
 
 code += `
-import { transcoders } from '@maptalks/gpu';
+import { transcoders } from '@maptalks/gl';
 if (typeof window !== 'undefined') {
     // transcoders are registered at maptalksgl namespace
     // @ts-expect-error-error

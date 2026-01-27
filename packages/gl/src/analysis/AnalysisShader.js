@@ -1,4 +1,4 @@
-import { getWGSLSource } from '@maptalks/gl';
+import { getWGSLSource } from '../reshader/gpu/WGSLSources';
 // import QuadShader from '../shader/QuadShader.js';
 import * as reshader from '../reshader';
 import frag from './glsl/analysis.frag';

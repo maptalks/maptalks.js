@@ -1,4 +1,4 @@
-import { getWGSLSource } from '@maptalks/gl';
+import { getWGSLSource } from '../gpu/WGSLSources';
 import { mat4 } from 'gl-matrix';
 import shadowDisplayFrag from './glsl/shadow_display.frag';
 import shadowDisplayVert from './glsl/shadow_display.vert';

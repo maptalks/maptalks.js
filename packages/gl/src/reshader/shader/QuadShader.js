@@ -1,4 +1,4 @@
-import { getWGSLSource } from '@maptalks/gl';
+import { getWGSLSource } from '../gpu/WGSLSources';
 import MeshShader from './MeshShader.js';
 import Mesh from '../Mesh.js';
 import Geometry from '../Geometry.js';
@@ -24,7 +24,7 @@ const quadTexcoords = new Float32Array([
 class QuadShader extends MeshShader {
     constructor(config) {
         config.vert = config.vert || vert;
-        config.getWGSLSource('gl_quad_vert') = config.getWGSLSource('gl_quad_vert') || getWGSLSource('gl_quad_vert');
+        config.wgslVert = config.wgslVert || getWGSLSource('gl_quad_vert');
         config.extraCommandProps = config.extraCommandProps || {};
         if (!config.extraCommandProps.depth) {
             //disable depth

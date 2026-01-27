@@ -1,4 +1,4 @@
-import { getWGSLSource } from '@maptalks/gl';
+import { getWGSLSource } from '../gpu/WGSLSources';
 import QuadShader from './QuadShader.js';
 import frag from './glsl/fxaa.frag';
 class FxaaShader extends QuadShader {

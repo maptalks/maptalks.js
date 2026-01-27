@@ -1,4 +1,4 @@
-import { getWGSLSource } from '@maptalks/gl';
+import { getWGSLSource } from '../gpu/WGSLSources';
 import { mat3, mat4 } from 'gl-matrix';
 import vert from './glsl/standard.vert';
 import frag from './glsl/standard.frag';
@@ -96,8 +96,8 @@ class StandardShader extends MeshShader {
         }
         const vertSource = config.vert || vert;
         const fragSource = config.frag || frag;
-        const wgslVertSource = config.getWGSLSource('gl_standard_vert') || getWGSLSource('gl_standard_vert');
-        const wgslFragSource = config.getWGSLSource('gl_standard_frag') || getWGSLSource('gl_standard_frag');
+        const wgslVertSource = config.wgslVert || getWGSLSource('gl_standard_vert');
+        const wgslFragSource = config.wgslFrag || getWGSLSource('gl_standard_frag');
         const shaderConfig = {
             vert: vertSource,
             frag: fragSource,

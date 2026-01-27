@@ -1,4 +1,4 @@
-import { getWGSLSource } from '@maptalks/gl';
+import { getWGSLSource } from '../gpu/WGSLSources';
 import { mat4, mat3 } from 'gl-matrix';
 import phongFrag from './glsl/phong.frag';
 import phongVert from './glsl/phong.vert';

@@ -1,4 +1,4 @@
-import { getWGSLSource } from '@maptalks/gl';
+import { getWGSLSource } from '../gpu/WGSLSources';
 import { vec2, vec4, mat4 } from 'gl-matrix';
 import Renderer from '../Renderer.js';
 import CopyDepthShader from './CopyDepthShader.js';

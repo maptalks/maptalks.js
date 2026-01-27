@@ -1,4 +1,4 @@
-import { getWGSLSource } from '@maptalks/gl';
+import { getWGSLSource } from '../gpu/WGSLSources';
 import { mat4 } from 'gl-matrix';
 import vsmFrag from './glsl/vsm_mapping.frag';
 import vsmVert from './glsl/vsm_mapping.vert';

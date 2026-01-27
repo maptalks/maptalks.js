@@ -21,14 +21,13 @@
   "scripts": {
     "clean": "rimraf dist",
     "dev": "rollup -w -c rollup.config.js",
-    "build": "npm run clean && npm run lint && rollup --environment BUILD:production -c rollup.config.js && npm run transform-gpu",
+    "build": "npm run clean && npm run lint && rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "rollup -c rollup.config.js",
     "pretest": "cd ../gltf-loader && npm run build && cd ../gl && npm run build && cd ../analysis && npm run build && cd ../layer-gltf && npm run build",
     "test": "karma start --single-run",
     "tdd": "karma start --no-single-run",
     "version": "npm run build",
-    "lint": "eslint src/**/*.js test/**/*.js",
-    "transform-gpu": "node ../../build/transform-to-gpu"
+    "lint": "eslint src/**/*.js test/**/*.js"
   },
   "devDependencies": {
     "@maptalks/gl": "workspace:*",

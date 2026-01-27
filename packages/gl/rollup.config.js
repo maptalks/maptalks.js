@@ -24,19 +24,6 @@ function glsl() {
         }
     };
 }
-
-function wgsl() {
-    return {
-        transform(code, id) {
-            if (/\.wgsl$/.test(id) === false) return null;
-            return {
-                code: `export default '';`,
-                map: { mappings: '' }
-            };
-        }
-    };
-}
-
 const production = process.env.BUILD === 'production';
 const outputFile = pkg.main;
 const plugins = production ? [terser({
@@ -63,7 +50,6 @@ const configPlugins = [
             './src/reshader/shaderlib/glsl'
         ]
     }) : glsl(),
-    wgsl(),
     nodeResolve({
         // mainFields: ''
         // module : true,

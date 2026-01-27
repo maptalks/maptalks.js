@@ -1,4 +1,4 @@
-import { getWGSLSource } from '@maptalks/gl';
+import { getWGSLSource } from '../../reshader/gpu/WGSLSources';
 import * as maptalks from 'maptalks';
 import TerrainWorkerConnection from './TerrainWorkerConnection';
 import * as reshader from '../../reshader';

@@ -1,4 +1,4 @@
-import { getWGSLSource } from '@maptalks/gl';
+import { getWGSLSource } from '../../reshader/gpu/WGSLSources';
 import  { extend, hasOwn, isNil } from '../util/util';
 import * as ContextUtil from '../util/context';
 import { vec3, mat4 } from 'gl-matrix';

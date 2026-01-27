@@ -1,4 +1,4 @@
-import { getWGSLSource } from '@maptalks/gl';
+import { getWGSLSource } from '../gpu/WGSLSources';
 import MeshShader from './MeshShader.js';
 import vert from './glsl/image.vert';
 import frag from './glsl/image.frag';

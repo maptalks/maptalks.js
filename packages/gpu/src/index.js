@@ -1,5 +1,6 @@
-import { registerWGSLSource } from '@maptalks/gl';
+import { registerWGSLSource } from '@maptalks/gl/src/reshader/gpu/WGSLSources';
 
+// analysis
 import analysisDepthFrag from '../../analysis/src/pass/wgsl/depth_frag.wgsl';
 import analysisDepthVert from '../../analysis/src/pass/wgsl/depth_vert.wgsl';
 import analysisExcavateExtentFrag from '../../analysis/src/pass/wgsl/excavateExtent_frag.wgsl';
@@ -10,6 +11,8 @@ import analysisInsightFrag from '../../analysis/src/pass/wgsl/insight_frag.wgsl'
 import analysisInsightVert from '../../analysis/src/pass/wgsl/insight_vert.wgsl';
 import analysisViewshedFrag from '../../analysis/src/pass/wgsl/viewshed_frag.wgsl';
 import analysisViewshedVert from '../../analysis/src/pass/wgsl/viewshed_vert.wgsl';
+
+// gl
 import glAnalysisFrag from '../../gl/src/analysis/wgsl/analysis_frag.wgsl';
 import glFillFrag from '../../gl/src/layer/glsl/fill_frag.wgsl';
 import glFillVert from '../../gl/src/layer/glsl/fill_vert.wgsl';
@@ -43,9 +46,15 @@ import glVsmMappingFrag from '../../gl/src/reshader/shadow/wgsl/vsm_mapping_frag
 import glVsmMappingVert from '../../gl/src/reshader/shadow/wgsl/vsm_mapping_vert.wgsl';
 import glSkyboxFrag from '../../gl/src/reshader/skybox/skybox_frag.wgsl';
 import glSkyboxVert from '../../gl/src/reshader/skybox/skybox_vert.wgsl';
+
+// 3dtiles
 import layer3dtilesPickingVert from '../../layer-3dtiles/src/layer/renderer/wgsl/picking_vert.wgsl';
+
+// video
 import layerVideoVideoFrag from '../../layer-video/src/video_frag.wgsl';
 import layerVideoVideoVert from '../../layer-video/src/video_vert.wgsl';
+
+// vt
 import vtBillboardFrag from '../../vt/src/layer/plugins/painters/wgsl/billboard_frag.wgsl';
 import vtBillboardVert from '../../vt/src/layer/plugins/painters/wgsl/billboard_vert.wgsl';
 import vtCollisionFrag from '../../vt/src/layer/plugins/painters/wgsl/collision_frag.wgsl';

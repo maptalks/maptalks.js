@@ -1,4 +1,4 @@
-import { getWGSLSource } from '@maptalks/gl';
+import { getWGSLSource } from '../gpu/WGSLSources';
 import Renderer from '../Renderer.js';
 import QuadShader from './QuadShader.js';
 // import BoxBlurShader from './BoxBlurShader.js';

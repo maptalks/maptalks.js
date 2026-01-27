@@ -1,4 +1,4 @@
-import { getWGSLSource } from '@maptalks/gl';
+import { getWGSLSource } from '../gpu/WGSLSources';
 //DEPRECATED
 import QuadShader from './QuadShader.js';
 import vert from './glsl/quad.vert';

@@ -1,4 +1,4 @@
-import { getWGSLSource } from '@maptalks/gl';
+import { getWGSLSource } from '../gpu/WGSLSources';
 import frag from './glsl/box_shadow_blur.frag';
 import QuadShader from './QuadShader.js';
 

@@ -1,4 +1,4 @@
-import { getWGSLSource } from '@maptalks/gl';
+import { getWGSLSource } from '../gpu/WGSLSources';
 import skyboxData from './skybox.js';
 import vert from './skybox.vert';
 import frag from './skybox.frag';

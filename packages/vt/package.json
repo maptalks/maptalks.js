@@ -17,15 +17,14 @@
     "clean": "rimraf dist",
     "lint": "eslint src/**/*.js test/**/*.js",
     "dev": "rollup -w -c build/rollup.config.js",
-    "build": "npm run clean && npm run lint && rollup --environment BUILD:production -c build/rollup.config.js && npm run transform-gpu",
+    "build": "npm run clean && npm run lint && rollup --environment BUILD:production -c build/rollup.config.js",
     "build-dev": "rollup -c build/rollup.config.js",
     "test": "electron-mocha -t 8000 --retries 3 --main ../ignore-gpu-blacklist.js --show-window --renderer ./test/**/*.spec.js -g \"\\btext\\b|ciskip\" --invert",
-    "tdd": "npm run transform-gpu && electron-mocha -t 8000 --main ../ignore-gpu-blacklist.js --interactive --renderer ./test/**/*.spec.js -g",
-    "test-gpu": "npm run transform-gpu && electron-mocha -t 8000 --preload ./test/integration/gpu.js --show-window --renderer ./test/**/*.spec.js",
-    "tdd-gpu": "npm run transform-gpu && electron-mocha -t 8000 --preload ./test/integration/gpu.js --interactive --renderer ./test/**/*.spec.js -g",
-    "pretest": "npm run build && npm run transform-gpu",
-    "preversion": "npm run pretest",
-    "transform-gpu": "node ../../build/transform-to-gpu"
+    "tdd": "electron-mocha -t 8000 --main ../ignore-gpu-blacklist.js --interactive --renderer ./test/**/*.spec.js -g",
+    "test-gpu": "electron-mocha -t 8000 --preload ./test/integration/gpu.js --show-window --renderer ./test/**/*.spec.js",
+    "tdd-gpu": "electron-mocha -t 8000 --preload ./test/integration/gpu.js --interactive --renderer ./test/**/*.spec.js -g",
+    "pretest": "npm run build",
+    "preversion": "npm run pretest"
   },
   "dependencies": {
     "@mapbox/point-geometry": "^0.1.0",

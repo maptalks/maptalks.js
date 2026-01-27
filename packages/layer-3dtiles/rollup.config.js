@@ -90,25 +90,6 @@ function glsl() {
     };
 }
 
-function wgsl() {
-    return {
-        transform(code, id) {
-            if (/\.wgsl$/.test(id) === false) return null;
-            let transformedCode = JSON.stringify(code.trim()
-                // .replace(/(^\s*)|(\s*$)/gm, '')
-                .replace(/\r/g, '')
-                .replace(/[ \t]*\/\/.*\n/g, '') // remove //
-                .replace(/[ \t]*\/\*[\s\S]*?\*\//g, '') // remove /* */
-                .replace(/\n{2,}/g, '\n')); // # \n+ to \n;;
-            transformedCode = `export default ${transformedCode};`;
-            return {
-                code: transformedCode,
-                map: { mappings: '' }
-            };
-        }
-    };
-}
-
 
 // 概述:
 // 因为图层和worker是在不同的进程中执行的，图层程序和worker程序的逻辑需要分别编译。
@@ -175,7 +156,6 @@ module.exports = [
                 ignoreGlobal: true
             }),
             glsl(),
-            wgsl(),
             typescript({ tsconfig: './tsconfig.json', sourceMap: true } )
         ].concat(plugins),
         external: ['maptalks', '@maptalks/gl'],
@@ -221,7 +201,6 @@ if (production) {
                     ignoreGlobal: true
                 }),
                 glsl(),
-                wgsl(),
                 typescript({ tsconfig: './tsconfig.json'} )
             ].concat(plugins),
             output: {
