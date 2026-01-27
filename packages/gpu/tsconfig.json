@@ -3,12 +3,9 @@
   "compilerOptions": {
     "lib": ["ES2021", "DOM"],
     "outDir": "./dist/",
-    "rootDir": "../gl/src",
-    "baseUrl": "../gl",
-    "types": ["@webgpu/types"]
+    "rootDir": "src"
   },
   "include": [
-    "../gl/src/**/*.ts",
-    "../gl/src/types/*.d.ts",
+    "src/**/*.ts"
   ]
 }

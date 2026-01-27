@@ -1,5 +1,5 @@
+import { getWGSLSource } from '../gpu/WGSLSources';
 import frag from './glsl/box_shadow_blur.frag';
-import wgslFrag from './wgsl/box_shadow_blur_frag.wgsl';
 import QuadShader from './QuadShader.js';
 
 class BoxShadowBlurShader extends QuadShader {
@@ -8,7 +8,7 @@ class BoxShadowBlurShader extends QuadShader {
         super({
             name: 'box-shadow-blur',
             frag,
-            wgslFrag,
+            wgslFrag: getWGSLSource('gl_box_shadow_blur_frag'),
             defines : {
                 'BOXBLUR_OFFSET' : blurOffset || 2
             }

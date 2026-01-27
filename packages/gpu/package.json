@@ -12,11 +12,8 @@
   },
   "files": [
     "dist/maptalksgpu.js",
-    "dist/maptalksgpu.js.map",
     "dist/maptalksgpu.es.js",
-    "dist/maptalksgpu.es.js.map",
-    "dist/maptalksgpu.d.ts",
-    "dist/transcoders.js"
+    "dist/maptalksgpu.d.ts"
   ],
   "keywords": [
     "webgl",
@@ -26,37 +23,14 @@
   "author": "fuzhenn",
   "license": "UNLICENSED",
   "dependencies": {
-    "@maptalks/fusiongl": "workspace:*",
-    "@maptalks/gltf-loader": "workspace:*",
-    "maptalks": "workspace:*",
-    "@maptalks/martini": "^0.4.0",
-    "@maptalks/regl": "^3.6.0",
-    "@maptalks/tbn-packer": "^1.4.5",
-    "@webgpu/types": "0.1.52",
-    "color": "^3.0.0",
-    "colorin": "^0.6.0",
-    "earcut": "^3.0.1",
-    "frustum-intersects": "^0.2.4",
-    "gl-matrix": "^3.4.0",
-    "wgsl_reflect": "^1.0.16"
+    "@maptalks/gl": "workspace:*"
   },
   "devDependencies": {
-    "@maptalks/rollup-plugin-glsl-minify": "^0.1.7",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-terser": "0.4.4",
-    "@rollup/plugin-typescript": "^11.1.6",
     "eslint": "^8.57.0",
     "eslint-plugin-mocha": "^10.5.0",
-    "expect.js": "^0.3.1",
-    "karma": "^6.4.4",
-    "karma-chrome-launcher": "^3.1.1",
-    "karma-mocha": "^2.0.1",
-    "karma-mocha-reporter": "^2.2.5",
-    "mocha": "^10.3.0",
-    "pixelmatch": "^4.0.2",
     "rollup": "^4.17.2",
-    "rollup-plugin-dts": "^6.1.0",
     "tslib": "^2.6.2",
     "typescript": "^5.4.2",
     "typescript-eslint": "^8.34.0"

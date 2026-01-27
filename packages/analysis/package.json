@@ -11,7 +11,6 @@
   "module": "dist/maptalks.analysis.es.js",
   "files": [
     "./dist/maptalks.analysis.es.js",
-    "./dist/maptalks.analysis.gpu.es.js",
     "./dist/maptalks.analysis.es.js.map",
     "./dist/maptalks.analysis.js",
     "./dist/maptalks.analysis.js.map"
@@ -29,11 +28,10 @@
     "clean": "rimraf dist",
     "dev": "rollup -w -c rollup.config.js",
     "build-gl": "cd ../gl && npm run build",
-    "build": "npm run clean && npm run lint && rollup --environment BUILD:production -c rollup.config.js && npm run transform-gpu",
+    "build": "npm run clean && npm run lint && rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "rollup -c rollup.config.js",
     "version": "npm run build",
-    "lint": "eslint \"src/**/*.{js,jsx,mjs,ts,tsx}\"",
-    "transform-gpu": "node ../../build/transform-to-gpu"
+    "lint": "eslint \"src/**/*.{js,jsx,mjs,ts,tsx}\""
   },
   "devDependencies": {
     "@maptalks/gl": "workspace:*",

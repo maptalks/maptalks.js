@@ -1,12 +1,10 @@
 import * as maptalks from 'maptalks';
 import { isFunctionDefinition } from '@maptalks/function-type';
 import CollisionPainter from './CollisionPainter';
-import { reshader } from '@maptalks/gl';
+import { reshader, getWGSLSource } from '@maptalks/gl';
 import { vec2, mat4 } from '@maptalks/gl';
 import vert from './glsl/marker.vert';
 import frag from './glsl/marker.frag';
-import wgslVert from './wgsl/marker_vert.wgsl';
-import wgslFrag from './wgsl/marker_frag.wgsl';
 import pickingVert from './glsl/marker.vert';
 import { getIconBox } from './util/get_icon_box';
 import { isNil, isIconText, getUniqueIds, extend } from '../Util';
@@ -735,7 +733,8 @@ class IconPainter extends CollisionPainter {
         this.shader = new reshader.MeshShader({
             name: 'marker',
             vert, frag,
-            wgslVert, wgslFrag,
+            wgslVert: getWGSLSource('vt_marker_vert'),
+            wgslFrag: getWGSLSource('vt_marker_frag'),
             uniforms: [
                 {
                     name: 'projViewModelMatrix',
@@ -765,7 +764,7 @@ class IconPainter extends CollisionPainter {
                 {
                     name: 'marker-picking',
                     vert: '#define PICKING_MODE 1\n' + pickingVert,
-                    wgslVert,
+                    wgslVert: getWGSLSource('vt_marker_vert'),
                     defines: pickingDefines,
                     uniforms: [
                         {

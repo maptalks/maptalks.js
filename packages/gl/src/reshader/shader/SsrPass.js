@@ -1,9 +1,9 @@
+import { getWGSLSource } from '../gpu/WGSLSources';
 import { vec2, vec4, mat4 } from 'gl-matrix';
 import Renderer from '../Renderer.js';
 import CopyDepthShader from './CopyDepthShader.js';
 
 import quadFrag from './glsl/quad.frag';
-import quadFragWgsl from './wgsl/quad_frag.wgsl';
 import QuadShader from './QuadShader.js';
 
 class SsrPass {
@@ -206,7 +206,7 @@ class SsrPass {
             const config = {
                 name: 'ssr-mipmap-quad',
                 frag: quadFrag,
-                wgslFrag: quadFragWgsl,
+                wgslFrag: getWGSLSource('gl_quad_frag'),
                 extraCommandProps: {
                     viewport: {
                         x: 0,

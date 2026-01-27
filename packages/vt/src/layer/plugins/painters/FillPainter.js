@@ -1,12 +1,9 @@
 import * as maptalks from 'maptalks';
 import BasicPainter from './BasicPainter';
-import { vec2, reshader, mat4 } from '@maptalks/gl';
+import { vec2, reshader, mat4, getWGSLSource } from '@maptalks/gl';
 import vert from './glsl/fill.vert';
 import frag from './glsl/fill.frag';
-import wgslVert from './wgsl/fill_vert.wgsl';
-import wgslFrag from './wgsl/fill_frag.wgsl';
 import pickingVert from './glsl/fill.picking.vert';
-import pickingWgsl from './wgsl/fill_picking_vert.wgsl';
 import { isNumber, isNil, setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar, meterToPoint } from '../Util';
 import { prepareFnTypeData } from './util/fn_type_util';
 import { createAtlasTexture } from './util/atlas_util';
@@ -619,7 +616,7 @@ class FillPainter extends BasicPainter {
                 {
                     name: 'fill-picking',
                     vert: pickingVert,
-                    wgslVert: pickingWgsl,
+                    wgslVert: getWGSLSource('vt_fill_picking_vert'),
                     defines,
                     uniforms: [
                         {
@@ -660,8 +657,8 @@ class FillPainter extends BasicPainter {
         this.shader = new reshader.MeshShader({
             name: 'vt-fill',
             vert, frag,
-            wgslVert: wgslVert,
-            wgslFrag,
+            wgslVert: getWGSLSource('vt_fill_vert'),
+            wgslFrag: getWGSLSource('vt_fill_frag'),
             uniforms,
             defines,
             extraCommandProps

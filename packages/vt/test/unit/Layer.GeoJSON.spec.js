@@ -1,8 +1,9 @@
 const maptalks = require('maptalks');
 const path = require('path');
 const assert = require('assert');
-const { GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.gpu.js');
-const { GroupGLLayer } = require('@maptalks/gpu');
+const { GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.js');
+const { GroupGLLayer } = require('@maptalks/gl');
+require('@maptalks/gpu');
 // const deepEqual = require('fast-deep-equal');
 
 const points = {

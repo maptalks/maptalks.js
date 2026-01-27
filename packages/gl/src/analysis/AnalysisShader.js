@@ -1,14 +1,13 @@
+import { getWGSLSource } from '../reshader/gpu/WGSLSources';
 // import QuadShader from '../shader/QuadShader.js';
 import * as reshader from '../reshader';
 import frag from './glsl/analysis.frag';
-import wgslFrag from './wgsl/analysis_frag.wgsl';
-
 class AnalysisShader extends reshader.QuadShader {
     constructor(viewport) {
         super({
             name: 'analysis',
             frag,
-            wgslFrag,
+            wgslFrag: getWGSLSource('gl_analysis_frag'),
             extraCommandProps: {
                 viewport,
                 cull: {

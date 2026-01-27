@@ -1,10 +1,9 @@
+import { getWGSLSource } from '../../reshader/gpu/WGSLSources';
 import * as maptalks from 'maptalks';
 import TerrainWorkerConnection from './TerrainWorkerConnection';
 import * as reshader from '../../reshader';
 import skinVert from './glsl/terrainSkin.vert';
 import skinFrag from './glsl/terrainSkin.frag';
-import skinWgslVert from './wgsl/terrain_skin_vert.wgsl';
-import skinWgslFrag from './wgsl/terrain_skin_frag.wgsl';
 import { getCascadeTileIds, getSkinTileScale, getSkinTileRes, createEmtpyTerrainHeights, EMPTY_TERRAIN_GEO } from './TerrainTileUtil';
 import { createMartiniData } from './util/martini';
 import { isNil, extend, pushIn, isFunction } from '../util/util';
@@ -1563,8 +1562,8 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             name: 'terrain-skin',
             vert: skinVert,
             frag: skinFrag,
-            wgslVert: skinWgslVert,
-            wgslFrag: skinWgslFrag,
+            wgslVert: getWGSLSource('gl_terrain_skin_vert'),
+            wgslFrag: getWGSLSource('gl_terrain_skin_frag'),
             extraCommandProps: {
                 cull: {
                     enable: false

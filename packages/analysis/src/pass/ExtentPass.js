@@ -1,9 +1,7 @@
-import { reshader, mat4 } from '@maptalks/gl';
+import { reshader, mat4, getWGSLSource } from '@maptalks/gl';
 import * as maptalks from 'maptalks';
 import vert from './glsl/excavateExtent.vert';
 import frag from './glsl/excavateExtent.frag';
-import wgslVert from './wgsl/excavateExtent_vert.wgsl';
-import wgslFrag from './wgsl/excavateExtent_frag.wgsl';
 import AnalysisPass from './AnalysisPass';
 
 const EMPTY_COLOR = [0, 0, 0, 1];
@@ -26,8 +24,8 @@ export default class ExtentPass extends AnalysisPass {
             name: 'extent',
             vert,
             frag,
-            wgslVert,
-            wgslFrag,
+            wgslVert: getWGSLSource('analysis_excavateExtent_vert'),
+            wgslFrag: getWGSLSource('analysis_excavateExtent_frag'),
             uniforms: [
                 {
                     name: 'projViewModelMatrix',

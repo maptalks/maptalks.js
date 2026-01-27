@@ -48,6 +48,8 @@ export { default as color } from 'color';
 import * as reshader from './reshader';
 export { reshader };
 
+export { getWGSLSource, registerWGSLSource } from './reshader/gpu/WGSLSources';
+
 // if (typeof window !== 'undefined') {
 //     // append GroupGLLayer on maptalks manually
 //     if (window.maptalks) {

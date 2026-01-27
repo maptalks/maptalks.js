@@ -140,7 +140,7 @@ DrawTool.registerMode('freeHandEllipse', extend({
 }, ellipseHooks));
 
 const rectangleHooks: modeActionType = {
-    'create': function (projection, prjCoords, event) {
+    'create': function (projection, prjCoords) {
         const rect: any = new Polygon([]);
         rect._firstClick = prjCoords[0];
         return rect;
@@ -178,11 +178,11 @@ DrawTool.registerMode('freeHandRectangle', extend({
 
 
 const realRectangleHooks: modeActionType = {
-    'create': function (projection, prjCoords, event) {
+    'create': function (projection, prjCoords) {
         //force create rectangle,the draw geometry width and height always equal when map pitched
         //https://github.com/maptalks/maptalks.js/issues/1583
         //https://github.com/maptalks/maptalks.js/issues/2697
-        let rect: any = new Rectangle([0, 0], 0, 0);
+        const rect: any = new Rectangle([0, 0], 0, 0);
 
         rect._firstClick = prjCoords[0];
         return rect;

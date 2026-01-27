@@ -1,6 +1,6 @@
 const assert = require('assert');
 const maptalks = require('maptalks');
-const { GeoJSONVectorTileLayer, VectorTileLayer } = require('../../dist/maptalks.vt.gpu.js');
+const { GeoJSONVectorTileLayer, VectorTileLayer } = require('../../dist/maptalks.vt.js');
 
 const mapRenderer = window.mapRenderer;
 

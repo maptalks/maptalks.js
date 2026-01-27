@@ -1,8 +1,7 @@
 import { reshader, mat4 } from '@maptalks/gl';
 import depthVert from './glsl/depth.vert';
 import depthFrag from './glsl/depth.frag';
-import wgslVert from './wgsl/depth_vert.wgsl';
-import wgslFrag from './wgsl/depth_frag.wgsl';
+import { getWGSLSource } from '@maptalks/gl';
 import { Util } from 'maptalks';
 
 const RESOLUTION = 2048;
@@ -52,8 +51,8 @@ export default class AnalysisPass {
             name: 'analysis-depth',
             vert: depthVert,
             frag: depthFrag,
-            wgslVert,
-            wgslFrag,
+            wgslVert: getWGSLSource('analysis_depth_vert'),
+            wgslFrag: getWGSLSource('analysis_depth_frag'),
             uniforms: [
                 {
                     name: 'projViewModelMatrix',

@@ -1,3 +1,4 @@
+import { getWGSLSource } from '../../reshader/gpu/WGSLSources';
 import  { extend, hasOwn, isNil } from '../util/util';
 import * as ContextUtil from '../util/context';
 import { vec3, mat4 } from 'gl-matrix';
@@ -6,9 +7,6 @@ import { EMPTY_TERRAIN_GEO } from './TerrainTileUtil.js';
 
 import vert from './glsl/terrain.vert';
 import frag from './glsl/terrain.frag';
-
-import wgslVert from './wgsl/terrain_vert.wgsl';
-import wgslFrag from './wgsl/terrain_frag.wgsl';
 
 const V3 = [];
 const SCALE3 = [];
@@ -226,8 +224,8 @@ class TerrainPainter {
             name: 'terrain-mesh',
             vert,
             frag,
-            wgslVert,
-            wgslFrag,
+            wgslVert: getWGSLSource('gl_terrain_vert'),
+            wgslFrag: getWGSLSource('gl_terrain_frag'),
             uniforms: uniformDeclares.concat([
                 {
                     name: 'modelViewMatrix',

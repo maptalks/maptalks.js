@@ -1,10 +1,8 @@
 import Color from 'color';
-import { reshader, mat4 } from '@maptalks/gl';
+import { reshader, mat4, getWGSLSource } from '@maptalks/gl';
 import BasicPainter from './BasicPainter';
 import vert from './glsl/native-point.vert';
 import frag from './glsl/native-point.frag';
-import wgslVert from './wgsl/native-point_vert.wgsl';
-import wgslFrag from './wgsl/native-point_frag.wgsl';
 import pickingVert from './glsl/native-point.vert';
 import { extend, setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar } from '../Util';
 import { isFunctionDefinition, piecewiseConstant } from '@maptalks/function-type';
@@ -160,8 +158,8 @@ class NativePointPainter extends BasicPainter {
             name: 'vt-native-point',
             vert,
             frag,
-            wgslVert,
-            wgslFrag,
+            wgslVert: getWGSLSource('vt_native_point_vert'),
+            wgslFrag: getWGSLSource('vt_native_point_frag'),
             uniforms: [
                 {
                     name: 'projViewModelMatrix',
@@ -217,7 +215,7 @@ class NativePointPainter extends BasicPainter {
                 this.renderer,
                 {
                     vert: pickingVert,
-                    wgslVert: wgslVert,
+                    wgslVert: getWGSLSource('vt_native_point_vert'),
                     uniforms: [
                         {
                             name: 'projViewModelMatrix',

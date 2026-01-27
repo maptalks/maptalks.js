@@ -1,10 +1,9 @@
 import * as maptalks from 'maptalks';
-import { reshader, vec3, mat4, HighlightUtil } from '@maptalks/gl';
+import { reshader, vec3, mat4, HighlightUtil, getWGSLSource } from '@maptalks/gl';
 import { getVectorPacker } from '../../../packer/inject';
 import { isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
 import { extend, copyJSON, isNil, hasOwn, isNumber } from '../Util';
 import outlineFrag from './glsl/outline.frag';
-import outlineWGSLFrag from './wgsl/outline_frag.wgsl';
 import { updateOneGeometryFnTypeAttrib } from './util/fn_type_util';
 import { inTerrainTile } from './util/line_offset';
 import deepEuqal from 'fast-deep-equal';
@@ -1154,7 +1153,7 @@ class Painter {
                 vert: pickingVert,
                 frag: outlineFrag,
                 wgslVert: wgslPickingVert,
-                wgslFrag: outlineWGSLFrag,
+                wgslFrag: getWGSLSource('vt_outline_frag'),
                 uniforms,
                 defines,
                 extraCommandProps: {

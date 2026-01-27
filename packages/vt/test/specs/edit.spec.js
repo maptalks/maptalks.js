@@ -1,7 +1,7 @@
 const assert = require('assert');
 const { readPixel } = require('../common/Util');
 const maptalks = require('maptalks');
-const { PolygonLayer } = require('../../dist/maptalks.vt.gpu.js');
+const { PolygonLayer } = require('../../dist/maptalks.vt.js');
 const happen = require('happen');
 
 const DEFAULT_VIEW = {

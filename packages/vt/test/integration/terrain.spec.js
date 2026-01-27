@@ -2,8 +2,9 @@ const maptalks = require('maptalks');
 const assert = require('assert');
 const path = require('path');
 const { match, readSpecs, writeImageData, hasOwn } = require('./util');
-const { GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.gpu.js');
-const { GroupGLLayer } = require('@maptalks/gpu');
+const { GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.js');
+const { GroupGLLayer } = require('@maptalks/gl');
+require('@maptalks/gpu');
 const startServer = require('../specs/server.js');
 const PORT = 4398;
 

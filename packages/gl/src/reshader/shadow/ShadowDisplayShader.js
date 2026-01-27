@@ -1,8 +1,7 @@
+import { getWGSLSource } from '../gpu/WGSLSources';
 import { mat4 } from 'gl-matrix';
 import shadowDisplayFrag from './glsl/shadow_display.frag';
 import shadowDisplayVert from './glsl/shadow_display.vert';
-import shadowDisplayFragWgsl from './wgsl/shadow_display_frag.wgsl';
-import shadowDisplayVertWgsl from './wgsl/shadow_display_vert.wgsl';
 import MeshShader from '../shader/MeshShader.js';
 
 class ShadowDisplayShader extends MeshShader {
@@ -13,8 +12,8 @@ class ShadowDisplayShader extends MeshShader {
             name: 'shadow_display',
             vert : shadowDisplayVert,
             frag : shadowDisplayFrag,
-            wgslVert: shadowDisplayVertWgsl,
-            wgslFrag: shadowDisplayFragWgsl,
+            wgslVert: getWGSLSource('gl_shadow_display_vert'),
+            wgslFrag: getWGSLSource('gl_shadow_display_frag'),
             uniforms : [
                 {
                     name: 'projViewModelMatrix',

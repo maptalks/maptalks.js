@@ -1,9 +1,7 @@
+import { getWGSLSource } from '../gpu/WGSLSources';
 import MeshShader from './MeshShader.js';
 import vert from './glsl/image.vert';
 import frag from './glsl/image.frag';
-import wgslVert from './wgsl/image_vert.wgsl';
-import wgslFrag from './wgsl/image_frag.wgsl';
-
 import { mat4 } from 'gl-matrix';
 
 class ImageShader extends MeshShader {
@@ -16,8 +14,8 @@ class ImageShader extends MeshShader {
             name: 'image',
             vert,
             frag,
-            wgslVert,
-            wgslFrag,
+            wgslVert: getWGSLSource('gl_image_vert'),
+            wgslFrag: getWGSLSource('gl_image_frag'),
             uniforms: [
                 {
                     name: 'projViewModelMatrix',

@@ -1,11 +1,9 @@
 import * as maptalks from 'maptalks';
 import LinePainter from './LinePainter';
-import { reshader } from '@maptalks/gl';
+import { reshader, getWGSLSource } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import vert from './glsl/line.vert';
 import frag from './glsl/line.gradient.frag';
-import wgslVert from './wgsl/line_vert.wgsl';
-import wgslFrag from './wgsl/line_gradient_frag.wgsl';
 import { prepareFnTypeData } from './util/fn_type_util';
 import { ID_PROP } from '../../vector/util/convert_to_feature';
 import { LINE_GRADIENT_PROP_KEY } from '../../vector/util/symbols';
@@ -208,7 +206,8 @@ class LineGradientPainter extends LinePainter {
         this.shader = new reshader.MeshShader({
             name: 'line-gradient',
             vert, frag,
-            wgslVert, wgslFrag,
+            wgslVert: getWGSLSource('vt_line_vert'),
+            wgslFrag: getWGSLSource('vt_line_gradient_frag'),
             uniforms,
             defines,
             extraCommandProps: this.getExtraCommandProps()

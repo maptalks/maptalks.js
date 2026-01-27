@@ -1,6 +1,6 @@
 const assert = require('assert');
 const maptalks = require('maptalks');
-const { PackUtil, FilterUtil } = require('../../dist/maptalks.vt.gpu.js');
+const { PackUtil, FilterUtil } = require('../../dist/maptalks.vt.js');
 
 const mapRenderer = window.mapRenderer;
 
