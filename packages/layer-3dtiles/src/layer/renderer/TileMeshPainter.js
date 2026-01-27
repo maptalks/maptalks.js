@@ -844,6 +844,7 @@ export default class TileMeshPainter {
             mesh.properties.projCenter = projCenter;
             mesh.properties.node = node;
             const defines = this._getGLTFMeshDefines(gltfMesh, geometry, material, node._rootIdx, gltf);
+            defines['MESH_ENV_EXPO'] = 1;
             if (gltfMesh.compressed_int16_params) {
                 this._setCompressedInt16Uniforms(mesh, gltfMesh.compressed_int16_params);
             }

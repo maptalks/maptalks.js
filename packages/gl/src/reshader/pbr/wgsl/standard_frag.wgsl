@@ -23,7 +23,10 @@ struct MaterialUniforms {
     ao: f32,
     specularColor: vec3f,
     glossiness: f32,
-    skinColor: vec4f
+    skinColor: vec4f,
+    #ifdef MESH_ENV_EXPO
+        environmentExposure: f32,
+    #endif
 };
 
 var<private> materialUniforms: MaterialUniforms;
@@ -87,7 +90,10 @@ struct ShaderUniforms {
     #endif
     cameraPosition: vec3f,
     cameraNearFar: vec2f,
-    environmentExposure: f32,
+
+    #ifndef MESH_ENV_EXPO
+        environmentExposure: f32,
+    #endif
     environmentTransform: mat3x3f,
 
     light0_viewDirection: vec3f,
@@ -769,9 +775,14 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
     let NoV = dot(materialNormal, eyeVector);
     specular = computeIBLSpecular(materialNormal, eyeVector, NoV, materialRoughness, materialSpecular, frontNormal, materialF90, materialDiffuse);
 
+    #ifdef MESH_ENV_EXPO
+        let environmentExposure = materialUniforms.environmentExposure;
+    #else
+        let environmentExposure = shaderUniforms.environmentExposure;
+    #endif
     var specularAO = 1.0;
     let materialAO = getMaterialOcclusion();
-    diffuse *= shaderUniforms.environmentExposure * materialAO;
+    diffuse *= environmentExposure * materialAO;
 
     #if HAS_IBL_LIGHTING
         specularAO = computeSpecularAO(materialAO, NoV);
@@ -791,7 +802,7 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
         specular = ssr(specular, materialSpecular * specularAO, materialRoughness, viewNormal, -normalize(vertexOutput.vViewVertex.xyz));
     #endif
 
-    specular *= shaderUniforms.environmentExposure * specularAO;
+    specular *= environmentExposure * specularAO;
 
     let modelNormal = vertexOutput.vModelNormal;
     let lightDir = -shaderUniforms.light0_viewDirection;
