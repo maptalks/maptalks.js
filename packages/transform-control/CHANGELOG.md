@@ -1,5 +1,16 @@
 # @maptalks/transform-control
 
+## 0.122.0
+
+### Minor Changes
+
+- add support for mesh_features, structural_metadata, gpu_instancing extensions in gltf-loader (#2802)
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gltf-layer@0.122.0
+
 ## 0.121.0
 
 ### Minor Changes

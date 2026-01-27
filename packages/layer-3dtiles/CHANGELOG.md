@@ -1,5 +1,11 @@
 # @maptalks/3dtiles
 
+## 0.122.0
+
+### Minor Changes
+
+- add support for mesh_features, structural_metadata, gpu_instancing extensions in gltf-loader (#2802)
+
 ## 0.121.0
 
 ### Minor Changes
