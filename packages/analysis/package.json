@@ -11,7 +11,6 @@
   "module": "dist/maptalks.analysis.es.js",
   "files": [
     "./dist/maptalks.analysis.es.js",
-    "./dist/maptalks.analysis.gpu.es.js",
     "./dist/maptalks.analysis.es.js.map",
     "./dist/maptalks.analysis.js",
     "./dist/maptalks.analysis.js.map"

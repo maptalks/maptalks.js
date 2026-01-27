@@ -13,7 +13,6 @@
     "dist/maptalks.video.js",
     "dist/maptalks.video.js.map",
     "dist/maptalks.video.es.js",
-    "dist/maptalks.video.gpu.es.js",
     "dist/maptalks.video.es.js.map"
   ],
   "scripts": {

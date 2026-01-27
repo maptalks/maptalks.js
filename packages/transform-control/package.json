@@ -13,7 +13,6 @@
     "dist/transform-control.js",
     "dist/transform-control.js.map",
     "dist/transform-control.es.js",
-    "dist/transform-control.gpu.es.js",
     "dist/transform-control.es.js.map"
   ],
   "scripts": {

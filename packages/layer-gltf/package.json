@@ -15,7 +15,6 @@
     "dist/maptalks.gltf.js",
     "dist/maptalks.gltf.js.map",
     "dist/maptalks.gltf.es.js",
-    "dist/maptalks.gltf.gpu.es.js",
     "dist/maptalks.gltf.es.js.map"
   ],
   "scripts": {
