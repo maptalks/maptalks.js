@@ -852,9 +852,6 @@ importers:
       '@maptalks/gl':
         specifier: workspace:*
         version: link:../gl
-      '@maptalks/gpu':
-        specifier: workspace:*
-        version: link:../gpu
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
         version: 25.0.7(rollup@4.17.2)
@@ -882,9 +879,6 @@ importers:
       '@maptalks/gl':
         specifier: workspace:*
         version: link:../gl
-      '@maptalks/gpu':
-        specifier: workspace:*
-        version: link:../gpu
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
         version: 25.0.7(rollup@4.17.2)
@@ -915,9 +909,6 @@ importers:
       '@maptalks/gl':
         specifier: workspace:*
         version: link:../gl
-      '@maptalks/gpu':
-        specifier: workspace:*
-        version: link:../gpu
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
         version: 25.0.7(rollup@4.17.2)

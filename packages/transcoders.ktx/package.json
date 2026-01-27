@@ -22,7 +22,6 @@
   "license": "ISC",
   "devDependencies": {
     "@maptalks/gl": "workspace:*",
-    "@maptalks/gpu": "workspace:*",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-replace": "^5.0.5",
