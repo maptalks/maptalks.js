@@ -206,7 +206,8 @@ class LineGradientPainter extends LinePainter {
         this.shader = new reshader.MeshShader({
             name: 'line-gradient',
             vert, frag,
-            wgslVert: getWGSLSource('vt_line_vert'), wgslFrag: getWGSLSource('vt_line_gradient_frag'),
+            wgslVert: getWGSLSource('vt_line_vert'),
+            wgslFrag: getWGSLSource('vt_line_gradient_frag'),
             uniforms,
             defines,
             extraCommandProps: this.getExtraCommandProps()

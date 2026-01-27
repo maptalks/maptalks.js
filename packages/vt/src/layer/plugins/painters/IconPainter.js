@@ -733,7 +733,8 @@ class IconPainter extends CollisionPainter {
         this.shader = new reshader.MeshShader({
             name: 'marker',
             vert, frag,
-            wgslVert: getWGSLSource('vt_marker_vert'), wgslFrag: getWGSLSource('vt_marker_frag'),
+            wgslVert: getWGSLSource('vt_marker_vert'),
+            wgslFrag: getWGSLSource('vt_marker_frag'),
             uniforms: [
                 {
                     name: 'projViewModelMatrix',

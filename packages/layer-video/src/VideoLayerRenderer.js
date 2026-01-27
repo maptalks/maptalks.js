@@ -7,8 +7,6 @@ const shaderConfig = {
     name: 'video-layer',
     vert,
     frag,
-    wgslVert: getWGSLSource('layer_video_video_vert'),
-    wgslFrag: getWGSLSource('layer_video_video_frag'),
     uniforms : [
         {
             name: 'projViewModelMatrix',
@@ -136,6 +134,8 @@ class VideoLayerRenderer extends CanvasCompatible(maptalks.renderer.LayerAbstrac
         if (this._shader) {
             this._shader.dispose();
         }
+        shaderConfig.wgslVert = getWGSLSource('layer_video_video_vert');
+        shaderConfig.wgslFrag = getWGSLSource('layer_video_video_frag');
         if (this.layer.options['showTopAlways']) {
             shaderConfig.extraCommandProps.depth.mask = false;
             shaderConfig.extraCommandProps.depth.range = [0, 0];

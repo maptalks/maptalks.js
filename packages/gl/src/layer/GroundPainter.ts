@@ -1,7 +1,7 @@
 import { vec2, mat4 } from 'gl-matrix';
 import { pbr } from '../reshader';
 import * as reshader from '../reshader';
-import { fillVert, fillFrag, fillWgslVert, fillWgslFrag } from './glsl/fill.js';
+import getFillShaderCodes from './glsl/fill.js';
 import ShadowProcess from './shadow/ShadowProcess';
 import { extend, getGroundTransform, hasOwn, normalizeColor } from './util/util.js';
 import { computeUVUniforms } from './util/uvUniforms.js';
@@ -284,6 +284,7 @@ class GroundPainter {
                 }
             }
         );
+        const { fillVert, fillFrag, fillWgslVert, fillWgslFrag } = getFillShaderCodes();
         this._fillShader = new reshader.MeshShader({
             name: 'ground-fill',
             vert: fillVert,
