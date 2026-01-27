@@ -1,19 +1,17 @@
-import * as maptalks from 'maptalks';
-import LinePainter from './LinePainter';
-import { reshader } from '@maptalks/gl';
-import { mat4 } from '@maptalks/gl';
-import vert from './glsl/line.vert';
-import frag from './glsl/line.gradient.frag';
-import wgslVert from './wgsl/line_vert.wgsl';
-import wgslFrag from './wgsl/line_gradient_frag.wgsl';
-import { prepareFnTypeData } from './util/fn_type_util';
-import { ID_PROP } from '../../vector/util/convert_to_feature';
-import { LINE_GRADIENT_PROP_KEY } from '../../vector/util/symbols';
+import * as maptalks from "maptalks";
+import LinePainter from "./LinePainter";
+import { reshader } from "@maptalks/gl";
+import { mat4 } from "@maptalks/gl";
+import vert from "./glsl/line.vert";
+import frag from "./glsl/line.gradient.frag";
+import { getWGSLSource } from "@maptalks/gl";
+import { prepareFnTypeData } from "./util/fn_type_util";
+import { ID_PROP } from "../../vector/util/convert_to_feature";
+import { LINE_GRADIENT_PROP_KEY } from "../../vector/util/symbols";
 
 const GRADIENTS_COUNT_TO_WARN = 2048;
 
 class LineGradientPainter extends LinePainter {
-
     postCreateGeometry(lineGeometry) {
         this.generateGradProperties(lineGeometry);
     }
@@ -26,20 +24,25 @@ class LineGradientPainter extends LinePainter {
     _updateMeshGradient() {
         if (this._changedMeshes) {
             for (let i = 0; i < this._changedMeshes.length; i++) {
-                if (!this._changedMeshes[i] || !this._changedMeshes[i].isValid()) {
+                if (
+                    !this._changedMeshes[i] ||
+                    !this._changedMeshes[i].isValid()
+                ) {
                     continue;
                 }
                 const { geometry, material } = this._changedMeshes[i];
                 const { symbolIndex } = geometry.properties;
                 this.generateGradProperties({ geometry, symbolIndex });
-                const texture = this._genGradientTexture(geometry.properties.gradients);
-                const oldTexture = material.get('lineGradientTexture');
+                const texture = this._genGradientTexture(
+                    geometry.properties.gradients,
+                );
+                const oldTexture = material.get("lineGradientTexture");
                 if (oldTexture) {
                     oldTexture.destroy();
                 }
                 geometry.generateBuffers(this.regl);
-                material.set('lineGradientTexture', texture);
-                material.set('lineGradientTextureHeight', texture.height);
+                material.set("lineGradientTexture", texture);
+                material.set("lineGradientTextureHeight", texture.height);
             }
             delete this._changedMeshes;
         }
@@ -60,7 +63,8 @@ class LineGradientPainter extends LinePainter {
             }
             const id = feature && feature[ID_PROP];
             if (features[id]) {
-                features[id].feature.properties[LINE_GRADIENT_PROP_KEY] = feature.properties[LINE_GRADIENT_PROP_KEY];
+                features[id].feature.properties[LINE_GRADIENT_PROP_KEY] =
+                    feature.properties[LINE_GRADIENT_PROP_KEY];
                 this._changedMeshes.push(meshes[i]);
                 this.setToRedraw();
             }
@@ -68,15 +72,16 @@ class LineGradientPainter extends LinePainter {
     }
 
     needRebuildOnGometryPropertiesChanged() {
-         return false;
+        return false;
     }
 
     generateGradProperties(lineGeometry) {
         const { symbolIndex, geometry } = lineGeometry;
         const { features } = geometry.properties;
         const symbol = this.getSymbol(symbolIndex);
-        const gradProp = symbol['lineGradientProperty'];
-        const featureIndexes = geometry.properties.aPickingId || geometry.data.aPickingId;
+        const gradProp = symbol["lineGradientProperty"];
+        const featureIndexes =
+            geometry.properties.aPickingId || geometry.data.aPickingId;
         const aGradIndex = new Uint8Array(featureIndexes.length);
         const gradients = [];
         const gradientIndex = new Map();
@@ -84,7 +89,7 @@ class LineGradientPainter extends LinePainter {
         function fillGradients(properties) {
             let grad = properties && properties[gradProp];
             if (!Array.isArray(grad)) {
-                grad = [0, 'black', 1, 'black'];
+                grad = [0, "black", 1, "black"];
             }
             let key = grad.join();
             let index;
@@ -131,15 +136,15 @@ class LineGradientPainter extends LinePainter {
         const uniforms = {
             tileResolution: geometry.properties.tileResolution,
             tileRatio: geometry.properties.tileRatio,
-            tileExtent: geometry.properties.tileExtent
+            tileExtent: geometry.properties.tileExtent,
         };
 
         const symbol = this.getSymbol(symbolIndex);
         this.setLineUniforms(symbol, uniforms);
 
         const texture = this._genGradientTexture(geometry.properties.gradients);
-        uniforms['lineGradientTexture'] = texture;
-        uniforms['lineGradientTextureHeight'] = texture.height;
+        uniforms["lineGradientTexture"] = texture;
+        uniforms["lineGradientTextureHeight"] = texture.height;
 
         if (ref === undefined) {
             geometry.generateBuffers(this.regl);
@@ -148,15 +153,15 @@ class LineGradientPainter extends LinePainter {
         const material = new reshader.Material(uniforms);
         const mesh = new reshader.Mesh(geometry, material, {
             castShadow: false,
-            picking: true
+            picking: true,
         });
         mesh.setLocalTransform(transform);
 
         const defines = {
-            'HAS_GRADIENT': 1
+            HAS_GRADIENT: 1,
         };
         if (geometry.data.aAltitude) {
-            defines['HAS_ALTITUDE'] = 1;
+            defines["HAS_ALTITUDE"] = 1;
         }
         this.setMeshDefines(defines, geometry, symbolDef);
         mesh.setDefines(defines);
@@ -171,9 +176,9 @@ class LineGradientPainter extends LinePainter {
             width: 256,
             height,
             data: createGradient(gradients),
-            format: 'rgba',
-            mag: 'linear', //very important
-            min: 'linear', //very important
+            format: "rgba",
+            mag: "linear", //very important
+            min: "linear", //very important
             flipY: false,
         });
         return texture;
@@ -188,30 +193,39 @@ class LineGradientPainter extends LinePainter {
         const uniforms = [];
         const defines = {};
         this.fillIncludes(defines, uniforms, context);
-        if (this.sceneConfig.trailAnimation && this.sceneConfig.trailAnimation.enable) {
-            defines['HAS_TRAIL'] = 1;
+        if (
+            this.sceneConfig.trailAnimation &&
+            this.sceneConfig.trailAnimation.enable
+        ) {
+            defines["HAS_TRAIL"] = 1;
         }
         const isVectorTile = this.layer instanceof maptalks.TileLayer;
-        defines['LINESOFAR_TYPE'] = isVectorTile ? 'u32' : 'f32';
+        defines["LINESOFAR_TYPE"] = isVectorTile ? "u32" : "f32";
         const projViewModelMatrix = [];
-        uniforms.push(
-            {
-                name: 'projViewModelMatrix',
-                type: 'function',
-                fn: function (context, props) {
-                    mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
-                    return projViewModelMatrix;
-                }
-            }
-        );
+        uniforms.push({
+            name: "projViewModelMatrix",
+            type: "function",
+            fn: function (context, props) {
+                mat4.multiply(
+                    projViewModelMatrix,
+                    props["projViewMatrix"],
+                    props["modelMatrix"],
+                );
+                return projViewModelMatrix;
+            },
+        });
 
+        const wgslVert = getWGSLSource("vt_line_vert");
+        const wgslFrag = getWGSLSource("vt_line_gradient_frag");
         this.shader = new reshader.MeshShader({
-            name: 'line-gradient',
-            vert, frag,
-            wgslVert, wgslFrag,
+            name: "line-gradient",
+            vert,
+            frag,
+            wgslVert,
+            wgslFrag,
             uniforms,
             defines,
-            extraCommandProps: this.getExtraCommandProps()
+            extraCommandProps: this.getExtraCommandProps(),
         });
     }
 }
@@ -220,11 +234,13 @@ export default LineGradientPainter;
 
 function createGradient(grads) {
     if (grads.length > GRADIENTS_COUNT_TO_WARN) {
-        console.warn(`Gradients count is (${grads.length}), it may be slow to render.`);
+        console.warn(
+            `Gradients count is (${grads.length}), it may be slow to render.`,
+        );
     }
     // create a 256x1 gradient that we'll use to turn a grayscale heatmap into a colored one
-    const canvas = document.createElement('canvas'),
-        ctx = canvas.getContext('2d');
+    const canvas = document.createElement("canvas"),
+        ctx = canvas.getContext("2d");
 
     canvas.width = 256;
     canvas.height = 2 * grads.length;

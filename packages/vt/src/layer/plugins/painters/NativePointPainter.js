@@ -1,29 +1,35 @@
-import Color from 'color';
-import { reshader, mat4 } from '@maptalks/gl';
-import BasicPainter from './BasicPainter';
-import vert from './glsl/native-point.vert';
-import frag from './glsl/native-point.frag';
-import wgslVert from './wgsl/native-point_vert.wgsl';
-import wgslFrag from './wgsl/native-point_frag.wgsl';
-import pickingVert from './glsl/native-point.vert';
-import { extend, setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar } from '../Util';
-import { isFunctionDefinition, piecewiseConstant } from '@maptalks/function-type';
-import { prepareFnTypeData } from './util/fn_type_util';
-import { MapStateCache } from 'maptalks';
+import Color from "color";
+import { reshader, mat4 } from "@maptalks/gl";
+import BasicPainter from "./BasicPainter";
+import vert from "./glsl/native-point.vert";
+import frag from "./glsl/native-point.frag";
+import { getWGSLSource } from "@maptalks/gl";
+import pickingVert from "./glsl/native-point.vert";
+import {
+    extend,
+    setUniformFromSymbol,
+    createColorSetter,
+    toUint8ColorInGlobalVar,
+} from "../Util";
+import {
+    isFunctionDefinition,
+    piecewiseConstant,
+} from "@maptalks/function-type";
+import { prepareFnTypeData } from "./util/fn_type_util";
+import { MapStateCache } from "maptalks";
 
 const DEFAULT_UNIFORMS = {
     markerFill: [0, 0, 0],
     markerOpacity: 1,
-    markerSize: 10
+    markerSize: 10,
 };
 
 class NativePointPainter extends BasicPainter {
-
     getPrimitive() {
         if (this.isWebGPU()) {
-            return 'triangles'
+            return "triangles";
         }
-        return 'points';
+        return "points";
     }
 
     isTerrainSkin() {
@@ -51,58 +57,80 @@ class NativePointPainter extends BasicPainter {
         }
 
         const uniforms = {};
-        setUniformFromSymbol(uniforms, 'markerOpacity', symbol, 'markerOpacity', 1);
-        setUniformFromSymbol(uniforms, 'markerSize', symbol, 'markerSize', 10);
-        setUniformFromSymbol(uniforms, 'markerFill', symbol, 'markerFill', '#000', createColorSetter(this.colorCache, 3));
+        setUniformFromSymbol(
+            uniforms,
+            "markerOpacity",
+            symbol,
+            "markerOpacity",
+            1,
+        );
+        setUniformFromSymbol(uniforms, "markerSize", symbol, "markerSize", 10);
+        setUniformFromSymbol(
+            uniforms,
+            "markerFill",
+            symbol,
+            "markerFill",
+            "#000",
+            createColorSetter(this.colorCache, 3),
+        );
         const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
         material.createDefines = () => {
-            if (symbol.markerType !== 'square') {
+            if (symbol.markerType !== "square") {
                 return {
-                    'USE_CIRCLE': 1
+                    USE_CIRCLE: 1,
                 };
             }
             return null;
         };
 
-        material.appendDefines = (defines/*, geometry*/) => {
-            if (symbol.markerType !== 'square') {
-                defines['USE_CIRCLE'] = 1;
+        material.appendDefines = (defines /*, geometry*/) => {
+            if (symbol.markerType !== "square") {
+                defines["USE_CIRCLE"] = 1;
             }
             return defines;
         };
         const meshOptions = {
             castShadow: false,
-            picking: true
+            picking: true,
         };
         let mesh;
         if (this.isWebGPU()) {
             const { aPosition, aAltitude, aColor, aPickingId } = geometry.data;
             const position = new Int16Array([
-                -1, -1,
-                1, -1,
-                -1, 1,
-                -1, 1,
-                1, -1,
-                1, 1
+                -1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1,
             ]);
-            const geo = new reshader.Geometry({
-                pointPosition: position
-            }, 6, 0, { positionSize: 2, positionAttribute: 'pointPosition' });
+            const geo = new reshader.Geometry(
+                {
+                    pointPosition: position,
+                },
+                6,
+                0,
+                { positionSize: 2, positionAttribute: "pointPosition" },
+            );
             extend(geo.properties, geometry.properties);
             geo.generateBuffers(this.regl);
-            mesh = new reshader.InstancedMesh({
-                instancePosition: aPosition, instanceAltitude: aAltitude, aColor, aPickingId
-            }, geometry.getVertexCount(), geo, material, meshOptions);
+            mesh = new reshader.InstancedMesh(
+                {
+                    instancePosition: aPosition,
+                    instanceAltitude: aAltitude,
+                    aColor,
+                    aPickingId,
+                },
+                geometry.getVertexCount(),
+                geo,
+                material,
+                meshOptions,
+            );
             mesh.generateInstancedBuffers(this.regl);
         } else {
             mesh = new reshader.Mesh(geometry, material, meshOptions);
         }
         const defines = {};
         if (mesh.geometry.data.aAltitude) {
-            defines['HAS_ALTITUDE'] = 1;
+            defines["HAS_ALTITUDE"] = 1;
         }
         if (geometry.data.aColor) {
-            defines['HAS_COLOR'] = 1;
+            defines["HAS_COLOR"] = 1;
         }
         mesh.setDefines(defines);
         mesh.positionMatrix = this.getAltitudeOffsetMatrix();
@@ -112,30 +140,37 @@ class NativePointPainter extends BasicPainter {
     }
 
     createFnTypeConfig(map, symbolDef) {
-        const aColorFn = piecewiseConstant(symbolDef['markerFill']);
+        const aColorFn = piecewiseConstant(symbolDef["markerFill"]);
         return [
             {
                 //geometry.data 中的属性数据
-                attrName: 'aColor',
+                attrName: "aColor",
                 //symbol中的function-type属性
-                symbolName: 'markerFill',
+                symbolName: "markerFill",
                 type: Uint8Array,
                 width: 4,
-                define: 'HAS_COLOR',
+                define: "HAS_COLOR",
                 evaluate: (properties, geometry) => {
                     const cache = MapStateCache[map.id];
                     const zoom = cache ? cache.zoom : map.getZoom();
                     let color = aColorFn(zoom, properties);
                     if (isFunctionDefinition(color)) {
-                        color = this.evaluateInFnTypeConfig(color, geometry, map, properties, true);
+                        color = this.evaluateInFnTypeConfig(
+                            color,
+                            geometry,
+                            map,
+                            properties,
+                            true,
+                        );
                     }
                     if (!Array.isArray(color)) {
-                        color = this.colorCache[color] = this.colorCache[color] || Color(color).unitArray();
+                        color = this.colorCache[color] =
+                            this.colorCache[color] || Color(color).unitArray();
                     }
                     color = toUint8ColorInGlobalVar(color);
                     return color;
-                }
-            }
+                },
+            },
         ];
     }
 
@@ -152,25 +187,31 @@ class NativePointPainter extends BasicPainter {
             },
             height: () => {
                 return this.canvas ? this.canvas.height : 1;
-            }
+            },
         };
         const projViewModelMatrix = [];
+        const wgslVert = getWGSLSource("vt_native_point_vert");
+        const wgslFrag = getWGSLSource("vt_native_point_frag");
         // const stencil = this.isOnly2D();
         const config = {
-            name: 'vt-native-point',
+            name: "vt-native-point",
             vert,
             frag,
             wgslVert,
             wgslFrag,
             uniforms: [
                 {
-                    name: 'projViewModelMatrix',
-                    type: 'function',
+                    name: "projViewModelMatrix",
+                    type: "function",
                     fn: function (context, props) {
-                        mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
+                        mat4.multiply(
+                            projViewModelMatrix,
+                            props["projViewMatrix"],
+                            props["modelMatrix"],
+                        );
                         return projViewModelMatrix;
-                    }
-                }
+                    },
+                },
             ],
             defines: null,
             extraCommandProps: {
@@ -198,14 +239,14 @@ class NativePointPainter extends BasicPainter {
                     enable: true,
                     // mask: true,
                     range: this.sceneConfig.depthRange || [0, 1],
-                    func: this.sceneConfig.depthFunc || 'always'
+                    func: this.sceneConfig.depthFunc || "always",
                 },
                 blend: {
                     enable: true,
                     func: this.getBlendFunc(),
-                    equation: 'add'
-                }
-            }
+                    equation: "add",
+                },
+            },
         };
 
         this.shader = new reshader.MeshShader(config);
@@ -213,29 +254,35 @@ class NativePointPainter extends BasicPainter {
 
         if (this.pickingFBO) {
             const projViewModelMatrix = [];
-            this.picking = [new reshader.FBORayPicking(
-                this.renderer,
-                {
-                    vert: pickingVert,
-                    wgslVert: wgslVert,
-                    uniforms: [
-                        {
-                            name: 'projViewModelMatrix',
-                            type: 'function',
-                            fn: function (context, props) {
-                                mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
-                                return projViewModelMatrix;
-                            }
-                        }
-                    ],
-                    defines: { 'PICKING_MODE': 1 },
-                    extraCommandProps: {
-                        viewport: this.pickingViewport
-                    }
-                },
-                this.pickingFBO,
-                this.getMap()
-            )];
+            this.picking = [
+                new reshader.FBORayPicking(
+                    this.renderer,
+                    {
+                        vert: pickingVert,
+                        wgslVert: getWGSLSource("vt_native_point_vert"),
+                        uniforms: [
+                            {
+                                name: "projViewModelMatrix",
+                                type: "function",
+                                fn: function (context, props) {
+                                    mat4.multiply(
+                                        projViewModelMatrix,
+                                        props["projViewMatrix"],
+                                        props["modelMatrix"],
+                                    );
+                                    return projViewModelMatrix;
+                                },
+                            },
+                        ],
+                        defines: { PICKING_MODE: 1 },
+                        extraCommandProps: {
+                            viewport: this.pickingViewport,
+                        },
+                    },
+                    this.pickingFBO,
+                    this.getMap(),
+                ),
+            ];
         }
     }
 
@@ -243,7 +290,7 @@ class NativePointPainter extends BasicPainter {
         const projViewMatrix = map.projViewMatrix;
         return {
             projViewMatrix,
-            resolution: [this.canvas.width, this.canvas.height]
+            resolution: [this.canvas.width, this.canvas.height],
         };
     }
 }

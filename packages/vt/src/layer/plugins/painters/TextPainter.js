@@ -1,51 +1,75 @@
-import { vec2, vec3, vec4, mat2, mat4, reshader, quat } from '@maptalks/gl';
-import { interpolated, isFunctionDefinition } from '@maptalks/function-type';
-import CollisionPainter from './CollisionPainter';
-import { extend, isNil } from '../Util';
-import { getCharOffset } from './util/get_char_offset';
-import { projectLine } from './util/projection';
-import { getLabelNormal } from './util/get_label_normal';
-import vert from './glsl/text.vert';
-import wgslVert from './wgsl/text_vert.wgsl';
-import vertAlongLine from './glsl/text.line.vert';
-import wgslVertAlongLine from './wgsl/text_line_vert.wgsl';
-import frag from './glsl/text.frag';
-import wgslFrag from './wgsl/text_frag.wgsl';
-import pickingVert from './glsl/text.vert';
-import pickingWgslVert from './wgsl/text_vert.wgsl';
-import linePickingVert from './glsl/text.line.vert';
-import linePickingWgslVert from './wgsl/text_line_vert.wgsl';
-import { projectPoint } from './util/projection';
-import { getShapeMatrix } from './util/box_util';
-import { createTextMesh, DEFAULT_UNIFORMS, createTextShader, GAMMA_SCALE, getTextFnTypeConfig, isLabelCollides, getLabelEntryKey } from './util/create_text_painter';
-import { GLYPH_SIZE } from './Constant';
-import { getCentiMeterScale } from '../../../common/Util';
-import { INVALID_PROJECTED_ANCHOR, INVALID_ALTITUDE } from '../../../common/Constant';
-import { getVectorPacker } from '../../../packer/inject';
-import { MapStateCache } from 'maptalks';
+import { vec2, vec3, vec4, mat2, mat4, reshader, quat } from "@maptalks/gl";
+import { interpolated, isFunctionDefinition } from "@maptalks/function-type";
+import CollisionPainter from "./CollisionPainter";
+import { extend, isNil } from "../Util";
+import { getCharOffset } from "./util/get_char_offset";
+import { projectLine } from "./util/projection";
+import { getLabelNormal } from "./util/get_label_normal";
+import vert from "./glsl/text.vert";
+import { getWGSLSource } from "@maptalks/gl";
+import vertAlongLine from "./glsl/text.line.vert";
+import frag from "./glsl/text.frag";
+import pickingVert from "./glsl/text.vert";
+import linePickingVert from "./glsl/text.line.vert";
+import { projectPoint } from "./util/projection";
+import { getShapeMatrix } from "./util/box_util";
+import {
+    createTextMesh,
+    DEFAULT_UNIFORMS,
+    createTextShader,
+    GAMMA_SCALE,
+    getTextFnTypeConfig,
+    isLabelCollides,
+    getLabelEntryKey,
+} from "./util/create_text_painter";
+import { GLYPH_SIZE } from "./Constant";
+import { getCentiMeterScale } from "../../../common/Util";
+import {
+    INVALID_PROJECTED_ANCHOR,
+    INVALID_ALTITUDE,
+} from "../../../common/Constant";
+import { getVectorPacker } from "../../../packer/inject";
+import { MapStateCache } from "maptalks";
 
 const { TextUtil, PackUtil, FilterUtil, TEXT_MAX_ANGLE } = getVectorPacker();
 
 const shaderFilter0 = function (mesh) {
     const renderer = this.layer.getRenderer();
-    return !this._isHalo0(mesh) && renderer.isTileNearCamera(mesh) && mesh.geometry.properties.textPlacement !== 'line';
+    return (
+        !this._isHalo0(mesh) &&
+        renderer.isTileNearCamera(mesh) &&
+        mesh.geometry.properties.textPlacement !== "line"
+    );
 };
 
 const shaderFilterN = function (mesh) {
     const renderer = this.layer.getRenderer();
-    return !this._isHalo0(mesh) && !renderer.isForeground(mesh) && mesh.geometry.properties.textPlacement !== 'line';
+    return (
+        !this._isHalo0(mesh) &&
+        !renderer.isForeground(mesh) &&
+        mesh.geometry.properties.textPlacement !== "line"
+    );
 };
 
 const shaderLineFilter0 = function (mesh) {
     const renderer = this.layer.getRenderer();
-    return !this._isHalo0(mesh) && renderer.isTileNearCamera(mesh) && mesh.geometry.properties.textPlacement === 'line';
+    return (
+        !this._isHalo0(mesh) &&
+        renderer.isTileNearCamera(mesh) &&
+        mesh.geometry.properties.textPlacement === "line"
+    );
 };
 
 const shaderLineFilterN = function (mesh) {
     const renderer = this.layer.getRenderer();
     const z = mesh.properties.tile.z;
     const currentZoom = renderer.getCurrentTileZoom();
-    return !this._isHalo0(mesh) && !renderer.isForeground(mesh) && mesh.geometry.properties.textPlacement === 'line' && z < currentZoom;
+    return (
+        !this._isHalo0(mesh) &&
+        !renderer.isForeground(mesh) &&
+        mesh.geometry.properties.textPlacement === "line" &&
+        z < currentZoom
+    );
 };
 
 //label box 或 icon box 对应的element数量
@@ -55,15 +79,19 @@ const BOX_ELEMENT_COUNT = 6;
 const Z_AXIS_OFFSET = [0, 0, 3];
 
 // temparary variables used later
-const PROJ_MATRIX = [], CHAR_OFFSET = [];
+const PROJ_MATRIX = [],
+    CHAR_OFFSET = [];
 
 const PLANE_MATRIX = [];
 
-const ANCHOR = [], PROJ_ANCHOR = [];
+const ANCHOR = [],
+    PROJ_ANCHOR = [];
 
 const MAT2 = [];
 
-const SHAPE = [], OFFSET = [], AXIS_FACTOR = [1, -1];
+const SHAPE = [],
+    OFFSET = [],
+    AXIS_FACTOR = [1, -1];
 
 const INT16 = new Int16Array(3);
 
@@ -73,7 +101,8 @@ const TEMP_MAT4_1 = [];
 const TEMP_AXIS = [];
 const TEMP_CANVAS_SIZE = [];
 
-const FIRST_CHAROFFSET = [], LAST_CHAROFFSET = [];
+const FIRST_CHAROFFSET = [],
+    LAST_CHAROFFSET = [];
 
 const params = {};
 const feature = {};
@@ -88,13 +117,13 @@ const BOX = [];
 
 export default class TextPainter extends CollisionPainter {
     static getBloomSymbol() {
-        return ['textBloom'];
+        return ["textBloom"];
     }
 
     constructor(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig) {
         super(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig);
-        this.propAllowOverlap = 'textAllowOverlap';
-        this.propIgnorePlacement = 'textIgnorePlacement';
+        this.propAllowOverlap = "textAllowOverlap";
+        this.propIgnorePlacement = "textIgnorePlacement";
         // this.layer.getRenderer().canvas.addEventListener('webglcontextlost', e => {
         //     console.log(JSON.stringify(layer.getMap().getView()));
         //     const arr = new Int16Array(this._buffer);
@@ -155,8 +184,8 @@ export default class TextPainter extends CollisionPainter {
         }
         for (let i = 0; i < this.symbolDef.length; i++) {
             const symbolDef = this.symbolDef[i];
-            const pitchAlignment = symbolDef['textPitchAlignment'];
-            if (pitchAlignment !== 'map') {
+            const pitchAlignment = symbolDef["textPitchAlignment"];
+            if (pitchAlignment !== "map") {
                 this._tagTerrainVector = true;
                 return true;
             }
@@ -174,8 +203,12 @@ export default class TextPainter extends CollisionPainter {
         }
         for (let i = 0; i < this.symbolDef.length; i++) {
             const symbolDef = this.symbolDef[i];
-            const pitchAlignment = symbolDef['textPitchAlignment'];
-            if (pitchAlignment === 'map' || isFunctionDefinition(pitchAlignment) || FilterUtil.isExpression(pitchAlignment)) {
+            const pitchAlignment = symbolDef["textPitchAlignment"];
+            if (
+                pitchAlignment === "map" ||
+                isFunctionDefinition(pitchAlignment) ||
+                FilterUtil.isExpression(pitchAlignment)
+            ) {
                 this._tagTerrainSkin = true;
                 return true;
             }
@@ -188,35 +221,53 @@ export default class TextPainter extends CollisionPainter {
         this._textNameFn = [];
         for (let i = 0; i < this.symbolDef.length; i++) {
             const symbolDef = this.symbolDef[i];
-            if (FilterUtil.isExpression(symbolDef['textName'])) {
-                const expression = FilterUtil.createExpression(symbolDef['textName'], 'string');
+            if (FilterUtil.isExpression(symbolDef["textName"])) {
+                const expression = FilterUtil.createExpression(
+                    symbolDef["textName"],
+                    "string",
+                );
                 this._textNameFn[i] = (zoom, properties) => {
                     params.zoom = zoom;
                     feature.properties = properties;
                     let v;
                     try {
-                        v = expression.evaluateWithoutErrorHandling(params, feature, featureState, null, availableImages);
+                        v = expression.evaluateWithoutErrorHandling(
+                            params,
+                            feature,
+                            featureState,
+                            null,
+                            availableImages,
+                        );
                     } catch (err) {
                         v = null;
                     }
 
                     return v;
                 };
-            } else if (isFunctionDefinition(symbolDef['textName'])) {
-                this._textNameFn[i] = interpolated(symbolDef['textName']);
+            } else if (isFunctionDefinition(symbolDef["textName"])) {
+                this._textNameFn[i] = interpolated(symbolDef["textName"]);
             }
         }
     }
 
     shouldDeleteMeshOnUpdateSymbol(symbol) {
         if (!Array.isArray(symbol)) {
-            return (symbol.textHaloRadius === 0 || this.symbolDef[0].textHaloRadius === 0) && symbol.textHaloRadius !== this.symbolDef[0].textHaloRadius;
+            return (
+                (symbol.textHaloRadius === 0 ||
+                    this.symbolDef[0].textHaloRadius === 0) &&
+                symbol.textHaloRadius !== this.symbolDef[0].textHaloRadius
+            );
         } else {
             for (let i = 0; i < symbol.length; i++) {
                 if (!symbol[i]) {
                     continue;
                 }
-                if ((symbol[i].textHaloRadius === 0 || this.symbolDef[i].textHaloRadius === 0) && symbol[i].textHaloRadius !== this.symbolDef[i].textHaloRadius) {
+                if (
+                    (symbol[i].textHaloRadius === 0 ||
+                        this.symbolDef[i].textHaloRadius === 0) &&
+                    symbol[i].textHaloRadius !==
+                        this.symbolDef[i].textHaloRadius
+                ) {
                     return true;
                 }
             }
@@ -264,9 +315,21 @@ export default class TextPainter extends CollisionPainter {
         const symbol = this.getSymbol(symbolIndex);
         const symbolDef = this.getSymbolDef(symbolIndex);
         const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
-        const mesh = createTextMesh.call(this, this.regl, geometry, transform, symbolDef, symbol, fnTypeConfig, this.layer.options['collision'], !enableCollision, enableUniquePlacement);
+        const mesh = createTextMesh.call(
+            this,
+            this.regl,
+            geometry,
+            transform,
+            symbolDef,
+            symbol,
+            fnTypeConfig,
+            this.layer.options["collision"],
+            !enableCollision,
+            enableUniquePlacement,
+        );
         if (mesh.length) {
-            const isLinePlacement = geometry.properties.textPlacement === 'line';
+            const isLinePlacement =
+                geometry.properties.textPlacement === "line";
             //tags for picking
             if (isLinePlacement) {
                 this._hasLineText = true;
@@ -274,7 +337,7 @@ export default class TextPainter extends CollisionPainter {
                 this._hasNormalText = true;
             }
         }
-        mesh.forEach(m => {
+        mesh.forEach((m) => {
             m.positionMatrix = this.getAltitudeOffsetMatrix();
             m.properties.tileVectorTransform = tileVectorTransform;
         });
@@ -305,23 +368,35 @@ export default class TextPainter extends CollisionPainter {
         // console.log('Buffer内存总大小', size);
 
         //1. render current tile level's meshes
-        this.shader.filter = context.sceneFilter ? [this._filter0, context.sceneFilter] : this._filter0;
+        this.shader.filter = context.sceneFilter
+            ? [this._filter0, context.sceneFilter]
+            : this._filter0;
         this.callRenderer(this.shader, uniforms, context);
 
-        this._shaderAlongLine.filter = context.sceneFilter ? [this._lineFilter0, context.sceneFilter] : this._lineFilter0;
+        this._shaderAlongLine.filter = context.sceneFilter
+            ? [this._lineFilter0, context.sceneFilter]
+            : this._lineFilter0;
         this.callRenderer(this._shaderAlongLine, uniforms, context);
     }
 
     callBackgroundTileShader(uniforms, context) {
-        this.shader.filter = context.sceneFilter ? [this._filter1, context.sceneFilter] : this._filter1;
+        this.shader.filter = context.sceneFilter
+            ? [this._filter1, context.sceneFilter]
+            : this._filter1;
         this.callRenderer(this.shader, uniforms, context);
 
-        this._shaderAlongLine.filter = context.sceneFilter ? [this._lineFilter1, context.sceneFilter] : this._lineFilter1;
+        this._shaderAlongLine.filter = context.sceneFilter
+            ? [this._lineFilter1, context.sceneFilter]
+            : this._lineFilter1;
         this.callRenderer(this._shaderAlongLine, uniforms, context);
     }
 
     callRenderer(shader, uniforms, context) {
-        if (context && context.isRenderingTerrain && isFunctionDefinition(this.symbolDef.textPitchAlignment)) {
+        if (
+            context &&
+            context.isRenderingTerrain &&
+            isFunctionDefinition(this.symbolDef.textPitchAlignment)
+        ) {
             if (context.isRenderingTerrainSkin) {
                 // 过滤掉 pitchAlignment 为 viewport 的数据
                 uniforms.textPitchFilter = 1;
@@ -346,13 +421,20 @@ export default class TextPainter extends CollisionPainter {
         const map = this.getMap();
         const cache = MapStateCache[map.id];
 
-        const bearing = -(cache ? cache.bearing : map.getBearing()) * Math.PI / 180;
+        const bearing =
+            (-(cache ? cache.bearing : map.getBearing()) * Math.PI) / 180;
         const planeMatrix = mat2.fromRotation(PLANE_MATRIX, bearing);
         //boxVisible, mesh, meshBoxes, mvpMatrix, boxIndex
         const fn = (visElemts, meshBoxes, mvpMatrix, labelIndex) => {
             // debugger
             const { start, end, mesh, allElements: elements } = meshBoxes[0];
-            const visible = this.updateBoxCollisionFading(true, mesh, meshBoxes, mvpMatrix, labelIndex);
+            const visible = this.updateBoxCollisionFading(
+                true,
+                mesh,
+                meshBoxes,
+                mvpMatrix,
+                labelIndex,
+            );
             if (visible) {
                 let count = visElemts.count;
                 for (let i = start; i < end; i++) {
@@ -387,12 +469,14 @@ export default class TextPainter extends CollisionPainter {
             const geometry = mesh.geometry;
             const symbol = this.getSymbol(mesh.properties.symbolIndex);
             // mesh.properties.textSize = !isNil(symbol['textSize']) ? symbol['textSize'] : DEFAULT_UNIFORMS['textSize'];
-            mesh.properties.textHaloRadius = !isNil(symbol['textHaloRadius']) ? symbol['textHaloRadius'] : DEFAULT_UNIFORMS['textHaloRadius'];
+            mesh.properties.textHaloRadius = !isNil(symbol["textHaloRadius"])
+                ? symbol["textHaloRadius"]
+                : DEFAULT_UNIFORMS["textHaloRadius"];
 
             // const idx = geometry.properties.aPickingId[0];
             // console.log(`图层:${geometry.properties.features[idx].feature.layer},数据数量：${geometry.count / BOX_ELEMENT_COUNT}`);
             const meshKey = mesh.properties.meshKey;
-            if (geometry.properties.textPlacement === 'line') {
+            if (geometry.properties.textPlacement === "line") {
                 //line placement
                 if (!geometry.properties.line) {
                     continue;
@@ -403,11 +487,11 @@ export default class TextPainter extends CollisionPainter {
                 this._updateLineLabel(mesh, planeMatrix);
                 const { aOffset, aOpacity } = geometry.properties;
                 if (aOffset.dirty) {
-                    geometry.updateData('aOffset', aOffset);
+                    geometry.updateData("aOffset", aOffset);
                     aOffset.dirty = false;
                 }
                 if (aOpacity && aOpacity.dirty) {
-                    geometry.updateData('aOpacity', aOpacity);
+                    geometry.updateData("aOpacity", aOpacity);
                     aOpacity.dirty = false;
                 }
                 if (enableCollision) {
@@ -417,14 +501,19 @@ export default class TextPainter extends CollisionPainter {
                 this.startMeshCollision(mesh);
                 const { elements, aOpacity, visElemts } = geometry.properties;
                 visElemts.count = 0;
-                this.forEachBox(mesh, (mesh, meshBoxes, mvpMatrix, labelIndex, label) => {
-                    fn(visElemts, meshBoxes, mvpMatrix, labelIndex, label);
-                });
+                this.forEachBox(
+                    mesh,
+                    (mesh, meshBoxes, mvpMatrix, labelIndex, label) => {
+                        fn(visElemts, meshBoxes, mvpMatrix, labelIndex, label);
+                    },
+                );
 
                 if (aOpacity && aOpacity.dirty) {
-                    geometry.updateData('aOpacity', aOpacity);
+                    geometry.updateData("aOpacity", aOpacity);
                 }
-                const allVisilbe = visElemts.count === elements.length && geometry.count === elements.length;
+                const allVisilbe =
+                    visElemts.count === elements.length &&
+                    geometry.count === elements.length;
                 const allHided = !visElemts.count && !geometry.count;
                 if (!allVisilbe && !allHided) {
                     geometry.setElements(visElemts, visElemts.count);
@@ -436,7 +525,15 @@ export default class TextPainter extends CollisionPainter {
 
     isMeshIterable(mesh) {
         //halo和正文共享的同一个geometry，无需更新
-        return mesh.isValid() && mesh.material && !mesh.material.get('isHalo') && !(this.shouldIgnoreBackground() && !this.layer.getRenderer().isForeground(mesh));
+        return (
+            mesh.isValid() &&
+            mesh.material &&
+            !mesh.material.get("isHalo") &&
+            !(
+                this.shouldIgnoreBackground() &&
+                !this.layer.getRenderer().isForeground(mesh)
+            )
+        );
     }
 
     isMeshUniquePlaced(mesh) {
@@ -444,7 +541,7 @@ export default class TextPainter extends CollisionPainter {
             return false;
         }
         const symbol = this.getSymbol(mesh.properties.symbolIndex);
-        return symbol['textPlacement'] !== 'line';
+        return symbol["textPlacement"] !== "line";
     }
 
     getUniqueEntryKey(mesh, idx) {
@@ -465,38 +562,57 @@ export default class TextPainter extends CollisionPainter {
         const cache = MapStateCache[map.id];
         const pitch = cache ? cache.pitch : map.getPitch();
         const bearing = cache ? cache.bearing : map.getBearing();
-        const { lineTextPitch: linePitch, lineTextBearing: lineBearing } = mesh.properties;
+        const { lineTextPitch: linePitch, lineTextBearing: lineBearing } =
+            mesh.properties;
 
         // this._counter++;
 
         const uniforms = mesh.material.uniforms;
-        const isPitchWithMap = uniforms['textPitchWithMap'] === 1;
+        const isPitchWithMap = uniforms["textPitchWithMap"] === 1;
 
         const allElements = geometryProps.elements;
 
         //pitchWithMap 而且 offset， rotation都更新过了，才能直接用allElements
 
         if (!isPitchWithMap) {
-            const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.localTransform);
+            const matrix = mat4.multiply(
+                PROJ_MATRIX,
+                map.projViewMatrix,
+                mesh.localTransform,
+            );
             //project line to screen coordinates
             //line.id都为0，但不同的tile, matrix是不同的，故可以用matrix作为hash id
-            const id = line.id + '-' + matrix.join();
+            const id = line.id + "-" + matrix.join();
             let out;
             if (this._projectedLinesCache[id]) {
                 line = this._projectedLinesCache[id];
             } else {
-                out = geometryProps.projectedLine = geometryProps.projectedLine || new Array(line.length);
-                line = this._projectLine(out, line, matrix, map.width, map.height);
+                out = geometryProps.projectedLine =
+                    geometryProps.projectedLine || new Array(line.length);
+                line = this._projectLine(
+                    out,
+                    line,
+                    matrix,
+                    map.width,
+                    map.height,
+                );
                 this._projectedLinesCache[id] = out;
             }
         }
         const enableCollision = this.isEnableCollision();
-        const visElemts = geometry.properties.visElemts = geometry.properties.visElemts || new allElements.constructor(allElements.length);
-        const visCache = geometry.properties.visCache = geometry.properties.visCache || [];
+        const visElemts = (geometry.properties.visElemts =
+            geometry.properties.visElemts ||
+            new allElements.constructor(allElements.length));
+        const visCache = (geometry.properties.visCache =
+            geometry.properties.visCache || []);
         if (enableCollision) {
             visElemts.count = 0;
         }
-        const needUpdate = linePitch === undefined || !map.isInteracting() || (Math.abs(pitch - linePitch) > 2 || Math.abs(bearing - lineBearing) > 2);
+        const needUpdate =
+            linePitch === undefined ||
+            !map.isInteracting() ||
+            Math.abs(pitch - linePitch) > 2 ||
+            Math.abs(bearing - lineBearing) > 2;
         if (needUpdate) {
             // label box 刷新后，强制将 this._meshCollisionStale 设为true， 避免在updateBoxCollisionFading方法中仍旧使用缓存的collision对象。
             this._meshCollisionStale = true;
@@ -505,7 +621,16 @@ export default class TextPainter extends CollisionPainter {
             const { start, end } = meshBoxes[0];
             let visible = visCache[labelIndex];
             if (visible === undefined || needUpdate) {
-                visible = this._updateLabelAttributes(mesh, allElements, start, end, line, mvpMatrix, isPitchWithMap ? planeMatrix : null, labelIndex);
+                visible = this._updateLabelAttributes(
+                    mesh,
+                    allElements,
+                    start,
+                    end,
+                    line,
+                    mvpMatrix,
+                    isPitchWithMap ? planeMatrix : null,
+                    labelIndex,
+                );
             }
             visCache[labelIndex] = visible;
             // const meshKey = mesh.properties.meshKey;
@@ -518,7 +643,13 @@ export default class TextPainter extends CollisionPainter {
                 //offset 计算 miss，则立即隐藏文字，不进入fading
                 return;
             }
-            visible = this.updateBoxCollisionFading(visible, mesh, meshBoxes, mvpMatrix, labelIndex);
+            visible = this.updateBoxCollisionFading(
+                visible,
+                mesh,
+                meshBoxes,
+                mvpMatrix,
+                labelIndex,
+            );
             if (visible) {
                 let count = visElemts.count;
                 for (let i = start; i < end; i++) {
@@ -533,10 +664,14 @@ export default class TextPainter extends CollisionPainter {
         }
         const aAltitudeArr = mesh.geometry.properties.aAltitude;
         if (aAltitudeArr && aAltitudeArr.dirty) {
-            geometry.updateData('aAltitude', aAltitudeArr);
+            geometry.updateData("aAltitude", aAltitudeArr);
             aAltitudeArr.dirty = false;
         }
-        if (enableCollision && (visElemts.count !== allElements.length || geometry.count !== visElemts.count)) {
+        if (
+            enableCollision &&
+            (visElemts.count !== allElements.length ||
+                geometry.count !== visElemts.count)
+        ) {
             geometry.setElements(visElemts, visElemts.count);
             // console.log('绘制', visibleElements.length / 6, '共', allElements.length / 6);
         }
@@ -549,8 +684,13 @@ export default class TextPainter extends CollisionPainter {
 
     forEachBox(mesh, fn) {
         const map = this.getMap();
-        const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.properties.tileVectorTransform);
-        const { collideIds, aCount, features, elements } = mesh.geometry.properties;
+        const matrix = mat4.multiply(
+            PROJ_MATRIX,
+            map.projViewMatrix,
+            mesh.properties.tileVectorTransform,
+        );
+        const { collideIds, aCount, features, elements } =
+            mesh.geometry.properties;
         if (!collideIds) {
             return;
         }
@@ -563,28 +703,47 @@ export default class TextPainter extends CollisionPainter {
         let index = 0;
 
         let idx = elements[0];
-        let start = 0, current = collideIds[idx];
+        let start = 0,
+            current = collideIds[idx];
         //每个文字有6个element
         for (let i = 0; i <= elements.length; i += BOX_ELEMENT_COUNT) {
             idx = elements[i];
             //pickingId发生变化，新的feature出现
             if (collideIds[idx] !== current || i === elements.length) {
                 const feature = features[current] && features[current].feature;
-                if (enableUniquePlacement && this.isMeshUniquePlaced(mesh) && feature && !feature.label) {
+                if (
+                    enableUniquePlacement &&
+                    this.isMeshUniquePlaced(mesh) &&
+                    feature &&
+                    !feature.label
+                ) {
                     const properties = feature.properties || {};
                     // properties['$layer'] = feature.layer;
                     // properties['$type'] = feature.type;
                     const { symbolIndex } = mesh.properties;
-                    const textName = symbolIndex && this._textNameFn[symbolIndex.index] ? this._textNameFn[symbolIndex.index](mesh.properties.z, properties) : this.getSymbol(mesh.properties.symbolIndex)['textName'];
+                    const textName =
+                        symbolIndex && this._textNameFn[symbolIndex.index]
+                            ? this._textNameFn[symbolIndex.index](
+                                  mesh.properties.z,
+                                  properties,
+                              )
+                            : this.getSymbol(mesh.properties.symbolIndex)[
+                                  "textName"
+                              ];
                     const label = TextUtil.resolveText(textName, properties);
                     // delete properties['$layer'];
                     // delete properties['$type'];
                     feature.label = label;
                 }
-                const end = i/*  === elements.length - 6 ? elements.length : i */;
+                const end =
+                    i; /*  === elements.length - 6 ? elements.length : i */
                 const charCount = aCount[elements[start]];
 
-                for (let ii = start; ii < end; ii += charCount * BOX_ELEMENT_COUNT) {
+                for (
+                    let ii = start;
+                    ii < end;
+                    ii += charCount * BOX_ELEMENT_COUNT
+                ) {
                     meshBox[0].start = ii;
                     meshBox[0].end = ii + charCount * BOX_ELEMENT_COUNT;
                     meshBox[0].boxCount = charCount;
@@ -597,24 +756,38 @@ export default class TextPainter extends CollisionPainter {
     }
 
     // start and end is the start and end index of a label
-    _updateLabelAttributes(mesh, meshElements, start, end, line, mvpMatrix, planeMatrix/*, labelIndex*/) {
+    _updateLabelAttributes(
+        mesh,
+        meshElements,
+        start,
+        end,
+        line,
+        mvpMatrix,
+        planeMatrix /*, labelIndex*/,
+    ) {
         const renderer = this.layer.getRenderer();
 
         const uniforms = mesh.material.uniforms;
-        const isPitchWithMap = uniforms['textPitchWithMap'] === 1;
-        const terrainHelper = !isPitchWithMap && renderer.getTerrainHelper && renderer.getTerrainHelper();
+        const isPitchWithMap = uniforms["textPitchWithMap"] === 1;
+        const terrainHelper =
+            !isPitchWithMap &&
+            renderer.getTerrainHelper &&
+            renderer.getTerrainHelper();
 
         const enableCollision = this.isEnableCollision();
         const map = this.getMap();
         const geometry = mesh.geometry;
         const positionSize = geometry.desc.positionSize;
 
-        const { aShape, aOffset, aAnchor, aAltitude, aPitchRotation } = geometry.properties;
+        const { aShape, aOffset, aAnchor, aAltitude, aPitchRotation } =
+            geometry.properties;
         let { aProjectedAnchor } = geometry.properties;
         if (!aProjectedAnchor) {
-            aProjectedAnchor = geometry.properties.aProjectedAnchor = new Array(aAnchor.length / positionSize * 3);
+            aProjectedAnchor = geometry.properties.aProjectedAnchor = new Array(
+                (aAnchor.length / positionSize) * 3,
+            );
         }
-        const aTextSize = geometry.properties['aTextSize'];
+        const aTextSize = geometry.properties["aTextSize"];
 
         // const layer = this.layer;
         // const renderer = layer.getRenderer();
@@ -633,12 +806,28 @@ export default class TextPainter extends CollisionPainter {
         // let labelAnchor = vec3.set(ANCHOR, aAnchor[idx], aAnchor[idx + 1], positionSize === 2 ? 0 : aAnchor[idx + 2]);
         let labelAnchor;
         if (geometry.data.aAltitude) {
-            labelAnchor = vec3.set(ANCHOR, aAnchor[idx], aAnchor[idx + 1], aAltitude[index]);
+            labelAnchor = vec3.set(
+                ANCHOR,
+                aAnchor[idx],
+                aAnchor[idx + 1],
+                aAltitude[index],
+            );
         } else {
-            labelAnchor = PackUtil.unpackPosition(ANCHOR, aAnchor[idx], aAnchor[idx + 1], aAnchor[idx + 2]);
+            labelAnchor = PackUtil.unpackPosition(
+                ANCHOR,
+                aAnchor[idx],
+                aAnchor[idx + 1],
+                aAnchor[idx + 2],
+            );
         }
 
-        const projLabelAnchor = projectPoint(PROJ_ANCHOR, labelAnchor, mvpMatrix, map.width, map.height);
+        const projLabelAnchor = projectPoint(
+            PROJ_ANCHOR,
+            labelAnchor,
+            mvpMatrix,
+            map.width,
+            map.height,
+        );
 
         const aTerrainAltitude = geometry.properties.aTerrainAltitude;
         let elevatedAnchor;
@@ -653,11 +842,16 @@ export default class TextPainter extends CollisionPainter {
             if (altitude) {
                 elevatedAnchor = vec3.set(ELEVATED_ANCHOR, ...labelAnchor);
                 elevatedAnchor[2] = altitude * 100;
-                elevatedAnchor = projectPoint(elevatedAnchor, elevatedAnchor, mvpMatrix, map.width, map.height);
+                elevatedAnchor = projectPoint(
+                    elevatedAnchor,
+                    elevatedAnchor,
+                    mvpMatrix,
+                    map.width,
+                    map.height,
+                );
             } else {
                 elevatedAnchor = projLabelAnchor;
             }
-
         } else {
             elevatedAnchor = projLabelAnchor;
         }
@@ -682,7 +876,9 @@ export default class TextPainter extends CollisionPainter {
         aProjectedAnchor[index * 3 + 1] = elevatedAnchor[1];
         aProjectedAnchor[index * 3 + 2] = elevatedAnchor[2];
 
-        const scale = isProjected ? 1 : geometry.properties.tileExtent / this.layer.getTileSize().width;
+        const scale = isProjected
+            ? 1
+            : geometry.properties.tileExtent / this.layer.getTileSize().width;
 
         let visible = true;
 
@@ -692,8 +888,20 @@ export default class TextPainter extends CollisionPainter {
         //normal decides whether to flip and vertical
         const firstChrIdx = meshElements[start];
         const lastChrIdx = meshElements[end - 1];
-        const textSize = aTextSize ? aTextSize[firstChrIdx] : mesh.properties.textSize;
-        const normal = this._updateNormal(mesh, textSize, line, firstChrIdx, lastChrIdx, labelAnchor, ANCHOR, scale, planeMatrix);
+        const textSize = aTextSize
+            ? aTextSize[firstChrIdx]
+            : mesh.properties.textSize;
+        const normal = this._updateNormal(
+            mesh,
+            textSize,
+            line,
+            firstChrIdx,
+            lastChrIdx,
+            labelAnchor,
+            ANCHOR,
+            scale,
+            planeMatrix,
+        );
         if (normal === null) {
             resetOffset(aOffset, meshElements, start, end);
             //normal返回null说明计算过程中有文字visible是false，直接退出
@@ -766,11 +974,31 @@ export default class TextPainter extends CollisionPainter {
             if (!flip && j === start && !onlyOne && !terrainHelper) {
                 // 因为在updateNormal中已经计算过first_offset，这里就不再计算了
                 offset = FIRST_CHAROFFSET;
-            } else if (!flip && j === end - BOX_ELEMENT_COUNT && !onlyOne && !terrainHelper) {
+            } else if (
+                !flip &&
+                j === end - BOX_ELEMENT_COUNT &&
+                !onlyOne &&
+                !terrainHelper
+            ) {
                 // 因为在updateNormal中已经计算过last_offset，这里就不再计算了
                 offset = LAST_CHAROFFSET;
             } else {
-                offset = getCharOffset.call(this, CHAR_OFFSET, mesh, textSize, line, vertexStart, labelAnchor, ANCHOR, scale, flip, elevatedAnchor, this.layer, mvpMatrix, isPitchWithMap);
+                offset = getCharOffset.call(
+                    this,
+                    CHAR_OFFSET,
+                    mesh,
+                    textSize,
+                    line,
+                    vertexStart,
+                    labelAnchor,
+                    ANCHOR,
+                    scale,
+                    flip,
+                    elevatedAnchor,
+                    this.layer,
+                    mvpMatrix,
+                    isPitchWithMap,
+                );
             }
             if (!offset) {
                 //remove whole text if any char is missed
@@ -786,24 +1014,42 @@ export default class TextPainter extends CollisionPainter {
                 rotation -= Math.PI / 2;
             }
 
-            const shapeMatrix = getShapeMatrix(MAT2, rotation, 0, uniforms['textRotateWithMap'], uniforms['textPitchWithMap']);
+            const shapeMatrix = getShapeMatrix(
+                MAT2,
+                rotation,
+                0,
+                uniforms["textRotateWithMap"],
+                uniforms["textPitchWithMap"],
+            );
 
             const is3DPitchText = aOffset.length > aShape.length;
             let rotMatrix;
             if (is3DPitchText) {
                 //这里假设一组文字的rotation是一致的，因为每个文字都单独计算高度和旋转度难度太高
-                vec3.set(TEMP_AXIS, aPitchRotation[3 * vertexStart], aPitchRotation[3 * vertexStart + 1], 0);
+                vec3.set(
+                    TEMP_AXIS,
+                    aPitchRotation[3 * vertexStart],
+                    aPitchRotation[3 * vertexStart + 1],
+                    0,
+                );
                 const axis = vec3.normalize(TEMP_AXIS, TEMP_AXIS);
                 const angleR = -aPitchRotation[3 * vertexStart + 2];
                 if (angleR) {
                     // angleR为0时，则不用旋转
-                    const quaterion = quat.setAxisAngle(TEMP_QUAT, axis, angleR);
+                    const quaterion = quat.setAxisAngle(
+                        TEMP_QUAT,
+                        axis,
+                        angleR,
+                    );
                     mat4.fromTranslation(TEMP_MAT4, Z_AXIS_OFFSET);
                     mat4.fromQuat(TEMP_MAT4_1, quaterion);
-                    rotMatrix = mat4.multiply(TEMP_MAT4_1, TEMP_MAT4_1, TEMP_MAT4);
+                    rotMatrix = mat4.multiply(
+                        TEMP_MAT4_1,
+                        TEMP_MAT4_1,
+                        TEMP_MAT4,
+                    );
                 }
             }
-
 
             for (let ii = 0; ii < 4; ii++) {
                 const idx = 2 * (vertexStart + ii);
@@ -835,9 +1081,11 @@ export default class TextPainter extends CollisionPainter {
 
                 //*10 是为了保留小数点做的精度修正
                 const offsetIdx = (is3DPitchText ? 3 : 2) * (vertexStart + ii);
-                if (aOffset[offsetIdx] !== INT16[0] ||
+                if (
+                    aOffset[offsetIdx] !== INT16[0] ||
                     aOffset[offsetIdx + 1] !== INT16[1] ||
-                    is3DPitchText && aOffset[offsetIdx + 2] !== INT16[2]) {
+                    (is3DPitchText && aOffset[offsetIdx + 2] !== INT16[2])
+                ) {
                     aOffset.dirty = true;
                     aOffset[offsetIdx] = INT16[0];
                     aOffset[offsetIdx + 1] = INT16[1];
@@ -845,26 +1093,57 @@ export default class TextPainter extends CollisionPainter {
                         aOffset[offsetIdx + 2] = INT16[2];
                     }
                 }
-
-
             }
         }
         return visible;
     }
 
-    _updateNormal(mesh, textSize, line, firstChrIdx, lastChrIdx, projectedAnchor, anchor, scale, planeMatrix) {
+    _updateNormal(
+        mesh,
+        textSize,
+        line,
+        firstChrIdx,
+        lastChrIdx,
+        projectedAnchor,
+        anchor,
+        scale,
+        planeMatrix,
+    ) {
         const onlyOne = lastChrIdx - firstChrIdx <= 3;
         const map = this.getMap();
         const symbol = this.getSymbol(mesh.geometry.properties.symbolIndex);
-        const normal = onlyOne ? 0 : getLabelNormal.call(this, FIRST_CHAROFFSET, LAST_CHAROFFSET, mesh,
-            textSize, line, firstChrIdx, lastChrIdx, projectedAnchor,
-            anchor, scale, map.width / map.height, planeMatrix, symbol['textMaxAngle'] || TEXT_MAX_ANGLE);
+        const normal = onlyOne
+            ? 0
+            : getLabelNormal.call(
+                  this,
+                  FIRST_CHAROFFSET,
+                  LAST_CHAROFFSET,
+                  mesh,
+                  textSize,
+                  line,
+                  firstChrIdx,
+                  lastChrIdx,
+                  projectedAnchor,
+                  anchor,
+                  scale,
+                  map.width / map.height,
+                  planeMatrix,
+                  symbol["textMaxAngle"] || TEXT_MAX_ANGLE,
+              );
 
         return normal;
     }
 
-    isBoxCollides(mesh, elements, boxCount, start, end, matrix/*, boxIndex*/) {
-        return this.isLabelCollides(0, mesh, elements, boxCount, start, end, matrix);
+    isBoxCollides(mesh, elements, boxCount, start, end, matrix /*, boxIndex*/) {
+        return this.isLabelCollides(
+            0,
+            mesh,
+            elements,
+            boxCount,
+            start,
+            end,
+            matrix,
+        );
     }
 
     deleteMesh(meshes, keepGeometry) {
@@ -874,7 +1153,7 @@ export default class TextPainter extends CollisionPainter {
         if (keepGeometry) {
             //keepGeometry时，文字纹理应该保留
             if (Array.isArray(meshes)) {
-                meshes.forEach(m => {
+                meshes.forEach((m) => {
                     if (m && m.material) {
                         delete m.material.uniforms.texture;
                     }
@@ -900,7 +1179,9 @@ export default class TextPainter extends CollisionPainter {
     }
 
     isEnableTileStencil() {
-        const isIntel = this.layer.getRenderer().isEnableWorkAround('win-intel-gpu-crash');
+        const isIntel = this.layer
+            .getRenderer()
+            .isEnableWorkAround("win-intel-gpu-crash");
         return !isIntel;
     }
 
@@ -910,7 +1191,11 @@ export default class TextPainter extends CollisionPainter {
 
         this.renderer = new reshader.Renderer(regl);
 
-        const { uniforms, extraCommandProps } = createTextShader.call(this, this.canvas, this.sceneConfig);
+        const { uniforms, extraCommandProps } = createTextShader.call(
+            this,
+            this.canvas,
+            this.sceneConfig,
+        );
 
         const canvas = this.canvas;
         // 地形瓦片中可能设置viewport
@@ -922,46 +1207,60 @@ export default class TextPainter extends CollisionPainter {
                 return props.viewport ? props.viewport.y : 0;
             },
             width: (_, props) => {
-                return props.viewport ? props.viewport.width : (canvas ? canvas.width : 1);
+                return props.viewport
+                    ? props.viewport.width
+                    : canvas
+                      ? canvas.width
+                      : 1;
             },
             height: (_, props) => {
-                return props.viewport ? props.viewport.height : (canvas ? canvas.height : 1);
+                return props.viewport
+                    ? props.viewport.height
+                    : canvas
+                      ? canvas.height
+                      : 1;
             },
         };
 
         extraCommandProps.viewport = viewport;
+        const wgslVert = getWGSLSource("vt_text_vert");
+        const wgslFrag = getWGSLSource("vt_text_frag");
+        const wgslVertAlongLine = getWGSLSource("vt_text_line_vert");
         const defines = {
-            HAS_HIGHLIGHT_COLOR_POINT: 1
+            HAS_HIGHLIGHT_COLOR_POINT: 1,
         };
         this.shader = new reshader.MeshShader({
-            name: 'text',
+            name: "text",
             // vert: vertAlongLine, frag,
-            vert, frag,
+            vert,
+            frag,
             wgslVert,
             wgslFrag,
             uniforms,
             defines,
-            extraCommandProps
+            extraCommandProps,
         });
         let commandProps = extraCommandProps;
-        if (this.layer.getRenderer().isEnableWorkAround('win-intel-gpu-crash')) {
+        if (
+            this.layer.getRenderer().isEnableWorkAround("win-intel-gpu-crash")
+        ) {
             //为解决intel gpu crash，stencil可能会被启用
             //但只有line-text渲染才需要，普通文字渲染不用打开stencil
             commandProps = extend({}, extraCommandProps);
             commandProps.stencil = extend({}, extraCommandProps.stencil);
             commandProps.stencil.enable = true;
-            commandProps.stencil.func.cmp = '<';
+            commandProps.stencil.func.cmp = "<";
             commandProps.stencil.func.ref = (context, props) => {
                 //level * 2 以避免相邻level的halo和非halo产生相同的ref
                 return props.level * 2 + (props.isHalo || 0) + 1;
             };
         }
         this._shaderAlongLine = new reshader.MeshShader({
-            name: 'text-along-line',
+            name: "text-along-line",
             vert: vertAlongLine,
             frag,
-            wgslVert: wgslVertAlongLine,
-            wgslFrag: wgslFrag,
+            wgslVert: getWGSLSource("vt_text_line_vert"),
+            wgslFrag: getWGSLSource("vt_text_frag"),
             uniforms,
             extraCommandProps: commandProps,
             defines,
@@ -972,50 +1271,53 @@ export default class TextPainter extends CollisionPainter {
             const textPicking = new reshader.FBORayPicking(
                 this.renderer,
                 {
-                    name: 'text-picking',
+                    name: "text-picking",
                     vert: pickingVert,
-                    wgslVert: pickingWgslVert,
+                    wgslVert: getWGSLSource("vt_text_vert"),
                     defines: pickingDefines,
                     uniforms,
                     extraCommandProps: {
-                        viewport: this.pickingViewport
-                    }
+                        viewport: this.pickingViewport,
+                    },
                 },
                 this.pickingFBO,
-                this.getMap()
+                this.getMap(),
             );
-            textPicking.filter = mesh => {
+            textPicking.filter = (mesh) => {
                 const symbolIndex = mesh.properties.symbolIndex;
                 const symbol = this.getSymbol(symbolIndex);
-                return symbol['textPlacement'] !== 'line';
+                return symbol["textPlacement"] !== "line";
             };
 
             const linePicking = new reshader.FBORayPicking(
                 this.renderer,
                 {
-                    name: 'line-text-picking',
+                    name: "line-text-picking",
                     vert: linePickingVert,
-                    wgslVert: linePickingWgslVert,
+                    wgslVert: getWGSLSource("vt_text_line_vert"),
                     uniforms,
                     defines: pickingDefines,
                     extraCommandProps: {
-                        viewport: this.pickingViewport
-                    }
+                        viewport: this.pickingViewport,
+                    },
                 },
                 this.pickingFBO,
-                this.getMap()
+                this.getMap(),
             );
-            linePicking.filter = mesh => {
-                return mesh.geometry.properties.textPlacement === 'line';
+            linePicking.filter = (mesh) => {
+                return mesh.geometry.properties.textPlacement === "line";
             };
             this.picking = [textPicking, linePicking];
         }
     }
 
     getUniformValues(map, context) {
-        const isRenderingTerrainSkin = context && context.isRenderingTerrainSkin;
+        const isRenderingTerrainSkin =
+            context && context.isRenderingTerrainSkin;
         const tileSize = this.layer.getTileSize().width;
-        const projViewMatrix = isRenderingTerrainSkin ? IDENTITY_ARR : map.projViewMatrix;
+        const projViewMatrix = isRenderingTerrainSkin
+            ? IDENTITY_ARR
+            : map.projViewMatrix;
         const cameraToCenterDistance = map.cameraToCenterDistance;
         // const canvasSize = [map.width, map.height];
         const canvasSize = vec2.set(TEMP_CANVAS_SIZE, map.width, map.height);
@@ -1044,23 +1346,24 @@ export default class TextPainter extends CollisionPainter {
         const cache = MapStateCache[map.id];
         const pitch = cache ? cache.pitch : map.getPitch();
         const bearing = cache ? cache.bearing : map.getBearing();
-        const resolution = cache ? cache.resolution : map.getResolution()
+        const resolution = cache ? cache.resolution : map.getResolution();
         return {
-            layerScale: this.layer.options['styleScale'] || 1,
-            mapPitch: pitch * Math.PI / 180,
-            mapRotation: bearing * Math.PI / 180,
+            layerScale: this.layer.options["styleScale"] || 1,
+            mapPitch: (pitch * Math.PI) / 180,
+            mapRotation: (bearing * Math.PI) / 180,
             projViewMatrix,
             viewMatrix: map.viewMatrix,
-            cameraToCenterDistance, canvasSize,
+            cameraToCenterDistance,
+            canvasSize,
             glyphSize: GLYPH_SIZE,
             // gammaScale : 0.64,
-            gammaScale: GAMMA_SCALE * (this.layer.options['textGamma'] || 1),
+            gammaScale: GAMMA_SCALE * (this.layer.options["textGamma"] || 1),
             resolution,
             altitudeScale: zScale,
             viewport: isRenderingTerrainSkin && context && context.viewport,
             // 过滤 pitchAlignment 为特定值的text，0时不过滤; 1时，过滤掉viewport; 2时，过滤掉map
             textPitchFilter: 0,
-            isRenderingTerrain: +!!isRenderingTerrainSkin
+            isRenderingTerrain: +!!isRenderingTerrainSkin,
             // planeMatrix
         };
     }
@@ -1088,9 +1391,7 @@ function resetOffset(aOffset, meshElements, start, end) {
         const vertexStart = meshElements[j];
         for (let ii = 0; ii < 4; ii++) {
             const idx = 3 * (vertexStart + ii);
-            if (aOffset[idx] ||
-                aOffset[idx + 1] ||
-                aOffset[idx + 2]) {
+            if (aOffset[idx] || aOffset[idx + 1] || aOffset[idx + 2]) {
                 aOffset.dirty = true;
                 aOffset[idx] = 0;
                 aOffset[idx + 1] = 0;
@@ -1101,7 +1402,7 @@ function resetOffset(aOffset, meshElements, start, end) {
 }
 
 function sortByLevel(m0, m1) {
-    const r = m0.properties['level'] - m1.properties['level'];
+    const r = m0.properties["level"] - m1.properties["level"];
     if (r === 0) {
         return m0.properties.meshKey - m1.properties.meshKey;
     } else {

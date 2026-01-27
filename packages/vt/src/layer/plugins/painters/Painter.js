@@ -1,21 +1,30 @@
-import * as maptalks from 'maptalks';
-import { reshader, vec3, mat4, HighlightUtil } from '@maptalks/gl';
-import { getVectorPacker } from '../../../packer/inject';
-import { isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
-import { extend, copyJSON, isNil, hasOwn, isNumber } from '../Util';
-import outlineFrag from './glsl/outline.frag';
-import outlineWGSLFrag from './wgsl/outline_frag.wgsl';
-import { updateOneGeometryFnTypeAttrib } from './util/fn_type_util';
-import { inTerrainTile } from './util/line_offset';
-import deepEuqal from 'fast-deep-equal';
-import { oldPropsKey, externalPropsKey } from '../../renderer/utils/convert_to_painter_features';
-import { INVALID_ALTITUDE } from '../../../common/Constant';
+import * as maptalks from "maptalks";
+import { reshader, vec3, mat4, HighlightUtil } from "@maptalks/gl";
+import { getVectorPacker } from "../../../packer/inject";
+import {
+    isFunctionDefinition,
+    interpolated,
+    piecewiseConstant,
+} from "@maptalks/function-type";
+import { extend, copyJSON, isNil, hasOwn, isNumber } from "../Util";
+import outlineFrag from "./glsl/outline.frag";
+import { getWGSLSource } from "@maptalks/gl";
+import { updateOneGeometryFnTypeAttrib } from "./util/fn_type_util";
+import { inTerrainTile } from "./util/line_offset";
+import deepEuqal from "fast-deep-equal";
+import {
+    oldPropsKey,
+    externalPropsKey,
+} from "../../renderer/utils/convert_to_painter_features";
+import { INVALID_ALTITUDE } from "../../../common/Constant";
 
-const { SYMBOLS_NEED_REBUILD_IN_VT, StyleUtil, FuncTypeUtil } = getVectorPacker();
+const { SYMBOLS_NEED_REBUILD_IN_VT, StyleUtil, FuncTypeUtil } =
+    getVectorPacker();
 
-const { loginIBLResOnCanvas, logoutIBLResOnCanvas, getIBLResOnCanvas } = reshader.pbr.PBRUtils;
+const { loginIBLResOnCanvas, logoutIBLResOnCanvas, getIBLResOnCanvas } =
+    reshader.pbr.PBRUtils;
 
-const TEX_CACHE_KEY = '__gl_textures';
+const TEX_CACHE_KEY = "__gl_textures";
 
 // const MAT = [];
 const V3 = [];
@@ -25,24 +34,24 @@ const ANCHOR_POINT = new maptalks.Point(0, 0);
 const ALTITUDE32 = new Float32Array(1);
 
 const EMPTY_ARRAY = [];
-const level0Filter = mesh => {
+const level0Filter = (mesh) => {
     return mesh.properties.level === 0;
 };
 
-const levelNFilter = mesh => {
+const levelNFilter = (mesh) => {
     return mesh.properties.level > 0;
 };
 
 class Painter {
     static getBloomSymbol() {
-        return ['bloom'];
+        return ["bloom"];
     }
 
     constructor(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig) {
         this._is2D = true;
         this.regl = regl;
         this.layer = layer;
-        this.canvas = (regl['_gl'] || regl.context).canvas;
+        this.canvas = (regl["_gl"] || regl.context).canvas;
         this.sceneConfig = sceneConfig || {};
         this.dataConfig = dataConfig || {};
         //插件的序号，也是style的序号
@@ -52,7 +61,9 @@ class Painter {
         this.level0Filter = level0Filter;
         this.levelNFilter = levelNFilter;
         this.loginTextureCache();
-        this.symbolDef = Array.isArray(symbol) ? symbol.map(s => copyJSON(s)) : [copyJSON(symbol)];
+        this.symbolDef = Array.isArray(symbol)
+            ? symbol.map((s) => copyJSON(s))
+            : [copyJSON(symbol)];
         this._compileSymbols();
         this.pickingViewport = {
             x: 0,
@@ -62,12 +73,14 @@ class Painter {
             },
             height: () => {
                 return this.canvas ? this.canvas.height : 1;
-            }
+            },
         };
         this.sortByCommandKey = sortByCommandKey.bind(this);
         this.colorCache = {};
         // 因为一开始visible为false的数据不会被创建，需要记录下来，updateSymbol时决定是否需要重新创建数据
-        this._invisibleWhenCreated = this.symbolDef.map(s => !!(s && s.visible === false));
+        this._invisibleWhenCreated = this.symbolDef.map(
+            (s) => !!(s && s.visible === false),
+        );
     }
 
     // 不允许地形上超过限定比例的upscale放大
@@ -76,7 +89,7 @@ class Painter {
     // }
 
     isWebGPU() {
-        return !this.regl['_gl'];
+        return !this.regl["_gl"];
     }
 
     hasMesh() {
@@ -90,7 +103,11 @@ class Painter {
 
     getTileLevelValue(tileInfo, currentTileZoom) {
         const renderer = this.layer.getRenderer();
-        return renderer.getTileLevelValue && renderer.getTileLevelValue(tileInfo, currentTileZoom) || 0;
+        return (
+            (renderer.getTileLevelValue &&
+                renderer.getTileLevelValue(tileInfo, currentTileZoom)) ||
+            0
+        );
     }
 
     getAnalysisMeshes() {
@@ -137,7 +154,8 @@ class Painter {
     }
 
     isMeshVisible(mesh) {
-        const symbolIndex = mesh && mesh.properties && mesh.properties.symbolIndex;
+        const symbolIndex =
+            mesh && mesh.properties && mesh.properties.symbolIndex;
         if (!symbolIndex) {
             return false;
         }
@@ -188,8 +206,14 @@ class Painter {
     }
 
     isShadowIncludeChanged(context) {
-        const isRenderingTerrainSkin = context && context.isRenderingTerrain && this.isTerrainSkin();
-        return context && context.states && context.states.includesChanged['shadow'] || isRenderingTerrainSkin && this._includeKeys;
+        const isRenderingTerrainSkin =
+            context && context.isRenderingTerrain && this.isTerrainSkin();
+        return (
+            (context &&
+                context.states &&
+                context.states.includesChanged["shadow"]) ||
+            (isRenderingTerrainSkin && this._includeKeys)
+        );
     }
 
     fillIncludes(defines, uniformDeclares, context) {
@@ -199,7 +223,7 @@ class Painter {
         }
         const includes = context && context.includes;
         if (includes) {
-            let keys = '';
+            let keys = "";
             for (const p in includes) {
                 if (includes[p]) {
                     keys += p;
@@ -247,7 +271,7 @@ class Painter {
                     geometries.push({
                         geometry: geometries[glData[i].ref].geometry,
                         symbolIndex: glData[i].symbolIndex,
-                        ref: glData[i].ref
+                        ref: glData[i].ref,
                     });
                 }
             } else {
@@ -257,7 +281,11 @@ class Painter {
                 const geo = this.createGeometry(glData[i], features, i);
                 if (geo && geo.geometry) {
                     const props = geo.geometry.properties;
-                    const { feaIdToPickingIdMap, pickingIdToFeaIdMap, hasFeaIds } = this._getIdMap(glData[i]);
+                    const {
+                        feaIdToPickingIdMap,
+                        pickingIdToFeaIdMap,
+                        hasFeaIds,
+                    } = this._getIdMap(glData[i]);
                     if (hasFeaIds) {
                         props.feaIdPickingMap = feaIdToPickingIdMap;
                         props.feaPickingIdMap = pickingIdToFeaIdMap;
@@ -283,7 +311,7 @@ class Painter {
         return this._is2D;
     }
 
-    postCreateGeometry() { }
+    postCreateGeometry() {}
 
     _getIdMap(glData) {
         if (!glData) {
@@ -316,7 +344,7 @@ class Painter {
     }
 
     createGeometry(/* glData, features */) {
-        throw new Error('not implemented');
+        throw new Error("not implemented");
     }
 
     createMeshes(geometries, transform, params, context) {
@@ -326,24 +354,39 @@ class Painter {
             if (!geometries[i]) {
                 continue;
             }
-            if (awareOfTerrain && context && context.isRenderingTerrain && this.isTerrainVector()) {
+            if (
+                awareOfTerrain &&
+                context &&
+                context.isRenderingTerrain &&
+                this.isTerrainVector()
+            ) {
                 const geometry = geometries[i];
                 const geo = geometry && geometry.geometry;
-                this._updateTerrainAltitude(geo, geo.data, geo.properties, geo.positionSize || geo.desc.positionSize, context);
+                this._updateTerrainAltitude(
+                    geo,
+                    geo.data,
+                    geo.properties,
+                    geo.positionSize || geo.desc.positionSize,
+                    context,
+                );
             }
-            let mesh = this.createMesh(geometries[i], transform, params, context || {});
+            let mesh = this.createMesh(
+                geometries[i],
+                transform,
+                params,
+                context || {},
+            );
             if (Array.isArray(mesh)) {
-                mesh = mesh.filter(m => !!m);
+                mesh = mesh.filter((m) => !!m);
                 meshes.push(...mesh);
             } else if (mesh) {
                 meshes.push(mesh);
             }
-
         }
         for (let i = 0; i < meshes.length; i++) {
             const mesh = meshes[i];
             const defines = mesh.defines || {};
-            if (!defines['POSITION_TYPE_3']) {
+            if (!defines["POSITION_TYPE_3"]) {
                 this.appendWGSLPositionType(mesh, defines);
                 mesh.setDefines(defines);
             }
@@ -352,7 +395,7 @@ class Painter {
     }
 
     createMesh(/* geometries, transform */) {
-        throw new Error('not implemented');
+        throw new Error("not implemented");
     }
 
     getAltitudeOffsetMatrix() {
@@ -364,9 +407,8 @@ class Painter {
     }
 
     isBloom(mesh) {
-        return !!this.getSymbol(mesh.properties.symbolIndex)['bloom'];
+        return !!this.getSymbol(mesh.properties.symbolIndex)["bloom"];
     }
-
 
     addMesh(meshes, progress, context) {
         // console.log(meshes.map(m => m.properties.tile.id).join());
@@ -385,14 +427,19 @@ class Painter {
         //         return;
         //     }
         // }
-        const isRenderingTerrainVector = context.isRenderingTerrain && this.isTerrainVector();
+        const isRenderingTerrainVector =
+            context.isRenderingTerrain && this.isTerrainVector();
         const fbo = this.getRenderFBO(context);
-        meshes = meshes.filter(m => this.isMeshVisible(m));
+        meshes = meshes.filter((m) => this.isMeshVisible(m));
         if (isRenderingTerrainVector) {
             // 只绘制加载了地形数据的mesh
-            meshes = meshes.filter(m => m.geometry && m.geometry.data.aTerrainAltitude);
+            meshes = meshes.filter(
+                (m) => m.geometry && m.geometry.data.aTerrainAltitude,
+            );
         }
-        const castShadow = this.sceneConfig.castShadow === undefined || !!this.sceneConfig.castShadow;
+        const castShadow =
+            this.sceneConfig.castShadow === undefined ||
+            !!this.sceneConfig.castShadow;
         const isEnableBloom = !!(context && context.bloom);
         for (let i = 0, len = meshes.length; i < len; i++) {
             const mesh = meshes[i];
@@ -401,25 +448,34 @@ class Painter {
             mesh.castShadow = castShadow;
             let updated = false;
             const defines = mesh.defines || {};
-            if (!!defines['HAS_BLOOM'] !== bloom) {
+            if (!!defines["HAS_BLOOM"] !== bloom) {
                 updated = true;
                 if (bloom) {
-                    defines['HAS_BLOOM'] = 1;
+                    defines["HAS_BLOOM"] = 1;
                 } else {
-                    delete defines['HAS_BLOOM'];
+                    delete defines["HAS_BLOOM"];
                 }
             }
             if (isRenderingTerrainVector) {
                 if (mesh.geometry.data.aTerrainAltitude) {
                     const geo = mesh.geometry;
-                    this._updateTerrainAltitude(geo, geo.data, geo.properties, geo.desc.positionSize, context);
+                    this._updateTerrainAltitude(
+                        geo,
+                        geo.data,
+                        geo.properties,
+                        geo.desc.positionSize,
+                        context,
+                    );
                 }
-                if (mesh.geometry.data.aTerrainAltitude && !defines['HAS_TERRAIN_ALTITUDE']) {
-                    defines['HAS_TERRAIN_ALTITUDE'] = 1;
+                if (
+                    mesh.geometry.data.aTerrainAltitude &&
+                    !defines["HAS_TERRAIN_ALTITUDE"]
+                ) {
+                    defines["HAS_TERRAIN_ALTITUDE"] = 1;
                     updated = true;
                 }
-            } else if (defines['HAS_TERRAIN_ALTITUDE']) {
-                delete defines['HAS_TERRAIN_ALTITUDE'];
+            } else if (defines["HAS_TERRAIN_ALTITUDE"]) {
+                delete defines["HAS_TERRAIN_ALTITUDE"];
                 updated = true;
             }
 
@@ -427,11 +483,11 @@ class Painter {
                 mesh.setDefines(defines);
             }
             if (!fbo) {
-                if (mesh.uniforms['targetFramebuffer']) {
-                    mesh.uniforms['targetFramebuffer'] = null;
+                if (mesh.uniforms["targetFramebuffer"]) {
+                    mesh.uniforms["targetFramebuffer"] = null;
                 }
             } else {
-                mesh.setUniform('targetFramebuffer', fbo);
+                mesh.setUniform("targetFramebuffer", fbo);
             }
             this._highlightMesh(mesh);
         }
@@ -440,9 +496,7 @@ class Painter {
         return;
     }
 
-    updateCollision(/*context*/) {
-
-    }
+    updateCollision(/*context*/) {}
 
     render(context) {
         this.pluginIndex = context.pluginIndex;
@@ -450,7 +504,7 @@ class Painter {
         this.paint(context);
         return {
             redraw: this._redraw,
-            drawCount: this._drawCount
+            drawCount: this._drawCount,
         };
     }
 
@@ -483,7 +537,14 @@ class Painter {
             }
             this._currentTimestamp = context.timestamp;
             const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
-            updateOneGeometryFnTypeAttrib(this.regl, this.layer, symbolDef, fnTypeConfig, meshes[i], z);
+            updateOneGeometryFnTypeAttrib(
+                this.regl,
+                this.layer,
+                symbolDef,
+                fnTypeConfig,
+                meshes[i],
+                z,
+            );
             this.limitMeshDefines(meshes[i]);
         }
     }
@@ -497,7 +558,7 @@ class Painter {
         const map = layer.getMap();
         if (!map) {
             return {
-                redraw: false
+                redraw: false,
             };
         }
         this._renderContext = context;
@@ -507,7 +568,7 @@ class Painter {
         this.callShader(uniforms, context);
 
         return {
-            redraw: this._redraw
+            redraw: this._redraw,
         };
     }
 
@@ -526,7 +587,10 @@ class Painter {
     callCurrentTileShader(uniforms, context) {
         if (this.shader) {
             //1. render current tile level's meshes
-            this.shader.filter = context && context.sceneFilter ? [this.level0Filter, context.sceneFilter] : this.level0Filter;
+            this.shader.filter =
+                context && context.sceneFilter
+                    ? [this.level0Filter, context.sceneFilter]
+                    : this.level0Filter;
         }
         this.callRenderer(this.shader, uniforms, context);
     }
@@ -535,7 +599,10 @@ class Painter {
         if (this.shader) {
             //2. render background tile level's meshes
             //stenciled pixels already rendered in step 1
-            this.shader.filter = context && context.sceneFilter ? [this.levelNFilter, context.sceneFilter] : this.levelNFilter;
+            this.shader.filter =
+                context && context.sceneFilter
+                    ? [this.levelNFilter, context.sceneFilter]
+                    : this.levelNFilter;
         }
         this.scene.getMeshes().sort(sortByLevel);
         this.callRenderer(this.shader, uniforms, context);
@@ -557,12 +624,17 @@ class Painter {
 
         this.scene.setMeshes(renderMeshes);
         uniforms.painterContext = context;
-        this._drawCount += this.renderer.render(shader, uniforms, this.scene, this.getRenderFBO(context));
+        this._drawCount += this.renderer.render(
+            shader,
+            uniforms,
+            this.scene,
+            this.getRenderFBO(context),
+        );
         this.scene.setMeshes(meshes);
     }
 
     _setLayerUniforms(uniforms) {
-        const altitude = this.layer.options['altitude'] || 0;
+        const altitude = this.layer.options["altitude"] || 0;
         const renderer = this.layer.getRenderer();
         uniforms.layerOpacity = renderer._getLayerOpacity();
         uniforms.minAltitude = altitude;
@@ -580,9 +652,7 @@ class Painter {
         return true;
     }
 
-    onFeatureChange() {
-
-    }
+    onFeatureChange() {}
 
     getPolygonOffset() {
         const layer = this.layer;
@@ -591,16 +661,18 @@ class Painter {
                 // if (props.meshConfig.ssr) {
                 //     return layer.getTotalPolygonOffset();
                 // }
-                const factor = layer.getPolygonOffset() + (this.polygonOffsetIndex || 0);
+                const factor =
+                    layer.getPolygonOffset() + (this.polygonOffsetIndex || 0);
                 return factor;
             },
             units: () => {
                 // if (props.meshConfig.ssr) {
                 //     return layer.getTotalPolygonOffset();
                 // }
-                const units = layer.getPolygonOffset() + (this.polygonOffsetIndex || 0);
+                const units =
+                    layer.getPolygonOffset() + (this.polygonOffsetIndex || 0);
                 return units;
-            }
+            },
         };
     }
 
@@ -609,16 +681,19 @@ class Painter {
             src: () => {
                 // src 设成 one 是因为 maptalks-designer#968
                 // 另外设成one，options.opacity < 1时，直接绘制的透明度才和直接添加到map上一致
-                return this.sceneConfig.blendSrc || 'one';
+                return this.sceneConfig.blendSrc || "one";
             },
             dst: () => {
-                return this.sceneConfig.blendDst || 'one minus src alpha';
-            }
+                return this.sceneConfig.blendDst || "one minus src alpha";
+            },
         };
     }
 
     pick(x, y, tolerance = 3) {
-        if (!this.layer.options['picking'] || this.sceneConfig.picking === false) {
+        if (
+            !this.layer.options["picking"] ||
+            this.sceneConfig.picking === false
+        ) {
             return null;
         }
         if (!this.pickingFBO || !this.picking) {
@@ -635,8 +710,11 @@ class Painter {
                 picked = picking.pick(x, y, tolerance, uniforms, {
                     viewMatrix: map.viewMatrix,
                     projMatrix: map.projMatrix,
-                    returnPoint: this.layer.options['pickingPoint'] && this.sceneConfig.pickingPoint !== false,
-                    logDepthBufFC: 2.0 / (Math.log(map.cameraFar + 1.0) / Math.LN2)
+                    returnPoint:
+                        this.layer.options["pickingPoint"] &&
+                        this.sceneConfig.pickingPoint !== false,
+                    logDepthBufFC:
+                        2.0 / (Math.log(map.cameraFar + 1.0) / Math.LN2),
                 });
             }
             const { meshId, pickingId, point } = picked;
@@ -651,12 +729,14 @@ class Painter {
                 props = mesh.properties;
             }
             if (point && point.length) {
-                point[0] = Math.round(point[0] * 1E5) / 1E5;
-                point[1] = Math.round(point[1] * 1E5) / 1E5;
-                point[2] = Math.round(point[2] * 1E5) / 1E5;
+                point[0] = Math.round(point[0] * 1e5) / 1e5;
+                point[1] = Math.round(point[1] * 1e5) / 1e5;
+                point[2] = Math.round(point[2] * 1e5) / 1e5;
             }
             const result = {
-                data: this._convertProxyFeature(props && props.features && props.features[pickingId]),
+                data: this._convertProxyFeature(
+                    props && props.features && props.features[pickingId],
+                ),
                 point,
                 coordinate: picked.coordinate,
                 plugin: this.pluginIndex,
@@ -684,16 +764,20 @@ class Painter {
         const result = extend({}, data);
         result.feature = extend({}, data.feature);
         delete result.feature.customProps;
-        result.feature.properties = extend({}, feature.properties, feature.properties[oldPropsKey], feature.properties[externalPropsKey]);
+        result.feature.properties = extend(
+            {},
+            feature.properties,
+            feature.properties[oldPropsKey],
+            feature.properties[externalPropsKey],
+        );
         delete result.feature.properties[externalPropsKey];
         delete result.feature.properties[oldPropsKey];
-        delete result.feature.properties['$layer'];
-        delete result.feature.properties['$type'];
+        delete result.feature.properties["$layer"];
+        delete result.feature.properties["$type"];
         return result;
     }
 
-    updateSceneConfig(/* config */) {
-    }
+    updateSceneConfig(/* config */) {}
 
     updateDataConfig(dataConfig) {
         extend(this.dataConfig, dataConfig);
@@ -748,7 +832,7 @@ class Painter {
         this.scene.clear();
     }
 
-    resize(/*width, height*/) { }
+    resize(/*width, height*/) {}
 
     delete(/* context */) {
         this.scene.clear();
@@ -782,13 +866,16 @@ class Painter {
         let needRefresh = false;
         for (let i = 0; i < symbolDef.length; i++) {
             if (symbolDef[i]) {
-                const refresh = this._updateChildSymbol(i, symbolDef[i], all[i]);
+                const refresh = this._updateChildSymbol(
+                    i,
+                    symbolDef[i],
+                    all[i],
+                );
                 if (refresh) {
                     needRefresh = refresh;
                 }
             }
         }
-
 
         delete this._fnTypeConfigs;
         this.setToRedraw(needRetire);
@@ -799,10 +886,18 @@ class Painter {
         for (const p in newSymbolDef) {
             if (hasOwn(newSymbolDef, p)) {
                 // 当新的symbol中是fn-type类型属性，且没有缓存features而且property不一致时，就刷新
-                if (StyleUtil.isFnTypeSymbol(newSymbolDef[p]) && !this.layer.options['features'] && (!oldSymbolDef[p] || oldSymbolDef[p].property !== newSymbolDef[p].property)) {
+                if (
+                    StyleUtil.isFnTypeSymbol(newSymbolDef[p]) &&
+                    !this.layer.options["features"] &&
+                    (!oldSymbolDef[p] ||
+                        oldSymbolDef[p].property !== newSymbolDef[p].property)
+                ) {
                     return true;
                 }
-                if (SYMBOLS_NEED_REBUILD_IN_VT[p] && !deepEuqal(newSymbolDef[p], oldSymbolDef[p])) {
+                if (
+                    SYMBOLS_NEED_REBUILD_IN_VT[p] &&
+                    !deepEuqal(newSymbolDef[p], oldSymbolDef[p])
+                ) {
                     return true;
                 }
             }
@@ -827,12 +922,15 @@ class Painter {
         const map = this.getMap();
         const params = [];
         // extend(this._symbol, this.symbolDef);
-        const loadedSymbol = FuncTypeUtil.loadSymbolFnTypes(this.symbolDef[i], () => {
-            const cache = maptalks.MapStateCache[map.id];
-            const zoom = cache ? cache.zoom : map.getZoom();
-            params[0] = zoom;
-            return params;
-        });
+        const loadedSymbol = FuncTypeUtil.loadSymbolFnTypes(
+            this.symbolDef[i],
+            () => {
+                const cache = maptalks.MapStateCache[map.id];
+                const zoom = cache ? cache.zoom : map.getZoom();
+                params[0] = zoom;
+                return params;
+            },
+        );
         for (const p in loadedSymbol) {
             const d = Object.getOwnPropertyDescriptor(loadedSymbol, p);
             if (d.get) {
@@ -840,7 +938,7 @@ class Painter {
                     get: d.get,
                     set: d.set,
                     configurable: true,
-                    enumerable: true
+                    enumerable: true,
                 });
             } else {
                 symbol[p] = loadedSymbol[p];
@@ -882,8 +980,14 @@ class Painter {
         this._symbol = [];
         this._visibleFn = [];
         for (let i = 0; i < this.symbolDef.length; i++) {
-            this._symbol[i] = FuncTypeUtil.loadSymbolFnTypes(extend({}, this.symbolDef[i]), fn);
-            if (this.symbolDef[i] && isFunctionDefinition(this.symbolDef[i].visible)) {
+            this._symbol[i] = FuncTypeUtil.loadSymbolFnTypes(
+                extend({}, this.symbolDef[i]),
+                fn,
+            );
+            if (
+                this.symbolDef[i] &&
+                isFunctionDefinition(this.symbolDef[i].visible)
+            ) {
                 this._visibleFn[i] = interpolated(this.symbolDef[i].visible);
             }
         }
@@ -897,7 +1001,10 @@ class Painter {
         if (!this._fnTypeConfigs[index]) {
             const symbolDef = this.getSymbolDef(symbolIndex);
             const map = this.getMap();
-            this._fnTypeConfigs[index] = this.createFnTypeConfig(map, symbolDef);
+            this._fnTypeConfigs[index] = this.createFnTypeConfig(
+                map,
+                symbolDef,
+            );
         }
         return this._fnTypeConfigs[index];
     }
@@ -907,18 +1014,18 @@ class Painter {
     }
 
     loginTextureCache() {
-        const keyName = (TEX_CACHE_KEY + '').trim();
+        const keyName = (TEX_CACHE_KEY + "").trim();
         const map = this.getMap();
         if (!map[keyName]) {
             map[keyName] = {
-                count: 0
+                count: 0,
             };
         }
         map[keyName].count++;
     }
 
     logoutTextureCache() {
-        const keyName = (TEX_CACHE_KEY + '').trim();
+        const keyName = (TEX_CACHE_KEY + "").trim();
         const map = this.getMap();
         const myTextures = this._myTextures;
         if (myTextures) {
@@ -940,19 +1047,19 @@ class Painter {
     }
 
     getCachedTexture(url) {
-        const keyName = (TEX_CACHE_KEY + '').trim();
+        const keyName = (TEX_CACHE_KEY + "").trim();
         const cached = this.getMap()[keyName][url];
         return cached ? cached.data : null;
     }
 
     addCachedTexture(url, data) {
-        const keyName = (TEX_CACHE_KEY + '').trim();
+        const keyName = (TEX_CACHE_KEY + "").trim();
         const map = this.getMap();
         let cached = map[keyName][url];
         if (!cached) {
             cached = map[keyName][url] = {
                 data,
-                count: 0
+                count: 0,
             };
         } else {
             cached.data = data;
@@ -969,7 +1076,7 @@ class Painter {
 
     disposeCachedTexture(texture) {
         let url;
-        if (typeof texture === 'string') {
+        if (typeof texture === "string") {
             url = texture;
         } else {
             url = texture.url;
@@ -977,7 +1084,7 @@ class Painter {
         if (!this._myTextures || !this._myTextures[url]) {
             return;
         }
-        const keyName = (TEX_CACHE_KEY + '').trim();
+        const keyName = (TEX_CACHE_KEY + "").trim();
         //删除texture时，同时回收cache上的纹理，尽量保证不出现内存泄漏
         //最常见场景： 更新material时，回收原有的texture
         delete this._myTextures[url];
@@ -1003,7 +1110,7 @@ class Painter {
     }
 
     supportRenderMode(mode) {
-        return mode === 'taa' || mode === 'fxaa';
+        return mode === "taa" || mode === "fxaa";
     }
 
     // _stencil(quadStencil) {
@@ -1064,11 +1171,16 @@ class Painter {
             this._initOutlineShaders();
             // this._outlineShader.filter = this.level0Filter;
             if (!this._outlineShaders) {
-                console.warn(`Plugin at ${this.pluginIndex} doesn't support outline.`);
+                console.warn(
+                    `Plugin at ${this.pluginIndex} doesn't support outline.`,
+                );
                 return;
             }
         }
-        const uniforms = this.getUniformValues(this.getMap(), this._renderContext);
+        const uniforms = this.getUniformValues(
+            this.getMap(),
+            this._renderContext,
+        );
         this._setLayerUniforms(uniforms);
 
         const meshes = this._findMeshesHasFeaId(featureId);
@@ -1090,10 +1202,14 @@ class Painter {
                         painted[pickingId] = 1;
                         uniforms.highlightPickingId = pickingId;
                         for (let j = 0; j < this._outlineShaders.length; j++) {
-                            this.renderer.render(this._outlineShaders[j], uniforms, this._outlineScene, fbo);
+                            this.renderer.render(
+                                this._outlineShaders[j],
+                                uniforms,
+                                this._outlineScene,
+                                fbo,
+                            );
                         }
                     }
-
                 }
             }
         }
@@ -1119,20 +1235,29 @@ class Painter {
         if (!this._outlineShaders) {
             this._initOutlineShaders();
             if (!this._outlineShaders) {
-                console.warn(`Plugin at ${this.pluginIndex} doesn't support outline.`);
+                console.warn(
+                    `Plugin at ${this.pluginIndex} doesn't support outline.`,
+                );
                 return;
             }
         }
-        const uniforms = this.getUniformValues(this.getMap(), this._renderContext);
+        const uniforms = this.getUniformValues(
+            this.getMap(),
+            this._renderContext,
+        );
         this._setLayerUniforms(uniforms);
         uniforms.highlightPickingId = -1;
         for (let j = 0; j < this._outlineShaders.length; j++) {
-            this.renderer.render(this._outlineShaders[j], uniforms, this.scene, fbo);
+            this.renderer.render(
+                this._outlineShaders[j],
+                uniforms,
+                this.scene,
+                fbo,
+            );
         }
     }
 
     _initOutlineShaders() {
-
         if (!this.picking) {
             return;
         }
@@ -1142,19 +1267,19 @@ class Painter {
             const pickingVert = this.picking[i].getPickingVert();
             const wgslPickingVert = this.picking[i].getPickingWGSLVert();
             const defines = {
-                'PICKING_MODE': 1,
-                'ENABLE_PICKING': 1,
-                'HAS_PICKING_ID': 1
+                PICKING_MODE: 1,
+                ENABLE_PICKING: 1,
+                HAS_PICKING_ID: 1,
             };
             const uniforms = this.picking[i].getUniformDeclares().slice(0);
-            if (uniforms['uPickingId'] !== undefined) {
-                defines['HAS_PICKING_ID'] = 2;
+            if (uniforms["uPickingId"] !== undefined) {
+                defines["HAS_PICKING_ID"] = 2;
             }
             this._outlineShaders[i] = new reshader.MeshShader({
                 vert: pickingVert,
                 frag: outlineFrag,
                 wgslVert: wgslPickingVert,
-                wgslFrag: outlineWGSLFrag,
+                wgslFrag: getWGSLSource("vt_outline_frag"),
                 uniforms,
                 defines,
                 extraCommandProps: {
@@ -1166,26 +1291,25 @@ class Painter {
                         },
                         height: () => {
                             return canvas.height;
-                        }
+                        },
                     },
                     depth: {
                         enable: true,
                         mask: false,
-                        func: 'always'
+                        func: "always",
                     },
                     blend: {
                         enable: true,
                         func: {
-                            src: 'src alpha',
-                            dst: 'one minus src alpha'
+                            src: "src alpha",
+                            dst: "one minus src alpha",
                         },
-                        equation: 'add'
-                    }
-                }
+                        equation: "add",
+                    },
+                },
             });
             this._outlineShaders[i].filter = this.picking[i].filter;
         }
-
     }
 
     hasIBL() {
@@ -1198,12 +1322,12 @@ class Painter {
         const shaderDefines = shader.shaderDefines;
         let updated = false;
         if (this.hasIBL()) {
-            if (!shaderDefines[['HAS_IBL_LIGHTING']]) {
-                shaderDefines['HAS_IBL_LIGHTING'] = 1;
+            if (!shaderDefines[["HAS_IBL_LIGHTING"]]) {
+                shaderDefines["HAS_IBL_LIGHTING"] = 1;
                 updated = true;
             }
-        } else if (shaderDefines[['HAS_IBL_LIGHTING']]) {
-            delete shaderDefines['HAS_IBL_LIGHTING'];
+        } else if (shaderDefines[["HAS_IBL_LIGHTING"]]) {
+            delete shaderDefines["HAS_IBL_LIGHTING"];
             updated = true;
         }
         if (updated) {
@@ -1220,7 +1344,7 @@ class Painter {
         const canvas = this.layer.getRenderer().canvas;
         loginIBLResOnCanvas(canvas, this.regl, this.getMap());
         this.setToRedraw(true);
-        this.layer.fire('iblupdated');
+        this.layer.fire("iblupdated");
     }
 
     disposeIBLTextures() {
@@ -1238,7 +1362,9 @@ class Painter {
         const key = hashCode(JSON.stringify(v));
         let fn = fnCaches[key];
         if (!fn) {
-            fn = fnCaches[key] = isPiecewiseConstant ? piecewiseConstant(v) : interpolated(v);
+            fn = fnCaches[key] = isPiecewiseConstant
+                ? piecewiseConstant(v)
+                : interpolated(v);
         }
         const cache = maptalks.MapStateCache[map.id];
         const zoom = cache ? cache.zoom : map.getZoom();
@@ -1268,13 +1394,30 @@ class Painter {
         if (mesh && mesh.properties.isHalo) {
             return;
         }
-        const properties = mesh instanceof reshader.InstancedMesh ? mesh.properties : mesh.geometry.properties;
+        const properties =
+            mesh instanceof reshader.InstancedMesh
+                ? mesh.properties
+                : mesh.geometry.properties;
         const { pickingIdIndiceMap } = properties;
-        const highlights = this._highlighted ? convertHighlights(mesh, this.layer, this._highlighted) : null;
-        HighlightUtil.highlightMesh(this.regl, mesh, highlights, this._highlightTimestamp, pickingIdIndiceMap);
+        const highlights = this._highlighted
+            ? convertHighlights(mesh, this.layer, this._highlighted)
+            : null;
+        HighlightUtil.highlightMesh(
+            this.regl,
+            mesh,
+            highlights,
+            this._highlightTimestamp,
+            pickingIdIndiceMap,
+        );
     }
 
-    _updateTerrainAltitude(geometry, geoData, geoProperties, positionSize, context) {
+    _updateTerrainAltitude(
+        geometry,
+        geoData,
+        geoProperties,
+        positionSize,
+        context,
+    ) {
         let aAnchor = geoProperties.aAnchor;
         if (!aAnchor) {
             const { aPosition } = geoData;
@@ -1282,10 +1425,17 @@ class Painter {
         }
         let aTerrainAltitude = geoProperties.aTerrainAltitude;
         if (!aTerrainAltitude) {
-            aTerrainAltitude = geoProperties.aTerrainAltitude = new Float32Array(aAnchor.length / positionSize);
+            aTerrainAltitude = geoProperties.aTerrainAltitude =
+                new Float32Array(aAnchor.length / positionSize);
             aTerrainAltitude.fill(INVALID_ALTITUDE);
         }
-        this._fillTerrainAltitude(aTerrainAltitude, aAnchor, context.tileInfo, 0, aTerrainAltitude.length - 1);
+        this._fillTerrainAltitude(
+            aTerrainAltitude,
+            aAnchor,
+            context.tileInfo,
+            0,
+            aTerrainAltitude.length - 1,
+        );
 
         if (!geoData.aTerrainAltitude) {
             geoData.aTerrainAltitude = aTerrainAltitude;
@@ -1301,23 +1451,27 @@ class Painter {
         }
         // GLTFMixin 的 geometry 就没有updateData
         if (geometry.updateData) {
-            geometry.updateData('aTerrainAltitude', aTerrainAltitude);
+            geometry.updateData("aTerrainAltitude", aTerrainAltitude);
         }
-
     }
 
     _fillTerrainAltitude(aTerrainAltitude, aPosition, tile, start, end) {
         const { res, extent, extent2d, id } = tile;
         const pluginIndex = this.pluginIndex;
-        const cacheId = id + '-' + pluginIndex;
+        const cacheId = id + "-" + pluginIndex;
         if (!tile.completeTerrainQuery) {
             tile.completeTerrainQuery = [];
         }
         if (tile.completeTerrainQuery[pluginIndex]) {
             return;
         }
-        if (!tile.completeTerrainQuery[pluginIndex] && this._terrainAltitudeCache && this._terrainAltitudeCache.has(cacheId)) {
-            const cachedAltitude = this._terrainAltitudeCache.getAndRemove(cacheId);
+        if (
+            !tile.completeTerrainQuery[pluginIndex] &&
+            this._terrainAltitudeCache &&
+            this._terrainAltitudeCache.has(cacheId)
+        ) {
+            const cachedAltitude =
+                this._terrainAltitudeCache.getAndRemove(cacheId);
             this._terrainAltitudeCache.add(cacheId, cachedAltitude);
             aTerrainAltitude.set(cachedAltitude.altitudeData);
             tile.terrainTileInfos = cachedAltitude.terrainTileInfos;
@@ -1333,7 +1487,8 @@ class Painter {
 
         let terrainTileInfos = tile.terrainTileInfos;
         if (!terrainTileInfos) {
-            terrainTileInfos = tile.terrainTileInfos = this.layer.queryTerrainTiles(tile);
+            terrainTileInfos = tile.terrainTileInfos =
+                this.layer.queryTerrainTiles(tile);
         }
         if (!tile.terrainQueryStatus) {
             tile.terrainQueryStatus = [];
@@ -1342,8 +1497,14 @@ class Painter {
         let queryStatus = [];
         // 查询地形瓦片是否有新的加载，如果没有则无需查询
         for (let i = 0; i < tile.terrainTileInfos.length; i++) {
-            queryStatus[i] = (+terrainHelper.isTerrainTileLoaded(tile.terrainTileInfos[i].id));
-            if (queryStatus[i] && tile.terrainQueryStatus[pluginIndex] && !tile.terrainQueryStatus[pluginIndex][i]) {
+            queryStatus[i] = +terrainHelper.isTerrainTileLoaded(
+                tile.terrainTileInfos[i].id,
+            );
+            if (
+                queryStatus[i] &&
+                tile.terrainQueryStatus[pluginIndex] &&
+                !tile.terrainQueryStatus[pluginIndex][i]
+            ) {
                 terrainChanged = true;
                 break;
             }
@@ -1361,7 +1522,7 @@ class Painter {
                 layerClazz.altitudeQueryFrameTimestamp = timestamp;
                 layerClazz.altitudeQueryFrameTime = 0;
             }
-            const timeLimit = layer.options['altitudeQueryTimeLimitPerFrame'];
+            const timeLimit = layer.options["altitudeQueryTimeLimitPerFrame"];
             if (layerClazz.altitudeQueryFrameTime > timeLimit) {
                 return;
             }
@@ -1404,15 +1565,32 @@ class Painter {
             }
             let terrainTile;
             for (let j = 0; j < terrainTileInfos.length; j++) {
-                if (inTerrainTile(terrainTileInfos[j], xmin + tileScale * x, ymax - tileScale * y, res)) {
+                if (
+                    inTerrainTile(
+                        terrainTileInfos[j],
+                        xmin + tileScale * x,
+                        ymax - tileScale * y,
+                        res,
+                    )
+                ) {
                     terrainTile = terrainTileInfos[j];
                     break;
                 }
             }
             let result;
-            if (terrainTile && (terrainHelper.getRenderer().isTileCached(terrainTile.id) || aTerrainAltitude[i] === INVALID_ALTITUDE)) {
+            if (
+                terrainTile &&
+                (terrainHelper.getRenderer().isTileCached(terrainTile.id) ||
+                    aTerrainAltitude[i] === INVALID_ALTITUDE)
+            ) {
                 ANCHOR_POINT.set(x, y);
-                result = this.layer.queryTilePointTerrain(ANCHOR_POINT, terrainTile, tilePoint, extent, res);
+                result = this.layer.queryTilePointTerrain(
+                    ANCHOR_POINT,
+                    terrainTile,
+                    tilePoint,
+                    extent,
+                    res,
+                );
             }
             altitude = aTerrainAltitude[i];
             if (result) {
@@ -1430,13 +1608,20 @@ class Painter {
                 complete = false;
             }
         }
-        layerClazz.altitudeQueryFrameTime = (layerClazz.altitudeQueryFrameTime || 0) + (performance.now() - startTime);
+        layerClazz.altitudeQueryFrameTime =
+            (layerClazz.altitudeQueryFrameTime || 0) +
+            (performance.now() - startTime);
         tile.completeTerrainQuery[pluginIndex] = complete;
         if (complete) {
             if (!this._terrainAltitudeCache) {
-                this._terrainAltitudeCache = new maptalks.LRUCache(this.layer.options['maxCacheSize'] * 4);
+                this._terrainAltitudeCache = new maptalks.LRUCache(
+                    this.layer.options["maxCacheSize"] * 4,
+                );
             }
-            this._terrainAltitudeCache.add(cacheId, { altitudeData: aTerrainAltitude, terrainTileInfos });
+            this._terrainAltitudeCache.add(cacheId, {
+                altitudeData: aTerrainAltitude,
+                terrainTileInfos,
+            });
         }
     }
 
@@ -1446,20 +1631,20 @@ class Painter {
 
     appendWGSLPositionType(mesh, defines) {
         const positionAttr = mesh.geometry.desc.positionAttribute;
-        const isFloat32 = mesh.geometry.data[positionAttr].array instanceof Float32Array;
-        defines['POSITION_TYPE_2'] = isFloat32 ? 'vec2f' : 'vec2i';
-        defines['POSITION_TYPE_3'] = isFloat32 ? 'vec3f' : 'vec4i';
+        const isFloat32 =
+            mesh.geometry.data[positionAttr].array instanceof Float32Array;
+        defines["POSITION_TYPE_2"] = isFloat32 ? "vec2f" : "vec2i";
+        defines["POSITION_TYPE_3"] = isFloat32 ? "vec3f" : "vec4i";
     }
 }
 
 export default Painter;
 
 function sortByCommandKey(a, b) {
-    const k1 = a && a.getCommandKey(this.regl) || '';
-    const k2 = b && b.getCommandKey(this.regl) || '';
+    const k1 = (a && a.getCommandKey(this.regl)) || "";
+    const k2 = (b && b.getCommandKey(this.regl)) || "";
     return k1.localeCompare(k2);
 }
-
 
 function sortByLevel(m0, m1) {
     return m0.properties.level - m1.properties.level;
@@ -1467,14 +1652,14 @@ function sortByLevel(m0, m1) {
 
 function hashCode(s) {
     let hash = 0;
-    const strlen = s && s.length || 0;
+    const strlen = (s && s.length) || 0;
     if (!strlen) {
         return hash;
     }
     let c;
     for (let i = 0; i < strlen; i++) {
         c = s.codePointAt(i);
-        hash = ((hash << 5) - hash) + c;
+        hash = (hash << 5) - hash + c;
         hash = hash & hash; // Convert to 32bit integer
     }
     return hash;
@@ -1485,7 +1670,10 @@ function hashCode(s) {
 // * 如果highlight输入的是filter函数，则转换成过滤后数据的pickingId
 // 转换后gl中的highlightMesh方法只需要考虑id相关逻辑
 function convertHighlights(mesh, layer, inputHighlights) {
-    const properties = mesh instanceof reshader.InstancedMesh ? mesh.properties : mesh.geometry.properties;
+    const properties =
+        mesh instanceof reshader.InstancedMesh
+            ? mesh.properties
+            : mesh.geometry.properties;
     const { aPickingId, feaIdPickingMap, features } = properties;
     const highlights = new Map();
     const names = inputHighlights.keys();

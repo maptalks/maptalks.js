@@ -1,28 +1,30 @@
-import { reshader, mat4 } from '@maptalks/gl';
-import { setUniformFromSymbol, createColorSetter } from '../Util';
-import BasicPainter from './BasicPainter';
-import vert from './glsl/native-line.vert';
-import frag from './glsl/native-line.frag';
-import wgslVert from './wgsl/native-line_vert.wgsl';
-import wgslFrag from './wgsl/native-line_frag.wgsl';
-import pickingVert from './glsl/native-line.vert';
-import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
-import { MapStateCache } from 'maptalks';
+import { reshader, mat4 } from "@maptalks/gl";
+import { setUniformFromSymbol, createColorSetter } from "../Util";
+import BasicPainter from "./BasicPainter";
+import vert from "./glsl/native-line.vert";
+import frag from "./glsl/native-line.frag";
+import { getWGSLSource } from "@maptalks/gl";
+import pickingVert from "./glsl/native-line.vert";
+import {
+    piecewiseConstant,
+    isFunctionDefinition,
+} from "@maptalks/function-type";
+import { MapStateCache } from "maptalks";
 
 const IDENTITY_ARR = mat4.identity([]);
 
 class NativeLinePainter extends BasicPainter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig) {
         super(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig);
-        this.primitive = 'lines';
-        if (isFunctionDefinition(this.symbolDef['lineColor'])) {
+        this.primitive = "lines";
+        if (isFunctionDefinition(this.symbolDef["lineColor"])) {
             const map = layer.getMap();
-            const fn = piecewiseConstant(this.symbolDef['lineColor']);
-            this.colorSymbol = properties => {
+            const fn = piecewiseConstant(this.symbolDef["lineColor"]);
+            this.colorSymbol = (properties) => {
                 const cache = MapStateCache[map.id];
                 const zoom = cache ? cache.zoom : map.getZoom();
-                return fn(zoom, properties)
-            }
+                return fn(zoom, properties);
+            };
         }
     }
 
@@ -40,14 +42,14 @@ class NativeLinePainter extends BasicPainter {
         const material = new reshader.Material(uniforms);
         const mesh = new reshader.Mesh(geometry, material, {
             castShadow: false,
-            picking: true
+            picking: true,
         });
         mesh.setLocalTransform(transform);
         mesh.properties.symbolIndex = symbolIndex;
 
         const defines = {};
         if (mesh.geometry.data.aAltitude) {
-            defines['HAS_ALTITUDE'] = 1;
+            defines["HAS_ALTITUDE"] = 1;
         }
         mesh.setDefines(defines);
         return mesh;
@@ -55,13 +57,24 @@ class NativeLinePainter extends BasicPainter {
 
     getMeshUniforms(geometry, symbol) {
         const uniforms = {};
-        setUniformFromSymbol(uniforms, 'lineColor', symbol, 'lineColor', '#000', createColorSetter(this.colorCache));
-        setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity', 1);
+        setUniformFromSymbol(
+            uniforms,
+            "lineColor",
+            symbol,
+            "lineColor",
+            "#000",
+            createColorSetter(this.colorCache),
+        );
+        setUniformFromSymbol(uniforms, "lineOpacity", symbol, "lineOpacity", 1);
         return uniforms;
     }
 
     isEnableTileStencil(context) {
-        const isRenderingTerrainSkin = !!(context && context.isRenderingTerrain && this.isTerrainSkin());
+        const isRenderingTerrainSkin = !!(
+            context &&
+            context.isRenderingTerrain &&
+            this.isTerrainSkin()
+        );
         const isEnableStencil = !isRenderingTerrainSkin;
         return isEnableStencil;
     }
@@ -80,27 +93,41 @@ class NativeLinePainter extends BasicPainter {
                 return props.viewport ? props.viewport.y : 0;
             },
             width: (_, props) => {
-                return props.viewport ? props.viewport.width : (canvas ? canvas.width : 1);
+                return props.viewport
+                    ? props.viewport.width
+                    : canvas
+                      ? canvas.width
+                      : 1;
             },
             height: (_, props) => {
-                return props.viewport ? props.viewport.height : (canvas ? canvas.height : 1);
+                return props.viewport
+                    ? props.viewport.height
+                    : canvas
+                      ? canvas.height
+                      : 1;
             },
         };
 
         const uniforms = [
             {
-                name: 'projViewModelMatrix',
-                type: 'function',
+                name: "projViewModelMatrix",
+                type: "function",
                 fn: function (context, props) {
                     const projViewModelMatrix = [];
-                    mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
+                    mat4.multiply(
+                        projViewModelMatrix,
+                        props["projViewMatrix"],
+                        props["modelMatrix"],
+                    );
                     return projViewModelMatrix;
-                }
-            }
+                },
+            },
         ];
+        const wgslVert = getWGSLSource("vt_native_line_vert");
+        const wgslFrag = getWGSLSource("vt_native_line_frag");
         const depthRange = this.sceneConfig.depthRange;
         const config = {
-            name: 'vt-native-line',
+            name: "vt-native-line",
             vert,
             frag,
             wgslVert,
@@ -115,59 +142,64 @@ class NativeLinePainter extends BasicPainter {
                     },
                     func: {
                         cmp: () => {
-                            return this.isOnly2D() ? '=' : '<=';
+                            return this.isOnly2D() ? "=" : "<=";
                         },
                         ref: (context, props) => {
                             return props.stencilRef;
-                        }
+                        },
                     },
                     op: {
-                        fail: 'keep',
-                        zfail: 'keep',
-                        zpass: 'replace'
-                    }
+                        fail: "keep",
+                        zfail: "keep",
+                        zpass: "replace",
+                    },
                 },
                 depth: {
                     enable: true,
                     range: depthRange || [0, 1],
-                    func: this.sceneConfig.depthFunc || '<='
+                    func: this.sceneConfig.depthFunc || "<=",
                 },
                 blend: {
                     enable: true,
                     func: this.getBlendFunc(),
-                    equation: 'add'
+                    equation: "add",
                 },
                 polygonOffset: {
                     enable: true,
-                    offset: this.getPolygonOffset()
-                }
-            }
+                    offset: this.getPolygonOffset(),
+                },
+            },
         };
 
         this.shader = new reshader.MeshShader(config);
 
         if (this.pickingFBO) {
-            this.picking = [new reshader.FBORayPicking(
-                this.renderer,
-                {
-                    name: 'vt-native-line-picking',
-                    wgslVert: wgslVert,
-                    vert: pickingVert,
-                    uniforms,
-                    defines: { 'PICKING_MODE': 1 },
-                    extraCommandProps: {
-                        viewport: this.pickingViewport
-                    }
-                },
-                this.pickingFBO,
-                this.getMap()
-            )];
+            this.picking = [
+                new reshader.FBORayPicking(
+                    this.renderer,
+                    {
+                        name: "vt-native-line-picking",
+                        wgslVert: getWGSLSource("vt_native_line_vert"),
+                        vert: pickingVert,
+                        uniforms,
+                        defines: { PICKING_MODE: 1 },
+                        extraCommandProps: {
+                            viewport: this.pickingViewport,
+                        },
+                    },
+                    this.pickingFBO,
+                    this.getMap(),
+                ),
+            ];
         }
     }
 
     getUniformValues(map, context) {
-        const isRenderingTerrainSkin = context && context.isRenderingTerrainSkin;
-        const projViewMatrix = isRenderingTerrainSkin ? IDENTITY_ARR : map.projViewMatrix;
+        const isRenderingTerrainSkin =
+            context && context.isRenderingTerrainSkin;
+        const projViewMatrix = isRenderingTerrainSkin
+            ? IDENTITY_ARR
+            : map.projViewMatrix;
         return {
             projViewMatrix,
             viewport: isRenderingTerrainSkin && context && context.viewport,
@@ -175,7 +207,7 @@ class NativeLinePainter extends BasicPainter {
     }
 
     getPrimitive() {
-        return 'lines';
+        return "lines";
     }
 }
 

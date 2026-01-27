@@ -1,56 +1,61 @@
-import { mat4 } from 'gl-matrix';
-import shadowDisplayFrag from './glsl/shadow_display.frag';
-import shadowDisplayVert from './glsl/shadow_display.vert';
-import shadowDisplayFragWgsl from './wgsl/shadow_display_frag.wgsl';
-import shadowDisplayVertWgsl from './wgsl/shadow_display_vert.wgsl';
-import MeshShader from '../shader/MeshShader.js';
+import { mat4 } from "gl-matrix";
+import shadowDisplayFrag from "./glsl/shadow_display.frag";
+import shadowDisplayVert from "./glsl/shadow_display.vert";
+import { getWGSLSource } from "@maptalks/gl";
+import MeshShader from "../shader/MeshShader.js";
 
 class ShadowDisplayShader extends MeshShader {
-
     constructor(defines) {
         const projViewModelMatrix = [];
         super({
-            name: 'shadow_display',
-            vert : shadowDisplayVert,
-            frag : shadowDisplayFrag,
-            wgslVert: shadowDisplayVertWgsl,
-            wgslFrag: shadowDisplayFragWgsl,
-            uniforms : [
+            name: "shadow_display",
+            vert: shadowDisplayVert,
+            frag: shadowDisplayFrag,
+            wgslVert: getWGSLSource("gl_shadow_display_vert"),
+            wgslFrag: getWGSLSource("gl_shadow_display_frag"),
+            uniforms: [
                 {
-                    name: 'projViewModelMatrix',
-                    type: 'function',
+                    name: "projViewModelMatrix",
+                    type: "function",
                     fn: function (context, props) {
-                        return mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
-                    }
-                }
+                        return mat4.multiply(
+                            projViewModelMatrix,
+                            props["projViewMatrix"],
+                            props["modelMatrix"],
+                        );
+                    },
+                },
             ],
-            defines : defines || {
-                'USE_ESM': 1
+            defines: defines || {
+                USE_ESM: 1,
             },
             extraCommandProps: {
                 depth: {
                     enable: true,
-                    mask: false
+                    mask: false,
                 },
                 viewport: {
                     x: 0,
                     y: 0,
                     width: (context, props) => {
-                        return props['globalTexSize'][0];
+                        return props["globalTexSize"][0];
                     },
                     height: (context, props) => {
-                        return props['globalTexSize'][1];
-                    }
-                }
-            }
+                        return props["globalTexSize"][1];
+                    },
+                },
+            },
         });
     }
 
     getMeshCommand(regl, mesh) {
-        if (!this.commands['shadow_display']) {
-            this.commands['shadow_display'] = this.createMeshCommand(regl, mesh);
+        if (!this.commands["shadow_display"]) {
+            this.commands["shadow_display"] = this.createMeshCommand(
+                regl,
+                mesh,
+            );
         }
-        return this.commands['shadow_display'];
+        return this.commands["shadow_display"];
     }
 }
 

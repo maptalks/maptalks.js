@@ -1,26 +1,33 @@
-import * as maptalks from 'maptalks';
-import Color from 'color';
-import BasicPainter from './BasicPainter';
-import { reshader } from '@maptalks/gl';
-import { vec2, mat4 } from '@maptalks/gl';
-import vert from './glsl/line.vert';
-import frag from './glsl/line.frag';
-import wgslVert from './wgsl/line_vert.wgsl';
-import wgslFrag from './wgsl/line_frag.wgsl';
-import pickingVert from './glsl/line.vert';
-import { setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar, isNil } from '../Util';
-import { prepareFnTypeData, isFnTypeSymbol } from './util/fn_type_util';
-import { createAtlasTexture } from './util/atlas_util';
-import { isFunctionDefinition, piecewiseConstant, interpolated } from '@maptalks/function-type';
-import { limitLineDefinesByDevice } from './util/limit_defines';
+import * as maptalks from "maptalks";
+import Color from "color";
+import BasicPainter from "./BasicPainter";
+import { reshader } from "@maptalks/gl";
+import { vec2, mat4 } from "@maptalks/gl";
+import vert from "./glsl/line.vert";
+import frag from "./glsl/line.frag";
+import { getWGSLSource } from "@maptalks/gl";
+import pickingVert from "./glsl/line.vert";
+import {
+    setUniformFromSymbol,
+    createColorSetter,
+    toUint8ColorInGlobalVar,
+    isNil,
+} from "../Util";
+import { prepareFnTypeData, isFnTypeSymbol } from "./util/fn_type_util";
+import { createAtlasTexture } from "./util/atlas_util";
+import {
+    isFunctionDefinition,
+    piecewiseConstant,
+    interpolated,
+} from "@maptalks/function-type";
+import { limitLineDefinesByDevice } from "./util/limit_defines";
 
 const IDENTITY_ARR = mat4.identity([]);
 const TEMP_CANVAS_SIZE = [];
 
 class LinePainter extends BasicPainter {
-
     static getBloomSymbol() {
-        return ['lineBloom'];
+        return ["lineBloom"];
     }
 
     isUniqueStencilRefPerTile() {
@@ -34,7 +41,7 @@ class LinePainter extends BasicPainter {
             if (lineColor.length === 3) {
                 lineColor.push(1);
             }
-            symbol.lineColor = lineColor.map(c => c * 255);
+            symbol.lineColor = lineColor.map((c) => c * 255);
         }
 
         const lineStrokeColor = symbol.lineStrokeColor;
@@ -42,7 +49,7 @@ class LinePainter extends BasicPainter {
             if (lineStrokeColor.length === 3) {
                 lineStrokeColor.push(1);
             }
-            symbol.lineStrokeColor = lineStrokeColor.map(c => c * 255);
+            symbol.lineStrokeColor = lineStrokeColor.map((c) => c * 255);
         }
 
         const lineDashColor = symbol.lineDashColor;
@@ -50,7 +57,7 @@ class LinePainter extends BasicPainter {
             if (lineDashColor.length === 3) {
                 lineDashColor.push(1);
             }
-            symbol.lineDashColor = lineDashColor.map(c => c * 255);
+            symbol.lineDashColor = lineDashColor.map((c) => c * 255);
         }
     }
 
@@ -65,7 +72,10 @@ class LinePainter extends BasicPainter {
             return true;
         }
         for (let i = 0; i < symbols.length; i++) {
-            if (symbols[i]['linePatternFile'] && symbols[i]['linePatternAnimSpeed']) {
+            if (
+                symbols[i]["linePatternFile"] &&
+                symbols[i]["linePatternAnimSpeed"]
+            ) {
                 return true;
             }
         }
@@ -107,39 +117,82 @@ class LinePainter extends BasicPainter {
         const uniforms = {
             tileResolution: geometry.properties.tileResolution,
             tileRatio: geometry.properties.tileRatio,
-            tileExtent: geometry.properties.tileExtent
+            tileExtent: geometry.properties.tileExtent,
         };
         this.setLineUniforms(symbol, uniforms);
 
         // 为了支持和linePattern合成，把默认lineColor设为白色
-        setUniformFromSymbol(uniforms, 'lineColor', symbol, 'lineColor', '#fff', createColorSetter(this.colorCache));
-        setUniformFromSymbol(uniforms, 'linePatterGapColor', symbol, 'linePatterGapColor', [0, 0, 0, 0], createColorSetter(this.colorCache));
-        setUniformFromSymbol(uniforms, 'lineStrokeColor', symbol, 'lineStrokeColor', [0, 0, 0, 0], createColorSetter(this.colorCache));
-        setUniformFromSymbol(uniforms, 'lineDasharray', symbol, 'lineDasharray', [0, 0, 0, 0], dasharray => {
-            let lineDasharray;
-            if (dasharray && dasharray.length) {
-                const old = dasharray;
-                if (dasharray.length === 1) {
-                    lineDasharray = [old[0], old[0], old[0], old[0]];
-                } else if (dasharray.length === 2) {
-                    lineDasharray = [old[0], old[1], old[0], old[1]];
-                } else if (dasharray.length === 3) {
-                    lineDasharray = [old[0], old[1], old[2], old[2]];
-                } else if (dasharray.length === 4) {
-                    lineDasharray = dasharray;
-                } else if (dasharray.length > 4) {
-                    lineDasharray = dasharray.slice(0, 4);
+        setUniformFromSymbol(
+            uniforms,
+            "lineColor",
+            symbol,
+            "lineColor",
+            "#fff",
+            createColorSetter(this.colorCache),
+        );
+        setUniformFromSymbol(
+            uniforms,
+            "linePatterGapColor",
+            symbol,
+            "linePatterGapColor",
+            [0, 0, 0, 0],
+            createColorSetter(this.colorCache),
+        );
+        setUniformFromSymbol(
+            uniforms,
+            "lineStrokeColor",
+            symbol,
+            "lineStrokeColor",
+            [0, 0, 0, 0],
+            createColorSetter(this.colorCache),
+        );
+        setUniformFromSymbol(
+            uniforms,
+            "lineDasharray",
+            symbol,
+            "lineDasharray",
+            [0, 0, 0, 0],
+            (dasharray) => {
+                let lineDasharray;
+                if (dasharray && dasharray.length) {
+                    const old = dasharray;
+                    if (dasharray.length === 1) {
+                        lineDasharray = [old[0], old[0], old[0], old[0]];
+                    } else if (dasharray.length === 2) {
+                        lineDasharray = [old[0], old[1], old[0], old[1]];
+                    } else if (dasharray.length === 3) {
+                        lineDasharray = [old[0], old[1], old[2], old[2]];
+                    } else if (dasharray.length === 4) {
+                        lineDasharray = dasharray;
+                    } else if (dasharray.length > 4) {
+                        lineDasharray = dasharray.slice(0, 4);
+                    }
                 }
-            }
-            return lineDasharray || [0, 0, 0, 0];
-        }, [0, 0, 0, 0]);
-        setUniformFromSymbol(uniforms, 'lineDashColor', symbol, 'lineDashColor', [0, 0, 0, 0], createColorSetter(this.colorCache));
+                return lineDasharray || [0, 0, 0, 0];
+            },
+            [0, 0, 0, 0],
+        );
+        setUniformFromSymbol(
+            uniforms,
+            "lineDashColor",
+            symbol,
+            "lineDashColor",
+            [0, 0, 0, 0],
+            createColorSetter(this.colorCache),
+        );
 
         const iconAtlas = geometry.properties.iconAtlas;
         const isVectorTile = this.layer instanceof maptalks.TileLayer;
         if (iconAtlas) {
-            uniforms.linePatternFile = createAtlasTexture(this.regl, iconAtlas, false, false);
-            uniforms.atlasSize = iconAtlas ? [iconAtlas.width, iconAtlas.height] : [0, 0];
+            uniforms.linePatternFile = createAtlasTexture(
+                this.regl,
+                iconAtlas,
+                false,
+                false,
+            );
+            uniforms.atlasSize = iconAtlas
+                ? [iconAtlas.width, iconAtlas.height]
+                : [0, 0];
             uniforms.flipY = isVectorTile ? -1 : 1;
             this.drawDebugAtlas(iconAtlas);
         }
@@ -168,26 +221,26 @@ class LinePainter extends BasicPainter {
         const material = new reshader.Material(uniforms);
         const mesh = new reshader.Mesh(geometry, material, {
             castShadow: false,
-            picking: true
+            picking: true,
         });
         mesh.setLocalTransform(transform);
         mesh.positionMatrix = this.getAltitudeOffsetMatrix();
 
         const defines = {};
         if (iconAtlas) {
-            defines['HAS_PATTERN'] = 1;
+            defines["HAS_PATTERN"] = 1;
         }
         mesh.properties.symbolIndex = symbolIndex;
         this._prepareDashDefines(mesh, defines);
         if (geometry.data.aColor) {
-            defines['HAS_COLOR'] = 1;
+            defines["HAS_COLOR"] = 1;
         }
         if (geometry.data.aStrokeColor) {
-            defines['HAS_STROKE_COLOR'] = 1;
+            defines["HAS_STROKE_COLOR"] = 1;
         }
         this.setMeshDefines(defines, geometry, symbolDef);
         if (geometry.data.aAltitude) {
-            defines['HAS_ALTITUDE'] = 1;
+            defines["HAS_ALTITUDE"] = 1;
         }
         mesh.setDefines(defines);
         return mesh;
@@ -207,7 +260,11 @@ class LinePainter extends BasicPainter {
     }
 
     _prepareMesh(mesh) {
-        if (!mesh.geometry.aLineWidth && mesh.material.get('lineWidth') <= 0 || !mesh.geometry.aOpacity && mesh.material.get('lineOpacity') <= 0) {
+        if (
+            (!mesh.geometry.aLineWidth &&
+                mesh.material.get("lineWidth") <= 0) ||
+            (!mesh.geometry.aOpacity && mesh.material.get("lineOpacity") <= 0)
+        ) {
             return;
         }
         const defines = mesh.defines;
@@ -221,59 +278,80 @@ class LinePainter extends BasicPainter {
     _prepareDashDefines(mesh, defines) {
         const geometry = mesh.geometry;
         const symbol = this.getSymbol(mesh.properties.symbolIndex);
-        if (geometry.data['aDasharray'] || Array.isArray(symbol.lineDasharray) &&
-            symbol.lineDasharray.reduce((accumulator, currentValue) => {
-                return accumulator + currentValue;
-            }, 0) > 0) {
-            defines['HAS_DASHARRAY'] = 1;
-            if (geometry.data['aDasharray']) {
-                defines['HAS_DASHARRAY_ATTR'] = 1;
+        if (
+            geometry.data["aDasharray"] ||
+            (Array.isArray(symbol.lineDasharray) &&
+                symbol.lineDasharray.reduce((accumulator, currentValue) => {
+                    return accumulator + currentValue;
+                }, 0) > 0)
+        ) {
+            defines["HAS_DASHARRAY"] = 1;
+            if (geometry.data["aDasharray"]) {
+                defines["HAS_DASHARRAY_ATTR"] = 1;
             }
-            if (geometry.data['aDashColor']) {
-                defines['HAS_DASHARRAY_COLOR'] = 1;
+            if (geometry.data["aDashColor"]) {
+                defines["HAS_DASHARRAY_COLOR"] = 1;
             }
-        } else if (defines['HAS_DASHARRAY']) {
-            delete defines['HAS_DASHARRAY'];
+        } else if (defines["HAS_DASHARRAY"]) {
+            delete defines["HAS_DASHARRAY"];
         }
     }
 
     setLineUniforms(symbol, uniforms) {
-        setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth', 2);
-        setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity', 1);
-        setUniformFromSymbol(uniforms, 'lineStrokeWidth', symbol, 'lineStrokeWidth', 0);
-        setUniformFromSymbol(uniforms, 'lineBlur', symbol, 'lineBlur', 0.7);
-        setUniformFromSymbol(uniforms, 'lineOffset', symbol, 'lineOffset', 0);
-        setUniformFromSymbol(uniforms, 'lineDx', symbol, 'lineDx', 0);
-        setUniformFromSymbol(uniforms, 'lineDy', symbol, 'lineDy', 0);
-        setUniformFromSymbol(uniforms, 'linePatternAnimSpeed', symbol, 'linePatternAnimSpeed', 0);
-        setUniformFromSymbol(uniforms, 'linePatternGap', symbol, 'linePatternGap', 0);
+        setUniformFromSymbol(uniforms, "lineWidth", symbol, "lineWidth", 2);
+        setUniformFromSymbol(uniforms, "lineOpacity", symbol, "lineOpacity", 1);
+        setUniformFromSymbol(
+            uniforms,
+            "lineStrokeWidth",
+            symbol,
+            "lineStrokeWidth",
+            0,
+        );
+        setUniformFromSymbol(uniforms, "lineBlur", symbol, "lineBlur", 0.7);
+        setUniformFromSymbol(uniforms, "lineOffset", symbol, "lineOffset", 0);
+        setUniformFromSymbol(uniforms, "lineDx", symbol, "lineDx", 0);
+        setUniformFromSymbol(uniforms, "lineDy", symbol, "lineDy", 0);
+        setUniformFromSymbol(
+            uniforms,
+            "linePatternAnimSpeed",
+            symbol,
+            "linePatternAnimSpeed",
+            0,
+        );
+        setUniformFromSymbol(
+            uniforms,
+            "linePatternGap",
+            symbol,
+            "linePatternGap",
+            0,
+        );
         // setUniformFromSymbol(uniforms, 'lineOffset', symbol, 'lineOffset', 0);
     }
 
     setMeshDefines(defines, geometry, symbolDef) {
         if (geometry.data.aOpacity) {
-            defines['HAS_OPACITY'] = 1;
+            defines["HAS_OPACITY"] = 1;
         }
         if (geometry.data.aLineWidth) {
-            defines['HAS_LINE_WIDTH'] = 1;
+            defines["HAS_LINE_WIDTH"] = 1;
         }
         if (geometry.data.aLineStrokeWidth) {
-            defines['HAS_STROKE_WIDTH'] = 1;
+            defines["HAS_STROKE_WIDTH"] = 1;
         }
-        if (isFnTypeSymbol(symbolDef['lineDx'])) {
-            defines['HAS_LINE_DX'] = 1;
+        if (isFnTypeSymbol(symbolDef["lineDx"])) {
+            defines["HAS_LINE_DX"] = 1;
         }
-        if (isFnTypeSymbol(symbolDef['lineDy'])) {
-            defines['HAS_LINE_DY'] = 1;
+        if (isFnTypeSymbol(symbolDef["lineDy"])) {
+            defines["HAS_LINE_DY"] = 1;
         }
         // if (symbol['lineOffset']) {
         //     defines['USE_LINE_OFFSET'] = 1;
         // }
-        if (isFnTypeSymbol(symbolDef['linePatternAnimSpeed'])) {
-            defines['HAS_PATTERN_ANIM'] = 1;
+        if (isFnTypeSymbol(symbolDef["linePatternAnimSpeed"])) {
+            defines["HAS_PATTERN_ANIM"] = 1;
         }
-        if (isFnTypeSymbol(symbolDef['linePatternGap'])) {
-            defines['HAS_PATTERN_GAP'] = 1;
+        if (isFnTypeSymbol(symbolDef["linePatternGap"])) {
+            defines["HAS_PATTERN_GAP"] = 1;
         }
     }
 
@@ -286,41 +364,52 @@ class LinePainter extends BasicPainter {
     }
 
     createFnTypeConfig(map, symbolDef) {
-        const aColorFn = piecewiseConstant(symbolDef['lineColor']);
-        const aLinePatternAnimSpeedFn = piecewiseConstant(symbolDef['aLinePatternAnimSpeed']);
-        const aLinePatternGapFn = piecewiseConstant(symbolDef['aLinePatternGap']);
+        const aColorFn = piecewiseConstant(symbolDef["lineColor"]);
+        const aLinePatternAnimSpeedFn = piecewiseConstant(
+            symbolDef["aLinePatternAnimSpeed"],
+        );
+        const aLinePatternGapFn = piecewiseConstant(
+            symbolDef["aLinePatternGap"],
+        );
         const shapeConfigs = this.createShapeFnTypeConfigs(map, symbolDef);
         const i8 = new Int8Array(2);
         return [
             {
                 //geometry.data 中的属性数据
-                attrName: 'aColor',
+                attrName: "aColor",
                 //symbol中的function-type属性
-                symbolName: 'lineColor',
+                symbolName: "lineColor",
                 type: Uint8Array,
                 width: 4,
-                define: 'HAS_COLOR',
+                define: "HAS_COLOR",
                 evaluate: (properties, geometry) => {
                     const cache = maptalks.MapStateCache[map.id];
                     const zoom = cache ? cache.zoom : map.getZoom();
                     let color = aColorFn(zoom, properties);
                     if (isFunctionDefinition(color)) {
-                        color = this.evaluateInFnTypeConfig(color, geometry, map, properties, true);
+                        color = this.evaluateInFnTypeConfig(
+                            color,
+                            geometry,
+                            map,
+                            properties,
+                            true,
+                        );
                     }
                     if (!Array.isArray(color)) {
-                        color = this.colorCache[color] = this.colorCache[color] || Color(color).unitArray();
+                        color = this.colorCache[color] =
+                            this.colorCache[color] || Color(color).unitArray();
                     }
                     color = toUint8ColorInGlobalVar(color);
                     return color;
-                }
+                },
             },
             {
-                attrName: 'aLinePattern',
-                symbolName: 'linePatternAnimSpeed',
+                attrName: "aLinePattern",
+                symbolName: "linePatternAnimSpeed",
                 type: Int8Array,
                 width: 2,
-                related: ['linePatternGap'],
-                define: 'HAS_LINE_PATTERN',
+                related: ["linePatternGap"],
+                define: "HAS_LINE_PATTERN",
                 evaluate: (properties, geometry, arr, index) => {
                     const cache = maptalks.MapStateCache[map.id];
                     const zoom = cache ? cache.zoom : map.getZoom();
@@ -334,15 +423,15 @@ class LinePainter extends BasicPainter {
                     i8[0] = speed / 127;
                     i8[1] = arr[index + 1];
                     return i8;
-                }
+                },
             },
             {
-                attrName: 'aLinePattern',
-                symbolName: 'linePatternGap',
+                attrName: "aLinePattern",
+                symbolName: "linePatternGap",
                 type: Int8Array,
                 width: 2,
-                related: ['linePatternAnimSpeed'],
-                define: 'HAS_LINE_PATTERN',
+                related: ["linePatternAnimSpeed"],
+                define: "HAS_LINE_PATTERN",
                 evaluate: (properties, geometry, arr, index) => {
                     const cache = maptalks.MapStateCache[map.id];
                     const zoom = cache ? cache.zoom : map.getZoom();
@@ -354,99 +443,112 @@ class LinePainter extends BasicPainter {
                     i8[1] = gap * 10;
                     i8[0] = arr[index];
                     return i8;
-                }
-            }
+                },
+            },
         ].concat(shapeConfigs);
     }
 
     createShapeFnTypeConfigs(map, symbolDef) {
-        const aLineWidthFn = interpolated(symbolDef['lineWidth']);
-        const aLineOpacityFn = interpolated(symbolDef['lineOpacity']);
-        const aLineStrokeWidthFn = interpolated(symbolDef['lineStrokeWidth']);
-        const aLineDxFn = interpolated(symbolDef['lineDx']);
-        const aLineDyFn = interpolated(symbolDef['lineDy']);
+        const aLineWidthFn = interpolated(symbolDef["lineWidth"]);
+        const aLineOpacityFn = interpolated(symbolDef["lineOpacity"]);
+        const aLineStrokeWidthFn = interpolated(symbolDef["lineStrokeWidth"]);
+        const aLineDxFn = interpolated(symbolDef["lineDx"]);
+        const aLineDyFn = interpolated(symbolDef["lineDy"]);
         const u16 = new Uint16Array(1);
         const i8 = new Int8Array(1);
         return [
             {
-                attrName: 'aLineWidth',
-                symbolName: 'lineWidth',
+                attrName: "aLineWidth",
+                symbolName: "lineWidth",
                 type: Uint8Array,
                 width: 1,
-                define: 'HAS_LINE_WIDTH',
+                define: "HAS_LINE_WIDTH",
                 evaluate: (properties, geometry) => {
                     const cache = maptalks.MapStateCache[map.id];
                     const zoom = cache ? cache.zoom : map.getZoom();
                     let lineWidth = aLineWidthFn(zoom, properties);
                     if (isFunctionDefinition(lineWidth)) {
-                        lineWidth = this.evaluateInFnTypeConfig(lineWidth, geometry, map, properties);
+                        lineWidth = this.evaluateInFnTypeConfig(
+                            lineWidth,
+                            geometry,
+                            map,
+                            properties,
+                        );
                     }
                     //乘以2是为了解决 #190
                     u16[0] = Math.round(lineWidth * 2.0);
                     return u16[0];
-                }
+                },
             },
             {
-                attrName: 'aLineStrokeWidth',
-                symbolName: 'lineStrokeWidth',
+                attrName: "aLineStrokeWidth",
+                symbolName: "lineStrokeWidth",
                 type: Uint8Array,
                 width: 1,
-                define: 'HAS_STROKE_WIDTH',
-                evaluate: properties => {
+                define: "HAS_STROKE_WIDTH",
+                evaluate: (properties) => {
                     const cache = maptalks.MapStateCache[map.id];
                     const zoom = cache ? cache.zoom : map.getZoom();
-                    const lineStrokeWidth = aLineStrokeWidthFn(zoom, properties);
+                    const lineStrokeWidth = aLineStrokeWidthFn(
+                        zoom,
+                        properties,
+                    );
                     //乘以2是为了解决 #190
                     u16[0] = Math.round(lineStrokeWidth * 2.0);
                     return u16[0];
-                }
+                },
             },
             {
-                attrName: 'aLineDxDy',
-                symbolName: 'lineDx',
+                attrName: "aLineDxDy",
+                symbolName: "lineDx",
                 type: Int8Array,
                 width: 2,
                 index: 0,
-                define: 'HAS_LINE_DX',
-                evaluate: properties => {
+                define: "HAS_LINE_DX",
+                evaluate: (properties) => {
                     const cache = maptalks.MapStateCache[map.id];
                     const zoom = cache ? cache.zoom : map.getZoom();
                     const lineDx = aLineDxFn(zoom, properties);
                     i8[0] = lineDx;
                     return i8[0];
-                }
+                },
             },
             {
-                attrName: 'aLineDxDy',
-                symbolName: 'lineDy',
+                attrName: "aLineDxDy",
+                symbolName: "lineDy",
                 type: Int8Array,
                 width: 2,
                 index: 1,
-                define: 'HAS_LINE_DY',
-                evaluate: properties => {
+                define: "HAS_LINE_DY",
+                evaluate: (properties) => {
                     const cache = maptalks.MapStateCache[map.id];
                     const zoom = cache ? cache.zoom : map.getZoom();
                     const lineDy = aLineDyFn(zoom, properties);
                     i8[0] = lineDy;
                     return i8[0];
-                }
+                },
             },
             {
-                attrName: 'aOpacity',
-                symbolName: 'lineOpacity',
+                attrName: "aOpacity",
+                symbolName: "lineOpacity",
                 type: Uint8Array,
                 width: 1,
-                define: 'HAS_OPACITY',
+                define: "HAS_OPACITY",
                 evaluate: (properties, geometry) => {
                     const cache = maptalks.MapStateCache[map.id];
                     const zoom = cache ? cache.zoom : map.getZoom();
                     let opacity = aLineOpacityFn(zoom, properties);
                     if (isFunctionDefinition(opacity)) {
-                        opacity = this.evaluateInFnTypeConfig(opacity, geometry, map, properties);
+                        opacity = this.evaluateInFnTypeConfig(
+                            opacity,
+                            geometry,
+                            map,
+                            properties,
+                        );
                     }
                     u16[0] = opacity * 255;
                     return u16[0];
-                }
+                },
             },
         ];
     }
@@ -466,73 +568,89 @@ class LinePainter extends BasicPainter {
 
         if (this.pickingFBO) {
             const isVectorTile = this.layer instanceof maptalks.TileLayer;
-            const defines = { 'PICKING_MODE': 1 };
-            defines['LINESOFAR_TYPE'] = isVectorTile ? 'u32' : 'f32';
-            this.picking = [new reshader.FBORayPicking(
-                this.renderer,
-                {
-                    name: 'line-picking',
-                    vert: pickingVert,
-                    wgslVert: wgslVert,
-                    defines,
-                    uniforms: [
-                        {
-                            name: 'projViewModelMatrix',
-                            type: 'function',
-                            fn: function (context, props) {
-                                const projViewModelMatrix = [];
-                                mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
-                                return projViewModelMatrix;
-                            }
-                        }
-                    ],
-                    extraCommandProps: this.getExtraCommandProps()
-                },
-                this.pickingFBO,
-                this.getMap()
-            )];
+            const defines = { PICKING_MODE: 1 };
+            defines["LINESOFAR_TYPE"] = isVectorTile ? "u32" : "f32";
+            this.picking = [
+                new reshader.FBORayPicking(
+                    this.renderer,
+                    {
+                        name: "line-picking",
+                        vert: pickingVert,
+                        wgslVert: getWGSLSource("vt_line_vert"),
+                        defines,
+                        uniforms: [
+                            {
+                                name: "projViewModelMatrix",
+                                type: "function",
+                                fn: function (context, props) {
+                                    const projViewModelMatrix = [];
+                                    mat4.multiply(
+                                        projViewModelMatrix,
+                                        props["projViewMatrix"],
+                                        props["modelMatrix"],
+                                    );
+                                    return projViewModelMatrix;
+                                },
+                            },
+                        ],
+                        extraCommandProps: this.getExtraCommandProps(),
+                    },
+                    this.pickingFBO,
+                    this.getMap(),
+                ),
+            ];
         }
     }
 
     createShader(context) {
         this._context = context;
         const uniforms = [];
-        const defines = {
-        };
+        const defines = {};
         this.fillIncludes(defines, uniforms, context);
-        if (this.sceneConfig.trailAnimation && this.sceneConfig.trailAnimation.enable) {
-            defines['HAS_TRAIL'] = 1;
+        if (
+            this.sceneConfig.trailAnimation &&
+            this.sceneConfig.trailAnimation.enable
+        ) {
+            defines["HAS_TRAIL"] = 1;
         }
         const projViewModelMatrix = [];
-        uniforms.push(
-            {
-                name: 'projViewModelMatrix',
-                type: 'function',
-                fn: function (context, props) {
-                    mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
-                    return projViewModelMatrix;
-                }
-            }
-        );
+        uniforms.push({
+            name: "projViewModelMatrix",
+            type: "function",
+            fn: function (context, props) {
+                mat4.multiply(
+                    projViewModelMatrix,
+                    props["projViewMatrix"],
+                    props["modelMatrix"],
+                );
+                return projViewModelMatrix;
+            },
+        });
 
         const isVectorTile = this.layer.isVectorTileLayer;
-        defines['LINESOFAR_TYPE'] = isVectorTile ? 'u32' : 'f32';
+        defines["LINESOFAR_TYPE"] = isVectorTile ? "u32" : "f32";
+        const wgslVert = getWGSLSource("vt_line_vert");
+        const wgslFrag = getWGSLSource("vt_line_frag");
         this.shader = new reshader.MeshShader({
-            name: 'vt-line',
+            name: "vt-line",
             vert,
             frag,
             wgslVert,
             wgslFrag,
             uniforms,
             defines,
-            extraCommandProps: this.getExtraCommandProps(context)
+            extraCommandProps: this.getExtraCommandProps(context),
         });
     }
 
     // LinePainter 需要在2d下打开stencil，否则会因为子级瓦片无法遮住父级瓦片的绘制，出现一些奇怪的现象
     // https://github.com/maptalks/issues/issues/677
     isEnableTileStencil(context) {
-        const isRenderingTerrainSkin = !!(context && context.isRenderingTerrain && this.isTerrainSkin());
+        const isRenderingTerrainSkin = !!(
+            context &&
+            context.isRenderingTerrain &&
+            this.isTerrainSkin()
+        );
         const isEnableStencil = !isRenderingTerrainSkin;
         return isEnableStencil;
     }
@@ -547,10 +665,18 @@ class LinePainter extends BasicPainter {
                 return props.viewport ? props.viewport.y : 0;
             },
             width: (_, props) => {
-                return props.viewport ? props.viewport.width : (canvas ? canvas.width : 1);
+                return props.viewport
+                    ? props.viewport.width
+                    : canvas
+                      ? canvas.width
+                      : 1;
             },
             height: (_, props) => {
-                return props.viewport ? props.viewport.height : (canvas ? canvas.height : 1);
+                return props.viewport
+                    ? props.viewport.height
+                    : canvas
+                      ? canvas.height
+                      : 1;
             },
         };
         const depthRange = this.sceneConfig.depthRange;
@@ -562,33 +688,33 @@ class LinePainter extends BasicPainter {
                 },
                 func: {
                     cmp: () => {
-                        return '<=';
+                        return "<=";
                     },
                     ref: (context, props) => {
                         return props.stencilRef;
-                    }
+                    },
                 },
                 op: {
-                    fail: 'keep',
-                    zfail: 'keep',
-                    zpass: 'replace'
-                }
+                    fail: "keep",
+                    zfail: "keep",
+                    zpass: "replace",
+                },
             },
             depth: {
                 enable: true,
                 range: depthRange || [0, 1],
                 mask: this.sceneConfig.depthMask || false,
-                func: this.sceneConfig.depthFunc || '<='
+                func: this.sceneConfig.depthFunc || "<=",
             },
             blend: {
                 enable: true,
                 func: this.getBlendFunc(),
-                equation: 'add'
+                equation: "add",
             },
             polygonOffset: {
                 enable: true,
-                offset: this.getPolygonOffset()
-            }
+                offset: this.getPolygonOffset(),
+            },
         };
     }
 
@@ -598,12 +724,14 @@ class LinePainter extends BasicPainter {
         mesh.setDefines(defines);
     }
 
-
     getUniformValues(map, context) {
-        const isRenderingTerrainSkin = context && context.isRenderingTerrainSkin;
+        const isRenderingTerrainSkin =
+            context && context.isRenderingTerrainSkin;
         const tileSize = this.layer.getTileSize().width;
 
-        const projViewMatrix = isRenderingTerrainSkin ? IDENTITY_ARR : map.projViewMatrix;
+        const projViewMatrix = isRenderingTerrainSkin
+            ? IDENTITY_ARR
+            : map.projViewMatrix;
         const viewMatrix = map.viewMatrix,
             cameraToCenterDistance = map.cameraToCenterDistance,
             resolution = map.getResolution();
@@ -619,17 +747,21 @@ class LinePainter extends BasicPainter {
         // console.log(vec2.normalize([], [v[0] - c[0], v[1] - c[1]]));
         const animation = this.sceneConfig.trailAnimation || {};
         const uniforms = {
-            layerScale: this.layer.options['styleScale'] || 1,
-            projViewMatrix, viewMatrix, cameraToCenterDistance, resolution, canvasSize,
+            layerScale: this.layer.options["styleScale"] || 1,
+            projViewMatrix,
+            viewMatrix,
+            cameraToCenterDistance,
+            resolution,
+            canvasSize,
             trailSpeed: animation.speed || 1,
             trailLength: animation.trailLength || 500,
             trailCircle: animation.trailCircle || 1000,
             currentTime: this.layer.getRenderer().getFrameTimestamp() || 0,
-            blendSrcIsOne: +(!!(blendSrc === 1 || blendSrc === 'one')),
+            blendSrcIsOne: +!!(blendSrc === 1 || blendSrc === "one"),
             cameraPosition: map.cameraPosition,
             viewport: isRenderingTerrainSkin && context && context.viewport,
-            isRenderingTerrain: +(!!isRenderingTerrainSkin),
-            fogFactor: this.layer.options.fogFactor || 0
+            isRenderingTerrain: +!!isRenderingTerrainSkin,
+            fogFactor: this.layer.options.fogFactor || 0,
             // projMatrix: map.projMatrix,
             // halton: context.jitter || [0, 0],
             // outSize: [this.canvas.width, this.canvas.height],

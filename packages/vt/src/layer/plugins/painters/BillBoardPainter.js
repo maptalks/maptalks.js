@@ -1,17 +1,16 @@
-import * as maptalks from 'maptalks';
-import { reshader, mat4, quat } from '@maptalks/gl';
-import BasicPainter from './BasicPainter';
-import vert from './glsl/billboard.vert';
-import frag from './glsl/billboard.frag';
-import wgslVert from './wgsl/billboard_vert.wgsl';
-import wgslFrag from './wgsl/billboard_frag.wgsl';
-import ShelfPack from '@mapbox/shelf-pack';
-import { RGBAImage } from '../../../packer/Image';
-import { isFunction, isString } from '../../../common/Util';
-import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
-import { createAtlasTexture } from './util/atlas_util';
-import { getIndexArrayType } from '../../../packer/pack/util/array';
-import { isObjectEmpty } from './util/is_obj_empty';
+import * as maptalks from "maptalks";
+import { reshader, mat4, quat } from "@maptalks/gl";
+import BasicPainter from "./BasicPainter";
+import vert from "./glsl/billboard.vert";
+import frag from "./glsl/billboard.frag";
+import { getWGSLSource } from "@maptalks/gl";
+import ShelfPack from "@mapbox/shelf-pack";
+import { RGBAImage } from "../../../packer/Image";
+import { isFunction, isString } from "../../../common/Util";
+import { isFunctionDefinition, interpolated } from "@maptalks/function-type";
+import { createAtlasTexture } from "./util/atlas_util";
+import { getIndexArrayType } from "../../../packer/pack/util/array";
+import { isObjectEmpty } from "./util/is_obj_empty";
 
 const TILE_POINT = new maptalks.Point(0, 0);
 
@@ -23,13 +22,12 @@ let TEMP_CANVAS;
 
 function getCanvas() {
     if (!TEMP_CANVAS) {
-        TEMP_CANVAS = document.createElement('canvas');
+        TEMP_CANVAS = document.createElement("canvas");
     }
     return TEMP_CANVAS;
 }
 
 export default class BillBoardPainter extends BasicPainter {
-
     constructor(...args) {
         super(...args);
         this._ready = true;
@@ -65,7 +63,7 @@ export default class BillBoardPainter extends BasicPainter {
         }
 
         if (isUrlSource) {
-            const image = this._image = new Image();
+            const image = (this._image = new Image());
             image.onload = () => {
                 this._ready = true;
             };
@@ -97,7 +95,12 @@ export default class BillBoardPainter extends BasicPainter {
         const bins = [];
         for (const p in currentTiles) {
             const tile = tileCache.get(p);
-            if (!tile || !tile.image || !tile.image.cache || !tile.image.cache[0]) {
+            if (
+                !tile ||
+                !tile.image ||
+                !tile.image.cache ||
+                !tile.image.cache[0]
+            ) {
                 continue;
             }
             let { geometry } = tile.image.cache[0];
@@ -108,7 +111,13 @@ export default class BillBoardPainter extends BasicPainter {
             if (!geometry) {
                 continue;
             }
-            const { oldPickingId, contextCache, textureCache, features, billTexture } = geometry.properties;
+            const {
+                oldPickingId,
+                contextCache,
+                textureCache,
+                features,
+                billTexture,
+            } = geometry.properties;
             if (!oldPickingId || !oldPickingId.length) {
                 continue;
             }
@@ -117,8 +126,10 @@ export default class BillBoardPainter extends BasicPainter {
             const count = oldPickingId.length;
             for (let i = 0; i < count; i++) {
                 const pickingId = oldPickingId[i];
-                const context = contextCache[pickingId] = contextCache[pickingId] || {};
-                const feature = features[pickingId] && features[pickingId].feature;
+                const context = (contextCache[pickingId] =
+                    contextCache[pickingId] || {});
+                const feature =
+                    features[pickingId] && features[pickingId].feature;
                 if (!feature) {
                     continue;
                 }
@@ -134,7 +145,10 @@ export default class BillBoardPainter extends BasicPainter {
                 if (tex.redraw) {
                     tileRedraw = redraw = true;
                     texture = textureCache[pickingId] = tex.data;
-                    if (currentWidth !== texture.width || currentHeight !== texture.height) {
+                    if (
+                        currentWidth !== texture.width ||
+                        currentHeight !== texture.height
+                    ) {
                         refreshTexCoord = true;
                     }
                 } else {
@@ -143,21 +157,27 @@ export default class BillBoardPainter extends BasicPainter {
                 bins.push({
                     id: pickingId,
                     w: texture.width,
-                    h: texture.height
+                    h: texture.height,
                 });
             }
             if (tileRedraw) {
-                const aTexCoord = refreshTexCoord ? geometry.properties.aTexCoord : null;
-                const image = this._fillFnTextureData(aTexCoord, geometry, bins);
+                const aTexCoord = refreshTexCoord
+                    ? geometry.properties.aTexCoord
+                    : null;
+                const image = this._fillFnTextureData(
+                    aTexCoord,
+                    geometry,
+                    bins,
+                );
                 const config = {
                     width: image.width,
                     height: image.height,
                     data: image.data,
                     format: image.format,
-                    mag: 'linear',
-                    min: 'linear',
+                    mag: "linear",
+                    min: "linear",
                     flipY: false,
-                    premultiplyAlpha: true
+                    premultiplyAlpha: true,
                 };
                 if (billTexture.update) {
                     billTexture.update(config);
@@ -165,7 +185,10 @@ export default class BillBoardPainter extends BasicPainter {
                     billTexture(config);
                 }
                 if (refreshTexCoord) {
-                    geometry.updateData('aTexCoord', geometry.properties.aTexCoord);
+                    geometry.updateData(
+                        "aTexCoord",
+                        geometry.properties.aTexCoord,
+                    );
                 }
             }
         }
@@ -194,16 +217,20 @@ export default class BillBoardPainter extends BasicPainter {
             return null;
         }
 
-        const geometry = this._createBillboard(pointGeo, pointGeo.desc.positionSize, features);
+        const geometry = this._createBillboard(
+            pointGeo,
+            pointGeo.desc.positionSize,
+            features,
+        );
         geometry.generateBuffers(this.regl);
         pointGeo.properties.billGeometry = geometry;
 
         const material = new reshader.Material({
-            billTexture: geometry.properties.billTexture
+            billTexture: geometry.properties.billTexture,
         });
         const mesh = new reshader.Mesh(geometry, material, {
             castShadow: false,
-            picking: true
+            picking: true,
         });
         const map = this.getMap();
         TILE_POINT.set(tilePoint[0], tilePoint[1]);
@@ -211,17 +238,17 @@ export default class BillBoardPainter extends BasicPainter {
         // const centiMeterToLocal = map.distanceToPointAtRes(100, 100, geometry.properties.tileResolution)['_multi'](tileRatio / 10000).toArray();
         const extrudeScale = map.altitudeToPoint(1, tileResolution) * tileRatio;
 
-        mesh.setUniform('extrudeScale', extrudeScale / 100);
+        mesh.setUniform("extrudeScale", extrudeScale / 100);
         const textureSize = [];
-        mesh.setFunctionUniform('textureSize', () => {
+        mesh.setFunctionUniform("textureSize", () => {
             const billTexture = geometry.properties.billTexture;
             textureSize[0] = billTexture.width;
             textureSize[1] = billTexture.height;
             return textureSize;
-        })
+        });
         const defines = {};
         if (mesh.geometry.data.aAltitude) {
-            defines['HAS_ALTITUDE'] = 1;
+            defines["HAS_ALTITUDE"] = 1;
         }
         mesh.setDefines(defines);
         mesh.positionMatrix = this.getAltitudeOffsetMatrix();
@@ -235,8 +262,8 @@ export default class BillBoardPainter extends BasicPainter {
         const { aPosition, aPickingId } = geometry.data;
         const geoProps = geometry.properties;
         geoProps.oldPickingId = aPickingId;
-        const contextCache = geoProps.contextCache = [];
-        const textureCache = geoProps.textureCache = [];
+        const contextCache = (geoProps.contextCache = []);
+        const textureCache = (geoProps.textureCache = []);
         const count = aPickingId.length;
         const newCount = count * 6;
         const newPosition = new aPosition.constructor(newCount * positionSize);
@@ -248,7 +275,10 @@ export default class BillBoardPainter extends BasicPainter {
         const bins = [];
 
         for (let i = 0; i < count; i++) {
-            const pos = aPosition.subarray(i * positionSize, (i + 1) * positionSize);
+            const pos = aPosition.subarray(
+                i * positionSize,
+                (i + 1) * positionSize,
+            );
             const pickingId = aPickingId[i];
             newPosition.set(pos, i * 6 * positionSize);
             newPosition.set(pos, (i * 6 + 1) * positionSize);
@@ -272,14 +302,18 @@ export default class BillBoardPainter extends BasicPainter {
 
             let texture;
             if (isFnSource) {
-                const context = contextCache[pickingId] = contextCache[pickingId] || {};
-                const tex = source(context, feature && feature.feature && feature.feature.properties);
+                const context = (contextCache[pickingId] =
+                    contextCache[pickingId] || {});
+                const tex = source(
+                    context,
+                    feature && feature.feature && feature.feature.properties,
+                );
                 texture = tex.data;
                 textureCache[pickingId] = texture;
                 bins.push({
                     id: pickingId,
                     w: texture.width,
-                    h: texture.height
+                    h: texture.height,
                 });
             } else {
                 texture = this._image;
@@ -291,9 +325,19 @@ export default class BillBoardPainter extends BasicPainter {
         const aTexCoord = new Int16Array(newCount * 2);
         if (bins.length) {
             const image = this._fillFnTextureData(aTexCoord, geometry, bins);
-            geoProps.billTexture = createAtlasTexture(this.regl, image, false, false);
+            geoProps.billTexture = createAtlasTexture(
+                this.regl,
+                image,
+                false,
+                false,
+            );
         } else {
-            const imageBin = { x: 0, y: 0, w: this._image.width, h: this._image.height };
+            const imageBin = {
+                x: 0,
+                y: 0,
+                w: this._image.width,
+                h: this._image.height,
+            };
             for (let i = 0; i < count; i++) {
                 this._fillTexCoord(aTexCoord, i, imageBin, 1);
             }
@@ -301,7 +345,7 @@ export default class BillBoardPainter extends BasicPainter {
             geoProps.billTexture = this.regl.texture({
                 width: image.width,
                 height: image.height,
-                data: image
+                data: image,
             });
         }
         const eleCount = count * 6;
@@ -318,7 +362,7 @@ export default class BillBoardPainter extends BasicPainter {
             aPickingId: newPickingId,
             aExtrude,
             aQuat,
-            aTexCoord
+            aTexCoord,
         };
 
         const { feaPickingIdMap, aFeaIds } = geometry.properties;
@@ -328,7 +372,9 @@ export default class BillBoardPainter extends BasicPainter {
         }
         geoProps.aFeaIds = newFeaIds;
         geoProps.aTexCoord = aTexCoord;
-        const geo = new reshader.Geometry(data, new ctor(elements), 0, { positionSize });
+        const geo = new reshader.Geometry(data, new ctor(elements), 0, {
+            positionSize,
+        });
         geo.properties = geometry.properties;
         return geo;
     }
@@ -337,7 +383,8 @@ export default class BillBoardPainter extends BasicPainter {
         let rotationX = this._rotationX || 0;
         let rotationY = this._rotationY || 0;
         let rotationZ = this._rotationZ || 0;
-        const properties = feature && feature.feature && feature.feature.properties;
+        const properties =
+            feature && feature.feature && feature.feature.properties;
         if (this._rotationXFn) {
             rotationX = this._rotationXFn(tileZoom, properties);
         }
@@ -353,13 +400,13 @@ export default class BillBoardPainter extends BasicPainter {
         for (let j = 0; j < 6; j++) {
             aQuat.set(OUT_QUAT, (startIndex + j) * 4);
         }
-
     }
 
     _fillExtrude(aExtrude, i, feature, tileZoom) {
         let width = this._width || 0;
         let height = this._height || 0;
-        const properties = feature && feature.feature && feature.feature.properties;
+        const properties =
+            feature && feature.feature && feature.feature.properties;
         if (this._widthFn) {
             width = this._widthFn(tileZoom, properties);
         }
@@ -367,8 +414,8 @@ export default class BillBoardPainter extends BasicPainter {
             height = this._heightFn(tileZoom, properties);
         }
         // to centimeter
-        const hw = width / 2 * 100;
-        const hh = height / 2 * 100;
+        const hw = (width / 2) * 100;
+        const hh = (height / 2) * 100;
 
         // 左下
         sizeOut[0] = -hw;
@@ -411,12 +458,12 @@ export default class BillBoardPainter extends BasicPainter {
         const pack = new ShelfPack(0, 0, { autoResize: true });
 
         const canvas = getCanvas();
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext("2d");
         pack.pack(bins, { inPlace: true });
         const limit = this.sceneConfig.textureLimit || 1024;
         let ratio = 1;
         if (pack.w * pack.h > limit * limit) {
-            ratio = Math.sqrt(limit * limit / (pack.w * pack.h));
+            ratio = Math.sqrt((limit * limit) / (pack.w * pack.h));
             pack.resize(Math.floor(pack.w * ratio), Math.floor(pack.h * ratio));
         }
         const image = new RGBAImage({ width: pack.w, height: pack.h });
@@ -436,12 +483,14 @@ export default class BillBoardPainter extends BasicPainter {
             ctx.drawImage(texture, 0, 0, w, h);
             const data = ctx.getImageData(0, 0, w, h);
             RGBAImage.copy(
-                data, image, { x: 0, y: 0 },
+                data,
+                image,
+                { x: 0, y: 0 },
                 { x: Math.floor(bin.x * ratio), y: Math.floor(bin.y * ratio) },
-                { width: w, height: h }
+                { width: w, height: h },
             );
         }
-        image.format = 'rgba';
+        image.format = "rgba";
         return image;
     }
 
@@ -499,9 +548,11 @@ export default class BillBoardPainter extends BasicPainter {
             },
             height: () => {
                 return this.canvas ? this.canvas.height : 1;
-            }
+            },
         };
         const projViewModelMatrix = [];
+        const wgslVert = getWGSLSource("vt_billboard_vert");
+        const wgslFrag = getWGSLSource("vt_billboard_frag");
         const config = {
             vert,
             frag,
@@ -509,13 +560,17 @@ export default class BillBoardPainter extends BasicPainter {
             wgslFrag,
             uniforms: [
                 {
-                    name: 'projViewModelMatrix',
-                    type: 'function',
+                    name: "projViewModelMatrix",
+                    type: "function",
                     fn: function (context, props) {
-                        mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
+                        mat4.multiply(
+                            projViewModelMatrix,
+                            props["projViewMatrix"],
+                            props["modelMatrix"],
+                        );
                         return projViewModelMatrix;
-                    }
-                }
+                    },
+                },
             ],
             defines: null,
             extraCommandProps: {
@@ -542,17 +597,17 @@ export default class BillBoardPainter extends BasicPainter {
                 depth: {
                     enable: true,
                     range: this.sceneConfig.depthRange || [0, 1],
-                    func: this.sceneConfig.depthFunc || '<='
+                    func: this.sceneConfig.depthFunc || "<=",
                 },
                 blend: {
                     enable: true,
                     func: this.getBlendFunc(),
-                    equation: 'add'
+                    equation: "add",
                 },
                 cull: {
-                    enable: false
-                }
-            }
+                    enable: false,
+                },
+            },
         };
 
         this.shader = new reshader.MeshShader(config);
@@ -560,44 +615,50 @@ export default class BillBoardPainter extends BasicPainter {
 
         if (this.pickingFBO) {
             const projViewModelMatrix = [];
-            this.picking = [new reshader.FBORayPicking(
-                this.renderer,
-                {
-                    vert,
-                    wgslVert,
-                    uniforms: [
-                        {
-                            name: 'projViewModelMatrix',
-                            type: 'function',
-                            fn: function (context, props) {
-                                mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
-                                return projViewModelMatrix;
-                            }
-                        }
-                    ],
-                    defines: { 'PICKING_MODE': 1 },
-                    extraCommandProps: {
-                        viewport: this.pickingViewport,
-                        depth: {
-                            enable: true,
-                            range: this.sceneConfig.depthRange || [0, 1],
-                            func: this.sceneConfig.depthFunc || '<='
+            this.picking = [
+                new reshader.FBORayPicking(
+                    this.renderer,
+                    {
+                        vert,
+                        wgslVert,
+                        uniforms: [
+                            {
+                                name: "projViewModelMatrix",
+                                type: "function",
+                                fn: function (context, props) {
+                                    mat4.multiply(
+                                        projViewModelMatrix,
+                                        props["projViewMatrix"],
+                                        props["modelMatrix"],
+                                    );
+                                    return projViewModelMatrix;
+                                },
+                            },
+                        ],
+                        defines: { PICKING_MODE: 1 },
+                        extraCommandProps: {
+                            viewport: this.pickingViewport,
+                            depth: {
+                                enable: true,
+                                range: this.sceneConfig.depthRange || [0, 1],
+                                func: this.sceneConfig.depthFunc || "<=",
+                            },
+                            cull: {
+                                enable: false,
+                            },
                         },
-                        cull: {
-                            enable: false
-                        }
-                    }
-                },
-                this.pickingFBO,
-                this.getMap()
-            )];
+                    },
+                    this.pickingFBO,
+                    this.getMap(),
+                ),
+            ];
         }
     }
 
     getUniformValues(map) {
         const projViewMatrix = map.projViewMatrix;
         return {
-            projViewMatrix
+            projViewMatrix,
         };
     }
 
