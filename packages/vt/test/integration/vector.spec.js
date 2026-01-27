@@ -3,8 +3,9 @@ const assert = require('assert');
 const path = require('path');
 const fs = require('fs');
 const { match, readSpecs, hasOwn } = require('./util');
-const { PointLayer, LineStringLayer, PolygonLayer, ExtrudePolygonLayer } = require('../../dist/maptalks.vt.gpu.js');
-const { GroupGLLayer } = require('@maptalks/gpu');
+const { PointLayer, LineStringLayer, PolygonLayer, ExtrudePolygonLayer } = require('../../dist/maptalks.vt.js');
+const { GroupGLLayer } = require('@maptalks/gl');
+require('@maptalks/gpu');
 
 const DEFAULT_VIEW = {
     center: [0, 0],

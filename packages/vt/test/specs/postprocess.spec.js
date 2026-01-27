@@ -2,8 +2,9 @@ const path = require('path');
 const assert = require('assert');
 const { readPixel, compareExpected } = require('../common/Util');
 const maptalks = require('maptalks');
-const { GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.gpu.js');
-const { GroupGLLayer } = require('@maptalks/gpu');
+const { GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.js');
+const { GroupGLLayer } = require('@maptalks/gl');
+require('@maptalks/gpu');
 
 const mapRenderer = window.mapRenderer;
 

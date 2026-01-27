@@ -18,10 +18,11 @@ const {
     LineStringLayer,
     VectorTileLayer,
     PolygonLayer
-} = require('../../dist/maptalks.vt.gpu.js');
+} = require('../../dist/maptalks.vt.js');
 const {
     GroupGLLayer
-} = require('@maptalks/gpu');
+} = require('@maptalks/gl');
+require('@maptalks/gpu');
 
 const DEFAULT_VIEW = {
     center: [0, 0],

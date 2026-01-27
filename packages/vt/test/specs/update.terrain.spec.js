@@ -1,8 +1,9 @@
 const assert = require('assert');
 const { readPixel } = require('../common/Util');
 const maptalks = require('maptalks');
-const { GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.gpu.js');
-const { GroupGLLayer } = require('@maptalks/gpu');
+const { GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.js');
+const { GroupGLLayer } = require('@maptalks/gl');
+require('@maptalks/gpu');
 const startServer = require('./server.js');
 const PORT = 4398;
 
