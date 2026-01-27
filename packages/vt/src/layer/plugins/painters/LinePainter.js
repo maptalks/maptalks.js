@@ -1,12 +1,10 @@
 import * as maptalks from 'maptalks';
 import Color from 'color';
 import BasicPainter from './BasicPainter';
-import { reshader } from '@maptalks/gl';
+import { reshader, getWGSLSource } from '@maptalks/gl';
 import { vec2, mat4 } from '@maptalks/gl';
 import vert from './glsl/line.vert';
 import frag from './glsl/line.frag';
-import wgslVert from './wgsl/line_vert.wgsl';
-import wgslFrag from './wgsl/line_frag.wgsl';
 import pickingVert from './glsl/line.vert';
 import { setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar, isNil } from '../Util';
 import { prepareFnTypeData, isFnTypeSymbol } from './util/fn_type_util';
@@ -473,7 +471,7 @@ class LinePainter extends BasicPainter {
                 {
                     name: 'line-picking',
                     vert: pickingVert,
-                    wgslVert: wgslVert,
+                    wgslVert: getWGSLSource('vt_line_vert'),
                     defines,
                     uniforms: [
                         {
@@ -521,8 +519,8 @@ class LinePainter extends BasicPainter {
             name: 'vt-line',
             vert,
             frag,
-            wgslVert,
-            wgslFrag,
+            wgslVert: getWGSLSource('vt_line_vert'),
+            wgslFrag: getWGSLSource('vt_line_frag'),
             uniforms,
             defines,
             extraCommandProps: this.getExtraCommandProps(context)

@@ -1,11 +1,8 @@
 import BasicPainter from './BasicPainter';
-import { reshader, mat4 } from '@maptalks/gl';
+import { reshader, mat4, getWGSLSource } from '@maptalks/gl';
 import vert from './glsl/vt-flat-mask.vert';
 import frag from './glsl/vt-flat-mask.frag';
-// import wgslVert from './wgsl/fill_vert.wgsl';
-// import wgslFrag from './wgsl/fill_frag.wgsl';
-
-const IDENTITY_ARR = mat4.identity([]);
+// // const IDENTITY_ARR = mat4.identity([]);
 
 const DEFAULT_UNIFORMS = {
 
@@ -97,8 +94,8 @@ class TerrainFlatMaskPainter extends BasicPainter {
         this.shader = new reshader.MeshShader({
             name: 'vt-terrain-flat-mask',
             vert, frag,
-            // wgslVert: TYPE_CONSTS + wgslVert,
-            // wgslFrag,
+            // wgslVert: TYPE_CONSTS + getWGSLSource('vt_fill_vert'),
+            // getWGSLSource('vt_fill_frag'),
             uniforms,
             extraCommandProps
         });

@@ -1,8 +1,7 @@
 import * as maptalks from 'maptalks';
-import { reshader, vec3, vec4, mat3, mat4, quat, HighlightUtil, ContextUtil } from '@maptalks/gl';
+import { reshader, vec3, vec4, mat3, mat4, quat, HighlightUtil, ContextUtil, getWGSLSource } from '@maptalks/gl';
 import { iterateMesh, iterateBufferData, getItemAtBufferData, setInstanceData, } from '../../common/GLTFHelpers';
 import pickingVert from './glsl/picking.vert';
-import pickingWGSLVert from './wgsl/picking_vert.wgsl';
 import pntsVert from './glsl/pnts.vert';
 import pntsFrag from './glsl/pnts.frag';
 import { isFunction, isNil, extend, setColumn3, flatArr, isNumber, normalizeColor, pushIn } from '../../common/Util';
@@ -1702,7 +1701,7 @@ export default class TileMeshPainter {
             this._renderer,
             {
                 vert: pickingVert,
-                wgslVert: pickingWGSLVert,
+                wgslVert: getWGSLSource('layer_3dtiles_picking_vert'),
                 extraCommandProps,
                 uniforms: this._standardShader.uniforms,
                 defines: {

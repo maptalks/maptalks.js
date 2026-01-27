@@ -1,12 +1,11 @@
+import { getWGSLSource } from '@maptalks/gl';
 import QuadShader from './QuadShader.js';
 import frag from './glsl/copy.frag';
-import wgslFrag from './wgsl/copy_frag.wgsl';
-
 class CopyShader extends QuadShader {
     constructor() {
         super({
             name: 'copy',
-            wgslFrag,
+            wgslFrag: getWGSLSource('gl_copy_frag'),
             frag,
             extraCommandProps: {
                 viewport: {

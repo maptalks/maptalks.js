@@ -1,8 +1,6 @@
-import { reshader } from '@maptalks/gl';
+import { reshader, getWGSLSource } from '@maptalks/gl';
 import vert from './glsl/flood.vert';
 import frag from './glsl/flood.frag';
-import wgslVert from './wgsl/flood_vert.wgsl';
-import wgslFrag from './wgsl/flood_frag.wgsl';
 import AnalysisPass from './AnalysisPass';
 
 export default class FloodPass extends AnalysisPass {
@@ -12,8 +10,8 @@ export default class FloodPass extends AnalysisPass {
             name: 'flood',
             vert,
             frag,
-            wgslVert,
-            wgslFrag,
+            wgslVert: getWGSLSource('analysis_flood_vert'),
+            wgslFrag: getWGSLSource('analysis_flood_frag'),
             extraCommandProps: {
                 viewport: this._viewport
             }

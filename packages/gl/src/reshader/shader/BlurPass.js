@@ -1,21 +1,15 @@
+import { getWGSLSource } from '@maptalks/gl';
 import Renderer from '../Renderer.js';
 import QuadShader from './QuadShader.js';
 // import BoxBlurShader from './BoxBlurShader.js';
 import quadVert from './glsl/quad.vert';
 import blur0Frag from './glsl/blur0.frag';
-import blur0FragWgsl from './wgsl/blur0_frag.wgsl';
 import blur1Frag from './glsl/blur1.frag';
-import blur1FragWgsl from './wgsl/blur1_frag.wgsl';
 import blur2Frag from './glsl/blur2.frag';
-import blur2FragWgsl from './wgsl/blur2_frag.wgsl';
 import blur3Frag from './glsl/blur3.frag';
-import blur3FragWgsl from './wgsl/blur3_frag.wgsl';
 import blur4Frag from './glsl/blur4.frag';
-import blur4FragWgsl from './wgsl/blur4_frag.wgsl';
 import blur5Frag from './glsl/blur5.frag';
-import blur5FragWgsl from './wgsl/blur5_frag.wgsl';
 import blur6Frag from './glsl/blur6.frag';
-import blur6FragWgsl from './wgsl/blur6_frag.wgsl';
 import { vec2 } from 'gl-matrix';
 
 class BlurPass {
@@ -270,34 +264,34 @@ class BlurPass {
             };
 
             config.frag = blur0Frag;
-            config.wgslFrag = blur0FragWgsl;
+            config.wgslFrag = getWGSLSource('gl_blur0_frag');
             config.name = 'blur0';
             this._blur0Shader = new QuadShader(config);
             config.frag = blur1Frag;
-            config.wgslFrag = blur1FragWgsl;
+            config.wgslFrag = getWGSLSource('gl_blur1_frag');
             config.name = 'blur1';
             this._blur1Shader = new QuadShader(config);
             config.frag = blur2Frag;
-            config.wgslFrag = blur2FragWgsl;
+            config.wgslFrag = getWGSLSource('gl_blur2_frag');
             config.name = 'blur2';
             this._blur2Shader = new QuadShader(config);
             config.frag = blur3Frag;
-            config.wgslFrag = blur3FragWgsl;
+            config.wgslFrag = getWGSLSource('gl_blur3_frag');
             config.name = 'blur3';
             this._blur3Shader = new QuadShader(config);
             config.frag = blur4Frag;
-            config.wgslFrag = blur4FragWgsl;
+            config.wgslFrag = getWGSLSource('gl_blur4_frag');
             config.name = 'blur4';
             this._blur4Shader = new QuadShader(config);
 
             if (this._level > 5) {
                 config.frag = blur5Frag;
-                config.wgslFrag = blur5FragWgsl;
+                config.wgslFrag = getWGSLSource('gl_blur5_frag');
                 config.name = 'blur5';
                 this._blur5Shader = new QuadShader(config);
 
                 config.frag = blur6Frag;
-                config.wgslFrag = blur6FragWgsl;
+                config.wgslFrag = getWGSLSource('gl_blur6_frag');
                 config.name = 'blur6';
                 this._blur6Shader = new QuadShader(config);
             }
