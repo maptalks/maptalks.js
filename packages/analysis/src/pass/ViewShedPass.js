@@ -1,9 +1,7 @@
-import { mat4, quat, vec3 } from '@maptalks/gl';
+import { mat4, quat, vec3, getWGSLSource } from '@maptalks/gl';
 import { reshader } from '@maptalks/gl';
 import vert from './glsl/viewshed.vert';
 import frag from './glsl/viewshed.frag';
-import wgslVert from './wgsl/viewshed_vert.wgsl';
-import wgslFrag from './wgsl/viewshed_frag.wgsl';
 import { Point } from 'maptalks';
 import AnalysisPass from './AnalysisPass';
 
@@ -38,8 +36,8 @@ export default class ViewshedPass extends AnalysisPass {
             name: 'viewshed',
             vert,
             frag,
-            wgslVert,
-            wgslFrag,
+            wgslVert: getWGSLSource('analysis_viewshed_vert'),
+            wgslFrag: getWGSLSource('analysis_viewshed_frag'),
             uniforms: [
                 {
                     name: 'projViewModelMatrix',

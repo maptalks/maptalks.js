@@ -1,9 +1,8 @@
+import { getWGSLSource } from '@maptalks/gl';
 import MeshShader from './MeshShader.js';
 import Mesh from '../Mesh.js';
 import Geometry from '../Geometry.js';
 import vert from './glsl/quad.vert';
-import wgslVert from './wgsl/quad_vert.wgsl';
-
 const quadVertices = new Float32Array([
     // positions
     -1.0,  1.0,
@@ -25,7 +24,7 @@ const quadTexcoords = new Float32Array([
 class QuadShader extends MeshShader {
     constructor(config) {
         config.vert = config.vert || vert;
-        config.wgslVert = config.wgslVert || wgslVert;
+        config.getWGSLSource('gl_quad_vert') = config.getWGSLSource('gl_quad_vert') || getWGSLSource('gl_quad_vert');
         config.extraCommandProps = config.extraCommandProps || {};
         if (!config.extraCommandProps.depth) {
             //disable depth

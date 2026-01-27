@@ -1,4 +1,4 @@
-import { vec2, vec3, vec4, mat2, mat4, reshader, quat } from '@maptalks/gl';
+import { vec2, vec3, vec4, mat2, mat4, reshader, quat, getWGSLSource } from '@maptalks/gl';
 import { interpolated, isFunctionDefinition } from '@maptalks/function-type';
 import CollisionPainter from './CollisionPainter';
 import { extend, isNil } from '../Util';
@@ -6,15 +6,10 @@ import { getCharOffset } from './util/get_char_offset';
 import { projectLine } from './util/projection';
 import { getLabelNormal } from './util/get_label_normal';
 import vert from './glsl/text.vert';
-import wgslVert from './wgsl/text_vert.wgsl';
 import vertAlongLine from './glsl/text.line.vert';
-import wgslVertAlongLine from './wgsl/text_line_vert.wgsl';
 import frag from './glsl/text.frag';
-import wgslFrag from './wgsl/text_frag.wgsl';
 import pickingVert from './glsl/text.vert';
-import pickingWgslVert from './wgsl/text_vert.wgsl';
 import linePickingVert from './glsl/text.line.vert';
-import linePickingWgslVert from './wgsl/text_line_vert.wgsl';
 import { projectPoint } from './util/projection';
 import { getShapeMatrix } from './util/box_util';
 import { createTextMesh, DEFAULT_UNIFORMS, createTextShader, GAMMA_SCALE, getTextFnTypeConfig, isLabelCollides, getLabelEntryKey } from './util/create_text_painter';
@@ -937,8 +932,8 @@ export default class TextPainter extends CollisionPainter {
             name: 'text',
             // vert: vertAlongLine, frag,
             vert, frag,
-            wgslVert,
-            wgslFrag,
+            wgslVert: getWGSLSource('vt_text_vert'),
+            wgslFrag: getWGSLSource('vt_text_frag'),
             uniforms,
             defines,
             extraCommandProps
@@ -960,8 +955,8 @@ export default class TextPainter extends CollisionPainter {
             name: 'text-along-line',
             vert: vertAlongLine,
             frag,
-            wgslVert: wgslVertAlongLine,
-            wgslFrag: wgslFrag,
+            wgslVert: getWGSLSource('vt_text_line_vert'),
+            wgslFrag: getWGSLSource('vt_text_frag'),
             uniforms,
             extraCommandProps: commandProps,
             defines,
@@ -974,7 +969,7 @@ export default class TextPainter extends CollisionPainter {
                 {
                     name: 'text-picking',
                     vert: pickingVert,
-                    wgslVert: pickingWgslVert,
+                    wgslVert: getWGSLSource('vt_text_vert'),
                     defines: pickingDefines,
                     uniforms,
                     extraCommandProps: {
@@ -995,7 +990,7 @@ export default class TextPainter extends CollisionPainter {
                 {
                     name: 'line-text-picking',
                     vert: linePickingVert,
-                    wgslVert: linePickingWgslVert,
+                    wgslVert: getWGSLSource('vt_text_line_vert'),
                     uniforms,
                     defines: pickingDefines,
                     extraCommandProps: {

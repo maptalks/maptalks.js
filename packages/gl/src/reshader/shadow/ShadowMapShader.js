@@ -1,8 +1,7 @@
+import { getWGSLSource } from '@maptalks/gl';
 import { mat4 } from 'gl-matrix';
 import vsmFrag from './glsl/vsm_mapping.frag';
 import vsmVert from './glsl/vsm_mapping.vert';
-import vsmVertWgsl from './wgsl/vsm_mapping_vert.wgsl';
-import vsmFragWgsl from './wgsl/vsm_mapping_frag.wgsl';
 import MeshShader from '../shader/MeshShader.js';
 
 class ShadowMapShader extends MeshShader {
@@ -12,8 +11,8 @@ class ShadowMapShader extends MeshShader {
             name: 'shadow-map',
             vert : vsmVert,
             frag : vsmFrag,
-            wgslVert: vsmVertWgsl,
-            wgslFrag: vsmFragWgsl,
+            wgslVert: getWGSLSource('gl_vsm_mapping_vert'),
+            wgslFrag: getWGSLSource('gl_vsm_mapping_frag'),
             uniforms : [
                 {
                     name : 'lightProjViewModelMatrix',

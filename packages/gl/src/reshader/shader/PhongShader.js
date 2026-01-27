@@ -1,8 +1,7 @@
+import { getWGSLSource } from '@maptalks/gl';
 import { mat4, mat3 } from 'gl-matrix';
 import phongFrag from './glsl/phong.frag';
 import phongVert from './glsl/phong.vert';
-import wgslVert from './wgsl/phong_vert.wgsl';
-import wgslFrag from './wgsl/phong_frag.wgsl';
 import MeshShader from '../shader/MeshShader.js';
 
 class PhongShader extends MeshShader {
@@ -33,8 +32,8 @@ class PhongShader extends MeshShader {
             name: 'phong',
             vert: config.vert || phongVert,
             frag: config.frag || phongFrag,
-            wgslVert,
-            wgslFrag,
+            wgslVert: getWGSLSource('gl_phong_vert'),
+            wgslFrag: getWGSLSource('gl_phong_frag'),
             uniforms,
             defines: config.defines || {},
             extraCommandProps: config.extraCommandProps || {}

@@ -1,9 +1,7 @@
-import { mat4 } from '@maptalks/gl';
+import { mat4, getWGSLSource } from '@maptalks/gl';
 import { reshader } from '@maptalks/gl';
 import vert from './glsl/insight.vert';
 import frag from './glsl/insight.frag';
-import wgslVert from './wgsl/insight_vert.wgsl';
-import wgslFrag from './wgsl/insight_frag.wgsl';
 import { Util } from 'maptalks';
 import AnalysisPass from './AnalysisPass';
 
@@ -24,8 +22,8 @@ export default class InSightPass extends AnalysisPass {
             name: 'insight',
             vert,
             frag,
-            wgslVert,
-            wgslFrag,
+            wgslVert: getWGSLSource('analysis_insight_vert'),
+            wgslFrag: getWGSLSource('analysis_insight_frag'),
             uniforms: [
                 {
                     name: 'projViewModelMatrix',

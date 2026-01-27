@@ -1,8 +1,7 @@
+import { getWGSLSource } from '@maptalks/gl';
 import skyboxData from './skybox.js';
 import vert from './skybox.vert';
 import frag from './skybox.frag';
-import wgslVert from './skybox_vert.wgsl';
-import wgslFrag from './skybox_frag.wgsl';
 import MeshShader from '../shader/MeshShader';
 import Mesh from '../Mesh.js';
 import Geometry from '../Geometry.js';
@@ -13,8 +12,8 @@ class SkyboxShader extends MeshShader {
             name: 'skybox',
             vert,
             frag,
-            wgslVert,
-            wgslFrag,
+            wgslVert: getWGSLSource('gl_skybox_vert'),
+            wgslFrag: getWGSLSource('gl_skybox_frag'),
             extraCommandProps: {
                 depth: {
                     enable : true,

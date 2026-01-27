@@ -1,12 +1,11 @@
+import { getWGSLSource } from '@maptalks/gl';
 import QuadShader from './QuadShader.js';
 import frag from './glsl/fxaa.frag';
-import wgslFrag from './wgsl/fxaa_frag.wgsl';
-
 class FxaaShader extends QuadShader {
     constructor() {
         super({
             name: 'fxaa',
-            frag, wgslFrag,
+            frag, wgslFrag: getWGSLSource('gl_fxaa_frag'),
             extraCommandProps: {
                 viewport: {
                     x: 0,

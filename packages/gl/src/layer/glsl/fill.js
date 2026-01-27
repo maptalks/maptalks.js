@@ -1,6 +1,4 @@
+import { getWGSLSource } from '@maptalks/gl';
 import fillVert from './fill.vert';
 import fillFrag from './fill.frag';
-import fillWgslVert from './fill_vert.wgsl';
-import fillWgslFrag from './fill_frag.wgsl';
-
-export { fillVert, fillFrag, fillWgslVert, fillWgslFrag };
+export { fillVert, fillFrag, fillWgslVert: getWGSLSource('gl_fill_vert'), fillWgslFrag: getWGSLSource('gl_fill_frag') };

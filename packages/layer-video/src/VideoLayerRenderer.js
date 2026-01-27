@@ -1,17 +1,14 @@
 import * as maptalks from 'maptalks';
-import { CanvasCompatible, reshader, mat4, quat } from '@maptalks/gl';
+import { CanvasCompatible, reshader, mat4, quat, getWGSLSource } from '@maptalks/gl';
 import { intersectsBox } from 'frustum-intersects';
 import vert from './video.vert';
 import frag from './video.frag';
-import wgslVert from './video_vert.wgsl';
-import wgslFrag from './video_frag.wgsl';
-
 const shaderConfig = {
     name: 'video-layer',
     vert,
     frag,
-    wgslVert,
-    wgslFrag,
+    wgslVert: getWGSLSource('layer_video_video_vert'),
+    wgslFrag: getWGSLSource('layer_video_video_frag'),
     uniforms : [
         {
             name: 'projViewModelMatrix',

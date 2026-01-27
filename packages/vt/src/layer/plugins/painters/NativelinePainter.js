@@ -1,10 +1,8 @@
-import { reshader, mat4 } from '@maptalks/gl';
+import { reshader, mat4, getWGSLSource } from '@maptalks/gl';
 import { setUniformFromSymbol, createColorSetter } from '../Util';
 import BasicPainter from './BasicPainter';
 import vert from './glsl/native-line.vert';
 import frag from './glsl/native-line.frag';
-import wgslVert from './wgsl/native-line_vert.wgsl';
-import wgslFrag from './wgsl/native-line_frag.wgsl';
 import pickingVert from './glsl/native-line.vert';
 import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
 import { MapStateCache } from 'maptalks';
@@ -103,8 +101,8 @@ class NativeLinePainter extends BasicPainter {
             name: 'vt-native-line',
             vert,
             frag,
-            wgslVert,
-            wgslFrag,
+            wgslVert: getWGSLSource('vt_native_line_vert'),
+            wgslFrag: getWGSLSource('vt_native_line_frag'),
             uniforms,
             defines: null,
             extraCommandProps: {
@@ -151,7 +149,7 @@ class NativeLinePainter extends BasicPainter {
                 this.renderer,
                 {
                     name: 'vt-native-line-picking',
-                    wgslVert: wgslVert,
+                    wgslVert: getWGSLSource('vt_native_line_vert'),
                     vert: pickingVert,
                     uniforms,
                     defines: { 'PICKING_MODE': 1 },

@@ -1,12 +1,11 @@
 import * as maptalks from 'maptalks';
 import Color from 'color';
-import { reshader, mat4, mat3 } from '@maptalks/gl';
+import { reshader, mat4, mat3, getWGSLSource } from '@maptalks/gl';
 import BasicPainter from './BasicPainter';
 import { setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar, isNil } from '../Util';
 import { prepareFnTypeData, isFnTypeSymbol } from './util/fn_type_util';
 import { createAtlasTexture } from './util/atlas_util';
 import tubeVert from './glsl/tube.vert';
-import tubeVertWgsl from './wgsl/tube_vert.wgsl';
 import { isFunctionDefinition, piecewiseConstant, interpolated } from '@maptalks/function-type';
 import { getVectorPacker } from '../../../packer/inject';
 
@@ -196,7 +195,7 @@ class TubePainter extends BasicPainter {
                 this.renderer,
                 {
                     vert: tubeVert,
-                    wgslVert: tubeVertWgsl,
+                    wgslVert: getWGSLSource('vt_tube_vert'),
                     defines: { 'PICKING_MODE': 1 },
                     uniforms: [
                         {
@@ -250,7 +249,7 @@ class TubePainter extends BasicPainter {
         this.shader = new reshader.pbr.StandardShader({
             name: 'vt-tube',
             vert: tubeVert,
-            wgslVert: tubeVertWgsl,
+            wgslVert: getWGSLSource('vt_tube_vert'),
             uniforms,
             defines: this._getDefines(defines),
             extraCommandProps: this.getExtraCommandProps()

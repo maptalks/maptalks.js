@@ -1,10 +1,9 @@
+import { getWGSLSource } from '@maptalks/gl';
 import Renderer from '../Renderer.js';
 import QuadShader from './QuadShader.js';
 import BlurPass from './BlurPass.js';
 import quadVert from './glsl/quad.vert';
 import combineFrag from './glsl/bloom_combine.frag';
-import quadVertWgsl from './wgsl/quad_vert.wgsl';
-import combineFragWgsl from './wgsl/bloom_combine_frag.wgsl';
 import { vec2 } from 'gl-matrix';
 
 class BloomPass {
@@ -135,8 +134,8 @@ class BloomPass {
                 name: 'bloom-combine',
                 vert: quadVert,
                 frag: combineFrag,
-                wgslVert: quadVertWgsl,
-                wgslFrag: combineFragWgsl,
+                wgslVert: getWGSLSource('gl_quad_vert'),
+                wgslFrag: getWGSLSource('gl_bloom_combine_frag'),
                 extraCommandProps: {
                     viewport
                 }

@@ -1,10 +1,8 @@
 import * as maptalks from 'maptalks';
-import { reshader, mat4, quat } from '@maptalks/gl';
+import { reshader, mat4, quat, getWGSLSource } from '@maptalks/gl';
 import BasicPainter from './BasicPainter';
 import vert from './glsl/billboard.vert';
 import frag from './glsl/billboard.frag';
-import wgslVert from './wgsl/billboard_vert.wgsl';
-import wgslFrag from './wgsl/billboard_frag.wgsl';
 import ShelfPack from '@mapbox/shelf-pack';
 import { RGBAImage } from '../../../packer/Image';
 import { isFunction, isString } from '../../../common/Util';
@@ -505,8 +503,8 @@ export default class BillBoardPainter extends BasicPainter {
         const config = {
             vert,
             frag,
-            wgslVert,
-            wgslFrag,
+            wgslVert: getWGSLSource('vt_billboard_vert'),
+            wgslFrag: getWGSLSource('vt_billboard_frag'),
             uniforms: [
                 {
                     name: 'projViewModelMatrix',
@@ -564,7 +562,7 @@ export default class BillBoardPainter extends BasicPainter {
                 this.renderer,
                 {
                     vert,
-                    wgslVert,
+                    wgslVert: getWGSLSource('vt_billboard_vert'),
                     uniforms: [
                         {
                             name: 'projViewModelMatrix',
