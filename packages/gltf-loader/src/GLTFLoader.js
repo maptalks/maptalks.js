@@ -5,6 +5,17 @@ import GLBReader from './GLBReader.js';
 import { defined, extend, isNumber, isString, getTypedArrayCtor, readInterleavedArray } from './common/Util.js';
 import AnimationClip from './core/AnimationClip.js';
 import { vec3 } from 'gl-matrix';
+import { EXT_MESH_FEATURES } from './extensions/ExtMeshFeatures.js';
+import {
+    EXT_MESH_GPU_INSTANCING,
+    collectInstancingAccessors,
+    getGpuInstancingExtension,
+} from './extensions/ExtMeshGpuInstancing.js';
+import {
+    EXT_STRUCTURAL_METADATA,
+    collectPropertyTableBufferViews,
+    getStructuralMetadataData,
+} from './extensions/ExtStructuralMetadata.js';
 
 let supportOffscreenLoad = false;
 if (typeof OffscreenCanvas !== 'undefined') {
@@ -141,11 +152,13 @@ export default class GLTFLoader {
         const animations = this._loadAnimations();
         const textures = this._loadTextures();
         const extensions = this._loadExtensions();
-        return Promise.all([gltf, animations, textures, extensions]).then(fullfilled => {
+        const metadata = this._loadStructuralMetadata();
+        return Promise.all([gltf, animations, textures, extensions, metadata]).then(fullfilled => {
             fullfilled[0].animations = fullfilled[1];
             fullfilled[0].textures = fullfilled[2];
             fullfilled[0].extensions = fullfilled[3];
             fullfilled[0].transferables = this.transferables || [];
+            fullfilled[0].structuralMetadata = fullfilled[4];
             //预先将channels以key-value的形式存储起来，提高查找效率
             this.createChannelsMap(fullfilled[0]);
             return fullfilled[0];
@@ -321,12 +334,68 @@ export default class GLTFLoader {
         const promise = this._loadMeshes(options);
         return promise.then(() => {
             const nodes = this.nodes = {};
+            const instancingPromises = [];
             this.adapter.iterate((key, nodeJSON) => {
                 //TODO 缺少 skin， morgh targets 和 extensions
                 const node = this.adapter.createNode(nodeJSON, this.meshes, this.skins);
                 nodes[key] = node;
+
+                // Handle EXT_mesh_gpu_instancing extension
+                const instancingExt = getGpuInstancingExtension(nodeJSON);
+                if (instancingExt) {
+                    const loadPromise = this._loadGpuInstancingData(
+                        instancingExt,
+                    ).then((instancingData) => {
+                        if (!node.extensions) {
+                            node.extensions = {};
+                        }
+                        node.extensions[EXT_MESH_GPU_INSTANCING] =
+                            instancingData;
+                    });
+                    instancingPromises.push(loadPromise);
+                }
             }, 'nodes');
-            return nodes;
+            
+            // Wait for all GPU instancing data to finish loading
+            return Promise.all(instancingPromises).then(() => nodes);
+        });
+    }
+
+    /**
+     * Load accessor data for EXT_mesh_gpu_instancing extension
+     * @param {Object} instancingExt - EXT_mesh_gpu_instancing extension object
+     * @returns {Promise<Object>} Object containing loaded attribute data
+     */
+    _loadGpuInstancingData(instancingExt) {
+        const accessors = collectInstancingAccessors(instancingExt);
+        if (accessors.length === 0) {
+            return Promise.resolve({ attributes: {} });
+        }
+
+        const promises = accessors.map(({ name, accessorIndex }) => {
+            return this.adapter.accessor
+                ._requestData(name, accessorIndex)
+                .then((data) => {
+                    if (
+                        data &&
+                        data.array &&
+                        data.array.buffer &&
+                        this.transferables
+                    ) {
+                        if (this.transferables.indexOf(data.array.buffer) < 0) {
+                            this.transferables.push(data.array.buffer);
+                        }
+                    }
+                    return { name, data };
+                });
+        });
+
+        return Promise.all(promises).then((results) => {
+            const attributes = {};
+            results.forEach(({ name, data }) => {
+                attributes[name] = data;
+            });
+            return { attributes };
         });
     }
 
@@ -566,9 +635,98 @@ export default class GLTFLoader {
             if (morphTargets) primitive.morphTargets = morphTargets;
             primitive.mode = defined(primJSON.mode) ? primJSON.mode : 4; //default mode is triangles
             if (defined(primJSON.extras)) primitive.extras = primJSON.extras;
+            // Save original extension information for subsequent parsing of EXT_mesh_features and EXT_structural_metadata
+            if (primJSON.extensions) {
+                primitive.extensions = primJSON.extensions;
+            }
             //TODO material 和 targets 没有处理
             return primitive;
         });
+    }
+
+    /**
+     * Load EXT_mesh_features and EXT_structural_metadata extension data
+     * Only prepare data, do not instantiate plugins (plugins are instantiated in the main thread)
+     */
+    _loadStructuralMetadata() {
+        const extensionsUsed = this.gltf.extensionsUsed || [];
+        const hasMeshFeatures = extensionsUsed.includes(EXT_MESH_FEATURES);
+        const hasStructuralMetadata = extensionsUsed.includes(
+            EXT_STRUCTURAL_METADATA,
+        );
+
+        if (!hasMeshFeatures && !hasStructuralMetadata) {
+            return Promise.resolve();
+        }
+
+        const promises = [];
+
+        // Load buffer views required for structural metadata
+        if (hasStructuralMetadata) {
+            const ext = this.gltf.extensions?.[EXT_STRUCTURAL_METADATA];
+            if (ext?.propertyTables) {
+                promises.push(
+                    this._loadPropertyTableBuffers(ext.propertyTables),
+                );
+            }
+        }
+
+        return Promise.all(promises).then((results) => {
+            const buffers = results[0] || [];
+
+            // Prepare structural metadata data (for constructing plugins in the main thread)
+            if (hasStructuralMetadata) {
+                return getStructuralMetadataData(
+                    this.gltf,
+                    buffers,
+                    this.rootPath,
+                    this._fetchOptions,
+                    this.options.urlModifier,
+                ).then((metadataData) => {
+                    if (metadataData) {
+                        buffers.forEach((buf) => {
+                            if (buf && this.transferables.indexOf(buf) < 0) {
+                                this.transferables.push(buf);
+                            }
+                        });
+                    }
+                    return metadataData;
+                });
+            }
+
+            // EXT_mesh_features data is already in primitive.extensions
+            // No extra processing needed, main thread can directly use primitive.extensions['EXT_mesh_features']
+        });
+    }
+
+    /**
+     * Load buffer views required for property tables
+     */
+    _loadPropertyTableBuffers(propertyTables) {
+        const bufferViews = this.gltf.bufferViews || [];
+        const bufferViewsToLoad =
+            collectPropertyTableBufferViews(propertyTables);
+        // Load all required buffer views
+        const result = new Array(bufferViews.length).fill(null);
+        const promises = [];
+
+        bufferViewsToLoad.forEach((index) => {
+            const bufferView = bufferViews[index];
+            if (!bufferView) return;
+            const promise = this._accessor
+                ._requestBufferOfBufferView(bufferView)
+                .then((buf) => {
+                    const { buffer, byteOffset } = buf;
+                    const start = (bufferView.byteOffset || 0) + byteOffset;
+                    result[index] = buffer.slice(
+                        start,
+                        start + bufferView.byteLength,
+                    );
+                });
+            promises.push(promise);
+        });
+
+        return Promise.all(promises).then(() => result);
     }
 }
 
