@@ -38,6 +38,7 @@ class TileSystem {
      */
     static 'tms-global-mercator' = new TileSystem([1, 1, -semiCircum, -semiCircum]);
 
+    static 'global-geodetic' = new TileSystem([1, -1, -180, 90]);
     /**
      * Another tile system published by [OSGEO]{@link http://www.osgeo.org/}, based on EPSG:4326 SRS.
      * @see {@link http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification#global-geodetic}
@@ -93,7 +94,7 @@ class TileSystem {
         if (code === 'baidu') {
             return 'baidu';
         } else if (code === 'EPSG:4326'.toLowerCase() || code === 'EPSG:4490'.toLowerCase()) {
-            return 'tms-global-geodetic';
+            return 'global-geodetic';
         } else if (code === 'identity') {
             return [1, -1, 0, 0];
         } else {
