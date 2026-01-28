@@ -1,3 +1,4 @@
+import * as maptalks from 'maptalks';
 /**
  * from mapbox-gl-js
  * A [least-recently-used cache](http://en.wikipedia.org/wiki/Cache_algorithms)
@@ -77,13 +78,11 @@ class LRUCache {
 
     shrink() {
         if (this.currentSize > this.max) {
-            let warned = false;
             const iterator = this.data.keys();
             let item = iterator.next();
             while (this.currentSize > this.max && item.value !== undefined) {
-                if (!warned && this.data.get(item.value).current) {
-                    warned = true;
-                    console.warn(`current maxGPUMemory(${this.max / 1024 / 1024}) for Geo3DTilesLayer is not enough, one or more current tiles will be discarded.`);
+                if (this.data.get(item.value).current) {
+                    maptalks.Util.warnOnce(`current maxGPUMemory(${this.max / 1024 / 1024}) for Geo3DTilesLayer is not enough, one or more current tiles will be discarded.`);
                 }
                 const removedData = this.getAndRemove(item.value);
                 if (removedData) {

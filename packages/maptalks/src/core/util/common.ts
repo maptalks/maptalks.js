@@ -153,3 +153,11 @@ export function toRadian(d: number) {
 export function toDegree(r: number) {
     return r / pi;
 }
+
+const warned = new Set();
+export function warnOnce(message) {
+    if (!warned.has(message)) {
+        console.warn(message);
+        warned.add(message);
+    }
+}
