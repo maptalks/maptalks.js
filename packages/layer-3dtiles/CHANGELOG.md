@@ -1,5 +1,16 @@
 # @maptalks/3dtiles
 
+## 0.123.0
+
+### Minor Changes
+
+- change @maptalks/gpu to wgsl register
+
+### Patch Changes
+
+- Updated dependencies
+  - maptalks@1.11.0
+
 ## 0.122.0
 
 ### Minor Changes

@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/gpu",
-  "version": "0.122.0",
+  "version": "0.123.0",
   "description": "WebGL infrastrcture for maptalks",
   "main": "dist/maptalksgpu.js",
   "module": "dist/maptalksgpu.es.js",

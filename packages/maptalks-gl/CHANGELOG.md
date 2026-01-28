@@ -1,5 +1,22 @@
 # maptalks-gl
 
+## 0.123.0
+
+### Minor Changes
+
+- change @maptalks/gpu to wgsl register
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.123.0
+  - @maptalks/3dtiles@0.123.0
+  - @maptalks/gltf-layer@0.123.0
+  - @maptalks/video-layer@0.123.0
+  - maptalks@1.11.0
+  - @maptalks/transform-control@0.123.0
+  - @maptalks/vt@0.123.0
+
 ## 0.122.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # maptalks
 
+## 1.11.0
+
+### Minor Changes
+
+- change @maptalks/gpu to wgsl register
+
 ## 1.10.0
 
 ### Minor Changes

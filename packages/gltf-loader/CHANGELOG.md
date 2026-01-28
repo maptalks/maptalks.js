@@ -1,5 +1,11 @@
 # @maptalks/gltf-loader
 
+## 0.123.0
+
+### Minor Changes
+
+- change @maptalks/gpu to wgsl register
+
 ## 0.122.0
 
 ### Minor Changes

@@ -1,5 +1,16 @@
 # @maptalks/traffic
 
+## 0.123.0
+
+### Minor Changes
+
+- change @maptalks/gpu to wgsl register
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gltf-layer@0.123.0
+
 ## 0.122.0
 
 ### Minor Changes

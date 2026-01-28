@@ -1,5 +1,18 @@
 # @maptalks/gl
 
+## 0.123.0
+
+### Minor Changes
+
+- change @maptalks/gpu to wgsl register
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/fusiongl@0.123.0
+  - @maptalks/gltf-loader@0.123.0
+  - maptalks@1.11.0
+
 ## 0.122.0
 
 ### Minor Changes
