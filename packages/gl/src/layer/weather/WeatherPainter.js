@@ -2,6 +2,7 @@ import * as reshader from '../../reshader';
 import { vec2 } from 'gl-matrix';
 import RainPainter from './RainPainter.js';
 import SnowPainter from './SnowPainter.js';
+import { extend } from '../util/util.js';
 
 const RESOLUTION = [],  DEFAULT_ZOOM = 16.685648411389433;
 class WeatherPainter {
@@ -76,20 +77,21 @@ class WeatherPainter {
         this._resize();
         const config = this._layer.getWeatherConfig();
         const uniforms = {};
+        const shaderDefines = extend({}, this._weatherShader.shaderDefines);
         if (this.isEnableRain()) {
             uniforms['ripplesMap'] = this._renderRainRipples();
-            this._weatherShader.shaderDefines['HAS_RAIN'] = 1;
+            shaderDefines['HAS_RAIN'] = 1;
         } else {
-            delete this._weatherShader.shaderDefines['HAS_RAIN'];
+            delete shaderDefines['HAS_RAIN'];
         }
         if (this.isEnableSnow()) {
-            this._weatherShader.shaderDefines['HAS_SNOW'] = 1;
+            shaderDefines['HAS_SNOW'] = 1;
             uniforms['snowIntensity'] = reshader.Util.isNumber(config.snow.snowIntensity) ? config.snow.snowIntensity : 0.5;
             meshes.forEach(mesh => {
                 mesh.defines['HAS_SNOW'] = 1;
             });
         } else {
-            delete this._weatherShader.shaderDefines['HAS_SNOW'];
+            delete shaderDefines['HAS_SNOW'];
             meshes.forEach(mesh => {
                 delete mesh.defines['HAS_SNOW'];
             });
@@ -97,11 +99,14 @@ class WeatherPainter {
         if (this.isEnableFog()) {
             const fogConfig = config.fog;
             uniforms['fogColor'] = fogConfig.color || [0.9, 0.9, 0.9];
-            this._weatherShader.shaderDefines['HAS_FOG'] = 1;
+            shaderDefines['HAS_FOG'] = 1;
         } else {
-            delete this._weatherShader.shaderDefines['HAS_FOG'];
+            delete shaderDefines['HAS_FOG'];
         }
-        this._weatherShader.setDefines(this._weatherShader.shaderDefines);
+        if (tex.texture && tex.texture.sampleCount > 1) {
+            shaderDefines['HAS_MULTISAMPLED'] = 1;
+        }
+        this._weatherShader.setDefines(shaderDefines);
         uniforms['mixFactorMap'] = this._renderMixFactor(meshes) || this.EMPTY_TEXTURE;
         uniforms['sceneMap'] = tex;
         uniforms['time'] = this._getTimeSpan() / 1000;

@@ -1448,6 +1448,10 @@ class Painter {
         const isFloat32 = mesh.geometry.data[positionAttr].array instanceof Float32Array;
         defines['POSITION_TYPE_2'] = isFloat32 ? 'vec2f' : 'vec2i';
         defines['POSITION_TYPE_3'] = isFloat32 ? 'vec3f' : 'vec4i';
+        if (!isFloat32) {
+            // for shadow mapping vert wgsl
+            defines['POSITION_IS_INT'] = 1;
+        }
     }
 }
 

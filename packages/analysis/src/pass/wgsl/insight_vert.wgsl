@@ -15,15 +15,7 @@ struct ShaderUniforms {
 @group(0) @binding($b) var<uniform> shaderUniforms: ShaderUniforms;
 
 struct VertexInput {
-    #if HAS_DRACO_POSITION || HAS_COMPRESSED_INT16_POSITION
-        @location($i) aPosition: vec4i,
-    #else
-        #ifdef POSITION_IS_INT
-            @location($i) aPosition: vec4i,
-        #else
-            @location($i) aPosition: vec3f,
-        #endif
-    #endif
+    #include <position_vert>
 };
 
 struct VertexOutput {

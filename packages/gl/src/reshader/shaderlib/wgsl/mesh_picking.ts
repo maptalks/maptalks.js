@@ -3,11 +3,7 @@ const vert = /*wgsl*/`
 #include <get_output>
 
 struct VertexInput {
-    #ifdef POSITION_IS_INT
-        @location($i) aPosition: vec4i,
-    #else
-        @location($i) aPosition: vec3f,
-    #endif
+    #include <position_vert>
 }
 
 struct Uniforms {

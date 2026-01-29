@@ -1,6 +1,5 @@
 #include <gl2_vert>
 attribute vec3 aPosition;
-attribute vec3 aNormal;
 attribute vec2 aTexCoord;
 
 uniform mat4 projMatrix;

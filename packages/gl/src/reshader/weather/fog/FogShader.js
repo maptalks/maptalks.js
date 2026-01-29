@@ -1,11 +1,14 @@
+import { getWGSLSource } from '../../gpu/WGSLSources.js';
 import QuadShader from '../../shader/QuadShader.js';
-import vert from '../../shader/glsl/quad.vert';
 import frag from './glsl/fog.frag';
+
 
 class FogShader extends QuadShader {
     constructor() {
         super({
-            vert, frag,
+            name: 'fog',
+            frag,
+            wgslFrag: getWGSLSource('gl_fog_frag'),
             extraCommandProps: {
                 viewport: {
                     x: 0,
