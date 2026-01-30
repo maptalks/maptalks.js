@@ -864,7 +864,8 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
 
 
     #ifdef HAS_SNOW
-        glFragColor.rgb = snow(glFragColor, getMaterialNormalMap(), 1.0);
+        let snowColor = snow(glFragColor, getMaterialNormalMap(), 1.0);
+        glFragColor = vec4f(snowColor, glFragColor.a);
     #endif
 
     if (uniforms.contrast != 1.0) {

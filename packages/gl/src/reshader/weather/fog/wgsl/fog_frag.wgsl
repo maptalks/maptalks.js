@@ -17,11 +17,6 @@ struct WeatherUniforms {
     @group(0) @binding($b) var ripplesMap: texture_2d<f32>;
 #endif
 
-#ifdef HAS_SNOW
-    @group(0) @binding($b) var normalMapSampler: sampler;
-    @group(0) @binding($b) var normalMap: texture_2d<f32>;
-#endif
-
 @group(0) @binding($b) var sceneMapSampler: sampler;
 #ifdef HAS_MULTISAMPLED
   @group(0) @binding($b) var sceneMap: texture_multisampled_2d<f32>;
@@ -85,9 +80,10 @@ fn Rand22(co: vec2f) -> vec2f {
         return col;
     }
 
-    fn snowFlower(@builtin(position) fragCoord: vec4f) -> vec3f {
+    fn snowFlower(fragCoord: vec2f) -> vec3f {
         var acc = vec3f(0.0, 0.0, 0.0);
-        var uv = fragCoord.xy / uniforms.resolution;
+        var uv = fragCoord / uniforms.resolution;
+        uv.y = 1.0 - uv.y;
         uv *= vec2f(uniforms.resolution.x / uniforms.resolution.y, 1.0);
 
         let layers = LAYERS * uniforms.snowIntensity;
@@ -147,12 +143,6 @@ fn main(
         let fragCoord = vertexOutput.position.xy;
         let snowFlowerColor = snowFlower(fragCoord);
         glFragColor = vec4f(sceneColor.rgb + snowFlowerColor, sceneColor.a);
-
-        #ifdef HAS_SNOW_NORMAL_MAP
-            let normalColor = textureSample(normalMap, normalMapSampler, uv);
-            let snowColor = snow(glFragColor, normalColor, mixFactorColor.a);
-            glFragColor = vec4f(snowColor, glFragColor.a);
-        #endif
     #endif
 
     #ifdef HAS_FOG
