@@ -1,4 +1,4 @@
-import { Marker, Util } from 'maptalks';
+import { Marker, Util,formatResourceUrl } from 'maptalks';
 import LRUCache from './LRUCache';
 
 export default class IconRequestor {
@@ -82,85 +82,158 @@ export default class IconRequestor {
         const urlModifier = this.options.urlModifier;
         let hasRequests = false;
         let marker;
-        for (let i = 0; i < urls.length; i++) {
-            const url = urls[i];
+         // 处理精灵图引用
+        const spriteUrls = [];
+        urls.forEach(url => {
+            if (url[0] === '$') {
+                spriteUrls.push(url);
+            }
+        });
+        
+        // 先处理精灵图
+        let processedSprites = 0;
+        spriteUrls.forEach(url => {
             const size = icons[url];
-            this._ensureMaxSize(url, size);
-            const icon = this._getCache(url, size);
-            if (icon && icon !== 'error') {
-                images[url] = this._getCache(url, size);
-                continue;
-            } else if (icon === 'error') {
-                continue;
-            }
-            let symbol, realUrl = url;
-            if (url.indexOf('vector://') === 0) {
-                symbol = JSON.parse(url.substring('vector://'.length));
-                if (symbol.markerType === 'path') {
-                    realUrl = Util.getMarkerPathBase64(symbol, symbol['markerWidth'], symbol['markerHeight']);
-                }
-            }
-            if (url.indexOf('vector://') === 0 && symbol.markerType !== 'path') {
-                marker = marker ||  new Marker([0, 0]);
-                const { markerFill, markerLineColor } = symbol;
-                if (markerFill && Array.isArray(markerFill)) {
-                    symbol.markerFill = convertColorArray(markerFill);
-                }
-                if (markerLineColor && Array.isArray(markerLineColor)) {
-                    symbol.markerLineColor = convertColorArray(markerLineColor);
-                }
-                delete symbol.markerHorizontalAlignment;
-                delete symbol.markerVerticalAlignment;
-                delete symbol.markerDx;
-                delete symbol.markerDy;
-                delete symbol.markerPlacement;
-                delete symbol.markerFile;
-                symbol.markerWidth = size[0];
-                symbol.markerHeight = size[1];
-                marker.setSymbol(symbol);
-                const methodName = '_getSprite'.trim();
-                const sprite = marker[methodName]();
-                if (sprite) {
-                    const canvas = sprite.canvas;
-                    const width = canvas.width;
-                    const height = canvas.height;
-                    const data = canvas.getContext('2d').getImageData(0, 0, width, height).data;
-                    images[url] = { data: { data: new Uint8ClampedArray(data), width, height }, url };
-                    buffers.push(images[url].data.data.buffer);
-                    this._addCache(url, data, width, height);
+            const resource = formatResourceUrl(url);
+            
+            if (resource && resource !== '') {
+                if (typeof resource === 'string' && resource.indexOf('data:image/') === 0) {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = size[0];
+                        canvas.height = size[1];
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, size[0], size[1]);
+                        const data = ctx.getImageData(0, 0, size[0], size[1]).data;
+                        images[url] = { 
+                            data: { data: new Uint8ClampedArray(data), width: size[0], height: size[1] }, 
+                            url 
+                        };
+                        buffers.push(images[url].data.data.buffer);
+                        self._addCache(url, data, size[0], size[1]);
+                        processedSprites++;
+                        
+                        // 检查是否所有精灵图都处理完成
+                        if (processedSprites === spriteUrls.length) {
+                            // 继续处理其他图标
+                            processRemainingUrls();
+                        }
+                    };
+                    img.onerror = () => {
+                        console.warn(`failed loading sprite: ${url}`);
+                        processedSprites++;
+                        if (processedSprites === spriteUrls.length) {
+                            processRemainingUrls();
+                        }
+                    };
+                    img.src = resource;
+                } else {
+                    processedSprites++;
+                    if (processedSprites === spriteUrls.length) {
+                        processRemainingUrls();
+                    }
                 }
             } else {
-                // fuzhenn/maptalks-designer#439
-                // canvas + svg存在bug: https://bugs.chromium.org/p/chromium/issues/detail?id=1142375
-                // 在canvas上绘制svg，调用getImageData时，data会发生变化
-                // 解决方法
-                // * 在requestor上增加cache缓存，保证同一个svg图片只会加载一次
-                // * Image 载入过程中的请求，先缓存在requesting，onload中集中处理
-                if (!this._requesting[url]) {
-                    this._requesting[url] = [];
-                } else {
-                    hasRequests = true;
-                    count++;
-                    this._requesting[url].push(callback);
+                processedSprites++;
+                if (processedSprites === spriteUrls.length) {
+                    processRemainingUrls();
+                }
+            }
+        });
+        
+        // 如果没有精灵图，直接处理其他图标
+        if (spriteUrls.length === 0) {
+            processRemainingUrls();
+        }
+          // 处理剩余的图标
+        function processRemainingUrls() {
+            for (let i = 0; i < urls.length; i++) {
+                const url = urls[i];
+                // 跳过已经处理的精灵图
+                if (url[0] === '$') {
                     continue;
                 }
-                this._requesting[url].push(callback);
-                const img = new Image();
-                img.index = i;
-                img.size = size;
-                img.onload = onload;
-                img.onerror = onerror;
-                img.onabort = onerror;
-                img.url = url;
-                img.crossOrigin = 'Anonymous';
-                hasRequests = true;
-                count++;
-                img.src = urlModifier && urlModifier(realUrl) || realUrl;
+                const size = icons[url];
+                self._ensureMaxSize(url, size);
+                const icon = self._getCache(url, size);
+                if (icon && icon !== 'error') {
+                    images[url] = self._getCache(url, size);
+                    continue;
+                } else if (icon === 'error') {
+                    continue;
+                }
+                let symbol, realUrl = url;
+                if (url.indexOf('vector://') === 0) {
+                    symbol = JSON.parse(url.substring('vector://'.length));
+                    if (symbol.markerType === 'path') {
+                        realUrl = Util.getMarkerPathBase64(symbol, symbol['markerWidth'], symbol['markerHeight']);
+                    }
+                }
+                if (url.indexOf('vector://') === 0 && symbol.markerType !== 'path') {
+                    marker = marker ||  new Marker([0, 0]);
+                    const { markerFill, markerLineColor } = symbol;
+                    if (markerFill && Array.isArray(markerFill)) {
+                        symbol.markerFill = convertColorArray(markerFill);
+                    }
+                    if (markerLineColor && Array.isArray(markerLineColor)) {
+                        symbol.markerLineColor = convertColorArray(markerLineColor);
+                    }
+                    delete symbol.markerHorizontalAlignment;
+                    delete symbol.markerVerticalAlignment;
+                    delete symbol.markerDx;
+                    delete symbol.markerDy;
+                    delete symbol.markerPlacement;
+                    delete symbol.markerFile;
+                    symbol.markerWidth = size[0];
+                    symbol.markerHeight = size[1];
+                    marker.setSymbol(symbol);
+                    const methodName = '_getSprite'.trim();
+                    const sprite = marker[methodName]();
+                    if (sprite) {
+                        const canvas = sprite.canvas;
+                        const width = canvas.width;
+                        const height = canvas.height;
+                        const data = canvas.getContext('2d').getImageData(0, 0, width, height).data;
+                        images[url] = { data: { data: new Uint8ClampedArray(data), width, height }, url };
+                        buffers.push(images[url].data.data.buffer);
+                        self._addCache(url, data, width, height);
+                    }
+                } else {
+                    // fuzhenn/maptalks-designer#439
+                    // canvas + svg存在bug: https://bugs.chromium.org/p/chromium/issues/detail?id=1142375
+                    // 在canvas上绘制svg，调用getImageData时，data会发生变化
+                    // 解决方法
+                    // * 在requestor上增加cache缓存，保证同一个svg图片只会加载一次
+                    // * Image 载入过程中的请求，先缓存在requesting，onload中集中处理
+                    if (!self._requesting[url]) {
+                        self._requesting[url] = [];
+                    } else {
+                        hasRequests = true;
+                        count++;
+                        self._requesting[url].push(callback);
+                        continue;
+                    }
+                    self._requesting[url].push(callback);
+                    const img = new Image();
+                    img.index = i;
+                    img.size = size;
+                    img.onload = onload;
+                    img.onerror = onerror;
+                    img.onabort = onerror;
+                    img.url = url;
+                    img.crossOrigin = 'Anonymous';
+                    hasRequests = true;
+                    count++;
+                    img.src = urlModifier && urlModifier(realUrl) || realUrl;
+                }
             }
+             if (!hasRequests && Object.keys(images).length === urls.length) {
+                cb(null, { icons: images, buffers });
+            }
+
         }
-        if (!hasRequests) {
-            cb(null, { icons: images, buffers });
-        }
+
     }
 
     _hasCache(url, width, height) {

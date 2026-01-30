@@ -40,8 +40,10 @@ export default class IconRequestor {
         }
         function complete(img) {
             const requests = self._requesting[img.url];
-            for (let i = 0; i < requests.length; i++) {
-                requests[i].call(img, img.url, img.size);
+            if (requests && Array.isArray(requests)) {
+                for (let i = 0; i < requests.length; i++) {
+                    requests[i].call(img, img.url, img.size);
+                }
             }
             delete self._requesting[img.url];
         }
@@ -137,6 +139,51 @@ export default class IconRequestor {
                     images[url] = { data: { data: new Uint8ClampedArray(data), width, height }, url };
                     buffers.push(images[url].data.data.buffer);
                     this._addCache(url, data, width, height);
+                }
+            }  else if (url.indexOf('$') === 0) {
+                // 处理精灵图引用
+                const spriteResource = formatResourceUrl(url);
+                if (spriteResource && spriteResource !== '') {
+                    if (typeof spriteResource === 'string') {
+                        // 如果是字符串URL，使用Image元素加载
+                        if (!this._requesting[url]) {
+                            this._requesting[url] = [];
+                        }
+                        this._requesting[url].push(callback);
+                        const img = new Image();
+                        img.index = i;
+                        img.size = size;
+                        img.onload = onload;
+                        img.onerror = onerror;
+                        img.onabort = onerror;
+                        img.url = url;
+                        img.crossOrigin = 'Anonymous';
+                        hasRequests = true;
+                        count++;
+                        img.src = spriteResource;
+                    } else if (spriteResource instanceof ImageBitmap) {
+                        // 如果是ImageBitmap，直接使用
+                        const width = spriteResource.width;
+                        const height = spriteResource.height;
+                        // 创建canvas并绘制ImageBitmap
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(spriteResource, 0, 0);
+                        const data = ctx.getImageData(0, 0, width, height).data;
+                        images[url] = { data: { data: new Uint8ClampedArray(data), width, height }, url };
+                        buffers.push(images[url].data.data.buffer);
+                        this._addCache(url, data, width, height);
+                    } else {
+                        // 未知类型的精灵图资源
+                        console.warn(`Unknown sprite resource type: ${typeof spriteResource}`);
+                        this._addCache(url);
+                    }
+                } else {
+                    // 精灵图资源不存在，标记为错误
+                    console.warn(`Sprite resource not found: ${url}`);
+                    this._addCache(url);
                 }
             } else {
                 // fuzhenn/maptalks-designer#439
