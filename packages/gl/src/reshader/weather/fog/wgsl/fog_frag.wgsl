@@ -29,7 +29,7 @@ struct WeatherUniforms {
   @group(0) @binding($b) var sceneMap: texture_2d<f32>;
 #endif
 @group(0) @binding($b) var mixFactorMapSampler: sampler;
-#ifdef HAS_MULTISAMPLED
+#ifdef HAS_MULTISAMPLED_MAP
   @group(0) @binding($b) var mixFactorMap: texture_multisampled_2d<f32>;
 #else
   @group(0) @binding($b) var mixFactorMap: texture_2d<f32>;
@@ -121,33 +121,35 @@ fn Rand22(co: vec2f) -> vec2f {
 fn main(
     vertexOutput: VertexOutput
 ) -> @location(0) vec4f {
-    let uv = vertexOutput.vTexCoord;
+    var uv = vertexOutput.vTexCoord;
+    uv.y = 1.0 - uv.y;
     #ifdef HAS_MULTISAMPLED
-        let sceneColor = textureLoad(sceneMap, vec2i(uv * uniforms.resolution), 0);
+        var sceneColor = textureLoad(sceneMap, vec2i(uv * uniforms.resolution), 0);
     #else
-        let sceneColor = textureSample(sceneMap, sceneMapSampler, uv);
+        var sceneColor = textureSample(sceneMap, sceneMapSampler, uv);
     #endif
     var glFragColor = sceneColor;
-    #ifdef HAS_MULTISAMPLED
+    #ifdef HAS_MULTISAMPLED_MAP
         let mixFactorColor = textureLoad(mixFactorMap, vec2i(uv * uniforms.resolution), 0);
     #else
         let mixFactorColor = textureSample(mixFactorMap, mixFactorMapSampler, uv);
     #endif
 
     #ifdef HAS_RAIN
-        let ripplesColor = textureSample(ripplesMap, ripplesMapSampler, vertexOutput.vTexCoord);
+        let ripplesColor = textureSample(ripplesMap, ripplesMapSampler, uv);
         if (mixFactorColor.g < 1.0) {
-            glFragColor = mix(sceneColor, ripplesColor, 0.4);
+            sceneColor = mix(sceneColor, ripplesColor, 0.4);
         }
+        glFragColor = sceneColor;
     #endif
 
     #ifdef HAS_SNOW
         let fragCoord = vertexOutput.position.xy;
         let snowFlowerColor = snowFlower(fragCoord);
-        glFragColor = vec4f(glFragColor.rgb + snowFlowerColor, glFragColor.a);
+        glFragColor = vec4f(sceneColor.rgb + snowFlowerColor, sceneColor.a);
 
         #ifdef HAS_SNOW_NORMAL_MAP
-            let normalColor = textureSample(normalMap, normalMapSampler, vertexOutput.vTexCoord);
+            let normalColor = textureSample(normalMap, normalMapSampler, uv);
             let snowColor = snow(glFragColor, normalColor, mixFactorColor.a);
             glFragColor = vec4f(snowColor, glFragColor.a);
         #endif
@@ -156,7 +158,7 @@ fn main(
     #ifdef HAS_FOG
         let mixFactor = mixFactorColor.r;
         let mixColor = mix(uniforms.fogColor, glFragColor.rgb, mixFactor);
-        glFragColor = vec4f(mixColor, glFragColor.a);
+        glFragColor = vec4f(mixColor, sceneColor.a);
     #endif
 
     return glFragColor;
