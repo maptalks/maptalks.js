@@ -79,6 +79,21 @@ function getTempParamArray(ctor, length: number) {
 
 export default class Geometry {
 
+    static padGPUAttribute(attribute) {
+        const array = attribute.array;
+        const newArray = Geometry.padGPUBufferAlignment(array, attribute.count);
+        if (array !== newArray) {
+            const itemSize = newArray.length /attribute.count;
+            attribute.array = newArray;
+            attribute.byteLength = newArray.byteLength;
+            attribute.itemSize = itemSize;
+            const type =attribute.type;
+            attribute.type = type.substring(0, type.length - 1) +attribute.itemSize;
+            //TODO attributes[name].byteStride 可能不为0
+        }
+        return attribute;
+    }
+
     static createElementBuffer(device: any, elements: any): any {
         if (device.wgpu) {
             if (Array.isArray(elements)) {

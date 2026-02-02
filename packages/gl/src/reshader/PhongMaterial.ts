@@ -39,7 +39,7 @@ class PhongMaterial extends Material {
         super.appendDefines(defines, geometry);
         const uniforms = this.uniforms;
         const position = geometry.data[geometry.desc.positionAttribute];
-        const positionItemType = position.buffer && position.buffer.itemType;
+        const positionItemType = position && position.buffer && position.buffer.itemType;
         if (positionItemType) {
             if (positionItemType.startsWith('sint')) {
                 defines['POSITION_IS_INT'] = 1;
@@ -48,7 +48,7 @@ class PhongMaterial extends Material {
             }
         }
         const normal = geometry.data[geometry.desc.normalAttribute];
-        const normalItemType = normal.buffer && normal.buffer.itemType;
+        const normalItemType = normal && normal.buffer && normal.buffer.itemType;
         if (normalItemType) {
             if (normalItemType.startsWith('sint')) {
                 defines['NORMAL_IS_INT'] = 1;

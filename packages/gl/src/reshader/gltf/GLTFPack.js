@@ -600,11 +600,20 @@ function createGeometry(primitive, regl, hasAOMap) {
         attributes['TEXCOORD_1'] = attributes['TEXCOORD_0'];
     }
     const attrs = {};
+    let positionSize = 3;
+    const isWebGPU = !!regl.wgpu;
     for (const name in attributes) {
         // 把原有的array赋给attr，用于计算 bbox、buildUniqueVertex
         attrs[name] = extend({}, attributes[name]);
+        const isPosition = name === 'POSITION';
+        if (isWebGPU) {
+            Geometry.padGPUGLTFAttribute(attrs[name]);
+        }
+        if (isPosition) {
+            positionSize = attrs[name].itemSize;
+        }
         if (regl) {
-            attrs[name].buffer = getUniqueREGLBuffer(regl, attributes[name], { dimension: attributes[name].itemSize });
+            attrs[name].buffer = getUniqueREGLBuffer(regl, attrs[name], { dimension: attrs[name].itemSize });
         }
     }
 
@@ -632,6 +641,7 @@ function createGeometry(primitive, regl, hasAOMap) {
         indices,
         0,
         {
+            positionSize,
             //绘制类型，例如 triangle strip, line等，根据gltf中primitive的mode来判断，默认是triangles
             primitive : isNumber(primitive.mode) ? getPrimitive(primitive.mode) : primitive.mode,
             positionAttribute: 'POSITION',

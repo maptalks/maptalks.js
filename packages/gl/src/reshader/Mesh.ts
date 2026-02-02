@@ -287,6 +287,9 @@ export default class Mesh {
     }
 
     hasUniform(k: string): boolean {
+        if (this._realUniforms) {
+            return this._realUniforms[k] !== undefined;
+        }
         return this.uniforms[k] !== undefined;
     }
 

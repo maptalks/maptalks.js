@@ -72,7 +72,7 @@ class StandardMaterial extends Material {
         //     defines['HAS_TONE_MAPPING'] = 1;
         // }
         const position = geometry.data[geometry.desc.positionAttribute];
-        if (position.buffer && position.buffer.itemType) {
+        if (position && position.buffer && position.buffer.itemType) {
             if (position.buffer.itemType.startsWith('sint')) {
                 defines['POSITION_IS_INT'] = 1;
             } else if (position.buffer.itemType.startsWith('uint')) {
@@ -80,7 +80,7 @@ class StandardMaterial extends Material {
             }
         }
         const normal = geometry.data[geometry.desc.normalAttribute];
-        const normalItemType = normal.buffer && normal.buffer.itemType;
+        const normalItemType = normal && normal.buffer && normal.buffer.itemType;
         if (normalItemType) {
             if (normalItemType.startsWith('sint')) {
                 defines['NORMAL_IS_INT'] = 1;

@@ -1467,24 +1467,11 @@ export default class TileMeshPainter {
             // 优先采用 attributeSemantics中定义的属性
             const name = attributeSemantics[p] || p;
             const isPosition = name === attributeSemantics['POSITION'];
+            if (isWebGPU) {
+                reshader.Geometry.padGPUGLTFAttribute(attributes[p]);
+            }
             if (isPosition) {
                 positionSize = attributes[p].itemSize;
-            }
-            if (isWebGPU) {
-                const array = attributes[p].array;
-                const newArray = reshader.Geometry.padGPUBufferAlignment(array, attributes[p].count);
-                if (array !== newArray) {
-                    const itemSize = newArray.length / attributes[p].count;
-                    if (isPosition) {
-                        positionSize = itemSize;
-                    }
-                    attributes[p].array = newArray;
-                    attributes[p].byteLength = newArray.byteLength;
-                    attributes[p].itemSize = itemSize;
-                    const type = attributes[p].type;
-                    attributes[p].type = type.substring(0, type.length - 1) + attributes[p].itemSize;
-                    //TODO attributes[p].byteStride 可能不为0
-                }
             }
             const buffer = getUniqueREGLBuffer(this._regl, attributes[p], { dimension: attributes[p].itemSize, name: p });
 
