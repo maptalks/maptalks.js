@@ -6,7 +6,7 @@ import Size from '../geo/Size';
 import { Geometry, Marker, MultiPoint, LineString, MultiLineString } from '../geometry';
 import type { Map } from '../map';
 import { MapEventDataType } from '../map/Map.DomEvents';
-import UIComponent, { UIComponentOptionsType } from './UIComponent';
+import UIComponent, { UIComponentAlignOptionsType, UIComponentOptionsType } from './UIComponent';
 const PROPERTY_PATTERN = /\{ *([\w_]+) *\}/g;
 
 /**
@@ -33,7 +33,9 @@ const options: InfoWindowOptionsType = {
     'custom': false,
     'title': null,
     'content': null,
-    'enableTemplate': false
+    'enableTemplate': false,
+    'horizontalAlignment': 'middle',
+    'verticalAlignment': 'top'
 };
 
 const EMPTY_SIZE = new Size(0, 0);
@@ -245,9 +247,54 @@ class InfoWindow extends UIComponent {
 
     getOffset() {
         const size = this.getSize();
-        const o = new Point(-size['width'] / 2, 0);
+
+        let offsetX = -size.width / 2, offsetY = size.height / 2;
+        const { horizontalAlignment, verticalAlignment } = this.options;
+
+        if (!this.options.custom) {
+            const dom = this.getDOM();
+            if (dom) {
+                //Dynamically add classes based on horizontalAlignment/verticalAlignment
+                const icoDom = dom.querySelector('.maptalks-ico');
+                if (icoDom && icoDom.classList) {
+                    const classList = icoDom.classList;
+                    const className = `maptalks-ico-${horizontalAlignment}-${verticalAlignment}`;
+                    const needRemove = [];
+                    classList.forEach(item => {
+                        if (item !== className && item.indexOf('maptalks-ico-') > -1) {
+                            needRemove.push(item);
+                        }
+                    });
+                    if (needRemove.length) {
+                        needRemove.forEach(item => {
+                            classList.remove(item);
+                        })
+                    }
+                    if (!classList.contains(className)) {
+                        classList.add(className);
+                    }
+                }
+            }
+        }
+        //cal offsetx/offsety
+        let isTop = false;
+        if (horizontalAlignment === 'left') {
+            offsetX = -size.width;
+        } else if (horizontalAlignment === 'right') {
+            offsetX = 0;
+        }
+        if (verticalAlignment === 'top') {
+            offsetY = 0;
+            isTop = true;
+        } else if (verticalAlignment === 'bottom') {
+            offsetY = size.height;
+        }
+        const o = new Point(offsetX, offsetY);
+
+
+        // const o = new Point(-size['width'] / 2, 0);
         if (!this.options['custom']) {
-            o._sub(4, 12);
+            o._sub(4, isTop ? 12 : 0);
         } else {
             o._sub(0, size['height']);
         }
@@ -268,12 +315,27 @@ class InfoWindow extends UIComponent {
             if (!markerSize) {
                 markerSize = EMPTY_SIZE;
             }
+
             if (painter) {
                 const fixExtent = painter.getFixedExtent();
-                o._add(fixExtent.xmax - markerSize.width / 2, fixExtent.ymin);
+                let translateX = fixExtent.ymin;
+                if (verticalAlignment === 'bottom') {
+                    translateX = fixExtent.ymax;
+                }
+                let translateY = 0;
+                if (verticalAlignment === 'middle') {
+                    if (horizontalAlignment === 'left') {
+                        translateY = -markerSize.width / 2;
+                    }
+                    if (horizontalAlignment === 'right') {
+                        translateY = markerSize.width / 2;
+                    }
+                }
+                o._add(fixExtent.xmax - markerSize.width / 2 + translateY, translateX);
             } else {
                 o._add(0, -markerSize.height);
             }
+
         }
         return o;
     }
@@ -481,4 +543,4 @@ export type InfoWindowOptionsType = {
     content?: string | HTMLElement;
     enableTemplate?: boolean;
 
-} & UIComponentOptionsType;
+} & UIComponentOptionsType & UIComponentAlignOptionsType;

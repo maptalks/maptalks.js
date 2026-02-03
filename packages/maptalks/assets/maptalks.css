@@ -78,6 +78,98 @@
   border-right: 7px solid transparent;
   border-top: 9px solid #fff;
 }
+ .maptalks-msgBox em.maptalks-ico-right-top {
+        left: 0%;
+        margin-left: 2px;
+
+    }
+
+    .maptalks-msgBox em.maptalks-ico-left-top {
+        left: 100%;
+        margin-left: -18px;
+
+    }
+
+    .maptalks-msgBox em.maptalks-ico-left-middle {
+        left: 100%;
+        bottom: calc(50% - 25px);
+        margin-left: 1px;
+        border: 8px solid #fff;
+        border-color: transparent transparent transparent #fff;
+
+    }
+
+    .maptalks-msgBox em.maptalks-ico-left-middle::after {
+        content: none;
+
+    }
+
+    .maptalks-msgBox em.maptalks-ico-right-middle {
+        left: 0%;
+        bottom: calc(50% - 25px);
+        margin-left: -16px;
+        border: 8px solid #fff;
+        border-color: transparent #fff transparent transparent;
+
+    }
+
+    .maptalks-msgBox em.maptalks-ico-right-middle::after {
+        content: none;
+
+    }
+
+    .maptalks-msgBox em.maptalks-ico-left-bottom {
+        left: 100%;
+        bottom: none;
+        top: -16px;
+        margin-left: -20px;
+        border: 8px solid #fff;
+        border-color: transparent transparent #fff transparent;
+
+    }
+
+    .maptalks-msgBox em.maptalks-ico-left-bottom::after {
+        content: none;
+
+    }
+
+    .maptalks-msgBox em.maptalks-ico-middle-bottom {
+        bottom: none;
+        top: -16px;
+        border: 8px solid #fff;
+        border-color: transparent transparent #fff transparent;
+
+    }
+
+    .maptalks-msgBox em.maptalks-ico-middle-bottom::after {
+        content: none;
+
+    }
+
+    .maptalks-msgBox em.maptalks-ico-right-bottom {
+        left: 0%;
+        bottom: none;
+        top: -16px;
+        margin-left: 4px;
+        border: 8px solid #fff;
+        border-color: transparent transparent #fff transparent;
+
+    }
+
+    .maptalks-msgBox em.maptalks-ico-right-bottom::after {
+        content: none;
+
+    }
+    .maptalks-msgBox em.maptalks-ico-middle-middle {
+       display: none;
+
+    }
+
+    .maptalks-msgBox em.maptalks-ico-middle-middle::after {
+        content: none;
+
+    }
+
 .maptalks-msgBox h2 { display: block; height: auto; line-height: 30px; font-weight: bold; font-size: 14px; padding: 0 10px;  margin: 0;  white-space: nowrap;padding-right: 30px;}
 .maptalks-msgBox a.maptalks-close { display: block; width: 13px; height: 13px; text-decoration: none; font-size: 14px; color: #a5a5a5; font-weight: bold; position: absolute; top: 3px; right: 6px }
 .maptalks-msgBox .maptalks-msgContent { font-size: 12px;padding: 10px; min-width: 200px;}

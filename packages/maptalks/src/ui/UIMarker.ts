@@ -6,7 +6,7 @@ import Handlerable from '../handler/Handlerable';
 import DragHandler from '../handler/Drag';
 import Coordinate from '../geo/Coordinate';
 import Point from '../geo/Point';
-import UIComponent, { UIComponentOptionsType } from './UIComponent';
+import UIComponent, { UIComponentAlignOptionsType, UIComponentOptionsType } from './UIComponent';
 import type { Map } from '../map';
 import { MapStateCache } from '../map/MapStateCache';
 
@@ -784,7 +784,5 @@ export type UIMarkerOptionsType = {
     altitude?: number;
     minZoom?: number;
     maxZoom?: number;
-    horizontalAlignment?: 'middle' | 'left' | 'right';
-    verticalAlignment?: 'middle' | 'top' | 'bottom';
 
-} & UIComponentOptionsType;
+} & UIComponentOptionsType & UIComponentAlignOptionsType;
