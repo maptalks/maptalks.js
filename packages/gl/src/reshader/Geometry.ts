@@ -79,7 +79,7 @@ function getTempParamArray(ctor, length: number) {
 
 export default class Geometry {
 
-    static padGPUAttribute(attribute) {
+    static padGPUGLTFAttribute(attribute) {
         const array = attribute.array;
         const newArray = Geometry.padGPUBufferAlignment(array, attribute.count);
         if (array !== newArray) {
@@ -195,7 +195,6 @@ export default class Geometry {
     constructor(data: AttributeData, elements, count?: number, desc?: GeometryDesc) {
         this._version = 0;
         this.data = data;
-
         this.elements = elements;
         this.desc = extend({}, DEFAULT_DESC, desc);
         this.semantic = getSemantic(this.desc);

@@ -84,6 +84,8 @@ import vtTextFrag from '../../vt/src/layer/plugins/painters/wgsl/text_frag.wgsl'
 import vtTextLineVert from '../../vt/src/layer/plugins/painters/wgsl/text_line_vert.wgsl';
 import vtTextVert from '../../vt/src/layer/plugins/painters/wgsl/text_vert.wgsl';
 import vtTubeVert from '../../vt/src/layer/plugins/painters/wgsl/tube_vert.wgsl';
+import vtFlatMaskFrag from '../../vt/src/layer/plugins/painters/wgsl/vt-flat-mask_frag.wgsl';
+import vtFlatMaskVert from '../../vt/src/layer/plugins/painters/wgsl/vt-flat-mask_vert.wgsl';
 
 registerWGSLSource('analysis_depth_frag', analysisDepthFrag);
 registerWGSLSource('analysis_depth_vert', analysisDepthVert);
@@ -164,3 +166,5 @@ registerWGSLSource('vt_text_frag', vtTextFrag);
 registerWGSLSource('vt_text_line_vert', vtTextLineVert);
 registerWGSLSource('vt_text_vert', vtTextVert);
 registerWGSLSource('vt_tube_vert', vtTubeVert);
+registerWGSLSource('vt_flat_mask_frag', vtFlatMaskFrag);
+registerWGSLSource('vt_flat_mask_vert', vtFlatMaskVert);

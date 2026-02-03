@@ -1227,6 +1227,11 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         if (parentContext) {
             extend(context, parentContext);
         }
+        if (plugin.isTerrainMask() && context.renderTarget) {
+            context.renderTarget = {
+                fbo: parentContext.terrainMaskFBO
+            }
+        }
         return context;
     }
 
