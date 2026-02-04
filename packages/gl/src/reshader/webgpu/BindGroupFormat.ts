@@ -186,7 +186,11 @@ export default class BindGroupFormat {
             } catch(e) {
                 continue;
             }
-            if (isTextureLike(v)) {
+            // fbo
+            if (v instanceof GraphicsFramebuffer) {
+                v = v.colorTexture;
+                bindGroup.uniformTextures[p] = { texture: v, version: v.version };
+            } else if (isTextureLike(v)) {
                 bindGroup.uniformTextures[p] = { texture: v, version: v.version };
             }
         }
