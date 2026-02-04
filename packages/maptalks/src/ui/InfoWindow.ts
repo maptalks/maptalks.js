@@ -249,9 +249,9 @@ class InfoWindow extends UIComponent {
         const size = this.getSize();
 
         let offsetX = -size.width / 2, offsetY = size.height / 2;
-        const { horizontalAlignment, verticalAlignment } = this.options;
+        const { horizontalAlignment, verticalAlignment, custom } = this.options;
 
-        if (!this.options.custom) {
+        if (!custom) {
             const dom = this.getDOM();
             if (dom) {
                 //Dynamically add classes based on horizontalAlignment/verticalAlignment
@@ -291,9 +291,8 @@ class InfoWindow extends UIComponent {
         }
         const o = new Point(offsetX, offsetY);
 
-
         // const o = new Point(-size['width'] / 2, 0);
-        if (!this.options['custom']) {
+        if (!custom) {
             o._sub(4, isTop ? 12 : 0);
         } else {
             o._sub(0, size['height']);
@@ -318,20 +317,20 @@ class InfoWindow extends UIComponent {
 
             if (painter) {
                 const fixExtent = painter.getFixedExtent();
-                let translateX = fixExtent.ymin;
+                let translateY = fixExtent.ymin;
                 if (verticalAlignment === 'bottom') {
-                    translateX = fixExtent.ymax;
+                    translateY = fixExtent.ymax;
                 }
-                let translateY = 0;
+                let translateX = 0;
                 if (verticalAlignment === 'middle') {
                     if (horizontalAlignment === 'left') {
-                        translateY = -markerSize.width / 2;
+                        translateX = -markerSize.width / 2;
                     }
                     if (horizontalAlignment === 'right') {
-                        translateY = markerSize.width / 2;
+                        translateX = markerSize.width / 2;
                     }
                 }
-                o._add(fixExtent.xmax - markerSize.width / 2 + translateY, translateX);
+                o._add(fixExtent.xmax - markerSize.width / 2 + translateX, translateY);
             } else {
                 o._add(0, -markerSize.height);
             }
