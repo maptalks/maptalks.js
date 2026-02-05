@@ -601,16 +601,17 @@ function createGeometry(primitive, regl, hasAOMap) {
     }
     const attrs = {};
     let positionSize = 3;
-    const isWebGPU = !!regl.wgpu;
+    const isWebGPU = regl && !!regl.wgpu;
     for (const name in attributes) {
         // 把原有的array赋给attr，用于计算 bbox、buildUniqueVertex
         attrs[name] = extend({}, attributes[name]);
         const isPosition = name === 'POSITION';
         if (isWebGPU) {
+            const length = attrs[name].array.length;
             Geometry.padGPUGLTFAttribute(attrs[name]);
-        }
-        if (isPosition) {
-            positionSize = attrs[name].itemSize;
+            if (isPosition && attrs[name].array.length !== length) {
+                positionSize = 4;
+            }
         }
         if (regl) {
             attrs[name].buffer = getUniqueREGLBuffer(regl, attrs[name], { dimension: attrs[name].itemSize });
