@@ -10,7 +10,7 @@ struct ShadowMappingUniforms {
 
 // Vertex 输入结构体
 struct VertexInput {
-    @location($i) aPosition: POSITION_TYPE_3,
+    #include <position_vert>
 };
 
 // Vertex 输出结构体

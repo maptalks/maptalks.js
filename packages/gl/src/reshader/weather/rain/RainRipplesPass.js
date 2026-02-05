@@ -8,6 +8,7 @@ import Mesh from '../../Mesh';
 import ripplesVert from './glsl/ripples.vert';
 import ripplesFrag from './glsl/ripples.frag';
 import { isFunction } from '../../common/Util';
+import { getWGSLSource } from '../../gpu/WGSLSources.js';
 
 const modelViewMatrix = [];
 const DEFALUT_SCALE = [0.03, 0.03, 0.03];
@@ -22,8 +23,11 @@ export default class RainRipplePass {
 
     _init() {
         this._shader = new MeshShader({
+            name: 'ripples',
             vert: ripplesVert,
             frag: ripplesFrag,
+            wgslVert: getWGSLSource('gl_ripples_vert'),
+            wgslFrag: getWGSLSource('gl_ripples_frag'),
             uniforms: [
                 {
                     name: 'modelViewMatrix',

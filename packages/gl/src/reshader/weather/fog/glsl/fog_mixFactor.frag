@@ -6,7 +6,11 @@ uniform vec3 cameraPosition;
 uniform float rainDepth;
 
 void main() {
-    vec3 dir = vec3(vWorldPosition[0] - cameraPosition[0], vWorldPosition[1] - cameraPosition[1], vWorldPosition[2] - cameraPosition[2]);
+    vec3 dir = vec3(
+        vWorldPosition[0] - cameraPosition[0],
+        vWorldPosition[1] - cameraPosition[1],
+        vWorldPosition[2] - cameraPosition[2]
+    );
     float dist = length(dir);
     float fogFactor = clamp(1.0 - (dist - fogDist.x) / (fogDist.y - fogDist.x), 0.0, 1.0);
     if (vWorldPosition[2] < rainDepth) {

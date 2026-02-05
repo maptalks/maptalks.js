@@ -43,7 +43,7 @@ export function limitDefinesByDevice(device, defines, defineOrder, checkedDefine
             }
         }
     }
-    // 不需要lmit的define
+    // 不需要limit的define
     for (const p in defines) {
         if (!checkedDefineKeys.has(p)) {
             limitedDefines[p] = defines[p];
@@ -56,6 +56,7 @@ export function limitDefinesByDevice(device, defines, defineOrder, checkedDefine
 
 const MARKER_DEFINE_ORDER = [
     'HAS_ALTITUDE',
+    'ENABLE_COLLISION',
     'HAS_OFFSET_Z',
     'HAS_TEXT_SIZE',
     'HAS_MARKER_WIDTH',

@@ -50,6 +50,7 @@ module.exports.push({
     },
     watch: {
         include: [
+            './src/**/*.js',
             '../gl/src/reshader/gpu/*.js',
             '../gl/src/**/*.wgsl',
             '../analysis/src/**/*.wgsl',
@@ -75,6 +76,7 @@ module.exports.push({
     },
     watch: {
         include: [
+            './src/**/*.js',
             '../gl/src/reshader/gpu/*.js',
             '../gl/src/**/*.wgsl',
             '../analysis/src/**/*.wgsl',

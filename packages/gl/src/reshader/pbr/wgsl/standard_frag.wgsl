@@ -77,6 +77,12 @@ struct SceneUniforms {
         uvScale: vec2f,
         atlasSize: vec2f,
     #endif
+
+    #ifdef IS_LINE_EXTRUSION
+        lineOpacity: f32,
+    #else
+        polygonOpacity: f32,
+    #endif
 };
 
 struct ShaderUniforms {
@@ -850,7 +856,11 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
             alpha = 1.0;
         #endif
     #endif
-
+    #if IS_LINE_EXTRUSION
+        alpha *= uniforms.lineOpacity;
+    #else
+        alpha *= uniforms.polygonOpacity;
+    #endif
     glFragColor = vec4f(frag * alpha, alpha);
 
     // Apply various effects
@@ -864,7 +874,8 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
 
 
     #ifdef HAS_SNOW
-        glFragColor.rgb = snow(glFragColor, getMaterialNormalMap(), 1.0);
+        let snowColor = snow(glFragColor, getMaterialNormalMap(), 1.0);
+        glFragColor = vec4f(snowColor, glFragColor.a);
     #endif
 
     if (uniforms.contrast != 1.0) {

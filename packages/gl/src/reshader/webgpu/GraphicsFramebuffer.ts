@@ -1,4 +1,4 @@
-import { isNil } from '../common/Util';
+import { isNil, isNumber } from '../common/Util';
 import GraphicsDevice from './GraphicsDevice';
 import GraphicsTexture from './GraphicsTexture';
 
@@ -203,11 +203,11 @@ export default class GraphicsFramebuffer {
         }
         if (depthStencilAttachment) {
             depthStencilAttachment.depthLoadOp = this.depthLoadOp || 'load';
-            depthStencilAttachment.depthClearValue = this.depthClearValue || 1;
+            depthStencilAttachment.depthClearValue = isNumber(this.depthClearValue) ? this.depthClearValue : 1;
             const depthTexture = this.depthTexture;
             if (depthTexture && depthTexture.gpuFormat.isDepthStencil) {
                 depthStencilAttachment.stencilLoadOp = this.stencilLoadOp || 'load';
-                depthStencilAttachment.stencilClearValue = this.stencilClearValue || 0;
+                depthStencilAttachment.stencilClearValue = isNumber(this.stencilClearValue) ? this.stencilClearValue : 0;
             }
             if (depthTexture && width && height && (depthTexture.width !== width || depthTexture.height !== height)) {
                 // depth texture size may be not consistent with canvas
@@ -224,11 +224,11 @@ export default class GraphicsFramebuffer {
             this.colorLoadOp = 'clear';
             this.colorClearValue = options.color;
         }
-        if (options.depth) {
+        if (isNumber(options.depth)) {
             this.depthLoadOp = 'clear';
             this.depthClearValue = options.depth;
         }
-        if (options.stencil) {
+        if (isNumber(options.stencil)) {
             this.stencilLoadOp = 'clear';
             this.stencilClearValue = options.stencil;
         }

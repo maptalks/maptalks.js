@@ -1,25 +1,28 @@
 #include <get_output>
 
+// Uniform 结构体
 struct Uniforms {
     modelMatrix: mat4x4f,
-    positionMatrix: mat4x4f,
+    modelViewMatrix: mat4x4f,
+    positionMatrix: mat4x4f
 };
 
 struct ShaderUniforms {
-    projViewMatrix: mat4x4f
-};
+    projMatrix: mat4x4f,
+}
 
 @group(0) @binding($b) var<uniform> uniforms: Uniforms;
 @group(0) @binding($b) var<uniform> shaderUniforms: ShaderUniforms;
 
 struct VertexInput {
     #include <position_vert>
+
+    @location($i) aTexCoord: vec2f
 };
 
 struct VertexOutput {
     @builtin(position) position: vec4f,
-    @location($o) vWorldPosition: vec4f,
-    @location($o) flood_height: f32,
+    @location($o) vTexCoord: vec2f,
 };
 
 @vertex
@@ -27,11 +30,9 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
     var output: VertexOutput;
     let localPositionMatrix: mat4x4f = getPositionMatrix(vertexInput, &output, uniforms.positionMatrix);
     let localPosition: vec4f = localPositionMatrix * getPosition(vec3f(vertexInput.aPosition.xyz), vertexInput);
-    let worldPosition = uniforms.modelMatrix * localPosition;
 
-    output.position = shaderUniforms.projViewMatrix * worldPosition;
-    output.vWorldPosition = worldPosition;
-    output.flood_height = worldPosition.z;
+    output.position = shaderUniforms.projMatrix * uniforms.modelViewMatrix * localPosition;
+    output.vTexCoord = vertexInput.aTexCoord;
 
     return output;
 }

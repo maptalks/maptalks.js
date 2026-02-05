@@ -11,14 +11,14 @@
 #include <common_pack_float>
 
 struct VertexInput {
-    #ifdef POSITION_IS_INT
-        @location($i) aPosition: vec4i,
-    #else
-        @location($i) aPosition: vec3f,
-    #endif
+    #include <position_vert>
 
     #if HAS_MAP || HAS_TERRAIN_FLAT_MASK
-        @location($i) aTexCoord: vec2f,
+        #ifdef HAS_DRACO_TEXCOORD
+            @location($i) aTexCoord: vec2u,
+        #else
+            @location($i) aTexCoord: vec2f,
+        #endif
     #endif
     #if HAS_MAP
 
@@ -51,6 +51,8 @@ struct VertexInput {
     #elif HAS_NORMAL
         #ifdef NORMAL_IS_INT
             @location($i) aNormal: vec4i,
+        #elif NORMAL_IS_UINT
+            @location($i) aNormal: vec4u,
         #else
             @location($i) aNormal: vec3f,
         #endif
@@ -228,7 +230,7 @@ fn main(input: VertexInput) -> VertexOutput {
         fbo_picking_setData(input, &output, output.position.w, alpha != 0.0);
     #else
         #if HAS_MAP
-            output.vTexCoord = transformTexcoord(input.aTexCoord);
+            output.vTexCoord = transformTexcoord(input.aTexCoord.xy);
             #ifdef HAS_AO_MAP
                 output.vTexCoord1 = transformTexcoord(input.aTexCoord1);
             #endif

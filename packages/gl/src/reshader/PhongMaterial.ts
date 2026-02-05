@@ -39,12 +39,22 @@ class PhongMaterial extends Material {
         super.appendDefines(defines, geometry);
         const uniforms = this.uniforms;
         const position = geometry.data[geometry.desc.positionAttribute];
-        if (position.buffer && position.buffer.itemType  && position.buffer.itemType.startsWith('sint')) {
-            defines['POSITION_IS_INT'] = 1;
+        const positionItemType = position && position.buffer && position.buffer.itemType;
+        if (positionItemType) {
+            if (positionItemType.startsWith('sint')) {
+                defines['POSITION_IS_INT'] = 1;
+            } else if (positionItemType.startsWith('uint')) {
+                defines['POSITION_IS_UINT'] = 1;
+            }
         }
         const normal = geometry.data[geometry.desc.normalAttribute];
-        if (normal && normal.buffer && normal.buffer.itemType && normal.buffer.itemType.startsWith('sint')) {
-            defines['NORMAL_IS_INT'] = 1;
+        const normalItemType = normal && normal.buffer && normal.buffer.itemType;
+        if (normalItemType) {
+            if (normalItemType.startsWith('sint')) {
+                defines['NORMAL_IS_INT'] = 1;
+            } else if (normalItemType.startsWith('uint')) {
+                defines['NORMAL_IS_UINT'] = 1;
+            }
         }
         if (this.unlit) {
             defines['SHADING_MODEL_UNLIT'] = 1;

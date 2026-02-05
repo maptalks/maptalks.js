@@ -32,13 +32,6 @@ class ShadowMapShader extends MeshShader {
         });
     }
 
-    setDefines(defines) {
-        if (!defines['POSITION_TYPE_3']) {
-            defines['POSITION_TYPE_3'] = 'vec3f';
-        }
-        return super.setDefines(defines);
-    }
-
     filter(mesh) {
         return mesh.castShadow;
     }

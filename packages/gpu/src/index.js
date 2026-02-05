@@ -46,6 +46,14 @@ import glVsmMappingFrag from '../../gl/src/reshader/shadow/wgsl/vsm_mapping_frag
 import glVsmMappingVert from '../../gl/src/reshader/shadow/wgsl/vsm_mapping_vert.wgsl';
 import glSkyboxFrag from '../../gl/src/reshader/skybox/skybox_frag.wgsl';
 import glSkyboxVert from '../../gl/src/reshader/skybox/skybox_vert.wgsl';
+import glSnowFrag from '../../gl/src/layer/weather/wgsl/snow_frag.wgsl';
+import glSnowVert from '../../gl/src/layer/weather/wgsl/snow_vert.wgsl';
+import glRainFrag from '../../gl/src/layer/weather/wgsl/rain_frag.wgsl';
+import glRainVert from '../../gl/src/layer/weather/wgsl/rain_vert.wgsl';
+import glRipplesFrag from '../../gl/src/reshader/weather/rain/wgsl/ripples_frag.wgsl';
+import glFogFrag from '../../gl/src/reshader/weather/fog/wgsl/fog_frag.wgsl';
+import glFogMixFactorVert from '../../gl/src/reshader/weather/fog/wgsl/fog_mixFactor_vert.wgsl';
+import glFogMixFactorFrag from '../../gl/src/reshader/weather/fog/wgsl/fog_mixFactor_frag.wgsl';
 
 // 3dtiles
 import layer3dtilesPickingVert from '../../layer-3dtiles/src/layer/renderer/wgsl/picking_vert.wgsl';
@@ -76,6 +84,8 @@ import vtTextFrag from '../../vt/src/layer/plugins/painters/wgsl/text_frag.wgsl'
 import vtTextLineVert from '../../vt/src/layer/plugins/painters/wgsl/text_line_vert.wgsl';
 import vtTextVert from '../../vt/src/layer/plugins/painters/wgsl/text_vert.wgsl';
 import vtTubeVert from '../../vt/src/layer/plugins/painters/wgsl/tube_vert.wgsl';
+import vtFlatMaskFrag from '../../vt/src/layer/plugins/painters/wgsl/vt-flat-mask_frag.wgsl';
+import vtFlatMaskVert from '../../vt/src/layer/plugins/painters/wgsl/vt-flat-mask_vert.wgsl';
 
 registerWGSLSource('analysis_depth_frag', analysisDepthFrag);
 registerWGSLSource('analysis_depth_vert', analysisDepthVert);
@@ -87,6 +97,7 @@ registerWGSLSource('analysis_insight_frag', analysisInsightFrag);
 registerWGSLSource('analysis_insight_vert', analysisInsightVert);
 registerWGSLSource('analysis_viewshed_frag', analysisViewshedFrag);
 registerWGSLSource('analysis_viewshed_vert', analysisViewshedVert);
+
 registerWGSLSource('gl_analysis_frag', glAnalysisFrag);
 registerWGSLSource('gl_fill_frag', glFillFrag);
 registerWGSLSource('gl_fill_vert', glFillVert);
@@ -120,9 +131,20 @@ registerWGSLSource('gl_vsm_mapping_frag', glVsmMappingFrag);
 registerWGSLSource('gl_vsm_mapping_vert', glVsmMappingVert);
 registerWGSLSource('gl_skybox_frag', glSkyboxFrag);
 registerWGSLSource('gl_skybox_vert', glSkyboxVert);
+registerWGSLSource('gl_snow_frag', glSnowFrag);
+registerWGSLSource('gl_snow_vert', glSnowVert);
+registerWGSLSource('gl_rain_frag', glRainFrag);
+registerWGSLSource('gl_rain_vert', glRainVert);
+registerWGSLSource('gl_ripples_vert', glSnowVert);
+registerWGSLSource('gl_ripples_frag', glRipplesFrag);
+registerWGSLSource('gl_fog_frag', glFogFrag);
+registerWGSLSource('gl_fog_mixFactor_vert', glFogMixFactorVert);
+registerWGSLSource('gl_fog_mixFactor_frag', glFogMixFactorFrag);
+
 registerWGSLSource('layer_3dtiles_picking_vert', layer3dtilesPickingVert);
 registerWGSLSource('layer_video_video_frag', layerVideoVideoFrag);
 registerWGSLSource('layer_video_video_vert', layerVideoVideoVert);
+
 registerWGSLSource('vt_billboard_frag', vtBillboardFrag);
 registerWGSLSource('vt_billboard_vert', vtBillboardVert);
 registerWGSLSource('vt_collision_frag', vtCollisionFrag);
@@ -144,3 +166,5 @@ registerWGSLSource('vt_text_frag', vtTextFrag);
 registerWGSLSource('vt_text_line_vert', vtTextLineVert);
 registerWGSLSource('vt_text_vert', vtTextVert);
 registerWGSLSource('vt_tube_vert', vtTubeVert);
+registerWGSLSource('vt_flat_mask_frag', vtFlatMaskFrag);
+registerWGSLSource('vt_flat_mask_vert', vtFlatMaskVert);
