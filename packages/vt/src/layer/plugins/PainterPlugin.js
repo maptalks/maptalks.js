@@ -144,7 +144,7 @@ function createPainterPlugin(type, Painter) {
                 meshes = newMeshes;
                 const oldMeshes = this._getMesh(key);
                 if (oldMeshes) {
-                    painter.deleteMesh(oldMeshes, true);
+                    painter.deleteMesh(oldMeshes);
                 }
                 tileCache.meshes = meshes;
                 this._meshCache[key] = meshes;
