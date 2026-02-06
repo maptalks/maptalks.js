@@ -1,5 +1,16 @@
 # @maptalks/gpu
 
+## 0.124.0
+
+### Minor Changes
+
+- a webgpu fix version ready for integration tests
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.124.0
+
 ## 0.123.0
 
 ### Minor Changes

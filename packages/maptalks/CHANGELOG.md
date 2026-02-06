@@ -1,5 +1,11 @@
 # maptalks
 
+## 1.12.0
+
+### Minor Changes
+
+- a webgpu fix version ready for integration tests
+
 ## 1.11.0
 
 ### Minor Changes

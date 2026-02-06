@@ -1,5 +1,11 @@
 # @maptalks/video-layer
 
+## 0.124.0
+
+### Minor Changes
+
+- a webgpu fix version ready for integration tests
+
 ## 0.123.0
 
 ### Minor Changes
