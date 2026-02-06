@@ -23,6 +23,7 @@ export type GeometryEditOptionsType = {
     vertexZIndex?: number;
     newVertexZIndex?: number;
     shadowDraggable?: boolean;
+    dragOnAxis?: 'x' | 'y'
 }
 
 declare module "../Geometry" {

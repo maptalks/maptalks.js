@@ -282,8 +282,12 @@ class GeometryDragHandler extends Handler {
         if (!dragOnScreenAxis) {
             if (axis === 'x') {
                 pointOffset.y = coordOffset.y = 0;
+                //https://github.com/maptalks/maptalks.js/issues/2817
+                coord.y = this._lastCoord.y;
             } else if (axis === 'y') {
                 pointOffset.x = coordOffset.x = 0;
+                //https://github.com/maptalks/maptalks.js/issues/2817
+                coord.x = this._lastCoord.x;
             }
         }
         this._lastPoint = point;
