@@ -40,8 +40,15 @@ export default class GLTFLoader {
         }
         this._fetchOptions = this.options.fetchOptions || {};
         if (gltf.buffer instanceof ArrayBuffer) {
-            const { json, glbBuffer } = GLBReader.read(gltf.buffer, gltf.byteOffset, gltf.byteLength);
-            this._init(rootPath, json, glbBuffer);
+            const textDecoder = new TextDecoder();
+            const magic = textDecoder.decode(new Uint8Array(gltf.buffer, 0, 4));
+            if (magic === 'glTF') {
+                const { json, glbBuffer } = GLBReader.read(gltf.buffer, gltf.byteOffset, gltf.byteLength);
+                this._init(rootPath, json, glbBuffer);
+            } else {
+                const json = JSON.parse(textDecoder.decode(gltf.buffer));
+                this._init(rootPath, json);
+            }
         } else {
             this._init(rootPath, gltf);
         }
