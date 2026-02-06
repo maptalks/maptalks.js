@@ -1145,6 +1145,7 @@ function unobserveUIDomResize(dom: HTMLElement) {
             resizeObserver.unobserve(dom);
         }
     }
+}
 
 export type UIComponentAlignOptionsType = {
     horizontalAlignment?: 'middle' | 'left' | 'right';
