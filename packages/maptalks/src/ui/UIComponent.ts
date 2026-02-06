@@ -1135,3 +1135,8 @@ export type UIComponentOptionsType = {
     cssName?: string | Array<string>;
     enableScrollbar?: boolean;
 }
+
+export type UIComponentAlignOptionsType = {
+    horizontalAlignment?: 'middle' | 'left' | 'right';
+    verticalAlignment?: 'middle' | 'top' | 'bottom';
+}
