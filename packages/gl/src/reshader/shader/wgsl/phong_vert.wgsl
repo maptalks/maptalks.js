@@ -1,14 +1,6 @@
 // ds魔法 请把下面的glsl代码转为wgsl，要求保留#开头的宏处理语句内的代码，变量名维持不变，非texture_2d和sampler类型的uniform变量放到一个struct中：
 struct VertexInput {
-#if HAS_DRACO_POSITION || HAS_COMPRESSED_INT16_POSITION
-    @location($i) aPosition: vec4i,
-#else
-    #ifdef POSITION_IS_INT
-        @location($i) aPosition: vec4i,
-    #else
-        @location($i) aPosition: vec3f,
-    #endif
-#endif
+#include <position_vert>
 #ifdef HAS_MAP
     #if HAS_DRACO_TEXCOORD || HAS_COMPRESSED_INT16_TEXCOORD_0
         @location($i) aTexCoord: vec2i,
@@ -40,6 +32,8 @@ struct VertexInput {
 #ifdef HAS_NORMAL
     #ifdef NORMAL_IS_INT
         @location($i) aNormal: vec4i,
+    #elif NORMAL_IS_UINT
+        @location($i) aNormal: vec4u,
     #else
         @location($i) aNormal: vec3f,
     #endif

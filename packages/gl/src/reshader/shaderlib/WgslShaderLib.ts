@@ -1,4 +1,5 @@
 /* eslint-disable camelcase */
+import position from './wgsl/position';
 import instance from './wgsl/instance';
 import invert_matrix from './wgsl/invert_matrix';
 import line_extrusion from './wgsl/line_extrusion';
@@ -22,6 +23,7 @@ import rgbm from './wgsl/rgbm';
 
 //Shader Chunks for includes
 const ShaderChunk = {
+    position,
     instance,
     invert_matrix,
     line_extrusion,

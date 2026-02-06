@@ -103,7 +103,9 @@ export default class PipelineDescriptor {
                     depthWriteEnable = !!depthProps.mask;
                 }
             }
-            //TODO where is depth range?
+        } else if (depthProps && !isEnable(depthProps.enable, uniformValues)) {
+            depthCompare = 'always';
+            depthWriteEnable = false;
         }
         this.depthCompare = depthCompare;
         this.depthWriteEnabled = depthWriteEnable;

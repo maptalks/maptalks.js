@@ -18,7 +18,7 @@ module.exports = [
             copy({
                 targets: [
                     { src: '../maptalks/assets/*', dest: 'dist' },
-                    { src: '../maptalks/assets/maptalks.css', dest: 'dist/', rename: 'maptalks-gl.css' },
+                    { src: '../maptalks/assets/maptalks.css', dest: 'dist/', rename: 'maptalks-gpu.css' },
                 ]
             }),
             nodeResolve({
@@ -37,7 +37,7 @@ module.exports = [
                 output: {
                     ecma: 2017,
                     // keep_quoted_props: true,
-                    beautify: true,
+                    beautify: false,
                     comments: '/^!/'
                 }
             })

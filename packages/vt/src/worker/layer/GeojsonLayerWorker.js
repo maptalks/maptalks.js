@@ -32,6 +32,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
 
     clearData() {
         delete this.index;
+        this.clearCache();
     }
 
     /**
@@ -85,6 +86,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                 this._genOMBB(features);
                 // debugger
                 const { sample1000, idMap } = this._generateId(features);
+                this.clearCache();
                 this._generate(sample1000, idMap, data, options, cb);
             });
         } else {
@@ -101,6 +103,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             //         insertSample(features[i], sample1000, i, length);
             //     }
             // }
+            this.clearCache();
             this._generate(sample1000, null, data, options, cb);
         }
     }

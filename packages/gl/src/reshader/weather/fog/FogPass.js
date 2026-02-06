@@ -5,6 +5,7 @@ import Scene from '../../Scene';
 import { isFunction } from '../../common/Util';
 import mixVert from './glsl/fog_mixFactor.vert';
 import mixFrag from './glsl/fog_mixFactor.frag';
+import { getWGSLSource } from '../../gpu/WGSLSources.js';
 const modelViewMatrix = [];
 class FogPass{
     constructor(regl, viewport, layer) {
@@ -16,8 +17,11 @@ class FogPass{
 
     _init() {
         this._shader = new MeshShader({
+            name: 'fog_mixFactor',
             vert: mixVert,
             frag: mixFrag,
+            wgslVert: getWGSLSource('gl_fog_mixFactor_vert'),
+            wgslFrag: getWGSLSource('gl_fog_mixFactor_frag'),
             uniforms: [
                 {
                     name: 'modelViewMatrix',

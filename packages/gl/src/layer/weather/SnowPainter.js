@@ -2,6 +2,7 @@ import { mat4, vec3, quat } from 'gl-matrix';
 import * as reshader from '../../reshader';
 import snowVert from './glsl/snow.vert';
 import snowFrag from './glsl/snow.frag';
+import { getWGSLSource } from '../../reshader/gpu/WGSLSources';
 const modelViewMatrix = [];
 const DEFALUT_SCALE = [0.03, 0.03, 0.03];
 const TEMP_ROTATE = [], TEMP_SCALE = [], TEMP_MAT = [], DEFAULT_ZOOM = 16.685648411389433;
@@ -27,8 +28,11 @@ class SnowPainter {
             }
         };
         this._shader = new reshader.MeshShader({
+            name: 'snow',
             vert: snowVert,
             frag: snowFrag,
+            wgslVert: getWGSLSource('gl_snow_vert'),
+            wgslFrag: getWGSLSource('gl_snow_frag'),
             uniforms: [
                 {
                     name: 'modelViewMatrix',

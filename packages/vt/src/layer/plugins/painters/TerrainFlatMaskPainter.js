@@ -1,5 +1,5 @@
 import BasicPainter from './BasicPainter';
-import { reshader, mat4 } from '@maptalks/gl';
+import { reshader, mat4, getWGSLSource } from '@maptalks/gl';
 import vert from './glsl/vt-flat-mask.vert';
 import frag from './glsl/vt-flat-mask.frag';
 // import wgslVert from './wgsl/fill_vert.wgsl';
@@ -33,7 +33,7 @@ class TerrainFlatMaskPainter extends BasicPainter {
         const { geometry, symbolIndex } = geo;
         const uniforms = {
         };
-
+        geometry.generateBuffers(this.regl);
         const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
         const mesh = new reshader.Mesh(geometry, material, {
             castShadow: false,
@@ -96,9 +96,10 @@ class TerrainFlatMaskPainter extends BasicPainter {
 
         this.shader = new reshader.MeshShader({
             name: 'vt-terrain-flat-mask',
-            vert, frag,
-            // wgslVert: TYPE_CONSTS + wgslVert,
-            // wgslFrag,
+            vert,
+            frag,
+            wgslVert: getWGSLSource('vt_flat_mask_vert'),
+            wgslFrag: getWGSLSource('vt_flat_mask_frag'),
             uniforms,
             extraCommandProps
         });

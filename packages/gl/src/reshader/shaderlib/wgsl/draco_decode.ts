@@ -58,27 +58,27 @@ const vert = /* wgsl */`
 
     // Draco 法线解码函数
     #ifdef HAS_DRACO_NORMAL
-    fn czm_signNotZero(value: f32) -> f32 {
+    fn czm_signNotZero1(value: f32) -> f32 {
         return select(-1.0, 1.0, value >= 0.0);
     }
 
     fn czm_signNotZero(value: vec2f) -> vec2f {
-        return vec2f(czm_signNotZero(value.x), czm_signNotZero(value.y));
+        return vec2f(czm_signNotZero1(value.x), czm_signNotZero1(value.y));
     }
 
     fn decodeDracoNormal(encoded: vec2f, range: f32) -> vec3f {
         if (encoded.x == 0.0 && encoded.y == 0.0) {
             return vec3f(0.0, 0.0, 0.0);
         }
-        encoded = encoded / range * 2.0 - 1.0;
-        var v = vec3f(encoded.x, encoded.y, 1.0 - abs(encoded.x) - abs(encoded.y));
+        let value = encoded / range * 2.0 - 1.0;
+        var v = vec3f(value.x, value.y, 1.0 - abs(value.x) - abs(value.y));
         if (v.z < 0.0) {
-            v.xy = (1.0 - abs(v.yx)) * czm_signNotZero(v.xy);
+            v = vec3f((1.0 - abs(v.yx)) * czm_signNotZero(v.xy), v.z);
         }
         return normalize(v);
     }
 
-    fn decode_getNormal(aNormal: vec2f) -> vec3f {
+    fn decode_getNormal2(aNormal: vec2f) -> vec3f {
         return decodeDracoNormal(aNormal, dracoUniforms.gltf_u_dec_normal_rangeConstant).zxy;
     }
     #endif

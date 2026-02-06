@@ -1146,4 +1146,7 @@ function unobserveUIDomResize(dom: HTMLElement) {
         }
     }
 
+export type UIComponentAlignOptionsType = {
+    horizontalAlignment?: 'middle' | 'left' | 'right';
+    verticalAlignment?: 'middle' | 'top' | 'bottom';
 }

@@ -65,6 +65,8 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     _dataExtent: maptalks.Extent;
     //@internal
     _idMaps: Map<string | number, any>;
+    //@internal
+    _updateTimeout: any;
 
     constructor(id: string, options: GeoJSONVectorTileLayerParamOptionsType) {
         // use map's spatial reference
@@ -158,11 +160,12 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
                 } else {
                     workerData = this.features;
                 }
+                clearTimeout(this._updateTimeout);
                 workerConn.setData(workerData, (err, params) => {
                     renderer.clear();
                     this.onWorkerReady(null, params);
                     renderer.setToRedraw();
-                    setTimeout(() => {
+                    this._updateTimeout = setTimeout(() => {
                         // 解决偶发性不重绘的问题
                         renderer.setToRedraw();
                     }, 500);

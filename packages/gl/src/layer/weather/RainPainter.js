@@ -2,6 +2,7 @@ import * as reshader from '../../reshader';
 import { mat4, quat, vec3 } from 'gl-matrix';
 import rainVert from './glsl/rain.vert';
 import rainFrag from './glsl/rain.frag';
+import { getWGSLSource } from '../../reshader/gpu/WGSLSources';
 const modelViewMatrix = [];
 const DEFALUT_SCALE = [0.03, 0.03, 0.03];
 const TEMP_ROTATE = [], TEMP_SCALE = [], TEMP_MAT = [];
@@ -38,8 +39,11 @@ class RainPainer {
             }
         };
         this._shader = new reshader.MeshShader({
+            name: 'rain',
             vert: rainVert,
             frag: rainFrag,
+            wgslVert: getWGSLSource('gl_rain_vert'),
+            wgslFrag: getWGSLSource('gl_rain_frag'),
             uniforms: [
                 {
                     name: 'modelViewMatrix',

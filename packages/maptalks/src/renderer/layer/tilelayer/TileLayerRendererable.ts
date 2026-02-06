@@ -109,6 +109,7 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
         avgMaxAltitude: number;
 
         init() {
+            this.version = 0;
             this.tilesInView = {};
             this.tilesLoading = {};
             this._parentTiles = [];
@@ -1196,6 +1197,7 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
         }
 
         clearTileCaches(): void {
+            this.version++;
             this.retireTiles(true);
             this.tileCache.reset();
             this.tilesInView = {};
@@ -1247,7 +1249,7 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
             }
             for (const i in this.tilesInView) {
                 const tile = this.tilesInView[i];
-                if (!tile.current) {
+                if (force || !tile.current) {
                     delete this.tilesInView[i];
                     if (!this.tileCache.has(i)) {
                         this.deleteTile(tile);
