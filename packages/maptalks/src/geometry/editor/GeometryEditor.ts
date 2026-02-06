@@ -144,20 +144,22 @@ function onHandleDragEnd(ev: Record<string, any>): boolean {
     return false;
 }
 
-function calCoordOffsetByDragOnAxis(curentCoord: Coordinate, preCoord?: Coordinate, dragOnAxis?: string) {
+function calCoordOffsetByDragOnAxis(currentCoord: Coordinate, preCoord?: Coordinate, dragOnAxis?: string): Coordinate {
     if (!dragOnAxis) {
-        return curentCoord;
+        return currentCoord;
     }
-    if (!preCoord && curentCoord) {
+    //currentCoord is offset
+    if (!preCoord && currentCoord) {
         if (dragOnAxis === 'x') {
-            curentCoord.y = 0;
+            currentCoord.y = 0;
         }
         if (dragOnAxis === 'y') {
-            curentCoord.x = 0;
+            currentCoord.x = 0;
         }
-        return curentCoord;
+        return currentCoord;
     }
-    const offset = curentCoord.sub(preCoord);
+    //need cal offset by currentCoordinates and preCoordinates
+    const offset = currentCoord.sub(preCoord);
     if (dragOnAxis === 'x') {
         preCoord.x += offset.x;
     }
