@@ -98,8 +98,6 @@ class UIComponent extends Eventable(Class) {
     _domContentRect: { width: number, height: number };
     //@internal
     _size: Size;
-    //@internal
-    _resizeObserver: ResizeObserver;
 
     /**
      *  Some instance methods subclasses needs to implement:  <br>
@@ -293,7 +291,7 @@ class UIComponent extends Eventable(Class) {
             dom = this.__uiDOM;
         }
         dom['eventsPropagation'] = this.options['eventsPropagation'];
-        this._observerDomSize(dom);
+        observerUIDomResize(dom, this);
         const zIndex = this.options.zIndex;
         if (!dom) {
             /**
@@ -754,6 +752,7 @@ class UIComponent extends Eventable(Class) {
             this.onDomRemove();
         }
         const eventsToStop = this.options['eventsToStop'];
+        unobserveUIDomResize(this.__uiDOM);
         if (this._singleton()) {
             const map = this.getMap(),
                 key = this._uiDomKey();
@@ -781,12 +780,8 @@ class UIComponent extends Eventable(Class) {
             removeDomNode(this.__uiDOM);
             delete this.__uiDOM;
         }
-        if (this._resizeObserver) {
-            //dispose resizeObserver
-            this._resizeObserver.disconnect();
-            delete this._resizeObserver;
-            delete this._domContentRect;
-        }
+        delete this._domContentRect;
+
     }
 
     /**
@@ -969,34 +964,6 @@ class UIComponent extends Eventable(Class) {
         }
     }
 
-    //@internal
-    _observerDomSize(dom: HTMLElement) {
-        if (!dom || !Browser.resizeObserver || this._resizeObserver) {
-            return this;
-        }
-        this._resizeObserver = new ResizeObserver((entries) => {
-            if (entries.length) {
-                const borderBoxSize = entries[0].borderBoxSize;
-                if (borderBoxSize && borderBoxSize.length) {
-                    this._domContentRect = {
-                        width: borderBoxSize[0].inlineSize,
-                        height: borderBoxSize[0].blockSize
-                    };
-                } else {
-                    this._domContentRect = entries[0].contentRect;
-                }
-            } else {
-                delete this._domContentRect;
-            }
-            //update dom position
-            if (this.onDomSizeChange) {
-                this.onDomSizeChange();
-            }
-        });
-        this._resizeObserver.observe(dom);
-        return this;
-    }
-
     isSupportZoomFilter() {
         return false;
     }
@@ -1134,6 +1101,50 @@ export type UIComponentOptionsType = {
     zIndex?: number;
     cssName?: string | Array<string>;
     enableScrollbar?: boolean;
+}
+
+let resizeObserver: ResizeObserver;
+function observerUIDomResize(dom: HTMLElement, uiComponent: UIComponent) {
+    if (!resizeObserver && Browser.resizeObserver) {
+        resizeObserver = new ResizeObserver((entries) => {
+            entries = entries || [];
+            entries.forEach(element => {
+                const { target, borderBoxSize, contentRect } = element;
+                let uicom: UIComponent;
+                if (target) {
+                    uicom = (target as any)._uiComponent;
+                }
+                if (!uicom) {
+                    return;
+                }
+                if (borderBoxSize && borderBoxSize.length) {
+                    uicom._domContentRect = {
+                        width: borderBoxSize[0].inlineSize,
+                        height: borderBoxSize[0].blockSize
+                    };
+                } else {
+                    uicom._domContentRect = contentRect;
+                }
+                if (uicom.onDomSizeChange) {
+                    uicom.onDomSizeChange();
+                }
+            });
+        });
+    }
+    if (resizeObserver && dom) {
+        (dom as any)._uiComponent = uiComponent;
+        resizeObserver.observe(dom);
+    }
+
+}
+
+function unobserveUIDomResize(dom: HTMLElement) {
+    if (dom) {
+        delete (dom as any)._uiComponent;
+        if (resizeObserver) {
+            resizeObserver.unobserve(dom);
+        }
+    }
 }
 
 export type UIComponentAlignOptionsType = {
