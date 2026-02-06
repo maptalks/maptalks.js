@@ -1403,6 +1403,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             const skinImage = skinImages[i];
             const texture = skinImage.texture;
             this._parentContext = {
+                tile: skinImage.tile,
                 terrainMaskFBO: skinImage.terrainMaskFBO,
                 renderTarget: {
                     fbo: texture

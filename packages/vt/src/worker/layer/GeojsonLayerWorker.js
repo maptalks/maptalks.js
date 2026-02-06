@@ -47,6 +47,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             cb();
             return;
         }
+        this.empty = false;
         const options = {
             maxZoom: 24,  // max zoom to preserve detail on; can't be higher than 24
             tolerance: this.options.simplifyTolerance, // simplification tolerance (higher means simpler)
