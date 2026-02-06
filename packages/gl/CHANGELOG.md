@@ -1,5 +1,14 @@
 # @maptalks/gl
 
+## 0.124.1
+
+### Patch Changes
+
+- fixes for geojson on terrain
+- Updated dependencies
+  - @maptalks/fusiongl@0.124.1
+  - @maptalks/gltf-loader@0.124.1
+
 ## 0.124.0
 
 ### Minor Changes

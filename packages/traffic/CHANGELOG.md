@@ -1,5 +1,13 @@
 # @maptalks/traffic
 
+## 0.124.1
+
+### Patch Changes
+
+- fixes for geojson on terrain
+- Updated dependencies
+  - @maptalks/gltf-layer@0.124.1
+
 ## 0.124.0
 
 ### Minor Changes

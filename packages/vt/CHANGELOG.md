@@ -1,5 +1,13 @@
 # @maptalks/vt
 
+## 0.124.1
+
+### Patch Changes
+
+- fixes for geojson on terrain
+- Updated dependencies
+  - @maptalks/vt-plugin@0.124.1
+
 ## 0.124.0
 
 ### Minor Changes

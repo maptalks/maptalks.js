@@ -1,5 +1,11 @@
 # @maptalks/gltf-layer
 
+## 0.124.1
+
+### Patch Changes
+
+- fixes for geojson on terrain
+
 ## 0.124.0
 
 ### Minor Changes

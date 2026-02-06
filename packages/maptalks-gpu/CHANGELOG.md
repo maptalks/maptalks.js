@@ -1,5 +1,19 @@
 # maptalks-gl
 
+## 0.124.1
+
+### Patch Changes
+
+- fixes for geojson on terrain
+- Updated dependencies
+  - @maptalks/gl@0.124.1
+  - @maptalks/gpu@0.124.1
+  - @maptalks/3dtiles@0.124.1
+  - @maptalks/gltf-layer@0.124.1
+  - @maptalks/video-layer@0.124.1
+  - @maptalks/transform-control@0.124.1
+  - @maptalks/vt@0.124.1
+
 ## 0.124.0
 
 ### Minor Changes
