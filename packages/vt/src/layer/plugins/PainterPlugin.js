@@ -135,13 +135,19 @@ function createPainterPlugin(type, Painter) {
                 }
             }
 
-            let meshes = this._getMesh(key);
+            let meshes = tileCache.meshes;
             if (!meshes) {
                 const { meshes: newMeshes, retire: isRetire } = this._createMeshes(geometries, context);
                 if (!retire) {
                     retire = isRetire;
                 }
                 meshes = newMeshes;
+                const oldMeshes = this._getMesh(key);
+                if (oldMeshes) {
+                    painter.deleteMesh(oldMeshes, true);
+                }
+                tileCache.meshes = meshes;
+                this._meshCache[key] = meshes;
             }
             return { retire };
         },
@@ -170,8 +176,6 @@ function createPainterPlugin(type, Painter) {
                 if (sceneConfig.animation) {
                     meshes._animationTime = context.timestamp;
                 }
-                const key = this._getMeshKey(context);
-                this._meshCache[key] = meshes;
             }
             return { meshes, retire };
         },
