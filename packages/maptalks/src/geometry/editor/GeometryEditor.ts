@@ -58,7 +58,7 @@ export function fixHandlePointCoordinates(geometry: Geometry, vertex: Coordinate
     const map = geometry.getMap();
     if (!vertex || vertex.z === 0) {
         const c = map.containerPointToCoord(dragContainerPoint);
-        return calCoordOffsetByDragOnAxis(c, vertex, dragOnAxis);
+        return calCoordByDragOnAxis(c, vertex, dragOnAxis);
     }
     const altitude = vertex.z;
     const glRes = map.getGLRes();
@@ -77,7 +77,7 @@ export function fixHandlePointCoordinates(geometry: Geometry, vertex: Coordinate
     if (isPoint) {
         coordinates.z = altitude;
     }
-    return calCoordOffsetByDragOnAxis(coordinates, vertex, dragOnAxis);
+    return calCoordByDragOnAxis(coordinates, vertex, dragOnAxis);
 
 
 }
@@ -144,30 +144,41 @@ function onHandleDragEnd(ev: Record<string, any>): boolean {
     return false;
 }
 
-function calCoordOffsetByDragOnAxis(currentCoord: Coordinate, preCoord?: Coordinate, dragOnAxis?: string): Coordinate {
-    if (!dragOnAxis) {
+/**
+ * cal drag coordinates by currentCoord and preCoord
+ * @param currentCoord
+ * @param preCoord
+ * @param dragOnAxis
+ * @returns
+ */
+function calCoordByDragOnAxis(currentCoord: Coordinate, preCoord: Coordinate, dragOnAxis?: string) {
+    if (!dragOnAxis || !preCoord) {
         return currentCoord;
     }
-    //currentCoord is offset
-    if (!preCoord && currentCoord) {
-        if (dragOnAxis === 'x') {
-            currentCoord.y = 0;
-        }
-        if (dragOnAxis === 'y') {
-            currentCoord.x = 0;
-        }
-        return currentCoord;
-    }
-    //need cal offset by currentCoordinates and preCoordinates
-    const offset = currentCoord.sub(preCoord);
-    if (dragOnAxis === 'x') {
-        preCoord.x += offset.x;
-    }
-    if (dragOnAxis === 'y') {
-        preCoord.y += offset.y;
-    }
+    let offset = currentCoord.sub(preCoord);
+    offset = calCoordOffsetByDragOnAxis(offset, dragOnAxis);
+    preCoord.x += offset.x;
+    preCoord.y += offset.y;
     return preCoord.copy();
+}
 
+/**
+ * cal offset by dragOnAxis
+ * @param offset
+ * @param dragOnAxis
+ * @returns
+ */
+function calCoordOffsetByDragOnAxis(offset: Coordinate, dragOnAxis?: string): Coordinate {
+    if (!dragOnAxis) {
+        return offset;
+    }
+
+    if (dragOnAxis === 'x') {
+        offset.y = 0;
+    } else if (dragOnAxis === 'y') {
+        offset.x = 0;
+    }
+    return offset;
 }
 
 const options: GeometryEditOptionsType = {
@@ -527,7 +538,7 @@ class GeometryEditor extends Eventable(Class) {
             },
             onMove: (param): void => {
                 const offset = param['coordOffset'];
-                calCoordOffsetByDragOnAxis(offset, null, this.options.dragOnAxis);
+                calCoordOffsetByDragOnAxis(offset, this.options.dragOnAxis);
                 if (shadow) {
                     shadow.translate(offset);
                 } else {
@@ -539,7 +550,7 @@ class GeometryEditor extends Eventable(Class) {
                     const shadowFirst = shadow.getFirstCoordinate();
                     const first = this._geometry.getFirstCoordinate();
                     const offset = shadowFirst.sub(first);
-                    calCoordOffsetByDragOnAxis(offset, null, this.options.dragOnAxis);
+                    calCoordOffsetByDragOnAxis(offset, this.options.dragOnAxis);
                     this._update('translate', offset);
                     shadow.remove();
                 }
