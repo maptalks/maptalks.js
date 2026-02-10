@@ -1397,9 +1397,11 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         const timestamp = this._currentTimestamp;
         const parentContext = this._parentContext;
         const tileSize = this.layer.getTileSize().width;
-
+        const filter = plugin => {
+            return terrainSkinFilter(plugin) && this.layer.options.awareOfTerrain;
+        }
         for (let i = 0; i < skinImages.length; i++) {
-            this._startFrame(timestamp);
+            this._startFrame(timestamp, filter);
             const skinImage = skinImages[i];
             const texture = skinImage.texture;
             this._parentContext = {
