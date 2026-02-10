@@ -1,5 +1,11 @@
 # @maptalks/transcoders.crn
 
+## 0.124.2
+
+### Patch Changes
+
+- minor fixes and features
+
 ## 0.124.1
 
 ### Patch Changes

@@ -1,5 +1,15 @@
 # @maptalks/gl
 
+## 0.124.2
+
+### Patch Changes
+
+- minor fixes and features
+- Updated dependencies
+  - @maptalks/gltf-loader@0.124.2
+  - @maptalks/fusiongl@0.124.2
+  - maptalks@1.12.1
+
 ## 0.124.1
 
 ### Patch Changes

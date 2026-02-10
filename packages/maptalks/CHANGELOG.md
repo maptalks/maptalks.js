@@ -1,5 +1,11 @@
 # maptalks
 
+## 1.12.1
+
+### Patch Changes
+
+- minor fixes and features
+
 ## 1.12.0
 
 ### Minor Changes
