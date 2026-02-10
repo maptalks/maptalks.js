@@ -54,10 +54,11 @@ function coordinatesToContainerPoint(map, coordinate) {
 }
 
 
-export function fixHandlePointCoordinates(geometry: Geometry, vertex: Coordinate, dragContainerPoint: Point) {
+export function fixHandlePointCoordinates(geometry: Geometry, vertex: Coordinate, dragContainerPoint: Point, dragOnAxis?: string) {
     const map = geometry.getMap();
     if (!vertex || vertex.z === 0) {
-        return map.containerPointToCoord(dragContainerPoint)
+        const c = map.containerPointToCoord(dragContainerPoint);
+        return calCoordByDragOnAxis(c, vertex, dragOnAxis);
     }
     const altitude = vertex.z;
     const glRes = map.getGLRes();
@@ -76,7 +77,7 @@ export function fixHandlePointCoordinates(geometry: Geometry, vertex: Coordinate
     if (isPoint) {
         coordinates.z = altitude;
     }
-    return coordinates;
+    return calCoordByDragOnAxis(coordinates, vertex, dragOnAxis);
 
 
 }
@@ -143,6 +144,43 @@ function onHandleDragEnd(ev: Record<string, any>): boolean {
     return false;
 }
 
+/**
+ * cal drag coordinates by currentCoord and preCoord
+ * @param currentCoord
+ * @param preCoord
+ * @param dragOnAxis
+ * @returns
+ */
+function calCoordByDragOnAxis(currentCoord: Coordinate, preCoord: Coordinate, dragOnAxis?: string) {
+    if (!dragOnAxis || !preCoord) {
+        return currentCoord;
+    }
+    let offset = currentCoord.sub(preCoord);
+    offset = calCoordOffsetByDragOnAxis(offset, dragOnAxis);
+    preCoord.x += offset.x;
+    preCoord.y += offset.y;
+    return preCoord.copy();
+}
+
+/**
+ * cal offset by dragOnAxis
+ * @param offset
+ * @param dragOnAxis
+ * @returns
+ */
+function calCoordOffsetByDragOnAxis(offset: Coordinate, dragOnAxis?: string): Coordinate {
+    if (!dragOnAxis) {
+        return offset;
+    }
+
+    if (dragOnAxis === 'x') {
+        offset.y = 0;
+    } else if (dragOnAxis === 'y') {
+        offset.x = 0;
+    }
+    return offset;
+}
+
 const options: GeometryEditOptionsType = {
     //fix outline's aspect ratio when resizing
     'fixAspectRatio': false,
@@ -180,7 +218,9 @@ class GeometryEditor extends Eventable(Class) {
     //@internal
     _shadow?: Geometry;
     //@internal
-    _geometryDraggble: boolean
+    _geometryDraggble: boolean;
+    //@internal
+    _geometryDragOnAxis: string;
     //@internal
     _history: any
     //@internal
@@ -274,6 +314,8 @@ class GeometryEditor extends Eventable(Class) {
         const layer = this._geometry.getLayer();
         const needShadow = layer.options['renderer'] === 'canvas';
         this._geometryDraggble = geometry.options['draggable'];
+        this._geometryDragOnAxis = geometry.options['dragOnAxis'];
+        const dragOnAxis = this.options.dragOnAxis;
         if (needShadow) {
             geometry.config('draggable', false);
             //edits are applied to a shadow of geometry to improve performance.
@@ -292,10 +334,12 @@ class GeometryEditor extends Eventable(Class) {
             });
 
             this._shadow = shadow;
+            shadow.config({ dragOnAxis });
 
             geometry.hide();
         } else if (geometry instanceof Marker) {
             geometry.config('draggable', true);
+            geometry.config({ dragOnAxis });
         }
 
         this._switchGeometryEvents('on');
@@ -348,6 +392,7 @@ class GeometryEditor extends Eventable(Class) {
         }
         map.off('drawtopstart', this._refresh, this);
         this._geometry.config('draggable', this._geometryDraggble);
+        this._geometry.config('dragOnAxis', this._geometryDragOnAxis);
         if (this._shadow) {
             this._shadow.off(SHADOW_DRAG_EVENTS, this._shadowDragEvent, this);
             delete this._shadow;
@@ -493,6 +538,7 @@ class GeometryEditor extends Eventable(Class) {
             },
             onMove: (param): void => {
                 const offset = param['coordOffset'];
+                calCoordOffsetByDragOnAxis(offset, this.options.dragOnAxis);
                 if (shadow) {
                     shadow.translate(offset);
                 } else {
@@ -504,6 +550,7 @@ class GeometryEditor extends Eventable(Class) {
                     const shadowFirst = shadow.getFirstCoordinate();
                     const first = this._geometry.getFirstCoordinate();
                     const offset = shadowFirst.sub(first);
+                    calCoordOffsetByDragOnAxis(offset, this.options.dragOnAxis);
                     this._update('translate', offset);
                     shadow.remove();
                 }
@@ -1187,7 +1234,7 @@ class GeometryEditor extends Eventable(Class) {
 
             const coordinates = getVertexCoordinates(ringIndex);
             const containerPoint = handleConatainerPoint.sub(getDxDy());
-            const coordinate = fixHandlePointCoordinates(me._geometry, coordinates[index], containerPoint);
+            const coordinate = fixHandlePointCoordinates(me._geometry, coordinates[index], containerPoint, me.options.dragOnAxis);
             const vertex = coordinates[index];
             vertex.x = coordinate.x;
             vertex.y = coordinate.y;
