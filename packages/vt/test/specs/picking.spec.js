@@ -851,6 +851,67 @@ describe('picking specs', () => {
             layer.addTo(map);
         });
 
+        it('should pick polygon with renderBeforeTerrain', done => {
+            const options = {
+                renderBeforeTerrain: true,
+                awareOfTerrain: false,
+                data: {
+                    type: 'FeatureCollection',
+                    features: [
+                        { type: 'Feature', geometry: { type: 'Polygon', coordinates: [[
+                            [91.14478,29.658272], [91.14778,29.658272], [91.14778,29.652272], [91.14478,29.652272], [91.14478,29.658272]
+                        ]] }, properties: { type: 1 } }
+                    ]
+                },
+                style: [{
+                    filter: true,
+                    renderPlugin: {
+                        type: 'fill',
+                        dataConfig: {
+                            type: 'fill'
+                        }
+                    },
+                    symbol: {
+                        polygonFill: '#f00',
+                        polygonOpacity: 1
+                    }
+                }],
+
+                view: {
+                    center: [91.14478, 29.658272],
+                    zoom: 12,
+                    pitch: 5,
+                }
+            };
+            const options2 = maptalks.Util.extend({}, options);
+            options2.awareOfTerrain = true;
+            options2.renderBeforeTerrain = false;
+
+            map = new maptalks.Map(container, options.view);
+            const terrain = {
+                type: 'mapbox',
+                urlTemplate: 'http://localhost:' + PORT + '/mapbox-terrain/{z}/{x}/{y}.webp',
+                tileStackDepth: 0,
+                tileLimitPerFrame: 0,
+                loadingLimit: 0,
+                requireSkuToken: false,
+                fadeAnimation: false
+            };
+
+            const layer = new GeoJSONVectorTileLayer('gvt', options);
+            const layer2 = new GeoJSONVectorTileLayer('gvt2', options2);
+            const group = new GroupGLLayer('group', [layer, layer2], {
+                terrain
+            });
+            setTimeout(() => {
+                const redPoint = layer.identify([91.14578, 29.655272]);
+                console.log(redPoint);
+                // assert(redPoint[0].data);
+                done();
+            }, 1000);
+            group.addTo(map);
+        });
+
         it('should pick polygon line', done => {
             const options = {
                 data: {
