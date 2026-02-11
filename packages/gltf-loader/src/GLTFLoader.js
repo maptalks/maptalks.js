@@ -16,6 +16,7 @@ import {
     collectPropertyTableBufferViews,
     getStructuralMetadataData,
 } from './extensions/ExtStructuralMetadata.js';
+import Ajax from './core/Ajax.js';
 
 let supportOffscreenLoad = false;
 if (typeof OffscreenCanvas !== 'undefined') {
@@ -232,6 +233,7 @@ export default class GLTFLoader {
         this.requests = {};
         // this.options.requestImage = this.options.requestImage ? this.options.requestImage : (supportOffscreenLoad ? requestImageOffscreen.bind(this) : requestImage);
         this.options.requestImage = supportOffscreenLoad ? requestImageOffscreen.bind(this) : this.options.requestImage || requestImage;
+        this.options.fetchSchema = this.options.fetchSchema || fetchSchema;
         if (this.options['transferable']) {
             //用于在worker中解析gltf
             this.transferables = [];
@@ -682,6 +684,8 @@ export default class GLTFLoader {
                     this.rootPath,
                     this._fetchOptions,
                     this.options.urlModifier,
+                    this.options.fetchSchema
+
                 ).then((metadataData) => {
                     if (metadataData) {
                         buffers.forEach((buf) => {
@@ -752,6 +756,10 @@ function requestImage(url, fetchOptions, cb) {
         cb(err);
     };
     image.src = url;
+}
+
+function fetchSchema(url, fetchOptions,urlModifier) {
+    return Ajax.getJSON(url, fetchOptions, urlModifier);
 }
 
 

@@ -1,8 +1,6 @@
 // EXT_structural_metadata extension
 // https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata
 
-import Ajax from '../core/Ajax.js';
-
 export const EXT_STRUCTURAL_METADATA = 'EXT_structural_metadata';
 
 /**
@@ -16,7 +14,7 @@ export const EXT_STRUCTURAL_METADATA = 'EXT_structural_metadata';
  * @param {Function} urlModifier - URL modifier function
  * @returns {Promise<Object|null>} Extension data, including schema, propertyTables, buffers
  */
-export async function getStructuralMetadataData(gltf, buffers, rootPath, fetchOptions, urlModifier) {
+export async function getStructuralMetadataData(gltf, buffers, rootPath, fetchOptions, urlModifier, fetchSchema) {
     const ext = gltf?.extensions?.[EXT_STRUCTURAL_METADATA];
     if (!ext) {
         return null;
@@ -29,7 +27,7 @@ export async function getStructuralMetadataData(gltf, buffers, rootPath, fetchOp
         if (!url.includes('://') && !url.startsWith('blob:')) {
             url = rootPath + url;
         }
-        const schema = await Ajax.getJSON(url, fetchOptions, urlModifier);
+        const schema = await fetchSchema(url, fetchOptions, urlModifier);
         return {
             schema,
             propertyTables: ext.propertyTables || [],
