@@ -1,6 +1,6 @@
 {
   "name": "maptalks-gpu",
-  "version": "0.124.2",
+  "version": "0.124.3",
   "description": "All-in-one package for maptalks webgl layers",
   "module": "index.js",
   "main": "dist/maptalks-gpu.js",

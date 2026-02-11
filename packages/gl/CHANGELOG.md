@@ -1,5 +1,14 @@
 # @maptalks/gl
 
+## 0.124.3
+
+### Patch Changes
+
+- GltfLoader add fetchSchema option
+- Updated dependencies
+  - @maptalks/fusiongl@0.124.3
+  - @maptalks/gltf-loader@0.124.3
+
 ## 0.124.2
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @maptalks/traffic
 
+## 0.124.3
+
+### Patch Changes
+
+- GltfLoader add fetchSchema option
+- Updated dependencies
+  - @maptalks/gltf-layer@0.124.3
+
 ## 0.124.2
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @maptalks/3dtiles
 
+## 0.124.3
+
+### Patch Changes
+
+- GltfLoader add fetchSchema option
+
 ## 0.124.2
 
 ### Patch Changes

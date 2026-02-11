@@ -1,5 +1,19 @@
 # maptalks-gl
 
+## 0.124.3
+
+### Patch Changes
+
+- GltfLoader add fetchSchema option
+- Updated dependencies
+  - @maptalks/gl@0.124.3
+  - @maptalks/gpu@0.124.3
+  - @maptalks/3dtiles@0.124.3
+  - @maptalks/gltf-layer@0.124.3
+  - @maptalks/video-layer@0.124.3
+  - @maptalks/transform-control@0.124.3
+  - @maptalks/vt@0.124.3
+
 ## 0.124.2
 
 ### Patch Changes

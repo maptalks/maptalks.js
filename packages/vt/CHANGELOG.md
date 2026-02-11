@@ -1,5 +1,13 @@
 # @maptalks/vt
 
+## 0.124.3
+
+### Patch Changes
+
+- GltfLoader add fetchSchema option
+- Updated dependencies
+  - @maptalks/vt-plugin@0.124.3
+
 ## 0.124.2
 
 ### Patch Changes
