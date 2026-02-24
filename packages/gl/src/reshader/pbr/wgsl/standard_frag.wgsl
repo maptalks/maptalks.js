@@ -12,7 +12,7 @@
 #endif
 
 #define PI 3.141593
-#define RECIPROCAL_PI 0.3183099
+#define RECIPROCAL_PI 1.0
 
 struct MaterialUniforms {
     roughnessMetalness: vec2f,
@@ -574,6 +574,7 @@ fn normalFiltering(roughness: f32, worldNormal: vec3f) -> f32 {
     }
 
     fn importanceSampling(
+        fragCoord: vec2f,
         frameMod: f32,
         tangentX: vec3f,
         tangentY: vec3f,
@@ -685,6 +686,7 @@ fn normalFiltering(roughness: f32, worldNormal: vec3f) -> f32 {
     }
 
     fn ssr(
+        fragCoord: vec2f,
         specularEnvironment: vec3f,
         specularColor: vec3f,
         roughness: f32,
@@ -702,7 +704,7 @@ fn normalFiltering(roughness: f32, worldNormal: vec3f) -> f32 {
         maskSsr *= clamp(4.7 - roughness * 5.0, 0.0, 1.0);
         let rayOriginUV = ssrViewToScreen(shaderUniforms.projMatrix, vViewVertex.xyz);
         rayOriginUV.z = 1.0 / rayOriginUV.z;
-        let rayDirView = importanceSampling(taaSS, tangentX, tangentY, normal, eyeVector, rough4);
+        let rayDirView = importanceSampling(fragCoord, taaSS, tangentX, tangentY, normal, eyeVector, rough4);
 
         let rayLen = mix(shaderUniforms.cameraNearFar.y + vViewVertex.z, -vViewVertex.z - shaderUniforms.cameraNearFar.x, rayDirView.z * 0.5 + 0.5);
         let depthTolerance = 0.5 * rayLen;
@@ -805,7 +807,7 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
             viewNormal = transformNormal(uniforms.normalMapFactor, materialNormal, ssrTangent.xyz, ssrBinormal, ssrfrontNormal);
         #endif
         #endif
-        specular = ssr(specular, materialSpecular * specularAO, materialRoughness, viewNormal, -normalize(vertexOutput.vViewVertex.xyz));
+        specular = ssr(vertexOutput.position, specular, materialSpecular * specularAO, materialRoughness, viewNormal, -normalize(vertexOutput.vViewVertex.xyz));
     #endif
 
     specular *= environmentExposure * specularAO;
