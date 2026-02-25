@@ -105,8 +105,8 @@ BASIS_WEBGL_FORMAT_MAP[BASIS_FORMAT.cTFRGB565] = { uncompressed: true, format: W
 BASIS_WEBGL_FORMAT_MAP[BASIS_FORMAT.cTFRGBA4444] = { uncompressed: true, format: WebGLRenderingContext.RGBA, type: WebGLRenderingContext.UNSIGNED_SHORT_4_4_4_4 };
 
 function ktxFileFail(id, ktx2File, errorMsg) {
-    ktx2File.close();
-    ktx2File.delete();
+    // ktx2File.close();
+    // ktx2File.delete();
     console.warn(errorMsg);
     // throw new Error(errorMsg);
 }
