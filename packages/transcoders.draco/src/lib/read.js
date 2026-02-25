@@ -2,8 +2,8 @@ const fs = require('fs');
 const assert = require('assert');
 
 
-const expectedArr = fs.readFileSync('./draco_decoder.wasm');
-const base64 = fs.readFileSync('./draco_decoder.wasm', { encoding: 'base64' });
+const expectedArr = fs.readFileSync('./draco_decoder_gltf.wasm');
+const base64 = fs.readFileSync('./draco_decoder_gltf.wasm', { encoding: 'base64' });
 
 const content = 'const wasmContent = \'' + base64 + '\';\nexport default wasmContent;';
 
