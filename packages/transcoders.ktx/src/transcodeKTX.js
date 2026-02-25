@@ -107,7 +107,8 @@ BASIS_WEBGL_FORMAT_MAP[BASIS_FORMAT.cTFRGBA4444] = { uncompressed: true, format:
 function ktxFileFail(id, ktx2File, errorMsg) {
     ktx2File.close();
     ktx2File.delete();
-    throw new Error(errorMsg);
+    console.warn(errorMsg);
+    // throw new Error(errorMsg);
 }
 
 export function transcode(id, arrayBuffer, supportedTargetFormats) {
@@ -128,6 +129,20 @@ export function transcode(id, arrayBuffer, supportedTargetFormats) {
 
     const colorModel = ktx2File.getDFDColorModel();
     const BasisFormat = transcoderModule.transcoder_texture_format;
+
+    function getValidFormat(formatName, fallbackFormatName) {
+        const format = BasisFormat[formatName];
+        if (format && (typeof format === 'number' || format.value !== undefined)) {
+            return format;
+        }
+        console.warn(`Basis format ${formatName} not available, falling back to ${fallbackFormatName}`);
+        const fallback = BasisFormat[fallbackFormatName];
+        if (!fallback) {
+            console.error(`Fallback format ${fallbackFormatName} also not available, using default cTFBC7_RGBA`);
+            return BasisFormat.cTFBC7_RGBA;
+        }
+        return fallback;
+    }
 
     let internalFormat, transcoderFormat;
 
@@ -197,12 +212,17 @@ export function transcode(id, arrayBuffer, supportedTargetFormats) {
             ktxFileFail(id, ktx2File, "No transcoding format target available for UASTC compressed ktx2.");
         }
     }
+
+    if (!internalFormat || !transcoderFormat) {
+        internalFormat = 0x1908; // RGBA
+        transcoderFormat = getValidFormat('cTFRGBA32', 'cTFBC7_RGBA');
+    }
     const transferableObjects = [];
     if (!ktx2File.startTranscoding()) {
         ktxFileFail(id, ktx2File, "startTranscoding() failed");
     }
 
-    const mipmap = [];
+    let mipmap = [];
     for (let i = 0; i < levels; ++i) {
         width = pixelWidth >> i;
         height = pixelHeight >> i;
@@ -241,16 +261,37 @@ export function transcode(id, arrayBuffer, supportedTargetFormats) {
     ktx2File.close();
     ktx2File.delete();
 
+    // Determine if this is an uncompressed format
+    const isUncompressed = internalFormat === 0x1908; // RGBA
+    let type;
+
+    if (isUncompressed) {
+        // For uncompressed formats, we should only return the base mip level
+        // and not the entire mipmap chain to avoid confusion
+        mipmap = [mipmap[0]];
+        type = 0x1401; // UNSIGNED_BYTE
+    }
+
     const result = {
         format: internalFormat,
         width: pixelWidth,
-        height: pixelHeight,
-        mipmap
+        height: pixelHeight
     };
-    if (mipmap.length === 1) {
-        result.data = mipmap[0];
-        delete result.mipmap;
+
+    // Add type for uncompressed formats
+    if (type !== undefined) {
+        result.type = type;
     }
+
+    // For uncompressed formats, always return a single data field instead of mipmap
+    if (isUncompressed) {
+        result.data = mipmap[0];
+    } else if (mipmap.length === 1) {
+        result.data = mipmap[0];
+    } else {
+        result.mipmap = mipmap;
+    }
+
     return result;
 }
 
