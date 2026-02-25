@@ -4,7 +4,7 @@
 
 // draco 1.5
 import wasmBinary from './lib/draco_decoder_base64.js';
-import DracoDecoderModule from './lib/draco_decoder_gltf.js';
+import DracoDecoderModule from './lib/draco_decoder.js';
 
 function createDecoderModule() {
     // DracoModule is created.
