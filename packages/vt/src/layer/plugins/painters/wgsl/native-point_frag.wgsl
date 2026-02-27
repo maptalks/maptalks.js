@@ -7,20 +7,21 @@ struct MarkerFragmentUniforms {
 
 @group(0) @binding($b) var<uniform> uniforms: MarkerFragmentUniforms;
 @group(0) @binding($b) var<uniform> layerOpacity: f32;
-#ifdef HAS_COLOR
-struct VertexOuput {
-    @location($i) vColor: vec4f,
-}
-#endif
 
 @fragment
 fn main(
-    #ifdef HAS_COLOR
-    vertexOutput: VertexOuput,
-    #endif
+    vertexOutput: VertexOutput
 ) -> @location(0) vec4f {
     var alpha: f32 = 1.0;
     #ifdef USE_CIRCLE
+        let uv = vertexOutput.vUv;
+        let center = vec2f(0.5, 0.5);
+        let dist = distance(uv, center);
+        let radius = 0.5;
+        // 使用抗锯齿（可选）
+        let smooth_width = 0.05;
+        let alpha_circle = 1.0 - smoothstep(radius - smooth_width, radius, dist);
+        alpha = alpha_circle;
     #endif
 
     var pointColor: vec4f;

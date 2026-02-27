@@ -30,6 +30,7 @@ struct VertexOutput {
             @location($o) vColor: vec4f,
         #endif
     #endif
+    @location($o) vUv: vec2f,
 };
 
 struct MarkerUniforms {
@@ -65,6 +66,7 @@ fn main(
     let w = out.position.w;
     out.position.x += f32(input.aPosition.x) * markerSize.x * w;
     out.position.y += f32(input.aPosition.y) * markerSize.y * w;
+    out.vUv = vec2f(input.aPosition + 1) / 2.0;
     #ifndef PICKING_MODE
         #ifdef HAS_COLOR
             out.vColor = vec4f(input.aColor) / 255.0;
