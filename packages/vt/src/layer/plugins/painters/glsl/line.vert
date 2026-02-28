@@ -38,7 +38,6 @@
 #endif
 #if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT) || defined(HAS_TRAIL)
     attribute float aLinesofar;
-    varying highp float vLinesofar;
 #endif
 
 uniform float cameraToCenterDistance;
@@ -70,9 +69,17 @@ uniform vec2 canvasSize;
 
 uniform float layerScale;
 
-varying vec2 vNormal;
-varying vec2 vWidth;
-varying float vGammaScale;
+varying vec4 vNormalAndWidth;
+#define vNormal vNormalAndWidth.xy
+#define vWidth vNormalAndWidth.zw
+
+#if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT) || defined(HAS_TRAIL)
+    varying highp vec2 vGammaAndLinesofar;
+    #define vGammaScale vGammaAndLinesofar.x
+    #define vLinesofar vGammaAndLinesofar.y
+#else
+    varying float vGammaScale;
+#endif
 #ifndef ENABLE_TILE_STENCIL
     varying vec2 vPosition;
 #endif
@@ -98,12 +105,14 @@ varying float vGammaScale;
             #if defined(HAS_PATTERN_ANIM) || defined(HAS_PATTERN_GAP)
                 attribute vec2 aLinePattern;
             #endif
-            #ifdef HAS_PATTERN_ANIM
-                varying float vLinePatternAnimSpeed;
-            #endif
-
-            #ifdef HAS_PATTERN_GAP
-                varying float vLinePatternGap;
+            #if defined(HAS_PATTERN_ANIM) || defined(HAS_PATTERN_GAP)
+                varying vec2 vLinePatternAnimAndGap;
+                #ifdef HAS_PATTERN_ANIM
+                    #define vLinePatternAnimSpeed vLinePatternAnimAndGap.x
+                #endif
+                #ifdef HAS_PATTERN_GAP
+                    #define vLinePatternGap vLinePatternAnimAndGap.y
+                #endif
             #endif
 
             attribute vec4 aTexInfo;
