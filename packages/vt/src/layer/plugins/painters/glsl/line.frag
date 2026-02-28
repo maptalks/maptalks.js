@@ -37,14 +37,19 @@ uniform float layerOpacity;
     uniform sampler2D linePatternFile;
     uniform vec2 atlasSize;
     uniform float flipY;
-    #ifdef HAS_PATTERN_ANIM
-        varying float vLinePatternAnimSpeed;
-    #else
+    #if defined(HAS_PATTERN_ANIM) || defined(HAS_PATTERN_GAP)
+        varying vec2 vLinePatternAnimAndGap;
+        #ifdef HAS_PATTERN_ANIM
+            #define vLinePatternAnimSpeed vLinePatternAnimAndGap.x
+        #endif
+        #ifdef HAS_PATTERN_GAP
+            #define vLinePatternGap vLinePatternAnimAndGap.y
+        #endif
+    #endif
+    #ifndef HAS_PATTERN_ANIM
         uniform float linePatternAnimSpeed;
     #endif
-    #ifdef HAS_PATTERN_GAP
-        varying float vLinePatternGap;
-    #else
+    #ifndef HAS_PATTERN_GAP
         uniform float linePatternGap;
     #endif
     uniform vec4 linePatterGapColor;
@@ -57,9 +62,17 @@ uniform float layerOpacity;
         return (uvStart + uv * uvSize) / atlasSize;
     }
 #endif
-varying vec2 vNormal;
-varying vec2 vWidth;
-varying float vGammaScale;
+varying vec4 vNormalAndWidth;
+#define vNormal vNormalAndWidth.xy
+#define vWidth vNormalAndWidth.zw
+
+#if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT) || defined(HAS_TRAIL)
+    varying highp vec2 vGammaAndLinesofar;
+    #define vGammaScale vGammaAndLinesofar.x
+    #define vLinesofar vGammaAndLinesofar.y
+#else
+    varying float vGammaScale;
+#endif
 #ifndef ENABLE_TILE_STENCIL
     varying vec2 vPosition;
 #endif
@@ -78,9 +91,8 @@ uniform float tileExtent;
         uniform vec4 lineDashColor;
     #endif
 #endif
-#if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT) || defined(HAS_TRAIL)
-    varying highp float vLinesofar;
-#endif
+// vLinesofar packed into vGammaAndLinesofar
+
 
 #ifdef HAS_TRAIL
     uniform float trailSpeed;
