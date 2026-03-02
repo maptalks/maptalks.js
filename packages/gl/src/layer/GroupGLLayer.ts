@@ -180,6 +180,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         if (idx < 0) {
             return this;
         }
+        layer.off('setzindex', this._onChildLayerZIndexChanged, this);
         const layerRenderer = layer.getRenderer() as any;
         if (layerRenderer && layerRenderer.setTerrainHelper) {
             layerRenderer.setTerrainHelper(null);
@@ -293,6 +294,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         layer['_canvas'] = renderer.canvas;
         layer['_bindMap'](this);
         layer.once('renderercreate', this._onChildRendererCreate, this);
+        layer.on('setzindex', this._onChildLayerZIndexChanged, this);
         // layer.on('setstyle updatesymbol', this._onChildLayerStyleChanged, this);
         layer.remove = () => {
             this.removeLayer(layer);
@@ -302,6 +304,11 @@ export default class GroupGLLayer extends maptalks.Layer {
         };
         layer.load();
         this._bindChildListeners(layer);
+    }
+
+    _onChildLayerZIndexChanged() {
+        this.sortLayersByZIndex();
+        this._updateTerrainSkinLayers();
     }
 
     onRemove() {

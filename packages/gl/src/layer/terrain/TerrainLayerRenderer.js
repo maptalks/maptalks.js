@@ -295,6 +295,23 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         return tempTiles;
     }
 
+    _forEachCachedTile(fn) {
+        for (const tile of this.tileCache.data.values()) {
+            fn(tile);
+        }
+
+        for (const p in this.tilesInView) {
+            const tile = this.tilesInView[p];
+            fn(tile);
+        }
+
+        if (this._tempTilesPool) {
+            for (const tile of this._tempTilesPool.data.values()) {
+                fn(tile);
+            }
+        }
+    }
+
     _clearCachdeSkinImages() {
         if (!this._skinImageCache) {
             return;
@@ -307,20 +324,10 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             return;
         }
         const currentImages = new Set();
-        for (const tile of this.tileCache.data.values()) {
+        this._forEachCachedTile(tile => {
             this._collectSkinImages(tile, currentImages);
-        }
+        });
 
-        for (const p in this.tilesInView) {
-            const tile = this.tilesInView[p];
-            this._collectSkinImages(tile, currentImages);
-        }
-
-        if (this._tempTilesPool) {
-            for (const tile of this._tempTilesPool.data.values()) {
-                this._collectSkinImages(tile, currentImages);
-            }
-        }
 
         if (!currentImages.size) {
             return;
@@ -358,13 +365,14 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         if (!renderer) {
             return;
         }
+        const id = skinLayer.getId();
         const layerSkinImages = [];
         for (let i = 0; i < terrainTiles.length; i++) {
             const { info, image } = terrainTiles[i];
             this._prepareMask(info, image);
             this._debugTile(info, 'renderChildTerrainSkin');
-            if (this._prepareChildTerrainSkin(skinIndex, info, image, skinImagesToDel)) {
-                const skinImages = image.skinImages[skinIndex];
+            if (this._prepareChildTerrainSkin(id, info, image, skinImagesToDel)) {
+                const skinImages = image.skinImages[id];
                 for (let j = 0; j < skinImages.length; j++) {
                     const tileId = skinImages[j].tile.info.id;
 
@@ -393,7 +401,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         this.device.clear(TERRAIN_MASK_CLEAR);
     }
 
-    _prepareChildTerrainSkin(skinIndex, terrainTileInfo, terrainTileImage, skinImagesToDel) {
+    _prepareChildTerrainSkin(skinLayerId, terrainTileInfo, terrainTileImage, skinImagesToDel) {
         const map = this.getMap();
         delete terrainTileImage.path;
         if (!terrainTileInfo || !map || !terrainTileImage) {
@@ -403,7 +411,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         if (!mesh) {
             return false;
         }
-        const skinLayer = this.layer.getSkinLayer(skinIndex);
+        const skinLayer = this.layer.getSkinLayerById(skinLayerId);
         const renderer = skinLayer.getRenderer();
         if (!renderer) {
             return false;
@@ -415,28 +423,28 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             //         return false;
             //     }
             // }
-            terrainTileImage.skinImages = [];
+            terrainTileImage.skinImages = {};
         }
         if (!terrainTileImage.skinStatus) {
-            terrainTileImage.skinStatus = [];
+            terrainTileImage.skinStatus = {};
         }
         if (!terrainTileImage.skinTileIds) {
-            terrainTileImage.skinTileIds = [];
+            terrainTileImage.skinTileIds = {};
         }
         const isInDebug = this.layer.options['debug'];
 
         const isAnimating = renderer.isAnimating && renderer.isAnimating();
 
         let isSameVersion = true;
-        const skinImages = terrainTileImage.skinImages[skinIndex] || [];
+        const skinImages = terrainTileImage.skinImages[skinLayerId] || [];
         for (let i = 0; i < skinImages.length; i++) {
             if (skinImages[i].version !== renderer.version) {
                 isSameVersion = false;
-                terrainTileImage.skinStatus[skinIndex] = 0;
+                terrainTileImage.skinStatus[skinLayerId] = 0;
                 break;
             }
         }
-        const status = terrainTileImage.skinStatus[skinIndex];
+        const status = terrainTileImage.skinStatus[skinLayerId];
 
         const isLayerAskToRefresh = renderer.needToRefreshTerrainTileOnZooming && renderer.needToRefreshTerrainTileOnZooming();
         const needRefreshTerrainTile = isAnimating || isLayerAskToRefresh && terrainTileImage.renderedZoom !== map.getZoom();
@@ -457,7 +465,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
 
         let scale = getSkinTileScale(myRes, myTileSize, res, tileSize);
 
-        let skinTileIds = terrainTileImage.skinTileIds[skinIndex];
+        let skinTileIds = terrainTileImage.skinTileIds[skinLayerId];
         if (!skinTileIds) {
             const terrainTileScaleY = this.layer['_getTileConfig']().tileSystem.scale.y;
             const maxAvailableZoom = skinLayer.options.maxAvailableZoom;
@@ -465,7 +473,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                 scale *= Math.pow(2, maxAvailableZoom - zoom);
                 zoom = maxAvailableZoom;
             }
-            skinTileIds = terrainTileImage.skinTileIds[skinIndex] = getCascadeTileIds(skinLayer, x, y, zoom, nw, offset, terrainTileScaleY, scale, SKIN_LEVEL_LIMIT);
+            skinTileIds = terrainTileImage.skinTileIds[skinLayerId] = getCascadeTileIds(skinLayer, x, y, zoom, nw, offset, terrainTileScaleY, scale, SKIN_LEVEL_LIMIT);
         }
         const level0 = skinTileIds['0'];
         let complete = true;
@@ -503,7 +511,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         }
         if (!tiles.length) {
             skinImages.currentSkins.clear();
-            terrainTileImage.skinImages[skinIndex] = [];
+            terrainTileImage.skinImages[skinLayerId] = [];
             // this._clearPrevSkinImages(terrainTileInfo, terrainTileImage, prevSkins, null, skinImagesToDel);
             return false;
 
@@ -551,11 +559,11 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         if (updated) {
             this._newTerrainTileCounter++;
         }
-        terrainTileImage.skinImages[skinIndex] = skinImages;
+        terrainTileImage.skinImages[skinLayerId] = skinImages;
 
         skinLayer.fire('renderterrainskin', { tile: terrainTileInfo, skinTiles: tiles });
         if (complete) {
-            terrainTileImage.skinStatus[skinIndex] = 1;
+            terrainTileImage.skinStatus[skinLayerId] = 1;
             // save some memory
             // if (!needRefresh) {
             //     terrainTileImage.skinTileIds = [];
@@ -628,8 +636,13 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         const skinImages = terrainTileImage.skinImages;
         if (skinImages) {
             const isWebGPU = !!this.device.wgpu;
-            for (let i = 0; i < skinImages.length; i++) {
-                const layerSkinImages = skinImages[i];
+            const skinLayers = this.layer.getSkinLayers();
+            for (let i = 0; i < skinLayers.length; i++) {
+                const id = skinLayers[i].getId();
+                const layerSkinImages = skinImages[id];
+                if (!layerSkinImages || !layerSkinImages.length) {
+                    continue;
+                }
                 for (let ii = 0; ii < layerSkinImages.length; ii++) {
                     const { tile, texture, layer } = layerSkinImages[ii];
                     const hasOffset = (tile.info.offset[0] || tile.info.offset[1]);
@@ -1677,6 +1690,38 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                 }
             }
         }
+    }
+
+    _clearStaleSkins(staleSkinLayers) {
+        // return;
+        if (!staleSkinLayers.length) {
+            return;
+        }
+        this._forEachCachedTile(tile => {
+            const { image } = tile;
+            if (!image || !image.skinImages) {
+                return;
+            }
+            const { skinImages, skinStatus, skinTileIds } = image;
+            for (let i = 0; i < staleSkinLayers.length; i++) {
+                const layerId = staleSkinLayers[i].getId();
+                if (skinImages[layerId]) {
+                    delete skinImages[layerId];
+                }
+                if (skinStatus) {
+                    delete skinStatus[layerId];
+                }
+                if (skinTileIds) {
+                    delete skinTileIds[layerId];
+                }
+            }
+        });
+        this._skinImageCache.forEach(cached => {
+            const { layer } = cached;
+            if (staleSkinLayers.includes(layer)) {
+                this._deleteSkinImage(cached);
+            }
+        });
     }
 }
 

@@ -121,5 +121,111 @@ describe('update vt on terrain specs', () => {
 
     });
 
+    it('should can setIndex on terrain, maptalks/issues#939', done => {
+        const styleRed = [
+            {
+                filter: true,
+                renderPlugin: {
+                    type: 'line',
+                    dataConfig: { type: 'line' },
+                },
+                symbol: { lineColor: '#f00', lineWidth: 8, lineOpacity: 1 }
+            }
+        ];
+        const styleGreen = [
+            {
+                filter: true,
+                renderPlugin: {
+                    type: 'line',
+                    dataConfig: { type: 'line' },
+                },
+                symbol: { lineColor: '#0f0', lineWidth: 8, lineOpacity: 1 }
+            }
+        ];
+        const layerRed = new GeoJSONVectorTileLayer('gvt0', {
+            tileLimitPerFrame: 0,
+            data: line,
+            style: styleRed,
+            tileStackDepth: 0,
+            loadingLimit: 0
+        });
+        const layerGreen = new GeoJSONVectorTileLayer('gvt1', {
+            tileLimitPerFrame: 0,
+            data: line,
+            style: styleGreen,
+            tileStackDepth: 0,
+            loadingLimit: 0
+        });
+        const group = new GroupGLLayer('group', [layerGreen, layerRed], { terrain });
+        group.addTo(map);
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        setTimeout(() => {
+            let pixel = readPixel(renderer.canvas, x / 2, y / 2);
+            assert.deepEqual(pixel, [255, 0, 0, 255]);
+            layerGreen.setZIndex(1);
+            setTimeout(() => {
+                console.log(group.getTerrainLayer().getRenderer().tileCache);
+                let pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                assert.deepEqual(pixel, [0, 255, 0, 255]);
+                done();
+            }, 1000);
+        }, 1500);
+    });
+
+    it('should can remove layer on terrain, maptalks/issues#939', done => {
+        const styleRed = [
+            {
+                filter: true,
+                renderPlugin: {
+                    type: 'line',
+                    dataConfig: { type: 'line' },
+                },
+                symbol: { lineColor: '#f00', lineWidth: 8, lineOpacity: 1 }
+            }
+        ];
+        const styleGreen = [
+            {
+                filter: true,
+                renderPlugin: {
+                    type: 'line',
+                    dataConfig: { type: 'line' },
+                },
+                symbol: { lineColor: '#0f0', lineWidth: 8, lineOpacity: 1 }
+            }
+        ];
+        const layerRed = new GeoJSONVectorTileLayer('gvt-red', {
+            tileLimitPerFrame: 0,
+            data: line,
+            style: styleRed,
+            tileStackDepth: 0,
+            loadingLimit: 0
+        });
+        const layerGreen = new GeoJSONVectorTileLayer('gvt-green', {
+            tileLimitPerFrame: 0,
+            data: line,
+            style: styleGreen,
+            tileStackDepth: 0,
+            loadingLimit: 0
+        });
+        const group = new GroupGLLayer('group', [layerGreen, layerRed], { terrain });
+        group.addTo(map);
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        setTimeout(() => {
+            let pixel = readPixel(renderer.canvas, x / 2, y / 2);
+            assert.deepEqual(pixel, [255, 0, 0, 255]);
+            const tiles = group.getTerrainLayer().getRenderer().tilesInView;
+            assert(Object.values(tiles)[0].image.skinImages[layerRed.getId()] !== undefined);
+            layerRed.remove();
+            setTimeout(() => {
+                assert(Object.values(tiles)[0].image.skinImages[layerRed.getId()] === undefined);
+                let pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                assert.deepEqual(pixel, [0, 255, 0, 255]);
+                done();
+            }, 1000);
+        }, 1500);
+    });
+
 });
 
