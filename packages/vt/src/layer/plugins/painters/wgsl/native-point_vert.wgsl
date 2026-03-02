@@ -6,6 +6,9 @@ struct AttributeInput {
 #else
     @location($i) instancePosition: vec4i,
 #endif
+#ifdef HAS_TERRAIN_ALTITUDE
+    @location($i) aTerrainAltitude: f32,
+#endif
 #ifndef PICKING_MODE
     #ifdef HAS_COLOR
         @location($i) aColor: vec4u,
@@ -58,6 +61,9 @@ fn main(
 
     #ifdef HAS_ALTITUDE
         inputVertex.aAltitude = input.instanceAltitude;
+    #endif
+    #ifdef HAS_TERRAIN_ALTITUDE
+        inputVertex.aTerrainAltitude += input.aTerrainAltitude;
     #endif
     let position = unpackVTPosition(inputVertex);
     out.position = uniforms.projViewModelMatrix * uniforms.positionMatrix * vec4f(position, 1.0);
