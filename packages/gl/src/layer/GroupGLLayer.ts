@@ -304,6 +304,11 @@ export default class GroupGLLayer extends maptalks.Layer {
         this._bindChildListeners(layer);
     }
 
+    _onChildLayerZIndexChanged() {
+        this.sortLayersByZIndex();
+        this._updateTerrainSkinLayers();
+    }
+
     onRemove() {
         this._removeTerrainLayer();
         this.layers.forEach(layer => {
@@ -329,12 +334,14 @@ export default class GroupGLLayer extends maptalks.Layer {
     _bindChildListeners(layer: maptalks.Layer) {
         layer.on('show hide', this._onLayerShowHide, this);
         layer.on('idchange', this._onLayerIDChange, this);
+        layer.on('setzindex', this._onChildLayerZIndexChanged, this);
     }
 
     //@internal
     _unbindChildListeners(layer: maptalks.Layer) {
         layer.off('show hide', this._onLayerShowHide, this);
         layer.off('idchange', this._onLayerIDChange, this);
+        layer.off('setzindex', this._onChildLayerZIndexChanged, this);
     }
 
     //@internal

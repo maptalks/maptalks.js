@@ -92,12 +92,14 @@ describe('highlight and showOnly specs', () => {
                         } else {
                             const color = readPixel(options.offset);
                             if (options.expected === true) {
+                                clearTimeout(timeoutHandle);
                                 done();
                                 return;
                             }
                             if (color.data[3] === 0 && options.expected[3] !== 0) {
                                 counterLimit++;
                             } else {
+                                clearTimeout(timeoutHandle);
                                 assert.deepEqual(color.data, options.expected);
                                 done();
                             }
@@ -113,6 +115,7 @@ describe('highlight and showOnly specs', () => {
                             layer.showOnly(options.showOnlys);
                         }
                     } else if (options.afterExe && counter === counterLimit + 2) {
+                        clearTimeout(timeoutHandle);
                         done();
                     }
 
