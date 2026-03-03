@@ -12,7 +12,7 @@
 #endif
 
 #define PI 3.141593
-#define RECIPROCAL_PI 0.3183099
+#define RECIPROCAL_PI 1.0
 
 struct MaterialUniforms {
     roughnessMetalness: vec2f,
@@ -173,6 +173,50 @@ struct ShaderUniforms {
     @group(0) @binding($b) var linePatternFile: texture_2d<f32>;
     @group(0) @binding($b) var linePatternFileSampler: sampler;
 #endif
+
+// 辅助函数：对vec3f各分量求和
+fn sum(v: vec3f) -> f32 {
+    return v.x + v.y + v.z;
+}
+
+// 纹理采样函数，支持随机纹理重复消除（technique 3）
+fn fetchTexture(tex: texture_2d<f32>, tex_sampler: sampler, uv: vec2f) -> vec4f {
+#ifdef HAS_RANDOM_TEX
+    // 假设 uvOrigin 是 uniform 变量（可从 uniforms 结构体获取）
+    let origin = uniforms.uvOrigin;          // vec2f
+    // 计算基础偏移
+    let uv1 = uv + origin - (origin % vec2f(1.0));
+    // 从噪声纹理获取随机种子（假设 noiseTexture 和 noiseSampler 已绑定）
+    let randomSeed = textureSample(noiseTexture, noiseSampler, 0.005 * uv1).x;
+
+    // 计算UV的屏幕空间导数
+    let duvdx = dpdx(uv1);
+    let duvdy = dpdy(uv1);
+
+    let seed = randomSeed * 8.0;
+    var seedFract = fract(seed);
+    // 使用 my method（对应原GLSL中 #if 1 分支）
+    let seedDigit = floor(seed);
+    let seedDigitPlusOne = seedDigit + 1.0;
+
+    // 根据种子生成扰动方向
+    let offa = sin(vec2f(3.0, 7.0) * seedDigit);
+    let offb = sin(vec2f(3.0, 7.0) * seedDigitPlusOne);
+
+    let velocity = 0.5;
+    // 带导数的采样
+    let cola = textureSampleGrad(tex, tex_sampler, uv + velocity * offa, duvdx, duvdy);
+    let colb = textureSampleGrad(tex, tex_sampler, uv + velocity * offb, duvdx, duvdy);
+
+    // 计算混合系数并混合
+    let diffSum = sum(cola.rgb - colb.rgb);
+    let t = smoothstep(0.2, 0.8, seedFract - 0.1 * diffSum);
+    return mix(cola, colb, t);
+#else
+    // 无随机纹理时直接采样
+    return textureSample(tex, tex_sampler, uv);
+#endif
+}
 
 fn getMaterialAlbedo() -> vec3f {
     return materialUniforms.albedo;
@@ -335,7 +379,7 @@ fn computeLambert(
 #endif
 
 fn computeBRDF(spec: vec3f, roughness: f32, NoV: f32, f90: f32) -> vec3f {
-    let rgba = textureSample(brdfLUT, brdfLUTSampler, vec2f(NoV, roughness)) * vec4f(255.0, 65280.0, 255.0, 65280.0);
+    let rgba = fetchTexture(brdfLUT, brdfLUTSampler, vec2f(NoV, roughness)) * vec4f(255.0, 65280.0, 255.0, 65280.0);
     let b = (rgba[3] + rgba[2]);
     let a = (rgba[1] + rgba[0]);
     return (spec * a + b * f90) / 65535.0;
@@ -412,7 +456,7 @@ fn initMaterial(vertexOutput: VertexOutput) -> MaterialUniforms {
     let patterny = (uniforms.flipY * vertexOutput.vNormalY) % 1.0;
     let texCoord = vec2f(patternx * (1.0 + myGap) * uniforms.uvScale[0], patterny * uniforms.uvScale[1]);
     uv = computeUV(vertexOutput, texCoord);
-    var patternColor = textureSample(linePatternFile, linePatternFileSampler, uv);
+    var patternColor = fetchTexture(linePatternFile, linePatternFileSampler, uv);
     let inGap = clamp(sign(1.0 / (1.0 + myGap) - patternx) + 0.000001, 0.0, 1.0);
     patternColor = mix(uniforms.linePatternGapColor, patternColor, inGap);
 
@@ -428,13 +472,13 @@ fn initMaterial(vertexOutput: VertexOutput) -> MaterialUniforms {
 #endif
 
 #if HAS_ALBEDO_MAP
-    let baseColor = textureSample(baseColorTexture, baseColorTextureSampler, uv);
+    let baseColor = fetchTexture(baseColorTexture, baseColorTextureSampler, uv);
     materialUniforms.albedo *= sRGBToLinear(baseColor.rgb);
     materialUniforms.alpha *= baseColor.a;
 #endif
 
 #if HAS_SKIN_MAP
-    let skinColorValue = textureSample(skinTexture, skinTextureSampler, uv);
+    let skinColorValue = fetchTexture(skinTexture, skinTextureSampler, uv);
     materialUniforms.skinColor = skinColorValue;
 #endif
 
@@ -462,7 +506,7 @@ fn initMaterial(vertexOutput: VertexOutput) -> MaterialUniforms {
 #endif
 
 #if HAS_METALLICROUGHNESS_MAP
-    let mrSample = textureSample(metallicRoughnessTexture, metallicRoughnessTextureSampler, uv).gb;
+    let mrSample = fetchTexture(metallicRoughnessTexture, metallicRoughnessTextureSampler, uv).gb;
     materialUniforms.roughnessMetalness = mrSample * vec2(uniforms.roughnessFactor, uniforms.metallicFactor);
 #else
     materialUniforms.roughnessMetalness = vec2(uniforms.roughnessFactor, uniforms.metallicFactor);
@@ -471,23 +515,23 @@ fn initMaterial(vertexOutput: VertexOutput) -> MaterialUniforms {
     materialUniforms.emit = uniforms.emissiveFactor;
 #if HAS_EMISSIVE_MAP
     if (uniforms.emitMultiplicative == 1.0) {
-        materialUniforms.emit *= sRGBToLinear(textureSample(emissiveTexture, emissiveTextureSampler, uv).rgb);
+        materialUniforms.emit *= sRGBToLinear(fetchTexture(emissiveTexture, emissiveTextureSampler, uv).rgb);
     } else {
-        materialUniforms.emit += sRGBToLinear(textureSample(emissiveTexture, emissiveTextureSampler, uv).rgb);
+        materialUniforms.emit += sRGBToLinear(fetchTexture(emissiveTexture, emissiveTextureSampler, uv).rgb);
     }
 #endif
     materialUniforms.emit *= uniforms.emitColorFactor;
 
 #if HAS_AO_MAP
     let aoTexCoord = computeTexCoord(vertexOutput.vTexCoord1, vertexOutput);
-    materialUniforms.ao = textureSample(occlusionTexture, occlusionTextureSampler, aoTexCoord).r;
+    materialUniforms.ao = fetchTexture(occlusionTexture, occlusionTextureSampler, aoTexCoord).r;
 #else
     materialUniforms.ao = 1.0;
 #endif
     materialUniforms.ao *= uniforms.occlusionFactor;
 
 #if HAS_NORMAL_MAP && HAS_TANGENT
-    var nmap = textureSample(normalTexture, normalTextureSampler, uv).xyz * 2.0 - 1.0;
+    var nmap = fetchTexture(normalTexture, normalTextureSampler, uv).xyz * 2.0 - 1.0;
     nmap.y = select(nmap.y, -nmap.y, uniforms.normalMapFlipY == 1.0);
     materialUniforms.normal = nmap;
 #else
@@ -504,7 +548,7 @@ fn initMaterial(vertexOutput: VertexOutput) -> MaterialUniforms {
     materialUniforms.albedo *= uniforms.diffuseFactor.rgb;
     materialUniforms.alpha *= uniforms.diffuseFactor.a;
 #if HAS_DIFFUSE_MAP
-    let diffuse = textureSample(diffuseTexture, diffuseTextureSampler, uv);
+    let diffuse = fetchTexture(diffuseTexture, diffuseTextureSampler, uv);
     materialUniforms.albedo *= sRGBToLinear(diffuse.rgb);
     materialUniforms.alpha *= diffuse.a;
 #endif
@@ -512,7 +556,7 @@ fn initMaterial(vertexOutput: VertexOutput) -> MaterialUniforms {
     materialUniforms.specularColor = uniforms.specularFactor;
     materialUniforms.glossiness = uniforms.glossinessFactor;
 #if HAS_SPECULARGLOSSINESS_MAP
-    let specularGlossiness = textureSample(specularGlossinessTexture, specularGlossinessTextureSampler, uv);
+    let specularGlossiness = fetchTexture(specularGlossinessTexture, specularGlossinessTextureSampler, uv);
     materialUniforms.specularColor *= sRGBToLinear(specularGlossiness.rgb);
     materialUniforms.glossiness *= specularGlossiness.a;
 #endif
@@ -574,6 +618,7 @@ fn normalFiltering(roughness: f32, worldNormal: vec3f) -> f32 {
     }
 
     fn importanceSampling(
+        fragCoord: vec2f,
         frameMod: f32,
         tangentX: vec3f,
         tangentY: vec3f,
@@ -685,6 +730,7 @@ fn normalFiltering(roughness: f32, worldNormal: vec3f) -> f32 {
     }
 
     fn ssr(
+        fragCoord: vec2f,
         specularEnvironment: vec3f,
         specularColor: vec3f,
         roughness: f32,
@@ -702,7 +748,7 @@ fn normalFiltering(roughness: f32, worldNormal: vec3f) -> f32 {
         maskSsr *= clamp(4.7 - roughness * 5.0, 0.0, 1.0);
         let rayOriginUV = ssrViewToScreen(shaderUniforms.projMatrix, vViewVertex.xyz);
         rayOriginUV.z = 1.0 / rayOriginUV.z;
-        let rayDirView = importanceSampling(taaSS, tangentX, tangentY, normal, eyeVector, rough4);
+        let rayDirView = importanceSampling(fragCoord, taaSS, tangentX, tangentY, normal, eyeVector, rough4);
 
         let rayLen = mix(shaderUniforms.cameraNearFar.y + vViewVertex.z, -vViewVertex.z - shaderUniforms.cameraNearFar.x, rayDirView.z * 0.5 + 0.5);
         let depthTolerance = 0.5 * rayLen;
@@ -805,7 +851,7 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
             viewNormal = transformNormal(uniforms.normalMapFactor, materialNormal, ssrTangent.xyz, ssrBinormal, ssrfrontNormal);
         #endif
         #endif
-        specular = ssr(specular, materialSpecular * specularAO, materialRoughness, viewNormal, -normalize(vertexOutput.vViewVertex.xyz));
+        specular = ssr(vertexOutput.position, specular, materialSpecular * specularAO, materialRoughness, viewNormal, -normalize(vertexOutput.vViewVertex.xyz));
     #endif
 
     specular *= environmentExposure * specularAO;

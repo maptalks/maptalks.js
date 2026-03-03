@@ -21,7 +21,16 @@ export function getLabelNormal(firstCharOffset, lastCharOffset, mesh,
     vec3.copy(firstCharOffset, offset);
     offset = getCharOffset.call(this, LAST_POINT, mesh, textSize, line, lastChrIdx, projectedAnchor, anchor, scale, false);
     textMaxAngle = Math.PI * textMaxAngle / 180;
-    if (!offset || Math.abs(offset[2]) > textMaxAngle) {
+    if (!offset) {
+        return null;
+    }
+    // 计算第一个字符和最后一个字符的角度差（判断道路弯曲程度）
+    let angleDiff = Math.abs(offset[2] - firstCharOffset[2]);
+    if (angleDiff > Math.PI) {
+        angleDiff = 2 * Math.PI - angleDiff;
+    }
+    // 注意：如果是较长的文字，首尾差异可能会累积较大。如果不想受限，可以直接干掉此判断，或者结合文字长度放大这个允许阈值。
+    if (angleDiff > textMaxAngle) {
         return null;
     }
     vec3.copy(lastCharOffset, offset);

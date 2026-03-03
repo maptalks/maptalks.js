@@ -389,7 +389,7 @@ class Painter {
         meshes = meshes.filter(m => this.isMeshVisible(m));
         if (isRenderingTerrainVector) {
             // 只绘制加载了地形数据的mesh
-            meshes = meshes.filter(m => m.geometry && m.geometry.data.aTerrainAltitude);
+            meshes = meshes.filter(m => m.geometry && m.geometry.data.aTerrainAltitude || (m instanceof reshader.InstancedMesh) && m.instancedData.aTerrainAltitude);
         }
         const castShadow = this.sceneConfig.castShadow === undefined || !!this.sceneConfig.castShadow;
         const isEnableBloom = !!(context && context.bloom);
