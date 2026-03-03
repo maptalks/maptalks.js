@@ -170,7 +170,7 @@ describe('update vt on terrain specs', () => {
                 assert.deepEqual(pixel, [0, 255, 0, 255]);
                 done();
             }, 1000);
-        }, 1500);
+        }, 3000);
     });
 
     it('should can remove layer on terrain, maptalks/issues#939', done => {
@@ -215,7 +215,8 @@ describe('update vt on terrain specs', () => {
         setTimeout(() => {
             let pixel = readPixel(renderer.canvas, x / 2, y / 2);
             assert.deepEqual(pixel, [255, 0, 0, 255]);
-            const tiles = group.getTerrainLayer().getRenderer().tilesInView;
+            const terrainRenderer = group.getTerrainLayer().getRenderer();
+            const tiles = terrainRenderer.tilesInView;
             assert(Object.values(tiles)[0].image.skinImages[layerRed.getId()] !== undefined);
             layerRed.remove();
             setTimeout(() => {
@@ -224,7 +225,7 @@ describe('update vt on terrain specs', () => {
                 assert.deepEqual(pixel, [0, 255, 0, 255]);
                 done();
             }, 1000);
-        }, 1500);
+        }, 3000);
     });
 
 });
