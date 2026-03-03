@@ -165,7 +165,6 @@ describe('update vt on terrain specs', () => {
             assert.deepEqual(pixel, [255, 0, 0, 255]);
             layerGreen.setZIndex(1);
             setTimeout(() => {
-                console.log(group.getTerrainLayer().getRenderer().tileCache);
                 let pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 assert.deepEqual(pixel, [0, 255, 0, 255]);
                 done();
