@@ -130,6 +130,9 @@ void main() {
 
     float blur2 = (blur + 1.0 / DEVICE_PIXEL_RATIO) * vGammaScale;
     float alpha = clamp(min(dist - (vWidth.t - blur2), vWidth.s - dist) / blur2, 0.0, 1.0);
+    if (lineBlur == 0.0) {
+        alpha = 1.0;
+    }
     #ifdef HAS_COLOR
         vec4 color = vColor / 255.0;
     #else
