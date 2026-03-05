@@ -61,9 +61,7 @@ struct ShaderUniforms {
 
 @fragment
 fn main(
-    #ifdef HAS_PATTERN || HAS_COLOR || HAS_OPACITY || HAS_UV_SCALE || HAS_UV_OFFSET || HAS_HIGHLIGHT_COLOR || HAS_HIGHLIGHT_OPACITY
     vertexOutput: VertexOutput
-    #endif
 ) -> @location(0) vec4f {
     // #ifndef ENABLE_TILE_STENCIL
     //     let clipExtent = fragmentUniforms.tileExtent;
