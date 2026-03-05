@@ -21,7 +21,7 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
 
     #if HAS_SHADOWING && !HAS_BLOOM
         var shadowCoeff = shadow_computeShadow(vertexOutput);
-        color.rgb = shadow_blend(color.rgb, shadowCoeff).rgb;
+        color = vec4f(shadow_blend(color.rgb, shadowCoeff).rgb, color.a);
     #endif
 
     var fragColor = color * uniforms.polygonOpacity;
