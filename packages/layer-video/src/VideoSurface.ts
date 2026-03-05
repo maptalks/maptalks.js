@@ -45,6 +45,7 @@ export default class VideoSurface extends Eventable(Handlerable(Class)) {
    */
   setCoordinates(coordinates: Coordinate[]) {
     this._coordinates = coordinates;
+    this._notifyRendererUpdate();
   }
 
   /**
@@ -56,6 +57,25 @@ export default class VideoSurface extends Eventable(Handlerable(Class)) {
    */
   getCoordinates() {
     return this._coordinates;
+  }
+
+  /**
+   * 通知渲染器更新VideoSurface
+   *
+   * @english
+   * Notify renderer to update VideoSurface
+   * @param updateType - 更新类型，用于区分不同的更新操作
+   * @return void
+   */
+  private _notifyRendererUpdate() {
+    const layer = this.getLayer();
+    const map = layer.getMap();
+    if (map && layer) {
+      const renderer = layer.getRenderer();
+      if (renderer) {
+        (renderer as any)._updateCoordinates(this);
+      }
+    }
   }
 
   /**
@@ -325,8 +345,6 @@ export default class VideoSurface extends Eventable(Handlerable(Class)) {
           return [coord.x, coord.y, 0.0];
         });
         this.setCoordinates(positions);
-        const renderer = layer.getRenderer();
-        renderer._updateCoordinates(this);
       },
       this
     );
