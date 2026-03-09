@@ -74,7 +74,7 @@ class NativePointPainter extends BasicPainter {
         };
         let mesh;
         if (this.isWebGPU()) {
-            const { aPosition, aAltitude, aColor, aPickingId } = geometry.data;
+            const { aPosition, aAltitude, aColor, aPickingId, aTerrainAltitude } = geometry.data;
             const position = new Int16Array([
                 -1, -1,
                 1, -1,
@@ -88,9 +88,13 @@ class NativePointPainter extends BasicPainter {
             }, 6, 0, { positionSize: 2, positionAttribute: 'pointPosition' });
             extend(geo.properties, geometry.properties);
             geo.generateBuffers(this.regl);
-            mesh = new reshader.InstancedMesh({
+            const data = {
                 instancePosition: aPosition, instanceAltitude: aAltitude, aColor, aPickingId
-            }, geometry.getVertexCount(), geo, material, meshOptions);
+            };
+            if (aTerrainAltitude) {
+                data.aTerrainAltitude = aTerrainAltitude;
+            }
+            mesh = new reshader.InstancedMesh(data, geometry.getVertexCount(), geo, material, meshOptions);
             mesh.generateInstancedBuffers(this.regl);
         } else {
             mesh = new reshader.Mesh(geometry, material, meshOptions);

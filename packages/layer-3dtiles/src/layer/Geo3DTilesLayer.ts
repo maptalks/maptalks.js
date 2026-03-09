@@ -781,9 +781,6 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
 
     //@internal
     _isVisible(node: TileNode, maxExtent: maptalks.Extent, projectionView: number[], mapExtentBBOX: BBOX, clipMasks: ClipOutsideMask[]): TileVisibility {
-        if (!this._isTileInMasks(node, mapExtentBBOX, clipMasks)) {
-            return TileVisibility.OUT_OF_FRUSTUM;
-        }
         node._cameraDistance = Infinity;
         if (node._level === 0 || node._empty) {
             this._updateRootCenter(node as RootTileNode);
@@ -791,6 +788,9 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         }
         // 根据service上的coordOffset和heightOffset计算node实际的boundingVolume
         this._offsetBoundingVolume(node);
+        if (!this._isTileInMasks(node, mapExtentBBOX, clipMasks)) {
+            return TileVisibility.OUT_OF_FRUSTUM;
+        }
         //reset node status
         // node._error = Infinity;
         if (!this._isTileInFrustum(node, maxExtent, projectionView)) {
@@ -824,33 +824,11 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
 
     //@internal
     _isTileInFrustum(node: TileNode, maxExtent: maptalks.Extent, projectionView: number[]): boolean {
-        const id = node.id;
-        let nodeBox = this._nodeBoxes.get(id);
-        const { boundingVolume } = node;
-        const region = boundingVolume.region;
-        const box = boundingVolume.box;
-        const sphere = boundingVolume.sphere;
-        const rootNode = this._getRootNode(node._rootIdx);
         const renderer = this.getRenderer() as any;
-        if (!nodeBox || nodeBox.version !== rootNode.version) {
-            if (region) {
-                nodeBox = this._createRegionBox(node);
-            } else if (box) {
-                nodeBox = this._createBBox(node);
-            } else if (sphere) {
-                //[xcenter, ycenter, radius]
-                nodeBox = this._createSphere(node);
-            }
-            if (nodeBox) {
-                this._nodeBoxes.set(id, nodeBox);
-            }
-            nodeBox.version = rootNode.version;
-
-            if (node._boxMesh) {
-                renderer._deleteBoxMesh(node._boxMesh);
-                delete node._boxMesh;
-            }
-        }
+        const id = node.id;
+        const { boundingVolume } = node;
+        const sphere = boundingVolume.sphere;
+        const nodeBox = this._updateNodeBoxIfNeeded(node);
 
         const service = this._getNodeService(node._rootIdx);
         if (service['debug']) {
@@ -891,6 +869,37 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             return intersectsSphere(projectionView, (nodeBox as TileSphereBox).sphereBox);
         }
         return false;
+    }
+
+    _updateNodeBoxIfNeeded(node: TileNode) {
+        const id = node.id;
+        let nodeBox = this._nodeBoxes.get(id);
+        const { boundingVolume } = node;
+        const region = boundingVolume.region;
+        const box = boundingVolume.box;
+        const sphere = boundingVolume.sphere;
+        const rootNode = this._getRootNode(node._rootIdx);
+        if (!nodeBox || nodeBox.version !== rootNode.version) {
+            if (region) {
+                nodeBox = this._createRegionBox(node);
+            } else if (box) {
+                nodeBox = this._createBBox(node);
+            } else if (sphere) {
+                //[xcenter, ycenter, radius]
+                nodeBox = this._createSphere(node);
+            }
+            if (nodeBox) {
+                this._nodeBoxes.set(id, nodeBox);
+            }
+            nodeBox.version = rootNode.version;
+
+            if (node._boxMesh) {
+                const renderer = this.getRenderer() as any;
+                renderer._deleteBoxMesh(node._boxMesh);
+                delete node._boxMesh;
+            }
+        }
+        return nodeBox;
     }
 
     //@internal

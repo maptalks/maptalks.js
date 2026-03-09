@@ -20,8 +20,8 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
     var color = textureSample(skin, skinSampler, uv);
 
     #if HAS_SHADOWING && !HAS_BLOOM
-        var shadowCoeff = shadow_computeShadow();
-        color.rgb = shadow_blend(color.rgb, shadowCoeff).rgb;
+        var shadowCoeff = shadow_computeShadow(vertexOutput);
+        color = vec4f(shadow_blend(color.rgb, shadowCoeff).rgb, color.a);
     #endif
 
     var fragColor = color * uniforms.polygonOpacity;

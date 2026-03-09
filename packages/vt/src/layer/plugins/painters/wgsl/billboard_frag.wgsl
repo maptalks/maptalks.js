@@ -15,8 +15,8 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
     var fragColor: vec4f = textureSample(billTexture, billTextureSampler, vertexOutput.vTexCoord / uniforms.textureSize);
 
     #if HAS_SHADOWING && !HAS_BLOOM
-        let shadowCoeff = shadow_computeShadow();
-        fragColor.rgb = shadow_blend(fragColor.rgb, shadowCoeff);
+        let shadowCoeff = shadow_computeShadow(vertexOutput);
+        fragColor = vec4f(shadow_blend(fragColor.rgb, shadowCoeff), fragColor.a);
     #endif
 
     // fragColor = vec4f(vertexOutput.vTexCoord / uniforms.textureSize, 0.0, 1.0);

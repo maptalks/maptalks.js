@@ -1,5 +1,11 @@
 # @maptalks/gltf-loader
 
+## 0.124.4
+
+### Patch Changes
+
+- bug fixes
+
 ## 0.124.3
 
 ### Patch Changes

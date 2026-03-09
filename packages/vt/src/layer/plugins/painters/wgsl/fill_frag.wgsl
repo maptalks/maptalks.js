@@ -61,9 +61,7 @@ struct ShaderUniforms {
 
 @fragment
 fn main(
-    #ifdef HAS_PATTERN || HAS_COLOR || HAS_OPACITY || HAS_UV_SCALE || HAS_UV_OFFSET || HAS_HIGHLIGHT_COLOR || HAS_HIGHLIGHT_OPACITY
     vertexOutput: VertexOutput
-    #endif
 ) -> @location(0) vec4f {
     // #ifndef ENABLE_TILE_STENCIL
     //     let clipExtent = fragmentUniforms.tileExtent;
@@ -100,7 +98,7 @@ fn main(
 
     #if HAS_SHADOWING && !HAS_BLOOM
         let shadowCoeff = shadow_computeShadow(vertexOutput);
-        outputColor.rgb = shadow_blend(outputColor.rgb, shadowCoeff);
+        outputColor = vec4f(shadow_blend(outputColor.rgb, shadowCoeff), outputColor.a);
     #endif
 
     #if HAS_HIGHLIGHT_COLOR || HAS_HIGHLIGHT_OPACITY

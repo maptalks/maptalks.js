@@ -7,11 +7,17 @@ import parseGlyphPBF from './parse_glyph_pbf';
 let DEBUG_COUNTER = 0;
 let LIMIT_PER_FRAME = 15;
 
+// https://github.com/xiaoiver/custom-mapbox-layer/blob/386abe0cd78da95ec122bd14581ca9f11f455f37/src/utils/glyph-manager.ts#L19C8-L22C1
+function isCJK(char) {
+    return char >= 0x4E00 && char <= 0x9FFF;
+}
+
+
 export default class GlyphRequestor {
     constructor(framer, limit = LIMIT_PER_FRAME, isCompactChars, sdfURL) {
         this.entries = {};
         this._cachedFont = {};
-        this._cache = new LRUCache(2048, function () {});
+        this._cache = new LRUCache(2048, function () { });
         this._framer = framer;
         this._limit = limit;
         this._isCompactChars = isCompactChars;
@@ -90,7 +96,7 @@ export default class GlyphRequestor {
     }
 
 
-   // 从远程服务请求sdf数据
+    // 从远程服务请求sdf数据
     _requestRemoteSDF(glyphs, cb) {
         const glyphSdfs = {};
         const buffers = [];
@@ -119,7 +125,7 @@ export default class GlyphRequestor {
                         missingChars.push(code);
                     }
                 }
-                
+
                 // 如果所有字符都已成功加载，直接使用缓存
                 if (missingChars.length === 0) {
                     for (const code of chars) {
@@ -236,7 +242,10 @@ export default class GlyphRequestor {
         const textFaceName = fonts;
         const fontFamily = textFaceName;
         let tinySDF = entry.tinySDF;
-        const buffer = 2;
+        let buffer = 2;
+        if(isCJK(charCode)){
+            buffer = 4;
+        }
         //1. 中日韩字符中间适当多留一些间隔
         //2. 英文或其他拉丁文字，减小 advanceBuffer，让文字更紧凑
         //3. 但因为intel gpu崩溃问题，启用stencil且advancaBuffer < 0时，会有文字削边现象，所以设为 1
@@ -302,12 +311,12 @@ export default class GlyphRequestor {
             }
         };
     }
-     /* =======================
-     * Utils
-     * ======================= */
+    /* =======================
+    * Utils
+    * ======================= */
 
     _getFontEntry(font) {
-        return this.entries[font]= this.entries[font]|| {
+        return this.entries[font] = this.entries[font] || {
             glyphs: {},
             requests: {},
             ranges: {},

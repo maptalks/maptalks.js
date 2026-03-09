@@ -169,10 +169,15 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
     }
 
     setSkinLayers(skinLayers) {
+        skinLayers = skinLayers || [];
+        const currentLayers = this._skinLayers;
         this._skinLayers = skinLayers;
         const renderer = this.getRenderer();
         if (renderer) {
-            renderer.clear();
+            if (currentLayers) {
+                const staleSkinLayers = getStaleSkinLayers(currentLayers, skinLayers)
+                renderer._clearStaleSkins(staleSkinLayers);
+            }
             renderer.setToRedraw();
         }
     }
@@ -294,6 +299,10 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
 
     getSkinLayer(index) {
         return this.getSkinLayers()[index];
+    }
+
+    getSkinLayerById(id) {
+        return this.getSkinLayers().filter(layer => layer.getId() === id)[0];
     }
 
     getSkinLayers() {
@@ -477,3 +486,13 @@ TerrainLayer.registerJSONType('TerrainLayer');
 
 TerrainLayer.registerRenderer('gl', TerrainLayerRenderer);
 TerrainLayer.registerRenderer('gpu', TerrainLayerRenderer);
+
+function getStaleSkinLayers(currentLayers, layers) {
+    const result = [];
+    for (let i = 0; i < currentLayers.length; i++) {
+        if (layers.indexOf(currentLayers[i]) === -1) {
+            result.push(currentLayers[i]);
+        }
+    }
+    return result;
+}

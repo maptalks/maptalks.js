@@ -87,7 +87,10 @@ fn main(input: VertexOutput) -> @location(0) vec4f {
     #endif
 
     let blur2 = (blur + 1.0 / DEVICE_PIXEL_RATIO) * input.vGammaScale;
-    let alpha = clamp(min(dist - (input.vWidth.y - blur2), input.vWidth.x - dist) / blur2, 0.0, 1.0);
+    var alpha = clamp(min(dist - (input.vWidth.y - blur2), input.vWidth.x - dist) / blur2, 0.0, 1.0);
+    if (uniforms.lineBlur == 0) {
+        alpha = 1;
+    }
     #ifdef HAS_COLOR
         var color = input.vColor / 255.0;
     #else

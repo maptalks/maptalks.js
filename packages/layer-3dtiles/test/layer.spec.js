@@ -464,6 +464,47 @@ describe('3dtiles layer', () => {
         layer.addTo(map);
     });
 
+    it('can update service coordOffset and back', done => {
+        const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
+        const service = {
+            url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+            shader: 'pbr',
+            opacity: 1
+        };
+        const layer = new Geo3DTilesLayer('3d-tiles', {
+            services: []
+        });
+
+        layer.addService(service);
+        layer.on('loadtileset', () => {
+            const extent = layer.getExtent(0);
+            map.fitExtent(extent, 0, { animation: false });
+        });
+        let count = 0;
+        layer.on('canvasisdirty', () => {
+            count++;
+            if (count === 2) {
+                layer.updateService(0, { coordOffset: [10, 0] });
+                setTimeout(() => {
+                    const canvas = map.getRenderer().canvas;
+                    const ctx = map.getRenderer().context;
+                    const color = ctx.getImageData(canvas.width / 2 - 43, canvas.height / 2 + 70, 1, 1);
+                    assert(color.data[3] === 0);
+                    layer.updateService(0, { coordOffset: [0, 0] });
+                    setTimeout(() => {
+                        const canvas = map.getRenderer().canvas;
+                        const ctx = map.getRenderer().context;
+                        const color = ctx.getImageData(canvas.width / 2 - 43, canvas.height / 2 + 70, 1, 1);
+                        assert(color.data[3] === 255);
+                        done();
+                    }, 300);
+
+                }, 300);
+            }
+        });
+        layer.addTo(map);
+    });
+
     it('can update remove/add service for multiple times', done => {
         const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
         const service = {
