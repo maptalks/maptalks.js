@@ -9,17 +9,14 @@ struct Uniforms {
 @group(0) @binding($b) var<uniform> uniforms: Uniforms;
 
 // 顶点输入结构体
-#ifdef HAS_ALTITUDE
 struct VertexInput {
+#ifdef HAS_ALTITUDE
     @location($i) aPosition: vec2f,
     @location($i) aAltitude: f32,
-};
 #else
-struct VertexInput {
     #include <position_vert>
-};
 #endif
-
+};
 // 顶点输出结构体
 struct VertexOutput {
     @builtin(position) position: vec4f,
