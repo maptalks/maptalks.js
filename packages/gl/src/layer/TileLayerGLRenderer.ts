@@ -6,7 +6,7 @@ import { createImageMesh, updateFilter, updateImageMeshLocalTransform } from './
 import { isNil } from './util/util';
 import CanvasCompatible from './CanvasCompatible';
 
-const { TileLayerRendererable, LayerAbstractRenderer, tileNeedUpdateAltitude } = maptalks.renderer;
+const { TileLayerRendererable, LayerAbstractRenderer, testNeedUpdateAltitude } = maptalks.renderer;
 
 const positionData = new Int16Array([
     0, 0, 0, -1, 1, 0, 1, -1
@@ -123,7 +123,7 @@ class TileLayerGLRenderer2 extends TexturePoolable(CanvasCompatible(TileLayerRen
 
     consumeTile(tileImage: Tile['image'], tileInfo: Tile['info']) {
         let mesh: reshader.Mesh = (tileImage as any).mesh;
-        const needUpdates = tileNeedUpdateAltitude(this.layer, tileInfo);
+        const needUpdates = testNeedUpdateAltitude(this.layer, tileInfo);
         if (!mesh) {
             mesh = this._createTileMesh(tileInfo, tileImage);
             (tileImage as any).mesh = mesh;
@@ -145,7 +145,7 @@ class TileLayerGLRenderer2 extends TexturePoolable(CanvasCompatible(TileLayerRen
         if (!tileInfo || !map || !tileImage) {
             return;
         }
-         const needUpdates = tileNeedUpdateAltitude(this.layer, tileInfo);
+         const needUpdates = testNeedUpdateAltitude(this.layer, tileInfo);
         let mesh: reshader.Mesh = (tileImage as any).mesh;
         if (!mesh) {
             mesh = this._createTileMesh(tileInfo, tileImage);

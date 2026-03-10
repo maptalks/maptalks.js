@@ -1,4 +1,4 @@
-import { IS_NODE, isInteger, isNil, isNumber } from '../../core/util';
+import { IS_NODE, isInteger, isNil } from '../../core/util';
 import type { Vector3, Matrix4InOut } from '../../core/util/mat4'
 import { createGLContext, createProgram, enableVertexAttrib } from '../../core/util/gl';
 import * as mat4 from '../../core/util/mat4';
@@ -8,6 +8,7 @@ import type { Map } from '../../map'
 import { MixinConstructor } from '../../core/Mixin';
 import { VertexAttrib, TileImageBuffer, TileImageTexture, TileImageType, TileRenderingProgram, TileRenderingCanvas, TileRenderingContext } from '../types';
 import { WithNull } from '../../types/typings';
+import { testNeedUpdateAltitude } from './LayerAbstractRenderer';
 
 // used to debug tiles
 const DEFAULT_BASE_COLOR = [1, 1, 1, 1];
@@ -127,7 +128,7 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
             v3[2] = 0;
             const layer = this.layer;
             const map = this.getMap();
-            tileNeedUpdateAltitude(layer, tileInfo);
+            testNeedUpdateAltitude(layer, tileInfo);
             v3[2] = tileInfo.layerAlt || 0;
             const uMatrix = mat4.identity(arr16);
             mat4.translate(uMatrix, uMatrix, v3);
@@ -646,31 +647,6 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
 
 export default ImageGLRenderable;
 
-/**
-    * 检测瓦片是否需要更新altitude,ImageLayer,TileLayer etc
-    * @param layer
-    * @param tileInfo
-    * @returns
-*/
-export function tileNeedUpdateAltitude(layer, tileInfo) {
-    let needUpdates = false;
-    if (layer && layer.getMap && tileInfo) {
-        let { altitude } = layer.options || {};
-        const altIsNumber = isNumber(altitude);
-        if (!altIsNumber) {
-            altitude = 0;
-        }
-        //update _layerAlt cache
-        if (tileInfo.layerAltitude !== altitude) {
-            const map = layer.getMap();
-            const z = map.altitudeToPoint(altitude, map.getGLRes());
-            tileInfo.layerAltitude = altitude;
-            tileInfo.layerAlt = z;
-            needUpdates = true;
-        }
-    }
-    return needUpdates;
-}
 
 function resize(image: TileImageType): TileImageType {
     if (isPowerOfTwo(image.width) && isPowerOfTwo(image.height)) {
