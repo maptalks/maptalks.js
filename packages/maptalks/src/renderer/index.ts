@@ -3,7 +3,7 @@
 export { ResourceCache } from './../core/ResourceCacheManager';
 export { default as CanvasRenderer } from './layer/CanvasRenderer';
 export { default as LayerAbstractRenderer } from './layer/LayerAbstractRenderer';
-export { default as ImageGLRenderable } from './layer/ImageGLRenderable';
+export { default as ImageGLRenderable, tileNeedUpdateAltitude } from './layer/ImageGLRenderable';
 
 export * from './layer/tilelayer';
 export * from './layer/vectorlayer';

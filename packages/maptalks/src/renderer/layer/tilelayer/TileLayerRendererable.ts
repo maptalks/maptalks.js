@@ -1394,6 +1394,8 @@ export interface Tile {
         maxAltitude?: number;
         //@internal
         _glScale: number;
+        layerAltitude?: number;
+        layerAlt?: number;
     };
 
     image: TileImage;

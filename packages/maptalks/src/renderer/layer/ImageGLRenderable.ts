@@ -108,7 +108,7 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
          * @param debugInfo
          * @param baseColor
          */
-        drawGLImage(image: TileImageType, x: number, y: number, w: number, h: number, scale: number, opacity: number, resized, debugInfo?: string, baseColor?: number[]) {
+        drawGLImage(tileInfo, image: TileImageType, x: number, y: number, w: number, h: number, scale: number, opacity: number, resized, debugInfo?: string, baseColor?: number[]) {
             if ((this.gl as any).program !== this.program) {
                 this.useProgram(this.program);
             }
@@ -127,20 +127,8 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
             v3[2] = 0;
             const layer = this.layer;
             const map = this.getMap();
-            if (layer) {
-                const { altitude } = layer.options;
-                const altIsNumber = isNumber(altitude);
-                if (!altIsNumber) {
-                    this._layerAlt = 0;
-                }
-                //update _layerAlt cache
-                if (this._layerAltitude !== altitude && altIsNumber) {
-                    const z = map.altitudeToPoint(altitude, map.getGLRes());
-                    this._layerAltitude = altitude;
-                    this._layerAlt = z;
-                }
-            }
-            v3[2] = this._layerAlt || 0;
+            tileNeedUpdateAltitude(layer, tileInfo);
+            v3[2] = tileInfo.layerAlt || 0;
             const uMatrix = mat4.identity(arr16);
             mat4.translate(uMatrix, uMatrix, v3);
             mat4.scale(uMatrix, uMatrix, [scale, scale, 1]);
@@ -658,6 +646,32 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
 
 export default ImageGLRenderable;
 
+/**
+    * 检测瓦片是否需要更新altitude,ImageLayer,TileLayer etc
+    * @param layer
+    * @param tileInfo
+    * @returns
+*/
+export function tileNeedUpdateAltitude(layer, tileInfo) {
+    let needUpdates = false;
+    if (layer && layer.getMap && tileInfo) {
+        let { altitude } = layer.options || {};
+        const altIsNumber = isNumber(altitude);
+        if (!altIsNumber) {
+            altitude = 0;
+        }
+        //update _layerAlt cache
+        if (tileInfo.layerAltitude !== altitude) {
+            const map = layer.getMap();
+            const z = map.altitudeToPoint(altitude, map.getGLRes());
+            tileInfo.layerAltitude = altitude;
+            tileInfo.layerAlt = z;
+            needUpdates = true;
+        }
+    }
+    return needUpdates;
+}
+
 function resize(image: TileImageType): TileImageType {
     if (isPowerOfTwo(image.width) && isPowerOfTwo(image.height)) {
         return image;
@@ -690,3 +704,4 @@ export function floorPowerOfTwo(value: number) {
 function ceilPowerOfTwo(value: number) {
     return Math.pow(2, Math.ceil(Math.log(value) / Math.LN2));
 }
+
