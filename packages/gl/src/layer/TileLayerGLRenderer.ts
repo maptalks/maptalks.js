@@ -2,11 +2,11 @@ import * as maptalks from 'maptalks';
 import { RenderContext, Tile, TileLayer } from 'maptalks';
 import * as reshader from '../reshader';
 import TexturePoolable from './TexturePoolable';
-import { createImageMesh, updateFilter } from './util/imageMesh';
+import { createImageMesh, updateFilter, updateImageMeshLocalTransform } from './util/imageMesh';
 import { isNil } from './util/util';
 import CanvasCompatible from './CanvasCompatible';
 
-const { TileLayerRendererable, LayerAbstractRenderer } = maptalks.renderer;
+const { TileLayerRendererable, LayerAbstractRenderer, testNeedUpdateAltitude } = maptalks.renderer;
 
 const positionData = new Int16Array([
     0, 0, 0, -1, 1, 0, 1, -1
@@ -16,7 +16,7 @@ const texCoords = new Uint16Array([
     0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0
 ]);
 
-const MESH_TO_TEST = { properties: {}};
+const MESH_TO_TEST = { properties: {} };
 
 
 const DEBUG_POINT = new maptalks.Point(20, 20);
@@ -123,9 +123,14 @@ class TileLayerGLRenderer2 extends TexturePoolable(CanvasCompatible(TileLayerRen
 
     consumeTile(tileImage: Tile['image'], tileInfo: Tile['info']) {
         let mesh: reshader.Mesh = (tileImage as any).mesh;
+        const needUpdates = testNeedUpdateAltitude(this.layer, tileInfo);
         if (!mesh) {
             mesh = this._createTileMesh(tileInfo, tileImage);
             (tileImage as any).mesh = mesh;
+        }
+        const map = this.getMap();
+        if (needUpdates && map) {
+            updateImageMeshLocalTransform(mesh, tileInfo.extent2d, tileInfo.offset, tileInfo.res / map.getGLRes(), tileInfo);
         }
         return super.consumeTile(tileImage, tileInfo);
     }
@@ -140,10 +145,14 @@ class TileLayerGLRenderer2 extends TexturePoolable(CanvasCompatible(TileLayerRen
         if (!tileInfo || !map || !tileImage) {
             return;
         }
+         const needUpdates = testNeedUpdateAltitude(this.layer, tileInfo);
         let mesh: reshader.Mesh = (tileImage as any).mesh;
         if (!mesh) {
             mesh = this._createTileMesh(tileInfo, tileImage);
             (tileImage as any).mesh = mesh;
+        }
+        if (needUpdates && map) {
+            updateImageMeshLocalTransform(mesh, tileInfo.extent2d, tileInfo.offset, tileInfo.res / map.getGLRes(), tileInfo);
         }
 
         const defines = mesh.getDefines();
@@ -225,7 +234,7 @@ class TileLayerGLRenderer2 extends TexturePoolable(CanvasCompatible(TileLayerRen
         const uniforms = {
             zoom: tileInfo.z,
         };
-        const mesh = createImageMesh.call(this, this._tileGeometry, tileImage, tileInfo.extent2d, tileInfo.offset, scale, uniforms);
+        const mesh = createImageMesh.call(this, this._tileGeometry, tileImage, tileInfo.extent2d, tileInfo.offset, scale, uniforms, tileInfo);
         const texture = mesh.material.get('baseColorTexture') as reshader.Texture2D;
         (tileImage as any).texture = texture;
         return mesh;

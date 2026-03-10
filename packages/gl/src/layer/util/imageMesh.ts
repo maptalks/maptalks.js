@@ -7,14 +7,14 @@ import { extend } from './util';
 const TILE_POINT = new maptalks.Point(0, 0);
 const DEFAULT_BASE_COLOR = [1, 1, 1, 1];
 
-export function createImageMesh(geometry, image, extent2d, offset, scale, uniforms) {
-    const width = extent2d.xmax - extent2d.xmin;
-    const height = extent2d.ymax - extent2d.ymin;
+export function createImageMesh(geometry, image, extent2d, offset, scale, uniforms, tileInfo) {
+    // const width = extent2d.xmax - extent2d.xmin;
+    // const height = extent2d.ymax - extent2d.ymin;
 
-    offset = offset || [0, 0];
-    const point = TILE_POINT.set(extent2d.xmin - offset[0], extent2d.ymax - offset[1]);
-    const x = point.x * scale,
-        y = point.y * scale;
+    // offset = offset || [0, 0];
+    // const point = TILE_POINT.set(extent2d.xmin - offset[0], extent2d.ymax - offset[1]);
+    // const x = point.x * scale,
+    //     y = point.y * scale;
 
     const config = {
         data: image,
@@ -46,11 +46,27 @@ export function createImageMesh(geometry, image, extent2d, offset, scale, unifor
     const material = new reshader.Material(uniforms);
     const mesh = new reshader.Mesh(geometry, material);
     mesh.properties.minFilter = WebGLConstants.GL_NEAREST;
+    // const localTransform = mat4.identity([] as any);
+    // mat4.translate(localTransform, localTransform, [x || 0, y || 0, 0]);
+    // mat4.scale(localTransform, localTransform, [scale * width, scale * height, 1]);
+    // mesh.localTransform = localTransform;
+    updateImageMeshLocalTransform(mesh, extent2d, offset, scale, tileInfo);
+    return mesh;
+}
+
+export function updateImageMeshLocalTransform(mesh, extent2d, offset, scale, tileInfo) {
+    const width = extent2d.xmax - extent2d.xmin;
+    const height = extent2d.ymax - extent2d.ymin;
+
+    offset = offset || [0, 0];
+    const point = TILE_POINT.set(extent2d.xmin - offset[0], extent2d.ymax - offset[1]);
+    const x = point.x * scale,
+        y = point.y * scale,
+        z = tileInfo.layerAlt || 0;
     const localTransform = mat4.identity([] as any);
-    mat4.translate(localTransform, localTransform, [x || 0, y || 0, 0]);
+    mat4.translate(localTransform, localTransform, [x || 0, y || 0, z]);
     mat4.scale(localTransform, localTransform, [scale * width, scale * height, 1]);
     mesh.localTransform = localTransform;
-    return mesh;
 }
 
 export function updateFilter(mesh: reshader.Mesh, map: maptalks.Map, res: number) {

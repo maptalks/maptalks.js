@@ -1,4 +1,4 @@
-import { IS_NODE, isInteger, isNil, isNumber } from '../../core/util';
+import { IS_NODE, isInteger, isNil } from '../../core/util';
 import type { Vector3, Matrix4InOut } from '../../core/util/mat4'
 import { createGLContext, createProgram, enableVertexAttrib } from '../../core/util/gl';
 import * as mat4 from '../../core/util/mat4';
@@ -8,6 +8,7 @@ import type { Map } from '../../map'
 import { MixinConstructor } from '../../core/Mixin';
 import { VertexAttrib, TileImageBuffer, TileImageTexture, TileImageType, TileRenderingProgram, TileRenderingCanvas, TileRenderingContext } from '../types';
 import { WithNull } from '../../types/typings';
+import { testNeedUpdateAltitude } from './LayerAbstractRenderer';
 
 // used to debug tiles
 const DEFAULT_BASE_COLOR = [1, 1, 1, 1];
@@ -108,7 +109,7 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
          * @param debugInfo
          * @param baseColor
          */
-        drawGLImage(image: TileImageType, x: number, y: number, w: number, h: number, scale: number, opacity: number, resized, debugInfo?: string, baseColor?: number[]) {
+        drawGLImage(tileInfo, image: TileImageType, x: number, y: number, w: number, h: number, scale: number, opacity: number, resized, debugInfo?: string, baseColor?: number[]) {
             if ((this.gl as any).program !== this.program) {
                 this.useProgram(this.program);
             }
@@ -127,20 +128,8 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
             v3[2] = 0;
             const layer = this.layer;
             const map = this.getMap();
-            if (layer) {
-                const { altitude } = layer.options;
-                const altIsNumber = isNumber(altitude);
-                if (!altIsNumber) {
-                    this._layerAlt = 0;
-                }
-                //update _layerAlt cache
-                if (this._layerAltitude !== altitude && altIsNumber) {
-                    const z = map.altitudeToPoint(altitude, map.getGLRes());
-                    this._layerAltitude = altitude;
-                    this._layerAlt = z;
-                }
-            }
-            v3[2] = this._layerAlt || 0;
+            testNeedUpdateAltitude(layer, tileInfo);
+            v3[2] = tileInfo.layerAlt || 0;
             const uMatrix = mat4.identity(arr16);
             mat4.translate(uMatrix, uMatrix, v3);
             mat4.scale(uMatrix, uMatrix, [scale, scale, 1]);
@@ -658,6 +647,7 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
 
 export default ImageGLRenderable;
 
+
 function resize(image: TileImageType): TileImageType {
     if (isPowerOfTwo(image.width) && isPowerOfTwo(image.height)) {
         return image;
@@ -690,3 +680,4 @@ export function floorPowerOfTwo(value: number) {
 function ceilPowerOfTwo(value: number) {
     return Math.pow(2, Math.ceil(Math.log(value) / Math.LN2));
 }
+
