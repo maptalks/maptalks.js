@@ -12,6 +12,79 @@ function isCJK(char) {
     return char >= 0x4E00 && char <= 0x9FFF;
 }
 
+// --- SDF Request Concurrency & Cache Optimization ---
+const MAX_CONCURRENT_REQUESTS = 6;
+let activeRequests = 0;
+const requestQueue = [];
+
+function enqueueSDFRequest(url, resolve, reject) {
+    if (activeRequests < MAX_CONCURRENT_REQUESTS) {
+        executeSDFRequest(url, resolve, reject);
+    } else {
+        requestQueue.push({ url, resolve, reject });
+    }
+}
+
+function processNextSDFRequest() {
+    if (requestQueue.length > 0 && activeRequests < MAX_CONCURRENT_REQUESTS) {
+        const { url, resolve, reject } = requestQueue.shift();
+        executeSDFRequest(url, resolve, reject);
+    }
+}
+
+function executeSDFRequest(url, resolve, reject) {
+    activeRequests++;
+
+    const onComplete = () => {
+        activeRequests--;
+        processNextSDFRequest();
+    };
+
+    if (typeof caches !== 'undefined') {
+        caches.match(url).then(cachedResponse => {
+            if (cachedResponse) {
+                return cachedResponse.arrayBuffer().then(buffer => {
+                    resolve(buffer);
+                    onComplete();
+                });
+            } else {
+                fetchAndCacheSDF(url, resolve, reject, onComplete);
+            }
+        }).catch(() => {
+            fetchAndCacheSDF(url, resolve, reject, onComplete);
+        });
+    } else {
+        fetchAndCacheSDF(url, resolve, reject, onComplete);
+    }
+}
+
+function fetchAndCacheSDF(url, resolve, reject, onComplete) {
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            if (typeof caches !== 'undefined') {
+                const clone = response.clone();
+                caches.open('maptalks-sdf-cache').then(cache => {
+                    cache.put(url, clone);
+                }).catch(e => {
+                    console.warn('Failed to cache SDF in caches API:', e);
+                });
+            }
+            return response.arrayBuffer();
+        })
+        .then(buffer => {
+            resolve(buffer);
+            onComplete();
+        })
+        .catch(err => {
+            reject(err);
+            onComplete();
+        });
+}
+// ----------------------------------------------------
+
 
 export default class GlyphRequestor {
     constructor(framer, limit = LIMIT_PER_FRAME, isCompactChars, sdfURL) {
@@ -212,11 +285,9 @@ export default class GlyphRequestor {
             .replace('{stack}', font)
             .replace('{range}', rangeStr);
 
-        fetch(url)
-            .then(r => {
-                if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                return r.arrayBuffer();
-            })
+        new Promise((resolve, reject) => {
+            enqueueSDFRequest(url, resolve, reject);
+        })
             .then(buf => {
                 const data = parseGlyphPBF(buf);
 
@@ -243,7 +314,7 @@ export default class GlyphRequestor {
         const fontFamily = textFaceName;
         let tinySDF = entry.tinySDF;
         let buffer = 2;
-        if(isCJK(charCode)){
+        if (isCJK(charCode)) {
             buffer = 4;
         }
         //1. 中日韩字符中间适当多留一些间隔
