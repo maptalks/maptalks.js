@@ -1,5 +1,4 @@
 import * as maptalks from "maptalks";
-import { ResourceProxy } from "maptalks";
 
 import type {
     BackgroundConfig,
@@ -390,6 +389,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             schema: options.schema,
             pickingGeometry: options.pickingGeometry,
             projectionCode: this.getSpatialReference().getProjection().code,
+             sdfURL: options.sdfURL,
             workerGlyph: options.workerGlyph && !this.getURLModifier(),
             featureIdProperty: options.featureIdProperty,
             isWebGPU,
@@ -529,107 +529,15 @@ class VectorTileLayer extends maptalks.TileLayer {
 
         style = uncompress(style);
 
-        const setStyleToRenderer = () => {
-            const renderer = this.getRenderer();
-            if (renderer) {
-                const styles = this._parseStyle(style);
-                (renderer as any).setStyle(styles, () => {
-                    this._loadStyle(style);
-                });
-            } else {
+        const renderer = this.getRenderer();
+        if (renderer) {
+            const styles = this._parseStyle(style);
+            (renderer as any).setStyle(styles, () => {
                 this._loadStyle(style);
-            }
-        };
-
-        const sprites = style["sprites"];
-        if (sprites) {
-            this.ready = false;
-            this._loadSprites(sprites).then(() => {
-                this.ready = true;
-                setStyleToRenderer();
-            }).catch(err => {
-                console.error("Failed to load sprites:", err);
-                this.ready = true;
-                setStyleToRenderer();
             });
         } else {
-            setStyleToRenderer();
+            this._loadStyle(style);
         }
-    }
-
-    //@internal
-    _loadSprites(sprites: any): Promise<void> {
-        return new Promise((resolve, reject) => {
-            const spriteConfigs = Array.isArray(sprites) ? sprites : [sprites];
-            const promises = [];
-
-            spriteConfigs.forEach((spriteConfig) => {
-                if (spriteConfig.imgUrl && spriteConfig.jsonUrl) {
-                    // 处理路径变量替换
-                    const imgUrl = this._processSpriteUrl(spriteConfig.imgUrl);
-                    const jsonUrl = this._processSpriteUrl(spriteConfig.jsonUrl);
-                    const sourceName = spriteConfig.sourceName || "";
-
-                    // 检查是否已经加载过该精灵图
-                    if (this._isSpriteLoaded(sourceName, jsonUrl)) {
-                        console.log(`Sprite already loaded: ${jsonUrl}`);
-                        return;
-                    }
-
-                    // 单个精灵图加载，使用catch捕获错误，确保单个精灵图加载失败不影响其他精灵图
-                    const spritePromise = ResourceProxy.loadSprite({
-                        imgUrl,
-                        jsonUrl,
-                        sourceName
-                    }).catch((err) => {
-                        console.error(`Failed to load sprite ${jsonUrl}:`, err);
-                        // 单个精灵图加载失败不影响其他精灵图，返回null表示加载失败但继续执行
-                        return null;
-                    });
-
-                    promises.push(spritePromise);
-                } else {
-                    console.warn('Invalid sprite configuration, missing imgUrl or jsonUrl:', spriteConfig);
-                }
-            });
-
-            if (promises.length === 0) {
-                resolve();
-                return;
-            }
-
-            // 等待所有精灵图加载完成，无论成功失败
-            Promise.all(promises).then(() => {
-                resolve();
-            }).catch((err) => {
-                // 所有精灵图加载失败的情况
-                reject(err);
-            });
-        });
-    }
-
-    //@internal
-    _processSpriteUrl(url: string): string {
-        if (!url) {
-            return url;
-        }
-        // 处理{$root}变量替换
-        if (this._replacer && typeof url === 'string') {
-            return url.replace(/\{\$root\}/g, (this as any)._replacer);
-        }
-        return url;
-    }
-
-    //@internal
-    _isSpriteLoaded(sourceName: string, jsonUrl: string): boolean {
-        // 简单检查：如果ResourceProxy中已经有以sourceName开头的资源，则认为精灵图已经加载
-        const resources = ResourceProxy.allResource();
-        for (const key in resources) {
-            if (key.startsWith(sourceName)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     _parseStyle(style) {
@@ -2118,7 +2026,7 @@ export type VectorTileLayerOptionsType = {
 
     altitudeQueryTimeLimitPerFrame?: number,
     workerGlyph?: boolean,
-
+    sdfURL?: string;
     // A property to use as a feature id (for feature state)
     // https://docs.mapbox.com/style-spec/reference/sources/#vector-promoteId
     featureIdProperty?: string,

@@ -24,9 +24,6 @@ export function compress(json) {
     if (json['$root']) {
         compressed['$root'] = json['$root'];
     }
-    if (json['sprites']) {
-        compressed['sprites'] = json['sprites'];
-    }
     // if (json['$iconset']) {
     //     compressed['$iconset'] = json['$iconset'];
     // }
@@ -83,9 +80,6 @@ export function uncompress(json) {
     };
     if (json['$root']) {
         target['$root'] = json['$root'];
-    }
-    if (json['sprites']) {
-        target['sprites'] = json['sprites'];
     }
     // if (json['$iconset']) {
     //     target['$iconset'] = json['$iconset'];
