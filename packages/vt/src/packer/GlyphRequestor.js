@@ -17,6 +17,72 @@ const MAX_CONCURRENT_REQUESTS = 6;
 let activeRequests = 0;
 const requestQueue = [];
 
+
+// --- IndexedDB persistent cache (works on HTTP & HTTPS) ---
+const SDF_DB_NAME = 'maptalks-sdf-cache';
+const SDF_STORE_NAME = 'sdf';
+const SDF_DB_VERSION = 1;
+let _sdfDB = null;
+let _sdfDBReady = null; // shared promise
+
+function _getCacheKey(url) {
+    // Strip query parameters so tokens/timestamps don't break matching
+    try {
+        const u = new URL(url, typeof location !== 'undefined' ? location.href : undefined);
+        return u.origin + u.pathname;
+    } catch (e) {
+        return url.split('?')[0];
+    }
+}
+
+function _openSdfDB() {
+    if (_sdfDBReady) return _sdfDBReady;
+    _sdfDBReady = new Promise((resolve, reject) => {
+        if (typeof indexedDB === 'undefined') {
+            reject(new Error('IndexedDB not available'));
+            return;
+        }
+        const req = indexedDB.open(SDF_DB_NAME, SDF_DB_VERSION);
+        req.onupgradeneeded = () => {
+            const db = req.result;
+            if (!db.objectStoreNames.contains(SDF_STORE_NAME)) {
+                db.createObjectStore(SDF_STORE_NAME);
+            }
+        };
+        req.onsuccess = () => {
+            _sdfDB = req.result;
+            resolve(_sdfDB);
+        };
+        req.onerror = () => reject(req.error);
+    });
+    return _sdfDBReady;
+}
+
+function _idbGet(key) {
+    return _openSdfDB().then(db => {
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(SDF_STORE_NAME, 'readonly');
+            const store = tx.objectStore(SDF_STORE_NAME);
+            const req = store.get(key);
+            req.onsuccess = () => resolve(req.result); // ArrayBuffer or undefined
+            req.onerror = () => reject(req.error);
+        });
+    });
+}
+
+function _idbPut(key, value) {
+    return _openSdfDB().then(db => {
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(SDF_STORE_NAME, 'readwrite');
+            const store = tx.objectStore(SDF_STORE_NAME);
+            const req = store.put(value, key);
+            req.onsuccess = () => resolve();
+            req.onerror = () => reject(req.error);
+        });
+    });
+}
+// -------------------------------------------------------
+
 function enqueueSDFRequest(url, resolve, reject) {
     if (activeRequests < MAX_CONCURRENT_REQUESTS) {
         executeSDFRequest(url, resolve, reject);
@@ -40,41 +106,33 @@ function executeSDFRequest(url, resolve, reject) {
         processNextSDFRequest();
     };
 
-    if (typeof caches !== 'undefined') {
-        caches.match(url).then(cachedResponse => {
-            if (cachedResponse) {
-                return cachedResponse.arrayBuffer().then(buffer => {
-                    resolve(buffer);
-                    onComplete();
-                });
-            } else {
-                fetchAndCacheSDF(url, resolve, reject, onComplete);
-            }
-        }).catch(() => {
-            fetchAndCacheSDF(url, resolve, reject, onComplete);
-        });
-    } else {
-        fetchAndCacheSDF(url, resolve, reject, onComplete);
-    }
+    const cacheKey = _getCacheKey(url);
+
+    _idbGet(cacheKey).then(buffer => {
+        if (buffer) {
+            // Cache hit — return a copy so the buffer can be transferred
+            resolve(buffer instanceof ArrayBuffer ? buffer.slice(0) : buffer);
+            onComplete();
+        } else {
+            fetchAndCacheSDF(url, cacheKey, resolve, reject, onComplete);
+        }
+    }).catch(() => {
+        // IndexedDB unavailable or error — fall back to network
+        fetchAndCacheSDF(url, cacheKey, resolve, reject, onComplete);
+    });
 }
 
-function fetchAndCacheSDF(url, resolve, reject, onComplete) {
+function fetchAndCacheSDF(url, cacheKey, resolve, reject, onComplete) {
     fetch(url)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
             }
-            if (typeof caches !== 'undefined') {
-                const clone = response.clone();
-                caches.open('maptalks-sdf-cache').then(cache => {
-                    cache.put(url, clone);
-                }).catch(e => {
-                    console.warn('Failed to cache SDF in caches API:', e);
-                });
-            }
             return response.arrayBuffer();
         })
         .then(buffer => {
+            // Store in IndexedDB (fire-and-forget)
+            _idbPut(cacheKey, buffer.slice(0)).catch(() => { });
             resolve(buffer);
             onComplete();
         })
