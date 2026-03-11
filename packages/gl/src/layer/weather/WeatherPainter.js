@@ -103,14 +103,14 @@ class WeatherPainter {
         } else {
             delete shaderDefines['HAS_FOG'];
         }
-        let isMultiSampled = tex.texture && tex.texture.sampleCount > 1;
+        let isMultiSampled = tex.isMultiSampled && tex.isMultiSampled();
         if (isMultiSampled) {
             shaderDefines['HAS_MULTISAMPLED'] = 1;
         } else {
             delete shaderDefines['HAS_MULTISAMPLED'];
         }
         const mixFactorMap = this._renderMixFactor(meshes) || this.EMPTY_TEXTURE;
-        if (isMultiSampled && mixFactorMap !== this.EMPTY_TEXTURE) {
+        if (mixFactorMap.isMultiSampled && mixFactorMap.isMultiSampled()) {
             shaderDefines['HAS_MULTISAMPLED_MAP'] = 1;
         } else {
             delete shaderDefines['HAS_MULTISAMPLED_MAP'];

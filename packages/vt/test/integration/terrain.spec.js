@@ -75,6 +75,7 @@ describe('vector tile on terrain integration specs', () => {
             style.tileStackDepth = 0;
             style.fadeAnimation = false;
             // style.debug = true;
+            const sceneConfig = style.sceneConfig || {};
             const layer = new GeoJSONVectorTileLayer('gvt', style);
             const terrain = {
                 type: 'mapbox',
@@ -91,7 +92,8 @@ describe('vector tile on terrain integration specs', () => {
             if (style.lit) {
                 terrain.shader = 'lit';
             }
-            const group = new GroupGLLayer('group', [layer], { terrain });
+            sceneConfig.terrain = terrain;
+            const group = new GroupGLLayer('group', [layer], sceneConfig);
             group.addTo(map);
 
 

@@ -34,6 +34,11 @@ export default class GraphicsTexture {
     get arrayLayers() {
         return 1;
     }
+
+    isMultiSampled() {
+        return this.texture && this.texture.sampleCount > 1;
+    }
+
     // called when minFilter or magFilter changed
     updateFilter() {
         if (this.texture) {
