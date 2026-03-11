@@ -180,6 +180,10 @@ class WeatherPainter {
         return weatherConfig && weatherConfig.enable;
     }
 
+    isAnimating() {
+        return this.isEnableRain() || this.isEnableSnow();
+    }
+
     isEnableRain() {
         const weatherConfig = this._layer.getWeatherConfig();
         return weatherConfig && weatherConfig.enable && weatherConfig.rain && weatherConfig.rain.enable;
