@@ -6,7 +6,7 @@ import frag from './glsl/fog.frag';
 class FogShader extends QuadShader {
     constructor() {
         super({
-            name: 'weather',
+            name: 'fog',
             frag,
             wgslFrag: getWGSLSource('gl_fog_frag'),
             extraCommandProps: {

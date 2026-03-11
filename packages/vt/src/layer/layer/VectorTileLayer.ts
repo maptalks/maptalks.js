@@ -390,6 +390,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             schema: options.schema,
             pickingGeometry: options.pickingGeometry,
             projectionCode: this.getSpatialReference().getProjection().code,
+             sdfURL: options.sdfURL,
             workerGlyph: options.workerGlyph && !this.getURLModifier(),
             featureIdProperty: options.featureIdProperty,
             isWebGPU,
@@ -2118,7 +2119,7 @@ export type VectorTileLayerOptionsType = {
 
     altitudeQueryTimeLimitPerFrame?: number,
     workerGlyph?: boolean,
-
+    sdfURL?: string;
     // A property to use as a feature id (for feature state)
     // https://docs.mapbox.com/style-spec/reference/sources/#vector-promoteId
     featureIdProperty?: string,

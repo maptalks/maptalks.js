@@ -327,7 +327,9 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
 
     drawImage(image: LayerImageType, extent: PointExtent, opacity: number) {
         const width = extent.getWidth();
-        this.drawGLImage(image, extent.xmin, extent.ymax, width, extent.getHeight(), 1, opacity, image.width !== width);
+        //因为imagelayer用的也是ImageGLRenderable,故也设置一个简单的TileInfo进行统一的抽象
+        image.tileInfo = image.tileInfo || {};
+        this.drawGLImage(image.tileInfo, image, extent.xmin, extent.ymax, width, extent.getHeight(), 1, opacity, image.width !== width);
     }
 
     createContext() {
@@ -379,7 +381,9 @@ export type ImageDataItem = ImageItem & {
     extent2d: PointExtent;
 }
 
-export type LayerImageType = HTMLImageElement | ImageBitmap;
+export type LayerImageType = (HTMLImageElement | ImageBitmap) & {
+    tileInfo?: any;
+}
 
 enum depthFuncEnum {
     'never', '<', '=', '<=', ' >', '!=', '>=', 'always'

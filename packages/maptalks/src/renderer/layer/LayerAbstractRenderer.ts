@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
-import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, getImageBitMap, isImageBitMap, calCanvasSize } from '../../core/util';
+import { now, isNil, isNumber, isArrayHasData, isSVG, IS_NODE, loadImage, getImageBitMap, isImageBitMap, calCanvasSize } from '../../core/util';
 import Class from '../../core/Class';
 import Browser from '../../core/Browser';
 import Canvas2D from '../../core/Canvas';
@@ -1040,3 +1040,30 @@ function registerWorkerSource() {
 }
 
 registerWorkerSource();
+
+
+/**
+    * 检测是否需要更新altitude,适用任何对象,Geometry,Mesh,TileInfo etc
+    * @param layer
+    * @param info
+    * @returns
+*/
+export function testNeedUpdateAltitude(layer, info) {
+    let needUpdates = false;
+    if (layer && layer.getMap && info) {
+        let { altitude } = layer.options || {};
+        const altIsNumber = isNumber(altitude);
+        if (!altIsNumber) {
+            altitude = 0;
+        }
+        //update _layerAlt cache
+        if (info.layerAltitude !== altitude) {
+            const map = layer.getMap();
+            const z = map.altitudeToPoint(altitude, map.getGLRes());
+            info.layerAltitude = altitude;
+            info.layerAlt = z;
+            needUpdates = true;
+        }
+    }
+    return needUpdates;
+}
