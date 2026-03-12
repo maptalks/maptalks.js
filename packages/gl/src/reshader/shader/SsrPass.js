@@ -164,11 +164,6 @@ class SsrPass {
         uniforms['inputRGBM'] = +this._inputRGBM;
         vec2.set(uniforms['outputSize'], output.width, output.height);
         vec2.set(uniforms['inputSize'], inputTex.width, inputTex.height);
-        const defines = {};
-        if (inputTex.texture && inputTex.texture.sampleCount > 1) {
-            defines['HAS_MULTISAMPLED'] = 1;
-        }
-        this._ssrQuadShader.setDefines(defines);
         this._renderer.render(this._ssrQuadShader, uniforms, null, output);
     }
 

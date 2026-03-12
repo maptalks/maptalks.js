@@ -6,11 +6,11 @@ struct Uniforms {
 
 @group(0) @binding($b) var<uniform> uniforms: Uniforms;
 #ifdef HAS_MULTISAMPLED
-@binding($b) @group(0) var textureSource: texture_multisampled_2d<f32>;
+@binding($b) @group(0) var depthTextureSource: texture_multisampled_2d<f32>;
 #else
-@binding($b) @group(0) var textureSource: texture_2d<f32>;
+@binding($b) @group(0) var depthTextureSource: texture_2d<f32>;
 #endif
-@group(0) @binding($b) var textureSourceSampler: sampler;
+@group(0) @binding($b) var depthTextureSourceSampler: sampler;
 
 fn sign_positive(x: f32) -> f32 {
     return select(0.0, 1.0, x > 0.0);
@@ -28,9 +28,9 @@ fn main(vertexOutput: VertexOutput) ->  @location(0) vec4f {
             var uv: vec2f = vertexOutput.vTexCoord + vec2f(f32(x) / uniforms.resolution.x, f32(y) / uniforms.resolution.y);
             uv = clamp(uv, vec2f(0.0), vec2f(1.0));
             #ifdef HAS_MULTISAMPLED
-                let texColor = textureLoad(textureSource, vec2i(uv * vec2f(uniforms.resolution)), 0);
+                let texColor = textureLoad(depthTextureSource, vec2i(uv * vec2f(uniforms.resolution)), 0);
             #else
-                let texColor = textureSample(textureSource, textureSourceSampler, uv);
+                let texColor = textureSample(depthTextureSource, depthTextureSourceSampler, uv);
             #endif
             let depth = common_decodeDepth(texColor);
 

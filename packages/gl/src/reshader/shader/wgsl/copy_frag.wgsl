@@ -6,21 +6,13 @@ struct SharpenUniforms {
 };
 
 @group(0) @binding($b) var<uniform> uniforms: SharpenUniforms;
-#ifdef HAS_MULTISAMPLED
-@binding($b) @group(0) var texture: texture_multisampled_2d<f32>;
-#else
 @binding($b) @group(0) var texture: texture_2d<f32>;
-#endif
 @group(0) @binding($b) var textureSampler: sampler;
 
 var<private> gTexCoord: vec2f;
 
 fn fetchSourceTexel(uv: vec2f) -> vec4f {
-#ifdef HAS_MULTISAMPLED
-  return textureLoad(texture, vec2i(uv * vec2f(uniforms.size)), 0);
-#else
   return textureSample(texture, textureSampler, uv);
-#endif
 }
 
 fn sharpColorFactor(color: vec3f, sharp: f32) -> vec3f {
