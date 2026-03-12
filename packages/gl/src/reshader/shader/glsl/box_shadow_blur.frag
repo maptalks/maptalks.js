@@ -2,7 +2,7 @@ precision highp float;
 
 varying vec2 vTexCoord;
 
-uniform sampler2D textureSource;
+uniform sampler2D depthTextureSource;
 uniform vec2 resolution;
 
 #include <common_pack_float>
@@ -17,7 +17,7 @@ void main()
     {
         vec2 uv = vTexCoord.st + vec2(float(x) / resolution.x, float(y) / resolution.y);
         uv = clamp(uv, 0.0, 1.0);
-        float depth = common_decodeDepth(texture2D(textureSource, uv));
+        float depth = common_decodeDepth(texture2D(depthTextureSource, uv));
         float s = max(0.0, sign(1.0 - depth));
         weight += sign(depth) * s;
         c += depth;

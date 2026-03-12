@@ -140,8 +140,9 @@ export default class BindGroupFormat {
                 if (!graphicsTexture) {
                     continue;
                 }
+                const gTexture = graphicsTexture as GraphicsTexture;
                 let descriptor: GPUTextureViewDescriptor;
-                if ((graphicsTexture as GraphicsTexture).gpuFormat.isDepthStencil) {
+                if (gTexture.gpuFormat.isDepthStencil) {
                     descriptor = {
                         aspect: 'depth-only'
                     };
@@ -150,9 +151,10 @@ export default class BindGroupFormat {
                         dimension: 'cube'
                     };
                 }
+                const resource = gTexture.isDepth() ? gTexture.getView(descriptor) : gTexture.getResolveTarget(descriptor);
                 entries.push({
                     binding: group.binding,
-                    resource: (graphicsTexture as GraphicsTexture).getView(descriptor)
+                    resource
                 });
             } else {
                 const allocation = group.isGlobal ? shaderBuffer.allocation : meshBuffer.allocation;

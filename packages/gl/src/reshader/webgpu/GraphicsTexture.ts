@@ -7,6 +7,7 @@ const flipYBuffer = new ArrayBuffer(1024 * 1024 * 4);
 
 export default class GraphicsTexture {
     texture: GPUTexture;
+    resolveTexture: GPUTexture;
     device: GraphicsDevice;
     config: any;
     //@internal
@@ -37,6 +38,11 @@ export default class GraphicsTexture {
 
     isMultiSampled() {
         return this.texture && this.texture.sampleCount > 1;
+    }
+
+    isDepth() {
+        const format = this.gpuFormat.format;
+        return format === 'depth24plus' || format === 'depth24plus-stencil8';
     }
 
     // called when minFilter or magFilter changed
@@ -76,13 +82,17 @@ export default class GraphicsTexture {
             this.version++;
             this.device.addToDestroyList(this.texture);
             this.texture = null;
+            if (this.resolveTexture) {
+                this.device.addToDestroyList(this.resolveTexture);
+                this.resolveTexture = null;
+            }
             this.dirty = false;
         }
         let texture: GPUTexture = this.texture;
         {
 
             const format = this.gpuFormat.format;
-            const isDepth = format === 'depth24plus' || format === 'depth24plus-stencil8';
+            const isDepth = this.isDepth();
             const usage = isDepth ?
                 GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT
                 :
@@ -102,6 +112,18 @@ export default class GraphicsTexture {
             this.fillData(texture, width, height);
         }
         this.texture = texture;
+        if (this.isMultiSampled()) {
+            this.resolveTexture = this.resolveTexture || device.createTexture({
+                size: [width, height, this.arrayLayers],
+                sampleCount: 1,
+                format: this.gpuFormat.format as any,
+                usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_SRC,
+                mipLevelCount: this.getMipLevelCount()
+            });
+        } else if (this.resolveTexture) {
+            this.device.addToDestroyList(this.resolveTexture);
+            this.resolveTexture = null;
+        }
     }
 
     _isDirty(newConfig) {
@@ -272,6 +294,14 @@ export default class GraphicsTexture {
         return true;
     }
 
+    getResolveTarget(descriptor?: GPUTextureViewDescriptor): GPUTextureView {
+        if (this.resolveTexture) {
+            return this.resolveTexture.createView(descriptor);
+        } else {
+            return this.getView(descriptor);
+        }
+    }
+
     getView(descriptor?: GPUTextureViewDescriptor): GPUTextureView {
         return this.texture.createView(descriptor);
     }
@@ -280,6 +310,10 @@ export default class GraphicsTexture {
         if (this.texture) {
             this.texture.destroy();
             delete this.texture;
+        }
+        if (this.resolveTexture) {
+            this.resolveTexture.destroy();
+            delete this.resolveTexture;
         }
     }
 }

@@ -65,9 +65,6 @@ class AnalysisPainter {
         delete shaderDefines['HAS_CUT'];
         delete shaderDefines['HAS_CROSSCUT'];
         delete shaderDefines['HAS_HEIGHTLIMIT'];
-        if (tex.texture && tex.texture.sampleCount > 1) {
-            shaderDefines['HAS_MULTISAMPLED'] = 1;
-        }
         for (let i = 0; i < analysisTaskList.length; i++) {
             const task = analysisTaskList[i];
             if (!task.isEnable()) {

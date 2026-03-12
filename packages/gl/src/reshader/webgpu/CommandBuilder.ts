@@ -251,8 +251,11 @@ export default class CommandBuilder {
                 format = (texture as Texture2D).config.type;
             } else if (texture instanceof GraphicsTexture) {
                 format = (texture as GraphicsTexture).gpuFormat.format;
+                if (texture.isDepth()) {
+                    multisampled = !!(texture.config && texture.config.sampleCount > 1);
+                }
+                // multisampled = !!(texture.config && texture.config.sampleCount > 1);
             }
-            multisampled = !!(texture.config && texture.config.sampleCount > 1);
         }
         return { format, multisampled };
     }
