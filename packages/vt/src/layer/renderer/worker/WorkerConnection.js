@@ -155,6 +155,16 @@ export default class WorkerConnection extends maptalks.worker.Actor {
         this.send(data, buffers, cb, this._dedicatedVTWorkers[layerId] === undefined ? this.workers[s].id : this._dedicatedVTWorkers[layerId]);
     }
 
+    returnBuffers(buffers) {
+        const data = {
+            command: 'returnBuffers',
+            params: {
+                buffers
+            }
+        };
+        this.broadcast(data, buffers);
+    }
+
     remove() {
         super.remove();
         this._dedicatedVTWorkers = {};
