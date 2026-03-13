@@ -74,19 +74,15 @@ export default class GraphicsFramebuffer {
     }
 
     getCommandKey() {
-        if (this._cmdKey) {
-            return this._cmdKey;
-        }
         const colorTexture = this.colorTexture;
         const depthTexture = this.depthTexture;
         let key = '';
         if (colorTexture) {
-            key += `${colorTexture.gpuFormat.format}-${colorTexture.config.sampleCount};`;
+            key += colorTexture.cmdVersion;
         }
         if (depthTexture) {
-            key += `${depthTexture.gpuFormat.format};`;
+            key += depthTexture.cmdVersion;
         }
-        this._cmdKey = key;
         return key;
     }
 

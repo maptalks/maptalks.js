@@ -30,7 +30,6 @@ export class GLShader {
     wgslVert: string;
     wgslFrag: string;
     uid: number;
-    commandId: number
     version: number;
     //@internal
     uniforms: ShaderUniformValue[];
@@ -55,7 +54,6 @@ export class GLShader {
         this.frag = frag;
         this.wgslVert = wgslVert;
         this.wgslFrag = wgslFrag;
-        this.commandId = 0;
         const shaderId = uid++;
         Object.defineProperty(this, 'uid', {
             enumerable: true,
@@ -423,12 +421,12 @@ export default class GPUShader extends GLShader {
             if (fnValues) {
                 const { funcs, key, commandKey } = fnValues;
                 if (!funcs.length) {
-                    return commandKey + fboKey;
+                    return this.dkey + commandKey + fboKey;
                 }
                 const values = funcs.map(func => func(null, renderProps));
                 const currentKey = pipelineDesc.generateValuesKey(values);
                 if (currentKey === key) {
-                    return commandKey + fboKey;
+                    return this.dkey + commandKey + fboKey;
                 }
             }
             const fbo = this._gpuFramebuffer;
@@ -440,7 +438,7 @@ export default class GPUShader extends GLShader {
                 key: pipelineDesc.getFnValuesKey(),
                 commandKey
             });
-            return commandKey + fboKey;
+            return this.dkey + commandKey + fboKey;
         } else {
             // regl
             return super.getShaderCommandKey(device, mesh, renderProps);
@@ -467,7 +465,6 @@ export default class GPUShader extends GLShader {
             const extraCommandProps = extend({}, this.extraCommandProps || {}, commandProps || {});
             pipelineDesc.readFromREGLCommand(extraCommandProps, mesh, renderProps, fbo);
             const command = builder.build(pipelineDesc, fbo);
-            command.uid = this.uid + '-' + this.commandId++;
             return command;
         } else {
             // regl
