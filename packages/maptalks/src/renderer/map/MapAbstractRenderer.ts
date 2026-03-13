@@ -93,6 +93,7 @@ class MapAbstractRenderer extends MapRenderer {
         this._resizeEventList = [];
         this._resizeTime = -Infinity;
         this._frameCycleRenderCount = 0;
+        console.log('renderer: ' + (this.isWebGPU() ? 'gpu' : this.isWebGL() ? 'webgl' : 'canvas'));
     }
 
     load() {

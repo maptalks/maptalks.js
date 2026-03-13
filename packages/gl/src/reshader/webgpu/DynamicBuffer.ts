@@ -4,7 +4,8 @@ import DynamicBufferPool, { DynamicBufferAllocation } from "./DynamicBufferPool"
 import { isArray, isFunction } from "../common/Util";
 import DynamicOffsets from "./DynamicOffsets";
 import { roundUp } from "./common/math";
-import { isPaddingType } from "./common/Types";
+
+let uid = 0;
 
 export default class DynamicBuffer {
     bindgroupMapping: any;
@@ -12,11 +13,13 @@ export default class DynamicBuffer {
     pool: DynamicBufferPool;
     allocation: DynamicBufferAllocation;
     version = 0;
+    uid: number;
 
     constructor(bindgroupMapping, pool: DynamicBufferPool) {
         this.bindgroupMapping = bindgroupMapping;
         this.pool = pool;
         this.allocation = {};
+        this.uid = uid++;
     }
 
     writeBuffer(uniformValues: Record<string, ShaderUniformValue>, dynamicOffsets: DynamicOffsets) {
@@ -99,18 +102,17 @@ export default class DynamicBuffer {
         // we always use f32 in WGSL
         const view = new Float32Array(buffer, offset, size / 4);
         if (isArray(value)) {
-            const padding = isPaddingType(type);
-            if (!padding) {
+            if (view.length === value.length) {
                 view.set(value);
-                return;
-            }
-            // 需要padding的类型参考:
-            // https://github.com/greggman/webgpu-utils/blob/dev/src/wgsl-types.ts
-            // wgsl 1.0中只会隔3个字节，pad一个字节
-            for (let i = 0; i < value.length; i++) {
-                const col = Math.floor(i / 3);
-                const row = i % 3;
-                view[col * 4 + row] = value[i];
+            } else {
+                // 需要padding的类型参考:
+                // https://github.com/greggman/webgpu-utils/blob/dev/src/wgsl-types.ts
+                // wgsl 1.0中只会隔3个字节，pad一个字节
+                for (let i = 0; i < value.length; i++) {
+                    const col = Math.floor(i / 3);
+                    const row = i % 3;
+                    view[col * 4 + row] = value[i];
+                }
             }
         } else {
             view[0] = value;

@@ -134,10 +134,6 @@ export default class Material extends Eventable(Base) {
         return this._loadingCount <= 0;
     }
 
-    hasUniform(k: string) {
-        return Object.prototype.hasOwnProperty.call(this.uniforms, k);
-    }
-
     setUniform(k: string, v: ShaderUniformValue) {
         return this.set(k, v);
     }
