@@ -287,10 +287,9 @@ export default class Mesh {
     }
 
     hasUniform(k: string): boolean {
-        if (this._realUniforms) {
-            return this._realUniforms[k] !== undefined;
-        }
-        return this.uniforms[k] !== undefined;
+        const uniforms = this.uniforms;
+        const materialUniforms = this._material && this._material.uniforms;
+        return uniforms && hasOwn(uniforms, k) || materialUniforms && hasOwn(materialUniforms, k);
     }
 
     getUniform(k: string): ShaderUniformValue {
@@ -603,9 +602,9 @@ export default class Mesh {
         return this.localTransform;
     }
 
-    _meshBuffer: Record<string, DynamicBuffer>;
+    _meshBuffer: Record<number, DynamicBuffer>;
     // 实现webgpu相关的逻辑
-    writeDynamicBuffer(commandUID: string, renderProps, bindGroupMapping: BindGroupFormat, pool: DynamicBufferPool, dynamicOffsets: DynamicOffsets) {
+    writeDynamicBuffer(commandUID: number, renderProps, bindGroupMapping: BindGroupFormat, pool: DynamicBufferPool, dynamicOffsets: DynamicOffsets) {
         if (!this._meshBuffer) {
             this._meshBuffer = {};
         }

@@ -5,6 +5,8 @@ import GraphicsDevice from "./GraphicsDevice";
 const arrayBuffer = new ArrayBuffer(1024 * 1024 * 4);
 const flipYBuffer = new ArrayBuffer(1024 * 1024 * 4);
 
+let warned = false;
+
 export default class GraphicsTexture {
     texture: GPUTexture;
     resolveTexture: GPUTexture;
@@ -13,6 +15,7 @@ export default class GraphicsTexture {
     //@internal
     gpuFormat: GPUTexFormat;
     version = 0;
+    cmdVersion = 0;
     //@internal
     dirty: boolean;
 
@@ -67,10 +70,22 @@ export default class GraphicsTexture {
             this.dirty = this._isDirty(config);
         }
         const { width, height } = this._getSize(config);
+        // 如果sampleCount或format发生变化，Shader中需要重新生成command
+        let cmdVersionDirty = false;
+        if (config.sampleCount && config.sampleCount !== this.config.sampleCount) {
+            cmdVersionDirty = true;
+        }
         extend(this.config, config);
         this.config.width = width;
         this.config.height = height;
-        this.gpuFormat = toTextureFormat(this.config.format, this.config.type);
+        const gpuFormat = toTextureFormat(this.config.format, this.config.type);
+        if (gpuFormat.format !== this.gpuFormat.format) {
+            cmdVersionDirty = true;
+        }
+        this.gpuFormat = gpuFormat;
+        if (cmdVersionDirty) {
+            this.cmdVersion++;
+        }
         this._updateTexture();
     }
 
@@ -183,7 +198,17 @@ export default class GraphicsTexture {
             if (this.isArrayData(config.data)) {
                 this.fillArrayData(texture, config.data, width, height, origin);
             } else {
-                this.fillImageData(texture, config.data, width, height, origin);
+                try {
+                    this.fillImageData(texture, config.data, width, height, origin);
+                } catch (err) {
+                    if (!warned) {
+                        if (config.data && config.data.src) {
+                            console.warn('image src:' + config.data.src);
+                        }
+                        console.warn('Failed to copy image to texture', err);
+                        warned = true;
+                    }
+                }
             }
         }
     }
