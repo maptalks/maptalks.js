@@ -279,7 +279,8 @@
 }
 
 :root {
-  --maptalks-ico-border: 8px solid #b4b3b3;
+  --maptalks-infowindow-border-color: #b4b3b3;
+  --maptalks-ico-border: 10px solid var(--maptalks-infowindow-border-color);
 }
 .maptalks-msgBox em.maptalks-ico-right-top {
   left: 0%;
@@ -292,11 +293,55 @@
 }
 
 .maptalks-msgBox em.maptalks-ico-left-middle {
-  left: 100%;
+  left: calc(100% + 6px);
   bottom: calc(50% - 25px);
-  margin-left: 1px;
+  /* margin-left: 0px; */
   border: var(--maptalks-ico-border);
-  border-color: transparent transparent transparent #fff;
+  border-color: transparent transparent transparent
+    var(--maptalks-infowindow-border-color);
+}
+
+.maptalks-msgBox em.maptalks-ico-right-middle {
+  left: 0%;
+  left: -8px;
+  bottom: calc(50% - 25px);
+  margin-left: -13px;
+
+  border: var(--maptalks-ico-border);
+  border-color: transparent var(--maptalks-infowindow-border-color) transparent
+    transparent;
+}
+
+.maptalks-msgBox em.maptalks-ico-left-bottom {
+  left: 100%;
+  bottom: none;
+  top: -21px;
+  margin-left: -22px;
+  border: var(--maptalks-ico-border);
+  border-color: transparent transparent var(--maptalks-infowindow-border-color)
+    transparent;
+}
+
+.maptalks-msgBox em.maptalks-ico-middle-bottom {
+  bottom: none;
+  top: -20px;
+  border: var(--maptalks-ico-border);
+  border-color: transparent transparent var(--maptalks-infowindow-border-color)
+    transparent;
+}
+
+.maptalks-msgBox em.maptalks-ico-right-bottom {
+  left: 0%;
+  bottom: none;
+  top: -20px;
+  margin-left: 4px;
+  border: var(--maptalks-ico-border);
+  border-color: transparent transparent var(--maptalks-infowindow-border-color)
+    transparent;
+}
+
+.maptalks-msgBox em.maptalks-ico-middle-middle {
+  display: none;
 }
 
 .maptalks-msgBox em.maptalks-ico-left-middle::after,
@@ -305,46 +350,34 @@
 .maptalks-msgBox em.maptalks-ico-middle-bottom::after,
 .maptalks-msgBox em.maptalks-ico-right-bottom::after,
 .maptalks-msgBox em.maptalks-ico-middle-middle::after {
-  content: none;
+  content: "";
+  border: 9px solid #fff;
 }
-
-.maptalks-msgBox em.maptalks-ico-right-middle {
-  left: 0%;
-  bottom: calc(50% - 25px);
-  margin-left: -16px;
-  border: var(--maptalks-ico-border);
+.maptalks-msgBox em.maptalks-ico-left-middle::after {
+  left: -11px;
+  top: -9px;
+  border-color: transparent transparent transparent #fff;
+}
+.maptalks-msgBox em.maptalks-ico-right-middle::after {
+  top: -9px;
   border-color: transparent #fff transparent transparent;
 }
-
-.maptalks-msgBox em.maptalks-ico-left-bottom {
-  left: 100%;
-  bottom: none;
-  top: -16px;
-  margin-left: -20px;
-  border: var(--maptalks-ico-border);
+.maptalks-msgBox em.maptalks-ico-left-bottom::after {
+  left: -9px;
+  top: -7.5px;
+  border-color: transparent transparent #fff transparent;
+}
+.maptalks-msgBox em.maptalks-ico-middle-bottom::after {
+  left: -9px;
+  top: -7px;
   border-color: transparent transparent #fff transparent;
 }
 
-.maptalks-msgBox em.maptalks-ico-middle-bottom {
-  bottom: none;
-  top: -16px;
-  border: var(--maptalks-ico-border);
+.maptalks-msgBox em.maptalks-ico-right-bottom::after {
+  left: -9px;
+  top: -8px;
   border-color: transparent transparent #fff transparent;
 }
-
-.maptalks-msgBox em.maptalks-ico-right-bottom {
-  left: 0%;
-  bottom: none;
-  top: -16px;
-  margin-left: 4px;
-  border: var(--maptalks-ico-border);
-  border-color: transparent transparent #fff transparent;
-}
-
-.maptalks-msgBox em.maptalks-ico-middle-middle {
-  display: none;
-}
-
 .maptalks-msgBox h2 {
   display: block;
   height: auto;
