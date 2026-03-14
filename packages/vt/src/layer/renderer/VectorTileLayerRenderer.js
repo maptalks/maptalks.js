@@ -1728,6 +1728,18 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             return;
         }
         if (tile.image && !tile.image._empty) {
+            const buffers = [];
+            if (tile.image.buffers) {
+                for (let i = 0; i < tile.image.buffers.length; i++) {
+                    if (tile.image.buffers[i] instanceof ArrayBuffer) {
+                        buffers.push(tile.image.buffers[i]);
+                    }
+                }
+            }
+            if (buffers.length > 0 && this._workerConn) {
+                this._workerConn.returnBuffers(buffers, tile.image.workerId);
+            }
+
             delete tile.image.featuresTypeArray;
             delete tile.image.featuresFullJSON;
             const styleCounter = tile.image && tile.image.style;
