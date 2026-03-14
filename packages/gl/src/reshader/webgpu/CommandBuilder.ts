@@ -17,8 +17,10 @@ const MESH_IN_GLOBAL_ERROR = 'Found a mesh uniform in global struct:';
 
 const vertexOutputRegex = /struct\s+VertexOutput\s*\{[\s\S]*?\}/;
 
+let uid = 0;
+
 export type CommandStruct = {
-    uid: string,
+    uid: number,
     layout: GPUBindGroupLayout,
     pipeline: GPURenderPipeline,
     vertexInfo: any,
@@ -140,7 +142,7 @@ export default class CommandBuilder {
         const activeAttributes = this._getActiveAttributes(/* vertexInfo */);
 
         return {
-            uid: -1 + '',
+            uid: uid++,
             layout,
             pipeline,
             vertexInfo,
@@ -251,8 +253,11 @@ export default class CommandBuilder {
                 format = (texture as Texture2D).config.type;
             } else if (texture instanceof GraphicsTexture) {
                 format = (texture as GraphicsTexture).gpuFormat.format;
+                if (texture.isDepth()) {
+                    multisampled = !!(texture.config && texture.config.sampleCount > 1);
+                }
+                // multisampled = !!(texture.config && texture.config.sampleCount > 1);
             }
-            multisampled = !!(texture.config && texture.config.sampleCount > 1);
         }
         return { format, multisampled };
     }
@@ -466,7 +471,7 @@ function meshHasUniform(mesh: Mesh, name: string, contextDesc: Record<string, an
         name === 'lineColor' || name === 'lineOpacity') {
         return true;
     }
-    return contextDesc[name] && !contextDesc[name].global || mesh.hasUniform(name) || (mesh.material && mesh.material.hasUniform(name));
+    return contextDesc[name] && !contextDesc[name].global || mesh.hasUniform(name);
 }
 
 function getItemSize(type) {

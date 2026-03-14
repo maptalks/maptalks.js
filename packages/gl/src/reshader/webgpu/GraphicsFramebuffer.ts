@@ -62,6 +62,9 @@ export default class GraphicsFramebuffer {
             const colorAttachment = this._renderPass.colorAttachments[0];
             if (colorAttachment && colorAttachment.view && this.colorTexture) {
                 colorAttachment.view = this.colorTexture.getView();
+                if (this.colorTexture.isMultiSampled()) {
+                    colorAttachment.resolveTarget = this.colorTexture.getResolveTarget();
+                }
             }
             const depthAttchment = this._renderPass.depthStencilAttachment;
             if (depthAttchment && depthAttchment.view && this.depthTexture) {
@@ -71,19 +74,15 @@ export default class GraphicsFramebuffer {
     }
 
     getCommandKey() {
-        if (this._cmdKey) {
-            return this._cmdKey;
-        }
         const colorTexture = this.colorTexture;
         const depthTexture = this.depthTexture;
         let key = '';
         if (colorTexture) {
-            key += `${colorTexture.gpuFormat.format}-${colorTexture.config.sampleCount};`;
+            key += colorTexture.cmdVersion;
         }
         if (depthTexture) {
-            key += `${depthTexture.gpuFormat.format};`;
+            key += depthTexture.cmdVersion;
         }
-        this._cmdKey = key;
         return key;
     }
 
@@ -168,6 +167,9 @@ export default class GraphicsFramebuffer {
                 loadOp: 'load',
                 storeOp: 'store',
             };
+            if (this.colorTexture && this.colorTexture.isMultiSampled()) {
+                this._renderPass.colorAttachments[0].resolveTarget = this.colorTexture.getResolveTarget();
+            }
         }
         if (depth) {
             const depthAttchment = this._renderPass.depthStencilAttachment = {

@@ -59,11 +59,11 @@ class BloomPass {
         uniforms['TextureSource'] = sourceTex;
         vec2.set(uniforms['outputSize'], sourceTex.width, sourceTex.height);
 
-        const shaderDefines = {};
-        if (sourceTex.config && sourceTex.config.sampleCount > 1) {
-            shaderDefines['HAS_MULTISAMPLED'] = 1;
-        }
-        this._combineShader.setDefines(shaderDefines);
+        // const shaderDefines = {};
+        // if (sourceTex.config && sourceTex.config.sampleCount > 1) {
+        //     shaderDefines['HAS_MULTISAMPLED'] = 1;
+        // }
+        // this._combineShader.setDefines(shaderDefines);
         this._renderer.render(this._combineShader, uniforms, null, paintToScreen ? null : this._combineFBO);
         return paintToScreen ? null : this._combineTex;
     }

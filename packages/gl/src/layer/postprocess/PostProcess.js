@@ -227,12 +227,6 @@ export default class PostProcess {
         } else {
             delete shaderDefines['HAS_OUTLINE_TEX'];
         }
-        const useMultiSample = this._layer.options.antialias === true;
-        if (useMultiSample) {
-            shaderDefines['HAS_MULTISAMPLED'] = 1;
-        } else {
-            delete shaderDefines['HAS_MULTISAMPLED'];
-        }
         // if (noAaSource) {
         //     shaderDefines['HAS_NOAA_TEX'] = 1;
         // } else {
@@ -268,12 +262,6 @@ export default class PostProcess {
         const shaderDefines = {};
         const renderer = this._layer.getRenderer();
         const texture =  fbo.color && renderer._getFBOColor(fbo) || fbo;
-        const useMultiSample = texture.texture && texture.texture.sampleCount > 1;
-        if (useMultiSample) {
-            shaderDefines['HAS_MULTISAMPLED'] = 1;
-        } else {
-            delete shaderDefines['HAS_MULTISAMPLED'];
-        }
         this._copyShader.setDefines(shaderDefines);
 
         this._renderer.render(this._copyShader, {

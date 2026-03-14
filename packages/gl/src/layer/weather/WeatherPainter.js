@@ -103,18 +103,7 @@ class WeatherPainter {
         } else {
             delete shaderDefines['HAS_FOG'];
         }
-        let isMultiSampled = tex.isMultiSampled && tex.isMultiSampled();
-        if (isMultiSampled) {
-            shaderDefines['HAS_MULTISAMPLED'] = 1;
-        } else {
-            delete shaderDefines['HAS_MULTISAMPLED'];
-        }
         const mixFactorMap = this._renderMixFactor(meshes) || this.EMPTY_TEXTURE;
-        if (mixFactorMap.isMultiSampled && mixFactorMap.isMultiSampled()) {
-            shaderDefines['HAS_MULTISAMPLED_MAP'] = 1;
-        } else {
-            delete shaderDefines['HAS_MULTISAMPLED_MAP'];
-        }
         this._weatherShader.setDefines(shaderDefines);
         uniforms['mixFactorMap'] = mixFactorMap;
         uniforms['sceneMap'] = tex;
@@ -178,6 +167,10 @@ class WeatherPainter {
     isEnable() {
         const weatherConfig = this._layer.getWeatherConfig();
         return weatherConfig && weatherConfig.enable;
+    }
+
+    isAnimating() {
+        return this.isEnableRain() || this.isEnableSnow();
     }
 
     isEnableRain() {

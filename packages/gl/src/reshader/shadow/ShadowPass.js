@@ -78,7 +78,7 @@ class ShadowPass {
                 this.boxBlurShader,
                 {
                     resolution : [depthTex.width, depthTex.height],
-                    textureSource : depthTex
+                    depthTextureSource : depthTex
                 },
                 null,
                 this.blurFBO

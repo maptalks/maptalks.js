@@ -17,9 +17,7 @@
 uniform sampler2D shadow_shadowMap;
 uniform float shadow_opacity;
 uniform vec3 shadow_color;
-#if defined(USE_ESM)
-    uniform float esm_shadow_threshold;
-#endif
+uniform float esm_shadow_threshold;
 
 varying vec4 shadow_vLightSpacePos;
 
@@ -27,7 +25,6 @@ varying vec4 shadow_vLightSpacePos;
     #include <common_pack_float>
 #endif
 
-#if defined(USE_ESM)
 float esm(vec3 projCoords, vec4 shadowTexel) {
     // vec2 uv = projCoords.xy;
     float compare = projCoords.z;
@@ -45,15 +42,12 @@ float esm(vec3 projCoords, vec4 shadowTexel) {
     // depth = exp(c * depth) * exp(-c * compare);
     return clamp(depth, esm_shadow_threshold, 1.0);
 }
-#endif
 
 float shadow_computeShadow_coeff(sampler2D shadowMap, vec3 projCoords) {
     vec2 uv = projCoords.xy;
     vec4 shadowTexel = texture2D(shadowMap, uv);
-    #if defined(USE_ESM)
-        float esm_coeff = esm(projCoords, shadowTexel);
-        float coeff = esm_coeff * esm_coeff;
-    #endif
+    float esm_coeff = esm(projCoords, shadowTexel);
+    float coeff = esm_coeff * esm_coeff;
     return 1.0 - (1.0 - coeff) * shadow_opacity;
 }
 

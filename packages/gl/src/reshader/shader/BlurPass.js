@@ -54,15 +54,6 @@ class BlurPass {
         }
         vec2.set(uniforms['outSize'], curTex.width, curTex.height);
 
-        if (curTex.config && curTex.config.sampleCount > 1) {
-            const defines = {
-                'HAS_MULTISAMPLED': 1
-            };
-            this._blur0Shader.setDefines(defines);
-        } else {
-            this._blur0Shader.setDefines({});
-        }
-
         //只有第一次blur需要用 luminThreshold 过滤像素
         this._blurOnce(this._blur0Shader, curTex, this._blur00FBO, this._blur01FBO, 0.5, luminThreshold);
         this._blurOnce(this._blur1Shader, this._blur01FBO.color[0], this._blur10FBO, this._blur11FBO, 0.5);
@@ -97,9 +88,6 @@ class BlurPass {
         vec2.set(uniforms['outputSize'], output0.width, output0.height);
         this._renderer.render(shader, uniforms, null, output0);
 
-        if (shader.shaderDefines && shader.shaderDefines['HAS_MULTISAMPLED']) {
-            shader.setDefines({});
-        }
         uniforms['luminThreshold'] = 0;
         uniforms['inputRGBM'] = 1;
         vec2.set(uniforms['blurDir'], 1, 0);

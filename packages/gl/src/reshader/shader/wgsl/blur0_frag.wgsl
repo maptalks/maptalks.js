@@ -9,11 +9,7 @@ struct GaussianBlur0Uniforms {
 };
 
 @group(0) @binding($b) var<uniform> uniforms: GaussianBlur0Uniforms;
-#ifdef HAS_MULTISAMPLED
-@binding($b) @group(0) var TextureBlurInput: texture_multisampled_2d<f32>;
-#else
 @binding($b) @group(0) var TextureBlurInput: texture_2d<f32>;
-#endif
 @group(0) @binding($b) var TextureBlurInputSampler: sampler;
 
 const colorBright = vec3f(0.2126, 0.7152, 0.0722);
@@ -44,11 +40,7 @@ fn decodeRGBM(color: vec4f, range: f32) -> vec3f {
 }
 
 fn fetchSourceTexel(uv: vec2f) -> vec4f {
-#ifdef HAS_MULTISAMPLED
-  return textureLoad(TextureBlurInput, vec2i(uv * vec2f(uniforms.outSize)), 0);
-#else
   return textureSample(TextureBlurInput, TextureBlurInputSampler, uv);
-#endif
 }
 
 fn gaussianBlur(gTexCoord: vec2f) -> vec4f {

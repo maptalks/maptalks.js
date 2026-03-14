@@ -62,11 +62,7 @@ struct FragmentUniforms {
   @group(0) @binding($b) var heightLimitMapSampler: sampler;
 #endif
 
-#ifdef HAS_MULTISAMPLED
-  @group(0) @binding($b) var sceneMap: texture_multisampled_2d<f32>;
-#else
-  @group(0) @binding($b) var sceneMap: texture_2d<f32>;
-#endif
+@group(0) @binding($b) var sceneMap: texture_2d<f32>;
 @group(0) @binding($b) var sceneMapSampler: sampler;
 
 @group(0) @binding($b) var<uniform> uniforms: FragmentUniforms;
@@ -76,11 +72,7 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
   var glFragColor: vec4f;
   var uv = vertexOutput.vTexCoord;
   uv.y = 1.0 - uv.y;
-  #ifdef HAS_MULTISAMPLED
-      let sceneColor = textureLoad(sceneMap, vec2i(uv * uniforms.resolution), 0);
-  #else
-      let sceneColor = textureSample(sceneMap, sceneMapSampler, uv);
-  #endif
+  let sceneColor = textureSample(sceneMap, sceneMapSampler, uv);
   glFragColor = sceneColor;
 
   #ifdef HAS_VIEWSHED

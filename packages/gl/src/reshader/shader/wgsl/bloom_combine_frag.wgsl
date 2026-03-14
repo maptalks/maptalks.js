@@ -21,13 +21,10 @@ struct BloomCombineUniforms {
 @group(0) @binding($b) var TextureBloomBlur4Sampler: sampler;
 @group(0) @binding($b) var TextureBloomBlur5: texture_2d<f32>;
 @group(0) @binding($b) var TextureBloomBlur5Sampler: sampler;
-#ifdef HAS_MULTISAMPLED
-@group(0) @binding($b) var TextureInput: texture_multisampled_2d<f32>;
-@group(0) @binding($b) var TextureSource: texture_multisampled_2d<f32>;
-#else
+
 @group(0) @binding($b) var TextureInput: texture_2d<f32>;
 @group(0) @binding($b) var TextureSource: texture_2d<f32>;
-#endif
+
 @group(0) @binding($b) var TextureInputSampler: sampler;
 @group(0) @binding($b) var TextureSourceSampler: sampler;
 
@@ -47,19 +44,11 @@ fn getRadiusFactored(value: f32, middle: f32) -> f32 {
 }
 
 fn fetchSourceTexel(uv: vec2f) -> vec4f {
-#ifdef HAS_MULTISAMPLED
-  return textureLoad(TextureSource, vec2i(uv * vec2f(uniforms.outputSize)), 0);
-#else
   return textureSample(TextureSource, TextureSourceSampler, uv);
-#endif
 }
 
 fn fetchInputTexel(uv: vec2f) -> vec4f {
-#ifdef HAS_MULTISAMPLED
-  return textureLoad(TextureInput, vec2i(uv * vec2f(uniforms.outputSize)), 0);
-#else
   return textureSample(TextureInput, TextureInputSampler, uv);
-#endif
 }
 
 

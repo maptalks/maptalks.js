@@ -14,20 +14,12 @@ struct FxaaUniforms {
 };
 
 @binding($b) @group(0) var<uniform> uniforms: FxaaUniforms;
-#ifdef HAS_MULTISAMPLED
-@binding($b) @group(0) var textureSource: texture_multisampled_2d<f32>;
-#else
 @binding($b) @group(0) var textureSource: texture_2d<f32>;
-#endif
 @binding($b) @group(0) var textureSourceSampler: sampler;
 
 
 #ifdef HAS_OUTLINE_TEX
-#ifdef HAS_MULTISAMPLED
-@binding($b) @group(0) var textureOutline: texture_multisampled_2d<f32>;
-#else
 @binding($b) @group(0) var textureOutline: texture_2d<f32>;
-#endif
 @binding($b) @group(0) var textureOutlineSampler: sampler;
 #endif
 
@@ -35,21 +27,13 @@ var<private> gTexCoord: vec2f;
 
 fn fetchSourceTexel(uv: vec2f) -> vec4f {
   let flipUV = vec2f(uv.x, 1.0 - uv.y);
-#ifdef HAS_MULTISAMPLED
-  return textureLoad(textureSource, vec2i(flipUV * vec2f(uniforms.resolution)), 0);
-#else
   return textureSample(textureSource, textureSourceSampler, flipUV);
-#endif
 }
 
 #ifdef HAS_OUTLINE_TEX
   fn fetchOutlineTexel(uv: vec2f) -> vec4f {
     let flipUV = vec2f(uv.x, 1.0 - uv.y);
-  #ifdef HAS_MULTISAMPLED
-    return textureLoad(textureOutline, vec2i(flipUV * vec2f(uniforms.resolution)), 0);
-  #else
     return textureSample(textureOutline, textureOutlineSampler, flipUV);
-  #endif
   }
 #endif
 

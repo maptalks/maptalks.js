@@ -400,7 +400,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         if (map.isInteracting() && (this._groundPainter && this._groundPainter.isEnable() || this._envPainter && this._envPainter.isEnable())) {
             return true;
         }
-        if (this._weatherPainter && this._weatherPainter.isEnable()) {
+        if (this._weatherPainter && this._weatherPainter.isAnimating()) {
             return true;
         }
         if (this.isEnableScanEffect()) {

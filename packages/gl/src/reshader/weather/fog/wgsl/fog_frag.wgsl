@@ -18,17 +18,9 @@ struct WeatherUniforms {
 #endif
 
 @group(0) @binding($b) var sceneMapSampler: sampler;
-#ifdef HAS_MULTISAMPLED
-  @group(0) @binding($b) var sceneMap: texture_multisampled_2d<f32>;
-#else
-  @group(0) @binding($b) var sceneMap: texture_2d<f32>;
-#endif
+@group(0) @binding($b) var sceneMap: texture_2d<f32>;
 @group(0) @binding($b) var mixFactorMapSampler: sampler;
-#ifdef HAS_MULTISAMPLED_MAP
-  @group(0) @binding($b) var mixFactorMap: texture_multisampled_2d<f32>;
-#else
-  @group(0) @binding($b) var mixFactorMap: texture_2d<f32>;
-#endif
+@group(0) @binding($b) var mixFactorMap: texture_2d<f32>;
 
 const HASHSCALE1 = 0.1031;
 const HASHSCALE3 = vec3f(0.1031, 0.1030, 0.0973);
@@ -119,17 +111,9 @@ fn main(
 ) -> @location(0) vec4f {
     var uv = vertexOutput.vTexCoord;
     uv.y = 1.0 - uv.y;
-    #ifdef HAS_MULTISAMPLED
-        var sceneColor = textureLoad(sceneMap, vec2i(uv * uniforms.resolution), 0);
-    #else
-        var sceneColor = textureSample(sceneMap, sceneMapSampler, uv);
-    #endif
+    var sceneColor = textureSample(sceneMap, sceneMapSampler, uv);
     var glFragColor = sceneColor;
-    #ifdef HAS_MULTISAMPLED_MAP
-        let mixFactorColor = textureLoad(mixFactorMap, vec2i(uv * uniforms.resolution), 0);
-    #else
-        let mixFactorColor = textureSample(mixFactorMap, mixFactorMapSampler, uv);
-    #endif
+    let mixFactorColor = textureSample(mixFactorMap, mixFactorMapSampler, uv);
 
     #ifdef HAS_RAIN
         let ripplesColor = textureSample(ripplesMap, ripplesMapSampler, uv);
