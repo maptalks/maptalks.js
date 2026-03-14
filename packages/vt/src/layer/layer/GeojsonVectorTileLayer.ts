@@ -3,7 +3,7 @@ import * as maptalks from "maptalks";
 import { isNumber, isObject, isString } from "../../common/Util";
 
 import Ajax from "../../worker/util/Ajax";
-import type { ArrayExtent, Callback, LayerJSONType } from "maptalks";
+import { ArrayExtent, Callback, LayerJSONType, GeoJSON } from "maptalks";
 import VectorTileLayer, { VectorTileLayerOptionsType } from "./VectorTileLayer";
 
 const options = {
@@ -117,6 +117,8 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     }
 
     setData(data: any) {
+        //always reset features
+        this.features = null;
         this.options.data = data;
         if (data && (isString(data) || data.url)) {
             const renderInited = !!this.getRenderer();
@@ -208,8 +210,34 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         }
     }
 
-    getData() {
-        return this.features || null;
+    getData(callback?: (geojson: any) => void) {
+        const data = this.features || null;
+        if (!callback) {
+            return data;
+        }
+        if (data && callback) {
+            callback(data);
+            return data;
+        }
+        const geojsonData = this.options.data;
+        if (!geojsonData) {
+            callback(null);
+            return data;
+        }
+
+        const url = isString(geojsonData) ? geojsonData : geojsonData.url;
+        if (isString(url)) {
+            GeoJSON.fetch(url).then(geojson => {
+                callback(geojson);
+            }).catch(error => {
+                console.error(error);
+                callback(null);
+            })
+
+        } else {
+            callback(null);
+        }
+        return data;
     }
 
     getTileUrl(x: number, y: number, z: number) {
