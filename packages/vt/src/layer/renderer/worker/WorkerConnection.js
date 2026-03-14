@@ -152,17 +152,27 @@ export default class WorkerConnection extends maptalks.worker.Actor {
         if (tileArrayBuffer && tileArrayBuffer instanceof ArrayBuffer) {
             buffers.push(tileArrayBuffer);
         }
-        this.send(data, buffers, cb, this._dedicatedVTWorkers[layerId] === undefined ? this.workers[s].id : this._dedicatedVTWorkers[layerId]);
+        const workerId = this._dedicatedVTWorkers[layerId] === undefined ? this.workers[s].id : this._dedicatedVTWorkers[layerId];
+        this.send(data, buffers, (err, resData) => {
+            if (resData) {
+                resData.workerId = workerId;
+            }
+            cb(err, resData);
+        }, workerId);
     }
 
-    returnBuffers(buffers) {
+    returnBuffers(buffers, workerId) {
         const data = {
             command: 'returnBuffers',
             params: {
                 buffers
             }
         };
-        this.broadcast(data, buffers);
+        const layerId = this._workerLayerId;
+        const targetWorkerId = (workerId !== undefined) ? workerId : this._dedicatedVTWorkers[layerId];
+        if (targetWorkerId !== undefined) {
+            this.send(data, buffers, null, targetWorkerId);
+        }
     }
 
     remove() {

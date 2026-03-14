@@ -188,5 +188,9 @@ export default class Dispatcher {
         //     delete TILE_LOADINGS[keys[i]];
         // }
         TILE_CACHE.reset();
+        const ArrayBufferPool = getVectorPacker().ArrayBufferPool;
+        if (ArrayBufferPool && ArrayBufferPool.clear) {
+            ArrayBufferPool.clear();
+        }
     }
 }

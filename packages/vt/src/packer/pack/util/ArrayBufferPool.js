@@ -35,6 +35,10 @@ class ArrayBufferPool {
         }
     }
 
+    clear() {
+        this._pool = {};
+    }
+
     _getBucketSize(size) {
         let n = 1024;
         while (n < size) {

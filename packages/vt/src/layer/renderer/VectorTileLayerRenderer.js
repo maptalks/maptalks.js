@@ -1737,7 +1737,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 }
             }
             if (buffers.length > 0 && this._workerConn) {
-                this._workerConn.returnBuffers(buffers);
+                this._workerConn.returnBuffers(buffers, tile.image.workerId);
             }
 
             delete tile.image.featuresTypeArray;
