@@ -69,8 +69,8 @@ export default class VideoSurface extends Eventable(Handlerable(Class)) {
    */
   private _notifyRendererUpdate() {
     const layer = this.getLayer();
-    const map = layer.getMap();
-    if (map && layer) {
+    const map = layer && layer.getMap();
+    if (map) {
       const renderer = layer.getRenderer();
       if (renderer) {
         (renderer as any)._updateCoordinates(this);
