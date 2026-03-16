@@ -78,7 +78,8 @@ export default class BaseLayerWorker {
             ref: this
         }];
         const feaIdProp = this.options.featureIdProperty;
-        this.requests[url] = this.getTileFeatures(context, (err, features, layers, props) => {
+        this.requests[url] = true;
+        const req = this.getTileFeatures(context, (err, features, layers, props) => {
             const waitings = loadings[url];
             delete loadings[url];
             if (this.checkIfCanceled(url)) {
@@ -117,6 +118,9 @@ export default class BaseLayerWorker {
                 }
             }
         });
+        if (this.requests[url]) {
+            this.requests[url] = req;
+        }
 
     }
 
