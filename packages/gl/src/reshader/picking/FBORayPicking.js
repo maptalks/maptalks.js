@@ -85,7 +85,7 @@ const frag1 = `
             discard;
             return;
         }
-        gl_FragColor = vec4(unpack(float(fbo_picking_meshId + 1.0)), 1.0);
+        gl_FragColor = vec4(unpack(float(fbo_picking_meshId) + 1.0), 1.0);
         // gl_FragColor = vec4(unpack(float(35)), 1.0);
     }
 `;

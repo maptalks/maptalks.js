@@ -981,6 +981,7 @@ export default class TileMeshPainter {
             mesh.properties.count = data.featureTable && data.featureTable['BATCH_LENGTH'] || 0;
             mesh.properties.serviceIndex = node._rootIdx;
             const defines = this._getGLTFMeshDefines(gltfMesh, geometry, material, node._rootIdx, gltf);
+            defines['MESH_ENV_EXPO'] = 1;
             mesh.setDefines(defines);
             const compressUniforms = gltfMesh.compressUniforms;
             if (compressUniforms) {
