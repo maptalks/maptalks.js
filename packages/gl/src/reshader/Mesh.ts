@@ -295,11 +295,11 @@ export default class Mesh {
     }
 
     getDefines(): ShaderDefines {
-        return this._defines;
+        return this._defines || {};
     }
 
     getShaderDefines() {
-        const defines = extend({}, this._defines);
+        const defines = extend({}, this._defines || {});
         this._appendGeometryDefines(defines);
         if (this._material && this._geometry) {
             this._material.appendDefines(defines, this._geometry);
