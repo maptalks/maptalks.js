@@ -216,13 +216,13 @@ export class GLShader {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     createMeshCommand(regl, mesh, commandProps = {}, _uniformValues?) {
-        const materialDefines = mesh.getDefines();
+        const meshDefines = mesh.getShaderDefines();
         const elements = mesh.getElements();
         const isInstanced = mesh instanceof InstancedMesh;
         const disableVAO = mesh.disableVAO;
 
         const isVAO = isSupportVAO(regl) && !disableVAO;
-        const defines = extend({}, this.shaderDefines || {}, materialDefines || {});
+        const defines = extend({}, this.shaderDefines || {}, meshDefines || {});
         const vertSource = this._insertDefines(this.vert, defines);
         const vert = this.getVersion(regl, vertSource) + vertSource;
         const fragSource = this._insertDefines(this.frag, defines);
@@ -457,7 +457,7 @@ export default class GPUShader extends GLShader {
             const uniformValues = this.context;
             const fbo = this._gpuFramebuffer;
             // 不同于glsl，因为不支持预处理指令，wgsl需要在创建command时编译源代码
-            const defines = extend({}, this.shaderDefines || {}, mesh.getDefines());
+            const defines = extend({}, this.shaderDefines || {}, mesh.getShaderDefines());
             const { vert, frag } = this._compileWGSLSource(defines);
 
             const builder = new CommandBuilder(this.name, device, vert, frag, mesh, this.contextDesc, defines, uniformValues);

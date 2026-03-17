@@ -83,7 +83,6 @@ export default class Mesh {
     disableVAO: boolean
     properties: any
     uniforms: ShaderUniforms
-    dirtyDefines?: boolean
     parent?: Mesh
 
     constructor(geometry: Geometry, material?: Material, config: MeshOptions = {}) {
@@ -204,7 +203,7 @@ export default class Mesh {
     }
 
     get defines(): ShaderDefines {
-        return this._getDefines();
+        return this.getDefines();
     }
 
     set defines(v: ShaderDefines) {
@@ -222,8 +221,7 @@ export default class Mesh {
     setMaterial(material: Material) {
         this._material = material;
         this._dirtyUniforms = true;
-        delete this._materialVer;
-        this.dirtyDefines = true;
+        delete this._commandKey;
         return this;
     }
 
@@ -297,40 +295,26 @@ export default class Mesh {
     }
 
     getDefines(): ShaderDefines {
-        const defines = {};
-        extend(defines, this._getDefines());
+        return this._defines;
+    }
+
+    getShaderDefines() {
+        const defines = extend({}, this._defines);
+        this._appendGeometryDefines(defines);
         if (this._material && this._geometry) {
             this._material.appendDefines(defines, this._geometry);
         }
         return defines;
     }
 
-    //@internal
-    _getDefines(): ShaderDefines {
-        if (!this._defines) {
-            this._defines = {};
-        }
-        const geometry = this._geometry;
-        const { positionAttribute, uv0Attribute, normalAttribute } = geometry.desc;
-        const position = geometry.data[positionAttribute],
-            texcoord = geometry.data[uv0Attribute],
-            normal = geometry.data[normalAttribute];
-        if (position && position.quantization) {
-            this._defines['HAS_DRACO_POSITION'] = 1;
-        }
-        if (texcoord && texcoord.quantization) {
-            this._defines['HAS_DRACO_TEXCOORD'] = 1;
-        }
-        if (normal && normal.quantization) {
-            this._defines['HAS_DRACO_NORMAL'] = 1;
-        }
-        return this._defines;
-    }
-
     setDefines(defines: ShaderDefines) {
-        const bak = this._bakDefines;
+        const currentDefines = this._bakDefines || {};
         this._defines = defines;
-        this.dirtyDefines = !!bak !== !!defines || !equalDefine(bak, defines);
+        const dirtyDefines = !!currentDefines !== !!defines || !equalDefine(currentDefines, defines);
+        if (dirtyDefines) {
+            delete this._commandKey;
+        }
+        this._bakDefines = extend({}, defines);
         return this;
     }
 
@@ -340,14 +324,41 @@ export default class Mesh {
 
     //@internal
     _getDefinesKey(): string {
-        this._bakDefines = extend({}, this._defines);
-        this.dirtyDefines = false;
-        return this._createDefinesKey(this.getDefines());
+        const defines = this.getShaderDefines();
+        return this._createDefinesKey(defines);
+    }
+
+    _appendGeometryDefines(defines: ShaderDefines) {
+        const geometry = this._geometry;
+        const { positionAttribute, uv0Attribute, normalAttribute } = geometry.desc;
+        const position = geometry.data[positionAttribute],
+            texcoord = geometry.data[uv0Attribute],
+            normal = geometry.data[normalAttribute];
+        if (position && position.quantization) {
+            defines['HAS_DRACO_POSITION'] = 1;
+        } else {
+            delete defines['HAS_DRACO_POSITION'];
+        }
+        if (texcoord && texcoord.quantization) {
+            defines['HAS_DRACO_TEXCOORD'] = 1;
+        } else {
+            delete defines['HAS_DRACO_TEXCOORD'];
+        }
+        if (normal && normal.quantization) {
+            defines['HAS_DRACO_NORMAL'] = 1;
+        } else {
+            delete defines['HAS_DRACO_NORMAL'];
+        }
+        if (geometry.isPickingIDUInt()) {
+            defines['PICKING_ID_IS_UINT'] = 1;
+        } else {
+            delete defines['PICKING_ID_IS_UINT'];
+        }
     }
 
     //eslint-disable-next-line
     getCommandKey(device: any): string {
-        if (!this._commandKey || this.dirtyDefines || (this._material && this._materialKeys !== this._material.getUniformKeys())) {
+        if (!this._commandKey || (this._material && this._materialKeys !== this._material.getUniformKeys())) {
             //TODO geometry的data变动也可能会改变commandKey，但鉴于geometry一般不会发生变化，暂时不管
             let dKey = this.geometry.getCommandKey(device) + '_' + this._getDefinesKey();
             const elementType = isNumber(this.getElements()) ? 'count' : 'elements';
