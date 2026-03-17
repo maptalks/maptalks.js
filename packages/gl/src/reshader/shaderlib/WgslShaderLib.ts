@@ -20,6 +20,7 @@ import snow from './wgsl/snow';
 import terrain_normal from './wgsl/terrain_normal';
 import mesh_picking from './wgsl/mesh_picking';
 import rgbm from './wgsl/rgbm';
+import { isFunction } from '../common/Util';
 
 //Shader Chunks for includes
 const ShaderChunk = {
@@ -170,7 +171,11 @@ class SourceCompiler {
         const secondPart = source.substring(endIndex);
         const attributes = [];
         for (let i = 0; i < items.length; i++) {
-            const { name, type } = items[i];
+            const { name } = items[i];
+            let { type } = items[i];
+            if (isFunction(type)) {
+                type = type(this.defines);
+            }
             attributes.push(`@location(${varName}) ${name}: ${type},`);
         }
         return firstPart + attributes.join('\n') + '\n' + secondPart;
