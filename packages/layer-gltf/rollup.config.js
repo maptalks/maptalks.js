@@ -11,18 +11,18 @@ const plugins = [
 ].concat(production ? [
     removeGlobal(),
     terser({
-        mangle: {
-            properties: {
-                'regex' : /^_/,
-                'keep_quoted' : true,
-                'reserved': ['on', 'once', 'off']
-            }
-        },
-        output : {
-            keep_quoted_props: true,
-            beautify: false,
-            comments : '/^!/'
-        }
+        // mangle: {
+        //     properties: {
+        //         'regex' : /^_/,
+        //         'keep_quoted' : true,
+        //         'reserved': ['on', 'once', 'off']
+        //     }
+        // },
+        // output : {
+        //     keep_quoted_props: true,
+        //     beautify: false,
+        //     comments : '/^!/'
+        // }
     })
 ] : []);
 
