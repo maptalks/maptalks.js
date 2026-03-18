@@ -749,7 +749,7 @@ export default class TileMeshPainter {
 
         const { POSITION, NORMAL_UP, NORMAL_RIGHT, SCALE, SCALE_NON_UNIFORM } = i3dm;
         const isWebGPU = this.getMap().getRenderer().isWebGPU();
-        const ctor = isWebGPU ? Float32Array : Uint16Array;
+        const ctor = isWebGPU ? Uint32Array : Uint16Array;
         const instanceData = {
             'instance_vectorA': new Float32Array(instanceCount * 4),
             'instance_vectorB': new Float32Array(instanceCount * 4),
@@ -981,6 +981,7 @@ export default class TileMeshPainter {
             mesh.properties.count = data.featureTable && data.featureTable['BATCH_LENGTH'] || 0;
             mesh.properties.serviceIndex = node._rootIdx;
             const defines = this._getGLTFMeshDefines(gltfMesh, geometry, material, node._rootIdx, gltf);
+            defines['MESH_ENV_EXPO'] = 1;
             mesh.setDefines(defines);
             const compressUniforms = gltfMesh.compressUniforms;
             if (compressUniforms) {
@@ -1438,8 +1439,8 @@ export default class TileMeshPainter {
         if (batchIdData) {
             if (batchIdData.byteOffset) {
                 batchIdData = new batchIdData.constructor(batchIdData);
-                if (isWebGPU && !(batchIdData instanceof Float32Array)) {
-                    batchIdData = new Float32Array(batchIdData);
+                if (isWebGPU && !(batchIdData instanceof Uint32Array)) {
+                    batchIdData = new Uint32Array(batchIdData);
                 }
             }
         }
@@ -1487,7 +1488,7 @@ export default class TileMeshPainter {
         // 补上缺失的_BATHCID属性，解决macos下 vertex buffer not big enough 报错
         const pickingIdAttribute = attributeSemantics['_BATCHID'];
         if (!attrs[pickingIdAttribute] && !isI3DM) {
-            const ctor = isWebGPU ? Float32Array : Uint8Array;
+            const ctor = isWebGPU ? Uint32Array : Uint8Array;
             const pickingData = new ctor(vertexCount);
             attrs[pickingIdAttribute] = pickingData;
         }
