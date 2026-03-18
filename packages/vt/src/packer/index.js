@@ -14,6 +14,7 @@ export { default as LRUCache } from './LRUCache';
 export { default as StyledPoint } from './pack/StyledPoint';
 export { default as StyledVector } from './pack/StyledVector';
 export { default as ArrayPool } from './pack/util/ArrayPool.js';
+export { default as ArrayBufferPool } from './pack/util/ArrayBufferPool.js';
 import * as PackUtil from './pack/util/index.js';
 export { PackUtil };
 import * as TextUtil from './style/Text.js';
