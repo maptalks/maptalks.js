@@ -30,6 +30,17 @@ function load(root, data, options) {
     });
 }
 
+const decoder = new TextDecoder();
+
+export function decodeJSON(uint8Array) {
+    try {
+        const str = decoder.decode(uint8Array);
+        return JSON.parse(str);
+    } catch (error) {
+        console.error('decode Uint8Array to JSON error:', error);
+    }
+}
+
 export function loadGLTF(actorId, url, fetchOptions, urlModifier) {
     const index = url.lastIndexOf('/');
     const root = url.slice(0, index);
@@ -47,6 +58,12 @@ export function loadGLTF(actorId, url, fetchOptions, urlModifier) {
         const dataView = new DataView(data, data.byteOffset, data.byteLength);
         const version = dataView.getUint32(4, true);
         if (version > 2) { //version is 1 or 2
+            //transform arraybuffer to gltf json
+            const gltfData = decodeJSON(data);
+            if (gltfData) {
+                return load(root, gltfData, { requestImage: imgRequest, decoders, transferable: true, fetchOptions, urlModifier });
+            }
+
             return getJSON(url, fetchOptions).then(res => {
                 if (res.message) {
                     return res;
@@ -72,7 +89,7 @@ function requestImage(actorId, url, fetchOptions, cb) {
     // 用数组为了防止相同url的重复调用
     callbacks[url] = [cb];
     //向主进程传递url
-    self.postMessage({type: '<request>', command: 'sendImageData', actorId, workerId, params: url });
+    self.postMessage({ type: '<request>', command: 'sendImageData', actorId, workerId, params: url });
 }
 
 function gltfload(message) {
@@ -84,13 +101,14 @@ function gltfload(message) {
     fetchOptions.referrerPolicy = fetchOptions.referrerPolicy || 'origin';
     fetchOptions.referrer = data.referrer;
     loadGLTF(actorId, url, fetchOptions).then(data => {
+        data.url = url;
         if (data.message) {
-            self.postMessage({callback, error: data});
+            self.postMessage({ callback, error: data });
         } else {
-            self.postMessage({callback, data}, data.transferables);
+            self.postMessage({ callback, data }, data.transferables);
         }
     }).catch(e => {
-        self.postMessage({callback, error: e});
+        self.postMessage({ callback, error: e });
     });
     callbacks['receive'] = callback;
 }
@@ -101,7 +119,7 @@ export const onmessage = function (message) {
     if (data.command === 'addLayer' || data.command === 'removeLayer') {
         // 保存当前worker的workerId。
         workerId = message.workerId;
-        self.postMessage({type: '<response>', actorId: data.actorId, workerId, params: 'ok' });
+        self.postMessage({ type: '<response>', actorId: data.actorId, workerId, params: 'ok' });
     } else if (url) {
         //加载gltf数据的逻辑
         gltfload(message);
@@ -130,7 +148,7 @@ function requestImageInMainThread(url, cb) {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(image, 0, 0, image.width, image.height);
         const imageData = ctx.getImageData(0, 0, image.width, image.height);
-        const result = { width : image.width, height : image.height, data : new Uint8Array(imageData.data) };
+        const result = { width: image.width, height: image.height, data: new Uint8Array(imageData.data) };
         cb(null, result, [result.data.buffer]);
     };
     image.onerror = function (err) {
