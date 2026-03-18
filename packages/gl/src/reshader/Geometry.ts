@@ -296,6 +296,28 @@ export default class Geometry {
         }
     }
 
+    isPickingIDUInt() {
+        const attr = this.desc.pickingIdAttribute;
+        const pickingData = this.data[attr];
+        if (!pickingData) {
+            return false;
+        }
+        if (pickingData.type) {
+            return pickingData.type.indexOf('uint') > -1;
+        } else if (isArray(pickingData.data) || isArray(pickingData)) {
+            const array = pickingData.data || pickingData;
+            return array instanceof Uint32Array || array instanceof Uint16Array || array instanceof Uint8Array;
+        } else if (pickingData.buffer) {
+            const buffer = pickingData.buffer;
+            if (buffer.itemType) {
+                // a webgpu buffer
+                return buffer.itemType.indexOf('uint') > -1;
+            }
+            // webgl 下不关心pickingID是否是Uint，所以不用处理
+        }
+        return false;
+    }
+
     getBuffer(name: string) {
         return this.data[name] && this.data[name].buffer;
     }
