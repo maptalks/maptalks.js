@@ -1,9 +1,10 @@
-import { isNil, extend, isString, isObject, isNumber, pushIn, isFnTypeSymbol, encodeJSON } from '../../common/Util';
+import { isNil, extend, isString, isObject, isNumber, pushIn, isFnTypeSymbol } from '../../common/Util';
 import { buildWireframe, build3DExtrusion } from '../builder/';
 import { createFilter } from '@maptalks/feature-filter';
 import { KEY_IDX } from '../../common/Constant';
 import Browser from '../util/Browser';
 import { getVectorPacker } from '../../packer/inject';
+import { encodeJSON } from 'maptalks/dist/core/util/encode';
 
 const { VectorPack, PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack,
     LineExtrusionPack, CirclePack, RoundTubePack, SquareTubePack, FilterUtil,
@@ -222,8 +223,8 @@ export default class BaseLayerWorker {
             if (glyphs && Object.keys(glyphs).length) {
                 const promise = new Promise((resolve) => {
                     if (!this._glyphRequestor) {
-                       // Get sdfURL from layer options first, then from renderPlugin if not found
-                        const sdfURL = this.options.sdfURL ;
+                        // Get sdfURL from layer options first, then from renderPlugin if not found
+                        const sdfURL = this.options.sdfURL;
                         this._glyphRequestor = new GlyphRequestor(null, null, null, sdfURL);
                     }
                     this._glyphRequestor.getGlyphs(glyphs, (err, glyphData) => {

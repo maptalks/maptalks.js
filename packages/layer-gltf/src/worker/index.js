@@ -1,4 +1,5 @@
 import transcoders, { getGLTFLoaderBundle } from '@maptalks/gl/dist/transcoders';
+import { decodeJSON } from 'maptalks/dist/core/util/encode';
 
 const gltfloader = getGLTFLoaderBundle();
 
@@ -28,17 +29,6 @@ function load(root, data, options) {
     return loader.load({
         skipAttributeTransform: true
     });
-}
-
-const decoder = new TextDecoder();
-
-export function decodeJSON(uint8Array) {
-    try {
-        const str = decoder.decode(uint8Array);
-        return JSON.parse(str);
-    } catch (error) {
-        console.error('decode Uint8Array to JSON error:', error);
-    }
 }
 
 export function loadGLTF(actorId, url, fetchOptions, urlModifier) {
