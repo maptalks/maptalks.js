@@ -7,7 +7,7 @@ import mixVert from './glsl/fog_mixFactor.vert';
 import mixFrag from './glsl/fog_mixFactor.frag';
 import { getWGSLSource } from '../../gpu/WGSLSources.js';
 const modelViewMatrix = [];
-class FogPass{
+class FogPass {
     constructor(regl, viewport, layer) {
         this._regl = regl;
         this._layer = layer;
