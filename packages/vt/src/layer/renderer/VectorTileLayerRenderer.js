@@ -101,7 +101,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             if (this._workerUpdateTimeout) {
                 clearTimeout(this._workerUpdateTimeout);
             }
-            this._styles[this._styleCounter] = JSON.parse(JSON.stringify(this.layer._getComputedStyle()));
+            this._styles[this._styleCounter] = this.layer._getComputedStyle();
             this._styleCounter++;
             this._preservePrevTiles();
             if (onLoad) {
@@ -110,7 +110,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                     this._groundPainter.update();
                 }
             }
-            this._styles[this._styleCounter] = JSON.parse(JSON.stringify(this.layer._getComputedStyle()));
+            this._styles[this._styleCounter] = this.layer._getComputedStyle();
             this._needRetire = true;
             // this.clear();
             // this._clearPlugin();
@@ -130,9 +130,9 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
 
     getStyleByCounter(styleCounter) {
         if (!this._styles[styleCounter] && styleCounter === this._styleCounter) {
-            this._styles[styleCounter] = JSON.parse(JSON.stringify(this.layer._getComputedStyle()));
+            this._styles[styleCounter] = this.layer._getComputedStyle();
         }
-        return this._styles[styleCounter];
+        return JSON.parse(JSON.stringify(this._styles[styleCounter]));
     }
 
     // 为了解决阴影更新的闪烁问题，保留之前的绘制，当前数据载入后再删除

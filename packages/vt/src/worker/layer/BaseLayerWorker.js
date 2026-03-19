@@ -161,19 +161,21 @@ export default class BaseLayerWorker {
 
     _getStyleByCounter(styleCounter) {
         if (this._styles[styleCounter]) {
-            return Promise.resolve(this._styles[styleCounter]);
+            return this._styles[styleCounter];
         }
-        return new Promise((resolve, reject) => {
+        this._styles[styleCounter] = new Promise((resolve, reject) => {
             this.upload('getStyleByCounter', { styleCounter }, null, (err, data) => {
                 if (err) {
                     reject(err);
                     return;
                 }
-                const compiledStyle = this._styles[styleCounter] = this._compileStyle(data);
+                const compiledStyle = this._compileStyle(data);
                 compiledStyle.style = data;
+                this._styles[styleCounter] = Promise.resolve(compiledStyle);
                 resolve(compiledStyle);
             });
         });
+        return this._styles[styleCounter];
     }
 
     abortTile(url, cb) {
