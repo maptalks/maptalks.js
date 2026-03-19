@@ -6,7 +6,7 @@ struct VertexOutput {
 @vertex
 fn main(
   @location($i) aPosition: vec2f,
-  @location($i) aTexCoord: vec2f
+  @location($i) aTexCoord: vec2f,
 ) -> VertexOutput {
   var output: VertexOutput;
 

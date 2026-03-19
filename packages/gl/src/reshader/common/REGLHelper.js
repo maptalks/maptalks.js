@@ -21,12 +21,16 @@ export function getMaterialType(type) {
 export function getArrayType(array) {
     if (array instanceof Uint8Array) {
         return 'uint8';
-    } else if (array instanceof Int8Array) {
-        return 'int8';
     } else if (array instanceof Uint16Array) {
         return 'uint16';
+    } else if (array instanceof Uint32Array) {
+        return 'uint32';
+    } else if (array instanceof Int8Array) {
+        return 'int8';
     } else if (array instanceof Int16Array) {
         return 'int16';
+    } else if (array instanceof Int32Array) {
+        return 'int32';
     } else {
         return 'float';
     }

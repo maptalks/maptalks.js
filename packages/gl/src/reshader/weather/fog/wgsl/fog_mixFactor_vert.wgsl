@@ -16,8 +16,6 @@ struct ShaderUniforms {
 
 struct VertexInput {
     #include <position_vert>
-
-    @location($i) aTexCoord: vec2f
 };
 
 struct VertexOutput {
