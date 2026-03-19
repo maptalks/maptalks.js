@@ -849,7 +849,10 @@ class Painter {
                     console.error(error);
                 }
             }
-            if (isFunctionDefinition(v1) !== isFunctionDefinition(v2)) {
+            if (isObjectOrArray(v1) && isFunctionDefinition(v1) && !isFunctionDefinition(v2)) {
+                refresh = true;
+            }
+            if (isObjectOrArray(v2) && isFunctionDefinition(v2) && !isFunctionDefinition(v1)) {
                 refresh = true;
             }
 
