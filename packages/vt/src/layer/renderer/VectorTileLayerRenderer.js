@@ -101,7 +101,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             if (this._workerUpdateTimeout) {
                 clearTimeout(this._workerUpdateTimeout);
             }
-            this._styles[this._styleCounter] = this.layer._getComputedStyle();
+            this._styles[this._styleCounter] = JSON.parse(JSON.stringify(this.layer._getComputedStyle()));
             this._styleCounter++;
             this._preservePrevTiles();
             if (onLoad) {
@@ -110,7 +110,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                     this._groundPainter.update();
                 }
             }
-            this._styles[this._styleCounter] = this.layer._getComputedStyle();
+            this._styles[this._styleCounter] = JSON.parse(JSON.stringify(this.layer._getComputedStyle()));
             this._needRetire = true;
             // this.clear();
             // this._clearPlugin();
@@ -130,7 +130,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
 
     getStyleByCounter(styleCounter) {
         if (!this._styles[styleCounter] && styleCounter === this._styleCounter) {
-            this._styles[styleCounter] = this.layer._getComputedStyle();
+            this._styles[styleCounter] = JSON.parse(JSON.stringify(this.layer._getComputedStyle()));
         }
         return this._styles[styleCounter];
     }
@@ -601,7 +601,6 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 verticalCentimeterToPoint,
                 fetchOptions,
                 referrer,
-                style: JSON.parse(JSON.stringify(this.layer._getComputedStyle())),
                 styleCounter: this._styleCounter,
                 workerCacheIndex: this._workerCacheIndex,
                 command: 'loadTile'
