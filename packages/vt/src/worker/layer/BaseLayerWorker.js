@@ -276,18 +276,6 @@ export default class BaseLayerWorker {
         const { glScale, tileInfo } = context;
         const useDefault = !this.options.style.style.length && !this.options.style.featureStyle.length;
         const keyName = (KEY_IDX + '').trim();
-        const featuresByLayer = {};
-        for (let i = 0, l = features.length; i < l; i++) {
-            const fea = features[i];
-            if (fea[keyName] === undefined) {
-                fea[keyName] = i;
-            }
-            const layer = fea.layer || '0';
-            if (!featuresByLayer[layer]) {
-                featuresByLayer[layer] = [];
-            }
-            featuresByLayer[layer].push(fea);
-        }
 
         let pluginConfigs = this.pluginConfig.slice(0);
         if (useDefault) {
@@ -334,6 +322,18 @@ export default class BaseLayerWorker {
         }
 
         features = feas;
+
+        const featuresByLayer = {};
+        for (let i = 0, l = features.length; i < l; i++) {
+            const fea = features[i];
+            // 确保每个扩展出的要素副本都有唯一的索引
+            fea[keyName] = i;
+            const layer = fea.layer || '0';
+            if (!featuresByLayer[layer]) {
+                featuresByLayer[layer] = [];
+            }
+            featuresByLayer[layer].push(fea);
+        }
 
         const EXTENT = features[0].extent;
         const zoom = tileInfo.z,
