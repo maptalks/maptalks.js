@@ -275,6 +275,20 @@ export default class BaseLayerWorker {
         }
         const { glScale, tileInfo } = context;
         const useDefault = !this.options.style.style.length && !this.options.style.featureStyle.length;
+        const keyName = (KEY_IDX + '').trim();
+        const featuresByLayer = {};
+        for (let i = 0, l = features.length; i < l; i++) {
+            const fea = features[i];
+            if (fea[keyName] === undefined) {
+                fea[keyName] = i;
+            }
+            const layer = fea.layer || '0';
+            if (!featuresByLayer[layer]) {
+                featuresByLayer[layer] = [];
+            }
+            featuresByLayer[layer].push(fea);
+        }
+
         let pluginConfigs = this.pluginConfig.slice(0);
         if (useDefault) {
             //图层没有定义任何style，通过数据动态生成pluginConfig
@@ -352,7 +366,7 @@ export default class BaseLayerWorker {
             getFnTypeProps(pluginConfig.symbol, fnTypeProps, i);
             hasFnTypeProps = hasFnTypeProps || fnTypeProps[i] && fnTypeProps[i].size > 0;
 
-            const { tileFeatures, tileFeaIndexes } = this._filterFeatures(zoom, pluginConfig.type, pluginConfig.filter, features, feaTags, i);
+            const { tileFeatures, tileFeaIndexes } = this._filterFeatures(zoom, pluginConfig.type, pluginConfig.filter, features, feaTags, i, featuresByLayer);
 
             if (!tileFeatures.length) {
                 targetData[typeIndex] = null;
@@ -701,30 +715,44 @@ export default class BaseLayerWorker {
      * @param {*} filter
      * @param {*} features
      */
-    _filterFeatures(zoom, styleType, filter, features, tags, index) {
+    _filterFeatures(zoom, styleType, filter, features, tags, index, featuresByLayer) {
         const keyName = (KEY_IDX + '').trim();
+        let targetFeatures = features;
+        if (featuresByLayer) {
+            const layerName = getFilterLayer(filter.def);
+            if (layerName) {
+                if (Array.isArray(layerName)) {
+                    targetFeatures = [];
+                    for (let i = 0; i < layerName.length; i++) {
+                        if (featuresByLayer[layerName[i]]) {
+                            pushIn(targetFeatures, featuresByLayer[layerName[i]]);
+                        }
+                    }
+                } else {
+                    targetFeatures = featuresByLayer[layerName] || EMPTY_ARRAY;
+                }
+            }
+        }
         const indexes = [];
         const filtered = [];
-        const l = features.length;
+        const l = targetFeatures.length;
         for (let i = 0; i < l; i++) {
-            if (styleType !== 1 && features[i].id !== undefined && this.styledFeatures[features[i].id]) {
+            const fea = targetFeatures[i];
+            const originalIndex = fea[keyName];
+            if (styleType !== 1 && fea.id !== undefined && this.styledFeatures[fea.id]) {
                 continue;
             }
 
             //filter.def没有定义，或者为default时，说明其实默认样式，feature之前没有其他样式时的应用样式
             // 并识别哪些feature归类到默认样式
-            if ((!filter.def || filter.def === 'default') && !tags[i] ||
-                (filter.def === true || filter.def && (filter.def.condition !== undefined || Array.isArray(filter.def)) && filter(features[i], zoom))) {
-                const fea = features[i];
-                if (fea[keyName] === undefined) {
-                    fea[keyName] = i;
+            if ((!filter.def || filter.def === 'default') && !tags[originalIndex] ||
+                (filter.def === true || filter.def && (filter.def.condition !== undefined || Array.isArray(filter.def)) && filter(fea, zoom))) {
+                if (!tags[originalIndex]) {
+                    tags[originalIndex] = [];
                 }
-                if (!tags[i]) {
-                    tags[i] = [];
-                }
-                tags[i].push(index);
+                tags[originalIndex].push(index);
                 filtered.push(fea);
-                indexes.push(i);
+                indexes.push(originalIndex);
                 if (styleType === 1) {
                     break;
                 }
@@ -775,6 +803,33 @@ export default class BaseLayerWorker {
         this.pluginConfig = pluginConfigs;
         this.featurePlugins = featurePlugins;
         this.styledFeatures = styledFeatures;
+        this._activeLayers = this._getActiveLayers();
+    }
+
+    _getActiveLayers() {
+        const configs = this.pluginConfig.concat(this.featurePlugins || []);
+        if (!configs.length) {
+            return null;
+        }
+        const layers = new Set();
+        for (let i = 0; i < configs.length; i++) {
+            const def = configs[i].filter && configs[i].filter.def;
+            if (!def || def === 'default') {
+                return null;
+            }
+            const layer = getFilterLayer(def);
+            if (!layer) {
+                return null;
+            }
+            if (Array.isArray(layer)) {
+                for (let j = 0; j < layer.length; j++) {
+                    layers.add(String(layer[j]));
+                }
+            } else {
+                layers.add(String(layer));
+            }
+        }
+        return layers;
     }
 
     _updateLayerPluginConfig(layers) {
@@ -1107,4 +1162,39 @@ function ifIsIconText(symbol) {
     // 如果symbol中没有marker，只有text时，则iconText为true
     // isIconText 主要用在 getAnchors 和各种判断是否是沿线文字的判断逻辑中
     return symbol.markerType || symbol.markerFile;
+}
+
+function getFilterLayer(filter) {
+    if (!filter) {
+        return null;
+    }
+    if (filter[0] === '==' && filter[1] === '$layer') {
+        return filter[2];
+    }
+    if (filter[0] === 'all') {
+        for (let i = 1, l = filter.length; i < l; i++) {
+            const layer = getFilterLayer(filter[i]);
+            if (layer) {
+                return layer;
+            }
+        }
+    }
+    if (filter[0] === 'any') {
+        let layers = [];
+        for (let i = 1, l = filter.length; i < l; i++) {
+            const layer = getFilterLayer(filter[i]);
+            if (layer) {
+                if (Array.isArray(layer)) {
+                    pushIn(layers, layer);
+                } else {
+                    layers.push(layer);
+                }
+            }
+        }
+        return layers.length ? layers : null;
+    }
+    if (filter[0] === 'in' && filter[1] === '$layer') {
+        return filter.slice(2);
+    }
+    return null;
 }

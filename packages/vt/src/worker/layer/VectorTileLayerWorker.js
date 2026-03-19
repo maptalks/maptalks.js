@@ -126,6 +126,9 @@ export default class VectorTileLayerWorker extends LayerWorker {
         let feature;
         for (const layer in tile.layers) {
             if (hasOwn(tile.layers, layer)) {
+                if (this._activeLayers && !this._activeLayers.has(layer)) {
+                    continue;
+                }
                 layers[layer] = {
                     types: {}
                 };
@@ -156,12 +159,22 @@ export default class VectorTileLayerWorker extends LayerWorker {
                         if (feature.id !== undefined) {
                             fea.id = feature.id;
                         }
-                        let ombb = fea.properties[PROP_OMBB];
-                        if (ombb) {
-                            if (isString(ombb)) {
-                                ombb = JSON.parse(ombb);
+                        let rawOmbb = fea.properties[PROP_OMBB];
+                        if (rawOmbb) {
+                            if (isString(rawOmbb)) {
+                                rawOmbb = JSON.parse(rawOmbb);
                             }
-                            fea.properties[PROP_OMBB] = projectOMBB(ombb, 'EPSG:3857');
+                            const properties = fea.properties;
+                            Object.defineProperty(properties, PROP_OMBB, {
+                                get: function () {
+                                    if (this._ombb_projected === undefined) {
+                                        this._ombb_projected = projectOMBB(rawOmbb, 'EPSG:3857');
+                                    }
+                                    return this._ombb_projected;
+                                },
+                                configurable: true,
+                                enumerable: true
+                            });
                         }
                         const altitudeBase64 = altitudePropertyName && fea.properties[altitudePropertyName];
                         if (altitudeBase64) {
