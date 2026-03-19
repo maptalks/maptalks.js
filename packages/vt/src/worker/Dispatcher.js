@@ -94,14 +94,6 @@ export default class Dispatcher {
         }
     }
 
-    updateStyle({ mapId, layerId, params }, callback) {
-        const layer = this._getLayerById(mapId, layerId);
-        if (layer) {
-            layer.updateStyle(params, callback);
-            // this._resetCache();
-        }
-    }
-
     updateOptions({ mapId, layerId, params }, callback) {
         const layer = this._getLayerById(mapId, layerId);
         if (layer) {

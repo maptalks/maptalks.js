@@ -99,23 +99,6 @@ export default class WorkerConnection extends maptalks.worker.Actor {
         }
     }
 
-    updateStyle(style, cb) {
-        const layerId = this._workerLayerId;
-        const data = {
-            mapId: this._mapId,
-            layerId,
-            command: 'updateStyle',
-            params: JSON.parse(JSON.stringify(style))
-        };
-        if (this._isDedicated) {
-            if (this._dedicatedVTWorkers[layerId] !== undefined) {
-                this.send(data, null, cb, this._dedicatedVTWorkers[layerId]);
-            }
-        } else {
-            this.broadcast(data, null, cb);
-        }
-    }
-
     updateOptions(options, cb) {
         const layerId = this._workerLayerId;
         const data = {
@@ -180,6 +163,11 @@ export default class WorkerConnection extends maptalks.worker.Actor {
 
         //error, data, buffers
 
+    }
+
+    getStyleByCounter({ styleCounter }, cb) {
+        const styles = this._layer.getRenderer().getStyleByCounter(styleCounter);
+        cb(null, styles);
     }
 
     setData(geojson, cb) {
