@@ -26,7 +26,7 @@ const vert = /*wgsl*/`
 fn fbo_picking_setData(input: VertexInput, output: ptr<function, VertexOutput>, viewPosZ: f32, visible: bool) {
     #ifdef ENABLE_PICKING
     #if HAS_PICKING_ID == 1
-       output.vPickingId = input.aPickingId;
+       output.vPickingId = f32(input.aPickingId);
     #elif HAS_PICKING_ID == 2
         output.vPickingId = pickingUniforms.uPickingId;
     #endif
@@ -45,7 +45,9 @@ export default {
                 return defines.HAS_PICKING_ID === 1;
             },
             name: 'aPickingId',
-            type: 'f32'
+            type: (defines) => {
+                return defines.PICKING_ID_IS_UINT ? 'u32' : 'f32';
+            }
         }
     ],
     varyings: [

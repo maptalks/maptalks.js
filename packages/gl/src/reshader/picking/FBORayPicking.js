@@ -97,7 +97,7 @@ const frag1Wgsl = /*wgsl*/`
         fbo_picking_meshId: f32,
     };
 
-    @group(0) @binding(0) var<uniform> pickingUniforms: PickingUniforms;
+    @group(0) @binding($b) var<uniform> pickingUniforms: PickingUniforms;
 
     @fragment
     fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
