@@ -50,17 +50,17 @@ export function loadGLTF(actorId, url, fetchOptions, urlModifier) {
         if (version > 2) { //version is 1 or 2
             //transform arraybuffer to gltf json
             //直接解码,减少不必要的网络请求
-            const gltfData = decodeJSON(new Uint8Array(data));
-            if (gltfData) {
-                return load(root, gltfData, { requestImage: imgRequest, decoders, transferable: true, fetchOptions, urlModifier });
+            const gltfJSON = decodeJSON(new Uint8Array(data));
+            if (gltfJSON) {
+                return load(root, gltfJSON, { requestImage: imgRequest, decoders, transferable: true, fetchOptions, urlModifier });
+            } else {
+                return getJSON(url, fetchOptions).then(res => {
+                    if (res.message) {
+                        return res;
+                    }
+                    return load(root, res, { requestImage: imgRequest, decoders, transferable: true, fetchOptions, urlModifier });
+                });
             }
-
-            return getJSON(url, fetchOptions).then(res => {
-                if (res.message) {
-                    return res;
-                }
-                return load(root, res, { requestImage: imgRequest, decoders, transferable: true, fetchOptions, urlModifier });
-            });
         } else {
             return load(root, { buffer: res.data, byteOffset: 0 }, { requestImage: imgRequest, decoders, transferable: true, fetchOptions, urlModifier });
         }
