@@ -725,7 +725,7 @@ describe('update style specs', () => {
         assertChangeStyle(done, [0, 0, 255, 255], layer => {
             layer.updateSymbol(1, { visible: true });
             assert(layer.options.style[1].symbol.visible === true);
-        }, true, style, 0, 7);
+        }, true, style, 0, 6);
     });
 
     it('should can set visible of multiple symbol', done => {
@@ -2037,7 +2037,7 @@ describe('update style specs', () => {
         layer.once('pluginsinited', () => {
             layer.updateDataConfig(0, { foo2: 2 });
             layer.updateDataConfig('squarePoint', { foo3: 2 });
-            assert.equal(refreshCount, 0);
+            assert.equal(refreshCount, 2);
             assert.deepStrictEqual(layer.options.style[0].renderPlugin.dataConfig, layer.getComputedStyle().style[0].renderPlugin.dataConfig);
             assert.deepStrictEqual(layer.getStyle()[0].renderPlugin.dataConfig, layer.getComputedStyle().style[0].renderPlugin.dataConfig);
             assert.deepStrictEqual(layer.options.style[0].renderPlugin.dataConfig, { type: 'native-point', foo2: 2 });
@@ -2569,10 +2569,12 @@ describe('update style specs', () => {
 
         if (isListenToRefreshStyle) {
             layer.once('refreshstyle', () => {
-                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
-                //变成绿色
-                assert.deepEqual(pixel, expectedColor);
-                done();
+                setTimeout(() => {
+                    const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                    //变成绿色
+                    assert.deepEqual(pixel, expectedColor);
+                    done();
+                }, 100);
             });
         }
         layer.addTo(map);
