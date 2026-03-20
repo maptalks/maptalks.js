@@ -18,18 +18,10 @@ export default class BaseLayerWorker {
         this.id = id;
         this.options = options;
         this.upload = upload;
-        this._compileStyle(options.style);
         this.requests = {};
         this._cache = tileCache;
-        this._styleCounter = 1;
         this.loadings = tileLoading;
-    }
-
-    updateStyle(style, cb) {
-        this.options.style = style;
-        this._styleCounter = style.styleCounter;
-        this._compileStyle(style);
-        cb();
+        this._styles = [];
     }
 
     updateOptions(options, cb) {
@@ -121,47 +113,69 @@ export default class BaseLayerWorker {
     }
 
     _onTileLoad(context, cb, url, layers, features, props) {
-        this._createTileData(layers, features, context).then(data => {
-            if (data.canceled) {
-                cb(null, { canceled: true });
-                return;
-            }
-            data.data.styleCounter = context.styleCounter;
-            if (props) {
-                extend(data.data, props);
-            }
+        this._getStyleByCounter(context.styleCounter).then(compiledStyle => {
+            context.style = compiledStyle;
+            this._createTileData(layers, features, context).then(data => {
+                if (data.canceled) {
+                    cb(null, { canceled: true });
+                    return;
+                }
+                data.data.styleCounter = context.styleCounter;
+                if (props) {
+                    extend(data.data, props);
+                }
 
 
-            const features = data.data.features;
-            if (features) {
-                const newFeatures = {};
-                for (const index in features) {
-                    const feature = features[index];
-                    newFeatures[feature.id] = feature;
-                }
-                //完整的feature json 进行编码
-                const uint8Array = encodeJSON(newFeatures);
-                if (uint8Array) {
-                    data.data.featuresTypeArray = uint8Array;
-                    data.buffers = data.buffer || [];
-                    data.buffers.push(uint8Array.buffer);
-                }
-                const onlyId = this.options.features === 'id';
-                for (const index in features) {
-                    const featureData = features[index];
+                const features = data.data.features;
+                if (features) {
+                    const newFeatures = {};
+                    for (const index in features) {
+                        const feature = features[index];
+                        newFeatures[feature.id] = feature;
+                    }
+                    //完整的feature json 进行编码
+                    const uint8Array = encodeJSON(newFeatures);
                     if (uint8Array) {
-                        //删除geometry,已经包含在featuresTypeArray
-                        delete featureData.geometry;
+                        data.data.featuresTypeArray = uint8Array;
+                        data.buffers = data.buffer || [];
+                        data.buffers.push(uint8Array.buffer);
                     }
-                    if (onlyId) {
-                        features[index] = featureData.id;
+                    const onlyId = this.options.features === 'id';
+                    for (const index in features) {
+                        const featureData = features[index];
+                        if (uint8Array) {
+                            //删除geometry,已经包含在featuresTypeArray
+                            delete featureData.geometry;
+                        }
+                        if (onlyId) {
+                            features[index] = featureData.id;
+                        }
                     }
                 }
-            }
-            cb(null, data.data, data.buffers);
-        }).catch(err => {
-            cb(err);
+                cb(null, data.data, data.buffers);
+            }).catch(err => {
+                cb(err);
+            });
         });
+    }
+
+    _getStyleByCounter(styleCounter) {
+        if (this._styles[styleCounter]) {
+            return this._styles[styleCounter];
+        }
+        this._styles[styleCounter] = new Promise((resolve, reject) => {
+            this.upload('getStyleByCounter', { styleCounter }, null, (err, data) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                const compiledStyle = this._compileStyle(data);
+                compiledStyle.style = data;
+                this._styles[styleCounter] = Promise.resolve(compiledStyle);
+                resolve(compiledStyle);
+            });
+        });
+        return this._styles[styleCounter];
     }
 
     abortTile(url, cb) {
@@ -270,14 +284,16 @@ export default class BaseLayerWorker {
             });
         }
         const { glScale, tileInfo } = context;
-        const useDefault = !this.options.style.style.length && !this.options.style.featureStyle.length;
-        let pluginConfigs = this.pluginConfig.slice(0);
+        const { pluginConfigs: stylePlugins, featurePlugins, styledFeatures } = context.style;
+        const style = context.style.style;
+        const useDefault = !style.style.length && !style.featureStyle.length;
+        let pluginConfigs = stylePlugins.slice(0);
         if (useDefault) {
             //图层没有定义任何style，通过数据动态生成pluginConfig
             pluginConfigs = this._updateLayerPluginConfig(layers);
         }
-        if (this.featurePlugins) {
-            pushIn(pluginConfigs, this.featurePlugins);
+        if (featurePlugins) {
+            pushIn(pluginConfigs, featurePlugins);
         }
         const allCustomProps = {};
         for (let i = 0; i < pluginConfigs.length; i++) {
@@ -348,7 +364,7 @@ export default class BaseLayerWorker {
             getFnTypeProps(pluginConfig.symbol, fnTypeProps, i);
             hasFnTypeProps = hasFnTypeProps || fnTypeProps[i] && fnTypeProps[i].size > 0;
 
-            const { tileFeatures, tileFeaIndexes } = this._filterFeatures(zoom, pluginConfig.type, pluginConfig.filter, features, feaTags, i);
+            const { tileFeatures, tileFeaIndexes } = this._filterFeatures(styledFeatures, zoom, pluginConfig.type, pluginConfig.filter, features, feaTags, i);
 
             if (!tileFeatures.length) {
                 targetData[typeIndex] = null;
@@ -400,9 +416,6 @@ export default class BaseLayerWorker {
         }
 
         return Promise.all(promises).then(([styleCounter, ...tileDatas]) => {
-            if (styleCounter !== this._styleCounter) {
-                return { canceled: true };
-            }
             function handleTileData(tileData, i) {
                 if (tileData.data.ref !== undefined) {
                     return;
@@ -697,13 +710,13 @@ export default class BaseLayerWorker {
      * @param {*} filter
      * @param {*} features
      */
-    _filterFeatures(zoom, styleType, filter, features, tags, index) {
+    _filterFeatures(styledFeatures, zoom, styleType, filter, features, tags, index) {
         const keyName = (KEY_IDX + '').trim();
         const indexes = [];
         const filtered = [];
         const l = features.length;
         for (let i = 0; i < l; i++) {
-            if (styleType !== 1 && features[i].id !== undefined && this.styledFeatures[features[i].id]) {
+            if (styleType !== 1 && features[i].id !== undefined && styledFeatures[features[i].id]) {
                 continue;
             }
 
@@ -767,10 +780,7 @@ export default class BaseLayerWorker {
                 featurePlugins.push(compiledFeatureStyle[i]);
             }
         }
-
-        this.pluginConfig = pluginConfigs;
-        this.featurePlugins = featurePlugins;
-        this.styledFeatures = styledFeatures;
+        return { pluginConfigs, featurePlugins, styledFeatures };
     }
 
     _updateLayerPluginConfig(layers) {

@@ -45,6 +45,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         this._workerCacheIndex = 0;
         this.ready = false;
         this._styleCounter = 1;
+        this._styles = [];
         this._requestingMVT = {};
         this._plugins = {};
         this._featurePlugins = {};
@@ -100,35 +101,22 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             if (this._workerUpdateTimeout) {
                 clearTimeout(this._workerUpdateTimeout);
             }
-            this._workersyncing = true;
-            this._workerUpdateTimeout = setTimeout(() => {
-                if (!this.layer) {
-                    // layer is removed from map
-                    return;
+            this._styles[this._styleCounter] = this.layer._getComputedStyle();
+            this._styleCounter++;
+            this._preservePrevTiles();
+            if (onLoad) {
+                onLoad();
+                if (this._groundPainter) {
+                    this._groundPainter.update();
                 }
-                this._styleCounter++;
-                this._preservePrevTiles();
-                const style = styles || this.layer._getComputedStyle();
-                style.styleCounter = this._styleCounter;
-                this._workerConn.updateStyle(style, err => {
-                    this._workersyncing = false;
-                    if (onLoad) {
-                        onLoad();
-                        if (this._groundPainter) {
-                            this._groundPainter.update();
-                        }
-                    }
-
-                    if (err) throw new Error(err);
-                    this._needRetire = true;
-                    // this.clear();
-                    // this._clearPlugin();
-                    this._initPlugins();
-                    this.setToRedraw();
-
-                    this.layer.fire('refreshstyle');
-                });
-            }, 10);
+            }
+            this._styles[this._styleCounter] = this.layer._getComputedStyle();
+            this._needRetire = true;
+            // this.clear();
+            // this._clearPlugin();
+            this._initPlugins();
+            this.setToRedraw();
+            this.layer.fire('refreshstyle');
         } else {
             if (onLoad) {
                 onLoad();
@@ -140,24 +128,31 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         }
     }
 
+    getStyleByCounter(styleCounter) {
+        if (!this._styles[styleCounter] && styleCounter === this._styleCounter) {
+            this._styles[styleCounter] = this.layer._getComputedStyle();
+        }
+        return JSON.parse(JSON.stringify(this._styles[styleCounter]));
+    }
+
     // 为了解决阴影更新的闪烁问题，保留之前的绘制，当前数据载入后再删除
     _preservePrevTiles() {
-        if (this._prevTilesInView) {
-            for (const p in this._prevTilesInView) {
-                const tile = this._prevTilesInView[p];
-                if (tile) {
-                    this.deleteTile(tile);
-                }
-            }
-        }
-        this._prevTilesInView = this.tilesInView;
+        // if (this._prevTilesInView) {
+        //     for (const p in this._prevTilesInView) {
+        //         const tile = this._prevTilesInView[p];
+        //         if (tile) {
+        //             this.deleteTile(tile);
+        //         }
+        //     }
+        // }
+        // this._prevTilesInView = this.tilesInView;
         const tileCache = this.tileCache;
-        for (const p in this._prevTilesInView) {
-            const tile = this._prevTilesInView[p];
-            if (tile && tile.info) {
-                tileCache.getAndRemove(tile.info.id);
-            }
-        }
+        // for (const p in this._prevTilesInView) {
+        //     const tile = this._prevTilesInView[p];
+        //     if (tile && tile.info) {
+        //         tileCache.getAndRemove(tile.info.id);
+        //     }
+        // }
         tileCache.reset();
         this.tilesInView = {};
         this.tilesLoading = {};
@@ -605,8 +600,8 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 centimeterToPoint,
                 verticalCentimeterToPoint,
                 fetchOptions,
-                styleCounter: this._styleCounter,
                 referrer,
+                styleCounter: this._styleCounter,
                 workerCacheIndex: this._workerCacheIndex,
                 command: 'loadTile'
             }
@@ -682,6 +677,10 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         if (data && data.canceled) {
             return;
         }
+        if (data && data.styleCounter !== this._styleCounter) {
+            //返回的是上一个style的tileData
+            return;
+        }
         const layer = this.layer;
         const useDefault = layer.isDefaultRender();
         const { tiles } = this._requestingMVT[url];
@@ -705,10 +704,6 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             return;
         }
 
-        if (data.styleCounter !== this._styleCounter) {
-            //返回的是上一个style的tileData
-            return;
-        }
         let needCompile = false;
         //restore features for plugin data
         const features = data.features;
@@ -907,7 +902,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
     }
 
     _getFramePlugins(tileData) {
-        const styleCounter = tileData && tileData.style;
+        const styleCounter = tileData && tileData.styleCounter;
         let plugins = this._getStylePlugins(styleCounter) || [];
         if (this.layer.isDefaultRender() && this._layerPlugins) {
             plugins = [];
