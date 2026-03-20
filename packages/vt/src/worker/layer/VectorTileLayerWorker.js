@@ -36,17 +36,14 @@ export default class VectorTileLayerWorker extends LayerWorker {
         const cached = this._cache.get(url);
         if (cached && cached.cacheIndex === context.workerCacheIndex) {
             const { err, data } = cached;
-            // setTimeout是因为该方法需要返回对象，否则BaseLayerWorker中的this.requests没有缓存，导致BaseLayerWorker不执行回调逻辑
-            return setTimeout(() => {
-                this._readTile(url, altitudePropertyName, disableAltitudeWarning, err, data, cb);
-            }, 1);
+            this._readTile(url, altitudePropertyName, disableAltitudeWarning, err, data, cb);
+            return null;
         }
         //data from laodTileArray for custom
         const { tileArrayBuffer } = context;
         if (tileArrayBuffer) {
-            return setTimeout(() => {
-                this._readTile(url, altitudePropertyName, disableAltitudeWarning, null, tileArrayBuffer, cb);
-            }, 1);
+            this._readTile(url, altitudePropertyName, disableAltitudeWarning, null, tileArrayBuffer, cb);
+            return null;
         }
         fetchOptions.referrer = context.referrer;
         fetchOptions.errorLog = context.loadTileErrorLog;
@@ -139,13 +136,23 @@ export default class VectorTileLayerWorker extends LayerWorker {
                         types[feature.type] = 1;
                         // feature.properties['$layer'] = layer;
                         // feature.properties['$type'] = feature.type;
+                        const f = feature;
                         const fea = {
-                            type: feature.type,
+                            type: f.type,
                             layer: layer,
-                            geometry: feature.loadGeometry(),
-                            properties: feature.properties,
-                            extent: feature.extent
+                            properties: f.properties,
+                            extent: f.extent
                         };
+                        Object.defineProperty(fea, 'geometry', {
+                            get: function () {
+                                if (!this._geometry) {
+                                    this._geometry = f.loadGeometry();
+                                }
+                                return this._geometry;
+                            },
+                            configurable: true,
+                            enumerable: true
+                        });
                         if (feature.id !== undefined) {
                             fea.id = feature.id;
                         }
