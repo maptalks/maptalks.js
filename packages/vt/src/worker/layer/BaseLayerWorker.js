@@ -1,9 +1,10 @@
-import { isNil, extend, isString, isObject, isNumber, pushIn, isFnTypeSymbol, encodeJSON } from '../../common/Util';
+import { isNil, extend, isString, isObject, isNumber, pushIn, isFnTypeSymbol } from '../../common/Util';
 import { buildWireframe, build3DExtrusion } from '../builder/';
 import { createFilter } from '@maptalks/feature-filter';
 import { KEY_IDX } from '../../common/Constant';
 import Browser from '../util/Browser';
 import { getVectorPacker } from '../../packer/inject';
+import { encodeJSON } from 'maptalks/dist/core/util/encode';
 
 const { VectorPack, PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack,
     LineExtrusionPack, CirclePack, RoundTubePack, SquareTubePack, FilterUtil,
@@ -18,18 +19,10 @@ export default class BaseLayerWorker {
         this.id = id;
         this.options = options;
         this.upload = upload;
-        this._compileStyle(options.style);
         this.requests = {};
         this._cache = tileCache;
-        this._styleCounter = 1;
         this.loadings = tileLoading;
-    }
-
-    updateStyle(style, cb) {
-        this.options.style = style;
-        this._styleCounter = style.styleCounter;
-        this._compileStyle(style);
-        cb();
+        this._styles = [];
     }
 
     updateOptions(options, cb) {
@@ -125,47 +118,69 @@ export default class BaseLayerWorker {
     }
 
     _onTileLoad(context, cb, url, layers, features, props) {
-        this._createTileData(layers, features, context).then(data => {
-            if (data.canceled) {
-                cb(null, { canceled: true });
-                return;
-            }
-            data.data.styleCounter = context.styleCounter;
-            if (props) {
-                extend(data.data, props);
-            }
+        this._getStyleByCounter(context.styleCounter).then(compiledStyle => {
+            context.style = compiledStyle;
+            this._createTileData(layers, features, context).then(data => {
+                if (data.canceled) {
+                    cb(null, { canceled: true });
+                    return;
+                }
+                data.data.styleCounter = context.styleCounter;
+                if (props) {
+                    extend(data.data, props);
+                }
 
 
-            const features = data.data.features;
-            if (features) {
-                const newFeatures = {};
-                for (const index in features) {
-                    const feature = features[index];
-                    newFeatures[feature.id] = feature;
-                }
-                //完整的feature json 进行编码
-                const uint8Array = encodeJSON(newFeatures);
-                if (uint8Array) {
-                    data.data.featuresTypeArray = uint8Array;
-                    data.buffers = data.buffer || [];
-                    data.buffers.push(uint8Array.buffer);
-                }
-                const onlyId = this.options.features === 'id';
-                for (const index in features) {
-                    const featureData = features[index];
+                const features = data.data.features;
+                if (features) {
+                    const newFeatures = {};
+                    for (const index in features) {
+                        const feature = features[index];
+                        newFeatures[feature.id] = feature;
+                    }
+                    //完整的feature json 进行编码
+                    const uint8Array = encodeJSON(newFeatures);
                     if (uint8Array) {
-                        //删除geometry,已经包含在featuresTypeArray
-                        delete featureData.geometry;
+                        data.data.featuresTypeArray = uint8Array;
+                        data.buffers = data.buffer || [];
+                        data.buffers.push(uint8Array.buffer);
                     }
-                    if (onlyId) {
-                        features[index] = featureData.id;
+                    const onlyId = this.options.features === 'id';
+                    for (const index in features) {
+                        const featureData = features[index];
+                        if (uint8Array) {
+                            //删除geometry,已经包含在featuresTypeArray
+                            delete featureData.geometry;
+                        }
+                        if (onlyId) {
+                            features[index] = featureData.id;
+                        }
                     }
                 }
-            }
-            cb(null, data.data, data.buffers);
-        }).catch(err => {
-            cb(err);
+                cb(null, data.data, data.buffers);
+            }).catch(err => {
+                cb(err);
+            });
         });
+    }
+
+    _getStyleByCounter(styleCounter) {
+        if (this._styles[styleCounter]) {
+            return this._styles[styleCounter];
+        }
+        this._styles[styleCounter] = new Promise((resolve, reject) => {
+            this.upload('getStyleByCounter', { styleCounter }, null, (err, data) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                const compiledStyle = this._compileStyle(data);
+                compiledStyle.style = data;
+                this._styles[styleCounter] = Promise.resolve(compiledStyle);
+                resolve(compiledStyle);
+            });
+        });
+        return this._styles[styleCounter];
     }
 
     abortTile(url, cb) {
@@ -226,8 +241,8 @@ export default class BaseLayerWorker {
             if (glyphs && Object.keys(glyphs).length) {
                 const promise = new Promise((resolve) => {
                     if (!this._glyphRequestor) {
-                       // Get sdfURL from layer options first, then from renderPlugin if not found
-                        const sdfURL = this.options.sdfURL ;
+                        // Get sdfURL from layer options first, then from renderPlugin if not found
+                        const sdfURL = this.options.sdfURL;
                         this._glyphRequestor = new GlyphRequestor(null, null, null, sdfURL);
                     }
                     this._glyphRequestor.getGlyphs(glyphs, (err, glyphData) => {
@@ -274,16 +289,16 @@ export default class BaseLayerWorker {
             });
         }
         const { glScale, tileInfo } = context;
-        const useDefault = !this.options.style.style.length && !this.options.style.featureStyle.length;
-        const keyName = (KEY_IDX + '').trim();
-
-        let pluginConfigs = this.pluginConfig.slice(0);
+        const { pluginConfigs: stylePlugins, featurePlugins, styledFeatures } = context.style;
+        const style = context.style.style;
+        const useDefault = !style.style.length && !style.featureStyle.length;
+        let pluginConfigs = stylePlugins.slice(0);
         if (useDefault) {
             //图层没有定义任何style，通过数据动态生成pluginConfig
             pluginConfigs = this._updateLayerPluginConfig(layers);
         }
-        if (this.featurePlugins) {
-            pushIn(pluginConfigs, this.featurePlugins);
+        if (featurePlugins) {
+            pushIn(pluginConfigs, featurePlugins);
         }
         const allCustomProps = {};
         for (let i = 0; i < pluginConfigs.length; i++) {
@@ -323,18 +338,6 @@ export default class BaseLayerWorker {
 
         features = feas;
 
-        const featuresByLayer = {};
-        for (let i = 0, l = features.length; i < l; i++) {
-            const fea = features[i];
-            // 确保每个扩展出的要素副本都有唯一的索引
-            fea[keyName] = i;
-            const layer = fea.layer || '0';
-            if (!featuresByLayer[layer]) {
-                featuresByLayer[layer] = [];
-            }
-            featuresByLayer[layer].push(fea);
-        }
-
         const EXTENT = features[0].extent;
         const zoom = tileInfo.z,
             tilePoint = { x: tileInfo.extent2d.xmin * glScale, y: tileInfo.extent2d.ymax * glScale },
@@ -366,7 +369,7 @@ export default class BaseLayerWorker {
             getFnTypeProps(pluginConfig.symbol, fnTypeProps, i);
             hasFnTypeProps = hasFnTypeProps || fnTypeProps[i] && fnTypeProps[i].size > 0;
 
-            const { tileFeatures, tileFeaIndexes } = this._filterFeatures(zoom, pluginConfig.type, pluginConfig.filter, features, feaTags, i, featuresByLayer);
+            const { tileFeatures, tileFeaIndexes } = this._filterFeatures(styledFeatures, zoom, pluginConfig.type, pluginConfig.filter, features, feaTags, i);
 
             if (!tileFeatures.length) {
                 targetData[typeIndex] = null;
@@ -418,9 +421,6 @@ export default class BaseLayerWorker {
         }
 
         return Promise.all(promises).then(([styleCounter, ...tileDatas]) => {
-            if (styleCounter !== this._styleCounter) {
-                return { canceled: true };
-            }
             function handleTileData(tileData, i) {
                 if (tileData.data.ref !== undefined) {
                     return;
@@ -715,44 +715,30 @@ export default class BaseLayerWorker {
      * @param {*} filter
      * @param {*} features
      */
-    _filterFeatures(zoom, styleType, filter, features, tags, index, featuresByLayer) {
+    _filterFeatures(styledFeatures, zoom, styleType, filter, features, tags, index) {
         const keyName = (KEY_IDX + '').trim();
-        let targetFeatures = features;
-        if (featuresByLayer) {
-            const layerName = getFilterLayer(filter.def);
-            if (layerName) {
-                if (Array.isArray(layerName)) {
-                    targetFeatures = [];
-                    for (let i = 0; i < layerName.length; i++) {
-                        if (featuresByLayer[layerName[i]]) {
-                            pushIn(targetFeatures, featuresByLayer[layerName[i]]);
-                        }
-                    }
-                } else {
-                    targetFeatures = featuresByLayer[layerName] || EMPTY_ARRAY;
-                }
-            }
-        }
         const indexes = [];
         const filtered = [];
-        const l = targetFeatures.length;
+        const l = features.length;
         for (let i = 0; i < l; i++) {
-            const fea = targetFeatures[i];
-            const originalIndex = fea[keyName];
-            if (styleType !== 1 && fea.id !== undefined && this.styledFeatures[fea.id]) {
+            if (styleType !== 1 && features[i].id !== undefined && styledFeatures[features[i].id]) {
                 continue;
             }
 
             //filter.def没有定义，或者为default时，说明其实默认样式，feature之前没有其他样式时的应用样式
             // 并识别哪些feature归类到默认样式
-            if ((!filter.def || filter.def === 'default') && !tags[originalIndex] ||
-                (filter.def === true || filter.def && (filter.def.condition !== undefined || Array.isArray(filter.def)) && filter(fea, zoom))) {
-                if (!tags[originalIndex]) {
-                    tags[originalIndex] = [];
+            if ((!filter.def || filter.def === 'default') && !tags[i] ||
+                (filter.def === true || filter.def && (filter.def.condition !== undefined || Array.isArray(filter.def)) && filter(features[i], zoom))) {
+                const fea = features[i];
+                if (fea[keyName] === undefined) {
+                    fea[keyName] = i;
                 }
-                tags[originalIndex].push(index);
+                if (!tags[i]) {
+                    tags[i] = [];
+                }
+                tags[i].push(index);
                 filtered.push(fea);
-                indexes.push(originalIndex);
+                indexes.push(i);
                 if (styleType === 1) {
                     break;
                 }
@@ -799,37 +785,7 @@ export default class BaseLayerWorker {
                 featurePlugins.push(compiledFeatureStyle[i]);
             }
         }
-
-        this.pluginConfig = pluginConfigs;
-        this.featurePlugins = featurePlugins;
-        this.styledFeatures = styledFeatures;
-        this._activeLayers = this._getActiveLayers();
-    }
-
-    _getActiveLayers() {
-        const configs = this.pluginConfig.concat(this.featurePlugins || []);
-        if (!configs.length) {
-            return null;
-        }
-        const layers = new Set();
-        for (let i = 0; i < configs.length; i++) {
-            const def = configs[i].filter && configs[i].filter.def;
-            if (!def || def === 'default') {
-                return null;
-            }
-            const layer = getFilterLayer(def);
-            if (!layer) {
-                return null;
-            }
-            if (Array.isArray(layer)) {
-                for (let j = 0; j < layer.length; j++) {
-                    layers.add(String(layer[j]));
-                }
-            } else {
-                layers.add(String(layer));
-            }
-        }
-        return layers;
+        return { pluginConfigs, featurePlugins, styledFeatures };
     }
 
     _updateLayerPluginConfig(layers) {
@@ -1162,39 +1118,4 @@ function ifIsIconText(symbol) {
     // 如果symbol中没有marker，只有text时，则iconText为true
     // isIconText 主要用在 getAnchors 和各种判断是否是沿线文字的判断逻辑中
     return symbol.markerType || symbol.markerFile;
-}
-
-function getFilterLayer(filter) {
-    if (!filter) {
-        return null;
-    }
-    if (filter[0] === '==' && filter[1] === '$layer') {
-        return filter[2];
-    }
-    if (filter[0] === 'all') {
-        for (let i = 1, l = filter.length; i < l; i++) {
-            const layer = getFilterLayer(filter[i]);
-            if (layer) {
-                return layer;
-            }
-        }
-    }
-    if (filter[0] === 'any') {
-        let layers = [];
-        for (let i = 1, l = filter.length; i < l; i++) {
-            const layer = getFilterLayer(filter[i]);
-            if (layer) {
-                if (Array.isArray(layer)) {
-                    pushIn(layers, layer);
-                } else {
-                    layers.push(layer);
-                }
-            }
-        }
-        return layers.length ? layers : null;
-    }
-    if (filter[0] === 'in' && filter[1] === '$layer') {
-        return filter.slice(2);
-    }
-    return null;
 }

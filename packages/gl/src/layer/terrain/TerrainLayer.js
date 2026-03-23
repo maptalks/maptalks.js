@@ -188,7 +188,7 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
             return EMPTY_TILE_GRIDS;
         }
         const tileGrids = renderer.getTileGridsInCurrentFrame();
-        const grid = tileGrids.tileGrids[0];
+        const grid = tileGrids && tileGrids.tileGrids && tileGrids.tileGrids[0];
         if (!grid) {
             return EMPTY_TILE_GRIDS;
         }

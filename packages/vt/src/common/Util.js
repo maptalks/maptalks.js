@@ -1,4 +1,5 @@
 import { isFunctionDefinition } from '@maptalks/function-type';
+import { decodeJSON } from 'maptalks/dist/core/util/encode';
 
 
 let id = 0;
@@ -202,26 +203,6 @@ export function wrap(n, min, max) {
     return w;
 }
 
-
-const encoder = new TextEncoder();
-const decoder = new TextDecoder();
-export function encodeJSON(json) {
-    try {
-        const str = JSON.stringify(json);
-        return encoder.encode(str);
-    } catch (error) {
-        console.error('encode JSON to Uint8Array error:', error);
-    }
-}
-
-export function decodeJSON(uint8Array) {
-    try {
-        const str = decoder.decode(uint8Array);
-        return JSON.parse(str);
-    } catch (error) {
-        console.error('decode Uint8Array to JSON error:', error);
-    }
-}
 
 export function wrapVTFeatureGeometryInfo(layerOptionsFeatures, tileCacheImage, dataList) {
     // layer features is 0 or false
