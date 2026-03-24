@@ -789,6 +789,7 @@ export default class BaseLayerWorker {
     }
 
     _getLayerFilter(styleCounter, ruleStyles) {
+        
         if (this._compiledLayerFilter !== undefined && this._compiledLayerFilterCounter === styleCounter) {
             return this._compiledLayerFilter;
         }
