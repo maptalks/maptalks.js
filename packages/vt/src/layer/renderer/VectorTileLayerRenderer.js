@@ -541,82 +541,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         super.loadTileQueue(tileQueue);
     }
 
-    _getLayerFilter() {
-        if (this._compiledLayerFilter !== undefined && this._compiledLayerFilterCounter === this._styleCounter) {
-            return this._compiledLayerFilter;
-        }
-        let hasNoLayerFilter = false;
-        const layers = new Set();
-        const traverse = (filter) => {
-            if (hasNoLayerFilter) return;
-            if (filter === true || filter === null || filter === undefined) {
-                hasNoLayerFilter = true;
-                return;
-            }
-            if (!Array.isArray(filter)) {
-                if (filter.condition !== undefined) {
-                    if (filter.layer !== undefined) {
-                        layers.add(filter.layer);
-                    } else if (filter.type === 'any' && Array.isArray(filter.condition)) {
-                        for (let i = 0; i < filter.condition.length; i++) traverse(filter.condition[i]);
-                    } else {
-                        hasNoLayerFilter = true;
-                    }
-                } else if (filter.type === 'FeatureFilter') {
-                    hasNoLayerFilter = true;
-                } else {
-                    hasNoLayerFilter = true;
-                }
-                return;
-            }
-            const operator = filter[0];
-            if (operator === '==' && filter[1] === '$layer') {
-                layers.add(filter[2]);
-            } else if (operator === 'in' && filter[1] === '$layer') {
-                for (let i = 2; i < filter.length; i++) layers.add(filter[i]);
-            } else if (operator === 'all') {
-                let foundLayer = false;
-                for (let i = 1; i < filter.length; i++) {
-                    const f = filter[i];
-                    if (Array.isArray(f) && f[0] === '==' && f[1] === '$layer') {
-                        foundLayer = true;
-                        layers.add(f[2]);
-                    } else if (Array.isArray(f) && f[0] === 'in' && f[1] === '$layer') {
-                        foundLayer = true;
-                        for (let j = 2; j < f.length; j++) layers.add(f[j]);
-                    } else if (typeof f === 'string' && f === 'any') {
-                        continue;
-                    }
-                }
-                if (!foundLayer) {
-                    hasNoLayerFilter = true;
-                }
-            } else if (operator === 'any') {
-                for (let i = 1; i < filter.length; i++) traverse(filter[i]);
-            } else {
-                hasNoLayerFilter = true;
-            }
-        };
 
-        const ruleStyles = this._styles[this._styleCounter];
-        if (!ruleStyles) {
-            return null;
-        }
-        const styleRules = (ruleStyles.style || []).concat(ruleStyles.featureStyle || []);
-        if (styleRules.length === 0) {
-            hasNoLayerFilter = true;
-        }
-        for (let i = 0; i < styleRules.length; i++) {
-            const rule = styleRules[i];
-            const filter = rule.filter && rule.filter.value !== undefined ? rule.filter.value : rule.filter;
-            traverse(filter);
-            if (hasNoLayerFilter) break;
-        }
-
-        this._compiledLayerFilterCounter = this._styleCounter;
-        this._compiledLayerFilter = hasNoLayerFilter ? null : Array.from(layers);
-        return this._compiledLayerFilter;
-    }
 
     loadTile(tileInfo) {
         const { url } = tileInfo;
@@ -680,7 +605,6 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 referrer,
                 styleCounter: this._styleCounter,
                 workerCacheIndex: this._workerCacheIndex,
-                layerFilter: this._getLayerFilter(),
                 command: 'loadTile'
             }
             //user custom ,data can from indexedDB

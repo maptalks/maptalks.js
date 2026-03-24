@@ -32,17 +32,25 @@ export default class VectorTileLayerWorker extends LayerWorker {
     getTileFeatures(context, cb) {
         const url = context.tileInfo.url;
         const fetchOptions = context.fetchOptions || {};
-        const { altitudePropertyName, disableAltitudeWarning, layerFilter } = context;
+        const { altitudePropertyName, disableAltitudeWarning } = context;
+
+        const doReadTile = (err, data) => {
+            this._getStyleByCounter(context.styleCounter).then(compiledStyle => {
+                const layerFilter = this._getLayerFilter(context.styleCounter, compiledStyle.style);
+                this._readTile(url, altitudePropertyName, disableAltitudeWarning, err, data, cb, layerFilter);
+            });
+        };
+
         const cached = this._cache.get(url);
         if (cached && cached.cacheIndex === context.workerCacheIndex) {
             const { err, data } = cached;
-            this._readTile(url, altitudePropertyName, disableAltitudeWarning, err, data, cb, layerFilter);
+            doReadTile(err, data);
             return null;
         }
         //data from laodTileArray for custom
         const { tileArrayBuffer } = context;
         if (tileArrayBuffer) {
-            this._readTile(url, altitudePropertyName, disableAltitudeWarning, null, tileArrayBuffer, cb, layerFilter);
+            doReadTile(null, tileArrayBuffer);
             return null;
         }
         fetchOptions.referrer = context.referrer;
@@ -57,7 +65,7 @@ export default class VectorTileLayerWorker extends LayerWorker {
             let arrayBuffer, hasData = false;
 
             const readTile = () => {
-                this._readTile(url, altitudePropertyName, disableAltitudeWarning, err, arrayBuffer, cb, layerFilter);
+                doReadTile(err, arrayBuffer);
             };
 
             if (err) {
