@@ -116,8 +116,7 @@ const el = {
         const pitch = cache ? cache.pitch : map.getPitch();
         const bearing = cache ? cache.bearing : map.getBearing();
         // when map is tilting, draw the ;circle/ellipse as a polygon by vertexes.
-        const isCircle = this instanceof Ellipse || this instanceof Circle;
-        return altitude > 0 || pitch || bearing || isCircle;
+        return altitude > 0 || pitch || ((this instanceof Ellipse) && bearing) || (this instanceof Sector);
     },
 
     //@internal
