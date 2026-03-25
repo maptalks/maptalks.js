@@ -1,29 +1,30 @@
 import { countVertexes, isClippedEdge, fillPosArray } from './Common';
 import { KEY_IDX } from '../../common/Constant';
 import { vec3 } from 'gl-matrix';
-import { isFunctionDefinition } from '@maptalks/function-type';
+import { isFunctionDefinition, loadFunctionTypes } from '@maptalks/function-type';
 import { getVectorPacker } from '../../packer/inject';
 
-const { PackUtil, StyleUtil, FilterUtil } = getVectorPacker();
+const { PackUtil, StyleUtil } = getVectorPacker();
 
-export function buildWireframe(
-    features, EXTENT, colorSymbol, opacity,
+export function wireframe(
+    features, EXTENT, lineColor, lineOpacity,
     {
         altitudeScale, altitudeProperty, defaultAltitude, heightProperty, minHeightProperty, defaultHeight,
         bottom
-    }
+    },
+    mapZoom
 ) {
+
     const drawBottom = bottom;
     const scale = EXTENT / features[0].extent;
     // debugger
     const size = countVertexes(features) * 2 + features.length * 3 * 2; //wireframe need to count last point in
 
     const featIndexes = [];
-    const vertices = new Int16Array(size);
+    // -32768 到 32767
+    let vertices = new Int16Array(size);
     const colors = new Uint8Array(vertices.length / 3 * 4);
-    if (isFunctionDefinition(colorSymbol)) {
-        colorSymbol = FilterUtil.compileFilter(colorSymbol);
-    }
+    const lineColorIsFunction = isFunctionDefinition(lineColor);
     const indices = [];
 
     function fillIndices(start, offset, height) {
@@ -68,6 +69,23 @@ export function buildWireframe(
         return offset + count;
     }
 
+    let minAlt = Infinity, maxAlt = -Infinity;
+    const heights = [];
+    // Find the maximum elevation
+    for (let r = 0, n = features.length; r < n; r++) {
+        const feature = features[r];
+        const { altitude, height } = PackUtil.getFeaAltitudeAndHeight(feature, altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty);
+        minAlt = Math.min(altitude, minAlt);
+        maxAlt = Math.max(altitude, maxAlt);
+        const idx = 2 * r;
+        heights[idx] = altitude;
+        heights[idx + 1] = height;
+    }
+    // https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/TypedArray
+    if (Math.max(Math.abs(minAlt), Math.abs(maxAlt)) > 32767) {
+        vertices = new Int32Array(size);
+    }
+
     let offset = 0;
     let maxAltitude = -Infinity;
     let minAltitude = Infinity;
@@ -76,12 +94,14 @@ export function buildWireframe(
     for (let r = 0, n = features.length; r < n; r++) {
         const feature = features[r];
         const geometry = feature.geometry;
-        if (colorSymbol) {
-            let color;
-            if (typeof colorSymbol === 'function') {
-                color = colorSymbol(feature && feature.properties);
-            } else {
-                color = colorSymbol;
+        if (lineColor) {
+            let color = lineColor;
+            if (lineColorIsFunction) {
+                const colorSymbol = loadFunctionTypes({ lineColor }, () => {
+                    return [mapZoom, feature.properties || {}];
+                });
+                color = colorSymbol.lineColor;
+                color = color || '#fff';
             }
             StyleUtil.normalizeColor(rgb, color);
         } else {
@@ -89,7 +109,10 @@ export function buildWireframe(
         }
 
         const colorStart = offset / 3 * 4;
-        const { altitude, height } = PackUtil.getFeaAltitudeAndHeight(feature, altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty);
+        const idx = 2 * r;
+        const altitude = heights[idx];
+        const height = heights[idx + 1];
+
         if (height < 0) {
             minAltitude = Math.min(altitude, minAltitude);
             maxAltitude = Math.max(altitude - height, maxAltitude);
@@ -117,7 +140,7 @@ export function buildWireframe(
             colors[i] = rgb[0];
             colors[i + 1] = rgb[1];
             colors[i + 2] = rgb[2];
-            colors[i + 3] = 255 * (opacity || 1);
+            colors[i + 3] = 255 * (lineOpacity || 1);
         }
         const count = indices.length - featIndexes.length;
         for (let i = 0; i < count; i++) {

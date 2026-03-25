@@ -1,7 +1,7 @@
-import { buildWireframe } from './Wireframe';
+import { wireframe } from './Wireframe';
 
-export default function (features, extent, symbol, dataConfig) {
-    const frames = buildWireframe(features, extent, symbol.lineColor, symbol.lineOpacity, dataConfig);
+export default function (features, extent, symbol, dataConfig, mapZoom) {
+    const frames = wireframe(features, extent, symbol.lineColor, symbol.lineOpacity, dataConfig, mapZoom);
     const { minAltitude, maxAltitude } = frames;
     delete frames.minAltitude;
     delete frames.maxAltitude;
