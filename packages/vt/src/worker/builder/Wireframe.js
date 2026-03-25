@@ -72,6 +72,7 @@ export function wireframe(
     let minAlt = Infinity, maxAlt = -Infinity;
     const heights = [];
     // Find the maximum elevation
+    //查找最大海拔值,判断是否用Int32Array
     for (let r = 0, n = features.length; r < n; r++) {
         const feature = features[r];
         const { altitude, height } = PackUtil.getFeaAltitudeAndHeight(feature, altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty);
