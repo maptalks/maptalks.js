@@ -1,4 +1,5 @@
 import { countVertexes, isClippedEdge, fillPosArray } from './Common';
+import { isNumber } from '../../common/Util';
 import { KEY_IDX } from '../../common/Constant';
 import { isFunctionDefinition, loadFunctionTypes } from '@maptalks/function-type';
 import { getVectorPacker } from '../../packer/inject';
@@ -96,7 +97,7 @@ export function wireframe(
     for (let r = 0, n = features.length; r < n; r++) {
         const feature = features[r];
         const geometry = feature.geometry;
-        let color, opacity;
+        let color = lineColor, opacity = lineOpacity;
         if (lineColorIsFunction || lineOpacityIsFunction) {
             const colorSymbol = loadFunctionTypes(symbol, () => {
                 return [mapZoom, feature.properties || {}];
@@ -104,11 +105,8 @@ export function wireframe(
             color = colorSymbol.lineColor;
             opacity = colorSymbol.lineOpacity;
 
-        } else {
-            color = lineColor;
-            opacity = lineOpacity;
         }
-        if (typeof opacity !== 'number') {
+        if (!isNumber(opacity)) {
             opacity = 1;
         }
         if (!color) {
