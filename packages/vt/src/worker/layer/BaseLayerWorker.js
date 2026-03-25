@@ -602,7 +602,7 @@ export default class BaseLayerWorker {
                 )
             )]);
         } else if (type === '3d-wireframe') {
-            return Promise.all([Promise.resolve(buildWireframe(features, extent, symbol, dataConfig))]);
+            return Promise.all([Promise.resolve(buildWireframe(features, extent, symbol, dataConfig, zoom))]);
         } else if (type === 'point') {
             options = extend(options, {
                 requestor: this.fetchIconGlyphs.bind(this),
