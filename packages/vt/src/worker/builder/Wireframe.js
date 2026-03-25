@@ -1,13 +1,12 @@
 import { countVertexes, isClippedEdge, fillPosArray } from './Common';
 import { KEY_IDX } from '../../common/Constant';
-import { vec3 } from 'gl-matrix';
 import { isFunctionDefinition, loadFunctionTypes } from '@maptalks/function-type';
 import { getVectorPacker } from '../../packer/inject';
 
 const { PackUtil, StyleUtil } = getVectorPacker();
 
 export function wireframe(
-    features, EXTENT, lineColor, lineOpacity,
+    features, EXTENT, symbol,
     {
         altitudeScale, altitudeProperty, defaultAltitude, heightProperty, minHeightProperty, defaultHeight,
         bottom
@@ -24,7 +23,9 @@ export function wireframe(
     // -32768 到 32767
     let vertices = new Int16Array(size);
     const colors = new Uint8Array(vertices.length / 3 * 4);
+    const { lineColor, lineOpacity } = symbol || {};
     const lineColorIsFunction = isFunctionDefinition(lineColor);
+    const lineOpacityIsFunction = isFunctionDefinition(lineOpacity);
     const indices = [];
 
     function fillIndices(start, offset, height) {
@@ -95,20 +96,25 @@ export function wireframe(
     for (let r = 0, n = features.length; r < n; r++) {
         const feature = features[r];
         const geometry = feature.geometry;
-        if (lineColor) {
-            let color = lineColor;
-            if (lineColorIsFunction) {
-                const colorSymbol = loadFunctionTypes({ lineColor }, () => {
-                    return [mapZoom, feature.properties || {}];
-                });
-                color = colorSymbol.lineColor;
-                color = color || '#fff';
-            }
-            StyleUtil.normalizeColor(rgb, color);
-        } else {
-            vec3.set(rgb, 255, 255, 255);
-        }
+        let color, opacity;
+        if (lineColorIsFunction || lineOpacityIsFunction) {
+            const colorSymbol = loadFunctionTypes(symbol, () => {
+                return [mapZoom, feature.properties || {}];
+            });
+            color = colorSymbol.lineColor;
+            opacity = colorSymbol.lineOpacity;
 
+        } else {
+            color = lineColor;
+            opacity = lineOpacity;
+        }
+        if (typeof opacity !== 'number') {
+            opacity = 1;
+        }
+        if (!color) {
+            color = '#fff';
+        }
+        StyleUtil.normalizeColor(rgb, color);
         const colorStart = offset / 3 * 4;
         const idx = 2 * r;
         const altitude = heights[idx];
@@ -141,7 +147,7 @@ export function wireframe(
             colors[i] = rgb[0];
             colors[i + 1] = rgb[1];
             colors[i + 2] = rgb[2];
-            colors[i + 3] = 255 * (lineOpacity || 1);
+            colors[i + 3] = 255 * opacity;
         }
         const count = indices.length - featIndexes.length;
         for (let i = 0; i < count; i++) {
