@@ -107,6 +107,10 @@ export function convertToFeature(geo, kidGen, currentFeature) {
         }
     }
     const properties = geo.getProperties() ? Object.assign({}, geo.getProperties()) : {};
+    let collision = geo.options.collision;
+    if (!isNil(collision)) {
+        collision = true;
+    }
     const symbol = geo['_getInternalSymbol']() || getDefaultSymbol(geo);
     const kid = currentFeature ? (Array.isArray(currentFeature) ? currentFeature[0]['id'] : currentFeature['id']) : kidGen.id++;
     if (Array.isArray(symbol) && symbol.length) {
@@ -133,7 +137,8 @@ export function convertToFeature(geo, kidGen, currentFeature) {
                 visible: geo.isVisible(),
                 geometry,
                 coordinates: coords,
-                extent: Infinity
+                extent: Infinity,
+                collision
             };
             watchGeoVisible(fea, symbol[i], geo);
             fea[keyName] = pickingId;
@@ -161,7 +166,8 @@ export function convertToFeature(geo, kidGen, currentFeature) {
         visible: geo.isVisible(),
         geometry,
         coordinates: coords,
-        extent: Infinity
+        extent: Infinity,
+        collision
     };
     watchGeoVisible(feature, symbol, geo);
     feature[keyName] = pickingId;
