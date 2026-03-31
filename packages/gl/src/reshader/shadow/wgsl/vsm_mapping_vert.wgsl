@@ -15,7 +15,7 @@ struct VertexInput {
 
 // Vertex 输出结构体
 struct VertexOutput {
-    @builtin(position) position: vec4f
+    @builtin(position) position: vec4f,
 };
 
 @group(0) @binding($b) var<uniform> uniforms: ShadowMappingUniforms;

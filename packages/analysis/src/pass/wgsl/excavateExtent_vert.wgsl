@@ -12,7 +12,7 @@ struct VertexInput {
 };
 
 struct VertexOutput {
-    @builtin(position) position: vec4f
+    @builtin(position) position: vec4f,
 };
 
 @vertex
