@@ -108,7 +108,7 @@ export function convertToFeature(geo, kidGen, currentFeature) {
     }
     const properties = geo.getProperties() ? Object.assign({}, geo.getProperties()) : {};
     let collision = geo.options.collision;
-    if (!isNil(collision)) {
+    if (isNil(collision)) {
         collision = true;
     }
     const symbol = geo['_getInternalSymbol']() || getDefaultSymbol(geo);
