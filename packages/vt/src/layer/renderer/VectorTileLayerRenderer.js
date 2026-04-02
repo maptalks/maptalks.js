@@ -541,6 +541,8 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         super.loadTileQueue(tileQueue);
     }
 
+
+
     loadTile(tileInfo) {
         const { url } = tileInfo;
         const cached = this._requestingMVT[url];
