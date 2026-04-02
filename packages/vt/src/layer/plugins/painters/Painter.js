@@ -32,6 +32,10 @@ const levelNFilter = mesh => {
     return mesh.properties.level > 0;
 };
 
+function isObjectOrArray(v) {
+    return v && (maptalks.Util.isObject(v) || Array.isArray(v));
+}
+
 class Painter {
     static getBloomSymbol() {
         return ['bloom'];
@@ -813,13 +817,46 @@ class Painter {
         if (!this._symbol) {
             return false;
         }
-        const refresh = this._isNeedRefreshStyle(this.symbolDef[i] || {}, all);
+        let refresh = this._isNeedRefreshStyle(this.symbolDef[i] || {}, all);
         if (this._invisibleWhenCreated[i] && all.visible !== false) {
             this._invisibleWhenCreated[i] = false;
             return true;
         }
         this.symbolDef[i] = copyJSON(all);
         const symbol = this._symbol[i];
+        const newSymbol = this.symbolDef[i];
+        const keys = Object.keys(newSymbol);
+
+        for (let j = 0, len = keys.length; j < len; j++) {
+            const key2 = keys[j];
+            const v2 = newSymbol[key2];
+            //function-type the original value
+            const key1 = `_${key2}`;
+            const v1 = symbol[key1];
+            if (v2 === v1) {
+                continue;
+            }
+            //function-type or array properties diff
+            if (isObjectOrArray(v1) && isObjectOrArray(v2)) {
+                try {
+                    const str1 = JSON.stringify(v1);
+                    const str2 = JSON.stringify(v2);
+                    if (str1 === str2) {
+                        continue;
+                    }
+
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+            if (isObjectOrArray(v1) && isFunctionDefinition(v1) && !isFunctionDefinition(v2)) {
+                refresh = true;
+            }
+            if (isObjectOrArray(v2) && isFunctionDefinition(v2) && !isFunctionDefinition(v1)) {
+                refresh = true;
+            }
+
+        }
         for (const p in symbol) {
             delete symbol[p];
         }
