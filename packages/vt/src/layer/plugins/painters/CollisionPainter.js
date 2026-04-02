@@ -450,6 +450,12 @@ export default class CollisionPainter extends BasicPainter {
         if (!this.isEnableCollision()) {
             return true;
         }
+        const features = mesh.geometry.properties.features || [];
+        const featureItem = features[index / 4];
+        if (featureItem && featureItem.feature && featureItem.feature.collision === false) {
+            return true;
+        }
+
         const aOverlap = mesh.geometry.properties['aOverlap'];
         if (!aOverlap) {
             return +symbol[this.propAllowOverlap] === 1;
