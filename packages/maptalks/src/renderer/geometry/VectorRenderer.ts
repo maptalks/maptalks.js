@@ -105,6 +105,7 @@ const el = {
 
     //@internal
     _paintAsPath: function (): boolean {
+
         //why? when rotate need draw by path
         if (this.isRotated()) {
             return true;
@@ -115,7 +116,7 @@ const el = {
         const pitch = cache ? cache.pitch : map.getPitch();
         const bearing = cache ? cache.bearing : map.getBearing();
         // when map is tilting, draw the ;circle/ellipse as a polygon by vertexes.
-        return altitude > 0 || pitch || ((this instanceof Ellipse) && bearing);
+        return altitude > 0 || pitch || ((this instanceof Ellipse) && bearing) || (this instanceof Sector && !this.options.antiMeridian);
     },
 
     //@internal
