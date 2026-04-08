@@ -40,6 +40,18 @@ export function getBytesPerElementFromGLTFAccessor(componentType) {
     return component_ctors[componentType].bytes;
 }
 
+export function determinAttrTypeDefine(position) {
+    const positionItemType = position && position.buffer && position.buffer.itemType;
+    if (positionItemType) {
+        if (positionItemType.startsWith('sint')) {
+            return '_IS_INT';
+        } else if (positionItemType.startsWith('uint')) {
+            return '_IS_UINT';
+        }
+    }
+    return null;
+}
+
 // const PADDING_TYPES = {
 //     mat2x3f: { pad: [3, 1] },
 //     mat2x3h: { pad: [3, 1] },

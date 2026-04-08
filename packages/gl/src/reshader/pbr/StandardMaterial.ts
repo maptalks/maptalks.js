@@ -2,6 +2,7 @@ import { ShaderUniforms, ShaderDefines } from '../types/typings';
 import Material from '../Material';
 import { extend } from '../common/Util';
 import Geometry from '../Geometry';
+import { determinAttrTypeDefine } from '../webgpu/common/Types';
 
 const DEFAULT_UNIFORMS: ShaderUniforms = {
     'uvScale': [1, 1],
@@ -72,22 +73,18 @@ class StandardMaterial extends Material {
         //     defines['HAS_TONE_MAPPING'] = 1;
         // }
         const position = geometry.data[geometry.desc.positionAttribute];
-        if (position && position.buffer && position.buffer.itemType) {
-            if (position.buffer.itemType.startsWith('sint')) {
-                defines['POSITION_IS_INT'] = 1;
-            } else if (position.buffer.itemType.startsWith('uint')) {
-                defines['POSITION_IS_UINT'] = 1;
-            }
+
+        const typeDefine = determinAttrTypeDefine(position);
+        if (typeDefine) {
+            defines['POSITION' + typeDefine] = 1;
         }
+
         const normal = geometry.data[geometry.desc.normalAttribute];
-        const normalItemType = normal && normal.buffer && normal.buffer.itemType;
-        if (normalItemType) {
-            if (normalItemType.startsWith('sint')) {
-                defines['NORMAL_IS_INT'] = 1;
-            } else if (normalItemType.startsWith('uint')) {
-                defines['NORMAL_IS_UINT'] = 1;
-            }
+        const normalTypeDefine = determinAttrTypeDefine(normal);
+        if (normalTypeDefine) {
+            defines['NORMAL' + normalTypeDefine] = 1;
         }
+
         if (uniforms['GAMMA_CORRECT_INPUT']) {
             defines['GAMMA_CORRECT_INPUT'] = 1;
         }

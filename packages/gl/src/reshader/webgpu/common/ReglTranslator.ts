@@ -14,7 +14,7 @@ export function toGPUCompareFunction(func): GPUCompareFunction {
 }
 
 const TOPOLOGY_DICTIONARY = {
-    // 'points': 'point-list',
+    'points': 'point-list',
     'triangles': 'triangle-list',
     'triangle strip': 'triangle-strip',
     'lines': 'line-list',

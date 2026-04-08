@@ -57,6 +57,9 @@ import glFogMixFactorFrag from '../../gl/src/reshader/weather/fog/wgsl/fog_mixFa
 
 // 3dtiles
 import layer3dtilesPickingVert from '../../layer-3dtiles/src/layer/renderer/wgsl/picking_vert.wgsl';
+import layer3dtilesPntsVert from '../../layer-3dtiles/src/layer/renderer/wgsl/pnts_vert.wgsl';
+import layer3dtilesPntsFrag from '../../layer-3dtiles/src/layer/renderer/wgsl/pnts_frag.wgsl';
+
 
 // video
 import layerVideoVideoFrag from '../../layer-video/src/video_frag.wgsl';
@@ -142,6 +145,9 @@ registerWGSLSource('gl_fog_mixFactor_vert', glFogMixFactorVert);
 registerWGSLSource('gl_fog_mixFactor_frag', glFogMixFactorFrag);
 
 registerWGSLSource('layer_3dtiles_picking_vert', layer3dtilesPickingVert);
+registerWGSLSource('layer_3dtiles_pnts_vert', layer3dtilesPntsVert);
+registerWGSLSource('layer_3dtiles_pnts_frag', layer3dtilesPntsFrag);
+
 registerWGSLSource('layer_video_video_frag', layerVideoVideoFrag);
 registerWGSLSource('layer_video_video_vert', layerVideoVideoVert);
 
