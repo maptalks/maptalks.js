@@ -271,7 +271,7 @@ export default class CommandBuilder {
             const name = inputs[i].name;
             inputMapping[name] = inputs[i];
         }
-        const vertexInfo = {};
+        const vertexInfo = {} as any;
         const data = mesh.geometry.data;
         const semantic = mesh.geometry.semantic;
         const visited = new Set();
@@ -281,6 +281,7 @@ export default class CommandBuilder {
             if (info) {
                 visited.add(attr);
                 vertexInfo[attr] = {
+                    name: attr,
                     geoAttrName: name,
                     location: info.location,
                     itemSize: getItemSize(info.type)
@@ -291,6 +292,7 @@ export default class CommandBuilder {
             if (!visited.has(name)) {
                 const info = inputMapping[name];
                 vertexInfo[name] = {
+                    name,
                     geoAttrName: name,
                     location: info.location,
                     itemSize: getItemSize(info.type)
@@ -302,6 +304,7 @@ export default class CommandBuilder {
             for (const name in data) {
                 if (inputMapping[name]) {
                     vertexInfo[name] = {
+                        name,
                         geoAttrName: name,
                         location: inputMapping[name].location,
                         itemSize: getItemSize(inputMapping[name].type)
@@ -361,7 +364,7 @@ export default class CommandBuilder {
     }
     // 运行时调用，生成 uniform buffer， 用来存放全局 uniform 变量的值
     _createCommandPipeline(graphicsDevice: GraphicsDevice,
-        vert: string, vertInfo, frag: string, layout: GPUBindGroupLayout, mesh:Mesh,
+        vert: string, vertInfo: any, frag: string, layout: GPUBindGroupLayout, mesh:Mesh,
         pipelineDesc: PipelineDescriptor, fbo: GraphicsFramebuffer): GPURenderPipeline {
         const device = graphicsDevice.wgpu;
         const vertModule = device.createShaderModule({

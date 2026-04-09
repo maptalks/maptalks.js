@@ -2,6 +2,7 @@ import Geometry from './Geometry.js';
 import Material from './Material';
 import { ShaderUniforms, ShaderDefines } from './types/typings';
 import StandardMaterial from './pbr/StandardMaterial';
+import { determinAttrTypeDefine } from './webgpu/common/Types';
 
 const DEFAULT_UNIFORMS: ShaderUniforms = {
     'baseColorFactor': [1, 1, 1, 1],
@@ -39,22 +40,15 @@ class PhongMaterial extends Material {
         super.appendDefines(defines, geometry);
         const uniforms = this.uniforms;
         const position = geometry.data[geometry.desc.positionAttribute];
-        const positionItemType = position && position.buffer && position.buffer.itemType;
-        if (positionItemType) {
-            if (positionItemType.startsWith('sint')) {
-                defines['POSITION_IS_INT'] = 1;
-            } else if (positionItemType.startsWith('uint')) {
-                defines['POSITION_IS_UINT'] = 1;
-            }
+        const typeDefine = determinAttrTypeDefine(position);
+        if (typeDefine) {
+            defines['POSITION' + typeDefine] = 1;
         }
+
         const normal = geometry.data[geometry.desc.normalAttribute];
-        const normalItemType = normal && normal.buffer && normal.buffer.itemType;
-        if (normalItemType) {
-            if (normalItemType.startsWith('sint')) {
-                defines['NORMAL_IS_INT'] = 1;
-            } else if (normalItemType.startsWith('uint')) {
-                defines['NORMAL_IS_UINT'] = 1;
-            }
+        const normalTypeDefine = determinAttrTypeDefine(normal);
+        if (normalTypeDefine) {
+            defines['NORMAL' + normalTypeDefine] = 1;
         }
         if (this.unlit) {
             defines['SHADING_MODEL_UNLIT'] = 1;

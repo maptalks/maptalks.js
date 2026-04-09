@@ -615,6 +615,17 @@ export default class TileMeshPainter {
         );
         geometry.generateBuffers(this._regl);
         const defines = {};
+
+        const position = geometry.data['POSITION'] || geometry.data['POSITION_QUANTIZED'];
+        const positionItemType = position && position.buffer && position.buffer.itemType;
+        if (positionItemType) {
+            if (positionItemType.startsWith('sint')) {
+                defines['POSITION_IS_INT'] = 1;
+            } else if (positionItemType.startsWith('uint')) {
+                defines['POSITION_IS_UINT'] = 1;
+            }
+        }
+
         if (pnts['POSITION']) {
             defines['HAS_POSITION'] = 1;
         } else if (pnts['POSITION_QUANTIZED']) {
@@ -1577,8 +1588,11 @@ export default class TileMeshPainter {
         const modelNormalMatrix = [];
         const projViewModelMatrix = [];
         this._pntsShader = new reshader.MeshShader({
+            name: '3dtiles-pnts-shader',
             vert: pntsVert,
             frag: pntsFrag,
+            wgslVert: getWGSLSource('layer_3dtiles_pnts_vert'),
+            wgslFrag: getWGSLSource('layer_3dtiles_pnts_frag'),
             uniforms: [
                 {
                     name: 'projViewModelMatrix',
@@ -1705,6 +1719,7 @@ export default class TileMeshPainter {
             this._renderer,
             {
                 vert: pntsVert,
+                wgslVert: getWGSLSource('layer_3dtiles_pnts_vert'),
                 extraCommandProps,
                 uniforms: this._pntsShader.uniforms,
                 defines: {

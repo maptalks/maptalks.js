@@ -1233,11 +1233,7 @@ export default class Geometry {
             if (!attr) {
                 continue;
             }
-            const infoName = this.semantic[p] || p;
-            const info = vertexInfo[infoName];
-            if (!info) {
-                continue;
-            }
+            const info = vertexInfo[attrInfos[i].name];
             const accessorName = attr.accessorName;
             const byteStride = attr.byteStride;
             if (byteStride && accessorName) {
