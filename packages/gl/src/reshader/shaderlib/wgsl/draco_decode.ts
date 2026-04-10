@@ -137,11 +137,13 @@ const vert = /* wgsl */`
     // 法线解码函数
     fn decode_getNormal(aNormal: vec3f) -> vec3f {
     #ifdef HAS_COMPRESSED_INT16_NORMAL
-        aNormal.x = int16ToFloat32(aNormal.x, dracoUniforms.compressedNormalRange);
-        aNormal.y = int16ToFloat32(aNormal.y, dracoUniforms.compressedNormalRange);
-        aNormal.z = int16ToFloat32(aNormal.z, dracoUniforms.compressedNormalRange);
-    #endif
+        let x = int16ToFloat32(aNormal.x, dracoUniforms.compressedNormalRange);
+        let y = int16ToFloat32(aNormal.y, dracoUniforms.compressedNormalRange);
+        let z = int16ToFloat32(aNormal.z, dracoUniforms.compressedNormalRange);
+        return vec3f(x, y, z);
+    #else
         return aNormal;
+    #endif
     }
 `;
 
