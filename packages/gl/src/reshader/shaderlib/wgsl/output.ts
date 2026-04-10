@@ -42,7 +42,7 @@ fn getPositionMatrix(input: VertexInput, vertexOutput: ptr<function, VertexOutpu
 #ifdef HAS_INSTANCE
     let attributeMatrix = instance_getAttributeMatrix(input);
     #ifdef HAS_INSTANCE_COLOR
-        vertexOutput.vInstanceColor = instance_getInstanceColor();
+        vertexOutput.vInstanceColor = instance_getInstanceColor(input);
     #endif
     #ifdef HAS_SKIN
         if (skinUniforms.skinAnimation == 1) {

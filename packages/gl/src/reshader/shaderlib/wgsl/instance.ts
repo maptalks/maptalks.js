@@ -30,10 +30,10 @@ fn instance_getAttributeMatrix(
 
 #ifdef HAS_INSTANCE_COLOR
 // 获取实例颜色函数
-fn instance_getInstanceColor(instance_color: vec4f) -> vec4f {
-    var color = instance_color;
+fn instance_getInstanceColor(input: VertexInput) -> vec4f {
+    var color = input.instance_color;
 #ifdef HAS_INSTANCE_HIGHLIGHT
-    color = instance_color * highlight_color;
+    color = input.instance_color * input.highlight_color;
 #endif
     return color;
 }
