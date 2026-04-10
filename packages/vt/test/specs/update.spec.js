@@ -725,7 +725,7 @@ describe('update style specs', () => {
         assertChangeStyle(done, [0, 0, 255, 255], layer => {
             layer.updateSymbol(1, { visible: true });
             assert(layer.options.style[1].symbol.visible === true);
-        }, true, style, 0, 6);
+        }, true, style, 0, 5);
     });
 
     it('should can set visible of multiple symbol', done => {
