@@ -72,14 +72,14 @@ export default class CommandBuilder {
         let frag = removeComment(this.frag);
         try {
             vert = WGSLParseDefines(vert, defines);
-        } catch (error) {
+        } catch (error: any) {
             error.message = this.name + '(vert):' + error.message;
             console.error(error);
             throw error;
         }
         try {
             frag = WGSLParseDefines(frag, defines);
-        } catch (error) {
+        } catch (error: any) {
             error.message = this.name + '(frag):' + error.message;
             console.error(error);
             throw error;
@@ -191,7 +191,7 @@ export default class CommandBuilder {
         });
     }
 
-    _createLayoutEntry(binding, visibility, groupInfo, mesh, uniformValues): GPUBindGroupLayoutEntry {
+    _createLayoutEntry(binding: number, visibility: number, groupInfo: any, mesh: Mesh, uniformValues: ShaderUniforms): GPUBindGroupLayoutEntry {
         if (groupInfo.resourceType === ResourceType.Sampler) {
             const sampler: GPUSamplerBindingLayout = {};
             if (groupInfo.type && groupInfo.type.name === 'sampler_comparison') {
@@ -241,7 +241,7 @@ export default class CommandBuilder {
         }
     }
 
-    _getTextureInfo(name: string, mesh, uniformValues) {
+    _getTextureInfo(name: string, mesh: Mesh, uniformValues: ShaderUniforms) {
         let texture = uniformValues[name] || mesh.material && mesh.material.get(name);
         let format;
         let multisampled = false;
@@ -324,7 +324,7 @@ export default class CommandBuilder {
         return mapping;
     }
 
-    _parseGroupMapping(mapping, groupReflect, mesh, shaderType) {
+    _parseGroupMapping(mapping: any, groupReflect: any, mesh: Mesh, shaderType: string) {
         if (!groupReflect) {
             return;
         }
@@ -446,18 +446,23 @@ export default class CommandBuilder {
             };
         }
         if (fragModule && pipelineDesc.blendAlphaDst) {
-            const fragTargets = pipelineOptions.fragment.targets;
-            for (const target of fragTargets) {
-                target.blend = {
-                    color: {
-                        srcFactor: pipelineDesc.blendColorSrc,
-                        dstFactor: pipelineDesc.blendColorDst,
-                        operation: 'add'
-                    },
-                    alpha: {
-                        srcFactor: pipelineDesc.blendAlphaSrc,
-                        dstFactor: pipelineDesc.blendAlphaDst,
-                        operation: 'add'
+            const fragTargets = pipelineOptions.fragment?.targets;
+            if (fragTargets) {
+                for (const target of fragTargets) {
+                    if (!target) {
+                        continue;
+                    }
+                    target.blend = {
+                        color: {
+                            srcFactor: pipelineDesc.blendColorSrc,
+                            dstFactor: pipelineDesc.blendColorDst,
+                            operation: 'add'
+                        },
+                        alpha: {
+                            srcFactor: pipelineDesc.blendAlphaSrc,
+                            dstFactor: pipelineDesc.blendAlphaDst,
+                            operation: 'add'
+                        }
                     }
                 }
             }
@@ -477,7 +482,7 @@ function meshHasUniform(mesh: Mesh, name: string, contextDesc: Record<string, an
     return contextDesc[name] && !contextDesc[name].global || mesh.hasUniform(name);
 }
 
-function getItemSize(type) {
+function getItemSize(type: any) {
     if (type.name.startsWith('vec')) {
         return parseInt(type.name[3]);
     } else {
@@ -509,7 +514,7 @@ function parseBindingIndex(code: any, index: number) {
     };
 }
 
-function removeComment(str) {
+function removeComment(str: string): string {
     if (!str) {
         return str;
     }

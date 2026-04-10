@@ -14,8 +14,8 @@ struct VertexInput {
     #include <position_vert>
 
     #if HAS_MAP || HAS_TERRAIN_FLAT_MASK
-        #ifdef HAS_DRACO_TEXCOORD
-            @location($i) aTexCoord: vec2u,
+        #ifdef HAS_DRACO_TEXCOORD || HAS_COMPRESSED_INT16_TEXCOORD_0
+            @location($i) aTexCoord: vec2i,
         #else
             @location($i) aTexCoord: vec2f,
         #endif
@@ -230,9 +230,9 @@ fn main(input: VertexInput) -> VertexOutput {
         fbo_picking_setData(input, &output, output.position.w, alpha != 0.0);
     #else
         #if HAS_MAP
-            output.vTexCoord = transformTexcoord(input.aTexCoord.xy);
+            output.vTexCoord = transformTexcoord(vec2f(input.aTexCoord.xy));
             #ifdef HAS_AO_MAP
-                output.vTexCoord1 = transformTexcoord(input.aTexCoord1);
+                output.vTexCoord1 = transformTexcoord(vec2f(input.aTexCoord1.xy));
             #endif
             #ifdef HAS_I3S_UVREGION
                 output.vUvRegion = input.uvRegion / 65535.0;
