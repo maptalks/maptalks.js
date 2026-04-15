@@ -34,6 +34,14 @@ export default class MapGPURenderer extends MapGLRenderer {
         return updated;
     }
 
+    toDataURL(mimeType: string, quality?: number) {
+        if (!this.canvas) {
+            return null;
+        }
+        const canvas = (this.canvas as any).readbackCanvas || this.canvas;
+        return canvas.toDataURL(mimeType, quality);
+    }
+
     createContext() {
         return initGPUDevice().then(({ gpuDevice, gpuAdapter }) => {
             const context = this.canvas.getContext('webgpu');
