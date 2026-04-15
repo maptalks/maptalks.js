@@ -54,12 +54,15 @@ export function getUnsignedArrayType(max) {
     return Float32Array;
 }
 
+import ArrayBufferPool from './ArrayBufferPool';
+
 export function createTypedArray(values, ctor) {
     const length = values.getLength ? values.getLength() : values.length;
     if (values instanceof ctor) {
         return values.slice(0, length);
     }
-    const arr = new ctor(length);
+    const byteLength = length * ctor.BYTES_PER_ELEMENT;
+    const arr = ArrayBufferPool ? new ctor(ArrayBufferPool.get(byteLength), 0, length) : new ctor(length);
     // _origin means values is a proxied ArrayItem
     values = values._origin || values;
     for (let i = 0; i < length; i++) {
