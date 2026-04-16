@@ -40,9 +40,12 @@ export default class MapGPURenderer extends MapGLRenderer {
         }
         const mapCanvas = this.canvas as any;
         const canvas = mapCanvas.readbackCanvas =  mapCanvas.readbackCanvas || document.createElement('canvas');
-        const timestamp = this.getFrameTimestamp();
-        this.renderFrame(timestamp);
-        this.device.preserveDrawingBuffer(canvas);
+        if (!this.map.options['preserveDrawingBuffer']) {
+            this.setForceRedraw();
+            const timestamp = this.getFrameTimestamp();
+            this.renderFrame(timestamp);
+            this.device.preserveDrawingBuffer(canvas);
+        }
         return canvas.toDataURL(mimeType, quality);
     }
 

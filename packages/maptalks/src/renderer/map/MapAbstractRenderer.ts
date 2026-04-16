@@ -71,6 +71,8 @@ class MapAbstractRenderer extends MapRenderer {
     _checkPositionTime: number;
     //@internal
     _tops: (EditHandle | EditOutline)[];
+    //@internal
+    _forceRedraw: boolean;
 
     context: any;
     canvas: HTMLCanvasElement;
@@ -239,8 +241,16 @@ class MapAbstractRenderer extends MapRenderer {
         }
     }
 
+    setForceRedraw() {
+        this._forceRedraw = true;
+    }
+
     //need redraw all layer,cause by collision/crs change/view change etc...
     checkIfNeedToRedrawLayers(layers: Layer[]) {
+        if (this._forceRedraw) {
+            this._forceRedraw = false;
+            return true;
+        }
         if (this.isSpatialReferenceChanged()) {
             return true;
         }
