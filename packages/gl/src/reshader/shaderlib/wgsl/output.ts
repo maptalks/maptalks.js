@@ -6,7 +6,7 @@ const vert = /* wgsl */`
 
 #ifdef HAS_SKIN
     struct SkinUniforms {
-        skinAnimation: i32,
+        skinAnimation: f32,
     };
     @group(0) @binding($b) var<uniform> skinUniforms: SkinUniforms;
     #include <skin_vert>
@@ -46,7 +46,7 @@ fn getPositionMatrix(input: VertexInput, vertexOutput: ptr<function, VertexOutpu
     #endif
     #ifdef HAS_SKIN
         if (skinUniforms.skinAnimation == 1) {
-            worldMatrix = attributeMatrix * positionMatrix * skin_getSkinMatrix();
+            worldMatrix = attributeMatrix * positionMatrix * skin_getSkinMatrix(input);
         } else {
             worldMatrix = attributeMatrix * positionMatrix;
         }
@@ -56,7 +56,7 @@ fn getPositionMatrix(input: VertexInput, vertexOutput: ptr<function, VertexOutpu
 #else
     #ifdef HAS_SKIN
         if (skinUniforms.skinAnimation == 1) {
-            worldMatrix = skin_getSkinMatrix() * positionMatrix;
+            worldMatrix = skin_getSkinMatrix(input) * positionMatrix;
         } else {
             worldMatrix = positionMatrix;
         }

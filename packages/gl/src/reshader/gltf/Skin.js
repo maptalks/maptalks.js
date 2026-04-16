@@ -27,7 +27,7 @@ export default class Skin {
         this.jointTextureSize = [4, 6];
     }
 
-    update(nodeMatrix, nodeMatrixMap, joinTexture) {
+    update(nodeMatrix, nodeMatrixMap, jointTexture) {
         mat4.invert(globalWorldInverse, nodeMatrix);
         for (let j = 0; j < this.joints.length; ++j) {
             const joint = this.joints[j];
@@ -39,11 +39,17 @@ export default class Skin {
         TEX_INFO.height = this.joints.length;
         TEX_INFO.data = this.jointData;
         const texInfo = TEX_INFO;
-        if (!joinTexture) {
-            joinTexture = this._regl.texture(texInfo);
+        const isWebGPU = !!this._regl.wgpu;
+        if (!jointTexture) {
+            jointTexture = this._regl.texture(texInfo);
         } else {
-            joinTexture(texInfo);
+            if (isWebGPU) {
+                jointTexture.update(texInfo);
+            } else {
+                jointTexture(texInfo);
+            }
+
         }
-        return joinTexture;
+        return jointTexture;
     }
 }

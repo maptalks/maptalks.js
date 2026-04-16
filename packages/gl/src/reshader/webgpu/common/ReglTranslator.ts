@@ -96,9 +96,9 @@ export function toTextureFormat(format: string, type: string): GPUTexFormat {
         }
         return { format: texFormat, bytesPerTexel: 4, isDepthStencil: false };
     } else if (type === 'float16' || type === 'half float') {
-        return { format: 'r16float', bytesPerTexel: 2, isDepthStencil: false };
+        return { format: 'rgba16float', bytesPerTexel: 2 * 4, isDepthStencil: false };
     } else if (type === 'float') {
-        return { format: 'r32float', bytesPerTexel: 4, isDepthStencil: false };
+        return { format: 'rgba32float', bytesPerTexel: 4 * 4, isDepthStencil: false };
     }
     return { format, bytesPerTexel: 4, isDepthStencil: false };
 }

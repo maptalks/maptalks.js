@@ -103,7 +103,6 @@ export default class CommandBuilder {
                 frag = frag.substring(0, structStartIndex) + match[0] + '\n' +frag.substring(structStartIndex);
             }
         }
-
         // console.log('vert', vert);
         // console.log('frag', frag);
         let vertReflect;
@@ -213,7 +212,8 @@ export default class CommandBuilder {
             const { format, multisampled } = this._getTextureInfo(name, mesh, uniformValues);
             // https://gpuweb.github.io/gpuweb/#dictdef-gputexturebindinglayout
             // 根据规范，如果 multisampled 为真，sampleType 不能是float
-            let sampleType: GPUTextureSampleType = multisampled ? 'unfilterable-float' : 'float';
+            let sampleType: GPUTextureSampleType = (multisampled || format && format.indexOf('32float') > 0) ?
+                'unfilterable-float' : 'float';
             if (format && format.startsWith('depth')) {
                 sampleType = 'depth';
             }
