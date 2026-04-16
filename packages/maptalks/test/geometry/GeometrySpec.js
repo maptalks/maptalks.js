@@ -57,6 +57,18 @@ describe('Geometry.main', function () {
         });
     });
 
+    it('#2861 multi flash conflict', function (done) {
+        var geometry = new maptalks.Marker(map.getCenter()).addTo(layer);
+        geometry.flash(200, 6, () => { });
+        setTimeout(() => {
+            //第一次没有结束,开始新的一次flash
+            geometry.flash(200, 6, () => {
+                expect(geometry.isVisible()).to.be.eql(true);
+                done();
+            });
+        }, 400);
+    });
+
     // 测试所有类型Geometry的公共方法
     var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
 
