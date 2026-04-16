@@ -60,10 +60,11 @@ describe('Geometry.main', function () {
     it('#2861 multi flash conflict', function (done) {
         var geometry = new maptalks.Marker(map.getCenter()).addTo(layer);
         geometry.flash(200, 6, () => { });
-        setTimeout(() => {
+        const tid = setTimeout(() => {
             //第一次没有结束,开始新的一次flash
             geometry.flash(200, 6, () => {
                 expect(geometry.isVisible()).to.be.eql(true);
+                clearTimeout(tid);
                 done();
             });
         }, 400);
