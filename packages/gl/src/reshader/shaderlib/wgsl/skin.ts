@@ -7,8 +7,7 @@ struct JoinUniforms {
 @group(0) @binding($b) var<uniform> joinUniforms: JoinUniforms;
 
 // 定义采样器
-@group(0) @binding($b) var jointTextureSampler: sampler;
-@group(0) @binding($b) var jointTexture: texture_2df,      // 关节纹理
+@group(0) @binding($b) var jointTexture: texture_2d<f32>;      // 关节纹理
 
 // 定义采样点坐标
 #define ROW0_U ((0.5 + 0.0) / 4.)
@@ -17,19 +16,22 @@ struct JoinUniforms {
 #define ROW3_U ((0.5 + 3.0) / 4.)
 
 // 获取骨骼矩阵函数
-fn skin_getBoneMatrix(jointNdx: f32) -> mat4x4f {
-    let v = (jointNdx + 0.5) / joinUniforms.numJoints;
+fn skin_getBoneMatrix(jointNdx: u32) -> mat4x4f {
+    let texSize = vec2f(textureDimensions(jointTexture));
+    let v = (f32(jointNdx) + 0.5) / joinUniforms.numJoints;
     return mat4x4f(
-        textureSample(jointTexture, jointTextureSampler, vec2f(ROW0_U, v)),
-        textureSample(jointTexture, jointTextureSampler, vec2f(ROW1_U, v)),
-        textureSample(jointTexture, jointTextureSampler, vec2f(ROW2_U, v)),
-        textureSample(jointTexture, jointTextureSampler, vec2f(ROW3_U, v))
+        textureLoad(jointTexture, vec2i(vec2f(ROW0_U, v) * texSize), 0),
+        textureLoad(jointTexture, vec2i(vec2f(ROW1_U, v) * texSize), 0),
+        textureLoad(jointTexture, vec2i(vec2f(ROW2_U, v) * texSize), 0),
+        textureLoad(jointTexture, vec2i(vec2f(ROW3_U, v) * texSize), 0)
     );
 }
 
 // 获取皮肤矩阵函数
-fn skin_getSkinMatrix(JOINTS_0: vec4f, WEIGHTS_0: vec4f) -> mat4x4f {
-    var skinMatrix = skin_getBoneMatrix(JOINTS_0[0]) * WEIGHTS_0[0] +
+fn skin_getSkinMatrix(input: VertexInput) -> mat4x4f {
+    let JOINTS_0 = input.JOINTS_0;
+    let WEIGHTS_0 = input.WEIGHTS_0;
+    let skinMatrix = skin_getBoneMatrix(JOINTS_0[0]) * WEIGHTS_0[0] +
                      skin_getBoneMatrix(JOINTS_0[1]) * WEIGHTS_0[1] +
                      skin_getBoneMatrix(JOINTS_0[2]) * WEIGHTS_0[2] +
                      skin_getBoneMatrix(JOINTS_0[3]) * WEIGHTS_0[3];
@@ -44,7 +46,7 @@ const attributes = [
     },
     {
         name: 'JOINTS_0',
-        type: 'vec4f',
+        type: 'vec4u',
     }
 ];
 

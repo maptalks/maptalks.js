@@ -15,7 +15,6 @@
     "declaration": true,
     "declarationMap": true,
     "stripInternal": true,
-    "ignoreDeprecations": "6.0",
     //dependencies lib version
     "lib": [
       "es2015",
