@@ -393,6 +393,20 @@ function approx(val: number, expected: number, delta?: number) {
  * @memberOf Util
  */
 export function flash(interval: number = 100, count: number = 4, cb: Function = null, context: any = null) {
+    const me = this;
+    if (me._flashTimeout) {
+        clearTimeout(this._flashTimeout);
+        //the previous visibility state
+        if (!isNil(me._flashInitVisible)) {
+            if (me._flashInitVisible) {
+                me.show();
+            } else {
+                me.hide();
+            }
+            delete me._flashInitVisible;
+        }
+    }
+
     if (!interval) {
         interval = 100;
     }
@@ -400,15 +414,14 @@ export function flash(interval: number = 100, count: number = 4, cb: Function = 
         count = 4;
     }
     // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const me = this;
     const initVisible = this.isVisible();
+    me._flashInitVisible = initVisible;
     count *= 2;
-    if (this._flashTimeout) {
-        clearTimeout(this._flashTimeout);
-    }
+
 
     function flashGeo() {
         if (count === 0) {
+            delete me._flashInitVisible;
             if (initVisible) {
                 me.show();
             } else {
