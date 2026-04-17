@@ -368,6 +368,10 @@ class MapGeometryEventsHandler extends MapBaseHandler {
                 };
                 oldGeosMouseout(oldTargets, []);
             } else if (eventType === 'mousemove') {
+                //优先老的geos 进行 mouseout
+                const oldTargets = getOldGeos();
+                oldGeosMouseout(oldTargets, geometries);
+
                 const geoMap = {};
                 if (geometries.length > 0) {
                     for (let i = geometries.length - 1; i >= 0; i--) {
@@ -390,12 +394,10 @@ class MapGeometryEventsHandler extends MapBaseHandler {
 
                 map._setPriorityCursor(geometryCursorStyle);
 
-                const oldTargets = getOldGeos();
                 this._prevOverGeos = {
                     'geos': geometries,
                     'geomap': geoMap
                 };
-                oldGeosMouseout(oldTargets, geometries);
 
             } else {
                 if (!geometries || !geometries.length) { return; }
