@@ -38,7 +38,14 @@ export default class MapGPURenderer extends MapGLRenderer {
         if (!this.canvas) {
             return null;
         }
-        const canvas = (this.canvas as any).readbackCanvas || this.canvas;
+        const mapCanvas = this.canvas as any;
+        const canvas = mapCanvas.readbackCanvas =  mapCanvas.readbackCanvas || document.createElement('canvas');
+        if (!this.map.options['preserveGpuDrawingBuffer']) {
+            this.setForceRedraw();
+            const timestamp = this.getFrameTimestamp();
+            this.renderFrame(timestamp);
+            this.device.preserveDrawingBuffer(canvas);
+        }
         return canvas.toDataURL(mimeType, quality);
     }
 
