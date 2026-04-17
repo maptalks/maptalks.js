@@ -40,7 +40,7 @@ export default class MapGPURenderer extends MapGLRenderer {
         }
         const mapCanvas = this.canvas as any;
         const canvas = mapCanvas.readbackCanvas =  mapCanvas.readbackCanvas || document.createElement('canvas');
-        if (!this.map.options['preserveDrawingBuffer']) {
+        if (!this.map.options['preserveGpuDrawingBuffer']) {
             this.setForceRedraw();
             const timestamp = this.getFrameTimestamp();
             this.renderFrame(timestamp);
