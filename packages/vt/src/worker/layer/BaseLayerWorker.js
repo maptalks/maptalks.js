@@ -72,7 +72,7 @@ export default class BaseLayerWorker {
         }];
         const feaIdProp = this.options.featureIdProperty;
         this.requests[url] = true;
-        const req = this.getTileFeatures(context, (err, features, layers, props) => {
+        this.getTileFeatures(context, (err, features, layers, props) => {
             const waitings = loadings[url];
             delete loadings[url];
             if (this.checkIfCanceled(url)) {
@@ -111,10 +111,6 @@ export default class BaseLayerWorker {
                 }
             }
         });
-        if (this.requests[url]) {
-            this.requests[url] = req;
-        }
-
     }
 
     _onTileLoad(context, cb, url, layers, features, props) {
@@ -789,7 +785,7 @@ export default class BaseLayerWorker {
     }
 
     _getLayerFilter(styleCounter, ruleStyles) {
-        
+
         if (this._compiledLayerFilter !== undefined && this._compiledLayerFilterCounter === styleCounter) {
             return this._compiledLayerFilter;
         }
