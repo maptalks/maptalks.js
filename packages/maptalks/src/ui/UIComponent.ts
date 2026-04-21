@@ -121,10 +121,6 @@ class UIComponent extends Eventable(Class) {
         this.proxyOptions();
     }
 
-    getOffset() {
-        return new Point(0, 0);
-    }
-
     //@internal
     _appendCustomClass(dom: HTMLElement) {
         if (!dom) {
