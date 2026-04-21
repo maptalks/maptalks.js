@@ -7,6 +7,7 @@ import { Geometry, Marker, MultiPoint, LineString, MultiLineString } from '../ge
 import type { Map } from '../map';
 import { MapEventDataType } from '../map/Map.DomEvents';
 import UIComponent, { UIComponentAlignOptionsType, UIComponentOptionsType } from './UIComponent';
+import { bboxInBBOX, BBOX } from '../core/util/bbox';
 const PROPERTY_PATTERN = /\{ *([\w_]+) *\}/g;
 
 /**
@@ -35,7 +36,8 @@ const options: InfoWindowOptionsType = {
     'content': null,
     'enableTemplate': false,
     'horizontalAlignment': 'middle',
-    'verticalAlignment': 'top'
+    'verticalAlignment': 'top',
+    'autoAdjustAnchor': false
 };
 
 const EMPTY_SIZE = new Size(0, 0);
@@ -524,6 +526,78 @@ class InfoWindow extends UIComponent {
         return width;
     }
 
+    _autoAdjustAnchor() {
+        const options = this.options as any;
+        if (!options.autoAdjustAnchor) {
+            return this
+        }
+        const dom = this.getDOM();
+        const map = this.getMap();
+        if (!map || !dom || !dom.getBoundingClientRect) {
+            return this
+        }
+        const rect = dom.getBoundingClientRect();
+        const size = map.getSize();
+
+        const horizontalAlignment = options.horizontalAlignment;
+        const verticalAlignment = options.verticalAlignment;
+
+        const width = size.width, height = size.height;
+        const x1 = rect.left, x2 = rect.right, y1 = rect.top, y2 = rect.bottom;
+        let temphorizontalAlignment = horizontalAlignment, tempverticalAlignment = verticalAlignment;
+        const w = rect.width, h = rect.height;
+
+        const bbox1 = [x1 - w / 2, y1, x2 + w / 2, y2], mapBBOX = [0, 0, width, height] as BBOX;
+        if (bbox1[0] > 0 && bbox1[2] < width) {
+            temphorizontalAlignment = 'middle';
+        }
+
+        if (bboxInBBOX(bbox1 as BBOX, mapBBOX)) {
+            temphorizontalAlignment = 'middle';
+            tempverticalAlignment = 'top';
+            if (verticalAlignment === 'bottom') {
+                let offset = { x: 0, y: 30 };
+                const owner = this.getOwner() || {};
+                if (owner instanceof Marker) {
+                    const extent = owner._getFixedExtent();
+                    if (extent) {
+                        const height = extent.getHeight();
+                        offset.y += height;
+                    }
+                }
+
+                const translateY = h + offset.y;
+                const bbox3 = [x1 - w / 2, y1 - translateY, x2 + w / 2, y2 - translateY];
+                if (!bboxInBBOX(bbox3 as BBOX, mapBBOX)) {
+                    tempverticalAlignment = verticalAlignment;
+                }
+            }
+
+        } else {
+            if (x1 < 0) {
+                temphorizontalAlignment = 'right';
+            }
+            if (x2 > width) {
+                temphorizontalAlignment = 'left';
+            }
+            if (y1 < 0) {
+                tempverticalAlignment = 'bottom';
+            }
+            if (y2 > height) {
+                tempverticalAlignment = 'top'
+            }
+        }
+        if (temphorizontalAlignment === horizontalAlignment && tempverticalAlignment === verticalAlignment) {
+            return this;
+        }
+
+        this.config({
+            horizontalAlignment: temphorizontalAlignment,
+            verticalAlignment: tempverticalAlignment
+        })
+
+    }
+
 }
 
 InfoWindow.mergeOptions(options);
@@ -541,5 +615,6 @@ export type InfoWindowOptionsType = {
     title?: string;
     content?: string | HTMLElement;
     enableTemplate?: boolean;
+    autoAdjustAnchor?: boolean;
 
 } & UIComponentOptionsType & UIComponentAlignOptionsType;

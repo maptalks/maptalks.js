@@ -121,6 +121,10 @@ class UIComponent extends Eventable(Class) {
         this.proxyOptions();
     }
 
+    getOffset() {
+        return new Point(0, 0);
+    }
+
     //@internal
     _appendCustomClass(dom: HTMLElement) {
         if (!dom) {
@@ -884,7 +888,7 @@ class UIComponent extends Eventable(Class) {
     }
 
     onMoving() {
-        if (this.isVisible() && this.getMap().isTransforming()) {
+        if (this.isVisible()) {
             this._updatePosition();
         }
     }
@@ -928,6 +932,8 @@ class UIComponent extends Eventable(Class) {
         return this;
     }
 
+
+
     //@internal
     _setPosition() {
         const dom = this.getDOM();
@@ -936,6 +942,11 @@ class UIComponent extends Eventable(Class) {
         const p = this.getPosition();
         this._pos = p;
         dom.style[TRANSFORM] = this._toCSSTranslate(p) + ' scale(1)';
+        if ((this as any)._autoAdjustAnchor) {
+            (this as any)._autoAdjustAnchor();
+        }
+
+
     }
 
     //@internal
