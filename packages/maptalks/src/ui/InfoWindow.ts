@@ -527,7 +527,7 @@ class InfoWindow extends UIComponent {
     }
 
     _autoAdjustAnchor() {
-        const options = this.options as any;
+        const options = this.options;
         if (!options.autoAdjustAnchor) {
             return this
         }
@@ -544,17 +544,21 @@ class InfoWindow extends UIComponent {
 
         const width = size.width, height = size.height;
         const x1 = rect.left, x2 = rect.right, y1 = rect.top, y2 = rect.bottom;
-        let temphorizontalAlignment = horizontalAlignment, tempverticalAlignment = verticalAlignment;
-        const w = rect.width, h = rect.height;
 
-        const bbox1 = [x1 - w / 2, y1, x2 + w / 2, y2], mapBBOX = [0, 0, width, height] as BBOX;
+        let horizontalAlign = horizontalAlignment,
+            verticalAlign = verticalAlignment;
+        const w = rect.width, h = rect.height;
+        const halfw = w / 2;
+
+        const bbox1 = [x1 - halfw, y1, x2 + halfw, y2], mapBBOX = [0, 0, width, height] as BBOX;
         if (bbox1[0] > 0 && bbox1[2] < width) {
-            temphorizontalAlignment = 'middle';
+            horizontalAlign = 'middle';
         }
 
+        //dom rect in map view
         if (bboxInBBOX(bbox1 as BBOX, mapBBOX)) {
-            temphorizontalAlignment = 'middle';
-            tempverticalAlignment = 'top';
+            horizontalAlign = 'middle';
+            verticalAlign = 'top';
             if (verticalAlignment === 'bottom') {
                 const offset = { x: 0, y: 30 };
                 const owner = this.getOwner() || {};
@@ -567,33 +571,33 @@ class InfoWindow extends UIComponent {
                 }
 
                 const translateY = h + offset.y;
-                const bbox3 = [x1 - w / 2, y1 - translateY, x2 + w / 2, y2 - translateY];
+                const bbox3 = [x1 - halfw, y1 - translateY, x2 + halfw, y2 - translateY];
+                //判断是否可以 verticalAlign=top
                 if (!bboxInBBOX(bbox3 as BBOX, mapBBOX)) {
-                    tempverticalAlignment = verticalAlignment;
+                    verticalAlign = verticalAlignment;
                 }
             }
-
         } else {
             if (x1 < 0) {
-                temphorizontalAlignment = 'right';
+                horizontalAlign = 'right';
             }
             if (x2 > width) {
-                temphorizontalAlignment = 'left';
+                horizontalAlign = 'left';
             }
             if (y1 < 0) {
-                tempverticalAlignment = 'bottom';
+                verticalAlign = 'bottom';
             }
             if (y2 > height) {
-                tempverticalAlignment = 'top'
+                verticalAlign = 'top'
             }
         }
-        if (temphorizontalAlignment === horizontalAlignment && tempverticalAlignment === verticalAlignment) {
+        if (horizontalAlign === horizontalAlignment && verticalAlign === verticalAlignment) {
             return this;
         }
 
         this.config({
-            horizontalAlignment: temphorizontalAlignment,
-            verticalAlignment: tempverticalAlignment
+            horizontalAlignment: horizontalAlign,
+            verticalAlignment: verticalAlign
         })
 
     }
