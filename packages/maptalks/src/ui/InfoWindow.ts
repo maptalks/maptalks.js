@@ -556,7 +556,7 @@ class InfoWindow extends UIComponent {
             temphorizontalAlignment = 'middle';
             tempverticalAlignment = 'top';
             if (verticalAlignment === 'bottom') {
-                let offset = { x: 0, y: 30 };
+                const offset = { x: 0, y: 30 };
                 const owner = this.getOwner() || {};
                 if (owner instanceof Marker) {
                     const extent = owner._getFixedExtent();
