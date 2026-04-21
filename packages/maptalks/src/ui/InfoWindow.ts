@@ -551,14 +551,12 @@ class InfoWindow extends UIComponent {
         const halfw = w / 2;
 
         const bbox1 = [x1 - halfw, y1, x2 + halfw, y2], mapBBOX = [0, 0, width, height] as BBOX;
+        //always middle
         if (bbox1[0] > 0 && bbox1[2] < width) {
             horizontalAlign = 'middle';
         }
 
-        //dom rect in map view
-        if (bboxInBBOX(bbox1 as BBOX, mapBBOX)) {
-            horizontalAlign = 'middle';
-            verticalAlign = 'top';
+        const topJudge = () => {
             if (verticalAlignment === 'bottom') {
                 const offset = { x: 0, y: 30 };
                 const owner = this.getOwner() || {};
@@ -571,12 +569,17 @@ class InfoWindow extends UIComponent {
                 }
 
                 const translateY = h + offset.y;
-                const bbox3 = [x1 - halfw, y1 - translateY, x2 + halfw, y2 - translateY];
+                const bbox3 = [x1, y1 - translateY, x2, y2 - translateY];
                 //判断是否可以 verticalAlign=top
-                if (!bboxInBBOX(bbox3 as BBOX, mapBBOX)) {
-                    verticalAlign = verticalAlignment;
+                if (bboxInBBOX(bbox3 as BBOX, mapBBOX)) {
+                    verticalAlign = 'top';
                 }
             }
+        }
+
+        //dom rect in map view
+        if (bboxInBBOX(bbox1 as BBOX, mapBBOX)) {
+            topJudge();
         } else {
             if (x1 < 0) {
                 horizontalAlign = 'right';
@@ -590,7 +593,9 @@ class InfoWindow extends UIComponent {
             if (y2 > height) {
                 verticalAlign = 'top'
             }
+            topJudge();
         }
+
         if (horizontalAlign === horizontalAlignment && verticalAlign === verticalAlignment) {
             return this;
         }
