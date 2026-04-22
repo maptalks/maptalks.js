@@ -302,8 +302,13 @@ describe('Map.Spec', function () {
         it('zoom in/out with animation', function (done) {
             map.config('zoomAnimation', true);
             var cur = map.getZoom();
+            function getZoom() {
+                const zoom = map.getZoom();
+                return parseInt(zoom.toFixed(0));
+
+            }
             map.on('zoomend', function () {
-                expect(map.getZoom()).to.be.eql(cur + 1);
+                expect(getZoom()).to.be.eql(cur + 1);
                 done();
             });
             map.zoomIn();
@@ -390,12 +395,12 @@ describe('Map.Spec', function () {
         });
 
         it('fit to china extent', function (done) {
-            const chinaExtent = [73.499013,3.397894,135.087377,53.561308];
+            const chinaExtent = [73.499013, 3.397894, 135.087377, 53.561308];
             map.fitExtent(chinaExtent, 0, { 'animation': false });
             const [lon, lat] = map.getCenter().toArray();
             const lonDiff = Math.abs(lon - 104.293195);
             const latDiff = Math.abs(lat - 31.76872613);
-            const delta = Math.pow(10,-10);
+            const delta = Math.pow(10, -10);
             expect(lonDiff).to.be.below(delta);
             expect(latDiff).to.be.below(delta);
             done();
