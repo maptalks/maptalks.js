@@ -392,13 +392,19 @@ Map.include(/** @lends Map.prototype */{
                 DEFAULT_CENTER.x = this._originLng;
                 this._altitudeOriginDirty = false;
             }
-            const p = this.distanceToPointAtRes(altitude, altitude, res, originCenter || DEFAULT_CENTER, POINT);
+            const tempAlt = 100;
+            const p = this.distanceToPointAtRes(tempAlt, tempAlt, res, originCenter || DEFAULT_CENTER, POINT);
             const heightFactor = this.options['heightFactor'];
             if (heightFactor && heightFactor !== 1) {
                 p.x *= heightFactor;
                 p.y *= heightFactor;
             }
-            return p.x * Math.sign(altitude);
+            let glValue = p.x * Math.sign(tempAlt);
+            //单位米对应的gl
+            glValue /= tempAlt;
+            //线性缩放
+            glValue *= altitude;
+            return glValue;
         };
     }(),
 
