@@ -7,7 +7,6 @@ import { Geometry, Marker, MultiPoint, LineString, MultiLineString } from '../ge
 import type { Map } from '../map';
 import { MapEventDataType } from '../map/Map.DomEvents';
 import UIComponent, { UIComponentAlignOptionsType, UIComponentOptionsType } from './UIComponent';
-import { bboxInBBOX, BBOX } from '../core/util/bbox';
 const PROPERTY_PATTERN = /\{ *([\w_]+) *\}/g;
 
 /**
@@ -36,8 +35,7 @@ const options: InfoWindowOptionsType = {
     'content': null,
     'enableTemplate': false,
     'horizontalAlignment': 'middle',
-    'verticalAlignment': 'top',
-    'autoAdjustAnchor': false
+    'verticalAlignment': 'top'
 };
 
 const EMPTY_SIZE = new Size(0, 0);
@@ -526,86 +524,7 @@ class InfoWindow extends UIComponent {
         return width;
     }
 
-    _autoAdjustAnchor() {
-        const options = this.options;
-        if (!options.autoAdjustAnchor) {
-            return this
-        }
-        const dom = this.getDOM();
-        const map = this.getMap();
-        if (!map || !dom || !dom.getBoundingClientRect) {
-            return this
-        }
-        const rect = dom.getBoundingClientRect();
-        const size = map.getSize();
 
-        const horizontalAlignment = options.horizontalAlignment;
-        const verticalAlignment = options.verticalAlignment;
-
-        const width = size.width, height = size.height;
-        const x1 = rect.left, x2 = rect.right, y1 = rect.top, y2 = rect.bottom;
-
-        let horizontalAlign = horizontalAlignment,
-            verticalAlign = verticalAlignment;
-        const w = rect.width, h = rect.height;
-        const halfw = w / 2;
-
-        const bbox1 = [x1 - halfw, y1, x2 + halfw, y2], mapBBOX = [0, 0, width, height] as BBOX;
-        //always middle
-        if (bbox1[0] > 0 && bbox1[2] < width) {
-            horizontalAlign = 'middle';
-        }
-
-        const topJudge = () => {
-            if (verticalAlignment === 'bottom') {
-                const offset = { x: 0, y: 30 };
-                const owner = this.getOwner() || {};
-                if (owner instanceof Marker) {
-                    const extent = owner._getFixedExtent();
-                    if (extent) {
-                        const height = extent.getHeight();
-                        offset.y += height;
-                    }
-                }
-
-                const translateY = h + offset.y;
-                const bbox3 = [x1, y1 - translateY, x2, y2 - translateY];
-                //判断是否可以 verticalAlign=top
-                if (bboxInBBOX(bbox3 as BBOX, mapBBOX)) {
-                    verticalAlign = 'top';
-                }
-            }
-        }
-
-        //dom rect in map view
-        if (bboxInBBOX(bbox1 as BBOX, mapBBOX)) {
-            topJudge();
-        } else {
-            if (x1 < 0) {
-                horizontalAlign = 'right';
-            }
-            if (x2 > width) {
-                horizontalAlign = 'left';
-            }
-            if (y1 < 0) {
-                verticalAlign = 'bottom';
-            }
-            if (y2 > height) {
-                verticalAlign = 'top'
-            }
-            topJudge();
-        }
-
-        if (horizontalAlign === horizontalAlignment && verticalAlign === verticalAlignment) {
-            return this;
-        }
-
-        this.config({
-            horizontalAlignment: horizontalAlign,
-            verticalAlignment: verticalAlign
-        })
-
-    }
 
 }
 
@@ -624,6 +543,6 @@ export type InfoWindowOptionsType = {
     title?: string;
     content?: string | HTMLElement;
     enableTemplate?: boolean;
-    autoAdjustAnchor?: boolean;
+
 
 } & UIComponentOptionsType & UIComponentAlignOptionsType;
