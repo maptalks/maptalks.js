@@ -8,6 +8,7 @@
     attribute vec3 aPosition;
 #endif
 
+attribute vec3 aTranslation;
 attribute vec2 aExtrude;
 attribute vec2 aTexCoord;
 attribute vec4 aQuat;
@@ -46,7 +47,7 @@ mat4 quatToMat4(vec4 q) {
 }
 
 void main() {
-    vec4 extrude = vec4(aExtrude.x * extrudeScale, 0.0, aExtrude.y, 1.0);
+    vec4 extrude = vec4((aExtrude.x + aTranslation.x) * extrudeScale, aTranslation.y * extrudeScale, aExtrude.y + aTranslation.z, 1.0);
     mat4 rotationMat4 = quatToMat4(aQuat);
     vec3 offset = (rotationMat4 * extrude).xyz;
     vec3 position = unpackVTPosition(offset);

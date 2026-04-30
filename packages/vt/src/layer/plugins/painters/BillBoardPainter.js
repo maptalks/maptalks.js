@@ -62,6 +62,22 @@ export default class BillBoardPainter extends BasicPainter {
             this._rotationZ = symbolDef.rotationZ;
         }
 
+        if (isFunctionDefinition(symbolDef.translationX)) {
+            this._translationXFn = interpolated(symbolDef.translationX);
+        } else {
+            this._translationX = symbolDef.translationX;
+        }
+        if (isFunctionDefinition(symbolDef.translationY)) {
+            this._translationYFn = interpolated(symbolDef.translationY);
+        } else {
+            this._translationY = symbolDef.translationY;
+        }
+        if (isFunctionDefinition(symbolDef.translationZ)) {
+            this._translationZFn = interpolated(symbolDef.translationZ);
+        } else {
+            this._translationZ = symbolDef.translationZ;
+        }
+
         if (isUrlSource) {
             const image = this._image = new Image();
             image.onload = () => {
@@ -238,6 +254,7 @@ export default class BillBoardPainter extends BasicPainter {
         const count = aPickingId.length;
         const newCount = count * 6;
         const newPosition = new aPosition.constructor(newCount * positionSize);
+        const aTranslation = new Int16Array(newCount * positionSize);
         const aExtrude = new Int16Array(newCount * 2);
         const aQuat = new Float32Array(newCount * 4);
         const newPickingId = new aPickingId.constructor(newCount);
@@ -284,6 +301,7 @@ export default class BillBoardPainter extends BasicPainter {
             }
             this._fillExtrude(aExtrude, i, feature, tileZoom);
             this._fillQuat(aQuat, i, feature, tileZoom);
+            this._fillTranslation(aTranslation, i, feature, tileZoom);
         }
 
         const aTexCoord = new Int16Array(newCount * 2);
@@ -314,6 +332,7 @@ export default class BillBoardPainter extends BasicPainter {
         const data = {
             aPosition: newPosition,
             aPickingId: newPickingId,
+            aTranslation,
             aExtrude,
             aQuat,
             aTexCoord
@@ -400,6 +419,18 @@ export default class BillBoardPainter extends BasicPainter {
         sizeOut[0] = hw;
         sizeOut[1] = hh;
         aExtrude.set(sizeOut, startIndex + 10);
+    }
+
+    _fillTranslation(aTranslation, i, feature, tileZoom) {
+        const properties = feature && feature.feature && feature.feature.properties;
+        const tx = this._translationXFn ? this._translationXFn(tileZoom, properties) : this._translationX || 0;
+        const ty = this._translationYFn ? this._translationYFn(tileZoom, properties) : this._translationY || 0;
+        const tz = this._translationZFn ? this._translationZFn(tileZoom, properties) : this._translationZ || 0;
+        const translation = [tx * 100, ty * 100, tz * 100];
+        const startIndex = i * 6;
+        for (let j = 0; j < 6; j++) {
+            aTranslation.set(translation, (startIndex + j) * 3);
+        }
     }
 
     _fillFnTextureData(aTexCoord, geometry, bins) {
