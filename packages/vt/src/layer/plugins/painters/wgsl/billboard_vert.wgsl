@@ -8,6 +8,7 @@
         @location($i) aPosition: vec4i,
 
 #endif
+        @location($i) aTranslation: vec3i,
         @location($i) aExtrude: vec2i,
         @location($i) aTexCoord: vec2i,
         @location($i) aQuat: vec4f,
@@ -68,7 +69,7 @@ fn main(
 ) -> VertexOutput {
     var output: VertexOutput;
 
-    let extrude = vec4f(f32(input.aExtrude.x) * uniforms.extrudeScale, 0.0, f32(input.aExtrude.y), 1.0);
+    let extrude = vec4f(f32(input.aExtrude.x + input.aTranslation.x) * uniforms.extrudeScale, input.aTranslation.y * uniforms.extrudeScale, f32(input.aExtrude.y + input.aTranslation.z), 1.0);
     let rotationMat4 = quatToMat4(input.aQuat);
     let offset = (rotationMat4 * extrude).xyz;
 
