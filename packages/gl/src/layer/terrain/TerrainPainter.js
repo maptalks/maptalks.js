@@ -48,7 +48,7 @@ class TerrainPainter {
         }
         const layerColors = this.layer.options.colors;
         const defines = this.shader.shaderDefines || {};
-        if (layerColors && layerColors.length && this.colors !== layerColors) {
+        if (layerColors && !compareColors(this.colors, layerColors)) {
             this.colors = layerColors;
             this._createColorsTexture();
             defines['HAS_COLORS'] = 1;
@@ -394,6 +394,10 @@ class TerrainPainter {
             min: 'linear',
             mag: 'linear'
         };
+        if (this.colorsTexture) {
+            this.colorsTexture.destroy();
+            this.colorsTexture = null;
+        }
         const texture = this.device.texture(config);
         this.colorsTexture = texture;
         this.colorsMin = ci.min;
@@ -407,4 +411,17 @@ export default TerrainPainter;
 //     return m1.properties.z - m0.properties.z;
 // }
 
-
+function compareColors(colors, layerColors) {
+    if (!colors) {
+        return false;
+    }
+    if (colors.length !== layerColors.length) {
+        return false;
+    }
+    for (let i = 0; i < colors.length; i++) {
+        if (colors[i] !== layerColors[i]) {
+            return false;
+        }
+    }
+    return true;
+}
