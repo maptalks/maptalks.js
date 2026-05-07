@@ -15,10 +15,14 @@ export const EXT_STRUCTURAL_METADATA = 'EXT_structural_metadata';
  * @returns {Promise<Object|null>} Extension data, including schema, propertyTables, buffers
  */
 export async function getStructuralMetadataData(gltf, buffers, rootPath, fetchOptions, urlModifier, fetchSchema) {
-    const ext = gltf?.extensions?.[EXT_STRUCTURAL_METADATA];
-    if (!ext) {
+    // const ext = gltf?.extensions?.[EXT_STRUCTURAL_METADATA];
+    // if (!ext) {
+    //     return null;
+    // }
+    if (!gltf || !gltf.extensions || !gltf.extensions[EXT_STRUCTURAL_METADATA]) {
         return null;
     }
+    const ext = gltf.extensions[EXT_STRUCTURAL_METADATA];
 
     // If schemaUri exists, request external schema
     if (ext.schemaUri) {

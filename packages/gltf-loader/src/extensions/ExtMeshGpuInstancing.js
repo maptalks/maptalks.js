@@ -9,7 +9,11 @@ export const EXT_MESH_GPU_INSTANCING = 'EXT_mesh_gpu_instancing';
  * @returns {Object|undefined} Extension data
  */
 export function getGpuInstancingExtension(nodeJSON) {
-    return nodeJSON?.extensions?.[EXT_MESH_GPU_INSTANCING];
+    // return nodeJSON?.extensions?.[EXT_MESH_GPU_INSTANCING];
+    if (nodeJSON.extensions) {
+        return nodeJSON.extensions[EXT_MESH_GPU_INSTANCING];
+    }
+    return null;
 }
 
 /**
@@ -18,9 +22,12 @@ export function getGpuInstancingExtension(nodeJSON) {
  * @returns {Array<{name: string, accessorIndex: number}>} Array of accessor information
  */
 export function collectInstancingAccessors(instancingExt) {
-    if (!instancingExt?.attributes) {
+    if (!instancingExt || !instancingExt.attributes) {
         return [];
     }
+    // if (!instancingExt?.attributes) {
+    //     return [];
+    // }
 
     return Object.entries(instancingExt.attributes).map(([name, accessorIndex]) => ({
         name,

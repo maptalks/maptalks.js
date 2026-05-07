@@ -9,7 +9,10 @@ export const EXT_MESH_FEATURES = 'EXT_mesh_features';
  * @returns {Object|undefined} Extension data
  */
 export function getMeshFeaturesExtension(primJSON) {
-    return primJSON?.extensions?.[EXT_MESH_FEATURES];
+    // return primJSON?.extensions?.[EXT_MESH_FEATURES];
+    if (primJSON.extensions) {
+        return primJSON.extensions[EXT_MESH_FEATURES];
+    }
 }
 
 /**
