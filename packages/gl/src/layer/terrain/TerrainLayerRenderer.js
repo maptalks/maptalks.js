@@ -20,7 +20,7 @@ const TEMP_EXTENT = new maptalks.PointExtent(0, 0, 0, 0);
 const TEMP_POINT = new maptalks.Point(0, 0);
 
 const TERRAIN_CLEAR = {
-    color: [0, 0, 0, 0],
+    color: [1, 1, 1, 1],
     depth: 1,
     stencil: 0
 };
