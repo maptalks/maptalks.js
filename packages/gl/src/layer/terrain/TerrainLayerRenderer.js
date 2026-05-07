@@ -120,7 +120,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         const hasSkirts = this.layer.options['hasSkirts'];
         const mesh = createMartiniData(error * errorScale, heights.data, terrainWidth, hasSkirts);
 
-        return { data: heights, mesh, sourceZoom, colorsTexture: heights.colorsTexture };
+        return { data: heights, mesh, sourceZoom };
     }
 
     _findTileMinAltitude(tile, parentTile) {
@@ -156,7 +156,6 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                 tileImage.sourceZoom = -1;
             } else {
                 tileImage = this._createTerrainFromParent(tileInfo, parentTile);
-                wrapTileColorsTexture(tileInfo, tileImage);
             }
         }
         this._createMesh(tileImage, tileInfo);
@@ -621,7 +620,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             return;
         }
         if (!terrainTileImage.skin) {
-            terrainTileImage.skin = this._createTerrainSkinTexture(terrainTileInfo, terrainTileImage);
+            terrainTileImage.skin = this._createTerrainSkinTexture();
             this._prepareMask(terrainTileInfo, terrainTileImage);
         } else {
             TERRAIN_CLEAR.framebuffer = terrainTileImage.skin;
@@ -796,38 +795,22 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         return texture;
     }
 
-    _createTerrainSkinTexture(tileInfo/*, tileImage*/) {
+    _createTerrainSkinTexture() {
         const tileSize = this.layer.getTileSize().width;
         // 乘以2是为了瓦片（缩放时）被放大后保持清晰度
         let width = tileSize * 2;
         let height = tileSize * 2;
         const regl = this.device;
-        const colorsTexture = tileInfo.colorsTexture;
-        let color;
-        if (maptalks.Util.isImageBitMap(colorsTexture) && colorsTexture.width > 0) {
-            //不同的打包环境下，framebuffer 的大小和texture不同的，有的报错，有的不报错，why? 我也不知道
-            //确保framebuffer 的大小和texture相同
-            width = colorsTexture.width;
-            height = colorsTexture.height;
-            color = regl.texture({
-                data: colorsTexture,
-                min: 'linear',
-                mag: 'linear',
-                type: 'uint8',
-                width,
-                height,
-                flipY: true
-            });
-        } else {
-            color = regl.texture({
-                min: 'linear',
-                mag: 'linear',
-                type: 'uint8',
-                width,
-                height,
-                flipY: true
-            });
-        }
+
+        const color = regl.texture({
+            min: 'linear',
+            mag: 'linear',
+            type: 'uint8',
+            width,
+            height,
+            flipY: true
+        });
+
         const fboInfo = {
             width,
             height,
@@ -870,27 +853,6 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         xmin = Math.floor(xmin);
         ymin = Math.floor(ymin);
 
-        let colorsTexture;
-        //parent tile has colorstexture
-        if (info.colorsTexture) {
-            const { width, height } = info.colorsTexture;
-            if (width * height > 0) {
-                const x1 = info.extent2d.xmin;
-                const x2 = info.extent2d.xmax;
-                const y1 = info.extent2d.ymin;
-                const y2 = info.extent2d.ymax;
-                const ax = (width) / (x2 - x1), ay = height / (y2 - y1);
-                const minx = (extent2d.xmin * res / parentRes - parentExtent.xmin) * ax;
-                const maxx = (extent2d.xmax * res / parentRes - parentExtent.xmin) * ax;
-                const miny = (extent2d.ymin * res / parentRes - parentExtent.ymin) * ay;
-                const maxy = (extent2d.ymax * res / parentRes - parentExtent.ymin) * ay;
-                //clip texture from parent tile texture
-                colorsTexture = clipTileTexture(info.colorsTexture, minx, miny, maxx, maxy);
-            }
-
-
-        }
-
         // const tileSize = tileWidth - 1;
         // if (tileSize & (tileSize - 1)) {
         //     debugger
@@ -932,8 +894,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             height: tileWidth,
             data: heights,
             min,
-            max,
-            colorsTexture
+            max
         };
     }
 
@@ -1049,7 +1010,6 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                 const args = [x, y, maxAvailableZoom, idx, idy, res, tile.error * Math.pow(2, diff)];
                 tile = layer.createTileNode ? layer.createTileNode(...args) : layer._createTileNode(...args);
             } else {
-                wrapTileColorsTexture(tile, terrainData);
                 this.onTileLoad(terrainData, tile);
                 return terrainData;
             }
@@ -1067,7 +1027,6 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             accessToken: layerOptions.accessToken,
             cesiumIonTokenURL: layerOptions.cesiumIonTokenURL,
             error: error * layer._getErrorScale(),
-            colors: layerOptions.colors,
             tileSize: tileSize ? [tileSize.width, tileSize.height] : [256, 256],
             command: 'loadTile'
         };
@@ -1092,7 +1051,6 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                 maptalks.Util.extend(terrainData, resource);
 
                 // this.consumeTile(terrainData, tile);
-                wrapTileColorsTexture(tile, terrainData);
                 this.onTileLoad(terrainData, tile);
             });
         };
@@ -1139,12 +1097,6 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
     }
 
     _deleteTerrainImage(tileInfo, image) {
-        if (tileInfo && tileInfo.colorsTexture) {
-            if (tileInfo.colorsTexture.close) {
-                tileInfo.colorsTexture.close();
-            }
-            delete tileInfo.colorsTexture;
-        }
         const skin = image.skin;
         if (skin) {
             skin.destroy();
@@ -1772,41 +1724,6 @@ function getParentRequestKey(x, y) {
     return x + '-' + y;
 }
 
-function isPowerOfTwo(value) {
-    return (value & (value - 1)) === 0 && value !== 0;
-}
-
-let tempCanvas;
-
-function clipTileTexture(image, x1, y1, x2, y2) {
-    if (maptalks.Browser.decodeImageInWorker) {
-        if (!tempCanvas) {
-            tempCanvas = new OffscreenCanvas(1, 1);
-        }
-        const width = Math.floor(x2 - x1), height = Math.floor((y2 - y1));
-        if (!isPowerOfTwo(width) || !isPowerOfTwo(height)) {
-            return;
-        }
-        tempCanvas.width = width;
-        tempCanvas.height = height;
-        const ctx = tempCanvas.getContext('2d');
-        ctx.clearRect(0, 0, width, height);
-        ctx.drawImage(image, x1, y1, width, height, 0, 0, width, height);
-        return tempCanvas.transferToImageBitmap();
-    }
-}
-
-function wrapTileColorsTexture(tile, terrainData) {
-    const colorsTexture = terrainData.colorsTexture;
-    delete terrainData.colorsTexture;
-    if (colorsTexture) {
-        if (tile.info) {
-            tile.info.colorsTexture = colorsTexture;
-        } else {
-            tile.colorsTexture = colorsTexture;
-        }
-    }
-}
 
 function checkIfFBO(texture) {
     return !!(texture.colorTexture || texture.color);

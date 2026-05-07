@@ -86,7 +86,8 @@ describe('vector tile on terrain integration specs', () => {
                 tileLimitPerFrame: 0,
                 loadingLimit: 0,
                 requireSkuToken: false,
-                fadeAnimation: false
+                fadeAnimation: false,
+                colors: style.colors
                 // shader: 'lit'
             };
             if (style.lit) {
@@ -151,4 +152,6 @@ describe('vector tile on terrain integration specs', () => {
             }
         }
     });
+
+
 });

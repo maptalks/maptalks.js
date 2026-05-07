@@ -2,7 +2,6 @@ import { Ajax } from '@maptalks/gltf-loader';
 import "./zlib.min";
 import { vec2, vec3 } from 'gl-matrix';
 import { createMartiniData } from '../util/martini';
-import { ColorIn } from 'colorin';
 import { buildTangents } from '@maptalks/tbn-packer';
 
 function isNumber(val) {
@@ -14,7 +13,6 @@ let workerId;
 let BITMAP_CANVAS = null;
 let BITMAP_CTX = null;
 const TEMP_RGB = [0, 0, 0];
-const DEFAULT_TILESIZE = [256, 256];
 
 function checkBitMapCanvas() {
     try {
@@ -25,8 +23,6 @@ function checkBitMapCanvas() {
         console.error(error);
     }
 }
-
-const colorInCache = {};
 
 const terrainRequests = {};
 
@@ -691,86 +687,6 @@ function clearCanvas(ctx) {
     ctx.clearRect(0, 0, width, height);
 }
 
-function colorTerrain(imgdata, colors) {
-    const key = JSON.stringify(colors);
-    if (!colorInCache[key]) {
-        colorInCache[key] = new ColorIn(colors);
-    }
-    const ci = colorInCache[key];
-    const data = imgdata.data;
-    for (let i = 0, len = data.length; i < len; i += 4) {
-        const R = data[i], G = data[i + 1], B = data[i + 2], A = data[i + 3];
-        let height = 0;
-        if (A !== 0) {
-            //地形解码
-            height = -10000 + ((R * 256 * 256 + G * 256 + B) * 0.1);
-            height = Math.max(height, 0);
-        }
-        const [r, g, b] = ci.getColor(height);
-
-        //根据不同的高度设置不同的颜色
-        data[i] = r;
-        data[i + 1] = g;
-        data[i + 2] = b;
-        data[i + 3] = 255;
-    }
-}
-
-function createColorsTexture(data, colors, tileSize) {
-    if (!colors || !Array.isArray(colors) || colors.length < 2) {
-        return;
-    }
-    if (!data || !data.image) {
-        return null;
-    }
-    let { width, height } = data.image;
-    tileSize = tileSize || DEFAULT_TILESIZE;
-    if (tileSize[0] !== width || tileSize[1] !== height) {
-        width = tileSize[0];
-        height = tileSize[1];
-    }
-    //always use default tilesize to create color texture for memory usage
-    // [width, height] = DEFAULT_TILESIZE;
-    //缩放两倍,这样才能保持和TileLayer联合作为纹理时不出错
-    width *= 2;
-    height *= 2;
-    try {
-        checkBitMapCanvas();
-        if (!BITMAP_CANVAS) {
-            return;
-        }
-        const canvas = BITMAP_CANVAS;
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d", { willReadFrequently: true });
-        clearCanvas(ctx);
-
-        ctx.drawImage(data.image, 0, 0, width, height);
-        // ctx.font = "bold 48px serif";
-        // ctx.textAlign = 'center';
-        // ctx.fillStyle = 'red';
-        // ctx.fillText('1234', width / 2, height / 2);
-        const imgdata = ctx.getImageData(0, 0, width, height);
-        colorTerrain(imgdata, colors);
-        // return new Uint8Array(imgdata.data);
-        ctx.putImageData(imgdata, 0, 0);
-        const copyImage = canvas.transferToImageBitmap();
-        //flip Y image by canvas
-        // https://github.com/regl-project/regl/issues/573
-        ctx.save();
-        ctx.scale(1, -1);
-        ctx.drawImage(copyImage, 0, -height, width, height);
-        ctx.restore();
-
-        const image = canvas.transferToImageBitmap();
-        copyImage.close();
-        return image
-    } catch (error) {
-        console.error(error);
-    }
-
-}
-
 /**
  * create terrain geometry tangents by worker for perf
  * @param {*} terrainMesh
@@ -814,16 +730,8 @@ export const onmessage = function (message, postResponse) {
         self.postMessage({ type: '<response>', actorId: data.actorId, workerId, params: 'ok', callback: message.callback });
     } else if (data.command === 'fetchTerrain') {
         //加载地形数据的逻辑
-        const colors = (data.params || {}).colors;
-        const tileSize = (data.params || {}).tileSize;
         loadTerrain(data.params, (data, transferables) => {
             transferables = transferables || [];
-            //create terrain colors texture
-            const texture = createColorsTexture(data, colors, tileSize);
-            if (texture) {
-                data.colorsTexture = texture;
-                transferables.push(texture);
-            }
 
             //create terrain geometry tangents attribute
             const tangents = createTerrainGeometryTangents(data.mesh);

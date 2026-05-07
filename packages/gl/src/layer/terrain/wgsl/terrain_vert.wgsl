@@ -25,6 +25,9 @@ struct TerrainUniforms {
 struct VertexOutput {
     @builtin(position) position : vec4f,
     @location($o) vUv: vec2f,
+    #if HAS_COLORS
+        @location($o) vAltitude: f32,
+    #endif
 };
 
 
@@ -57,6 +60,9 @@ fn main(
     }
 
     var position: vec4f = vec4f(vertexInput.aPosition.xy, (altitude + uniforms.minAltitude) * matrixUniforms.heightScale, 1.0);
+    #if HAS_COLORS
+        vertexOutput.vAltitude = position.z;
+    #endif
     position = uniforms.positionMatrix * position;
 
     #ifdef HAS_MASK_EXTENT
