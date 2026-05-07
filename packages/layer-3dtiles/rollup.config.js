@@ -27,6 +27,11 @@ const plugins = [].concat(production ? [
     })
 ] : []);
 
+const esPlugins = [].concat(production ? [
+    removeGlobal(),
+
+] : []);
+
 //worker.js中的global可能被webpack替换为全局变量，造成worker代码执行失败，所以这里统一把typeof global替换为typeof undefined
 function removeGlobal() {
     return {
@@ -156,7 +161,7 @@ module.exports = [
                 ignoreGlobal: true
             }),
             glsl(),
-            typescript({ tsconfig: './tsconfig.json', sourceMap: true } )
+            typescript({ tsconfig: './tsconfig.json', sourceMap: true })
         ].concat(plugins),
         external: ['maptalks', '@maptalks/gl'],
         output: {
@@ -201,8 +206,8 @@ if (production) {
                     ignoreGlobal: true
                 }),
                 glsl(),
-                typescript({ tsconfig: './tsconfig.json'} )
-            ].concat(plugins),
+                typescript({ tsconfig: './tsconfig.json' })
+            ].concat(esPlugins),
             output: {
                 globals: {
                     'maptalks': 'maptalks',

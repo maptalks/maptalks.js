@@ -70,7 +70,7 @@ export default class GLTFLoader {
         if (!extensions || !extensions['KHR_techniques_webgl']) {
             return Promise.resolve(extensions);
         }
-        return this._accessor.requestKHRTechniquesWebgl(extensions['KHR_techniques_webgl']).then(extension  => {
+        return this._accessor.requestKHRTechniquesWebgl(extensions['KHR_techniques_webgl']).then(extension => {
             extensions['KHR_techniques_webgl'] = extension;
             return extensions;
         });
@@ -309,12 +309,12 @@ export default class GLTFLoader {
             const gltf = {
                 textures: this.gltf.textures,
                 asset: this.gltf.asset,
-                scene : defaultScene,
-                scenes : scenes,
-                nodes : nodeMap,
-                meshes : this.meshes,
+                scene: defaultScene,
+                scenes: scenes,
+                nodes: nodeMap,
+                meshes: this.meshes,
                 materials: this.gltf.materials,
-                skins : this.skins,
+                skins: this.skins,
                 extensionsRequired: this.gltf.extensionsRequired,
                 extensionsUsed: this.gltf.extensionsUsed
             };
@@ -357,7 +357,7 @@ export default class GLTFLoader {
                     instancingPromises.push(loadPromise);
                 }
             }, 'nodes');
-            
+
             // Wait for all GPU instancing data to finish loading
             return Promise.all(instancingPromises).then(() => nodes);
         });
@@ -630,7 +630,7 @@ export default class GLTFLoader {
                 return accumulator;
             }, {});
             const primitive = {
-                attributes : attrData,
+                attributes: attrData,
                 material: primJSON.material
             };
             if (indices) primitive.indices = indices;
@@ -665,11 +665,19 @@ export default class GLTFLoader {
 
         // Load buffer views required for structural metadata
         if (hasStructuralMetadata) {
-            const ext = this.gltf.extensions?.[EXT_STRUCTURAL_METADATA];
-            if (ext?.propertyTables) {
-                promises.push(
-                    this._loadPropertyTableBuffers(ext.propertyTables),
-                );
+            // const ext = this.gltf.extensions?.[EXT_STRUCTURAL_METADATA];
+            // if (ext?.propertyTables) {
+            //     promises.push(
+            //         this._loadPropertyTableBuffers(ext.propertyTables),
+            //     );
+            // }
+            if (this.gltf.extensions && this.gltf.extensions[EXT_STRUCTURAL_METADATA]) {
+                const ext = this.gltf.extensions[EXT_STRUCTURAL_METADATA];
+                if (ext.propertyTables) {
+                    promises.push(
+                        this._loadPropertyTableBuffers(ext.propertyTables),
+                    );
+                }
             }
         }
 
@@ -749,7 +757,7 @@ function requestImage(url, fetchOptions, cb) {
         ctx.drawImage(image, 0, 0, image.width, image.height);
         const imgData = ctx.getImageData(0, 0, image.width, image.height);
         //TODO, retina may need special operations
-        const result = { width : image.width, height : image.height, data : new Uint8Array(imgData.data) };
+        const result = { width: image.width, height: image.height, data: new Uint8Array(imgData.data) };
         cb(null, result);
     };
     image.onerror = function (err) {
@@ -758,7 +766,7 @@ function requestImage(url, fetchOptions, cb) {
     image.src = url;
 }
 
-function fetchSchema(url, fetchOptions,urlModifier) {
+function fetchSchema(url, fetchOptions, urlModifier) {
     return Ajax.getJSON(url, fetchOptions, urlModifier);
 }
 
@@ -783,7 +791,7 @@ function requestImageOffscreen(url, fetchOptions, cb) {
         const data = url;
         const blob = new Blob([data]);
         promise = createImageBitmap(blob);
-        promise.then(thenMethod.bind(this)).then(res =>{
+        promise.then(thenMethod.bind(this)).then(res => {
             cb(null, res);
         }).catch(err => {
             console.warn(err);
@@ -806,7 +814,7 @@ function loopRequests() {
             // 2022-03-09
             const blob = new Blob([new Uint8Array(arrayBuffer)]);
             return createImageBitmap(blob);
-        }).then(thenMethod.bind(context)).then(res =>{
+        }).then(thenMethod.bind(context)).then(res => {
             cb.call(context, null, res);
             const index = workingRequests.indexOf(request);
             workingRequests.splice(index, 1);
