@@ -524,6 +524,8 @@ class InfoWindow extends UIComponent {
         return width;
     }
 
+
+
 }
 
 InfoWindow.mergeOptions(options);
@@ -541,5 +543,6 @@ export type InfoWindowOptionsType = {
     title?: string;
     content?: string | HTMLElement;
     enableTemplate?: boolean;
+
 
 } & UIComponentOptionsType & UIComponentAlignOptionsType;
