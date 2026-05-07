@@ -30,7 +30,6 @@ export default class TerrainWorkerConnection extends maptalks.worker.Actor {
                 accessToken: options.accessToken,
                 cesiumIonTokenURL: options.cesiumIonTokenURL,
                 error: options.error,
-                colors: options.colors,
                 tileSize: options.tileSize,
                 tileImage
             }

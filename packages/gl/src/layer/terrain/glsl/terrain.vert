@@ -16,6 +16,9 @@ uniform sampler2D flatMask;
 #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
     #include <vsm_shadow_vert>
 #endif
+#if defined(HAS_COLORS)
+    varying float vAltitude;
+#endif
 void main() {
     vec2 uv = aTexCoord;
     uv.y = 1.0 - uv.y;
@@ -26,6 +29,9 @@ void main() {
         altitude = min(aPosition.z, maskHeight);
     }
     vec4 position = vec4(aPosition.xy, (altitude + minAltitude) * heightScale, 1.0);
+    #ifdef HAS_COLORS
+        vAltitude = position.z;
+    #endif
     position = positionMatrix * position;
     #ifdef HAS_MASK_EXTENT
         gl_Position = projMatrix * getMaskPosition(position, modelMatrix);

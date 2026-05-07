@@ -4,6 +4,7 @@ import * as ContextUtil from '../util/context';
 import { vec3, mat4 } from 'gl-matrix';
 import * as reshader from '../../reshader';
 import { EMPTY_TERRAIN_GEO } from './TerrainTileUtil.js';
+import { ColorIn } from 'colorin';
 
 import vert from './glsl/terrain.vert';
 import frag from './glsl/terrain.frag';
@@ -45,6 +46,17 @@ class TerrainPainter {
         if (!this.shader) {
             this.initShader(context);
         }
+        const layerColors = this.layer.options.colors;
+        const defines = this.shader.shaderDefines || {};
+        if (layerColors && layerColors.length && this.colors !== layerColors) {
+            this.colors = layerColors;
+            this._createColorsTexture();
+            defines['HAS_COLORS'] = 1;
+        } else if (!layerColors) {
+            this.colors = null;
+            delete defines['HAS_COLORS'];
+        }
+        this.shader.shaderDefines = defines;
         this._leafScene.clear();
     }
 
@@ -194,6 +206,10 @@ class TerrainPainter {
             this.shader.dispose();
             delete this.shader;
         }
+        if (this.colorsTexture) {
+            this.colorsTexture.destroy();
+            delete this.colorsTexture;
+        }
         if (this._emptyTileTexture) {
             this._emptyTileTexture.destroy();
             delete this._emptyTileTexture;
@@ -306,7 +322,10 @@ class TerrainPainter {
             projMatrix: map.projMatrix,
             projViewMatrix,
             heightScale: 1,
-            layerOpacity
+            layerOpacity,
+            colorsTexture: this.colorsTexture,
+            colorsMin: this.colorsMin,
+            colorsMax: this.colorsMax
         };
         extend(uniforms, maskUniforms);
         return uniforms;
@@ -358,6 +377,27 @@ class TerrainPainter {
         triangles,
         0);
         this._emptyTerrainGeometry.generateBuffers(this.device);
+    }
+
+    _createColorsTexture() {
+        const ci = new ColorIn(this.colors);
+        const canvas = document.createElement('canvas');
+        canvas.width = ci.options.width;
+        canvas.height = ci.options.height;
+        const ctx = canvas.getContext('2d');
+        const data = ci.getImageData();
+        ctx.putImageData(data, 0, 0);
+        const config = {
+            data: canvas,
+            width: ci.options.width,
+            height: ci.options.height,
+            min: 'linear',
+            mag: 'linear'
+        };
+        const texture = this.device.texture(config);
+        this.colorsTexture = texture;
+        this.colorsMin = ci.min;
+        this.colorsMax = ci.max;
     }
 }
 
