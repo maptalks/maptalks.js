@@ -2,7 +2,6 @@ import { Ajax } from '@maptalks/gltf-loader';
 import "./zlib.min";
 import { vec2, vec3 } from 'gl-matrix';
 import { createMartiniData } from '../util/martini';
-import { ColorIn } from 'colorin';
 import { buildTangents } from '@maptalks/tbn-packer';
 
 function isNumber(val) {
@@ -14,7 +13,6 @@ let workerId;
 let BITMAP_CANVAS = null;
 let BITMAP_CTX = null;
 const TEMP_RGB = [0, 0, 0];
-const DEFAULT_TILESIZE = [256, 256];
 
 function checkBitMapCanvas() {
     try {
@@ -25,8 +23,6 @@ function checkBitMapCanvas() {
         console.error(error);
     }
 }
-
-const colorInCache = {};
 
 const terrainRequests = {};
 
