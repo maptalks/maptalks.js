@@ -629,7 +629,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             terrainTileImage.skin = this._createTerrainSkinTexture();
             this._prepareMask(terrainTileInfo, terrainTileImage);
         } else {
-            const layerColors = this.layer.options['color'];
+            const layerColors = this.layer.options['colors'];
             let fboClear = TERRAIN_CLEAR;
             if (layerColors && layerColors.length) {
                 fboClear = TERRAIN_COLOR_CLEAR;
