@@ -628,15 +628,15 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         if (!terrainTileImage.skin) {
             terrainTileImage.skin = this._createTerrainSkinTexture();
             this._prepareMask(terrainTileInfo, terrainTileImage);
-        } else {
-            const layerColors = this.layer.options['colors'];
-            let fboClear = TERRAIN_CLEAR;
-            if (layerColors && layerColors.length) {
-                fboClear = TERRAIN_COLOR_CLEAR;
-            }
-            fboClear.framebuffer = terrainTileImage.skin;
-            this.device.clear(fboClear);
         }
+        const layerColors = this.layer.options['colors'];
+        let fboClear = TERRAIN_CLEAR;
+        if (layerColors && layerColors.length) {
+            fboClear = TERRAIN_COLOR_CLEAR;
+        }
+        fboClear.framebuffer = terrainTileImage.skin;
+        this.device.clear(fboClear);
+
         this._initSkinShader();
         const enableDebug = this.layer.options.debug;
         const meshes = [];
