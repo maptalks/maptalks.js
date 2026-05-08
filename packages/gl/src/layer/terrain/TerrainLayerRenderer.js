@@ -25,6 +25,12 @@ const TERRAIN_CLEAR = {
     stencil: 0
 };
 
+const TERRAIN_COLOR_CLEAR = {
+    color: [1, 1, 1, 1],
+    depth: 1,
+    stencil: 0
+};
+
 const TERRAIN_MASK_CLEAR = {
     color: [1, 1, 1, 1],
     depth: 0,
@@ -623,8 +629,13 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             terrainTileImage.skin = this._createTerrainSkinTexture();
             this._prepareMask(terrainTileInfo, terrainTileImage);
         } else {
-            TERRAIN_CLEAR.framebuffer = terrainTileImage.skin;
-            this.device.clear(TERRAIN_CLEAR);
+            const layerColors = this.layer.options['colors'];
+            let fboClear = TERRAIN_CLEAR;
+            if (layerColors && layerColors.length) {
+                fboClear = TERRAIN_COLOR_CLEAR;
+            }
+            fboClear.framebuffer = terrainTileImage.skin;
+            this.device.clear(fboClear);
         }
         this._initSkinShader();
         const enableDebug = this.layer.options.debug;

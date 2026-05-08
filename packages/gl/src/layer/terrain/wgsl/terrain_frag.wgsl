@@ -14,6 +14,8 @@ struct LayerUniforms {
 };
 
 @group(0) @binding($b) var<uniform> layerUniforms: LayerUniforms;
+@group(0) @binding($b) var skin: texture_2d<f32>;
+@group(0) @binding($b) var skinSampler: sampler;
 
 #if HAS_COLORS
     @group(0) @binding($b) var colorsTexture: texture_2d<f32>;
@@ -26,21 +28,16 @@ struct LayerUniforms {
         return colorFromTexture;
     }
 
-#else
-    @group(0) @binding($b) var skin: texture_2d<f32>;
-    @group(0) @binding($b) var skinSampler: sampler;
 #endif
 
 @fragment
 fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
     var uv = vec2f(vertexOutput.vUv);
     // uv.y = 1.0 - uv.y;
-
+    var color = textureSample(skin, skinSampler, uv);
     #if HAS_COLORS
         var colorFromTexture = getColor(vertexOutput.vAltitude);
-        var color = colorFromTexture;
-    #else
-        var color = textureSample(skin, skinSampler, uv);
+        color *= colorFromTexture;
     #endif
 
     #if HAS_SHADOWING && !HAS_BLOOM

@@ -48,11 +48,11 @@ class TerrainPainter {
         }
         const layerColors = this.layer.options.colors;
         const defines = this.shader.shaderDefines || {};
-        if (layerColors && !compareColors(this.colors, layerColors)) {
+        if (layerColors && layerColors.length && !compareColors(this.colors, layerColors)) {
             this.colors = layerColors;
             this._createColorsTexture();
             defines['HAS_COLORS'] = 1;
-        } else if (!layerColors) {
+        } else if (!layerColors || !layerColors.length) {
             this.colors = null;
             delete defines['HAS_COLORS'];
         }
