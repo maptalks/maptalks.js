@@ -882,7 +882,7 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
         let skinColor = getMaterialSkinColor();
         frag = frag.rgb * (1.0 - skinColor.a) + skinColor.rgb * skinColor.a;
         #if HAS_SHADOWING && !HAS_BLOOM
-            frag = shadow_blend(rgb, shadowCoeff).rgb;
+            frag = shadow_blend(frag.rgb, shadowCoeff).rgb;
         #endif
     #endif
 
