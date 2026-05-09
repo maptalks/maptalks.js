@@ -468,24 +468,55 @@ class VectorLayer extends OverlayLayer {
     }
 
     /**
-     * 添加单个蛛网标记（用法与 addMarker 一致）
+     * 添加单个蛛网标记
      * @english
      * Add a single marker. If multiple markers share the same coordinate, they will be
      * automatically stacked and expandable.
      *
-     * @param item - Marker data
+     * @param coord - Coordinate array [lng, lat] or properties object
+     * @param properties - Marker properties { id, name, symbol, ... } (if first param is coord)
      * @param options - Spider options (only effective on first marker at a coordinate)
+     *
+     * @example
+     * // 方式1：坐标在前，属性在后（推荐）
+     * vectorLayer.addSpiderMarker([121.507, 31.247], {
+     *   id: 1,
+     *   name: 'Coffee Shop',
+     *   symbol: { markerFile: './marker.png', markerWidth: 32, markerHeight: 32 }
+     * });
+     *
+     * // 方式2：直接传对象（兼容旧版）
+     * vectorLayer.addSpiderMarker({
+     *   id: 2,
+     *   coord: [121.508, 31.248],
+     *   name: 'Tea House'
+     * });
      */
-    addSpiderMarker(item: any, options?: SpiderOptions): this {
-        // Merge options from first call
-        if (options) {
-            const opts = (this as any)._spiderOptions || {};
-            if (!opts.spiderRadius) {
-                opts.spiderRadius = options['spiderRadius'] || 60;
-                opts.spiderLineColor = options['spiderLineColor'] || '#DE3333';
-                opts.defaultMarkerSymbol = options['markerSymbol'] || null;
-                opts.onSpiderMarkerClick = options['onSpiderMarkerClick'];
-                (this as any)._spiderOptions = opts;
+    addSpiderMarker(coord: number[] | any, properties?: any, options?: SpiderOptions): this {
+        // 判断是旧版格式 { coord, ... } 还是新版格式 [lng, lat], { ... }
+        let item: any;
+        let opts = options;
+
+        if (Array.isArray(coord)) {
+            // 新版格式：坐标在前
+            item = properties || {};
+            item.coord = coord;
+        } else {
+            // 旧版格式：直接是对象
+            item = coord;
+            opts = properties;
+        }
+
+        // Merge spider options from first call
+        if (opts) {
+            const spiderOpts = (this as any)._spiderOptions || {};
+            if (!spiderOpts.spiderRadius) {
+                spiderOpts.spiderRadius = opts['spiderRadius'] || 60;
+                spiderOpts.spiderLineColor = opts['spiderLineColor'] || '#DE3333';
+                spiderOpts.defaultMarkerSymbol = opts['markerSymbol'] || null;
+                spiderOpts.stackSymbol = opts['stackSymbol'] || null;
+                spiderOpts.onSpiderMarkerClick = opts['onSpiderMarkerClick'];
+                (this as any)._spiderOptions = spiderOpts;
             }
         }
 
@@ -496,9 +527,9 @@ class VectorLayer extends OverlayLayer {
             // First marker at this coordinate
             this._spiderCoordGroups.set(key, [item]);
 
-            // Create the marker - use item.symbol, or defaultMarkerSymbol from options, or fallback
-            const opts = (this as any)._spiderOptions || {};
-            const itemSymbol = item.symbol || opts.defaultMarkerSymbol || {
+            // Create the marker
+            const spiderOpts = (this as any)._spiderOptions || {};
+            const itemSymbol = item.symbol || spiderOpts.defaultMarkerSymbol || {
                 markerType: 'ellipse',
                 markerWidth: 30,
                 markerHeight: 30,
@@ -524,9 +555,9 @@ class VectorLayer extends OverlayLayer {
                     const group = existingGroup;
                     const coord = group[0].coord;
 
-                    // Use stackSymbol if provided (from options or stored options), otherwise use first item's symbol
-                    const opts = (this as any)._spiderOptions || {};
-                    const stackSymbol = (options && options['stackSymbol']) || opts.stackSymbol || group[0].symbol || {
+                    // Use stackSymbol if provided
+                    const spiderOpts = (this as any)._spiderOptions || {};
+                    const stackSymbol = (opts && opts['stackSymbol']) || spiderOpts.stackSymbol || group[0].symbol || {
                         markerType: 'ellipse',
                         markerWidth: 36,
                         markerHeight: 36,
