@@ -319,6 +319,9 @@ class Painter {
     }
 
     createMeshes(geometries, transform, params, context) {
+        if (!this.isReady()) {
+            return null;
+        }
         const awareOfTerrain = this.layer.options.awareOfTerrain;
         const meshes = [];
         for (let i = 0; i < geometries.length; i++) {
@@ -348,6 +351,11 @@ class Painter {
             }
         }
         return meshes;
+    }
+
+    // whether is ready to create meshes
+    isReady() {
+        return true;
     }
 
     createMesh(/* geometries, transform */) {

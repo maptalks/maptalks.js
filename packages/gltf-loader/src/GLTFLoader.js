@@ -773,7 +773,7 @@ function fetchSchema(url, fetchOptions, urlModifier) {
 
 const requests = [];
 const workingRequests = [];
-const requestLimit = 30;
+const requestLimit = 40;
 let offCanvas, offCtx;
 function requestImageOffscreen(url, fetchOptions, cb) {
     if (!offCanvas) {
@@ -841,12 +841,16 @@ function thenMethod(bitmap) {
         width = Math.min(maxSize, width);
         height = Math.min(maxSize, height);
     }
+    // debugger
+    if (bitmap.width === width && bitmap.height === height) {
+        return { width, height, data: bitmap };
+    }
     offCanvas.width = width;
     offCanvas.height = height;
     offCtx.drawImage(bitmap, 0, 0, width, height);
     bitmap.close();
     const imgData = offCtx.getImageData(0, 0, width, height);
-    return { width, height, data: new Uint8Array(imgData.data) };
+    return { width, height, data: new Uint8Array(imgData.data.buffer) };
 }
 
 function isPowerOfTwo(value) {

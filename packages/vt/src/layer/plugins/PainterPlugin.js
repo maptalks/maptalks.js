@@ -137,7 +137,11 @@ function createPainterPlugin(type, Painter) {
 
             let meshes = tileCache.meshes;
             if (!meshes) {
-                const { meshes: newMeshes, retire: isRetire } = this._createMeshes(geometries, context);
+                const result = this._createMeshes(geometries, context);
+                if (!result) {
+                    return { retire, loading: true };
+                }
+                const { meshes: newMeshes, retire: isRetire } = result;
                 if (!retire) {
                     retire = isRetire;
                 }
@@ -166,6 +170,9 @@ function createPainterPlugin(type, Painter) {
             const painter = this.painter;
             const tilePoint = [tileInfo.extent2d.xmin, tileInfo.extent2d.ymax];
             const meshes = painter.createMeshes(geometries, tileTransform, { tileExtent, tilePoint, tileZoom, tileTranslationMatrix, tileVectorTransform }, context);
+            if (!meshes) {
+                return null;
+            }
             if (meshes.length) {
                 for (let i = 0; i < meshes.length; i++) {
                     if (meshes[i]) {
@@ -200,7 +207,11 @@ function createPainterPlugin(type, Painter) {
             const key = this._getMeshKey(context);
             let meshes = this._getMesh(key);
             if (!meshes) {
-                const { meshes: newMeshes, retire: isRetire } = this._createMeshes(geometries, context);
+                const result  = this._createMeshes(geometries, context);
+                if (!result) {
+                    return NO_REDRAW;
+                }
+                const { meshes: newMeshes, retire: isRetire } = result;
                 if (!retire) {
                     retire = isRetire;
                 }
