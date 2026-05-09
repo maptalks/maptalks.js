@@ -84,10 +84,11 @@ const GLTFMixin = Base =>
             return EMPTY_ARRAY;
         }
 
+        isReady() {
+            return this._ready;
+        }
+
         createMesh(geo, transform, { tileTranslationMatrix, tileExtent, tilePoint }, { timestamp }) {
-            if (!this._ready) {
-                return null;
-            }
             const map = this.getMap();
             const { geometry } = geo;
             const { positionSize, features } = geometry;

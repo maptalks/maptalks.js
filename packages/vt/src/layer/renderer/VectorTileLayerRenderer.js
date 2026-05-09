@@ -1671,12 +1671,9 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
                 tileZoom: this['_tileZoom']
             };
             const status = plugin.createTile(context);
-            if (tileCache[idx].geometry) {
+            if (!status.loading && tileCache[idx].geometry) {
                 //插件数据以及经转化为geometry，可以删除原始数据以节省内存
                 tileData.data[idx] = 'geometry created';
-            }
-            if (!this._needRetire && status.retire && plugin.supportRenderMode('taa')) {
-                this._needRetire = true;
             }
         });
     }
