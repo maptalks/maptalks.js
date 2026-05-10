@@ -50,6 +50,8 @@ import * as control from './control/index';
 export { ui, control };
 
 export * from './layer/index';
+export { SpiderManager } from './SpiderManager';
+export type { SpiderMarkerItem, SpiderOptions } from './SpiderManager';
 
 export * from './geometry/index';
 
