@@ -96,14 +96,6 @@ class VectorLayer extends OverlayLayer {
         super(id, geometries, options);
     }
 
-    onAdd() {
-        super.onAdd();
-    }
-
-    onRemove() {
-        super.onRemove();
-    }
-
     onConfig(conf: Record<string, any>) {
         super.onConfig(conf);
         if (!isNil(conf['enableAltitude'])) {
