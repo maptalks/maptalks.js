@@ -456,7 +456,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         if (!isInDebug && status && !needRefreshTerrainTile) {
             return false;
         }
-        const sr = skinLayer.getSpatialReference();
+
         const { x, y, z, res, offset } = terrainTileInfo;
         let nw = terrainTileInfo.nw;
         if (!nw) {
@@ -464,7 +464,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         }
         const tileSize = this.layer.getTileSize().width;
         // const zoom = this.getCurrentTileZoom();
-        let { res: myRes, zoom } = getSkinTileRes(sr, z, res);
+        let { res: myRes, zoom } = getSkinTileRes(skinLayer, z, res);
 
         const myTileSize = skinLayer.getTileSize().width;
 

@@ -121,7 +121,8 @@ export function getSkinTileScale(res, size, terrainRes, terrainSize) {
     return scale;
 }
 
-export function getSkinTileRes(sr, z, terrainRes) {
+export function getSkinTileRes(layer, z, terrainRes) {
+    const sr = layer.getSpatialReference();
     const resAtZ = sr.getResolution(z);
     const zoom = z - Math.log(terrainRes / resAtZ) * Math.LOG2E;
     const myRes = sr.getResolution(zoom);
