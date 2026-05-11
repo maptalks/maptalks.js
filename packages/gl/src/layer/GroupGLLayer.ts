@@ -672,6 +672,11 @@ export default class GroupGLLayer extends maptalks.Layer {
         if (!this._terrainLayer) {
             return;
         }
+        const terrainLayer = this._terrainLayer as any;
+        const isTerrainAvailable = () => {
+            const zoom = this.getMap().getZoom();
+            return zoom >= terrainLayer.getMinZoom() && zoom <= terrainLayer.getMaxZoom();
+        };
         const layers = this.layers;
         const skinLayers = [];
         for (let i = 0; i < layers.length; i++) {
@@ -689,7 +694,7 @@ export default class GroupGLLayer extends maptalks.Layer {
                 const getTilesFn = layer.getTiles;
                 layer.getTiles = (...args) => {
                     // debugger
-                    if (!layer.options['awareOfTerrain']) {
+                    if (!layer.options['awareOfTerrain'] || !isTerrainAvailable()) {
                         return getTilesFn.call(layer, ...args);
                     }
                     return this._terrainLayer && this._terrainLayer.getSkinTiles(layer);
@@ -699,14 +704,14 @@ export default class GroupGLLayer extends maptalks.Layer {
                 const drawTileFn = renderer.drawTile;
                 if (renderer.drawTileOnTerrain) {
                     renderer.drawTile = (...args) => {
-                        if (!layer.options['awareOfTerrain']) {
+                        if (!layer.options['awareOfTerrain'] || !isTerrainAvailable()) {
                             return drawTileFn.call(renderer, ...args);
                         }
                         return renderer.drawTileOnTerrain(...args);
                     };
                 } else {
                     renderer.drawTile = (...args) => {
-                        if (!layer.options['awareOfTerrain']) {
+                        if (!layer.options['awareOfTerrain'] || !isTerrainAvailable()) {
                             return drawTileFn.call(renderer, ...args);
                         }
                     };
@@ -714,7 +719,7 @@ export default class GroupGLLayer extends maptalks.Layer {
                 // skinLayer的deleteTile交由TerrainLayerRenderer.deleteTile中手动执行
                 const deleteTileFn = renderer.deleteTile;
                 renderer.deleteTile = (...args) => {
-                    if (!layer.options['awareOfTerrain']) {
+                    if (!layer.options['awareOfTerrain'] || !isTerrainAvailable()) {
                         return deleteTileFn.call(renderer, ...args);
                     }
                 }
