@@ -339,9 +339,9 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
             if (this.gl) {
                 this.gl.clearStencil(0xFF);
                 this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.STENCIL_BUFFER_BIT);
-            }
-            if (!this.gl.wrap) {
-                this.gl.clear(this.gl.DEPTH_BUFFER_BIT);
+                if (!this.gl.wrap) {
+                    this.gl.clear(this.gl.DEPTH_BUFFER_BIT);
+                }
             }
         }
 
