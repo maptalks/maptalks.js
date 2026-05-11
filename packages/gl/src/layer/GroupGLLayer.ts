@@ -676,7 +676,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         const isTerrainAvailable = () => {
             const map = this.getMap();
             if (!map || !terrainLayer.getMap()) {
-                return true;
+                return false;
             }
             const zoom = map.getZoom();
             return zoom >= terrainLayer.getMinZoom() && zoom <= terrainLayer.getMaxZoom();
