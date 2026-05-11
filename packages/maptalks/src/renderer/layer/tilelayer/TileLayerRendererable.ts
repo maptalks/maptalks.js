@@ -9,7 +9,8 @@ import {
     isString,
     getAbsoluteURL,
     pushIn,
-    mergeArray
+    mergeArray,
+    isNumber
 } from '../../../core/util';
 import Browser from '../../../core/Browser';
 import { default as TileLayer } from '../../../layer/tile/TileLayer';
@@ -631,7 +632,7 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
 
         loadTile(tile: Tile['info']): Tile['image'] {
             const maxAvailableZoom = this.layer.options['maxAvailableZoom'];
-            if (maxAvailableZoom >= 0 && tile.z > maxAvailableZoom) {
+            if (isNumber(maxAvailableZoom) && tile.z > maxAvailableZoom) {
                 return null;
             }
             let tileImage = {} as Tile['image'];
