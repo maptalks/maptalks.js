@@ -1,11 +1,15 @@
 import * as GLTFHelper  from '../GLTFHelper.js';
 import { simpleModels, getSimpleModel, setSimpleModel } from './SimpleModel';
+import getDecoders from '../common/Decoders';
 
 export default class GLTFManager {
     constructor(regl, options) {
+        const decoders = getDecoders();
         this.regl = regl;
         this.resourceMap = {};
         this.options = options || {};
+        this.options.gltfLoaderOptions = this.options.gltfLoaderOptions || {};
+        this.options.gltfLoaderOptions.decoders = decoders;
     }
 
     getGLTF(url) {
