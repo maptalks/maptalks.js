@@ -32,7 +32,7 @@ const intro = `${printVer} const transcoder = function () { const getGlobal = ${
 const outro = `
     }(); return currentGlobal.crn______decoder; };
     if (typeof exports === 'object' && typeof module !== 'undefined') {
-        const maptalksgl = require('@maptalks/gl') || require('@maptalks/gpu');
+        const maptalksgl = require('@maptalks/gl');
         maptalksgl.transcoders.registerTranscoder('crn', transcoder);
     } else {
         return transcoder;
@@ -62,7 +62,7 @@ const terserPlugin = terser({
 module.exports = [
     {
         input: 'src/index.js',
-        external : ['@maptalks/gl', '@maptalks/gpu'],
+        external : ['@maptalks/gl'],
         plugins : plugins.concat(production ? [terserPlugin] : []),
         output: [
             {
@@ -71,8 +71,7 @@ module.exports = [
                 extend: true,
                 'name': 'maptalks.transcoders.crn',
                 'globals' : {
-                    '@maptalks/gl' : 'maptalks',
-                    '@maptalks/gpu' : 'maptalks'
+                    '@maptalks/gl' : 'maptalks'
                 },
                 intro,
                 outro,
@@ -88,7 +87,7 @@ if (production) {
     module.exports.push(
         {
             input: 'src/index.js',
-            external : ['@maptalks/gl/dist/transcoders', '@maptalks/gpu/dist/transcoders'],
+            external : ['@maptalks/gl/dist/transcoders'],
             plugins : plugins.concat([
                 replace({
                   // '(function(A) {': 'function (A) {',
@@ -111,12 +110,11 @@ if (production) {
         },
         {
             input: 'src/index.es.js',
-            external : ['@maptalks/gl/dist/transcoders', '@maptalks/gpu/dist/transcoders'],
+            external : ['@maptalks/gl/dist/transcoders'],
             plugins : plugins,
             output: {
                 globals: {
-                    '@maptalks/gl': 'maptalks',
-                    '@maptalks/gpu': 'maptalks'
+                    '@maptalks/gl': 'maptalks'
                 },
                 extend: true,
                 format: 'es',
