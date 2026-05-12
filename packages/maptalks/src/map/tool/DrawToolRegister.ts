@@ -54,9 +54,9 @@ function queryTerrainCoordinates(projection: any, prjCoords: any, mapEvent: any)
             //prj to container point
             if (enableAltitude) {
                 const point = map.prjToContainerPoint(c);
-                const terrain = map._queryTerrainInfo(point);
-                if (terrain && terrain.coordinate) {
-                    return terrain.coordinate;
+                const projCoord = map.queryPrjCoordAtContainerPoint(point);
+                if (projCoord) {
+                    return projection.unproject(projCoord);
                 }
             }
             return projection.unproject(c);
