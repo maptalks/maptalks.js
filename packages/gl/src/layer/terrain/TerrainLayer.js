@@ -202,9 +202,9 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
         const map = this.getMap();
         const parents = grid.parents || EMPTY_ARRAY;
         const parentCount = parents.length;
-        const allTiles = parents.concat(tiles);
+        const allTerrainTiles = parents.concat(tiles);
 
-        const sr = layer.getSpatialReference();
+
         const size = tiles[0].extent2d.getWidth();
 
         const dx = tileSysScale.x;
@@ -215,14 +215,14 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
         const allSkinTileIds = new Set();
         const scaleY = this['_getTileConfig']().tileSystem.scale.y;
 
-        for (let i = 0; i < allTiles.length; i++) {
-            const info = allTiles[i];
+        for (let i = 0; i < allTerrainTiles.length; i++) {
+            const info = allTerrainTiles[i];
             const { res } = info;
             let nw = info.nw;
             if (!nw) {
                 nw = info.nw = map.pointAtResToCoord(info.extent2d.getMin(POINT0), info.res);
             }
-            const { res: skinRes, zoom } = getSkinTileRes(sr, info.z, res);
+            const { res: skinRes, zoom } = getSkinTileRes(layer, info.z, res);
             const resScale = skinRes / res;
             const scale = getSkinTileScale(skinRes, tileSize, res, size);
 
@@ -383,8 +383,7 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
         const tileSize = tileInfo.extent2d.getWidth();
         const tc = this['_getTileConfig']();
         const layerTC = layer['_getTileConfig']();
-        const sr = this.getSpatialReference();
-        const { res: terrainRes, zoom } = getSkinTileRes(sr, z, res);
+        const { res: terrainRes, zoom } = getSkinTileRes(this, z, res);
 
         const terrainTileSize = this.getTileSize().width;
 

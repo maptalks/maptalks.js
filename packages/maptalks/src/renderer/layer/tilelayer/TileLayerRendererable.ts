@@ -9,7 +9,8 @@ import {
     isString,
     getAbsoluteURL,
     pushIn,
-    mergeArray
+    mergeArray,
+    isNumber
 } from '../../../core/util';
 import Browser from '../../../core/Browser';
 import { default as TileLayer } from '../../../layer/tile/TileLayer';
@@ -613,7 +614,7 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
                 if (tileQueue.hasOwnProperty(p)) {
                     const tile = tileQueue[p];
                     const tileImage = this.loadTile(tile);
-                    if (tileImage.loadTime === undefined) {
+                    if (tileImage && tileImage.loadTime === undefined) {
                         // tile image's loading may not be async
                         // if empty not add to tilesLoading, it is not async
                         //空的瓦片不加入加载队列，因为不是异步的
@@ -630,6 +631,10 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
         }
 
         loadTile(tile: Tile['info']): Tile['image'] {
+            const maxAvailableZoom = this.layer.options['maxAvailableZoom'];
+            if (isNumber(maxAvailableZoom) && tile.z > maxAvailableZoom) {
+                return null;
+            }
             let tileImage = {} as Tile['image'];
             // fixme: 无相关定义，是否实现？
             if (this.loadTileBitmap && isFunction(this.loadTileBitmap)) {
