@@ -27,7 +27,7 @@ function getArrayBuffer(url, options) {
 function load(root, data, options) {
     const loader = new gltfloader.GLTFLoader(root, data, options);
     return loader.load({
-        skipAttributeTransform: true
+        skipAttributeTransform: false
     });
 }
 
