@@ -1261,7 +1261,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             return this;
         }
         const syncExtent = new Extent(extent);
-        const zoom = this.getFitZoom(syncExtent, options.isFraction || false, options) + (zoomOffset || 0);
+        let zoom = this.getFitZoom(syncExtent, options.isFraction || false, options);
         const containerExtent = syncExtent.convertTo(p => this.coordToPoint(p));
         let center = this.pointToCoord(containerExtent.getCenter() as Point);
         if (this._getPaddingSize(options)) {
@@ -1269,12 +1269,10 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
         const maxAltitude = (extent as Extent).zmax;
         if (isNumber(maxAltitude) && maxAltitude !== 0) {
-            const currentCenterZ = this.getCenter().z || 0;
-            if (maxAltitude > currentCenterZ) {
-                center.z = maxAltitude;
-            }
-
+            const zoomForAltitude = this.getFitZoomForAltitude(maxAltitude + 1);
+            zoom = Math.min(zoom, zoomForAltitude);
         }
+        zoom += zoomOffset || 0;
 
         if (typeof (options['animation']) === 'undefined' || options['animation'])
             return this._animateTo({
