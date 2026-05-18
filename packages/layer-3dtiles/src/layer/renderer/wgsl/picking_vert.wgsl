@@ -3,9 +3,9 @@
 
 // Uniform 结构体
 struct Uniforms {
-    modelMatrix: mat4x4f,
+    modelViewMatrix: mat4x4f,
     #ifdef HAS_MASK_EXTENT
-        modelViewMatrix: mat4x4f,
+        modelMatrix: mat4x4f,
     #endif
     positionMatrix: mat4x4f
 };
@@ -42,7 +42,7 @@ fn main(vertexInput: VertexInput) -> VertexOutput {
     let localPositionMatrix: mat4x4f = getPositionMatrix(vertexInput, &output, uniforms.positionMatrix);
     let localVertex = getPosition(vec3f(vertexInput.aPosition.xyz), vertexInput);
     let position: vec4f = localPositionMatrix * localVertex;
-    let viewVertex = uniforms.modelMatrix * position;
+    let viewVertex = uniforms.modelViewMatrix * position;
     let projMatrix = shaderUniforms.projMatrix;
     #ifdef HAS_MASK_EXTENT
         output.position = projMatrix * getMaskPosition(position, uniforms.modelMatrix);

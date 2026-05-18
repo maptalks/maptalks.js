@@ -12,13 +12,7 @@ const outputESFile = pkg.module;
 const plugins = [].concat(production ? [
     removeGlobal(),
     terser({
-        mangle: {
-            properties: {
-                'regex' : /^_/,
-                'keep_quoted' : true,
-                'reserved': ['on', 'once', 'off']
-            }
-        },
+        mangle: true,
         output : {
             keep_quoted_props: true,
             beautify: false,
@@ -127,8 +121,8 @@ module.exports = [
                 '})(this.exports = this.exports || {});': '}',
 
                 // 为了引入loaders.gl做的修改
-                '(function (exports, Module, path) {': 'function (exports) { const Module = {}; const path = {};',
-                '})(this.exports = this.exports || {}, Module, path);': '}',
+                // '(function (exports, Module, path) {': 'function (exports) { const Module = {}; const path = {};',
+                // '})(this.exports = this.exports || {}, Module, path);': '}',
                 preventAssignment: false,
                 delimiters: ['', '']
             })
