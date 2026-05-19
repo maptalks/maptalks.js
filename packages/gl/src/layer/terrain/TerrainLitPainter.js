@@ -101,6 +101,7 @@ class TerrainLitPainter extends TerrainPainter {
         const matInfo = extend({}, DEFAULT_MATERIAL, this.layer.options['material'] || {});
         matInfo.skinTexture = emptyTexture;
         matInfo.terrainHeightTexture = terrainHeightTexture;
+        matInfo.terrainHeightMapResolution = [terrainHeightTexture.width, terrainHeightTexture.height];
         const material = new reshader.pbr.StandardMaterial(matInfo);
         const mesh = new reshader.Mesh(geo, material);
         mesh.properties.matVer = this._matVer;
@@ -153,7 +154,6 @@ class TerrainLitPainter extends TerrainPainter {
         const canvas = map.getRenderer().canvas;
         const { iblTexes, dfgLUT } = getIBLResOnCanvas(canvas);
         const uniforms = getPBRUniforms(map, iblTexes, dfgLUT);
-        const tileSize = this.layer.getTileSize().width;
         const renderer = this.layer.getRenderer();
         const maskUniforms = renderer.getMaskUniforms();
         // const terrainHeightScale = this._getHeightScale();
@@ -167,7 +167,6 @@ class TerrainLitPainter extends TerrainPainter {
             projViewMatrix: map.projViewMatrix,
             outSize: [canvas.width, canvas.height],
             polygonFill: [1, 1, 1, 1],
-            terrainHeightMapResolution: [tileSize, tileSize],
             terrainResolution: [canvas.width, canvas.height],
             // terrainHeightScale,
             terrainUnpackFactors: [6553.6, 25.6, 0.1, 10000.0],

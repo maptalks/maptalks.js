@@ -114,7 +114,8 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         }
         const res = tile.res;
         const error = this.getMap().pointAtResToDistance(1, 1, res);
-        const heights = parentTile && parentTile.image && parentTile.image.data && this._clipParentTerrain(parentTile, tile);
+        const clipped = parentTile && parentTile.image && parentTile.image.data && this._clipParentTerrain(parentTile, tile);
+        const heights = clipped && clipped.data;
         const sourceZoom = heights && parentTile.image.sourceZoom !== -1 ? parentTile.info.z : -1;
         if (!heights || heights.width <= 1) {
             // find sibling tile's minAltitude
@@ -126,7 +127,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         const hasSkirts = this.layer.options['hasSkirts'];
         const mesh = createMartiniData(error * errorScale, heights.data, terrainWidth, hasSkirts);
 
-        return { data: heights, mesh, sourceZoom };
+        return { data: heights, mesh, sourceZoom, image: clipped.image };
     }
 
     _findTileMinAltitude(tile, parentTile) {
@@ -849,6 +850,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
     _clipParentTerrain(parentTile, tile) {
         const { image, info } = parentTile;
         const terrainData = image.data;
+        const terrainImage = image.image;
         const terrainWidth = terrainData.width;
         const { extent2d: parentExtent, res: parentRes } = info;
         const { extent2d, res } = tile;
@@ -900,12 +902,29 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             }
         }
 
+        let clippedImage;
+        if (terrainImage) {
+            const canvas = document.createElement('canvas');
+            const tileSize = terrainImage.width;
+            const clipSize = Math.round((tileWidth - 1) / (terrainWidth - 1) * tileSize);
+            canvas.width = clipSize;
+            canvas.height = clipSize;
+            const ctx = canvas.getContext('2d');
+            const clipXmin = +((xmin - terrainWidth / 4) > 0) * tileSize / 2;
+            const clipYmin = +((ymin - terrainWidth / 4) > 0) * tileSize / 2;
+            ctx.drawImage(terrainImage, clipXmin, clipYmin, clipSize, clipSize, 0, 0, clipSize, clipSize);
+            clippedImage = canvas;
+        }
+
         return {
-            width: tileWidth,
-            height: tileWidth,
-            data: heights,
-            min,
-            max
+            image: clippedImage,
+            data: {
+                width: tileWidth,
+                height: tileWidth,
+                data: heights,
+                min,
+                max
+            }
         };
     }
 
