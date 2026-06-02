@@ -12,7 +12,6 @@ import CanvasCompatible from './CanvasCompatible';
 
 const { LayerAbstractRenderer } = maptalks.renderer;
 
-const EMPTY_COLOR = [0, 0, 0, 0];
 const DEFAULT_LIGHT_DIRECTION = [1, 1, -1];
 
 const MIN_SSR_PITCH = -0.001;
@@ -24,6 +23,17 @@ const noSsrFilter = m => !m.ssr;
 
 const SSR_STATIC = 1;
 const SSR_IN_ONE_FRAME = 2;
+
+const GL_CLEAR = {
+    depth: 1,
+    stencil: 0
+};
+
+const CANVAS_CLEAR = {
+    color: [0, 0, 0, 0],
+    depth: 1,
+    stencil: 0
+};
 
 class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
 
@@ -534,23 +544,21 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         this._clearFramebuffers();
     }
 
-    _clearFramebuffers() {
+
+    _clearFramebuffers(forceClearColor) {
         const device = this.device;
+        const mapRenderer = this.getMap().getRenderer();
+        let clearOptions = CANVAS_CLEAR;
+        if (!forceClearColor && (mapRenderer.isWebGL() || mapRenderer.isWebGPU())) {
+            clearOptions = GL_CLEAR;
+        }
         if (this._targetFBO) {
-            device.clear({
-                color: EMPTY_COLOR,
-                depth: 1,
-                stencil: 0,
-                framebuffer: this._targetFBO
-            });
+            clearOptions.framebuffer = this._targetFBO;
+            device.clear(clearOptions);
         }
         if (this._outlineFBO) {
-            device.clear({
-                color: EMPTY_COLOR,
-                depth: 1,
-                stencil: 0,
-                framebuffer: this._outlineFBO
-            });
+            clearOptions.framebuffer = this._outlineFBO;
+            device.clear(clearOptions);
         }
     }
 

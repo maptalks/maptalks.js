@@ -12,6 +12,13 @@ export default class MapGLRenderer extends renderer.MapAbstractRenderer {
         this.device.clear({
             color: [0, 0, 0, 0]
         });
+        const layers = this._getAllLayerToRender();
+        for (let i = 0; i < layers.length; i++) {
+            if (layers[i].isGroupGLLayer) {
+                const renderer = layers[i].getRenderer();
+                renderer._clearFramebuffers(true);
+            }
+        }
     }
 
     clearLayerCanvasContext(layer) {

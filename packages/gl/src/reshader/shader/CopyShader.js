@@ -17,6 +17,13 @@ class CopyShader extends QuadShader {
                     height: (_, props) => {
                         return props['size'][1];
                     }
+                },
+                blend: {
+                    enable: true,
+                    func: {
+                        src: 'src alpha',
+                        dst: 'one minus src alpha'
+                    }
                 }
             }
         });
