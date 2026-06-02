@@ -79,6 +79,7 @@ export default class GroupGLLayer extends maptalks.Layer {
     _terrainLayer: TerrainLayer
     //@internal
     _meterToGLPoint: number
+    isGroupGLLayer: true
 
     /**
      * @param id    - layer's id
@@ -96,6 +97,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         this._checkChildren();
         this.sortLayersByZIndex();
         this._layerMap = {};
+        this.isGroupGLLayer = true;
     }
 
     sortLayersByZIndex() {
