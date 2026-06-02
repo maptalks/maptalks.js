@@ -21,7 +21,7 @@ class CopyShader extends QuadShader {
                 blend: {
                     enable: true,
                     func: {
-                        src: 'src alpha',
+                        src: 1,
                         dst: 'one minus src alpha'
                     }
                 }
