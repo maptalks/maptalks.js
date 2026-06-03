@@ -683,6 +683,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                     const skinTileOpacity = layer.getOpacity();
                     mesh.setUniform('opacity', isNil(skinTileOpacity) ? 1 : skinTileOpacity);
                     mesh.setUniform('skinDim', skinDim);
+                    mesh.setUniform('tileScale', terrainTileImage.skin.width / tileSize);
                     mesh.setUniform('tileSize', tileSize);
                     mesh.setUniform('x', terrainTileInfo.x);
                     mesh.setUniform('y', terrainTileInfo.y);
@@ -810,8 +811,8 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
     _createTerrainSkinTexture() {
         const tileSize = this.layer.getTileSize().width;
         // 乘以2是为了瓦片（缩放时）被放大后保持清晰度
-        let width = tileSize * 2;
-        let height = tileSize * 2;
+        const width = tileSize;
+        const height = tileSize;
         const regl = this.device;
 
         const color = regl.texture({
@@ -1584,8 +1585,8 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                 viewport: {
                     x: 0,
                     y: 0,
-                    width: tileSize * 2,
-                    height: tileSize * 2
+                    width: tileSize,
+                    height: tileSize
                 },
                 depth: {
                     enable: false
