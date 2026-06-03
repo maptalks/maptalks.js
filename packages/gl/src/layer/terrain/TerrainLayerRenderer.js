@@ -1503,6 +1503,8 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             delete this._terrainMaskDepthStencil;
         }
         delete this._parentRequests;
+        this.clear();
+        this.removeTileCaches();
         super.onRemove();
         if (this._painter) {
             this._painter.delete();
