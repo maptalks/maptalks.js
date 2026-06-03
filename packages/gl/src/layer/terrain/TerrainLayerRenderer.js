@@ -1146,13 +1146,14 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             delete image.skinDebugMesh;
         }
         const skinImages = image.skinImages;
-        if (skinImages && skinImages.length) {
+        const layerIds = skinImages ? Object.keys(skinImages) : [];
+        if (layerIds.length) {
             let refKey = tileInfo.id;
             if (image.temp) {
                 refKey += '-temp';
             }
-            for (let i = 0; i < skinImages.length; i++) {
-                const layerSkinImages = skinImages[i];
+            for (let i = 0; i < layerIds.length; i++) {
+                const layerSkinImages = skinImages[layerIds[i]];
                 if (!layerSkinImages) {
                     continue;
                 }
@@ -1234,6 +1235,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             }
         }
         delete cached.tile;
+        delete cached.terrainMaskFBO;
         this._skinImageCache.delete(skinTileId);
     }
 
