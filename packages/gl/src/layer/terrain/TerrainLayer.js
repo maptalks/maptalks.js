@@ -38,7 +38,8 @@ const options = {
     'exaggeration': 1,
     'errorScale': 1,
     'hasSkirts': true,
-    'colors': []
+    'colors': [],
+    'skinScale': 1
 };
 
 const EMPTY_TILE_GRIDS = {

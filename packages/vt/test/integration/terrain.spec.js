@@ -87,7 +87,8 @@ describe('vector tile on terrain integration specs', () => {
                 loadingLimit: 0,
                 requireSkuToken: false,
                 fadeAnimation: false,
-                colors: style.colors
+                colors: style.colors,
+                skinScale: 2
                 // shader: 'lit'
             };
             if (style.lit) {

@@ -810,9 +810,10 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
 
     _createTerrainSkinTexture() {
         const tileSize = this.layer.getTileSize().width;
+        const skinScale = this.layer.options.skinScale;
         // 乘以2是为了瓦片（缩放时）被放大后保持清晰度
-        const width = tileSize;
-        const height = tileSize;
+        const width = tileSize * skinScale;
+        const height = tileSize * skinScale;
         const regl = this.device;
 
         const color = regl.texture({
@@ -1574,6 +1575,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         }
 
         const tileSize = this.layer.getTileSize().width;
+        const skinScale = this.layer.options.skinScale;
         this._skinShader = new reshader.MeshShader({
             name: 'terrain-skin',
             vert: skinVert,
@@ -1587,8 +1589,8 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                 viewport: {
                     x: 0,
                     y: 0,
-                    width: tileSize,
-                    height: tileSize
+                    width: tileSize * skinScale,
+                    height: tileSize * skinScale
                 },
                 depth: {
                     enable: false
