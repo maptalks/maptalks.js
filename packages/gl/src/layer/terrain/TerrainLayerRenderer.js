@@ -76,9 +76,10 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         const refKey = info.id + '-temp';
 
         const skinImages = image.skinImages;
-        if (skinImages) {
-            for (let i = 0; i < skinImages.length; i++) {
-                const cachedImages = skinImages[i];
+        const layerIds = skinImages && Object.keys(skinImages);
+        if (layerIds && layerIds.length) {
+            for (let i = 0; i < layerIds.length; i++) {
+                const cachedImages = skinImages[layerIds[i]];
                 if (!cachedImages) {
                     continue;
                 }
@@ -351,11 +352,12 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
 
     _collectSkinImages(tile, currentImages) {
         const skinImages = tile.image && tile.image.skinImages;
-        if (!skinImages || !skinImages.length) {
+        const layerIds = skinImages && Object.keys(skinImages);
+        if (!layerIds || !layerIds.length) {
             return;
         }
-        for (let i = 0; i < skinImages.length; i++) {
-            const currentSkins = skinImages[i] && skinImages.currentSkins;
+        for (let i = 0; i < layerIds.length; i++) {
+            const currentSkins = skinImages[layerIds[i]] && skinImages[layerIds[i]].currentSkins;
             if (currentSkins) {
                 for (const tileId of currentSkins) {
                     currentImages.add(tileId);
@@ -1135,12 +1137,14 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             skin.colorTex.destroy();
             delete skin.colorTex;
         }
+        delete image.skin;
         const mask = image.mask;
         if (mask) {
             mask.destroy();
             mask.colorTex.destroy();
             delete mask.colorTex;
         }
+        delete image.mask;
         if (image.debugTexture) {
             image.debugTexture.destroy();
             delete image.debugTexture;
@@ -1148,8 +1152,8 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             delete image.skinDebugMesh;
         }
         const skinImages = image.skinImages;
-        const layerIds = skinImages ? Object.keys(skinImages) : [];
-        if (layerIds.length) {
+        const layerIds = skinImages && Object.keys(skinImages);
+        if (layerIds && layerIds.length) {
             let refKey = tileInfo.id;
             if (image.temp) {
                 refKey += '-temp';
@@ -1163,11 +1167,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                     if (!layerSkinImages[ii] || !layerSkinImages[ii].tile) {
                         continue;
                     }
-                    const skinTileId = layerSkinImages[ii].tile.info.id;
-                    const cached = this._skinImageCache && this._skinImageCache.get(skinTileId);
-                    if (cached) {
-                        this._deleteCachedSkinImage(cached, refKey);
-                    }
+                    this._deleteCachedSkinImage(layerSkinImages[ii], refKey);
                 }
                 layerSkinImages.length = 0;
             }
