@@ -683,6 +683,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                     const skinTileOpacity = layer.getOpacity();
                     mesh.setUniform('opacity', isNil(skinTileOpacity) ? 1 : skinTileOpacity);
                     mesh.setUniform('skinDim', skinDim);
+                    mesh.setUniform('tileScale', terrainTileImage.skin.width / tileSize);
                     mesh.setUniform('tileSize', tileSize);
                     mesh.setUniform('x', terrainTileInfo.x);
                     mesh.setUniform('y', terrainTileInfo.y);
@@ -809,9 +810,10 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
 
     _createTerrainSkinTexture() {
         const tileSize = this.layer.getTileSize().width;
+        const skinScale = this.layer.options.skinScale;
         // 乘以2是为了瓦片（缩放时）被放大后保持清晰度
-        let width = tileSize * 2;
-        let height = tileSize * 2;
+        const width = tileSize * skinScale;
+        const height = tileSize * skinScale;
         const regl = this.device;
 
         const color = regl.texture({
@@ -1502,6 +1504,8 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             delete this._terrainMaskDepthStencil;
         }
         delete this._parentRequests;
+        this.clear();
+        this.removeTileCaches();
         super.onRemove();
         if (this._painter) {
             this._painter.delete();
@@ -1571,6 +1575,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         }
 
         const tileSize = this.layer.getTileSize().width;
+        const skinScale = this.layer.options.skinScale;
         this._skinShader = new reshader.MeshShader({
             name: 'terrain-skin',
             vert: skinVert,
@@ -1584,8 +1589,8 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                 viewport: {
                     x: 0,
                     y: 0,
-                    width: tileSize * 2,
-                    height: tileSize * 2
+                    width: tileSize * skinScale,
+                    height: tileSize * skinScale
                 },
                 depth: {
                     enable: false

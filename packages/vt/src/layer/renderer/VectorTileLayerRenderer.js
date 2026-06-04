@@ -1341,9 +1341,10 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
     }
 
     createTerrainTexture(regl) {
+        const tileSkinScale = this.getTerrainHelper().options.skinScale;
         const tileSize = this.layer.getTileSize().width;
-        const width = tileSize * 2;
-        const height = tileSize * 2;
+        const width = tileSize * tileSkinScale;
+        const height = tileSize * tileSkinScale;
         const color = regl.texture({
             min: 'linear',
             mag: 'linear',
@@ -1390,6 +1391,7 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
         if (!this.layer.isDefaultRender() && (!plugins.length && !featurePlugins.length)) {
             return;
         }
+        const skinScale = this.getTerrainHelper().options.skinScale;
         this.isRenderingTerrainSkin = true;
         const timestamp = this._currentTimestamp;
         const parentContext = this._parentContext;
@@ -1410,8 +1412,8 @@ class VectorTileLayerRenderer extends CanvasCompatible(TileLayerRendererable(Lay
             };
             TERRAIN_CLEAR.framebuffer = texture;
             terrainRegl.clear(TERRAIN_CLEAR);
-            this._parentContext.maskViewport = getTileViewport(skinImage.terrainMaskFBO.width / 2);
-            this._parentContext.viewport = getTileViewport(tileSize);
+            this._parentContext.maskViewport = getTileViewport(skinImage.terrainMaskFBO.width / 2 * skinScale);
+            this._parentContext.viewport = getTileViewport(tileSize * skinScale);
             // 如果矢量瓦片的目标绘制尺寸过大，拉伸后会过于失真，还不如不去绘制
             this._drawTerrainTile(skinImage.tile);
             this._endTerrainFrame(skinImage);
@@ -2438,8 +2440,8 @@ function getTileViewport(tileSize) {
     return {
         x: 0,
         y: 0,
-        width: tileSize * 2,
-        height: tileSize * 2
+        width: tileSize,
+        height: tileSize
     };
 }
 
