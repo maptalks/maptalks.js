@@ -51,7 +51,9 @@ export default class MapGLRenderer extends renderer.MapAbstractRenderer {
             this.regl.destroy();
             delete this.regl;
         }
-
+        if (this.map._disposeLightManager) {
+            this.map._disposeLightManager();
+        }
         super.remove();
     }
 
