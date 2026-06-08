@@ -38,7 +38,7 @@ const GLTFMixin = Base =>
             fetchOptions.referrer = window && window.location.href;
             const modifier = layer.getURLModifier();
             if (modifier) {
-                this._gltfManager = regl.gltfManager = regl.gltfManager || new reshader.GLTFManager(regl, {
+                this._gltfManager = new reshader.GLTFManager(regl, {
                     fetchOptions,
                     urlModifier: (url) => {
                         const modifier = layer.getURLModifier();
