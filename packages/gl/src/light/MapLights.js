@@ -5,6 +5,7 @@ import LightManager from './LightManager.js';
 Map.include({
     setLights(config) {
         this.options['lights'] = config;
+        this._disposeLightManager();
         this._initLightManager();
         return this;
     },
@@ -29,6 +30,13 @@ Map.include({
             return null;
         }
         return this._lightManager;
+    },
+
+    _disposeLightManager() {
+        if (this._lightManager) {
+            this._lightManager.dispose();
+            delete this._lightManager;
+        }
     }
 });
 

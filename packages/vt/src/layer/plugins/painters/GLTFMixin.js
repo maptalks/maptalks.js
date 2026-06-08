@@ -36,13 +36,21 @@ const GLTFMixin = Base =>
             // this.scene.sortFunction = this.sortByCommandKey;
             const fetchOptions = sceneConfig.fetchOptions || {};
             fetchOptions.referrer = window && window.location.href;
-            this._gltfManager = regl.gltfManager = regl.gltfManager || new reshader.GLTFManager(regl, {
-                fetchOptions,
-                urlModifier: (url) => {
-                    const modifier = layer.getURLModifier();
-                    return modifier && modifier(url) || url;
-                }
-            });
+            const modifier = layer.getURLModifier();
+            if (modifier) {
+                this._gltfManager = regl.gltfManager = regl.gltfManager || new reshader.GLTFManager(regl, {
+                    fetchOptions,
+                    urlModifier: (url) => {
+                        const modifier = layer.getURLModifier();
+                        return modifier && modifier(url) || url;
+                    }
+                });
+            } else {
+                this._gltfManager = regl.gltfManager = regl.gltfManager || new reshader.GLTFManager(regl, {
+                    fetchOptions
+                });
+            }
+
             this._initTRSFuncType();
             this._initGLTF();
         }
@@ -880,6 +888,7 @@ const GLTFMixin = Base =>
                 const url = symbols[i].url || 'pyramid';
                 this._gltfManager.logoutGLTF(url);
             }
+            delete this._gltfManager;
             if (this._skinMap) {
                 for (const uuid in this._skinMap) {
                     const skinmap = this._skinMap[uuid];
@@ -892,7 +901,6 @@ const GLTFMixin = Base =>
                 delete this._skinMap;
             }
             delete this._nodeMatrixMap;
-
         }
 
         _getGLTFMatrix(out, t, r, s) {

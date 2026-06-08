@@ -273,6 +273,7 @@ class GLTFLayerRenderer extends MaskRendererMixin(CanvasCompatible(maptalks.rend
             this.workerConn.remove();
             delete this.workerConn;
         }
+        delete this._gltfManager;
         super.onRemove();
     }
 
