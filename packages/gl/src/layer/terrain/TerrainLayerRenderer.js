@@ -19,24 +19,6 @@ const POINT1 = new maptalks.Point(0, 0);
 const TEMP_EXTENT = new maptalks.PointExtent(0, 0, 0, 0);
 const TEMP_POINT = new maptalks.Point(0, 0);
 
-const TERRAIN_CLEAR = {
-    color: [0, 0, 0, 0],
-    depth: 1,
-    stencil: 0
-};
-
-const TERRAIN_COLOR_CLEAR = {
-    color: [1, 1, 1, 1],
-    depth: 1,
-    stencil: 0
-};
-
-const TERRAIN_MASK_CLEAR = {
-    color: [1, 1, 1, 1],
-    depth: 0,
-    stencil: 0
-};
-
 const SKIN_LEVEL_LIMIT = 1;
 
 class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(LayerAbstractRenderer)) {
@@ -405,8 +387,13 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
     }
 
     _clearMask(maskFBO) {
-        TERRAIN_MASK_CLEAR.framebuffer = maskFBO;
-        this.device.clear(TERRAIN_MASK_CLEAR);
+        const options = {
+            color: [1, 1, 1, 1],
+            depth: 0,
+            stencil: 0,
+            framebuffer: maskFBO
+        };
+        this.device.clear(options);
     }
 
     _prepareChildTerrainSkin(skinLayerId, terrainTileInfo, terrainTileImage, skinImagesToDel) {
@@ -633,9 +620,13 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             this._prepareMask(terrainTileInfo, terrainTileImage);
         }
         const layerColors = this.layer.options['colors'];
-        let fboClear = TERRAIN_CLEAR;
+        let fboClear = {
+            color: [0, 0, 0, 0],
+            depth: 1,
+            stencil: 0
+        };
         if (layerColors && layerColors.length) {
-            fboClear = TERRAIN_COLOR_CLEAR;
+            fboClear.color = [1, 1, 1, 1];
         }
         fboClear.framebuffer = terrainTileImage.skin;
         this.device.clear(fboClear);
@@ -801,8 +792,13 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             }
             const timestamp = this.getFrameTimestamp();
             if (timestamp > texture._timestamp) {
-                TERRAIN_MASK_CLEAR.framebuffer = texture;
-                regl.clear(TERRAIN_MASK_CLEAR);
+                const options = {
+                    color: [1, 1, 1, 1],
+                    depth: 0,
+                    stencil: 0,
+                    framebuffer: texture
+                };
+                regl.clear(options);
                 texture._timestamp = timestamp;
             }
         }

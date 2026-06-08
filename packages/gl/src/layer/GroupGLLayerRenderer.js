@@ -24,17 +24,6 @@ const noSsrFilter = m => !m.ssr;
 const SSR_STATIC = 1;
 const SSR_IN_ONE_FRAME = 2;
 
-const GL_CLEAR = {
-    depth: 1,
-    stencil: 0
-};
-
-const CANVAS_CLEAR = {
-    color: [0, 0, 0, 0],
-    depth: 1,
-    stencil: 0
-};
-
 class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
 
     setToRedraw() {
@@ -548,9 +537,13 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
     _clearFramebuffers(forceClearColor) {
         const device = this.device;
         const mapRenderer = this.getMap().getRenderer();
-        let clearOptions = CANVAS_CLEAR;
+        let clearOptions = {
+            color: [0, 0, 0, 0],
+            depth: 1,
+            stencil: 0
+        };
         if (!forceClearColor && (mapRenderer.isWebGL() || mapRenderer.isWebGPU())) {
-            clearOptions = GL_CLEAR;
+            delete clearOptions.color;
         }
         if (this._targetFBO) {
             clearOptions.framebuffer = this._targetFBO;

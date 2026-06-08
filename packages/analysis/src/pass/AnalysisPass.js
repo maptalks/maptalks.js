@@ -47,6 +47,7 @@ export default class AnalysisPass {
     }
 
     _createDepthShader(horizontalAngle, verticalAngle) {
+        const projViewModelMatrix = [];
         this._depthShader = new reshader.MeshShader({
             name: 'analysis-depth',
             vert: depthVert,
@@ -58,7 +59,7 @@ export default class AnalysisPass {
                     name: 'projViewModelMatrix',
                     type: 'function',
                     fn: (context, props) => {
-                        return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
+                        return mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                     }
                 }
             ],
