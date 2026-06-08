@@ -46,6 +46,15 @@ export default class MapGLRenderer extends renderer.MapAbstractRenderer {
         return Promise.resolve();
     }
 
+    remove() {
+        if (this.regl) {
+            this.regl.destroy();
+            delete this.regl;
+        }
+
+        super.remove();
+    }
+
     _initGL() {
         const map = this.map;
         const gl = this.gl;

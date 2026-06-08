@@ -12,6 +12,7 @@ export default class InstancedMesh extends Mesh {
     instancedData: InstancedAttribute
     //@internal
     _vao: Record<string, any>
+    isInstancedMesh = true;
 
     constructor(instancedData: InstancedAttribute, instanceCount: number, geometry: Geometry, material?: Material, config: MeshOptions = {}) {
         super(geometry, material, config);
