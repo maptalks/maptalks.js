@@ -1,0 +1,220 @@
+<!doctype html>
+<html>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Maptalks 地形加载示例</title>
+  <style type="text/css">
+    html,
+    body {
+      margin: 0px;
+      height: 100%;
+      width: 100%;
+    }
+    .container {
+      width: 100%;
+      height: 100%;
+    }
+    .loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 10px 20px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      border-radius: 4px;
+      z-index: 1000;
+    }
+    .layer-list {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px;
+      border-radius: 4px;
+      z-index: 1000;
+      font-size: 12px;
+    }
+    .flv-player,
+    .flv-player1 {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 320px;
+      height: 180px;
+      background: #000;
+      border-radius: 4px;
+      z-index: 1000;
+      overflow: hidden;
+    }
+
+    .flv-player video {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+  <link rel="stylesheet" href="/packages/maptalks-gpu/dist/maptalks-gpu.css" />
+  <script
+    type="text/javascript"
+    src="/packages/maptalks-gpu/dist/maptalks-gpu.js"
+  ></script>
+  <!-- <script
+    type="text/javascript"
+    src="/maptalks-work/packages/gl/dist/maptalksgl.js"
+  ></script> -->
+  <!-- <script
+    type="text/javascript"
+    src="/maptalks-work/packages/layer-3dtiles/dist/maptalks.3dtiles.js"
+  ></script> -->
+  <script
+    type="text/javascript"
+    src="/packages/transcoders.draco/dist/transcoders.draco.js"
+  ></script>
+
+  <body>
+    <div id="map" class="container"></div>
+    <div id="layerList" class="layer-list" style="display: none">
+      <h4>已加载图层:</h4>
+      <ul id="layers"></ul>
+    </div>
+
+    <script>
+      let map = null;
+      // 图层集合
+      const layers = [];
+      let groupLayer = null;
+
+      /**
+       * 加载所有图层
+       */
+      async function loadLayers() {
+        try {
+
+          const skinLayers = [
+              new maptalks.TileLayer('base', {
+                  maxAvailableZoom : 20,
+                  'urlTemplate' : 'http://webst{s}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}',
+                  'subdomains'  : ['01','02','03','04'],
+                  attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
+                })
+          ];
+
+          // 创建GroupGLLayer，包含地形和所有图层
+          const sceneConfig = {
+            environment: {
+              enable: true,
+              mode: 1,
+              level: 0,
+              brightness: 0.489,
+            },
+            shadow: {
+              type: "esm",
+              enable: true,
+              quality: "high",
+              opacity: 0.5,
+              color: [0, 0, 0],
+              blurOffset: 1,
+            },
+            postProcess: {
+              enable: true,
+              antialias: { enable: true },
+              bloom: {
+                enable: true,
+                threshold: 0,
+                factor: 1,
+                radius: 0.02,
+              },
+            },
+            ground: {
+              enable: true,
+              renderPlugin: {
+                type: "fill",
+              },
+              symbol: {
+                polygonFill: [
+                  0.803921568627451, 0.803921568627451, 0.803921568627451, 1,
+                ],
+                polygonOpacity: 1,
+              },
+            },
+          };
+
+          const dataConfig = {
+            type: '3d-extrusion',
+            heightProperty: 'height',
+            altitudeScale: 1,
+            defaultAltitude: 0,
+            top: true,
+            side: true,
+            perPositionHeight: true
+            // sideVerticalUVMode: 1
+            // textureYOrigin: 'bottom'
+        };
+
+        const material = {
+            'baseColorFactor': [1, 1, 1, 1],
+            'emissiveFactor': [1, 1, 1],
+            'roughnessFactor': 0,
+            'metalnessFactor': 0,
+            'outputSRGB': 0,
+            'uvScale': [0.001, 0.0013]
+        };
+
+        const extrudeLayer = new maptalks.ExtrudePolygonLayer('vector', { dataConfig, material, geometryEvents: false })
+        
+
+
+          groupLayer = new maptalks.GroupGLLayer("group", skinLayers, {
+            sceneConfig,
+          });
+
+          groupLayer.addTo(map);
+          extrudeLayer.addTo(groupLayer)
+          const geojson = {"type":"FeatureCollection","features":[{"type":"Feature","id":"db_zhejiang_daolu.fid-41bb20da_19ea6517e1b_-e9e","geometry":{"type":"Polygon","coordinates":[[[120.22209014022826,29.838260769735417,97.80321801898569],[120.22221888626099,29.838121223356946,103.83025522300571],[120.22238518321991,29.838042146989253,108.9014342281542],[120.22265340412139,29.837772356557835,116.66005604318441],[120.22241736972809,29.837386275879883,112.18834443915623],[120.22200967395783,29.836981587302397,100.11697499369569],[120.22145713890076,29.836544335732356,80.30105948912781],[120.22090996826171,29.83614894702658,63.255581944408476],[120.22029842460631,29.83591636470391,55.64770298206915],[120.21947766864776,29.83579542168213,45.277163565640905],[120.21922017658234,29.83574890509628,54.95656573512564],[120.21880711639403,29.835683781839734,53.16974624260339],[120.218259945755,29.835702388488805,41.76786787879067],[120.21681155288695,29.83585124155652,52.80525445863973],[120.21641458595275,29.836525729240122,60.337024306007756],[120.21643067920685,29.837172302813297,61.74014892366957],[120.21734799468994,29.83759559691458,47.8389834609656],[120.21822775924682,29.83773049246007,56.27615856679567],[120.21879638755799,29.83780956907445,57.85513562694076],[120.21979953372954,29.838056101646938,68.2202662622758],[120.22073830688475,29.838260769735417,80.60105885826732],[120.22140349472045,29.838330542851565,85.83848284145583],[120.22209014022826,29.838260769735417,97.80321801898569]]]},"geometry_name":"geom","properties":{"_id":"49889","id":"49889","type":"道路","roadName":"诸永高速绍兴段","roadCode":"S26","roadType":"主线","direction":"上行","sStation":"K37+000.131","eStation":"K37+727.752","laneAmount":null,"roadWidth":null,"techGrade":null,"rspDptName":"杭州南管理中心","lane":"第一车道","highwayId":"1505830070305013774","gjid":"1505830070305013774_1_1_DL_37000.131_37727.752_1_00","referencId":null,"fourLane":"主线","ss":"37000.131","es":"37727.752","修改":null,"高程":"54.5726585388","boundary_zeiet":"[[532347.8953,3269157.328900002],[532404.9808999998,3268318.231400002]]","deleted_zeiet":0,"id_zeiet_geom":"e07f6c08b8be4efe9914d89981d37f4a","create_zeiet":null,"altitude":null,"update_zeiet":null,"create_time":"2026-06-05T08:30:38.332Z","update_time":"2026-06-05T08:30:38.332Z"}}],"totalFeatures":63171,"numberMatched":63171,"numberReturned":1,"timeStamp":"2026-06-10T01:18:58.847Z","crs":{"type":"name","properties":{"name":"urn:ogc:def:crs:EPSG::4490"}}}
+        const polygons = maptalks.GeoJSON.toGeometry(geojson);
+        polygons.forEach(polygon => {
+            polygon.setSymbol({
+                topPolygonFill: '#fff',
+                bottomPolygonFill: '#000',
+            });
+            polygon.setProperties({
+                height: 100
+            })
+        });
+        console.log(polygons)
+        extrudeLayer.addGeometry(polygons);
+
+          
+        } catch (error) {
+        } finally {
+        }
+      }
+
+     
+      const initMap = () => {
+
+        // 初始化地图
+        map = new maptalks.Map("map", {
+          // center: [120.0419, 30.58051],
+          center: [120.22209014022826,29.838260769735417],
+          // center: [119.72798, 30.93029],
+          zoom: 18.5,
+          renderer: "gl",
+          pitch: 0,
+          bearing: 175.29,
+          lights: {
+            directional: {
+              direction: [1, 0, -1],
+              color: [1, 1, 1],
+            },
+          },
+        });
+        loadLayers();
+      };
+      const remove = () => {
+        map.remove();
+      };
+      initMap()
+    </script>
+  </body>
+</html>
