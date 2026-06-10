@@ -152,6 +152,7 @@ const DEFAULT_DATACONFIG = {
     altitudeProperty: 'height',
     minHeightProperty: 'min_height',
     defaultAltitude: 20,
+    perPositionHeight: false
 };
 
 const topFilter = (mesh) => {

@@ -10,7 +10,7 @@ const { PackUtil, ArrayPool } = getVectorPacker();
 export function buildExtrudeFaces(
     features, EXTENT,
     {
-        altitudeScale, altitudeProperty, defaultAltitude, heightProperty, minHeightProperty, defaultHeight
+        altitudeScale, altitudeProperty, defaultAltitude, heightProperty, minHeightProperty, defaultHeight, perPositionHeight
     },
     {
         center,
@@ -171,13 +171,37 @@ export function buildExtrudeFaces(
         let ringOmbb = isMultiOmbb ? ombb[0] : ombb;
 
         const { altitude, height } = PackUtil.getFeaAltitudeAndHeight(feature, altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty);
-        if (height < 0) {
-            hasNegativeHeight = true;
-            minAltitude = Math.min(altitude, minAltitude);
-            maxAltitude = Math.max(altitude - height, maxAltitude);
+        // 当 perPositionHeight 为 true 时，需要遍历所有顶点计算 maxAltitude 和 minAltitude
+        if (perPositionHeight) {
+            let maxZ = -Infinity;
+            let minZ = Infinity;
+            for (let i = 0; i < geometry.length; i++) {
+                const ring = geometry[i];
+                for (let j = 0; j < ring.length; j++) {
+                    const point = ring[j];
+                    const z = Array.isArray(point) ? (point[2] || 0) : (point.z || 0);
+                    const zInCm = z * 100 * (altitudeScale || 1);
+                    maxZ = Math.max(maxZ, zInCm);
+                    minZ = Math.min(minZ, zInCm);
+                }
+            }
+            if (minZ < 0) {
+                hasNegativeHeight = true;
+                minAltitude = Math.min(minZ, minAltitude);
+                maxAltitude = Math.max(maxZ - height, maxAltitude);
+            } else {
+                maxAltitude = Math.max(maxZ, maxAltitude);
+                minAltitude = Math.min(minZ - height, minAltitude);
+            }
         } else {
-            maxAltitude = Math.max(altitude, maxAltitude);
-            minAltitude = Math.min(altitude - height, minAltitude);
+            if (height < 0) {
+                hasNegativeHeight = true;
+                minAltitude = Math.min(altitude, minAltitude);
+                maxAltitude = Math.max(altitude - height, maxAltitude);
+            } else {
+                maxAltitude = Math.max(altitude, maxAltitude);
+                minAltitude = Math.min(altitude - height, minAltitude);
+            }
         }
 
         const verticeCount = vertices.getLength();
@@ -229,7 +253,21 @@ export function buildExtrudeFaces(
                 holes.currentIndex = index;
             }
             //a seg or a ring in line or polygon
-            fillPosArray(geoVertices, geoVertices.getLength(), ring, scale, altitude, false, positionType);
+            let ringAltitude = altitude;
+            if (perPositionHeight) {
+                // 从 ring 中提取每个顶点的 z 值作为高度
+                ringAltitude = [];
+                for (let j = 0; j < ring.length; j++) {
+                    const point = ring[j];
+                    // 支持 [x, y, z] 和 {x, y, z} 两种格式
+                    const z = Array.isArray(point) ? (point[2] || 0) : (point.z || 0);
+                    // z 值需要乘以 100 转换为厘米单位，并应用 altitudeScale 这里高度值是给顶面用的，所以需要再加上height
+                    ringAltitude.push(z * 100 * (altitudeScale || 1)+ height);
+                }
+                fillPosArray(geoVertices, geoVertices.getLength(), ring, scale, ringAltitude, false, positionType);
+            }else{
+                fillPosArray(geoVertices, geoVertices.getLength(), ring, scale, altitude, false, positionType);
+            }
 
             if (i === l - 1) {
                 offset = fillData(start, offset, holes, height * scale, ringOmbb, needReverseTriangle); //need to multiply with scale as altitude is
