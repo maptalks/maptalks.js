@@ -321,7 +321,6 @@ class TerrainPainter {
             viewMatrix: map.viewMatrix,
             projMatrix: map.projMatrix,
             projViewMatrix,
-            heightScale: 1,
             layerOpacity,
             colorsTexture: this.colorsTexture,
             colorsMin: this.colorsMin,

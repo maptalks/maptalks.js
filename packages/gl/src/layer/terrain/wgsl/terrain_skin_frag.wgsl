@@ -1,5 +1,6 @@
 struct TerrrainSkinUniforms {
     tileSize: f32,
+    skinScale: f32,
     skinDim: vec3f,
     opacity: f32,
     flipY: f32
@@ -12,7 +13,7 @@ struct TerrrainSkinUniforms {
 @fragment
 fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
     // 除以2是因为瓦片实际的fbo是tileSize的2倍大
-    var fragCoord = vertexOutput.position.xy / 2.0;
+    var fragCoord = vertexOutput.position.xy / uniforms.skinScale;
     var resolution = vec2f(uniforms.tileSize);
     var uv = (fragCoord - uniforms.skinDim.xy) / (resolution * uniforms.skinDim.z);
     if (uniforms.flipY > 0.5) {

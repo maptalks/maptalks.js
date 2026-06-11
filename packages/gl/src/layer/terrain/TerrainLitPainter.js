@@ -156,7 +156,6 @@ class TerrainLitPainter extends TerrainPainter {
         const uniforms = getPBRUniforms(map, iblTexes, dfgLUT);
         const renderer = this.layer.getRenderer();
         const maskUniforms = renderer.getMaskUniforms();
-        // const terrainHeightScale = this._getHeightScale();
         let layerOpacity = this.layer.options['opacity'];
         if (isNil(layerOpacity)) {
             layerOpacity = 1;
@@ -168,7 +167,6 @@ class TerrainLitPainter extends TerrainPainter {
             outSize: [canvas.width, canvas.height],
             polygonFill: [1, 1, 1, 1],
             terrainResolution: [canvas.width, canvas.height],
-            // terrainHeightScale,
             terrainUnpackFactors: [6553.6, 25.6, 0.1, 10000.0],
             layerOpacity
         });

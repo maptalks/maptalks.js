@@ -324,7 +324,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
 
         this._skinImageCache.forEach((v, id) => {
             if (!currentImages.has(id)) {
-                console.log('deleted:', id);
+                // console.log('deleted:', id);
                 this._deleteSkinImage(this._skinImageCache.get(id));
                 this._skinImageCache.delete(id);
             }
@@ -676,7 +676,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                     const skinTileOpacity = layer.getOpacity();
                     mesh.setUniform('opacity', isNil(skinTileOpacity) ? 1 : skinTileOpacity);
                     mesh.setUniform('skinDim', skinDim);
-                    mesh.setUniform('tileScale', terrainTileImage.skin.width / tileSize);
+                    mesh.setUniform('skinScale', terrainTileImage.skin.width / tileSize);
                     mesh.setUniform('tileSize', tileSize);
                     mesh.setUniform('x', terrainTileInfo.x);
                     mesh.setUniform('y', terrainTileInfo.y);

@@ -8,8 +8,7 @@
 #endif
 
 struct MatrixUniforms {
-    projMatrix: mat4x4f,
-    heightScale: f32,
+    projMatrix: mat4x4f
 };
 
 
@@ -59,7 +58,7 @@ fn main(
         altitude = min(vertexInput.aPosition.z, maskHeight);
     }
 
-    var position: vec4f = vec4f(vertexInput.aPosition.xy, (altitude + uniforms.minAltitude) * matrixUniforms.heightScale, 1.0);
+    var position: vec4f = vec4f(vertexInput.aPosition.xy, (altitude + uniforms.minAltitude), 1.0);
     #if HAS_COLORS
         vertexOutput.vAltitude = position.z;
     #endif

@@ -8,7 +8,6 @@ uniform mat4 projMatrix;
 uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
 uniform mat4 positionMatrix;
-uniform float heightScale;
 varying vec2 vUv;
 uniform sampler2D flatMask;
 #include <common_pack_float>
@@ -28,7 +27,7 @@ void main() {
         float maskHeight = decodeFloat32(encodedHeight);
         altitude = min(aPosition.z, maskHeight);
     }
-    vec4 position = vec4(aPosition.xy, (altitude + minAltitude) * heightScale, 1.0);
+    vec4 position = vec4(aPosition.xy, (altitude + minAltitude), 1.0);
     #ifdef HAS_COLORS
         vAltitude = position.z;
     #endif
