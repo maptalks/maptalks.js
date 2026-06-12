@@ -101,6 +101,7 @@ class TerrainPainter {
 
         mesh.setUniform('heightTexture', heightTexture);
         this.prepareMesh(mesh, tileInfo, terrainImage);
+        mesh.setDefines({ IS_TERRAIN: 1 })
         return mesh;
     }
 

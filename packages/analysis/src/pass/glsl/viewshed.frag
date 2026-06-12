@@ -25,17 +25,19 @@ void main() {
     #ifdef HAS_HELPERLINE
         gl_FragColor = vec4(lineColor, 0.009);
     #else
-        vec3 shadowCoord = (viewshed_positionFromViewpoint.xyz / viewshed_positionFromViewpoint.w)/2.0 + 0.5;
-        vec4 rgbaDepth = texture2D(depthMap, shadowCoord.xy);
+        vec3 viewCoord = (viewshed_positionFromViewpoint.xyz / viewshed_positionFromViewpoint.w)/2.0 + 0.5;
+        float viewZ = linear(viewCoord.z);
+
+        vec4 rgbaDepth = texture2D(depthMap, viewCoord.xy);
         float depth = unpackRGBAToDepth(rgbaDepth);
-        float linearZ = linear(shadowCoord.z);
         float linearDepth = linear(depth);
 
-        if (shadowCoord.x >= 0.0 && shadowCoord.x <= 1.0 &&
-            shadowCoord.y >= 0.0 && shadowCoord.y <= 1.0 &&
-            linearZ >= near && linearZ <= far - near) {
-
-            if (linearZ / far <= linearDepth / (far - near)) {
+        if (viewCoord.x >= 0.0 && viewCoord.x <= 1.0 &&
+            viewCoord.y >= 0.0 && viewCoord.y <= 1.0 &&
+            viewZ >= near && viewZ <= far - near) {
+            // 给予一定的误差范围，避免由于精度问题导致的不正确结果
+            float delta = (far - near) * 0.05;
+            if (viewZ <= linearDepth + delta) {
                 gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);//可视区
             } else {
                 gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);//不可视区
