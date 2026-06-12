@@ -665,7 +665,8 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
 
                     // 如果不是FBO，WebGPU 上的 texture 本身需要上下翻转，位置也需要上下调整
                     const isFBO = checkIfFBO(texture);
-                    const skinDim = computeSkinDimension(terrainTileInfo, tile, tileSize, isFBO, isWebGPU);
+                    const skinTileSize = skinLayers[i].getTileSize().width;
+                    const skinDim = computeSkinDimension(terrainTileInfo, tile, skinTileSize, tileSize, isFBO, isWebGPU);
                     if (!isFBO) {
                         mesh.setUniform('flipY', 1);
                     } else {
@@ -1731,7 +1732,7 @@ export default TerrainLayerRenderer;
 //     }
 // }
 
-function computeSkinDimension(terrainTileInfo, tile, terrainTileSize, isFBO, isWebGPU) {
+function computeSkinDimension(terrainTileInfo, tile, skinTileSize, terrainTileSize, isFBO, isWebGPU) {
     const { res, extent2d: terrainExtent, offset: terrainOffset } = terrainTileInfo;
     const { info } = tile;
     const scale = info.res / res;
@@ -1746,7 +1747,7 @@ function computeSkinDimension(terrainTileInfo, tile, terrainTileSize, isFBO, isW
     if (!isFBO && isWebGPU) {
         bottom = -(terrainExtent.ymax - ymax + dy);
     }
-    return [left, -bottom, scale * info.tileSize / terrainTileSize];
+    return [left, -bottom, scale * skinTileSize / terrainTileSize];
 }
 
 function isValidSkinImage(image) {
