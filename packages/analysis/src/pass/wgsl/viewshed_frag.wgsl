@@ -56,8 +56,8 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
 
         if (shadowCoord.x >= 0.0 && shadowCoord.x <= 1.0 &&
             shadowCoord.y >= 0.0 && shadowCoord.y <= 1.0 &&
-            linearZ >= near && linearZ <= far - near) {
-            let delta = (far - near) * 0.05;
+            linearZ >= near && linearZ <= far) {
+            let delta = (far - near) * 0.08;
             if (linearZ <= (linearDepth + delta)) {
                 return vec4f(0.0, 1.0, 0.0, 1.0); // 可视区
             } else {
