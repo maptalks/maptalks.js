@@ -226,6 +226,12 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         });
     }
 
+    getDepthTexture() {
+        const renderTarget = this._drawContext && this._drawContext.renderTarget;
+        const fbo = renderTarget && renderTarget.fbo;
+        return fbo && getDepthTexture(fbo);
+    }
+
     _getDrawContext(args) {
         let timestamp = args[0];
         if (!isNumber(timestamp)) {
@@ -1434,7 +1440,7 @@ function getFramebuffer(fbo) {
 
 function getDepthTexture(fbo) {
     //TODO 也可能是renderbuffer
-    return fbo.depthStencil._texture.texture;
+    return fbo.depthStencil && fbo.depthStencil._texture && fbo.depthStencil._texture.texture || fbo.depthTexture;
 }
 
 export default GroupGLLayerRenderer;

@@ -25,7 +25,8 @@ void main() {
     #ifdef HAS_HELPERLINE
         gl_FragColor = vec4(lineColor, 0.009);
     #else
-        vec3 viewCoord = (viewshed_positionFromViewpoint.xyz / viewshed_positionFromViewpoint.w)/2.0 + 0.5;
+        vec3 viewCoord = viewshed_positionFromViewpoint.xyz / viewshed_positionFromViewpoint.w;
+        viewCoord = viewCoord / 2.0 + 0.5;
         float viewZ = linear(viewCoord.z);
 
         vec4 rgbaDepth = texture2D(depthMap, viewCoord.xy);
