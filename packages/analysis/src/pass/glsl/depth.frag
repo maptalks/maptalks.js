@@ -20,7 +20,7 @@ vec4 packDepthToRGBA(const in float v ) {
     return r * PackUpscale;
 }
 void main() {
-    gl_FragDepthEXT = log2(vFragDepth) * logDepthBufFC * 0.5;
+    // gl_FragDepthEXT = log2(vFragDepth) * logDepthBufFC * 0.5;
     float fragCoordZ = 0.5 * vHighPrecisionZW[0] / vHighPrecisionZW[1] + 0.5;
     glFragColor = packDepthToRGBA(fragCoordZ);
     #if __VERSION__ == 100

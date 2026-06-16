@@ -32,8 +32,8 @@ fn linear(value: f32) -> f32 {
     let near = uniforms.near;
     let far = uniforms.far;
 
-    let z = value * 2.0 - 1.0;
-    return (2.0 * near * far) / (far + near - z * (far - near));
+    let z = value;
+    return (near * far) / (far - z * (far - near));
 }
 
 @fragment
@@ -45,17 +45,20 @@ fn main(vertexOutput: VertexOutput) -> @location(0) vec4f {
         let far = uniforms.far;
         let viewpoint = vertexOutput.viewpoint;
 
-        let shadowCoord: vec3f = vec3f((viewpoint.xy / viewpoint.w) / 2.0 + 0.5, viewpoint.z / viewpoint.w);
-        let rgbaDepth: vec4f = textureSample(depthMap, depthMapSampler, shadowCoord.xy);
+        let viewCoord: vec3f = viewpoint.xyz / viewpoint.w;
+        // WebGPU的NDC深度范围是[0, 1]，不需要像WebGL那样/2.0 + 0.5转换
+        let shadowCoord: vec3f = vec3f(viewCoord.xy / 2.0 + 0.5, viewCoord.z);
+        let uv = vec2f(shadowCoord.x, 1 - shadowCoord.y);
+        let rgbaDepth: vec4f = textureSample(depthMap, depthMapSampler, uv);
         let depth: f32 = unpackRGBAToDepth(rgbaDepth);
         let linearDepth: f32 = linear(depth);
         let linearZ: f32 = linear(shadowCoord.z);
 
         if (shadowCoord.x >= 0.0 && shadowCoord.x <= 1.0 &&
             shadowCoord.y >= 0.0 && shadowCoord.y <= 1.0 &&
-            linearZ >= near && linearZ <= far - near) {
-
-            if (linearZ <= linearDepth) {
+            linearZ >= near && linearZ <= far) {
+            let delta = (far - near) * 0.08;
+            if (linearZ <= (linearDepth + delta)) {
                 return vec4f(0.0, 1.0, 0.0, 1.0); // 可视区
             } else {
                 return vec4f(1.0, 0.0, 0.0, 1.0); // 不可视区
