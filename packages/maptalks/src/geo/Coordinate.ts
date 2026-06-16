@@ -2,14 +2,35 @@ import { isNumber, isNil } from '../core/util/common';
 import { forEachCoord } from '../core/util/util';
 import Position from './Position';
 
+/**
+ * 坐标的 JSON 对象表示形式
+ *
+ * @english
+ *
+ * JSON object representation of a coordinate
+ */
 export type CoordinateJson = {
     x: number;
     y: number;
     z?: number;
 }
 
+/**
+ * 坐标的数组表示形式，格式为 [x, y] 或 [x, y, z]
+ *
+ * @english
+ *
+ * Array representation of a coordinate, in [x, y] or [x, y, z] format
+ */
 export type CoordinateArray = [number, number] | [number, number, number];
 
+/**
+ * 可接受的坐标类型，包括 Coordinate 对象、JSON 对象或数组
+ *
+ * @english
+ *
+ * Acceptable coordinate types, including Coordinate object, JSON object, or array
+ */
 export type CoordinateLike = Coordinate | CoordinateJson | CoordinateArray;
 
 /**
@@ -121,51 +142,51 @@ class Coordinate extends Position {
     }
 
     /**
-     * 返回该坐标的经纬度绝对值的坐标对象（不会改变原始数据）
+     * 返回该坐标 x、y、z 绝对值的坐标对象（不会改变原始数据，z 存在时才会处理 z）
      *
      * @english
      *
-     * Return abs value of the coordinate
+     * Return abs value of the coordinate (z is processed only if present)
      * @returns abs Coordinate
      */
     abs() {
-        return new Coordinate(Math.abs(this.x), Math.abs(this.y));
+        return new Coordinate(Math.abs(this.x), Math.abs(this.y), isNumber(this.z) ? Math.abs(this.z) : undefined);
     }
 
     /**
-     * 类似于数学中的四舍五入，对坐标的 x 和 y 进行舍入，返回一个新 Coordinate
+     * 类似于数学中的四舍五入，对坐标的 x、y、z 进行舍入，返回一个新 Coordinate（z 存在时才会处理 z）
      *
      * @english
      *
-     * Like math.round, rounding the coordinate's xy.
+     * Like math.round, rounding the coordinate's xyz. (z is processed only if present)
      * @returns rounded coordinate
      */
     round() {
-        return new Coordinate(Math.round(this.x), Math.round(this.y));
+        return new Coordinate(Math.round(this.x), Math.round(this.y), isNumber(this.z) ? Math.round(this.z) : undefined);
     }
 
     /**
-     * 对坐标的 x 和 y 向上取整，返回一个新 Coordinate
+     * 对坐标的 x、y、z 向上取整，返回一个新 Coordinate（z 存在时才会处理 z）
      *
      * @english
      *
-     * Like math.ceil, ceil the coordinate's xy.
+     * Like math.ceil, ceil the coordinate's xyz. (z is processed only if present)
      * @returns ceiled coordinate
      */
     ceil() {
-        return new Coordinate(Math.ceil(this.x), Math.ceil(this.y));
+        return new Coordinate(Math.ceil(this.x), Math.ceil(this.y), isNumber(this.z) ? Math.ceil(this.z) : undefined);
     }
 
     /**
-     * 对坐标的 x 和 y 向下取整，返回一个新 Coordinate
+     * 对坐标的 x、y、z 向下取整，返回一个新 Coordinate（z 存在时才会处理 z）
      *
      * @english
      *
-     * Like math.floor, floor the coordinate's xy.
+     * Like math.floor, floor the coordinate's xyz. (z is processed only if present)
      * @returns floored coordinate
      */
     floor() {
-        return new Coordinate(Math.floor(this.x), Math.floor(this.y));
+        return new Coordinate(Math.floor(this.x), Math.floor(this.y), isNumber(this.z) ? Math.floor(this.z) : undefined);
     }
 
     /**
@@ -309,6 +330,10 @@ class Coordinate extends Position {
     }
 
     /**
+     * 将当前坐标与给定数字相乘，返回一个新 Coordinate。
+     *
+     * @english
+     *
      * Returns the result of multiplication of the current coordinate by the given number.
      * @param ratio - ratio to multi
      * @returns result
