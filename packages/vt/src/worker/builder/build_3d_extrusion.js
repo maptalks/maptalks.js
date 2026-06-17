@@ -33,6 +33,7 @@ export default function (features, dataConfig, extent, uvOrigin, textureSize, re
         top, side,
         textureYOrigin,
         topThickness,
+        perPositionHeight,
     } = dataConfig;
     //256是2的8次方，在glZoom + 8级别时，texture为1:1比例
     // const textureSize = PACK_TEX_SIZE;
@@ -44,7 +45,8 @@ export default function (features, dataConfig, extent, uvOrigin, textureSize, re
             defaultAltitude: defaultAltitude || 0,
             heightProperty,
             minHeightProperty,
-            defaultHeight: defaultHeight || 0
+            defaultHeight: defaultHeight || 0,
+            perPositionHeight
         },
         {
             center,
