@@ -164,17 +164,17 @@ export default class ViewshedPass extends AnalysisPass {
 
     //根据视点位置，方向，垂直角，水平角构建矩阵
     _createProjViewMatrix(eyePos, lookPoint, verticalAngle, horizontalAngle) {
-        const aspect =  horizontalAngle / verticalAngle;
+        const aspect =  verticalAngle / horizontalAngle;
         const distance = Math.sqrt(Math.pow(eyePos[0] - lookPoint[0], 2) + Math.pow(eyePos[1] - lookPoint[1], 2) + Math.pow(eyePos[2] - lookPoint[2], 2));
         near = distance / 100;
         let projMatrix;
         const isWebGPU = !!this.renderer.device.wgpu;
         if (isWebGPU) {
-            projMatrix = mat4.perspectiveZO([], verticalAngle * Math.PI / 180, aspect, near, distance);
+            projMatrix = mat4.perspectiveZO([], horizontalAngle * Math.PI / 180, aspect, near, distance);
         } else {
-            projMatrix = mat4.perspective([], verticalAngle * Math.PI / 180, aspect, near, distance);
+            projMatrix = mat4.perspective([], horizontalAngle * Math.PI / 180, aspect, near, distance);
         }
-        const viewMatrix = mat4.lookAt([], eyePos, lookPoint, [0, 0, 1]);
+        const viewMatrix = mat4.lookAt([], eyePos, lookPoint, [0, 1, 0]);
         const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
         return { projViewMatrixFromViewpoint: projViewMatrix, far: distance };
     }
