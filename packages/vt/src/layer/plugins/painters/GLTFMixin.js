@@ -304,7 +304,7 @@ const GLTFMixin = Base =>
             gltfScale = vec3.scale([], gltfScale, meterScale);
             const options = {
                 gapLength: this.dataConfig.gapLength || 0,
-                direction: this.dataConfig.direction || 0,
+                direction: this.dataConfig.direction || 'x',
                 scaleVertex: true
             };
             const gltfPack = this._gltfPack[0][0];

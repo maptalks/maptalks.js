@@ -495,7 +495,7 @@ export default class GLTFPack {
         boxWidth /= projectionScale;
         const distance = Math.sqrt(xyDist * xyDist + zDist * zDist);
         const times = Math.floor(distance / boxWidth);
-        let scaleIndex = (options.direction || 0);
+        let scaleIndex = getDirectionIndex(options.direction || 0);
         // scale的scaleIndex已经是Y_UP后的模型，所以和direction不同
         if (scaleIndex === 1) {
             scaleIndex = 2;
@@ -558,7 +558,7 @@ export default class GLTFPack {
     _calBoxWidth(scale, rotationScaleMat, options) {
         const mat = mat4.multiply(MAT4, rotationScaleMat, Y_TO_Z);
         const gltfmodelBBox = this.getGLTFBBox(mat);
-        const direction = options.direction || 0;
+        const direction = getDirectionIndex(options.direction || 0);
         const boxExtent = vec3.sub(TEMP_VEC, gltfmodelBBox.max, gltfmodelBBox.min);
         vec3.multiply(boxExtent, boxExtent, scale);
         const gapLength = options['gapLength'];
@@ -686,4 +686,16 @@ function interpolate(from, to, t) {
 
 function lerp(a, b, t) {
     return a + t * (b - a);
+}
+
+function getDirectionIndex(direction) {
+    if (direction === 'x' || direction === 'X') {
+        return 0;
+    } else if (direction === 'y' || direction === 'Y') {
+        return 1;
+    } else if (direction === 'z' || direction === 'Z') {
+        return 2;
+    } else {
+        return direction;
+    }
 }
