@@ -505,7 +505,7 @@ export default class GLTFPack {
         //取余缩放
         if (times >= 1) {
             for (let i = 1; i <= times; i++) {
-                const t = boxWidth * (i - 0.5) / distance;
+                const t = boxWidth * (i - 1) / distance;
                 const item = {
                     coordinates: interpolate(from, to, t),
                     t,
@@ -518,8 +518,9 @@ export default class GLTFPack {
             }
             //尾巴
             if (options['scaleVertex']) {
-                const t = (boxWidth * times + (distance - boxWidth * times) / 2) / distance;
-                const scale = (distance - boxWidth * times) / boxWidth;
+                const t = (boxWidth * times) / distance;
+                //TODO 这里scale设置成1，模型的排列才不会产生缝隙
+                const scale = 1;// (distance - boxWidth * times) / boxWidth;
                 const itemScale = [1, 1, 1];
                 itemScale[scaleIndex] = scale;
                 const item = {
@@ -537,8 +538,8 @@ export default class GLTFPack {
             const itemScale = [1, 1, 1];
             itemScale[scaleIndex] = scale;
             const item = {
-                coordinates: interpolate(from, to, 0.5),
-                t: 0.5,
+                coordinates: from,
+                t: 0,
                 scale: itemScale,
                 rotation: [0, 0, rotationZ],
                 rotationZ,
