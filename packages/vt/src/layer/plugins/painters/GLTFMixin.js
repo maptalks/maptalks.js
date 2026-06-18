@@ -98,13 +98,13 @@ const GLTFMixin = Base =>
 
         createMesh(geo, transform, { tileTranslationMatrix, tileExtent, tilePoint }, { timestamp }) {
             const map = this.getMap();
-            const { geometry } = geo;
+            let { geometry } = geo;
             const { positionSize, features } = geometry;
             if (!geometry.data.aPosition || geometry.data.aPosition.length === 0) {
                 return null;
             }
             if (this.dataConfig.type === 'native-line') {
-                this._arrangeAlongLine(0, geometry, tilePoint, features);
+                geometry = this._arrangeAlongLine(0, geometry, tilePoint, features);
             }
             const { aPosition } = geometry.data;
             let count = aPosition.length / positionSize;
@@ -296,6 +296,7 @@ const GLTFMixin = Base =>
 
 
         _arrangeAlongLine(symbolIndex, geometry, features) {
+            const result = extend({}, geometry);
             const { tileExtent, z: tileZoom } = geometry.properties;
             const { data, positionSize } = geometry;
 
@@ -368,7 +369,7 @@ const GLTFMixin = Base =>
                     newScaleXYZ.push(...item.scale);
                 }
             }
-            geometry.data = {
+            result.data = {
                 aPosition: new aPosition.constructor(newPosition),
                 aPickingId: new aPickingId.constructor(newPickingId),
                 aZRotation: newRotationZ,
@@ -376,8 +377,9 @@ const GLTFMixin = Base =>
                 aScaleXYZ: newScaleXYZ
             };
             if (aAltitude) {
-                geometry.data.aAltitude = new aAltitude.constructor(newAltitude);
+                result.data.aAltitude = new aAltitude.constructor(newAltitude);
             }
+            return result;
         }
 
         _calGLTFScale(symbolIndex) {
