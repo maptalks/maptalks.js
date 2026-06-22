@@ -494,7 +494,7 @@ export default class GLTFPack {
         let boxWidth = this._calBoxWidth(gltfScale, rotationScaleMat, options);
         boxWidth /= projectionScale;
         const distance = Math.sqrt(xyDist * xyDist + zDist * zDist);
-        const times = Math.floor(distance / boxWidth);
+        const times = Math.ceil(distance / boxWidth);
         let scaleIndex = getDirectionIndex(options.direction || 0);
         // scale的scaleIndex已经是Y_UP后的模型，所以和direction不同
         if (scaleIndex === 1) {
@@ -503,43 +503,17 @@ export default class GLTFPack {
             scaleIndex = 1;
         }
         //取余缩放
-        if (times >= 1) {
-            for (let i = 1; i <= times; i++) {
-                const t = boxWidth * (i - 1) / distance;
-                const item = {
-                    coordinates: interpolate(from, to, t),
-                    t,
-                    scale: [1, 1, 1],
-                    rotation: [0, 0, rotationZ],
-                    rotationZ,
-                    rotationXY
-                }
-                items.push(item);
+        for (let i = 1; i <= times; i++) {
+            const t = boxWidth * (i - 1) / distance;
+            let scale = 1;
+            if (options['scaleVertex'] && i === times) {
+                scale = (distance - boxWidth * (times - 1)) / boxWidth;
             }
-            //尾巴
-            if (options['scaleVertex']) {
-                const t = (boxWidth * times) / distance;
-                //TODO 这里scale设置成1，模型的排列才不会产生缝隙
-                const scale = 1;// (distance - boxWidth * times) / boxWidth;
-                const itemScale = [1, 1, 1];
-                itemScale[scaleIndex] = scale;
-                const item = {
-                    coordinates: interpolate(from, to, t),
-                    t,
-                    scale: itemScale,
-                    rotation: [0, 0, rotationZ],
-                    rotationZ,
-                    rotationXY
-                }
-                items.push(item);
-            }
-        } else if (options['scaleVertex']) {
-            const scale = distance / boxWidth;
             const itemScale = [1, 1, 1];
             itemScale[scaleIndex] = scale;
             const item = {
-                coordinates: from,
-                t: 0,
+                coordinates: interpolate(from, to, t),
+                t,
                 scale: itemScale,
                 rotation: [0, 0, rotationZ],
                 rotationZ,
