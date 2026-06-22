@@ -494,8 +494,8 @@ export default class GLTFPack {
         let boxWidth = this._calBoxWidth(gltfScale, rotationScaleMat, options);
         boxWidth /= projectionScale;
         const distance = Math.sqrt(xyDist * xyDist + zDist * zDist);
-        const times = Math.floor(distance / boxWidth);
-        let scaleIndex = (options.direction || 0);
+        const times = Math.ceil(distance / boxWidth);
+        let scaleIndex = getDirectionIndex(options.direction || 0);
         // scale的scaleIndex已经是Y_UP后的模型，所以和direction不同
         if (scaleIndex === 1) {
             scaleIndex = 2;
@@ -503,42 +503,17 @@ export default class GLTFPack {
             scaleIndex = 1;
         }
         //取余缩放
-        if (times >= 1) {
-            for (let i = 1; i <= times; i++) {
-                const t = boxWidth * (i - 0.5) / distance;
-                const item = {
-                    coordinates: interpolate(from, to, t),
-                    t,
-                    scale: [1, 1, 1],
-                    rotation: [0, 0, rotationZ],
-                    rotationZ,
-                    rotationXY
-                }
-                items.push(item);
+        for (let i = 1; i <= times; i++) {
+            const t = boxWidth * (i - 1) / distance;
+            let scale = 1;
+            if (options['scaleVertex'] && i === times) {
+                scale = (distance - boxWidth * (times - 1)) / boxWidth;
             }
-            //尾巴
-            if (options['scaleVertex']) {
-                const t = (boxWidth * times + (distance - boxWidth * times) / 2) / distance;
-                const scale = (distance - boxWidth * times) / boxWidth;
-                const itemScale = [1, 1, 1];
-                itemScale[scaleIndex] = scale;
-                const item = {
-                    coordinates: interpolate(from, to, t),
-                    t,
-                    scale: itemScale,
-                    rotation: [0, 0, rotationZ],
-                    rotationZ,
-                    rotationXY
-                }
-                items.push(item);
-            }
-        } else if (options['scaleVertex']) {
-            const scale = distance / boxWidth;
             const itemScale = [1, 1, 1];
             itemScale[scaleIndex] = scale;
             const item = {
-                coordinates: interpolate(from, to, 0.5),
-                t: 0.5,
+                coordinates: interpolate(from, to, t),
+                t,
                 scale: itemScale,
                 rotation: [0, 0, rotationZ],
                 rotationZ,
@@ -558,7 +533,7 @@ export default class GLTFPack {
     _calBoxWidth(scale, rotationScaleMat, options) {
         const mat = mat4.multiply(MAT4, rotationScaleMat, Y_TO_Z);
         const gltfmodelBBox = this.getGLTFBBox(mat);
-        const direction = options.direction || 0;
+        const direction = getDirectionIndex(options.direction || 0);
         const boxExtent = vec3.sub(TEMP_VEC, gltfmodelBBox.max, gltfmodelBBox.min);
         vec3.multiply(boxExtent, boxExtent, scale);
         const gapLength = options['gapLength'];
@@ -686,4 +661,16 @@ function interpolate(from, to, t) {
 
 function lerp(a, b, t) {
     return a + t * (b - a);
+}
+
+function getDirectionIndex(direction) {
+    if (direction === 'x' || direction === 'X') {
+        return 0;
+    } else if (direction === 'y' || direction === 'Y') {
+        return 1;
+    } else if (direction === 'z' || direction === 'Z') {
+        return 2;
+    } else {
+        return direction;
+    }
 }
