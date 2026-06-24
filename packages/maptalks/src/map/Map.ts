@@ -329,6 +329,13 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         delete opts['zoom'];
         const center = new Coordinate(opts['center']);
         delete opts['center'];
+        // ensure zoom is number
+        if (opts['minZoom'] !== null) {
+            opts['minZoom'] = +opts['minZoom'];
+        }
+        if (opts['maxZoom'] !== null) {
+            opts['maxZoom'] = +opts['maxZoom'];
+        }
 
         const baseLayer = opts['baseLayer'];
         delete opts['baseLayer'];
@@ -357,7 +364,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         this._baseLayer = null;
         this._layers = [];
 
-        this._zoomLevel = zoom;
+        this._zoomLevel = +zoom;
         this._center = center;
 
         this.setSpatialReference(opts['spatialReference'] || opts['view']);
@@ -821,7 +828,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Number}
      */
     getZoom() {
-        return this._zoomLevel;
+        return +this._zoomLevel;
     }
 
     /**
@@ -918,13 +925,15 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @returns {Map} this
      */
     setMaxZoom(maxZoom: number) {
-        const viewMaxZoom = this.getMaxNativeZoom();
-        if (maxZoom > viewMaxZoom) {
-            maxZoom = viewMaxZoom;
-        }
-        if (maxZoom !== null && maxZoom < this._zoomLevel) {
-            this.setZoom(maxZoom);
+        if (!isNil(maxZoom)) {
             maxZoom = +maxZoom;
+            const viewMaxZoom = this.getMaxNativeZoom();
+            if (maxZoom > viewMaxZoom) {
+                maxZoom = viewMaxZoom;
+            }
+            if (!isNil(maxZoom) && maxZoom < this._zoomLevel) {
+                this.setZoom(maxZoom);
+            }
         }
         this.options['maxZoom'] = maxZoom;
         return this;
@@ -947,7 +956,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Map} this
      */
     setMinZoom(minZoom: number) {
-        if (minZoom !== null) {
+        if (!isNil(minZoom)) {
             minZoom = +minZoom;
             const viewMinZoom = this._spatialReference.getMinZoom();
             if (minZoom < viewMinZoom) {
