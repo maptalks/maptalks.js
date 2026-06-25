@@ -5,6 +5,39 @@ function isImageBitMap(img) {
     return img && Browser.decodeImageInWorker && img instanceof ImageBitmap;
 }
 
+function isPowerOfTwo(value) {
+    return (value & (value - 1)) === 0 && value !== 0;
+}
+
+function getUVImageNearbySize(v) {
+    v = Math.round(v);
+    let size = 1;
+    while (size < v) {
+        size *= 2;
+    }
+    const d1 = Math.abs(v - size / 2), d2 = Math.abs(v - size);
+    if (d1 < d2) {
+        return size / 2;
+    }
+    return size;
+}
+
+function resizeUVImage(image) {
+    if (image.needResize) {
+        const { width, height } = image;
+        let w = width, h = height;
+        if (!isPowerOfTwo(width)) {
+            w = getUVImageNearbySize(width);
+        }
+        if (!isPowerOfTwo(height)) {
+            h = getUVImageNearbySize(height);
+        }
+        image.width = w;
+        image.height = h;
+    }
+
+}
+
 
 export default class IconRequestor {
     //options.errorUrl : alt image when failing loading the icon
@@ -49,6 +82,7 @@ export default class IconRequestor {
             const ctx = self.ctx;
             let width, height;
             try {
+                resizeUVImage(this);
                 width = this.width;
                 height = this.height;
                 this.size[0] = width;
@@ -89,6 +123,8 @@ export default class IconRequestor {
         let marker;
         for (let i = 0; i < urls.length; i++) {
             const url = urls[i];
+            const needResize = icons[url][2];
+            icons[url] = icons[url].slice(0, 2);
             const size = icons[url];
             this._ensureMaxSize(url, size);
             const icon = this._getCache(url, size);
@@ -160,6 +196,7 @@ export default class IconRequestor {
                     img.size = size;
                     img.url = url;
                     img.crossOrigin = 'Anonymous';
+                    img.needResize = needResize;
                 }
                 if (isImageBitMap(realUrl)) {
                     createImageBitmap(realUrl).then((img) => {
