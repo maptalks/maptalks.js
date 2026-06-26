@@ -52,7 +52,6 @@ const GLTFMixin = Base =>
             }
 
             this._initTRSFuncType();
-            this._initGLTF();
         }
 
         isUniqueStencilRefPerTile() {
@@ -60,6 +59,9 @@ const GLTFMixin = Base =>
         }
 
         isAnimating() {
+            if (!this.isReady()) {
+                return false;
+            }
             const symbols = this.getSymbols();
             for (let i = 0; i < symbols.length; i++) {
                 const symbol = symbols[i];
@@ -95,6 +97,14 @@ const GLTFMixin = Base =>
 
         isReady() {
             return this._ready;
+        }
+
+        createMeshes(...args) {
+            if (!this.isReady()) {
+                this._initGLTF();
+                return null;
+            }
+            return super.createMeshes(...args);
         }
 
         createMesh(geo, transform, { tileTranslationMatrix, tileExtent, tilePoint }, { timestamp }) {
@@ -756,11 +766,6 @@ const GLTFMixin = Base =>
             config.positionAttribute = 'POSITION';
             config.normalAttribute = 'NORMAL';
             return config;
-        }
-
-        init(context) {
-            super.init(context);
-            this._initGLTF();
         }
 
         _initTRSFuncType() {
