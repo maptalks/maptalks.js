@@ -638,6 +638,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
 
         const tileSize = this.layer.getTileSize().width;
         const skinImages = terrainTileImage.skinImages;
+        const skinScale = terrainTileImage.skin.width / tileSize;
         if (skinImages) {
             const isWebGPU = !!this.device.wgpu;
             const skinLayers = this.layer.getSkinLayers();
@@ -677,7 +678,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
                     const skinTileOpacity = layer.getOpacity();
                     mesh.setUniform('opacity', isNil(skinTileOpacity) ? 1 : skinTileOpacity);
                     mesh.setUniform('skinDim', skinDim);
-                    mesh.setUniform('skinScale', terrainTileImage.skin.width / tileSize);
+                    mesh.setUniform('skinScale', skinScale);
                     mesh.setUniform('tileSize', tileSize);
                     mesh.setUniform('x', terrainTileInfo.x);
                     mesh.setUniform('y', terrainTileInfo.y);
@@ -690,6 +691,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         if (enableDebug) {
             const debugMesh = terrainTileImage.skinDebugMesh || new reshader.Mesh(this._skinGeometry);
             debugMesh.setUniform('tileSize', tileSize);
+            debugMesh.setUniform('skinScale', skinScale);
             const debugTexture = terrainTileImage.debugTexture || this._createDebugTexture(terrainTileInfo, tileSize, terrainTileImage.temp);
             terrainTileImage.debugTexture = debugTexture;
             terrainTileImage.skinDebugMesh = debugMesh;
@@ -697,7 +699,6 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             debugMesh.setUniform('opacity', 1);
             debugMesh.setUniform('skinTexture', debugTexture);
             debugMesh.setUniform('skinDim', [0, 0, 1]);
-            debugMesh.setUniform('tileSize', tileSize);
             debugMeshes.push(debugMesh);
         }
         if (meshes.length) {
