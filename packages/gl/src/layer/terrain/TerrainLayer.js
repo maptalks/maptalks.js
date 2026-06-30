@@ -3,6 +3,7 @@ import TerrainLayerRenderer from './TerrainLayerRenderer';
 import { getTileIdsAtLevel, getSkinTileScale, getSkinTileRes, getCascadeTileIds } from './TerrainTileUtil';
 import { isNil, extend } from '../util/util';
 import MaskLayerMixin from '../mask/MaskLayerMixin';
+import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 
 const COORD0 = new maptalks.Coordinate(0, 0);
 const TEMP_POINT = new maptalks.Coordinate(0, 0);
@@ -466,7 +467,15 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
         };
     }
 
-    _getErrorScale() {
+    _getErrorScale(z) {
+        if (isFunctionDefinition(this.options.errorScale) &&
+            (!this._errorScaleFn || this._parsedErrorScale !== this.options.errorScale)) {
+            this._parsedErrorScale = this.options.errorScale;
+            this._errorScaleFn = interpolated(this.options.errorScale);
+        }
+        if (this._errorScaleFn) {
+            return this._errorScaleFn(z) / 6;
+        }
         return this.options.errorScale / 6;
     }
 }
