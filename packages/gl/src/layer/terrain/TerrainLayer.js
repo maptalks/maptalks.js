@@ -304,15 +304,15 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
     }
 
     getSkinLayerById(id) {
-        return this.getSkinLayers().filter(layer => layer.getId() === id)[0];
+        return this.getSkinLayers().filter(layer => layer && layer.getId() === id)[0];
     }
 
     getSkinLayers() {
-        return this._skinLayers || EMPTY_ARRAY;
+        return (this._skinLayers || EMPTY_ARRAY).filter(layer => layer && !!layer.options['awareOfTerrain']);
     }
 
     getSkinCount() {
-        return this._skinLayers && this._skinLayers.length || 0;
+        return this.getSkinLayers().length;
     }
 
     queryTerrainByProjCoord(prjCoord, out) {

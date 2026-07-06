@@ -947,8 +947,9 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             // 还没有初始化
             return false;
         }
-        for (let i = 0; i < skinCount; i++) {
-            if (!tileImage.skinStatus[i]) {
+        const skinLayers = this.layer.getSkinLayers();
+        for (let i = 0; i < skinLayers.length; i++) {
+            if (!tileImage.skinStatus[skinLayers[i].getId()]) {
                 return false;
             }
         }
