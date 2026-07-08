@@ -491,11 +491,21 @@ export default class GLTFPack {
         // cm to mi
         const zDist = (from.z || 0) - (to.z || 0);
         const rotationXY = this._getRotationXY(xyDist, zDist);
-        let boxWidth = this._calBoxWidth(gltfScale, rotationScaleMat, options);
+        // direction
+        const direction = getDirectionIndex(options.direction || 0);
+
+        const mat = mat4.multiply(MAT4, rotationScaleMat, Y_TO_Z);
+        const bbox = this.getGLTFBBox(mat);
+
+        let boxWidth = this._calBoxWidth(gltfScale, bbox, options);
         boxWidth /= projectionScale;
+
+        const startStep = boxWidth * bbox.max[direction] / (bbox.max[direction] - bbox.min[direction]);
+
         const distance = Math.sqrt(xyDist * xyDist + zDist * zDist);
         const times = Math.ceil(distance / boxWidth);
-        let scaleIndex = getDirectionIndex(options.direction || 0);
+
+        let scaleIndex = direction;
         // scale的scaleIndex已经是Y_UP后的模型，所以和direction不同
         if (scaleIndex === 1) {
             scaleIndex = 2;
@@ -504,10 +514,11 @@ export default class GLTFPack {
         }
         //取余缩放
         for (let i = 1; i <= times; i++) {
-            const t = boxWidth * (i - 1) / distance;
+            let t = (boxWidth * (i - 1) + startStep) / distance;
             let scale = 1;
             if (options['scaleVertex'] && i === times) {
                 scale = (distance - boxWidth * (times - 1)) / boxWidth;
+                t = (boxWidth * (i - 2) + boxWidth * scale + startStep) / distance;
             }
             const itemScale = [1, 1, 1];
             itemScale[scaleIndex] = scale;
@@ -530,9 +541,7 @@ export default class GLTFPack {
         return vec3.set(out, fitScale, fitScale, fitScale);
     }
 
-    _calBoxWidth(scale, rotationScaleMat, options) {
-        const mat = mat4.multiply(MAT4, rotationScaleMat, Y_TO_Z);
-        const gltfmodelBBox = this.getGLTFBBox(mat);
+    _calBoxWidth(scale, gltfmodelBBox, options) {
         const direction = getDirectionIndex(options.direction || 0);
         const boxExtent = vec3.sub(TEMP_VEC, gltfmodelBBox.max, gltfmodelBBox.min);
         vec3.multiply(boxExtent, boxExtent, scale);

@@ -317,7 +317,7 @@ const GLTFMixin = Base =>
             const options = {
                 gapLength: this.dataConfig.gapLength || 0,
                 direction: this.dataConfig.direction || 'x',
-                scaleVertex: this.dataConfig.scaleVertex || false
+                scaleVertex: true
             };
             const gltfPack = this._gltfPack[0][0];
 
