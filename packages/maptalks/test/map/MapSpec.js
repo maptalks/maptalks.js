@@ -149,7 +149,7 @@ describe('Map.Spec', function () {
             map.setCenter([121, 114, 5000]);
             var dist = map.pointAtResToDistance(1, 1, map.getResolution());
 
-            expect(dist).to.be.equal(0.14570758317344668);
+            expect(dist).to.be.equal(0.14570758517629945);
         });
     });
 

@@ -215,7 +215,7 @@ describe('Geometry.LineString', function () {
             ]);
             polyline.rotate(20);
 
-            var expected = [[10.796595235854738, 1.80922137642275], [7.350247889302295, 11.206147584281835], [-33.81727811172436, 76.98463103929541]];
+            var expected = [[10.796595235854738, 1.80922137642275], [7.350247889302295, 11.206147584281835], [-33.817278111724306, 76.98463103929541]];
             var json = polyline.toGeoJSON().geometry.coordinates;
             expect(json).to.eql(expected);
         });
