@@ -229,11 +229,13 @@ export default class Accessor {
     }
 
     _typedArray(arrayBuffer, count, itemSize, start, ctor) {
-
+        let byteLength = Math.min(arrayBuffer.byteLength - start, count * itemSize * ctor.BYTES_PER_ELEMENT);
+        count = Math.floor(byteLength / (itemSize * ctor.BYTES_PER_ELEMENT));
+        byteLength = count * itemSize * ctor.BYTES_PER_ELEMENT;
         if (start % ctor.BYTES_PER_ELEMENT !== 0) {
             //拷贝 array buffer，以保证比特对齐
             //有些不太正规的数据没有比特对齐，此时 new Float32Array(offset,.. ) 会抛出 offset must be multiplier of 4 错误
-            arrayBuffer = arrayBuffer.slice(start, start + count * itemSize * ctor.BYTES_PER_ELEMENT);
+            arrayBuffer = arrayBuffer.slice(start, start + byteLength);
             start = 0;
             //拷贝了arraybuffer，不再使用老的buffer
         }

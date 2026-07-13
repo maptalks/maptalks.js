@@ -448,6 +448,12 @@ export default class GLTFLoader {
     _loadMesh(mesh, options) {
         //TODO 解析材质
         const primitives = mesh.primitives; // attributes
+        if (!primitives) {
+            const out = {};
+            extend(out, mesh);
+            out.primitives = [];
+            return Promise.resolve(out);
+        }
         const promises = primitives.map(p => {
             return this._loadPrimitive(p, options);
         }).filter(p => !!p);
