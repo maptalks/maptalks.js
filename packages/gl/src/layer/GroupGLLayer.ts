@@ -104,9 +104,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         if (!this.layers || !this.layers.length) {
             return;
         }
-        for (let i = 0, l = this.layers.length; i < l; i++) {
-            this.layers[i]['__group_gl_order'] = i;
-        }
+
         this.layers.sort(sortLayersByZIndex);
     }
 
@@ -836,7 +834,7 @@ function empty() { return }
 function sortLayersByZIndex(a: maptalks.Layer, b: maptalks.Layer) {
     const c = a.getZIndex() - b.getZIndex();
     if (c === 0) {
-        return a['__group_gl_order'] - b['__group_gl_order'];
+        return 0;
     }
     return c;
 }

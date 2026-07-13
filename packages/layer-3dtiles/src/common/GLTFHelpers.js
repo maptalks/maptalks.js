@@ -89,6 +89,8 @@ export function iterateBufferData(arr, cb) {
     byteOffset = byteOffset === undefined ? arr.array.byteOffset : byteOffset;
     stride = stride || 0;
     count = count || arr.array.length / itemSize;
+    const byteLength = Math.min(arrayBuffer.byteLength - byteOffset, count * itemSize * ctor.BYTES_PER_ELEMENT);
+    count = Math.floor(byteLength / (itemSize * ctor.BYTES_PER_ELEMENT));
     if ((!stride || stride === itemSize * ctor.BYTES_PER_ELEMENT) && byteOffset % ctor.BYTES_PER_ELEMENT === 0) {
         const src = new ctor(arrayBuffer, byteOffset, count * itemSize);
         for (let i = 0; i < count * itemSize; i+= itemSize) {
