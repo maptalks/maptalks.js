@@ -642,6 +642,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         if (skinImages) {
             const isWebGPU = !!this.device.wgpu;
             const skinLayers = this.layer.getSkinLayers();
+            terrainTileImage.skinOrder = skinLayers.map(layer => layer.getId()).join(',');
             for (let i = 0; i < skinLayers.length; i++) {
                 const id = skinLayers[i].getId();
                 const layerSkinImages = skinImages[id];
@@ -948,6 +949,10 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             return false;
         }
         const skinLayers = this.layer.getSkinLayers();
+        const skinOrder = skinLayers.map(layer => layer.getId()).join(',');
+        if (tileImage.skinOrder !== skinOrder) {
+            return false;
+        }
         for (let i = 0; i < skinLayers.length; i++) {
             if (!tileImage.skinStatus[skinLayers[i].getId()]) {
                 return false;
