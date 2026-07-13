@@ -583,11 +583,15 @@ export default class Geometry {
         }
         const key = color0Attribute;
         if (this.data[key]) {
-            const arr = this.data[key].data || this.data[key].array || this.data[key];
+            const attrData = this.data[key];
+            const arr = attrData.data || attrData.array || attrData;
             if (Array.isArray(arr)) {
                 this._color0Size = arr.length / this._vertexCount;
-            } else if (this.data[key].buffer && this.data[key].buffer.destroy) {
-                this._color0Size = this.data[key].buffer['_buffer'].dimension;
+            } else if (attrData.itemSize) {
+                this._color0Size = attrData.itemSize;
+            } else if (attrData.buffer && attrData.buffer.destroy) {
+                const isWebGPU = !!(attrData.buffer.device && attrData.buffer.device.wgpu) ;
+                this._color0Size = isWebGPU ? attrData.buffer.itemCount / this._vertexCount : attrData.buffer['_buffer'].dimension;
             } else if (arr && arr.itemSize) {
                 this._color0Size = arr.itemSize;
             }
