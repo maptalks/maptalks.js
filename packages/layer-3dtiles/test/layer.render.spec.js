@@ -93,6 +93,7 @@ describe('render specs', () => {
         });
         let ended = false;
         let timeoutHandle = null;
+        let doneCalled = false;
         layer.on('canvasisdirty', () => {
             if (ended) {
                 return;
@@ -107,7 +108,10 @@ describe('render specs', () => {
                 match(canvas, expectedPath, threshold, (err, result) => {
                     if (err) {
                         console.error(err);
-                        done(err);
+                        if (!doneCalled) {
+                            doneCalled = true;
+                            done(err);
+                        }
                         return;
                     }
                     if (result.diffCount > (expected.diffCount || 0)) {
@@ -127,7 +131,10 @@ describe('render specs', () => {
                     if (layerAssertion) {
                         layerAssertion(layer);
                     }
-                    done();
+                    if (!doneCalled) {
+                        doneCalled = true;
+                        done();
+                    }
                 });
             }, expected.timeout || 500);
 
