@@ -49,6 +49,10 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(CanvasCompatib
         };
     }
 
+    getTilesInfo() {
+        return this.painter.getTilesInfo();
+    }
+
     getAnalysisMeshes() {
         if (!this.painter) {
             return EMPTY_ARRAY;
