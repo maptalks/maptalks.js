@@ -388,7 +388,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         const rootCandidateNode = {
             children: [],
             level: -1
-        } as CandinateNode;
+        } as CandidateNode;
         // 遍历堆栈
         const tiles = [];
         for (let i = 0; i < this._roots.length; i++) {
@@ -416,7 +416,10 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
                 while (parent && !parent.content && parent.parent) {
                     parent = parent.parent;
                 }
-                const currentParent: CandinateNode = parent && parent._candidateNode || rootCandidateNode;
+                const currentParent: CandidateNode = parent && parent._candidateNode || rootCandidateNode;
+                if (currentParent.content === 'http://10.126.13.241/3dtiles/shensuzhewan/changxing_fuwuqu/3Dtiles_anhuifangxiang/Scene/Data/Tile_p010_p004/Tile_p010_p004_L19_000.b3dm') {
+                    debugger
+                }
                 // // find ancestors
                 // if (node.id === 117) {
                 //     let ancestors = [];
@@ -527,7 +530,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
     }
 
     //@internal
-    _addCandidateNode(tiles: CandinateNode[], candidate: CandinateNode) {
+    _addCandidateNode(tiles: CandidateNode[], candidate: CandidateNode) {
         const { viewerRequestVolume, matrix } = candidate.node;
         if (!viewerRequestVolume || inViewerRequestVolume(this._cameraLocation, this._cameraCartesian3, viewerRequestVolume, matrix as mat4)) {
             tiles.push(candidate);
@@ -535,8 +538,8 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
     }
 
     //@internal
-    _createCandidate(node: TileNode, parent: CandinateNode): CandinateNode {
-        const candidate: CandinateNode = {
+    _createCandidate(node: TileNode, parent: CandidateNode): CandidateNode {
+        const candidate: CandidateNode = {
             id: node.id, // for debug
             node,
             children: [],
@@ -666,7 +669,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
                 break;
             }
             parent._cameraDistance = node._cameraDistance;
-            parent = node.parent;
+            parent = parent.parent;
         }
     }
 
@@ -1914,7 +1917,7 @@ export type TileNode = {
     hasParentContent?: boolean,
     extent?: maptalks.Extent,
     service?: Record<string, any>,
-    _candidateNode: CandinateNode
+    _candidateNode?: CandidateNode
 };
 
 export type RootTileNode = {
@@ -1940,13 +1943,13 @@ export type BoundingVolume = {
     originalVolume?: number[]
 };
 
-export type CandinateNode = {
+export type CandidateNode = {
     id?: string, // for debug
     node?: TileNode,
-    children: CandinateNode[],
+    children: CandidateNode[],
     level: number,
     // cameraDistance : node._cameraDistance, // for debug
-    parent?: CandinateNode,
+    parent?: CandidateNode,
     content?: string
 };
 
@@ -1996,8 +1999,8 @@ type TileSphereBox = {
 } & TileBoxCenter;
 
 export type QueriedTiles = {
-    tiles: CandinateNode[],
-    root?: CandinateNode
+    tiles: CandidateNode[],
+    root?: CandidateNode
 };
 
 export enum TileVisibility {
