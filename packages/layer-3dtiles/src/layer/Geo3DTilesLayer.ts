@@ -417,9 +417,6 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
                     parent = parent.parent;
                 }
                 const currentParent: CandidateNode = parent && parent._candidateNode || rootCandidateNode;
-                if (currentParent.content === 'http://10.126.13.241/3dtiles/shensuzhewan/changxing_fuwuqu/3Dtiles_anhuifangxiang/Scene/Data/Tile_p010_p004/Tile_p010_p004_L19_000.b3dm') {
-                    debugger
-                }
                 // // find ancestors
                 // if (node.id === 117) {
                 //     let ancestors = [];

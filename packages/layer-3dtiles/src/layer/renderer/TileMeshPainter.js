@@ -1760,7 +1760,7 @@ export default class TileMeshPainter {
             // },
             cull : {
                 enable: (_, props) => {
-                    return props.meshProperties.cullFace;
+                    return !!props.meshProperties.cullFace;
                 },
                 face: (_, props) => {
                     return props.cullFace || 'back';
