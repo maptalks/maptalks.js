@@ -253,6 +253,11 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return this;
     }
 
+    _getTilesInfo() {
+        const renderer = this.getRenderer();
+        return renderer && renderer.getTilesInfo();
+    }
+
     getTileUrl(url: string, rootNode: RootTileNode): string {
         const subdomains = rootNode && rootNode.service && rootNode.service.subdomains;
         if (subdomains && rootNode.domainKey) {
@@ -380,11 +385,10 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             }
         })
 
-        const root = {
+        const rootCandidateNode = {
             children: [],
             level: -1
-        };
-        let currentParent: CandinateNode = root;
+        } as CandidateNode;
         // 遍历堆栈
         const tiles = [];
         for (let i = 0; i < this._roots.length; i++) {
@@ -401,10 +405,6 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
                 if (!node.id) {
                     this._initNode(node);
                 }
-                while (currentParent.level >= node._level) {
-                    //pop parent
-                    currentParent = currentParent.parent;
-                }
                 // if (this.options.debugTile && node.id === this.options.debugTile) {
                 //     debugger
                 // }
@@ -412,7 +412,11 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
                 //record service
                 node.service = service;
 
-
+                let parent = node.parent;
+                while (parent && !parent.content && parent.parent) {
+                    parent = parent.parent;
+                }
+                const currentParent: CandidateNode = parent && parent._candidateNode || rootCandidateNode;
                 // // find ancestors
                 // if (node.id === 117) {
                 //     let ancestors = [];
@@ -424,14 +428,11 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
                 //     console.log(ancestors.join());
                 // }
                 if (visible !== TileVisibility.VISIBLE && (visible === TileVisibility.OUT_OF_FRUSTUM || !this.options['alwaysShowTopTiles'] || !isTopTile(node))) {
-                    let parent: CandinateNode = currentParent;
-                    while (parent && !parent.content) {
-                        parent = parent.parent;
-                    }
-                    if (visible === TileVisibility.SCREEN_ERROR_TOO_SMALL && parent && parent.content) {
-                        // node._contentParent = parent;
-                        this._addCandidateNode(tiles, parent);
-                        // tiles[parent.node.id] = parent;
+
+                    if (visible === TileVisibility.SCREEN_ERROR_TOO_SMALL && parent && currentParent.content) {
+                        // node._contentParent = currentParent;
+                        this._addCandidateNode(tiles, currentParent);
+                        // tiles[currentParent.node.id] = currentParent;
                     }
                     continue;
                     // if (config['alwaysShow'] !== false) {
@@ -458,6 +459,11 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
                 }
 
                 const candidate = this._createCandidate(node, currentParent);
+
+                // if (candidate.content === 'http://10.126.13.241/3dtiles/shensuzhewan/changxing_fuwuqu/3Dtiles_anhuifangxiang/Scene/Data/Tile_p010_p004/Tile_p010_p004_L19_000.b3dm') {
+                //     debugger
+                // }
+
                 currentParent.children.push(candidate);
 
                 //node is visible
@@ -480,7 +486,6 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
                     if (hasContent && node.refine === 'add') {
                         this._addCandidateNode(tiles, candidate);
                     }
-                    currentParent = candidate;
                     const inited = children[0].parent;
                     let hasValidChild = false;
                     for (let i = 0, l = children.length; i < l; i++) {
@@ -518,11 +523,11 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
 
             }
         }
-        return { root, tiles };
+        return { root: rootCandidateNode, tiles };
     }
 
     //@internal
-    _addCandidateNode(tiles: CandinateNode[], candidate: CandinateNode) {
+    _addCandidateNode(tiles: CandidateNode[], candidate: CandidateNode) {
         const { viewerRequestVolume, matrix } = candidate.node;
         if (!viewerRequestVolume || inViewerRequestVolume(this._cameraLocation, this._cameraCartesian3, viewerRequestVolume, matrix as mat4)) {
             tiles.push(candidate);
@@ -530,8 +535,8 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
     }
 
     //@internal
-    _createCandidate(node: TileNode, parent: CandinateNode): CandinateNode {
-        return {
+    _createCandidate(node: TileNode, parent: CandidateNode): CandidateNode {
+        const candidate: CandidateNode = {
             id: node.id, // for debug
             node,
             children: [],
@@ -540,6 +545,8 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             parent,
             content: node.content && node.content.url
         };
+        node._candidateNode = candidate;
+        return candidate;
     }
 
     //@internal
@@ -659,7 +666,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
                 break;
             }
             parent._cameraDistance = node._cameraDistance;
-            parent = node.parent;
+            parent = parent.parent;
         }
     }
 
@@ -1906,7 +1913,8 @@ export type TileNode = {
     _tileRegion?: TileBoundingRegion,
     hasParentContent?: boolean,
     extent?: maptalks.Extent,
-    service?: Record<string, any>
+    service?: Record<string, any>,
+    _candidateNode?: CandidateNode
 };
 
 export type RootTileNode = {
@@ -1932,13 +1940,13 @@ export type BoundingVolume = {
     originalVolume?: number[]
 };
 
-export type CandinateNode = {
+export type CandidateNode = {
     id?: string, // for debug
     node?: TileNode,
-    children: CandinateNode[],
+    children: CandidateNode[],
     level: number,
     // cameraDistance : node._cameraDistance, // for debug
-    parent?: CandinateNode,
+    parent?: CandidateNode,
     content?: string
 };
 
@@ -1988,8 +1996,8 @@ type TileSphereBox = {
 } & TileBoxCenter;
 
 export type QueriedTiles = {
-    tiles: CandinateNode[],
-    root?: CandinateNode
+    tiles: CandidateNode[],
+    root?: CandidateNode
 };
 
 export enum TileVisibility {

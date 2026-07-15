@@ -35,7 +35,7 @@ function removeGlobal() {
             const transformedCode = code.replace(commonjsCode, 'typeof undefined');
             return {
                 code: transformedCode,
-                map: { mappings: '' }
+                map: null
             };
         }
     };
@@ -63,7 +63,7 @@ function transformBackQuote() {
             transformedCode += 'export default code';
             return {
                 code: transformedCode,
-                map: { mappings: '' }
+                map: null
             };
         }
     };
@@ -83,7 +83,7 @@ function glsl() {
             transformedCode = `export default "${transformedCode}";`;
             return {
                 code: transformedCode,
-                map: { mappings: '' }
+                map: null
             };
         }
     };

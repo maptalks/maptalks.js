@@ -156,6 +156,10 @@ export default class TileMeshPainter {
         return this._layer.getMap();
     }
 
+    getTilesInfo() {
+        return this._tiles;
+    }
+
     paint(tiles, boxMeshes, parentContext) {
         // const testMesh = { bloom: 1 };
         // if (!parentContext.sceneFilter(testMesh)) {
@@ -167,6 +171,7 @@ export default class TileMeshPainter {
         if (!tiles.length || !map) {
             return null;
         }
+        this._tiles = tiles;
         const uniforms = this._getUniformValues();
         const projViewMatrix = map.projViewMatrix;
         const oneMeshArray = [];
@@ -1755,7 +1760,7 @@ export default class TileMeshPainter {
             // },
             cull : {
                 enable: (_, props) => {
-                    return props.meshProperties.cullFace;
+                    return !!props.meshProperties.cullFace;
                 },
                 face: (_, props) => {
                     return props.cullFace || 'back';

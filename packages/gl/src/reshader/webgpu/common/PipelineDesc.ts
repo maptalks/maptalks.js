@@ -167,7 +167,7 @@ export default class PipelineDescriptor {
                 if (blendFunc.srcAlpha) {
                     let blendSrcAlpha = blendFunc.srcAlpha;
                     if (isFunction(blendFunc.srcAlpha)) {
-                        blendSrcAlpha = blendFunc.srcAlpha(null, uniformValues) ||
+                        blendSrcAlpha = blendFunc.srcAlpha(null, uniformValues);
                         this.functionProps.push({ func: blendFunc.srcAlpha, v: blendSrcAlpha });
                     }
                     blendAlphaSrc = toGPUBlendFactor(blendSrcAlpha);
@@ -175,7 +175,7 @@ export default class PipelineDescriptor {
                 if (blendFunc.srcRGB) {
                     let blendSrcRGB = blendFunc.srcRGB;
                     if (isFunction(blendFunc.srcRGB)) {
-                        blendSrcRGB = blendFunc.srcRGB(null, uniformValues) ||
+                        blendSrcRGB = blendFunc.srcRGB(null, uniformValues);
                         this.functionProps.push({ func: blendFunc.srcRGB, v: blendSrcRGB });
                     }
                     blendColorSrc = toGPUBlendFactor(blendSrcRGB);
@@ -183,7 +183,7 @@ export default class PipelineDescriptor {
                 if (blendFunc.dstAlpha) {
                     let blendDstAlpha = blendFunc.dstAlpha;
                     if (isFunction(blendFunc.dstAlpha)) {
-                        blendDstAlpha = blendFunc.dstAlpha(null, uniformValues) ||
+                        blendDstAlpha = blendFunc.dstAlpha(null, uniformValues);
                         this.functionProps.push({ func: blendFunc.dstAlpha, v: blendDstAlpha });
                     }
                     blendAlphaDst = toGPUBlendFactor(blendDstAlpha);
@@ -191,7 +191,7 @@ export default class PipelineDescriptor {
                 if (blendFunc.dstRGB) {
                     let blendDstRGB = blendFunc.dstRGB;
                     if (isFunction(blendFunc.dstRGB)) {
-                        blendDstRGB = blendFunc.dstRGB(null, uniformValues) ||
+                        blendDstRGB = blendFunc.dstRGB(null, uniformValues);
                         this.functionProps.push({ func: blendFunc.dstRGB, v: blendDstRGB });
                     }
                     blendColorDst = toGPUBlendFactor(blendDstRGB);
@@ -211,8 +211,13 @@ export default class PipelineDescriptor {
                 if (cullProps.face) {
                     cullMode = cullProps.face;
                     if (isFunction(cullProps.face)) {
-                        cullMode = cullProps.face(null, uniformValues) ||
-                        this.functionProps.push({ func: cullProps.face, v: cullMode });
+                        cullMode = cullProps.face(null, uniformValues);
+                        this.functionProps.push({ func: (...args) => {
+                            if (!isEnable(cullProps.enable, args[1])) {
+                                return 'none';
+                            }
+                            return cullProps.face(...args);
+                        }, v: cullMode });
                     }
                 }
             }
