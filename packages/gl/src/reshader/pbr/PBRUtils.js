@@ -10,7 +10,6 @@ export function loginIBLResOnCanvas(canvas, regl, map) {
                 return onUpdatelights.call(this, canvas, regl, ...args);
             };
             map.on('updatelights', listener);
-            canvas._iblResListener = listener;
         }
     }
     canvas.dfgLUT.mtkRefCount++;
@@ -47,8 +46,7 @@ export function logoutIBLResOnCanvas(canvas, map) {
         if (canvas.dfgLUT.mtkRefCount <= 0) {
             del = true;
             if (map) {
-                const listener = canvas._iblResListener;
-                map.off('updatelights', listener);
+                map._clearListeners('updatelights');
             }
             canvas.dfgLUT.destroy();
             delete canvas.dfgLUT;
