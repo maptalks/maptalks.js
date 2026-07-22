@@ -106,7 +106,6 @@ function createPainterPlugin(type, Painter) {
             if (!painter) {
                 return { retire };
             }
-            const key = this._getMeshKey(context);
             let geometries = tileCache.geometry;
             if (!geometries) {
                 const features = tileData.features;
@@ -138,22 +137,23 @@ function createPainterPlugin(type, Painter) {
             let meshes = tileCache.meshes;
             if (!meshes) {
                 const result = this._createMeshes(geometries, context);
+                this._cacheMeshes(context, result && result.meshes);
                 if (!result) {
                     return { retire, loading: true };
                 }
-                const { meshes: newMeshes, retire: isRetire } = result;
-                if (!retire) {
-                    retire = isRetire;
-                }
-                meshes = newMeshes;
-                const oldMeshes = this._getMesh(key);
-                if (oldMeshes) {
-                    painter.deleteMesh(oldMeshes);
-                }
-                tileCache.meshes = meshes;
-                this._meshCache[key] = meshes;
             }
             return { retire };
+        },
+
+        _cacheMeshes(context, meshes) {
+            const { tileCache } = context;
+            const meshKey = this._getMeshKey(context);
+            const oldMeshes = this._getMesh(meshKey);
+            if (oldMeshes) {
+                this.painter.deleteMesh(oldMeshes);
+            }
+            tileCache.meshes = meshes;
+            this._meshCache[meshKey] = meshes;
         },
 
         _createMeshes(geometries, context) {
@@ -208,6 +208,7 @@ function createPainterPlugin(type, Painter) {
             let meshes = this._getMesh(key);
             if (!meshes) {
                 const result  = this._createMeshes(geometries, context);
+                this._cacheMeshes(context, result && result.meshes);
                 if (!result) {
                     return NO_REDRAW;
                 }
