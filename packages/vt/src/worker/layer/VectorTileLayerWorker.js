@@ -44,14 +44,17 @@ export default class VectorTileLayerWorker extends LayerWorker {
         const cached = this._cache.get(url);
         if (cached && cached.cacheIndex === context.workerCacheIndex) {
             const { err, data } = cached;
-            doReadTile(err, data);
-            return null;
+            // setTimeout是因为该方法需要返回对象，否则BaseLayerWorker中的this.requests没有缓存，导致BaseLayerWorker不执行回调逻辑
+            return setTimeout(() => {
+                doReadTile(err, data);
+            }, 1);
         }
         //data from laodTileArray for custom
         const { tileArrayBuffer } = context;
         if (tileArrayBuffer) {
-            doReadTile(null, tileArrayBuffer);
-            return null;
+            return setTimeout(() => {
+                doReadTile(null, tileArrayBuffer);
+            }, 1);
         }
         fetchOptions.referrer = context.referrer;
         fetchOptions.errorLog = context.loadTileErrorLog;
