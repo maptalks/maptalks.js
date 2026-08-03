@@ -119,19 +119,15 @@ Map.include(/** @lends Map.prototype */{
         for (const p in view) {
             if (hasOwn(view, p) && !isNil(view[p]) && (p === 'prjCenter' || !isNil(currView[p]))) {
                 empty = false;
-                /* if (p === 'center') {
+                if (p === 'center') {
                     const from = new Coordinate(currView[p]),
                         to = new Coordinate(view[p]);
-                    if (!from.equals(to)) {
-                        props['center'] = [from, to];
-                    }
+                    props['center'] = [from, to];
                 } else if (p === 'prjCenter') {
                     const from = new Coordinate(this._getPrjCenter());
                     const to = new Coordinate(view[p]);
-                    if (!from.equals(to)) {
-                        props['prjCenter'] = [from, to];
-                    }
-                } else */if (currView[p] !== view[p] && p !== 'around') {
+                    props['prjCenter'] = [from, to];
+                } else if (currView[p] !== view[p] && p !== 'around') {
                     props[p] = [currView[p], view[p]];
                 }
             }
