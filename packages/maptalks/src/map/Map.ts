@@ -2363,7 +2363,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     //@internal
-    _setPrjCenter(pcenter: Coordinate, padding?: MapPaddingType) {
+    _setPrjCenter(pcenter: Coordinate) {
         if (pcenter && this._prjCenter) {
             //Respect the current altitude
             // https://github.com/maptalks/maptalks.js/issues/2724
