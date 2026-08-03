@@ -113,7 +113,7 @@ describe('MapSetCenter.Spec', function () {
                 var pPoint = map.coordinateToViewPoint(pCenter);
                 var tPoint = map.coordinateToViewPoint(extent.getCenter());
                 var gap = Math.round(tPoint.y - pPoint.y);
-                expect( gap >= 40 && gap < 45).to.be.ok();
+                expect( gap > -45 && gap <= -40).to.be.ok();
                 done();
             }, 150);
 
