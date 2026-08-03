@@ -98,6 +98,7 @@ Map.include(/** @lends Map.prototype */{
      * @return {Map}         this
      */
     animateTo(view, options = {}, step) {
+        const paramView = view || {};
         view = extend({}, this.getView(), view);
         view.bearing = view.bearing % 360;
         // this._stopAnim(this._animPlayer);
@@ -116,7 +117,7 @@ Map.include(/** @lends Map.prototype */{
             props = {};
         let empty = true;
         const isEqual = mapViewEqual(view, currView);
-        for (const p in view) {
+        for (const p in paramView) {
             if (hasOwn(view, p) && !isNil(view[p]) && (p === 'prjCenter' || !isNil(currView[p]))) {
                 empty = false;
                 if (p === 'center') {
