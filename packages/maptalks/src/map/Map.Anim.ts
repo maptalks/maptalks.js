@@ -119,7 +119,7 @@ Map.include(/** @lends Map.prototype */{
         for (const p in view) {
             if (hasOwn(view, p) && !isNil(view[p]) && (p === 'prjCenter' || !isNil(currView[p]))) {
                 empty = false;
-                if (p === 'center') {
+                /* if (p === 'center') {
                     const from = new Coordinate(currView[p]),
                         to = new Coordinate(view[p]);
                     if (!from.equals(to)) {
@@ -131,7 +131,7 @@ Map.include(/** @lends Map.prototype */{
                     if (!from.equals(to)) {
                         props['prjCenter'] = [from, to];
                     }
-                } else if (currView[p] !== view[p] && p !== 'around') {
+                } else */if (currView[p] !== view[p] && p !== 'around') {
                     props[p] = [currView[p], view[p]];
                 }
             }
@@ -157,6 +157,12 @@ Map.include(/** @lends Map.prototype */{
                 renderer.callInNextFrame(fn);
             };
 
+        let paddingContainerPoint;
+        const hasContainerPadding = this._getPaddingSize(options);
+        if (hasContainerPadding) {
+            paddingContainerPoint = this._getContainerCenterByPadding(options);
+        }
+
         const player = this._animPlayer = Animation.animate(props, {
             'easing': options['easing'] || 'out',
             'duration': options['duration'] || this.options['zoomAnimationDuration'],
@@ -174,15 +180,6 @@ Map.include(/** @lends Map.prototype */{
                 //     this._stopAnim(player);
                 //     return;
                 // }
-                if (frame.styles['center']) {
-                    const center = frame.styles['center'];
-                    this._setPrjCenter(projection.project(center));
-                    this.onMoving(this._parseEventFromCoord(this.getCenter()));
-                } else if (frame.styles['prjCenter']) {
-                    const center = frame.styles['prjCenter'];
-                    this._setPrjCenter(center);
-                    this.onMoving(this._parseEventFromCoord(this.getCenter()));
-                }
                 if (!isNil(frame.styles['zoom'])) {
                     this.onZooming(frame.styles['zoom'], zoomOrigin);
                 }
@@ -191,6 +188,22 @@ Map.include(/** @lends Map.prototype */{
                 }
                 if (!isNil(frame.styles['bearing'])) {
                     this._setBearing(frame.styles['bearing']);
+                }
+                if (frame.styles['center']) {
+                    const center = frame.styles['center'];
+                    let pcenter = projection.project(center);
+                    if (hasContainerPadding) {
+                        pcenter = this._getPCenterWhenPrjCoordAtContainerPoint(pcenter, paddingContainerPoint);
+                    }
+                    this._setPrjCenter(pcenter);
+                    this.onMoving(this._parseEventFromCoord(this.getCenter()));
+                } else if (frame.styles['prjCenter']) {
+                    let pcenter = frame.styles['prjCenter'];
+                    if (hasContainerPadding) {
+                        pcenter = this._getPCenterWhenPrjCoordAtContainerPoint(pcenter, paddingContainerPoint);
+                    }
+                    this._setPrjCenter(pcenter);
+                    this.onMoving(this._parseEventFromCoord(this.getCenter()));
                 }
                 // preView = this.getView();
                 /**
@@ -204,17 +217,25 @@ Map.include(/** @lends Map.prototype */{
                 this._fireEvent('animating');
             } else if (player.playState !== 'paused' || player === this._mapAnimPlayer) {
                 if (!(player as any)._interupted) {
-                    if (props['center']) {
-                        this._setPrjCenter(projection.project(props['center'][1]));
-                    } else if (props['prjCenter']) {
-                        this._setPrjCenter(props['prjCenter'][1]);
-                    }
                     if (!isNil(props['pitch'])) {
                         this._setPitch(props['pitch'][1]);
                     }
                     if (!isNil(props['bearing'])) {
                         this._setBearing(props['bearing'][1]);
                     }
+                    let pcenter;
+                    if (props['center']) {
+                        pcenter = projection.project(props['center'][1]);
+                    } else if (props['prjCenter']) {
+                        pcenter = props['prjCenter'][1];
+                    }
+                    if (pcenter) {
+                        if (hasContainerPadding) {
+                            pcenter = this._getPCenterWhenPrjCoordAtContainerPoint(pcenter, paddingContainerPoint);
+                        }
+                        this._setPrjCenter(pcenter);
+                    }
+
                 }
                 this._endAnim(player, props, zoomOrigin, options);
                 // preView = this.getView();

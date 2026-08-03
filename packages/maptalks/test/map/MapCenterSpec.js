@@ -75,5 +75,47 @@ describe('MapSetCenter.Spec', function () {
             var tPoint = map.coordinateToViewPoint(center);
             expect(Math.round(tPoint.y - pPoint.y)).to.equal((100 - 180) / 2);
         });
+
+        it('set center with paddingLeft and paddingRight with pitch and bearing', function () {
+            map.setPitch(75);
+            map.setBearing(90);
+            map.setCenter(center, { paddingLeft: 100, paddingRight: 180 });
+            var pCenter = map.getCenter();
+            var pPoint = map.coordinateToViewPoint(pCenter);
+            var tPoint = map.coordinateToViewPoint(center);
+            expect(Math.round(tPoint.x - pPoint.x)).to.equal((100 - 180) / 2);
+        });
+
+        it('fitExtent with paddingLeft and paddingRight', function () {
+            var extent = new maptalks.Marker(center).getExtent();
+            map.fitExtent(extent, 0, { paddingLeft: 100, paddingRight: 180, animation: false });
+
+            var pCenter = map.getCenter();
+            var pPoint = map.coordinateToViewPoint(pCenter);
+            var tPoint = map.coordinateToViewPoint(center);
+            expect(Math.round(tPoint.x - pPoint.x)).to.equal((100 - 180) / 2);
+        });
+
+        it('fitExtent with paddingTop and paddingBottom', function () {
+            var extent = new maptalks.Marker(center).getExtent();
+            map.fitExtent(extent, 0, { paddingTop: 100, paddingBottom: 180, animation: false });
+            var pCenter = map.getCenter();
+            var pPoint = map.coordinateToViewPoint(pCenter);
+            var tPoint = map.coordinateToViewPoint(extent.getCenter());
+            expect(Math.round(tPoint.y - pPoint.y)).to.equal((100 - 180) / 2);
+        });
+
+        it('fitExtent animation with paddingTop and paddingBottom', function (done) {
+            var extent = new maptalks.Marker(center).getExtent();
+            map.fitExtent(extent, 0, { paddingTop: 100, paddingBottom: 180, duration: 100 });
+            setTimeout(function () {
+                var pCenter = map.getCenter();
+                var pPoint = map.coordinateToViewPoint(pCenter);
+                var tPoint = map.coordinateToViewPoint(extent.getCenter());
+                expect(Math.round(tPoint.y - pPoint.y)).to.equal((100 - 180) / 2);
+                done();
+            }, 150);
+
+        });
     })
 })

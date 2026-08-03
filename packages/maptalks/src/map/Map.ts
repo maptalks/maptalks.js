@@ -633,9 +633,6 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             return this;
         }
         center = new Coordinate(center);
-        if (padding) {
-            center = this._getCenterByPadding(center, this.getZoom(), padding);
-        }
         const projection = this.getProjection();
         const pcenter = projection.project(center);
         if (!this._verifyExtent(pcenter) && !this.options.limitExtentOnMaxExtent) {
@@ -646,7 +643,13 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
             return this;
         }
         this.onMoveStart();
-        this._setPrjCenter(pcenter);
+        if (this._getPaddingSize(padding)) {
+            const containerPoint = this._getContainerCenterByPadding(padding);
+            this._setPrjCoordAtContainerPoint(pcenter, containerPoint);
+        } else {
+            this._setPrjCenter(pcenter);
+        }
+
         this.onMoveEnd(this._parseEventFromCoord(this.getCenter()));
         return this;
     }
@@ -1042,12 +1045,12 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Number} zoom
      * @return {Map} this
      */
-    setCenterAndZoom(center: Coordinate, zoom?: number) {
+    setCenterAndZoom(center: Coordinate, zoom?: number, padding?: MapPaddingType) {
         if (!isNil(zoom) && this._zoomLevel !== zoom) {
-            this.setCenter(center);
             this.setZoom(zoom, { animation: false });
+            this.setCenter(center, padding);
         } else {
-            this.setCenter(center);
+            this.setCenter(center, padding);
         }
         return this;
     }
@@ -1220,8 +1223,8 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Coordinate}
      */
     //@internal
-    _getCenterByPadding(center: Coordinate, zoom?: number, padding?: MapPaddingType) {
-        const point = this.coordinateToPoint(center, zoom);
+    _getContainerCenterByPadding(padding?: MapPaddingType) {
+        const point = new Point(this.width / 2, this.height / 2);
         const { paddingLeft = 0, paddingRight = 0, paddingTop = 0, paddingBottom = 0 } = padding || {};
         let pX = 0;
         let pY = 0;
@@ -1231,11 +1234,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (paddingTop || paddingBottom) {
             pY = (paddingTop - paddingBottom) / 2;
         }
-        const newPoint = new Point({
-            x: point.x + pX,
-            y: point.y + pY
-        });
-        return this.pointToCoordinate(newPoint, zoom);
+        return point._add(-pX, pY);
     }
 
     /**
@@ -1263,10 +1262,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         const syncExtent = new Extent(extent);
         let zoom = this.getFitZoom(syncExtent, options.isFraction || false, options);
         const containerExtent = syncExtent.convertTo(p => this.coordToPoint(p));
-        let center = this.pointToCoord(containerExtent.getCenter() as Point);
-        if (this._getPaddingSize(options)) {
-            center = this._getCenterByPadding(center, zoom, options);
-        }
+        const center = this.pointToCoord(containerExtent.getCenter() as Point);
         const maxAltitude = (extent as Extent).zmax;
         if (isNumber(maxAltitude) && maxAltitude !== 0) {
             const zoomForAltitude = this.getFitZoomForAltitude(maxAltitude + 1);
@@ -1274,16 +1270,17 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
         zoom += zoomOffset || 0;
 
-        if (typeof (options['animation']) === 'undefined' || options['animation'])
+        if (typeof (options['animation']) === 'undefined' || options['animation']) {
+            const animOptions = extend({}, options);
+            animOptions['duration'] = options['duration'] || this.options['zoomAnimationDuration'];
+            animOptions['easing'] = options['easing'] || 'out';
             return this._animateTo({
                 center,
                 zoom
-            }, {
-                'duration': options['duration'] || this.options['zoomAnimationDuration'],
-                'easing': options['easing'] || 'out',
-            }, step);
-        else
-            return this.setCenterAndZoom(center, zoom);
+            }, animOptions, step);
+        } else {
+            return this.setCenterAndZoom(center, zoom, options);
+        }
     }
 
     /**
@@ -2366,7 +2363,7 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     //@internal
-    _setPrjCenter(pcenter: Coordinate) {
+    _setPrjCenter(pcenter: Coordinate, padding?: MapPaddingType) {
         if (pcenter && this._prjCenter) {
             //Respect the current altitude
             // https://github.com/maptalks/maptalks.js/issues/2724
@@ -2385,14 +2382,19 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         this._calcMatrices();
     }
 
+    _getPCenterWhenPrjCoordAtContainerPoint(coordinate: Coordinate, point: Point) {
+        const p = this._containerPointToPoint(point);
+        const t = p._sub(this._prjToPoint(this._getPrjCenter()));
+        const pcenter = this._pointToPrj(this._prjToPoint(coordinate)._sub(t));
+        return pcenter;
+    }
+
     //@internal
     _setPrjCoordAtContainerPoint(coordinate: Coordinate, point: Point) {
         if (!this.centerAltitude && point.x === this.width / 2 && point.y === this.height / 2) {
             return this;
         }
-        const p = this._containerPointToPoint(point);
-        const t = p._sub(this._prjToPoint(this._getPrjCenter()));
-        const pcenter = this._pointToPrj(this._prjToPoint(coordinate)._sub(t));
+        const pcenter = this._getPCenterWhenPrjCoordAtContainerPoint(coordinate, point);
         this._setPrjCenter(pcenter);
         return this;
     }
