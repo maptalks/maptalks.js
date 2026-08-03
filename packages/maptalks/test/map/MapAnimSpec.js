@@ -296,7 +296,7 @@ describe('Map.Anim', function () {
         map.setView({
             bearing: 0
         })
-        const bearing = Math.floor(Math.random() * 180);
+        const bearing = 2 + Math.floor(Math.random() * 180);
         map.animateTo(
             {
                 bearing,

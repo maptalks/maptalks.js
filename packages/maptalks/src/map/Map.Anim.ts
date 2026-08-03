@@ -98,6 +98,7 @@ Map.include(/** @lends Map.prototype */{
      * @return {Map}         this
      */
     animateTo(view, options = {}, step) {
+        const paramView = view || {};
         view = extend({}, this.getView(), view);
         view.bearing = view.bearing % 360;
         // this._stopAnim(this._animPlayer);
@@ -116,21 +117,17 @@ Map.include(/** @lends Map.prototype */{
             props = {};
         let empty = true;
         const isEqual = mapViewEqual(view, currView);
-        for (const p in view) {
+        for (const p in paramView) {
             if (hasOwn(view, p) && !isNil(view[p]) && (p === 'prjCenter' || !isNil(currView[p]))) {
                 empty = false;
                 if (p === 'center') {
                     const from = new Coordinate(currView[p]),
                         to = new Coordinate(view[p]);
-                    if (!from.equals(to)) {
-                        props['center'] = [from, to];
-                    }
+                    props['center'] = [from, to];
                 } else if (p === 'prjCenter') {
                     const from = new Coordinate(this._getPrjCenter());
                     const to = new Coordinate(view[p]);
-                    if (!from.equals(to)) {
-                        props['prjCenter'] = [from, to];
-                    }
+                    props['prjCenter'] = [from, to];
                 } else if (currView[p] !== view[p] && p !== 'around') {
                     props[p] = [currView[p], view[p]];
                 }
@@ -157,6 +154,12 @@ Map.include(/** @lends Map.prototype */{
                 renderer.callInNextFrame(fn);
             };
 
+        let paddingContainerPoint;
+        const hasContainerPadding = this._getPaddingSize(options);
+        if (hasContainerPadding) {
+            paddingContainerPoint = this._getContainerCenterByPadding(options);
+        }
+
         const player = this._animPlayer = Animation.animate(props, {
             'easing': options['easing'] || 'out',
             'duration': options['duration'] || this.options['zoomAnimationDuration'],
@@ -174,15 +177,6 @@ Map.include(/** @lends Map.prototype */{
                 //     this._stopAnim(player);
                 //     return;
                 // }
-                if (frame.styles['center']) {
-                    const center = frame.styles['center'];
-                    this._setPrjCenter(projection.project(center));
-                    this.onMoving(this._parseEventFromCoord(this.getCenter()));
-                } else if (frame.styles['prjCenter']) {
-                    const center = frame.styles['prjCenter'];
-                    this._setPrjCenter(center);
-                    this.onMoving(this._parseEventFromCoord(this.getCenter()));
-                }
                 if (!isNil(frame.styles['zoom'])) {
                     this.onZooming(frame.styles['zoom'], zoomOrigin);
                 }
@@ -191,6 +185,22 @@ Map.include(/** @lends Map.prototype */{
                 }
                 if (!isNil(frame.styles['bearing'])) {
                     this._setBearing(frame.styles['bearing']);
+                }
+                if (frame.styles['center']) {
+                    const center = frame.styles['center'];
+                    let pcenter = projection.project(center);
+                    if (hasContainerPadding) {
+                        pcenter = this._getPCenterWhenPrjCoordAtContainerPoint(pcenter, paddingContainerPoint);
+                    }
+                    this._setPrjCenter(pcenter);
+                    this.onMoving(this._parseEventFromCoord(this.getCenter()));
+                } else if (frame.styles['prjCenter']) {
+                    let pcenter = frame.styles['prjCenter'];
+                    if (hasContainerPadding) {
+                        pcenter = this._getPCenterWhenPrjCoordAtContainerPoint(pcenter, paddingContainerPoint);
+                    }
+                    this._setPrjCenter(pcenter);
+                    this.onMoving(this._parseEventFromCoord(this.getCenter()));
                 }
                 // preView = this.getView();
                 /**
@@ -204,17 +214,25 @@ Map.include(/** @lends Map.prototype */{
                 this._fireEvent('animating');
             } else if (player.playState !== 'paused' || player === this._mapAnimPlayer) {
                 if (!(player as any)._interupted) {
-                    if (props['center']) {
-                        this._setPrjCenter(projection.project(props['center'][1]));
-                    } else if (props['prjCenter']) {
-                        this._setPrjCenter(props['prjCenter'][1]);
-                    }
                     if (!isNil(props['pitch'])) {
                         this._setPitch(props['pitch'][1]);
                     }
                     if (!isNil(props['bearing'])) {
                         this._setBearing(props['bearing'][1]);
                     }
+                    let pcenter;
+                    if (props['center']) {
+                        pcenter = projection.project(props['center'][1]);
+                    } else if (props['prjCenter']) {
+                        pcenter = props['prjCenter'][1];
+                    }
+                    if (pcenter) {
+                        if (hasContainerPadding) {
+                            pcenter = this._getPCenterWhenPrjCoordAtContainerPoint(pcenter, paddingContainerPoint);
+                        }
+                        this._setPrjCenter(pcenter);
+                    }
+
                 }
                 this._endAnim(player, props, zoomOrigin, options);
                 // preView = this.getView();
