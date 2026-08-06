@@ -174,6 +174,11 @@ void main() {
         vVertex = (modelMatrix * positionMatrix * pos4).xyz;
     }
 
+    // 使用vertex.w与cameraToCenterDistance的比值来补偿透视投影导致的线宽变化
+    // vertex.w是裁剪空间W值，等于视图空间深度，在WebGL和WebGPU中计算方式一致
+    // 当顶点有高程时，vertex.w减小，depthRatio<1，挤出偏移量被缩小，线宽保持恒定
+    float depthRatio = vertex.w / cameraToCenterDistance;
+
     #ifdef HAS_STROKE_WIDTH
         float strokeWidth = aLineStrokeWidth / 2.0 * layerScale;
     #else
@@ -202,6 +207,9 @@ void main() {
         vec2 extrude = aExtrude.xy / EXTRUDE_SCALE;
         vec2 dist = outset * extrude;
     #endif
+
+    // 按深度比例缩放挤出偏移量，补偿透视投影
+    dist *= depthRatio;
 
     float resScale = tileResolution / resolution;
     // if (isRenderingTerrain == 1.0) {
@@ -248,7 +256,7 @@ void main() {
     gl_Position.xy += vec2(myLineDx, myLineDy) * 2.0 / canvasSize * projDistance;
 
     #ifndef PICKING_MODE
-        vWidth = vec2(outset, inset);
+        vWidth = vec2(outset * depthRatio, inset * depthRatio);
         if (isRenderingTerrain == 1.0) {
             vGammaScale = 1.0;
         } else {

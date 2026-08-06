@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>线带高程的情况下，放大层级异常</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.min.css"
+    />
+    <script src="/packages/maptalks-gpu/dist/maptalks-gpu.js"></script>
+    <!-- <script src="https://unpkg.com/maptalks-gpu/dist/maptalks-gpu.js"></script> -->
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+      #map {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+
+    <script>
+      // 1. 创建地图
+      var map = new maptalks.Map("map", {
+        center: [0.02, 0.005],
+        zoom: 10,
+        renderer: "gpu",
+        baseLayer: new maptalks.TileLayer("base", {
+          urlTemplate:
+            "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+          subdomains: ["a", "b", "c", "d"],
+        }),
+      });
+
+      // 2. 创建 LineStringLayer（图层管理线）
+      var lineStringLayer = new maptalks.LineStringLayer("line-layer", {
+        enableAltitude: true,
+      }).addTo(map);
+
+      // 3. 创建 PointLayer（图层管理点标记）
+      var pointLayer = new maptalks.PointLayer("point-layer", {
+        enableAltitude: true,
+      }).addTo(map);
+
+      // 4. 定义线条的坐标点（5个点）
+      var coordinates = [
+        [0, 0, 1000],
+        [0.01, 0.01, 1000],
+        [0.02, 0.005, 1000],
+        [0.03, 0.015, 1000],
+        [0.04, 0, 1000],
+      ];
+
+      // 5. 创建 LineString 几何对象（不包含标记）
+      var line = new maptalks.LineString(coordinates, {
+        symbol: {
+          lineColor: "#1F71CE",
+          lineWidth: 6,
+          lineOpacity: 0.85,
+          lineDasharray: [],
+        },
+      });
+      lineStringLayer.addGeometry(line);
+
+      // 6. 创建起点标记（绿色 + "起"字）
+      var startMarker = new maptalks.Marker(coordinates[0], {
+        properties: {
+          label: "起",
+        },
+        symbol: {
+          markerType: "ellipse",
+          markerWidth: 26,
+          markerHeight: 26,
+          markerFill: "#00CC00",
+          markerLineColor: "#fff",
+          markerLineWidth: 0,
+          textName: "{label}",
+          textSize: 16,
+          textFill: "#fff",
+          textWeight: "bold",
+          textVerticalAlignment: "middle",
+          textHorizontalAlignment: "center",
+        },
+      });
+      pointLayer.addGeometry(startMarker);
+
+      // 7. 创建终点标记（红色 + "终"字）
+      var endMarker = new maptalks.Marker(coordinates[coordinates.length - 1], {
+        properties: {
+          label: "终",
+        },
+        symbol: {
+          markerType: "ellipse",
+          markerWidth: 26,
+          markerHeight: 26,
+          markerFill: "#FF0000",
+          markerLineColor: "#fff",
+          markerLineWidth: 0,
+          textName: "{label}",
+          textSize: 16,
+          textFill: "#fff",
+          textWeight: "bold",
+          textVerticalAlignment: "middle",
+          textHorizontalAlignment: "center",
+        },
+      });
+      pointLayer.addGeometry(endMarker);
+
+      // 8. 创建途径点标记（中间的3个点，显示1,2,3）
+      for (var i = 1; i < coordinates.length - 1; i++) {
+        var waypointMarker = new maptalks.Marker(coordinates[i], {
+          properties: {
+            label: i.toString(),
+          },
+          symbol: {
+            markerType: "ellipse",
+            markerWidth: 24,
+            markerHeight: 24,
+            markerFill: "#FFA500",
+            markerLineColor: "#fff",
+            markerLineWidth: 0,
+            textName: "{label}",
+            textSize: 13,
+            textFill: "#fff",
+            textWeight: "bold",
+            textVerticalAlignment: "middle",
+            textHorizontalAlignment: "center",
+          },
+        });
+        pointLayer.addGeometry(waypointMarker);
+      }
+    </script>
+  </body>
+</html>
