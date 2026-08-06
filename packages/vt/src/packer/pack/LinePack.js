@@ -358,7 +358,10 @@ export default class LinePack extends VectorPack {
         }
         if (this.iconAtlas) {
             const res = line.getLineResource();
-            const image = this.iconAtlas.iconMap[res];
+            // iconMap 可能缺失：当图层增量重建复用序列化后的 atlas 时，若该 atlas 由
+            // 未序列化 iconMap 的旧产物生成，iconMap 为 undefined。这里做防御，
+            // 缺失时按"无图案"降级处理，避免读取 undefined 的属性而崩溃。
+            const image = this.iconAtlas.iconMap && this.iconAtlas.iconMap[res];
             this.feaTexInfo = this.feaTexInfo || [0, 0, 0, 0];
             if (image) {
                 const { tl, displaySize } = this.iconAtlas.positions[res];
