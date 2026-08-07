@@ -714,10 +714,12 @@ export default class VectorPack {
 
 function serializeAtlas(atlas) {
     let positions = atlas.positions;
+    let iconMap = atlas.iconMap;
     let format = atlas.image && atlas.image.format || 'alpha';
     if (atlas instanceof IconAtlas) {
         //iconAtlas中原属性用get方法实现，无法transfer，故遍历复制为普通对象
         positions = {};
+        iconMap = {};
         for (const p in atlas.positions) {
             const pos = atlas.positions[p];
             positions[p] = {
@@ -726,6 +728,21 @@ function serializeAtlas(atlas) {
                 tl: pos.tl,
                 br: pos.br,
                 displaySize: pos.displaySize
+            };
+        }
+        // iconMap 是构建期数据（url -> 图标），与 positions 的 key 一一对应。
+        // 序列化时必须一并保留，否则图层增量重建（setCoordinates/坐标更新）复用序列化后的
+        // atlas 时，LinePack/PolygonPack 的 placeVector 读取 this.iconAtlas.iconMap[url] 会
+        // 因 iconMap 缺失而抛 "Cannot read properties of undefined (reading 'url')"。
+        // 此处仅保留尺寸元数据，像素已由 IconAtlas.build 拷入合并图 image，无需重复传输。
+        for (const id in atlas.iconMap) {
+            const icon = atlas.iconMap[id];
+            iconMap[id] = {
+                data: {
+                    width: icon.data.width,
+                    height: icon.data.height
+                },
+                pixelRatio: icon.pixelRatio
             };
         }
         format = 'rgba';
@@ -739,7 +756,8 @@ function serializeAtlas(atlas) {
             format
         },
         glyphMap: atlas.glyphMap,
-        positions: positions
+        positions: positions,
+        iconMap: iconMap
     };
 }
 
