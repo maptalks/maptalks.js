@@ -136,6 +136,11 @@ function createPainterPlugin(type, Painter) {
 
             let meshes = tileCache.meshes;
             if (!meshes) {
+                // 当前 zoom 不在 sceneConfig 的 [minZoom, maxZoom] 范围内时跳过 mesh 构建
+                // geometry 已构建,当 zoom 回到范围内时 paintTile 会懒加载构建 mesh
+                if (!painter.isVisible()) {
+                    return { retire };
+                }
                 const result = this._createMeshes(geometries, context);
                 this._cacheMeshes(context, result && result.meshes);
                 if (!result) {
@@ -201,6 +206,11 @@ function createPainterPlugin(type, Painter) {
 
             let geometries = tileCache.geometry;
             if (!geometries) {
+                return NO_REDRAW;
+            }
+            // 当前 zoom 不在 sceneConfig 的 [minZoom, maxZoom] 范围内时跳过 mesh 构建和添加
+            // 已有 mesh 不会添加到场景,endFrame 也会跳过 render
+            if (!painter.isVisible()) {
                 return NO_REDRAW;
             }
             let retire = false;
