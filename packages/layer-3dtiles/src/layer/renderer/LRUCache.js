@@ -81,10 +81,14 @@ class LRUCache {
             const iterator = this.data.keys();
             let item = iterator.next();
             while (this.currentSize > this.max && item.value !== undefined) {
-                if (this.data.get(item.value).current) {
-                    maptalks.Util.warnOnce(`current maxGPUMemory(${this.max / 1024 / 1024}) for Geo3DTilesLayer is not enough, one or more current tiles will be discarded.`);
+                const tileData = this.data.get(item.value);
+                if (tileData.current) {
+                    maptalks.Util.warnOnce(`current maxGPUMemory(${this.max / 1024 / 1024}) for Geo3DTilesLayer is not enough.`);
                 }
-                const removedData = this.getAndRemove(item.value);
+                let removedData;
+                if (!tileData.current) {
+                    removedData = this.getAndRemove(item.value);
+                }
                 if (removedData) {
                     this.onRemove(removedData);
                 }
