@@ -108,6 +108,11 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(CanvasCompatib
         const { root, tiles } = this.layer.getTiles();
         const count = tiles.length;
         if (!tiles || !count) {
+            // 无候选瓦片（相机移出 tileset 范围等）：若直接 return，markAll(false)/shrink 不会执行，
+            // 旧瓦片将一直保持 current=true 而无法被淘汰。
+            // 这里兜底标记全部为非 current 并触发一次淘汰，超预算的瓦片即可被释放
+            this.tileCache.markAll(this, false);
+            this.tileCache.shrink();
             this.completeRender();
             return;
         }
@@ -161,7 +166,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(CanvasCompatib
                 tile.data = cached;
             } else if (!this.painter.has(node)) {
                 tileLoading = loading = true;
-                requests.push(node);
+                this._requestTile(node, requests);
             }
             if (!tileLoading) {
                 continue;
@@ -255,6 +260,33 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(CanvasCompatib
         }
 
         return selectedTiles;
+    }
+
+    _cacheMargin() {
+        const max = this.tileCache.max;
+        return Math.min(max * 0.1, 16 * 1024 * 1024);
+    }
+
+    _hasCacheBudget() {
+        const max = this.tileCache.max;
+        return this.tileCache.currentSize < max - this._cacheMargin();
+    }
+
+    _requestTile(node, requests) {
+        if (this._hasCacheBudget()) {
+            requests.push(node);
+            return false;
+        }
+        // 预算不足：先尝试通过淘汰腾出空间。shrink 只淘汰非 current（非本帧绘制）瓦片，
+        // 目标为 max-margin 而非 max，以释放 (max-margin, max] 死区内的内存，
+        // 避免"可见瓦片占满预算后新瓦片永远无法加载"的死锁
+        this.tileCache.shrink(this.tileCache.max - this._cacheMargin());
+        if (this._hasCacheBudget()) {
+            requests.push(node);
+            return false;
+        }
+        // 预算仍然不足：门控阻塞，本帧不再下发该瓦片请求
+        return true;
     }
 
     _selectParentTile(node) {
