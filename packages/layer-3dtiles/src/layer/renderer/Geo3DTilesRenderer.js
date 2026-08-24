@@ -161,7 +161,9 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(CanvasCompatib
                 tile.data = cached;
             } else if (!this.painter.has(node)) {
                 tileLoading = loading = true;
-                requests.push(node);
+                if (this.tileCache.currentSize < this.tileCache.max) {
+                    requests.push(node);
+                }
             }
             if (!tileLoading) {
                 continue;
