@@ -199,6 +199,13 @@ fn main(input: VertexInput) -> VertexOutput {
         }
     #endif
 
+    // 使用顶点高程投影后的vertex.w与投影到地面(z=0)后的groundVertex.w的比值来补偿透视投影导致的线宽变化
+    // vertex.w是裁剪空间W值，等于视图空间深度，在WebGL和WebGPU中计算方式一致
+    // 当顶点有高程时，vertex.w小于groundVertex.w，depthRatio<1，挤出偏移量被缩小，线宽与地面线保持一致
+    // 不能用cameraToCenterDistance替代groundVertex.w，否则无高程的顶点在倾斜视角下也会被错误缩放
+    let groundVertex = uniforms.projViewModelMatrix * uniforms.positionMatrix * vec4f(position.xy, 0.0, 1.0);
+    let depthRatio = vertex.w / groundVertex.w;
+
 #ifdef HAS_STROKE_WIDTH
     let strokeWidth = f32(input.aLineStrokeWidth) / 2.0 * shaderUniforms.layerScale;
 #else
@@ -223,6 +230,9 @@ fn main(input: VertexInput) -> VertexOutput {
     let extrudeXY = vec2f(input.aExtrude.xy);
     let extrude = extrudeXY / EXTRUDE_SCALE;
     var dist = outset * extrude;
+
+    // 按深度比例缩放挤出偏移量，补偿透视投影
+    dist *= depthRatio;
 
     let resScale = uniforms.tileResolution / shaderUniforms.resolution;
 
@@ -263,7 +273,7 @@ fn main(input: VertexInput) -> VertexOutput {
     output.position.y += f32(myLineDy) * 2.0 / shaderUniforms.canvasSize.y * projDistance;
 
 #ifndef PICKING_MODE
-    output.vWidth = vec2f(outset, inset);
+    output.vWidth = vec2f(outset * depthRatio, inset * depthRatio);
     if (shaderUniforms.isRenderingTerrain == 1.0) {
         output.vGammaScale = 1.0;
     } else {
