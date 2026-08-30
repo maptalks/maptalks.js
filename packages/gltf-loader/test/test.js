@@ -26,10 +26,10 @@ function uint8ArrayEqual(a, b) {
 }
 /* eslint-disable no-undef */
 const decoders= {
-    'image/crn': maptalksgl.transcoders.crn && maptalksgl.transcoders.crn(),
-    'image/ktx2': maptalksgl.transcoders.ktx2 && maptalksgl.transcoders.ktx2(),
-    'image/cttf': maptalksgl.transcoders.ktx2 && maptalksgl.transcoders.ktx2(),
-    'draco': maptalksgl.transcoders.draco && maptalksgl.transcoders.draco()
+    'image/crn': maptalks.transcoders.crn && maptalks.transcoders.crn(),
+    'image/ktx2': maptalks.transcoders.ktx2 && maptalks.transcoders.ktx2(),
+    'image/cttf': maptalks.transcoders.ktx2 && maptalks.transcoders.ktx2(),
+    'draco': maptalks.transcoders.draco && maptalks.transcoders.draco()
 }
 
 describe('GLTF', () => {
@@ -87,6 +87,26 @@ describe('GLTF', () => {
             const root = 'models/v2/BoxTextured';
             gltf.Ajax.getJSON(root + '/BoxTextured.gltf', {}).then(json => {
                 const loader = new gltf.GLTFLoader(root, json);
+                loader.load().then(gltf => {
+                    expect(gltf.scene).to.be.eql(0);
+                    const nodes = gltf.scenes[gltf.scene].nodes;
+
+                    expect(nodes[0]).to.be.ok();
+                    const textures = gltf.textures;
+                    expect(textures.length).to.be.eql(1);
+                    const texture = textures[0];
+                    expect(texture.image.array.length).to.be.eql(262144);
+                    expect(texture.image.array instanceof Uint8Array).to.be.ok();
+                    expect(texture.sampler).to.be.ok();
+                    done();
+                });
+            });
+        });
+
+        it('load gltf as buffer', done => {
+            const root = 'models/v2/BoxTextured';
+            gltf.Ajax.getArrayBuffer(root + '/BoxTextured.gltf', {}).then(res => {
+                const loader = new gltf.GLTFLoader(root, {buffer: res.data, byteOffset: 0});
                 loader.load().then(gltf => {
                     expect(gltf.scene).to.be.eql(0);
                     const nodes = gltf.scenes[gltf.scene].nodes;
