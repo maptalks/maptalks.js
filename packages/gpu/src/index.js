@@ -55,6 +55,13 @@ import glFogFrag from '../../gl/src/reshader/weather/fog/wgsl/fog_frag.wgsl';
 import glFogMixFactorVert from '../../gl/src/reshader/weather/fog/wgsl/fog_mixFactor_vert.wgsl';
 import glFogMixFactorFrag from '../../gl/src/reshader/weather/fog/wgsl/fog_mixFactor_frag.wgsl';
 
+// video projection
+import glVideoProjectionFrustumFrag from '../../gl/src/layer/video-projection/shaders/frustum_frag.wgsl';
+import glVideoProjectionFrustumVert from '../../gl/src/layer/video-projection/shaders/frustum_vert.wgsl';
+import glVideoProjectionDepthFrag from '../../gl/src/layer/video-projection/shaders/video_projection_depth_frag.wgsl';
+import glVideoProjectionDepthVert from '../../gl/src/layer/video-projection/shaders/video_projection_depth_vert.wgsl';
+import glVideoProjectionFrag from '../../gl/src/layer/video-projection/shaders/video_projection_frag.wgsl';
+
 // 3dtiles
 import layer3dtilesPickingVert from '../../layer-3dtiles/src/layer/renderer/wgsl/picking_vert.wgsl';
 import layer3dtilesPntsVert from '../../layer-3dtiles/src/layer/renderer/wgsl/pnts_vert.wgsl';
@@ -143,6 +150,12 @@ registerWGSLSource('gl_ripples_frag', glRipplesFrag);
 registerWGSLSource('gl_fog_frag', glFogFrag);
 registerWGSLSource('gl_fog_mixFactor_vert', glFogMixFactorVert);
 registerWGSLSource('gl_fog_mixFactor_frag', glFogMixFactorFrag);
+
+registerWGSLSource('gl_video_projection_frustum_frag', glVideoProjectionFrustumFrag);
+registerWGSLSource('gl_video_projection_frustum_vert', glVideoProjectionFrustumVert);
+registerWGSLSource('gl_video_projection_depth_frag', glVideoProjectionDepthFrag);
+registerWGSLSource('gl_video_projection_depth_vert', glVideoProjectionDepthVert);
+registerWGSLSource('gl_video_projection_frag', glVideoProjectionFrag);
 
 registerWGSLSource('layer_3dtiles_picking_vert', layer3dtilesPickingVert);
 registerWGSLSource('layer_3dtiles_pnts_vert', layer3dtilesPntsVert);
