@@ -529,7 +529,9 @@ export default class GPUShader extends GLShader {
             // 获取mesh的dynamicBuffer
             const meshBuffer = mesh.writeDynamicBuffer(uid, props[i], bindGroupFormat.getMeshUniforms(), buffersPool, this._dynamicOffsets);
             const groupKey = bindGroupFormat.uuid + '-' + meshBuffer.version + '-' + shaderBuffer.version + '-'
-                + mesh.textureVersion + '-' + (mesh.material && mesh.material.textureVersion || 0);
+                + mesh.textureVersion + '-' + (mesh.material && mesh.material.textureVersion || 0)
+                // geometry 的 storage buffer 被创建/替换时（storage 资源属于 bind group），需要重建 bind group
+                + '-s' + mesh.geometry.getStorageVersion();
             // 获取或者生成bind group
             let bindGroup = mesh.getBindGroup(groupKey);
             if (bindGroup && this._checkBindGroupOutdated(bindGroup, props[i])) {

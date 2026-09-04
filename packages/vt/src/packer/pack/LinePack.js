@@ -9,6 +9,98 @@ import Point3 from './point3/Point3';
 import mergeLineFeatures from './util/merge_line_features';
 import { vec2 } from 'gl-matrix';
 
+// 倾斜视角下线段透视细分的最大子段长度（本地图层几何所在的 GL 世界单位，即 zoom 19 的固定分辨率）。
+//
+// 线宽（含 lineStrokeWidth 描边）的"恒定屏幕像素宽度"是靠顶点着色器中逐顶点按深度
+// (vertex.w / cameraToCenterDistance) 放大挤出偏移来实现的。当一条折线段的源顶点很稀疏、
+// 段又很长时，段内各点的透视深度差异很大，透视投影（对段内是1/w非线性）会让 GPU 对
+// quad 的线性插值无法在整段保持恒定屏幕宽度，表现为近相机端线变宽、远离端变窄，
+// 描边（尤其是近端一侧）甚至整体丢失的"近大远小"。pitch=0 时视线垂直地面，段内深度
+// 几乎不变，因此没有这个问题。
+//
+// 本地图层的打包在数据变化时一次性完成，几何坐标固定在 GL 世界（getGLRes，zoom 19 的
+// 分辨率，1 单位 ≈ 76.4m），不会随相机/zoom 重建，因此细分密度必须与视角解耦。
+// 参考实验：pitch≈50 时源折线每 0.004° 加一个顶点对应约 7.6 GL 单位（445m）的段宽随
+// 深度变化、描边丢失；内插到 0.38 GL 单位（22m/段）后全深度宽度恒定。这里取 0.1 GL
+// 单位（约 7.6m/段），留 4 倍余量以覆盖更高 zoom/更倾斜视角的透视。
+const LINE_PERSPECTIVE_SUBSEG_GL = 0.1;
+
+// 单条线细分后的安全顶点数上限。本地图层几何坐标是固定的 GL 世界单位，其“单位长度”
+// 取决于投影 fullExtent 计算出的 glRes：在 identity/自定义投影下若 fullExtent 很小而
+// 坐标值很大，GL 单位会被放大数个数量级，固定 0.1 阈值会把一条普通线段细分出百万级
+// 顶点导致程序卡死/爆内存。超出上限的线放弃细分，保持原打包行为。
+const MAX_LINE_PERSPECTIVE_POINTS = 65536;
+
+/**
+ * 预估细分后 line 的点数（不真正分配顶点），超过上限可提前退出。
+ * @param {Point[]} points
+ * @param {number} maxSegLen
+ * @private
+ */
+function estimateDensifiedPointCount(points, maxSegLen) {
+    if (!points || points.length < 2 || !(maxSegLen > 0)) {
+        return points ? points.length : 0;
+    }
+    const max2 = maxSegLen * maxSegLen;
+    let count = points.length;
+    for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i], p1 = points[i + 1];
+        const dx = p1.x - p0.x, dy = p1.y - p0.y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 > max2) {
+            count += Math.ceil(Math.sqrt(d2) / maxSegLen) - 1;
+            if (count > MAX_LINE_PERSPECTIVE_POINTS) {
+                break;
+            }
+        }
+    }
+    return count;
+}
+
+/**
+ * 把过长的直线段细分为多个等长子段，返回新数组；若无超长线段则原样返回，避免内存开销。
+ * @param {Point[]} points
+ * @param {number} maxSegLen 子段最大长度（与 points 坐标同单位）
+ * @private
+ */
+function densifyLineForPerspective(points, maxSegLen) {
+    if (!points || points.length < 2 || !(maxSegLen > 0)) {
+        return points;
+    }
+    // 先检查是否存在超长线段，没有则直接复用原数组
+    let needDensify = false;
+    const max2 = maxSegLen * maxSegLen;
+    for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i], p1 = points[i + 1];
+        const dx = p1.x - p0.x, dy = p1.y - p0.y;
+        if (dx * dx + dy * dy > max2) {
+            needDensify = true;
+            break;
+        }
+    }
+    if (!needDensify) {
+        return points;
+    }
+    const out = [points[0]];
+    for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i], p1 = points[i + 1];
+        const dx = p1.x - p0.x, dy = p1.y - p0.y;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        if (len > maxSegLen) {
+            const n = Math.ceil(len / maxSegLen);
+            const z0 = p0.z || 0, dz = (p1.z || 0) - z0;
+            for (let k = 1; k < n; k++) {
+                const t = k / n;
+                const p = new Point(p0.x + dx * t, p0.y + dy * t);
+                p.z = z0 + dz * t;
+                out.push(p);
+            }
+        }
+        out.push(p1);
+    }
+    return out;
+}
+
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
 // contains the "texture" normals (-1..1). this is distinct from the extrude
@@ -92,7 +184,7 @@ export default class LinePack extends VectorPack {
     }
 
     getFormat() {
-        const { lineWidthFn, lineStrokeWidthFn, lineStrokeColorFn, lineColorFn, lineOpacityFn, lineDxFn, lineDyFn, linePatternAnimSpeedFn, linePatternGapFn } = this._fnTypes;
+        const { lineWidthFn, lineStrokeWidthFn, lineStrokeColorFn, lineColorFn, lineOpacityFn, lineDxFn, lineDyFn, linePatternAnimSpeedFn, linePatternGapFn, lineOffsetFn } = this._fnTypes;
         const format = [
             ...this.getPositionFormat()
         ];
@@ -164,15 +256,6 @@ export default class LinePack extends VectorPack {
                 }
             );
         }
-        // if (this.symbol['lineOffset']) {
-        //     format.push(
-        //         {
-        //             type: Int8Array,
-        //             width: 2,
-        //             name: 'aExtrudeOffset'
-        //         }
-        //     );
-        // }
         if (this.dasharrayFn) {
             format.push(
                 {
@@ -206,6 +289,19 @@ export default class LinePack extends VectorPack {
                 name: 'aLineDxDy'
             });
         }
+        if (lineOffsetFn) {
+            format.push({
+                type: Int16Array,
+                width: 1,
+                name: 'aLineOffset'
+            });
+            // round帽顶点：记录所在线段的单位法向(EXTRUDE_SCALE倍)，供shader中让帽随线段整体刚性平移
+            format.push({
+                type: Int8Array,
+                width: 2,
+                name: 'aCapOffset'
+            });
+        }
         if (linePatternAnimSpeedFn || linePatternGapFn) {
             format.push({
                 type: Int8Array,
@@ -226,7 +322,7 @@ export default class LinePack extends VectorPack {
     placeVector(line) {
         const { lineJoinFn, lineCapFn, lineWidthFn, lineHeightFn, lineStrokeWidthFn, lineStrokeColorFn,
             lineColorFn, lineOpacityFn,
-            lineDxFn, lineDyFn, linePatternAnimSpeedFn, linePatternGapFn } = this._fnTypes;
+            lineDxFn, lineDyFn, linePatternAnimSpeedFn, linePatternGapFn, lineOffsetFn } = this._fnTypes;
         const symbol = this.symbol,
             miterLimit = 2,
             roundLimit = 1.05;
@@ -400,6 +496,18 @@ export default class LinePack extends VectorPack {
             }
             this.feaLineDy = dy;
         }
+        if (lineOffsetFn) {
+            let lineOffset = lineOffsetFn(this.options['zoom'], properties);
+            if (isFunctionDefinition(lineOffset)) {
+                this.dynamicAttrs['aLineOffset'] = 1;
+                // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
+                lineOffset = 0;
+            }
+            if (isNil(lineOffset)) {
+                lineOffset = 0;
+            }
+            this.feaLineOffset = lineOffset;
+        }
         if (linePatternAnimSpeedFn) {
             let speed = linePatternAnimSpeedFn(this.options['zoom'], properties);
             if (isFunctionDefinition(speed)) {
@@ -448,6 +556,23 @@ export default class LinePack extends VectorPack {
                 lines.push(...segs);
             }
 
+        }
+        // 倾斜视角下稀疏的长折线段会因透视插值产生线宽"近大远小"，把长直段按细分阈值
+        // 等分（详见文件顶部 LINE_PERSPECTIVE_SUBSEG_GL 的注释）。
+        // 仅对本地图层（EXTENT 为 Infinity，几何为固定 GL 世界坐标）启用；
+        // isTube 的管线有自己的顶点生成方式，且细分后成本过高，这里跳过。
+        // 瓦片图层（EXTENT 有限，坐标随瓦片 zoom 缩放）保持原有打包行为，不细分。
+        if (!this.options['isTube'] && extent === Infinity) {
+            const maxSegLen = LINE_PERSPECTIVE_SUBSEG_GL;
+            if (maxSegLen > 0 && maxSegLen !== Infinity) {
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i];
+                    const count = estimateDensifiedPointCount(line, maxSegLen);
+                    if (count <= MAX_LINE_PERSPECTIVE_POINTS) {
+                        lines[i] = densifyLineForPerspective(line, maxSegLen);
+                    }
+                }
+            }
         }
         const positionSize = this.needAltitudeAttribute() ? 2 : 3;
         for (let i = 0; i < lines.length; i++) {
@@ -850,8 +975,11 @@ export default class LinePack extends VectorPack {
                 rightNormalDistance = getNormalDistance(segRightNormal, TEMP_NORMAL_3, segment.dir);
             }
         }
-        this.addHalfVertex(p, leftX, leftY, round, false, endLeft, segment, leftNormalDistance);
-        this.addHalfVertex(p, rightX, rightY, round, true, -endRight, segment, rightNormalDistance);
+        // round帽（线端半圆帽）时，normal为线段单位法向，帽顶点需要沿该法向整体平移
+        const capOffsetX = round ? EXTRUDE_SCALE * normal.x : 0;
+        const capOffsetY = round ? EXTRUDE_SCALE * normal.y : 0;
+        this.addHalfVertex(p, leftX, leftY, round, false, endLeft, segment, leftNormalDistance, capOffsetX, capOffsetY);
+        this.addHalfVertex(p, rightX, rightY, round, true, -endRight, segment, rightNormalDistance, capOffsetX, capOffsetY);
 
         if (!this.prevVertex || !equalPoint(p, this.prevVertex)) {
             this.prevVertex = p;
@@ -867,11 +995,11 @@ export default class LinePack extends VectorPack {
         }
     }
 
-    addHalfVertex({ x, y, z }, extrudeX, extrudeY, round, up, dir, segment, normalDistance) {
+    addHalfVertex({ x, y, z }, extrudeX, extrudeY, round, up, dir, segment, normalDistance, capOffsetX = 0, capOffsetY = 0) {
         // scale down so that we can store longer distances while sacrificing precision.
         const linesofar = this.scaledDistance * LINE_DISTANCE_SCALE;
 
-        this.fillData(this.data, x, y, z || 0, extrudeX, extrudeY, round, up, linesofar, normalDistance);
+        this.fillData(this.data, x, y, z || 0, extrudeX, extrudeY, round, up, linesofar, normalDistance, capOffsetX, capOffsetY);
 
         const e = segment.vertexLength++;
         if (this.e1 >= 0 && this.e2 >= 0) {
@@ -887,8 +1015,8 @@ export default class LinePack extends VectorPack {
     }
 
     //参数会影响LineExtrusionPack中的addLineVertex方法
-    fillData(data, x, y, altitude, extrudeX, extrudeY, round, up, linesofar, normalDistance) {
-        const { lineWidthFn, lineStrokeWidthFn, lineStrokeColorFn, lineColorFn, lineOpacityFn, lineDxFn, lineDyFn, linePatternAnimSpeedFn, linePatternGapFn } = this._fnTypes;
+    fillData(data, x, y, altitude, extrudeX, extrudeY, round, up, linesofar, normalDistance, capOffsetX = 0, capOffsetY = 0) {
+        const { lineWidthFn, lineStrokeWidthFn, lineStrokeColorFn, lineColorFn, lineOpacityFn, lineDxFn, lineDyFn, linePatternAnimSpeedFn, linePatternGapFn, lineOffsetFn } = this._fnTypes;
         // debugger
         // if (this.options.center) {
         //     // data.aPosition.push(x, y, 0);
@@ -970,23 +1098,6 @@ export default class LinePack extends VectorPack {
             data.aDashColor[index++] = this.feaDashColor[3];
             data.aDashColor.currentIndex = index;
         }
-        // if (this.symbol['lineOffset']) {
-        //     //添加 aExtrudeOffset 数据，用来在vert glsl中决定offset的矢量方向
-        //     //vNormal.y在up时为1， 在down时为-1，vert中的计算逻辑如下：
-        //     //offsetExtrude = (vNormal.y * (aExtrude - aExtrudeOffset) + aExtrudeOffset)
-        //     if (up) {
-        //         //up时，offsetExtrude = aExtrude
-        //         data.push(0, 0);
-        //     } else {
-        //         //normal是该方法传入的normal参数
-        //         //down时，offsetExtrude = aExtrude - normal - normal)，
-        //         // 因为aExtrude和normal垂直，根据矢量减法，extrude - normal - normal = -extrude
-        //         data.push(
-        //             EXTRUDE_SCALE * (extrudeX - normal.x),
-        //             EXTRUDE_SCALE * (extrudeY - normal.y),
-        //         );
-        //     }
-        // }
 
         if (this.iconAtlas) {
             index = data.aTexInfo.currentIndex;
@@ -1001,6 +1112,17 @@ export default class LinePack extends VectorPack {
             data.aLineDxDy[index++] = this.feaLineDx || 0;
             data.aLineDxDy[index++] = this.feaLineDy || 0;
             data.aLineDxDy.currentIndex = index;
+        }
+        if (lineOffsetFn) {
+            index = data.aLineOffset.currentIndex;
+            data.aLineOffset[index++] = Math.round(this.feaLineOffset || 0);
+            data.aLineOffset.currentIndex = index;
+
+            // 记录round帽顶点所在线段的法向，非帽顶点为0
+            index = data.aCapOffset.currentIndex;
+            data.aCapOffset[index++] = Math.round(capOffsetX);
+            data.aCapOffset[index++] = Math.round(capOffsetY);
+            data.aCapOffset.currentIndex = index;
         }
         // if (lineDyFn) {
         //     data.aLineDy.push(this.feaLineDy);

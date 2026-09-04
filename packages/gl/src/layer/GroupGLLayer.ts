@@ -4,6 +4,7 @@ import { vec3 } from 'gl-matrix';
 import { isNil, extend } from './util/util';
 import TerrainLayer from './terrain/TerrainLayer';
 import RayCaster from './raycaster/RayCaster';
+import BatchRayCaster from './raycaster/BatchRayCaster';
 import Mask from './mask/Mask';
 import { LayerJSONType } from 'maptalks';
 
@@ -75,6 +76,8 @@ export default class GroupGLLayer extends maptalks.Layer {
     //TODO 需要等analysis类型定义
     //@internal
     _analysisTaskList: Analysis[]
+    //@internal
+    _videoProjectionList: any[]
     //@internal
     _terrainLayer: TerrainLayer
     //@internal
@@ -318,6 +321,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         });
         this._layerMap = {};
         this.clearAnalysis();
+        this.clearVideoProjections();
         super.onRemove();
     }
 
@@ -428,6 +432,45 @@ export default class GroupGLLayer extends maptalks.Layer {
                 analysis.remove();
             });
             this._analysisTaskList = [];
+        }
+        const renderer = (this as any).getRenderer();
+        if (renderer) {
+            renderer.setToRedraw();
+        }
+    }
+
+    //@internal
+    addVideoProjection(projection: any) {
+        this._videoProjectionList = this._videoProjectionList || [];
+        this._videoProjectionList.push(projection);
+        const renderer = (this as any).getRenderer();
+        if (renderer) {
+            renderer.setToRedraw();
+        }
+    }
+
+    //@internal
+    removeVideoProjection(projection: any) {
+        if (this._videoProjectionList) {
+            const index = this._videoProjectionList.indexOf(projection);
+            if (index > -1) {
+                this._videoProjectionList.splice(index, 1);
+                projection.remove();
+            }
+        }
+        const renderer = (this as any).getRenderer();
+        if (renderer) {
+            renderer.setToRedraw();
+        }
+    }
+
+    //@internal
+    clearVideoProjections() {
+        if (this._videoProjectionList) {
+            this._videoProjectionList.slice().forEach(projection => {
+                projection.remove();
+            });
+            this._videoProjectionList = [];
         }
         const renderer = (this as any).getRenderer();
         if (renderer) {
@@ -665,6 +708,64 @@ export default class GroupGLLayer extends maptalks.Layer {
             return [null, 0];
         }
         return this._terrainLayer.queryTerrainByProjCoord(projCoord, out);
+    }
+
+    /**
+     * 自包含的批量场景表面高度查询。
+     * 不依赖各图层 getAnalysisMeshes 的聚合实现，直接从渲染器收集可分析 mesh：
+     * vt 图层从其内部 painter 的 scene 中收集全部 level 0 的 mesh（含 fill/gltf-lit 等），
+     * 其余图层（3dtiles 等）走官方 getAnalysisMeshes，地形单独处理。
+     * 对每个经纬度坐标发射垂直向下的射线，取命中的最高表面，返回该点高度（米）。
+     * @param coordinates - 经纬度坐标数组
+     * @returns 与坐标一一对应的结果数组：{ coordinate, height, mesh } 或 null（未命中）
+     */
+    queryHeightsAll(coordinates: maptalks.Coordinate[]): any[] {
+        const meshes = this._collectAllAnalysisMeshes();
+        return BatchRayCaster.test(coordinates, meshes, this.getMap());
+    }
+
+    //@internal
+    _collectAllAnalysisMeshes(): any[] {
+        const meshes = [];
+        const layers = this._getLayers();
+        for (let i = 0; i < layers.length; i++) {
+            const layer = layers[i] as any;
+            const renderer = layer.getRenderer && layer.getRenderer();
+            if (!renderer) {
+                continue;
+            }
+            if (renderer._getAllPlugins) {
+                // vt 渲染器：从内部 plugin painter 的 scene 收集 level 0 mesh（fill/gltf-lit 均在此）
+                renderer._getAllPlugins().forEach((plugin) => {
+                    if (!plugin || !plugin.painter || !plugin.painter.scene) {
+                        return;
+                    }
+                    const ms = plugin.painter.scene.getMeshes();
+                    if (ms && ms.length) {
+                        for (let j = 0; j < ms.length; j++) {
+                            if (ms[j].properties && ms[j].properties.level === 0) {
+                                meshes.push(ms[j]);
+                            }
+                        }
+                    }
+                });
+            } else if (renderer.getAnalysisMeshes) {
+                const ms = renderer.getAnalysisMeshes();
+                if (ms && ms.length) {
+                    meshes.push(...ms);
+                }
+            }
+        }
+        if (this._terrainLayer) {
+            const terrainRenderer = (this._terrainLayer as any).getRenderer();
+            if (terrainRenderer && terrainRenderer.getAnalysisMeshes) {
+                const ms = terrainRenderer.getAnalysisMeshes();
+                if (ms && ms.length) {
+                    meshes.push(...ms);
+                }
+            }
+        }
+        return meshes;
     }
 
     //@internal

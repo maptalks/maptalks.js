@@ -4,6 +4,8 @@ import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 import { isObjectEmpty } from './is_obj_empty';
 import deepEqual from 'fast-deep-equal';
 import { getVectorPacker } from '../../../../packer/inject';
+import { syncLineFnStorageRecords, isLineFnStorageMode } from './line_fn_storage';
+import { syncMarkerFnStorageRecords, isMarkerFnStorageMode } from './marker_fn_storage';
 
 const { StyleUtil } = getVectorPacker();
 
@@ -161,6 +163,9 @@ export function updateOneGeometryFnTypeAttrib(regl, layer, symbolDef, configs, m
     if (isObjectEmpty(features)) {
         return;
     }
+    // 本轮是否发生了逐顶点 fn-type 数据更新（新增/删除/值变化），
+    // 若 geometry 处于 line fn storage 模式，则需要同步逐 feature 的 storage records
+    let updated = false;
     // const layer = mesh.geometry.properties.layer;
     for (let i = 0; i < configs.length; i++) {
         const config = configs[i];
@@ -176,7 +181,9 @@ export function updateOneGeometryFnTypeAttrib(regl, layer, symbolDef, configs, m
                 continue;
             }
             //fn-type的二级stops与zoom有关，更新数据
-            updateFnTypeAttrib(geometry, aIndex, config, layer);
+            if (updateFnTypeAttrib(geometry, aIndex, config, layer)) {
+                updated = true;
+            }
             continue;
         }
         // debugger
@@ -193,6 +200,7 @@ export function updateOneGeometryFnTypeAttrib(regl, layer, symbolDef, configs, m
         const define = config.define;
         if (!arr) {
             //原有的arr和define要删除
+            updated = true;
             if (define) {
                 const defines = mesh.defines;
                 if (defines[define]) {
@@ -205,6 +213,8 @@ export function updateOneGeometryFnTypeAttrib(regl, layer, symbolDef, configs, m
             const aIndex = geometry.properties[aIndexPropName];
             //增加了新的fn-type arr，相应的需要增加define
             updateFnTypeAttrib(geometry, aIndex, config, layer);
+            // 新增了 fn-type 属性，storage records 需要重新打包（否则新字段读到的可能是上一次的旧值）
+            updated = true;
             if (layer._getFeatureStateStamp) {
                 geometry._featureTimestamp = layer._getFeatureStateStamp();
             }
@@ -215,6 +225,15 @@ export function updateOneGeometryFnTypeAttrib(regl, layer, symbolDef, configs, m
             }
             geometry.generateBuffers(regl);
         }
+    }
+    if (updated && isLineFnStorageMode(geometry)) {
+        // fn-type 数据有更新，重建并上传逐 feature 的 storage records
+        // （generateBuffers 已确保 geometry 中没有任何待暂存的 storage 数据，records 会立即上传）
+        syncLineFnStorageRecords(geometry);
+    } else if (updated && isMarkerFnStorageMode(geometry)) {
+        // marker/text（IconPainter / TextPainter）的 fn-type 数据有更新，
+        // 重建并上传逐 feature 的 storage records（见 marker_fn_storage.js）
+        syncMarkerFnStorageRecords(geometry);
     }
     let defines = mesh.defines;
     mesh.setDefines(defines);
@@ -292,6 +311,7 @@ function getFnTypePropertyStopValues(stops) {
  * @param {reshader.Geometry} geometry
  * @param {Array} aIndex
  * @param {Function} evaluate
+ * @returns {Boolean} 属性值是否发生了变化（用于判断是否需要同步 storage records）
  */
 function updateFnTypeAttrib(geometry, aIndex, config, layer) {
     const { attrName, evaluate, index, width } = config;
@@ -340,10 +360,12 @@ function updateFnTypeAttrib(geometry, aIndex, config, layer) {
             }
         }
     }
-    if (arr.dirty) {
+    if (arr && arr.dirty) {
         geometry.updateData(attrName, arr);
         arr.dirty = false;
+        return true;
     }
+    return false;
 }
 
 const SOURCE = {};

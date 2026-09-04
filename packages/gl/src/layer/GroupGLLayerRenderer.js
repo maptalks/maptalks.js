@@ -7,6 +7,7 @@ import EnvironmentPainter from './EnvironmentPainter';
 import WeatherPainter from './weather/WeatherPainter';
 import PostProcess from './postprocess/PostProcess.js';
 import AnalysisPainter from '../analysis/AnalysisPainter.js';
+import VideoProjectionPainter from './video-projection/VideoProjectionPainter.js';
 import ScanEffectPainter from './effect/ScanEffectPainter.js';
 import CanvasCompatible from './CanvasCompatible';
 
@@ -408,6 +409,9 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         if (this._weatherPainter && this._weatherPainter.isAnimating()) {
             return true;
         }
+        if (this._videoProjectionPainter && this._videoProjectionPainter.isAnimating()) {
+            return true;
+        }
         if (this.isEnableScanEffect()) {
             return true;
         }
@@ -523,6 +527,7 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         const weatherConfig = this.layer.getWeatherConfig();
         this._weatherPainter = new WeatherPainter(graphics, layer, weatherConfig);
         this._analysisPainter = new AnalysisPainter(graphics, layer);
+        this._videoProjectionPainter = new VideoProjectionPainter(graphics, layer);
         this._scanEffectPainter = new ScanEffectPainter(graphics, layer);
 
         const sceneConfig = this.layer._getSceneConfig() || {};
@@ -666,6 +671,10 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         if (this._weatherPainter) {
             this._weatherPainter.dispose();
             delete this._weatherPainter;
+        }
+        if (this._videoProjectionPainter) {
+            this._videoProjectionPainter.dispose();
+            delete this._videoProjectionPainter;
         }
         delete this.gl;
         delete this.regl;
@@ -998,6 +1007,23 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         return this._analysisPainter.paint(tex, layers);
     }
 
+    _renderVideoProjection(tex) {
+        const layers = this._getLayers().filter(layer => {
+            return layer.isVisible();
+        });
+        if (this.layer.getTerrainLayer()) {
+            layers.push(this.layer.getTerrainLayer());
+        }
+        return this._videoProjectionPainter.paint(tex, this._blitDepthTex(), layers);
+    }
+
+    _renderVideoProjectionFrustums() {
+        if (!this._targetFBO || !this._videoProjectionPainter) {
+            return;
+        }
+        this._videoProjectionPainter.renderFrustum(this._targetFBO);
+    }
+
     _updateIncludesState(context) {
         let state = false;
         const includeKeys = Object.keys(context.includes);
@@ -1296,9 +1322,10 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         // const bloomPainted = enableBloom && this._bloomPainted;
         // const enableAntialias = +!!(config.antialias && config.antialias.enable);
         const enableAnalysis = this._analysisPainter._hasAnalysis();
+        const enableVideoProjection = this._videoProjectionPainter._hasVideoProjection();
         const enableWeather = this._weatherPainter._hasWeather();
         const enableScanEffect = this.isEnableScanEffect();
-        const hasPost = /*enableSSAO || */enableBloom || enableSSR || enableAnalysis || enableWeather || enableScanEffect;
+        const hasPost = /*enableSSAO || */enableBloom || enableSSR || enableAnalysis || enableVideoProjection || enableWeather || enableScanEffect;
 
         let postFBO = this._postFBO;
         if (hasPost) {
@@ -1325,6 +1352,9 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
                 delete this._postFBO;
             }
         }
+
+        // 绘制视频投影视锥体线框（叠加到主场景 FBO，参与深度测试）
+        this._renderVideoProjectionFrustums();
 
         let tex = this._getFBOColor(this._targetFBO);
         // const noAaTex = this._noaaDrawCount && this._getFBOColor(this._noAaFBO);
@@ -1389,6 +1419,9 @@ class GroupGLLayerRenderer extends CanvasCompatible(LayerAbstractRenderer) {
         }
         if (this._analysisPainter) {
             tex = this._renderAnalysis(tex);
+        }
+        if (this._videoProjectionPainter && enableVideoProjection) {
+            tex = this._renderVideoProjection(tex);
         }
         if (this.isEnableWeather()) {
             tex = this._renderWeather(tex);

@@ -15,6 +15,7 @@ import { updateOneGeometryFnTypeAttrib } from './util/fn_type_util';
 import { GLYPH_SIZE, ICON_SIZE } from './Constant';
 import { createMarkerMesh, getMarkerFnTypeConfig, prepareMarkerGeometry, prepareDxDy, prepareLabelIndex, updateMarkerFitSize, BOX_VERTEX_COUNT, BOX_ELEMENT_COUNT } from './util/create_marker_painter';
 import { limitMarkerDefinesByDevice } from './util/limit_defines';
+import { isMarkerFnStorageMode, syncMarkerFnStorageRecords } from './util/marker_fn_storage';
 import { getVectorPacker } from '../../../packer/inject';
 import { INVALID_ALTITUDE } from '../../../common/Constant';
 
@@ -336,17 +337,25 @@ class IconPainter extends CollisionPainter {
             const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
             updateOneGeometryFnTypeAttrib(this.regl, this.layer, symbolDef, fnTypeConfig, meshes[i], z);
             const { aMarkerWidth, aMarkerHeight, aPadOffset } = geometry.properties;
+            let dirtyFitSize = false;
             if (aMarkerWidth && aMarkerWidth.dirty) {
                 geometry.updateData('aMarkerWidth', aMarkerWidth);
                 aMarkerWidth.dirty = false;
+                dirtyFitSize = true;
             }
             if (aMarkerHeight && aMarkerHeight.dirty) {
                 geometry.updateData('aMarkerHeight', aMarkerHeight);
                 aMarkerHeight.dirty = false;
+                dirtyFitSize = true;
             }
             if (aPadOffset && aPadOffset.dirty) {
                 geometry.updateData('aPadOffset', aPadOffset);
                 aPadOffset.dirty = false;
+            }
+            if (dirtyFitSize && isMarkerFnStorageMode(geometry)) {
+                // markerTextFit（updateMarkerFitSize）更新了 aMarkerWidth/aMarkerHeight，
+                // 这两个字段在 storage 模式下打包在 records 的 word0 中，需要重建并上传逐 feature 的 records
+                syncMarkerFnStorageRecords(geometry);
             }
         }
         super.addMesh(...arguments);
@@ -354,7 +363,7 @@ class IconPainter extends CollisionPainter {
 
     limitMeshDefines(mesh) {
         let defines = mesh.defines;
-        defines = limitMarkerDefinesByDevice(this.regl, defines);
+        defines = limitMarkerDefinesByDevice(this.regl, defines, isMarkerFnStorageMode(mesh.geometry));
         mesh.setDefines(defines);
     }
 

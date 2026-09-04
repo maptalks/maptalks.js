@@ -67,6 +67,10 @@ export default class BindGroupFormat {
             if (!uniform) {
                 continue;
             }
+            if (uniform.resourceType === ResourceType.Storage) {
+                // storage buffer 不走 uniform dynamic buffer 的分配路径，也没有 uniform 的 size
+                continue;
+            }
             if (uniform.isGlobal) {
                 let index = this._shaderUniforms.index;
                 this._shaderUniforms[index++] = uniform;
@@ -156,6 +160,16 @@ export default class BindGroupFormat {
                     binding: group.binding,
                     resource
                 });
+            } else if (group.resourceType === ResourceType.Storage) {
+                // 只读 storage buffer：资源来自 mesh.geometry 持有的 storage buffer
+                const geoStorage = mesh.geometry && mesh.geometry.getStorageData(group.name);
+                const gpuBuffer = geoStorage && geoStorage.buffer ? geoStorage.buffer : getEmptyStorageBuffer(device);
+                entries.push({
+                    binding: group.binding,
+                    resource: {
+                        buffer: gpuBuffer
+                    }
+                });
             } else {
                 const allocation = group.isGlobal ? shaderBuffer.allocation : meshBuffer.allocation;
                 entries.push({
@@ -203,4 +217,20 @@ export default class BindGroupFormat {
         delete this._meshUniforms;
         delete this.groups;
     }
+}
+
+// bind group layout 中的 storage binding 必须提供对应的资源，
+// 当 geometry 尚未生成 storage buffer 时（例如该 mesh 的 shader 声明了 storage 但实际未启用），
+// 用零长度的兜底 buffer 占位，避免 bind group 校验失败
+const emptyStorageBuffers = new WeakMap<GraphicsDevice, GPUBuffer>();
+function getEmptyStorageBuffer(device: GraphicsDevice): GPUBuffer {
+    let buffer = emptyStorageBuffers.get(device);
+    if (!buffer) {
+        buffer = device.wgpu.createBuffer({
+            size: 16,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+        });
+        emptyStorageBuffers.set(device, buffer);
+    }
+    return buffer;
 }

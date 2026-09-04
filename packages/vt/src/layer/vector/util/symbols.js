@@ -267,6 +267,12 @@ export const LINE_SYMBOL = {
         default: 2,
         property: '_symbol_lineWidth'
     },
+    //沿线法向偏移（像素），正值为线行进方向右侧，负值左侧
+    lineOffset: {
+        type: 'identity',
+        default: 0,
+        property: '_symbol_lineOffset'
+    },
     lineStrokeWidth: {
         type: 'identity',
         default: 0,
