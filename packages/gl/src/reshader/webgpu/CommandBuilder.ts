@@ -229,6 +229,16 @@ export default class CommandBuilder {
                 visibility,
                 texture
             };
+        } else if (groupInfo.resourceType === ResourceType.Storage) {
+            // 只读 storage buffer（如 line 逐 feature 的动态属性），不占 maxVertexBuffers 的顶点 buffer 名额，
+            // 因此不会被顶点 buffer 数量限制裁剪。buffer 在运行时绑定 geometry 持有的 storage buffer。
+            return {
+                binding,
+                visibility,
+                buffer: {
+                    type: 'read-only-storage'
+                }
+            };
         } else {
             return {
                 binding,
@@ -350,7 +360,10 @@ export default class CommandBuilder {
                 }
             } else {
                 const name = groupInfo.name;
-                if (!meshHasUniform(mesh, name, this.contextDesc)) {
+                if (groupInfo.resourceType === ResourceType.Storage) {
+                    // storage buffer 属于 geometry（mesh）级别的资源，不走 uniform 分配路径
+                    isGlobal = false;
+                } else if (!meshHasUniform(mesh, name, this.contextDesc)) {
                     isGlobal = true;
                 }
             }
@@ -518,7 +531,10 @@ function removeComment(str: string): string {
     if (!str) {
         return str;
     }
-    return str.replace(/[ \t]*\/\/.*\n/g, '') // remove //
+    // 先归一化 CRLF，否则 /\/\/.*\n/ 无法匹配 \r\n 行尾的注释，
+    // 残留注释中的文本会被 WGSLParseDefines 误当成 #if 表达式，导致解析错乱
+    return str.replace(/\r/g, '')
+        .replace(/[ \t]*\/\/.*\n/g, '') // remove //
         .replace(/[ \t]*\/\*[\s\S]*?\*\//g, ''); // remove /* */
 }
 

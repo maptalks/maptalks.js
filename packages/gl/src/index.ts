@@ -1,6 +1,7 @@
 import GroupGLLayer from './layer/GroupGLLayer';
 import GroundPainter from './layer/GroundPainter';
 import CanvasCompatible from './layer/CanvasCompatible';
+import './layer/video-projection';
 import './light/MapLights';
 import './map/MapPostProcess';
 export { default as MapGLRenderer } from  './map/MapGLRenderer';
@@ -9,6 +10,7 @@ export { default as MapGPURenderer } from  './map/MapGPURenderer';
 import * as HighlightUtil from './layer/util/highlight';
 import * as ContextUtil from './layer/util/context';
 export { GroupGLLayer, GroundPainter, CanvasCompatible, HighlightUtil, ContextUtil };
+export { VideoProjection } from './layer/video-projection';
 
 import './layer/TileLayerGLRenderer';
 import './map/MapGLRenderer';

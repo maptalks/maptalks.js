@@ -209,6 +209,14 @@ const GLTFMixin = Base =>
                         // castShadow: false,
                         picking: true
                     });
+                    // 原始实例数据（数组）供拾取/分析使用；mesh.instancedData 中是 regl buffer，无法读回
+                    mesh.insContext = {
+                        instanceData,
+                        tileTranslationMatrix,
+                        tileExtent,
+                        aPosition,
+                        positionSize
+                    };
                     if (gltfPack.hasSkinAnimation()) {
                         const skinObj = this._updateAnimation(mesh, i, 0)[nodeIndex];
                         mesh.setUniform('jointTexture', skinObj.jointTexture);

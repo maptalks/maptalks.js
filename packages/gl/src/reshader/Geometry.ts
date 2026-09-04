@@ -191,6 +191,14 @@ export default class Geometry {
     _isIndexed?: boolean
     //@internal
     _bufferGen?: boolean
+    //@internal
+    // 只读 storage buffer 的 CPU 数据（未生成 GPU buffer 前暂存），用于存放下一步的 storage buffer
+    _storageData: Record<string, AttributeData>
+    //@internal
+    // 已生成的 storage buffer：{ buffer: GPUBuffer, array: TypedArray }
+    _storage: Record<string, any>
+    //@internal
+    _storageVersion: number
 
     constructor(data: AttributeData, elements, count?: number, desc?: GeometryDesc) {
         this._version = 0;
@@ -219,6 +227,9 @@ export default class Geometry {
         this.properties = {};
         this._buffers = {};
         this._vao = {};
+        this._storageData = {};
+        this._storage = {};
+        this._storageVersion = 0;
         this.getVertexCount();
         this._prepareData(true);
         this.updateBoundingBox();
@@ -520,6 +531,9 @@ export default class Geometry {
         }
         this.data = buffers;
         delete this._reglData;
+        if (isWebGPU) {
+            this._generateStorageBuffers(device);
+        }
 
         // const supportVAO = isSupportVAO(regl);
         // const excludeElementsInVAO = options && options.excludeElementsInVAO;
@@ -707,6 +721,123 @@ export default class Geometry {
         return buffer;
     }
 
+    /**
+     * 递增 storage 数据的版本号，供 bind group 缓存判断是否需要在 storage buffer 创建/替换后重建 bind group。
+     * 注意：只有 GPU storage buffer 对象本身被创建或替换时才需要递增（storage 资源属于 bind group），
+     * 单纯的 writeBuffer 内容更新复用同一个 buffer，不需要重建 bind group。
+     */
+    //@internal
+    _incrStorageVersion() {
+        this._storageVersion++;
+    }
+
+    getStorageVersion(): number {
+        return this._storageVersion;
+    }
+
+    //@internal
+    // 生成只读 storage buffer（目前仅 webgpu 使用）。数据来自 setStorageData 暂存的 CPU 数组，
+    // 每条 feature 一条记录，用于承载 line 等动态逐属性数据，避免其占用 maxVertexBuffers 的顶点 buffer 名额。
+    _generateStorageBuffers(device) {
+        for (const name in this._storageData) {
+            const data = this._storageData[name];
+            if (!data) {
+                continue;
+            }
+            const storage = this._storage[name];
+            if (storage && storage.buffer) {
+                // 已有 GPU buffer，如果 CPU 数据被整体替换（例如 zoom 变化后生成了新的 records 数组），
+                // 需要重新上传，否则保持现状（GPU 内容可能已被 updateStorageData 等接口单独更新过）
+                if (storage.source !== data) {
+                    const oldBuffer = storage.buffer;
+                    storage.buffer = this._updateGPUBuffer(storage.buffer, data, 0, data.byteLength);
+                    storage.source = data;
+                    if (storage.buffer !== oldBuffer) {
+                        this._incrStorageVersion();
+                    }
+                }
+                continue;
+            }
+            this._storage[name] = {
+                buffer: createGPUBuffer(device, data, GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST, 'storage buffer ' + name),
+                source: data
+            };
+            this._incrStorageVersion();
+        }
+    }
+
+    /**
+     * 设置 storage 数据的 CPU 数组（typed array）。
+     * 在 geometry.generateBuffers 之前调用用于暂存数据（generateBuffers 时会创建 GPU buffer），
+     * 在 generateBuffers 之后调用则会整段更新 GPU buffer。
+     * storage buffer 只读绑定给 shader（var<storage, read>），更新走 GPU queue 的 writeBuffer。
+     */
+    setStorageData(name: string, data: TypedArray): this {
+        if (!data) {
+            return this;
+        }
+        data = normalizeStorageData(data);
+        this._storageData[name] = data;
+        const storage = this._storage[name];
+        if (storage && storage.buffer) {
+            // GPU buffer 已经生成，整段上传
+            const device = (storage.buffer as any).device;
+            if (storage.buffer.size >= data.byteLength) {
+                device.wgpu.queue.writeBuffer(storage.buffer, 0, data.buffer, 0, data.byteLength);
+            } else {
+                storage.buffer.destroy();
+                storage.buffer = createGPUBuffer(device, data, GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST, 'storage buffer ' + name);
+                this._incrStorageVersion();
+            }
+            storage.source = data;
+        }
+        return this;
+    }
+
+    /**
+     * 获取已生成的 storage buffer 及其 CPU 数据源。
+     * @returns {Object} 形如 { buffer: GPUBuffer, source: TypedArray }，未设置时返回 undefined
+     */
+    getStorageData(name: string) {
+        return this._storage[name];
+    }
+
+    /**
+     * 子范围更新 storage buffer（byteOffset 和 data 的字节长度都必须是 4 的倍数，records 按 feature 对齐时满足该条件）。
+     * 只在 GPU buffer 生成后有效。CPU 数据源由调用方自行维护。
+     */
+    updateStorageSubData(name: string, data: TypedArray, byteOffset: number): this {
+        const storage = this._storage[name];
+        if (!storage || !storage.buffer) {
+            return this;
+        }
+        if (byteOffset % 4 === 0 && data.byteLength % 4 === 0) {
+            // writeBuffer 内容更新复用同一个 buffer，bind group 无需重建，因此不递增 storage 版本
+            (storage.buffer as any).device.wgpu.queue.writeBuffer(storage.buffer, byteOffset, data.buffer, 0, data.byteLength);
+        } else {
+            // 无法做 4 字节对齐的子范围写入，合并进整段 CPU 数据后整体上传
+            const cpu = this._storageData[name];
+            if (cpu) {
+                for (let i = 0; i < data.length; i++) {
+                    cpu[i + byteOffset / (data as any).BYTES_PER_ELEMENT] = data[i];
+                }
+                this.setStorageData(name, cpu);
+            }
+        }
+        return this;
+    }
+
+    deleteStorageData(name: string): this {
+        const storage = this._storage[name];
+        if (storage && storage.buffer) {
+            storage.buffer.destroy();
+        }
+        delete this._storage[name];
+        delete this._storageData[name];
+        this._incrStorageVersion();
+        return this;
+    }
+
     updateSubData(name: string, data: AttributeData, offset: number): this {
         const buf = this.data[name];
         if (!buf) {
@@ -888,6 +1019,18 @@ export default class Geometry {
         }
         this.data = {};
         this._buffers = {};
+        for (const p in this._storage) {
+            if (hasOwn(this._storage, p)) {
+                const storage = this._storage[p];
+                const buffer = storage && storage.buffer;
+                if (buffer && !buffer[KEY_DISPOSED]) {
+                    buffer[KEY_DISPOSED] = true;
+                    buffer.destroy();
+                }
+            }
+        }
+        this._storage = {};
+        this._storageData = {};
         delete this._reglData;
         this.count = 0;
         this.elements = [];
@@ -1453,4 +1596,21 @@ function getPadArrayCtor(ctor, itemSize): any {
     } else {
         throw new Error('sth unexpected in getPadArrayCtor');
     }
+}
+
+// 将 storage 数据规范化成"独立的、字节长度是 4 的倍数"的 typed array：
+// storage buffer 的 size 以及 queue.writeBuffer 的写入字节数都要求是 4 的倍数，
+// 因此这里统一复制成完整数组，并对末尾不足 4 字节的数据做补位（records 本身按 4 字节对齐时补位不产生额外元素）
+function normalizeStorageData(data: TypedArray): TypedArray {
+    if (Array.isArray(data)) {
+        data = new Float32Array(data);
+    }
+    const ctor = data.constructor as any;
+    const byteLength = roundUp(data.byteLength, 4);
+    if (data.byteOffset % 4 === 0 && data.byteLength % 4 === 0) {
+        return data;
+    }
+    const array = new ctor(byteLength / ctor.BYTES_PER_ELEMENT);
+    array.set(data as any);
+    return array;
 }

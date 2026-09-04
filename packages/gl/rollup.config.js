@@ -213,25 +213,28 @@ module.exports = [
     }
 ];
 
-if (production) {
-    module.exports.push({
-        input: 'src/index.ts',
-        plugins: tsPlugins.concat(plugins),
-        external : externalPackages,
-        output: {
-            'sourcemap': true,
-            'format': 'es',
-            'globals' : {
-                'maptalks' : 'maptalks'
-            },
-            'file': 'build/dist/gl/gl.es.js'
-        }
-    });
-}
+// ES module 构建在 dev 和 production 下都必须输出：
+// 下游包（如 maptalks-gpu）通过 nodeResolve 的 module 字段引用 dist/maptalksgl.es.js，
+// 若 dev 构建不输出该文件，则只会更新 UMD 而 es.js 保持旧内容，下游将打包到过期的 shader/代码
+module.exports.push({
+    input: 'src/index-dev.js',
+    plugins: tsPlugins,
+    external : externalPackages,
+    output: {
+        'sourcemap': true,
+        'format': 'es',
+        'globals' : {
+            'maptalks' : 'maptalks'
+        },
+        banner,
+        outro,
+        'file': pkg.module
+    }
+});
 
 module.exports.push({
-    input: production ? 'build/index.js' : 'src/index-dev.js',
-    plugins: production ? configPlugins : tsPlugins,
+    input: 'src/index-dev.js',
+    plugins: tsPlugins,
     external : ['maptalks'],
     output: {
         'extend': true,
@@ -250,24 +253,6 @@ module.exports.push({
             'build/dist/**/*.js']
     }
 });
-
-if (production) {
-    module.exports.push({
-        input: 'src/index-dev.js',
-        plugins: tsPlugins,
-        external : externalPackages,
-        output: {
-            'sourcemap': true,
-            'format': 'es',
-            'globals' : {
-                'maptalks' : 'maptalks'
-            },
-            banner,
-            outro,
-            'file': pkg.module
-        }
-    });
-}
 
 module.exports.push({
     input: 'build/index.d.ts',

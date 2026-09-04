@@ -6,6 +6,7 @@ import { createAtlasTexture, getDefaultMarkerSize } from './atlas_util';
 import { prepareFnTypeData, PREFIX, isFnTypeSymbol } from './fn_type_util';
 import { prepareTextGeometry, initTextUniforms, initTextMeshDefines } from './create_text_painter';
 import { limitMarkerDefinesByDevice } from './limit_defines';
+import { prepareMarkerFnStorageForDevice, isMarkerFnStorageMode } from './marker_fn_storage';
 import { MapStateCache } from 'maptalks';
 // import { getIconBox } from './get_icon_box';
 
@@ -74,6 +75,10 @@ export function createMarkerMesh(
     }
 
     geometry.properties.memorySize = geometry.getMemorySize();
+    // WebGPU 下把 marker/text 的 fn-type / text-fit 动态外观按 feature 打包成只读 storage records
+    // （records 在 generateBuffers 时创建 GPU storage buffer），避免它们占用 maxVertexBuffers 的顶点 buffer 名额。
+    // 无 fn 逐顶点数组的纯常量外观继续走 per-mesh uniform 路径，不启用（见 hasMarkerFnAttrs）
+    prepareMarkerFnStorageForDevice(geometry, !regl['_gl']);
     // console.log('data', geometry.data);
     geometry.generateBuffers(regl, { excludeElementsInVAO: true });
 
@@ -118,6 +123,11 @@ export function createMarkerMesh(
     }
 
     initMeshDefines.call(this, geometry, defines);
+    if (isMarkerFnStorageMode(geometry)) {
+        // 该 geometry 的 marker/text fn-type 动态外观已打包进只读 storage records，
+        // shader 中不再为这些属性声明逐顶点 attribute（不占用顶点 buffer 名额），改为以 aPickingId 为下标读取
+        defines['HAS_MARKERS_STORAGE'] = 1;
+    }
     if (haloMesh) {
         const haloDefines = extend({}, defines);
         initTextMeshDefines.call(this, defines, haloMesh);
@@ -126,7 +136,7 @@ export function createMarkerMesh(
     if (hasText) {
         initTextMeshDefines.call(this, defines, mesh);
     }
-    defines = limitMarkerDefinesByDevice(regl, defines);
+    defines = limitMarkerDefinesByDevice(regl, defines, isMarkerFnStorageMode(geometry));
     mesh.setDefines(defines);
     mesh.setUniform('alphaTest', DEFAULT_ICON_ALPHA_TEST);
     mesh.setLocalTransform(transform);

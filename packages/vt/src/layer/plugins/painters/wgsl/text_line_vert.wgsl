@@ -28,6 +28,21 @@ struct ShaderUniforms {
 @group(0) @binding($b) var<uniform> uniforms: TextLineUniforms;
 @group(0) @binding($b) var<uniform> shaderUniforms: ShaderUniforms;
 
+#ifdef HAS_MARKERS_STORAGE
+// 纯文字（TextPainter）的 fn-type 动态外观属性按 feature 打包的只读 storage 记录。
+// 与 IconPainter 的 markerFnRecords 共用同一 10 字记录布局（marker_fn_storage.js 的 FN_STRIDE），
+// 纯文字只有 text 槽位有值，marker 槽位保持 0：
+// word0 markerWidth(u16)|markerHeight(u16), word1 markerOpacity(u8)|textOpacity(u8),
+// word2 dxdy(i8x4, 后两位为 textDx/textDy), word3 pitchAlign(u8x2, 高位为 text),
+// word4 rotationAlign(u8x2, 高位为 text), word5 rotation(u16x2, 高位为 text),
+// word6 textSize(u16), word7 textHaloRadius(u8)|textHaloOpacity(u8),
+// word8 textFill(rgba), word9 textHaloFill(rgba)
+struct TextFnRecords {
+    records: array<u32>,
+};
+@group(0) @binding($b) var<storage, read> markerFnRecords: TextFnRecords;
+#endif
+
 struct VertexInput {
 #ifdef HAS_ALTITUDE
     @location($i) aPosition: POSITION_TYPE_2,
@@ -45,28 +60,52 @@ struct VertexInput {
     @location($i) aOpacity: u32,
 #endif
 #ifdef HAS_OPACITY
-    @location($i) aColorOpacity: u32,
+    #ifndef HAS_MARKERS_STORAGE
+        @location($i) aColorOpacity: u32,
+    #endif
 #endif
 #ifdef HAS_TEXT_SIZE
-    @location($i) aTextSize: u32,
+    #ifndef HAS_MARKERS_STORAGE
+        @location($i) aTextSize: u32,
+    #endif
 #endif
 #ifdef HAS_TEXT_DX
-    @location($i) aTextDx: i32,
+    #ifndef HAS_MARKERS_STORAGE
+        @location($i) aTextDx: i32,
+    #endif
 #endif
 #ifdef HAS_TEXT_DY
-    @location($i) aTextDy: i32,
+    #ifndef HAS_MARKERS_STORAGE
+        @location($i) aTextDy: i32,
+    #endif
 #endif
 #ifdef HAS_PITCH_ALIGN
-    @location($i) aPitchAlign: u32,
+    #ifndef HAS_MARKERS_STORAGE
+        @location($i) aPitchAlign: u32,
+    #endif
 #endif
 #ifdef HAS_TEXT_FILL
-    @location($i) aTextFill: vec4u,
+    #ifndef HAS_MARKERS_STORAGE
+        @location($i) aTextFill: vec4u,
+    #endif
 #endif
 #ifdef HAS_TEXT_HALO_FILL
-    @location($i) aTextHaloFill: vec4u,
+    #ifndef HAS_MARKERS_STORAGE
+        @location($i) aTextHaloFill: vec4u,
+    #endif
 #endif
 #if HAS_TEXT_HALO_RADIUS || HAS_TEXT_HALO_OPACITY
-    @location($i) aTextHalo: vec2u,
+    #ifndef HAS_MARKERS_STORAGE
+        @location($i) aTextHalo: vec2u,
+    #endif
+#endif
+#ifndef PICKING_MODE
+    #ifdef HAS_MARKERS_STORAGE
+        // storage 模式下 fn 动态属性已打包进只读 storage buffer（不占用顶点 buffer 名额），
+        // 顶点只提供其所属 feature 的序号 aPickingId，作为 markerFnRecords 的下标。
+        // PICKING_MODE 编译中该属性由 <fbo_picking_vert> include 注入，这里无需重复声明
+        @location($i) aPickingId: f32,
+    #endif
 #endif
 };
 
@@ -97,26 +136,71 @@ fn main(input: VertexInput) -> VertexOutput {
     var output: VertexOutput;
     var position = unpackVTPosition(input);
 
+#ifdef HAS_MARKERS_STORAGE
+    // 逐 feature 记录读取：同一 feature（同一 label/文字）的 text fn-type 外观取值相同（packing 时逐 run 填充），
+    // 因此打包成一条记录，顶点以 aPickingId（feature 序号）为下标读取，不再占用顶点 buffer 名额。
+    // 记录布局必须与 vt 端 marker_fn_storage.js（FN_STRIDE/FIELD_DEFS）保持一致，每条固定 10 个 u32，
+    // 纯文字只使用 text 槽位（word1 高 u8、word2 后两字节、word3/4/5 高位、word6-9），marker 槽位为 0：
+    // word0 markerWidth(u16)|markerHeight(u16), word1 markerOpacity(u8)|textOpacity(u8),
+    // word2 dxdy(i8x4), word3 pitchAlign(u8x2), word4 rotationAlign(u8x2),
+    // word5 rotation(u16x2), word6 textSize(u16), word7 haloRadius(u8)|haloOpacity(u8),
+    // word8 textFill(rgba), word9 textHaloFill(rgba)
+    let recBase = u32(input.aPickingId) * 10u;
+    let recOpacityWord = markerFnRecords.records[recBase + 1u];
+    let recTextOpacity = (recOpacityWord >> 8u) & 0xffu;
+    // dx/dy 各占一个字节，用左移再算术右移做 int8 符号扩展还原（x/y/z/w 依次对应 markerDx/markerDy/textDx/textDy）
+    let recDxDyWord = bitcast<i32>(markerFnRecords.records[recBase + 2u]);
+    let recTextDx = (recDxDyWord << 8) >> 24;
+    let recTextDy = recDxDyWord >> 24;
+    let recPitchAlignWord = markerFnRecords.records[recBase + 3u];
+    let recTextPitchAlign = (recPitchAlignWord >> 8u) & 0xffu;
+    let recTextSize = markerFnRecords.records[recBase + 6u] & 0xffffu;
+    let recHaloWord = markerFnRecords.records[recBase + 7u];
+    let recTextHaloRadius = recHaloWord & 0xffu;
+    let recTextHaloOpacity = (recHaloWord >> 8u) & 0xffu;
+    // 颜色按 bit24-31 r / bit16-23 g / bit8-15 b / bit0-7 a 还原成 vec4u
+    let recTextFillWord = markerFnRecords.records[recBase + 8u];
+    let recTextFill = vec4u((recTextFillWord >> 24u) & 0xffu, (recTextFillWord >> 16u) & 0xffu, (recTextFillWord >> 8u) & 0xffu, recTextFillWord & 0xffu);
+    let recTextHaloFillWord = markerFnRecords.records[recBase + 9u];
+    let recTextHaloFill = vec4u((recTextHaloFillWord >> 24u) & 0xffu, (recTextHaloFillWord >> 16u) & 0xffu, (recTextHaloFillWord >> 8u) & 0xffu, recTextHaloFillWord & 0xffu);
+#endif
+
 #ifdef HAS_TEXT_DX
-    var myTextDx = f32(input.aTextDx);
+    #ifdef HAS_MARKERS_STORAGE
+        var myTextDx = f32(recTextDx);
+    #else
+        var myTextDx = f32(input.aTextDx);
+    #endif
 #else
     var myTextDx = uniforms.textDx;
 #endif
 
 #ifdef HAS_TEXT_DY
-    var myTextDy = f32(input.aTextDy);
+    #ifdef HAS_MARKERS_STORAGE
+        var myTextDy = f32(recTextDy);
+    #else
+        var myTextDy = f32(input.aTextDy);
+    #endif
 #else
     var myTextDy = uniforms.textDy;
 #endif
 
 #ifdef HAS_TEXT_SIZE
-    var myTextSize = f32(input.aTextSize) * shaderUniforms.layerScale;
+    #ifdef HAS_MARKERS_STORAGE
+        var myTextSize = f32(recTextSize) * shaderUniforms.layerScale;
+    #else
+        var myTextSize = f32(input.aTextSize) * shaderUniforms.layerScale;
+    #endif
 #else
     var myTextSize = uniforms.textSize * shaderUniforms.layerScale;
 #endif
 
 #ifdef HAS_PITCH_ALIGN
-    var isPitchWithMap = f32(input.aPitchAlign);
+    #ifdef HAS_MARKERS_STORAGE
+        var isPitchWithMap = f32(recTextPitchAlign);
+    #else
+        var isPitchWithMap = f32(input.aPitchAlign);
+    #endif
 #else
     var isPitchWithMap = uniforms.textPitchWithMap;
 #endif
@@ -183,19 +267,35 @@ fn main(input: VertexInput) -> VertexOutput {
     output.vOpacity = 1.0;
 #endif
 #ifdef HAS_OPACITY
-    output.vOpacity *= f32(input.aColorOpacity) / 255.0;
+    #ifdef HAS_MARKERS_STORAGE
+        output.vOpacity *= f32(recTextOpacity) / 255.0;
+    #else
+        output.vOpacity *= f32(input.aColorOpacity) / 255.0;
+    #endif
 #endif
 
 #ifdef HAS_TEXT_FILL
-    output.vTextFill = vec4f(input.aTextFill) / 255.0;
+    #ifdef HAS_MARKERS_STORAGE
+        output.vTextFill = vec4f(recTextFill) / 255.0;
+    #else
+        output.vTextFill = vec4f(input.aTextFill) / 255.0;
+    #endif
 #endif
 
 #ifdef HAS_TEXT_HALO_FILL
-    output.vTextHaloFill = vec4f(input.aTextHaloFill) / 255.0;
+    #ifdef HAS_MARKERS_STORAGE
+        output.vTextHaloFill = vec4f(recTextHaloFill) / 255.0;
+    #else
+        output.vTextHaloFill = vec4f(input.aTextHaloFill) / 255.0;
+    #endif
 #endif
 
 #if HAS_TEXT_HALO_RADIUS || HAS_TEXT_HALO_OPACITY
-    output.vTextHalo = vec2f(input.aTextHalo);
+    #ifdef HAS_MARKERS_STORAGE
+        output.vTextHalo = vec2f(f32(recTextHaloRadius), f32(recTextHaloOpacity));
+    #else
+        output.vTextHalo = vec2f(input.aTextHalo);
+    #endif
 #endif
 #if HAS_HIGHLIGHT_COLOR || HAS_HIGHLIGHT_OPACITY
     highlight_setVarying(input, &output);

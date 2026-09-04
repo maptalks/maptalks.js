@@ -10,11 +10,20 @@ async function initGPUDevice() {
         return { gpuDevice, gpuAdapter };
     }
     gpuAdapter = await navigator.gpu?.requestAdapter();
-    gpuDevice = await gpuAdapter?.requestDevice({
-        // requiredLimits: {
-        //     maxVertexBuffers: 16
-        // }
-    });
+    // WebGPU 默认每个 pipeline 最多 8 个 vertex buffer，而 vector 渲染路径中
+    // 同一条线的多 symbol 合并进同一 geometry（含逐feature深度偏置 aLineDepthBias 等）
+    // 可能同时需要 9 个以上的顶点属性，超限会导致 limit_defines.js 按 maxVertexBuffers
+    // 把 HAS_LINE_DEPTH_BIAS 等 defines 裁剪掉（表现为 GPU 后端失效）。
+    // 因此把设备上限提高到适配器支持范围以内的 16。
+    let requestOptions: any;
+    if (gpuAdapter && gpuAdapter.limits && gpuAdapter.limits.maxVertexBuffers > 8) {
+        requestOptions = {
+            requiredLimits: {
+                maxVertexBuffers: Math.min(16, gpuAdapter.limits.maxVertexBuffers)
+            }
+        };
+    }
+    gpuDevice = await gpuAdapter?.requestDevice(requestOptions);
     return { gpuDevice, gpuAdapter };
 }
 

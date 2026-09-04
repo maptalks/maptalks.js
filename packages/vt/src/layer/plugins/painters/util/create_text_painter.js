@@ -9,6 +9,7 @@ import {
 } from '../../Util';
 import { DEFAULT_ICON_ALPHA_TEST } from '../Constant';
 import { prepareFnTypeData, PREFIX, isFnTypeSymbol } from './fn_type_util';
+import { isMarkerFnStorageMode, prepareMarkerFnStorageForDevice } from './marker_fn_storage';
 import { isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
 import Color from 'color';
 import { getAnchor, getLabelBox } from './get_label_box';
@@ -68,6 +69,10 @@ export function createTextMesh(regl, geometry, transform, symbolDef, symbol, fnT
     }
 
     geometry.properties.memorySize = geometry.getMemorySize();
+    // WebGPU 下把 text 的 fn-type 动态外观按 feature 打包成只读 storage records
+    // （records 在 generateBuffers 时创建 GPU storage buffer），避免它们占用 maxVertexBuffers 的顶点 buffer 名额。
+    // 无 fn 逐顶点数组的纯常量外观继续走 per-mesh uniform 路径，不启用（见 hasMarkerFnAttrs）
+    prepareMarkerFnStorageForDevice(geometry, !regl['_gl']);
     geometry.generateBuffers(regl, { excludeElementsInVAO: true });
     const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
     const mesh = new reshader.Mesh(geometry, material, {
@@ -101,6 +106,12 @@ export function createTextMesh(regl, geometry, transform, symbolDef, symbol, fnT
     meshes.forEach(m => {
         const defines = m.defines || {};
         initTextMeshDefines.call(this, defines, m);
+        if (isMarkerFnStorageMode(geometry)) {
+            // 该 text geometry 的 fn-type 动态外观已打包进只读 storage records，
+            // shader 中不再为这些属性声明逐顶点 attribute（不占用顶点 buffer 名额），改为以 aPickingId 为下标读取。
+            // 正文与 halo mesh 共享同一 geometry，都需要该宏（读同一份 records）
+            defines['HAS_MARKERS_STORAGE'] = 1;
+        }
         m.setDefines(defines);
         m.properties.symbolIndex = geometry.properties.symbolIndex;
     });

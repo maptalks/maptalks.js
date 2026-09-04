@@ -65,10 +65,22 @@ uniform float isRenderingTerrain;
 #ifndef HAS_LINE_DY
     uniform float lineDy;
 #endif
-// uniform float lineOffset;
+#ifdef HAS_LINE_OFFSET
+    attribute float aLineOffset;
+    // round帽(线端半圆帽)顶点：所在线段单位法向(EXTRUDE_SCALE倍)，供帽顶点刚性平移；非帽顶点为0
+    attribute vec2 aCapOffset;
+#endif
+#ifdef USE_LINE_OFFSET
+    uniform float lineOffset;
+#endif
 uniform vec2 canvasSize;
 
 uniform float layerScale;
+
+// 同一几何的多个 symbol（如线宽10描边 + 线宽8主线）被拆成多个独立 mesh 绘制，它们完全共面，
+// 深度只差浮点噪声，倾斜视角下会 z-fighting 闪烁。
+// lineDepthBias 为按 symbol 绘制序号递增的 NDC 深度偏置，使后绘制（上层）的线确定性地靠近相机。
+uniform float lineDepthBias;
 
 varying vec2 vNormal;
 varying vec2 vWidth;
@@ -77,14 +89,15 @@ varying float vGammaScale;
     varying vec2 vPosition;
 #endif
 
-#ifdef USE_LINE_OFFSET
-    attribute vec2 aExtrudeOffset;
-#endif
-
 #ifdef HAS_LINE_WIDTH
     attribute float aLineWidth;
 #else
     uniform float lineWidth;
+#endif
+
+#ifdef HAS_LINE_DEPTH_BIAS
+    // vector渲染中同一条线的多symbol被合并进同一顶点缓冲，这里按feature（symbol顺序）存放NDC深度偏置
+    attribute float aLineDepthBias;
 #endif
 
 #ifndef PICKING_MODE
@@ -174,12 +187,22 @@ void main() {
         vVertex = (modelMatrix * positionMatrix * pos4).xyz;
     }
 
-    // 使用顶点高程投影后的vertex.w与投影到地面(z=0)后的groundVertex.w的比值来补偿透视投影导致的线宽变化
-    // vertex.w是裁剪空间W值，等于视图空间深度，在WebGL和WebGPU中计算方式一致
-    // 当顶点有高程时，vertex.w小于groundVertex.w，depthRatio<1，挤出偏移量被缩小，线宽与地面线保持一致
-    // 不能用cameraToCenterDistance替代groundVertex.w，否则无高程的顶点在倾斜视角下也会被错误缩放
-    vec4 groundVertex = projViewModelMatrix * positionMatrix * vec4(position.xy, 0.0, 1.0);
-    float depthRatio = vertex.w / groundVertex.w;
+    // 地形皮肤模式下projViewMatrix为单位矩阵，vertex.w与cameraToCenterDistance不在同一坐标系，
+    // 因此地形模式继续使用顶点深度与地面投影点深度的比值来补偿线宽
+    // 非地形模式下，使用相机深度比例缩放挤出偏移量，使线宽在屏幕上保持恒定像素宽度
+    // vertex.w是裁剪空间W值(视图空间深度)，cameraToCenterDistance是相机到视图中心的距离
+    // 挤出偏移量乘以vertex.w/cameraToCenterDistance后，透视投影的1/w效应被抵消，线宽不再随深度近大远小
+    // 该比例同时隐式补偿了顶点高程：有高程的顶点vertex.w更小，缩放更小，线宽与地面线保持一致
+    float widthScale;
+    if (isRenderingTerrain == 1.0) {
+        vec4 groundVertex = projViewModelMatrix * positionMatrix * vec4(position.xy, 0.0, 1.0);
+        widthScale = vertex.w / groundVertex.w;
+    } else {
+        // 线延伸到相机后方时该顶点vertex.w为负，若直接相除widthScale变负，会使挤出方向翻转
+        // 且vWidth变负导致片元中描边/芯线分层错乱；相机后方的几何最终被近平面裁剪，
+        // 这里钳制为0，只让线在越过相机的交界处平滑收拢到中心线，不再产生颜色翻转
+        widthScale = max(vertex.w, 0.0) / cameraToCenterDistance;
+    }
 
     #ifdef HAS_STROKE_WIDTH
         float strokeWidth = aLineStrokeWidth / 2.0 * layerScale;
@@ -202,16 +225,32 @@ void main() {
 
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
-    #ifdef USE_LINE_OFFSET
-        vec2 offset = lineOffset * (vNormal.y * (aExtrude.xy - aExtrudeOffset) + aExtrudeOffset);
-        vec2 dist = (outset * aExtrude.xy + offset) / EXTRUDE_SCALE;
+    #if defined(USE_LINE_OFFSET) || defined(HAS_LINE_OFFSET)
+        // lineOffset（像素）：为线增加一个沿自身法向（垂直于线方向）的偏移，
+        // 偏移后的线整体平移在原来线的一侧，正值向线行进方向的右侧偏移，负值向左。
+        // 上下两半顶点分别增减 offset，等价于把整条带宽刚性平移到法向一侧，
+        // miter 顶点因 extrude 自带 miterLength 倍率，顶点位移自动放大，保证偏移后 join 依然闭合。
+        #ifdef HAS_LINE_OFFSET
+            float myLineOffset = aLineOffset;
+        #else
+            float myLineOffset = lineOffset;
+        #endif
+        vec2 extrude = aExtrude.xy / EXTRUDE_SCALE;
+        vec2 lineOffsetDist = myLineOffset * vNormal.y * extrude;
+        #ifdef HAS_LINE_OFFSET
+            // round帽（线端半圆帽）顶点需要让整个帽随所在线段法向刚性平移，
+            // 否则帽会沿各自对角线extrude方向被拉扯变形
+            vec2 capAxis = aCapOffset / EXTRUDE_SCALE;
+            lineOffsetDist = mix(lineOffsetDist, -myLineOffset * capAxis, vNormal.x);
+        #endif
+        vec2 dist = outset * extrude + lineOffsetDist;
     #else
         vec2 extrude = aExtrude.xy / EXTRUDE_SCALE;
         vec2 dist = outset * extrude;
     #endif
 
-    // 按深度比例缩放挤出偏移量，补偿透视投影
-    dist *= depthRatio;
+    // 按宽度缩放比例缩放挤出偏移量，抵消透视投影导致的线宽近大远小
+    dist *= widthScale;
 
     float resScale = tileResolution / resolution;
     // if (isRenderingTerrain == 1.0) {
@@ -257,17 +296,30 @@ void main() {
     float projDistance = gl_Position.w;
     gl_Position.xy += vec2(myLineDx, myLineDy) * 2.0 / canvasSize * projDistance;
 
+    // 共面 symbol 深度分离：后绘制（symbolIndex 更大）的 mesh 通过 lineDepthBias 把 NDC 深度
+    // 确定性地向相机偏移，避免与先绘制的描边完全共面时交替胜负导致 z-fighting 闪烁。
+    gl_Position.z -= lineDepthBias * projDistance;
+
+    #ifdef HAS_LINE_DEPTH_BIAS
+        // vector渲染中同一条线的多symbol被合并在同一mesh内绘制，无法用mesh级uniform区分，
+        // 需要按feature（aLineDepthBias）逐顶点偏移NDC深度，使后一个symbol确定性地更靠近相机，
+        // 从而避免共面描边/主线在倾斜视角下z-fighting闪烁。
+        gl_Position.z -= aLineDepthBias * projDistance;
+    #endif
+
     #ifndef PICKING_MODE
-        vWidth = vec2(outset * depthRatio, inset * depthRatio);
+        vWidth = vec2(outset * widthScale, inset * widthScale);
         if (isRenderingTerrain == 1.0) {
             vGammaScale = 1.0;
         } else {
-            vGammaScale = projDistance / cameraToCenterDistance;
+            // 与widthScale同理，相机后方顶点的projDistance为负会使vGammaScale为负，
+            // 片元抗锯齿blur2随之变负导致alpha计算错误，钳制为0
+            vGammaScale = max(projDistance, 0.0) / cameraToCenterDistance;
         }
         #ifndef ENABLE_TILE_STENCIL
             vPosition = position.xy;
-            #ifdef USE_LINE_OFFSET
-                vPosition += tileRatio * offset / EXTRUDE_SCALE;
+            #if defined(USE_LINE_OFFSET) || defined(HAS_LINE_OFFSET)
+                vPosition += lineOffsetDist * widthScale * tileRatio / resScale;
             #endif
         #endif
 

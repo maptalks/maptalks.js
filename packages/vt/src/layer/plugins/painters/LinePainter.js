@@ -8,12 +8,84 @@ import frag from './glsl/line.frag';
 import pickingVert from './glsl/line.vert';
 import { setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar, isNil } from '../Util';
 import { prepareFnTypeData, isFnTypeSymbol } from './util/fn_type_util';
+import { canEnableLineFnStorage, enableLineFnStorage, isLineFnStorageMode, prepareLineFnStorageRecords, storeLineFnConstantValues, getLineFnConstantAttrValues } from './util/line_fn_storage';
 import { createAtlasTexture } from './util/atlas_util';
 import { isFunctionDefinition, piecewiseConstant, interpolated } from '@maptalks/function-type';
 import { limitLineDefinesByDevice } from './util/limit_defines';
 
 const IDENTITY_ARR = mat4.identity([]);
 const TEMP_CANVAS_SIZE = [];
+
+// 同一几何的多个 symbol（如线宽10的描边 + 线宽8的主线）在 vt 的瓦片渲染中会被拆成多个 mesh（symbolIndex 递增），
+// 需要 mesh 级 NDC 深度偏置（见 lineDepthBias uniform），使后绘制（上层）的 mesh 确定性地略靠近相机；
+// 而在 vector 渲染路径（LineStringLayer 等）中，同一条线的多个 symbol 会被合并进同一个 mesh 的同一顶点缓冲，
+// 只能通过逐 feature 的顶点属性 aLineDepthBias（见 prepareFeatureDepthBias）区分。
+const LINE_SYMBOL_DEPTH_BIAS = 1e-4;
+
+// 计算单个 symbol mesh 的 NDC 深度偏置（瓦片渲染中同一线的多 symbol 被拆成多个 mesh 的场景）。
+// vt 管线中传入 createMesh 的 symbolIndex 是 { index: N } 形式的对象（见 Painter.getSymbolDef），
+// 直接对对象做乘法会得到 NaN，导致顶点深度为 NaN、线整体绘制不出来，这里统一安全取值。
+export function getLineDepthBias(symbolIndex) {
+    const index = symbolIndex && symbolIndex.index !== undefined ? symbolIndex.index : symbolIndex;
+    const biasIndex = parseInt(index, 10);
+    return (isFinite(biasIndex) && biasIndex > 0 ? biasIndex : 0) * LINE_SYMBOL_DEPTH_BIAS;
+}
+
+// vector 渲染路径（非瓦片图层）中，同一条线的多个 symbol 会被 convertToFeature 拆成多个共享同一 id 的 feature，
+// 并合并在同一个 geometry/顶点缓冲中一次绘制，它们完全共面，倾斜视角下深度只差插值噪声，产生 z-fighting 闪烁。
+// 这里按 feature 在其所属几何 symbol 数组中的顺序（即 packing 顺序）计算 NDC 深度偏置，
+// 写入逐顶点属性 aLineDepthBias，使后一个 symbol（语义上绘制在上层）确定性地更靠近相机。
+// 注意偏置只把"下层的 symbol"（非最上层）向远离相机方向推：同一线的最上层 symbol 仍保持在 feature 所在的平面深度（偏置 0），
+// 否则上层的 symbol 会因其 NDC 深度偏置浮到其他无关 feature（例如同图层中另一条线、渐变线）之上，破坏原先由绘制顺序决定的层叠关系。
+// features 中不存在多 symbol 几何时不做任何处理，不改变普通线条的顶点格式。
+function prepareFeatureDepthBias(geometry) {
+    const aPickingId = geometry.properties.aPickingId || geometry.data.aPickingId;
+    const features = geometry.properties.features;
+    if (!aPickingId || !aPickingId.length || !features) {
+        return false;
+    }
+    const count = {};
+    const ord = {};
+    let hasMultiSymbol = false;
+    for (const key in features) {
+        const feaObj = features[key];
+        const feature = feaObj && (feaObj.feature || feaObj);
+        if (!feature || feature.id === undefined) {
+            continue;
+        }
+        const id = feature.id;
+        const c = count[id] || 0;
+        count[id] = c + 1;
+        ord[key] = c;
+        if (c > 0) {
+            hasMultiSymbol = true;
+        }
+    }
+    if (!hasMultiSymbol) {
+        return false;
+    }
+    const len = aPickingId.length;
+    const arr = new Float32Array(len);
+    let start = 0;
+    let current = aPickingId[0];
+    for (let i = 1; i <= len; i++) {
+        if (i === len || aPickingId[i] !== current) {
+            // 同一 feature 的所有顶点连续（aPickingId 相同），按 feature 填统一的偏置
+            const total = count[current];
+            if (total > 1) {
+                // 只有同一线的多 symbol 之间才需要区分深度：最上层 symbol 偏置为 0，下层 symbol 依次向后推
+                const bias = (ord[current] - (total - 1)) * LINE_SYMBOL_DEPTH_BIAS;
+                if (bias !== 0) {
+                    arr.fill(bias, start, i);
+                }
+            }
+            current = aPickingId[i];
+            start = i;
+        }
+    }
+    geometry.data['aLineDepthBias'] = arr;
+    return true;
+}
 
 class LinePainter extends BasicPainter {
 
@@ -99,13 +171,23 @@ class LinePainter extends BasicPainter {
         if (ref === undefined) {
             const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
             prepareFnTypeData(geometry, symbolDef, fnTypeConfig, this.layer);
+            // vector（非瓦片）图层的同一条多symbol线会被合并进同一geometry，需要逐 feature 的深度偏置
+            // 避免共面 z-fighting；瓦片图层每条线的多 symbol 会拆成独立 mesh，由 lineDepthBias uniform 处理
+            geometry.properties.hasFeatureDepthBias = !(this.layer instanceof maptalks.TileLayer) && prepareFeatureDepthBias(geometry);
+            // WebGPU 下把 fn-type 的动态属性打包成逐 feature 的只读 storage records，
+            // 避免它们占用 maxVertexBuffers 的顶点 buffer 名额（records 在 generateBuffers 时创建 GPU buffer）。
+            // 纯常量外观（无 fn 逐顶点数组）的线条同样启用，常量字段按本 mesh 的 symbol 取值打包
+            this._enableLineFnStorage(geometry, symbolDef);
         }
 
         const symbol = this.getSymbol(symbolIndex);
         const uniforms = {
             tileResolution: geometry.properties.tileResolution,
             tileRatio: geometry.properties.tileRatio,
-            tileExtent: geometry.properties.tileExtent
+            tileExtent: geometry.properties.tileExtent,
+            // 瓦片渲染中同一条线的多 symbol 被拆成多个 mesh 绘制时，按 symbolIndex 递增的 NDC 深度偏置（见 shader 中 lineDepthBias）。
+            // 注意 symbolIndex 在这里是 { index: N } 形式的对象，直接相乘会产生 NaN，需要安全取值。
+            lineDepthBias: getLineDepthBias(symbolIndex)
         };
         this.setLineUniforms(symbol, uniforms);
 
@@ -187,6 +269,23 @@ class LinePainter extends BasicPainter {
         if (geometry.data.aAltitude) {
             defines['HAS_ALTITUDE'] = 1;
         }
+        if (geometry.properties.hasFeatureDepthBias) {
+            //同一条线的多symbol被合并进同一mesh绘制，启用逐feature（逐顶点）的NDC深度偏置以解决共面z-fighting
+            defines['HAS_LINE_DEPTH_BIAS'] = 1;
+        }
+        if (isLineFnStorageMode(geometry)) {
+            // 该 geometry 的 fn-type 动态属性已打包进只读 storage buffer，
+            // shader 中不再为这些属性声明逐顶点 attribute（不占用顶点 buffer 名额），改为按 feature 下标读取
+            defines['HAS_LINES_STORAGE'] = 1;
+        }
+        // 存在逐顶点aLineOffset属性时，用属性驱动偏移，无需再开启uniform方式的USE_LINE_OFFSET
+        if (!geometry.data.aLineOffset) {
+            const lineOffset = symbol['lineOffset'];
+            if (!isNil(lineOffset) && !isFunctionDefinition(lineOffset) && lineOffset !== 0) {
+                //开启沿线法向偏移（像素），在顶点着色器中把整条带宽平移到线的一侧
+                defines['USE_LINE_OFFSET'] = 1;
+            }
+        }
         mesh.setDefines(defines);
         return mesh;
     }
@@ -245,34 +344,55 @@ class LinePainter extends BasicPainter {
         setUniformFromSymbol(uniforms, 'lineDy', symbol, 'lineDy', 0);
         setUniformFromSymbol(uniforms, 'linePatternAnimSpeed', symbol, 'linePatternAnimSpeed', 0);
         setUniformFromSymbol(uniforms, 'linePatternGap', symbol, 'linePatternGap', 0);
-        // setUniformFromSymbol(uniforms, 'lineOffset', symbol, 'lineOffset', 0);
     }
 
     setMeshDefines(defines, geometry, symbolDef) {
-        if (geometry.data.aOpacity) {
+        const isStorage = isLineFnStorageMode(geometry);
+        if (isStorage) {
+            // storage 模式下这 5 个外观字段的值全部打包在逐 feature 的 records 里
+            // （字段没有 fn 逐顶点数组时使用该 mesh symbol 的常量值，见 storeLineFnConstantValues），
+            // 因此 define 一律放行：否则 WGSL 会回退到 per-mesh 动态 uniform，而 WebGPU 顶点阶段
+            // 动态 uniform 对 lineStrokeWidth 等部分字段上传不可靠（实际读到 0），导致外观丢失
+            defines['HAS_COLOR'] = 1;
             defines['HAS_OPACITY'] = 1;
-        }
-        if (geometry.data.aLineWidth) {
             defines['HAS_LINE_WIDTH'] = 1;
-        }
-        if (geometry.data.aLineStrokeWidth) {
             defines['HAS_STROKE_WIDTH'] = 1;
+            defines['HAS_STROKE_COLOR'] = 1;
+        } else {
+            if (geometry.data.aOpacity) {
+                defines['HAS_OPACITY'] = 1;
+            }
+            if (geometry.data.aLineWidth) {
+                defines['HAS_LINE_WIDTH'] = 1;
+            }
+            if (geometry.data.aLineStrokeWidth) {
+                defines['HAS_STROKE_WIDTH'] = 1;
+            }
         }
-        if (isFnTypeSymbol(symbolDef['lineDx'])) {
+        if (geometry.data.aLineOffset) {
+            // 存在逐顶点aLineOffset属性（pack 会同时生成 aCapOffset）时，用 storage records / 属性驱动偏移
+            defines['HAS_LINE_OFFSET'] = 1;
+        }
+        // 需要 shader 的 dx/dy 分支的情形：fn-type 的 lineDx/lineDy、存在逐顶点 aLineDxDy 数据，
+        // 或 storage 模式下非零的常量 dx/dy（取值已随 aLineDxDy 打包进 records，按 records 读取；
+        // WebGL 常量 dx/dy 仍走 uniform 路径，避免 glsl 声明没有数据的 attribute）
+        if (geometry.data.aLineDxDy || isFnTypeSymbol(symbolDef['lineDx']) || isStorage && this._isNonZeroConst(symbolDef['lineDx'])) {
             defines['HAS_LINE_DX'] = 1;
         }
-        if (isFnTypeSymbol(symbolDef['lineDy'])) {
+        if (geometry.data.aLineDxDy || isFnTypeSymbol(symbolDef['lineDy']) || isStorage && this._isNonZeroConst(symbolDef['lineDy'])) {
             defines['HAS_LINE_DY'] = 1;
         }
-        // if (symbol['lineOffset']) {
-        //     defines['USE_LINE_OFFSET'] = 1;
-        // }
         if (isFnTypeSymbol(symbolDef['linePatternAnimSpeed'])) {
             defines['HAS_PATTERN_ANIM'] = 1;
         }
         if (isFnTypeSymbol(symbolDef['linePatternGap'])) {
             defines['HAS_PATTERN_GAP'] = 1;
         }
+    }
+
+    // symbol 取值是否为非零常量（非 fn-type）：storage 模式下非零常量 dx/dy 应走 records 读取
+    _isNonZeroConst(value) {
+        return !isNil(value) && !isFunctionDefinition(value) && value !== 0;
     }
 
     paint(context) {
@@ -363,8 +483,10 @@ class LinePainter extends BasicPainter {
         const aLineStrokeWidthFn = interpolated(symbolDef['lineStrokeWidth']);
         const aLineDxFn = interpolated(symbolDef['lineDx']);
         const aLineDyFn = interpolated(symbolDef['lineDy']);
+        const aLineOffsetFn = piecewiseConstant(symbolDef['lineOffset']);
         const u16 = new Uint16Array(1);
         const i8 = new Int8Array(1);
+        const i16 = new Int16Array(1);
         return [
             {
                 attrName: 'aLineWidth',
@@ -397,6 +519,26 @@ class LinePainter extends BasicPainter {
                     //乘以2是为了解决 #190
                     u16[0] = Math.round(lineStrokeWidth * 2.0);
                     return u16[0];
+                }
+            },
+            {
+                attrName: 'aLineOffset',
+                symbolName: 'lineOffset',
+                type: Int16Array,
+                width: 1,
+                define: 'HAS_LINE_OFFSET',
+                evaluate: (properties, geometry) => {
+                    const cache = maptalks.MapStateCache[map.id];
+                    const zoom = cache ? cache.zoom : map.getZoom();
+                    let lineOffset = aLineOffsetFn(zoom, properties);
+                    if (isFunctionDefinition(lineOffset)) {
+                        lineOffset = this.evaluateInFnTypeConfig(lineOffset, geometry, map, properties);
+                    }
+                    if (isNil(lineOffset)) {
+                        lineOffset = 0;
+                    }
+                    i16[0] = Math.round(lineOffset);
+                    return i16[0];
                 }
             },
             {
@@ -592,8 +734,31 @@ class LinePainter extends BasicPainter {
 
     limitMeshDefines(mesh) {
         let defines = mesh.defines;
-        defines = limitLineDefinesByDevice(this.regl, defines);
+        defines = limitLineDefinesByDevice(this.regl, defines, isLineFnStorageMode(mesh.geometry));
         mesh.setDefines(defines);
+    }
+
+    // WebGPU 下把 line 的 fn-type 动态属性（同一 feature 的所有顶点取值相同）打包进只读 storage records，
+    // shader 从 storage 按 feature 读取，不再为这些属性占用 maxVertexBuffers 的顶点 buffer 名额。
+    // WebGL/GLSL 渲染路径保持原样（仍使用逐顶点 attribute）。
+    // 纯常量外观（没有任何 fn-type 逐顶点数组）的线条同样启用：WebGPU 下只要 geometry 带
+    // aPickingId（feature 序号）即可按 feature 打包 records。缺少逐顶点数组的字段回退到
+    // storeLineFnConstantValues 保存的本 mesh symbol 常量取值，渲染时外观字段一律从 records 读取，
+    // 不再回退到 per-mesh 动态 uniform（WebGPU 动态 uniform 对部分顶点阶段字段上传不可靠，
+    // 见 lineStrokeWidth 在 GPU 下读到 0 的问题）。
+    _enableLineFnStorage(geometry, symbolDef) {
+        if (!this.isWebGPU()) {
+            return;
+        }
+        if (!canEnableLineFnStorage(geometry)) {
+            return;
+        }
+        // 保存常量外观字段的取值（attributeName -> 与 fn 逐顶点数组同单位的取值数组），
+        // syncLineFnStorageRecords 打包 records 时对缺少 fn 逐顶点数组的字段回退使用
+        storeLineFnConstantValues(geometry, getLineFnConstantAttrValues(symbolDef));
+        enableLineFnStorage(geometry);
+        // 打包 records 并暂存到 geometry，generateBuffers 时会创建 GPU storage buffer
+        prepareLineFnStorageRecords(geometry);
     }
 
 

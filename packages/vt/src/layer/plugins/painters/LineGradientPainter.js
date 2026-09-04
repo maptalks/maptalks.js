@@ -1,12 +1,14 @@
 import * as maptalks from 'maptalks';
-import LinePainter from './LinePainter';
+import LinePainter, { getLineDepthBias } from './LinePainter';
 import { reshader, getWGSLSource } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
+import { isFunctionDefinition } from '@maptalks/function-type';
 import vert from './glsl/line.vert';
 import frag from './glsl/line.gradient.frag';
 import { prepareFnTypeData } from './util/fn_type_util';
 import { ID_PROP } from '../../vector/util/convert_to_feature';
 import { LINE_GRADIENT_PROP_KEY } from '../../vector/util/symbols';
+import { isNil } from '../Util';
 
 const GRADIENTS_COUNT_TO_WARN = 2048;
 
@@ -129,7 +131,10 @@ class LineGradientPainter extends LinePainter {
         const uniforms = {
             tileResolution: geometry.properties.tileResolution,
             tileRatio: geometry.properties.tileRatio,
-            tileExtent: geometry.properties.tileExtent
+            tileExtent: geometry.properties.tileExtent,
+            // 与 LinePainter.createMesh 保持一致：line.vert 中按 symbolIndex 递增的 NDC 深度偏置
+            // 避免多 symbol 共面线的 z-fighting，缺失该 uniform 会导致顶点深度为 NaN、渐变线绘制不出来
+            lineDepthBias: getLineDepthBias(symbolIndex)
         };
 
         const symbol = this.getSymbol(symbolIndex);
@@ -157,6 +162,14 @@ class LineGradientPainter extends LinePainter {
             defines['HAS_ALTITUDE'] = 1;
         }
         this.setMeshDefines(defines, geometry, symbolDef);
+        // 存在逐顶点aLineOffset属性时，用属性驱动偏移，无需再开启uniform方式的USE_LINE_OFFSET
+        if (!geometry.data.aLineOffset) {
+            const lineOffset = symbol['lineOffset'];
+            if (!isNil(lineOffset) && !isFunctionDefinition(lineOffset) && lineOffset !== 0) {
+                //开启沿线法向偏移（像素），在顶点着色器中把整条带宽平移到线的一侧
+                defines['USE_LINE_OFFSET'] = 1;
+            }
+        }
         mesh.setDefines(defines);
         mesh.properties.symbolIndex = symbolIndex;
         return mesh;
