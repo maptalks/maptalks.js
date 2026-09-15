@@ -69,11 +69,11 @@ export function updateImageMeshLocalTransform(mesh, extent2d, offset, scale, til
     mesh.localTransform = localTransform;
 }
 
-export function updateFilter(mesh: reshader.Mesh, map: maptalks.Map, res: number) {
+export function updateFilter(mesh: reshader.Mesh, map: maptalks.Map, res: number, mipmapTexture = false) {
     const cache = maptalks.MapStateCache[map.id];
     const zoom = cache ? cache.zoom : map.getZoom();
     const dpr = cache ? cache.devicePixelRatio : map.getDevicePixelRatio();
-    const minFilter = getTexMinFilter(map, zoom);
+    const minFilter = getTexMinFilter(map, zoom, mipmapTexture);
 
     if (mesh.properties.minFilter !== minFilter) {
         const baseColorTexture = (mesh.material.get('baseColorTexture') as any);
@@ -83,7 +83,9 @@ export function updateFilter(mesh: reshader.Mesh, map: maptalks.Map, res: number
     const resized = map.getResolution() !== res;
 
     let magFilter: number = WebGLConstants.GL_NEAREST;
-    if (dpr !== 1 || resized) {
+    if (mipmapTexture) {
+        magFilter = WebGLConstants.GL_LINEAR;
+    } else if (dpr !== 1 || resized) {
         magFilter = WebGLConstants.GL_LINEAR;
     }
     if (mesh.properties.magFilter !== magFilter) {
@@ -93,7 +95,10 @@ export function updateFilter(mesh: reshader.Mesh, map: maptalks.Map, res: number
     }
 }
 
-function getTexMinFilter(map: maptalks.Map, zoom: number) {
+function getTexMinFilter(map: maptalks.Map, zoom: number, mipmapTexture = false) {
+    if (mipmapTexture) {
+        return WebGLConstants.GL_LINEAR_MIPMAP_LINEAR;
+    }
     const blurTexture = map.isMoving() && map.getRenderer().isViewChanged();
     let minFilter;
     if (blurTexture) {

@@ -40,7 +40,7 @@ class ImageLayerGLRenderer2 extends TexturePoolable(CanvasCompatible(ImageLayerR
             (image as any).mesh = mesh;
         }
         const map = this.getMap();
-        updateFilter(mesh, map, map.getGLRes());
+        updateFilter(mesh, map, map.getGLRes(), !!this.layer.options['mipmapTexture']);
         if (map.getRenderer().canvas === this.canvas) {
             let layerOpacity = this.layer.options['opacity'];
             if (isNil(layerOpacity)) {
