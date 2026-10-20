@@ -1830,7 +1830,7 @@ export default class TileMeshPainter {
         const uniforms = getPBRUniforms(map, iblTexes, dfgLUT);
         const renderer = this._layer.getRenderer();
         const maskUniforms = renderer.getMaskUniforms();
-        uniforms.minAltitude = layer.options.altitude || 0;
+        uniforms.minAltitude = layer.options.altitude / 100 || 0;
         let layerOpacity = layer.options['opacity'];
         layerOpacity = isNil(layerOpacity) ? 1 : layerOpacity;
         uniforms.layerOpacity = layerOpacity;
