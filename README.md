@@ -208,3 +208,12 @@ Change to:
 ```js
 it.only('spec name', () => {});
 ```
+
+## Publish
+```shell
+pnpm changeset
+pnpm changeset-version
+pnpm changeset-tag
+```
+
+Create a release note on github, then github action will do the rest jobs.
