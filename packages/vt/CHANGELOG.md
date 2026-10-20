@@ -1,5 +1,16 @@
 # @maptalks/vt
 
+## 0.125.0
+
+### Minor Changes
+
+- some features and many fixes
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/vt-plugin@0.125.0
+
 ## 0.124.4
 
 ### Patch Changes

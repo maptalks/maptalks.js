@@ -1,5 +1,16 @@
 # @maptalks/gpu
 
+## 0.125.0
+
+### Minor Changes
+
+- some features and many fixes
+
+### Patch Changes
+
+- Updated dependencies
+  - @maptalks/gl@0.125.0
+
 ## 0.124.4
 
 ### Patch Changes
