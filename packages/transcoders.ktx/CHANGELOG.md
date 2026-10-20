@@ -1,5 +1,11 @@
 # @maptalks/transcoders.ktx2
 
+## 0.126.0
+
+### Minor Changes
+
+- upgrade maptalks
+
 ## 0.125.0
 
 ### Minor Changes

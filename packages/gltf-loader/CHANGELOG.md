@@ -1,5 +1,11 @@
 # @maptalks/gltf-loader
 
+## 0.126.0
+
+### Minor Changes
+
+- upgrade maptalks
+
 ## 0.125.0
 
 ### Minor Changes
