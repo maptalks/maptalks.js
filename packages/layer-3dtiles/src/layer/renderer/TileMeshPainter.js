@@ -843,7 +843,7 @@ export default class TileMeshPainter {
                 ready = false;
                 unreadyCount++;
             }
-            const mesh = new reshader.InstancedMesh(instanceBuffers, instanceCount, geometry, material);
+            const mesh = new reshader.InstancedMesh(instanceBuffers, instanceCount, geometry, material, { transparent: gltfResource.transparent });
             if (!gltfResource.refMeshes) {
                 gltfResource.refMeshes = new Set();
                 gltfResource.refMeshes.add(mesh.uuid);
@@ -982,7 +982,7 @@ export default class TileMeshPainter {
                 ready = false;
                 unreadyCount++;
             }
-            const mesh = new reshader.Mesh(geometry, material);
+            const mesh = new reshader.Mesh(geometry, material, { transparent: gltfResource.transparent });
             if (!gltfResource.refMeshes) {
                 gltfResource.refMeshes = new Set();
                 gltfResource.refMeshes.add(mesh.uuid);
@@ -1382,6 +1382,9 @@ export default class TileMeshPainter {
         // 效率更高的做法是为他们单独创建buffer后赋给Geometry
         // 程序中无需管理buffer的销毁，Geometry中会维护buffer的引用计数来管理buffer的销毁
         const matInfo = gltf.materials && gltf.materials[gltfMesh.material];
+        const alphaMode = matInfo && matInfo.alphaMode && matInfo.alphaMode.toUpperCase();
+        // alphaMode为BLEND的材质走透明渲染通道（在_getExtraCommandProps中关闭深度写入）
+        const transparent = alphaMode === 'BLEND';
         const khrTechniquesWebgl = gltf.extensions && gltf.extensions['KHR_techniques_webgl'];
         const service =  this._layer._getNodeService(node._rootIdx);
         if (khrTechniquesWebgl && matInfo.extensions && matInfo.extensions['KHR_techniques_webgl']) {
@@ -1406,6 +1409,13 @@ export default class TileMeshPainter {
                 const alphaTest = service['alphaTest'];
                 if (!isNil(alphaTest)) {
                     return alphaTest;
+                }
+                // glTF规范中只有alphaMode为MASK的材质才需要用alpha做裁剪，
+                // OPAQUE/BLEND材质的alpha应被忽略（cesium中这些材质的alphaTest为0）。
+                // 如果统一沿用默认的0.1，顶点色alpha小于0.1的数据（例如25/255=0.098）会被整片discard，
+                // 导致模型的一部分看起来“没有加载”
+                if (alphaMode === 'OPAQUE' || alphaMode === 'BLEND') {
+                    return 0;
                 }
                 return 0.1;
             });
@@ -1434,7 +1444,7 @@ export default class TileMeshPainter {
         }
 
         const gltfGeo = {
-            geometry, material
+            geometry, material, transparent
         };
         geometry.properties.url = url;
         this._cachedGLTF[url] = gltfGeo;
@@ -1785,6 +1795,8 @@ export default class TileMeshPainter {
             },
             depth: {
                 enable: true,
+                // alphaMode为BLEND的透明网格不写深度，避免其透明区域遮挡后面的瓦片
+                mask: (_, props) => !props.meshConfig.transparent,
                 func: (_, props) => {
                     return props.meshProperties.depthFunc || '<=';
                 }
