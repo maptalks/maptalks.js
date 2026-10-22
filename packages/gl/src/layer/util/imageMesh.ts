@@ -62,7 +62,7 @@ export function updateImageMeshLocalTransform(mesh, extent2d, offset, scale, til
     const point = TILE_POINT.set(extent2d.xmin - offset[0], extent2d.ymax - offset[1]);
     const x = point.x * scale,
         y = point.y * scale,
-        z = tileInfo.layerAlt || 0;
+        z = tileInfo && tileInfo.layerAlt || 0;
     const localTransform = mat4.identity([] as any);
     mat4.translate(localTransform, localTransform, [x || 0, y || 0, z]);
     mat4.scale(localTransform, localTransform, [scale * width, scale * height, 1]);

@@ -2,11 +2,11 @@ import * as maptalks from 'maptalks';
 import { LayerImageType, PointExtent } from 'maptalks';
 import * as reshader from '../reshader';
 import TexturePoolable from './TexturePoolable';
-import { createImageMesh, updateFilter } from './util/imageMesh';
+import { createImageMesh, updateFilter, updateImageMeshLocalTransform } from './util/imageMesh';
 import { isNil } from './util/util';
 import CanvasCompatible from './CanvasCompatible';
 
-const { LayerAbstractRenderer, ImageLayerRenderable } = maptalks.renderer;
+const { LayerAbstractRenderer, ImageLayerRenderable, testNeedUpdateAltitude } = maptalks.renderer;
 
 const positionData = new Int16Array([
     0, 0, 0, -1, 1, 0, 1, -1
@@ -15,6 +15,20 @@ const positionData = new Int16Array([
 const texCoords = new Uint16Array([
     0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0
 ]);
+
+const IMAGE_SCALE = 1;
+
+/**
+ * ImageLayer has no tiles, but createImageMesh/updateImageMeshLocalTransform need a tileInfo
+ * to carry layerAlt (layer.options.altitude), so keep a lightweight tileInfo on each image,
+ * the same way as the core ImageLayerGLRenderer does.
+ */
+function getImageTileInfo(image: LayerImageType) {
+    if (!(image as any).tileInfo) {
+        (image as any).tileInfo = {};
+    }
+    return (image as any).tileInfo;
+}
 
 
 class ImageLayerGLRenderer2 extends TexturePoolable(CanvasCompatible(ImageLayerRenderable(LayerAbstractRenderer))) {
@@ -34,10 +48,15 @@ class ImageLayerGLRenderer2 extends TexturePoolable(CanvasCompatible(ImageLayerR
     }
 
     drawImage(image: LayerImageType, extent: PointExtent, opacity: number) {
+        const tileInfo = getImageTileInfo(image);
+        const needUpdateAltitude = testNeedUpdateAltitude(this.layer, tileInfo);
         let mesh: reshader.Mesh = (image as any).mesh;
         if (!mesh) {
-            mesh = this._createImageMesh(image, extent);
+            mesh = this._createImageMesh(image, extent, tileInfo);
             (image as any).mesh = mesh;
+        } else if (needUpdateAltitude) {
+            // layer.options.altitude changed, recompute mesh's z
+            updateImageMeshLocalTransform(mesh, extent, null, IMAGE_SCALE, tileInfo);
         }
         const map = this.getMap();
         updateFilter(mesh, map, map.getGLRes());
@@ -53,9 +72,8 @@ class ImageLayerGLRenderer2 extends TexturePoolable(CanvasCompatible(ImageLayerR
         this._imageMeshes.push(mesh);
     }
 
-    _createImageMesh(image: LayerImageType, extent: PointExtent) {
-        const scale = 1;
-        const mesh = createImageMesh.call(this, this._imageGeometry, image, extent, null, scale);
+    _createImageMesh(image: LayerImageType, extent: PointExtent, tileInfo?: any) {
+        const mesh = createImageMesh.call(this, this._imageGeometry, image, extent, null, IMAGE_SCALE, null, tileInfo);
         const texture = mesh.material.get('baseColorTexture') as reshader.Texture2D;
         (image as any).texture = texture;
         return mesh;

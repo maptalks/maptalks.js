@@ -128,6 +128,8 @@ class ImageLayer extends Layer {
     }
 }
 
+ImageLayer.registerJSONType('ImageLayer');
+
 ImageLayer.mergeOptions(options);
 
 const EMPTY_ARRAY = [];
