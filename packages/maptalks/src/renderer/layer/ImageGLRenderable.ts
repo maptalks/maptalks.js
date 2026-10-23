@@ -404,7 +404,7 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
          * Load image into a text and bind it with WebGLContext
          * @param image
          */
-        loadTexture(image: TileImageType, resized = false): TileImageTexture {
+        loadTexture(image: TileImageType, _resized = false): TileImageTexture {
             const gl = this.gl;
             let texture = image.texture;   // Create a texture object
             if (!texture) {
@@ -414,19 +414,8 @@ const ImageGLRenderable = function <T extends MixinConstructor>(Base: T) {
             gl.bindTexture(gl.TEXTURE_2D, texture);
             const genMipmap = this.layer.options['mipmapTexture'];
             if (genMipmap) {
-                const map = (this as any).getMap();
-                const dpr = (this as any).mapDPR || map.getDevicePixelRatio();
-                if (map.isMoving() && map.getRenderer().isViewChanged()) {
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-                } else {
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-                }
-                if (dpr !== 1 || resized) {
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-                } else {
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-                }
-
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             }
             return texture;
         }
@@ -663,8 +652,9 @@ function resize(image: TileImageType): TileImageType {
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    ctx.imageSmoothingEnabled = false;
+    const ctx = canvas.getContext('2d')!;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(image, 0, 0, width, height);
     return canvas;
 }

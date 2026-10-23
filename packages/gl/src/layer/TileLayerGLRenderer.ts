@@ -172,7 +172,7 @@ class TileLayerGLRenderer2 extends TexturePoolable(CanvasCompatible(TileLayerRen
             mesh.setDefines({});
         }
 
-        updateFilter(mesh, map, tileInfo.res);
+        updateFilter(mesh, map, tileInfo.res, !!this.layer.options['mipmapTexture']);
 
         let opacity = this.getTileOpacity(tileImage, tileInfo);
         let layerOpacity = this.layer.options['opacity'];
