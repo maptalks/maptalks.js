@@ -6,7 +6,7 @@ import * as maptalks from 'maptalks';
 import { quat, vec2, vec3, mat3, mat4, MaskLayerMixin, ClipOutsideMask } from '@maptalks/gl';
 //https://github.com/fuzhenn/frustum-intersects
 import { intersectsSphere, intersectsOrientedBox } from 'frustum-intersects';
-import { isFunction, extend, isNil, toRadian, toDegree, getAbsoluteURL, isBase64, pushIn } from '../common/Util';
+import { isFunction, isNumber, extend, isNil, toRadian, toDegree, getAbsoluteURL, isBase64, pushIn } from '../common/Util';
 import { isRelativeURL } from '../common/UrlUtil';
 import { DEFAULT_MAXIMUMSCREENSPACEERROR } from '../common/Constants';
 import Geo3DTilesRenderer from './renderer/Geo3DTilesRenderer';
@@ -813,9 +813,14 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         if (maximumScreenSpaceError === undefined || maximumScreenSpaceError === null) {
             maximumScreenSpaceError = DEFAULT_MAXIMUMSCREENSPACEERROR;
         }
-        let error = this._getScreenSpaceError(node);
-        if (error === 0.0 && node.parent) {
-            error = (node.parent._error || 0) * 0.5;
+        // 父瓦片是ADD精化时，父瓦片的内容会一直绘制，子瓦片只是在其之上叠加更精细的内容，
+        // 此时应像cesium一样用父瓦片的geometricError来判定子瓦片是否需要加载，
+        // 否则子瓦片自身的geometricError很小(例如0.01)，会被误判为“不需要加载”而永远不被请求
+        const parent = node.parent;
+        const useParentGeometricError = !!(parent && parent.refine === 'add');
+        let error = this._getScreenSpaceError(node, useParentGeometricError);
+        if (error === 0.0 && parent) {
+            error = (parent._error || 0) * 0.5;
         }
         return error >= maximumScreenSpaceError ? TileVisibility.VISIBLE : TileVisibility.SCREEN_ERROR_TOO_SMALL;
     }
@@ -1239,11 +1244,15 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
      * Compute tile's SSE
      * from Cesium
      * 与cesium不同的是，我们用boundingVolume顶面的四个顶点中的最小值作为distanceToCamera
+     * @param {Boolean} [useParentGeometricError=false] 是否用父瓦片的geometricError参与计算，
+     * 用于ADD精化：父瓦片内容会一直保留，子瓦片只是叠加更精细的内容，
+     * 因此判断子瓦片是否需要加载，要看父层的精度在该子瓦片范围是否已经足够（对齐cesium的meetsScreenSpaceErrorEarly）
      */
     //@internal
-    _getScreenSpaceError(node: TileNode): number {
+    _getScreenSpaceError(node: TileNode, useParentGeometricError?: boolean): number {
         const fovDenominator = this._fovDenominator;
-        const geometricError = node.geometricError;
+        const parentGeometricError = node.parent && node.parent.geometricError;
+        const geometricError = useParentGeometricError && isNumber(parentGeometricError) ? parentGeometricError : node.geometricError;
         if (geometricError === 0) {
             node._error = 0;
             return 0;
