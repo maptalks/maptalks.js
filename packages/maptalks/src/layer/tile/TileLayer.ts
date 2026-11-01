@@ -601,9 +601,9 @@ class TileLayer extends Layer {
      *       需要提高log2(r)级分辨率才能保持同样的清晰度（相邻zoom级别瓦片尺寸减半）
      *    3. 海拔为0时 dist === dist0，ratio为1，加载级别正好等于maxZoom
      * 2. pitch因素：pitch越大，相机视线越倾斜，瓦片在屏幕上被拉伸越明显，
-     *    同等分辨率下瓦片越模糊，pitch >= 60° 时提1级（见 _getPitchZoomOffset）。
-     *    pitch提级只与视角有关、与瓦片内容无关，帧间稳定，不会引起加载震荡，
-     *    因此没有真实海拔的瓦片也按pitch提级
+     *    同等分辨率下瓦片越模糊，pitch >= 60° 时将海拔提级的logRatio放大2倍（见 _getPitchZoomFactor）。
+     *    pitch只影响放大倍数，dist0与dist接近时logRatio≈0，放大后仍≈0，
+     *    不会导致无海拔差距的瓦片凭空提级；没有真实海拔的瓦片也不提级
      * 最终上限为 this.getMaxZoom() 与 maxAvailableZoom 中的较小值
      * 注意：海拔提级只使用瓦片自身的真实海拔（地形数据解析后赋值），
      * 没有真实海拔的瓦片不做海拔提级，避免用全局平均海拔导致整屏瓦片提级和加载震荡
@@ -621,15 +621,15 @@ class TileLayer extends Layer {
         if (maxZoom >= absoluteMax) {
             return maxZoom;
         }
-        const map = this.map;
-        const pitchZoomOffset = this._getPitchZoomOffset(map.getPitch());
-        // 只使用瓦片自身解析出的真实海拔，不能回退到renderer.avgMaxAltitude（全局平均）
-        // 否则没有地形数据的瓦片全部按高海拔提级，且加载后海拔变化会引起加载-丢弃-重加载震荡
         const maxAltitude = node.maxAltitude;
         if (isNil(maxAltitude)) {
-            return Math.min(maxZoom + pitchZoomOffset, absoluteMax);
+            return maxZoom;
         }
-        const minAltitude = node.minAltitude || 0;
+        const map = this.map;
+        if (maxAltitude * this._zScale >= map.cameraPosition[2]) {
+            return maxZoom;
+        }
+
         const glScale = node.res / glRes;
         const { xmin, ymin, xmax, ymax } = node.extent2d;
         TILE_MIN[0] = (xmin - offset[0]) * glScale;
@@ -642,27 +642,28 @@ class TileLayer extends Layer {
         // @ts-ignore
         const dist0 = Math.max(Math.abs(distanceToRect(TILE_MIN, TILE_MAX, map.cameraPosition)), 1E-7);
         // 实际海拔下，相机到瓦片的距离，海拔越高距离越近
-        TILE_MIN[2] = minAltitude * this._zScale;
+        TILE_MIN[2] = maxAltitude * this._zScale;
         TILE_MAX[2] = maxAltitude * this._zScale;
         // @ts-ignore
         const dist = Math.max(Math.abs(distanceToRect(TILE_MIN, TILE_MAX, map.cameraPosition)), 1E-7);
         // 距离比：海拔抬升使表观尺寸放大的倍数，海拔为0时为1
         const logRatio = Math.log2(Math.max(dist0 / dist, 1));
-        // 海拔提级与pitch提级相加，pitch提级只与视角有关，帧间稳定，不会引起加载震荡
-        const zoomOffset = Math.round(logRatio) + pitchZoomOffset;
+        // pitch只放大logRatio：dist0与dist接近时logRatio≈0，放大后仍≈0，不会凭空提级；
+        // 有海拔差距时，大pitch下瓦片被拉伸更模糊，适当放大提级倍数
+        const zoomOffset = Math.round(logRatio) * this._getPitchZoomFactor(map.getPitch());
         // console.log(zoomOffset);
         return Math.min(maxZoom + zoomOffset, absoluteMax);
     }
 
     /**
-     * 根据地图pitch计算额外提级，最多提1级
-     * pitch >= 60° 时，视角明显倾斜，瓦片在屏幕上被拉伸，同等分辨率的瓦片显得模糊，提1级；
-     * pitch < 60° 时不提级，避免低pitch时瓦片数量增加
+     * 根据地图pitch计算logRatio的放大倍数
+     * pitch >= 60° 时视角明显倾斜，瓦片在屏幕上被拉伸、更模糊，海拔提级放大2倍；
+     * 其他情况不放大（倍数为1）。pitch本身不产生提级，只放大海拔提级的效果
      * @param pitch - 地图pitch，单位为度，0表示俯视
      */
     //@internal
-    _getPitchZoomOffset(pitch: number): number {
-        return pitch >= 60 ? 1 : 0;
+    _getPitchZoomFactor(pitch: number): number {
+        return pitch >= 60 ? 2 : 1;
     }
 
     //@internal
