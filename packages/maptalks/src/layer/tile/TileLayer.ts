@@ -101,6 +101,7 @@ class TileHashset {
  * @property             [options.bufferPixel=0.5]       - tile buffer size,the unit is pixel
  * @property             [options.depthMask=true]       - mask to decide whether to write depth buffer
  * @property             [options.tileErrorScale=1]     - scale for tile's geometric error, default is 1
+ * @property             [options.dynamicZoomByDistance=false] - dynamically increase tile's loading zoom based on its altitude, the higher the altitude (the closer to camera), the higher zoom will be loaded, useful when terrain altitude is high and camera is close to ground
  * @memberOf TileLayer
  * @instance
  */
@@ -167,7 +168,10 @@ const options: TileLayerOptionsType = {
     'depthMask': true,
     'currentTilesFirst': true,
     'forceRenderOnMoving': true,
-    'tileErrorScale': 1
+    'tileErrorScale': 1,
+
+    // 根据瓦片海拔动态提高瓦片加载级别，解决地形海拔很高、相机离地面很近时瓦片模糊的问题
+    'dynamicZoomByDistance': false
 };
 
 const URL_PATTERN = /\{ *([\w_]+) *\}/g;
@@ -499,6 +503,11 @@ class TileLayer extends Layer {
         const fullExtent = this._getTileFullExtent();
 
         const offset0 = this._getTileOffset(0);
+        if (!this._zScale) {
+            const map = this.getMap();
+            const glRes = map.getGLRes();
+            this._zScale = (map.altitudeToPoint(100, glRes) as any) / 100;
+        }
 
         let queue;
 
@@ -547,7 +556,8 @@ class TileLayer extends Layer {
         const parentRenderer = layer && layer.getRenderer();
         while (queue.length > 0) {
             const node = queue.pop();
-            if (node.z === maxZoom) {
+            const nodeMaxZoom = this._getNodeMaxZoom(node, maxZoom, glRes, offsets[node.z]);
+            if (node.z === nodeMaxZoom) {
                 extent._combine(node.extent2d);
                 tiles.push(node);
                 continue;
@@ -555,11 +565,11 @@ class TileLayer extends Layer {
             if (!offsets[node.z + 1]) {
                 offsets[node.z + 1] = this._getTileOffset(node.z + 1);
             }
-            this._splitNode(node, projectionView, queue, tiles, parents, z, extent, maxZoom, offsets[node.z + 1], parentRenderer, glRes);
+            this._splitNode(node, projectionView, queue, tiles, parents, z, extent, nodeMaxZoom, offsets[node.z + 1], parentRenderer, glRes);
         }
         parents.sort(sortingTiles);
         this._debugTile(tiles, '_getPyramidTiles');
-
+        // console.log('count', tiles.length);
         return {
             tileGrids: [
                 {
@@ -579,6 +589,80 @@ class TileLayer extends Layer {
         const stackMinZoom = Math.max(this.getMinZoom(), currentTileZoom - this.options['tileStackStartDepth']);
         const stackMaxZoom = stackMinZoom + this.options['tileStackDepth'];
         return tile.z >= stackMinZoom && tile.z < stackMaxZoom && tile.z < maxZoom;
+    }
+
+    /**
+     * 估算该瓦片允许加载的最大级别
+     * 1. 海拔因素：地形海拔很高时，相机离地面很近，但地图zoom（基于相机海拔）较低，
+     *    默认的maxZoom会导致瓦片模糊。
+     *    算法：
+     *    1. 计算相机到瓦片包围盒的两个距离：海拔为0时的dist0，实际海拔下的dist
+     *    2. 近大远小，瓦片的表观尺寸与距离成反比，距离缩短到1/r时，
+     *       需要提高log2(r)级分辨率才能保持同样的清晰度（相邻zoom级别瓦片尺寸减半）
+     *    3. 海拔为0时 dist === dist0，ratio为1，加载级别正好等于maxZoom
+     * 2. pitch因素：pitch越大，相机视线越倾斜，瓦片在屏幕上被拉伸越明显，
+     *    同等分辨率下瓦片越模糊，pitch >= 60° 时提1级（见 _getPitchZoomOffset）。
+     *    pitch提级只与视角有关、与瓦片内容无关，帧间稳定，不会引起加载震荡，
+     *    因此没有真实海拔的瓦片也按pitch提级
+     * 最终上限为 this.getMaxZoom() 与 maxAvailableZoom 中的较小值
+     * 注意：海拔提级只使用瓦片自身的真实海拔（地形数据解析后赋值），
+     * 没有真实海拔的瓦片不做海拔提级，避免用全局平均海拔导致整屏瓦片提级和加载震荡
+     * @param node - 瓦片节点
+     * @param maxZoom - 基于地图当前zoom计算的默认最大级别
+     * @param glRes - gl resolution
+     * @param offset - 节点所在zoom级别的tile offset
+     */
+    //@internal
+    _getNodeMaxZoom(node: TileNodeType, maxZoom: number, glRes: number, offset: TileOffsetType): number {
+        if (!this.options['dynamicZoomByDistance']) {
+            return maxZoom;
+        }
+        const absoluteMax = Math.min(this.getMaxZoom(), this.getMaxAvailableZoom() || Infinity);
+        if (maxZoom >= absoluteMax) {
+            return maxZoom;
+        }
+        const map = this.map;
+        const pitchZoomOffset = this._getPitchZoomOffset(map.getPitch());
+        // 只使用瓦片自身解析出的真实海拔，不能回退到renderer.avgMaxAltitude（全局平均）
+        // 否则没有地形数据的瓦片全部按高海拔提级，且加载后海拔变化会引起加载-丢弃-重加载震荡
+        const maxAltitude = node.maxAltitude;
+        if (isNil(maxAltitude)) {
+            return Math.min(maxZoom + pitchZoomOffset, absoluteMax);
+        }
+        const minAltitude = node.minAltitude || 0;
+        const glScale = node.res / glRes;
+        const { xmin, ymin, xmax, ymax } = node.extent2d;
+        TILE_MIN[0] = (xmin - offset[0]) * glScale;
+        TILE_MIN[1] = (ymin - offset[1]) * glScale;
+        TILE_MAX[0] = (xmax - offset[0]) * glScale;
+        TILE_MAX[1] = (ymax - offset[1]) * glScale;
+        // 海拔为0时，相机到瓦片的距离
+        TILE_MIN[2] = 0;
+        TILE_MAX[2] = 0;
+        // @ts-ignore
+        const dist0 = Math.max(Math.abs(distanceToRect(TILE_MIN, TILE_MAX, map.cameraPosition)), 1E-7);
+        // 实际海拔下，相机到瓦片的距离，海拔越高距离越近
+        TILE_MIN[2] = minAltitude * this._zScale;
+        TILE_MAX[2] = maxAltitude * this._zScale;
+        // @ts-ignore
+        const dist = Math.max(Math.abs(distanceToRect(TILE_MIN, TILE_MAX, map.cameraPosition)), 1E-7);
+        // 距离比：海拔抬升使表观尺寸放大的倍数，海拔为0时为1
+        const logRatio = Math.log2(Math.max(dist0 / dist, 1));
+        // 海拔提级与pitch提级相加，pitch提级只与视角有关，帧间稳定，不会引起加载震荡
+        const zoomOffset = Math.round(logRatio) + pitchZoomOffset;
+        // console.log(zoomOffset);
+        return Math.min(maxZoom + zoomOffset, absoluteMax);
+    }
+
+    /**
+     * 根据地图pitch计算额外提级，最多提1级
+     * pitch >= 60° 时，视角明显倾斜，瓦片在屏幕上被拉伸，同等分辨率的瓦片显得模糊，提1级；
+     * pitch < 60° 时不提级，避免低pitch时瓦片数量增加
+     * @param pitch - 地图pitch，单位为度，0表示俯视
+     */
+    //@internal
+    _getPitchZoomOffset(pitch: number): number {
+        return pitch >= 60 ? 1 : 0;
     }
 
     //@internal
@@ -755,11 +839,6 @@ class TileLayer extends Layer {
 
     //@internal
     _isTileInFrustum(node: TileNodeType, projectionView: Matrix4, glScale: number, offset: TileOffsetType): boolean {
-        if (!this._zScale) {
-            const map = this.getMap();
-            const glRes = map.getGLRes();
-            this._zScale = (map.altitudeToPoint(100, glRes) as any) / 100;
-        }
         const renderer = this.getRenderer();
         let { xmin, ymin, xmax, ymax } = node.extent2d;
         if (node.offset && (node.offset[0] !== 0 && node.offset[1] !== 0) && !isFunction(this.options.offset)) {
@@ -1774,6 +1853,7 @@ export type TileLayerOptionsType = LayerOptionsType & {
     mipmapTexture?: boolean;
     currentTilesFirst?: boolean;
     tileErrorScale?: number;
+    dynamicZoomByDistance?: boolean;
 };
 
 enum TileVisibility {
