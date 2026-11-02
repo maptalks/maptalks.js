@@ -624,12 +624,12 @@ class TileLayer extends Layer {
         if (maxZoom >= absoluteMax) {
             return maxZoom;
         }
-        const maxAltitude = node.maxAltitude;
-        if (isNil(maxAltitude)) {
+        const minAltitude = node.minAltitude;
+        if (isNil(minAltitude)) {
             return maxZoom;
         }
         const map = this.map;
-        if (maxAltitude * this._zScale >= map.cameraPosition[2]) {
+        if (minAltitude * this._zScale >= map.cameraPosition[2]) {
             return maxZoom;
         }
 
@@ -645,8 +645,8 @@ class TileLayer extends Layer {
         // @ts-ignore
         const dist0 = Math.max(Math.abs(distanceToRect(TILE_MIN, TILE_MAX, map.cameraPosition)), 1E-7);
         // 实际海拔下，相机到瓦片的距离，海拔越高距离越近
-        TILE_MIN[2] = maxAltitude * this._zScale;
-        TILE_MAX[2] = maxAltitude * this._zScale;
+        TILE_MIN[2] = minAltitude * this._zScale;
+        TILE_MAX[2] = minAltitude * this._zScale;
         // @ts-ignore
         const dist = Math.max(Math.abs(distanceToRect(TILE_MIN, TILE_MAX, map.cameraPosition)), 1E-7);
         // 距离比：海拔抬升使表观尺寸放大的倍数，海拔为0时为1
