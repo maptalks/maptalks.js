@@ -95,7 +95,8 @@ const defaultOptions: VectorTileLayerOptionsType = {
     loadTileCachMaxSize: 0,//MB, 0 no limit
     loadTileCacheLog: true,
 
-    renderBeforeTerrain: false
+    renderBeforeTerrain: false,
+    dynamicZoomByDistance: true
 };
 
 /**

@@ -441,9 +441,12 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         }
         const status = terrainTileImage.skinStatus[skinLayerId];
 
+        // debug 模式下 skin 纹理需要绘制 debug 边框，但只需在 debug 开关状态变化时重绘一次
+        const debugChanged = (skinImages.debugRendered || false) !== !!isInDebug;
+
         const isLayerAskToRefresh = renderer.needToRefreshTerrainTileOnZooming && renderer.needToRefreshTerrainTileOnZooming();
         const needRefreshTerrainTile = isAnimating || isLayerAskToRefresh && terrainTileImage.renderedZoom !== map.getZoom();
-        if (!isInDebug && status && !needRefreshTerrainTile) {
+        if (!debugChanged && status && !needRefreshTerrainTile) {
             return false;
         }
 
@@ -507,13 +510,14 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         if (!tiles.length) {
             skinImages.currentSkins.clear();
             terrainTileImage.skinImages[skinLayerId] = [];
+            terrainTileImage.skinImages[skinLayerId].debugRendered = !!isInDebug;
             // this._clearPrevSkinImages(terrainTileInfo, terrainTileImage, prevSkins, null, skinImagesToDel);
             return false;
 
         }
 
         const ids = tiles.map(t => t.info.id).join();
-        if (isSameVersion && !isInDebug && !needRefreshTerrainTile && !skinImageRetired && skinImages.tileIds === ids) {
+        if (isSameVersion && !debugChanged && !needRefreshTerrainTile && !skinImageRetired && skinImages.tileIds === ids) {
             return false;
         }
         skinImages.tileIds = ids;
@@ -555,6 +559,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
             this._newTerrainTileCounter++;
         }
         terrainTileImage.skinImages[skinLayerId] = skinImages;
+        skinImages.debugRendered = !!isInDebug;
 
         skinLayer.fire('renderterrainskin', { tile: terrainTileInfo, skinTiles: tiles });
         if (complete) {
@@ -611,7 +616,10 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         if (!isSkinReady) {
             delete terrainTileImage.renderedZoom;
         }
-        const needRefreshSkins = this._needRefreshTerrainSkins(terrainTileImage.renderedZoom);
+        // debug 开关变化时，需要重绘一次 skin FBO 以显示或移除 debug 边框
+        const isInDebug = !!this.layer.options['debug'];
+        const debugChanged = (terrainTileImage.debugRendered || false) !== isInDebug;
+        const needRefreshSkins = debugChanged || this._needRefreshTerrainSkins(terrainTileImage.renderedZoom);
         if (!needRefreshSkins) {
             return;
         }
@@ -719,6 +727,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(TileLayerRendererable(Layer
         }
         if (isSkinReady) {
             terrainTileImage.renderedZoom = map.getZoom();
+            terrainTileImage.debugRendered = isInDebug;
         }
     }
 

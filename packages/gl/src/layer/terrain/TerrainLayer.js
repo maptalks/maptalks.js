@@ -40,7 +40,8 @@ const options = {
     'errorScale': 1,
     'hasSkirts': true,
     'colors': [],
-    'skinScale': 1
+    'skinScale': 1,
+    'dynamicZoomByDistance': true,
 };
 
 const EMPTY_TILE_GRIDS = {
