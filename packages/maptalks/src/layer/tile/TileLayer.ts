@@ -557,7 +557,7 @@ class TileLayer extends Layer {
         while (queue.length > 0) {
             const node = queue.pop();
             const nodeMaxZoom = this._getNodeMaxZoom(node, maxZoom, glRes, offsets[node.z]);
-            if (node.z === nodeMaxZoom) {
+            if (node.z >= nodeMaxZoom) {
                 extent._combine(node.extent2d);
                 tiles.push(node);
                 continue;
@@ -565,11 +565,14 @@ class TileLayer extends Layer {
             if (!offsets[node.z + 1]) {
                 offsets[node.z + 1] = this._getTileOffset(node.z + 1);
             }
-            this._splitNode(node, projectionView, queue, tiles, parents, z, extent, nodeMaxZoom, offsets[node.z + 1], parentRenderer, glRes);
+            this._splitNode(node, projectionView, queue, tiles, parents, z, extent, nodeMaxZoom, maxZoom, offsets[node.z + 1], parentRenderer, glRes);
         }
         parents.sort(sortingTiles);
         this._debugTile(tiles, '_getPyramidTiles');
         // console.log('count', tiles.length);
+        // if ((this as any).isVectorTileLayer) {
+        //     console.log(tiles.length, tiles.map(t => t.id).join(','));
+        // }
         return {
             tileGrids: [
                 {
@@ -676,6 +679,7 @@ class TileLayer extends Layer {
         currentTileZoom: number,
         gridExtent: PointExtent,
         maxZoom: number,
+        nativeMaxZoom: number,
         offset: TileOffsetType,
         parentRenderer: any,
         glRes: number
@@ -712,9 +716,11 @@ class TileLayer extends Layer {
             const cached = renderer.isTileCachedOrLoading(tileId);
             let childNode = cached && cached.info;
             if (!childNode) {
-                childNode = this.tileInfoCache.get(tileId);
                 if (!childNode) {
                     childNode = this._createChildNode(node, dx, dy, offset, tileId);
+                    // 子瓦片临时继承父节点的高程，以免因为缺少高程被判定为 out_of_frustum
+                    childNode.minAltitude = node.minAltitude;
+                    childNode.maxAltitude = node.maxAltitude;
                 }
             }
             childNode.error = node.error / 2;
@@ -725,7 +731,7 @@ class TileLayer extends Layer {
                 hasCurrentIn = true;
             } else if (visible === TileVisibility.OUT_OF_FRUSTUM) {
                 continue;
-            } else if (visible === TileVisibility.SCREEN_ERROR_TOO_SMALL && z !== maxZoom) {
+            } else if (visible === TileVisibility.SCREEN_ERROR_TOO_SMALL) {
                 // 任意子瓦片的error低于maxError，则添加父级瓦片，不再遍历子瓦片
                 tiles.push(node);
                 gridExtent._combine(node.extent2d);
@@ -743,7 +749,7 @@ class TileLayer extends Layer {
         } else {
             pushIn(queue, children);
         }
-        if (this.isParentTile(currentTileZoom, maxZoom, node)) {
+        if (this.isParentTile(currentTileZoom, nativeMaxZoom, node)) {
             parents.push(node);
         }
 

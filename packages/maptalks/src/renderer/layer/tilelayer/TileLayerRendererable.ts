@@ -187,9 +187,9 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
                 if (!loading) {
                     //redraw to remove parent tiles if any left in last paint
                     if (!map.isAnimating() && (this._parentTiles.length || this._childTiles.length)) {
+                        this.setToRedraw();
                         this._parentTiles = [];
                         this._childTiles = [];
-                        this.setToRedraw();
                     }
                     this.completeRender();
                 }
@@ -737,11 +737,11 @@ const TileLayerRenderable = function <T extends MixinConstructor>(Base: T) {
         removeTileLoading(tileInfo: Tile['info']): void {
             if (this.tilesLoading[tileInfo.id]) {
                 delete this.tilesLoading[tileInfo.id];
+                // need to setToRedraw to let tiles blocked by loadingLimit continue to load
+                this.setToRedraw();
             } else {
                 // console.warn('Tile not found in tilesLoading:', tileInfo.id);
             }
-            // need to setToRedraw to let tiles blocked by loadingLimit continue to load
-            this.setToRedraw();
         }
 
         //@internal
