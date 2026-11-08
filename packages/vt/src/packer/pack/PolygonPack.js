@@ -23,7 +23,7 @@ export default class PolygonPack extends VectorPack {
         const vector = new StyledVector(feature, symbol, fnTypes, options);
         const pattern = vector.getPolygonResource();
         if (!this.options['atlas'] && pattern) {
-            iconReqs[pattern] = [0, 0];
+            iconReqs[pattern] = [0, 0, true];//[width,height,needResize]
         }
         return vector;
     }
