@@ -632,7 +632,8 @@ export default class FBORayPicking {
         });
         const ids = [];
         for (let i = 0; i < data.length; i += 4) {
-            ids.push(pack3(data.subarray(i, i + 4)));
+            // encoded as pickingId + 1 in frag2, must decode the same way as _packData
+            ids.push(this._packData(data.subarray(i, i + 4), this._shader2).pickingId);
         }
         return ids;
     }

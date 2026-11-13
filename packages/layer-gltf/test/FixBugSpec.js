@@ -1171,6 +1171,49 @@ describe('bug', () => {
         expect(identifyData.length).to.be.equal(0);
     });
 
+    // maptalks/issues#924: pickingId was off-by-one when many GLTFMarkers are present
+    // use animated markers so they are not batched into MultiGLTFMarker
+    it('identify should return correct pickingId among many gltf markers(maptalks/issues#924)', function (done) {
+        this.timeout(60000);
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        // At least 255 meshes are required to select the two-pass shader1 path.
+        const markerCount = 256;
+        const markers = [];
+        let loaded = 0;
+        for (let i = 0; i < markerCount; i++) {
+            const marker = new maptalks.GLTFGeometry(center.add((i % 16 - 7.5) * 0.00015, (Math.floor(i / 16) - 7.5) * 0.00015), {
+                symbol: {
+                    url: url1,
+                    modelHeight: 10,
+                    animation: true
+                },
+                id: 'marker-' + i
+            }).addTo(gltflayer);
+            markers.push(marker);
+            marker.once('load', () => {
+                loaded++;
+                if (loaded < markerCount) {
+                    return;
+                }
+                setTimeout(() => {
+                    for (const target of [markers[0], markers[markerCount - 1]]) {
+                        const results = gltflayer.identify(target.getCoordinates());
+                        const picking = gltflayer.getRenderer().getFBORayPicking();
+                        expect(picking.getRenderedMeshes().length).to.be.above(254);
+                        expect(picking._currentShader).to.be.equal(picking._shader1);
+                        expect(results.length).to.be.above(0);
+                        const picked = results[0];
+                        expect(picked.data.getId()).to.be.equal(target.getId());
+                        expect(picked.pickingId).to.be.eql(target._getPickingId());
+                    }
+                    gltflayer.remove();
+                    done();
+                }, 300);
+            });
+        }
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
+
     it('copy gltfmarker, its meshes\'s scale should be equal(fuzhenn/maptalks-studio#2749)', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const marker = new maptalks.GLTFGeometry(center, {
