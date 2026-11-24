@@ -52,6 +52,37 @@ describe('MapSetCenter.Spec', function () {
             expect(Math.round(tPoint.x - pPoint.x)).to.equal((100 - 180) / 2);
         });
 
+        it('updates center when left and right padding are equal', function () {
+            var next = new maptalks.Coordinate(118.856825, 32.056534);
+            map.setCenter(next, { paddingLeft: 100, paddingRight: 100 });
+            var pCenter = map.getCenter();
+            expect(pCenter).to.be.closeTo(next);
+            var pPoint = map.coordinateToViewPoint(pCenter);
+            var tPoint = map.coordinateToViewPoint(next);
+            expect(Math.round(tPoint.x - pPoint.x)).to.equal(0);
+            expect(Math.round(tPoint.y - pPoint.y)).to.equal(0);
+        });
+
+        it('updates center when top and bottom padding are equal', function () {
+            var next = new maptalks.Coordinate(118.836825, 32.036534);
+            map.setCenter(next, { paddingTop: 80, paddingBottom: 80 });
+            var pCenter = map.getCenter();
+            expect(pCenter).to.be.closeTo(next);
+            var pPoint = map.coordinateToViewPoint(pCenter);
+            var tPoint = map.coordinateToViewPoint(next);
+            expect(Math.round(tPoint.x - pPoint.x)).to.equal(0);
+            expect(Math.round(tPoint.y - pPoint.y)).to.equal(0);
+        });
+
+        it('updates center when padding is symmetric with pitch and bearing', function () {
+            var next = new maptalks.Coordinate(118.866825, 32.066534);
+            map.setPitch(75);
+            map.setBearing(90);
+            map.setCenter(next, { paddingLeft: 40, paddingRight: 40, paddingTop: 60, paddingBottom: 60 });
+            var pCenter = map.getCenter();
+            expect(pCenter).to.be.closeTo(next);
+        });
+
         it('set center with paddingTop', function () {
             map.setCenter(center, { paddingTop: 100 });
             var pCenter = map.getCenter();

@@ -2389,9 +2389,18 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         return pcenter;
     }
 
+    /**
+     * Place a projected coordinate at a container point and update the map center.
+     * When the point is the container center and there is no center altitude, the projected center is the coordinate itself.
+     * @param {Coordinate} coordinate - projected coordinate to place
+     * @param {Point} point - container point
+     * @return {Map} this
+     */
     //@internal
     _setPrjCoordAtContainerPoint(coordinate: Coordinate, point: Point) {
+        // 左右、上下 padding 相等时目标点仍是容器中心，仍需把该坐标写成新的投影中心
         if (!this.centerAltitude && point.x === this.width / 2 && point.y === this.height / 2) {
+            this._setPrjCenter(coordinate.copy());
             return this;
         }
         const pcenter = this._getPCenterWhenPrjCoordAtContainerPoint(coordinate, point);
