@@ -645,7 +645,13 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
         this.onMoveStart();
         if (this._getPaddingSize(padding)) {
             const containerPoint = this._getContainerCenterByPadding(padding);
-            this._setPrjCoordAtContainerPoint(pcenter, containerPoint);
+            // 左右、上下相等时目标点仍是容器中心。_setPrjCoordAtContainerPoint 在该点会直接返回，
+            // 以保持 panBy 不改中心；setCenter 仍要把传入坐标写成新的投影中心。
+            if (!this.centerAltitude && containerPoint.x === this.width / 2 && containerPoint.y === this.height / 2) {
+                this._setPrjCenter(pcenter);
+            } else {
+                this._setPrjCoordAtContainerPoint(pcenter, containerPoint);
+            }
         } else {
             this._setPrjCenter(pcenter);
         }
@@ -2390,17 +2396,15 @@ export class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
-     * Place a projected coordinate at a container point and update the map center.
-     * When the point is the container center and there is no center altitude, the projected center is the coordinate itself.
-     * @param {Coordinate} coordinate - projected coordinate to place
-     * @param {Point} point - container point
+     * 把投影坐标放到指定容器点，并据此更新地图中心。
+     * 目标点是容器中心且没有中心高程时不改中心，panBy 依赖这个行为。
+     * @param {Coordinate} coordinate - 需要对齐到容器点的投影坐标
+     * @param {Point} point - 容器像素点
      * @return {Map} this
      */
     //@internal
     _setPrjCoordAtContainerPoint(coordinate: Coordinate, point: Point) {
-        // 左右、上下 padding 相等时目标点仍是容器中心，仍需把该坐标写成新的投影中心
         if (!this.centerAltitude && point.x === this.width / 2 && point.y === this.height / 2) {
-            this._setPrjCenter(coordinate.copy());
             return this;
         }
         const pcenter = this._getPCenterWhenPrjCoordAtContainerPoint(coordinate, point);
