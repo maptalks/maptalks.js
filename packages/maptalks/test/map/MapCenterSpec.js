@@ -138,16 +138,14 @@ describe('MapSetCenter.Spec', function () {
 
         it('fitExtent animation with paddingTop and paddingBottom', function (done) {
             var extent = new maptalks.Marker(center).getExtent();
-            map.fitExtent(extent, 0, { paddingTop: 100, paddingBottom: 180, duration: 100 });
-            setTimeout(function () {
+            map.once('animateend', function () {
                 var pCenter = map.getCenter();
                 var pPoint = map.coordinateToViewPoint(pCenter);
                 var tPoint = map.coordinateToViewPoint(extent.getCenter());
-                var gap = Math.round(tPoint.y - pPoint.y);
-                expect( gap > -45 && gap <= -40).to.be.ok();
+                expect(Math.round(tPoint.y - pPoint.y)).to.equal((100 - 180) / 2);
                 done();
-            }, 150);
-
+            });
+            map.fitExtent(extent, 0, { paddingTop: 100, paddingBottom: 180, duration: 100 });
         });
     })
 })

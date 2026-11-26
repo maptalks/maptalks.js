@@ -220,6 +220,10 @@ Map.include(/** @lends Map.prototype */{
                     if (!isNil(props['bearing'])) {
                         this._setBearing(props['bearing'][1]);
                     }
+                    // 先落到最终 zoom，再按 padding 计算中心。否则 padding 仍按动画中的 zoom 换算，zoomend 之后像素偏移会被放大。
+                    if (!isNil(props['zoom']) && !options['wheelZoom']) {
+                        this.onZooming(props['zoom'][1], zoomOrigin);
+                    }
                     let pcenter;
                     if (props['center']) {
                         pcenter = projection.project(props['center'][1]);
